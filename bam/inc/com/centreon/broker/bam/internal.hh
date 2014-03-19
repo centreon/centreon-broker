@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -27,13 +27,12 @@ CCB_BEGIN()
 namespace bam {
   // Data elements.
   enum data_element {
-    de_metric = 1,
-    de_rebuild,
-    de_remove_graph,
-    de_status
+    de_ba_status = 1,
+    de_bool_status,
+    de_kpi_status
   };
 }
 
 CCB_END()
 
-#endif // !CCB_STORAGE_INTERNAL_HH
+#endif // !CCB_BAM_INTERNAL_HH
