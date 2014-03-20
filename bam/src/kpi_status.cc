@@ -29,12 +29,14 @@ using namespace com::centreon::broker::bam;
  */
 kpi_status::kpi_status()
   : kpi_id(0),
-    level_acknowledgement(0.0),
-    level_downtime(0.0),
-    level_nominal(100.0),
+    level_acknowledgement_hard(0.0),
+    level_acknowledgement_soft(0.0),
+    level_downtime_hard(0.0),
+    level_downtime_soft(0.0),
+    level_nominal_hard(100.0),
+    level_nominal_soft(100.0),
     state_hard(0),
-    state_soft(0),
-    state_type(0) {}
+    state_soft(0) {}
 
 /**
  *  Copy constructor.
@@ -81,11 +83,13 @@ unsigned int kpi_status::type() const {
  */
 void kpi_status::_internal_copy(kpi_status const& other) {
   kpi_id = other.kpi_id;
-  level_acknowledgement = other.level_acknowledgement;
-  level_downtime = other.level_downtime;
-  level_nominal = other.level_nominal;
+  level_acknowledgement_hard = other.level_acknowledgement_hard;
+  level_acknowledgement_soft = other.level_acknowledgement_soft;
+  level_downtime_hard = other.level_downtime_hard;
+  level_downtime_soft = other.level_downtime_soft;
+  level_nominal_hard = other.level_nominal_hard;
+  level_nominal_soft = other.level_nominal_soft;
   state_hard = other.state_hard;
   state_soft = other.state_soft;
-  state_type = other.state_type;
   return ;
 }

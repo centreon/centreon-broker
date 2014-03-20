@@ -201,6 +201,7 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     throw (exceptions::msg()
            << "BAM: could not create KPI " << cfg.get_id()
            << ": BA " << cfg.get_ba_id() << " does not exist");
+  my_kpi->set_id(cfg.get_ba_id());
   my_kpi->add_parent(my_ba.staticCast<bam::computable>());
   return (my_kpi);
 }

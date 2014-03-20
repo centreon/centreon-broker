@@ -41,12 +41,14 @@ namespace        bam {
     unsigned int type() const;
 
     unsigned int kpi_id;
-    double       level_acknowledgement;
-    double       level_downtime;
-    double       level_nominal;
+    double       level_acknowledgement_hard;
+    double       level_acknowledgement_soft;
+    double       level_downtime_hard;
+    double       level_downtime_soft;
+    double       level_nominal_hard;
+    double       level_nominal_soft;
     short        state_hard;
     short        state_soft;
-    short        state_type;
 
   private:
     void         _internal_copy(kpi_status const& other);

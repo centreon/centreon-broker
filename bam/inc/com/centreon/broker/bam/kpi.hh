@@ -42,8 +42,13 @@ namespace        bam {
                  kpi(kpi const& right);
     virtual      ~kpi();
     kpi&         operator=(kpi const& right);
+    unsigned int get_id() const;
     virtual void impact_hard(impact_values& hard_impact) = 0;
     virtual void impact_soft(impact_values& soft_impact) = 0;
+    void         set_id(unsigned int id);
+
+  protected:
+    unsigned int _id;
   };
 }
 

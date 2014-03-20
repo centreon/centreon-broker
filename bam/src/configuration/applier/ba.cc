@@ -172,6 +172,7 @@ void applier::ba::_internal_copy(applier::ba const& right) {
 misc::shared_ptr<bam::ba> applier::ba::_new_ba(
                                          configuration::ba const& cfg) {
   misc::shared_ptr<bam::ba> obj(new bam::ba);
+  obj->set_id(cfg.get_id());
   // XXX : use configuration for BA levels
   return (obj);
 }

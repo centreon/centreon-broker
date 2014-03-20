@@ -18,8 +18,10 @@
 */
 
 #include "com/centreon/broker/bam/ba.hh"
+#include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
 
 using namespace com::centreon::broker::bam;
 
@@ -31,6 +33,7 @@ ba::ba()
     _acknowledgement_soft(0.0),
     _downtime_hard(0.0),
     _downtime_soft(0.0),
+    _id(0),
     _level_critical(0.0),
     _level_hard(100.0),
     _level_soft(100.0),
@@ -100,6 +103,14 @@ void ba::child_has_update(misc::shared_ptr<computable>& child) {
     it->second.kpi_ptr->impact_hard(it->second.hard_impact);
     it->second.kpi_ptr->impact_soft(it->second.soft_impact);
     _apply_impact(it->second);
+
+    // Generate status event.
+    misc::shared_ptr<ba_status> status(new ba_status);
+    status->ba_id = _id;
+    status->level_acknowledgement = _acknowledgement_hard;
+    status->level_downtime = _downtime_hard;
+    status->level_nominal = _level_hard;
+    multiplexing::publisher().write(status.staticCast<io::data>());
   }
   return ;
 }
@@ -138,6 +149,15 @@ double ba::get_downtime_impact_hard() {
  */
 double ba::get_downtime_impact_soft() {
   return (_downtime_soft);
+}
+
+/**
+ *  Get the BA ID.
+ *
+ *  @return ID of this BA.
+ */
+unsigned int ba::get_id() {
+  return (_id);
 }
 
 /**
@@ -188,6 +208,16 @@ void ba::remove_impact(misc::shared_ptr<kpi>& impact) {
 }
 
 /**
+ *  Set BA ID.
+ *
+ *  @param[in] id BA ID.
+ */
+void ba::set_id(unsigned int id) {
+  _id = id;
+  return ;
+}
+
+/**
  *  Apply some impact.
  *
  *  @param[in] impact Impact information.
@@ -219,6 +249,7 @@ void ba::_internal_copy(ba const& right) {
   _acknowledgement_soft = right._acknowledgement_soft;
   _downtime_hard = right._downtime_hard;
   _downtime_soft = right._downtime_soft;
+  _id = right._id;
   _impacts = right._impacts;
   _level_critical = right._level_critical;
   _level_hard = right._level_hard;

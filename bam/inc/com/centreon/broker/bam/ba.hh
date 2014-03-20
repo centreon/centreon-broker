@@ -28,9 +28,9 @@
 
 CCB_BEGIN()
 
-namespace  bam {
+namespace        bam {
   // Forward declaration.
-  class    kpi;
+  class          kpi;
 
   /**
    *  @class ba ba.hh "com/centreon/broker/bam/ba.hh"
@@ -39,21 +39,23 @@ namespace  bam {
    *  Represents a BA that gets computed every time an impact change
    *  of value.
    */
-  class    ba : public computable {
+  class          ba : public computable {
   public:
-           ba();
-           ba(ba const& right);
-           ~ba();
-    ba&    operator=(ba const& right);
-    void   add_impact(misc::shared_ptr<kpi>& impact);
-    void   child_has_update(misc::shared_ptr<computable>& child);
-    double get_ack_impact_hard();
-    double get_ack_impact_soft();
-    double get_downtime_impact_hard();
-    double get_downtime_impact_soft();
-    short  get_state_hard();
-    short  get_state_soft();
-    void   remove_impact(misc::shared_ptr<kpi>& impact);
+                 ba();
+                 ba(ba const& right);
+                 ~ba();
+    ba&          operator=(ba const& right);
+    void         add_impact(misc::shared_ptr<kpi>& impact);
+    void         child_has_update(misc::shared_ptr<computable>& child);
+    double       get_ack_impact_hard();
+    double       get_ack_impact_soft();
+    double       get_downtime_impact_hard();
+    double       get_downtime_impact_soft();
+    unsigned int get_id();
+    short        get_state_hard();
+    short        get_state_soft();
+    void         remove_impact(misc::shared_ptr<kpi>& impact);
+    void         set_id(unsigned int id);
 
   private:
     static int const        _recompute_limit = 100;
@@ -64,22 +66,23 @@ namespace  bam {
       impact_values         soft_impact;
     };
 
-    void   _apply_impact(impact_info& impact);
-    void   _internal_copy(ba const& right);
-    void   _recompute();
-    void   _unapply_impact(impact_info& impact);
+    void         _apply_impact(impact_info& impact);
+    void         _internal_copy(ba const& right);
+    void         _recompute();
+    void         _unapply_impact(impact_info& impact);
 
-    double _acknowledgement_hard;
-    double _acknowledgement_soft;
-    double _downtime_hard;
-    double _downtime_soft;
+    double       _acknowledgement_hard;
+    double       _acknowledgement_soft;
+    double       _downtime_hard;
+    double       _downtime_soft;
+    unsigned int _id;
     umap<kpi*, impact_info>
-           _impacts;
-    double _level_critical;
-    double _level_hard;
-    double _level_soft;
-    double _level_warning;
-    int    _recompute_count;
+                 _impacts;
+    double       _level_critical;
+    double       _level_hard;
+    double       _level_soft;
+    double       _level_warning;
+    int          _recompute_count;
   };
 }
 

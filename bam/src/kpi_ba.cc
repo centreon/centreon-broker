@@ -19,6 +19,8 @@
 
 #include "com/centreon/broker/bam/ba.hh"
 #include "com/centreon/broker/bam/kpi_ba.hh"
+#include "com/centreon/broker/bam/kpi_status.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -65,7 +67,26 @@ kpi_ba& kpi_ba::operator=(kpi_ba const& right) {
 void kpi_ba::child_has_update(misc::shared_ptr<computable>& child) {
   // It is useless to maintain a cache of BA values in this class, as
   // the ba class already cache most of them.
-  (void)child;
+  if (child.data() == _ba.data()) {
+    // Get information.
+    impact_values hard_values;
+    impact_values soft_values;
+    impact_hard(hard_values);
+    impact_soft(soft_values);
+
+    // Generate status event.
+    misc::shared_ptr<kpi_status> status(new kpi_status);
+    status->kpi_id = _id;
+    status->level_acknowledgement_hard = hard_values.get_acknowledgement();
+    status->level_acknowledgement_soft = soft_values.get_acknowledgement();
+    status->level_downtime_hard = hard_values.get_downtime();
+    status->level_downtime_soft = soft_values.get_downtime();
+    status->level_nominal_hard = hard_values.get_nominal();
+    status->level_nominal_soft = soft_values.get_nominal();
+    status->state_hard = _ba->get_state_hard();
+    status->state_soft = _ba->get_state_soft();
+    multiplexing::publisher().write(status.staticCast<io::data>());
+  }
   return ;
 }
 
