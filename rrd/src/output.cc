@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -63,7 +63,11 @@ output::output(
           bool ignore_update_errors,
           bool write_metrics,
           bool write_status)
-  : _backend(new lib(metrics_path.toStdString(), cache_size)),
+  : _backend(new lib(
+                   (!metrics_path.isEmpty()
+                    ? metrics_path.toStdString()
+                    : status_path.toStdString()),
+                   cache_size)),
     _ignore_update_errors(ignore_update_errors),
     _metrics_path(metrics_path.toStdString()),
     _process_out(true),

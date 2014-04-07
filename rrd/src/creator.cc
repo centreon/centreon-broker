@@ -47,7 +47,11 @@ using namespace com::centreon::broker::rrd;
 creator::creator(
            std::string const& tmpl_path,
            unsigned int cache_size)
-  : _cache_size(cache_size), _tmpl_path(tmpl_path) {}
+  : _cache_size(cache_size), _tmpl_path(tmpl_path) {
+  logging::debug(logging::medium)
+    << "RRD: file creator will maintain at most " << _cache_size
+    << " templates in '" << _tmpl_path << "'";
+}
 
 /**
  *  Copy constructor.
