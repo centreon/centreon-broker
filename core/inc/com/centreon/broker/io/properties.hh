@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -55,6 +55,7 @@ namespace              io {
     iterator           end();
     const_iterator     end() const;
     property const&    get(std::string const& name) const;
+    void               merge(properties const& other);
     std::string const& name() const throw ();
     void               name(std::string const& name);
 

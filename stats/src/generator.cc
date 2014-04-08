@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -93,8 +93,12 @@ void generator::run() {
         sleep(1);
         continue ;
       }
+      next_time = now + _interval;
 
       // Generate stats.
+      logging::info(logging::medium)
+        << "stats: time has come to generate statistics (tag '"
+        << _tag << "')";
       builder b;
       b.build();
 
@@ -124,6 +128,10 @@ void generator::run() {
                 std::pair<unsigned int, unsigned int> >::const_iterator
             it3(_plugins.find(it2->first));
           if ((it3 != _plugins.end()) && it2->second.is_graphable()) {
+            logging::debug(logging::low)
+              << "stats: generating update for graphable service '"
+              << it3->first << "' (host " << it3->second.first
+              << ", service " << it3->second.second << ")";
             misc::shared_ptr<neb::service_status>
               ss(new neb::service_status);
             ss->host_id = it3->second.first;
