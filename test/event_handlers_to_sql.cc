@@ -222,7 +222,7 @@ int main() {
         std::string output;
         int return_code;
         short state;
-        short state_type;
+        e_service_state state_type;
         time_t timeout;
         short type;
       } const entries[] = {

@@ -18,55 +18,12 @@
 */
 
 #include "com/centreon/broker/bam/sql_mapping.hh"
-#include <map>
+#include  <map>
+#include "com/centreon/tools/create_map.hh"
 
 using namespace com::centreon::broker::bam;
+using namespace com::centreon::tools;
 
-/**
- *  @class  create_map
- *  @brief  A clever piece of code found on the net to
- *          automate the loading of a map from a literal expression.
- */
-template <typename T, typename U>
-class create_map {
-public:
-  /**
-   *  Constructor
-   */
-  create_map(T const& key,U const& val) {
-    m_map[key] = val;
-  }
-
-  /**
-   *  @brief Operator (key, value).
-   *
-   *  This operator takes the same parameters as constructor so that the
-   *  row for the constructor and all preceding rows are identical. This
-   *  allows for a clean layout of table rows.
-   *
-   *  @param[in] key Key.
-   *  @param[in] val Value.
-   *
-   *  @return This object.
-   */
-  create_map<T,U>& operator()(T const& key, U const& val) {
-    m_map[key] = val;
-    return (*this);
-  }
-
-  /**
-   *  Operator map
-   *
-   *  @return  Returns the internal map loaded with all the values of
-   *           the literal table.
-   */
-  operator std::map<T, U>() {
-    return (m_map);
-  }
-
-private:
-  std::map<T,U> m_map;
-};
 
  /**
  *  This function maps the logical name for a RDBMS to the QT lib name.

@@ -22,6 +22,7 @@
 
 #  include "com/centreon/broker/bam/computable.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
 
 CCB_BEGIN()
 
@@ -40,6 +41,11 @@ namespace        bam {
     bool_value&  operator=(bool_value const& right);
     virtual bool value_hard() = 0;
     virtual bool value_soft() = 0;
+
+    /**
+     * @brief  An encapsulation of the pointer type
+     */
+    typedef misc::shared_ptr<bool_value> ptr;
   };
 }
 

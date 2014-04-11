@@ -44,6 +44,7 @@
 #include "com/centreon/engine/events.hh"
 #include "com/centreon/engine/nebcallbacks.hh"
 #include "com/centreon/engine/nebstructs.hh"
+#include "com/centreon/defines.hh"
 
 using namespace com::centreon::broker;
 
@@ -1251,7 +1252,7 @@ int neb::callback_host(int callback_type, void* data) {
       = h->current_notification_number;
     my_host->current_state = (h->has_been_checked
                               ? h->current_state
-                              : 4); // Pending state.
+                              : E_STATE_PENDING); // Pending state.
     my_host->default_active_checks_enabled = h->checks_enabled;
     my_host->default_event_handler_enabled = h->event_handler_enabled;
     my_host->default_failure_prediction = h->failure_prediction_enabled;
@@ -1286,7 +1287,7 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->instance_id = neb::instance_id;
     my_host->is_flapping = h->is_flapping;
     my_host->last_check = h->last_check;
-    my_host->last_hard_state = h->last_hard_state;
+    my_host->last_hard_state = static_cast<e_service_state>(h->last_hard_state);
     my_host->last_hard_state_change = h->last_hard_state_change;
     my_host->last_notification = h->last_host_notification;
     my_host->last_state_change = h->last_state_change;
@@ -1501,7 +1502,7 @@ int neb::callback_host_status(int callback_type, void* data) {
     }
     host_status->is_flapping = h->is_flapping;
     host_status->last_check = h->last_check;
-    host_status->last_hard_state = h->last_hard_state;
+    host_status->last_hard_state = static_cast<e_service_state>(h->last_hard_state);
     host_status->last_hard_state_change = h->last_hard_state_change;
     host_status->last_notification = h->last_host_notification;
     host_status->last_state_change = h->last_state_change;
@@ -2025,7 +2026,7 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->is_flapping = s->is_flapping;
     my_service->is_volatile = s->is_volatile;
     my_service->last_check = s->last_check;
-    my_service->last_hard_state = s->last_hard_state;
+    my_service->last_hard_state = static_cast<e_service_state>(s->last_hard_state);
     my_service->last_hard_state_change = s->last_hard_state_change;
     my_service->last_notification = s->last_notification;
     my_service->last_state_change = s->last_state_change;
@@ -2247,7 +2248,7 @@ int neb::callback_service_status(int callback_type, void* data) {
     service_status->has_been_checked = s->has_been_checked;
     service_status->is_flapping = s->is_flapping;
     service_status->last_check = s->last_check;
-    service_status->last_hard_state = s->last_hard_state;
+    service_status->last_hard_state = static_cast<e_service_state>(s->last_hard_state);
     service_status->last_hard_state_change = s->last_hard_state_change;
     service_status->last_notification = s->last_notification;
     service_status->last_state_change = s->last_state_change;

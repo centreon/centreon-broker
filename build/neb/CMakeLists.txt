@@ -18,10 +18,12 @@
 ##
 
 # Global options.
+set(COMMON_INC_DIR "${PROJECT_SOURCE_DIR}/common/inc")
 set(INC_DIR "${PROJECT_SOURCE_DIR}/neb/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/neb/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/neb/test")
 include_directories("${INC_DIR}")
+include_directories("${COMMON_INC_DIR}")
 
 # NEB sources.
 set(NEB_SOURCES
@@ -94,6 +96,7 @@ set(NEB_SOURCES
   "${INC_DIR}/com/centreon/broker/neb/service_group_member.hh"
   "${INC_DIR}/com/centreon/broker/neb/service_status.hh"
   "${INC_DIR}/com/centreon/broker/neb/status.hh"
+  "${COMMON_INC_DIR}/com/centreon/defines.hh"
 )
 
 # Static library.

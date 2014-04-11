@@ -24,7 +24,8 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-bool_not::bool_not() {}
+bool_not::bool_not( bool_value::ptr p)
+  : _value(p) {}
 
 /**
  *  Copy constructor.
@@ -63,7 +64,7 @@ bool_not& bool_not::operator=(bool_not const& right) {
  *
  *  @param[in] child Child.
  */
-void bool_not::child_has_update(misc::shared_ptr<computable>& child) {
+void bool_not::child_has_update(computable::ptr & child) {
   (void)child;
   return ;
 }
@@ -73,7 +74,7 @@ void bool_not::child_has_update(misc::shared_ptr<computable>& child) {
  *
  *  @param[in] value Value object whose value will be negated.
  */
-void bool_not::set_value(misc::shared_ptr<bool_value>& value) {
+void bool_not::set_value(bool_value::ptr& value) {
   _value = value;
   return ;
 }

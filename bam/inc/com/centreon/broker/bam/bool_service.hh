@@ -23,7 +23,7 @@
 #  include "com/centreon/broker/bam/bool_value.hh"
 #  include "com/centreon/broker/bam/service_listener.hh"
 #  include "com/centreon/broker/namespace.hh"
-
+#  include "com/centreon/defines.hh"
 CCB_BEGIN()
 
 namespace         bam {
@@ -37,13 +37,15 @@ namespace         bam {
   class           bool_service : public bool_value,
                                  public service_listener {
   public:
-                  bool_service();
+    typedef misc::shared_ptr<bool_service> ptr;
+
+                  bool_service(unsigned int host_id,
+                               unsigned int service_id );
                   bool_service(bool_service const& right);
                   ~bool_service();
     bool_service& operator=(bool_service const& right);
-    void          child_has_update(
-                    misc::shared_ptr<computable>& child);
-    void          set_expected_state(short expected);
+    void          child_has_update( computable::ptr& child);
+    void          set_expected_state( e_service_state expected);
     void          set_host_id(unsigned int host_id);
     void          set_service_id(unsigned int service_id);
     void          set_value_if_state_match(bool value);
@@ -55,12 +57,12 @@ namespace         bam {
   private:
     void          _internal_copy(bool_service const& right);
 
-    unsigned int  _host_id;
-    unsigned int  _service_id;
-    short         _state_expected;
-    short         _state_hard;
-    short         _state_soft;
-    bool          _value_if_state_match;
+    unsigned int     _host_id;
+    unsigned int     _service_id;
+    e_service_state  _state_expected;
+    e_service_state  _state_hard;
+    e_service_state  _state_soft;
+    bool             _value_if_state_match;
   };
 }
 
