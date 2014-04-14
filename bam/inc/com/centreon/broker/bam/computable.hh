@@ -36,16 +36,14 @@ namespace        bam {
    */
   class          computable {
   public:
-    typedef misc::shared_ptr<computable> ptr;
-
-
                  computable();
                  computable(computable const& right);
     virtual      ~computable();
-    computable&  operator=( computable const& right);
-    void         add_parent(      ptr const& parent);
-    void         propagate_update(ptr & child);
-    void         remove_parent(   ptr const& parent);
+    computable&  operator=(computable const& right);
+    void         add_parent(misc::shared_ptr<computable> const& parent);
+    void         propagate_update(
+                   misc::shared_ptr<computable>& child);
+    void         remove_parent(misc::shared_ptr<computable> const& parent);
 
     /**
      *  @brief Notify node of the change of a child node.
@@ -57,12 +55,14 @@ namespace        bam {
      *
      *  @param[in] child Recently updated child node.
      */
-    virtual void child_has_update( ptr& child) = 0;
+    virtual void child_has_update(
+                   misc::shared_ptr<computable>& child) = 0;
 
   private:
     void         _internal_copy(computable const& right);
 
-    std::list< ptr >  _parents;
+    std::list<misc::shared_ptr<computable> >
+                 _parents;
   };
 }
 

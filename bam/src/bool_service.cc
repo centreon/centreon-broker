@@ -19,22 +19,19 @@
 
 #include "com/centreon/broker/bam/bool_service.hh"
 #include "com/centreon/broker/neb/service_status.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
-//using namespace com::centreon::broker::exceptions;
 using namespace com::centreon::broker::bam;
 
 /**
  *  Default constructor.
  */
-bool_service::bool_service(unsigned int host_id,
-                           unsigned int service_id)
-  : _host_id(host_id),
-    _service_id(service_id),
-    _state_expected(E_STATE_OK),
-    _state_hard(E_STATE_OK),
-    _state_soft(E_STATE_OK),
+bool_service::bool_service()
+  : _host_id(0),
+    _service_id(0),
+    _state_expected(0),
+    _state_hard(0),
+    _state_soft(0),
     _value_if_state_match(true) {}
 
 /**
@@ -87,7 +84,7 @@ void bool_service::child_has_update(
  *
  *  @param[in] expected Expected state of the service.
  */
-void bool_service::set_expected_state(e_service_state expected) {
+void bool_service::set_expected_state(short expected) {
   _state_expected = expected;
   return ;
 }
@@ -123,30 +120,18 @@ void bool_service::set_value_if_state_match(bool value) {
   return ;
 }
 
-
-
-e_service_state map_2_service_state( int val){
-
-  if ( val < E_STATE_OK || val > E_STATE_PENDING){
-    throw exceptions::msg()  << "Bam: illegal value for e_service_state"
-                             << " ... val=" << val;
-  }
-  return static_cast<e_service_state>( val);
-}
-
 /**
  *  Notify of service update.
  *
  *  @param[in] status Service status.
  */
 void bool_service::service_update(
-                                  misc::shared_ptr<neb::service_status> const& status) {
+                     misc::shared_ptr<neb::service_status> const& status) {
   if (!status.isNull()
       && (status->host_id == _host_id)
       && (status->service_id == _service_id)) {
-
-    _state_hard = map_2_service_state(status->last_hard_state );
-    _state_soft = map_2_service_state(status->current_state );
+    _state_hard = status->last_hard_state;
+    _state_soft = status->current_state;
   }
   return ;
 }

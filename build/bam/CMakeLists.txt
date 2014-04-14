@@ -19,12 +19,10 @@
 
 # Global options.
 set(INC_DIR "${PROJECT_SOURCE_DIR}/bam/inc")
-set(COMMON_INC_DIR "${PROJECT_SOURCE_DIR}/common/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/bam/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/bam/test")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
-include_directories("${COMMON_INC_DIR}")
 set(INC_DIR "${INC_DIR}/com/centreon/broker/bam")
 
 # BAM module.
@@ -64,11 +62,7 @@ add_library("${BAM}" SHARED
   "${SRC_DIR}/service_listener.cc"
   "${SRC_DIR}/sql_mapping.cc"
   "${SRC_DIR}/stream.cc"
-  "${SRC_DIR}/bool_exp_parser.cc"
-  "${SRC_DIR}/tokeniser.cc"
-  "${SRC_DIR}/parse_exception.cc"
-
-# Headers.
+  # Headers.
   "${INC_DIR}/ba.hh"
   "${INC_DIR}/ba_status.hh"
   "${INC_DIR}/bool_and.hh"
@@ -100,13 +94,6 @@ add_library("${BAM}" SHARED
   "${INC_DIR}/service_listener.hh"
   "${INC_DIR}/sql_mapping.hh"
   "${INC_DIR}/stream.hh"
-  "${INC_DIR}/bool_exp_parser.hh"
-  "${INC_DIR}/tokeniser.hh"
-  "${INC_DIR}/parse_exception.hh"
-  "${COMMON_INC_DIR}/com/centreon/defines.hh"
-  "${COMMON_INC_DIR}/com/centreon/tools/create_map.hh"
-  "${COMMON_INC_DIR}/com/centreon/tools/idioms.hh"
-
 )
 target_link_libraries("${BAM}" ${QT_LIBRARIES})
 set_target_properties("${BAM}" PROPERTIES PREFIX "")

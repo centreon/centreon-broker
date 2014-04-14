@@ -23,7 +23,6 @@
 #  include "com/centreon/broker/bam/kpi.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/bam/service_listener.hh"
-#  include "com/centreon/defines.hh"
 
 CCB_BEGIN()
 

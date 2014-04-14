@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/defines.hh"
 #include "com/centreon/broker/neb/host_service_status.hh"
 
 using namespace com::centreon::broker::neb;
@@ -47,7 +46,7 @@ host_service_status::host_service_status()
     host_id(0),
     is_flapping(false),
     last_check(0),
-    last_hard_state(E_STATE_PENDING),
+    last_hard_state(4), // Pending
     last_hard_state_change(0),
     last_notification(0),
     last_state_change(0),

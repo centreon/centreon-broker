@@ -45,8 +45,6 @@ namespace                 bam {
     void                  set_left(misc::shared_ptr<bool_value>& left);
     void                  set_right(misc::shared_ptr<bool_value>& right);
 
-    typedef misc::shared_ptr<bool_binary_operator> ptr;
-
   protected:
     misc::shared_ptr<bool_value>
                           _left;
@@ -56,8 +54,6 @@ namespace                 bam {
                           _right;
     bool                  _right_hard;
     bool                  _right_soft;
-
-
 
   private:
     void                  _internal_copy(

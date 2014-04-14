@@ -21,13 +21,9 @@
 set(INC_DIR "${PROJECT_SOURCE_DIR}/correlation/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/correlation/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/correlation/test")
-set(COMMON_INC_DIR "${PROJECT_SOURCE_DIR}/common/inc")
-
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
-include_directories("${COMMON_INC_DIR}")
-
 set(INC_DIR "${INC_DIR}/com/centreon/broker/correlation")
 
 # Some files must be processed by Qt's moc.
@@ -62,7 +58,6 @@ add_library("${CORRELATION}" SHARED
   "${INC_DIR}/parser.hh"
   "${INC_DIR}/service_state.hh"
   "${INC_DIR}/state.hh"
-  "${COMMON_INC_DIR}/com/centreon/defines.hh"
   # Qt-processed files.
   ${QT_WRAPPED_SOURCES}
 )

@@ -39,19 +39,20 @@ namespace     bam {
    */
   class       bool_not : public bool_value {
   public:
-    bool_not( bool_value::ptr);
+              bool_not();
               bool_not(bool_not const& right);
               ~bool_not();
     bool_not& operator=(bool_not const& right);
-    void      child_has_update( computable::ptr & child);
-    void      set_value( bool_value::ptr& value);
+    void      child_has_update(misc::shared_ptr<computable>& child);
+    void      set_value(misc::shared_ptr<bool_value>& value);
     bool      value_hard();
     bool      value_soft();
 
   private:
     void      _internal_copy(bool_not const& right);
 
-    bool_value::ptr  _value;
+    misc::shared_ptr<bool_value>
+              _value;
   };
 }
 

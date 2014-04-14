@@ -19,13 +19,11 @@
 
 # Global options.
 set(INC_DIR "${PROJECT_SOURCE_DIR}/stats/inc/com/centreon/broker/stats")
-set(COMMON_INC_DIR "${PROJECT_SOURCE_DIR}/common/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/stats/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/stats/test")
 include_directories("${PROJECT_SOURCE_DIR}/stats/inc")
 include_directories("${PROJECT_SOURCE_DIR}/dumper/inc")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
-include_directories("${COMMON_INC_DIR}")
 
 # Some files must be processed by Qt's moc.
 unset(QT_WRAPPED_SOURCES)
@@ -53,7 +51,6 @@ add_library("${STATS}" SHARED
   "${INC_DIR}/metric.hh"
   "${INC_DIR}/parser.hh"
   "${INC_DIR}/worker.hh"
-  "${COMMON_INC_DIR}/com/centreon/defines.hh"
 )
 target_link_libraries("${STATS}" ${QT_LIBRARIES})
 set_target_properties("${STATS}" PROPERTIES PREFIX "")
