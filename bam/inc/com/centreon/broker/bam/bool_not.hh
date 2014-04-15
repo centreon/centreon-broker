@@ -39,7 +39,7 @@ namespace     bam {
    */
   class       bool_not : public bool_value {
   public:
-              bool_not();
+              bool_not(bool_value::ptr val = bool_value::ptr());
               bool_not(bool_not const& right);
               ~bool_not();
     bool_not& operator=(bool_not const& right);
@@ -51,7 +51,7 @@ namespace     bam {
   private:
     void      _internal_copy(bool_not const& right);
 
-    misc::shared_ptr<bool_value>
+    bool_value::ptr
               _value;
   };
 }

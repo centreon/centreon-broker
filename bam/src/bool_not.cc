@@ -22,9 +22,11 @@
 using namespace com::centreon::broker::bam;
 
 /**
- *  Default constructor.
+ *  Constructor.
+ *
+ *  @param[in] val Value that will be negated.
  */
-bool_not::bool_not() {}
+bool_not::bool_not(bool_value::ptr val) : _value(val) {}
 
 /**
  *  Copy constructor.

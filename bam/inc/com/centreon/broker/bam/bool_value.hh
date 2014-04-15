@@ -21,6 +21,7 @@
 #  define CCB_BAM_BOOL_VALUE_HH
 
 #  include "com/centreon/broker/bam/computable.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -34,6 +35,8 @@ namespace        bam {
    */
   class          bool_value : public computable {
   public:
+    typedef misc::shared_ptr<bool_value> ptr;
+
                  bool_value();
                  bool_value(bool_value const& right);
     virtual      ~bool_value();

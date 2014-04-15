@@ -35,6 +35,8 @@ namespace                 bam {
    */
   class                   bool_binary_operator : public bool_value {
   public:
+    typedef misc::shared_ptr<bool_binary_operator> ptr;
+
                           bool_binary_operator();
                           bool_binary_operator(
                             bool_binary_operator const& right);
