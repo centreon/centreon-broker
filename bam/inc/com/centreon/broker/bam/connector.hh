@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,7 +20,6 @@
 #ifndef CCB_BAM_CONNECTOR_HH
 #  define CCB_BAM_CONNECTOR_HH
 
-#  include <ctime>
 #  include <QString>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -43,19 +42,14 @@ namespace          bam {
     io::endpoint*  clone() const;
     void           close();
     void           connect_to(
-                     QString const& bam_type,
-                     QString const& bam_host,
-                     unsigned short bam_port,
-                     QString const& bam_user,
-                     QString const& bam_password,
-                     QString const& bam_db,
+                     QString const& db_type,
+                     QString const& db_host,
+                     unsigned short db_port,
+                     QString const& db_user,
+                     QString const& db_password,
+                     QString const& db_name,
                      unsigned int queries_per_transaction,
-                     unsigned int rrd_len,
-                     time_t interval_length,
-                     unsigned int rebuild_check_interval,
-                     bool check_replication,
-                     bool store_in_data_bin = true,
-                     bool insert_in_index_data = false);
+                     bool check_replication);
     misc::shared_ptr<io::stream>
                    open();
     misc::shared_ptr<io::stream>
@@ -65,18 +59,13 @@ namespace          bam {
     void           _internal_copy(connector const& c);
 
     bool           _check_replication;
-    bool           _insert_in_index_data;
-    time_t         _interval_length;
+    QString        _db_host;
+    QString        _db_name;
+    QString        _db_password;
+    unsigned short _db_port;
+    QString        _db_user;
+    QString        _db_type;
     unsigned int   _queries_per_transaction;
-    unsigned int   _rebuild_check_interval;
-    unsigned int   _rrd_len;
-    QString        _bam_db;
-    QString        _bam_host;
-    QString        _bam_password;
-    unsigned short _bam_port;
-    QString        _bam_user;
-    QString        _bam_type;
-    bool           _store_in_data_bin;
   };
 }
 

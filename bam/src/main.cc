@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,19 +18,16 @@
 */
 
 #include <QSqlDatabase>
-#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/bam/factory.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/bam/factory.hh"
-#include "com/centreon/broker/bam/internal.hh"
-#include "com/centreon/broker/bam/stream.hh"
 
 using namespace com::centreon::broker;
 
 // Load count.
-namespace{
+namespace {
   unsigned int instances(0);
-  const char* BAM_MODULE="bam";
+  char const* bam_module("bam");
 }
 
 extern "C" {
@@ -41,8 +38,7 @@ extern "C" {
     // Decrement instance number.
     if (!--instances) {
       // Deregister storage layer.
-      // io::events::instance().unreg(BAM_MODULE);
-      io::protocols::instance().unreg(BAM_MODULE);
+      io::protocols::instance().unreg(bam_module);
 
       // Remove the workaround connection.
       if (QSqlDatabase::contains())
@@ -61,9 +57,9 @@ extern "C" {
 
     // Increment instance number.
     if (!instances++) {
-      // Storage module.
+      // BAM module.
       logging::info(logging::high)
-        << "bam: module for Centreon Broker "
+        << "BAM: module for Centreon Broker "
         << CENTREON_BROKER_VERSION;
 
       // This is a workaround to keep a mysql driver open.
@@ -72,12 +68,10 @@ extern "C" {
 
       // Register storage layer.
       io::protocols::instance().reg(
-                                  BAM_MODULE,
+                                  bam_module,
                                   bam::factory(),
                                   1,
                                   7);
-
-      // Register storage events.
     }
     return ;
   }

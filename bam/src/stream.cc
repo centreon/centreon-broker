@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,77 +17,20 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cmath>
+#include <cassert>
 #include <cstdlib>
-#include <QSqlDriver>
+#include <QMutexLocker>
 #include <QSqlError>
-#include <QSqlField>
 #include <QSqlQuery>
 #include <QSqlRecord>
-#include <QThread>
 #include <QVariant>
-#include <QMutexLocker>
-#include <sstream>
-#include "com/centreon/broker/misc/global_lock.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
-#include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/multiplexing/engine.hh"
-#include "com/centreon/broker/multiplexing/publisher.hh"
-#include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/service.hh"
-#include "com/centreon/broker/neb/service_status.hh"
-//#include "com/centreon/broker/bam/exceptions/perfdata.hh"
-//#include "com/centreon/broker/bam/metric.hh"
-//#include "com/centreon/broker/bam/parser.hh"
-//#include "com/centreon/broker/bam/perfdata.hh"
-//#include "com/centreon/broker/bam/remove_graph.hh"
-//#include "com/centreon/broker/bam/status.hh"
 #include "com/centreon/broker/bam/stream.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/misc/global_lock.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::misc;
 using namespace com::centreon::broker::bam;
-
-#define BAM_NAME "_Module_"
-#define EPSILON 0.0001
-
-/**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
-
-/**
- *  Check that the floating point value is a NaN, in which case return a
- *  NULL QVariant.
- *
- *  @param[in] f Floating point value.
- *
- *  @return NULL QVariant if f is a NaN, f casted as QVariant otherwise.
- */
-static inline QVariant check_double(double f) {
-  return (isnan(f) ? QVariant(QVariant::Double) : QVariant(f));
-}
-
-/**
- *  Check that two double are equal.
- *
- *  @param[in] a First value.
- *  @param[in] b Second value.
- *
- *  @return true if a and b are equal.
- */
-static inline bool double_equal(double a, double b) {
-  return ((isnan(a) && isnan(b))
-          || (isinf(a)
-              && isinf(b)
-              && (std::signbit(a) == std::signbit(b)))
-          || (std::isfinite(a)
-              && std::isfinite(b)
-              && !(fabs((a) - (b)) > (0.01 * fabs(a)))));
-}
 
 /**************************************
 *                                     *
@@ -98,56 +41,145 @@ static inline bool double_equal(double a, double b) {
 /**
  *  Constructor.
  *
- *  @param[in] bam_type            Bam DB type.
- *  @param[in] bam_host            Bam DB host.
- *  @param[in] bam_port            Bam DB port.
- *  @param[in] bam_user            Bam DB user.
- *  @param[in] bam_password        Bam DB password.
- *  @param[in] bam_db              Bam DB name.
+ *  @param[in] db_type                 BAM DB type.
+ *  @param[in] db_host                 BAM DB host.
+ *  @param[in] db_port                 BAM DB port.
+ *  @param[in] db_user                 BAM DB user.
+ *  @param[in] db_password             BAM DB password.
+ *  @param[in] db_name                 BAM DB name.
  *  @param[in] queries_per_transaction Queries per transaction.
- *  @param[in] rrd_len                 RRD length.
- *  @param[in] interval_length         Interval length.
- *  @param[in] rebuild_check_interval  How often the stream must check
- *                                     for graph rebuild.
- *  @param[in] store_in_db             Should we insert data in
- *                                     data_bin ?
  *  @param[in] check_replication       true to check replication status.
- *  @param[in] insert_in_index_data    Create entries in index_data or
- *                                     not.
  */
 stream::stream(
-          QString const& bam_type,
-          QString const& bam_host,
-          unsigned short bam_port,
-          QString const& bam_user,
-          QString const& bam_password,
-          QString const& bam_db,
+          QString const& db_type,
+          QString const& db_host,
+          unsigned short db_port,
+          QString const& db_user,
+          QString const& db_password,
+          QString const& db_name,
           unsigned int queries_per_transaction,
-          unsigned int rrd_len,
-          time_t interval_length,
-          unsigned int rebuild_check_interval,
-          bool store_in_db,
-          bool check_replication,
-          bool insert_in_index_data)
+          bool check_replication) {
+  // Process events.
+  _process_out = true;
 
+  // Queries per transaction.
+  _queries_per_transaction = ((queries_per_transaction >= 2)
+                              ? queries_per_transaction
+                              : 1);
+  _transaction_queries = 0;
 
-{
+  // BAM connection ID.
+  QString bam_id;
+  bam_id.setNum((qulonglong)this, 16);
 
-}
+  // Add database connection.
+  _db.reset(
+        new QSqlDatabase(QSqlDatabase::addDatabase(
+                                         db_type,
+                                         bam_id)));
 
-/**
- *  Copy constructor.
- *
- *  @param[in] s Object to copy.
- */
-stream::stream(stream const& s) : multiplexing::hooker(s) {
+  // Set DB parameters.
+  _db->setHostName(db_host);
+  _db->setPort(db_port);
+  _db->setUserName(db_user);
+  _db->setPassword(db_password);
+  _db->setDatabaseName(db_name);
 
+  try {
+    {
+      QMutexLocker lock(&misc::global_lock);
+      // Open database.
+      if (!_db->open()) {
+        _clear_qsql();
+        throw (broker::exceptions::msg()
+               << "BAM: could not connect to database '"
+               << db_name << "' on host '" << db_host
+               << ":" << db_port << "': " << _db->lastError().text());
+      }
+    }
+
+    // Check that replication is OK.
+    if (check_replication) {
+      logging::debug(logging::medium)
+        << "BAM: checking replication status of database '"
+        << db_name << "' on host '" << db_host << ":" << db_port << "'";
+      QSqlQuery q(*_db);
+      if (!q.exec("SHOW SLAVE STATUS"))
+        logging::info(logging::medium)
+          << "BAM: could not check replication status of database '"
+          << db_name << "' on host '" << db_host << ":" << db_port
+          << "': " << q.lastError().text();
+      else {
+        if (!q.next())
+          logging::info(logging::medium)
+            << "BAM: database '" << db_name << "' on host '" << db_host
+            << ":" << db_port << "' is not under replication";
+        else {
+          QSqlRecord record(q.record());
+          unsigned int i(0);
+          for (QString field(record.fieldName(i));
+               !field.isEmpty();
+               field = record.fieldName(++i))
+            if (((field == "Slave_IO_Running")
+                 && (q.value(i).toString() != "Yes"))
+                || ((field == "Slave_SQL_Running")
+                    && (q.value(i).toString() != "Yes"))
+                || ((field == "Seconds_Behind_Master")
+                    && (q.value(i).toInt() != 0)))
+              throw (broker::exceptions::msg()
+                     << "BAM: replication of database '" << db_name
+                     << "' on host '" << db_host << ":" << db_port
+                     << "' is not complete: " << field
+                     << "=" << q.value(i).toString());
+          logging::info(logging::medium)
+            << "storage: replication of database '" << db_name
+            << "' on host '" << db_host << ":" << db_port
+            << "' is complete, connection granted";
+        }
+      }
+    }
+    else
+      logging::debug(logging::medium)
+        << "BAM: NOT checking replication status of database '"
+        << db_name << "' on host '" << db_host << ":" << db_port << "'";
+
+    // Prepare queries.
+    _prepare();
+
+    // Initial transaction.
+    if (_queries_per_transaction > 1)
+      _db->transaction();
+  }
+  catch (...) {
+    {
+      QMutexLocker lock(&misc::global_lock);
+      // Delete statements.
+      _clear_qsql();
+    }
+
+    // Remove this connection.
+    QSqlDatabase::removeDatabase(bam_id);
+
+    throw ;
+  }
 }
 
 /**
  *  Destructor.
  */
 stream::~stream() {
+  // Connection ID.
+  QString bam_id;
+  bam_id.setNum((qulonglong)this, 16);
+
+  {
+    QMutexLocker lock(&misc::global_lock);
+    // Reset statements.
+    _clear_qsql();
+  }
+
+  // Remove this connection.
+  QSqlDatabase::removeDatabase(bam_id);
 }
 
 /**
@@ -157,6 +189,8 @@ stream::~stream() {
  *  @param[in] out Set to true to enable output event processing.
  */
 void stream::process(bool in, bool out) {
+  _process_out = in || !out; // Only for immediate shutdown.
+  return ;
 }
 
 /**
@@ -165,14 +199,10 @@ void stream::process(bool in, bool out) {
  *  @param[out] d Cleared.
  */
 void stream::read(misc::shared_ptr<io::data>& d) {
-
-}
-
-/**
- *  Multiplexing starts.
- */
-void stream::starting() {
-
+  d.clear();
+  throw (exceptions::msg()
+         << "BAM: attempt to read from a BAM stream (not supported)");
+  return ;
 }
 
 /**
@@ -181,22 +211,20 @@ void stream::starting() {
  *  @param[out] tree Output tree.
  */
 void stream::statistics(io::properties& tree) const {
-
-}
-
-/**
- *  Multiplexing stopped.
- */
-void stream::stopping() {
-
+  QMutexLocker lock(&_statusm);
+  if (!_status.empty()) {
+    io::property& p(tree["status"]);
+    p.set_perfdata(_status);
+    p.set_graphable(false);
+  }
+  return ;
 }
 
 /**
  *  Rebuild index and metrics cache.
  */
 void stream::update() {
-
-
+  // XXX : reread configuration
 }
 
 /**
@@ -217,10 +245,27 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
 **************************************/
 
 /**
- *  Check for deleted index.
+ *  Copy constructor.
+ *
+ *  @param[in] other Unused.
  */
-void stream::_check_deleted_index() {
+stream::stream(stream const& other) : io::stream(other) {
+  assert(!"BAM stream is not copyable");
+  abort();
+}
 
+/**
+ *  Assignment operator.
+ *
+ *  @param[in] other Unused.
+ *
+ *  @return This object.
+ */
+stream& stream::operator=(stream const& other) {
+  (void)other;
+  assert(!"BAM stream is not copyable");
+  abort();
+  return (*this);
 }
 
 /**
@@ -231,100 +276,9 @@ void stream::_clear_qsql() {
 }
 
 /**
- *  Delete specified metrics.
- *
- *  @param[in] metrics_to_delete Metrics to delete.
- */
-void stream::_delete_metrics(
-                    std::list<unsigned long long> const& metrics_to_delete){
-
-}
-
-/**
- *  @brief Find index ID.
- *
- *  Look through the index cache for the specified index. If it cannot
- *  be found, insert an entry in the database.
- *
- *  @param[in]  host_id      Host ID associated to the index.
- *  @param[in]  service_id   Service ID associated to the index.
- *  @param[in]  host_name    Host name associated to the index.
- *  @param[in]  service_desc Service description associated to the index.
- *  @param[out] rrd_len      Index RRD length.
- *  @param[out] locked       Locked flag.
- *
- *  @return Index ID matching host and service ID.
- */
-unsigned int stream::_find_index_id(
-                       unsigned int host_id,
-                       unsigned int service_id,
-                       QString const& host_name,
-                       QString const& service_desc,
-                       unsigned int* rrd_len,
-                       bool* locked) {
-
-}
-
-/**
- *  @brief Find metric ID.
- *
- *  Look through the metric cache for the specified metric. If it cannot
- *  be found, insert an entry in the database.
- *
- *  @param[in]     index_id    Index ID of the metric.
- *  @param[in]     metric_name Name of the metric.
- *  @param[in]     unit_name   Metric unit.
- *  @param[in]     warn        High warning threshold.
- *  @param[in]     warn_low    Low warning threshold.
- *  @param[in]     warn_mode   Warning range mode.
- *  @param[in]     crit        High critical threshold.
- *  @param[in]     crit_low    Low critical threshold.
- *  @param[in]     crit_mode   Critical range mode.
- *  @param[in]     min         Minimal metric value.
- *  @param[in]     max         Maximal metric value.
- *  @param[in]     value       Most recent value.
- *  @param[in,out] type        If not null, set to the metric type.
- *  @param[in,out] locked      Whether or not the metric is locked.
- *
- *  @return Metric ID requested, 0 if it could not be found not
- *          inserted.
- */
-unsigned int stream::_find_metric_id(
-                       unsigned int index_id,
-                       QString metric_name,
-                       QString const& unit_name,
-                       double warn,
-                       double warn_low,
-                       bool warn_mode,
-                       double crit,
-                       double crit_low,
-                       bool crit_mode,
-                       double min,
-                       double max,
-                       double value,
-                       unsigned int* type,
-                       bool* locked) {
-
-}
-
-/**
- *  Insert performance data entries in the data_bin table.
- */
-void stream::_insert_perfdatas() {
-
-}
-
-/**
  *  Prepare queries.
  */
 void stream::_prepare() {
-
-}
-
-/**
- *  Rebuild cache.
- */
-void stream::_rebuild_cache() {
 
 }
 

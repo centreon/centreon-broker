@@ -20,20 +20,15 @@
 #ifndef CCB_BAM_SQL_MAPPING_HH
 #  define CCB_BAM_SQL_MAPPING_HH
 
-#  include "com/centreon/broker/namespace.hh"
 #  include <QString>
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-// TECHNICAL NOTE:
-// This code would be better suited in a namespace called
-// database interaction or something like that
-namespace bam{
-
-  QString map_2_qt(QString const& dbtype);
-
+namespace bam {
+  QString plain_db_to_qt(QString const& dbtype);
 }
 
 CCB_END()
 
-#endif
+#endif // !CCB_BAM_SQL_MAPPING_HH

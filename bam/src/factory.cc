@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,10 +18,10 @@
 */
 
 #include <memory>
-#include "com/centreon/broker/config/parser.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/bam/connector.hh"
 #include "com/centreon/broker/bam/factory.hh"
+#include "com/centreon/broker/config/parser.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -45,7 +45,7 @@ static QString const& find_param(
                         QString const& key) {
   QMap<QString, QString>::const_iterator it(cfg.params.find(key));
   if (cfg.params.end() == it)
-    throw (exceptions::msg() << "storage: no '" << key
+    throw (exceptions::msg() << "BAM: no '" << key
            << "' defined for endpoint '" << cfg.name << "'");
   return (it.value());
 }
@@ -95,33 +95,33 @@ io::factory* factory::clone() const {
 }
 
 /**
- *  Check if a configuration match the storage layer.
+ *  Check if a configuration match the BAM layer.
  *
  *  @param[in] cfg       Endpoint configuration.
  *  @param[in] is_input  true if endpoint should act as input.
  *  @param[in] is_output true if endpoint should act as output.
  *
- *  @return true if the configuration matches the storage layer.
+ *  @return true if the configuration matches the BAM layer.
  */
 bool factory::has_endpoint(
                 config::endpoint& cfg,
                 bool is_input,
                 bool is_output) const {
   (void)is_input;
-  bool is_storage(!cfg.type.compare("bam", Qt::CaseInsensitive)
-                  && is_output);
-  if (is_storage) {
+  bool is_bam(!cfg.type.compare("bam", Qt::CaseInsensitive)
+              && is_output);
+  if (is_bam) {
     // Transaction timeout.
     if (cfg.params.find("read_timeout") == cfg.params.end()) {
       cfg.params["read_timeout"] = "2";
       cfg.read_timeout = 2;
     }
   }
-  return (is_storage);
+  return (is_bam);
 }
 
 /**
- *  Build a storage endpoint from a configuration.
+ *  Build a BAM endpoint from a configuration.
  *
  *  @param[in]  cfg         Endpoint configuration.
  *  @param[in]  is_input    true if endpoint should act as input.
@@ -138,11 +138,7 @@ io::endpoint* factory::new_endpoint(
   (void)is_input;
   (void)is_output;
 
-  // Find lengths.
-  unsigned int interval_length(find_param(cfg, "interval").toUInt());
-  unsigned int rrd_length(find_param(cfg, "length").toUInt());
-
-  // Find storage DB parameters.
+  // Find DB parameters.
   QString type(find_param(cfg, "db_type"));
   QString host(find_param(cfg, "db_host"));
   unsigned short port(find_param(cfg, "db_port").toUShort());
@@ -161,17 +157,6 @@ io::endpoint* factory::new_endpoint(
       queries_per_transaction = 1000;
   }
 
-  // Rebuild check interval.
-  unsigned int rebuild_check_interval(0);
-  {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("rebuild_check_interval"));
-    if (it != cfg.params.end())
-      rebuild_check_interval = it.value().toUInt();
-    else
-      rebuild_check_interval = 300;
-  }
-
   // Check replication status ?
   bool check_replication(true);
   {
@@ -179,24 +164,6 @@ io::endpoint* factory::new_endpoint(
       it(cfg.params.find("check_replication"));
     if (it != cfg.params.end())
       check_replication = config::parser::parse_boolean(*it);
-  }
-
-  // Store or not in data_bin.
-  bool store_in_data_bin(true);
-  {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("store_in_data_bin"));
-    if (it != cfg.params.end())
-      store_in_data_bin = config::parser::parse_boolean(*it);
-  }
-
-  // Insert entries or not in index_data.
-  bool insert_in_index_data(false);
-  {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("insert_in_index_data"));
-    if (it != cfg.params.end())
-      insert_in_index_data = config::parser::parse_boolean(*it);
   }
 
   // Connector.
@@ -209,12 +176,7 @@ io::endpoint* factory::new_endpoint(
        password,
        name,
        queries_per_transaction,
-       rrd_length,
-       interval_length,
-       rebuild_check_interval,
-       check_replication,
-       store_in_data_bin,
-       insert_in_index_data);
+       check_replication);
   is_acceptor = false;
   return (c.release());
 }

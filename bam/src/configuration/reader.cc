@@ -17,8 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <QtSql>
-#include <map>
+#include <cassert>
+#include <cstdlib>
+#include <QSqlDatabase>
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QVariant>
 #include "com/centreon/broker/bam/configuration/db.hh"
 #include "com/centreon/broker/bam/configuration/state.hh"
 #include "com/centreon/broker/bam/configuration/reader.hh"
@@ -30,24 +34,14 @@ using namespace com::centreon::broker::bam::configuration;
 /**
  *  Constructor.
  *
- *  @param[in] mydb       Information for accessing database.
+ *  @param[in] mydb  Information for accessing database.
  */
-reader::reader(configuration::db const& mydb)
-  : _db(), _dbinfo(mydb) {
-  QString id;
-  id.setNum((qulonglong)this, 16);
-  _db = QSqlDatabase::addDatabase(
-                               map_2_qt(QString(mydb.get_type().c_str())
-                               ), id);
-  _ensure_open();
-}
+reader::reader(configuration::db const& mydb) : _dbinfo(mydb) {}
 
 /**
  *  Destructor.
  */
-reader::~reader() {
-  _db.close();
-}
+reader::~reader() {}
 
 /**
  *  Read configuration from database.
@@ -57,18 +51,20 @@ reader::~reader() {
  */
 void reader::read(state& st) {
   try {
-    _ensure_open();
-    _db.transaction(); // A single explicit transaction is more efficient
-    _load( st.get_bas());
-    _load( st.get_kpis());
-    _load( st.get_boolexps());
-    _db.commit();
+    _open();
+    _db.transaction(); // A single explicit transaction is more efficient.
+    _load(st.get_bas());
+    _load(st.get_kpis());
+    _load(st.get_boolexps());
+    _db.rollback();
   }
   catch (std::exception const& e) {
-    // Apparently, no need to rollback transaction.. achieved in the db destructor.
     st.clear();
+    _close();
     throw ;
   }
+  _close();
+  return ;
 }
 
 /**
@@ -76,7 +72,10 @@ void reader::read(state& st) {
  *
  *  Hidden implementation, never called.
  */
-reader::reader(reader const& other) : _dbinfo(other._dbinfo) {}
+reader::reader(reader const& other) : _dbinfo(other._dbinfo) {
+  assert(!"BAM configuration reader is not copyable");
+  abort();
+}
 
 /**
  *  @brief Assignment operator.
@@ -89,31 +88,20 @@ reader::reader(reader const& other) : _dbinfo(other._dbinfo) {}
  */
 reader& reader::operator=(reader const& other) {
   (void)other;
+  assert(!"BAM configuration reader is not copyable");
+  abort();
   return (*this);
 }
 
 /**
- *  @brief Ensure that internal database object is open.
- *
- *  Enforce that the database be open as a postcondition.
+ *  Close database connection.
  */
-void reader::_ensure_open() {
-  if (!_db.isOpen()){
-    _db.setHostName(_dbinfo.get_host().c_str());
-    _db.setDatabaseName(_dbinfo.get_name().c_str());
-    _db.setUserName(_dbinfo.get_user().c_str());
-    _db.setPassword(_dbinfo.get_password().c_str());
-    // We must have a valid database connexion at this point.
-    if( !_db.open()) {
-      throw (reader_exception()
-             << "BAM: database access failure ("
-             << "reason: " <<  _db.lastError().text()
-             << ", type: "  <<  _dbinfo.get_type()
-             << ", host: "  <<  _dbinfo.get_host()
-             << ", DB name: "  <<  _dbinfo.get_name()
-             << ")");
-    }
-  }
+void reader::_close() {
+  _db.close();
+  QString id;
+  id.setNum((qulonglong)this, 16);
+  QSqlDatabase::removeDatabase(id);
+  return ;
 }
 
 /**
@@ -122,27 +110,24 @@ void reader::_ensure_open() {
  *  @param[out] kpis The list of kpis in database.
  */
 void reader::_load(state::kpis& kpis) {
-  kpis.clear();
-  QSqlQuery query =
-    _db.exec("SELECT    k.kpi_id,                                              "
-	     "          k.state_type,                                          "
-	     "          k.host_id,                                             "
-	     "          k.service_id,                                          "
-	     "          k.id_ba,                                               "
-	     "          k.current_status,                                      "
-	     "          k.last_level,                                          "
-	     "          k.downtime,                                            "
-	     "          k.acknowledged,                                        "
-	     "          k.ignore_downtime,                                     "
-	     "          k.ignore_acknowledged,                                 "
-	     "          coalesce(k.drop_warning,ww.impact),                    "
-	     "          coalesce(k.drop_critical,cc.impact),                   "
-	     "          coalesce(k.drop_unknown,uu.impact)                     "
-	     "FROM      mod_bam_kpi AS k                                       "
-	     "LEFT JOIN mod_bam_impacts AS ww ON k.drop_warning_impact_id =  ww.id_impact "
-	     "LEFT JOIN mod_bam_impacts AS cc ON k.drop_critical_impact_id = cc.id_impact "
-	     "LEFT JOIN mod_bam_impacts AS uu ON k.drop_unknown_impact_id =  uu.id_impact");
-  _assert_query(query);
+  QSqlQuery query(_db.exec(
+    "SELECT  k.kpi_id, k.state_type, k.host_id, k.service_id, k.id_ba,"
+    "        k.current_status, k.last_level, k.downtime,"
+    "        k.acknowledged, k.ignore_downtime, k.ignore_acknowledged,"
+    "        COALESCE(k.drop_warning, ww.impact),"
+    "        COALESCE(k.drop_critical, cc.impact),"
+    "        COALESCE(k.drop_unknown, uu.impact)"
+    "  FROM  mod_bam_kpi AS k"
+    "  LEFT JOIN mod_bam_impacts AS ww"
+    "    ON k.drop_warning_impact_id = ww.id_impact"
+    "  LEFT JOIN mod_bam_impacts AS cc"
+    "    ON k.drop_critical_impact_id = cc.id_impact"
+    "  LEFT JOIN mod_bam_impacts AS uu"
+    "    ON k.drop_unknown_impact_id = uu.id_impact"));
+  if (_db.lastError().isValid())
+    throw (reader_exception()
+           << "BAM: could not retrieve KPI configuration from DB: "
+           << _db.lastError().text());
 
   while (query.next()) {
     kpis.push_back(
@@ -150,33 +135,34 @@ void reader::_load(state::kpis& kpis) {
         query.value(0).toInt(), // ID.
         query.value(1).toInt(), // State type.
         query.value(2).toInt(), // Host ID.
-        query.value(3).toInt(),// Service ID.
-        query.value(4).toInt(),// BA ID.
-        query.value(5).toInt(),// Status.
-        query.value(6).toInt(),// Hard state.
-        query.value(7).toFloat(),// Downtimed.
-        query.value(8).toFloat(),// Acknowledged.
-        query.value(9).toBool(),// Ignore downtime.
-        query.value(10).toBool(),// Ignore acknowledgement.
-        query.value(11).toDouble(),// Warning.
-        query.value(12).toDouble(),// Critical.
-        query.value(13).toDouble()));// Unknown.
+        query.value(3).toInt(), // Service ID.
+        query.value(4).toInt(), // BA ID.
+        query.value(5).toInt(), // Status.
+        query.value(6).toInt(), // Hard state.
+        query.value(7).toFloat(), // Downtimed.
+        query.value(8).toFloat(), // Acknowledged.
+        query.value(9).toBool(), // Ignore downtime.
+        query.value(10).toBool(), // Ignore acknowledgement.
+        query.value(11).toDouble(), // Warning.
+        query.value(12).toDouble(), // Critical.
+        query.value(13).toDouble())); // Unknown.
   }
+  return ;
 }
 
 /**
  *  Load BAs from the DB.
  *
- *  @param[out] bas The list of bas in database.
+ *  @param[out] bas The list of BAs in database.
  */
 void reader::_load(state::bas& bas) {
-  QSqlQuery query = _db.exec("SELECT ba_id,          "
-			     "       name,           "
-			     "       current_level,  "
-			     "       level_w,        "
-			     "       level_c,        "
-			     "FROM   mod_bam");
-  _assert_query(query);
+  QSqlQuery query(_db.exec(
+    "SELECT ba_id, name, current_level, level_w, level_c"
+    "  FROM mod_bam"));
+  if (_db.lastError().isValid())
+    throw (reader_exception()
+           << "BAM: could not retrieve BA configuration from DB: "
+           << _db.lastError().text());
 
   while (query.next()) {
     bas.push_back(
@@ -187,6 +173,7 @@ void reader::_load(state::bas& bas) {
         query.value(3).toFloat(), // Warning level.
         query.value(4).toFloat())); // Critical level.
   }
+  return ;
 }
 
 /**
@@ -195,14 +182,16 @@ void reader::_load(state::bas& bas) {
  *  @param[out] bool_exps The list of bool expression in database.
  */
 void reader::_load(state::bool_exps& bool_exps) {
-  QSqlQuery query = _db.exec("SELECT     be.boolean_id,      "
-			     "           COALESCE(be.impact,imp.impact)"
-			     "           be.expression,"
-			     "           be.bool_state,"
-			     "           be.current_state"
-			     "FROM       mod_bam_boolean as be"
-			     "LEFT JOIN  mod_bam_impacts as imp ON be.impact_id =  imp.id_impact ");
-  _assert_query(query);
+  QSqlQuery query(_db.exec(
+    "SELECT  be.boolean_id, COALESCE(be.impact, imp.impact)"
+    "        be.expression, be.bool_state, be.current_state"
+    "  FROM  mod_bam_boolean as be"
+    "  LEFT JOIN mod_bam_impacts as imp"
+    "    ON be.impact_id = imp.id_impact"));
+  if (_db.lastError().isValid())
+    throw (reader_exception()
+           << "BAM: could not retrieve boolean expression "
+           << "configuration from DB: " << _db.lastError().text());
 
   while (query.next()) {
     bool_exps.push_back(
@@ -213,23 +202,31 @@ void reader::_load(state::bool_exps& bool_exps) {
         query.value(3).toBool(), // Impact if.
         query.value(4).toBool())); // State.
   }
+  return ;
 }
 
 /**
- *  @brief Assert query.
+ *  @brief Ensure that internal database object is open.
  *
- *  Ensure that the query is legitimate.
- *
- *  @param[in] query Query to assert.
+ *  Enforce that the database be open as a postcondition.
  */
-void reader::_assert_query(QSqlQuery& query) {
-  if (!query.isActive()) {
+void reader::_open() {
+  QString id;
+  id.setNum((qulonglong)this, 16);
+  _db = QSqlDatabase::addDatabase(
+                        plain_db_to_qt(_dbinfo.get_type().c_str()),
+                        id);
+  _db.setHostName(_dbinfo.get_host().c_str());
+  _db.setPort(_dbinfo.get_port());
+  _db.setUserName(_dbinfo.get_user().c_str());
+  _db.setPassword(_dbinfo.get_password().c_str());
+  _db.setDatabaseName(_dbinfo.get_name().c_str());
+  // We must have a valid database connexion at this point.
+  if (!_db.open()) {
     throw (reader_exception()
-           << "BAM: could not get extract configuration from DB: "
-           << query.lastError().text()
-           << " (type: " <<  _dbinfo.get_type()
-           << ", host: "  <<  _db.hostName()
-           << ", name: "  <<  _db.databaseName()
-           << ")");
+           << "BAM: database access failure on database '"
+           << _dbinfo.get_name() << "' of host '"
+           << _dbinfo.get_host() << "': " <<  _db.lastError().text());
   }
+  return ;
 }

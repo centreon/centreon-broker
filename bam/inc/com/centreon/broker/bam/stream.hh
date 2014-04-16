@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,18 +20,10 @@
 #ifndef CCB_BAM_STREAM_HH
 #  define CCB_BAM_STREAM_HH
 
-#  include <deque>
-#  include <list>
-#  include <map>
 #  include <memory>
 #  include <QSqlDatabase>
-#  include <QString>
-#  include <utility>
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/multiplexing/hooker.hh"
 #  include "com/centreon/broker/namespace.hh"
-//
-//#  include "com/centreon/broker/bam/rebuilder.hh"
 
 CCB_BEGIN()
 
@@ -43,105 +35,38 @@ namespace          bam {
    *  Handle perfdata and insert proper informations in index_data and
    *  metrics table of a centbam DB.
    */
-  class            stream : public multiplexing::hooker {
+  class            stream : public io::stream {
   public:
                    stream(
-                     QString const& bam_type,
-                     QString const& bam_host,
-                     unsigned short bam_port,
-                     QString const& bam_user,
-                     QString const& bam_password,
-                     QString const& bam_db,
+                     QString const& db_type,
+                     QString const& db_host,
+                     unsigned short db_port,
+                     QString const& db_user,
+                     QString const& db_password,
+                     QString const& db_name,
                      unsigned int queries_per_transaction,
-                     unsigned int rrd_len,
-                     time_t interval_length,
-                     unsigned int rebuild_check_interval,
-                     bool store_in_db = true,
-                     bool check_replication = true,
-                     bool insert_in_index_data = false);
-                   stream(stream const& s);
+                     bool check_replication = true);
                    ~stream();
     void           process(bool in = false, bool out = true);
     void           read(misc::shared_ptr<io::data>& d);
-    void           starting();
     void           statistics(io::properties& tree) const;
-    void           stopping();
     void           update();
     unsigned int   write(misc::shared_ptr<io::data> const& d);
 
   private:
-    struct         index_info {
-      QString      host_name;
-      unsigned int index_id;
-      bool         locked;
-      unsigned int rrd_retention;
-      QString      service_description;
-      bool         special;
-    };
-    struct         metric_info {
-      bool         locked;
-      unsigned int metric_id;
-      unsigned int type;
-    };
-    struct         metric_value {
-      time_t       c_time;
-      unsigned int metric_id;
-      short        status;
-      double       value;
-    };
-
-    stream&        operator=(stream const& s);
-    void           _check_deleted_index();
+                   stream(stream const& other);
+    stream&        operator=(stream const& other);
     void           _clear_qsql();
-    void           _delete_metrics(
-                     std::list<unsigned long long> const& metrics_to_delete);
-    unsigned int   _find_index_id(
-                     unsigned int host_id,
-                     unsigned int service_id,
-                     QString const& host_name,
-                     QString const& service_desc,
-                     unsigned int* rrd_len,
-                     bool* locked);
-    unsigned int   _find_metric_id(
-                     unsigned int index_id,
-                     QString metric_name,
-		     QString const& unit_name,
-		     double warn,
-                     double warn_low,
-                     bool warn_mode,
-		     double crit,
-                     double crit_low,
-                     bool crit_mode,
-		     double min,
-		     double max,
-                     double value,
-                     unsigned int* type,
-                     bool* locked);
-    void           _insert_perfdatas();
     void           _prepare();
-    void           _rebuild_cache();
     void           _update_status(std::string const& status);
 
-    std::map<std::pair<unsigned int, unsigned int>, index_info>
-                   _index_cache;
-    bool           _insert_in_index_data;
-    time_t         _interval_length;
-    std::map<std::pair<unsigned int, QString>, metric_info>
-                   _metric_cache;
-    std::deque<metric_value>
-                   _perfdata_queue;
     bool           _process_out;
     unsigned int   _queries_per_transaction;
-    //rebuilder      _rebuild_thread;
-    unsigned int   _rrd_len;
     std::string    _status;
     mutable QMutex _statusm;
-    bool           _store_in_db;
     unsigned int   _transaction_queries;
-    std::auto_ptr<QSqlQuery>
-                   _update_metrics;
     std::auto_ptr<QSqlDatabase>
-                   _bam_db;
+                   _db;
   };
 }
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -23,14 +23,6 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
-
-/**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
-
-
 
 /**************************************
 *                                     *
@@ -92,74 +84,52 @@ void connector::close() {
 /**
  *  Set connection parameters.
  *
- *  @param[in] bam_type            Bam DB type.
- *  @param[in] bam_host            Bam DB host.
- *  @param[in] bam_port            Bam DB port.
- *  @param[in] bam_user            Bam DB user.
- *  @param[in] bam_password        Bam DB password.
- *  @param[in] bam_db              Bam DB name.
+ *  @param[in] db_type                 BAM DB type.
+ *  @param[in] db_host                 BAM DB host.
+ *  @param[in] db_port                 BAM DB port.
+ *  @param[in] db_user                 BAM DB user.
+ *  @param[in] db_password             BAM DB password.
+ *  @param[in] db_name                 BAM DB name.
  *  @param[in] queries_per_transaction Queries per transaction.
- *  @param[in] rrd_len                 RRD bam length.
- *  @param[in] interval_length         Interval length.
- *  @param[in] rebuild_check_interval  How often the bam endpoint
- *                                     must check for graph rebuild.
  *  @param[in] check_replication       Check for replication status or
  *                                     not.
- *  @param[in] store_in_data_bin       True to store performance data in
- *                                     the data_bin table.
- *  @param[in] insert_in_index_data    Create entries in index_data.
  */
 void connector::connect_to(
-                  QString const& bam_type,
-                  QString const& bam_host,
-                  unsigned short bam_port,
-                  QString const& bam_user,
-                  QString const& bam_password,
-                  QString const& bam_db,
+                  QString const& db_type,
+                  QString const& db_host,
+                  unsigned short db_port,
+                  QString const& db_user,
+                  QString const& db_password,
+                  QString const& db_name,
                   unsigned int queries_per_transaction,
-                  unsigned int rrd_len,
-                  time_t interval_length,
-                  unsigned int rebuild_check_interval,
-                  bool check_replication,
-                  bool store_in_data_bin,
-                  bool insert_in_index_data) {
+                  bool check_replication) {
+  _db_type = plain_db_to_qt(db_type);
+  _db_host = db_host;
+  _db_port = db_port;
+  _db_user = db_user;
+  _db_password = db_password;
+  _db_name = db_name;
   _queries_per_transaction = queries_per_transaction;
-  _bam_db = bam_db;
-  _bam_host = bam_host;
-  _bam_password = bam_password;
-  _bam_port = bam_port;
-  _bam_user = bam_user;
-  _bam_type = map_2_qt(bam_type);
-  _rrd_len = rrd_len;
-  _interval_length = interval_length;
-  _rebuild_check_interval = rebuild_check_interval;
   _check_replication = check_replication;
-  _store_in_data_bin = store_in_data_bin;
-  _insert_in_index_data = insert_in_index_data;
   return ;
 }
 
 /**
  *  Connect to a DB.
  *
- *  @return Bam connection object.
+ *  @return BAM connection object.
  */
 misc::shared_ptr<io::stream> connector::open() {
   return (misc::shared_ptr<io::stream>(
             new stream(
-                  _bam_type,
-                  _bam_host,
-                  _bam_port,
-                  _bam_user,
-                  _bam_password,
-                  _bam_db,
+                  _db_type,
+                  _db_host,
+                  _db_port,
+                  _db_user,
+                  _db_password,
+                  _db_name,
                   _queries_per_transaction,
-                  _rrd_len,
-                  _interval_length,
-                  _rebuild_check_interval,
-                  _store_in_data_bin,
-                  _check_replication,
-                  _insert_in_index_data)));
+                  _check_replication)));
 }
 
 /**
@@ -167,7 +137,7 @@ misc::shared_ptr<io::stream> connector::open() {
  *
  *  @param[in] id Unused.
  *
- *  @return Bam connection object.
+ *  @return BAM connection object.
  */
 misc::shared_ptr<io::stream> connector::open(QString const& id) {
   (void)id;
@@ -187,17 +157,12 @@ misc::shared_ptr<io::stream> connector::open(QString const& id) {
  */
 void connector::_internal_copy(connector const& c) {
   _check_replication = c._check_replication;
-  _insert_in_index_data = c._insert_in_index_data;
-  _interval_length = c._interval_length;
+  _db_name = c._db_name;
+  _db_host = c._db_host;
+  _db_password = c._db_password;
+  _db_port = c._db_port;
+  _db_user = c._db_user;
+  _db_type = c._db_type;
   _queries_per_transaction = c._queries_per_transaction;
-  _rebuild_check_interval = c._rebuild_check_interval;
-  _rrd_len = c._rrd_len;
-  _bam_db = c._bam_db;
-  _bam_host = c._bam_host;
-  _bam_password = c._bam_password;
-  _bam_port = c._bam_port;
-  _bam_user = c._bam_user;
-  _bam_type = c._bam_type;
-  _store_in_data_bin = c._store_in_data_bin;
   return ;
 }

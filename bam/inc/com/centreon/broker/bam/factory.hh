@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -27,10 +27,10 @@ CCB_BEGIN()
 
 namespace         bam {
   /**
-   *  @class factory factory.hh "com/centreon/broker/storage/factory.hh"
-   *  @brief Storage layer factory.
+   *  @class factory factory.hh "com/centreon/broker/bam/factory.hh"
+   *  @brief BAM layer factory.
    *
-   *  Build storage layer objects.
+   *  Build BAM layer objects.
    */
   class           factory : public io::factory {
   public:
@@ -53,4 +53,4 @@ namespace         bam {
 
 CCB_END()
 
-#endif // !CCB_STORAGE_FACTORY_HH
+#endif // !CCB_BAM_FACTORY_HH

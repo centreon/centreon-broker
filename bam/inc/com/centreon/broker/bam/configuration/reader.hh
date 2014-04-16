@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2014 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,16 +21,16 @@
 #  define CCB_BAM_CONFIGURATION_READER_HH
 
 #  include <string>
-#  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/bam/configuration/db.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace       bam{
-  namespace     configuration{
+namespace               bam {
+  namespace             configuration {
     // Class declarations.
-    class       db;
-    class       state;
+    class               db;
+    class               state;
 
     /**
      *  @class reader reader.hh "com/centreon/broker/bam/configuration/reader.hh"
@@ -47,14 +47,13 @@ namespace       bam{
       void              read(state& state_obj);
 
     private:
-      // No copies or assignments
                         reader(reader const& other);
       reader&           operator=(reader const& other);
-      void              _ensure_open();
+      void              _close();
       void              _load(state::kpis& kpis);
       void              _load(state::bas& bas);
       void              _load(state::bool_exps& bool_exps);
-      void              _assert_query(QSqlQuery& query_to_check);
+      void              _open();
 
       QSqlDatabase      _db;
       configuration::db _dbinfo;
