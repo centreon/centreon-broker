@@ -74,7 +74,7 @@ ba& ba::operator=(ba const& right) {
  *
  *  @param[in] impact KPI that will impact BA.
  */
-void ba::add_impact(misc::shared_ptr<kpi>& impact) {
+void ba::add_impact(misc::shared_ptr<kpi> const& impact) {
   umap<kpi*, impact_info>::iterator
     it(_impacts.find(impact.data()));
   if (it == _impacts.end()) {
@@ -197,7 +197,7 @@ short ba::get_state_soft() {
  *
  *  @param[in] impact Impact to remove.
  */
-void ba::remove_impact(misc::shared_ptr<kpi>& impact) {
+void ba::remove_impact(misc::shared_ptr<kpi> const& impact) {
   umap<kpi*, impact_info>::iterator
     it(_impacts.find(impact.data()));
   if (it != _impacts.end()) {

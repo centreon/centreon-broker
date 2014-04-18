@@ -76,6 +76,15 @@ bool_parser& bool_parser::operator=(bool_parser const& other) {
 }
 
 /**
+ *  Get expression tree.
+ *
+ *  @return Expression tree build with bool_value subclasses.
+ */
+bool_value::ptr bool_parser::get_tree() const {
+  return (_root);
+}
+
+/**
  *  @brief Eat boolean expression.
  *
  *  Consumes all terms at a certain level of scope and returns a

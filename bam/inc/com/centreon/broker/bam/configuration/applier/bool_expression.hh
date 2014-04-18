@@ -21,13 +21,17 @@
 #  define CCB_BAM_CONFIGURATION_APPLIER_BOOL_EXPRESSION_HH
 
 #  include <map>
-#  include "com/centreon/broker/configuration/state.hh"
+#  include "com/centreon/broker/bam/configuration/bool_expression.hh"
+#  include "com/centreon/broker/bam/configuration/state.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace                bam {
+  // Forward declaration.
+  class                  bool_expression;
+
   namespace              configuration {
     namespace            applier {
       // Forward declaration.
@@ -56,9 +60,13 @@ namespace                bam {
         };
 
         void             _internal_copy(bool_expression const& other);
+        misc::shared_ptr<bam::bool_expression>
+                         _new_bool_exp(
+                           configuration::bool_expression const& cfg);
 
         std::map<unsigned int, applied>
                          _applied;
+      };
     }
   }
 }

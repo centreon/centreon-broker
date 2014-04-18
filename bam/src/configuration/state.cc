@@ -76,11 +76,11 @@ state::kpis const& state::get_kpis() const {
 }
 
 /**
- *  Get all the bool expressions.
+ *  Get all the boolean expressions.
  *
  *  @return  A list of constant expressions.
  */
-state::bool_exps const& state::get_boolexps() const {
+state::bool_exps const& state::get_bool_exps() const {
   return (_bool_expressions);
 }
 
@@ -103,11 +103,10 @@ state::kpis & state::get_kpis() {
 }
 
 /**
- *  Get all the boolexps
+ *  Get all the boolean expressions.
  *
  *  @return  A list of expressions.
  */
-state::bool_exps& state::get_boolexps() {
+state::bool_exps& state::get_bool_exps() {
   return (_bool_expressions);
 }
-

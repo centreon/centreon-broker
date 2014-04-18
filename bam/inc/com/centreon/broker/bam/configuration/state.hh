@@ -51,11 +51,11 @@ namespace              bam {
 
       bas const&       get_bas() const;
       kpis const&      get_kpis() const;
-      bool_exps const& get_boolexps() const;
+      bool_exps const& get_bool_exps() const;
 
       bas&             get_bas();
       kpis&            get_kpis();
-      bool_exps&       get_boolexps();
+      bool_exps&       get_bool_exps();
 
     private:
       bas              _bas;

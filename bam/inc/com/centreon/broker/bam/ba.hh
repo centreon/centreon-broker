@@ -45,7 +45,7 @@ namespace        bam {
                  ba(ba const& right);
                  ~ba();
     ba&          operator=(ba const& right);
-    void         add_impact(misc::shared_ptr<kpi>& impact);
+    void         add_impact(misc::shared_ptr<kpi> const& impact);
     void         child_has_update(misc::shared_ptr<computable>& child);
     double       get_ack_impact_hard();
     double       get_ack_impact_soft();
@@ -54,7 +54,7 @@ namespace        bam {
     unsigned int get_id();
     short        get_state_hard();
     short        get_state_soft();
-    void         remove_impact(misc::shared_ptr<kpi>& impact);
+    void         remove_impact(misc::shared_ptr<kpi> const& impact);
     void         set_id(unsigned int id);
 
   private:

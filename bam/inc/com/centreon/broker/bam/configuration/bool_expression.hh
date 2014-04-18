@@ -20,6 +20,7 @@
 #ifndef BAM_CCB_CONFIGURATION_BOOL_EXPRESSION_HH
 #  define BAM_CCB_CONFIGURATION_BOOL_EXPRESSION_HH
 
+#  include <list>
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
@@ -36,33 +37,36 @@ namespace                   bam {
      */
     class                   bool_expression {
     public:
+      typedef std::list<unsigned int> ids_of_bas;
+
                             bool_expression(
                               unsigned int id = 0,
                               double impact = 0.0,
                               std::string const& expression = "",
-                              bool impact_if = false,
-                              bool state = false);
-                            bool_expression(bool_expression const& right);
-      bool_expression&      operator=(bool_expression const& right);
+                              bool impact_if = false);
+                            bool_expression(bool_expression const& other);
                             ~bool_expression();
+      bool_expression&      operator=(bool_expression const& other);
+      bool                  operator==(bool_expression const& other) const;
+      bool                  operator!=(bool_expression const& other) const;
 
       unsigned int          get_id() const;
       double                get_impact() const;
+      ids_of_bas const&     get_impacted_bas() const;
       std::string const&    get_expression() const;
       bool                  get_impact_if() const;
-      bool                  get_state() const;
 
+      ids_of_bas&           impacted_bas();
       void                  set_impact(double d);
       void                  set_expression(std::string const& s);
       void                  set_impact_if(bool b);
-      void                  set_state(bool s);
 
     private:
       unsigned int          _id;
       double                _impact;
+      ids_of_bas            _impacted;
       std::string           _expression;
       bool                  _impact_if;
-      bool                  _state;
     };
   }
 }

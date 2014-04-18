@@ -42,6 +42,7 @@ namespace            bam {
                      bool_parser(bool_parser const& other);
                      ~bool_parser();
     bool_parser&     operator=(bool_parser const& other);
+    bool_value::ptr  get_tree() const;
 
   private:
     bool_value::ptr  _root;

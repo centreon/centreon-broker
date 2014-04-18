@@ -113,7 +113,7 @@ void bool_expression::impact_soft(impact_values& soft_impact) {
  *  @param[in] expression Boolean expression.
  */
 void bool_expression::set_expression(
-                        misc::shared_ptr<bool_value>& expression) {
+                        misc::shared_ptr<bool_value> const& expression) {
   _expression = expression;
   return ;
 }

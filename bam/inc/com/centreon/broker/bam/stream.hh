@@ -22,6 +22,7 @@
 
 #  include <memory>
 #  include <QSqlDatabase>
+#  include "com/centreon/broker/bam/configuration/applier/state.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -56,10 +57,13 @@ namespace          bam {
   private:
                    stream(stream const& other);
     stream&        operator=(stream const& other);
+    void           _check_replication();
     void           _clear_qsql();
     void           _prepare();
     void           _update_status(std::string const& status);
 
+    configuration::applier::state
+                   _applier;
     bool           _process_out;
     unsigned int   _queries_per_transaction;
     std::string    _status;

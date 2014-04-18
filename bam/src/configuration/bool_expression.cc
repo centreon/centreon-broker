@@ -29,31 +29,27 @@ using namespace com::centreon::broker::bam::configuration;
  *  @param[in] impact         BA impact.
  *  @param[in] expression     BA expression.
  *  @param[in] impact_if      BA impact_if
- *  @param[in] state          BA state.
  */
 bool_expression::bool_expression(
                    unsigned int id,
                    double impact,
                    std::string const& expression,
-                   bool impact_if,
-                   bool state)
+                   bool impact_if)
   : _id(id),
     _impact(impact),
     _expression(expression),
-    _impact_if(impact_if),
-    _state(state) {}
+    _impact_if(impact_if) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] right The object to copy.
+ *  @param[in] other The object to copy.
  */
-bool_expression::bool_expression(bool_expression const& right)
-  : _id(right._id),
-    _impact(right._impact),
-    _expression(right._expression),
-    _impact_if(right._impact),
-    _state(right._state) {}
+bool_expression::bool_expression(bool_expression const& other)
+  : _id(other._id),
+    _impact(other._impact),
+    _expression(other._expression),
+    _impact_if(other._impact) {}
 
 /**
  *  Destructor
@@ -73,9 +69,34 @@ bool_expression& bool_expression::operator=(bool_expression const& other) {
     _impact = other._impact ;
     _expression = other._expression;
     _impact_if = other._impact_if;
-    _state = other._state;
   }
   return (*this);
+}
+
+/**
+ *  Equality operator.
+ *
+ *  @param[in] other Object to compare to.
+ *
+ *  @return True if this and other objects are equal.
+ */
+bool bool_expression::operator==(bool_expression const& other) const {
+  return ((_id == other._id)
+          && (_impact == other._impact)
+          && (_impacted == other._impacted)
+          && (_expression == other._expression)
+          && (_impact_if == other._impact_if));
+}
+
+/**
+ *  Inequality operator.
+ *
+ *  @param[in] other Object to compare to.
+ *
+ *  @return True if this and other objects are equal.
+ */
+bool bool_expression::operator!=(bool_expression const& other) const {
+  return (!operator==(other));
 }
 
 /**
@@ -101,6 +122,15 @@ double bool_expression::get_impact() const {
 }
 
 /**
+ *  Get impacted BAs.
+ *
+ *  @return Impacted BAs.
+ */
+bool_expression::ids_of_bas const& bool_expression::get_impacted_bas() const {
+  return (_impacted);
+}
+
+/**
  *  Get the boolean expression.
  *
  *  @return The textual representation of the expression.
@@ -120,12 +150,12 @@ bool bool_expression::get_impact_if() const {
 }
 
 /**
- *  Get state.
+ *  Get modifiable list of BAs impacted by this boolean expression.
  *
- *  @result Gets the current state.
+ *  @return List of BAs impacted by this boolean expression.
  */
-bool bool_expression::get_state() const {
-  return (_state);
+bool_expression::ids_of_bas& bool_expression::impacted_bas() {
+  return (_impacted);
 }
 
 /**
@@ -154,13 +184,4 @@ void bool_expression::set_expression(std::string const& exp) {
  */
 void bool_expression::set_impact_if(bool bif) {
   _impact_if = bif;
-}
-
-/**
- *  Set state.
- *
- *  @param[in]  st Set the current state of the expression.
- */
-void bool_expression::set_state(bool st) {
-  _state = st;
 }

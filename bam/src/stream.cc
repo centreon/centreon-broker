@@ -24,6 +24,8 @@
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QVariant>
+#include "com/centreon/broker/bam/configuration/reader.hh"
+#include "com/centreon/broker/bam/configuration/state.hh"
 #include "com/centreon/broker/bam/stream.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -99,49 +101,13 @@ stream::stream(
     }
 
     // Check that replication is OK.
-    if (check_replication) {
-      logging::debug(logging::medium)
-        << "BAM: checking replication status of database '"
-        << db_name << "' on host '" << db_host << ":" << db_port << "'";
-      QSqlQuery q(*_db);
-      if (!q.exec("SHOW SLAVE STATUS"))
-        logging::info(logging::medium)
-          << "BAM: could not check replication status of database '"
-          << db_name << "' on host '" << db_host << ":" << db_port
-          << "': " << q.lastError().text();
-      else {
-        if (!q.next())
-          logging::info(logging::medium)
-            << "BAM: database '" << db_name << "' on host '" << db_host
-            << ":" << db_port << "' is not under replication";
-        else {
-          QSqlRecord record(q.record());
-          unsigned int i(0);
-          for (QString field(record.fieldName(i));
-               !field.isEmpty();
-               field = record.fieldName(++i))
-            if (((field == "Slave_IO_Running")
-                 && (q.value(i).toString() != "Yes"))
-                || ((field == "Slave_SQL_Running")
-                    && (q.value(i).toString() != "Yes"))
-                || ((field == "Seconds_Behind_Master")
-                    && (q.value(i).toInt() != 0)))
-              throw (broker::exceptions::msg()
-                     << "BAM: replication of database '" << db_name
-                     << "' on host '" << db_host << ":" << db_port
-                     << "' is not complete: " << field
-                     << "=" << q.value(i).toString());
-          logging::info(logging::medium)
-            << "storage: replication of database '" << db_name
-            << "' on host '" << db_host << ":" << db_port
-            << "' is complete, connection granted";
-        }
-      }
-    }
+    if (check_replication)
+      _check_replication();
     else
       logging::debug(logging::medium)
         << "BAM: NOT checking replication status of database '"
-        << db_name << "' on host '" << db_host << ":" << db_port << "'";
+        << _db->databaseName() << "' on host '" << _db->hostName()
+        << ":" << _db->port() << "'";
 
     // Prepare queries.
     _prepare();
@@ -149,6 +115,16 @@ stream::stream(
     // Initial transaction.
     if (_queries_per_transaction > 1)
       _db->transaction();
+
+    // Read configuration from DB.
+    configuration::state s;
+    {
+      configuration::reader r(_db.get());
+      r.read(s);
+    }
+
+    // Apply configuration.
+    _applier.apply(s);
   }
   catch (...) {
     {
@@ -224,7 +200,14 @@ void stream::statistics(io::properties& tree) const {
  *  Rebuild index and metrics cache.
  */
 void stream::update() {
-  // XXX : reread configuration
+  // XXX : beware of exceptions ?
+  configuration::state s;
+  {
+    configuration::reader r(_db.get());
+    r.read(s);
+  }
+  _applier.apply(s);
+  return ;
 }
 
 /**
@@ -235,7 +218,18 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
+  // Check that processing is enabled.
+  if (!_process_out)
+    throw (io::exceptions::shutdown(true, true)
+           << "BAM stream is shutdown");
 
+  if (!data.isNull()) {
+    // Process service status events.
+    if (data->type()
+        == io::events::data_type<io::events::neb, neb::de_service_status>::value) {
+    }
+    // XXX : BA/KPI/BOOLEXP status
+  }
 }
 
 /**************************************
@@ -266,6 +260,54 @@ stream& stream::operator=(stream const& other) {
   assert(!"BAM stream is not copyable");
   abort();
   return (*this);
+}
+
+/**
+ *  Check that replication is OK.
+ */
+void stream::_check_replication() {
+  // Check that replication is OK.
+  logging::debug(logging::medium)
+    << "BAM: checking replication status of database '"
+    << _db->databaseName() << "' on host '" << _db->hostName()
+    << ":" << _db->port() << "'";
+  QSqlQuery q(*_db);
+  if (!q.exec("SHOW SLAVE STATUS"))
+    logging::info(logging::medium)
+      << "BAM: could not check replication status of database '"
+      << _db->databaseName() << "' on host '" << _db->hostName()
+      << ":" << _db->port() << "': " << q.lastError().text();
+  else {
+    if (!q.next())
+      logging::info(logging::medium)
+        << "BAM: database '" << _db->databaseName() << "' on host '"
+        << _db->hostName() << ":" << _db->port()
+        << "' is not under replication";
+    else {
+      QSqlRecord record(q.record());
+      unsigned int i(0);
+      for (QString field(record.fieldName(i));
+           !field.isEmpty();
+           field = record.fieldName(++i))
+        if (((field == "Slave_IO_Running")
+             && (q.value(i).toString() != "Yes"))
+            || ((field == "Slave_SQL_Running")
+                && (q.value(i).toString() != "Yes"))
+            || ((field == "Seconds_Behind_Master")
+                && (q.value(i).toInt() != 0)))
+          throw (broker::exceptions::msg()
+                 << "BAM: replication of database '"
+                 << _db->databaseName() << "' on host '"
+                 << _db->hostName() << ":" << _db->port()
+                 << "' is not complete: " << field
+                 << "=" << q.value(i).toString());
+      logging::info(logging::medium)
+        << "storage: replication of database '" << _db->databaseName()
+        << "' on host '" << _db->hostName() << ":" << _db->port()
+        << "' is complete, connection granted";
+    }
+  }
+  return ;
 }
 
 /**

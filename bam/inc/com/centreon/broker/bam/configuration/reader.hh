@@ -21,17 +21,13 @@
 #  define CCB_BAM_CONFIGURATION_READER_HH
 
 #  include <string>
-#  include "com/centreon/broker/bam/configuration/db.hh"
+#  include "com/centreon/broker/bam/configuration/state.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace               bam {
   namespace             configuration {
-    // Class declarations.
-    class               db;
-    class               state;
-
     /**
      *  @class reader reader.hh "com/centreon/broker/bam/configuration/reader.hh"
      *  @brief Using the dbinfo to access the database, load state_obj
@@ -42,21 +38,18 @@ namespace               bam {
      */
     class               reader {
     public:
-                        reader(configuration::db const& database_info);
+                        reader(QSqlDatabase* db);
                         ~reader();
       void              read(state& state_obj);
 
     private:
                         reader(reader const& other);
       reader&           operator=(reader const& other);
-      void              _close();
       void              _load(state::kpis& kpis);
       void              _load(state::bas& bas);
       void              _load(state::bool_exps& bool_exps);
-      void              _open();
 
-      QSqlDatabase      _db;
-      configuration::db _dbinfo;
+      QSqlDatabase*     _db;
     };
   }
 }
