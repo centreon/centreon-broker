@@ -22,6 +22,7 @@
 
 #  include <memory>
 #  include <QSqlDatabase>
+#  include <QSqlQuery>
 #  include "com/centreon/broker/bam/configuration/applier/state.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -69,6 +70,12 @@ namespace          bam {
     std::string    _status;
     mutable QMutex _statusm;
     unsigned int   _transaction_queries;
+    std::auto_ptr<QSqlQuery>
+                   _ba_update;
+    std::auto_ptr<QSqlQuery>
+                   _bool_exp_update;
+    std::auto_ptr<QSqlQuery>
+                   _kpi_update;
     std::auto_ptr<QSqlDatabase>
                    _db;
   };

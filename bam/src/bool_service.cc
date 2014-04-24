@@ -80,6 +80,24 @@ void bool_service::child_has_update(
 }
 
 /**
+ *  Get the host ID.
+ *
+ *  @return Host ID.
+ */
+unsigned int bool_service::get_host_id() const {
+  return (_host_id);
+}
+
+/**
+ *  Get the service ID.
+ *
+ *  @return Service ID.
+ */
+unsigned int bool_service::get_service_id() const {
+  return (_service_id);
+}
+
+/**
  *  Set the expected state of the service.
  *
  *  @param[in] expected Expected state of the service.

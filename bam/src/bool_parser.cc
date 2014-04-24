@@ -53,7 +53,9 @@ bool_parser::bool_parser(std::string const& exp_text)
  *  @param[in] other Object to copy.
  */
 bool_parser::bool_parser(bool_parser const& other)
-  : _root(other._root), _toknizr(other._toknizr) {}
+  : _root(other._root),
+    _services(other._services),
+    _toknizr(other._toknizr) {}
 
 /**
  *  Destructor.
@@ -70,9 +72,19 @@ bool_parser::~bool_parser() {}
 bool_parser& bool_parser::operator=(bool_parser const& other) {
   if (this != &other) {
     _root = other._root;
+    _services = other._services;
     _toknizr = other._toknizr;
   }
   return (*this);
+}
+
+/**
+ *  Get services.
+ *
+ *  @return Boolean values that acts on a service state.
+ */
+bool_parser::list_service const& bool_parser::get_services() const {
+  return (_services);
 }
 
 /**
@@ -116,10 +128,10 @@ bool_value::ptr bool_parser::_make_boolean_exp() {
 bool_value::ptr bool_parser::_make_host_service_state() {
   // FORMAT example   {HOST SERV} {is} {UNKNOWN}
 
-  // Get host serv
+  // Get host.
   // std::stringstream ss(toknizr.get_token());
-  // short host;
-  // short service;
+  unsigned int host_id;
+  unsigned int service_id;
   // ss >> host;
   // if (!ss)
   //   ;// XXX throw parse_exception();
@@ -133,10 +145,14 @@ bool_value::ptr bool_parser::_make_host_service_state() {
   // Get referred state
   short state(_token_to_service_state(_toknizr.get_token()));
 
-  // bool_service::ptr ret(new bool_service(host, service));
-  // ret->set_value_if_state_match(is_expected);
-  // ret->set_expected_state(state);
-  // return (ret);
+  // Create object.
+  bool_service::ptr ret(new bool_service);
+  ret->set_host_id(host_id);
+  ret->set_service_id(service_id);
+  ret->set_value_if_state_match(is_expected);
+  ret->set_expected_state(state);
+  _services.push_back(ret);
+  return (ret.staticCast<bool_value>());
 }
 
 /**

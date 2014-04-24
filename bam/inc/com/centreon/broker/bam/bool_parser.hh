@@ -20,8 +20,10 @@
 #ifndef CCB_BAM_BOOL_PARSER_HH
 #  define CCB_BAM_BOOL_PARSER_HH
 
+#  include <list>
 #  include <string>
 #  include "com/centreon/broker/bam/bool_binary_operator.hh"
+#  include "com/centreon/broker/bam/bool_service.hh"
 #  include "com/centreon/broker/bam/bool_tokenizer.hh"
 #  include "com/centreon/broker/bam/bool_value.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -38,14 +40,19 @@ namespace            bam {
    */
   class              bool_parser{
   public:
+    typedef std::list<bool_service::ptr> list_service;
+
                      bool_parser(std::string const& exp_text);
                      bool_parser(bool_parser const& other);
                      ~bool_parser();
     bool_parser&     operator=(bool_parser const& other);
+    list_service const&
+                     get_services() const;
     bool_value::ptr  get_tree() const;
 
   private:
     bool_value::ptr  _root;
+    list_service     _services;
     bool_tokenizer   _toknizr;
 
     bool_value::ptr  _make_boolean_exp();

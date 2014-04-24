@@ -23,6 +23,7 @@
 #include "com/centreon/broker/bam/configuration/applier/ba.hh"
 #include "com/centreon/broker/bam/configuration/applier/bool_expression.hh"
 #include "com/centreon/broker/bam/configuration/bool_expression.hh"
+#include "com/centreon/broker/bam/service_book.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -68,10 +69,13 @@ applier::bool_expression& applier::bool_expression::operator=(
  *  @param[in]     my_bools Boolean expressions.
  *  @param[in,out] my_bas   BAs on which boolean expressions will be
  *                          applied.
+ *  @param[out]    book     Used to notify bool_service of service
+ *                          change.
  */
 void applier::bool_expression::apply(
                                  configuration::state::bool_exps const& my_bools,
-                                 ba& my_bas) {
+                                 ba& my_bas,
+                                 service_book& book) {
   //
   // DIFF
   //
@@ -127,6 +131,15 @@ void applier::bool_expression::apply(
       if (!target.isNull())
         target->remove_impact(it->second.obj.staticCast<bam::kpi>());
     }
+    for (std::list<bool_service::ptr>::const_iterator
+           it2(it->second.svc.begin()),
+           end2(it->second.svc.end());
+         it2 != end2;
+         ++it2)
+      book.unlisten(
+             (*it2)->get_host_id(),
+             (*it2)->get_service_id(),
+             it2->data());
     _applied.erase(it->first);
   }
   to_delete.clear();
@@ -138,10 +151,27 @@ void applier::bool_expression::apply(
        it != end;
        ++it) {
     misc::shared_ptr<bam::bool_expression>
-      new_bool_exp(_new_bool_exp(*it));
-    applied& content(_applied[it->get_id()]);
-    content.cfg = *it;
-    content.obj = new_bool_exp;
+      new_bool_exp(new bam::bool_expression);
+    {
+      bam::bool_parser p(it->get_expression());
+      new_bool_exp->set_expression(p.get_tree());
+      applied& content(_applied[it->get_id()]);
+      content.cfg = *it;
+      content.obj = new_bool_exp;
+      content.svc = p.get_services();
+      for (std::list<bool_service::ptr>::const_iterator
+             it2(content.svc.begin()),
+             end2(content.svc.end());
+           it2 != end2;
+           ++it2)
+        book.listen(
+               (*it2)->get_host_id(),
+               (*it2)->get_service_id(),
+               it2->data());
+    }
+    new_bool_exp->set_impact_hard(it->get_impact());
+    new_bool_exp->set_impact_if(it->get_impact_if());
+    new_bool_exp->set_impact_soft(it->get_impact());
     for (bam::configuration::bool_expression::ids_of_bas::const_iterator
            it2(it->get_impacted_bas().begin()),
            end2(it->get_impacted_bas().end());
@@ -169,24 +199,4 @@ void applier::bool_expression::_internal_copy(
                                  applier::bool_expression const& other) {
   _applied = other._applied;
   return ;
-}
-
-/**
- *  Create new boolean expression object.
- *
- *  @param[in] cfg Boolean expression configuration.
- *
- *  @return New boolean expression object.
- */
-misc::shared_ptr<bam::bool_expression> applier::bool_expression::_new_bool_exp(
-                                                                   configuration::bool_expression const& cfg) {
-  misc::shared_ptr<bam::bool_expression> obj(new bam::bool_expression);
-  {
-    bam::bool_parser p(cfg.get_expression());
-    obj->set_expression(p.get_tree());
-  }
-  obj->set_impact_hard(cfg.get_impact());
-  obj->set_impact_if(cfg.get_impact_if());
-  obj->set_impact_soft(cfg.get_impact());
-  return (obj);
 }

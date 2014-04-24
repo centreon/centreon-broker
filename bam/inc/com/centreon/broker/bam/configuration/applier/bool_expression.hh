@@ -20,6 +20,7 @@
 #ifndef CCB_BAM_CONFIGURATION_APPLIER_BOOL_EXPRESSION_HH
 #  define CCB_BAM_CONFIGURATION_APPLIER_BOOL_EXPRESSION_HH
 
+#  include <list>
 #  include <map>
 #  include "com/centreon/broker/bam/configuration/bool_expression.hh"
 #  include "com/centreon/broker/bam/configuration/state.hh"
@@ -29,8 +30,10 @@
 CCB_BEGIN()
 
 namespace                bam {
-  // Forward declaration.
+  // Forward declarations.
   class                  bool_expression;
+  class                  bool_service;
+  class                  service_book;
 
   namespace              configuration {
     namespace            applier {
@@ -51,12 +54,14 @@ namespace                bam {
         bool_expression& operator=(bool_expression const& other);
         void             apply(
                            configuration::state::bool_exps const& my_bools,
-                           ba& my_bas);
+                           ba& my_bas,
+                           service_book& book);
 
       private:
         struct applied {
-          configuration::bool_expression         cfg;
-          misc::shared_ptr<bam::bool_expression> obj;
+          configuration::bool_expression                  cfg;
+          misc::shared_ptr<bam::bool_expression>          obj;
+          std::list<misc::shared_ptr<bam::bool_service> > svc;
         };
 
         void             _internal_copy(bool_expression const& other);

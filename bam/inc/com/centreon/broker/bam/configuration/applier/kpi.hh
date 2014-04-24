@@ -30,6 +30,9 @@
 CCB_BEGIN()
 
 namespace     bam {
+  // Forward declaration.
+  class       service_book;
+
   namespace   configuration {
     namespace applier {
       // Forward declaration.
@@ -49,7 +52,8 @@ namespace     bam {
         kpi&  operator=(kpi const& right);
         void  apply(
                 configuration::state::kpis const& my_kpis,
-                ba& my_bas);
+                ba& my_bas,
+                service_book& book);
 
       private:
         struct applied {
@@ -61,7 +65,8 @@ namespace     bam {
         misc::shared_ptr<bam::kpi>
               _new_kpi(
                 configuration::kpi const& cfg,
-                ba& my_bas);
+                ba& my_bas,
+                service_book& book);
 
         std::map<unsigned int, applied>
               _applied;

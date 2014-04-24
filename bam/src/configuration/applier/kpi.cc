@@ -21,6 +21,7 @@
 #include "com/centreon/broker/bam/configuration/applier/kpi.hh"
 #include "com/centreon/broker/bam/kpi_ba.hh"
 #include "com/centreon/broker/bam/kpi_service.hh"
+#include "com/centreon/broker/bam/service_book.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
@@ -63,12 +64,14 @@ applier::kpi& applier::kpi::operator=(applier::kpi const& right) {
  *
  *  @param[in]     my_kpis Object to copy.
  *  @param[in,out] my_bas  Already applied BAs.
+ *  @param[out]    book    Service book.
  *
  *  @return This object.
  */
 void applier::kpi::apply(
                      bam::configuration::state::kpis const& my_kpis,
-                     applier::ba& my_bas) {
+                     applier::ba& my_bas,
+                     bam::service_book& book) {
   //
   // DIFF
   //
@@ -113,8 +116,14 @@ void applier::kpi::apply(
          it(to_delete.begin()),
          end(to_delete.end());
        it != end;
-       ++it)
+       ++it) {
+    if (it->second.cfg.is_service())
+      book.unlisten(
+             it->second.cfg.get_host_id(),
+             it->second.cfg.get_service_id(),
+             static_cast<kpi_service*>(it->second.obj.data()));
     _applied.erase(it->first);
+  }
   to_delete.clear();
 
   // Create new objects.
@@ -123,7 +132,7 @@ void applier::kpi::apply(
          end(to_create.end());
        it != end;
        ++it) {
-    misc::shared_ptr<bam::kpi> new_kpi(_new_kpi(*it, my_bas));
+    misc::shared_ptr<bam::kpi> new_kpi(_new_kpi(*it, my_bas, book));
     applied& content(_applied[it->get_id()]);
     content.cfg = *it;
     content.obj = new_kpi;
@@ -154,14 +163,17 @@ void applier::kpi::_internal_copy(applier::kpi const& right) {
 /**
  *  Create new KPI object.
  *
- *  @param[in] cfg    KPI configuration.
- *  @param[in] my_bas Already applied BAs.
+ *  @param[in]     cfg    KPI configuration.
+ *  @param[in,out] my_bas Already applied BAs.
+ *  @param[out]    book   Service book, used to notify kpi_service of
+ *                        service change.
  *
  *  @return New KPI object.
  */
 misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
                                            configuration::kpi const& cfg,
-                                           applier::ba& my_bas) {
+                                           applier::ba& my_bas,
+                                           service_book& book) {
   misc::shared_ptr<bam::kpi> my_kpi;
   if (cfg.is_service()) {
     misc::shared_ptr<bam::kpi_service> obj(new bam::kpi_service);
@@ -176,6 +188,7 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     obj->set_state_soft(cfg.get_status());
     obj->set_state_type(cfg.get_state_type());
     my_kpi = obj.staticCast<bam::kpi>();
+    book.listen(cfg.get_host_id(), cfg.get_service_id(), obj.data());
   }
   else if (cfg.is_ba()) {
     misc::shared_ptr<bam::kpi_ba> obj(new bam::kpi_ba);

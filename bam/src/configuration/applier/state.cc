@@ -61,7 +61,29 @@ applier::state& applier::state::operator=(applier::state const& other) {
  */
 void applier::state::apply(bam::configuration::state const& my_state) {
   _ba_applier.apply(my_state.get_bas());
-  _kpi_applier.apply(my_state.get_kpis(), _ba_applier);
-  _bool_exp_applier.apply(my_state.get_bool_exps(), _ba_applier);
+  _kpi_applier.apply(my_state.get_kpis(), _ba_applier, _book);
+  _bool_exp_applier.apply(my_state.get_bool_exps(), _ba_applier, _book);
+  return ;
+}
+
+/**
+ *  Get the book of service listeners.
+ *
+ *  @return Book of service listeners.
+ */
+bam::service_book& applier::state::book() {
+  return (_book);
+}
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] other  Object to copy.
+ */
+void applier::state::_internal_copy(applier::state const& other) {
+  _ba_applier = other._ba_applier;
+  _book = other._book;
+  _kpi_applier = other._kpi_applier;
+  _bool_exp_applier = other._bool_exp_applier;
   return ;
 }

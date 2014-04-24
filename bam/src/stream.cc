@@ -26,10 +26,15 @@
 #include <QVariant>
 #include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/state.hh"
+#include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/bam/stream.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
+#include "com/centreon/broker/neb/internal.hh"
+#include "com/centreon/broker/neb/service_status.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -227,8 +232,17 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
     // Process service status events.
     if (data->type()
         == io::events::data_type<io::events::neb, neb::de_service_status>::value) {
+      _applier.book().update(data.staticCast<neb::service_status>());
     }
-    // XXX : BA/KPI/BOOLEXP status
+    else if (data->type()
+             == io::events::data_type<io::events::bam, bam::de_ba_status>::value) {
+    }
+    else if (data->type()
+             == io::events::data_type<io::events::bam, bam::de_bool_status>::value) {
+    }
+    else if (data->type()
+             == io::events::data_type<io::events::bam, bam::de_kpi_status>::value) {
+    }
   }
 }
 
@@ -314,14 +328,59 @@ void stream::_check_replication() {
  *  Clear QtSql objects.
  */
 void stream::_clear_qsql() {
-
+  _ba_update.reset();
+  _bool_exp_update.reset();
+  _kpi_update.reset();
+  _db.reset();
+  return ;
 }
 
 /**
  *  Prepare queries.
  */
 void stream::_prepare() {
+  // BA status.
+  {
+    QString query;
+    query = "UPDATE mod_bam"
+            "  SET current_level=:level"
+            "  WHERE ba_id=:ba_id";
+    _ba_update.reset(new QSqlQuery(*_db));
+    if (!_ba_update->prepare(query))
+      throw (exceptions::msg()
+             << "BAM: could not prepare BA update query: "
+             << _ba_update->lastError().text());
+  }
 
+  // Boolean expression status.
+  {
+    QString query;
+    query = "UPDATE mod_bam_boolean"
+            "  SET current_state=:value"
+            "  WHERE boolean_id=:bool_id";
+    _bool_exp_update.reset(new QSqlQuery(*_db));
+    if (!_bool_exp_update->prepare(query))
+      throw (exceptions::msg()
+             << "BAM: could not prepare boolean expression update query: "
+             << _bool_exp_update->lastError().text());
+  }
+
+  // KPI status.
+  {
+    QString query;
+    query = "UPDATE mod_bam_kpi"
+            "  SET acknowledged=:acknowledged, current_status=:state,"
+            "      downtime=:downtime, last_level=:last_level,"
+            "      current_type=:state_type"
+            "  WHERE kpi_id=:kpi_id";
+    _kpi_update.reset(new QSqlQuery(*_db));
+    if (!_kpi_update->prepare(query))
+      throw (exceptions::msg()
+             << "BAM: could not prepare KPI update query: "
+             << _kpi_update->lastError().text());
+  }
+
+  return ;
 }
 
 /**
