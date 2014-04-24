@@ -65,16 +65,19 @@ bool_binary_operator& bool_binary_operator::operator=(
 /**
  *  Notification of child update.
  *
- *  @param[in] child Child that got updated.
+ *  @param[in] child     Child that got updated.
+ *  @param[out] visitor  Visitor.
  */
 void bool_binary_operator::child_has_update(
-                             misc::shared_ptr<computable>& child) {
-  if (!child.isNull()) {
-    if (child.data() == _left.data()) {
+                             computable* child,
+                             stream* visitor) {
+  (void)visitor;
+  if (child) {
+    if (child == _left.data()) {
       _left_hard = _left->value_hard();
       _left_soft = _left->value_soft();
     }
-    else if (child.data() == _right.data()) {
+    else if (child == _right.data()) {
       _right_hard = _right->value_hard();
       _right_soft = _right->value_soft();
     }

@@ -43,7 +43,8 @@ namespace                 bam {
     virtual               ~bool_binary_operator();
     bool_binary_operator& operator=(bool_binary_operator const& right);
     void                  child_has_update(
-                            misc::shared_ptr<computable>& child);
+                            computable* child,
+                            stream* visitor = NULL);
     void                  set_left(misc::shared_ptr<bool_value>& left);
     void                  set_right(misc::shared_ptr<bool_value>& right);
 

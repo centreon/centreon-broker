@@ -70,21 +70,21 @@ void computable::add_parent(
  *  This method will call the child_has_update() method of the parents
  *  of this node.
  *
- *  @param[in] child Recently updated child node.
+ *  @param[out] visitor  Object that will receive events.
  */
-void computable::propagate_update(misc::shared_ptr<computable>& child) {
+void computable::propagate_update(stream* visitor) {
   for (std::list<misc::shared_ptr<computable> >::iterator
          it(_parents.begin()),
          end(_parents.end());
        it != end;
        ++it)
-    (*it)->child_has_update(child);
+    (*it)->child_has_update(this, visitor);
   for (std::list<misc::shared_ptr<computable> >::iterator
          it(_parents.begin()),
          end(_parents.end());
        it != end;
        ++it)
-    (*it)->propagate_update(child);
+    (*it)->propagate_update(visitor);
   return ;
 }
 

@@ -40,7 +40,8 @@ namespace        bam {
                  ~kpi_service();
     kpi_service& operator=(kpi_service const& right);
     void         child_has_update(
-                   misc::shared_ptr<computable>& child);
+                   computable* child,
+                   stream* visitor = NULL);
     unsigned int get_host_id() const;
     double       get_impact_critical() const;
     double       get_impact_unknown() const;
@@ -54,7 +55,8 @@ namespace        bam {
     bool         in_downtime() const;
     bool         is_acknowledged() const;
     void         service_update(
-                   misc::shared_ptr<neb::service_status> const& status);
+                   misc::shared_ptr<neb::service_status> const& status,
+                   stream* visitor = NULL);
     void         set_acknowledged(bool acknowledged);
     void         set_downtimed(bool downtimed);
     void         set_host_id(unsigned int host_id);

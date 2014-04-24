@@ -44,7 +44,7 @@ namespace   bam {
             kpi_ba(kpi_ba const& right);
             ~kpi_ba();
     kpi_ba& operator=(kpi_ba const& right);
-    void    child_has_update(misc::shared_ptr<computable>& child);
+    void    child_has_update(computable* child, stream* visitor = NULL);
     double  get_impact_critical() const;
     double  get_impact_warning() const;
     void    impact_hard(impact_values& hard_impact);

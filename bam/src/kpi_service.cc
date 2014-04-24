@@ -21,8 +21,8 @@
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi_service.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
+#include "com/centreon/broker/bam/stream.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 
 using namespace com::centreon::broker;
@@ -77,11 +77,12 @@ kpi_service& kpi_service::operator=(kpi_service const& right) {
 /**
  *  Unused callback.
  *
- *  @param[in] child Unused.
+ *  @param[in]  child    Unused.
+ *  @param[out] visitor  Unused.
  */
-void kpi_service::child_has_update(
-                    misc::shared_ptr<computable>& child) {
+void kpi_service::child_has_update(computable* child, stream* visitor) {
   (void)child;
+  (void)visitor;
   return ;
 }
 
@@ -198,10 +199,12 @@ bool kpi_service::is_acknowledged() const {
 /**
  *  Service got updated !
  *
- *  @param[in] status Service status.
+ *  @param[in]  status   Service status.
+ *  @param[out] visitor  Object that will receive events.
  */
 void kpi_service::service_update(
-                    misc::shared_ptr<neb::service_status> const& status) {
+                    misc::shared_ptr<neb::service_status> const& status,
+                    stream* visitor) {
   if (!status.isNull()
       && (status->host_id == _host_id)
       && (status->service_id == _service_id)) {
@@ -219,17 +222,22 @@ void kpi_service::service_update(
     impact_soft(soft_values);
 
     // Generate status event.
-    misc::shared_ptr<kpi_status> status(new kpi_status);
-    status->kpi_id = _id;
-    status->level_acknowledgement_hard = hard_values.get_acknowledgement();
-    status->level_acknowledgement_soft = soft_values.get_acknowledgement();
-    status->level_downtime_hard = hard_values.get_downtime();
-    status->level_downtime_soft = soft_values.get_downtime();
-    status->level_nominal_hard = hard_values.get_nominal();
-    status->level_nominal_soft = soft_values.get_nominal();
-    status->state_hard = _state_hard;
-    status->state_soft = _state_soft;
-    multiplexing::publisher().write(status.staticCast<io::data>());
+    if (visitor) {
+      misc::shared_ptr<kpi_status> status(new kpi_status);
+      status->kpi_id = _id;
+      status->level_acknowledgement_hard = hard_values.get_acknowledgement();
+      status->level_acknowledgement_soft = soft_values.get_acknowledgement();
+      status->level_downtime_hard = hard_values.get_downtime();
+      status->level_downtime_soft = soft_values.get_downtime();
+      status->level_nominal_hard = hard_values.get_nominal();
+      status->level_nominal_soft = soft_values.get_nominal();
+      status->state_hard = _state_hard;
+      status->state_soft = _state_soft;
+      visitor->write(status.staticCast<io::data>());
+    }
+
+    // Propagate change.
+    propagate_update(visitor);
   }
   return ;
 }

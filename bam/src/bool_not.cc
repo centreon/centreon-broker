@@ -63,10 +63,12 @@ bool_not& bool_not::operator=(bool_not const& right) {
  *  This class does not cache values. This method is therefore useless
  *  for this class.
  *
- *  @param[in] child Child.
+ *  @param[in] child     Unused.
+ *  @param[out] visitor  Unused.
  */
-void bool_not::child_has_update(misc::shared_ptr<computable>& child) {
+void bool_not::child_has_update(computable* child, stream* visitor) {
   (void)child;
+  (void)visitor;
   return ;
 }
 

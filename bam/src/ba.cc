@@ -21,7 +21,7 @@
 #include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi.hh"
-#include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/bam/stream.hh"
 
 using namespace com::centreon::broker::bam;
 
@@ -90,11 +90,12 @@ void ba::add_impact(misc::shared_ptr<kpi> const& impact) {
 /**
  *  Notify BA of child update.
  *
- *  @param[in] child Child impact that got updated.
+ *  @param[in]  child    Child impact that got updated.
+ *  @param[out] visitor  Object that will receive generated events.
  */
-void ba::child_has_update(misc::shared_ptr<computable>& child) {
+void ba::child_has_update(computable* child, stream* visitor) {
   umap<kpi*, impact_info>::iterator
-    it(_impacts.find(static_cast<kpi*>(child.data())));
+    it(_impacts.find(static_cast<kpi*>(child)));
   if (it != _impacts.end()) {
     // Discard old data.
     _unapply_impact(it->second);
@@ -105,12 +106,14 @@ void ba::child_has_update(misc::shared_ptr<computable>& child) {
     _apply_impact(it->second);
 
     // Generate status event.
-    misc::shared_ptr<ba_status> status(new ba_status);
-    status->ba_id = _id;
-    status->level_acknowledgement = _acknowledgement_hard;
-    status->level_downtime = _downtime_hard;
-    status->level_nominal = _level_hard;
-    multiplexing::publisher().write(status.staticCast<io::data>());
+    if (visitor) {
+      misc::shared_ptr<ba_status> status(new ba_status);
+      status->ba_id = _id;
+      status->level_acknowledgement = _acknowledgement_hard;
+      status->level_downtime = _downtime_hard;
+      status->level_nominal = _level_hard;
+      visitor->write(status.staticCast<io::data>());
+    }
   }
   return ;
 }

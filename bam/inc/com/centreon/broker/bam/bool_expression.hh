@@ -43,7 +43,8 @@ namespace            bam {
                      ~bool_expression();
     bool_expression& operator=(bool_expression const& right);
     void             child_has_update(
-                       misc::shared_ptr<computable>& child);
+                       computable* child,
+                       stream* visitor = NULL);
     void             impact_hard(impact_values& hard_impact);
     void             impact_soft(impact_values& soft_impact);
     void             set_expression(

@@ -69,11 +69,12 @@ bool_expression& bool_expression::operator=(
  *  This class does not cache child values. Therefore this method is not
  *  used within this class.
  *
- *  @param[in] child Unused.
+ *  @param[in]  child    Unused.
+ *  @param[out] visitor  Unused.
  */
-void bool_expression::child_has_update(
-                        misc::shared_ptr<computable>& child) {
+void bool_expression::child_has_update(computable* child, stream* visitor) {
   (void)child;
+  (void)visitor;
   return ;
 }
 

@@ -24,9 +24,12 @@
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QVariant>
+#include "com/centreon/broker/bam/ba_status.hh"
+#include "com/centreon/broker/bam/bool_status.hh"
 #include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/state.hh"
 #include "com/centreon/broker/bam/internal.hh"
+#include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/bam/stream.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -236,12 +239,31 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
     }
     else if (data->type()
              == io::events::data_type<io::events::bam, bam::de_ba_status>::value) {
+      ba_status* status(static_cast<ba_status*>(data.data()));
+      // XXX
+      if (!_ba_update->exec())
+        throw (exceptions::msg() << "BAM: could not update BA "
+               << status->ba_id << ": "
+               << _ba_update->lastError().text());
     }
     else if (data->type()
              == io::events::data_type<io::events::bam, bam::de_bool_status>::value) {
+      bool_status* status(static_cast<bool_status*>(data.data()));
+      // XXX
+      if (!_bool_exp_update->exec())
+        throw (exceptions::msg()
+               << "BAM: could not update boolean expression "
+               << status->bool_id << ": "
+               << _bool_exp_update->lastError().text());
     }
     else if (data->type()
              == io::events::data_type<io::events::bam, bam::de_kpi_status>::value) {
+      kpi_status* status(static_cast<kpi_status*>(data.data()));
+      // XXX
+      if (!_kpi_update->exec())
+        throw (exceptions::msg() << "BAM: could not update KPI "
+               << status->kpi_id << ": "
+               << _kpi_update->lastError().text());
     }
   }
 }

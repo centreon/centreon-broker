@@ -97,16 +97,18 @@ void service_book::unlisten(
 /**
  *  Update all service listeners related to the service.
  *
- *  @param[in] ss  Service status.
+ *  @param[in]  ss       Service status.
+ *  @param[out] visitor  Object that will receive events.
  */
 void service_book::update(
-                     misc::shared_ptr<neb::service_status> const& ss) {
+                     misc::shared_ptr<neb::service_status> const& ss,
+                     stream* visitor) {
   std::pair<multimap::iterator, multimap::iterator>
     range(_book.equal_range(std::make_pair(
                                    ss->host_id,
                                    ss->service_id)));
   while (range.first != range.second) {
-    range.first->second->service_update(ss);
+    range.first->second->service_update(ss, visitor);
     ++range.first;
   }
   return ;

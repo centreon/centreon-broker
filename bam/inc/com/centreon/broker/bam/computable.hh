@@ -27,6 +27,9 @@
 CCB_BEGIN()
 
 namespace        bam {
+  // Forward declaration.
+  class          stream;
+
   /**
    *  @class computable computable.hh "com/centreon/broker/bam/computable.hh"
    *  @brief Object that get computed by the BAM engine.
@@ -41,8 +44,7 @@ namespace        bam {
     virtual      ~computable();
     computable&  operator=(computable const& right);
     void         add_parent(misc::shared_ptr<computable> const& parent);
-    void         propagate_update(
-                   misc::shared_ptr<computable>& child);
+    void         propagate_update(stream* visitor = NULL);
     void         remove_parent(misc::shared_ptr<computable> const& parent);
 
     /**
@@ -56,7 +58,8 @@ namespace        bam {
      *  @param[in] child Recently updated child node.
      */
     virtual void child_has_update(
-                   misc::shared_ptr<computable>& child) = 0;
+                   computable* child,
+                   stream* visitor = NULL) = 0;
 
   private:
     void         _internal_copy(computable const& right);

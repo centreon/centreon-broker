@@ -71,11 +71,12 @@ bool_service& bool_service::operator=(bool_service const& right) {
  *  This method is unused by bool_service because it has no computable
  *  child that could influence its value.
  *
- *  @param[in] child Unused.
+ *  @param[in]  child   Unused.
+ *  @param[out] visitor Unused.
  */
-void bool_service::child_has_update(
-                     misc::shared_ptr<computable>& child) {
+void bool_service::child_has_update(computable* child, stream* visitor) {
   (void)child;
+  (void)visitor;
   return ;
 }
 
@@ -141,15 +142,18 @@ void bool_service::set_value_if_state_match(bool value) {
 /**
  *  Notify of service update.
  *
- *  @param[in] status Service status.
+ *  @param[in]  status   Service status.
+ *  @param[out] visitor  Object that will receive events.
  */
 void bool_service::service_update(
-                     misc::shared_ptr<neb::service_status> const& status) {
+                     misc::shared_ptr<neb::service_status> const& status,
+                     stream* visitor) {
   if (!status.isNull()
       && (status->host_id == _host_id)
       && (status->service_id == _service_id)) {
     _state_hard = status->last_hard_state;
     _state_soft = status->current_state;
+    propagate_update(visitor);
   }
   return ;
 }
