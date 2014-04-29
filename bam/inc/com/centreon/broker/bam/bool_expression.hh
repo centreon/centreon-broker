@@ -52,6 +52,7 @@ namespace            bam {
     void             set_impact_hard(double impact);
     void             set_impact_if(bool impact_if);
     void             set_impact_soft(double impact);
+    void             visit(stream* visitor);
 
   private:
     void             _internal_copy(bool_expression const& right);

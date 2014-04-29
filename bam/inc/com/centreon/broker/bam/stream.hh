@@ -49,6 +49,7 @@ namespace          bam {
                      unsigned int queries_per_transaction,
                      bool check_replication = true);
                    ~stream();
+    void           initialize();
     void           process(bool in = false, bool out = true);
     void           read(misc::shared_ptr<io::data>& d);
     void           statistics(io::properties& tree) const;

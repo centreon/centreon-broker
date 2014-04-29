@@ -21,6 +21,7 @@
 #include "com/centreon/broker/bam/kpi_ba.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/bam/stream.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -69,26 +70,12 @@ void kpi_ba::child_has_update(computable* child, stream* visitor) {
   // It is useless to maintain a cache of BA values in this class, as
   // the ba class already cache most of them.
   if (child == _ba.data()) {
-    // Get information.
-    impact_values hard_values;
-    impact_values soft_values;
-    impact_hard(hard_values);
-    impact_soft(soft_values);
+    // Logging.
+    logging::debug(logging::low) << "BAM: BA KPI " << _id
+      << " is getting notified of child update";
 
     // Generate status event.
-    if (visitor) {
-      misc::shared_ptr<kpi_status> status(new kpi_status);
-      status->kpi_id = _id;
-      status->level_acknowledgement_hard = hard_values.get_acknowledgement();
-      status->level_acknowledgement_soft = soft_values.get_acknowledgement();
-      status->level_downtime_hard = hard_values.get_downtime();
-      status->level_downtime_soft = soft_values.get_downtime();
-      status->level_nominal_hard = hard_values.get_nominal();
-      status->level_nominal_soft = soft_values.get_nominal();
-      status->state_hard = _ba->get_state_hard();
-      status->state_soft = _ba->get_state_soft();
-      visitor->write(status.staticCast<io::data>());
-    }
+    visit(visitor);
   }
   return ;
 }
@@ -174,6 +161,35 @@ void kpi_ba::set_impact_warning(double impact) {
  */
 void kpi_ba::unlink_ba() {
   _ba.clear();
+  return ;
+}
+
+/**
+ *  Visit BA KPI.
+ *
+ *  @param[out] visitor  Object that will receive status.
+ */
+void kpi_ba::visit(stream* visitor) {
+  if (visitor) {
+    // Get information.
+    impact_values hard_values;
+    impact_values soft_values;
+    impact_hard(hard_values);
+    impact_soft(soft_values);
+
+    // Generate status event.
+    misc::shared_ptr<kpi_status> status(new kpi_status);
+    status->kpi_id = _id;
+    status->level_acknowledgement_hard = hard_values.get_acknowledgement();
+    status->level_acknowledgement_soft = soft_values.get_acknowledgement();
+    status->level_downtime_hard = hard_values.get_downtime();
+    status->level_downtime_soft = soft_values.get_downtime();
+    status->level_nominal_hard = hard_values.get_nominal();
+    status->level_nominal_soft = soft_values.get_nominal();
+    status->state_hard = _ba->get_state_hard();
+    status->state_soft = _ba->get_state_soft();
+    visitor->write(status.staticCast<io::data>());
+  }
   return ;
 }
 

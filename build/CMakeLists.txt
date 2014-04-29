@@ -576,6 +576,8 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/temporary.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/temporary.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bam.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/bam.xml")
 
   # Test library.
   include_directories("${PROJECT_SOURCE_DIR}")
@@ -763,6 +765,13 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/stats_events.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # BAM engine.
+  set(TEST_NAME "running_bam")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/bam.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
   # Benchmark.

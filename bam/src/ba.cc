@@ -22,8 +22,25 @@
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi.hh"
 #include "com/centreon/broker/bam/stream.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker::bam;
+
+/**
+ *  Normalize the value of a double to be in the range [0,100].
+ *
+ *  @param[in] d  Value.
+ *
+ *  @return The provided value if in the range [0,100], the closest
+ *          limit otherwise.
+ */
+static double normalize(double d) {
+  if (d > 100.0)
+    d = 100.0;
+  else if (d < 0.0)
+    d = 0.0;
+  return (d);
+}
 
 /**
  *  Default constructor.
@@ -97,6 +114,10 @@ void ba::child_has_update(computable* child, stream* visitor) {
   umap<kpi*, impact_info>::iterator
     it(_impacts.find(static_cast<kpi*>(child)));
   if (it != _impacts.end()) {
+    // Logging.
+    logging::debug(logging::low)
+      << "BAM: BA " << _id << " is getting notified of child update";
+
     // Discard old data.
     _unapply_impact(it->second);
 
@@ -106,14 +127,7 @@ void ba::child_has_update(computable* child, stream* visitor) {
     _apply_impact(it->second);
 
     // Generate status event.
-    if (visitor) {
-      misc::shared_ptr<ba_status> status(new ba_status);
-      status->ba_id = _id;
-      status->level_acknowledgement = _acknowledgement_hard;
-      status->level_downtime = _downtime_hard;
-      status->level_nominal = _level_hard;
-      visitor->write(status.staticCast<io::data>());
-    }
+    visit(visitor);
   }
   return ;
 }
@@ -217,6 +231,43 @@ void ba::remove_impact(misc::shared_ptr<kpi> const& impact) {
  */
 void ba::set_id(unsigned int id) {
   _id = id;
+  return ;
+}
+
+/**
+ *  Set critical level.
+ *
+ *  @param[in] level  Critical level.
+ */
+void ba::set_level_critical(double level) {
+  _level_critical = level;
+  return ;
+}
+
+/**
+ *  Set warning level.
+ *
+ *  @param[in] level  Warning level.
+ */
+void ba::set_level_warning(double level) {
+  _level_warning = level;
+  return ;
+}
+
+/**
+ *  Visit BA.
+ *
+ *  @param[out] visitor  Visitor that will receive BA status.
+ */
+void ba::visit(stream* visitor) {
+  if (visitor) {
+    misc::shared_ptr<ba_status> status(new ba_status);
+    status->ba_id = _id;
+    status->level_acknowledgement = normalize(_acknowledgement_hard);
+    status->level_downtime = normalize(_downtime_hard);
+    status->level_nominal = normalize(_level_hard);
+    visitor->write(status.staticCast<io::data>());
+  }
   return ;
 }
 

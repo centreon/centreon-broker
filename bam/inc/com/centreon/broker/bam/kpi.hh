@@ -26,8 +26,9 @@
 CCB_BEGIN()
 
 namespace        bam {
-  // Forward declaration.
+  // Forward declarations.
   class          impact_values;
+  class          stream;
 
   /**
    *  @class kpi kpi.hh "com/centreon/broker/bam/kpi.hh"
@@ -46,6 +47,7 @@ namespace        bam {
     virtual void impact_hard(impact_values& hard_impact) = 0;
     virtual void impact_soft(impact_values& soft_impact) = 0;
     void         set_id(unsigned int id);
+    virtual void visit(stream* visitor) = 0;
 
   protected:
     unsigned int _id;

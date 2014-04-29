@@ -38,9 +38,9 @@ namespace          bam {
                      double nominal = 0.0,
                      double acknowledgement = 0.0,
                      double downtime = 0.0);
-                   impact_values(impact_values const& right);
+                   impact_values(impact_values const& other);
                    ~impact_values();
-    impact_values& operator=(impact_values const& right);
+    impact_values& operator=(impact_values const& other);
     double         get_acknowledgement() const;
     double         get_downtime() const;
     double         get_nominal() const;
@@ -49,7 +49,7 @@ namespace          bam {
     void           set_nominal(double nominal);
 
   private:
-    void           _internal_copy(impact_values const& right);
+    void           _internal_copy(impact_values const& other);
 
     double         _acknowledgement;
     double         _downtime;

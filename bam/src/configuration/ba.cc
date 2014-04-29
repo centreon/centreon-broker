@@ -26,22 +26,18 @@ using namespace com::centreon::broker::bam::configuration;
  *
  *  @param[in] id             BA ID.
  *  @param[in] name           BA name.
- *  @param[in] level          BA level.
  *  @param[in] warning_level  BA warning_level.
  *  @param[in] critical_level BA critical_level.
  */
 ba::ba(
       unsigned int id,
       std::string const& name,
-      double level,
       double warning_level,
       double critical_level):
   _id(id),
   _name(name),
-  _level(level),
   _warning_level(warning_level),
-  _critical_level(critical_level)
-{}
+  _critical_level(critical_level) {}
 
 /**
  *  Copy constructor.
@@ -51,10 +47,8 @@ ba::ba(
 ba::ba(ba const& other)
   : _id(other._id),
     _name(other._name),
-    _level(other._level),
     _warning_level(other._warning_level),
-    _critical_level(other._critical_level)
-{}
+    _critical_level(other._critical_level) {}
 
 /**
  *  Destructor.
@@ -72,7 +66,6 @@ ba& ba::operator=(ba const& other) {
   if (this != &other) {
     _id = other._id;
     _name =  other._name;
-    _level = other._level;
     _warning_level = other._warning_level;
     _critical_level = other._critical_level;
   }
@@ -89,7 +82,6 @@ ba& ba::operator=(ba const& other) {
 bool ba::operator==(ba const& right) const {
   return ((_id == right._id)
           && (_name == right._name)
-          && (_level == right._level)
           && (_warning_level == right._warning_level)
           && (_critical_level == right._critical_level));
 }
@@ -157,15 +149,6 @@ void ba::set_id(unsigned int id) {
  */
 void ba::set_name(std::string const& name) {
   _name = name;
-}
-
-/**
- *  Set level.
- *
- *  @param[in] level Level of the BA.
- */
-void ba::set_level(double level) {
-  _level = level;
 }
 
 /**

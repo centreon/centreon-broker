@@ -76,6 +76,19 @@ bam::service_book& applier::state::book() {
 }
 
 /**
+ *  @brief Visit applied state.
+ *
+ *  This method is used to generate default status.
+ *
+ *  @param[out] visitor  Visitor.
+ */
+void applier::state::visit(stream* visitor) {
+  _ba_applier.visit(visitor);
+  _kpi_applier.visit(visitor);
+  return ;
+}
+
+/**
  *  Copy internal data members.
  *
  *  @param[in] other  Object to copy.

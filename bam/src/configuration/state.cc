@@ -58,6 +58,16 @@ state& state::operator=(state const& right) {
 }
 
 /**
+ *  Clear state.
+ */
+void state::clear() {
+  _bas.clear();
+  _kpis.clear();
+  _bool_expressions.clear();
+  return ;
+}
+
+/**
  *  Get the list of BAs.
  *
  *  @return  A const list of all the business activities.

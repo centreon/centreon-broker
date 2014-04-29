@@ -67,6 +67,7 @@ namespace        bam {
     void         set_state_hard(short state);
     void         set_state_soft(short state);
     void         set_state_type(short type);
+    void         visit(stream* visitor);
 
   private:
     void         _fill_impact(impact_values& impact, short state);

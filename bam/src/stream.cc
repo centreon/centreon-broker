@@ -167,6 +167,14 @@ stream::~stream() {
 }
 
 /**
+ *  Generate default state.
+ */
+void stream::initialize() {
+  _applier.visit(this);
+  return ;
+}
+
+/**
  *  Enable or disable output event processing.
  *
  *  @param[in] in  Unused.
@@ -235,12 +243,28 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
     // Process service status events.
     if (data->type()
         == io::events::data_type<io::events::neb, neb::de_service_status>::value) {
-      _applier.book().update(data.staticCast<neb::service_status>());
+      misc::shared_ptr<neb::service_status>
+        ss(data.staticCast<neb::service_status>());
+      logging::debug(logging::low)
+        << "BAM: processing service status (host "
+        << ss->host_id << ", service " << ss->service_id
+        << ", hard state " << ss->last_hard_state << ", current state "
+        << ss->current_state << ")";
+      _applier.book().update(ss, this);
     }
     else if (data->type()
              == io::events::data_type<io::events::bam, bam::de_ba_status>::value) {
       ba_status* status(static_cast<ba_status*>(data.data()));
-      // XXX
+      logging::debug(logging::low) << "BAM: processing BA status (id "
+        << status->ba_id << ", level " << status->level_nominal
+        << ", acknowledgement " << status->level_acknowledgement
+        << ", downtime " << status->level_downtime << ")";
+      _ba_update->bindValue(":level_nominal", status->level_nominal);
+      _ba_update->bindValue(
+                    ":level_acknowledgement",
+                    status->level_acknowledgement);
+      _ba_update->bindValue(":level_downtime", status->level_downtime);
+      _ba_update->bindValue(":ba_id", status->ba_id);
       if (!_ba_update->exec())
         throw (exceptions::msg() << "BAM: could not update BA "
                << status->ba_id << ": "
@@ -259,7 +283,22 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
     else if (data->type()
              == io::events::data_type<io::events::bam, bam::de_kpi_status>::value) {
       kpi_status* status(static_cast<kpi_status*>(data.data()));
-      // XXX
+      logging::debug(logging::low) << "BAM: processing KPI status (id "
+        << status->kpi_id << ", level " << status->level_nominal_hard
+        << ", acknowledgement " << status->level_acknowledgement_hard
+        << ", downtime " << status->level_downtime_hard << ")";
+      _kpi_update->bindValue(
+                     ":level_nominal",
+                     status->level_nominal_hard);
+      _kpi_update->bindValue(
+                     ":level_acknowledgement",
+                     status->level_acknowledgement_hard);
+      _kpi_update->bindValue(
+                     ":level_downtime",
+                     status->level_downtime_hard);
+      _kpi_update->bindValue(":state", status->state_hard);
+      _kpi_update->bindValue(":state_type", 1 + 1);
+      _kpi_update->bindValue(":kpi_id", status->kpi_id);
       if (!_kpi_update->exec())
         throw (exceptions::msg() << "BAM: could not update KPI "
                << status->kpi_id << ": "
@@ -365,7 +404,9 @@ void stream::_prepare() {
   {
     QString query;
     query = "UPDATE mod_bam"
-            "  SET current_level=:level"
+            "  SET current_level=:level_nominal,"
+            "      acknowledged=:level_acknowledgement,"
+            "      downtime=:level_downtime"
             "  WHERE ba_id=:ba_id";
     _ba_update.reset(new QSqlQuery(*_db));
     if (!_ba_update->prepare(query))
@@ -391,9 +432,10 @@ void stream::_prepare() {
   {
     QString query;
     query = "UPDATE mod_bam_kpi"
-            "  SET acknowledged=:acknowledged, current_status=:state,"
-            "      downtime=:downtime, last_level=:last_level,"
-            "      current_type=:state_type"
+            "  SET acknowledged=:level_acknowledgement,"
+            "      current_status=:state,"
+            "      downtime=:level_downtime, last_level=:level_nominal,"
+            "      state_type=:state_type"
             "  WHERE kpi_id=:kpi_id";
     _kpi_update.reset(new QSqlQuery(*_db));
     if (!_kpi_update->prepare(query))

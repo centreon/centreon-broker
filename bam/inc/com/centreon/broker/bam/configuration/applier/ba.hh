@@ -47,6 +47,7 @@ namespace     bam {
         void  apply(configuration::state::bas const& my_bas);
         misc::shared_ptr<bam::ba>
               find_ba(unsigned int id);
+        void  visit(stream* visitor);
 
       private:
         struct applied {

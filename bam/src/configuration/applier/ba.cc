@@ -153,6 +153,21 @@ misc::shared_ptr<bam::ba> applier::ba::find_ba(unsigned int id) {
 }
 
 /**
+ *  Visit each applied BA.
+ *
+ *  @param[out] visitor  Visitor that will receive status.
+ */
+void applier::ba::visit(stream* visitor) {
+  for (std::map<unsigned int, applied>::iterator
+         it(_applied.begin()),
+         end(_applied.end());
+       it != end;
+       ++it)
+    it->second.obj->visit(visitor);
+  return ;
+}
+
+/**
  *  Copy internal data members.
  *
  *  @param[in] right Object to copy.
@@ -173,6 +188,7 @@ misc::shared_ptr<bam::ba> applier::ba::_new_ba(
                                          configuration::ba const& cfg) {
   misc::shared_ptr<bam::ba> obj(new bam::ba);
   obj->set_id(cfg.get_id());
-  // XXX : use configuration for BA levels
+  obj->set_level_warning(cfg.get_warning_level());
+  obj->set_level_critical(cfg.get_critical_level());
   return (obj);
 }

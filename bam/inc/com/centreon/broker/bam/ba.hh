@@ -58,6 +58,9 @@ namespace        bam {
     short        get_state_soft();
     void         remove_impact(misc::shared_ptr<kpi> const& impact);
     void         set_id(unsigned int id);
+    void         set_level_critical(double level);
+    void         set_level_warning(double level);
+    void         visit(stream* visitor);
 
   private:
     static int const        _recompute_limit = 100;

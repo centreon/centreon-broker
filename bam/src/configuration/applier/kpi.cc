@@ -23,6 +23,7 @@
 #include "com/centreon/broker/bam/kpi_service.hh"
 #include "com/centreon/broker/bam/service_book.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
@@ -117,6 +118,8 @@ void applier::kpi::apply(
          end(to_delete.end());
        it != end;
        ++it) {
+    logging::config(logging::medium)
+      << "BAM: removing KPI " << it->second.cfg.get_id();
     if (it->second.cfg.is_service())
       book.unlisten(
              it->second.cfg.get_host_id(),
@@ -151,6 +154,21 @@ void applier::kpi::apply(
 }
 
 /**
+ *  Visit KPIs.
+ *
+ *  @param[out] visitor  Object that will receive status.
+ */
+void applier::kpi::visit(stream* visitor) {
+  for (std::map<unsigned int, applied>::iterator
+         it(_applied.begin()),
+         end(_applied.end());
+       it != end;
+       ++it)
+    it->second.obj->visit(visitor);
+  return ;
+}
+
+/**
  *  Copy internal data members.
  *
  *  @param[in] right Object to copy.
@@ -176,6 +194,10 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
                                            service_book& book) {
   misc::shared_ptr<bam::kpi> my_kpi;
   if (cfg.is_service()) {
+    logging::config(logging::medium)
+      << "BAM: creating new KPI " << cfg.get_id() << " of service ("
+      << cfg.get_host_id() << ", " << cfg.get_service_id()
+      << ") impacting BA " << cfg.get_ba_id();
     misc::shared_ptr<bam::kpi_service> obj(new bam::kpi_service);
     obj->set_acknowledged(cfg.is_acknowledged());
     obj->set_downtimed(cfg.is_downtimed());
@@ -191,6 +213,10 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     book.listen(cfg.get_host_id(), cfg.get_service_id(), obj.data());
   }
   else if (cfg.is_ba()) {
+    logging::config(logging::medium)
+      << "BAM: creating new KPI " << cfg.get_id() << " of BA "
+      << cfg.get_indicator_ba_id() << " impacting BA "
+      << cfg.get_ba_id();
     misc::shared_ptr<bam::kpi_ba> obj(new bam::kpi_ba);
     obj->set_impact_critical(cfg.get_impact_critical());
     obj->set_impact_warning(cfg.get_impact_warning());
@@ -214,7 +240,8 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     throw (exceptions::msg()
            << "BAM: could not create KPI " << cfg.get_id()
            << ": BA " << cfg.get_ba_id() << " does not exist");
-  my_kpi->set_id(cfg.get_ba_id());
+  my_kpi->set_id(cfg.get_id());
+  my_ba->add_impact(my_kpi.staticCast<bam::kpi>());
   my_kpi->add_parent(my_ba.staticCast<bam::computable>());
   return (my_kpi);
 }

@@ -23,6 +23,7 @@
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/bam/stream.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 
 using namespace com::centreon::broker;
@@ -208,6 +209,10 @@ void kpi_service::service_update(
   if (!status.isNull()
       && (status->host_id == _host_id)
       && (status->service_id == _service_id)) {
+    // Log.
+    logging::debug(logging::low) << "BAM: updating KPI of service ("
+      << status->host_id << ", " << status->service_id << ")";
+
     // Update information.
     _acknowledged = status->problem_has_been_acknowledged;
     _downtimed = status->scheduled_downtime_depth;
@@ -215,26 +220,8 @@ void kpi_service::service_update(
     _state_soft = status->current_state;
     _state_type = status->state_type;
 
-    // Get information.
-    impact_values hard_values;
-    impact_values soft_values;
-    impact_hard(hard_values);
-    impact_soft(soft_values);
-
     // Generate status event.
-    if (visitor) {
-      misc::shared_ptr<kpi_status> status(new kpi_status);
-      status->kpi_id = _id;
-      status->level_acknowledgement_hard = hard_values.get_acknowledgement();
-      status->level_acknowledgement_soft = soft_values.get_acknowledgement();
-      status->level_downtime_hard = hard_values.get_downtime();
-      status->level_downtime_soft = soft_values.get_downtime();
-      status->level_nominal_hard = hard_values.get_nominal();
-      status->level_nominal_soft = soft_values.get_nominal();
-      status->state_hard = _state_hard;
-      status->state_soft = _state_soft;
-      visitor->write(status.staticCast<io::data>());
-    }
+    visit(visitor);
 
     // Propagate change.
     propagate_update(visitor);
@@ -339,6 +326,35 @@ void kpi_service::set_state_soft(short state) {
  */
 void kpi_service::set_state_type(short type) {
   _state_type = type;
+  return ;
+}
+
+/**
+ *  Visit service KPI.
+ *
+ *  @param[out] visitor  Object that will receive status.
+ */
+void kpi_service::visit(stream* visitor) {
+  if (visitor) {
+    // Get information.
+    impact_values hard_values;
+    impact_values soft_values;
+    impact_hard(hard_values);
+    impact_soft(soft_values);
+
+    // Generate status event.
+    misc::shared_ptr<kpi_status> status(new kpi_status);
+    status->kpi_id = _id;
+    status->level_acknowledgement_hard = hard_values.get_acknowledgement();
+    status->level_acknowledgement_soft = soft_values.get_acknowledgement();
+    status->level_downtime_hard = hard_values.get_downtime();
+    status->level_downtime_soft = soft_values.get_downtime();
+    status->level_nominal_hard = hard_values.get_nominal();
+    status->level_nominal_soft = soft_values.get_nominal();
+    status->state_hard = _state_hard;
+    status->state_soft = _state_soft;
+    visitor->write(status.staticCast<io::data>());
+  }
   return ;
 }
 

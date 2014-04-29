@@ -151,6 +151,15 @@ void bool_expression::set_impact_soft(double impact) {
 }
 
 /**
+ *  Visit boolean expression.
+ *
+ *  @param[out] visitor  Object that will receive status.
+ */
+void bool_expression::visit(stream* visitor) {
+  // XXX
+}
+
+/**
  *  Copy internal data members.
  *
  *  @param[in] right Object to copy.

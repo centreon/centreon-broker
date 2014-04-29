@@ -98,8 +98,9 @@ reader& reader::operator=(reader const& other) {
 void reader::_load(state::kpis& kpis) {
   QSqlQuery query(_db->exec(
     "SELECT  k.kpi_id, k.state_type, k.host_id, k.service_id, k.id_ba,"
-    "        k.current_status, k.last_level, k.downtime,"
-    "        k.acknowledged, k.ignore_downtime, k.ignore_acknowledged,"
+    "        k.id_indicator_ba, k.current_status, k.last_level,"
+    "        k.downtime, k.acknowledged, k.ignore_downtime,"
+    "        k.ignore_acknowledged,"
     "        COALESCE(k.drop_warning, ww.impact),"
     "        COALESCE(k.drop_critical, cc.impact),"
     "        COALESCE(k.drop_unknown, uu.impact)"
@@ -123,15 +124,16 @@ void reader::_load(state::kpis& kpis) {
         query.value(2).toInt(), // Host ID.
         query.value(3).toInt(), // Service ID.
         query.value(4).toInt(), // BA ID.
-        query.value(5).toInt(), // Status.
-        query.value(6).toInt(), // Hard state.
-        query.value(7).toFloat(), // Downtimed.
-        query.value(8).toFloat(), // Acknowledged.
-        query.value(9).toBool(), // Ignore downtime.
-        query.value(10).toBool(), // Ignore acknowledgement.
-        query.value(11).toDouble(), // Warning.
-        query.value(12).toDouble(), // Critical.
-        query.value(13).toDouble())); // Unknown.
+        query.value(5).toInt(), // BA indicator ID.
+        query.value(6).toInt(), // Status.
+        query.value(7).toInt(), // Hard state.
+        query.value(8).toFloat(), // Downtimed.
+        query.value(9).toFloat(), // Acknowledged.
+        query.value(10).toBool(), // Ignore downtime.
+        query.value(11).toBool(), // Ignore acknowledgement.
+        query.value(12).toDouble(), // Warning.
+        query.value(13).toDouble(), // Critical.
+        query.value(14).toDouble())); // Unknown.
   }
   return ;
 }
@@ -143,7 +145,7 @@ void reader::_load(state::kpis& kpis) {
  */
 void reader::_load(state::bas& bas) {
   QSqlQuery query(_db->exec(
-    "SELECT ba_id, name, current_level, level_w, level_c"
+    "SELECT ba_id, name, level_w, level_c"
     "  FROM mod_bam"));
   if (_db->lastError().isValid())
     throw (reader_exception()
@@ -155,9 +157,8 @@ void reader::_load(state::bas& bas) {
       ba(
         query.value(0).toInt(), // ID.
         query.value(1).toString().toStdString(), // Name.
-        query.value(2).toFloat(), // Level.
-        query.value(3).toFloat(), // Warning level.
-        query.value(4).toFloat())); // Critical level.
+        query.value(2).toFloat(), // Warning level.
+        query.value(3).toFloat())); // Critical level.
   }
   return ;
 }
@@ -169,7 +170,7 @@ void reader::_load(state::bas& bas) {
  */
 void reader::_load(state::bool_exps& bool_exps) {
   QSqlQuery query(_db->exec(
-    "SELECT  be.boolean_id, COALESCE(be.impact, imp.impact)"
+    "SELECT  be.boolean_id, COALESCE(be.impact, imp.impact),"
     "        be.expression, be.bool_state"
     "  FROM  mod_bam_boolean as be"
     "  LEFT JOIN mod_bam_impacts as imp"

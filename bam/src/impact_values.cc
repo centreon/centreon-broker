@@ -24,10 +24,10 @@ using namespace com::centreon::broker::bam;
 /**
  *  Constructor.
  *
- *  @param[in] nominal         Nominal impact.
- *  @param[in] acknowledgement Part of impact induced by an
- *                             acknowledgement.
- *  @param[in] downtime        Part of impact induced by a downtime.
+ *  @param[in] nominal          Nominal impact.
+ *  @param[in] acknowledgement  Part of impact induced by an
+ *                              acknowledgement.
+ *  @param[in] downtime         Part of impact induced by a downtime.
  */
 impact_values::impact_values(
                  double nominal,
@@ -40,10 +40,10 @@ impact_values::impact_values(
 /**
  *  Copy constructor.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-impact_values::impact_values(impact_values const& right) {
-  _internal_copy(right);
+impact_values::impact_values(impact_values const& other) {
+  _internal_copy(other);
 }
 
 /**
@@ -54,13 +54,13 @@ impact_values::~impact_values() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-impact_values& impact_values::operator=(impact_values const& right) {
-  if (this != &right)
-    _internal_copy(right);
+impact_values& impact_values::operator=(impact_values const& other) {
+  if (this != &other)
+    _internal_copy(other);
   return (*this);
 }
 
@@ -94,7 +94,7 @@ double impact_values::get_nominal() const {
 /**
  *  Set impact induced by acknowledgement.
  *
- *  @param[in] acknowledgement Impact induced by some acknowledgement.
+ *  @param[in] acknowledgement  Impact induced by some acknowledgement.
  */
 void impact_values::set_acknowledgement(double acknowledgement) {
   _acknowledgement = acknowledgement;
@@ -104,7 +104,7 @@ void impact_values::set_acknowledgement(double acknowledgement) {
 /**
  *  Set impact induced by downtime.
  *
- *  @param[in] downtime Impact induced by some downtime.
+ *  @param[in] downtime  Impact induced by some downtime.
  */
 void impact_values::set_downtime(double downtime) {
   _downtime = downtime;
@@ -114,9 +114,21 @@ void impact_values::set_downtime(double downtime) {
 /**
  *  Set nominal impact.
  *
- *  @param[in] nominal Nominal impact.
+ *  @param[in] nominal  Nominal impact.
  */
 void impact_values::set_nominal(double nominal) {
   _nominal = nominal;
+  return ;
+}
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] other  Object to copy.
+ */
+void impact_values::_internal_copy(impact_values const& other) {
+  _acknowledgement = other._acknowledgement;
+  _downtime = other._downtime;
+  _nominal = other._nominal;
   return ;
 }

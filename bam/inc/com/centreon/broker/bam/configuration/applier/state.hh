@@ -29,6 +29,9 @@
 CCB_BEGIN()
 
 namespace               bam {
+  // Forward declaration.
+  class                 stream;
+
   namespace             configuration {
     // Forward declaration.
     class               state;
@@ -48,6 +51,7 @@ namespace               bam {
         state&          operator=(state const& other);
         void            apply(configuration::state const& my_state);
         service_book&   book();
+        void            visit(stream* visitor);
 
       private:
         void            _internal_copy(state const& other);

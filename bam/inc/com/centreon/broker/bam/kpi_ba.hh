@@ -53,6 +53,7 @@ namespace   bam {
     void    set_impact_critical(double impact);
     void    set_impact_warning(double impact);
     void    unlink_ba();
+    void    visit(stream* visitor);
 
   private:
     void    _fill_impact(
