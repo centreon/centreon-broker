@@ -67,6 +67,7 @@ applier::bool_expression& applier::bool_expression::operator=(
  *  Apply boolean expressions.
  *
  *  @param[in]     my_bools Boolean expressions.
+ *  @param[in]     mapping  Host/service mapping (names to IDs).
  *  @param[in,out] my_bas   BAs on which boolean expressions will be
  *                          applied.
  *  @param[out]    book     Used to notify bool_service of service
@@ -74,6 +75,7 @@ applier::bool_expression& applier::bool_expression::operator=(
  */
 void applier::bool_expression::apply(
                                  configuration::state::bool_exps const& my_bools,
+                                 hst_svc_mapping const& mapping,
                                  ba& my_bas,
                                  service_book& book) {
   //
@@ -153,7 +155,7 @@ void applier::bool_expression::apply(
     misc::shared_ptr<bam::bool_expression>
       new_bool_exp(new bam::bool_expression);
     {
-      bam::bool_parser p(it->get_expression());
+      bam::bool_parser p(it->get_expression(), mapping);
       new_bool_exp->set_expression(p.get_tree());
       applied& content(_applied[it->get_id()]);
       content.cfg = *it;
@@ -169,6 +171,7 @@ void applier::bool_expression::apply(
                (*it2)->get_service_id(),
                it2->data());
     }
+    new_bool_exp->set_id(it->get_id());
     new_bool_exp->set_impact_hard(it->get_impact());
     new_bool_exp->set_impact_if(it->get_impact_if());
     new_bool_exp->set_impact_soft(it->get_impact());

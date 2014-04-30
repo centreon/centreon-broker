@@ -54,6 +54,7 @@ namespace                bam {
         bool_expression& operator=(bool_expression const& other);
         void             apply(
                            configuration::state::bool_exps const& my_bools,
+                           hst_svc_mapping const& mapping,
                            ba& my_bas,
                            service_book& book);
 

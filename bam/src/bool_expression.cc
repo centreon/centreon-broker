@@ -19,7 +19,9 @@
 */
 
 #include "com/centreon/broker/bam/bool_expression.hh"
+#include "com/centreon/broker/bam/bool_status.hh"
 #include "com/centreon/broker/bam/bool_value.hh"
+#include "com/centreon/broker/bam/stream.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
 
 using namespace com::centreon::broker::bam;
@@ -28,7 +30,8 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 bool_expression::bool_expression()
-  : _impact_if(true),
+  : _id(0),
+    _impact_if(true),
     _impact_hard(0.0),
     _impact_soft(0.0) {}
 
@@ -120,6 +123,16 @@ void bool_expression::set_expression(
 }
 
 /**
+ *  Set boolean expression ID.
+ *
+ *  @param[in] id  Boolean expression ID.
+ */
+void bool_expression::set_id(unsigned int id) {
+  _id = id;
+  return ;
+}
+
+/**
  *  Set hard impact.
  *
  *  @param[in] impact Hard impact.
@@ -156,7 +169,11 @@ void bool_expression::set_impact_soft(double impact) {
  *  @param[out] visitor  Object that will receive status.
  */
 void bool_expression::visit(stream* visitor) {
-  // XXX
+  misc::shared_ptr<bool_status> b(new bool_status);
+  b->bool_id = _id;
+  b->state = (_expression->value_hard() ? _impact_if : !_impact_if);
+  visitor->write(b.staticCast<io::data>());
+  return ;
 }
 
 /**
@@ -166,6 +183,7 @@ void bool_expression::visit(stream* visitor) {
  */
 void bool_expression::_internal_copy(bool_expression const& right) {
   _expression = right._expression;
+  _id = right._id;
   _impact_if = right._impact_if;
   _impact_hard = right._impact_hard;
   _impact_soft = right._impact_soft;

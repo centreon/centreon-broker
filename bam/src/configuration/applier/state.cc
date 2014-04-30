@@ -62,7 +62,11 @@ applier::state& applier::state::operator=(applier::state const& other) {
 void applier::state::apply(bam::configuration::state const& my_state) {
   _ba_applier.apply(my_state.get_bas());
   _kpi_applier.apply(my_state.get_kpis(), _ba_applier, _book);
-  _bool_exp_applier.apply(my_state.get_bool_exps(), _ba_applier, _book);
+  _bool_exp_applier.apply(
+                      my_state.get_bool_exps(),
+                      my_state.get_mapping(),
+                      _ba_applier,
+                      _book);
   return ;
 }
 

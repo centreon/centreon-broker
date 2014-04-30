@@ -24,11 +24,15 @@
 #  include "com/centreon/broker/bam/configuration/kpi.hh"
 #  include "com/centreon/broker/bam/configuration/bool_expression.hh"
 #  include "com/centreon/broker/bam/configuration/ba.hh"
+#  include "com/centreon/broker/bam/hst_svc_mapping.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace              bam {
+  // Forward declaration.
+  class                hst_svc_mapping;
+
   namespace            configuration {
     /**
      *  @class state state.hh "com/centreon/broker/bam/configuration/state.hh"
@@ -52,15 +56,19 @@ namespace              bam {
       bas const&       get_bas() const;
       kpis const&      get_kpis() const;
       bool_exps const& get_bool_exps() const;
+      hst_svc_mapping const&
+                       get_mapping() const;
 
       bas&             get_bas();
       kpis&            get_kpis();
       bool_exps&       get_bool_exps();
+      hst_svc_mapping& get_mapping();
 
     private:
       bas              _bas;
       kpis             _kpis;
       bool_exps        _bool_expressions;
+      hst_svc_mapping  _mapping;
     };
   }
 }

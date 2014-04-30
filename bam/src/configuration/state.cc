@@ -19,6 +19,7 @@
 
 #include "com/centreon/broker/bam/configuration/state.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
 
 /**
@@ -29,12 +30,13 @@ state::state() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-state::state(state const& right)
-  : _bas(right._bas),
-    _kpis(right._kpis),
-    _bool_expressions(right._bool_expressions) {}
+state::state(state const& other)
+  : _bas(other._bas),
+    _kpis(other._kpis),
+    _bool_expressions(other._bool_expressions),
+    _mapping(other._mapping) {}
 
 /**
  *  Destructor
@@ -44,15 +46,16 @@ state::~state() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-state& state::operator=(state const& right) {
-  if (this != &right) {
-    _bas = right._bas;
-    _kpis= right._kpis;
-    _bool_expressions= right._bool_expressions;
+state& state::operator=(state const& other) {
+  if (this != &other) {
+    _bas = other._bas;
+    _kpis= other._kpis;
+    _bool_expressions = other._bool_expressions;
+    _mapping = other._mapping;
   }
   return (*this);
 }
@@ -95,6 +98,15 @@ state::bool_exps const& state::get_bool_exps() const {
 }
 
 /**
+ *  Get mapping.
+ *
+ *  @return Mapping.
+ */
+bam::hst_svc_mapping const& state::get_mapping() const {
+  return (_mapping);
+}
+
+/**
  *  Get all the business activities
  *
  *  @return  The list of all the business activities.
@@ -119,4 +131,13 @@ state::kpis & state::get_kpis() {
  */
 state::bool_exps& state::get_bool_exps() {
   return (_bool_expressions);
+}
+
+/**
+ *  Get mapping.
+ *
+ *  @return Mapping.
+ */
+bam::hst_svc_mapping& state::get_mapping() {
+  return (_mapping);
 }

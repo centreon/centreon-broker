@@ -25,6 +25,7 @@
 #include "com/centreon/broker/bam/bool_parser.hh"
 #include "com/centreon/broker/bam/bool_service.hh"
 #include "com/centreon/broker/bam/bool_xor.hh"
+#include "com/centreon/broker/bam/hst_svc_mapping.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
@@ -33,10 +34,13 @@ using namespace com::centreon::broker::bam;
 /**
  *  Constructor.
  *
- *  @param[in] exp_test Boolean expression as text.
+ *  @param[in] exp_test  Boolean expression as text.
+ *  @param[in] mapping   Host/service mapping (names to IDs).
  */
-bool_parser::bool_parser(std::string const& exp_text)
-  : _toknizr(exp_text) {
+bool_parser::bool_parser(
+               std::string const& exp_text,
+               hst_svc_mapping const& mapping)
+  : _mapping(mapping), _toknizr(exp_text) {
   try {
     _root = _make_boolean_exp();
   }
@@ -53,7 +57,8 @@ bool_parser::bool_parser(std::string const& exp_text)
  *  @param[in] other Object to copy.
  */
 bool_parser::bool_parser(bool_parser const& other)
-  : _root(other._root),
+  : _mapping(other._mapping),
+    _root(other._root),
     _services(other._services),
     _toknizr(other._toknizr) {}
 
@@ -73,7 +78,6 @@ bool_parser& bool_parser::operator=(bool_parser const& other) {
   if (this != &other) {
     _root = other._root;
     _services = other._services;
-    _toknizr = other._toknizr;
   }
   return (*this);
 }
@@ -129,15 +133,19 @@ bool_value::ptr bool_parser::_make_host_service_state() {
   // FORMAT example   {HOST SERV} {is} {UNKNOWN}
 
   // Get host.
-  // std::stringstream ss(toknizr.get_token());
-  unsigned int host_id;
-  unsigned int service_id;
-  // ss >> host;
-  // if (!ss)
-  //   ;// XXX throw parse_exception();
-  // ss >> service;
-  // if (!ss)
-  //   ;// XXX throw parse_exception();
+  std::string hst_svc(_toknizr.get_token());
+  size_t split(hst_svc.find(' '));
+  if (split == std::string::npos)
+    throw (exceptions::msg()
+           << "service must be expressed as {HOST SERVICE}");
+  std::string hst(hst_svc.substr(0, split));
+  std::string svc(hst_svc.substr(split + 1));
+  unsigned int host_id(_mapping.get_host_id(hst));
+  unsigned int service_id(_mapping.get_service_id(svc));
+  if (!host_id || !service_id)
+    throw (exceptions::msg()
+           << "could not find ID of service '" << svc
+           << "' or of host '" << hst << "'");
 
   // Condition whether state desired OR not
   bool is_expected(_token_to_condition(_toknizr.get_token()));

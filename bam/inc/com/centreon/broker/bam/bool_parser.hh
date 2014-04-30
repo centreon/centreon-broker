@@ -31,6 +31,9 @@
 CCB_BEGIN()
 
 namespace            bam {
+  // Forward declaration.
+  class              hst_svc_mapping;
+
   /**
    *  @class bool_parser bool_parser.hh "com/centreon/broker/bam/bool_parser.hh"
    *  @brief Boolean expression parser.
@@ -42,7 +45,9 @@ namespace            bam {
   public:
     typedef std::list<bool_service::ptr> list_service;
 
-                     bool_parser(std::string const& exp_text);
+                     bool_parser(
+                       std::string const& exp_text,
+                       hst_svc_mapping const& mapping);
                      bool_parser(bool_parser const& other);
                      ~bool_parser();
     bool_parser&     operator=(bool_parser const& other);
@@ -51,6 +56,8 @@ namespace            bam {
     bool_value::ptr  get_tree() const;
 
   private:
+    hst_svc_mapping const&
+                     _mapping;
     bool_value::ptr  _root;
     list_service     _services;
     bool_tokenizer   _toknizr;

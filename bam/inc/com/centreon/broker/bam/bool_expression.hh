@@ -49,6 +49,7 @@ namespace            bam {
     void             impact_soft(impact_values& soft_impact);
     void             set_expression(
                        misc::shared_ptr<bool_value> const& expression);
+    void             set_id(unsigned int id);
     void             set_impact_hard(double impact);
     void             set_impact_if(bool impact_if);
     void             set_impact_soft(double impact);
@@ -59,6 +60,7 @@ namespace            bam {
 
     misc::shared_ptr<bool_value>
                      _expression;
+    unsigned int     _id;
     bool             _impact_if;
     double           _impact_hard;
     double           _impact_soft;
