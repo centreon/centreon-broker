@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -92,6 +92,8 @@ QSqlDatabase config_db_open(char const* db_name) {
   {
     std::ostringstream query;
     query << "CREATE DATABASE " << db_name;
+    if ("QMYSQL" == db_type)
+      query << " DEFAULT CHARACTER SET utf8";
     QSqlQuery q(db);
     if (!q.exec(query.str().c_str()))
       std::cerr << q.lastError().text().toStdString() << std::endl;
