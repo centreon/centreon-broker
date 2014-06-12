@@ -1896,6 +1896,7 @@ void stream::_write_logs() {
 
       // Build insertion query.
       static QString const empty_string("''");
+      static QString const null_string("NULL");
       host_name_field.setValue(le->host_name);
       instance_name_field.setValue(le->instance_name);
       notification_cmd_field.setValue(le->notification_cmd);
@@ -1908,7 +1909,7 @@ void stream::_write_logs() {
       else
         query << "NULL";
       query << ", " << (host_name_field.isNull()
-                        ? empty_string
+                        ? null_string
                         : drivr->formatValue(host_name_field)) << ", "
             << (instance_name_field.isNull()
                 ? empty_string
@@ -1919,17 +1920,17 @@ void stream::_write_logs() {
         query << "NULL";
       query << ", " << le->msg_type << ", "
             << (notification_cmd_field.isNull()
-                ? empty_string
+                ? null_string
                 : drivr->formatValue(notification_cmd_field)) << ", "
             << (notification_contact_field.isNull()
-                ? empty_string
+                ? null_string
                 : drivr->formatValue(notification_contact_field))
             << ", "
             << (output_field.isNull()
                 ? empty_string
                 : drivr->formatValue(output_field)) << ", " << le->retry
             << ", " << (service_description_field.isNull()
-                        ? empty_string
+                        ? null_string
                         : drivr->formatValue(service_description_field))
             << ", ";
       if (le->service_id)
