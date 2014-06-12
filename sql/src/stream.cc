@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -158,6 +158,54 @@ void stream::_clean_tables(int instance_id) {
     ss << "UPDATE " << mapped_type<neb::service_group>::table
        << " SET enabled=0"
        << " WHERE instance_id=" << instance_id;
+    _execute(ss.str().c_str());
+  }
+
+  // Remove host group memberships.
+  {
+    std::ostringstream ss;
+    ss << "DELETE " << mapped_type<neb::host_group_member>::table
+       << " FROM " << mapped_type<neb::host_group_member>::table
+       << " LEFT JOIN " << mapped_type<neb::host>::table
+       << " ON " << mapped_type<neb::host_group_member>::table << ".host_id="
+       << mapped_type<neb::host>::table << ".host_id"
+       << " WHERE " << mapped_type<neb::host>::table
+       << ".instance_id=" << instance_id;
+    _execute(ss.str().c_str());
+  }
+  {
+    std::ostringstream ss;
+    ss << "DELETE " << mapped_type<neb::host_group_member>::table
+       << " FROM " << mapped_type<neb::host_group_member>::table
+       << " LEFT JOIN " << mapped_type<neb::host_group>::table
+       << " ON " << mapped_type<neb::host_group_member>::table << ".hostgroup_id="
+       << mapped_type<neb::host_group>::table << ".hostgroup_id"
+       << " WHERE " << mapped_type<neb::host_group>::table
+       << ".instance_id=" << instance_id;
+    _execute(ss.str().c_str());
+  }
+
+  // Remove service group memberships
+  {
+    std::ostringstream ss;
+    ss << "DELETE " << mapped_type<neb::service_group_member>::table
+       << " FROM " << mapped_type<neb::service_group_member>::table
+       << " LEFT JOIN " << mapped_type<neb::host>::table
+       << " ON " << mapped_type<neb::service_group_member>::table << ".host_id="
+       << mapped_type<neb::host>::table << ".host_id"
+       << " WHERE " << mapped_type<neb::host>::table
+       << ".instance_id=" << instance_id;
+    _execute(ss.str().c_str());
+  }
+  {
+    std::ostringstream ss;
+    ss << "DELETE " << mapped_type<neb::service_group_member>::table
+       << " FROM " << mapped_type<neb::service_group_member>::table
+       << " LEFT JOIN " << mapped_type<neb::service_group>::table
+       << " ON " << mapped_type<neb::service_group_member>::table << ".servicegroup_id="
+       << mapped_type<neb::service_group>::table << ".servicegroup_id"
+       << " WHERE " << mapped_type<neb::service_group>::table
+       << ".instance_id=" << instance_id;
     _execute(ss.str().c_str());
   }
 
