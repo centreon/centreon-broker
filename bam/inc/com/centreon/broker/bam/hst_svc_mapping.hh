@@ -22,6 +22,7 @@
 
 #  include <map>
 #  include <string>
+#  include <utility>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -39,22 +40,26 @@ namespace            bam {
                      hst_svc_mapping(hst_svc_mapping const& other);
                      ~hst_svc_mapping();
     hst_svc_mapping& operator=(hst_svc_mapping const& other);
-    unsigned int     get_host_id(std::string const& name) const;
-    unsigned int     get_service_id(std::string const& name) const;
+    unsigned int     get_host_id(std::string const& hst) const;
+    std::pair<unsigned int, unsigned int>
+                     get_service_id(
+                       std::string const& hst,
+                       std::string const& svc) const;
     void             set_host(
-                       std::string const& name,
-                       unsigned int id);
+                       std::string const& hst,
+                       unsigned int host_id);
     void             set_service(
-                       std::string const& name,
-                       unsigned int id);
+                       std::string const& hst,
+                       std::string const& svc,
+                       unsigned int host_id,
+                       unsigned int service_id);
 
   private:
     void             _internal_copy(hst_svc_mapping const& other);
 
-    std::map<std::string, unsigned int>
-                     _hosts;
-    std::map<std::string, unsigned int>
-                     _services;
+    std::map<std::pair<std::string, std::string>,
+             std::pair<unsigned int, unsigned int> >
+                     _mapping;
   };
 }
 

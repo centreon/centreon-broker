@@ -28,6 +28,7 @@
 #include "com/centreon/broker/bam/configuration/reader_exception.hh"
 #include "com/centreon/broker/bam/sql_mapping.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
 
 /**
@@ -54,6 +55,7 @@ void reader::read(state& st) {
     _load(st.get_bas());
     _load(st.get_kpis());
     _load(st.get_bool_exps());
+    _load(st.get_mapping());
     _db->rollback();
   }
   catch (std::exception const& e) {
@@ -169,24 +171,77 @@ void reader::_load(state::bas& bas) {
  *  @param[out] bool_exps The list of bool expression in database.
  */
 void reader::_load(state::bool_exps& bool_exps) {
-  QSqlQuery query(_db->exec(
-    "SELECT  be.boolean_id, COALESCE(be.impact, imp.impact),"
-    "        be.expression, be.bool_state"
-    "  FROM  mod_bam_boolean as be"
-    "  LEFT JOIN mod_bam_impacts as imp"
-    "    ON be.impact_id = imp.id_impact"));
+  // Load boolean expressions themselves.
+  {
+    QSqlQuery query(_db->exec(
+      "SELECT  be.boolean_id, COALESCE(be.impact, imp.impact),"
+      "        be.expression, be.bool_state"
+      "  FROM  mod_bam_boolean as be"
+      "  LEFT JOIN mod_bam_impacts as imp"
+      "    ON be.impact_id = imp.id_impact"));
+    if (_db->lastError().isValid())
+      throw (reader_exception()
+             << "BAM: could not retrieve boolean expression "
+             << "configuration from DB: " << _db->lastError().text());
+
+    while (query.next()) {
+      bool_exps.push_back(
+                  bool_expression(
+                    query.value(0).toInt(), // ID.
+                    query.value(1).toFloat(),// Impact.
+                    query.value(2).toString().toStdString(), // Expression.
+                    query.value(3).toBool())); // Impact if.
+    }
+  }
+
+  // Load relations of boolean expressions with BAs.
+  {
+    std::map<unsigned int, bool_expression::ids_of_bas> impacted_bas;
+    {
+      QSqlQuery q(_db->exec(
+        "SELECT boolean_id, ba_id FROM mod_bam_bool_rel"));
+      if (_db->lastError().isValid())
+        throw (reader_exception()
+               << "BAM: could not retrieve BAs impacted by boolean "
+               << "expressions: " << _db->lastError().text());
+
+      while (q.next())
+        impacted_bas[q.value(0).toUInt()].push_back(q.value(1).toUInt());
+    }
+    for (state::bool_exps::iterator
+           it(bool_exps.begin()), end(bool_exps.end());
+         it != end;
+         ++it) {
+      std::map<unsigned int, bool_expression::ids_of_bas>::iterator
+        it_impacted_bas(impacted_bas.find(it->get_id()));
+      if (it_impacted_bas != impacted_bas.end())
+        it->impacted_bas().swap(it_impacted_bas->second);
+      else
+        it->impacted_bas().clear();
+    }
+  }
+  return ;
+}
+
+/**
+ *  Load host/service IDs from the DB.
+ *
+ *  @param[out] mapping  Host/service mapping.
+ */
+void reader::_load(bam::hst_svc_mapping& mapping) {
+  QSqlQuery q(_db->exec(
+    "SELECT h.host_id, s.service_id, h.name, s.description"
+    "  FROM services AS s LEFT JOIN hosts AS h"
+    "  ON s.host_id = h.host_id"));
   if (_db->lastError().isValid())
     throw (reader_exception()
-           << "BAM: could not retrieve boolean expression "
-           << "configuration from DB: " << _db->lastError().text());
-
-  while (query.next()) {
-    bool_exps.push_back(
-      bool_expression(
-        query.value(0).toInt(), // ID.
-        query.value(1).toFloat(),// Impact.
-        query.value(2).toString().toStdString(), // Expression.
-        query.value(3).toBool())); // Impact if.
-  }
+           << "BAM: could not retrieve host/service IDs: "
+           << _db->lastError().text());
+  while (q.next())
+    mapping.set_service(
+              q.value(2).toString().toStdString(),
+              q.value(3).toString().toStdString(),
+              q.value(0).toUInt(),
+              q.value(1).toUInt());
   return ;
 }

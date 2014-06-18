@@ -57,54 +57,60 @@ hst_svc_mapping& hst_svc_mapping::operator=(
 /**
  *  Get host ID by its name.
  *
- *  @param[in] name  Host name.
+ *  @param[in] hst  Host name.
  *
  *  @return Host ID, 0 if it was not found.
  */
 unsigned int hst_svc_mapping::get_host_id(
-                                std::string const& name) const {
-  std::map<std::string, unsigned int>::const_iterator
-    it(_hosts.find(name));
-  return ((it != _hosts.end()) ? it->second : 0);
+                                std::string const& hst) const {
+  return (get_service_id(hst, "").first);
 }
 
 /**
  *  Get service ID by its name.
  *
- *  @param[in] name  Service description.
+ *  @param[in] hst  Host name.
+ *  @param[in] svc  Service description.
  *
- *  @return Service ID, 0 if it was not found.
+ *  @return Pair of integers with host ID and service ID, (0, 0) if it
+ *          was not found.
  */
-unsigned int hst_svc_mapping::get_service_id(
-                                std::string const& name) const {
-  std::map<std::string, unsigned int>::const_iterator
-    it(_services.find(name));
-  return ((it != _services.end()) ? it->second : 0);
+std::pair<unsigned int, unsigned int> hst_svc_mapping::get_service_id(
+                                                         std::string const& hst,
+                                                         std::string const& svc) const {
+  std::map<std::pair<std::string, std::string>,
+           std::pair<unsigned int, unsigned int> >::const_iterator
+    it(_mapping.find(std::make_pair(hst, svc)));
+  return ((it != _mapping.end()) ? it->second : std::make_pair(0u, 0u));
 }
 
 /**
  *  Set the ID of a host.
  *
- *  @param[in] name  Host name.
- *  @param[in] id    Host ID.
+ *  @param[in] hst      Host name.
+ *  @param[in] host_id  Host ID.
  */
 void hst_svc_mapping::set_host(
-                        std::string const& name,
-                        unsigned int id) {
-  _hosts[name] = id;
+                        std::string const& hst,
+                        unsigned int host_id) {
+  set_service(hst, "", host_id, 0u);
   return ;
 }
 
 /**
  *  Set the ID of a service.
  *
- *  @param[in] name  Service description.
- *  @param[in] id    Service ID.
+ *  @param[in] hst         Host name.
+ *  @param[in] svc         Service description.
+ *  @param[in] host_id     Host ID.
+ *  @param[in] service_id  Service ID.
  */
 void hst_svc_mapping::set_service(
-                        std::string const& name,
-                        unsigned int id) {
-  _services[name] = id;
+                        std::string const& hst,
+                        std::string const& svc,
+                        unsigned int host_id,
+                        unsigned int service_id) {
+  _mapping[std::make_pair(hst, svc)] = std::make_pair(host_id, service_id);
   return ;
 }
 
@@ -114,7 +120,6 @@ void hst_svc_mapping::set_service(
  *  @param[in] other  Object to copy.
  */
 void hst_svc_mapping::_internal_copy(hst_svc_mapping const& other) {
-  _hosts = other._hosts;
-  _services = other._services;
+  _mapping = other._mapping;
   return ;
 }

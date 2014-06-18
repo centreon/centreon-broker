@@ -100,11 +100,12 @@ stream::stream(
       QMutexLocker lock(&misc::global_lock);
       // Open database.
       if (!_db->open()) {
+        QString error(_db->lastError().text());
         _clear_qsql();
         throw (broker::exceptions::msg()
                << "BAM: could not connect to database '"
                << db_name << "' on host '" << db_host
-               << ":" << db_port << "': " << _db->lastError().text());
+               << ":" << db_port << "': " << error);
       }
     }
 
@@ -241,8 +242,10 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
 
   if (!data.isNull()) {
     // Process service status events.
-    if (data->type()
-        == io::events::data_type<io::events::neb, neb::de_service_status>::value) {
+    if ((data->type()
+        == io::events::data_type<io::events::neb, neb::de_service_status>::value)
+        || (data->type()
+            == io::events::data_type<io::events::neb, neb::de_service>::value)) {
       misc::shared_ptr<neb::service_status>
         ss(data.staticCast<neb::service_status>());
       logging::debug(logging::low)
@@ -273,7 +276,10 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
     else if (data->type()
              == io::events::data_type<io::events::bam, bam::de_bool_status>::value) {
       bool_status* status(static_cast<bool_status*>(data.data()));
-      // XXX
+      logging::debug(logging::low) << "BAM: processing boolexp status (id "
+        << status->bool_id << ", state " << status->state << ")";
+      _bool_exp_update->bindValue(":state", status->state);
+      _bool_exp_update->bindValue(":bool_id", status->bool_id);
       if (!_bool_exp_update->exec())
         throw (exceptions::msg()
                << "BAM: could not update boolean expression "
@@ -419,7 +425,7 @@ void stream::_prepare() {
   {
     QString query;
     query = "UPDATE mod_bam_boolean"
-            "  SET current_state=:value"
+            "  SET current_state=:state"
             "  WHERE boolean_id=:bool_id";
     _bool_exp_update.reset(new QSqlQuery(*_db));
     if (!_bool_exp_update->prepare(query))

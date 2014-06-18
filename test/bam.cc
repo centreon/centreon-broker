@@ -36,6 +36,8 @@
 using namespace com::centreon::broker;
 
 #define DB_NAME "broker_bam"
+#define HOST_COUNT 1
+#define SERVICES_BY_HOST 10
 
 typedef struct {
   double current_level;
@@ -50,6 +52,10 @@ typedef struct {
   double downtime;
   double acknowledged;
 } kpi_state;
+
+typedef struct {
+  bool state;
+} boolexp_state;
 
 /**
  *  Compare two double values.
@@ -141,6 +147,39 @@ static void check_kpis(
 }
 
 /**
+ *  Check content of the mod_bam_boolean table.
+ */
+static void check_boolexps(
+              QSqlDatabase& db,
+              boolexp_state const* boolexps,
+              size_t count) {
+  static int iteration(-1);
+  ++iteration;
+  QString query(
+            "SELECT boolean_id, current_state"
+            "  FROM mod_bam_boolean"
+            "  ORDER BY boolean_id ASC");
+  QSqlQuery q(db);
+  if (!q.exec(query))
+    throw (exceptions::msg() << "could not fetch boolexps at iteration "
+           << iteration << ": " << q.lastError().text());
+  for (size_t i(0); i < count; ++i) {
+    if (!q.next())
+      throw (exceptions::msg() << "not enough boolexps at iteration "
+             << iteration << ": got " << i << ", expected " << count);
+    if (static_cast<bool>(q.value(1).toInt()) != boolexps[i].state)
+      throw (exceptions::msg() << "invalid boolexp "
+             << q.value(0).toUInt() << " at iteration " << iteration
+             << ": got (state " << static_cast<bool>(q.value(1).toInt())
+             << "), expected (" << boolexps[i].state << ")");
+  }
+  if (q.next())
+    throw (exceptions::msg() << "too much boolexps at iteration "
+           << iteration << ": expected " << count);
+  return ;
+}
+
+/**
  *  Check functionnally the BAM engine.
  *
  *  @return EXIT_SUCCESS on success.
@@ -161,8 +200,8 @@ int main() {
     QSqlDatabase db(config_db_open(DB_NAME));
 
     // Prepare monitoring engine configuration parameters.
-    generate_hosts(hosts, 1);
-    generate_services(services, hosts, 10);
+    generate_hosts(hosts, HOST_COUNT);
+    generate_services(services, hosts, SERVICES_BY_HOST);
     for (std::list<service>::iterator
            it(services.begin()),
            end(services.end());
@@ -189,6 +228,44 @@ int main() {
       &hosts,
       &services);
 
+    // Create instance entry.
+    {
+      QString query(
+                "INSERT INTO instances (instance_id, name)"
+                "  VALUES (42, 'MyBroker')");
+      QSqlQuery q(db);
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not create instance: "
+               << q.lastError().text());
+    }
+
+    // Create host/service entries.
+    {
+
+      for (int i(1); i <= HOST_COUNT; ++i) {
+        {
+          std::ostringstream oss;
+          oss << "INSERT INTO hosts (host_id, name, instance_id)"
+              << "  VALUES (" << i << ", '" << i << "', 42)";
+          QSqlQuery q(db);
+          if (!q.exec(oss.str().c_str()))
+            throw (exceptions::msg() << "could not create host "
+                   << i << ": " << q.lastError().text());
+        }
+        for (int j((i - 1) * SERVICES_BY_HOST + 1), limit(i * SERVICES_BY_HOST);
+             j < limit;
+             ++j) {
+          std::ostringstream oss;
+          oss << "INSERT INTO services (host_id, description, service_id)"
+              << "  VALUES (" << i << ", '" << j << "', " << j << ")";
+          QSqlQuery q(db);
+          if (!q.exec(oss.str().c_str()))
+            throw (exceptions::msg() << "could not create service ("
+                   << i << ", " << j << "): " << q.lastError().text());
+        }
+      }
+    }
+
     // Create BAs.
     {
       QString query(
@@ -200,7 +277,8 @@ int main() {
                 "         (5, 'BA5', 50, 40),"
                 "         (6, 'BA6', 40, 30),"
                 "         (7, 'BA7', 30, 20),"
-                "         (8, 'BA8', 20, 10)");
+                "         (8, 'BA8', 20, 10),"
+                "         (9, 'BA9', 10, 0)");
       QSqlQuery q(db);
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create BAs: "
@@ -240,7 +318,28 @@ int main() {
     }
 
     // Create boolean expressions.
-    // XXX
+    {
+      QString query(
+                "INSERT INTO mod_bam_boolean (boolean_id, name,"
+                "            config_type, impact, impact_id,"
+                "            expression, bool_state)"
+                "  VALUES (1, 'BoolExp1', 0, 75, NULL, '{1 1} {is} {OK}', 0),"
+                "         (2, 'BoolExp2', 0, 25, NULL, '{1 2} {not} {CRITICAL} {OR} {1 3} {not} {OK}', 1),"
+                "         (3, 'BoolExp3', 0, 6, NULL, '({1 5} {not} {WARNING} {AND} {1 6} {is} {WARNING}) {OR} {1 7} {is} {CRITICAL}', 1)");
+      QSqlQuery q(db);
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not create boolexps: "
+               << q.lastError().text());
+    }
+    {
+      QString query(
+                "INSERT INTO mod_bam_bool_rel (ba_id, boolean_id)"
+                "  VALUES (9, 1), (9, 2), (9, 3)");
+      QSqlQuery q(db);
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not link boolexps: "
+               << q.lastError().text());
+    }
 
     // Start monitoring engine.
     std::string engine_config_file(engine_config_path);
@@ -261,7 +360,8 @@ int main() {
         { 100.0, 0.0, 0.0 },
         { 100.0, 0.0, 0.0 },
         { 100.0, 0.0, 0.0 },
-        { 100.0, 0.0, 0.0 }
+        { 100.0, 0.0, 0.0 },
+        { 75.0, 0.0, 0.0 }
       };
       check_bas(db, bas, sizeof(bas) / sizeof(*bas));
     }
@@ -287,7 +387,12 @@ int main() {
       check_kpis(db, kpis, sizeof(kpis) / sizeof(*kpis));
     }
     {
-      // XXX : boolean expressions
+      boolexp_state const boolexps[] = {
+        { true },
+        { true },
+        { false }
+      };
+      check_boolexps(db, boolexps, sizeof(boolexps) / sizeof(*boolexps));
     }
 
     // Modify service states.
@@ -311,7 +416,8 @@ int main() {
         // Impacted by BAs.
         { 35.0, 0.0, 0.0 },  // BA2 W  = 65 => W
         { 65.0, 0.0, 0.0 },  // BA3 C  = 35 => O
-        { 15.0, 0.0, 0.0 }   // BA6 W  = 85 => W
+        { 15.0, 0.0, 0.0 },  // BA6 W  = 85 => W
+        { 19.0, 0.0, 0.0 }   // BE1 F  = 75, BE3 T = 6 => W
       };
       check_bas(db, bas, sizeof(bas) / sizeof(*bas));
     }
@@ -337,7 +443,12 @@ int main() {
       check_kpis(db, kpis, sizeof(kpis) / sizeof(*kpis));
     }
     {
-      // XXX : boolean expressions
+      boolexp_state const boolexps[] = {
+        { false },
+        { false },
+        { true }
+      };
+      check_boolexps(db, boolexps, sizeof(boolexps) / sizeof(*boolexps));
     }
 
     // Modify service states.
@@ -360,7 +471,8 @@ int main() {
         // Impacted by BAs.
         { 35.0, 0.0, 0.0 },  // BA2 W  = 65 => W
         { 0.0, 0.0, 0.0 },   // BA3 C  = 35, BA4 C  = 45, BA5 W = 45 => C
-        { 0.0, 0.0, 0.0 }    // BA6 W  = 85 => W, BA7 C = 105 => C
+        { 0.0, 0.0, 0.0 },   // BA6 W  = 85 => W, BA7 C = 105 => C
+        { 0.0, 0.0, 0.0 }    // BE1 F  = 75, BE2 T = 25, BE3 T = 6 => C
       };
       check_bas(db, bas, sizeof(bas) / sizeof(*bas));
     }
@@ -386,10 +498,13 @@ int main() {
       check_kpis(db, kpis, sizeof(kpis) / sizeof(*kpis));
     }
     {
-      // XXX : boolean expressions
+      boolexp_state const boolexps[] = {
+        { false },
+        { true },
+        { true }
+      };
+      check_boolexps(db, boolexps, sizeof(boolexps) / sizeof(*boolexps));
     }
-
-    // XXX
 
     // Success.
     error = false;

@@ -130,8 +130,10 @@ void applier::bool_expression::apply(
          it2 != end2;
          ++it2) {
       misc::shared_ptr<bam::ba> target(my_bas.find_ba(*it2));
-      if (!target.isNull())
+      if (!target.isNull()) {
         target->remove_impact(it->second.obj.staticCast<bam::kpi>());
+        it->second.obj->remove_parent(target.staticCast<bam::computable>());
+      }
     }
     for (std::list<bool_service::ptr>::const_iterator
            it2(it->second.svc.begin()),
@@ -156,7 +158,10 @@ void applier::bool_expression::apply(
       new_bool_exp(new bam::bool_expression);
     {
       bam::bool_parser p(it->get_expression(), mapping);
-      new_bool_exp->set_expression(p.get_tree());
+      bam::bool_value::ptr tree(p.get_tree());
+      new_bool_exp->set_expression(tree);
+      if (!tree.isNull())
+        tree->add_parent(new_bool_exp.staticCast<bam::computable>());
       applied& content(_applied[it->get_id()]);
       content.cfg = *it;
       content.obj = new_bool_exp;
@@ -175,6 +180,8 @@ void applier::bool_expression::apply(
     new_bool_exp->set_impact_hard(it->get_impact());
     new_bool_exp->set_impact_if(it->get_impact_if());
     new_bool_exp->set_impact_soft(it->get_impact());
+    logging::config(logging::medium)
+      << "BAM: creating new boolexp " << it->get_id();
     for (bam::configuration::bool_expression::ids_of_bas::const_iterator
            it2(it->get_impacted_bas().begin()),
            end2(it->get_impacted_bas().end());
@@ -185,7 +192,10 @@ void applier::bool_expression::apply(
         logging::config(logging::high) << "BAM: could not find BA "
           << *it2 << " for boolean expression " << it->get_id()
           << ", BA won't be impacted by this boolean expression";
+      logging::config(logging::low)
+        << "BAM: boolexp " << it->get_id() << " impacts BA " << *it2;
       target->add_impact(new_bool_exp.staticCast<bam::kpi>());
+      new_bool_exp->add_parent(target.staticCast<bam::computable>());
     }
   }
 

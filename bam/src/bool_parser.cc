@@ -116,6 +116,8 @@ bool_value::ptr bool_parser::_make_boolean_exp() {
     bool_value::ptr right_term(_make_term());
     op->set_left(result);
     op->set_right(right_term);
+    result->add_parent(op.staticCast<bam::computable>());
+    right_term->add_parent(op.staticCast<bam::computable>());
     result = op.staticCast<bool_value>();
     op = _make_op();
   }
@@ -140,9 +142,9 @@ bool_value::ptr bool_parser::_make_host_service_state() {
            << "service must be expressed as {HOST SERVICE}");
   std::string hst(hst_svc.substr(0, split));
   std::string svc(hst_svc.substr(split + 1));
-  unsigned int host_id(_mapping.get_host_id(hst));
-  unsigned int service_id(_mapping.get_service_id(svc));
-  if (!host_id || !service_id)
+  std::pair<unsigned int, unsigned int>
+    ids(_mapping.get_service_id(hst, svc));
+  if (!ids.first || !ids.second)
     throw (exceptions::msg()
            << "could not find ID of service '" << svc
            << "' or of host '" << hst << "'");
@@ -155,8 +157,8 @@ bool_value::ptr bool_parser::_make_host_service_state() {
 
   // Create object.
   bool_service::ptr ret(new bool_service);
-  ret->set_host_id(host_id);
-  ret->set_service_id(service_id);
+  ret->set_host_id(ids.first);
+  ret->set_service_id(ids.second);
   ret->set_value_if_state_match(is_expected);
   ret->set_expected_state(state);
   _services.push_back(ret);

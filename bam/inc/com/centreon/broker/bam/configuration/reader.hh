@@ -27,6 +27,9 @@
 CCB_BEGIN()
 
 namespace               bam {
+  // Forward declaration.
+  class                 hst_svc_mapping;
+
   namespace             configuration {
     /**
      *  @class reader reader.hh "com/centreon/broker/bam/configuration/reader.hh"
@@ -48,6 +51,7 @@ namespace               bam {
       void              _load(state::kpis& kpis);
       void              _load(state::bas& bas);
       void              _load(state::bool_exps& bool_exps);
+      void              _load(bam::hst_svc_mapping& mapping);
 
       QSqlDatabase*     _db;
     };

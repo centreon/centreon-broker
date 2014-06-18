@@ -35,19 +35,21 @@ using namespace com::centreon::broker::bam;
 static std::string trim(std::string const& trim_me) {
   char const* ws(" \t\n\r");
   std::size_t from(trim_me.find_first_not_of(ws));
-  from = ((from == std::string::npos) ? trim_me.size() : from);
+  std::size_t to(trim_me.find_last_not_of(ws));
 
-  std::size_t to(trim_me.find_last_not_of(ws, from));
-  to = ((to == std::string::npos) ? trim_me.size() : to);
-
-  return (trim_me.substr(from, to - from));
+  return (((from == std::string::npos)
+           || (to == std::string::npos))
+          ? std::string()
+          : trim_me.substr(from, to - from + 1));
 }
 
 /**
  *  Constructor.
  */
 bool_tokenizer::bool_tokenizer(std::string const& text)
-  : _pos(_text.begin()), _text(text) {}
+  : _text(text) {
+  _pos = _text.begin();
+}
 
 /**
  *  Copy constructor.

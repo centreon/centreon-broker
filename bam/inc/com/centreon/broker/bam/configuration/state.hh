@@ -30,9 +30,6 @@
 CCB_BEGIN()
 
 namespace              bam {
-  // Forward declaration.
-  class                hst_svc_mapping;
-
   namespace            configuration {
     /**
      *  @class state state.hh "com/centreon/broker/bam/configuration/state.hh"

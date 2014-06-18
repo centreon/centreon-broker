@@ -48,8 +48,9 @@ bool_expression::bool_expression(
 bool_expression::bool_expression(bool_expression const& other)
   : _id(other._id),
     _impact(other._impact),
+    _impacted(other._impacted),
     _expression(other._expression),
-    _impact_if(other._impact) {}
+    _impact_if(other._impact_if) {}
 
 /**
  *  Destructor
@@ -67,6 +68,7 @@ bool_expression& bool_expression::operator=(bool_expression const& other) {
   if (&other != this) {
     _id = other._id;
     _impact = other._impact ;
+    _impacted = other._impacted;
     _expression = other._expression;
     _impact_if = other._impact_if;
   }
