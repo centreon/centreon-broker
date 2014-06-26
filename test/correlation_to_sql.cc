@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -218,6 +218,9 @@ int main() {
     broker.start();
     sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
+    // T0.
+    time_t t0(time(NULL));
+
     // Start monitoring engine.
     std::string engine_config_file(engine_config_path);
     engine_config_file.append("/nagios.cfg");
@@ -344,7 +347,7 @@ int main() {
         ** Host 1.
         */
         // Start = PENDING.
-        { 1, 0, 1, false, t1, t2, 4, true, 0, 0, false },
+        { 1, t0, t1, false, t1, t2, 4, true, 0, 0, false },
         // Step 1 = UP.
         { 1, t1, t2, false, t2, t3, 0, true, 0, 0, false },
         // Step 2 = UNREACHABLE.
@@ -354,7 +357,7 @@ int main() {
         ** Host 2.
         */
         // Start = PENDING.
-        { 2, 0, 1, false, t1, t2, 4, true, 0, 0, false },
+        { 2, t0, t1, false, t1, t2, 4, true, 0, 0, false },
         // Step 1 = UP.
         { 2, t1, t2, false, t2, t3, 0, true, 0, 0, false },
         // Step 2 = DOWNTIME.
@@ -364,21 +367,21 @@ int main() {
         // Step 5 = UNREACHABLE.
         { 2, t4, t5, true, 0, 0, 2, false, t4, t5, true },
 
-        { 3, 0, 1, false, t1, t2, 4, true, 0, 0, false },
+        { 3, t0, t1, false, t1, t2, 4, true, 0, 0, false },
         { 3, t1, t2, true, 0, 0, 0, true, 0, 0, false },
-        { 4, 0, 1, false, t1, t2, 4, true, 0, 0, false },
+        { 4, t0, t1, false, t1, t2, 4, true, 0, 0, false },
         { 4, t1, t2, true, 0, 0, 0, true, 0, 0, false },
-        { 5, 0, 1, false, t1, t2, 4, true, 0, 0, false },
+        { 5, t0, t1, false, t1, t2, 4, true, 0, 0, false },
         { 5, t1, t2, true, 0, 0, 0, true, 0, 0, false },
-        { 6, 0, 1, false, t1, t2, 4, true, 0, 0, false },
+        { 6, t0, t1, false, t1, t2, 4, true, 0, 0, false },
         { 6, t1, t2, true, 0, 0, 0, true, 0, 0, false },
-        { 7, 0, 1, false, t1, t2, 4, true, 0, 0, false },
+        { 7, t0, t1, false, t1, t2, 4, true, 0, 0, false },
         { 7, t1, t2, true, 0, 0, 0, true, 0, 0, false },
-        { 8, 0, 1, false, t1, t2, 4, true, 0, 0, false },
+        { 8, t0, t1, false, t1, t2, 4, true, 0, 0, false },
         { 8, t1, t2, true, 0, 0, 0, true, 0, 0, false },
-        { 9, 0, 1, false, t1, t2, 4, true, 0, 0, false },
+        { 9, t0, t1, false, t1, t2, 4, true, 0, 0, false },
         { 9, t1, t2, true, 0, 0, 0, true, 0, 0, false },
-        { 10, 0, 1, false, t1, t2, 4, true, 0, 0, false },
+        { 10, t0, t1, false, t1, t2, 4, true, 0, 0, false },
         { 10, t1, t2, true, 0, 0, 0, true, 0, 0, false }
       };
 
@@ -474,7 +477,7 @@ int main() {
 	** Service 1-1.
 	*/
 	// Start = UNKNOWN.
-        { 1, 1, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+        { 1, 1, t0, t1, false, t1, t2, 3, true, 0, 0, false },
 	// Step 1 = OK.
         { 1, 1, t1, t2, false, t2, t3, 0, true, 0, 0, false },
 	// Step 2 = WARNING.
@@ -486,7 +489,7 @@ int main() {
 	** Service 1-2.
 	*/
 	// Start = UNKNOWN.
-        { 1, 2, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+        { 1, 2, t0, t1, false, t1, t2, 3, true, 0, 0, false },
 	// Step 1 = OK.
         { 1, 2, t1, t2, false, t2, t3, 0, true, 0, 0, false },
 	// Step 2 = CRITICAL, step 3 = ACK (STICKY), step 4 = WARNING.
@@ -496,7 +499,7 @@ int main() {
 	** Service 2-3.
 	*/
 	// Start = UNKNOWN.
-	{ 2, 3, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 2, 3, t0, t1, false, t1, t2, 3, true, 0, 0, false },
 	// Step 1 = OK.
 	{ 2, 3, t1, t2, false, t2, t3, 0, true, 0, 0, false },
         // Step 2 = CRITICAL, step 3 = ACK (STICKY).
@@ -506,7 +509,7 @@ int main() {
 	** Service 2-4.
 	*/
 	// Start = UNKNOWN.
-	{ 2, 4, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 2, 4, t0, t1, false, t1, t2, 3, true, 0, 0, false },
 	// Step 1 = OK.
 	{ 2, 4, t1, t2, false, t2, t3, 0, true, 0, 0, false },
 	// Step 2 = WARNING, step 3 = ACK (NORMAL).
@@ -514,52 +517,52 @@ int main() {
 	// Step 4 = DOWNTIME.
 	{ 2, 4, t4, t5, true, 0, 0, 3, false, t4, t5, true },
 
-	{ 3, 5, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 3, 5, t0, t1, false, t1, t2, 3, true, 0, 0, false },
 	{ 3, 5, t1, t2, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 3, 6, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 3, 6, t0, t1, false, t1, t2, 3, true, 0, 0, false },
 	{ 3, 6, t1, t2, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 4, 7, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 4, 7, t0, t1, false, t1, t2, 3, true, 0, 0, false },
 	{ 4, 7, t1, t2, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 4, 8, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 4, 8, t0, t1, false, t1, t2, 3, true, 0, 0, false },
 	{ 4, 8, t1, t2, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 5, 9, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 5, 9, t0, t1, false, t1, t2, 3, true, 0, 0, false },
 	{ 5, 9, t1, t2, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 5, 10, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 5, 10, t0, t1, false, t1, t2, 3, true, 0, 0, false },
 	{ 5, 10, t1, t2, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 6, 11, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 6, 11, t0, t1, false, t1, t2, 3, true, 0, 0, false },
 	{ 6, 11, t1, t2, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 6, 12, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 6, 12, t0, t1, false, t1, t2, 3, true, 0, 0, false },
 	{ 6, 12, t1, t2, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 7, 13, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 7, 13, t0, t1, false, t1, t2, 3, true, 0, 0, false },
 	{ 7, 13, t1, t2, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 7, 14, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 7, 14, t0, t1, false, t1, t2, 3, true, 0, 0, false },
 	{ 7, 14, t1, t2, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 8, 15, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 8, 15, t0, t1, false, t1, t2, 3, true, 0, 0, false },
 	{ 8, 15, t1, t2, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 8, 16, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 8, 16, t0, t1, false, t1, t2, 3, true, 0, 0, false },
 	{ 8, 16, t1, t2, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 9, 17, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 9, 17, t0, t1, false, t1, t2, 3, true, 0, 0, false },
 	{ 9, 17, t1, t2, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 9, 18, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 9, 18, t0, t1, false, t1, t2, 3, true, 0, 0, false },
 	{ 9, 18, t1, t2, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 10, 19, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 10, 19, t0, t1, false, t1, t2, 3, true, 0, 0, false },
 	{ 10, 19, t1, t2, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 10, 20, 0, 1, false, t1, t2, 3, true, 0, 0, false },
+	{ 10, 20, t0, t1, false, t1, t2, 3, true, 0, 0, false },
 	{ 10, 20, t1, t2, true, 0, 0, 0, true, 0, 0, false }
       };
 
@@ -688,7 +691,7 @@ int main() {
   ::remove(broker_correlation_path.c_str());
   ::remove(cbmod_config_path.c_str());
   ::remove(cbmod_correlation_path.c_str());
-  //config_db_close(DB_NAME);
+  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
 

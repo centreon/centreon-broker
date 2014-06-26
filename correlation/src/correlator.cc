@@ -542,6 +542,8 @@ void correlator::_correlate_host_service_status(
   }
 
   time_t now(hss.last_check);
+  if (!now)
+    now = hss.last_update;
   unsigned short old_state(n->state);
   bool state_changed(n->state != hss.current_state);
   if (state_changed

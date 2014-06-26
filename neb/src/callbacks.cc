@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -1293,7 +1293,7 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->last_time_down = h->last_time_down;
     my_host->last_time_unreachable = h->last_time_unreachable;
     my_host->last_time_up = h->last_time_up;
-    my_host->last_update = h->last_state_history_update;
+    my_host->last_update = time(NULL);
     my_host->latency = h->latency;
     my_host->low_flap_threshold = h->low_flap_threshold;
     my_host->max_check_attempts = h->max_attempts;
@@ -2033,7 +2033,7 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->last_time_ok = s->last_time_ok;
     my_service->last_time_unknown = s->last_time_unknown;
     my_service->last_time_warning = s->last_time_warning;
-    my_service->last_update = time(NULL); // XXX
+    my_service->last_update = time(NULL);
     my_service->latency = s->latency;
     my_service->low_flap_threshold = s->low_flap_threshold;
     my_service->max_check_attempts = s->max_attempts;
