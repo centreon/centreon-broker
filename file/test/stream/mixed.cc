@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -88,7 +88,7 @@ static int write_some(file::stream& f, unsigned int count) {
     snprintf(buffer, sizeof(buffer) - 1, "%u\n", written);
     misc::shared_ptr<io::raw> data(new io::raw);
     data->append(buffer);
-    f.write(data.staticCast<io::data>());
+    f.write(data);
   }
   return (0);
 }

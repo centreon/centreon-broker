@@ -69,7 +69,7 @@ int main() {
       ss->state_type = 1;
       ss->current_state = 2;
       ss->last_check = 123456789;
-      c.write(ss.staticCast<io::data>());
+      c.write(ss);
     }
     { // #2
       misc::shared_ptr<neb::acknowledgement>
@@ -79,7 +79,7 @@ int main() {
       ack->service_id = 24;
       ack->entry_time = 123456790;
       ack->is_sticky = false;
-      c.write(ack.staticCast<io::data>());
+      c.write(ack);
     }
     { // #3
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
@@ -89,7 +89,7 @@ int main() {
       ss->state_type = 1;
       ss->current_state = 1;
       ss->last_check = 123456791;
-      c.write(ss.staticCast<io::data>());
+      c.write(ss);
     }
     { // #4
       misc::shared_ptr<neb::acknowledgement>
@@ -99,7 +99,7 @@ int main() {
       ack->service_id = 24;
       ack->entry_time = 123456792;
       ack->is_sticky = true;
-      c.write(ack.staticCast<io::data>());
+      c.write(ack);
     }
     { // #5
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
@@ -110,7 +110,7 @@ int main() {
       ss->current_state = 2;
       ss->last_check = 123456793;
       ss->problem_has_been_acknowledged = true;
-      c.write(ss.staticCast<io::data>());
+      c.write(ss);
     }
     { // #6
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
@@ -120,7 +120,7 @@ int main() {
       ss->state_type = 1;
       ss->current_state = 0;
       ss->last_check = 123456794;
-      c.write(ss.staticCast<io::data>());
+      c.write(ss);
     }
     { // #7
       misc::shared_ptr<neb::acknowledgement>
@@ -129,7 +129,7 @@ int main() {
       ack->instance_id = 1;
       ack->service_id = 24;
       ack->entry_time = 123456795;
-      c.write(ack.staticCast<io::data>());
+      c.write(ack);
     }
     { // #8
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
@@ -139,7 +139,7 @@ int main() {
       ss->state_type = 1;
       ss->current_state = 1;
       ss->last_check = 123456796;
-      c.write(ss.staticCast<io::data>());
+      c.write(ss);
     }
 
     // Check correlation content.

@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -193,7 +193,7 @@ misc::shared_ptr<io::stream> connector::_open(
         welcome_packet(new version_response);
       if (_negociate)
         welcome_packet->extensions = _extensions;
-      bbdo_stream->output::write(welcome_packet.staticCast<io::data>());
+      bbdo_stream->output::write(welcome_packet);
       bbdo_stream->output::write(misc::shared_ptr<io::data>());
 
       // Version packet (first packet).
@@ -263,6 +263,6 @@ misc::shared_ptr<io::stream> connector::_open(
       }
     }
   }
-  stream = bbdo_stream.staticCast<io::stream>();
+  stream = bbdo_stream;
   return (stream);
 }

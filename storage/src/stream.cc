@@ -449,7 +449,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
         status->is_for_rebuild = false;
         status->rrd_len = rrd_len;
         status->state = ss->last_hard_state;
-        multiplexing::publisher().write(status.staticCast<io::data>());
+        multiplexing::publisher().write(status);
 
         if (!ss->perf_data.isEmpty()) {
           // Parse perfdata.
@@ -521,7 +521,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
                 << perf->metric_id << " (name " << perf->name
                 << ", ctime " << perf->ctime << ", value "
                 << perf->value << ")";
-              multiplexing::publisher().write(perf.staticCast<io::data>());
+              multiplexing::publisher().write(perf);
             }
           }
         }
@@ -621,7 +621,7 @@ void stream::_check_deleted_index() {
     misc::shared_ptr<remove_graph> rg(new remove_graph);
     rg->id = index_id;
     rg->is_index = true;
-    multiplexing::publisher().write(rg.staticCast<io::data>());
+    multiplexing::publisher().write(rg);
   }
 
   // Search standalone metrics to delete.
@@ -709,7 +709,7 @@ void stream::_delete_metrics(
     misc::shared_ptr<remove_graph> rg(new remove_graph);
     rg->id = metric_id;
     rg->is_index = false;
-    multiplexing::publisher().write(rg.staticCast<io::data>());
+    multiplexing::publisher().write(rg);
   }
 
   return ;

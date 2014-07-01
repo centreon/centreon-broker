@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -140,7 +140,7 @@ misc::shared_ptr<io::stream> connector::open() {
   // Return stream.
   misc::shared_ptr<stream> s(new stream(_socket, _mutex));
   s->set_timeout(_timeout);
-  return (s.staticCast<io::stream>());
+  return (s);
 }
 
 /**

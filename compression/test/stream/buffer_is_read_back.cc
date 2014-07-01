@@ -82,14 +82,14 @@ int main() {
   // Compression stream.
   misc::shared_ptr<fake_stream> fs(new fake_stream);
   compression::stream cs(-1, 40000);
-  cs.read_from(fs.staticCast<io::stream>());
-  cs.write_to(fs.staticCast<io::stream>());
+  cs.read_from(fs);
+  cs.write_to(fs);
 
   // Write data to compression stream.
   {
     misc::shared_ptr<io::raw> data(new io::raw);
     data->append("0123456789abcdefghijklmnopqrstuvwxyz");
-    cs.write(data.staticCast<io::data>());
+    cs.write(data);
   }
 
   // Read data back and check it.

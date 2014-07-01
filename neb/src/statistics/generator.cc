@@ -246,7 +246,7 @@ void generator::run() {
     }
 
     // Send event.
-    gl_publisher.write(ss.staticCast<io::data>());
+    gl_publisher.write(ss);
   }
   return ;
 }

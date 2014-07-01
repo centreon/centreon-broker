@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -106,7 +106,7 @@ void stream::read(misc::shared_ptr<io::data>& d) {
     throw (exceptions::msg() << "TLS: could not receive data: "
            << gnutls_strerror(ret));
   buffer->resize(ret);
-  d = buffer.staticCast<io::data>();
+  d = buffer;
 
   return ;
 }
@@ -197,7 +197,7 @@ unsigned int stream::write_encrypted(
                        unsigned int size) {
   misc::shared_ptr<io::raw> r(new io::raw);
   r->append(static_cast<char const*>(buffer), size);
-  _from->write(r.staticCast<io::data>());
+  _from->write(r);
   _from->write(misc::shared_ptr<io::data>());
   return (size);
 }

@@ -73,11 +73,11 @@ int main() {
     misc::shared_ptr<file::stream>
       fs(new file::stream(filename.toStdString()));
     compression::stream cs(-1, 40000);
-    cs.write_to(fs.staticCast<io::stream>());
+    cs.write_to(fs);
 
     // Write data in file.
     for (unsigned int i(0); i < 1000000; ++i)
-      cs.write(data.staticCast<io::data>());
+      cs.write(data);
   }
 
   // Return value.
@@ -95,7 +95,7 @@ int main() {
     misc::shared_ptr<file::stream>
       fs(new file::stream(filename.toStdString()));
     compression::stream cs(-1);
-    cs.read_from(fs.staticCast<io::stream>());
+    cs.read_from(fs);
 
     // Compare data read with data written.
     unsigned int bufferc(0);

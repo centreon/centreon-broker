@@ -76,7 +76,7 @@ failover::failover(
       misc::shared_ptr<multiplexing::subscriber>
         subscr(new multiplexing::subscriber(name));
       subscr->set_filters(filters);
-      _from = subscr.staticCast<io::stream>();
+      _from = subscr;
     }
   }
   else
@@ -731,7 +731,7 @@ void failover::set_failover(misc::shared_ptr<failover> fo) {
   _failover = fo;
   if (!fo.isNull() && _is_out) { // failover object will act as input for output threads.
     QWriteLocker lock(&_fromm);
-    _from = _failover.staticCast<io::stream>();
+    _from = _failover;
   }
   return ;
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -68,7 +68,8 @@ namespace             misc {
      *
      *  @param[in] right Object to copy.
      */
-                      shared_ptr(shared_ptr<T> const& right) {
+    template <typename U>
+                      shared_ptr(shared_ptr<U> const& right) {
       // Copy data.
       _internal_copy(right);
 
@@ -96,8 +97,9 @@ namespace             misc {
      *
      *  @return This object.
      */
-    shared_ptr<T>&    operator=(shared_ptr<T> const& right) {
-      if (this != &right) {
+    template <typename U>
+    shared_ptr<T>&    operator=(shared_ptr<U> const& right) {
+      if (_ptr != right._ptr) {
         // Clear self.
         clear();
 
@@ -222,7 +224,8 @@ namespace             misc {
      *
      *  @param[in] right Object to copy.
      */
-    void              _internal_copy(shared_ptr<T> const& right) {
+    template <typename U>
+    void              _internal_copy(shared_ptr<U> const& right) {
       _mtx = right._mtx;
       _ptr = right._ptr;
       _refs = right._refs;

@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -278,7 +278,7 @@ unsigned int output::write(misc::shared_ptr<io::data> const& e) {
         logging::debug(logging::medium) << "BBDO: event of type '"
           << event_type << "' successfully serialized in "
           << data->size() << " bytes";
-        _to->write(data.staticCast<io::data>());
+        _to->write(data);
         break ;
       }
   }

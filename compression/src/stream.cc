@@ -118,7 +118,7 @@ void stream::read(misc::shared_ptr<io::data>& data) {
         logging::debug(logging::low) << "compression: " << this
           << " uncompressed " << size + 4 << " bytes to " << r->size()
           << " bytes";
-        data = r.staticCast<io::data>();
+        data = r;
         _rbuffer.remove(0, size + 4);
       }
       else
@@ -131,7 +131,7 @@ void stream::read(misc::shared_ptr<io::data>& data) {
     if (!_wbuffer.isEmpty()) {
       misc::shared_ptr<io::raw> r(new io::raw);
       *static_cast<QByteArray*>(r.data()) = _wbuffer;
-      data = r.staticCast<io::data>();
+      data = r;
       _wbuffer.clear();
     }
     else
@@ -216,7 +216,7 @@ void stream::_flush() {
       compressed->prepend(buffer[i]);
 
     // Send compressed data.
-    _to->write(compressed.staticCast<io::data>());
+    _to->write(compressed);
   }
 
   return ;

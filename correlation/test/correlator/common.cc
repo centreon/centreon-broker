@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -42,7 +42,7 @@ void add_engine_state(
   misc::shared_ptr<correlation::engine_state>
     es(new correlation::engine_state);
   es->started = started;
-  content.push_back(es.staticCast<io::data>());
+  content.push_back(es);
   return ;
 }
 
@@ -72,7 +72,7 @@ void add_issue(
   i->service_id = service_id;
   i->start_time = start_time;
   i->instance_id = instance_id;
-  content.push_back(i.staticCast<io::data>());
+  content.push_back(i);
   return ;
 }
 
@@ -115,7 +115,7 @@ void add_issue_parent(
   ip->parent_service_id = parent_service_id;
   ip->parent_start_time = parent_start_time;
   ip->start_time = start_time;
-  content.push_back(ip.staticCast<io::data>());
+  content.push_back(ip);
   return ;
 }
 
@@ -149,7 +149,7 @@ void add_state_host(
   s->instance_id = instance_id;
   s->in_downtime = in_downtime;
   s->start_time = start_time;
-  content.push_back(s.staticCast<io::data>());
+  content.push_back(s);
   return ;
 }
 
@@ -186,7 +186,7 @@ void add_state_service(
   s->in_downtime = in_downtime;
   s->service_id = service_id;
   s->start_time = start_time;
-  content.push_back(s.staticCast<io::data>());
+  content.push_back(s);
   return ;
 }
 

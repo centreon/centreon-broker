@@ -109,7 +109,7 @@ void generator::run() {
         d->instance_id = _instance_id;
         d->tag = _tag.c_str();
         multiplexing::publisher p;
-        p.write(d.staticCast<io::data>());
+        p.write(d);
       }
 
       // Send RRD events.
@@ -141,7 +141,7 @@ void generator::run() {
             ss->output = it2->second.get_output().c_str();
             ss->perf_data = it2->second.get_perfdata().c_str();
             multiplexing::publisher p;
-            p.write(ss.staticCast<io::data>());
+            p.write(ss);
           }
         }
       }
