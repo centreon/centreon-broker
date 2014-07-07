@@ -69,8 +69,8 @@ namespace             misc {
      *  @param[in] right Object to copy.
      */
                       shared_ptr(shared_ptr<T> const& right) {
-      _shared_ptr_copy(right);
-     }
+      _internal_copy(right);
+    }
 
     /**
      *  Copy constructor.
@@ -79,7 +79,7 @@ namespace             misc {
      */
     template <typename U>
                       shared_ptr(shared_ptr<U> const& right) {
-      _shared_ptr_copy(right);
+      _internal_copy(right);
     }
 
     /**
@@ -101,10 +101,8 @@ namespace             misc {
     */
     shared_ptr<T>&    operator=(shared_ptr<T> const& right) {
       if (_ptr != right._ptr) {
-        // Clear self.
         clear();
-
-        _shared_ptr_copy(right);
+        _internal_copy(right);
       }
       return (*this);
     }
@@ -119,10 +117,8 @@ namespace             misc {
     template <typename U>
     shared_ptr<T>&    operator=(shared_ptr<U> const& right) {
       if (_ptr != right._ptr) {
-        // Clear self.
         clear();
-
-        _shared_ptr_copy(right);
+        _internal_copy(right);
       }
       return (*this);
     }
@@ -232,33 +228,23 @@ namespace             misc {
 
   private:
     /**
-     *  Perform a copy of another shared_ptr
-     *
-     *  @param[in]  right Object to copy
-     */
-    template <typename U>
-    void              _shared_ptr_copy(shared_ptr<U> const& right)
-    {
-      // Copy data.
-      _internal_copy(right);
-
-      // Increase reference count.
-      if (_ptr) {
-        QMutexLocker ref_lock(_mtx);
-        ++*_refs;
-      }
-    }
-
-    /**
      *  Copy internal data members.
      *
      *  @param[in] right Object to copy.
      */
     template <typename U>
     void              _internal_copy(shared_ptr<U> const& right) {
+      // Copy data.
       _mtx = right._mtx;
       _ptr = right._ptr;
       _refs = right._refs;
+
+      // Increase reference count.
+      if (_ptr) {
+        QMutexLocker ref_lock(_mtx);
+        ++*_refs;
+      }
+
       return ;
     }
 
