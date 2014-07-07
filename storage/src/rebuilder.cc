@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cfloat>
 #include <ctime>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -398,8 +399,12 @@ void rebuilder::_rebuild_metric(
         entry->metric_id = metric_id;
         entry->name = metric_name;
         entry->rrd_len = length;
-        entry->value = data_bin_query.value(1).toDouble();
         entry->value_type = metric_type;
+        entry->value = data_bin_query.value(1).toDouble();
+        if (entry->value > DBL_MAX * 0.999)
+          entry->value = DBL_MAX;
+        else if (entry->value < DBL_MIN * 0.999)
+          entry->value = DBL_MIN;
         multiplexing::publisher().write(entry.staticCast<io::data>());
       }
     else
