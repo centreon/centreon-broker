@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -396,7 +396,7 @@ unsigned int output::write(misc::shared_ptr<io::data> const& e) {
   // Send data.
   misc::shared_ptr<io::raw> data(new io::raw);
   data->append(buffer.str().c_str());
-  _to->write(data.staticCast<io::data>());
+  _to->write(data);
   logging::debug(logging::medium) << "NDO: data successfully sent";
 
   return (1);

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -120,7 +120,7 @@ namespace correlation {
             crltr(new correlation::correlator(cfg.instance_id(), is_passive));
           try {
             crltr->load(correlation_file, retention_file);
-            correlation::obj = crltr.staticCast<multiplexing::hooker>();
+            correlation::obj = crltr;
             multiplexing::engine::instance().hook(*correlation::obj);
             loaded = true;
           }

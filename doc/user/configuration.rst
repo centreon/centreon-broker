@@ -262,46 +262,46 @@ Common Options
 This table lists all options that can be specified on every endpoint.
 Note that some of them might be useless on some endpoint types.
 
-================= =============================== ======================
-Option            Description                     Example
-================= =============================== ======================
-buffering_timeout Number of seconds to wait       ::
-                  before launching the endpoint
-                  *failover*.                       <buffering_timeout>
-                                                      10
-                                                    </buffering_timeout>
-filters           This parameter is used by       ::
-  category        endpoint to skip usless events
-                  for a specific endpoint.          <filters>
-                  The filtering is base on            <category>
-                  category (neb, storage,               neb
-                  correlation).                       </category>
-                                                      <category>
-                                                        storage
-                                                      </storage>
-                                                    </filters>
-name              An optional name, mostly used   ::
-                  to identify a *failover*.
-                                                    <name>
-                                                      MyEndpoint
-                                                    </name>
-read_timeout      This parameter is used by some
-                  output endpoints to take some   ::
-                  action after an inactivity of
-                  specified seconds. For example    <read_timeout>
-                  the *SQL* module will commit        10
-                  its current transaction, the      </read_timeout>
-                  *compression* module will
-                  compress data without waiting
-                  for a full buffer, ...
-retry_interval    Number of seconds to wait       ::
-                  between two reconnections to
-                  the same endpoint.                <retry_interval>
-                                                      60
-                                                    </retry_interval>
-type              Endpoint type, as specified
-                  by modules.
-================= =============================== ======================
+================== =============================== ======================
+Option             Description                     Example
+================== =============================== ======================
+buffering_timeout  Number of seconds to wait       ::
+                   before launching the endpoint
+                   *failover*.                       <buffering_timeout>
+                                                       10
+                                                     </buffering_timeout>
+filters (category) This parameter is used by       ::
+                   endpoint to skip usless events
+                   for a specific endpoint.          <filters>
+                   The filtering is base on            <category>
+                   category (neb, storage,               neb
+                   correlation).                       </category>
+                                                       <category>
+                                                         storage
+                                                       </storage>
+                                                     </filters>
+name               An optional name, mostly used   ::
+                   to identify a *failover*.
+                                                     <name>
+                                                       MyEndpoint
+                                                     </name>
+read_timeout       This parameter is used by some
+                   output endpoints to take some   ::
+                   action after an inactivity of
+                   specified seconds. For example    <read_timeout>
+                   the *SQL* module will commit        10
+                   its current transaction, the      </read_timeout>
+                   *compression* module will
+                   compress data without waiting
+                   for a full buffer, ...
+retry_interval     Number of seconds to wait       ::
+                   between two reconnections to
+                   the same endpoint.                <retry_interval>
+                                                       60
+                                                     </retry_interval>
+type               Endpoint type, as specified
+                   by modules.
+================== =============================== ======================
 
 Configuration File
 ==================

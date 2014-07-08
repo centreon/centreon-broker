@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -65,7 +65,7 @@ int main() {
       ss->current_state = 2;
       ss->last_check = 123456789;
       ss->last_update = 123456789;
-      c.write(ss.staticCast<io::data>());
+      c.write(ss);
     }
     { // #2
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
@@ -77,7 +77,7 @@ int main() {
       ss->last_check = 123456790;
       ss->last_update = 123456790;
       ss->scheduled_downtime_depth = 1;
-      c.write(ss.staticCast<io::data>());
+      c.write(ss);
     }
     { // #3
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
@@ -88,7 +88,7 @@ int main() {
       ss->current_state = 0;
       ss->last_check = 123456791;
       ss->last_update = 123456791;
-      c.write(ss.staticCast<io::data>());
+      c.write(ss);
     }
     { // #4
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
@@ -100,7 +100,7 @@ int main() {
       ss->last_check = 123456792;
       ss->last_update = 123456792;
       ss->scheduled_downtime_depth = 1;
-      c.write(ss.staticCast<io::data>());
+      c.write(ss);
     }
     { // #5
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
@@ -112,7 +112,7 @@ int main() {
       ss->last_check = 123456793;
       ss->last_update = 123456793;
       ss->scheduled_downtime_depth = 1;
-      c.write(ss.staticCast<io::data>());
+      c.write(ss);
     }
     { // #6
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
@@ -124,7 +124,7 @@ int main() {
       ss->last_check = 123456794;
       ss->last_update = 123456794;
       ss->scheduled_downtime_depth = 1;
-      c.write(ss.staticCast<io::data>());
+      c.write(ss);
     }
     { // #7
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
@@ -136,7 +136,7 @@ int main() {
       ss->last_check = 123456795;
       ss->last_update = 123456795;
       ss->scheduled_downtime_depth = 0;
-      c.write(ss.staticCast<io::data>());
+      c.write(ss);
     }
 
     // Check correlation content.

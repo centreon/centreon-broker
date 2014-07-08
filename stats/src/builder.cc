@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -267,12 +267,14 @@ void builder::_generate_stats_for_endpoint(
           buffer.append("replaying\n");
           io::properties p;
           (*first_s)->statistics(p);
+          tree.merge(p);
           _serialize(buffer, p);
         }
         else {
           buffer.append("connected\n");
           io::properties p;
           (*first_s)->statistics(p);
+          tree.merge(p);
           _serialize(buffer, p);
         }
       }
@@ -297,6 +299,7 @@ void builder::_generate_stats_for_endpoint(
       if (!second_s->isNull()) {
         io::properties p;
         (*second_s)->statistics(p);
+        tree.merge(p);
         _serialize(buffer, p);
       }
     }
@@ -315,6 +318,7 @@ void builder::_generate_stats_for_endpoint(
     if (!fo->_endpoint.isNull()) {
       io::properties p;
       fo->_endpoint->stats(p);
+      tree.merge(p);
       _serialize(buffer, p);
     }
 

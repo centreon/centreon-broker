@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -34,7 +34,7 @@
 using namespace com::centreon::broker;
 
 #define TEMP_FILE_NAME "broker_compression_stream_io.tmp"
-#include <iostream>
+
 /**
  *  Check that compression works properly.
  *
@@ -62,7 +62,7 @@ int main() {
   filename.append("/" TEMP_FILE_NAME);
 
   // Remove old file.
-  QFile::remove(filename);
+  ::remove(qPrintable(filename));
 
   // Generate data packet.
   misc::shared_ptr<io::raw> data(new io::raw);
@@ -73,11 +73,11 @@ int main() {
     misc::shared_ptr<file::stream>
       fs(new file::stream(filename.toStdString()));
     compression::stream cs(-1, 40000);
-    cs.write_to(fs.staticCast<io::stream>());
+    cs.write_to(fs);
 
     // Write data in file.
     for (unsigned int i(0); i < 1000000; ++i)
-      cs.write(data.staticCast<io::data>());
+      cs.write(data);
   }
 
   // Return value.
@@ -95,7 +95,7 @@ int main() {
     misc::shared_ptr<file::stream>
       fs(new file::stream(filename.toStdString()));
     compression::stream cs(-1);
-    cs.read_from(fs.staticCast<io::stream>());
+    cs.read_from(fs);
 
     // Compare data read with data written.
     unsigned int bufferc(0);

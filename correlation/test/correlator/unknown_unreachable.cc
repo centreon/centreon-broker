@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -78,7 +78,7 @@ int main() {
       ss->state_type = 1;
       ss->current_state = 2;
       ss->last_check = 123456789;
-      c.write(ss.staticCast<io::data>());
+      c.write(ss);
     }
     { // #2
       misc::shared_ptr<neb::host_status> hs(new neb::host_status);
@@ -87,7 +87,7 @@ int main() {
       hs->state_type = 1;
       hs->current_state = 1;
       hs->last_check = 123456790;
-      c.write(hs.staticCast<io::data>());
+      c.write(hs);
     }
     { // #3
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
@@ -97,7 +97,7 @@ int main() {
       ss->state_type = 1;
       ss->current_state = 2;
       ss->last_check = 123456791;
-      c.write(ss.staticCast<io::data>());
+      c.write(ss);
     }
     { // #4
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
@@ -107,7 +107,7 @@ int main() {
       ss->state_type = 1;
       ss->current_state = 1;
       ss->last_check = 123456792;
-      c.write(ss.staticCast<io::data>());
+      c.write(ss);
     }
     { // #5
       misc::shared_ptr<neb::host_status> hs(new neb::host_status);
@@ -116,7 +116,7 @@ int main() {
       hs->state_type = 1;
       hs->current_state = 1;
       hs->last_check = 123456793;
-      c.write(hs.staticCast<io::data>());
+      c.write(hs);
     }
     { // #6
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
@@ -126,7 +126,7 @@ int main() {
       ss->state_type = 1;
       ss->current_state = 0;
       ss->last_check = 123456794;
-      c.write(ss.staticCast<io::data>());
+      c.write(ss);
     }
 
     // Check correlation content.

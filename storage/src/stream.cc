@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cfloat>
 #include <cmath>
 #include <cstdlib>
 #include <QSqlDriver>
@@ -448,7 +449,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
         status->is_for_rebuild = false;
         status->rrd_len = rrd_len;
         status->state = ss->last_hard_state;
-        multiplexing::publisher().write(status.staticCast<io::data>());
+        multiplexing::publisher().write(status);
 
         if (!ss->perf_data.isEmpty()) {
           // Parse perfdata.
@@ -520,7 +521,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
                 << perf->metric_id << " (name " << perf->name
                 << ", ctime " << perf->ctime << ", value "
                 << perf->value << ")";
-              multiplexing::publisher().write(perf.staticCast<io::data>());
+              multiplexing::publisher().write(perf);
             }
           }
         }
@@ -620,7 +621,7 @@ void stream::_check_deleted_index() {
     misc::shared_ptr<remove_graph> rg(new remove_graph);
     rg->id = index_id;
     rg->is_index = true;
-    multiplexing::publisher().write(rg.staticCast<io::data>());
+    multiplexing::publisher().write(rg);
   }
 
   // Search standalone metrics to delete.
@@ -708,7 +709,7 @@ void stream::_delete_metrics(
     misc::shared_ptr<remove_graph> rg(new remove_graph);
     rg->id = metric_id;
     rg->is_index = false;
-    multiplexing::publisher().write(rg.staticCast<io::data>());
+    multiplexing::publisher().write(rg);
   }
 
   return ;
@@ -1059,7 +1060,14 @@ void stream::_insert_perfdatas() {
       query << std::fixed
             << "INSERT INTO data_bin (id_metric, ctime, status, value)"
                " VALUES (" << mv.metric_id << ", " << mv.c_time << ", "
-            << mv.status << ", " << mv.value << ")";
+            << mv.status << ", ";
+      if (isinf(mv.value))
+        query << ((mv.value > 0) ? DBL_MAX : DBL_MIN);
+      else if (isnan(mv.value))
+        query << "NULL";
+      else
+        query << mv.value;
+      query << ")";
       _perfdata_queue.pop_front();
     }
 
@@ -1067,7 +1075,14 @@ void stream::_insert_perfdatas() {
     while (!_perfdata_queue.empty()) {
       metric_value& mv(_perfdata_queue.front());
       query << ", (" << mv.metric_id << ", " << mv.c_time << ", "
-            << mv.status << ", " << mv.value << ")";
+            << mv.status << ", ";
+      if (isinf(mv.value))
+        query << ((mv.value > 0.0) ? DBL_MAX : DBL_MIN);
+      else if (isnan(mv.value))
+        query << "NULL";
+      else
+        query << mv.value;
+      query << ")";
       _perfdata_queue.pop_front();
     }
 

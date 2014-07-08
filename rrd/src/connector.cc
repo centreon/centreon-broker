@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -277,7 +277,7 @@ QString connector::_real_path_of(QString const& path) {
 
   // Last slash.
   int last_index(retval.size() - 1);
-  if (retval[last_index] != '/')
+  if (!retval.isEmpty() && (retval[last_index] != '/'))
     retval.append("/");
 
   return (retval);

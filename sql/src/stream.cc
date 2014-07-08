@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -158,6 +158,54 @@ void stream::_clean_tables(int instance_id) {
     ss << "UPDATE " << mapped_type<neb::service_group>::table
        << " SET enabled=0"
        << " WHERE instance_id=" << instance_id;
+    _execute(ss.str().c_str());
+  }
+
+  // Remove host group memberships.
+  {
+    std::ostringstream ss;
+    ss << "DELETE " << mapped_type<neb::host_group_member>::table
+       << " FROM " << mapped_type<neb::host_group_member>::table
+       << " LEFT JOIN " << mapped_type<neb::host>::table
+       << " ON " << mapped_type<neb::host_group_member>::table << ".host_id="
+       << mapped_type<neb::host>::table << ".host_id"
+       << " WHERE " << mapped_type<neb::host>::table
+       << ".instance_id=" << instance_id;
+    _execute(ss.str().c_str());
+  }
+  {
+    std::ostringstream ss;
+    ss << "DELETE " << mapped_type<neb::host_group_member>::table
+       << " FROM " << mapped_type<neb::host_group_member>::table
+       << " LEFT JOIN " << mapped_type<neb::host_group>::table
+       << " ON " << mapped_type<neb::host_group_member>::table << ".hostgroup_id="
+       << mapped_type<neb::host_group>::table << ".hostgroup_id"
+       << " WHERE " << mapped_type<neb::host_group>::table
+       << ".instance_id=" << instance_id;
+    _execute(ss.str().c_str());
+  }
+
+  // Remove service group memberships
+  {
+    std::ostringstream ss;
+    ss << "DELETE " << mapped_type<neb::service_group_member>::table
+       << " FROM " << mapped_type<neb::service_group_member>::table
+       << " LEFT JOIN " << mapped_type<neb::host>::table
+       << " ON " << mapped_type<neb::service_group_member>::table << ".host_id="
+       << mapped_type<neb::host>::table << ".host_id"
+       << " WHERE " << mapped_type<neb::host>::table
+       << ".instance_id=" << instance_id;
+    _execute(ss.str().c_str());
+  }
+  {
+    std::ostringstream ss;
+    ss << "DELETE " << mapped_type<neb::service_group_member>::table
+       << " FROM " << mapped_type<neb::service_group_member>::table
+       << " LEFT JOIN " << mapped_type<neb::service_group>::table
+       << " ON " << mapped_type<neb::service_group_member>::table << ".servicegroup_id="
+       << mapped_type<neb::service_group>::table << ".servicegroup_id"
+       << " WHERE " << mapped_type<neb::service_group>::table
+       << ".instance_id=" << instance_id;
     _execute(ss.str().c_str());
   }
 
@@ -1848,6 +1896,7 @@ void stream::_write_logs() {
 
       // Build insertion query.
       static QString const empty_string("''");
+      static QString const null_string("NULL");
       host_name_field.setValue(le->host_name);
       instance_name_field.setValue(le->instance_name);
       notification_cmd_field.setValue(le->notification_cmd);
@@ -1860,7 +1909,7 @@ void stream::_write_logs() {
       else
         query << "NULL";
       query << ", " << (host_name_field.isNull()
-                        ? empty_string
+                        ? null_string
                         : drivr->formatValue(host_name_field)) << ", "
             << (instance_name_field.isNull()
                 ? empty_string
@@ -1871,17 +1920,17 @@ void stream::_write_logs() {
         query << "NULL";
       query << ", " << le->msg_type << ", "
             << (notification_cmd_field.isNull()
-                ? empty_string
+                ? null_string
                 : drivr->formatValue(notification_cmd_field)) << ", "
             << (notification_contact_field.isNull()
-                ? empty_string
+                ? null_string
                 : drivr->formatValue(notification_contact_field))
             << ", "
             << (output_field.isNull()
                 ? empty_string
                 : drivr->formatValue(output_field)) << ", " << le->retry
             << ", " << (service_description_field.isNull()
-                        ? empty_string
+                        ? null_string
                         : drivr->formatValue(service_description_field))
             << ", ";
       if (le->service_id)

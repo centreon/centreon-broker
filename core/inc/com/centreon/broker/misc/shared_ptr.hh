@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -69,14 +69,17 @@ namespace             misc {
      *  @param[in] right Object to copy.
      */
                       shared_ptr(shared_ptr<T> const& right) {
-      // Copy data.
       _internal_copy(right);
+    }
 
-      // Increase reference count.
-      if (_ptr) {
-        QMutexLocker ref_lock(_mtx);
-        ++*_refs;
-      }
+    /**
+     *  Copy constructor.
+     *
+     *  @param[in] right Object to copy.
+     */
+    template <typename U>
+                      shared_ptr(shared_ptr<U> const& right) {
+      _internal_copy(right);
     }
 
     /**
@@ -90,25 +93,32 @@ namespace             misc {
     }
 
     /**
+    *  Copy another shared pointer.
+    *
+    *  @param[in] right Object to copy.
+    *
+    *  @return This object.
+    */
+    shared_ptr<T>&    operator=(shared_ptr<T> const& right) {
+      if (_ptr != right._ptr) {
+        clear();
+        _internal_copy(right);
+      }
+      return (*this);
+    }
+
+    /**
      *  Copy another shared pointer.
      *
      *  @param[in] right Object to copy.
      *
      *  @return This object.
      */
-    shared_ptr<T>&    operator=(shared_ptr<T> const& right) {
-      if (this != &right) {
-        // Clear self.
+    template <typename U>
+    shared_ptr<T>&    operator=(shared_ptr<U> const& right) {
+      if (_ptr != right._ptr) {
         clear();
-
-        // Copy shared pointer.
         _internal_copy(right);
-
-        // Increase reference count.
-        if (_ptr) {
-          QMutexLocker ref_lock(_mtx);
-          ++*_refs;
-        }
       }
       return (*this);
     }
@@ -222,10 +232,19 @@ namespace             misc {
      *
      *  @param[in] right Object to copy.
      */
-    void              _internal_copy(shared_ptr<T> const& right) {
+    template <typename U>
+    void              _internal_copy(shared_ptr<U> const& right) {
+      // Copy data.
       _mtx = right._mtx;
       _ptr = right._ptr;
       _refs = right._refs;
+
+      // Increase reference count.
+      if (_ptr) {
+        QMutexLocker ref_lock(_mtx);
+        ++*_refs;
+      }
+
       return ;
     }
 

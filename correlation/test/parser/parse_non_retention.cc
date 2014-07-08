@@ -44,10 +44,10 @@ int main() {
     "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
     "<centreonbroker>\n"
     "  <host id=\"13\" since=\"789\" state=\"1\" />\n"
-    "  <host id=\"42\" />\n"
+    "  <host id=\"42\" since=\"0\" />\n"
     "  <service id=\"21\" host=\"13\" since=\"456\" />\n"
-    "  <service id=\"66\" host=\"42\" state=\"3\" />\n"
-    "  <service id=\"33\" host=\"13\" />\n"
+    "  <service id=\"66\" host=\"42\" since=\"0\" state=\"3\" />\n"
+    "  <service id=\"33\" host=\"13\" since=\"0\" />\n"
     "  <service id=\"12\" host=\"42\" since=\"666\" state=\"2\" />\n"
     "  <parent host=\"13\" parent=\"42\" />\n"
     "  <dependency dependent_host=\"13\" dependent_service=\"21\"\n"
@@ -86,6 +86,7 @@ int main() {
     h1.state = 1;
     node& h2(expected[qMakePair(42u, 0u)]);
     h2.host_id = 42;
+    h2.since = 0;
     node& s1(expected[qMakePair(13u, 21u)]);
     s1.host_id = 13;
     s1.service_id = 21;
@@ -93,10 +94,12 @@ int main() {
     node& s2(expected[qMakePair(42u, 66u)]);
     s2.host_id = 42;
     s2.service_id = 66;
+    s2.since = 0;
     s2.state = 3;
     node& s3(expected[qMakePair(13u, 33u)]);
     s3.host_id = 13;
     s3.service_id = 33;
+    s3.since = 0;
     node& s4(expected[qMakePair(42u, 12u)]);
     s4.host_id = 42;
     s4.service_id = 12;

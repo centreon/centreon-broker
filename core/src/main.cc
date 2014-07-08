@@ -47,6 +47,7 @@ using namespace com::centreon::broker;
 
 // Main config file.
 static std::vector<std::string> gl_mainconfigfiles;
+static config::state gl_state;
 
 /**
  *  Function called when updating configuration (when program receives
@@ -64,13 +65,38 @@ static void hup_handler(int signum) {
   logging::config(logging::high)
     << "main: configuration update requested";
 
-  // Parse configuration file.
-  config::parser parsr;
-  config::state conf;
-  parsr.parse(gl_mainconfigfiles.front().c_str(), conf);
+  try {
+    // Parse configuration file.
+    config::parser parsr;
+    config::state conf;
+    parsr.parse(gl_mainconfigfiles.front().c_str(), conf);
 
-  // Apply resulting configuration.
-  config::applier::state::instance().apply(conf);
+    try {
+      // Apply resulting configuration.
+      config::applier::state::instance().apply(conf);
+      gl_state = conf;
+    }
+    catch (std::exception const& e) {
+      logging::error(logging::high) << "main: configuration update "
+        << "could not succeed, reloading previous configuration: "
+        << e.what();
+      config::applier::state::instance().apply(gl_state);
+    }
+    catch (...) {
+      logging::error(logging::high) << "main: configuration update "
+        << "could not succeed, reloading previous configuration";
+      config::applier::state::instance().apply(gl_state);
+    }
+  }
+  catch (std::exception const& e) {
+    logging::config(logging::high)
+      << "main: configuration update failed: "
+      << e.what();
+  }
+  catch (...) {
+    logging::config(logging::high)
+      << "main: configuration update failed: unknown exception";
+  }
 
   // Reenable SIGHUP handler.
   signal(SIGHUP, &hup_handler);
@@ -274,6 +300,7 @@ int main(int argc, char* argv[]) {
 
         // Apply resulting configuration totally or partially.
         config::applier::state::instance().apply(conf, !check);
+        gl_state = conf;
       }
 
       // Set configuration update handler.

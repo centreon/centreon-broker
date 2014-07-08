@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -156,7 +156,7 @@ int main(int argc, char* argv[]) {
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
       ++it;
-      cmd = MY_PLUGIN_PATH " 0 \"DERIVE|d[dérîve]=89588s\\;100000\\;@100:1000\\;\\;inf\"";
+      cmd = MY_PLUGIN_PATH " 0 \"DERIVE|d[dérîve]=inf\\;100000\\;@100:1000\\;\\;-inf\"";
       it->command_line = new char[strlen(cmd) + 1];
       strcpy(it->command_line, cmd);
       ++it;
@@ -379,7 +379,7 @@ int main(int argc, char* argv[]) {
         case 3:
           error = ((metric_name != "dérîve")
                    || (data_source_type != 2)
-                   || (unit_name != "s")
+                   || (unit_name != "")
                    || (fabs(warning - 100000.0) > 100.0)
                    || (fabs(warning_low) > 0.001)
                    || warning_mode
