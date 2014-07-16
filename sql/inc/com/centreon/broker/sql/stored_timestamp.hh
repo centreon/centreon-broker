@@ -25,7 +25,12 @@
 CCB_BEGIN()
 
 namespace sql {
-
+  /**
+   *  @class stored_timestamp stored_timestamp.hh "com/centreon/broker/sql/stored_timestamp.hh"
+   *  @brief Store a timestamp associated to an instance.
+   *
+   *  The instance can be in a responsive or unresponsive state, and its id is stored.
+   */
   class           stored_timestamp {
   public:
     enum          state_type {
