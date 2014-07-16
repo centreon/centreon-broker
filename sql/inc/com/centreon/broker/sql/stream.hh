@@ -119,7 +119,7 @@ namespace        sql {
     void         _write_logs();
     void         _update_timestamp(unsigned int instance_id);
     void         _get_all_outdated_instances_from_db();
-    void         _update_hosts_and_services_of_instances();
+    void         _update_hosts_and_services_of_unresponsive_instances();
     void         _update_hosts_and_services_of_instance(unsigned int id, bool responsive);
 
     static void (stream::* const _correlation_processing_table[])(misc::shared_ptr<io::data> const&);
@@ -178,8 +178,9 @@ namespace        sql {
     bool                        _with_state_events;
     unsigned int                _instance_timeout;
 
-    // Vector sorted by timestamp.
-    std::vector<stored_timestamp> _stored_timestamps;
+    std::map<unsigned int, stored_timestamp>
+                                _stored_timestamps;
+    timestamp                   _oldest_timestamp;
   };
 }
 

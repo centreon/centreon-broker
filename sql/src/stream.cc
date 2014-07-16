@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <ctime>
 #include <QPair>
 #include <QSqlDriver>
 #include <QSqlError>
@@ -1248,10 +1249,6 @@ void stream::_process_instance_status(
     logging::error(logging::medium) << "SQL: instance "
       << is.id << " was not updated because no matching entry "
          "was found in database";
-
-  // Update the timestamp of this instance.
-  _update_timestamp(is.id);
-
   return ;
 }
 
@@ -1962,25 +1959,23 @@ void stream::_update_timestamp(unsigned int instance_id) {
       s(stored_timestamp::responsive);
 
   // Find the state of an existing timestamp of it exists.
-  for (std::vector<stored_timestamp>::iterator
-       it = _stored_timestamps.begin(),
-       end = _stored_timestamps.end(); it != end; ++it) {
-    if (it->get_id() == instance_id) {
-      s = it->get_state();
-      _stored_timestamps.erase(it);
-      break ;
-    }
+  std::map<unsigned int, stored_timestamp>::iterator found =
+      _stored_timestamps.find(instance_id);
+  if (found != _stored_timestamps.end())
+    s = found->second.get_state();
+
+  // Update a suddenly alive instance
+  if (s == stored_timestamp::unresponsive)
+  {
+    _update_hosts_and_services_of_instance(instance_id, true);
+    s = stored_timestamp::responsive;
   }
 
-  // Insert the timestamp and its state in the sorted list.
-  stored_timestamp timestamp(instance_id, s);
-  std::vector<stored_timestamp>::iterator it =
-      _stored_timestamps.begin();
-  for (std::vector<stored_timestamp>::iterator end =
-       _stored_timestamps.end();
-       it != end && it->get_timestamp() < timestamp.get_timestamp();
-       ++it);
-  _stored_timestamps.insert(it, timestamp);
+  // Insert the timestamp and its state in the store.
+  stored_timestamp& timestamp = _stored_timestamps[instance_id];
+  timestamp = stored_timestamp(instance_id, s);
+  if (_oldest_timestamp > timestamp.get_timestamp())
+    _oldest_timestamp = timestamp.get_timestamp();
 }
 
 /**
@@ -1998,53 +1993,40 @@ void stream::_get_all_outdated_instances_from_db() {
       << q.lastError().text();
   else
     while (q.next()) {
-      _stored_timestamps.push_back(stored_timestamp(
-                                            q.value(0).toUInt(),
-                                            stored_timestamp::responsive));
-      _stored_timestamps.back().set_timestamp(
-            timestamp(std::numeric_limits<time_t>::max()));
+      unsigned int instance_id = q.value(0).toUInt();
+      stored_timestamp& ts = _stored_timestamps[instance_id];
+      ts = stored_timestamp(instance_id, stored_timestamp::unresponsive);
+      ts.set_timestamp(timestamp(std::numeric_limits<time_t>::max()));
     }
 }
 
 /**
- *  Update all the hosts and services of the stored instances.
+ *  Update all the hosts and services of unresponsive instances.
  */
-void stream::_update_hosts_and_services_of_instances() {
-  if (_stored_timestamps.size() == 0)
+void stream::_update_hosts_and_services_of_unresponsive_instances() {
+  if (_stored_timestamps.size() == 0 ||
+      std::difftime(std::time(NULL), _oldest_timestamp) <= _instance_timeout)
     return ;
 
-  // _stored_timestamps is a vector sorted by timestamp: search the borders
-  // between responsive and unresponsive timestamp.
-  std::vector<stored_timestamp>::iterator first_unresponsive;
-
-  if (_stored_timestamps.back().timestamp_outdated(_instance_timeout)) {
-    first_unresponsive = _stored_timestamps.end() - 1;
-    for (std::vector<stored_timestamp>::iterator end =
-         _stored_timestamps.begin();
-         first_unresponsive->timestamp_outdated(_instance_timeout) &&
-         first_unresponsive != end;
-         --first_unresponsive);
-  }
-  else
-    first_unresponsive = _stored_timestamps.end();
-
   // Update unresponsive instances which were responsive
-  for (std::vector<stored_timestamp>::iterator it = first_unresponsive,
-       end =_stored_timestamps.end();
-       it != end; ++it) {
-    if (it->get_state() == stored_timestamp::responsive) {
-      it->set_state(stored_timestamp::unresponsive);
-      _update_hosts_and_services_of_instance(it->get_id(), false);
+  for (std::map<unsigned int, stored_timestamp>::iterator it =
+       _stored_timestamps.begin(),
+       end = _stored_timestamps.end(); it != end; ++it) {
+    if (it->second.get_state() == stored_timestamp::responsive &&
+        it->second.timestamp_outdated(_instance_timeout)) {
+      it->second.set_state(stored_timestamp::unresponsive);
+      _update_hosts_and_services_of_instance(it->second.get_id(), false);
     }
   }
 
-  // Update responsive instances which were unresponsive
-  for (std::vector<stored_timestamp>::iterator
-       it = _stored_timestamps.begin(); it != first_unresponsive; ++it) {
-    if (it->get_state() == stored_timestamp::unresponsive) {
-      it->set_state(stored_timestamp::responsive);
-      _update_hosts_and_services_of_instance(it->get_id(), true);
-    }
+  // Update new oldest timestamp
+  _oldest_timestamp = timestamp(std::numeric_limits<time_t>::max());
+  for (std::map<unsigned int, stored_timestamp>::iterator it =
+       _stored_timestamps.begin(),
+       end = _stored_timestamps.end(); it != end; ++it) {
+    if (it->second.get_state() == stored_timestamp::responsive &&
+        _oldest_timestamp > it->second.get_timestamp())
+      _oldest_timestamp = it->second.get_timestamp();
   }
 }
 
@@ -2127,7 +2109,8 @@ stream::stream(
     _queries_per_transaction((qpt >= 2) ? qpt : 1),
     _transaction_queries(0),
     _with_state_events(wse),
-    _instance_timeout (30) {
+    _instance_timeout(15),
+    _oldest_timestamp(std::numeric_limits<time_t>::max()) {
   // Get the driver ID.
   QString t;
   if (!type.compare("db2", Qt::CaseInsensitive))
@@ -2407,6 +2390,10 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
       return (retval);
     }
 
+    // Update the timestamp of this instance.
+    _update_timestamp(data->instance_id);
+    logging::debug(logging::low) << "Updating timestamp: instance " << data->instance_id << " last_timestamp = " << _oldest_timestamp;
+
     // Process event.
     unsigned int type(data->type());
     unsigned short cat(io::events::category_of_type(type));
@@ -2424,7 +2411,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   }
 
   // Update hosts and services of stopped instances
-  _update_hosts_and_services_of_instances();
+  _update_hosts_and_services_of_unresponsive_instances();
 
   // Commit transaction.
   if (_queries_per_transaction > 1) {
