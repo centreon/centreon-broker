@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_SQL_INSTANCES_UPDATES_HH
-#  define CCB_SQL_INSTANCES_UPDATES_HH
+#ifndef CCB_SQL_STORED_TIMESTAMP_HH
+#  define CCB_SQL_STORED_TIMESTAMP_HH
 
 #  include "com/centreon/broker/timestamp.hh"
 
@@ -60,4 +60,4 @@ namespace sql {
 
 CCB_END()
 
-#endif //!CCB_SQL_INSTANCES_UPDATES_HH
+#endif //!CCB_SQL_STORED_TIMESTAMP_HH
