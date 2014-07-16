@@ -1487,13 +1487,11 @@ void stream::_process_service(
     << ", description: " << s.service_description << ")";
 
   // Processing.
-  if (s.host_id && s.service_id) {
-    logging::info(logging::high) << "updating process service";
+  if (s.host_id && s.service_id)
     _update_on_none_insert(
       *_service_insert,
       *_service_update,
       s);
-  }
   else
     logging::error(logging::high) << "SQL: service '"
       << s.service_description << "' has no host ID or no service ID";
@@ -1955,8 +1953,9 @@ void stream::_write_logs() {
 }
 
 /**
- * Update the store of living instance timestamps.
- * @param instance_id the id of the instance to have its timestamp updated
+ *  Update the store of living instance timestamps.
+ *
+ *  @param instance_id The id of the instance to have its timestamp updated.
  */
 void stream::_update_timestamp(unsigned int instance_id) {
   stored_timestamp::state_type
@@ -1969,7 +1968,7 @@ void stream::_update_timestamp(unsigned int instance_id) {
     if (it->get_id() == instance_id) {
       s = it->get_state();
       _stored_timestamps.erase(it);
-      break;
+      break ;
     }
   }
 
@@ -1985,7 +1984,7 @@ void stream::_update_timestamp(unsigned int instance_id) {
 }
 
 /**
- * Get all the outdated instances from the database and store them.
+ *  Get all the outdated instances from the database and store them.
  */
 void stream::_get_all_outdated_instances_from_db() {
   std::ostringstream ss;
@@ -1995,7 +1994,7 @@ void stream::_get_all_outdated_instances_from_db() {
   QSqlQuery q(*_db);
   if (!q.exec(ss.str().c_str()))
     logging::error(logging::high)
-      << "SQL: could not get list of deleted instances: "
+      << "SQL: could not get list of outdated instances: "
       << q.lastError().text();
   else
     while (q.next()) {
@@ -2008,9 +2007,9 @@ void stream::_get_all_outdated_instances_from_db() {
 }
 
 /**
- * Update all the hosts and services of the stored instances.
+ *  Update all the hosts and services of the stored instances.
  */
-void stream::_update_hosts_and_services_of_instances() {  
+void stream::_update_hosts_and_services_of_instances() {
   if (_stored_timestamps.size() == 0)
     return ;
 
@@ -2050,12 +2049,14 @@ void stream::_update_hosts_and_services_of_instances() {
 }
 
 /**
- * Update the hosts and services of one instance.
- * @param[in] id The instance id.
- * @param[in] responsive True if the instance is responsive, false otherwise.
+ *  Update the hosts and services of one instance.
+ *
+ *  @param[in] id         The instance id.
+ *  @param[in] responsive True if the instance is responsive, false otherwise.
  */
-void stream::_update_hosts_and_services_of_instance(unsigned int id,
-                                                    bool responsive) {
+void stream::_update_hosts_and_services_of_instance(
+               unsigned int id,
+               bool responsive) {
   std::ostringstream ss;
 
   if (responsive) {

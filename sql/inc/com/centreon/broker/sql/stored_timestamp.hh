@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,14 +17,14 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_SQL_INSTANCES_UPDATES_HH
-#  define CCB_SQL_INSTANCES_UPDATES_HH
+#ifndef CCB_SQL_STORED_TIMESTAMP_HH
+#  define CCB_SQL_STORED_TIMESTAMP_HH
 
 #  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace sql {
+namespace         sql {
   /**
    *  @class stored_timestamp stored_timestamp.hh "com/centreon/broker/sql/stored_timestamp.hh"
    *  @brief Store a timestamp associated to an instance.
@@ -37,21 +37,21 @@ namespace sql {
                   responsive,
                   unresponsive
     };
-                  stored_timestamp() throw();
-                  stored_timestamp(unsigned int id, state_type s) throw();
-                  stored_timestamp(stored_timestamp const& right) throw();
-                  ~stored_timestamp() throw();
 
-    unsigned int  get_id() const throw();
-    state_type    get_state() const throw();
-    void          set_state(state_type state) throw();
-    void          update_timestamp() throw();
-    timestamp     get_timestamp() const throw();
-    void          set_timestamp(timestamp ts) throw();
-    bool          timestamp_outdated(unsigned int timeout) const throw();
+                  stored_timestamp() throw ();
+                  stored_timestamp(unsigned int id, state_type s) throw ();
+                  stored_timestamp(stored_timestamp const& right) throw ();
+                  ~stored_timestamp() throw ();
+
+    unsigned int  get_id() const throw ();
+    state_type    get_state() const throw ();
+    void          set_state(state_type state) throw ();
+    void          update_timestamp() throw ();
+    timestamp     get_timestamp() const throw ();
+    void          set_timestamp(timestamp ts) throw ();
+    bool          timestamp_outdated(unsigned int timeout) const throw ();
 
   private:
-
     unsigned int  _id;
     timestamp     _ts;
     state_type    _state;
@@ -60,4 +60,4 @@ namespace sql {
 
 CCB_END()
 
-#endif //!CCB_SQL_INSTANCES_UPDATES_HH
+#endif //!CCB_SQL_STORED_TIMESTAMP_HH
