@@ -1,5 +1,5 @@
 ##
-## Copyright 2009-2013 Merethis
+## Copyright 2009-2014 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -121,6 +121,9 @@ if (WITH_TESTING)
   include(CTest)
   enable_testing()
   include_directories("${PROJECT_SOURCE_DIR}/core")
+  include_directories("${PROJECT_SOURCE_DIR}/bbdo/inc")
+  include_directories("${PROJECT_SOURCE_DIR}/compression/inc")
+  include_directories("${PROJECT_SOURCE_DIR}/ndo/inc")
   include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 endif ()
 
@@ -769,7 +772,7 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Benchmark.
+  # RRD benchmark.
   unset(QT_WRAPPED_SOURCES)
   qt4_wrap_cpp(QT_WRAPPED_SOURCES
     "${PROJECT_SOURCE_DIR}/test/bench_generate_rrd_mod.hh")
@@ -784,6 +787,14 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/bench_generate_rrd.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+
+  # BBDO benchmark.
+  set(TEST_NAME "running_bench_bbdo")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/bench_bbdo.cc"
+    "${PROJECT_SOURCE_DIR}/test/bench_stream.cc"
+    "${PROJECT_SOURCE_DIR}/test/bench_stream.hh")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${BBDO} ${COMPRESSION} ${CORRELATION} ${NEB} ${NDO} ${STORAGE})
 
   # Last file to configure, based on target paths.
   configure_file("${PROJECT_SOURCE_DIR}/test/vars.hh.in"
@@ -1382,7 +1393,6 @@ if (WITH_TESTING)
     "${TEST_DIR}/processing/failover/recovery.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
-
 
   # cbd tests.
   add_test("cbd_help" "cbd" "-h")
