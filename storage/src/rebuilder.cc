@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,6 +18,7 @@
 */
 
 #include <cfloat>
+#include <cmath>
 #include <ctime>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -402,9 +403,9 @@ void rebuilder::_rebuild_metric(
         entry->value_type = metric_type;
         entry->value = data_bin_query.value(1).toDouble();
         if (entry->value > DBL_MAX * 0.999)
-          entry->value = DBL_MAX;
+          entry->value = INFINITY;
         else if (entry->value < DBL_MIN * 0.999)
-          entry->value = DBL_MIN;
+          entry->value = -INFINITY;
         multiplexing::publisher().write(entry.staticCast<io::data>());
       }
     else
