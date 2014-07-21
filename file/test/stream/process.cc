@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
     fs.process(true, true);
 
     // Write data to file.
-    fs.write(data.staticCast<io::data>());
+    fs.write(data);
 
     // Read data from file.
     misc::shared_ptr<io::data> d;
@@ -80,14 +80,14 @@ int main(int argc, char* argv[]) {
     file::stream fs(filename.toStdString());
 
     // Write data to file.
-    fs.write(data.staticCast<io::data>());
+    fs.write(data);
 
     // Checked method.
     fs.process(false, true);
 
     // Write data to file.
     try {
-      fs.write(data.staticCast<io::data>());
+      fs.write(data);
       retval |= 1;
     }
     catch (io::exceptions::shutdown const& e) {
@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
     fs.process(true, false);
 
     // Write data to file.
-    fs.write(data.staticCast<io::data>());
+    fs.write(data);
 
     // Read data from file.
     misc::shared_ptr<io::data> d;
@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
     fs.process(false, false);
 
     // Write data to file.
-    fs.write(data.staticCast<io::data>());
+    fs.write(data);
 
     // Read data from file.
     try {

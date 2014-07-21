@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -296,6 +296,8 @@ bool parser::startElement(
       i_attr = attrs.value("since");
       if (!i_attr.isEmpty())
         n->since = i_attr.toULongLong();
+      else
+        n->since = time(NULL);
       i_attr = attrs.value("state");
       if (!i_attr.isEmpty())
         n->state = i_attr.toUInt();
@@ -408,6 +410,8 @@ bool parser::startElement(
       id_attr = attrs.value("since");
       if (!id_attr.isEmpty())
         n->since = id_attr.toULongLong();
+      else
+        n->since = time(NULL);
       id_attr = attrs.value("state");
       if (!id_attr.isEmpty())
         n->state = id_attr.toUInt();

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -68,13 +68,13 @@ int main(int argc, char* argv[]) {
       "\n");
 
     // Write buffer to file.
-    fs->write(buffer.staticCast<io::data>());
+    fs->write(buffer);
   }
 
   // NDO stream.
   ndo::stream ns;
-  ns.read_from(fs.staticCast<io::stream>());
-  ns.write_to(fs.staticCast<io::stream>());
+  ns.read_from(fs);
+  ns.write_to(fs);
 
   // Sample object.
   misc::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement);
@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
   ack->state = 2;
 
   // Write to NDO stream.
-  ns.write(ack.staticCast<io::data>());
+  ns.write(ack);
 
   // Now the check begins.
   int retval(0);

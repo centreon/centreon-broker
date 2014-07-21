@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
 
     // Write data in file.
     for (unsigned int i = 0; i < 10000; ++i)
-      fs.write(data.staticCast<io::data>());
+      fs.write(data);
   }
 
   // Return value.

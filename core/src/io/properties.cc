@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -153,6 +153,19 @@ property const& properties::get(std::string const& name) const {
   if (it == _properties.end())
     throw (exceptions::msg() << "property '" << name << "' not found");
   return (it->second);
+}
+
+/**
+ *  Merge new properties in this object.
+ *
+ *  @param[in] other Properties that will be merged in this object.
+ */
+void properties::merge(properties const& other) {
+  for (const_iterator it(other.begin()), end(other.end());
+       it != end;
+       ++it)
+    _properties[it->first] = it->second;
+  return ;
 }
 
 /**

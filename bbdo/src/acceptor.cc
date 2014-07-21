@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -188,7 +188,7 @@ misc::shared_ptr<io::stream> acceptor::open() {
         my_bbdo->read_from(s);
         my_bbdo->write_to(s);
         _negociate_features(s, my_bbdo);
-        return (my_bbdo.staticCast<io::stream>());
+        return (my_bbdo);
       }
     }
     else {
@@ -237,7 +237,7 @@ misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
         my_bbdo->read_from(s);
         my_bbdo->write_to(s);
         _negociate_features(s, my_bbdo);
-        return (my_bbdo.staticCast<io::stream>());
+        return (my_bbdo);
       }
     }
     else {
@@ -317,7 +317,7 @@ void acceptor::_negociate_features(
     welcome_packet(new version_response);
   if (_negociate)
     welcome_packet->extensions = _extensions;
-  my_bbdo->output::write(welcome_packet.staticCast<io::data>());
+  my_bbdo->output::write(welcome_packet);
   my_bbdo->output::write(misc::shared_ptr<io::data>());
 
   // Negociation.
@@ -389,7 +389,7 @@ misc::shared_ptr<io::stream> acceptor::_open(
     if (!_is_out) {
       my_bbdo = misc::shared_ptr<bbdo::stream>(
                         new bbdo::stream(true, false));
-      in = my_bbdo.staticCast<io::stream>();
+      in = my_bbdo;
       in->read_from(stream);
       in->write_to(stream);
       out = misc::shared_ptr<io::stream>(new multiplexing::publisher);
@@ -399,7 +399,7 @@ misc::shared_ptr<io::stream> acceptor::_open(
                    new multiplexing::subscriber(_name));
       my_bbdo = misc::shared_ptr<bbdo::stream>(
                         new bbdo::stream(false, true));
-      out = my_bbdo.staticCast<io::stream>();
+      out = my_bbdo;
       out->read_from(stream);
       out->write_to(stream);
     }

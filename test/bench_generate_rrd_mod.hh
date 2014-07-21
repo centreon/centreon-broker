@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -64,7 +64,7 @@ public:
         m->name = "value";
         m->rrd_len = 180 * 24 * 3600;
         m->value = i;
-        publicheur.write(m.staticCast<io::data>());
+        publicheur.write(m);
       }
     }
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -89,14 +89,14 @@ int main() {
       ss->service_id = 21;
       ss->state_type = 1;
       ss->current_state = 2;
-      c.write(ss.staticCast<io::data>());
+      c.write(ss);
     }
     {
       misc::shared_ptr<neb::host_status> hs(new neb::host_status);
       hs->host_id = 42;
       hs->state_type = 1;
       hs->current_state = 2;
-      c.write(hs.staticCast<io::data>());
+      c.write(hs);
     }
     {
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
@@ -104,7 +104,7 @@ int main() {
       ss->service_id = 12;
       ss->state_type = 1;
       ss->current_state = 2;
-      c.write(ss.staticCast<io::data>());
+      c.write(ss);
     }
 
     // Dump retention file.

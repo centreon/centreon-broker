@@ -298,7 +298,7 @@ void correlator::starting() {
   misc::shared_ptr<engine_state> es(new engine_state);
   es->instance_id = _instance_id;
   es->started = true;
-  _events.push_front(es.staticCast<io::data>());
+  _events.push_front(es);
   return ;
 }
 
@@ -338,7 +338,7 @@ void correlator::stopping() {
                            ? p->child_start_time
                            : p->parent_start_time);
           p->end_time = now;
-          _events.push_back(p.staticCast<io::data>());
+          _events.push_back(p);
         }
       bool all_parents(true);
       for (QList<node*>::const_iterator
@@ -364,7 +364,7 @@ void correlator::stopping() {
                            ? p->child_start_time
                            : p->parent_start_time);
           p->end_time = now;
-          _events.push_back(p.staticCast<io::data>());
+          _events.push_back(p);
         }
       }
 
@@ -373,7 +373,7 @@ void correlator::stopping() {
       // Close issue itself.
       misc::shared_ptr<issue> i(new issue(*it->my_issue));
       i->end_time = now;
-      _events.push_back(i.staticCast<io::data>());
+      _events.push_back(i);
     }
   */
 
@@ -381,7 +381,7 @@ void correlator::stopping() {
   misc::shared_ptr<engine_state> es(new engine_state);
   es->instance_id = _instance_id;
   es->started = false;
-  _events.push_back(es.staticCast<io::data>());
+  _events.push_back(es);
 
   return ;
 }
@@ -482,7 +482,7 @@ void correlator::_correlate_acknowledgement(
       state_update->in_downtime = it->in_downtime;
       state_update->service_id = it->service_id;
       state_update->start_time = it->since;
-      _events.push_back(state_update.staticCast<io::data>());
+      _events.push_back(state_update);
     }
 
     // Send updated issue.
@@ -542,6 +542,8 @@ void correlator::_correlate_host_service_status(
   }
 
   time_t now(hss.last_check);
+  if (!now)
+    now = hss.last_update;
   unsigned short old_state(n->state);
   bool state_changed(n->state != hss.current_state);
   if (state_changed
@@ -575,7 +577,7 @@ void correlator::_correlate_host_service_status(
           state_update->ack_time = n->my_issue->ack_time;
         else
           state_update->ack_time = n->since;
-        _events.push_back(state_update.staticCast<io::data>());
+        _events.push_back(state_update);
       }
 
       // Update node.
@@ -598,7 +600,7 @@ void correlator::_correlate_host_service_status(
         state_update->in_downtime = n->in_downtime;
         state_update->service_id = n->service_id;
         state_update->start_time = n->since;
-        _events.push_back(state_update.staticCast<io::data>());
+        _events.push_back(state_update);
       }
     }
   }
@@ -639,7 +641,7 @@ void correlator::_correlate_host_service_status(
                              ? p->child_start_time
                              : p->parent_start_time);
             p->end_time = now;
-            _events.push_back(p.staticCast<io::data>());
+            _events.push_back(p);
           }
         for (QList<node*>::const_iterator
                it(n->depended_by().begin()),
@@ -664,7 +666,7 @@ void correlator::_correlate_host_service_status(
                              ? p->child_start_time
                              : p->parent_start_time);
             p->end_time = now;
-            _events.push_back(p.staticCast<io::data>());
+            _events.push_back(p);
           }
         bool all_parents(true);
         timestamp t(n->my_issue->start_time);
@@ -699,7 +701,7 @@ void correlator::_correlate_host_service_status(
             p->parent_start_time = (*it)->my_issue->start_time;
             p->start_time = t;
             p->end_time = now;
-            _events.push_back(p.staticCast<io::data>());
+            _events.push_back(p);
           }
         for (QList<node*>::const_iterator
                it(n->children().begin()),
@@ -742,7 +744,7 @@ void correlator::_correlate_host_service_status(
                 p->parent_start_time = (*it2)->my_issue->start_time;
                 p->start_time = t;
                 p->end_time = now;
-                _events.push_back(p.staticCast<io::data>());
+                _events.push_back(p);
               }
           }
         }
@@ -906,7 +908,7 @@ void correlator::_issue_parenting(node* n, bool full) {
         parenting->parent_service_id = (*it)->service_id;
         parenting->parent_start_time = (*it)->my_issue->start_time;
         parenting->start_time = n->my_issue->start_time;
-        _events.push_back(parenting.staticCast<io::data>());
+        _events.push_back(parenting);
       }
 
     // Loop parents.
@@ -937,7 +939,7 @@ void correlator::_issue_parenting(node* n, bool full) {
         parenting->parent_service_id = (*it)->service_id;
         parenting->parent_start_time = (*it)->my_issue->start_time;
         parenting->start_time = n->my_issue->start_time;
-        _events.push_back(parenting.staticCast<io::data>());
+        _events.push_back(parenting);
       }
     }
   }
@@ -963,7 +965,7 @@ void correlator::_issue_parenting(node* n, bool full) {
       parenting->parent_service_id = n->service_id;
       parenting->parent_start_time = n->my_issue->start_time;
       parenting->start_time = n->my_issue->start_time;
-      _events.push_back(parenting.staticCast<io::data>());
+      _events.push_back(parenting);
     }
 
   // Loop children.
@@ -1002,7 +1004,7 @@ void correlator::_issue_parenting(node* n, bool full) {
           parenting->parent_service_id = (*it2)->service_id;
           parenting->parent_start_time = (*it2)->my_issue->start_time;
           parenting->start_time = n->my_issue->start_time;
-          _events.push_back(parenting.staticCast<io::data>());
+          _events.push_back(parenting);
         }
     }
   return ;
@@ -1023,7 +1025,7 @@ QMap<QPair<unsigned int, unsigned int>, node>::iterator correlator::_remove_node
     ss->state_type = 1;
     ss->host_id = it->host_id;
     ss->service_id = it->service_id;
-    _correlate_service_status(ss.staticCast<io::data>());
+    _correlate_service_status(ss);
   }
   else {
     misc::shared_ptr<neb::host_status> hs(new neb::host_status);
@@ -1031,7 +1033,7 @@ QMap<QPair<unsigned int, unsigned int>, node>::iterator correlator::_remove_node
     hs->current_state = 0;
     hs->state_type = 1;
     hs->host_id = it->host_id;
-    _correlate_host_status(hs.staticCast<io::data>());
+    _correlate_host_status(hs);
   }
 
   // Delete node for real.

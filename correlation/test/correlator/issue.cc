@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -64,7 +64,7 @@ int main() {
       ss->state_type = 1;
       ss->current_state = 2;
       ss->last_check = 123456789;
-      c.write(ss.staticCast<io::data>());
+      c.write(ss);
     }
     {
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
@@ -74,7 +74,7 @@ int main() {
       ss->state_type = 1;
       ss->current_state = 0;
       ss->last_check = 123456790;
-      c.write(ss.staticCast<io::data>());
+      c.write(ss);
     }
 
     // Check correlation content.

@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -65,9 +65,11 @@ int main() {
     s2.state = 2;
     node& h2(expected[qMakePair(42u, 0u)]);
     h2.host_id = 42;
+    h2.since = 0;
     node& s3(expected[qMakePair(42u, 66u)]);
     s3.host_id = 42;
     s3.service_id = 66;
+    s3.since = 0;
     s3.state = 3;
     s1.add_dependency(&s2);
     s1.add_dependency(&h1);

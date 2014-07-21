@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cfloat>
 #include <ctime>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -398,9 +399,13 @@ void rebuilder::_rebuild_metric(
         entry->metric_id = metric_id;
         entry->name = metric_name;
         entry->rrd_len = length;
-        entry->value = data_bin_query.value(1).toDouble();
         entry->value_type = metric_type;
-        multiplexing::publisher().write(entry.staticCast<io::data>());
+        entry->value = data_bin_query.value(1).toDouble();
+        if (entry->value > DBL_MAX * 0.999)
+          entry->value = DBL_MAX;
+        else if (entry->value < DBL_MIN * 0.999)
+          entry->value = DBL_MIN;
+        multiplexing::publisher().write(entry);
       }
     else
       logging::error(logging::medium) << "storage: rebuilder: "
@@ -457,7 +462,7 @@ void rebuilder::_rebuild_status(
         entry->is_for_rebuild = true;
         entry->rrd_len = _rrd_len;
         entry->state = data_bin_query.value(1).toInt();
-        multiplexing::publisher().write(entry.staticCast<io::data>());
+        multiplexing::publisher().write(entry);
       }
     else
       logging::error(logging::medium) << "storage: rebuilder: "
@@ -493,7 +498,7 @@ void rebuilder::_send_rebuild_event(
   rb->end = end;
   rb->id = id;
   rb->is_index = is_index;
-  multiplexing::publisher().write(rb.staticCast<io::data>());
+  multiplexing::publisher().write(rb);
   return ;
 }
 

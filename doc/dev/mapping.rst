@@ -15,9 +15,9 @@ NEB
 Acknowledgement
 ===============
 
-==================== ================ ==================================
-Property             Type             Description
-==================== ================ ==================================
+==================== ================ ================================== =============
+Property             Type             Description                        Version
+==================== ================ ================================== =============
 acknowledgement_type short integer    Host acknowledgement when 0,
                                       service acknowledgement when 1.
 author               string           Acknowledgement author.
@@ -36,14 +36,14 @@ persistent_comment   boolean          True if the comment is persistent.
 service_id           unsigned integer Service ID. 0 for a host
                                       acknowledgement.
 state                short integer    Host / service state.
-==================== ================ ==================================
+==================== ================ ================================== =============
 
 Comment
 =======
 
-============= ================ =========================================
-Property      Type             Description
-============= ================ =========================================
+============= ================ ========================================= =============
+Property      Type             Description                               Version
+============= ================ ========================================= =============
 author        string           Comment author.
 comment_type  short integer    1 for a host comment, 2 for a service
                                comment.
@@ -68,14 +68,14 @@ source        short integer    0 when the comment originates from the
                                the comment comes from another source
                                (external).
 data          string           Comment data (text).
-============= ================ =========================================
+============= ================ ========================================= =============
 
 Custom variable
 ===============
 
-=========== ================ ===========================================
-Property    Type             Description
-=========== ================ ===========================================
+=========== ================ =========================================== =============
+Property    Type             Description                                 Version
+=========== ================ =========================================== =============
 host_id     unsigned integer Host ID.
 modified    boolean          True if the variable was modified.
 name        string           Variable name.
@@ -86,7 +86,9 @@ update_time time             Last time at which the variable was
 var_type    short integer    0 for a host custom variable, 1 for a
                              service custom variable.
 value       string           Variable value.
-=========== ================ ===========================================
+instance_id unsigned integer Instance ID.                                Since 2.6.0
+                                                                         (BBDO 1.1.0).
+=========== ================ =========================================== =============
 
 Custom variable status
 ======================
@@ -94,9 +96,9 @@ Custom variable status
 Custom variable status events are generated when a custom variable needs
 to be updated.
 
-=========== ================ ===========================================
-Property    Type             Description
-=========== ================ ===========================================
+=========== ================ =========================================== =============
+Property    Type             Description                                 Version
+=========== ================ =========================================== =============
 host_id     unsigned integer Host ID.
 modified    boolean          True if the variable was modified.
 name        string           Variable name.
@@ -105,14 +107,16 @@ service_id  unsigned integer Service ID. 0 if this is a host custom
 update_time time             Last time at which the variable was
                              updated.
 value       string           Variable value.
-=========== ================ ===========================================
+instance_id unsigned integer Instance ID.                                Since 2.6.0
+                                                                         (BBDO 1.1.0).
+=========== ================ =========================================== =============
 
 Downtime
 ========
 
-================= ================ =====================================
-Property          Type             Description
-================= ================ =====================================
+================= ================ ===================================== =============
+Property          Type             Description                           Version
+================= ================ ===================================== =============
 actual_end_time   time             Actual time at which the downtime
                                    ended.
 actual_start_time time             Actual time at which the downtime
@@ -140,14 +144,14 @@ was_cancelled     boolean          True if the downtime was cancelled.
 was_started       boolean          True if the downtime has been
                                    started.
 comment           string           Downtime comment.
-================= ================ =====================================
+================= ================ ===================================== =============
 
 Event handler
 =============
 
-============== ================ ========================================
-Property       Type             Description
-============== ================ ========================================
+============== ================ ======================================== =============
+Property       Type             Description                              Version
+============== ================ ======================================== =============
 early_timeout  boolean          True if the event handler timed out.
 end_time       time             Time at which the event handler
                                 execution ended.
@@ -167,14 +171,16 @@ timeout        short integer    Event handler timeout in seconds.
 command_args   string           Event handler arguments.
 command_line   string           Event handler command line.
 output         string           Output returned by the event handler.
-============== ================ ========================================
+instance_id    unsigned integer Instance ID.                             Since 2.6.0
+                                                                         (BBDO 1.1.0).
+============== ================ ======================================== =============
 
 Flapping status
 ===============
 
-==================== ================ ==================================
-Property             Type             Description
-==================== ================ ==================================
+==================== ================ ================================== =============
+Property             Type             Description                        Version.
+==================== ================ ================================== =============
 comment_time         time
 event_time           time
 event_type           integer
@@ -187,14 +193,16 @@ percent_state_change real
 reason_type          short integer
 service_id           unsigned integer Service ID. 0 if this is a host
                                       flapping entry.
-==================== ================ ==================================
+instance_id          unsigned integer Instance ID.                       Since 2.6.0
+                                                                         (BBDO 1.1.0).
+==================== ================ ================================== =============
 
 Host
 ====
 
-============================== ================ ========================
-Property                       Type             Description
-============================== ================ ========================
+============================== ================ ======================== =============
+Property                       Type             Description              Version
+============================== ================ ======================== =============
 acknowledgement_type           short integer
 action_url                     string
 active_checks_enabled          boolean
@@ -278,14 +286,14 @@ statusmap_image                string
 check_command                  string
 output                         string
 perf_data                      string
-============================== ================ ========================
+============================== ================ ======================== =============
 
 Host check
 ==========
 
-===================== ================ =================================
-Property              Type             Description
-===================== ================ =================================
+===================== ================ ================================= =============
+Property              Type             Description                       Version
+===================== ================ ================================= =============
 active_checks_enabled boolean          True if active checks are enabled
                                        on the host.
 check_type            short integer
@@ -293,14 +301,16 @@ host_id               unsigned integer Host ID.
 next_check            time             Time at which the next check is
                                        scheduled.
 command_line          string           Check command line.
-===================== ================ =================================
+instance_id           unsigned integer Instance ID.                      Since 2.6.0
+                                                                         (BBDO 1.1.0).
+===================== ================ ================================= =============
 
 Host dependency
 ===============
 
-============================ ================ ==========================
-Property                     Type             Description
-============================ ================ ==========================
+============================ ================ ========================== =============
+Property                     Type             Description                Version
+============================ ================ ========================== =============
 dependency_period            string
 dependent_host_id            unsigned integer
 enabled                      boolean
@@ -308,14 +318,16 @@ execution_failure_options    string
 inherits_parent              boolean
 notification_failure_options string
 host_id                      unsigned integer
-============================ ================ ==========================
+instance_id                  unsigned integer Instance ID.               Since 2.6.0
+                                                                         (BBDO 1.1.0).
+============================ ================ ========================== =============
 
 Host group
 ==========
 
-=========== ================ ===========================================
-Property    Type             Description
-=========== ================ ===========================================
+=========== ================ =========================================== =============
+Property    Type             Description                                 Version
+=========== ================ =========================================== =============
 action_url  string           Action URL.
 alias       string           Group alias.
 enabled     boolean          True if the group is enabled, false if it
@@ -324,39 +336,41 @@ instance_id unsigned integer Instance ID.
 name        string           Group name.
 notes       string           Notes.
 notes_url   string           Notes URL.
-=========== ================ ===========================================
+=========== ================ =========================================== =============
 
 Host group member
 =================
 
-=========== ================ ===========================================
-Property    Type             Description
-=========== ================ ===========================================
+=========== ================ =========================================== =============
+Property    Type             Description                                 Version
+=========== ================ =========================================== =============
 enabled     boolean          True if the membership is enabled, false if
                              it is not (deletion).
 group       string           Group name.
 instance_id unsigned integer Instance ID.
 host_id     unsigned integer Host ID.
-=========== ================ ===========================================
+=========== ================ =========================================== =============
 
 Host parent
 ===========
 
-========= ================ =============================================
-Property  Type             Description
-========= ================ =============================================
-enabled   boolean          True if parenting is enabled, false if it is
-                           not (deletion).
-host_id   unsigned integer Child host ID.
-parent_id unsigned integer Parent host ID.
-========= ================ =============================================
+=========== ================ ============================================= =============
+Property    Type             Description                                   Version
+=========== ================ ============================================= =============
+enabled     boolean          True if parenting is enabled, false if it is
+                             not (deletion).
+host_id     unsigned integer Child host ID.
+parent_id   unsigned integer Parent host ID.
+instance_id unsigned integer Instance ID.                                  Since 2.6.0
+                                                                           (BBDO 1.1.0).
+=========== ================ ============================================= =============
 
 Host status
 ===========
 
-============================= ================ =========================
-Property                      Type             Description
-============================= ================ =========================
+============================= ================ ========================= =============
+Property                      Type             Description               Version
+============================= ================ ========================= =============
 acknowledgement_type          short integer
 active_checks_enabled         boolean
 check_interval                real
@@ -402,14 +416,16 @@ state_type                    short integer
 check_command                 string
 output                        string
 perf_data                     string
-============================= ================ =========================
+instance_id                   unsigned integer Instance ID.              Since 2.6.0
+                                                                         (BBDO 1.1.0).
+============================= ================ ========================= =============
 
 Instance
 ========
 
-============= ================ =========================================
-Property      Type             Description
-============= ================ =========================================
+============= ================ ========================================= =============
+Property      Type             Description                               Version
+============= ================ ========================================= =============
 engine        string           Name of the monitoring engine used on
                                this instance.
 id            unsigned integer Instance ID.
@@ -420,14 +436,14 @@ program_end   time             Time at which the instance shut down.
 program_start time             Time at which the instance started.
 version       string           Version of the monitoring engine used on
                                this instance.
-============= ================ =========================================
+============= ================ ========================================= =============
 
 Instance status
 ===============
 
-============================== ================ ========================
-Property                       Type             Description
-============================== ================ ========================
+============================== ================ ======================== =============
+Property                       Type             Description              Version
+============================== ================ ======================== =============
 active_host_checks_enabled     boolean          Whether or not active
                                                 host checks are globally
                                                 enabled.
@@ -487,14 +503,14 @@ global_host_event_handler      string           Global host event
                                                 handler.
 global_service_event_handler   string           Global service event
                                                 handler.
-============================== ================ ========================
+============================== ================ ======================== =============
 
 Log entry
 =========
 
-==================== ================ ==================================
-Property             Type             Description
-==================== ================ ==================================
+==================== ================ ================================== =============
+Property             Type             Description                        Version
+==================== ================ ================================== =============
 c_time               time             Log time.
 host_id              unsigned integer Host ID. 0 if log entry does not
                                       refer to a specific host or
@@ -529,7 +545,9 @@ service_id           unsigned integer Service ID. 0 if log entry does
                                       not refer to a specific service.
 status               short integer    Host / service status.
 output               string           Output.
-==================== ================ ==================================
+instance_id          unsigned integer Instance ID.                       Since 2.6.0
+                                                                         (BBDO 1.1.0).
+==================== ================ ================================== =============
 
 Module
 ======
@@ -537,9 +555,9 @@ Module
 Module events are generated when Centreon Broker modules get loaded or
 unloaded.
 
-================ ================ ======================================
-Property         Type             Description
-================ ================ ======================================
+================ ================ ====================================== =============
+Property         Type             Description                            Version
+================ ================ ====================================== =============
 args             string           Module arguments.
 enabled          boolean          Whether or not this module is enabled.
 filename         string           Path to the module file.
@@ -547,14 +565,14 @@ instance_id      unsigned integer Instance ID.
 loaded           boolean          Whether or not this module is loaded.
 should_be_loaded boolean          Whether or not this module should be
                                   (should have been) loaded.
-================ ================ ======================================
+================ ================ ====================================== =============
 
 Notification
 ============
 
-================= ================ =====================================
-Property          Type             Description
-================= ================ =====================================
+================= ================ ===================================== =============
+Property          Type             Description                           Version
+================= ================ ===================================== =============
 contacts_notified boolean
 end_time          time
 escalated         boolean
@@ -569,14 +587,16 @@ ack_data          string
 command_name      string
 contact_name      string
 output            string
-================= ================ =====================================
+instance_id       unsigned integer Instance ID.                          Since 2.6.0
+                                                                         (BBDO 1.1.0).
+================= ================ ===================================== =============
 
 Service
 =======
 
-============================== ================ ========================
-Property                       Type             Description
-============================== ================ ========================
+============================== ================ ======================== =============
+Property                       Type             Description              Version
+============================== ================ ======================== =============
 acknowledgement_type           short integer
 action_url                     string
 active_checks_enabled          boolean
@@ -664,14 +684,16 @@ state_type                     short integer
 check_command                  string
 output                         string
 perf_data                      string
-============================== ================ ========================
+instance_id                    unsigned integer Instance ID.             Since 2.6.0
+                                                                         (BBDO 1.1.0).
+============================== ================ ======================== =============
 
 Service check
 =============
 
-===================== ================ =================================
-Property              Type             Description
-===================== ================ =================================
+===================== ================ ================================= =============
+Property              Type             Description                       Version
+===================== ================ ================================= =============
 active_checks_enabled boolean          True if active checks are enabled
                                        on the service.
 check_type            short
@@ -680,14 +702,16 @@ next_check            time             Time at which the next check is
                                        scheduled.
 service_id            unsigned integer Service ID.
 command_line          string           Check command line.
-===================== ================ =================================
+instance_id           unsigned integer Instance ID.                      Since 2.6.0
+                                                                         (BBDO 1.1.0).
+===================== ================ ================================= =============
 
 Service dependency
 ==================
 
-============================ ================ ==========================
-Property                     Type             Description
-============================ ================ ==========================
+============================ ================ ========================== =============
+Property                     Type             Description                Version
+============================ ================ ========================== =============
 dependency_period            string
 dependent_host_id            unsigned integer
 dependent_service_id         unsigned integer
@@ -697,14 +721,16 @@ host_id                      unsigned integer
 inherits_parent              boolean
 notification_failure_options string
 service_id                   unsigned integer
-============================ ================ ==========================
+instance_id                  unsigned integer Instance ID.               Since 2.6.0
+                                                                         (BBDO 1.1.0).
+============================ ================ ========================== =============
 
 Service group
 =============
 
-=========== ================ ===========================================
-Property    Type             Description
-=========== ================ ===========================================
+=========== ================ =========================================== =============
+Property    Type             Description                                 Version
+=========== ================ =========================================== =============
 action_url  string           Action URL.
 alias       string           Group alias.
 enabled     enabled          True if the group is enable, false if it is
@@ -713,28 +739,28 @@ instance_id unsigned integer Instance ID.
 name        string           Group name.
 notes       string           Notes.
 notes_url   string           Notes URL.
-=========== ================ ===========================================
+=========== ================ =========================================== =============
 
 Service group member
 ====================
 
-=========== ================ ===========================================
-Property    Type             Description
-=========== ================ ===========================================
+=========== ================ =========================================== =============
+Property    Type             Description                                 Version
+=========== ================ =========================================== =============
 enabled     boolean          True if the membership is enabled, false if
                              it is not (deletion).
 group       string           Group name.
 host_id     unsigned integer Host ID.
 instance_id unsigned integer Instance ID.
 service_id  unsigned integer Service ID.
-=========== ================ ===========================================
+=========== ================ =========================================== =============
 
 Service status
 ==============
 
-============================= ================ =========================
-Property                      Type             Description
-============================= ================ =========================
+============================= ================ ========================= =============
+Property                      Type             Description               Version
+============================= ================ ========================= =============
 acknowledgement_type          short integer
 active_checks_enabled         boolean
 check_interval                real
@@ -784,7 +810,9 @@ state_type                    short integer
 check_command                 string
 output                        string
 perf_data                     string
-============================= ================ =========================
+instance_id                   unsigned integer Instance ID.              Since 2.6.0
+                                                                         (BBDO 1.1.0).
+============================= ================ ========================= =============
 
 *******
 Storage
@@ -796,9 +824,9 @@ Metric
 This event is generated by a Storage endpoint to notify that a RRD
 metric graph should be updated.
 
-============== ================ ========================================
-Property       Type             Description
-============== ================ ========================================
+============== ================ ======================================== =============
+Property       Type             Description                              Version
+============== ================ ======================================== =============
 ctime          time             Time at which the metric value was
                                 generated.
 interval       unsigned integer Normal service check interval in
@@ -811,7 +839,9 @@ value_type     short integer    Metric type (1 = counter, 2 = derive,
                                 3 = absolute, other = gauge).
 is_for_rebuild boolean          Set to true when a graph is being
                                 rebuild (see the rebuild event).
-============== ================ ========================================
+instance_id    unsigned integer Instance ID.                             Since 2.6.0
+                                                                         (BBDO 1.1.0).
+============== ================ ======================================== =============
 
 Rebuild
 =======
@@ -821,17 +851,19 @@ graph should be rebuild. It first sends a rebuild start event
 (end = false), then metric values (metric event with is_for_rebuild set
 to true) and finally a rebuild end event (end = true).
 
-======== ================ ==============================================
-Property Type             Description
-======== ================ ==============================================
-end      boolean          End flag. Set to true if rebuild is starting,
-                          false if it is ending.
-id       unsigned integer ID of metric to rebuild if is_index is false,
-                          or ID of index to rebuild (status graph) if
-                          is_index is true.
-is_index boolean          Index flag. Rebuild index (status) if true,
-                          rebuild metric if false.
-======== ================ ==============================================
+=========== ================ ============================================== =============
+Property    Type             Description                                    Version
+=========== ================ ============================================== =============
+end         boolean          End flag. Set to true if rebuild is starting,
+                             false if it is ending.
+id          unsigned integer ID of metric to rebuild if is_index is false,
+                             or ID of index to rebuild (status graph) if
+                             is_index is true.
+is_index    boolean          Index flag. Rebuild index (status) if true,
+                             rebuild metric if false.
+instance_id unsigned integer Instance ID.                                   Since 2.6.0
+                                                                            (BBDO 1.1.0).
+=========== ================ ============================================== =============
 
 Remove graph
 ============
@@ -839,21 +871,24 @@ Remove graph
 A Storage endpoint generates a remove graph event when some graph must
 be deleted.
 
-======== ================ ==============================================
-Property Type             Description
-======== ================ ==============================================
-id       unsigned integer Index ID (is_index = true) or metric ID
-                          (is_index = false) to remove.
-is_index boolean          Index flag. If true, a index (status) graph
-                          will be deleted. If false, a metric graph will
-                          be deleted.
-======== ================ ==============================================
+=========== ================ ============================================== =============
+Property    Type             Description                                    Version
+=========== ================ ============================================== =============
+id          unsigned integer Index ID (is_index = true) or metric ID
+                             (is_index = false) to remove.
+is_index    boolean          Index flag. If true, a index (status) graph
+                             will be deleted. If false, a metric graph will
+                             be deleted.
+instance_id unsigned integer Instance ID.                                   Since 2.6.0
+                                                                            (BBDO 1.1.0).
+=========== ================ ============================================== =============
 
 Status
 ======
-============== ================ ========================================
-Property       Type             Description
-============== ================ ========================================
+
+============== ================ ======================================== =============
+Property       Type             Description                              Version
+============== ================ ======================================== =============
 ctime          time             Time at which the status was generated.
 index_id       unsigned integer Index ID.
 interval       unsigned integer Normal service check interval in
@@ -862,7 +897,9 @@ rrd_len        time             RRD retention in seconds.
 state          short integer    Service state.
 is_for_rebuild boolean          Set to true when a graph is being
                                 rebuild (see the rebuild event).
-============== ================ ========================================
+instance_id    unsigned integer Instance ID.                             Since 2.6.0
+                                                                         (BBDO 1.1.0).
+============== ================ ======================================== =============
 
 ***********
 Correlation
@@ -873,46 +910,52 @@ Engine state
 
 Engine state events are sent when the correlation engine starts or stops.
 
-======== ======= =======================================================
-Property Type    Description
-======== ======= =======================================================
-started  boolean True if the correlation engine is starting, false if it
-                 is stopping.
-======== ======= =======================================================
+=========== ================ ======================================================= =============
+Property    Type             Description                                             Version
+=========== ================ ======================================================= =============
+started     boolean          True if the correlation engine is starting, false if it
+                             is stopping.
+instance_id unsigned integer Instance ID.                                            Since 2.6.0
+                                                                                     (BBDO 1.1.0).
+=========== ================ ======================================================= =============
 
 Host state
 ==========
 
-============= ================ =========================================
-Property      Type             Description
-============= ================ =========================================
+============= ================ ========================================= =============
+Property      Type             Description                               Version
+============= ================ ========================================= =============
 ack_time      time
 current_state integer
 end_time      time
 host_id       unsigned integer
 in_downtime   boolean
 start_time    time
-============= ================ =========================================
+instance_id   unsigned integer Instance ID.                              Since 2.6.0
+                                                                         (BBDO 1.1.0).
+============= ================ ========================================= =============
 
 Issue
 =====
 
-========== ================ ============================================
-Property   Type             Description
-========== ================ ============================================
-ack_time   time
-end_time   time
-host_id    unsigned integer
-service_id unsigned integer
-start_time time
-========== ================ ============================================
+=========== ================ ============================================ =============
+Property    Type             Description                                  Version
+=========== ================ ============================================ =============
+ack_time    time
+end_time    time
+host_id     unsigned integer
+service_id  unsigned integer
+start_time  time
+instance_id unsigned integer Instance ID.                                 Since 2.6.0
+                                                                          (BBDO 1.1.0).
+=========== ================ ============================================ =============
 
 Issue parent
 ============
 
-================= ================ =====================================
-Property          Type             Description
-================= ================ =====================================
+================= ================ ===================================== =============
+Property          Type             Description                           Version
+================= ================ ===================================== =============
 child_host_id     unsigned integer
 child_service_id  unsigned integer
 child_start_time  time
@@ -921,14 +964,16 @@ parent_host_id    unsigned integer
 parent_service_id unsigned integer
 parent_start_time time
 start_time        time
-================= ================ =====================================
+instance_id       unsigned integer Instance ID.                          Since 2.6.0
+                                                                         (BBDO 1.1.0).
+================= ================ ===================================== =============
 
 Service state
 =============
 
-============= ================ =========================================
-Property      Type             Description
-============= ================ =========================================
+============= ================ ========================================= =============
+Property      Type             Description                               Version
+============= ================ ========================================= =============
 ack_time      time
 current_state int
 end_time      time
@@ -936,7 +981,9 @@ host_id       unsigned integer
 in_downtime   boolean
 service_id    unsigned integer
 start_time    time
-============= ================ =========================================
+instance_id   unsigned integer Instance ID.                              Since 2.6.0
+                                                                         (BBDO 1.1.0).
+============= ================ ========================================= =============
 
 
 ********
@@ -946,17 +993,19 @@ Internal
 Version response
 ================
 
-========== ============= ===============================================
-Property   Type          Description
-========== ============= ===============================================
-bbdo_major short integer BBDO protocol major used by the peer sending
-                         this *version_response* packet. The sole
-                         current protocol version is 1.0.0.
-bbdo_minor short integer BBDO protocol minor used by the peer sending
-                         this *version_response* packet.
-bbdo_patch short integer BBDO protocol patch used by the peer sending
-                         this *version_response* packet.
-extensions string        Space-separated string of extensions supported
-                         by the peer sending this *version_response*
-                         packet.
-========== ============= ===============================================
+=========== ================ =============================================== =============
+Property    Type             Description                                     Version
+=========== ================ =============================================== =============
+bbdo_major  short integer    BBDO protocol major used by the peer sending
+                             this *version_response* packet. The sole
+                             current protocol version is 1.0.0.
+bbdo_minor  short integer    BBDO protocol minor used by the peer sending
+                             this *version_response* packet.
+bbdo_patch  short integer    BBDO protocol patch used by the peer sending
+                             this *version_response* packet.
+extensions  string           Space-separated string of extensions supported
+                             by the peer sending this *version_response*
+                             packet.
+instance_id unsigned integer Instance ID.                                    Since 2.6.0
+                                                                             (BBDO 1.1.0).
+=========== ================ =============================================== =============

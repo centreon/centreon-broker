@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -96,35 +96,48 @@ void stream::read(misc::shared_ptr<io::data>& data) {
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
              << "compression stream is shutdown");
 
-  // Compute compressed data length.
-  if (_get_data(sizeof(qint32))) {
-    int size;
-    {
-      unsigned char* buff((unsigned char*)_rbuffer.data());
-      size = (buff[0] << 24)
-             | (buff[1] << 16)
-             | (buff[2] << 8)
-             | (buff[3]);
-    }
+  try {
+    // Compute compressed data length.
+    if (_get_data(sizeof(qint32))) {
+      int size;
+      {
+        unsigned char* buff((unsigned char*)_rbuffer.data());
+        size = (buff[0] << 24)
+               | (buff[1] << 16)
+               | (buff[2] << 8)
+               | (buff[3]);
+      }
 
-    // Get compressed data.
-    if (_get_data(size + 4)) {
-      misc::shared_ptr<io::raw> r(new io::raw);
-      r->QByteArray::operator=(qUncompress(static_cast<uchar*>(
-                                 static_cast<void*>((_rbuffer.data()
-                                   + 4))),
-                               size));
-      logging::debug(logging::low) << "compression: " << this
-        << " uncompressed " << size + 4 << " bytes to " << r->size()
-        << " bytes";
-      data = r.staticCast<io::data>();
-      _rbuffer.remove(0, size + 4);
+      // Get compressed data.
+      if (_get_data(size + 4)) {
+        misc::shared_ptr<io::raw> r(new io::raw);
+        r->QByteArray::operator=(qUncompress(static_cast<uchar*>(
+                                   static_cast<void*>((_rbuffer.data()
+                                                       + 4))),
+                                   size));
+        logging::debug(logging::low) << "compression: " << this
+          << " uncompressed " << size + 4 << " bytes to " << r->size()
+          << " bytes";
+        data = r;
+        _rbuffer.remove(0, size + 4);
+      }
+      else
+        _rbuffer.clear();
     }
     else
       _rbuffer.clear();
   }
-  else
-    _rbuffer.clear();
+  catch (io::exceptions::shutdown const& e) {
+    if (!_wbuffer.isEmpty()) {
+      misc::shared_ptr<io::raw> r(new io::raw);
+      *static_cast<QByteArray*>(r.data()) = _wbuffer;
+      data = r;
+      _wbuffer.clear();
+    }
+    else
+      throw ;
+  }
+
   return ;
 }
 
@@ -203,7 +216,7 @@ void stream::_flush() {
       compressed->prepend(buffer[i]);
 
     // Send compressed data.
-    _to->write(compressed.staticCast<io::data>());
+    _to->write(compressed);
   }
 
   return ;
@@ -218,18 +231,7 @@ bool stream::_get_data(unsigned int size) {
   bool retval;
   if (static_cast<unsigned int>(_rbuffer.size()) < size) {
     misc::shared_ptr<io::data> d;
-    try {
-      _from->read(d);
-    }
-    catch (io::exceptions::shutdown const& e) {
-      if (!_wbuffer.isEmpty()) {
-        misc::shared_ptr<io::raw> r(new io::raw);
-        *static_cast<QByteArray*>(r.data()) = _wbuffer;
-        _wbuffer.clear();
-      }
-      else
-        throw ;
-    }
+    _from->read(d);
     if (d.isNull())
       retval = false;
     else {
