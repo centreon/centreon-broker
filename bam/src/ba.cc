@@ -298,7 +298,8 @@ void ba::_apply_impact(ba::impact_info& impact) {
   _level_soft -= impact.soft_impact.get_nominal();
 
   // Prevent derive of values.
-  ++_recompute_count;
+  _recompute_count = _recompute_count >= 0 ? _recompute_count + 1 :
+                                           _recompute_count;
   if (_recompute_count >= _recompute_limit)
     _recompute();
 
@@ -337,13 +338,15 @@ void ba::_recompute() {
   _downtime_soft = 0.0;
   _level_hard = 0.0;
   _level_soft = 0.0;
-  _recompute_count = 0;
+  // Set _recompute_count to an invalid, guard value.
+  _recompute_count = -1;
   for (umap<kpi*, impact_info>::iterator
          it(_impacts.begin()),
          end(_impacts.end());
        it != end;
        ++it)
     _apply_impact(it->second);
+  _recompute_count = 0;
   return ;
 }
 
