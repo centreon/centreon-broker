@@ -218,15 +218,6 @@ void perfdata::unit(QString const& u) {
 }
 
 /**
- *  Get the value.
- *
- *  @return Metric value.
- */
-double perfdata::value() const throw () {
-  return (_value);
-}
-
-/**
  *  Set the value.
  *
  *  @param[in] v New value.
