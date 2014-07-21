@@ -118,12 +118,23 @@ void ba::child_has_update(computable* child, stream* visitor) {
     logging::debug(logging::low)
       << "BAM: BA " << _id << " is getting notified of child update";
 
+    impact_values new_hard_impact;
+    impact_values new_soft_impact;
+
+    it->second.kpi_ptr->impact_hard(new_hard_impact);
+    it->second.kpi_ptr->impact_soft(new_soft_impact);
+
+    // If the new impact is the same as the old, don't update.
+    if (it->second.hard_impact == new_hard_impact &&
+        it->second.soft_impact == new_soft_impact)
+      return ;
+
     // Discard old data.
     _unapply_impact(it->second);
 
     // Apply new data.
-    it->second.kpi_ptr->impact_hard(it->second.hard_impact);
-    it->second.kpi_ptr->impact_soft(it->second.soft_impact);
+    it->second.hard_impact = new_hard_impact;
+    it->second.soft_impact = new_soft_impact;
     _apply_impact(it->second);
 
     // Generate status event.
@@ -131,6 +142,7 @@ void ba::child_has_update(computable* child, stream* visitor) {
   }
   return ;
 }
+
 
 /**
  *  Get the hard impact introduced by acknowledged KPI.

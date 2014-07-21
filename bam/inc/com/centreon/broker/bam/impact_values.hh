@@ -41,6 +41,7 @@ namespace          bam {
                    impact_values(impact_values const& other);
                    ~impact_values();
     impact_values& operator=(impact_values const& other);
+    bool           operator==(impact_values const& other) const throw();
     double         get_acknowledgement() const;
     double         get_downtime() const;
     double         get_nominal() const;

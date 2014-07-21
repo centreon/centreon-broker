@@ -65,6 +65,21 @@ impact_values& impact_values::operator=(impact_values const& other) {
 }
 
 /**
+ *  Comparison operator.
+ *
+ *  @param[in] other   Object to compare to.
+ *
+ *  @return True if equal.
+ */
+bool impact_values::operator==(impact_values const& other) const throw() {
+  if (this == &other)
+    return true;
+  return (_acknowledgement == other._acknowledgement &&
+          _downtime == other._downtime &&
+          _nominal == other._nominal);
+}
+
+/**
  *  Get impact induced by acknowledgement.
  *
  *  @return Impact induced by some acknowledgement.
