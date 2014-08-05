@@ -689,12 +689,12 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/monitoring_to_rrd.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
   add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # Graph rebuild
-  # set(TEST_NAME "running_rebuild_graphs")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/rebuild_graphs.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Graph rebuild
+  set(TEST_NAME "running_rebuild_graphs")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/rebuild_graphs.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   # Disable status graphs.
   set(TEST_NAME "running_disable_status_graphs")
   add_executable("${TEST_NAME}"
