@@ -377,7 +377,7 @@ int main() {
         throw (exceptions::msg()
                << "graph rebuild does not handle infinity of file '"
                << file_path.str().c_str() << "' ("
-               << graph.get_rras().front().rbegin()->second << ")");
+               << graph.get_rras().front().begin()->second << ")");
     }
 
     // Success.
