@@ -98,6 +98,7 @@ int main() {
           << "  <include>" PROJECT_SOURCE_DIR "/test/cfg/broker_modules.xml</include>\n"
           << "  <instance>42</instance>\n"
           << "  <instance_name>MyBroker</instance_name>\n"
+          << "  <!--\n"
           << "  <logger>\n"
           << "    <type>file</type>\n"
           << "    <name>cbmod.log</name>\n"
@@ -107,6 +108,7 @@ int main() {
           << "    <info>1</info>\n"
           << "    <level>3</level>\n"
           << "  </logger>\n"
+          << "  -->\n"
           << "  <output>\n"
           << "    <name>EngineToStorageUnitTest</name>\n"
           << "    <type>storage</type>\n"
@@ -374,7 +376,7 @@ int main() {
                && !isinf(graph.get_rras().front().begin()->second))
         throw (exceptions::msg()
                << "graph rebuild does not handle infinity of file '"
-               << file_path.str().c_str() << " ("
+               << file_path.str().c_str() << "' ("
                << graph.get_rras().front().rbegin()->second << ")");
     }
 
