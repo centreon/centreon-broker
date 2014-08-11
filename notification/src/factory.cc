@@ -20,6 +20,7 @@
 #include <memory>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/notification/connector.hh"
 #include "com/centreon/broker/notification/factory.hh"
 
 using namespace com::centreon::broker;
@@ -137,6 +138,75 @@ io::endpoint* factory::new_endpoint(
   (void)is_input;
   (void)is_output;
 
+  // Find DB type.
+  QString type(find_param(cfg, "db_type"));
 
-  return (NULL);
+  // Find DB host.
+  QString host(find_param(cfg, "db_host"));
+
+  // Find DB port.
+  unsigned short port(find_param(cfg, "db_port").toUShort());
+
+  // Find DB user.
+  QString user(find_param(cfg, "db_user"));
+
+  // Find DB password.
+  QString password(find_param(cfg, "db_password"));
+
+  // Find DB name.
+  QString name(find_param(cfg, "db_name"));
+
+  // Transaction size.
+  unsigned int queries_per_transaction(0);
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("queries_per_transaction"));
+    if (it != cfg.params.end())
+      queries_per_transaction = it.value().toUInt();
+    else
+      queries_per_transaction = 1000;
+  }
+
+  // Cleanup check interval.
+  unsigned int cleanup_check_interval(0);
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("cleanup_check_interval"));
+    if (it != cfg.params.end())
+      cleanup_check_interval = it.value().toUInt();
+  }
+
+  // Check replication status ?
+  bool check_replication(true);
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("check_replication"));
+    if (it != cfg.params.end())
+      check_replication = config::parser::parse_boolean(*it);
+  }
+
+  // Use state events ?
+  bool wse(false);
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("with_state_events"));
+    if (it != cfg.params.end())
+      wse = config::parser::parse_boolean(*it);
+  }
+
+  // Connector.
+  std::auto_ptr<notification::connector> c(new notification::connector);
+  c->connect_to(
+       type,
+       host,
+       port,
+       user,
+       password,
+       name,
+       queries_per_transaction,
+       cleanup_check_interval,
+       check_replication,
+       wse);
+  is_acceptor = false;
+  return (c.release());
 }
