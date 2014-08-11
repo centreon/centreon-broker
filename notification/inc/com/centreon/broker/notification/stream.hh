@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_SQL_STREAM_HH
-#  define CCB_SQL_STREAM_HH
+#ifndef CCB_NOTIFICATION_STREAM_HH
+#  define CCB_NOTIFICATION_STREAM_HH
 
 #  include <vector>
 #  include <deque>
@@ -75,4 +75,4 @@ namespace        notification {
 
 CCB_END()
 
-#endif // !CCB_SQL_STREAM_HH
+#endif // !CCB_NOTIFICATION_STREAM_HH

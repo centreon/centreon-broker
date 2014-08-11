@@ -293,7 +293,7 @@ void stream::process(bool in, bool out) {
 void stream::read(misc::shared_ptr<io::data>& d) {
   d.clear();
   throw (exceptions::msg()
-         << "NOTIFICATION: attempt to read from a NOTIFICATION stream");
+         << "NOTIFICATION: attempt to read from a notification stream");
   return ;
 }
 

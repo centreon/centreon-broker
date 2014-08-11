@@ -506,6 +506,13 @@ if (WITH_MODULE_NDO)
   list(APPEND MODULE_LIST "ndo")
 endif()
 
+# NOTIFICATION module.
+option(WITH_MODULE_NOTIFICATION "Build NOTIFICATION module." ON)
+if (WITH_MODULE_NOTIFICATION)
+  add_subdirectory("notification")
+  list(APPEND MODULE_LIST "notification")
+endif()
+
 # Format string.
 string(REPLACE ";" ", " MODULE_LIST "${MODULE_LIST}")
 
