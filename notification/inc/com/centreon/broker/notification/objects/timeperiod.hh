@@ -38,6 +38,23 @@ namespace       notification {
     timeperiod(timeperiod const& obj);
     timeperiod operator=(timeperiod const& obj);
 
+    std::string const&     get_alias() const throw();
+    void                   set_alias(std::string const& value);
+
+    std::vector<std::list<daterange> > const&
+                           get_exceptions() const throw();
+    void                   add_exceptions(std::list<daterange> const& val);
+
+    group const&           get_exclude() const throw();
+    void                   set_exclude(group const& val);
+
+    std::string const&     get_timeperiod_name() const throw();
+    void                   set_timeperiod_name(std::string const& value);
+
+    std::vector<std::list<timerange> > const&
+                           get_timeranges() const throw();
+    void                   add_timerange(std::list<timerange> const& val);
+
   private:
     std::string            _alias;
     std::vector<std::list<daterange> >
