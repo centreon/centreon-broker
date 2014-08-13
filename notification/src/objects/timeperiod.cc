@@ -20,3 +20,15 @@
 #include "com/centreon/broker/notification/objects/timeperiod.hh"
 
 using namespace com::centreon::broker::notification;
+
+timeperiod::timeperiod() {}
+
+timeperiod::timeperiod(timeperiod const& obj) {}
+
+timeperiod timeperiod::operator=(timeperiod const& obj) {
+  if (this != &obj) {
+
+  }
+  return (*this);
+}
+

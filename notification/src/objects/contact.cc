@@ -40,7 +40,8 @@ contact::contact(contact const& obj) :
   _service_notification_commands(obj._service_notification_commands),
   _service_notification_options(obj._service_notification_options),
   _service_notification_period(obj._service_notification_period),
-  _service_notifications_enabled(obj._service_notifications_enabled) {}
+  _service_notifications_enabled(obj._service_notifications_enabled),
+  _services(obj._services) {}
 
 contact& contact::operator=(contact const& obj) {
   if (this != &obj) {
@@ -61,6 +62,7 @@ contact& contact::operator=(contact const& obj) {
     _service_notification_options = obj._service_notification_options;
     _service_notification_period = obj._service_notification_period;
     _service_notifications_enabled = obj._service_notifications_enabled;
+    _services = obj._services;
   }
   return *this;
 }

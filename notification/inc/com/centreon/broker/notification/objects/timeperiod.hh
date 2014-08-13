@@ -20,14 +20,32 @@
 #ifndef CCB_NOTIFICATION_TIMEPERIOD_HH
 #  define CCB_NOTIFICATION_TIMEPERIOD_HH
 
+#  include <string>
+#  include <vector>
+#  include <list>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/objects/group.hh"
+#  include "com/centreon/broker/notification/objects/timerange.hh"
+#  include "com/centreon/broker/notification/objects/daterange.hh"
 
 CCB_BEGIN()
 
 namespace       notification {
 
   class         timeperiod {
+  public:
+    timeperiod();
+    timeperiod(timeperiod const& obj);
+    timeperiod operator=(timeperiod const& obj);
 
+  private:
+    std::string            _alias;
+    std::vector<std::list<daterange> >
+                           _exceptions;
+    group                  _exclude;
+    std::string            _timeperiod_name;
+    std::vector<std::list<timerange> >
+                           _timeranges;
   };
 
 }
