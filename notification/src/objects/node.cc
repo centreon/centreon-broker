@@ -23,7 +23,7 @@ using namespace com::centreon::broker::notification;
 
 node::node() :
   _notification_number(0),
-  _last_notification_time(),
+  _last_notification_time(0),
   _hard_state(0),
   _soft_state(0) {}
 

@@ -21,7 +21,14 @@
 
 using namespace com::centreon::broker::notification;
 
-contact::contact() {}
+contact::contact() :
+  _can_submit_commands(false),
+  _host_notifications_enabled(false),
+  _host_notification_options(0),
+  _retain_nonstatus_information(false),
+  _retain_status_information(false),
+  _service_notification_options(0),
+  _service_notifications_enabled(false) {}
 
 contact::contact(contact const& obj) :
   _address(obj._address),

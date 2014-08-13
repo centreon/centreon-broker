@@ -110,5 +110,5 @@ time_t timeperiod::get_next_valid(time_t preferred_time) const {
       valid_time,
       current_time,
       tperiod));*/
-  return (time_t());
+  return (time_t()); // STUB
 }
