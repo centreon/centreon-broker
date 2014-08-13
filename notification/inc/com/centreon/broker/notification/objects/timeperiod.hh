@@ -55,6 +55,11 @@ namespace       notification {
                            get_timeranges() const throw();
     void                   add_timerange(std::list<timerange> const& val);
 
+    std::string const&     get_timezone() const throw();
+    void                   set_timezone(std::string const& tz);
+
+    bool                   is_valid(time_t preferred_time) const;
+
   private:
     std::string            _alias;
     std::vector<std::list<daterange> >
@@ -63,6 +68,7 @@ namespace       notification {
     std::string            _timeperiod_name;
     std::vector<std::list<timerange> >
                            _timeranges;
+    std::string            _timezone;
   };
 
 }

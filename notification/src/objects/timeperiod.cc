@@ -28,7 +28,8 @@ timeperiod::timeperiod(timeperiod const& obj) :
   _exceptions(obj._exceptions),
   _exclude(obj._exclude),
   _timeperiod_name(obj._timeperiod_name),
-  _timeranges(obj._timeranges) {}
+  _timeranges(obj._timeranges),
+  _timezone(obj._timezone) {}
 
 timeperiod timeperiod::operator=(timeperiod const& obj) {
   if (this != &obj) {
@@ -37,6 +38,7 @@ timeperiod timeperiod::operator=(timeperiod const& obj) {
     _exclude = obj._exclude;
     _timeperiod_name = obj._timeperiod_name;
     _timeranges = obj._timeranges;
+    _timezone = obj._timezone;
   }
   return (*this);
 }
@@ -81,4 +83,16 @@ std::vector<std::list<timerange> > const&
 
 void timeperiod::add_timerange(std::list<timerange> const& val) {
   _timeranges.push_back(val);
+}
+
+std::string const& timezone::get_timezone() const throw() {
+  return (_timezone);
+}
+
+void timezone::set_timezone(std::string const& tz) {
+  _timezone = tz;
+}
+
+bool timeperiod::is_valid(time_t preferred_time) const {
+  return (false); // STUB
 }
