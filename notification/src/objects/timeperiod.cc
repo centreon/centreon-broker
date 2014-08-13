@@ -85,14 +85,30 @@ void timeperiod::add_timerange(std::list<timerange> const& val) {
   _timeranges.push_back(val);
 }
 
-std::string const& timezone::get_timezone() const throw() {
+std::string const& timeperiod::get_timezone() const throw() {
   return (_timezone);
 }
 
-void timezone::set_timezone(std::string const& tz) {
+void timeperiod::set_timezone(std::string const& tz) {
   _timezone = tz;
 }
 
 bool timeperiod::is_valid(time_t preferred_time) const {
-  return (false); // STUB
+  return (get_next_valid(preferred_time) == preferred_time);
+}
+
+time_t timeperiod::get_next_valid(time_t preferred_time) const {
+  // Preferred time must be now or in the future.
+  time_t current_time(time(NULL));
+  preferred_time = std::max(preferred_time, current_time);
+
+  // First check for possible timeperiod exclusions
+  // before getting a valid_time.
+  /*timezone_locker tzlock(tz);
+    return (_get_next_valid_time_per_timeperiod(
+      preferred_time,
+      valid_time,
+      current_time,
+      tperiod));*/
+  return (time_t());
 }

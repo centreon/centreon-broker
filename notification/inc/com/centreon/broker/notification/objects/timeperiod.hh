@@ -59,6 +59,7 @@ namespace       notification {
     void                   set_timezone(std::string const& tz);
 
     bool                   is_valid(time_t preferred_time) const;
+    time_t                 get_next_valid(time_t preferred_time) const;
 
   private:
     std::string            _alias;
