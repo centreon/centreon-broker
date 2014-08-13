@@ -72,6 +72,9 @@ namespace       notification {
     void                     set_service_notification_period(std::string const&);
     bool                     get_service_notifications_enabled() const throw();
     void                     set_service_notifications_enabled(bool value) throw();
+    std::vector<std::string> const&
+                             get_services() const throw();
+    void                     add_services(std::string const& service);
 
   private:
     std::vector<std::string> _address;
@@ -93,6 +96,7 @@ namespace       notification {
     unsigned int             _service_notification_options;
     std::string              _service_notification_period;
     bool                     _service_notifications_enabled;
+    std::vector<std::string> _services;
   };
 
 }

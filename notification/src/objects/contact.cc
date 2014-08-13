@@ -201,3 +201,11 @@ bool contact::get_service_notifications_enabled() const throw() {
 void contact::set_service_notifications_enabled(bool value) throw() {
   _service_notifications_enabled = value;
 }
+
+std::vector<std::string> const& contact::get_services() const throw() {
+  return (_services);
+}
+
+void contact::add_services(std::string const& service) {
+  _services.push_back(service);
+}
