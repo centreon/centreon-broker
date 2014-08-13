@@ -28,7 +28,7 @@ contact::contact(contact const& obj) :
   _alias(obj._alias),
   _can_submit_commands(obj._can_submit_commands),
   _contact_name(obj._contact_name),
-  _customvariables(obj._custombariables),
+  _customvariables(obj._customvariables),
   _email(obj._email),
   _host_notifications_enabled(obj._host_notifications_enabled),
   _host_notification_commands(obj._host_notification_commands),
@@ -48,7 +48,7 @@ contact& contact::operator=(contact const& obj) {
     _alias = obj._alias;
     _can_submit_commands = obj._can_submit_commands;
     _contact_name = obj._contact_name;
-    _customvariables = obj._custombariables;
+    _customvariables = obj._customvariables;
     _email = obj._email;
     _host_notifications_enabled = obj._host_notifications_enabled;
     _host_notification_commands = obj._host_notification_commands;
@@ -65,3 +65,139 @@ contact& contact::operator=(contact const& obj) {
   return *this;
 }
 
+std::vector<std::string> const& contact::get_address() const throw() {
+  return (_address);
+}
+
+void contact::add_address(std::string const& value) {
+  _address.push_back(value);
+}
+
+std::string const& contact::get_alias() const throw() {
+  return (_alias);
+}
+
+void contact::set_alias(std::string const& value) {
+  _alias = value;
+}
+
+bool contact::get_can_submit_commands() const throw() {
+  return (_can_submit_commands);
+}
+
+void contact::set_can_submit_commands(bool value) throw() {
+  _can_submit_commands = value;
+}
+
+group const& contact::get_group() const throw() {
+  return (_contactgroups);
+}
+
+void contact::set_group(group const& value) {
+  _contactgroups = value;
+}
+
+std::map<std::string, std::string> const&
+                         contact::get_customvariables() const throw() {
+  return (_customvariables);
+}
+
+void contact::add_customvariables(std::string const& name,
+                                  std::string const& value) {
+  _customvariables[name] = value;
+}
+
+std::string const& contact::get_email() const throw() {
+  return (_email);
+}
+
+void contact::set_email(std::string const& value) {
+  _email = value;
+}
+
+bool contact::get_host_notifications_enabled() const throw() {
+  return (_host_notifications_enabled);
+}
+
+void contact::set_host_notifications_enabled(bool value) throw() {
+  _host_notifications_enabled = value;
+}
+
+group const& contact::get_host_notification_commands() const throw() {
+  return (_host_notification_commands);
+}
+
+void contact::set_host_notification_commands(group const& value) {
+  _host_notification_commands = value;
+}
+
+unsigned int contact::get_host_notification_options() const throw() {
+  return (_host_notification_options);
+}
+
+void contact::set_host_notification_options(unsigned int value) throw() {
+  _host_notification_options = value;
+}
+
+std::string const& contact::get_host_notification_period() const throw() {
+  return (_host_notification_period);
+}
+
+void contact::set_host_notification_period(std::string const& value) {
+  _host_notification_period = value;
+}
+
+bool contact::get_retain_nonstatus_information() const throw() {
+  return (_retain_nonstatus_information);
+}
+
+void contact::set_retain_nonstatus_information(bool value) throw() {
+  _retain_nonstatus_information = value;
+}
+
+bool contact::get_retain_status_information() const throw() {
+  return (_retain_status_information);
+}
+
+void contact::set_retain_status_information(bool value) throw() {
+  _retain_status_information = value;
+}
+
+std::string const& contact::get_pager() const throw() {
+  return (_pager);
+}
+
+void contact::set_pager(std::string const& value) {
+  _pager = value;
+}
+
+group const& contact::get_service_notification_commands() const throw() {
+  return (_service_notification_commands);
+}
+
+void contact::set_service_notification_commands(group const& value) {
+  _service_notification_commands = value;
+}
+
+unsigned int contact::get_service_notification_options() const throw() {
+  return (_service_notification_options);
+}
+void contact::set_service_notification_options(unsigned int value) throw() {
+  _service_notification_options = value;
+}
+
+std::string const& contact::get_service_notification_period() const throw() {
+  return (_service_notification_period);
+}
+
+void contact::set_service_notification_period(std::string const& value) {
+  _service_notification_period = value;
+}
+
+bool contact::get_service_notifications_enabled() const throw() {
+  return (_service_notifications_enabled);
+}
+
+void contact::set_service_notifications_enabled(bool value) throw() {
+  _service_notifications_enabled = value;
+}
