@@ -20,3 +20,24 @@
 #include "com/centreon/broker/notification/objects/command.hh"
 
 using namespace com::centreon::broker::notification;
+
+command::command(std::string const& base_command) :
+  _base_command(base_command) {}
+
+command::command(command const& obj) :
+  _base_command(obj._base_command) {}
+
+command& command::operator=(command const& obj) {
+  if (this != &obj) {
+    _base_command = obj._base_command;
+  }
+  return (*this);
+}
+
+std::string command::resolve(neb::host_status) {
+  return (_base_command); // STUB
+}
+
+std::string command::resolve(neb::service_status) {
+  return (_base_command); // STUB
+}

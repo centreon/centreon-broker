@@ -20,6 +20,10 @@
 #ifndef CCB_NOTIFICATION_COMMAND_HH
 #  define CCB_NOTIFICATION_COMMAND_HH
 
+#  include <string>
+
+#  include "com/centreon/broker/neb/host_status.hh"
+#  include "com/centreon/broker/neb/service_status.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -27,7 +31,18 @@ CCB_BEGIN()
 namespace       notification {
 
   class         command {
+  public:
+    command(std::string const& base_command);
+    command(command const& obj);
+    command& operator=(command const& obj);
 
+    std::string resolve(neb::host_status);
+    std::string resolve(neb::service_status);
+
+  private:
+    command();
+
+    std::string _base_command;
   };
 
 }
