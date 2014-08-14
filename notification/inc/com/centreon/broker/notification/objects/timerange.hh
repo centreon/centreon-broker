@@ -20,6 +20,7 @@
 #ifndef CCB_NOTIFICATION_OBJECTS_TIMERANGE_HH
 #  define CCB_NOTIFICATION_OBJECTS_TIMERANGE_HH
 
+#  include <ctime>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -40,6 +41,14 @@ namespace         notification {
     void          end(unsigned long value);
     unsigned long start() const throw ();
     void          start(unsigned long value);
+    unsigned long start_hour() const throw();
+    unsigned long start_minute() const throw();
+    unsigned long end_hour() const throw();
+    unsigned long end_minute() const throw();
+
+    bool          to_time_t(struct tm const& midnight,
+                            time_t& range_start,
+                            time_t& range_end) const;
 
   private:
     unsigned long _end;

@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstring>
 #include "com/centreon/broker/notification/objects/timerange.hh"
 
 using namespace com::centreon::broker::notification;
@@ -133,4 +134,43 @@ unsigned long timerange::start() const throw () {
  */
 void timerange::start(unsigned long value) {
   _start = value;
+}
+
+unsigned long timerange::start_hour() const throw() {
+  return (_start / (60 * 60));
+}
+
+unsigned long timerange::start_minute() const throw() {
+  return ((_start / 60) % 60);
+}
+
+unsigned long timerange::end_hour() const throw() {
+  return (_end / (60 * 60));
+}
+
+unsigned long timerange::end_minute() const throw() {
+  return ((_end / 60) % 60);
+}
+
+/**
+ *  Get time range limits.
+ *
+ *  @param[in]  midnight     Midnight of day.
+ *  @param[out] range_start  Start of time range in this specific day.
+ *  @param[out] range_end    End of time range in this specific day.
+ *
+ *  @return True upon successful conversion.
+ */
+bool timerange::to_time_t(struct tm const& midnight,
+                          time_t& range_start,
+                          time_t& range_end) const {
+  struct tm my_tm;
+  memcpy(&my_tm, &midnight, sizeof(my_tm));
+  my_tm.tm_hour = start_hour();
+  my_tm.tm_min = start_minute();
+  range_start = mktime(&my_tm);
+  my_tm.tm_hour = end_hour();
+  my_tm.tm_min = end_minute();
+  range_end = mktime(&my_tm);
+  return (true);
 }

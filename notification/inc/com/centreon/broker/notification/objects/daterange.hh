@@ -22,6 +22,7 @@
 
 #  include <list>
 #  include <string>
+#  include <ctime>
 #  include "com/centreon/broker/notification/objects/timerange.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -74,6 +75,10 @@ namespace        notification {
     void         year_start(unsigned int value);
     unsigned int year_start() const throw ();
 
+    bool         to_time_t(time_t const preferred_time,
+                           time_t& start,
+                           time_t& end) const;
+
   private:
     unsigned int _month_end;
     unsigned int _month_start;
@@ -89,6 +94,23 @@ namespace        notification {
     int          _week_day_start_offset;
     unsigned int _year_end;
     unsigned int _year_start;
+
+    struct time_info;
+
+    bool         _calendar_date_to_time_t(time_t& start,
+                                          time_t& end) const;
+    bool         _month_date_to_time_t(time_info const& ti,
+                                       time_t& start,
+                                       time_t& end) const;
+    bool         _month_day_to_time_t(time_info const& ti,
+                                     time_t& start,
+                                     time_t& end) const;
+    bool         _month_week_day_to_time_t(time_info const& ti,
+                                           time_t& start,
+                                           time_t& end) const;
+    bool         _week_day_to_time_t(time_info const& ti,
+                                     time_t& start,
+                                     time_t& end) const;
   };
 }
 
