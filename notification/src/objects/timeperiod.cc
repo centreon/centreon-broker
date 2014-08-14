@@ -52,65 +52,154 @@ timeperiod timeperiod::operator=(timeperiod const& obj) {
   return (*this);
 }
 
+/**
+ *  Get the alias of the timeperiod.
+ *
+ *  @return The alias of the timeperiod.
+ */
 std::string const& timeperiod::get_alias() const throw() {
   return (_alias);
 }
 
+/**
+ *  Set the alias of the timeperiod.
+ *
+ *  @param value The new alias' value.
+ */
 void timeperiod::set_alias(std::string const& value) {
   _alias = value;
 }
 
+/**
+ *  Get the timeperiod exceptions.
+ *
+ *  @return The timeperiod exceptions.
+ */
 std::vector<std::list<daterange> > const&
   timeperiod::get_exceptions() const throw() {
   return (_exceptions);
 }
 
+/**
+ *  Add a new timeperiod exception.
+ *
+ *  @param val The exception to add.
+ */
 void timeperiod::add_exceptions(std::list<daterange> const& val) {
   _exceptions.push_back(val);
 }
 
+/**
+ *  Get the excluded timeperiods.
+ *
+ *  @return The excluded timeperiods.
+ */
 group const& timeperiod::get_exclude() const throw() {
   return (_exclude);
 }
 
+/**
+ *  Set the excluded timeperiods.
+ *
+ *  @param val The new excluded timeperiods.
+ */
 void timeperiod::set_exclude(group const& val) {
   _exclude = val;
 }
 
+/**
+ *  Get the timeperiod name.
+ *
+ *  @return The timeperiod name.
+ */
 std::string const& timeperiod::get_timeperiod_name() const throw() {
   return (_timeperiod_name);
 }
 
+/**
+ *  Set the timeperiod name.
+ *
+ * @param value The new name.
+ */
 void timeperiod::set_timeperiod_name(std::string const& value) {
   _timeperiod_name = value;
 }
 
+/**
+ *  Get the timeperiod timeranges.
+ *
+ *  @return The timeperiod timeranges.
+ */
 std::vector<std::list<timerange> > const&
   timeperiod::get_timeranges() const throw() {
   return (_timeranges);
 }
 
+/**
+ *  Set the timeperiod timeranges.
+ *
+ *  @param val The timeranges to be added.
+ */
 void timeperiod::add_timerange(std::list<timerange> const& val) {
   _timeranges.push_back(val);
 }
 
+/**
+ *  Get the timerange of a particular day.
+ *
+ *  @param day The day (from 0 to 6).
+ *  @return The timerange on this day.
+ */
 std::list<timerange> const&
   timeperiod::get_timeranges_by_day(int day) const throw() {
   return (_timeranges[day]);
 }
 
+/**
+ *  Set the timerange of a particular day.
+ *
+ *  @param val The new timeranges to set.
+ *  @param day The day (from 0 to 6).
+ */
+void timeperiod::set_timerange(std::list<timerange> const& val,
+                               int day) {
+  _timeranges[day] = val;
+}
+
+/**
+ *  Get the timezone of this timeperiod.
+ *
+ *  @return The timezone.
+ */
 std::string const& timeperiod::get_timezone() const throw() {
   return (_timezone);
 }
 
+/**
+ *  Set the timezone of this timeperiod.
+ *
+ *  @param tz The timezone to set.
+ */
 void timeperiod::set_timezone(std::string const& tz) {
   _timezone = tz;
 }
 
+/**
+ *  Check if the preferred time is valid in this timeperiod.
+ *
+ *  @param preferred_time The time to check.
+ *  @return True if it is valid.
+ */
 bool timeperiod::is_valid(time_t preferred_time) const {
   return (get_next_valid(preferred_time) == preferred_time);
 }
 
+/**
+ *  Get the next valid time from preferred time in this timeperiod.
+ *
+ *  @param preferred_time The preferred time.
+ *  @return The next valid time.
+ */
 time_t timeperiod::get_next_valid(time_t preferred_time) const {
   // Preferred time must be now or in the future.
   time_t current_time(time(NULL));
