@@ -203,3 +203,20 @@ std::string& string::trim_right(std::string& str) throw () {
     str.erase(pos + 1);
   return (str);
 }
+
+/**
+ *  Replace all the instance of string str from the string input.
+ *
+ *  @param[in,out] input The string to modify.
+ *  @param[in] str The string to search for.
+ *  @param[in] str2 The string to replace.
+ */
+void string::replace_all(std::string& input,
+                         std::string const& str,
+                         std::string const& str2) {
+  size_t pos = 0;
+  while ((pos = input.find(str, pos)) != std::string::npos) {
+       input.replace(pos, str.length(), str2);
+       pos += str.length();
+  }
+}

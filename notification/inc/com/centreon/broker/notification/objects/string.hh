@@ -201,6 +201,9 @@ namespace                 string {
   std::string&            trim(std::string& str) throw ();
   std::string&            trim_left(std::string& str) throw ();
   std::string&            trim_right(std::string& str) throw ();
+  void                    replace_all(std::string& input,
+                                      std::string const& str,
+                                      std::string const& str2);
 }
 
 CCB_END()
