@@ -17,9 +17,16 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <ctime>
+#include "com/centreon/broker/notification/objects/timezone_locker.hh"
 #include "com/centreon/broker/notification/objects/timeperiod.hh"
 
 using namespace com::centreon::broker::notification;
+
+static time_t _get_next_valid_time_per_timeperiod(
+              time_t preferred_time,
+              time_t current_time,
+              timeperiod const& tperiod);
 
 timeperiod::timeperiod() {}
 
@@ -111,12 +118,11 @@ time_t timeperiod::get_next_valid(time_t preferred_time) const {
 
   // First check for possible timeperiod exclusions
   // before getting a valid_time.
-  /*timezone_locker tzlock(tz);
+  timezone_locker tzlock(_timezone.c_str());
     return (_get_next_valid_time_per_timeperiod(
       preferred_time,
-      valid_time,
       current_time,
-      tperiod));*/
+      *this));
   return (time_t()); // STUB
 }
 
@@ -206,7 +212,7 @@ static time_t _earliest_midnight_in_daterange(
 static time_t _get_next_valid_time_per_timeperiod(
               time_t preferred_time,
               time_t current_time,
-              timeperiod& tperiod) {
+              timeperiod const& tperiod) {
 
   // If no time can be found, the original preferred time will be returned
   time_t original_preferred_time(preferred_time);
