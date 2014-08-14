@@ -136,18 +136,38 @@ void timerange::start(unsigned long value) {
   _start = value;
 }
 
+/**
+ *  Get the hour when the timerange starts.
+ *
+ *  @return The hour when the timerange starts.
+ */
 unsigned long timerange::start_hour() const throw() {
   return (_start / (60 * 60));
 }
 
+/**
+ *  Get the minute when the timerange starts.
+ *
+ *  @return The minute when the timerange starts.
+ */
 unsigned long timerange::start_minute() const throw() {
   return ((_start / 60) % 60);
 }
 
+/**
+ *  Get the hour when the timerange ends.
+ *
+ *  @return The hour when the timerange ends.
+ */
 unsigned long timerange::end_hour() const throw() {
   return (_end / (60 * 60));
 }
 
+/**
+ *  Get the minute when the timerange ends.
+ *
+ *  @return The minute when the timerange ends.
+ */
 unsigned long timerange::end_minute() const throw() {
   return ((_end / 60) % 60);
 }
