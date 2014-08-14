@@ -54,6 +54,8 @@ namespace       notification {
     std::vector<std::list<timerange> > const&
                            get_timeranges() const throw();
     void                   add_timerange(std::list<timerange> const& val);
+    std::list<timerange> const&
+                           get_timeranges_by_day(int day) const throw();
 
     std::string const&     get_timezone() const throw();
     void                   set_timezone(std::string const& tz);

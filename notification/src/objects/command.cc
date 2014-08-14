@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/notification/objects/string.hh"
 #include "com/centreon/broker/notification/objects/command.hh"
 
 using namespace com::centreon::broker::notification;
@@ -34,8 +35,12 @@ command& command::operator=(command const& obj) {
   return (*this);
 }
 
+
 std::string command::resolve(neb::host_status) {
-  return (_base_command); // STUB
+  std::string ret(_base_command);
+
+  //string::replace_all(ret, "$HOSTADDRESS$", );
+  return (ret);
 }
 
 std::string command::resolve(neb::service_status) {
