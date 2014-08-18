@@ -40,20 +40,20 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
       << query.lastError().text());
 
   while (query.next()) {
-    contact cont;
+    shared_ptr<contact> cont(new contact);
     unsigned int id = query.value(0).toUInt();
-    cont.set_host_notification_period(query.value(1).toString().toStdString());
-    cont.set_service_notification_period(query.value(2).toString().toStdString());
-    cont.set_name(query.value(3).toString().toStdString());
-    cont.set_alias(query.value(4).toString().toStdString());
-    cont.set_email(query.value(7).toString().toStdString());
-    cont.set_pager(query.value(8).toString().toStdString());
-    cont.add_address(query.value(9).toString().toStdString());
-    cont.add_address(query.value(10).toString().toStdString());
-    cont.add_address(query.value(11).toString().toStdString());
-    cont.add_address(query.value(12).toString().toStdString());
-    cont.add_address(query.value(13).toString().toStdString());
-    cont.add_address(query.value(14).toString().toStdString());
+    cont->set_host_notification_period(query.value(1).toString().toStdString());
+    cont->set_service_notification_period(query.value(2).toString().toStdString());
+    cont->set_name(query.value(3).toString().toStdString());
+    cont->set_alias(query.value(4).toString().toStdString());
+    cont->set_email(query.value(7).toString().toStdString());
+    cont->set_pager(query.value(8).toString().toStdString());
+    cont->add_address(query.value(9).toString().toStdString());
+    cont->add_address(query.value(10).toString().toStdString());
+    cont->add_address(query.value(11).toString().toStdString());
+    cont->add_address(query.value(12).toString().toStdString());
+    cont->add_address(query.value(13).toString().toStdString());
+    cont->add_address(query.value(14).toString().toStdString());
 
     output->add_contact(id, cont);
   }

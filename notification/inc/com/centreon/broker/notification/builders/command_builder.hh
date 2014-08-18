@@ -20,6 +20,7 @@
 #ifndef CCB_NOTIFICATION_BUILDERS_COMMAND_BUILDER_HH
 #  define CCB_NOTIFICATION_BUILDERS_COMMAND_BUILDER_HH
 
+#  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/command.hh"
 
@@ -32,7 +33,7 @@ namespace       notification {
     virtual ~command_builder() {}
 
     virtual void add_command(unsigned int id,
-                             command& com) = 0;
+                             shared_ptr<command> com) = 0;
   };
 
 }

@@ -43,7 +43,7 @@ void command_loader::load(QSqlDatabase* db, command_builder* output) {
   while (query.next()) {
     unsigned int id = query.value(0).toUInt();
     std::string base_command = query.value(4).toString().toStdString();
-    command com(base_command);
+    shared_ptr<command> com(new command(base_command));
 
     output->add_command(id, com);
   }

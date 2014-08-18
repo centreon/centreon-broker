@@ -20,6 +20,7 @@
 #ifndef CCB_NOTIFICATION_BUILDERS_TIMEPERIOD_BUILDER_HH
 #  define CCB_NOTIFICATION_BUILDERS_TIMEPERIOD_BUILDER_HH
 
+#  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/timeperiod.hh"
 
@@ -32,7 +33,7 @@ namespace       notification {
     virtual ~timeperiod_builder() {}
 
     virtual void add_timeperiod(unsigned int id,
-                                timeperiod& tperiod) = 0;
+                                shared_ptr<timeperiod> tperiod) = 0;
     virtual void add_timeperiod_exception(unsigned int timeperiod_id,
                                           std::string const& days,
                                            std::string const& timerange) = 0;

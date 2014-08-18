@@ -43,17 +43,17 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
       << query.lastError().text());
 
   while(query.next()) {
-    timeperiod tperiod;
+    shared_ptr<timeperiod> tperiod(new timeperiod);
     unsigned int timeperiod_id = query.value(0).toUInt();
-    tperiod.set_name(query.value(1).toString().toStdString());
-    tperiod.set_alias(query.value(2).toString().toStdString());
-    tperiod.set_timerange(query.value(3).toString().toStdString(), 0);
-    tperiod.set_timerange(query.value(4).toString().toStdString(), 1);
-    tperiod.set_timerange(query.value(5).toString().toStdString(), 2);
-    tperiod.set_timerange(query.value(6).toString().toStdString(), 3);
-    tperiod.set_timerange(query.value(7).toString().toStdString(), 4);
-    tperiod.set_timerange(query.value(8).toString().toStdString(), 5);
-    tperiod.set_timerange(query.value(9).toString().toStdString(), 6);
+    tperiod->set_name(query.value(1).toString().toStdString());
+    tperiod->set_alias(query.value(2).toString().toStdString());
+    tperiod->set_timerange(query.value(3).toString().toStdString(), 0);
+    tperiod->set_timerange(query.value(4).toString().toStdString(), 1);
+    tperiod->set_timerange(query.value(5).toString().toStdString(), 2);
+    tperiod->set_timerange(query.value(6).toString().toStdString(), 3);
+    tperiod->set_timerange(query.value(7).toString().toStdString(), 4);
+    tperiod->set_timerange(query.value(8).toString().toStdString(), 5);
+    tperiod->set_timerange(query.value(9).toString().toStdString(), 6);
 
     output->add_timeperiod(timeperiod_id,
                            tperiod);
