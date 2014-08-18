@@ -21,6 +21,8 @@
 #  define CCB_NOTIFICATION_OBJECTS_TIMERANGE_HH
 
 #  include <ctime>
+#  include <list>
+#  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -49,6 +51,9 @@ namespace         notification {
     bool          to_time_t(struct tm const& midnight,
                             time_t& range_start,
                             time_t& range_end) const;
+
+    static bool   build_timeranges_from_string(std::string const& line,
+                                               std::list<timerange>& timeranges);
 
   private:
     unsigned long _end;

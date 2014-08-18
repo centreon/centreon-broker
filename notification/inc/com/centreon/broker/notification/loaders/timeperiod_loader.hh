@@ -20,21 +20,21 @@
 #ifndef CCB_NOTIFICATION_LOADERS_TIMEPERIOD_LOADER_HH
 #  define CCB_NOTIFICATION_LOADERS_TIMEPERIOD_LOADER_HH
 
+#  include <QSqlDatabase>
+#  include <QSqlQuery>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace       notification {
 
-  // Class forwarding
-  class QSqlDatabase;
-  class timeperiod_builder;
-
   class         timeperiod_loader {
   public:
     timeperiod_loader();
 
     void        load(QSqlDatabase* db, timeperiod_builder* output);
+
+  private:
   };
 
 }

@@ -38,6 +38,7 @@ timeperiod::timeperiod(timeperiod const& obj) :
   _timeranges(obj._timeranges),
   _timezone(obj._timezone) {
   _timeranges.resize(7);
+  _exceptions.resize(daterange::daterange_types);
 }
 
 timeperiod timeperiod::operator=(timeperiod const& obj) {
@@ -112,7 +113,7 @@ void timeperiod::set_exclude(group const& val) {
  *
  *  @return The timeperiod name.
  */
-std::string const& timeperiod::get_timeperiod_name() const throw() {
+std::string const& timeperiod::get_name() const throw() {
   return (_timeperiod_name);
 }
 
@@ -121,7 +122,7 @@ std::string const& timeperiod::get_timeperiod_name() const throw() {
  *
  * @param value The new name.
  */
-void timeperiod::set_timeperiod_name(std::string const& value) {
+void timeperiod::set_name(std::string const& value) {
   _timeperiod_name = value;
 }
 
@@ -164,6 +165,11 @@ std::list<timerange> const&
 void timeperiod::set_timerange(std::list<timerange> const& val,
                                int day) {
   _timeranges[day] = val;
+}
+
+void timeperiod::set_timerange(std::string const& timerange_text,
+                               int day) {
+  timerange::build_timeranges_from_string(timerange_text, _timeranges[day]);
 }
 
 /**

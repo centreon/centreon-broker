@@ -48,13 +48,15 @@ namespace       notification {
     group const&           get_exclude() const throw();
     void                   set_exclude(group const& val);
 
-    std::string const&     get_timeperiod_name() const throw();
-    void                   set_timeperiod_name(std::string const& value);
+    std::string const&     get_name() const throw();
+    void                   set_name(std::string const& value);
 
     std::vector<std::list<timerange> > const&
                            get_timeranges() const throw();
     void                   add_timerange(std::list<timerange> const& val);
     void                   set_timerange(std::list<timerange> const& val,
+                                         int day);
+    void                   set_timerange(std::string const& timerange_text,
                                          int day);
     std::list<timerange> const&
                            get_timeranges_by_day(int day) const throw();

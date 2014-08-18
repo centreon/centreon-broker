@@ -23,6 +23,7 @@
 #  include <list>
 #  include <string>
 #  include <ctime>
+#  include <vector>
 #  include "com/centreon/broker/notification/objects/timerange.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -31,6 +32,8 @@ CCB_BEGIN()
 namespace        notification {
   class          daterange {
   public:
+    static const int daterange_types = 5;
+
     enum         type_range {
       none = -1,
       calendar_date = 0,
@@ -78,6 +81,13 @@ namespace        notification {
     bool         to_time_t(time_t const preferred_time,
                            time_t& start,
                            time_t& end) const;
+
+    static bool  build_calendar_date(std::string const& line,
+                                     std::vector<std::list<daterange> >& list);
+    static bool  build_other_date(std::string const& line,
+                                  std::vector<std::list<daterange> >& list);
+    static bool  build_dateranges_from_string(std::string const& value,
+                              std::vector<std::list<daterange> >& list);
 
   private:
     unsigned int _month_end;

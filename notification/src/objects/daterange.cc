@@ -17,6 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdio>
+#include <cstring>
 #include "com/centreon/broker/notification/objects/daterange.hh"
 
 using namespace com::centreon::broker::notification;
@@ -983,4 +985,400 @@ bool daterange::to_time_t(time_t const preferred_time,
   }
 
   return (true);
+}
+
+/**
+ *  Add a week day.
+ *
+ *  @param[in] key   The week day.
+ *  @param[in] value The range.
+ *
+ *  @return True on success, otherwise false.
+ */
+/*bool _add_week_day(
+       std::string const& key,
+       std::string const& value) {
+  unsigned int day_id;
+  if (!_get_day_id(key, day_id))
+    return (false);
+
+  if (!_build_timeranges(value, _timeranges[day_id]))
+    return (false);
+
+  return (true);
+}*/
+
+/**
+ *  Get the month id.
+ *
+ *  @param[in]  name The month name.
+ *  @param[out] id   The id to fill.
+ *
+ *  @return True on success, otherwise false.
+ */
+static bool _get_month_id(
+          std::string const& name,
+          unsigned int& id) {
+  static std::string const months[] = {
+    "january",
+    "february",
+    "march",
+    "april",
+    "may",
+    "june",
+    "july",
+    "august",
+    "september",
+    "october",
+    "november",
+    "december"
+  };
+  for (id = 0; id < sizeof(months) / sizeof(months[0]); ++id)
+    if (name == months[id])
+      return (true);
+  return (false);
+}
+
+/**
+ *  Get the week day id.
+ *
+ *  @param[in]  name The week day name.
+ *  @param[out] id   The id to fill.
+ *
+ *  @return True on success, otherwise false.
+ */
+static bool _get_day_id(
+          std::string const& name,
+          unsigned int& id) {
+  static std::string const days[] = {
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday"
+  };
+  for (id = 0; id < sizeof(days) / sizeof(days[0]); ++id)
+    if (name == days[id])
+      return (true);
+  return (false);
+}
+
+bool daterange::build_calendar_date(std::string const& line,
+                                    std::vector<std::list<daterange> >& list) {
+  int ret(0);
+  int pos(0);
+  unsigned int month_start(0);
+  unsigned int month_end(0);
+  unsigned int month_day_start(0);
+  unsigned int month_day_end(0);
+  unsigned int year_start(0);
+  unsigned int year_end(0);
+  unsigned int skip_interval(0);
+
+  if ((ret = sscanf(
+               line.c_str(),
+               "%4u-%2u-%2u - %4u-%2u-%2u / %u %n",
+               &year_start,
+               &month_start,
+               &month_day_start,
+               &year_end,
+               &month_end,
+               &month_day_end,
+               &skip_interval,
+               &pos)) == 7)
+    ;
+  else if ((ret = sscanf(
+                    line.c_str(),
+                    "%4u-%2u-%2u - %4u-%2u-%2u %n",
+                    &year_start,
+                    &month_start,
+                    &month_day_start,
+                    &year_end,
+                    &month_end,
+                    &month_day_end,
+                    &pos)) == 6)
+    ;
+  else if ((ret = sscanf(
+                    line.c_str(),
+                    "%4u-%2u-%2u / %u %n",
+                    &year_start,
+                    &month_start,
+                    &month_day_start,
+                    &skip_interval,
+                    &pos)) == 4) {
+    year_end = 0;
+    month_end = 0;
+    month_day_end = 0;
+  }
+  else if ((ret = sscanf(
+                    line.c_str(),
+                    "%4u-%2u-%2u %n",
+                    &year_start,
+                    &month_start,
+                    &month_day_start,
+                    &pos)) == 3) {
+    year_end = year_start;
+    month_end = month_start;
+    month_day_end = month_day_start;
+  }
+
+  if (ret) {
+    std::list<timerange> timeranges;
+    if (!timerange::build_timeranges_from_string(line.substr(pos),
+                                                 timeranges))
+      return (false);
+
+    daterange range(daterange::calendar_date);
+    range.year_start(year_start);
+    range.month_start(month_start - 1);
+    range.month_day_start(month_day_start);
+    range.year_end(year_end);
+    range.month_end(month_end - 1);
+    range.month_day_end(month_day_end);
+    range.skip_interval(skip_interval);
+    range.timeranges(timeranges);
+
+    list[daterange::calendar_date].push_front(range);
+    return (true);
+  }
+  return (false);
+}
+
+bool daterange::build_other_date(std::string const& line,
+                                 std::vector<std::list<daterange> >& list) {
+  int pos(0);
+  daterange::type_range type(daterange::none);
+  unsigned int month_start(0);
+  unsigned int month_end(0);
+  int month_day_start(0);
+  int month_day_end(0);
+  unsigned int skip_interval(0);
+  unsigned int week_day_start(0);
+  unsigned int week_day_end(0);
+  int week_day_start_offset(0);
+  int week_day_end_offset(0);
+  char buffer[4][4096];
+
+  if (line.size() > 1024)
+    return (false);
+
+  if (sscanf(
+        line.c_str(),
+        "%[a-z] %d %[a-z] - %[a-z] %d %[a-z] / %u %n",
+        buffer[0],
+        &week_day_start_offset,
+        buffer[1],
+        buffer[2],
+        &week_day_end_offset,
+        buffer[3],
+        &skip_interval,
+        &pos) == 7) {
+    // wednesday 1 january - thursday 2 july / 3
+    if (_get_day_id(buffer[0], week_day_start)
+        && _get_month_id(buffer[1], month_start)
+        && _get_day_id(buffer[2], week_day_end)
+        && _get_month_id(buffer[3], month_end))
+      type = daterange::month_week_day;
+  }
+  else if (sscanf(
+             line.c_str(),
+             "%[a-z] %d - %[a-z] %d / %u %n",
+             buffer[0],
+             &month_day_start,
+             buffer[1],
+             &month_day_end,
+             &skip_interval,
+             &pos) == 5) {
+    // monday 2 - thursday 3 / 2
+    if (_get_day_id(buffer[0], week_day_start)
+        && _get_day_id(buffer[1], week_day_end)) {
+      week_day_start_offset = month_day_start;
+      week_day_end_offset = month_day_end;
+      type = daterange::week_day;
+    }
+    // february 1 - march 15 / 3
+    else if (_get_month_id(buffer[0], month_start)
+       && _get_month_id(buffer[1], month_end))
+      type = daterange::month_date;
+    // day 4 - 6 / 2
+    else if (!strcmp(buffer[0], "day")
+             && !strcmp(buffer[1], "day"))
+      type = daterange::month_day;
+  }
+  else if (sscanf(
+             line.c_str(),
+             "%[a-z] %d - %d / %u %n",
+             buffer[0],
+             &month_day_start,
+             &month_day_end,
+             &skip_interval,
+             &pos) == 4) {
+    // thursday 2 - 4
+    if (_get_day_id(buffer[0], week_day_start)) {
+      week_day_start_offset = month_day_start;
+      week_day_end = week_day_start;
+      week_day_end_offset = month_day_end;
+      type = daterange::week_day;
+    }
+    // february 3 - 5
+    else if (_get_month_id(buffer[0], month_start)) {
+      month_end = month_start;
+      type = daterange::month_date;
+    }
+    // day 1 - 4
+    else if (!strcmp(buffer[0], "day"))
+      type = daterange::month_day;
+  }
+  else if (sscanf(
+             line.c_str(),
+             "%[a-z] %d %[a-z] - %[a-z] %d %[a-z] %n",
+             buffer[0],
+             &week_day_start_offset,
+             buffer[1],
+             buffer[2],
+             &week_day_end_offset,
+             buffer[3],
+             &pos) == 6) {
+    // wednesday 1 january - thursday 2 july
+    if (_get_day_id(buffer[0], week_day_start)
+        && _get_month_id(buffer[1], month_start)
+        && _get_day_id(buffer[2], week_day_end)
+        && _get_month_id(buffer[3], month_end))
+      type = daterange::month_week_day;
+  }
+  else if (sscanf(
+             line.c_str(),
+             "%[a-z] %d - %d %n",
+             buffer[0],
+             &month_day_start,
+             &month_day_end,
+             &pos) == 3) {
+    // thursday 2 - 4
+    if (_get_day_id(buffer[0], week_day_start)) {
+      week_day_start_offset = month_day_start;
+      week_day_end = week_day_start;
+      week_day_end_offset = month_day_end;
+      type = daterange::week_day;
+    }
+    // february 3 - 5
+    else if (_get_month_id(buffer[0], month_start)) {
+      month_end = month_start;
+      type = daterange::month_date;
+    }
+    // day 1 - 4
+    else if (!strcmp(buffer[0], "day"))
+      type = daterange::month_day;
+  }
+  else if (sscanf(
+             line.c_str(),
+             "%[a-z] %d - %[a-z] %d %n",
+             buffer[0],
+             &month_day_start,
+             buffer[1],
+             &month_day_end,
+             &pos) == 4) {
+    // monday 2 - thursday 3
+    if (_get_day_id(buffer[0], week_day_start)
+        && _get_day_id(buffer[1], week_day_end)) {
+      week_day_start_offset = month_day_start;
+      week_day_end_offset = month_day_end;
+      type = daterange::week_day;
+    }
+    // february 1 - march 15
+    else if (_get_month_id(buffer[0], month_start)
+       && _get_month_id(buffer[1], month_end))
+      type = daterange::month_date;
+    // day 1 - day 5
+    else if (!strcmp(buffer[0], "day")
+             && !strcmp(buffer[1], "day"))
+      type = daterange::month_day;
+  }
+  else if (sscanf(
+             line.c_str(),
+             "%[a-z] %d %[a-z] %n",
+             buffer[0],
+             &week_day_start_offset,
+             buffer[1],
+             &pos) == 3) {
+    // thursday 3 february
+    if (_get_day_id(buffer[0], week_day_start)
+        && _get_month_id(buffer[1], month_start)) {
+      month_end = month_start;
+      week_day_end = week_day_start;
+      week_day_end_offset = week_day_start_offset;
+      type = daterange::month_week_day;
+    }
+  }
+  else if (sscanf(
+             line.c_str(),
+             "%[a-z] %d %n",
+             buffer[0],
+             &month_day_start,
+             &pos) == 2) {
+    // thursday 2
+    if (_get_day_id(buffer[0], week_day_start)) {
+      week_day_start_offset = month_day_start;
+      week_day_end = week_day_start;
+      week_day_end_offset = week_day_start_offset;
+      type = daterange::week_day;
+    }
+    // february 3
+    else if (_get_month_id(buffer[0], month_start)) {
+      month_end = month_start;
+      month_day_end = month_day_start;
+      type = daterange::month_date;
+    }
+    // day 1
+    else if (!strcmp(buffer[0], "day")) {
+      month_day_end = month_day_start;
+      type = daterange::month_day;
+    }
+  }
+
+  if (type != daterange::none) {
+    daterange range(type);
+    if (type == daterange::month_day) {
+      range.month_day_start(month_day_start);
+      range.month_day_end(month_day_end);
+    }
+    else if (type == daterange::month_week_day) {
+      range.month_start(month_start);
+      range.week_day_start(week_day_start);
+      range.week_day_start_offset(week_day_start_offset);
+      range.month_end(month_end);
+      range.week_day_end(week_day_end);
+      range.week_day_end_offset(week_day_end_offset);
+    }
+    else if (type == daterange::week_day) {
+      range.week_day_start(week_day_start);
+      range.week_day_start_offset(week_day_start_offset);
+      range.week_day_end(week_day_end);
+      range.week_day_end_offset(week_day_end_offset);
+    }
+    else if (type == daterange::month_date) {
+      range.month_start(month_start);
+      range.month_day_start(month_day_start);
+      range.month_end(month_end);
+      range.month_day_end(month_day_end);
+    }
+    range.skip_interval(skip_interval);
+
+    std::list<timerange> timeranges;
+    if (!timerange::build_timeranges_from_string(line.substr(pos),
+                                                 timeranges))
+      return (false);
+
+    range.timeranges(timeranges);
+    list[type].push_front(range);
+    return (true);
+  }
+
+  return (false);
+}
+
+bool daterange::build_dateranges_from_string(std::string const& value,
+                             std::vector<std::list<daterange> >& list) {
+  return (build_calendar_date(value, list) || build_other_date(value, list));
 }

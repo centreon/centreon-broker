@@ -17,6 +17,11 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QVariant>
+#include <QSqlError>
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/notification/objects/timeperiod.hh"
+#include "com/centreon/broker/notification/builders/timeperiod_builder.hh"
 #include "com/centreon/broker/notification/loaders/timeperiod_loader.hh"
 
 using namespace com::centreon::broker::notification;
@@ -27,4 +32,56 @@ timeperiod_loader::timeperiod_loader() {
 
 void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
 
+  // If we don't have any db or output, don't do anything.
+  if (!db || !output)
+    return;
+
+  QSqlQuery query(*db);
+  timeperiod tperiod;
+
+  if (!query.exec("SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday, tp_tuesday, tp_wednesday, tp_thursday, tp_friday, tp_saturday sunday from timeperiod"))
+    throw (exceptions::msg()
+      << "Notification: cannot select timeperiod in loader: "
+      << query.lastError().text());
+
+  while(query.next()) {
+    unsigned int timeperiod_id = query.value(0).toUInt();
+    tperiod.set_name(query.value(1).toString().toStdString());
+    tperiod.set_alias(query.value(2).toString().toStdString());
+    tperiod.set_timerange(query.value(3).toString().toStdString(), 0);
+    tperiod.set_timerange(query.value(4).toString().toStdString(), 1);
+    tperiod.set_timerange(query.value(5).toString().toStdString(), 2);
+    tperiod.set_timerange(query.value(6).toString().toStdString(), 3);
+    tperiod.set_timerange(query.value(7).toString().toStdString(), 4);
+    tperiod.set_timerange(query.value(8).toString().toStdString(), 5);
+    tperiod.set_timerange(query.value(9).toString().toStdString(), 6);
+
+    output->add_timeperiod(timeperiod_id,
+                           tperiod);
+  }
+
+  if (!query.exec("SELECT exception_id, timeperiod_id, days, timerange from timeperiod_exceptions"))
+    throw (exceptions::msg()
+      << "Notification: cannot select timeperiod_exceptions in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    unsigned int timeperiod_id = query.value(1).toUInt();
+    std::string days = query.value(2).toString().toStdString();
+    std::string timerange = query.value(3).toString().toStdString();
+
+    output->add_timeperiod_exception(timeperiod_id, days, timerange);
+  }
+
+  if (!query.exec("SELECT exclude_id, timeperiod_id, timeperiod_exclude_id from timeperiod_exclude_relations"))
+    throw (exceptions::msg()
+      << "Notification: cannot select timeperiod_exclude_relations in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    unsigned int timeperiod_id = query.value(0).toUInt();
+    unsigned int timeperiod_exclude_id = query.value(0).toUInt();
+
+    output->add_timeperiod_exclude_relation(timeperiod_id, timeperiod_exclude_id);
+  }
 }

@@ -18,8 +18,10 @@
 */
 
 #include <cstring>
+#include "com/centreon/broker/notification/objects/string.hh"
 #include "com/centreon/broker/notification/objects/timerange.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::notification;
 
 /**
@@ -192,5 +194,43 @@ bool timerange::to_time_t(struct tm const& midnight,
   my_tm.tm_hour = end_hour();
   my_tm.tm_min = end_minute();
   range_end = mktime(&my_tm);
+  return (true);
+}
+
+static bool _build_time_t(std::string const& time_str,
+                          unsigned long& ret) {
+  std::size_t pos(time_str.find(':'));
+  if (pos == std::string::npos)
+    return (false);
+  unsigned long hours;
+  if (!string::to(time_str.substr(0, pos).c_str(), hours))
+    return (false);
+  unsigned long minutes;
+  if (!string::to(time_str.substr(pos + 1).c_str(), minutes))
+    return (false);
+  ret = hours * 3600 + minutes * 60;
+  return (true);
+}
+
+bool timerange::build_timeranges_from_string(std::string const& line,
+                                             std::list<timerange>& timeranges) {
+  std::list<std::string> timeranges_str;
+  string::split(line, timeranges_str, ',');
+  for (std::list<std::string>::const_iterator
+         it(timeranges_str.begin()),
+         end(timeranges_str.end());
+       it != end;
+       ++it) {
+    std::size_t pos(it->find('-'));
+    if (pos == std::string::npos)
+      return (false);
+    unsigned long start_time;
+    if (!_build_time_t(it->substr(0, pos), start_time))
+      return (false);
+    unsigned long end_time;
+    if (!_build_time_t(it->substr(pos + 1), end_time))
+      return (false);
+    timeranges.push_front(timerange(start_time, end_time));
+  }
   return (true);
 }
