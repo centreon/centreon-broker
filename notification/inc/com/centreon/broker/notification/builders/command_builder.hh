@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,26 +17,26 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NOTIFICATION_LOADERS_COMMAND_LOADER_HH
-#  define CCB_NOTIFICATION_LOADERS_COMMAND_LOADER_HH
+#ifndef CCB_NOTIFICATION_BUILDERS_COMMAND_BUILDER_HH
+#  define CCB_NOTIFICATION_BUILDERS_COMMAND_BUILDER_HH
 
-#  include <QSqlDatabase>
-#  include <QSqlQuery>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/objects/command.hh"
 
 CCB_BEGIN()
 
 namespace       notification {
 
-  class         command_loader {
+  class         command_builder {
   public:
-    command_loader();
+    virtual ~command_builder() {}
 
-    void        load(QSqlDatabase* db, command_builder* output);
+    virtual void add_command(unsigned int id,
+                             command& com) = 0;
   };
 
 }
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_LOADERS_COMMAND_LOADER_HH
+#endif // !CCB_NOTIFICATION_BUILDERS_COMMAND_BUILDER_HH

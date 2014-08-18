@@ -17,14 +17,34 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QVariant>
+#include <QSqlError>
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/notification/objects/command.hh"
+#include "com/centreon/broker/notification/builders/command_builder.hh"
 #include "com/centreon/broker/notification/loaders/command_loader.hh"
 
 using namespace com::centreon::broker::notification;
 
-command_loader::command_loader() {
-
-}
+command_loader::command_loader() {}
 
 void command_loader::load(QSqlDatabase* db, command_builder* output) {
+  // If we don't have any db or output, don't do anything.
+  if (!db || !output)
+    return;
 
+  QSqlQuery query(*db);
+
+  if (!query.exec("SELECT command_id, connector_id, command_name, command_line, command_example, command_type, enable_shell, command_comment, graph_id, cmd_cat_id from command"))
+    throw (exceptions::msg()
+      << "Notification: cannot select command in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    unsigned int id = query.value(0).toUInt();
+    std::string base_command = query.value(4).toString().toStdString();
+    command com(base_command);
+
+    output->add_command(id, com);
+  }
 }
