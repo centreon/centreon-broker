@@ -31,13 +31,11 @@ timeperiod_loader::timeperiod_loader() {
 }
 
 void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
-
   // If we don't have any db or output, don't do anything.
   if (!db || !output)
     return;
 
   QSqlQuery query(*db);
-  timeperiod tperiod;
 
   if (!query.exec("SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday, tp_tuesday, tp_wednesday, tp_thursday, tp_friday, tp_saturday sunday from timeperiod"))
     throw (exceptions::msg()
@@ -45,6 +43,7 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
       << query.lastError().text());
 
   while(query.next()) {
+    timeperiod tperiod;
     unsigned int timeperiod_id = query.value(0).toUInt();
     tperiod.set_name(query.value(1).toString().toStdString());
     tperiod.set_alias(query.value(2).toString().toStdString());
