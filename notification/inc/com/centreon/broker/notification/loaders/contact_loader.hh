@@ -20,15 +20,14 @@
 #ifndef CCB_NOTIFICATION_LOADERS_CONTACT_LOADER_HH
 #  define CCB_NOTIFICATION_LOADERS_CONTACT_LOADER_HH
 
+#  include <QSqlDatabase>
+#  include <QSqlQuery>
+#  include "com/centreon/broker/notification/builders/contact_builder.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace       notification {
-
-  // Class forwarding
-  class QSqlDatabase;
-  class contact_builder;
 
   class         contact_loader {
   public:

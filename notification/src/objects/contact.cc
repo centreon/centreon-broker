@@ -98,6 +98,14 @@ void contact::set_can_submit_commands(bool value) throw() {
   _can_submit_commands = value;
 }
 
+std::string const& contact::get_name() const throw() {
+  return (_contact_name);
+}
+
+void contact::set_name(std::string const& value) {
+  _contact_name = value;
+}
+
 group const& contact::get_group() const throw() {
   return (_contactgroups);
 }

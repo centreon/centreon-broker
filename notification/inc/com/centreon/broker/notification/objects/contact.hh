@@ -42,6 +42,8 @@ namespace       notification {
     void                     set_alias(std::string const& value);
     bool                     get_can_submit_commands() const throw();
     void                     set_can_submit_commands(bool value) throw();
+    std::string const&       get_name() const throw();
+    void                     set_name(std::string const& value);
     group const&             get_group() const throw();
     void                     set_group(group const& value);
     std::map<std::string, std::string> const&
