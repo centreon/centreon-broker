@@ -17,14 +17,35 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QVariant>
+#include <QSqlError>
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/notification/objects/dependency.hh"
 #include "com/centreon/broker/notification/loaders/dependency_loader.hh"
 
 using namespace com::centreon::broker::notification;
 
-dependency_loader::dependency_loader() {
-
-}
+dependency_loader::dependency_loader() {}
 
 void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
+  // If we don't have any db or output, don't do anything.
+  if (!db || !output)
+    return;
+
+  QSqlQuery query(*db);
+
+  if (!query.exec("SELECT dep_id, dep_name, dep_description, inherits_parent, execution_failure_criteria, notification_failure_criteria from dependency"))
+    throw (exceptions::msg()
+      << "Notification: cannot select dependency in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    shared_ptr<dependency> dep(new dependency);
+    unsigned int id = query.value(0).toUInt();
+    dep->set_inherits_parent(query.value(3).toBool());
+
+
+    output->add_dependency(id, dep);
+  }
 
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,27 +17,27 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NOTIFICATION_LOADERS_DEPENDENCY_LOADER_HH
-#  define CCB_NOTIFICATION_LOADERS_DEPENDENCY_LOADER_HH
+#ifndef CCB_NOTIFICATION_BUILDERS_CONTACT_BUILDER_HH
+#  define CCB_NOTIFICATION_BUILDERS_CONTACT_BUILDER_HH
 
-#  include <QSqlDatabase>
-#  include <QSqlQuery>
+#  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/builders/dependency_builder.hh"
+#  include "com/centreon/broker/notification/objects/contact.hh"
 
 CCB_BEGIN()
 
 namespace       notification {
 
-  class         dependency_loader {
+  class         contact_builder {
   public:
-    dependency_loader();
+    virtual ~contact_builder() {}
 
-    void        load(QSqlDatabase* db, dependency_builder* output);
+    virtual void add_contact(unsigned int id,
+                             shared_ptr<contact> con) = 0;
   };
 
 }
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_LOADERS_DEPENDENCY_LOADER_HH
+#endif // !CCB_NOTIFICATION_BUILDERS_CONTACT_BUILDER_HH
