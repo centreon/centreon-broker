@@ -1058,7 +1058,7 @@ void stream::_insert_perfdatas() {
                " VALUES (" << mv.metric_id << ", " << mv.c_time << ", "
             << mv.status << ", '";
       if (isinf(mv.value))
-        query << ((mv.value > 0) ? DBL_MAX : DBL_MIN);
+        query << ((mv.value > 0) ? FLT_MAX : FLT_MIN);
       else if (isnan(mv.value))
         query << "NULL";
       else
@@ -1073,7 +1073,7 @@ void stream::_insert_perfdatas() {
       query << ", (" << mv.metric_id << ", " << mv.c_time << ", "
             << mv.status << ", ";
       if (isinf(mv.value))
-        query << ((mv.value > 0.0) ? DBL_MAX : DBL_MIN);
+        query << ((mv.value > 0.0) ? FLT_MAX : FLT_MIN);
       else if (isnan(mv.value))
         query << "NULL";
       else
