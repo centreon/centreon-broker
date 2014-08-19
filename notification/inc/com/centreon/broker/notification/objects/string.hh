@@ -28,6 +28,7 @@
 #  include <limits>
 #  include <sstream>
 #  include <string>
+#  include <vector>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -96,6 +97,10 @@ namespace                 string {
   void                    split(
                             std::string const& data,
                             std::list<std::string>& out,
+                            char delim);
+  void                    split(
+                            std::string const& data,
+                            std::vector<std::string>& out,
                             char delim);
 
   template<typename T>

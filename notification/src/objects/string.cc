@@ -156,6 +156,32 @@ void string::split(
 }
 
 /**
+ *  Split data into element.
+ *
+ *  @param[in]  data  The data to split.
+ *  @param[out] out   The vector to fill.
+ *  @param[in]  delim The delimiter.
+ */
+void string::split(
+               std::string const& data,
+               std::vector<std::string>& out,
+               char delim) {
+  if (data.empty())
+    return ;
+
+  std::size_t last(0);
+  std::size_t current(0);
+  while ((current = data.find(delim, current)) != std::string::npos) {
+    std::string tmp(data.substr(last, current - last));
+    out.push_back(trim(tmp));
+    last = ++current;
+  }
+  std::string tmp(last ? data.substr(last) : data);
+  out.push_back(trim(tmp));
+  return ;
+}
+
+/**
  *  Trim a string.
  *
  *  @param[in] str The string.

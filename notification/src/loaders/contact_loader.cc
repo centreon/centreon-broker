@@ -89,10 +89,10 @@ static void _parse_host_notification_options(std::string const& line,
   if (line == "n")
     cont.set_host_notification_options(contact::host_none);
   else {
-    std::list<std::string> tokens;
+    std::vector<std::string> tokens;
     string::split(line, tokens, ',');
 
-    for (std::list<std::string>::const_iterator it(tokens.begin()),
+    for (std::vector<std::string>::const_iterator it(tokens.begin()),
          end(tokens.end()); it != end; ++it) {
       if (*it == "d")
         cont.set_host_notification_option(contact::host_down);
@@ -114,10 +114,10 @@ static void _parse_service_notification_options(std::string const& line,
   if (line == "n")
     cont.set_service_notification_options(contact::service_none);
   else {
-    std::list<std::string> tokens;
+    std::vector<std::string> tokens;
     string::split(line, tokens, ',');
 
-    for (std::list<std::string>::const_iterator it(tokens.begin()),
+    for (std::vector<std::string>::const_iterator it(tokens.begin()),
          end(tokens.end()); it != end; ++it) {
       if (*it == "w")
         cont.set_service_notification_option(contact::service_warning);
