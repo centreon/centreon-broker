@@ -29,5 +29,47 @@ node_loader::node_loader() {
 }
 
 void node_loader::load(QSqlDatabase* db, node_builder* output) {
+  // If we don't have any db or output, don't do anything.
+  if (!db || !output)
+    return;
+
+  QSqlQuery query(*db);
+
+  // Instead of doing crosses select from host_id and service_id,
+  // we only do three selects and internally do the connexions. It's faster.
+
+  if (!query.exec("SELECT host_id from host"))
+    throw (exceptions::msg()
+      << "Notification: cannot select host in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    unsigned int id = query.value(0).toUInt();
+
+    output->add_host(id);
+  }
+
+  if (!query.exec("SELECT service_id from service"))
+    throw (exceptions::msg()
+      << "Notification: cannot select host in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    unsigned int id = query.value(0).toUInt();
+
+    output->add_service(id);
+  }
+
+  if (!query.exec("SELECT host_host_id, service_service_id from host_service_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select host_service_relation in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    unsigned int host_id = query.value(0).toUInt();
+    unsigned int service_id = query.value(0).toUInt();
+
+    output->connect_service_host(host_id, service_id);
+  }
 
 }
