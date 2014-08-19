@@ -24,10 +24,10 @@ using namespace com::centreon::broker::notification;
 contact::contact() :
   _can_submit_commands(false),
   _host_notifications_enabled(false),
-  _host_notification_options(0),
+  _host_notification_options(host_none),
   _retain_nonstatus_information(false),
   _retain_status_information(false),
-  _service_notification_options(0),
+  _service_notification_options(service_none),
   _service_notifications_enabled(false) {}
 
 contact::contact(contact const& obj) :
@@ -148,12 +148,16 @@ void contact::set_host_notification_commands(group const& value) {
   _host_notification_commands = value;
 }
 
-unsigned int contact::get_host_notification_options() const throw() {
+contact::host_action_on contact::get_host_notification_options() const throw() {
   return (_host_notification_options);
 }
 
-void contact::set_host_notification_options(unsigned int value) throw() {
+void contact::set_host_notification_options(host_action_on value) throw() {
   _host_notification_options = value;
+}
+
+void contact::set_host_notification_option(host_action_on value) throw() {
+  _host_notification_options = (host_action_on)(_host_notification_options | value);
 }
 
 std::string const& contact::get_host_notification_period() const throw() {
@@ -196,11 +200,16 @@ void contact::set_service_notification_commands(group const& value) {
   _service_notification_commands = value;
 }
 
-unsigned int contact::get_service_notification_options() const throw() {
+contact::service_action_on contact::get_service_notification_options() const throw() {
   return (_service_notification_options);
 }
-void contact::set_service_notification_options(unsigned int value) throw() {
+
+void contact::set_service_notification_options(service_action_on value) throw() {
   _service_notification_options = value;
+}
+
+void contact::set_service_notification_option(service_action_on value) throw() {
+  _service_notification_options = (service_action_on)(_service_notification_options | value);
 }
 
 std::string const& contact::get_service_notification_period() const throw() {
