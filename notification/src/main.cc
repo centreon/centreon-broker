@@ -63,14 +63,4 @@ extern "C" {
 
     return ;
   }
-
-  /**
-   *  Module update routine.
-   *
-   *  @param[in] arg Configuration argument.
-   */
-  void broker_module_update(void const* arg) {
-
-    return ;
-  }
 }
