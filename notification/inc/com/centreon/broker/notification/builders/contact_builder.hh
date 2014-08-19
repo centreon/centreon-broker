@@ -34,6 +34,8 @@ namespace       notification {
 
     virtual void add_contact(unsigned int id,
                              shared_ptr<contact> con) = 0;
+    virtual void connect_contactgroup_contact(unsigned int contact_id,
+                                              unsigned int contactgroup_id) = 0;
   };
 
 }

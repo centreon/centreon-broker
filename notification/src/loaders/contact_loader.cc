@@ -57,4 +57,17 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
 
     output->add_contact(id, cont);
   }
+
+  if (!query.exec("SELECT contact_contact_id, contactgroup_cg_id from contactgroup_contact_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select contactgroup_contact_relation in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    unsigned int contact_id = query.value(0).toUInt();
+    unsigned int contactgroup_id = query.value(1).toUInt();
+
+    output->connect_contactgroup_contact(contact_id, contactgroup_id);
+  }
+
 }

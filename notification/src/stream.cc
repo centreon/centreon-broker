@@ -28,6 +28,8 @@
 #include <QVariant>
 #include <QVector>
 #include <QMutexLocker>
+#include <QHash>
+#include <QMultiHash>
 #include <sstream>
 #include <limits>
 #include "com/centreon/engine/common.hh"
@@ -301,6 +303,7 @@ void stream::read(misc::shared_ptr<io::data>& d) {
  *  Update internal stream cache.
  */
 void stream::update() {
+  _update_objects_from_db();
   return ;
 }
 
