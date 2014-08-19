@@ -23,6 +23,7 @@
 #  include <QSqlDatabase>
 #  include <QSqlQuery>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/builders/timeperiod_builder.hh"
 
 CCB_BEGIN()
 

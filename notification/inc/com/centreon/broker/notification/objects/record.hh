@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,17 +17,27 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <QVariant>
-#include <QSqlError>
-#include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/notification/loaders/node_loader.hh"
+#ifndef CCB_NOTIFICATION_NODE_HH
+#  define CCB_NOTIFICATION_NODE_HH
 
-using namespace com::centreon::broker::notification;
+#  include <ctime>
+#  include "com/centreon/broker/namespace.hh"
 
-node_loader::node_loader() {
+CCB_BEGIN()
+
+namespace        notification {
+
+  struct         record {
+    record(const char* name, unsigned int index) :
+      name(name), index(index) {}
+    record() : name(NULL), index(0) {}
+
+    const char*  name;
+    unsigned int index;
+  };
 
 }
 
-void node_loader::load(QSqlDatabase* db, node_builder* output) {
+CCB_END()
 
-}
+#endif // !CCB_NOTIFICATION_NODE_HH

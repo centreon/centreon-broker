@@ -21,7 +21,6 @@
 #include <QSqlError>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/notification/objects/command.hh"
-#include "com/centreon/broker/notification/builders/command_builder.hh"
 #include "com/centreon/broker/notification/loaders/command_loader.hh"
 
 using namespace com::centreon::broker::notification;

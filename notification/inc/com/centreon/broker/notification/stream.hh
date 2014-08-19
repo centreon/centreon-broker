@@ -31,6 +31,12 @@
 #  include <set>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/loaders/command_loader.hh"
+#  include "com/centreon/broker/notification/loaders/contact_loader.hh"
+#  include "com/centreon/broker/notification/loaders/dependency_loader.hh"
+#  include "com/centreon/broker/notification/loaders/escalation_loader.hh"
+#  include "com/centreon/broker/notification/loaders/node_loader.hh"
+#  include "com/centreon/broker/notification/loaders/timeperiod_loader.hh"
 
 CCB_BEGIN()
 
@@ -70,6 +76,10 @@ namespace        notification {
     unsigned int                _transaction_queries;
     bool                        _with_state_events;
     unsigned int                _instance_timeout;
+
+    void                        _update_objects_from_db();
+    void                        _process_service_status_event(neb::service_status& event);
+    void                        _process_host_status_event(neb::host_status& event);
   };
 }
 

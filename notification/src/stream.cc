@@ -324,3 +324,19 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   }
   return (retval);
 }
+
+void stream::_update_objects_from_db() {
+  command_loader command;
+  contact_loader contact;
+  dependency_loader dependency;
+  escalation_loader escalation;
+  node_loader node;
+  timeperiod_loader timeperiod;
+
+  command.load(_db.get(), NULL);
+  contact.load(_db.get(), NULL);
+  dependency.load(_db.get(), NULL);
+  escalation.load(_db.get(), NULL);
+  node.load(_db.get(), NULL);
+  timeperiod.load(_db.get(), NULL);
+}
