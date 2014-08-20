@@ -158,7 +158,7 @@ void contact::set_host_notification_option(host_action_on value) throw() {
   _host_notification_options = (host_action_on)(_host_notification_options | value);
 }
 
-bool contact::can_be_notified_of_host(host_action_on value) const throw() {
+bool contact::can_be_notified_for_host(host_action_on value) const throw() {
   return (_host_notification_options & value);
 }
 
@@ -214,7 +214,7 @@ void contact::set_service_notification_option(service_action_on value) throw() {
   _service_notification_options = (service_action_on)(_service_notification_options | value);
 }
 
-bool contact::can_be_notified_of_service(service_action_on value) const throw() {
+bool contact::can_be_notified_for_service(service_action_on value) const throw() {
   return (_service_notification_options & value);
 }
 

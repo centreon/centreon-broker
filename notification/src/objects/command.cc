@@ -35,6 +35,13 @@ command& command::operator=(command const& obj) {
   return (*this);
 }
 
+std::string const& command::get_name() const throw() {
+  return (_name);
+}
+
+void command::set_name(std::string const& name) {
+  _name = name;
+}
 
 std::string command::resolve(neb::host_status) {
   std::string ret(_base_command);
