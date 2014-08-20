@@ -147,8 +147,10 @@ unsigned int output::write(misc::shared_ptr<io::data> const& e) {
   if (!_process_out)
     throw (io::exceptions::shutdown(true, !_process_out)
            << "NDO output stream is shutdown");
-  if (e.isNull())
+  if (e.isNull()) {
+    _to->write(e);
     return (1);
+  }
 
   logging::debug(logging::medium) << "NDO: writing data ("
     << e->type() << ")";

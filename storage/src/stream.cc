@@ -1057,17 +1057,17 @@ void stream::_insert_perfdatas() {
     {
       metric_value& mv(_perfdata_queue.front());
       query.precision(10);
-      query << std::fixed
+      query << std::scientific
             << "INSERT INTO data_bin (id_metric, ctime, status, value)"
                " VALUES (" << mv.metric_id << ", " << mv.c_time << ", "
-            << mv.status << ", ";
+            << mv.status << ", '";
       if (isinf(mv.value))
-        query << ((mv.value > 0) ? DBL_MAX : DBL_MIN);
+        query << ((mv.value > 0) ? FLT_MAX : FLT_MIN);
       else if (isnan(mv.value))
         query << "NULL";
       else
         query << mv.value;
-      query << ")";
+      query << "')";
       _perfdata_queue.pop_front();
     }
 
@@ -1077,7 +1077,7 @@ void stream::_insert_perfdatas() {
       query << ", (" << mv.metric_id << ", " << mv.c_time << ", "
             << mv.status << ", ";
       if (isinf(mv.value))
-        query << ((mv.value > 0.0) ? DBL_MAX : DBL_MIN);
+        query << ((mv.value > 0.0) ? FLT_MAX : FLT_MIN);
       else if (isnan(mv.value))
         query << "NULL";
       else

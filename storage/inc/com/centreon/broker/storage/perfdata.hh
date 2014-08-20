@@ -85,6 +85,16 @@ namespace          storage {
     double         _warning_low;
     bool           _warning_mode;
   };
+
+  /**
+   *  Get the value.
+   *
+   *  @return Metric value.
+   */
+  // Inlined after profiling for performance.
+  inline double perfdata::value() const throw () {
+    return (_value);
+  }
 }
 
 CCB_END()

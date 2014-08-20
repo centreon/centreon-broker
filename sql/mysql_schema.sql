@@ -73,6 +73,7 @@ CREATE TABLE instances (
   notifications boolean default NULL,
   obsess_over_hosts boolean default NULL,
   obsess_over_services boolean default NULL,
+  outdated boolean default NULL,
   passive_host_checks boolean default NULL,
   passive_service_checks boolean default NULL,
   pid int default NULL,
@@ -163,6 +164,7 @@ CREATE TABLE hosts (
   percent_state_change double default NULL,
   perfdata text default NULL,
   process_perfdata boolean default NULL,
+  real_last_hard_state smallint default NULL,
   retain_nonstatus_information boolean default NULL,
   retain_status_information boolean default NULL,
   retry_interval double default NULL,
@@ -339,6 +341,7 @@ CREATE TABLE services (
   percent_state_change double default NULL,
   perfdata text default NULL,
   process_perfdata boolean default NULL,
+  real_last_hard_state smallint default NULL,
   retain_nonstatus_information boolean default NULL,
   retain_status_information boolean default NULL,
   retry_interval double default NULL,
@@ -799,7 +802,7 @@ CREATE TABLE data_bin (
   id_metric int NOT NULL,
   ctime int NOT NULL,
   status enum('0', '1', '2', '3', '4') NOT NULL default '3',
-  value double default NULL,
+  value float default NULL,
 
   FOREIGN KEY (id_metric) REFERENCES metrics (metric_id)
     ON DELETE CASCADE,

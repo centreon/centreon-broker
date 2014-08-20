@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cstdlib>
+#include <ctime>
 #include <QPair>
 #include <QSqlDriver>
 #include <QSqlError>
@@ -29,6 +29,8 @@
 #include <QVector>
 #include <QMutexLocker>
 #include <sstream>
+#include <limits>
+#include "com/centreon/engine/common.hh"
 #include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -1247,7 +1249,6 @@ void stream::_process_instance_status(
     logging::error(logging::medium) << "SQL: instance "
       << is.id << " was not updated because no matching entry "
          "was found in database";
-
   return ;
 }
 
@@ -1483,12 +1484,11 @@ void stream::_process_service(
     << ", description: " << s.service_description << ")";
 
   // Processing.
-  if (s.host_id && s.service_id) {
+  if (s.host_id && s.service_id)
     _update_on_none_insert(
       *_service_insert,
       *_service_update,
       s);
-  }
   else
     logging::error(logging::high) << "SQL: service '"
       << s.service_description << "' has no host ID or no service ID";
@@ -1949,6 +1949,130 @@ void stream::_write_logs() {
   return ;
 }
 
+/**
+ *  Update the store of living instance timestamps.
+ *
+ *  @param instance_id The id of the instance to have its timestamp updated.
+ */
+void stream::_update_timestamp(unsigned int instance_id) {
+  stored_timestamp::state_type
+      s(stored_timestamp::responsive);
+
+  // Find the state of an existing timestamp of it exists.
+  std::map<unsigned int, stored_timestamp>::iterator found =
+      _stored_timestamps.find(instance_id);
+  if (found != _stored_timestamps.end())
+    s = found->second.get_state();
+
+  // Update a suddenly alive instance
+  if (s == stored_timestamp::unresponsive)
+  {
+    _update_hosts_and_services_of_instance(instance_id, true);
+    s = stored_timestamp::responsive;
+  }
+
+  // Insert the timestamp and its state in the store.
+  stored_timestamp& timestamp = _stored_timestamps[instance_id];
+  timestamp = stored_timestamp(instance_id, s);
+  if (_oldest_timestamp > timestamp.get_timestamp())
+    _oldest_timestamp = timestamp.get_timestamp();
+}
+
+/**
+ *  Get all the outdated instances from the database and store them.
+ */
+void stream::_get_all_outdated_instances_from_db() {
+  std::ostringstream ss;
+  ss << "SELECT instance_id"
+     << " FROM " << mapped_type<neb::instance>::table
+     << " WHERE outdated=TRUE";
+  QSqlQuery q(*_db);
+  if (!q.exec(ss.str().c_str()))
+    logging::error(logging::high)
+      << "SQL: could not get list of outdated instances: "
+      << q.lastError().text();
+  else
+    while (q.next()) {
+      unsigned int instance_id = q.value(0).toUInt();
+      stored_timestamp& ts = _stored_timestamps[instance_id];
+      ts = stored_timestamp(instance_id, stored_timestamp::unresponsive);
+      ts.set_timestamp(timestamp(std::numeric_limits<time_t>::max()));
+    }
+}
+
+/**
+ *  Update all the hosts and services of unresponsive instances.
+ */
+void stream::_update_hosts_and_services_of_unresponsive_instances() {
+  if (_stored_timestamps.size() == 0 ||
+      std::difftime(std::time(NULL), _oldest_timestamp) <= _instance_timeout)
+    return ;
+
+  // Update unresponsive instances which were responsive
+  for (std::map<unsigned int, stored_timestamp>::iterator it =
+       _stored_timestamps.begin(),
+       end = _stored_timestamps.end(); it != end; ++it) {
+    if (it->second.get_state() == stored_timestamp::responsive &&
+        it->second.timestamp_outdated(_instance_timeout)) {
+      it->second.set_state(stored_timestamp::unresponsive);
+      _update_hosts_and_services_of_instance(it->second.get_id(), false);
+    }
+  }
+
+  // Update new oldest timestamp
+  _oldest_timestamp = timestamp(std::numeric_limits<time_t>::max());
+  for (std::map<unsigned int, stored_timestamp>::iterator it =
+       _stored_timestamps.begin(),
+       end = _stored_timestamps.end(); it != end; ++it) {
+    if (it->second.get_state() == stored_timestamp::responsive &&
+        _oldest_timestamp > it->second.get_timestamp())
+      _oldest_timestamp = it->second.get_timestamp();
+  }
+}
+
+/**
+ *  Update the hosts and services of one instance.
+ *
+ *  @param[in] id         The instance id.
+ *  @param[in] responsive True if the instance is responsive, false otherwise.
+ */
+void stream::_update_hosts_and_services_of_instance(
+               unsigned int id,
+               bool responsive) {
+  std::ostringstream ss;
+
+  if (responsive) {
+    ss << "UPDATE " << mapped_type<neb::instance>::table
+       << " SET outdated = FALSE where instance_id = " << id;
+    _execute(ss.str().c_str());
+    ss.str("");
+    ss.clear();
+    ss << "UPDATE " << mapped_type<neb::service>::table << " AS a "
+       << "INNER JOIN " << mapped_type<neb::host>::table << " AS b "
+       << "ON a.host_id=b.host_id "
+       << "SET b.last_hard_state = b.real_last_hard_state, "
+       << "a.last_hard_state = a.real_last_hard_state "
+       << "WHERE b.instance_id = " << id;
+    _execute(ss.str().c_str());
+  }
+  else {
+    ss << "UPDATE " << mapped_type<neb::instance>::table
+       << " SET outdated = TRUE where instance_id = " << id;
+    _execute(ss.str().c_str());
+    ss.str("");
+    ss.clear();
+    ss << "UPDATE " << mapped_type<neb::service>::table << " AS a "
+       << "INNER JOIN " << mapped_type<neb::host>::table << " AS b "
+       << "ON a.host_id=b.host_id "
+       << "SET b.real_last_hard_state=b.last_hard_state, "
+       << "a.real_last_hard_state=a.last_hard_state, "
+       << "b.last_hard_state = " << HOST_UNREACHABLE
+       << ", a.last_hard_state = " << STATE_UNKNOWN
+       << " WHERE b.instance_id = " << id;
+    _execute(ss.str().c_str());
+  }
+}
+
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -1984,7 +2108,9 @@ stream::stream(
   : _process_out(true),
     _queries_per_transaction((qpt >= 2) ? qpt : 1),
     _transaction_queries(0),
-    _with_state_events(wse) {
+    _with_state_events(wse),
+    _instance_timeout(15),
+    _oldest_timestamp(std::numeric_limits<time_t>::max()) {
   // Get the driver ID.
   QString t;
   if (!type.compare("db2", Qt::CaseInsensitive))
@@ -2083,6 +2209,8 @@ stream::stream(
     _cleanup_thread.set_interval(cleanup_check_interval);
     _cleanup_thread.set_db(*_db);
     _cleanup_thread.start();
+
+    _get_all_outdated_instances_from_db();
   }
   catch (...) {
     // Unprepare queries.
@@ -2262,6 +2390,10 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
       return (retval);
     }
 
+    // Update the timestamp of this instance.
+    _update_timestamp(data->instance_id);
+    logging::debug(logging::low) << "Updating timestamp: instance " << data->instance_id << " last_timestamp = " << _oldest_timestamp;
+
     // Process event.
     unsigned int type(data->type());
     unsigned short cat(io::events::category_of_type(type));
@@ -2277,6 +2409,9 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
       retval = 0;
     }
   }
+
+  // Update hosts and services of stopped instances
+  _update_hosts_and_services_of_unresponsive_instances();
 
   // Commit transaction.
   if (_queries_per_transaction > 1) {

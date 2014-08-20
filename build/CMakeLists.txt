@@ -121,6 +121,9 @@ if (WITH_TESTING)
   include(CTest)
   enable_testing()
   include_directories("${PROJECT_SOURCE_DIR}/core")
+  include_directories("${PROJECT_SOURCE_DIR}/bbdo/inc")
+  include_directories("${PROJECT_SOURCE_DIR}/compression/inc")
+  include_directories("${PROJECT_SOURCE_DIR}/ndo/inc")
   include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 endif ()
 
@@ -578,6 +581,10 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/temporary.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bam.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/bam.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_instance_update_outdated_1.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/sql_instance_update_outdated_1.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_instance_update_outdated_2.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/sql_instance_update_outdated_2.xml")
 
   # Test library.
   include_directories("${PROJECT_SOURCE_DIR}")
@@ -710,12 +717,12 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/monitoring_to_rrd.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
   add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # Graph rebuild
-  # set(TEST_NAME "running_rebuild_graphs")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/rebuild_graphs.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Graph rebuild
+  set(TEST_NAME "running_rebuild_graphs")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/rebuild_graphs.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   # Disable status graphs.
   set(TEST_NAME "running_disable_status_graphs")
   add_executable("${TEST_NAME}"
@@ -774,7 +781,14 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Benchmark.
+  # Instance update when outdated.
+  set(TEST_NAME "running_sql_instance_update_outdated")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/sql_instance_update_outdated.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # RRD benchmark.
   unset(QT_WRAPPED_SOURCES)
   qt4_wrap_cpp(QT_WRAPPED_SOURCES
     "${PROJECT_SOURCE_DIR}/test/bench_generate_rrd_mod.hh")
@@ -789,6 +803,14 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/bench_generate_rrd.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+
+  # BBDO benchmark.
+  set(TEST_NAME "running_bench_bbdo")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/bench_bbdo.cc"
+    "${PROJECT_SOURCE_DIR}/test/bench_stream.cc"
+    "${PROJECT_SOURCE_DIR}/test/bench_stream.hh")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${BBDO} ${COMPRESSION} ${CORRELATION} ${NEB} ${NDO} ${STORAGE})
 
   # Last file to configure, based on target paths.
   configure_file("${PROJECT_SOURCE_DIR}/test/vars.hh.in"
@@ -1387,7 +1409,6 @@ if (WITH_TESTING)
     "${TEST_DIR}/processing/failover/recovery.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
-
 
   # cbd tests.
   add_test("cbd_help" "cbd" "-h")

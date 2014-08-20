@@ -18,6 +18,7 @@
 */
 
 #include <cfloat>
+#include <cmath>
 #include <ctime>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -401,10 +402,10 @@ void rebuilder::_rebuild_metric(
         entry->rrd_len = length;
         entry->value_type = metric_type;
         entry->value = data_bin_query.value(1).toDouble();
-        if (entry->value > DBL_MAX * 0.999)
-          entry->value = DBL_MAX;
-        else if (entry->value < DBL_MIN * 0.999)
-          entry->value = DBL_MIN;
+        if (entry->value > FLT_MAX * 0.999)
+          entry->value = INFINITY;
+        else if (entry->value < FLT_MIN * 0.999)
+          entry->value = -INFINITY;
         multiplexing::publisher().write(entry);
       }
     else

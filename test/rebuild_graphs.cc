@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -43,7 +44,13 @@ using namespace com::centreon::broker;
 
 #define DB_NAME "broker_rebuild_graphs"
 #define HOST_COUNT 2
-#define SERVICES_BY_HOST 5
+#define SERVICES_BY_HOST 6
+
+// Local structure.
+struct metric_info {
+  time_t first_entry;
+  bool is_infinity;
+};
 
 /**
  *  Check that graphs can be properly rebuild.
@@ -127,21 +134,27 @@ int main() {
     }
 
     // Prepare monitoring engine configuration parameters.
-    generate_commands(commands, 1);
+    generate_commands(commands, 2);
     {
-      command& cmd(commands.front());
+      command* cmd(&commands.front());
       char const* cmdline;
-      cmdline = MY_PLUGIN_PATH " 0 \"output|metric=100\"";
-      cmd.command_line = new char[strlen(cmdline) + 1];
-      strcpy(cmd.command_line, cmdline);
+      cmdline = MY_PLUGIN_PATH " 0 \"output1|metric=100\"";
+      cmd->command_line = new char[strlen(cmdline) + 1];
+      strcpy(cmd->command_line, cmdline);
+      cmd = &*(++commands.begin());
+      cmdline = MY_PLUGIN_PATH " 0 \"output2|metric=inf\"";
+      cmd->command_line = new char[strlen(cmdline) + 1];
+      strcpy(cmd->command_line, cmdline);
     }
+    int i(0);
     generate_hosts(hosts, HOST_COUNT);
     for (std::list<host>::iterator it(hosts.begin()), end(hosts.end());
          it != end;
          ++it) {
       it->host_check_command = new char[2];
-      strcpy(it->host_check_command, "1");
+      strcpy(it->host_check_command, (++i % 2 ? "1" : "2"));
     }
+    i = 0;
     generate_services(services, hosts, SERVICES_BY_HOST);
     for (std::list<service>::iterator
            it(services.begin()),
@@ -149,7 +162,7 @@ int main() {
          it != end;
          ++it) {
       it->service_check_command = new char[2];
-      strcpy(it->service_check_command, "1");
+      strcpy(it->service_check_command, (++i % 2 ? "1" : "2"));
     }
     std::string engine_additional;
     {
@@ -158,7 +171,7 @@ int main() {
       engine_additional = oss.str();
     }
 
-    // Insert entries in index_data;
+    // Insert entries in index_data.
     {
       QSqlQuery q(db);
       for (unsigned int i(1); i <= HOST_COUNT * SERVICES_BY_HOST; ++i) {
@@ -220,16 +233,20 @@ int main() {
     }
 
     // Get metrics list.
-    std::map<unsigned int, time_t> metrics;
+    std::map<unsigned int, metric_info> metrics;
     {
       std::ostringstream query;
-      query << "SELECT metric_id FROM metrics";
+      query << "SELECT m.metric_id"
+            << "  FROM metrics AS m LEFT JOIN index_data AS i"
+            << "  ON m.index_id = i.id"
+            << "  ORDER BY i.host_id, i.service_id";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot get metric list: "
                << qPrintable(q.lastError().text()));
+      i = 0;
       while (q.next())
-        metrics[q.value(0).toUInt()];
+        metrics[q.value(0).toUInt()].is_infinity = !(++i % 2);
       if (metrics.size() != HOST_COUNT * SERVICES_BY_HOST)
         throw (exceptions::msg()
                << "not enough entries in metrics: got "
@@ -238,7 +255,7 @@ int main() {
     }
 
     // For each metric, get the first entry time.
-    for (std::map<unsigned int, time_t>::iterator
+    for (std::map<unsigned int, metric_info>::iterator
            it(metrics.begin()),
            end(metrics.end());
          it != end;
@@ -250,7 +267,7 @@ int main() {
       if (graph.get_rras().empty() || graph.get_rras().front().empty())
         throw (exceptions::msg() << "not enough data in metrics graph '"
                << file_path.str().c_str() << "'");
-      it->second = graph.get_rras().front().begin()->first;
+      it->second.first_entry = graph.get_rras().front().begin()->first;
     }
 
     // Graphs must have been recreated from this time.
@@ -302,22 +319,25 @@ int main() {
                << " whereas recreation limit is " << recreated_limit);
 
       // Check file content.
+      time_t data_low(it->second - 2592000 / 5 / MONITORING_ENGINE_INTERVAL_LENGTH);
+      time_t data_high(it->second + 2592000 * 5 * MONITORING_ENGINE_INTERVAL_LENGTH);
       rrd_file graph;
       graph.load(file_path.str().c_str());
       if (graph.get_rras().empty() || graph.get_rras().front().empty())
         throw (exceptions::msg() << "status file '"
                << file_path.str().c_str()
                << "' does not have any data after rebuild");
-      else if (graph.get_rras().front().begin()->first != it->second)
+      else if ((graph.get_rras().front().begin()->first < data_low)
+               || (graph.get_rras().front().begin()->first > data_high))
         throw (exceptions::msg()
                << "data time mismatch in status file '"
                << file_path.str().c_str() << "': got "
                << graph.get_rras().front().begin()->first
-               << ", expected " << it->second);
+               << ", expected " << data_low << ":" << data_high);
     }
 
     // Check metrics graphs.
-    for (std::map<unsigned int, time_t>::iterator
+    for (std::map<unsigned int, metric_info>::iterator
            it(metrics.begin()),
            end(metrics.end());
          it != end;
@@ -337,18 +357,27 @@ int main() {
                << " whereas recreation limit is " << recreated_limit);
 
       // Check file content.
+      time_t data_low(it->second.first_entry - 2592000 / 5 / MONITORING_ENGINE_INTERVAL_LENGTH);
+      time_t data_high(it->second.first_entry + 2592000 * 5 * MONITORING_ENGINE_INTERVAL_LENGTH);
       rrd_file graph;
       graph.load(file_path.str().c_str());
       if (graph.get_rras().empty() || graph.get_rras().front().empty())
         throw (exceptions::msg() << "metric file '"
                << file_path.str().c_str()
                << "' does not have any data after rebuild");
-      else if (graph.get_rras().front().begin()->first != it->second)
+      else if ((graph.get_rras().front().begin()->first < data_low)
+               || (graph.get_rras().front().end()->first > data_high))
         throw (exceptions::msg()
                << "data time mismatch in metric file '"
                << file_path.str().c_str() << "': got "
                << graph.get_rras().front().begin()->first
-               << ", expected " << it->second);
+               << ", expected " << data_low << ":" << data_high);
+      else if (it->second.is_infinity
+               && !isinf(graph.get_rras().front().begin()->second))
+        throw (exceptions::msg()
+               << "graph rebuild does not handle infinity of file '"
+               << file_path.str().c_str() << "' ("
+               << graph.get_rras().front().begin()->second << ")");
     }
 
     // Success.
