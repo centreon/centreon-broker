@@ -57,7 +57,56 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
     output->add_dependency(id, dep);
   }
 
+  // Get the type of the dependency and their relations.
+  if (!query.exec("SELECT dependency_dep_id, host_host_id from dependency_hostParent_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select dependency_hostParent_relation in loader: "
+      << query.lastError().text());
 
+  while (query.next()) {
+    unsigned int id = query.value(0).toUInt();
+    unsigned int host_id = query.value(1).toUInt();
+
+    output->dependency_host_parent_relation(id, host_id);
+  }
+
+  if (!query.exec("SELECT dependency_dep_id, host_host_id from dependency_hostChild_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select dependency_hostChild_relation in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    unsigned int id = query.value(0).toUInt();
+    unsigned int host_id = query.value(1).toUInt();
+
+    output->dependency_host_child_relation(id, host_id);
+  }
+
+  if (!query.exec("SELECT dependency_dep_id, service_service_id from dependency_serviceParent_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select dependency_serviceParent_relation in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    unsigned int id = query.value(0).toUInt();
+    unsigned int service_service_id = query.value(1).toUInt();
+
+    output->dependency_service_parent_relation(id, service_service_id);
+  }
+
+  if (!query.exec("SELECT dependency_dep_id, service_service_id from dependency_serviceChild_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select dependency_serviceChild_relation in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    unsigned int id = query.value(0).toUInt();
+    unsigned int service_service_id = query.value(1).toUInt();
+
+    output->dependency_service_child_relation(id, service_service_id);
+  }
+
+  // We know the types of the dependencies: now we can parse the failure options.
   for (std::vector<std::pair<int, std::string> >::const_iterator
        it(dep_execution_failure_options.begin()),
        end(dep_execution_failure_options.end());
