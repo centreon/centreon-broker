@@ -65,7 +65,9 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
     cont->add_address(query.value(12).toString().toStdString());
     cont->add_address(query.value(13).toString().toStdString());
     cont->add_address(query.value(14).toString().toStdString());
-    //cont->set_host_notification_enabled(query.value(15).toInt() ==)
+    bool is_enabled = (query.value(15).toInt() == 0);
+    cont->set_host_notifications_enabled(is_enabled);
+    cont->set_service_notifications_enabled(is_enabled);
 
     output->add_contact(id, cont);
   }
@@ -82,6 +84,29 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
     output->connect_contactgroup_contact(contact_id, contactgroup_id);
   }
 
+  if (!query.exec("SELECT contact_contact_id, command_command_id from contact_hostcommands_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select contact_hostcommands_relation in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    unsigned int contact_id = query.value(0).toUInt();
+    unsigned int command_id = query.value(1).toUInt();
+
+    output->connect_contact_hostcommand(contact_id, command_id);
+  }
+
+  if (!query.exec("SELECT contact_contact_id, command_command_id from contact_servicecommands_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select contact_servicecommands_relation in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    unsigned int contact_id = query.value(0).toUInt();
+    unsigned int command_id = query.value(1).toUInt();
+
+    output->connect_contact_servicecommand(contact_id, command_id);
+  }
 }
 
 static void _parse_host_notification_options(std::string const& line,

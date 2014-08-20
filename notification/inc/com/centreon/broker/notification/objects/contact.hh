@@ -78,6 +78,7 @@ namespace       notification {
     host_action_on           get_host_notification_options() const throw();
     void                     set_host_notification_options(host_action_on value) throw();
     void                     set_host_notification_option(host_action_on value) throw();
+    bool                     can_be_notified_of_host(host_action_on value) const throw();
     std::string const&       get_host_notification_period() const throw();
     void                     set_host_notification_period(std::string const& value);
     bool                     get_retain_nonstatus_information() const throw();
@@ -91,13 +92,11 @@ namespace       notification {
     service_action_on        get_service_notification_options() const throw();
     void                     set_service_notification_options(service_action_on value) throw();
     void                     set_service_notification_option(service_action_on value) throw();
+    bool                     can_be_notified_of_service(service_action_on value) const throw();
     std::string const&       get_service_notification_period() const throw();
     void                     set_service_notification_period(std::string const&);
     bool                     get_service_notifications_enabled() const throw();
     void                     set_service_notifications_enabled(bool value) throw();
-    std::vector<std::string> const&
-                             get_services() const throw();
-    void                     add_services(std::string const& service);
 
   private:
     std::vector<std::string> _address;
@@ -119,7 +118,6 @@ namespace       notification {
     service_action_on        _service_notification_options;
     std::string              _service_notification_period;
     bool                     _service_notifications_enabled;
-    std::vector<std::string> _services;
   };
 
 }

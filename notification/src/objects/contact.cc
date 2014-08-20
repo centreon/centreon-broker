@@ -47,8 +47,7 @@ contact::contact(contact const& obj) :
   _service_notification_commands(obj._service_notification_commands),
   _service_notification_options(obj._service_notification_options),
   _service_notification_period(obj._service_notification_period),
-  _service_notifications_enabled(obj._service_notifications_enabled),
-  _services(obj._services) {}
+  _service_notifications_enabled(obj._service_notifications_enabled) {}
 
 contact& contact::operator=(contact const& obj) {
   if (this != &obj) {
@@ -69,7 +68,6 @@ contact& contact::operator=(contact const& obj) {
     _service_notification_options = obj._service_notification_options;
     _service_notification_period = obj._service_notification_period;
     _service_notifications_enabled = obj._service_notifications_enabled;
-    _services = obj._services;
   }
   return *this;
 }
@@ -160,6 +158,10 @@ void contact::set_host_notification_option(host_action_on value) throw() {
   _host_notification_options = (host_action_on)(_host_notification_options | value);
 }
 
+bool contact::can_be_notified_of_host(host_action_on value) const throw() {
+  return (_host_notification_options & value);
+}
+
 std::string const& contact::get_host_notification_period() const throw() {
   return (_host_notification_period);
 }
@@ -212,6 +214,10 @@ void contact::set_service_notification_option(service_action_on value) throw() {
   _service_notification_options = (service_action_on)(_service_notification_options | value);
 }
 
+bool contact::can_be_notified_of_service(service_action_on value) const throw() {
+  return (_service_notification_options & value);
+}
+
 std::string const& contact::get_service_notification_period() const throw() {
   return (_service_notification_period);
 }
@@ -226,12 +232,4 @@ bool contact::get_service_notifications_enabled() const throw() {
 
 void contact::set_service_notifications_enabled(bool value) throw() {
   _service_notifications_enabled = value;
-}
-
-std::vector<std::string> const& contact::get_services() const throw() {
-  return (_services);
-}
-
-void contact::add_services(std::string const& service) {
-  _services.push_back(service);
 }
