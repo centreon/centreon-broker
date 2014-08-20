@@ -34,6 +34,11 @@ namespace       notification {
 
     virtual void add_dependency(unsigned int id,
                                 shared_ptr<dependency> d) = 0;
+
+    virtual void set_notification_failure_options(unsigned int dep_id,
+                                                  std::string const& line) = 0;
+    virtual void set_execution_failure_options(unsigned int dep_id,
+                                               std::string const& line) = 0;
   };
 
 }

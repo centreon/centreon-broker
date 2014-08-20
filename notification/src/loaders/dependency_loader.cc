@@ -17,6 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <utility>
+#include <vector>
 #include <QVariant>
 #include <QSqlError>
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -32,6 +34,10 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
   if (!db || !output)
     return;
 
+  // We do not know the type of a dependency until far latter.
+  // Cache the options until we know enough to correctly parse them.
+  std::vector<std::pair<int, std::string> > dep_execution_failure_options;
+  std::vector<std::pair<int, std::string > > dep_notification_failure_options;
   QSqlQuery query(*db);
 
   if (!query.exec("SELECT dep_id, dep_name, dep_description, inherits_parent, execution_failure_criteria, notification_failure_criteria from dependency"))
@@ -43,9 +49,23 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
     shared_ptr<dependency> dep(new dependency);
     unsigned int id = query.value(0).toUInt();
     dep->set_inherits_parent(query.value(3).toBool());
-
+    dep_execution_failure_options.push_back(
+          std::make_pair(id, query.value(4).toString().toStdString()));
+    dep_notification_failure_options.push_back(
+          std::make_pair(id, query.value(5).toString().toStdString()));
 
     output->add_dependency(id, dep);
   }
 
+
+  for (std::vector<std::pair<int, std::string> >::const_iterator
+       it(dep_execution_failure_options.begin()),
+       end(dep_execution_failure_options.end());
+       it != end; ++it)
+    output->set_execution_failure_options(it->first, it->second);
+  for (std::vector<std::pair<int, std::string> >::const_iterator
+       it(dep_notification_failure_options.begin()),
+       end(dep_notification_failure_options.end());
+       it != end; ++it)
+    output->set_notification_failure_options(it->first, it->second);
 }

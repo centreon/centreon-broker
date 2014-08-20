@@ -21,6 +21,7 @@
 #  define CCB_NOTIFICATION_DEPENDENCY_HH
 
 #  include <string>
+#  include <functional>
 #  include "com/centreon/broker/notification/objects/group.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -76,20 +77,27 @@ namespace       notification {
     void                  set_dependent_servicegroups(group const& val);
     group const&          get_dependent_service_description() const throw();
     void                  set_dependent_service_description(group const& val);
-    unsigned int          get_execution_failure_options() const throw();
-    void                  set_execution_failure_options(unsigned int val) throw();
+    action_on             get_execution_failure_options() const throw();
+    void                  set_execution_failure_options(action_on val) throw();
+    void                  set_execution_failure_option(action_on val) throw();
+    bool                  is_execution_failure_option_set(action_on val) throw();
     group const&          get_hostgroups() const throw();
     void                  set_hostgroups(group const& val);
     group const&          get_hosts() const throw();
     void                  set_hosts(group const& val);
     bool                  get_inherits_parent() const throw();
     void                  set_inherits_parent(bool val) throw();
-    unsigned int          get_notification_failure_options() const throw();
-    void                  set_notification_failure_options(unsigned int val) throw();
+    action_on             get_notification_failure_options() const throw();
+    void                  set_notification_failure_options(action_on val) throw();
+    void                  set_notification_failure_option(action_on val) throw();
+    bool                  is_notification_failure_option_set(action_on val) const throw();
     group const&          get_servicegroups() const throw();
     void                  set_servicegroups(group const& val);
     group const&          get_service_description() const throw();
     void                  set_service_description(group const& val);
+
+    void                  parse_notification_failure_options(std::string const& line);
+    void                  parse_execution_failure_options(std::string const& line);
 
   private:
     type                   _type;
@@ -99,13 +107,24 @@ namespace       notification {
     group                  _dependent_hosts;
     group                  _dependent_servicegroups;
     group                  _dependent_service_description;
-    unsigned int           _execution_failure_options;
+    action_on              _execution_failure_options;
     group                  _hostgroups;
     group                  _hosts;
     bool                   _inherits_parent;
-    unsigned int           _notification_failure_options;
+    action_on              _notification_failure_options;
     group                  _servicegroups;
     group                  _service_description;
+
+    struct name_to_action {
+      const char* name;
+      action_on action;
+    };
+
+    static const name_to_action _service_actions[];
+    static const name_to_action _host_actions[];
+
+    void _parse_failure_options(std::string const& line,
+                                void (dependency::*func_to_call)(action_on));
   };
 
 }
