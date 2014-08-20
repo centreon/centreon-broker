@@ -19,6 +19,7 @@
 
 #include <utility>
 #include <vector>
+#include <sstream>
 #include <QVariant>
 #include <QSqlError>
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -57,56 +58,10 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
     output->add_dependency(id, dep);
   }
 
-  // Get the type of the dependency and their relations.
-  if (!query.exec("SELECT dependency_dep_id, host_host_id from dependency_hostParent_relation"))
-    throw (exceptions::msg()
-      << "Notification: cannot select dependency_hostParent_relation in loader: "
-      << query.lastError().text());
+  // Get the relations of the dependencies. It will also give us their type.
+  _load_relations(query, *output);
 
-  while (query.next()) {
-    unsigned int id = query.value(0).toUInt();
-    unsigned int host_id = query.value(1).toUInt();
-
-    output->dependency_host_parent_relation(id, host_id);
-  }
-
-  if (!query.exec("SELECT dependency_dep_id, host_host_id from dependency_hostChild_relation"))
-    throw (exceptions::msg()
-      << "Notification: cannot select dependency_hostChild_relation in loader: "
-      << query.lastError().text());
-
-  while (query.next()) {
-    unsigned int id = query.value(0).toUInt();
-    unsigned int host_id = query.value(1).toUInt();
-
-    output->dependency_host_child_relation(id, host_id);
-  }
-
-  if (!query.exec("SELECT dependency_dep_id, service_service_id from dependency_serviceParent_relation"))
-    throw (exceptions::msg()
-      << "Notification: cannot select dependency_serviceParent_relation in loader: "
-      << query.lastError().text());
-
-  while (query.next()) {
-    unsigned int id = query.value(0).toUInt();
-    unsigned int service_service_id = query.value(1).toUInt();
-
-    output->dependency_service_parent_relation(id, service_service_id);
-  }
-
-  if (!query.exec("SELECT dependency_dep_id, service_service_id from dependency_serviceChild_relation"))
-    throw (exceptions::msg()
-      << "Notification: cannot select dependency_serviceChild_relation in loader: "
-      << query.lastError().text());
-
-  while (query.next()) {
-    unsigned int id = query.value(0).toUInt();
-    unsigned int service_service_id = query.value(1).toUInt();
-
-    output->dependency_service_child_relation(id, service_service_id);
-  }
-
-  // We know the types of the dependencies: now we can parse the failure options.
+  // We now know the types of the dependencies: we can parse the failure options.
   for (std::vector<std::pair<int, std::string> >::const_iterator
        it(dep_execution_failure_options.begin()),
        end(dep_execution_failure_options.end());
@@ -117,4 +72,61 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
        end(dep_notification_failure_options.end());
        it != end; ++it)
     output->set_notification_failure_options(it->first, it->second);
+}
+
+void dependency_loader::_load_relations(QSqlQuery& query,
+                                        dependency_builder& output) {
+  _load_relation(query, output,
+                 "host_host_id",
+                 "dependency_hostParent_relation",
+                 &dependency_builder::dependency_host_parent_relation);
+  _load_relation(query, output,
+                 "host_host_id",
+                 "dependency_hostChild_relation",
+                 &dependency_builder::dependency_host_child_relation);
+  _load_relation(query, output,
+                 "service_service_id",
+                 "dependency_serviceParent_relation",
+                 &dependency_builder::dependency_service_parent_relation);
+  _load_relation(query, output,
+                 "service_service_id",
+                 "dependency_serviceChild_relation",
+                 &dependency_builder::dependency_service_child_relation);
+  _load_relation(query, output,
+                 "servicegroup_sg_id",
+                 "dependency_servicegroupParent_relation",
+                  &dependency_builder::dependency_servicegroup_parent_relation);
+  _load_relation(query, output,
+                 "servicegroup_sg_id",
+                 "dependency_servicegroupChild_relation",
+                  &dependency_builder::dependency_servicegroup_child_relation);
+  _load_relation(query, output,
+                 "hostgroup_hg_id",
+                 "dependency_hostgroupParent_relation",
+                  &dependency_builder::dependency_hostgroup_parent_relation);
+  _load_relation(query, output,
+                 "hostgroup_hg_id",
+                 "dependency_hostgroupChild_relation",
+                  &dependency_builder::dependency_hostgroup_child_relation);
+
+}
+
+void dependency_loader::_load_relation(QSqlQuery& query,
+                                       dependency_builder& output,
+                                       std::string const& relation_id_name,
+                                       std::string const& table,
+                                       void (dependency_builder::*register_method)(unsigned int, unsigned int)) {
+  std::stringstream ss;
+  ss << "SELECT dependency_dep_id, " << relation_id_name << " FROM " << table;
+  if (!query.exec(ss.str().c_str()))
+    throw (exceptions::msg()
+      << "Notification: cannot select " <<  table << " in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    unsigned int id = query.value(0).toUInt();
+    unsigned int associated_id = query.value(1).toUInt();
+
+    (output.*register_method)(id, associated_id);
+  }
 }

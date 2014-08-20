@@ -34,6 +34,13 @@ namespace       notification {
     dependency_loader();
 
     void        load(QSqlDatabase* db, dependency_builder* output);
+
+  private:
+    void        _load_relations(QSqlQuery& query, dependency_builder& output);
+    void        _load_relation(QSqlQuery& query, dependency_builder& output,
+                               std::string const& relation_id_name,
+                               std::string const& table,
+                               void (dependency_builder::*register_method)(unsigned int, unsigned int));
   };
 
 }
