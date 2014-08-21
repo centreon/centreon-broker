@@ -32,5 +32,8 @@ acknowledgement_loader::acknowledgement_loader() {}
 
 void acknowledgement_loader::load(QSqlDatabase* db,
                                   acknowledgement_builder* output) {
+  // If we don't have any db or output, don't do anything.
+  if (!db || !output)
+    return;
 
 }

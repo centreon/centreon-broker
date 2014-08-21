@@ -31,5 +31,24 @@ using namespace com::centreon::broker::notification;
 downtime_loader::downtime_loader() {}
 
 void downtime_loader::load(QSqlDatabase* db, downtime_builder* output) {
+  // If we don't have any db or output, don't do anything.
+  if (!db || !output)
+    return;
 
+  QSqlQuery query(*db);
+
+  // Performance improvement, as we never go back.
+  query.setForwardOnly(true);
+
+  if (!query.exec("SELECT downtime_id, entry_time, host_id, service_id, author, cancelled, deletion_time, duration, end_time, fixed, start_time, actual_start_time, actual_end_time, started, triggered_by, type FROM downtimes"))
+    throw (exceptions::msg()
+      << "Notification: cannot select downtimes in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    shared_ptr<downtime> down(new downtime);
+    unsigned int downtime_id = query.value(0).toUInt();
+
+    output->add_downtime(downtime_id, down);
+  }
 }

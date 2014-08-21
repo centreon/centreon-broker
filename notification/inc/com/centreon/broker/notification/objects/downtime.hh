@@ -20,6 +20,8 @@
 #ifndef CCB_NOTIFICATION_DOWNTIME_HH
 #  define CCB_NOTIFICATION_DOWNTIME_HH
 
+#  include <ctime>
+#include <string>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -32,8 +34,54 @@ namespace       notification {
     downtime(downtime const& obj);
     downtime& operator=(downtime const& obj);
 
-  private:
+    time_t        get_entry_time() const throw();
+    void          set_entry_time(time_t val) throw();
+    unsigned int  get_host_id() const throw();
+    void          set_host_id(unsigned int val) throw();
+    unsigned int  get_service_id() const throw();
+    void          set_service_id(unsigned int val) throw();
+    std::string const&
+                  get_author() const throw();
+    void          set_author(std::string const& val);
+    bool          get_cancelled() const throw();
+    void          set_cancelled(bool val) throw();
+    time_t        get_deletion_time() const throw();
+    void          set_deletion_time(time_t val) throw();
+    unsigned int  get_duration() const throw();
+    void          set_duration(unsigned int val) throw();
+    time_t        get_end_time() const throw();
+    void          set_end_time(time_t val) throw();
+    bool          get_fixed() const throw();
+    void          set_fixed(bool val) throw();
+    time_t        get_start_time() const throw();
+    void          set_start_time(time_t val) throw();
+    time_t        get_actual_start_time() const throw();
+    void          set_actual_start_time(time_t val) throw();
+    time_t        get_actual_end_time() const throw();
+    void          set_actual_end_time(time_t val) throw();
+    bool          get_started() const throw();
+    void          set_started(bool val) throw();
+    unsigned int  get_triggered_by() const throw();
+    void          set_triggered_by(unsigned int val) throw();
+    int           get_type() const throw();
+    void          set_type(int val) throw();
 
+  private:
+    time_t        _entry_time;
+    unsigned int  _host_id;
+    unsigned int  _service_id;
+    std::string   _author;
+    bool          _cancelled;
+    time_t        _deletion_time;
+    unsigned int  _duration;
+    time_t        _end_time;
+    bool          _fixed;
+    time_t        _start_time;
+    time_t        _actual_start_time;
+    time_t        _actual_end_time;
+    bool          _started;
+    unsigned int  _triggered_by;
+    int           _type;
   };
 
 }
