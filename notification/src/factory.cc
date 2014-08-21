@@ -153,8 +153,11 @@ io::endpoint* factory::new_endpoint(
   // Find DB password.
   QString password(find_param(cfg, "db_password"));
 
-  // Find DB name.
-  QString name(find_param(cfg, "db_name"));
+  // Find centreon DB name.
+  QString centreon_db_name(find_param(cfg, "centreon_db_name"));
+
+  // Find centreon storage DB name.
+  QString centreon_storage_db_name(find_param(cfg, "centreon_storage_db_name"));
 
   // Transaction size.
   unsigned int queries_per_transaction(0);
@@ -202,7 +205,8 @@ io::endpoint* factory::new_endpoint(
        port,
        user,
        password,
-       name,
+       centreon_db_name,
+       centreon_storage_db_name,
        queries_per_transaction,
        cleanup_check_interval,
        check_replication,

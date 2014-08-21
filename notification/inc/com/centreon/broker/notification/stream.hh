@@ -55,7 +55,8 @@ namespace        notification {
                    unsigned short port,
                    QString const& user,
                    QString const& password,
-                   QString const& db,
+                   QString const& centreon_db,
+                   QString const& centreon_storage_db,
                    unsigned int queries_per_transaction,
                    unsigned int cleanup_check_interval,
                    bool check_replication,
@@ -70,13 +71,26 @@ namespace        notification {
 
   private:
     stream&      operator=(stream const& s);
-    std::auto_ptr<QSqlDatabase> _db;
+    std::auto_ptr<QSqlDatabase> _centreon_db;
+    std::auto_ptr<QSqlDatabase> _centreon_storage_db;
     bool                        _process_out;
     unsigned int                _queries_per_transaction;
     unsigned int                _transaction_queries;
     bool                        _with_state_events;
     unsigned int                _instance_timeout;
 
+    void                        _open_db(std::auto_ptr<QSqlDatabase>& db,
+                                         QString const& t,
+                                         QString const& host,
+                                         unsigned short port,
+                                         QString const& user,
+                                         QString const& password,
+                                         QString const& db_name,
+                                         QString const& id,
+                                         bool check_replication);
+    void                        _clone_db(std::auto_ptr<QSqlDatabase>& db,
+                                          std::auto_ptr<QSqlDatabase> const& db_to_clone,
+                                          QString const& id);
     void                        _update_objects_from_db();
     void                        _process_service_status_event(neb::service_status& event);
     void                        _process_host_status_event(neb::host_status& event);

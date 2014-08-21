@@ -81,7 +81,8 @@ stream::stream(
           unsigned short port,
           QString const& user,
           QString const& password,
-          QString const& db,
+          QString const& centreon_db,
+          QString const& centreon_storage_db,
           unsigned int qpt,
           unsigned int cleanup_check_interval,
           bool check_replication,
@@ -121,75 +122,28 @@ stream::stream(
   QString id;
   id.setNum((qulonglong)this, 16);
 
-  // Add database connection.
-  _db.reset(new QSqlDatabase(QSqlDatabase::addDatabase(t, id)));
-  try {
-    if (t == "QMYSQL")
-      _db->setConnectOptions("CLIENT_FOUND_ROWS");
+  // Open centreon database.
+  _open_db(_centreon_db,
+           t,
+           host,
+           port,
+           user,
+           password,
+           centreon_db,
+           id,
+           check_replication);
 
-    // Open database.
-    _db->setHostName(host);
-    _db->setPort(port);
-    _db->setUserName(user);
-    _db->setPassword(password);
-    _db->setDatabaseName(db);
-
-    {
-      QMutexLocker lock(&global_lock);
-      if (!_db->open())
-        throw (exceptions::msg() << "NOTIFICATION: could not open SQL database: "
-               << _db->lastError().text());
-    }
-
-    // Check that replication is OK.
-    if (check_replication) {
-      logging::debug(logging::medium)
-        << "NOTIFICATION: checking replication status";
-      QSqlQuery q(*_db);
-      if (!q.exec("SHOW SLAVE STATUS"))
-        logging::info(logging::medium)
-          << "NOTIFICATION: could not check replication status";
-      else {
-        if (!q.next())
-          logging::info(logging::medium)
-            << "NOTIFICATION: database is not under replication";
-        else {
-          QSqlRecord record(q.record());
-          unsigned int i(0);
-          for (QString field = record.fieldName(i);
-               !field.isEmpty();
-               field = record.fieldName(++i))
-            if (((field == "Slave_IO_Running")
-                 && (q.value(i).toString() != "Yes"))
-                || ((field == "Slave_SQL_Running")
-                    && (q.value(i).toString() != "Yes"))
-                || ((field == "Seconds_Behind_Master")
-                    && (q.value(i).toInt() != 0)))
-              throw (exceptions::msg() << "NOTIFICATION: replication is not "
-                          "complete: " << field << "="
-                       << q.value(i).toString());
-          logging::info(logging::medium)
-            << "NOTIFICATION: database replication is complete, "
-               "connection granted";
-        }
-      }
-    }
-    else
-      logging::debug(logging::medium)
-        << "NOTIFICATION: NOT checking replication status";  }
-  catch (...) {
-    {
-      QMutexLocker lock(&global_lock);
-      // Close database if open.
-      if (_db->isOpen())
-        _db->close();
-      _db.reset();
-    }
-
-    // Add this connection to the connections to be deleted.
-    QSqlDatabase::removeDatabase(id);
-    throw ;
-  }
+  // Open centreon storage database.
+  id.setNum(((qulonglong)this) + 1, 16);
+  _open_db(_centreon_storage_db,
+           t,
+           host,
+           port,
+           user,
+           password,
+           centreon_storage_db,
+           id,
+           check_replication);
 }
 
 /**
@@ -211,37 +165,13 @@ stream::stream(stream const& s) : io::stream(s) {
   // Connection ID.
   QString id;
   id.setNum((qulonglong)this, 16);
+  QString id2;
+  id.setNum(((qulonglong)this) + 1, 16);
 
-  // Clone database.
-  _db.reset(new QSqlDatabase(QSqlDatabase::cloneDatabase(*s._db, id)));
-
-  try {
-    {
-      QMutexLocker lock(&global_lock);
-      // Open database.
-      if (!_db->open())
-        throw (exceptions::msg() << "NOTIFICATION: could not open SQL database: "
-               << _db->lastError().text());
-    }
-
-    // First transaction.
-    if (_queries_per_transaction > 1)
-      _db->transaction();
-  }
-  catch (...) {
-
-    {
-      QMutexLocker lock(&global_lock);
-      // Close database if open.
-      if (_db->isOpen())
-        _db->close();
-      _db.reset();
-    }
-
-    // Add this connection to the connections to be deleted.
-    QSqlDatabase::removeDatabase(id);
-    throw ;
-  }
+  // Clone centreon database.
+  _clone_db(_centreon_db, s._centreon_db, id);
+  // Clone centreon storage database.
+  _clone_db(_centreon_storage_db, s._centreon_storage_db, id);
 }
 
 /**
@@ -256,12 +186,23 @@ stream::~stream() {
   {
     QMutexLocker lock(&global_lock);
     // Close database.
-    if (_db->isOpen()) {
+    if (_centreon_db->isOpen()) {
       if (_queries_per_transaction > 1)
-        _db->commit();
-      _db->close();
+        _centreon_db->commit();
+      _centreon_db->close();
     }
-    _db.reset();
+    _centreon_db.reset();
+  }
+
+  {
+    QMutexLocker lock(&global_lock);
+    // Close database.
+    if (_centreon_storage_db->isOpen()) {
+      if (_queries_per_transaction > 1)
+        _centreon_storage_db->commit();
+      _centreon_storage_db->close();
+    }
+    _centreon_storage_db.reset();
   }
 
   // Add this connection to the connections to be deleted.
@@ -328,6 +269,121 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   return (retval);
 }
 
+void stream::_open_db(std::auto_ptr<QSqlDatabase>& db,
+                      QString const& t,
+                      QString const& host,
+                      unsigned short port,
+                      QString const& user,
+                      QString const& password,
+                      QString const& db_name,
+                      QString const& id,
+                      bool check_replication) {
+   // Add database connection.
+  db.reset(new QSqlDatabase(QSqlDatabase::addDatabase(t, id)));
+  try {
+    if (t == "QMYSQL")
+      db->setConnectOptions("CLIENT_FOUND_ROWS");
+
+    // Open database.
+    db->setHostName(host);
+    db->setPort(port);
+    db->setUserName(user);
+    db->setPassword(password);
+    db->setDatabaseName(db_name);
+
+    {
+      QMutexLocker lock(&global_lock);
+      if (!db->open())
+        throw (exceptions::msg() << "NOTIFICATION: could not open SQL database: "
+               << db->lastError().text());
+    }
+
+    // Check that replication is OK.
+    if (check_replication) {
+      logging::debug(logging::medium)
+        << "NOTIFICATION: checking replication status";
+      QSqlQuery q(*db);
+      if (!q.exec("SHOW SLAVE STATUS"))
+        logging::info(logging::medium)
+          << "NOTIFICATION: could not check replication status";
+      else {
+        if (!q.next())
+          logging::info(logging::medium)
+            << "NOTIFICATION: database is not under replication";
+        else {
+          QSqlRecord record(q.record());
+          unsigned int i(0);
+          for (QString field = record.fieldName(i);
+               !field.isEmpty();
+               field = record.fieldName(++i))
+            if (((field == "Slave_IO_Running")
+                 && (q.value(i).toString() != "Yes"))
+                || ((field == "Slave_SQL_Running")
+                    && (q.value(i).toString() != "Yes"))
+                || ((field == "Seconds_Behind_Master")
+                    && (q.value(i).toInt() != 0)))
+              throw (exceptions::msg() << "NOTIFICATION: replication is not "
+                          "complete: " << field << "="
+                       << q.value(i).toString());
+          logging::info(logging::medium)
+            << "NOTIFICATION: database replication is complete, "
+               "connection granted";
+        }
+      }
+    }
+    else
+      logging::debug(logging::medium)
+        << "NOTIFICATION: NOT checking replication status";  }
+  catch (...) {
+    {
+      QMutexLocker lock(&global_lock);
+      // Close database if open.
+      if (db->isOpen())
+        db->close();
+      db.reset();
+    }
+
+    // Add this connection to the connections to be deleted.
+    QSqlDatabase::removeDatabase(id);
+    throw ;
+  }
+}
+
+void stream::_clone_db(std::auto_ptr<QSqlDatabase>& db,
+                       std::auto_ptr<QSqlDatabase> const& db_to_clone,
+                       QString const& id) {
+  // Clone database.
+  db.reset(new QSqlDatabase(QSqlDatabase::cloneDatabase(*db_to_clone, id)));
+
+  try {
+    {
+      QMutexLocker lock(&global_lock);
+      // Open database.
+      if (!db->open())
+        throw (exceptions::msg() << "NOTIFICATION: could not open SQL database: "
+               << db->lastError().text());
+    }
+
+    // First transaction.
+    if (_queries_per_transaction > 1)
+      db->transaction();
+  }
+  catch (...) {
+
+    {
+      QMutexLocker lock(&global_lock);
+      // Close database if open.
+      if (db->isOpen())
+        db->close();
+      db.reset();
+    }
+
+    // Add this connection to the connections to be deleted.
+    QSqlDatabase::removeDatabase(id);
+    throw ;
+  }
+}
+
 void stream::_update_objects_from_db() {
   command_loader command;
   contact_loader contact;
@@ -336,10 +392,10 @@ void stream::_update_objects_from_db() {
   node_loader node;
   timeperiod_loader timeperiod;
 
-  command.load(_db.get(), NULL);
-  contact.load(_db.get(), NULL);
-  dependency.load(_db.get(), NULL);
-  escalation.load(_db.get(), NULL);
-  node.load(_db.get(), NULL);
-  timeperiod.load(_db.get(), NULL);
+  command.load(_centreon_db.get(), NULL);
+  contact.load(_centreon_db.get(), NULL);
+  dependency.load(_centreon_db.get(), NULL);
+  escalation.load(_centreon_db.get(), NULL);
+  node.load(_centreon_db.get(), NULL);
+  timeperiod.load(_centreon_db.get(), NULL);
 }
