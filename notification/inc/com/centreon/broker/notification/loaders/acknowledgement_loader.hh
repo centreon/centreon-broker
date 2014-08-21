@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,24 +17,27 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NOTIFICATION_BUILDERS_DOWNTIME_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_DOWNTIME_BUILDER_HH
+#ifndef CCB_NOTIFICATION_LOADERS_ACKNOWLEDGEMENT_LOADER_HH
+#  define CCB_NOTIFICATION_LOADERS_ACKNOWLEDGEMENT_LOADER_HH
 
-#  include "com/centreon/shared_ptr.hh"
+#  include <QSqlDatabase>
+#  include <QSqlQuery>
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/downtime.hh"
+#  include "com/centreon/broker/notification/builders/acknowledgement_builder.hh"
 
 CCB_BEGIN()
 
 namespace       notification {
 
-  class         downtime_builder {
+  class         acknowledgement_loader {
   public:
-    virtual ~downtime_builder() {}
+    acknowledgement_loader();
+
+    void        load(QSqlDatabase* db, acknowledgement_builder* output);
   };
 
 }
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_DOWNTIME_BUILDER_HH
+#endif // !CCB_NOTIFICATION_LOADERS_ACKNOWLEDGEMENT_LOADER_HH

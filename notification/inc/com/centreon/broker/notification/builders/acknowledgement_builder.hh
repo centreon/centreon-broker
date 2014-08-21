@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NOTIFICATION_BUILDERS_DOWNTIME_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_DOWNTIME_BUILDER_HH
+#ifndef CCB_NOTIFICATION_BUILDERS_ACKNOWLEDGEMENT_BUILDER_HH
+#  define CCB_NOTIFICATION_BUILDERS_ACKNOWLEDGEMENT_BUILDER_HH
 
 #  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -28,13 +28,13 @@ CCB_BEGIN()
 
 namespace       notification {
 
-  class         downtime_builder {
+  class         acknowledgement_builder {
   public:
-    virtual ~downtime_builder() {}
+    virtual ~acknowledgement_builder() {}
   };
 
 }
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_DOWNTIME_BUILDER_HH
+#endif // !CCB_NOTIFICATION_BUILDERS_ACKNOWLEDGEMENT_BUILDER_HH
