@@ -83,4 +83,16 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
 
     output->add_timeperiod_exclude_relation(timeperiod_id, timeperiod_exclude_id);
   }
+
+  if (!query.exec("SELECT include_id, timeperiod_id, timeperiod_include_id from timeperiod_include_relations"))
+    throw (exceptions::msg()
+      << "Notification: cannot select timeperiod_include_relations in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    unsigned int timeperiod_id = query.value(0).toUInt();
+    unsigned int timeperiod_include_id = query.value(0).toUInt();
+
+    output->add_timeperiod_include_relation(timeperiod_id, timeperiod_include_id);
+  }
 }

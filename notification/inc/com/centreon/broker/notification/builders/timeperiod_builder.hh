@@ -39,6 +39,8 @@ namespace       notification {
                                            std::string const& timerange) = 0;
     virtual void add_timeperiod_exclude_relation(unsigned int timeperiod_id,
                                                  unsigned int exclude_id) = 0;
+    virtual void add_timeperiod_include_relation(unsigned int timeperiod_id,
+                                                 unsigned int include_id) = 0;
   };
 
 }
