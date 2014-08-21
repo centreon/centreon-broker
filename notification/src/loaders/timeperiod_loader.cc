@@ -37,6 +37,9 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
 
   QSqlQuery query(*db);
 
+  // Performance improvement, as we never go back.
+  query.setForwardOnly(true);
+
   if (!query.exec("SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday, tp_tuesday, tp_wednesday, tp_thursday, tp_friday, tp_saturday sunday from timeperiod"))
     throw (exceptions::msg()
       << "Notification: cannot select timeperiod in loader: "

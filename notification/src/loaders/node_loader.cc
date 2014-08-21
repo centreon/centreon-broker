@@ -36,6 +36,9 @@ void node_loader::load(QSqlDatabase* db, node_builder* output) {
 
   QSqlQuery query(*db);
 
+  // Performance improvement, as we never go back.
+  query.setForwardOnly(true);
+
   // Instead of doing crosses select from host_id and service_id,
   // we only do three selects and internally do the connexions. It's faster.
 

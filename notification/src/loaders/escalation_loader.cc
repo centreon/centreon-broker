@@ -35,6 +35,9 @@ void escalation_loader::load(QSqlDatabase* db, escalation_builder* output) {
 
   QSqlQuery query(*db);
 
+  // Performance improvement, as we never go back.
+  query.setForwardOnly(true);
+
   if (!query.exec("SELECT esc_id, esc_name, esc_alias, first_notification, last_notification, notification_interval, escalation_period, escalation_options1, escalation_options2 from escalation"))
     throw (exceptions::msg()
       << "Notification: cannot select escalation in loader: "
