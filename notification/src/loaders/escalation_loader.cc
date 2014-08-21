@@ -17,9 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <vector>
+#include <sstream>
 #include <QVariant>
 #include <QSqlError>
-#include <vector>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/notification/loaders/escalation_loader.hh"
 
@@ -47,7 +48,55 @@ void escalation_loader::load(QSqlDatabase* db, escalation_builder* output) {
     esc->set_last_notification(query.value(4).toUInt());
     esc->set_notification_interval(query.value(5).toUInt());
     esc->set_escalation_period(query.value(6).toString().toStdString());
+    esc->parse_host_escalation_options(query.value(7).toString().toStdString());
+    esc->parse_service_escalation_options(query.value(7).toString().toStdString());
 
     output->add_escalation(id, esc);
+  }
+
+  _load_relation(query,
+                 *output,
+                 "contactgroup_cg_id",
+                 "escalation_contactgroup_relation",
+                 &escalation_builder::connect_escalation_contactgroup);
+  _load_relation(query,
+                 *output,
+                 "host_host_id",
+                 "escalation_host_relation",
+                 &escalation_builder::connect_escalation_host);
+  _load_relation(query,
+                 *output,
+                 "hostgroup_hg_id",
+                 "escalation_hostgroup_relation",
+                 &escalation_builder::connect_escalation_hostgroup);
+  _load_relation(query,
+                 *output,
+                 "service_service_id",
+                 "escalation_service_relation",
+                 &escalation_builder::connect_escalation_service);
+  _load_relation(query,
+                 *output,
+                 "servicegroup_sg_id",
+                 "escalation_servicegroup_relation",
+                 &escalation_builder::connect_escalation_servicegroup);
+}
+
+void escalation_loader::_load_relation(QSqlQuery& query,
+                                       escalation_builder& output,
+                                       std::string const& relation_id_name,
+                                       std::string const& table,
+                                       void (escalation_builder::*register_method)(unsigned int, unsigned int)) {
+  std::stringstream ss;
+  ss << "SELECT escalation_esc_id, " << relation_id_name << " FROM " << table;
+  if (!query.exec(ss.str().c_str()))
+    throw (exceptions::msg()
+      << "Notification: cannot select " <<  table << " in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    unsigned int id = query.value(0).toUInt();
+    unsigned int associated_id = query.value(1).toUInt();
+
+    (output.*register_method)(id, associated_id);
   }
 }

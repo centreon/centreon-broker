@@ -185,7 +185,7 @@ void escalation::parse_host_escalation_options(std::string const& line) {
          end(tokens.end()); it != end; ++it) {
       for (int i = 0; i < host_actions_size; ++i) {
         if (*it == _host_actions[i].name)
-          set_escalation_options(_host_actions[i].action);
+          set_escalation_option(_host_actions[i].action);
       }
     }
 }
@@ -199,7 +199,7 @@ void  escalation::parse_service_escalation_options(std::string const& line) {
          end(tokens.end()); it != end; ++it) {
       for (int i = 0; i < service_actions_size; ++i) {
         if (*it == _service_actions[i].name)
-          set_escalation_options(_service_actions[i].action);
+          set_escalation_option(_service_actions[i].action);
       }
     }
 }

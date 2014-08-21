@@ -34,6 +34,16 @@ namespace       notification {
 
     virtual void add_escalation(unsigned int id,
                                 shared_ptr<escalation> esc) = 0;
+    virtual void connect_escalation_contactgroup(unsigned int id,
+                                                 unsigned int contactgroup_id) = 0;
+    virtual void connect_escalation_host(unsigned int id,
+                                         unsigned int host_id) = 0;
+    virtual void connect_escalation_hostgroup(unsigned int id,
+                                              unsigned int hostgroup_id) = 0;
+    virtual void connect_escalation_service(unsigned int id,
+                                            unsigned int service_id) = 0;
+    virtual void connect_escalation_servicegroup(unsigned int id,
+                                                 unsigned int servicegroup_id) = 0;
   };
 
 }
