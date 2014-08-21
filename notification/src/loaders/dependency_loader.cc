@@ -41,7 +41,7 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
   std::vector<std::pair<int, std::string > > dep_notification_failure_options;
   QSqlQuery query(*db);
 
-  if (!query.exec("SELECT dep_id, dep_name, dep_description, inherits_parent, execution_failure_criteria, notification_failure_criteria from dependency"))
+  if (!query.exec("SELECT dep_id, dep_name, dep_description, inherits_parent, execution_failure_criteria, notification_failure_criteria FROM dependency"))
     throw (exceptions::msg()
       << "Notification: cannot select dependency in loader: "
       << query.lastError().text());

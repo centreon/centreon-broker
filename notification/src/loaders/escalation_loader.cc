@@ -19,6 +19,7 @@
 
 #include <QVariant>
 #include <QSqlError>
+#include <vector>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/notification/loaders/escalation_loader.hh"
 

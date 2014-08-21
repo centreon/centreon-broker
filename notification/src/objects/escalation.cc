@@ -17,13 +17,25 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/notification/objects/string.hh"
 #include "com/centreon/broker/notification/objects/escalation.hh"
 
 using namespace com::centreon::broker::notification;
 
+const escalation::name_to_action escalation::_service_actions[] =
+{{"w", service_warning},
+ {"u", service_unknown},
+ {"c", service_critical},
+ {"r", service_recovery}};
+
+const escalation::name_to_action escalation::_host_actions[] =
+{{"d", host_down},
+ {"u", host_unreachable},
+ {"r", host_recovery}};
+
 escalation::escalation() :
   _type(unknown),
-  _escalation_options(0),
+  _escalation_options(none),
   _first_notification(0),
   _last_notification(0),
   _notification_interval(0) {
@@ -64,26 +76,16 @@ escalation& escalation::operator=(escalation const& obj) {
   return (*this);
 }
 
-bool escalation::is_host_escalation() const throw() {
-  return (_type == host);
+void escalation::set_types(type t) throw() {
+  _type = t;
 }
 
-bool escalation::is_service_escalation() const throw() {
-  return (_type == service);
+void escalation::set_type(type t) throw() {
+  _type = (type)(_type | t);
 }
 
-void escalation::set_is_host_escalation(bool val) throw() {
-  if (val)
-    _type = host;
-  else
-    _type = service;
-}
-
-void escalation::set_is_service_escalation(bool val) throw() {
-  if (val)
-    _type = service;
-  else
-    _type = host;
+bool escalation::is_type(type t) const throw() {
+  return (_type & t);
 }
 
 group const& escalation::get_contactgroups() const throw() {
@@ -102,12 +104,20 @@ void escalation::set_contacts(group const& val) {
   _contacts = val;
 }
 
-unsigned short escalation::get_escalation_options() const throw() {
+escalation::action_on escalation::get_escalation_options() const throw() {
   return (_escalation_options);
 }
 
-void escalation::set_escalation_options(unsigned int val) throw() {
+void escalation::set_escalation_options(action_on val) throw() {
   _escalation_options = val;
+}
+
+void escalation::set_escalation_option(action_on val) throw() {
+  _escalation_options = (action_on)(_escalation_options | val);
+}
+
+bool escalation::is_escalation_option_set(action_on val) const throw() {
+  return (_escalation_options & val);
 }
 
 std::string const& escalation::get_escalation_period() const throw() {
@@ -164,4 +174,32 @@ group const& escalation::get_servicegroups() const throw() {
 
 void escalation::set_servicegroups(group const& val) {
   _servicegroups = val;
+}
+
+void escalation::parse_host_escalation_options(std::string const& line) {
+  std::vector<std::string> tokens;
+  string::split(line, tokens, ',');
+
+  static int host_actions_size = sizeof(_host_actions) / sizeof(_host_actions[0]);
+    for (std::vector<std::string>::const_iterator it(tokens.begin()),
+         end(tokens.end()); it != end; ++it) {
+      for (int i = 0; i < host_actions_size; ++i) {
+        if (*it == _host_actions[i].name)
+          set_escalation_options(_host_actions[i].action);
+      }
+    }
+}
+
+void  escalation::parse_service_escalation_options(std::string const& line) {
+  std::vector<std::string> tokens;
+  string::split(line, tokens, ',');
+
+  static int service_actions_size = sizeof(_service_actions) / sizeof(_service_actions[0]);
+    for (std::vector<std::string>::const_iterator it(tokens.begin()),
+         end(tokens.end()); it != end; ++it) {
+      for (int i = 0; i < service_actions_size; ++i) {
+        if (*it == _service_actions[i].name)
+          set_escalation_options(_service_actions[i].action);
+      }
+    }
 }

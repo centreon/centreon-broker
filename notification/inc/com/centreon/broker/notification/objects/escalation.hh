@@ -32,8 +32,10 @@ namespace       notification {
   public:
     enum              type {
       unknown = 0,
-      host = 1,
-      service = 2
+      host = (1 << 1),
+      service = (1 << 2),
+      hostgroup = (1 << 3),
+      servicegroup = (1 << 4)
     };
 
     enum              action_on {
@@ -44,24 +46,26 @@ namespace       notification {
       service_pending = (1 << 4),
       service_recovery = (1 << 5),
       host_down = (1 << 6),
-      host_unreachable = (1 << 7)
+      host_unreachable = (1 << 7),
+      host_recovery = (1 << 8)
     };
 
     escalation();
     escalation(escalation const& obj);
     escalation& operator=(escalation const& obj);
 
-    bool              is_host_escalation() const throw();
-    bool              is_service_escalation() const throw();
-    void              set_is_host_escalation(bool val) throw();
-    void              set_is_service_escalation(bool val) throw();
+    void              set_types(type t) throw();
+    void              set_type(type t) throw();
+    bool              is_type(type t) const throw();
 
     group const&      get_contactgroups() const throw();
     void              set_contactgroups(group const& val);
     group const&      get_contacts() const throw();
     void              set_contacts(group const& val);
-    unsigned short    get_escalation_options() const throw();
-    void              set_escalation_options(unsigned int val) throw();
+    action_on         get_escalation_options() const throw();
+    void              set_escalation_options(action_on val) throw();
+    void              set_escalation_option(action_on val) throw();
+    bool              is_escalation_option_set(action_on val) const throw();
     std::string const& get_escalation_period() const throw();
     void              set_escalation_period(const std::string& val);
     unsigned int      get_first_notification() const throw();
@@ -77,12 +81,15 @@ namespace       notification {
     group const&      get_servicegroups() const throw();
     void              set_servicegroups(group const& val);
 
+    void              parse_host_escalation_options(std::string const& line);
+    void              parse_service_escalation_options(std::string const& line);
+
   private:
     type              _type;
 
     group             _contactgroups;
     group             _contacts;
-    unsigned short    _escalation_options;
+    action_on         _escalation_options;
     std::string       _escalation_period;
     unsigned int      _first_notification;
     group             _hostgroups;
@@ -91,6 +98,14 @@ namespace       notification {
     unsigned int      _notification_interval;
     group             _servicegroups;
     group             _service_description;
+
+    struct name_to_action {
+      const char* name;
+      action_on action;
+    };
+
+    static const name_to_action _service_actions[];
+    static const name_to_action _host_actions[];
   };
 
 }
