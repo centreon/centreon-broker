@@ -73,41 +73,44 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
     output->add_contact(id, cont);
   }
 
-  if (!query.exec("SELECT contact_contact_id, contactgroup_cg_id from contactgroup_contact_relation"))
+  // Load all the relations of a contact.
+  _load_relations(query, *output);
+
+  // Load the custom variables of the contact.
+  if (!query.exec("SELECT cp_key, cp_value, cp_contact_id, FROM contact_param"))
     throw (exceptions::msg()
-      << "Notification: cannot select contactgroup_contact_relation in loader: "
+      << "Notification: cannot select contact_param in loader: "
       << query.lastError().text());
 
   while (query.next()) {
-    unsigned int contact_id = query.value(0).toUInt();
-    unsigned int contactgroup_id = query.value(1).toUInt();
+    std::string cp_key = query.value(0).toString().toStdString();
+    std::string cp_value = query.value(1).toString().toStdString();
+    unsigned int cp_contact_id = query.value(2).toUInt();
 
-    output->connect_contactgroup_contact(contact_id, contactgroup_id);
+    output->add_contact_param(cp_contact_id, cp_key, cp_value);
   }
+}
 
-  if (!query.exec("SELECT contact_contact_id, command_command_id from contact_hostcommands_relation"))
-    throw (exceptions::msg()
-      << "Notification: cannot select contact_hostcommands_relation in loader: "
-      << query.lastError().text());
-
-  while (query.next()) {
-    unsigned int contact_id = query.value(0).toUInt();
-    unsigned int command_id = query.value(1).toUInt();
-
-    output->connect_contact_hostcommand(contact_id, command_id);
-  }
-
-  if (!query.exec("SELECT contact_contact_id, command_command_id from contact_servicecommands_relation"))
-    throw (exceptions::msg()
-      << "Notification: cannot select contact_servicecommands_relation in loader: "
-      << query.lastError().text());
-
-  while (query.next()) {
-    unsigned int contact_id = query.value(0).toUInt();
-    unsigned int command_id = query.value(1).toUInt();
-
-    output->connect_contact_servicecommand(contact_id, command_id);
-  }
+void contact_loader::_load_relations(QSqlQuery& query,
+                                     contact_builder& output) {
+  _load_relation(query,
+                 output,
+                 "contact_contact_id",
+                 "contactgroup_cg_id",
+                 "contactgroup_contact_relation",
+                 &contact_builder::connect_contact_contactgroup);
+  _load_relation(query,
+                 output,
+                 "contact_contact_id",
+                 "command_command_id",
+                 "contact_hostcommands_relation",
+                 &contact_builder::connect_contact_hostcommand);
+  _load_relation(query,
+                 output,
+                 "contact_contact_id",
+                 "command_command_id",
+                 "contact_servicecommands_relation",
+                 &contact_builder::connect_contact_servicecommand);
 }
 
 void contact_loader::_load_relation(QSqlQuery& query,

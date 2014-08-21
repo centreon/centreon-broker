@@ -37,6 +37,8 @@ namespace       notification {
     void        load(QSqlDatabase* db, contact_builder* output);
 
   private:
+    void        _load_relations(QSqlQuery& query,
+                                contact_builder& output);
     void        _load_relation(QSqlQuery& query,
                                contact_builder& output,
                                std::string const& first_relation_id_name,

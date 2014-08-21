@@ -34,12 +34,16 @@ namespace       notification {
 
     virtual void add_contact(unsigned int id,
                              shared_ptr<contact> con) = 0;
-    virtual void connect_contactgroup_contact(unsigned int contact_id,
+    virtual void connect_contact_contactgroup(unsigned int contact_id,
                                               unsigned int contactgroup_id) = 0;
     virtual void connect_contact_hostcommand(unsigned int contact_id,
                                              unsigned int command_id) = 0;
     virtual void connect_contact_servicecommand(unsigned int contact_id,
                                                 unsigned int service_id) = 0;
+    virtual void add_contact_param(unsigned int contact_id,
+                                   std::string const& key,
+                                   std::string const& value) = 0;
+    /*virtual void connect_contact_*/
   };
 
 }
