@@ -36,8 +36,6 @@ namespace       notification {
     virtual void add_service(unsigned int service_id) = 0;
     virtual void connect_service_host(unsigned int host_id,
                                       unsigned int service_id) = 0;
-    /*virtual void add_node(unsigned int id,
-                          shared_ptr<node> n) = 0;*/
   };
 
 }

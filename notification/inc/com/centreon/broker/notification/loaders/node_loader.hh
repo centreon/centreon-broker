@@ -20,6 +20,7 @@
 #ifndef CCB_NOTIFICATION_LOADERS_NODE_LOADER_HH
 #  define CCB_NOTIFICATION_LOADERS_NODE_LOADER_HH
 
+#  include <string>
 #  include <QSqlDatabase>
 #  include <QSqlQuery>
 #  include "com/centreon/broker/namespace.hh"
@@ -34,6 +35,15 @@ namespace       notification {
     node_loader();
 
     void        load(QSqlDatabase* db, node_builder* output);
+
+  private:
+    void        _load_relation(QSqlQuery& query,
+                               node_builder& output,
+                               std::string const& first_relation_id_name,
+                               std::string const& second_relation_id_name,
+                               std::string const& table,
+                               void (node_builder::*register_method)
+                               (unsigned int, unsigned int));
   };
 
 }
