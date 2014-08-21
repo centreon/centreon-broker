@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <sstream>
 #include <QVariant>
 #include <QSqlError>
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -109,6 +110,29 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
   }
 }
 
+void contact_loader::_load_relation(QSqlQuery& query,
+                                    contact_builder& output,
+                                    std::string const& first_relation_id_name,
+                                    std::string const& second_relation_id_name,
+                                    std::string const& table,
+                                    void (contact_builder::*register_method)
+                                    (unsigned int, unsigned int)) {
+  std::stringstream ss;
+  ss << "SELECT " << first_relation_id_name << ", "
+     << second_relation_id_name << " FROM " << table;
+  if (!query.exec(ss.str().c_str()))
+    throw (exceptions::msg()
+      << "Notification: cannot select " <<  table << " in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    unsigned int id = query.value(0).toUInt();
+    unsigned int associated_id = query.value(1).toUInt();
+
+    (output.*register_method)(id, associated_id);
+  }
+}
+
 static void _parse_host_notification_options(std::string const& line,
                                              contact& cont) {
   if (line == "n")
@@ -132,7 +156,6 @@ static void _parse_host_notification_options(std::string const& line,
     }
   }
 }
-
 
 static void _parse_service_notification_options(std::string const& line,
                                                 contact& cont) {
