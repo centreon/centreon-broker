@@ -23,6 +23,7 @@
 #  include <QSqlDatabase>
 #  include <QSqlQuery>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/neb/acknowledgement.hh"
 #  include "com/centreon/broker/notification/builders/acknowledgement_builder.hh"
 
 CCB_BEGIN()
@@ -34,6 +35,8 @@ namespace       notification {
     acknowledgement_loader();
 
     void        load(QSqlDatabase* db, acknowledgement_builder* output);
+    void        new_ack(neb::acknowledgement& ack,
+                        acknowledgement_builder& output);
   };
 
 }

@@ -32,11 +32,9 @@ namespace       notification {
   public:
     virtual ~acknowledgement_builder() {}
 
-    virtual void add_host_ack(unsigned int host_id,
-                              shared_ptr<acknowledgement> ack) = 0;
-    virtual void add_service_ack(unsigned int host_id,
-                                 unsigned int service_id,
-                                 shared_ptr<acknowledgement> ack) = 0;
+    virtual void add_ack(unsigned int host_id,
+                         unsigned int service_id,
+                         shared_ptr<acknowledgement> ack) = 0;
   };
 
 }
