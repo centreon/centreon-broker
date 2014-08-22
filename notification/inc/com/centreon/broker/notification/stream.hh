@@ -37,6 +37,8 @@
 #  include "com/centreon/broker/notification/loaders/escalation_loader.hh"
 #  include "com/centreon/broker/notification/loaders/node_loader.hh"
 #  include "com/centreon/broker/notification/loaders/timeperiod_loader.hh"
+#  include "com/centreon/broker/notification/loaders/acknowledgement_loader.hh"
+#  include "com/centreon/broker/notification/loaders/downtime_loader.hh"
 
 CCB_BEGIN()
 

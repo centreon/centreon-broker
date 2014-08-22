@@ -44,6 +44,9 @@ namespace        notification {
     unsigned int _service_id;
   };
 
+  // QHash function for hash and sets.
+  uint qHash(node_id id);
+
 }
 
 CCB_END()

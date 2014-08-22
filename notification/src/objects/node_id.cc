@@ -17,6 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QHash>
+#include <QPair>
 #include "com/centreon/broker/notification/objects/node_id.hh"
 
 using namespace com::centreon::broker::notification;
@@ -59,4 +61,10 @@ unsigned int node_id::get_host_id() const throw() {
 
 unsigned int node_id::get_service_id() const throw() {
   return (_service_id);
+}
+
+// QHash function for hash and sets.
+uint qHash(node_id id) {
+  return (qHash(qMakePair(id.get_host_id(),
+                          id.get_service_id())));
 }

@@ -266,6 +266,20 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   if (!data.isNull()) {
 
   }
+
+  unsigned int type(data->type());
+  unsigned short cat(io::events::category_of_type(type));
+  unsigned short elem(io::events::element_of_type(type));
+
+  if (cat == io::events::neb)  {
+    if (elem == neb::de_downtime) {
+      // Load downtime
+    }
+    else if (elem == neb::de_acknowledgement) {
+      // Load acknowledgement
+    }
+  }
+
   return (retval);
 }
 
