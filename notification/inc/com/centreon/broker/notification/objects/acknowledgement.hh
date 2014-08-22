@@ -28,12 +28,30 @@ namespace       notification {
 
   class acknowledgement {
   public:
+    enum type {
+      unknown = 0,
+      host = 1,
+      service = 2
+    };
+
     acknowledgement();
     acknowledgement(acknowledgement const& obj);
     acknowledgement& operator=(acknowledgement const& obj);
 
-  private:
+    type          get_type() const throw();
+    void          set_type(type val) throw();
+    int           get_acknowledgement_type() const throw();
+    void          set_acknowledgement_type(int val) throw();
+    unsigned int  get_host_id() const throw();
+    void          set_host_id(unsigned int val) throw();
+    unsigned int  get_service_id() const throw();
+    void          set_service_id(unsigned int val) throw();
 
+  private:
+    type          _type;
+    int           _acknowledgement_type;
+    unsigned int  _host_id;
+    unsigned int  _service_id;
   };
 
 }

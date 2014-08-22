@@ -22,7 +22,7 @@
 
 #  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/downtime.hh"
+#  include "com/centreon/broker/notification/objects/acknowledgement.hh"
 
 CCB_BEGIN()
 
@@ -31,6 +31,12 @@ namespace       notification {
   class         acknowledgement_builder {
   public:
     virtual ~acknowledgement_builder() {}
+
+    virtual void add_host_ack(unsigned int host_id,
+                              shared_ptr<acknowledgement> ack) = 0;
+    virtual void add_service_ack(unsigned int host_id,
+                                 unsigned int service_id,
+                                 shared_ptr<acknowledgement> ack) = 0;
   };
 
 }

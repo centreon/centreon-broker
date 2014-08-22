@@ -36,4 +36,40 @@ void acknowledgement_loader::load(QSqlDatabase* db,
   if (!db || !output)
     return;
 
+  QSqlQuery query(*db);
+
+  // Performance improvement, as we never go back.
+  query.setForwardOnly(true);
+
+  if (!query.exec("SELECT host_id, acknowledgement_type FROM hosts WHERE acknowledged = true"))
+    throw (exceptions::msg()
+      << "Notification: cannot select hosts in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    unsigned int host_id = query.value(0).toUInt();
+    shared_ptr<acknowledgement> ack(new acknowledgement);
+    ack->set_type(acknowledgement::host);
+    ack->set_host_id(host_id);
+    ack->set_acknowledgement_type(query.value(1).toInt());
+
+    output->add_host_ack(host_id, ack);
+  }
+
+  if (!query.exec("SELECT host_id, service_id, acknowledgement_type FROM services WHERE acknowledged = true"))
+    throw (exceptions::msg()
+      << "Notification: cannot select services in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    unsigned int host_id = query.value(0).toUInt();
+    unsigned int service_id = query.value(1).toUInt();
+    shared_ptr<acknowledgement> ack(new acknowledgement);
+    ack->set_type(acknowledgement::service);
+    ack->set_host_id(host_id);
+    ack->set_service_id(service_id);
+    ack->set_acknowledgement_type(query.value(2).toInt());
+
+    output->add_service_ack(host_id, service_id, ack);
+  }
 }
