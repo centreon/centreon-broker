@@ -48,6 +48,21 @@ void downtime_loader::load(QSqlDatabase* db, downtime_builder* output) {
   while (query.next()) {
     shared_ptr<downtime> down(new downtime);
     unsigned int downtime_id = query.value(0).toUInt();
+    down->set_entry_time(query.value(1).toUInt());
+    down->set_host_id(query.value(2).toUInt());
+    down->set_service_id(query.value(3).toUInt());
+    down->set_author(query.value(4).toString().toStdString());
+    down->set_cancelled(query.value(5).toBool());
+    down->set_deletion_time(query.value(6).toUInt());
+    down->set_duration(query.value(7).toUInt());
+    down->set_end_time(query.value(8).toUInt());
+    down->set_fixed(query.value(9).toBool());
+    down->set_start_time(query.value(10).toUInt());
+    down->set_actual_start_time(query.value(11).toUInt());
+    down->set_actual_end_time(query.value(12).toUInt());
+    down->set_started(query.value(13).toBool());
+    down->set_triggered_by(query.value(14).toUInt());
+    down->set_type(query.value(15).toInt());
 
     output->add_downtime(downtime_id, down);
   }
