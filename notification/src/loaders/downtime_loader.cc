@@ -67,3 +67,22 @@ void downtime_loader::load(QSqlDatabase* db, downtime_builder* output) {
     output->add_downtime(downtime_id, down);
   }
 }
+
+void downtime_loader::new_downtime(neb::downtime& new_downtime,
+                                   downtime_builder& output) {
+  shared_ptr<downtime> down(new downtime);
+  down->set_actual_end_time(new_downtime.actual_end_time);
+  down->set_actual_start_time(new_downtime.actual_start_time);
+  down->set_author(new_downtime.author.toStdString());
+  down->set_deletion_time(new_downtime.deletion_time);
+  down->set_duration(new_downtime.duration);
+  down->set_end_time(new_downtime.end_time);
+  down->set_entry_time(new_downtime.entry_time);
+  down->set_fixed(new_downtime.fixed);
+  down->set_host_id(new_downtime.host_id);
+  down->set_service_id(new_downtime.service_id);
+  down->set_start_time(new_downtime.start_time);
+  down->set_triggered_by(new_downtime.triggered_by);
+
+  output.add_downtime(new_downtime.internal_id, down);
+}
