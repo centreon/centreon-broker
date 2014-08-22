@@ -32,7 +32,7 @@ namespace       notification {
 
   class         acknowledgement_loader {
   public:
-    acknowledgement_loader();
+                acknowledgement_loader();
 
     void        load(QSqlDatabase* db, acknowledgement_builder* output);
     void        new_ack(neb::acknowledgement& ack,

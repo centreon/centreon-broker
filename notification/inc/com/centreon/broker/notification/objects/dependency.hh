@@ -29,7 +29,7 @@ CCB_BEGIN()
 
 namespace       notification {
 
-  class         dependency {
+  class                     dependency {
   public:
     enum        type {
       unknown = 0,
@@ -56,14 +56,14 @@ namespace       notification {
       execution_dependency
     };
 
-    dependency();
-    dependency(dependency const& obj);
-    dependency& operator=(dependency const& obj);
+                          dependency();
+                          dependency(dependency const& obj);
+                          dependency& operator=(dependency const& obj);
 
-    bool                   is_host_dependency() const throw();
-    void                   set_is_host_dependency(bool val) throw();
-    bool                   is_service_dependency() const throw();
-    void                   set_is_service_dependency(bool val) throw();
+    bool                  is_host_dependency() const throw();
+    void                  set_is_host_dependency(bool val) throw();
+    bool                  is_service_dependency() const throw();
+    void                  set_is_service_dependency(bool val) throw();
 
     std::string const&    get_period() const throw();
     void                  set_period(std::string const& val);

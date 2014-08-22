@@ -32,40 +32,40 @@ CCB_BEGIN()
 
 namespace       notification {
 
-  class         timeperiod {
+  class                 timeperiod {
   public:
-    timeperiod();
-    timeperiod(timeperiod const& obj);
-    timeperiod operator=(timeperiod const& obj);
+                        timeperiod();
+                        timeperiod(timeperiod const& obj);
+                        timeperiod operator=(timeperiod const& obj);
 
-    std::string const&     get_alias() const throw();
-    void                   set_alias(std::string const& value);
+    std::string const&  get_alias() const throw();
+    void                set_alias(std::string const& value);
 
     std::vector<std::list<daterange> > const&
-                           get_exceptions() const throw();
-    void                   add_exceptions(std::list<daterange> const& val);
+                        get_exceptions() const throw();
+    void                add_exceptions(std::list<daterange> const& val);
 
-    group const&           get_exclude() const throw();
-    void                   set_exclude(group const& val);
+    group const&        get_exclude() const throw();
+    void                set_exclude(group const& val);
 
-    std::string const&     get_name() const throw();
-    void                   set_name(std::string const& value);
+    std::string const&  get_name() const throw();
+    void                set_name(std::string const& value);
 
     std::vector<std::list<timerange> > const&
-                           get_timeranges() const throw();
-    void                   add_timerange(std::list<timerange> const& val);
-    void                   set_timerange(std::list<timerange> const& val,
-                                         int day);
-    void                   set_timerange(std::string const& timerange_text,
-                                         int day);
+                        get_timeranges() const throw();
+    void                add_timerange(std::list<timerange> const& val);
+    void                set_timerange(std::list<timerange> const& val,
+                                      int day);
+    void                set_timerange(std::string const& timerange_text,
+                                      int day);
     std::list<timerange> const&
-                           get_timeranges_by_day(int day) const throw();
+                        get_timeranges_by_day(int day) const throw();
 
-    std::string const&     get_timezone() const throw();
-    void                   set_timezone(std::string const& tz);
+    std::string const&  get_timezone() const throw();
+    void                set_timezone(std::string const& tz);
 
-    bool                   is_valid(time_t preferred_time) const;
-    time_t                 get_next_valid(time_t preferred_time) const;
+    bool                is_valid(time_t preferred_time) const;
+    time_t              get_next_valid(time_t preferred_time) const;
 
   private:
     std::string            _alias;

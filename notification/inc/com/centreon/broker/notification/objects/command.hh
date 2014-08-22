@@ -30,23 +30,23 @@ CCB_BEGIN()
 
 namespace       notification {
 
-  class         command {
+  class                 command {
   public:
-    command(std::string const& base_command);
-    command(command const& obj);
-    command& operator=(command const& obj);
+                        command(std::string const& base_command);
+                        command(command const& obj);
+                        command& operator=(command const& obj);
 
-    std::string const& get_name() const throw();
-    void set_name(std::string const& name);
+    std::string const&  get_name() const throw();
+    void                set_name(std::string const& name);
 
-    std::string resolve(neb::host_status);
-    std::string resolve(neb::service_status);
+    std::string         resolve(neb::host_status);
+    std::string         resolve(neb::service_status);
 
   private:
     command();
 
-    std::string _name;
-    std::string _base_command;
+    std::string         _name;
+    std::string         _base_command;
   };
 
 }

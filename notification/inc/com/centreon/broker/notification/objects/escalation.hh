@@ -28,7 +28,7 @@ CCB_BEGIN()
 
 namespace       notification {
 
-  class         escalation {
+  class               escalation {
   public:
     enum              type {
       unknown = 0,
@@ -50,9 +50,9 @@ namespace       notification {
       host_recovery = (1 << 8)
     };
 
-    escalation();
-    escalation(escalation const& obj);
-    escalation& operator=(escalation const& obj);
+                      escalation();
+                      escalation(escalation const& obj);
+                      escalation& operator=(escalation const& obj);
 
     void              set_types(type t) throw();
     void              set_type(type t) throw();

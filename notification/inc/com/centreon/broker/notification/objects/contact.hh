@@ -28,9 +28,9 @@
 
 CCB_BEGIN()
 
-namespace       notification {
+namespace notification {
 
-  class         contact {
+  class                      contact {
   public:
     enum host_action_on {
       host_none = 0,
@@ -51,9 +51,9 @@ namespace       notification {
       service_downtime = (1 << 5)
     };
 
-    contact();
-    contact(contact const& obj);
-    contact& operator=(contact const& obj);
+                             contact();
+                             contact(contact const& obj);
+                             contact& operator=(contact const& obj);
 
     std::vector<std::string> const& get_address() const throw();
     void                     add_address(std::string const& value);

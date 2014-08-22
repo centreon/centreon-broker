@@ -28,9 +28,9 @@ CCB_BEGIN()
 
 namespace       notification {
 
-  class         node_builder {
+  class          node_builder {
   public:
-    virtual ~node_builder() {}
+    virtual      ~node_builder() {}
 
     virtual void add_host(unsigned int id) = 0;
     virtual void add_service(unsigned int service_id) = 0;

@@ -28,11 +28,11 @@ CCB_BEGIN()
 
 namespace       notification {
 
-  class downtime {
+  class           downtime {
   public:
-    downtime();
-    downtime(downtime const& obj);
-    downtime& operator=(downtime const& obj);
+                  downtime();
+                  downtime(downtime const& obj);
+                  downtime& operator=(downtime const& obj);
 
     time_t        get_entry_time() const throw();
     void          set_entry_time(time_t val) throw();

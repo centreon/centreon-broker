@@ -34,9 +34,9 @@ namespace       notification {
       service = 2
     };
 
-    acknowledgement();
-    acknowledgement(acknowledgement const& obj);
-    acknowledgement& operator=(acknowledgement const& obj);
+                  acknowledgement();
+                  acknowledgement(acknowledgement const& obj);
+                  acknowledgement& operator=(acknowledgement const& obj);
 
     type          get_type() const throw();
     void          set_type(type val) throw();
