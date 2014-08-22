@@ -406,6 +406,9 @@ void stream::_update_objects_from_db() {
   node_loader node;
   timeperiod_loader timeperiod;
 
+  node_set_builder node_set_build(_nodes);
+
+  node.load(_centreon_db.get(), &node_set_build);
   command.load(_centreon_db.get(), NULL);
   contact.load(_centreon_db.get(), NULL);
   dependency.load(_centreon_db.get(), NULL);

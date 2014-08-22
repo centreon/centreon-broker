@@ -23,6 +23,7 @@
 #  include <vector>
 #  include <deque>
 #  include <memory>
+#  include <QSet>
 #  include <QPair>
 #  include <QSqlDatabase>
 #  include <QSqlQuery>
@@ -39,6 +40,7 @@
 #  include "com/centreon/broker/notification/loaders/timeperiod_loader.hh"
 #  include "com/centreon/broker/notification/loaders/acknowledgement_loader.hh"
 #  include "com/centreon/broker/notification/loaders/downtime_loader.hh"
+#  include "com/centreon/broker/notification/builders/node_set_builder.hh"
 
 CCB_BEGIN()
 
@@ -80,6 +82,8 @@ namespace        notification {
     unsigned int                _transaction_queries;
     bool                        _with_state_events;
     unsigned int                _instance_timeout;
+
+    QSet<node_id>               _nodes;
 
     void                        _open_db(std::auto_ptr<QSqlDatabase>& db,
                                          QString const& t,
