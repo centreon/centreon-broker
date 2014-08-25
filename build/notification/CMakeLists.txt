@@ -49,6 +49,7 @@ add_library("${NOTIFICATION}" SHARED
   "${SRC_DIR}/objects/node_id.cc"
   "${SRC_DIR}/objects/acknowledgement.cc"
   "${SRC_DIR}/objects/downtime.cc"
+  "${SRC_DIR}/objects/qhash_func.cc"
   "${SRC_DIR}/loaders/contact_loader.cc"
   "${SRC_DIR}/loaders/dependency_loader.cc"
   "${SRC_DIR}/loaders/escalation_loader.cc"
@@ -60,6 +61,7 @@ add_library("${NOTIFICATION}" SHARED
   "${SRC_DIR}/builders/node_set_builder.cc"
   "${SRC_DIR}/builders/composed_contact_builder.cc"
   "${SRC_DIR}/builders/contact_by_node_builder.cc"
+  "${SRC_DIR}/builders/contact_by_name_builder.cc"
   "${PROJECT_SOURCE_DIR}/core/src/mapping.cc"
   # Headers.
   "${INC_DIR}/com/centreon/broker/notification/factory.hh"
@@ -79,6 +81,7 @@ add_library("${NOTIFICATION}" SHARED
   "${INC_DIR}/com/centreon/broker/notification/objects/timezone_locker.hh"
   "${INC_DIR}/com/centreon/broker/notification/objects/node_id.hh"
   "${INC_DIR}/com/centreon/broker/notification/objects/acknowledgement.hh"
+  "${INC_DIR}/com/centreon/broker/notification/objects/qhash_func.hh"
   "${INC_DIR}/com/centreon/broker/notification/objects/downtime.hh"
   "${INC_DIR}/com/centreon/broker/notification/loaders/command_loader.hh"
   "${INC_DIR}/com/centreon/broker/notification/loaders/contact_loader.hh"
@@ -99,6 +102,7 @@ add_library("${NOTIFICATION}" SHARED
   "${INC_DIR}/com/centreon/broker/notification/builders/acknowledgement_builder.hh"
   "${INC_DIR}/com/centreon/broker/notification/builders/composed_contact_builder.hh"
   "${INC_DIR}/com/centreon/broker/notification/builders/contact_by_node_builder.hh"
+  "${INC_DIR}/com/centreon/broker/notification/builders/contact_by_name_builder.hh"
 )
 target_link_libraries("${NOTIFICATION}" ${QT_LIBRARIES})
 set_target_properties("${NOTIFICATION}" PROPERTIES PREFIX "")
