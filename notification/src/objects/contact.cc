@@ -104,14 +104,6 @@ void contact::set_name(std::string const& value) {
   _contact_name = value;
 }
 
-group const& contact::get_group() const throw() {
-  return (_contactgroups);
-}
-
-void contact::set_group(group const& value) {
-  _contactgroups = value;
-}
-
 std::map<std::string, std::string> const&
                          contact::get_customvariables() const throw() {
   return (_customvariables);

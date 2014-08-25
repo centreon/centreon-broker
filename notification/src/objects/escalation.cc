@@ -44,34 +44,22 @@ escalation::escalation() :
 
 escalation::escalation(escalation const& obj) :
   _type(obj._type),
-  _contactgroups(obj._contactgroups),
-  _contacts(obj._contacts),
   _escalation_options(obj._escalation_options),
   _escalation_period(obj._escalation_period),
   _first_notification(obj._first_notification),
-  _hostgroups(obj._hostgroups),
-  _hosts(obj._hosts),
   _last_notification(obj._last_notification),
-  _notification_interval(obj._notification_interval),
-  _servicegroups(obj._servicegroups),
-  _service_description(obj._service_description) {
+  _notification_interval(obj._notification_interval) {
 
 }
 
 escalation& escalation::operator=(escalation const& obj) {
   if (this != &obj) {
     _type = obj._type;
-    _contactgroups = obj._contactgroups;
-    _contacts = obj._contacts;
     _escalation_options = obj._escalation_options;
     _escalation_period = obj._escalation_period;
     _first_notification = obj._first_notification;
-    _hostgroups = obj._hostgroups;
-    _hosts = obj._hosts;
     _last_notification = obj._last_notification;
     _notification_interval = obj._notification_interval;
-    _servicegroups = obj._servicegroups;
-    _service_description = obj._service_description;
   }
   return (*this);
 }
@@ -86,22 +74,6 @@ void escalation::set_type(type t) throw() {
 
 bool escalation::is_type(type t) const throw() {
   return (_type & t);
-}
-
-group const& escalation::get_contactgroups() const throw() {
-  return (_contactgroups);
-}
-
-void escalation::set_contactgroups(group const& val) {
-  _contactgroups = val;
-}
-
-group const& escalation::get_contacts() const throw() {
-  return (_contacts);
-}
-
-void escalation::set_contacts(group const& val) {
-  _contacts = val;
 }
 
 escalation::action_on escalation::get_escalation_options() const throw() {
@@ -136,22 +108,6 @@ void escalation::set_first_notification(unsigned int val) throw() {
   _first_notification = val;
 }
 
-group const& escalation::get_hostgroups() const throw() {
-  return (_hostgroups);
-}
-
-void escalation::set_hostgroups(group const& val) {
-  _hostgroups = val;
-}
-
-group const& escalation::get_hosts() const throw() {
-  return (_hosts);
-}
-
-void escalation::set_hosts(group const& val) {
-  _hosts = val;
-}
-
 unsigned int escalation::get_last_notification() const throw() {
   return (_last_notification);
 }
@@ -166,14 +122,6 @@ unsigned int escalation::get_notification_interval() const throw() {
 
 void escalation::set_notification_interval(unsigned int val) throw() {
   _notification_interval = val;
-}
-
-group const& escalation::get_servicegroups() const throw() {
-  return (_servicegroups);
-}
-
-void escalation::set_servicegroups(group const& val) {
-  _servicegroups = val;
 }
 
 void escalation::parse_host_escalation_options(std::string const& line) {

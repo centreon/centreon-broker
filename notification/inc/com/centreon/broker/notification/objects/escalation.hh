@@ -58,10 +58,6 @@ namespace       notification {
     void              set_type(type t) throw();
     bool              is_type(type t) const throw();
 
-    group const&      get_contactgroups() const throw();
-    void              set_contactgroups(group const& val);
-    group const&      get_contacts() const throw();
-    void              set_contacts(group const& val);
     action_on         get_escalation_options() const throw();
     void              set_escalation_options(action_on val) throw();
     void              set_escalation_option(action_on val) throw();
@@ -70,16 +66,10 @@ namespace       notification {
     void              set_escalation_period(const std::string& val);
     unsigned int      get_first_notification() const throw();
     void              set_first_notification(unsigned int val) throw();
-    group const&      get_hostgroups() const throw();
-    void              set_hostgroups(group const& val);
-    group const&      get_hosts() const throw();
-    void              set_hosts(group const& val);
     unsigned int      get_last_notification() const throw();
     void              set_last_notification(unsigned int val) throw();
     unsigned int      get_notification_interval() const throw();
     void              set_notification_interval(unsigned int val) throw();
-    group const&      get_servicegroups() const throw();
-    void              set_servicegroups(group const& val);
 
     void              parse_host_escalation_options(std::string const& line);
     void              parse_service_escalation_options(std::string const& line);
@@ -87,17 +77,11 @@ namespace       notification {
   private:
     type              _type;
 
-    group             _contactgroups;
-    group             _contacts;
     action_on         _escalation_options;
     std::string       _escalation_period;
     unsigned int      _first_notification;
-    group             _hostgroups;
-    group             _hosts;
     unsigned int      _last_notification;
     unsigned int      _notification_interval;
-    group             _servicegroups;
-    group             _service_description;
 
     struct name_to_action {
       const char* name;

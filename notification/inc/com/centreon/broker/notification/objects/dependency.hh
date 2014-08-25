@@ -69,21 +69,10 @@ namespace       notification {
     void                  set_period(std::string const& val);
     dependency_kind       get_kind() const throw();
     void                  set_kind(dependency_kind val) throw();
-    group const&          get_dependent_hostgroups() const throw();
-    void                  set_dependent_hostgroups(group const& val);
-    group const&          get_dependent_hosts() const throw();
-    void                  set_dependent_hosts(group const& val);
-    group const&          get_dependent_servicegroups() const throw();
-    void                  set_dependent_servicegroups(group const& val);
-    group const&          get_dependent_service_description() const throw();
-    void                  set_dependent_service_description(group const& val);
     action_on             get_execution_failure_options() const throw();
     void                  set_execution_failure_options(action_on val) throw();
     void                  set_execution_failure_option(action_on val) throw();
     bool                  is_execution_failure_option_set(action_on val) throw();
-    group const&          get_hostgroups() const throw();
-    void                  set_hostgroups(group const& val);
-    group const&          get_hosts() const throw();
     void                  set_hosts(group const& val);
     bool                  get_inherits_parent() const throw();
     void                  set_inherits_parent(bool val) throw();
@@ -91,10 +80,6 @@ namespace       notification {
     void                  set_notification_failure_options(action_on val) throw();
     void                  set_notification_failure_option(action_on val) throw();
     bool                  is_notification_failure_option_set(action_on val) const throw();
-    group const&          get_servicegroups() const throw();
-    void                  set_servicegroups(group const& val);
-    group const&          get_service_description() const throw();
-    void                  set_service_description(group const& val);
 
     void                  parse_notification_failure_options(std::string const& line);
     void                  parse_execution_failure_options(std::string const& line);
@@ -103,17 +88,9 @@ namespace       notification {
     type                   _type;
     std::string            _dependency_period;
     dependency_kind        _dependency_type;
-    group                  _dependent_hostgroups;
-    group                  _dependent_hosts;
-    group                  _dependent_servicegroups;
-    group                  _dependent_service_description;
     action_on              _execution_failure_options;
-    group                  _hostgroups;
-    group                  _hosts;
     bool                   _inherits_parent;
     action_on              _notification_failure_options;
-    group                  _servicegroups;
-    group                  _service_description;
 
     struct name_to_action {
       const char* name;

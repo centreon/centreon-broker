@@ -46,34 +46,18 @@ dependency::dependency(dependency const& obj) :
   _type(obj._type),
   _dependency_period(obj._dependency_period),
   _dependency_type(obj._dependency_type),
-  _dependent_hostgroups(obj._dependent_hostgroups),
-  _dependent_hosts(obj._dependent_hosts),
-  _dependent_servicegroups(obj._dependent_servicegroups),
-  _dependent_service_description(obj._dependent_service_description),
   _execution_failure_options(obj._execution_failure_options),
-  _hostgroups(obj._hostgroups),
-  _hosts(obj._hosts),
   _inherits_parent(obj._inherits_parent),
-  _notification_failure_options(obj._notification_failure_options),
-  _servicegroups(obj._servicegroups),
-  _service_description(obj._service_description) {}
+  _notification_failure_options(obj._notification_failure_options) {}
 
 dependency& dependency::operator=(dependency const& obj) {
   if (this != &obj) {
     _type = obj._type;
     _dependency_period = obj._dependency_period;
     _dependency_type = obj._dependency_type;
-    _dependent_hostgroups = obj._dependent_hostgroups;
-    _dependent_hosts = obj._dependent_hosts;
-    _dependent_servicegroups = obj._dependent_servicegroups;
-    _dependent_service_description = obj._dependent_service_description;
     _execution_failure_options = obj._execution_failure_options;
-    _hostgroups = obj._hostgroups;
-    _hosts = obj._hosts;
     _inherits_parent = obj._inherits_parent;
     _notification_failure_options = obj._notification_failure_options;
-    _servicegroups = obj._servicegroups;
-    _service_description = obj._service_description;
   }
   return (*this);
 }
@@ -116,38 +100,6 @@ void dependency::set_kind(dependency::dependency_kind val) throw() {
   _dependency_type = val;
 }
 
-group const& dependency::get_dependent_hostgroups() const throw() {
-  return (_dependent_hostgroups);
-}
-
-void dependency::set_dependent_hostgroups(group const& val) {
-  _dependent_hostgroups = val;
-}
-
-group const& dependency::get_dependent_hosts() const throw() {
-  return (_dependent_hosts);
-}
-
-void dependency::set_dependent_hosts(group const& val) {
-  _dependent_hosts = val;
-}
-
-group const& dependency::get_dependent_servicegroups() const throw() {
-  return (_dependent_servicegroups);
-}
-
-void dependency::set_dependent_servicegroups(group const& val) {
-  _dependent_servicegroups = val;
-}
-
-group const& dependency::get_dependent_service_description() const throw() {
-  return (_dependent_service_description);
-}
-
-void dependency::set_dependent_service_description(group const& val) {
-  _dependent_service_description = val;
-}
-
 dependency::action_on dependency::get_notification_failure_options() const throw() {
   return (_notification_failure_options);
 }
@@ -162,22 +114,6 @@ void dependency::set_notification_failure_option(action_on val) throw() {
 
 bool dependency::is_notification_failure_option_set(action_on val) const throw() {
   return (_notification_failure_options & val);
-}
-
-group const& dependency::get_hostgroups() const throw() {
-  return (_hostgroups);
-}
-
-void dependency::set_hostgroups(group const& val) {
-  _hostgroups = val;
-}
-
-group const& dependency::get_hosts() const throw() {
-  return (_hosts);
-}
-
-void dependency::set_hosts(group const& val) {
-  _hosts = val;
 }
 
 bool dependency::get_inherits_parent() const throw() {
@@ -202,22 +138,6 @@ void dependency::set_execution_failure_option(action_on val) throw() {
 
 bool dependency::is_execution_failure_option_set(action_on val) throw() {
   return (_execution_failure_options & val);
-}
-
-group const& dependency::get_servicegroups() const throw() {
-  return (_servicegroups);
-}
-
-void dependency::set_servicegroups(group const& val) {
-  _servicegroups = val;
-}
-
-group const& dependency::get_service_description() const throw() {
-  return (_service_description);
-}
-
-void dependency::set_service_description(group const& val) {
-  _service_description = val;
 }
 
 void dependency::parse_notification_failure_options(std::string const& line) {

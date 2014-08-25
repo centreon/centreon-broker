@@ -63,8 +63,6 @@ namespace notification {
     void                     set_can_submit_commands(bool value) throw();
     std::string const&       get_name() const throw();
     void                     set_name(std::string const& value);
-    group const&             get_group() const throw();
-    void                     set_group(group const& value);
     std::map<std::string, std::string> const&
                              get_customvariables() const throw();
     void                     add_customvariables(std::string const& name,
@@ -102,7 +100,6 @@ namespace notification {
     std::vector<std::string> _address;
     std::string              _alias;
     bool                     _can_submit_commands;
-    group                    _contactgroups;
     std::string              _contact_name;
     std::map<std::string, std::string>
                              _customvariables;
