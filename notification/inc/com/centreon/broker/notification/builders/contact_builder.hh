@@ -22,6 +22,7 @@
 
 #  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/objects/node_id.hh"
 #  include "com/centreon/broker/notification/objects/contact.hh"
 
 CCB_BEGIN()
@@ -40,10 +41,11 @@ namespace       notification {
                                              unsigned int command_id) = 0;
     virtual void connect_contact_servicecommand(unsigned int contact_id,
                                                 unsigned int service_id) = 0;
+    virtual void connect_contact_node_id(unsigned int contact_id,
+                                         node_id id) = 0;
     virtual void add_contact_param(unsigned int contact_id,
                                    std::string const& key,
                                    std::string const& value) = 0;
-    /*virtual void connect_contact_*/
   };
 
 }

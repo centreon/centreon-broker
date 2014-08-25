@@ -83,11 +83,9 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
       << query.lastError().text());
 
   while (query.next()) {
-    std::string cp_key = query.value(0).toString().toStdString();
-    std::string cp_value = query.value(1).toString().toStdString();
-    unsigned int cp_contact_id = query.value(2).toUInt();
-
-    output->add_contact_param(cp_contact_id, cp_key, cp_value);
+    output->add_contact_param(query.value(2).toUInt(),
+                              query.value(0).toString().toStdString(),
+                              query.value(1).toString().toStdString());
   }
 }
 
@@ -111,6 +109,40 @@ void contact_loader::_load_relations(QSqlQuery& query,
                  "command_command_id",
                  "contact_servicecommands_relation",
                  &contact_builder::connect_contact_servicecommand);
+  _load_relation(query,
+                 output,
+                 "contact_contact_id",
+                 "command_command_id",
+                 "contact_servicecommands_relation",
+                 &contact_builder::connect_contact_servicecommand);
+
+  if (!query.exec("SELECT contact_id, host_host_id FROM contact_host_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select contact_host_relation in loader: "
+      << query.lastError().text());
+
+  while (query.next())
+    output.connect_contact_node_id(query.value(1).toUInt(),
+                                   node_id(query.value(0).toUInt()));
+
+  if (!query.exec("SELECT contact_id, service_service_id FROM contact_service_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select contact_service_relation in loader: "
+      << query.lastError().text());
+
+  while (query.next())
+    output.connect_contact_node_id(query.value(1).toUInt(),
+                                   node_id(0, query.value(0).toUInt()));
+
+  if (!query.exec("SELECT a.host_host_id, a.service_service_id, b.contact_id FROM host_service_relation AS a LEFT JOIN contact_service_relation AS b ON a.service_service_id = b.service_service_id"))
+    throw (exceptions::msg()
+      << "Notification: cannot select contact_service_relation in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    output.connect_contact_node_id(query.value(2).toUInt(),
+                                   node_id(query.value(0).toUInt(), query.value(1).toUInt()));
+  }
 }
 
 void contact_loader::_load_relation(QSqlQuery& query,

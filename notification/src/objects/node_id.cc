@@ -63,6 +63,14 @@ unsigned int node_id::get_service_id() const throw() {
   return (_service_id);
 }
 
+bool node_id::has_host() const throw() {
+  return (_host_id != 0);
+}
+
+bool node_id::has_service() const throw() {
+  return (_service_id != 0);
+}
+
 // QHash function for hash and sets.
 uint qHash(node_id id) {
   return (qHash(qMakePair(id.get_host_id(),

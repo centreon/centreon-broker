@@ -72,3 +72,12 @@ void composed_contact_builder::add_contact_param(unsigned int contact_id,
        ++it)
     (*it)->add_contact_param(contact_id, key, value);
 }
+
+void composed_contact_builder::connect_contact_node_id(unsigned int contact_id,
+                                                       node_id id) {
+  for (std::vector<contact_builder*>::iterator it(_contact_builders.begin()),
+       end(_contact_builders.end());
+       it != end;
+       ++it)
+    (*it)->connect_contact_node_id(contact_id, id);
+}

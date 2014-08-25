@@ -20,6 +20,7 @@
 #ifndef CCB_NOTIFICATION_NODE_ID_HH
 #  define CCB_NOTIFICATION_NODE_ID_HH
 
+#  include <QHash>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -38,6 +39,8 @@ namespace        notification {
 
     unsigned int get_host_id() const throw();
     unsigned int get_service_id() const throw();
+    bool has_host() const throw();
+    bool has_service() const throw();
 
   private:
     unsigned int _host_id;

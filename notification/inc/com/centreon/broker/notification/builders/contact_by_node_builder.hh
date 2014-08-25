@@ -17,11 +17,13 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NOTIFICATION_BUILDERS_COMPOSED_CONTACT_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_COMPOSED_CONTACT_BUILDER_HH
+#ifndef CCB_NOTIFICATION_BUILDERS_CONTACT_BY_NODE_BUILDER_HH
+#  define CCB_NOTIFICATION_BUILDERS_CONTACT_BY_NODE_BUILDER_HH
 
 #  include <vector>
+#  include <QHash>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/objects/node_id.hh"
 #  include "com/centreon/broker/notification/objects/contact.hh"
 #  include "com/centreon/broker/notification/builders/contact_builder.hh"
 
@@ -29,12 +31,10 @@ CCB_BEGIN()
 
 namespace       notification {
 
-  class           composed_contact_builder : public contact_builder {
+  class           contact_by_node_builder : public contact_builder {
   public:
-                  composed_contact_builder();
-    virtual       ~composed_contact_builder() {}
-
-    void          push_back(contact_builder& cb);
+                  contact_by_node_builder(QMultiHash<node_id, shared_ptr<contact> >& table);
+    virtual       ~contact_by_node_builder() {}
 
     virtual void  add_contact(unsigned int id,
                              shared_ptr<contact> con);
@@ -44,19 +44,21 @@ namespace       notification {
                                               unsigned int command_id);
     virtual void  connect_contact_servicecommand(unsigned int contact_id,
                                                  unsigned int service_id);
+    virtual void  connect_contact_node_id(unsigned int contact_id,
+                                          node_id id);
     virtual void  add_contact_param(unsigned int contact_id,
                                     std::string const& key,
                                     std::string const& value);
-    virtual void  connect_contact_node_id(unsigned int contact_id,
-                                          node_id id);
-
 
   private:
-    std::vector<contact_builder*> _contact_builders;
+    QHash<unsigned int, shared_ptr<contact> > _cache;
+    QMultiHash<node_id, shared_ptr<contact> >& _table;
+
+                  contact_by_node_builder();
   };
 
 }
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_COMPOSED_CONTACT_BUILDER_HH
+#endif // !CCB_NOTIFICATION_BUILDERS_CONTACT_BY_NODE_BUILDER_HH
