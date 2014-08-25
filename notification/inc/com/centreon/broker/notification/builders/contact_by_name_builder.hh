@@ -17,13 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NOTIFICATION_BUILDERS_CONTACT_BY_NODE_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_CONTACT_BY_NODE_BUILDER_HH
+#ifndef CCB_NOTIFICATION_BUILDERS_CONTACT_BY_NAME_BUILDER_HH
+#  define CCB_NOTIFICATION_BUILDERS_CONTACT_BY_NAME_BUILDER_HH
 
 #  include <vector>
 #  include <QHash>
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/builders/contact_by_name_builder.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
 #  include "com/centreon/broker/notification/objects/contact.hh"
 #  include "com/centreon/broker/notification/builders/contact_builder.hh"
@@ -32,10 +31,10 @@ CCB_BEGIN()
 
 namespace       notification {
 
-  class           contact_by_node_builder : public contact_builder {
+  class           contact_by_name_builder : public contact_builder {
   public:
-                  contact_by_node_builder(QMultiHash<node_id, shared_ptr<contact> >& table);
-    virtual       ~contact_by_node_builder() {}
+                  contact_by_name_builder(QHash<std::string, shared_ptr<contact> >& table);
+    virtual       ~contact_by_name_builder() {}
 
     virtual void  add_contact(unsigned int id,
                              shared_ptr<contact> con);
@@ -52,14 +51,13 @@ namespace       notification {
                                     std::string const& value);
 
   private:
-    QHash<unsigned int, shared_ptr<contact> > _cache;
-    QMultiHash<node_id, shared_ptr<contact> >& _table;
+    QHash<std::string, shared_ptr<contact> >& _table;
 
-                  contact_by_node_builder();
+                  contact_by_name_builder();
   };
 
 }
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_CONTACT_BY_NODE_BUILDER_HH
+#endif // !CCB_NOTIFICATION_BUILDERS_CONTACT_BY_NAME_BUILDER_HH
