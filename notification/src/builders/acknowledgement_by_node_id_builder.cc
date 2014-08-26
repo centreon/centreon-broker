@@ -17,28 +17,16 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NOTIFICATION_BUILDERS_ACKNOWLEDGEMENT_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_ACKNOWLEDGEMENT_BUILDER_HH
+#include "com/centreon/broker/notification/builders/acknowledgement_by_node_id_builder.hh"
 
-#  include "com/centreon/shared_ptr.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/node_id.hh"
-#  include "com/centreon/broker/notification/objects/acknowledgement.hh"
+using namespace com::centreon::broker::notification;
 
-CCB_BEGIN()
+acknowledgement_by_node_id_builder::acknowledgement_by_node_id_builder(
+    QMultiHash<node_id, shared_ptr<acknowledgement> >& table) :
+  _table(table){}
 
-namespace       notification {
-
-  class         acknowledgement_builder {
-  public:
-    virtual     ~acknowledgement_builder() {}
-
-    virtual void add_ack(node_id id,
-                         shared_ptr<acknowledgement> ack) = 0;
-  };
-
+void acknowledgement_by_node_id_builder::add_ack(
+    node_id id,
+    shared_ptr<acknowledgement> ack) {
+  _table.insert(id, ack);
 }
-
-CCB_END()
-
-#endif // !CCB_NOTIFICATION_BUILDERS_ACKNOWLEDGEMENT_BUILDER_HH
