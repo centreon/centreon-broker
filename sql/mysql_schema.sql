@@ -819,28 +819,10 @@ CREATE TABLE mod_bam (
   description varchar(254) default NULL,
   level_w float default NULL,
   level_c float default NULL,
---  sla_type tinyint NULL,
---  sla_warning float NULL,
---  sla_critical float NULL,
---  id_notification_period int default NULL,
---  id_check_period int default NULL,
---  id_reporting_period int default NULL,
---  notification_interval int(default NULL,
---  notification_options varchar(255) default NULL,
---  notifications_enabled enum('0','1','2') default NULL,
---  max_check_attempts int default NULL,
---  normal_check_interval int default NULL,
---  retry_check_interval int default NULL,
   current_level float default NULL,
---  calculate enum('0','1') NOT NULL default '0',
   downtime float default NULL,
   acknowledged float default NULL,
---  dependency_dep_id int default NULL,
---  graph_id int default NULL,
---  icon_id int default NULL,
---  graph_style varchar(254) default NULL,
---  activate enum('1','0') NOT NULL default '0',
---  comment text,
+  activate enum('1','0') NOT NULL default '0',
 
   PRIMARY KEY (ba_id),
   UNIQUE (name)
@@ -851,9 +833,7 @@ CREATE TABLE mod_bam (
 --
 CREATE TABLE mod_bam_impacts (
   id_impact int NOT NULL auto_increment,
---  code tinyint NOT NULL,
   impact float NOT NULL,
---  color varchar(7) default NULL
 
   PRIMARY KEY (id_impact)
 ) ENGINE=InnoDB CHARACTER SET utf8;
@@ -869,10 +849,9 @@ CREATE TABLE mod_bam_boolean (
   impact float default NULL,
   impact_id int default NULL,
   expression text NOT NULL,
-  bool_state boolean NOT NULL default '1',
+  bool_state boolean NOT NULL default 1,
   current_state boolean default NULL,
---  comments text default NULL,
---  activate boolean NOT NULL default 0,
+  activate boolean NOT NULL default 0,
 
   PRIMARY KEY (boolean_id),
   FOREIGN KEY (impact_id) REFERENCES mod_bam_impacts (id_impact)
@@ -909,7 +888,6 @@ CREATE TABLE mod_bam_kpi (
   last_level float default NULL,
   downtime float default NULL,
   acknowledged float default NULL,
---  comment text,
   config_type enum('0', '1'),
   drop_warning float default NULL,
   drop_warning_impact_id int default NULL,
@@ -917,7 +895,7 @@ CREATE TABLE mod_bam_kpi (
   drop_critical_impact_id int default NULL,
   drop_unknown float default NULL,
   drop_unknown_impact_id int default NULL,
---  activate enum('0','1') default '0',
+  activate enum('0','1') default '0',
   ignore_downtime enum('0','1') default '0',
   ignore_acknowledged enum('0','1') default '0',
 
