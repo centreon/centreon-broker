@@ -72,6 +72,7 @@ add_library("${NOTIFICATION}" SHARED
   "${SRC_DIR}/builders/dependency_by_node_id_builder.cc"
   "${SRC_DIR}/builders/acknowledgement_by_node_id_builder.cc"
   "${SRC_DIR}/builders/downtime_by_node_id_builder.cc"
+  "${SRC_DIR}/builders/escalation_by_node_id_builder.cc"
   "${PROJECT_SOURCE_DIR}/core/src/mapping.cc"
   # Headers.
   "${INC_DIR}/com/centreon/broker/notification/factory.hh"
@@ -124,6 +125,7 @@ add_library("${NOTIFICATION}" SHARED
   "${INC_DIR}/com/centreon/broker/notification/builders/dependency_by_node_id_builder.hh"
   "${INC_DIR}/com/centreon/broker/notification/builders/acknowledgement_by_node_id_builder.hh"
   "${INC_DIR}/com/centreon/broker/notification/builders/downtime_by_node_id_builder.hh"
+  "${INC_DIR}/com/centreon/broker/notification/builders/escalation_by_node_id_builder.hh"
 )
 target_link_libraries("${NOTIFICATION}" ${QT_LIBRARIES})
 set_target_properties("${NOTIFICATION}" PROPERTIES PREFIX "")

@@ -17,16 +17,21 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/notification/builders/downtime_by_node_id_builder.hh"
+#include "com/centreon/broker/notification/builders/escalation_by_node_id_builder.hh"
 
 using namespace com::centreon::broker::notification;
 
-downtime_by_node_id_builder::downtime_by_node_id_builder(
-    QMultiHash<node_id, shared_ptr<downtime> >& table) :
+escalation_by_node_id_builder::escalation_by_node_id_builder(
+    QMultiHash<node_id, shared_ptr<escalation> >& table) :
   _table(table) {}
 
-void downtime_by_node_id_builder::add_downtime(unsigned int downtime_id,
-                                               shared_ptr<downtime> downtime) {
-  _table.insert(node_id(downtime->get_host_id(), downtime->get_service_id()),
-                downtime);
+void escalation_by_node_id_builder::add_escalation(unsigned int id,
+                                                   shared_ptr<escalation> esc) {
+  _cache[id] = esc;
+}
+
+void escalation_by_node_id_builder::connect_escalation_node_id(
+    unsigned int esc_id,
+    node_id id) {
+  _table.insert(id, _cache[esc_id]);
 }

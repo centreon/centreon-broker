@@ -17,34 +17,36 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NOTIFICATION_BUILDERS_DOWNTIME_BY_NODE_ID_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_DOWNTIME_BY_NODE_ID_BUILDER_HH
+#ifndef CCB_NOTIFICATION_BUILDERS_ESCALATION_BY_NODE_ID_BUILDER_HH
+#  define CCB_NOTIFICATION_BUILDERS_ESCALATION_BY_NODE_ID_BUILDER_HH
 
 #  include <QHash>
 #  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/downtime.hh"
+#  include "com/centreon/broker/notification/objects/escalation.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
 
 CCB_BEGIN()
 
 namespace       notification {
 
-  class           downtime_by_node_id_builder {
+  class           escalation_by_node_id_builder {
   public:
-                  downtime_by_node_id_builder(
-                        QMultiHash<node_id, shared_ptr<downtime> >& table);
-    virtual       ~downtime_by_node_id_builder() {}
+                  escalation_by_node_id_builder(
+                      QMultiHash<node_id, shared_ptr<escalation> >& table);
+    virtual       ~escalation_by_node_id_builder() {}
 
-    virtual void  add_downtime(unsigned int downtime_id,
-                               shared_ptr<downtime> downtime);
-
+    virtual void  add_escalation(unsigned int id,
+                                 shared_ptr<escalation> esc);
+    virtual void  connect_escalation_node_id(unsigned int esc_id,
+                                             node_id id);
   private:
-    QMultiHash<node_id, shared_ptr<downtime> > _table;
+    QHash<unsigned int, shared_ptr<escalation> > _cache;
+    QMultiHash<node_id, shared_ptr<escalation> >& _table;
   };
 
 }
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_DOWNTIME_BY_NODE_ID_BUILDER_HH
+#endif // !CCB_NOTIFICATION_BUILDERS_ESCALATION_BY_NODE_ID_BUILDER_HH
