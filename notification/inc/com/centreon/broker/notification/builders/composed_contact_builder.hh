@@ -24,17 +24,16 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/contact.hh"
 #  include "com/centreon/broker/notification/builders/contact_builder.hh"
+#  include "com/centreon/broker/notification/builders/composed_builder.hh"
 
 CCB_BEGIN()
 
 namespace       notification {
 
-  class           composed_contact_builder : public contact_builder {
+  class           composed_contact_builder : public composed_builder<contact_builder> {
   public:
                   composed_contact_builder();
     virtual       ~composed_contact_builder() {}
-
-    void          push_back(contact_builder& cb);
 
     virtual void  add_contact(unsigned int id,
                              shared_ptr<contact> con);
@@ -49,10 +48,6 @@ namespace       notification {
                                     std::string const& value);
     virtual void  connect_contact_node_id(unsigned int contact_id,
                                           node_id id);
-
-
-  private:
-    std::vector<contact_builder*> _contact_builders;
   };
 
 }

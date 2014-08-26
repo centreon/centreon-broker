@@ -23,42 +23,38 @@ using namespace com::centreon::broker::notification;
 
 composed_contact_builder::composed_contact_builder() {}
 
-void composed_contact_builder::push_back(contact_builder& cb) {
-  _contact_builders.push_back(&cb);
-}
-
 void composed_contact_builder::add_contact(unsigned int id,
                                            shared_ptr<contact> con) {
-  for (std::vector<contact_builder*>::iterator it(_contact_builders.begin()),
-       end(_contact_builders.end());
-       it != end;
+  for (composed_builder<contact_builder>::iterator it(begin()),
+       end_it(end());
+       it != end_it;
        ++it)
     (*it)->add_contact(id, con);
 }
 
 void composed_contact_builder::connect_contact_contactgroup(unsigned int contact_id,
                                                             unsigned int contactgroup_id) {
-  for (std::vector<contact_builder*>::iterator it(_contact_builders.begin()),
-       end(_contact_builders.end());
-       it != end;
+  for (composed_builder<contact_builder>::iterator it(begin()),
+       end_it(end());
+       it != end_it;
        ++it)
     (*it)->connect_contact_contactgroup(contact_id, contactgroup_id);
 }
 
 void composed_contact_builder::connect_contact_hostcommand(unsigned int contact_id,
                                                            unsigned int command_id) {
-  for (std::vector<contact_builder*>::iterator it(_contact_builders.begin()),
-       end(_contact_builders.end());
-       it != end;
+  for (composed_builder<contact_builder>::iterator it(begin()),
+       end_it(end());
+       it != end_it;
        ++it)
     (*it)->connect_contact_hostcommand(contact_id, command_id);
 }
 
 void composed_contact_builder::connect_contact_servicecommand(unsigned int contact_id,
                                                               unsigned int service_id) {
-  for (std::vector<contact_builder*>::iterator it(_contact_builders.begin()),
-       end(_contact_builders.end());
-       it != end;
+  for (composed_builder<contact_builder>::iterator it(begin()),
+       end_it(end());
+       it != end_it;
        ++it)
     (*it)->connect_contact_servicecommand(contact_id, service_id);
 }
@@ -66,18 +62,18 @@ void composed_contact_builder::connect_contact_servicecommand(unsigned int conta
 void composed_contact_builder::add_contact_param(unsigned int contact_id,
                                                  std::string const& key,
                                                  std::string const& value) {
-  for (std::vector<contact_builder*>::iterator it(_contact_builders.begin()),
-       end(_contact_builders.end());
-       it != end;
+  for (composed_builder<contact_builder>::iterator it(begin()),
+       end_it(end());
+       it != end_it;
        ++it)
     (*it)->add_contact_param(contact_id, key, value);
 }
 
 void composed_contact_builder::connect_contact_node_id(unsigned int contact_id,
                                                        node_id id) {
-  for (std::vector<contact_builder*>::iterator it(_contact_builders.begin()),
-       end(_contact_builders.end());
-       it != end;
+  for (composed_builder<contact_builder>::iterator it(begin()),
+       end_it(end());
+       it != end_it;
        ++it)
     (*it)->connect_contact_node_id(contact_id, id);
 }
