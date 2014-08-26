@@ -57,28 +57,41 @@ void escalation_loader::load(QSqlDatabase* db, escalation_builder* output) {
     output->add_escalation(id, esc);
   }
 
+  // Load relations
+  _load_relations(query, *output);
+}
+
+void escalation_loader::_load_relations(QSqlQuery& query,
+                                        escalation_builder& output) {
+  if (!query.exec("SELECT escalation_esc_id, host_host_id FROM escalation_host_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select escalation_host_relation in loader: "
+      << query.lastError().text());
+  while (query.next())
+    output.connect_escalation_node_id(query.value(0).toUInt(),
+                                      node_id(query.value(1).toUInt()));
+
+  if (!query.exec("SELECT escalation_esc_id, host_host_id, service_service_id FROM escalation_service_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select escalation_host_relation in loader: "
+      << query.lastError().text());
+  while (query.next())
+    output.connect_escalation_node_id(query.value(0).toUInt(),
+                                      node_id(query.value(1).toUInt(),
+                                              query.value(2).toUInt()));
+
   _load_relation(query,
-                 *output,
+                 output,
                  "contactgroup_cg_id",
                  "escalation_contactgroup_relation",
                  &escalation_builder::connect_escalation_contactgroup);
   _load_relation(query,
-                 *output,
-                 "host_host_id",
-                 "escalation_host_relation",
-                 &escalation_builder::connect_escalation_host);
-  _load_relation(query,
-                 *output,
+                 output,
                  "hostgroup_hg_id",
                  "escalation_hostgroup_relation",
                  &escalation_builder::connect_escalation_hostgroup);
   _load_relation(query,
-                 *output,
-                 "service_service_id",
-                 "escalation_service_relation",
-                 &escalation_builder::connect_escalation_service);
-  _load_relation(query,
-                 *output,
+                 output,
                  "servicegroup_sg_id",
                  "escalation_servicegroup_relation",
                  &escalation_builder::connect_escalation_servicegroup);
