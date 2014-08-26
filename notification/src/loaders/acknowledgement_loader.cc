@@ -53,7 +53,7 @@ void acknowledgement_loader::load(QSqlDatabase* db,
     ack->set_host_id(host_id);
     ack->set_acknowledgement_type(query.value(1).toInt());
 
-    output->add_ack(host_id, 0, ack);
+    output->add_ack(node_id(host_id), ack);
   }
 
   if (!query.exec("SELECT host_id, service_id, acknowledgement_type FROM services WHERE acknowledged = true"))
@@ -70,7 +70,7 @@ void acknowledgement_loader::load(QSqlDatabase* db,
     ack->set_service_id(service_id);
     ack->set_acknowledgement_type(query.value(2).toInt());
 
-    output->add_ack(host_id, service_id, ack);
+    output->add_ack(node_id(host_id, service_id), ack);
   }
 }
 
@@ -83,5 +83,5 @@ void acknowledgement_loader::new_ack(neb::acknowledgement& new_ack,
   ack->set_type(new_ack.service_id == 0 ? acknowledgement::host :
                                           acknowledgement::service);
 
-  output.add_ack(new_ack.host_id, new_ack.service_id, ack);
+  output.add_ack(node_id(new_ack.host_id, new_ack.service_id), ack);
 }

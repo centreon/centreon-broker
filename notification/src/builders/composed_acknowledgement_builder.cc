@@ -23,10 +23,9 @@ using namespace com::centreon::broker::notification;
 
 composed_acknowledgement_builder::composed_acknowledgement_builder() {}
 
-void composed_acknowledgement_builder::add_ack(unsigned int host_id,
-                                               unsigned int service_id,
+void composed_acknowledgement_builder::add_ack(node_id id,
                                                shared_ptr<acknowledgement> ack) {
   for (composed_builder<acknowledgement_builder>::iterator it(begin()),
        it_end(end()); it != it_end; ++it)
-    (*it)->add_ack(host_id, service_id, ack);
+    (*it)->add_ack(id, ack);
 }

@@ -22,6 +22,7 @@
 
 #  include <vector>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/objects/node_id.hh"
 #  include "com/centreon/broker/notification/objects/acknowledgement.hh"
 #  include "com/centreon/broker/notification/builders/acknowledgement_builder.hh"
 #  include "com/centreon/broker/notification/builders/composed_builder.hh"
@@ -35,8 +36,7 @@ namespace       notification {
                   composed_acknowledgement_builder();
     virtual       ~composed_acknowledgement_builder() {}
 
-    virtual void  add_ack(unsigned int host_id,
-                          unsigned int service_id,
+    virtual void  add_ack(node_id,
                           shared_ptr<acknowledgement> ack);
   };
 
