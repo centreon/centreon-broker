@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/bam/configuration/applier/ba.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
@@ -105,8 +106,11 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas) {
          it(to_delete.begin()),
          end(to_delete.end());
        it != end;
-       ++it)
+       ++it) {
+    logging::config(logging::medium)
+      << "BAM: removing BA " << it->first;
     _applied.erase(it->first);
+  }
   to_delete.clear();
 
   // Create new objects.
@@ -115,6 +119,8 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas) {
          end(to_create.end());
        it != end;
        ++it) {
+    logging::config(logging::medium)
+      << "BAM: creating BA " << it->get_id();
     misc::shared_ptr<bam::ba> new_ba(_new_ba(*it));
     applied& content(_applied[it->get_id()]);
     content.cfg = *it;
@@ -130,8 +136,18 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas) {
     std::map<unsigned int, applied>::iterator
       pos(_applied.find(it->get_id()));
     if (pos != _applied.end()) {
-      // XXX : apply modified configuration
+      logging::config(logging::medium)
+        << "BAM: modifying BA " << it->get_id();
+      pos->second.obj->set_level_warning(it->get_warning_level());
+      pos->second.obj->set_level_critical(it->get_critical_level());
+      pos->second.cfg = *it;
     }
+    else
+      logging::error(logging::high)
+        << "BAM: attempting to modify BA " << it->get_id()
+        << ", however associated object was not found. This is likely a"
+        << " software bug that you should report to Centreon Broker "
+        << "developers";
   }
 
   return ;

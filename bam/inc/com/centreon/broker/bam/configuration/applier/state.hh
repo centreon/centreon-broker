@@ -23,6 +23,8 @@
 #  include "com/centreon/broker/bam/configuration/applier/ba.hh"
 #  include "com/centreon/broker/bam/configuration/applier/bool_expression.hh"
 #  include "com/centreon/broker/bam/configuration/applier/kpi.hh"
+#  include "com/centreon/broker/bam/configuration/applier/meta_service.hh"
+#  include "com/centreon/broker/bam/metric_book.hh"
 #  include "com/centreon/broker/bam/service_book.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -50,16 +52,19 @@ namespace               bam {
                         ~state();
         state&          operator=(state const& other);
         void            apply(configuration::state const& my_state);
-        service_book&   book();
+        metric_book&    book_metric();
+        service_book&   book_service();
         void            visit(stream* visitor);
 
       private:
         void            _internal_copy(state const& other);
 
         ba              _ba_applier;
-        service_book    _book;
+        metric_book     _book_metric;
+        service_book    _book_service;
         kpi             _kpi_applier;
         bool_expression _bool_exp_applier;
+        meta_service    _meta_service_applier;
       };
     }
   }

@@ -90,10 +90,6 @@ void applier::bool_expression::apply(
   // set at the end of the iteration.
   bam::configuration::state::bool_exps to_create(my_bools);
 
-  // Objects to modify are items found but
-  // with mismatching configuration.
-  std::list<bam::configuration::bool_expression> to_modify;
-
   // Iterate through configuration.
   for (bam::configuration::state::bool_exps::iterator
          it(to_create.begin()),
@@ -103,11 +99,14 @@ void applier::bool_expression::apply(
       cfg_it(to_delete.find(it->get_id()));
     // Found = modify (or not).
     if (cfg_it != to_delete.end()) {
-      // Configuration mismatch, modify object.
+      // Configuration mismatch, modify object
+      // (indeed deletion + recreation).
       if (cfg_it->second.cfg != *it)
-        to_modify.push_back(*it);
-      to_delete.erase(cfg_it);
-      it = to_create.erase(it);
+        ++it;
+      else {
+        to_delete.erase(cfg_it);
+        it = to_create.erase(it);
+      }
     }
     // Not found = create.
     else
@@ -199,8 +198,7 @@ void applier::bool_expression::apply(
     }
   }
 
-  // Modify existing objects.
-  // XXX
+  return ;
 }
 
 /**

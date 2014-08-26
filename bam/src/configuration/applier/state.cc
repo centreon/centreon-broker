@@ -61,13 +61,25 @@ applier::state& applier::state::operator=(applier::state const& other) {
  */
 void applier::state::apply(bam::configuration::state const& my_state) {
   _ba_applier.apply(my_state.get_bas());
-  _kpi_applier.apply(my_state.get_kpis(), _ba_applier, _book);
+  _kpi_applier.apply(my_state.get_kpis(), _ba_applier, _book_service);
   _bool_exp_applier.apply(
                       my_state.get_bool_exps(),
                       my_state.get_mapping(),
                       _ba_applier,
-                      _book);
+                      _book_service);
+  _meta_service_applier.apply(
+                          my_state.get_meta_services(),
+                          _book_metric);
   return ;
+}
+
+/**
+ *  Get the book of metric listeners.
+ *
+ *  @return Book of metric listeners.
+ */
+bam::metric_book& applier::state::book_metric() {
+  return (_book_metric);
 }
 
 /**
@@ -75,8 +87,8 @@ void applier::state::apply(bam::configuration::state const& my_state) {
  *
  *  @return Book of service listeners.
  */
-bam::service_book& applier::state::book() {
-  return (_book);
+bam::service_book& applier::state::book_service() {
+  return (_book_service);
 }
 
 /**
@@ -99,8 +111,10 @@ void applier::state::visit(stream* visitor) {
  */
 void applier::state::_internal_copy(applier::state const& other) {
   _ba_applier = other._ba_applier;
-  _book = other._book;
+  _book_metric = other._book_metric;
+  _book_service = other._book_service;
   _kpi_applier = other._kpi_applier;
   _bool_exp_applier = other._bool_exp_applier;
+  _meta_service_applier = other._meta_service_applier;
   return ;
 }

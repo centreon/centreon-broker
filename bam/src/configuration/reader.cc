@@ -23,6 +23,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QVariant>
+#include <sstream>
 #include "com/centreon/broker/bam/configuration/state.hh"
 #include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/reader_exception.hh"
@@ -55,6 +56,7 @@ void reader::read(state& st) {
     _load(st.get_bas());
     _load(st.get_kpis());
     _load(st.get_bool_exps());
+    _load(st.get_meta_services());
     _load(st.get_mapping());
     _db->rollback();
   }
@@ -218,6 +220,83 @@ void reader::_load(state::bool_exps& bool_exps) {
         it->impacted_bas().swap(it_impacted_bas->second);
       else
         it->impacted_bas().clear();
+    }
+  }
+  return ;
+}
+
+/**
+ *  Load meta-services from the DB.
+ *
+ *  @param[out] meta_services  Meta-services.
+ */
+void reader::_load(state::meta_services& meta_services) {
+  // Load meta-services.
+  {
+    QSqlQuery q(_db->exec(
+      "SELECT meta_id, meta_name, calcul_type, warning, critical"
+      "       meta_select_mode, regexp_str, metric"
+      "  FROM meta_service"
+      "  WHERE meta_activate='1'"));
+    if (_db->lastError().isValid())
+      throw (reader_exception()
+             << "BAM: could not retrieve meta-services: "
+             << _db->lastError().text());
+    while (q.next())
+      meta_services.push_back(meta_service(
+                                q.value(0).toUInt(),
+                                q.value(1).toString().toStdString(),
+                                q.value(2).toString().toStdString(),
+                                q.value(3).toDouble(),
+                                q.value(4).toDouble(),
+                                (q.value(5).toInt() == 2
+                                ? q.value(6).toString().toStdString()
+                                : ""),
+                                (q.value(5).toInt() == 2
+                                 ? q.value(7).toString().toStdString()
+                                 : "")));
+  }
+
+  // Load metrics of meta-services.
+  for (state::meta_services::iterator
+         it(meta_services.begin()),
+         end(meta_services.end());
+       it != end;
+       ++it) {
+    // SQL LIKE mode.
+    if (!it->get_service_filter().empty()
+        && !it->get_metric_name().empty()) {
+      std::ostringstream query;
+      query << "SELECT m.metric_id"
+            << "  FROM metrics AS m"
+            << "    INNER JOIN index_data AS i"
+            << "    ON m.index_id=i.id"
+            << "    INNER JOIN services AS s"
+            << "    ON i.host_id=s.host_id AND i.service_id=s.service_id"
+            << "  WHERE s.description LIKE '" << it->get_service_filter() << "'"
+            << "    AND m.metric_name='" << it->get_metric_name() << "'";
+      QSqlQuery q(_db->exec(query.str().c_str()));
+      if (_db->lastError().isValid())
+        throw (reader_exception()
+               << "BAM: could not retrieve members of meta-service '"
+               << it->get_name() << "': " << _db->lastError().text());
+      while (q.next())
+        it->add_metric(q.value(0).toUInt());
+    }
+    // Service list mode.
+    else {
+      std::ostringstream query;
+      query << "SELECT metric_id"
+            << "  FROM meta_service_relation"
+            << "  WHERE meta_id=" << it->get_id()
+            << "    AND activate='1'";
+      QSqlQuery q(_db->exec(query.str().c_str()));
+      if (_db->lastError().isValid())
+        throw (reader_exception()
+               << "BAM: could not retrieve members of meta-service '"
+               << it->get_name() << "': " << _db->lastError().text());
+      while (q.next())
+        it->add_metric(q.value(0).toUInt());
     }
   }
   return ;

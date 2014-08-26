@@ -85,10 +85,6 @@ void applier::kpi::apply(
   // set at the end of the iteration.
   bam::configuration::state::kpis to_create(my_kpis);
 
-  // Objects to modify are items found but
-  // with mismatching configuration.
-  std::list<bam::configuration::kpi> to_modify;
-
   // Iterate through configuration.
   for (bam::configuration::state::kpis::iterator
          it(to_create.begin()),
@@ -98,10 +94,14 @@ void applier::kpi::apply(
       cfg_it(to_delete.find(it->get_id()));
     // Found = modify (or not).
     if (cfg_it != to_delete.end()) {
+      // Configuration mismatch, modify object
+      // (indeed deletion + recreation).
       if (cfg_it->second.cfg != *it)
-        to_modify.push_back(*it);
-      to_delete.erase(cfg_it);
-      it = to_create.erase(it);
+        ++it;
+      else {
+        to_delete.erase(cfg_it);
+        it = to_create.erase(it);
+      }
     }
     // Not found = create.
     else
@@ -139,15 +139,6 @@ void applier::kpi::apply(
     applied& content(_applied[it->get_id()]);
     content.cfg = *it;
     content.obj = new_kpi;
-  }
-
-  // Modify existing objects.
-  for (std::list<bam::configuration::kpi>::iterator
-         it(to_modify.begin()),
-         end(to_modify.end());
-       it != end;
-       ++it) {
-    // XXX
   }
 
   return ;

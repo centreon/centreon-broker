@@ -38,6 +38,8 @@
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_status.hh"
+#include "com/centreon/broker/storage/internal.hh"
+#include "com/centreon/broker/storage/metric.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -253,7 +255,16 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
         << ss->host_id << ", service " << ss->service_id
         << ", hard state " << ss->last_hard_state << ", current state "
         << ss->current_state << ")";
-      _applier.book().update(ss, this);
+      _applier.book_service().update(ss, this);
+    }
+    else if (data->type()
+             == io::events::data_type<io::events::storage, storage::de_metric>::value) {
+      misc::shared_ptr<storage::metric>
+        m(data.staticCast<storage::metric>());
+      logging::debug(logging::low)
+        << "BAM: processing metric (id " << m->metric_id << ", time "
+        << m->ctime << ", value " << m->value << ")";
+      _applier.book_metric().update(m, this);
     }
     else if (data->type()
              == io::events::data_type<io::events::bam, bam::de_ba_status>::value) {
