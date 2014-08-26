@@ -79,22 +79,40 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
 
 void dependency_loader::_load_relations(QSqlQuery& query,
                                         dependency_builder& output) {
-  _load_relation(query, output,
-                 "host_host_id",
-                 "dependency_hostParent_relation",
-                 &dependency_builder::dependency_host_parent_relation);
-  _load_relation(query, output,
-                 "host_host_id",
-                 "dependency_hostChild_relation",
-                 &dependency_builder::dependency_host_child_relation);
-  _load_relation(query, output,
-                 "service_service_id",
-                 "dependency_serviceParent_relation",
-                 &dependency_builder::dependency_service_parent_relation);
-  _load_relation(query, output,
-                 "service_service_id",
-                 "dependency_serviceChild_relation",
-                 &dependency_builder::dependency_service_child_relation);
+
+  if (!query.exec("SELECT dependency_dep_id, service_service_id, host_host_id FROM dependency_hostChild_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select dependency_hostChild_relation in loader: "
+      << query.lastError().text());
+  while (query.next())
+    output.dependency_node_id_child_relation(query.value(0).toUInt(),
+                                             node_id(query.value(1).toUInt()));
+
+  if (!query.exec("SELECT dependency_dep_id, host_host_id FROM dependency_hostParent_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select dependency_hostParent_relation in loader: "
+      << query.lastError().text());
+  while (query.next())
+    output.dependency_node_id_parent_relation(query.value(0).toUInt(),
+                                              node_id(query.value(1).toUInt()));
+
+  if (!query.exec("SELECT dependency_dep_id, service_service_id, host_host_id FROM dependency_serviceChild_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select dependency_serviceChild_relation in loader: "
+      << query.lastError().text());
+  while (query.next())
+    output.dependency_node_id_child_relation(query.value(0).toUInt(),
+                                             node_id(query.value(2).toUInt(),
+                                                     query.value(1).toUInt()));
+
+  if (!query.exec("SELECT dependency_dep_id, service_service_id, host_host_id FROM dependency_serviceParent_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select dependency_serviceParent_relation in loader: "
+      << query.lastError().text());
+  while (query.next())
+    output.dependency_node_id_parent_relation(query.value(0).toUInt(),
+                                              node_id(query.value(2).toUInt(),
+                                                      query.value(1).toUInt()));
   _load_relation(query, output,
                  "servicegroup_sg_id",
                  "dependency_servicegroupParent_relation",
@@ -111,7 +129,6 @@ void dependency_loader::_load_relations(QSqlQuery& query,
                  "hostgroup_hg_id",
                  "dependency_hostgroupChild_relation",
                   &dependency_builder::dependency_hostgroup_child_relation);
-
 }
 
 void dependency_loader::_load_relation(QSqlQuery& query,

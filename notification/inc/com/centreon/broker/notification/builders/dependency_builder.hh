@@ -23,6 +23,7 @@
 #  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/dependency.hh"
+#  include "com/centreon/broker/notification/objects/node_id.hh"
 
 CCB_BEGIN()
 
@@ -34,20 +35,16 @@ namespace       notification {
 
     virtual void add_dependency(unsigned int id,
                                 shared_ptr<dependency> d) = 0;
-    virtual void dependency_host_child_relation(unsigned int dep_id,
-                                                unsigned int host_id) = 0;
-    virtual void dependency_host_parent_relation(unsigned int dep_id,
-                                                 unsigned int host_id) = 0;
+    virtual void dependency_node_id_parent_relation(unsigned int dep_id,
+                                                    node_id id) = 0;
+    virtual void dependency_node_id_child_relation(unsigned int dep_id,
+                                                   node_id id) = 0;
     virtual void dependency_hostgroup_parent_relation(
           unsigned int dep_id,
           unsigned int hostgroup_id) = 0;
     virtual void dependency_hostgroup_child_relation(
           unsigned int dep_id,
           unsigned int hostgroup_id) = 0;
-    virtual void dependency_service_child_relation(unsigned int dep_id,
-                                                   unsigned int service_id) = 0;
-    virtual void dependency_service_parent_relation(unsigned int dep_id,
-                                                    unsigned int service_id = 0);
     virtual void dependency_servicegroup_child_relation(
           unsigned int dep_id,
           unsigned int servicegroup_id) = 0;
