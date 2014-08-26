@@ -30,21 +30,21 @@ CCB_BEGIN()
 
 namespace       notification {
 
-  class         dependency_by_node_id_builder {
+  class           dependency_by_node_id_builder {
   public:
-                dependency_by_node_id_builder(
-                      QMultiHash<node_id, shared_ptr<dependency> >& by_child_id,
-                      QMultiHash<node_id, shared_ptr<dependency> >& by_parent_id);
-    virtual     ~dependency_by_node_id_builder() {}
+                  dependency_by_node_id_builder(
+                        QMultiHash<node_id, shared_ptr<dependency> >& by_child_id,
+                        QMultiHash<node_id, shared_ptr<dependency> >& by_parent_id);
+    virtual       ~dependency_by_node_id_builder() {}
 
-    virtual void add_dependency(unsigned int id,
+    virtual void  add_dependency(unsigned int id,
                                 shared_ptr<dependency> d);
-    virtual void dependency_node_id_parent_relation(unsigned int dep_id,
+    virtual void  dependency_node_id_parent_relation(unsigned int dep_id,
                                                     node_id id);
-    virtual void dependency_node_id_child_relation(unsigned int dep_id,
+    virtual void  dependency_node_id_child_relation(unsigned int dep_id,
                                                    node_id id);
   private:
-                dependency_by_node_id_builder();
+                  dependency_by_node_id_builder();
 
      QHash<unsigned int, shared_ptr<dependency> >  _cache;
      QMultiHash<node_id, shared_ptr<dependency> >& _table_child_id;
