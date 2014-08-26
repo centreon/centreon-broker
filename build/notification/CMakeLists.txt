@@ -62,6 +62,10 @@ add_library("${NOTIFICATION}" SHARED
   "${SRC_DIR}/builders/composed_contact_builder.cc"
   "${SRC_DIR}/builders/contact_by_node_builder.cc"
   "${SRC_DIR}/builders/contact_by_name_builder.cc"
+  "${SRC_DIR}/builders/composed_dependency_builder.cc"
+  "${SRC_DIR}/builders/composed_downtime_builder.cc"
+  "${SRC_DIR}/builders/composed_node_builder.cc"
+  "${SRC_DIR}/builders/composed_timeperiod_builder.cc"
   "${PROJECT_SOURCE_DIR}/core/src/mapping.cc"
   # Headers.
   "${INC_DIR}/com/centreon/broker/notification/factory.hh"
@@ -103,6 +107,11 @@ add_library("${NOTIFICATION}" SHARED
   "${INC_DIR}/com/centreon/broker/notification/builders/composed_contact_builder.hh"
   "${INC_DIR}/com/centreon/broker/notification/builders/contact_by_node_builder.hh"
   "${INC_DIR}/com/centreon/broker/notification/builders/contact_by_name_builder.hh"
+  "${INC_DIR}/com/centreon/broker/notification/builders/composed_builder.hh"
+  "${INC_DIR}/com/centreon/broker/notification/builders/composed_dependency_builder.hh"
+  "${INC_DIR}/com/centreon/broker/notification/builders/composed_downtime_builder.hh"
+  "${INC_DIR}/com/centreon/broker/notification/builders/composed_node_builder.hh"
+  "${INC_DIR}/com/centreon/broker/notification/builders/composed_timeperiod_builder.hh"
 )
 target_link_libraries("${NOTIFICATION}" ${QT_LIBRARIES})
 set_target_properties("${NOTIFICATION}" PROPERTIES PREFIX "")
