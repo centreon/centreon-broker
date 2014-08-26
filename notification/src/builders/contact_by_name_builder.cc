@@ -29,24 +29,3 @@ void contact_by_name_builder::add_contact(unsigned int id,
                                            shared_ptr<contact> con) {
   _table[con->get_name()];
 }
-
-void contact_by_name_builder::connect_contact_contactgroup(unsigned int contact_id,
-                                                            unsigned int contactgroup_id) {
-}
-
-void contact_by_name_builder::connect_contact_hostcommand(unsigned int contact_id,
-                                                           unsigned int command_id) {
-}
-
-void contact_by_name_builder::connect_contact_servicecommand(unsigned int contact_id,
-                                                              unsigned int service_id) {
-}
-
-void contact_by_name_builder::add_contact_param(unsigned int contact_id,
-                                                 std::string const& key,
-                                                 std::string const& value) {
-}
-
-void contact_by_name_builder::connect_contact_node_id(unsigned int contact_id,
-                                                      node_id id) {
-}

@@ -33,7 +33,7 @@ namespace       notification {
     virtual ~command_builder() {}
 
     virtual void add_command(unsigned int id,
-                             shared_ptr<command> com) = 0;
+                             shared_ptr<command> com) {}
   };
 
 }

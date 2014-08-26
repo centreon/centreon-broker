@@ -33,14 +33,14 @@ namespace       notification {
     virtual ~timeperiod_builder() {}
 
     virtual void add_timeperiod(unsigned int id,
-                                shared_ptr<timeperiod> tperiod) = 0;
+                                shared_ptr<timeperiod> tperiod) {}
     virtual void add_timeperiod_exception(unsigned int timeperiod_id,
                                           std::string const& days,
-                                           std::string const& timerange) = 0;
+                                           std::string const& timerange) {}
     virtual void add_timeperiod_exclude_relation(unsigned int timeperiod_id,
-                                                 unsigned int exclude_id) = 0;
+                                                 unsigned int exclude_id) {}
     virtual void add_timeperiod_include_relation(unsigned int timeperiod_id,
-                                                 unsigned int include_id) = 0;
+                                                 unsigned int include_id) {}
   };
 
 }

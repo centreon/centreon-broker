@@ -34,7 +34,7 @@ namespace       notification {
     virtual     ~acknowledgement_builder() {}
 
     virtual void add_ack(node_id id,
-                         shared_ptr<acknowledgement> ack) = 0;
+                         shared_ptr<acknowledgement> ack) {}
   };
 
 }

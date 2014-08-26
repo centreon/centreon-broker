@@ -44,39 +44,3 @@ void dependency_by_node_id_builder::dependency_node_id_child_relation(
     node_id id) {
   _table_child_id.insert(id, _cache[dep_id]);
 }
-
-void dependency_by_node_id_builder::dependency_hostgroup_parent_relation(
-      unsigned int dep_id,
-      unsigned int hostgroup_id) {
-
-}
-
-void dependency_by_node_id_builder::dependency_hostgroup_child_relation(
-      unsigned int dep_id,
-      unsigned int hostgroup_id) {
-
-}
-
-void dependency_by_node_id_builder::dependency_servicegroup_child_relation(
-      unsigned int dep_id,
-      unsigned int servicegroup_id) {
-
-}
-
-void dependency_by_node_id_builder::dependency_servicegroup_parent_relation(
-      unsigned int dep_id,
-      unsigned int servicegroup_id) {
-
-}
-
-void dependency_by_node_id_builder::set_notification_failure_options(
-    unsigned int dep_id,
-    std::string const& line) {
-
-}
-
-void dependency_by_node_id_builder::set_execution_failure_options(
-    unsigned int dep_id,
-    std::string const& line) {
-
-}

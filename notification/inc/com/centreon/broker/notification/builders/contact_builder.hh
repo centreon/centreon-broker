@@ -34,18 +34,18 @@ namespace       notification {
     virtual ~contact_builder() {}
 
     virtual void add_contact(unsigned int id,
-                             shared_ptr<contact> con) = 0;
+                             shared_ptr<contact> con) {}
     virtual void connect_contact_contactgroup(unsigned int contact_id,
-                                              unsigned int contactgroup_id) = 0;
+                                              unsigned int contactgroup_id) {}
     virtual void connect_contact_hostcommand(unsigned int contact_id,
-                                             unsigned int command_id) = 0;
+                                             unsigned int command_id) {}
     virtual void connect_contact_servicecommand(unsigned int contact_id,
-                                                unsigned int service_id) = 0;
+                                                unsigned int service_id) {}
     virtual void connect_contact_node_id(unsigned int contact_id,
-                                         node_id id) = 0;
+                                         node_id id) {}
     virtual void add_contact_param(unsigned int contact_id,
                                    std::string const& key,
-                                   std::string const& value) = 0;
+                                   std::string const& value) {}
   };
 
 }

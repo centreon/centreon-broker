@@ -34,15 +34,15 @@ namespace       notification {
     virtual ~escalation_builder() {}
 
     virtual void add_escalation(unsigned int id,
-                                shared_ptr<escalation> esc) = 0;
+                                shared_ptr<escalation> esc) {}
     virtual void connect_escalation_node_id(unsigned int esc_id,
-                                            node_id id) = 0;
+                                            node_id id) {}
     virtual void connect_escalation_contactgroup(unsigned int id,
-                                                 unsigned int contactgroup_id) = 0;
+                                                 unsigned int contactgroup_id) {}
     virtual void connect_escalation_hostgroup(unsigned int id,
-                                              unsigned int hostgroup_id) = 0;
+                                              unsigned int hostgroup_id) {}
     virtual void connect_escalation_servicegroup(unsigned int id,
-                                                 unsigned int servicegroup_id) = 0;
+                                                 unsigned int servicegroup_id) {}
   };
 
 }

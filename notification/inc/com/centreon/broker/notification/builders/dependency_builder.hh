@@ -34,28 +34,28 @@ namespace       notification {
     virtual ~dependency_builder() {}
 
     virtual void add_dependency(unsigned int id,
-                                shared_ptr<dependency> d) = 0;
+                                shared_ptr<dependency> d) {}
     virtual void dependency_node_id_parent_relation(unsigned int dep_id,
-                                                    node_id id) = 0;
+                                                    node_id id) {}
     virtual void dependency_node_id_child_relation(unsigned int dep_id,
-                                                   node_id id) = 0;
+                                                   node_id id) {}
     virtual void dependency_hostgroup_parent_relation(
           unsigned int dep_id,
-          unsigned int hostgroup_id) = 0;
+          unsigned int hostgroup_id) {}
     virtual void dependency_hostgroup_child_relation(
           unsigned int dep_id,
-          unsigned int hostgroup_id) = 0;
+          unsigned int hostgroup_id) {}
     virtual void dependency_servicegroup_child_relation(
           unsigned int dep_id,
-          unsigned int servicegroup_id) = 0;
+          unsigned int servicegroup_id) {}
     virtual void dependency_servicegroup_parent_relation(
           unsigned int dep_id,
-          unsigned int servicegroup_id) = 0;
+          unsigned int servicegroup_id) {}
 
     virtual void set_notification_failure_options(unsigned int dep_id,
-                                                  std::string const& line) = 0;
+                                                  std::string const& line) {}
     virtual void set_execution_failure_options(unsigned int dep_id,
-                                               std::string const& line) = 0;
+                                               std::string const& line) {}
   };
 
 }
