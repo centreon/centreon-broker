@@ -17,35 +17,35 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NOTIFICATION_BUILDERS_DOWNTIME_BY_NODE_ID_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_DOWNTIME_BY_NODE_ID_BUILDER_HH
+#ifndef CCB_NOTIFICATION_BUILDERS_COMMAND_BY_NAME_BUILDER_HH
+#  define CCB_NOTIFICATION_BUILDERS_COMMAND_BY_NAME_BUILDER_HH
 
+#  include <string>
 #  include <QHash>
-#  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/downtime.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
+#  include "com/centreon/broker/notification/objects/command.hh"
+#  include "com/centreon/broker/notification/builders/command_builder.hh"
+#  include "com/centreon/broker/notification/builders/composed_builder.hh"
 
 CCB_BEGIN()
 
-namespace         notification {
+namespace       notification {
 
-  class           downtime_by_node_id_builder {
+  class           command_by_name_builder : public composed_builder<command_builder> {
   public:
-                  downtime_by_node_id_builder(
-                        QMultiHash<node_id, shared_ptr<downtime> >& table);
-    virtual       ~downtime_by_node_id_builder() {}
+                  command_by_name_builder(QHash<std::string, shared_ptr<command> >& table);
+    virtual       ~command_by_name_builder() {}
 
-    virtual void  add_downtime(unsigned int downtime_id,
-                               shared_ptr<downtime> downtime);
+    virtual void  add_command(unsigned int id,
+                              shared_ptr<command> com);
 
   private:
-    QMultiHash<node_id, shared_ptr<downtime> >
-                  _table;
+    QHash<std::string, shared_ptr<command> > _table;
   };
 
 }
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_DOWNTIME_BY_NODE_ID_BUILDER_HH
+#endif // !CCB_NOTIFICATION_BUILDERS_COMMAND_BY_NAME_BUILDER_HH
