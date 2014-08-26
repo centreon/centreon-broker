@@ -67,6 +67,8 @@ add_library("${NOTIFICATION}" SHARED
   "${SRC_DIR}/builders/composed_node_builder.cc"
   "${SRC_DIR}/builders/composed_timeperiod_builder.cc"
   "${SRC_DIR}/builders/composed_acknowledgement_builder.cc"
+  "${SRC_DIR}/builders/composed_escalation_builder.cc"
+  "${SRC_DIR}/builders/composed_command_builder.cc"
   "${PROJECT_SOURCE_DIR}/core/src/mapping.cc"
   # Headers.
   "${INC_DIR}/com/centreon/broker/notification/factory.hh"
@@ -114,6 +116,8 @@ add_library("${NOTIFICATION}" SHARED
   "${INC_DIR}/com/centreon/broker/notification/builders/composed_node_builder.hh"
   "${INC_DIR}/com/centreon/broker/notification/builders/composed_timeperiod_builder.hh"
   "${INC_DIR}/com/centreon/broker/notification/builders/composed_acknowledgement_builder.hh"
+  "${INC_DIR}/com/centreon/broker/notification/builders/composed_escalation_builder.hh"
+  "${INC_DIR}/com/centreon/broker/notification/builders/composed_command_builder.hh"
 )
 target_link_libraries("${NOTIFICATION}" ${QT_LIBRARIES})
 set_target_properties("${NOTIFICATION}" PROPERTIES PREFIX "")

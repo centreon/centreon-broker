@@ -36,7 +36,7 @@ namespace       notification {
     virtual void add_escalation(unsigned int id,
                                 shared_ptr<escalation> esc) = 0;
     virtual void connect_escalation_node_id(unsigned int esc_id,
-                                            node_id id);
+                                            node_id id) = 0;
     virtual void connect_escalation_contactgroup(unsigned int id,
                                                  unsigned int contactgroup_id) = 0;
     virtual void connect_escalation_hostgroup(unsigned int id,
