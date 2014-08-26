@@ -77,6 +77,8 @@ namespace          bam {
                    _bool_exp_update;
     std::auto_ptr<QSqlQuery>
                    _kpi_update;
+    std::auto_ptr<QSqlQuery>
+                   _meta_service_update;
     std::auto_ptr<QSqlDatabase>
                    _db;
   };

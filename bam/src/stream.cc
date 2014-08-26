@@ -30,6 +30,7 @@
 #include "com/centreon/broker/bam/configuration/state.hh"
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
+#include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/bam/stream.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -321,6 +322,23 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
                << status->kpi_id << ": "
                << _kpi_update->lastError().text());
     }
+    else if (data->type()
+             == io::events::data_type<io::events::bam, bam::de_meta_service_status>::value) {
+      meta_service_status* status(static_cast<meta_service_status*>(data.data()));
+      logging::debug(logging::low)
+        << "BAM: processing meta-service status (id "
+        << status->meta_service_id << ", value " << status->value
+        << ")";
+      _meta_service_update->bindValue(
+                              ":meta_service_id",
+                              status->meta_service_id);
+      _meta_service_update->bindValue(":value", status->value);
+      if (!_meta_service_update->exec())
+        throw (exceptions::msg()
+               << "BAM: could not update meta-service "
+               << status->meta_service_id << ": "
+               << _meta_service_update->lastError().text());
+    }
   }
 }
 
@@ -409,6 +427,7 @@ void stream::_clear_qsql() {
   _ba_update.reset();
   _bool_exp_update.reset();
   _kpi_update.reset();
+  _meta_service_update.reset();
   _db.reset();
   return ;
 }
@@ -459,6 +478,19 @@ void stream::_prepare() {
       throw (exceptions::msg()
              << "BAM: could not prepare KPI update query: "
              << _kpi_update->lastError().text());
+  }
+
+  // Meta-service status.
+  {
+    QString query;
+    query = "UPDATE meta_service"
+            "  SET value=:value"
+            "  WHERE meta_id=:meta_service_id";
+    _meta_service_update.reset(new QSqlQuery(*_db));
+    if (!_meta_service_update->prepare(query))
+      throw (exceptions::msg()
+             << "BAM: could not prepare meta-service update query: "
+             << _meta_service_update->lastError().text());
   }
 
   return ;

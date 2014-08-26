@@ -29,7 +29,8 @@ namespace bam {
   enum data_element {
     de_ba_status = 1,
     de_bool_status,
-    de_kpi_status
+    de_kpi_status,
+    de_meta_service_status
   };
 }
 
