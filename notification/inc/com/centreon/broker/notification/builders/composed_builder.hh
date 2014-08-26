@@ -41,7 +41,7 @@ namespace       notification {
       _builders.push_back(&builder);
     }
 
-    iterator begin() {
+    iterator      begin() {
       return (_builders.begin());
     }
 
@@ -49,7 +49,7 @@ namespace       notification {
       return (_builders.begin());
     }
 
-    iterator end() {
+    iterator       end() {
       return (_builders.end());
     }
 
