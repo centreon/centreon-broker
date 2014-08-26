@@ -43,9 +43,10 @@ namespace       notification {
                                           node_id id);
 
   private:
-    QHash<unsigned int, shared_ptr<contact> > _cache;
-    QMultiHash<node_id, shared_ptr<contact> >& _table;
-
+    QHash<unsigned int, shared_ptr<contact> >
+                  _cache;
+    QMultiHash<node_id, shared_ptr<contact> >&
+                  _table;
                   contact_by_node_builder();
   };
 

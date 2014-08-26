@@ -40,7 +40,8 @@ namespace       notification {
                                shared_ptr<downtime> downtime);
 
   private:
-    QMultiHash<node_id, shared_ptr<downtime> > _table;
+    QMultiHash<node_id, shared_ptr<downtime> >
+                  _table;
   };
 
 }

@@ -46,9 +46,12 @@ namespace       notification {
   private:
                   dependency_by_node_id_builder();
 
-     QHash<unsigned int, shared_ptr<dependency> >  _cache;
-     QMultiHash<node_id, shared_ptr<dependency> >& _table_child_id;
-     QMultiHash<node_id, shared_ptr<dependency> >& _table_parent_id;
+     QHash<unsigned int, shared_ptr<dependency> >
+                  _cache;
+     QMultiHash<node_id, shared_ptr<dependency> >&
+                  _table_child_id;
+     QMultiHash<node_id, shared_ptr<dependency> >&
+                  _table_parent_id;
   };
 
 }

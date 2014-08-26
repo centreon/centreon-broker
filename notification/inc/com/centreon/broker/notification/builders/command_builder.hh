@@ -28,12 +28,12 @@ CCB_BEGIN()
 
 namespace       notification {
 
-  class         command_builder {
+  class           command_builder {
   public:
-    virtual ~command_builder() {}
+    virtual       ~command_builder() {}
 
-    virtual void add_command(unsigned int id,
-                             shared_ptr<command> com) {}
+    virtual void  add_command(unsigned int id,
+                              shared_ptr<command> com) {}
   };
 
 }

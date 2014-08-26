@@ -30,16 +30,17 @@ CCB_BEGIN()
 
 namespace       notification {
 
-  class         acknowledgement_by_node_id_builder {
+  class           acknowledgement_by_node_id_builder {
   public:
-                acknowledgement_by_node_id_builder(
-                     QMultiHash<node_id, shared_ptr<acknowledgement> >& table);
-    virtual     ~acknowledgement_by_node_id_builder() {}
+                  acknowledgement_by_node_id_builder(
+                       QMultiHash<node_id, shared_ptr<acknowledgement> >& table);
+    virtual       ~acknowledgement_by_node_id_builder() {}
 
-    virtual void add_ack(node_id id, shared_ptr<acknowledgement> ack);
+    virtual void  add_ack(node_id id, shared_ptr<acknowledgement> ack);
 
   private:
-    QMultiHash<node_id,shared_ptr<acknowledgement> >& _table;
+    QMultiHash<node_id,shared_ptr<acknowledgement> >&
+        _table;
   };
 
 }

@@ -27,7 +27,7 @@
 
 CCB_BEGIN()
 
-namespace       notification {
+namespace         notification {
 
   class           timeperiod_by_name_builder {
   public:
@@ -38,7 +38,8 @@ namespace       notification {
     virtual void  add_timeperiod(unsigned int id,
                                 shared_ptr<timeperiod> tperiod);
   private:
-    QHash<std::string, shared_ptr<timeperiod> >& _table;
+    QHash<std::string, shared_ptr<timeperiod> >&
+                  _table;
   };
 
 }

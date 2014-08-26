@@ -42,8 +42,8 @@ namespace       notification {
                                           node_id id);
 
   private:
-    QHash<std::string, shared_ptr<contact> >& _table;
-
+    QHash<std::string, shared_ptr<contact> >&
+                  _table;
                   contact_by_name_builder();
   };
 

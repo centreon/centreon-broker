@@ -41,8 +41,10 @@ namespace       notification {
     virtual void  connect_escalation_node_id(unsigned int esc_id,
                                              node_id id);
   private:
-    QHash<unsigned int, shared_ptr<escalation> > _cache;
-    QMultiHash<node_id, shared_ptr<escalation> >& _table;
+    QHash<unsigned int, shared_ptr<escalation> >
+                  _cache;
+    QMultiHash<node_id, shared_ptr<escalation> >&
+                  _table;
   };
 
 }

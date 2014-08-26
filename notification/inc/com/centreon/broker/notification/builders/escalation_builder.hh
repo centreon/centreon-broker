@@ -29,20 +29,20 @@ CCB_BEGIN()
 
 namespace       notification {
 
-  class         escalation_builder {
+  class           escalation_builder {
   public:
-    virtual ~escalation_builder() {}
+    virtual       ~escalation_builder() {}
 
-    virtual void add_escalation(unsigned int id,
-                                shared_ptr<escalation> esc) {}
-    virtual void connect_escalation_node_id(unsigned int esc_id,
-                                            node_id id) {}
-    virtual void connect_escalation_contactgroup(unsigned int id,
-                                                 unsigned int contactgroup_id) {}
-    virtual void connect_escalation_hostgroup(unsigned int id,
-                                              unsigned int hostgroup_id) {}
-    virtual void connect_escalation_servicegroup(unsigned int id,
-                                                 unsigned int servicegroup_id) {}
+    virtual void  add_escalation(unsigned int id,
+                                 shared_ptr<escalation> esc) {}
+    virtual void  connect_escalation_node_id(unsigned int esc_id,
+                                             node_id id) {}
+    virtual void  connect_escalation_contactgroup(unsigned int id,
+                                                  unsigned int contactgroup_id) {}
+    virtual void  connect_escalation_hostgroup(unsigned int id,
+                                               unsigned int hostgroup_id) {}
+    virtual void  connect_escalation_servicegroup(unsigned int id,
+                                                  unsigned int servicegroup_id) {}
   };
 
 }

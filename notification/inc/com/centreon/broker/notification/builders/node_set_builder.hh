@@ -27,22 +27,22 @@
 
 CCB_BEGIN()
 
-namespace       notification {
+namespace           notification {
 
-  class         node_set_builder : public node_builder{
+  class             node_set_builder : public node_builder{
   public:
-    node_set_builder(QSet<node_id>& set);
-    virtual ~node_set_builder() {}
+                    node_set_builder(QSet<node_id>& set);
+    virtual         ~node_set_builder() {}
 
-    virtual void add_host(unsigned int id);
-    virtual void add_service(unsigned int service_id);
-    virtual void connect_service_host(unsigned int host_id,
-                                      unsigned int service_id);
+    virtual void    add_host(unsigned int id);
+    virtual void    add_service(unsigned int service_id);
+    virtual void    connect_service_host(unsigned int host_id,
+                                         unsigned int service_id);
 
   private:
-    node_set_builder();
+                    node_set_builder();
 
-    QSet<node_id>& _set;
+    QSet<node_id>&  _set;
   };
 
 }
