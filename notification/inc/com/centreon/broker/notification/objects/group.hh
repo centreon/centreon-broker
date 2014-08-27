@@ -23,6 +23,7 @@
 #  include <list>
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
 
 typedef std::list<std::string> list_string;
 
@@ -31,6 +32,8 @@ CCB_BEGIN()
 namespace              notification {
   class                group {
   public:
+    DECLARE_SHARED_PTR(group);
+
                        group(bool inherit = false);
                        group(group const& right);
                        ~group() throw ();

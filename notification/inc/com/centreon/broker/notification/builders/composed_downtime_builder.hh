@@ -36,7 +36,7 @@ namespace       notification {
     virtual       ~composed_downtime_builder() {}
 
     virtual void  add_downtime(unsigned int downtime_id,
-                               shared_ptr<downtime> downtime);
+                               downtime::ptr downtime);
   };
 
 }

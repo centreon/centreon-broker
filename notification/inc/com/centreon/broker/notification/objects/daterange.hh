@@ -26,12 +26,15 @@
 #  include <vector>
 #  include "com/centreon/broker/notification/objects/timerange.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
 
 CCB_BEGIN()
 
 namespace        notification {
   class          daterange {
   public:
+    DECLARE_SHARED_PTR(daterange);
+
     static const int daterange_types = 5;
 
     enum         type_range {

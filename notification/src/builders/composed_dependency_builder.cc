@@ -24,7 +24,7 @@ using namespace com::centreon::broker::notification;
 composed_dependency_builder::composed_dependency_builder() {}
 
 void composed_dependency_builder::add_dependency(unsigned int id,
-                                                 shared_ptr<dependency> d) {
+                                                 dependency::ptr d) {
   for (composed_builder<dependency_builder>::iterator it(begin()),
        it_end(end()); it != it_end; ++it)
     (*it)->add_dependency(id, d);

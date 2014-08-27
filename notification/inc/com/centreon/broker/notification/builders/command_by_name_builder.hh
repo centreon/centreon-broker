@@ -34,14 +34,14 @@ namespace       notification {
 
   class           command_by_name_builder : public composed_builder<command_builder> {
   public:
-                  command_by_name_builder(QHash<std::string, shared_ptr<command> >& table);
+                  command_by_name_builder(QHash<std::string, command::ptr>& table);
     virtual       ~command_by_name_builder() {}
 
     virtual void  add_command(unsigned int id,
-                              shared_ptr<command> com);
+                              command::ptr com);
 
   private:
-    QHash<std::string, shared_ptr<command> > _table;
+    QHash<std::string, command::ptr>& _table;
   };
 
 }

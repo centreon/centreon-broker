@@ -23,10 +23,10 @@
 using namespace com::centreon::broker::notification;
 
 timeperiod_by_name_builder::timeperiod_by_name_builder(
-      QHash<std::string, shared_ptr<timeperiod> >& table) :
+      QHash<std::string, timeperiod::ptr>& table) :
   _table(table) {}
 
 void timeperiod_by_name_builder::add_timeperiod(unsigned int id,
-                                                shared_ptr<timeperiod> tperiod) {
+                                                timeperiod::ptr tperiod) {
   _table[tperiod->get_name()] = tperiod;
 }

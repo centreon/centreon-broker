@@ -21,7 +21,6 @@
 #  define CCB_NOTIFICATION_BUILDERS_TIMEPERIOD_BY_NAME_BUILDER_HH
 
 #  include <QHash>
-#  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/timeperiod.hh"
 
@@ -32,13 +31,13 @@ namespace         notification {
   class           timeperiod_by_name_builder {
   public:
                   timeperiod_by_name_builder(
-                        QHash<std::string, shared_ptr<timeperiod> >& table);
+                        QHash<std::string, timeperiod::ptr>& table);
     virtual       ~timeperiod_by_name_builder() {}
 
     virtual void  add_timeperiod(unsigned int id,
-                                shared_ptr<timeperiod> tperiod);
+                                 timeperiod::ptr tperiod);
   private:
-    QHash<std::string, shared_ptr<timeperiod> >&
+    QHash<std::string, timeperiod::ptr>&
                   _table;
   };
 

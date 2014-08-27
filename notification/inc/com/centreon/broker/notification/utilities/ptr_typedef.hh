@@ -17,15 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/notification/builders/composed_acknowledgement_builder.hh"
+#ifndef CCB_NOTIFICATION_UTILITIES_PTR_TYPEDEF_HH
+#  define CCB_NOTIFICATION_UTILITIES_PTR_TYPEDEF_HH
 
-using namespace com::centreon::broker::notification;
+#include "com/centreon/shared_ptr.hh"
 
-composed_acknowledgement_builder::composed_acknowledgement_builder() {}
+#define DECLARE_SHARED_PTR(klass)\
+  typedef shared_ptr<klass> ptr
 
-void composed_acknowledgement_builder::add_ack(node_id id,
-                                               acknowledgement::ptr ack) {
-  for (composed_builder<acknowledgement_builder>::iterator it(begin()),
-       it_end(end()); it != it_end; ++it)
-    (*it)->add_ack(id, ack);
-}
+#endif //!CCB_NOTIFICATION_UTILITIES_PTR_TYPEDEF_HH

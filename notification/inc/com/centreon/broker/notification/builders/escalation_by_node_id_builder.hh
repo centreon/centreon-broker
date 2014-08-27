@@ -21,7 +21,6 @@
 #  define CCB_NOTIFICATION_BUILDERS_ESCALATION_BY_NODE_ID_BUILDER_HH
 
 #  include <QHash>
-#  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/escalation.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
@@ -33,17 +32,17 @@ namespace       notification {
   class           escalation_by_node_id_builder {
   public:
                   escalation_by_node_id_builder(
-                      QMultiHash<node_id, shared_ptr<escalation> >& table);
+                      QMultiHash<node_id, escalation::ptr>& table);
     virtual       ~escalation_by_node_id_builder() {}
 
     virtual void  add_escalation(unsigned int id,
-                                 shared_ptr<escalation> esc);
+                                 escalation::ptr esc);
     virtual void  connect_escalation_node_id(unsigned int esc_id,
                                              node_id id);
   private:
-    QHash<unsigned int, shared_ptr<escalation> >
+    QHash<unsigned int, escalation::ptr>
                   _cache;
-    QMultiHash<node_id, shared_ptr<escalation> >&
+    QMultiHash<node_id, escalation::ptr>&
                   _table;
   };
 

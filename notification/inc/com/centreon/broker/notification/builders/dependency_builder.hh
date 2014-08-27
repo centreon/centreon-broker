@@ -20,7 +20,6 @@
 #ifndef CCB_NOTIFICATION_BUILDERS_DEPENDENCY_BUILDER_HH
 #  define CCB_NOTIFICATION_BUILDERS_DEPENDENCY_BUILDER_HH
 
-#  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/dependency.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
@@ -34,7 +33,7 @@ namespace       notification {
     virtual       ~dependency_builder() {}
 
     virtual void  add_dependency(unsigned int id,
-                                 shared_ptr<dependency> d) {}
+                                 dependency::ptr d) {}
     virtual void  dependency_node_id_parent_relation(unsigned int dep_id,
                                                      node_id id) {}
     virtual void  dependency_node_id_child_relation(unsigned int dep_id,

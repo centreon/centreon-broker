@@ -23,6 +23,7 @@
 #  include <string>
 #  include "com/centreon/broker/notification/objects/group.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
 
 CCB_BEGIN()
 
@@ -30,6 +31,8 @@ namespace       notification {
 
   class               escalation {
   public:
+    DECLARE_SHARED_PTR(escalation);
+
     enum              type {
       unknown = 0,
       host = (1 << 1),

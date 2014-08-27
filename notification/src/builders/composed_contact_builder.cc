@@ -24,7 +24,7 @@ using namespace com::centreon::broker::notification;
 composed_contact_builder::composed_contact_builder() {}
 
 void composed_contact_builder::add_contact(unsigned int id,
-                                           shared_ptr<contact> con) {
+                                           contact::ptr con) {
   for (composed_builder<contact_builder>::iterator it(begin()),
        end_it(end());
        it != end_it;

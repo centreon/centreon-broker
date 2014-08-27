@@ -33,16 +33,16 @@ namespace       notification {
 
   class           contact_by_name_builder : public contact_builder {
   public:
-                  contact_by_name_builder(QHash<std::string, shared_ptr<contact> >& table);
+                  contact_by_name_builder(QHash<std::string, contact::ptr>& table);
     virtual       ~contact_by_name_builder() {}
 
     virtual void  add_contact(unsigned int id,
-                             shared_ptr<contact> con);
+                              contact::ptr con);
     virtual void  connect_contact_node_id(unsigned int contact_id,
                                           node_id id);
 
   private:
-    QHash<std::string, shared_ptr<contact> >&
+    QHash<std::string, contact::ptr>&
                   _table;
                   contact_by_name_builder();
   };

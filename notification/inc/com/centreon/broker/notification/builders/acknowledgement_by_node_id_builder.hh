@@ -21,7 +21,6 @@
 #  define CCB_NOTIFICATION_BUILDERS_ACKNOWLEDGEMENT_BY_NODE_ID_BUILDER_HH
 
 #  include <QHash>
-#  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
 #  include "com/centreon/broker/notification/objects/acknowledgement.hh"
@@ -33,13 +32,13 @@ namespace       notification {
   class           acknowledgement_by_node_id_builder {
   public:
                   acknowledgement_by_node_id_builder(
-                       QMultiHash<node_id, shared_ptr<acknowledgement> >& table);
+                       QMultiHash<node_id, acknowledgement::ptr>& table);
     virtual       ~acknowledgement_by_node_id_builder() {}
 
-    virtual void  add_ack(node_id id, shared_ptr<acknowledgement> ack);
+    virtual void  add_ack(node_id id, acknowledgement::ptr ack);
 
   private:
-    QMultiHash<node_id,shared_ptr<acknowledgement> >&
+    QMultiHash<node_id, acknowledgement::ptr>&
         _table;
   };
 

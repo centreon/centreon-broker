@@ -21,10 +21,11 @@
 #  define CCB_NOTIFICATION_COMMAND_HH
 
 #  include <string>
-
 #  include "com/centreon/broker/neb/host_status.hh"
 #  include "com/centreon/broker/neb/service_status.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
+
 
 CCB_BEGIN()
 
@@ -32,6 +33,8 @@ namespace       notification {
 
   class                 command {
   public:
+    DECLARE_SHARED_PTR(command);
+
                         command(std::string const& base_command);
                         command(command const& obj);
                         command& operator=(command const& obj);

@@ -22,6 +22,7 @@
 
 #  include <ctime>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
 
 CCB_BEGIN()
 
@@ -29,6 +30,8 @@ namespace        notification {
 
   class     node {
   public:
+    DECLARE_SHARED_PTR(node);
+
             node();
             node(node const& obj);
             node& operator=(node const& obj);

@@ -22,10 +22,10 @@
 
 using namespace com::centreon::broker::notification;
 
-contact_by_name_builder::contact_by_name_builder(QHash<std::string, shared_ptr<contact> >& table) :
+contact_by_name_builder::contact_by_name_builder(QHash<std::string, contact::ptr>& table) :
   _table(table) {}
 
 void contact_by_name_builder::add_contact(unsigned int id,
-                                           shared_ptr<contact> con) {
+                                           contact::ptr con) {
   _table[con->get_name()];
 }

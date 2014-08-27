@@ -24,7 +24,7 @@ using namespace com::centreon::broker::notification;
 composed_escalation_builder::composed_escalation_builder() {}
 
 void composed_escalation_builder::add_escalation(unsigned int id,
-                                                 shared_ptr<escalation> esc) {
+                                                 escalation::ptr esc) {
   for (composed_builder<escalation_builder>::iterator it(begin()),
        it_end(end()); it != it_end; ++it)
     (*it)->add_escalation(id, esc);

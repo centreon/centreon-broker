@@ -20,7 +20,6 @@
 #ifndef CCB_NOTIFICATION_BUILDERS_ESCALATION_BUILDER_HH
 #  define CCB_NOTIFICATION_BUILDERS_ESCALATION_BUILDER_HH
 
-#  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/escalation.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
@@ -34,7 +33,7 @@ namespace       notification {
     virtual       ~escalation_builder() {}
 
     virtual void  add_escalation(unsigned int id,
-                                 shared_ptr<escalation> esc) {}
+                                 escalation::ptr esc) {}
     virtual void  connect_escalation_node_id(unsigned int esc_id,
                                              node_id id) {}
     virtual void  connect_escalation_contactgroup(unsigned int id,

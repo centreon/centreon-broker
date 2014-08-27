@@ -22,11 +22,11 @@
 using namespace com::centreon::broker::notification;
 
 acknowledgement_by_node_id_builder::acknowledgement_by_node_id_builder(
-    QMultiHash<node_id, shared_ptr<acknowledgement> >& table) :
+    QMultiHash<node_id, acknowledgement::ptr>& table) :
   _table(table) {}
 
 void acknowledgement_by_node_id_builder::add_ack(
     node_id id,
-    shared_ptr<acknowledgement> ack) {
+    acknowledgement::ptr ack) {
   _table.insert(id, ack);
 }

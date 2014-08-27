@@ -21,7 +21,6 @@
 #  define CCB_NOTIFICATION_BUILDERS_DOWNTIME_BY_NODE_ID_BUILDER_HH
 
 #  include <QHash>
-#  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/downtime.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
@@ -33,14 +32,14 @@ namespace         notification {
   class           downtime_by_node_id_builder {
   public:
                   downtime_by_node_id_builder(
-                        QMultiHash<node_id, shared_ptr<downtime> >& table);
+                        QMultiHash<node_id, downtime::ptr>& table);
     virtual       ~downtime_by_node_id_builder() {}
 
     virtual void  add_downtime(unsigned int downtime_id,
-                               shared_ptr<downtime> downtime);
+                               downtime::ptr downtime);
 
   private:
-    QMultiHash<node_id, shared_ptr<downtime> >
+    QMultiHash<node_id, downtime::ptr>
                   _table;
   };
 

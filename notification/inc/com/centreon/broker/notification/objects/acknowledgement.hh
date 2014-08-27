@@ -21,6 +21,7 @@
 #  define CCB_NOTIFICATION_ACKNOWLEDGMENT_HH
 
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
 
 CCB_BEGIN()
 
@@ -28,12 +29,13 @@ namespace       notification {
 
   class acknowledgement {
   public:
+    DECLARE_SHARED_PTR(acknowledgement);
+
     enum type {
       unknown = 0,
       host = 1,
       service = 2
     };
-
                   acknowledgement();
                   acknowledgement(acknowledgement const& obj);
                   acknowledgement& operator=(acknowledgement const& obj);

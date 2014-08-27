@@ -20,7 +20,6 @@
 #ifndef CCB_NOTIFICATION_BUILDERS_DOWNTIME_BUILDER_HH
 #  define CCB_NOTIFICATION_BUILDERS_DOWNTIME_BUILDER_HH
 
-#  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/downtime.hh"
 
@@ -33,7 +32,7 @@ namespace       notification {
     virtual ~downtime_builder() {}
 
     virtual void add_downtime(unsigned int downtime_id,
-                              shared_ptr<downtime> downtime) {}
+                              downtime::ptr downtime) {}
   };
 
 }

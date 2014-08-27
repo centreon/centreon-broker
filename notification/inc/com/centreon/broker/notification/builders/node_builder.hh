@@ -20,7 +20,6 @@
 #ifndef CCB_NOTIFICATION_BUILDERS_NODE_BUILDER_HH
 #  define CCB_NOTIFICATION_BUILDERS_NODE_BUILDER_HH
 
-#  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/node.hh"
 

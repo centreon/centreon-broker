@@ -22,11 +22,11 @@
 using namespace com::centreon::broker::notification;
 
 downtime_by_node_id_builder::downtime_by_node_id_builder(
-    QMultiHash<node_id, shared_ptr<downtime> >& table) :
+    QMultiHash<node_id, downtime::ptr>& table) :
   _table(table) {}
 
 void downtime_by_node_id_builder::add_downtime(unsigned int downtime_id,
-                                               shared_ptr<downtime> downtime) {
+                                               downtime::ptr downtime) {
   _table.insert(node_id(downtime->get_host_id(), downtime->get_service_id()),
                 downtime);
 }

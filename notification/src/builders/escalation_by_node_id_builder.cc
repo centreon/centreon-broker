@@ -22,11 +22,11 @@
 using namespace com::centreon::broker::notification;
 
 escalation_by_node_id_builder::escalation_by_node_id_builder(
-    QMultiHash<node_id, shared_ptr<escalation> >& table) :
+    QMultiHash<node_id, escalation::ptr>& table) :
   _table(table) {}
 
 void escalation_by_node_id_builder::add_escalation(unsigned int id,
-                                                   shared_ptr<escalation> esc) {
+                                                   escalation::ptr esc) {
   _cache[id] = esc;
 }
 

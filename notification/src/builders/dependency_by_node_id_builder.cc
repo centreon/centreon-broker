@@ -22,14 +22,14 @@
 using namespace com::centreon::broker::notification;
 
 dependency_by_node_id_builder::dependency_by_node_id_builder(
-    QMultiHash<node_id, shared_ptr<dependency> >& by_child_id,
-    QMultiHash<node_id, shared_ptr<dependency> >& by_parent_id) :
+    QMultiHash<node_id, dependency::ptr>& by_child_id,
+    QMultiHash<node_id, dependency::ptr>& by_parent_id) :
   _table_child_id(by_child_id),
   _table_parent_id(by_parent_id) {}
 
 void dependency_by_node_id_builder::add_dependency(
     unsigned int id,
-    shared_ptr<dependency> d) {
+    dependency::ptr d) {
   _cache[id] = d;
 }
 

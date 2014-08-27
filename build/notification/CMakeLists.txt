@@ -130,6 +130,7 @@ add_library("${NOTIFICATION}" SHARED
   "${INC_DIR}/com/centreon/broker/notification/builders/escalation_by_node_id_builder.hh"
   "${INC_DIR}/com/centreon/broker/notification/builders/timeperiod_by_name_builder.hh"
   "${INC_DIR}/com/centreon/broker/notification/builders/command_by_name_builder.hh"
+  "${INC_DIR}/com/centreon/broker/notification/utilities/ptr_typedef.hh"
 )
 target_link_libraries("${NOTIFICATION}" ${QT_LIBRARIES})
 set_target_properties("${NOTIFICATION}" PROPERTIES PREFIX "")

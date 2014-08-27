@@ -22,11 +22,10 @@
 
 using namespace com::centreon::broker::notification;
 
-command_by_name_builder::command_by_name_builder(    QHash<std::string, shared_ptr<command> >& table) :
+command_by_name_builder::command_by_name_builder(QHash<std::string, command::ptr>& table) :
   _table(table) {}
 
-
 void command_by_name_builder::add_command(unsigned int id,
-                                          shared_ptr<command> com) {
+                                          command::ptr com) {
   _table[com->get_name()] = com;
 }

@@ -20,7 +20,6 @@
 #ifndef CCB_NOTIFICATION_BUILDERS_CONTACT_BUILDER_HH
 #  define CCB_NOTIFICATION_BUILDERS_CONTACT_BUILDER_HH
 
-#  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
 #  include "com/centreon/broker/notification/objects/contact.hh"
@@ -34,7 +33,7 @@ namespace       notification {
     virtual ~contact_builder() {}
 
     virtual void add_contact(unsigned int id,
-                             shared_ptr<contact> con) {}
+                             contact::ptr con) {}
     virtual void connect_contact_contactgroup(unsigned int contact_id,
                                               unsigned int contactgroup_id) {}
     virtual void connect_contact_hostcommand(unsigned int contact_id,

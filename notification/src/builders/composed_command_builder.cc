@@ -24,7 +24,7 @@ using namespace com::centreon::broker::notification;
 composed_command_builder::composed_command_builder() {}
 
 void composed_command_builder::add_command(unsigned int id,
-                                           shared_ptr<command> com) {
+                                           command::ptr com) {
   for (composed_builder<command_builder>::iterator it(begin()),
        it_end(end()); it != it_end; ++it)
     (*it)->add_command(id, com);

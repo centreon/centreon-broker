@@ -36,7 +36,7 @@ namespace       notification {
     virtual       ~composed_dependency_builder() {}
 
     virtual void  add_dependency(unsigned int id,
-                                 shared_ptr<dependency> d) = 0;
+                                 dependency::ptr d) = 0;
     virtual void  dependency_node_id_parent_relation(unsigned int dep_id,
                                                      node_id id) = 0;
     virtual void  dependency_node_id_child_relation(unsigned int dep_id,

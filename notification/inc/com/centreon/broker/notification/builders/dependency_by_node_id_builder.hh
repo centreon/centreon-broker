@@ -21,7 +21,6 @@
 #  define CCB_NOTIFICATION_BUILDERS_DEPENDENCY_BY_NODE_ID_BUILDER_HH
 
 #  include <QHash>
-#  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/dependency.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
@@ -33,12 +32,12 @@ namespace       notification {
   class           dependency_by_node_id_builder {
   public:
                   dependency_by_node_id_builder(
-                        QMultiHash<node_id, shared_ptr<dependency> >& by_child_id,
-                        QMultiHash<node_id, shared_ptr<dependency> >& by_parent_id);
+                        QMultiHash<node_id, dependency::ptr>& by_child_id,
+                        QMultiHash<node_id, dependency::ptr>& by_parent_id);
     virtual       ~dependency_by_node_id_builder() {}
 
     virtual void  add_dependency(unsigned int id,
-                                shared_ptr<dependency> d);
+                                 dependency::ptr d);
     virtual void  dependency_node_id_parent_relation(unsigned int dep_id,
                                                     node_id id);
     virtual void  dependency_node_id_child_relation(unsigned int dep_id,
@@ -46,11 +45,11 @@ namespace       notification {
   private:
                   dependency_by_node_id_builder();
 
-     QHash<unsigned int, shared_ptr<dependency> >
+     QHash<unsigned int, dependency::ptr>
                   _cache;
-     QMultiHash<node_id, shared_ptr<dependency> >&
+     QMultiHash<node_id, dependency::ptr>&
                   _table_child_id;
-     QMultiHash<node_id, shared_ptr<dependency> >&
+     QMultiHash<node_id, dependency::ptr>&
                   _table_parent_id;
   };
 

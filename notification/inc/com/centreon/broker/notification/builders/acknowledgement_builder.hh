@@ -20,7 +20,6 @@
 #ifndef CCB_NOTIFICATION_BUILDERS_ACKNOWLEDGEMENT_BUILDER_HH
 #  define CCB_NOTIFICATION_BUILDERS_ACKNOWLEDGEMENT_BUILDER_HH
 
-#  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
 #  include "com/centreon/broker/notification/objects/acknowledgement.hh"
@@ -34,7 +33,7 @@ namespace       notification {
     virtual     ~acknowledgement_builder() {}
 
     virtual void add_ack(node_id id,
-                         shared_ptr<acknowledgement> ack) {}
+                         acknowledgement::ptr ack) {}
   };
 
 }

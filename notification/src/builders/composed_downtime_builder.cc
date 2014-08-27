@@ -24,7 +24,7 @@ using namespace com::centreon::broker::notification;
 composed_downtime_builder::composed_downtime_builder() {}
 
 void composed_downtime_builder::add_downtime(unsigned int downtime_id,
-                                             shared_ptr<downtime> downtime) {
+                                             downtime::ptr downtime) {
   for (composed_builder<downtime_builder>::iterator it(begin()),
        it_end(end()); it != it_end; ++it)
     (*it)->add_downtime(downtime_id,

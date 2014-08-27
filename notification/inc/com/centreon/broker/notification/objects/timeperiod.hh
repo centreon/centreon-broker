@@ -27,6 +27,7 @@
 #  include "com/centreon/broker/notification/objects/group.hh"
 #  include "com/centreon/broker/notification/objects/timerange.hh"
 #  include "com/centreon/broker/notification/objects/daterange.hh"
+#  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
 
 CCB_BEGIN()
 
@@ -34,6 +35,8 @@ namespace       notification {
 
   class                 timeperiod {
   public:
+    DECLARE_SHARED_PTR(timeperiod);
+
                         timeperiod();
                         timeperiod(timeperiod const& obj);
                         timeperiod operator=(timeperiod const& obj);

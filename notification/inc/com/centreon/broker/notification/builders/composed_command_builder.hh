@@ -36,7 +36,7 @@ namespace       notification {
     virtual       ~composed_command_builder() {}
 
     virtual void  add_command(unsigned int id,
-                              shared_ptr<command> com);
+                              command::ptr com);
 
   };
 

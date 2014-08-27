@@ -25,6 +25,7 @@
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/group.hh"
+#  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
 
 CCB_BEGIN()
 
@@ -32,6 +33,8 @@ namespace notification {
 
   class                      contact {
   public:
+    DECLARE_SHARED_PTR(contact);
+
     enum host_action_on {
       host_none = 0,
       host_up = (1 << 0),

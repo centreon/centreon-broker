@@ -21,8 +21,9 @@
 #  define CCB_NOTIFICATION_DOWNTIME_HH
 
 #  include <ctime>
-#include <string>
+#  include <string>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
 
 CCB_BEGIN()
 
@@ -30,6 +31,8 @@ namespace       notification {
 
   class           downtime {
   public:
+    DECLARE_SHARED_PTR(downtime);
+
                   downtime();
                   downtime(downtime const& obj);
                   downtime& operator=(downtime const& obj);

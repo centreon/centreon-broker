@@ -25,7 +25,7 @@ composed_timeperiod_builder::composed_timeperiod_builder() {}
 
 void composed_timeperiod_builder::add_timeperiod(
     unsigned int id,
-    shared_ptr<timeperiod> tperiod) {
+    timeperiod::ptr tperiod) {
   for (composed_builder<timeperiod_builder>::iterator it(begin()),
        it_end(end()); it != it_end; ++it)
     (*it)->add_timeperiod(id, tperiod);

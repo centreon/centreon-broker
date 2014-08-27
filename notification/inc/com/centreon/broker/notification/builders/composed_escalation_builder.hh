@@ -36,7 +36,7 @@ namespace       notification {
     virtual       ~composed_escalation_builder() {}
 
     virtual void  add_escalation(unsigned int id,
-                                 shared_ptr<escalation> esc);
+                                 escalation::ptr esc);
     virtual void  connect_escalation_node_id(unsigned int esc_id,
                                              node_id id);
     virtual void  connect_escalation_contactgroup(unsigned int id,
