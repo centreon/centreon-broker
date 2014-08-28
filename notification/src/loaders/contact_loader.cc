@@ -78,7 +78,7 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
   _load_relations(query, *output);
 
   // Load the custom variables of the contact.
-  if (!query.exec("SELECT cp_key, cp_value, cp_contact_id, FROM contact_param"))
+  if (!query.exec("SELECT cp_key, cp_value, cp_contact_id FROM contact_param"))
     throw (exceptions::msg()
       << "Notification: cannot select contact_param in loader: "
       << query.lastError().text());
