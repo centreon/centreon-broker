@@ -108,7 +108,7 @@ bool factory::has_endpoint(
                 bool is_input,
                 bool is_output) const {
   (void)is_input;
-  bool is_sql(!cfg.type.compare("sql", Qt::CaseInsensitive)
+  bool is_sql(!cfg.type.compare("notification", Qt::CaseInsensitive)
               && is_output);
   if (is_sql) {
     // Default transaction timeout.
