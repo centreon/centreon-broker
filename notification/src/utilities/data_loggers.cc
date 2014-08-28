@@ -21,7 +21,7 @@
 
 using namespace com::centreon::broker;
 
-logging::temp_logger& logging::operator<<(const logging::temp_logger& left,
+logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
                                           notification::node_id const& node) throw()
 {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
@@ -29,5 +29,55 @@ logging::temp_logger& logging::operator<<(const logging::temp_logger& left,
        << node.get_host_id()
        << "node_id::get_service_id() : "
        << node.get_service_id();
+  return (tmp);
+}
+
+logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
+                                          notification::command const& com) throw() {
+  logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+  tmp << "command::get_name() : "
+       << com.get_name();
+  return (tmp);
+}
+
+logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
+                                          notification::downtime const& down) throw() {
+  logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+  return (tmp);
+}
+
+logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
+                                          notification::escalation const& esc) throw() {
+  logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+  return (tmp);
+}
+
+logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
+                                          notification::dependency const&) throw() {
+  logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+  return (tmp);
+}
+
+logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
+                                          notification::contact const&) throw() {
+  logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+  return (tmp);
+}
+
+logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
+                                          notification::timeperiod const&) throw() {
+  logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+  return (tmp);
+}
+
+logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
+                                          notification::node const&) throw() {
+  logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+  return (tmp);
+}
+
+logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
+                                          notification::acknowledgement const&) throw() {
+  logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
   return (tmp);
 }
