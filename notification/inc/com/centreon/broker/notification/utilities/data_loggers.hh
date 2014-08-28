@@ -27,6 +27,9 @@
 CCB_BEGIN()
 
 namespace logging {
+  // Constant ref needed because the temp_logger returned by logging
+  // is a rvalue, and can only be acceded by a const reference.
+  // Am I pushing the boundary of the language too far?
   temp_logger& operator<<(const temp_logger& left,
                           notification::node_id const& node) throw();
 }
