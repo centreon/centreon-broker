@@ -19,6 +19,7 @@
 
 #include <sstream>
 #include <QVariant>
+#include <QSet>
 #include <QSqlError>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/notification/objects/string.hh"
@@ -125,14 +126,9 @@ void contact_loader::_load_relations(QSqlQuery& query,
     output.connect_contact_node_id(query.value(1).toUInt(),
                                    node_id(query.value(0).toUInt()));
 
-  if (!query.exec("SELECT contact_id, service_service_id FROM contact_service_relation"))
-    throw (exceptions::msg()
-      << "Notification: cannot select contact_service_relation in loader: "
-      << query.lastError().text());
-
-  while (query.next())
-    output.connect_contact_node_id(query.value(1).toUInt(),
-                                   node_id(0, query.value(0).toUInt()));
+  // We cache the services connected to a service/host pair to prevent the
+  // twice insertion of services later.
+  QSet<unsigned int> service_ids;
 
   if (!query.exec("SELECT a.host_host_id, a.service_service_id, b.contact_id FROM host_service_relation AS a LEFT JOIN contact_service_relation AS b ON a.service_service_id = b.service_service_id"))
     throw (exceptions::msg()
@@ -140,9 +136,21 @@ void contact_loader::_load_relations(QSqlQuery& query,
       << query.lastError().text());
 
   while (query.next()) {
+    service_ids.insert(query.value(1).toUInt());
     output.connect_contact_node_id(query.value(2).toUInt(),
                                    node_id(query.value(0).toUInt(), query.value(1).toUInt()));
   }
+
+
+  if (!query.exec("SELECT contact_id, service_service_id FROM contact_service_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select contact_service_relation in loader: "
+      << query.lastError().text());
+
+  while (query.next())
+    if(!service_ids.contains(query.value(1).toUInt()))
+      output.connect_contact_node_id(query.value(0).toUInt(),
+                                     node_id(0, query.value(1).toUInt()));
 }
 
 void contact_loader::_load_relation(QSqlQuery& query,
