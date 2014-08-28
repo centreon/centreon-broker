@@ -43,6 +43,25 @@
 #include "mapping.hh"
 #include "com/centreon/broker/notification/stream.hh"
 
+#include "com/centreon/broker/notification/builders/composed_acknowledgement_builder.hh"
+#include "com/centreon/broker/notification/builders/composed_command_builder.hh"
+#include "com/centreon/broker/notification/builders/composed_contact_builder.hh"
+#include "com/centreon/broker/notification/builders/composed_dependency_builder.hh"
+#include "com/centreon/broker/notification/builders/composed_downtime_builder.hh"
+#include "com/centreon/broker/notification/builders/composed_escalation_builder.hh"
+#include "com/centreon/broker/notification/builders/composed_node_builder.hh"
+#include "com/centreon/broker/notification/builders/composed_timeperiod_builder.hh"
+
+#include "com/centreon/broker/notification/builders/acknowledgement_by_node_id_builder.hh"
+#include "com/centreon/broker/notification/builders/command_by_name_builder.hh"
+#include "com/centreon/broker/notification/builders/contact_by_name_builder.hh"
+#include "com/centreon/broker/notification/builders/contact_by_node_builder.hh"
+#include "com/centreon/broker/notification/builders/dependency_by_node_id_builder.hh"
+#include "com/centreon/broker/notification/builders/downtime_by_node_id_builder.hh"
+#include "com/centreon/broker/notification/builders/escalation_by_node_id_builder.hh"
+#include "com/centreon/broker/notification/builders/node_set_builder.hh"
+#include "com/centreon/broker/notification/builders/timeperiod_by_name_builder.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
 using namespace com::centreon::broker::notification;
@@ -399,20 +418,63 @@ void stream::_clone_db(std::auto_ptr<QSqlDatabase>& db,
 }
 
 void stream::_update_objects_from_db() {
-  command_loader command;
-  contact_loader contact;
-  dependency_loader dependency;
-  escalation_loader escalation;
-  node_loader node;
-  timeperiod_loader timeperiod;
-
-  node_set_builder node_set_build(_nodes);
-
-  node.load(_centreon_db.get(), &node_set_build);
-  command.load(_centreon_db.get(), NULL);
-  contact.load(_centreon_db.get(), NULL);
-  dependency.load(_centreon_db.get(), NULL);
-  escalation.load(_centreon_db.get(), NULL);
-  node.load(_centreon_db.get(), NULL);
-  timeperiod.load(_centreon_db.get(), NULL);
+  {
+    node_loader node;
+    composed_node_builder composed;
+    node_set_builder set_builder(_nodes);
+    composed.push_back(set_builder);
+    node.load(_centreon_db.get(), &composed);
+  }
+  {
+    command_loader command;
+    composed_command_builder composed;
+    command_by_name_builder by_name_builder(_commands);
+    composed.push_back(by_name_builder);
+    command.load(_centreon_db.get(), &composed);
+  }
+  {
+    contact_loader contact;
+    composed_contact_builder composed;
+    contact_by_name_builder by_name_builder(_contact_by_name);
+    contact_by_node_builder by_node_builder(_contacts);
+    composed.push_back(by_name_builder);
+    composed.push_back(by_node_builder);
+    contact.load(_centreon_db.get(), &composed);
+  }
+  {
+    dependency_loader dependency;
+    composed_dependency_builder composed;
+    dependency_by_node_id_builder by_node_builder(_dependency_by_child_id,
+                                                  _dependency_by_parent_id);
+    composed.push_back(by_node_builder);
+    dependency.load(_centreon_db.get(), &composed);
+  }
+  {
+    escalation_loader escalation;
+    composed_escalation_builder composed;
+    escalation_by_node_id_builder by_node_builder(_escalations);
+    composed.push_back(by_node_builder);
+    escalation.load(_centreon_db.get(), &composed);
+  }
+  {
+    timeperiod_loader timeperiod;
+    composed_timeperiod_builder composed;
+    timeperiod_by_name_builder by_name_builder(_timeperiod_by_name);
+    composed.push_back(by_name_builder);
+    timeperiod.load(_centreon_db.get(), &composed);
+  }
+  {
+    downtime_loader downtime;
+    composed_downtime_builder composed;
+    downtime_by_node_id_builder by_node_builder(_downtimes);
+    composed.push_back(by_node_builder);
+    downtime.load(_centreon_db.get(), &composed);
+  }
+  {
+    acknowledgement_loader ack;
+    composed_acknowledgement_builder composed;
+    acknowledgement_by_node_id_builder by_node_builder(_acks);
+    composed.push_back(by_node_builder);
+    ack.load(_centreon_db.get(), &composed);
+  }
 }

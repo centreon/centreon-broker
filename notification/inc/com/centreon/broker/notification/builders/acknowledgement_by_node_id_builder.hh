@@ -24,12 +24,13 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
 #  include "com/centreon/broker/notification/objects/acknowledgement.hh"
+#  include "com/centreon/broker/notification/builders/acknowledgement_builder.hh"
 
 CCB_BEGIN()
 
 namespace       notification {
 
-  class           acknowledgement_by_node_id_builder {
+  class           acknowledgement_by_node_id_builder : public acknowledgement_builder {
   public:
                   acknowledgement_by_node_id_builder(
                        QMultiHash<node_id, acknowledgement::ptr>& table);

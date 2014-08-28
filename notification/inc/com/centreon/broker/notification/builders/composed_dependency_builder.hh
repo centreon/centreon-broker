@@ -36,20 +36,20 @@ namespace       notification {
     virtual       ~composed_dependency_builder() {}
 
     virtual void  add_dependency(unsigned int id,
-                                 dependency::ptr d) = 0;
+                                 dependency::ptr d);
     virtual void  dependency_node_id_parent_relation(unsigned int dep_id,
-                                                     node_id id) = 0;
+                                                     node_id id);
     virtual void  dependency_node_id_child_relation(unsigned int dep_id,
-                                                    node_id id) = 0;
+                                                    node_id id);
     virtual void  dependency_hostgroup_parent_relation(
          unsigned int dep_id,
-         unsigned int hostgroup_id) = 0;
+         unsigned int hostgroup_id);
     virtual void  dependency_hostgroup_child_relation(
          unsigned int dep_id,
-         unsigned int hostgroup_id) = 0;
+         unsigned int hostgroup_id);
     virtual void  dependency_servicegroup_child_relation(
          unsigned int dep_id,
-         unsigned int servicegroup_id) = 0;
+         unsigned int servicegroup_id);
     virtual void  dependency_servicegroup_parent_relation(
          unsigned int dep_id,
          unsigned int servicegroup_id);

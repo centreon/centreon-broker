@@ -75,15 +75,24 @@ namespace        notification {
 
   private:
     stream&      operator=(stream const& s);
-    std::auto_ptr<QSqlDatabase> _centreon_db;
-    std::auto_ptr<QSqlDatabase> _centreon_storage_db;
-    bool                        _process_out;
-    unsigned int                _queries_per_transaction;
-    unsigned int                _transaction_queries;
-    bool                        _with_state_events;
-    unsigned int                _instance_timeout;
+    std::auto_ptr<QSqlDatabase>           _centreon_db;
+    std::auto_ptr<QSqlDatabase>           _centreon_storage_db;
+    bool                                  _process_out;
+    unsigned int                          _queries_per_transaction;
+    unsigned int                          _transaction_queries;
+    bool                                  _with_state_events;
+    unsigned int                          _instance_timeout;
 
-    QSet<node_id>               _nodes;
+    QSet<node_id>                         _nodes;
+    QMultiHash<node_id, acknowledgement::ptr> _acks;
+    QHash<std::string, command::ptr>      _commands;
+    QHash<std::string, contact::ptr>      _contact_by_name;
+    QMultiHash<node_id, contact::ptr>     _contacts;
+    QMultiHash<node_id, dependency::ptr>  _dependency_by_child_id;
+    QMultiHash<node_id, dependency::ptr>  _dependency_by_parent_id;
+    QMultiHash<node_id, downtime::ptr>    _downtimes;
+    QMultiHash<node_id, escalation::ptr>  _escalations;
+    QHash<std::string, timeperiod::ptr>   _timeperiod_by_name;
 
     void                        _open_db(std::auto_ptr<QSqlDatabase>& db,
                                          QString const& t,

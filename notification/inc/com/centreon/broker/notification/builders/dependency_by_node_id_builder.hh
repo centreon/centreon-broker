@@ -23,13 +23,14 @@
 #  include <QHash>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/dependency.hh"
+#  include "com/centreon/broker/notification/builders/dependency_builder.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
 
 CCB_BEGIN()
 
 namespace       notification {
 
-  class           dependency_by_node_id_builder {
+  class           dependency_by_node_id_builder : public dependency_builder {
   public:
                   dependency_by_node_id_builder(
                         QMultiHash<node_id, dependency::ptr>& by_child_id,

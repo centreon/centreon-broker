@@ -23,13 +23,14 @@
 #  include <QHash>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/escalation.hh"
+#  include "com/centreon/broker/notification/builders/escalation_builder.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
 
 CCB_BEGIN()
 
 namespace       notification {
 
-  class           escalation_by_node_id_builder {
+  class           escalation_by_node_id_builder : public escalation_builder {
   public:
                   escalation_by_node_id_builder(
                       QMultiHash<node_id, escalation::ptr>& table);

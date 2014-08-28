@@ -23,12 +23,13 @@
 #  include <QHash>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/timeperiod.hh"
+#  include "com/centreon/broker/notification/builders/timeperiod_builder.hh"
 
 CCB_BEGIN()
 
 namespace         notification {
 
-  class           timeperiod_by_name_builder {
+  class           timeperiod_by_name_builder : public timeperiod_builder {
   public:
                   timeperiod_by_name_builder(
                         QHash<std::string, timeperiod::ptr>& table);

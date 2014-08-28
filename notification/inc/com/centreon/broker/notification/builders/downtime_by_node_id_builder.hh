@@ -24,12 +24,13 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/downtime.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
+#  include "com/centreon/broker/notification/builders/downtime_builder.hh"
 
 CCB_BEGIN()
 
 namespace         notification {
 
-  class           downtime_by_node_id_builder {
+  class           downtime_by_node_id_builder : public downtime_builder {
   public:
                   downtime_by_node_id_builder(
                         QMultiHash<node_id, downtime::ptr>& table);
