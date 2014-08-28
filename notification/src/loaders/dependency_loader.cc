@@ -80,7 +80,7 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
 void dependency_loader::_load_relations(QSqlQuery& query,
                                         dependency_builder& output) {
 
-  if (!query.exec("SELECT dependency_dep_id, service_service_id, host_host_id FROM dependency_hostChild_relation"))
+  if (!query.exec("SELECT dependency_dep_id, host_host_id FROM dependency_hostChild_relation"))
     throw (exceptions::msg()
       << "Notification: cannot select dependency_hostChild_relation in loader: "
       << query.lastError().text());

@@ -28,7 +28,11 @@ static time_t _get_next_valid_time_per_timeperiod(
               time_t current_time,
               timeperiod const& tperiod);
 
-timeperiod::timeperiod() {}
+timeperiod::timeperiod()
+{
+  _timeranges.resize(7);
+  _exceptions.resize(daterange::daterange_types);
+}
 
 timeperiod::timeperiod(timeperiod const& obj) :
   _alias(obj._alias),
@@ -36,10 +40,7 @@ timeperiod::timeperiod(timeperiod const& obj) :
   _exclude(obj._exclude),
   _timeperiod_name(obj._timeperiod_name),
   _timeranges(obj._timeranges),
-  _timezone(obj._timezone) {
-  _timeranges.resize(7);
-  _exceptions.resize(daterange::daterange_types);
-}
+  _timezone(obj._timezone) {}
 
 timeperiod timeperiod::operator=(timeperiod const& obj) {
   if (this != &obj) {
