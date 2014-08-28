@@ -19,6 +19,7 @@
 
 #include <sstream>
 #include <QVariant>
+#include <QSet>
 #include <QSqlError>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/notification/loaders/node_loader.hh"
@@ -48,9 +49,26 @@ void node_loader::load(QSqlDatabase* db, node_builder* output) {
       << query.lastError().text());
 
   while (query.next()) {
-    unsigned int id = query.value(0).toUInt();
+    node::ptr n(new node);
+    n->set_node_id(node_id(query.value(0).toUInt()));
 
-    output->add_host(id);
+    output->add_node(n);
+  }
+
+  QSet<unsigned int> service_cache;
+
+  if (!query.exec("SELECT host_host_id, service_service_id FROM host_service_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select host_service_relation in loader: "
+      << query.lastError().text());
+
+  while (query.next()) {
+    unsigned int service_id = query.value(1).toUInt();
+    node::ptr n(new node);
+    n->set_node_id(node_id(query.value(0).toUInt(), service_id));
+    service_cache.insert(service_id);
+
+    output->add_node(n);
   }
 
   if (!query.exec("SELECT service_id FROM service"))
@@ -60,37 +78,12 @@ void node_loader::load(QSqlDatabase* db, node_builder* output) {
 
   while (query.next()) {
     unsigned int id = query.value(0).toUInt();
+    if (!service_cache.contains(id))
+    {
+      node::ptr n(new node);
+      n->set_node_id(node_id(0, id));
 
-    output->add_service(id);
-  }
-
-  _load_relation(query, *output,
-                 "host_host_id",
-                 "service_service_id",
-                 "host_service_relation",
-                 &node_builder::connect_service_host);
-
-}
-
-void node_loader::_load_relation(QSqlQuery& query,
-                                 node_builder& output,
-                                 std::string const& first_relation_id_name,
-                                 std::string const& second_relation_id_name,
-                                 std::string const& table,
-                                 void (node_builder::*register_method)
-                                 (unsigned int, unsigned int)) {
-  std::stringstream ss;
-  ss << "SELECT " << first_relation_id_name << ", "
-     << second_relation_id_name << " FROM " << table;
-  if (!query.exec(ss.str().c_str()))
-    throw (exceptions::msg()
-      << "Notification: cannot select " <<  table << " in loader: "
-      << query.lastError().text());
-
-  while (query.next()) {
-    unsigned int id = query.value(0).toUInt();
-    unsigned int associated_id = query.value(1).toUInt();
-
-    (output.*register_method)(id, associated_id);
+      output->add_node(n);
+    }
   }
 }

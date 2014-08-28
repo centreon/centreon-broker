@@ -24,21 +24,6 @@ using namespace com::centreon::broker::notification;
 node_set_builder::node_set_builder(QSet<node_id>& set) :
   _set(set) {}
 
-void node_set_builder::add_host(unsigned int id) {
-  _set.insert(node_id(id, 0));
-}
-
-void node_set_builder::add_service(unsigned int service_id) {
-  _set.insert(node_id(0, service_id));
-}
-
-void node_set_builder::connect_service_host(unsigned int host_id,
-                                            unsigned int service_id) {
-  // Search existing services without host and remove it if found:
-  // It got one now.
-  QSet<node_id>::iterator found = _set.find(node_id(0, service_id));
-  if (found != _set.end())
-    _set.erase(found);
-
-  _set.insert(node_id(host_id, service_id));
+void node_set_builder::add_node(node::ptr node) {
+  _set.insert(node->get_node_id());
 }

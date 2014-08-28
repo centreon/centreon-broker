@@ -23,6 +23,7 @@
 #  include <ctime>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
+#  include "com/centreon/broker/notification/objects/node_id.hh"
 
 CCB_BEGIN()
 
@@ -44,12 +45,15 @@ namespace        notification {
     void    set_hard_state(short value);
     short   get_soft_state() const throw();
     void    set_soft_state(short value);
+    node_id get_node_id() const throw();
+    void    set_node_id(node_id) throw();
 
   private:
     int     _notification_number;
     time_t  _last_notification_time;
     short   _hard_state;
     short   _soft_state;
+    node_id _id;
   };
 
 }

@@ -23,22 +23,8 @@ using namespace com::centreon::broker::notification;
 
 composed_node_builder::composed_node_builder() {}
 
-void composed_node_builder::add_host(unsigned int id) {
+void composed_node_builder::add_node(node::ptr node) {
   for (composed_builder<node_builder>::iterator it(begin()),
        it_end(end()); it != it_end; ++it)
-    (*it)->add_host(id);
-}
-
-void composed_node_builder::add_service(unsigned int service_id) {
-  for (composed_builder<node_builder>::iterator it(begin()),
-       it_end(end()); it != it_end; ++it)
-    (*it)->add_service(service_id);
-}
-
-void composed_node_builder::connect_service_host(unsigned int host_id,
-                                                 unsigned int service_id) {
-  for (composed_builder<node_builder>::iterator it(begin()),
-       it_end(end()); it != it_end; ++it)
-    (*it)->connect_service_host(host_id,
-                                service_id);
+    (*it)->add_node(node);
 }

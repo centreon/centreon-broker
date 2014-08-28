@@ -34,10 +34,7 @@ namespace           notification {
                     node_set_builder(QSet<node_id>& set);
     virtual         ~node_set_builder() {}
 
-    virtual void    add_host(unsigned int id);
-    virtual void    add_service(unsigned int service_id);
-    virtual void    connect_service_host(unsigned int host_id,
-                                         unsigned int service_id);
+    virtual void    add_node(node::ptr node);
 
   private:
                     node_set_builder();

@@ -74,3 +74,11 @@ short node::get_soft_state() const throw() {
 void node::set_soft_state(short value) {
   _soft_state = value;
 }
+
+node_id node::get_node_id() const throw() {
+  return (_id);
+}
+
+void node::set_node_id(node_id id) throw() {
+  _id = id;
+}

@@ -20,7 +20,7 @@
 #ifndef CCB_NOTIFICATION_UTILITIES_PTR_TYPEDEF_HH
 #  define CCB_NOTIFICATION_UTILITIES_PTR_TYPEDEF_HH
 
-#include "com/centreon/shared_ptr.hh"
+#  include "com/centreon/shared_ptr.hh"
 
 #define DECLARE_SHARED_PTR(klass)\
   typedef shared_ptr<klass> ptr

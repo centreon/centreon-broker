@@ -35,10 +35,7 @@ namespace       notification {
                   composed_node_builder();
     virtual       ~composed_node_builder() {}
 
-    virtual void  add_host(unsigned int id) = 0;
-    virtual void  add_service(unsigned int service_id) = 0;
-    virtual void  connect_service_host(unsigned int host_id,
-                                       unsigned int service_id) = 0;
+    virtual void  add_node(node::ptr node);
   };
 
 }
