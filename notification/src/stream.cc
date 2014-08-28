@@ -282,9 +282,8 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
 
   // Check that data exists.
   unsigned int retval(1);
-  if (!data.isNull()) {
-
-  }
+  if (data.isNull())
+    return 1;
 
   unsigned int type(data->type());
   unsigned short cat(io::events::category_of_type(type));
@@ -468,13 +467,13 @@ void stream::_update_objects_from_db() {
     composed_downtime_builder composed;
     downtime_by_node_id_builder by_node_builder(_downtimes);
     composed.push_back(by_node_builder);
-    downtime.load(_centreon_db.get(), &composed);
+    downtime.load(_centreon_storage_db.get(), &composed);
   }
   {
     acknowledgement_loader ack;
     composed_acknowledgement_builder composed;
     acknowledgement_by_node_id_builder by_node_builder(_acks);
     composed.push_back(by_node_builder);
-    ack.load(_centreon_db.get(), &composed);
+    ack.load(_centreon_storage_db.get(), &composed);
   }
 }
