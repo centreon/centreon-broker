@@ -189,6 +189,9 @@ void applier::meta_service::_modify_meta(
          end(old_cfg.get_metrics().end());
        it != end;
        ++it) {
+    logging::config(logging::low)
+      << "BAM: meta-service " << obj.get_id()
+      << " does not depend of metric " << *it << " anymore";
     book.unlisten(*it, &obj);
     obj.remove_metric(*it);
   }
@@ -199,6 +202,8 @@ void applier::meta_service::_modify_meta(
          end(new_cfg.get_metrics().end());
        it != end;
        ++it) {
+    logging::config(logging::low)
+      << "BAM: meta-service " << obj.get_id() << " uses metric " << *it;
     book.listen(*it, &obj);
     obj.add_metric(*it);
   }
@@ -215,6 +220,7 @@ void applier::meta_service::_modify_meta(
   else
     computation = bam::meta_service::average;
   obj.set_computation(computation);
+  obj.set_id(new_cfg.get_id());
   obj.set_level_warning(new_cfg.get_level_warning());
   obj.set_level_critical(new_cfg.get_level_critical());
 

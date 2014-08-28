@@ -234,7 +234,7 @@ void reader::_load(state::meta_services& meta_services) {
   // Load meta-services.
   {
     QSqlQuery q(_db->exec(
-      "SELECT meta_id, meta_name, calcul_type, warning, critical"
+      "SELECT meta_id, meta_name, calcul_type, warning, critical,"
       "       meta_select_mode, regexp_str, metric"
       "  FROM meta_service"
       "  WHERE meta_activate='1'"));

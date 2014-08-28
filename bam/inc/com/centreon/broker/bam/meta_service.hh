@@ -60,12 +60,14 @@ namespace            bam {
     void             child_has_update(
                        computable* child,
                        stream* visitor = NULL);
+    unsigned int     get_id() const;
     void             metric_update(
                        misc::shared_ptr<storage::metric> const& m,
                        stream* visitor = NULL);
     void             remove_metric(unsigned int metric_id);
     void             recompute();
     void             set_computation(computation_type type);
+    void             set_id(unsigned int id);
     void             set_level_critical(double level);
     void             set_level_warning(double level);
     void             visit(stream* visitor);
@@ -79,6 +81,7 @@ namespace            bam {
                        double old_value);
 
     computation_type _computation;
+    unsigned int     _id;
     double           _level_critical;
     double           _level_warning;
     umap<unsigned int, double>

@@ -581,6 +581,8 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/temporary.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bam.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/bam.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/meta_service.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/meta_service.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_instance_update_outdated_1.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/sql_instance_update_outdated_1.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_instance_update_outdated_2.xml.in"
@@ -778,6 +780,12 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_bam")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/bam.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Meta-services.
+  set(TEST_NAME "running_meta_service")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/meta_service.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 

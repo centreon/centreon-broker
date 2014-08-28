@@ -19,6 +19,8 @@
 
 #include <cmath>
 #include "com/centreon/broker/bam/meta_service.hh"
+#include "com/centreon/broker/bam/meta_service_status.hh"
+#include "com/centreon/broker/bam/stream.hh"
 #include "com/centreon/broker/storage/metric.hh"
 
 using namespace com::centreon::broker;
@@ -29,6 +31,7 @@ using namespace com::centreon::broker::bam;
  */
 meta_service::meta_service()
   : _computation(meta_service::average),
+    _id(0),
     _level_critical(0.0),
     _level_warning(0.0),
     _recompute_count(0),
@@ -88,6 +91,15 @@ void meta_service::child_has_update(
   (void)child;
   (void)visitor;
   return ;
+}
+
+/**
+ *  Get meta-service ID.
+ *
+ *  @return Meta-service ID.
+ */
+unsigned int meta_service::get_id() const {
+  return (_id);
 }
 
 /**
@@ -194,6 +206,16 @@ void meta_service::set_computation(
 }
 
 /**
+ *  Set meta-service ID.
+ *
+ *  @param[in] id  Meta-service ID.
+ */
+void meta_service::set_id(unsigned int id) {
+  _id = id;
+  return ;
+}
+
+/**
  *  Set critical level.
  *
  *  @param[in] level  Critical level.
@@ -224,7 +246,12 @@ void meta_service::visit(stream* visitor) {
     if (_recompute_count >= _recompute_limit)
       recompute();
 
-    // XXX
+    // Send meta-service status.
+    misc::shared_ptr<meta_service_status>
+      status(new meta_service_status);
+    status->meta_service_id = _id;
+    status->value = _value;
+    visitor->write(status.staticCast<io::data>());
   }
   return ;
 }
@@ -236,6 +263,7 @@ void meta_service::visit(stream* visitor) {
  */
 void meta_service::_internal_copy(meta_service const& other) {
   _computation = other._computation;
+  _id = other._id;
   _level_critical = other._level_critical;
   _level_warning = other._level_warning;
   _metrics = other._metrics;
