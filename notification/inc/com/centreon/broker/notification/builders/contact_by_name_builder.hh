@@ -38,8 +38,6 @@ namespace       notification {
 
     virtual void  add_contact(unsigned int id,
                               contact::ptr con);
-    virtual void  connect_contact_node_id(unsigned int contact_id,
-                                          node_id id);
 
   private:
     QHash<std::string, contact::ptr>&

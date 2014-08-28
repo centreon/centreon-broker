@@ -72,7 +72,7 @@ bool node_id::has_service() const throw() {
 }
 
 // QHash function for hash and sets.
-uint qHash(node_id id) {
+uint ::com::centreon::broker::notification::qHash(node_id id) {
   return (qHash(qMakePair(id.get_host_id(),
                           id.get_service_id())));
 }
