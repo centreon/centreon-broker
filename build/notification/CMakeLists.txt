@@ -75,6 +75,7 @@ add_library("${NOTIFICATION}" SHARED
   "${SRC_DIR}/builders/escalation_by_node_id_builder.cc"
   "${SRC_DIR}/builders/timeperiod_by_name_builder.cc"
   "${SRC_DIR}/builders/command_by_name_builder.cc"
+  "${SRC_DIR}/utilities/data_loggers.cc"
   "${PROJECT_SOURCE_DIR}/core/src/mapping.cc"
   # Headers.
   "${INC_DIR}/com/centreon/broker/notification/factory.hh"
@@ -131,6 +132,7 @@ add_library("${NOTIFICATION}" SHARED
   "${INC_DIR}/com/centreon/broker/notification/builders/timeperiod_by_name_builder.hh"
   "${INC_DIR}/com/centreon/broker/notification/builders/command_by_name_builder.hh"
   "${INC_DIR}/com/centreon/broker/notification/utilities/ptr_typedef.hh"
+  "${INC_DIR}/com/centreon/broker/notification/utilities/data_loggers.hh"
 )
 target_link_libraries("${NOTIFICATION}" ${QT_LIBRARIES})
 set_target_properties("${NOTIFICATION}" PROPERTIES PREFIX "")

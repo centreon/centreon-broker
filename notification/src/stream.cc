@@ -41,6 +41,7 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "mapping.hh"
+#include "com/centreon/broker/notification/utilities/data_loggers.hh"
 #include "com/centreon/broker/notification/stream.hh"
 
 #include "com/centreon/broker/notification/builders/composed_acknowledgement_builder.hh"
@@ -423,6 +424,7 @@ void stream::_update_objects_from_db() {
     node_set_builder set_builder(_nodes);
     composed.push_back(set_builder);
     node.load(_centreon_db.get(), &composed);
+    data_logger::log_container("_nodes", _nodes);
   }
   {
     command_loader command;
