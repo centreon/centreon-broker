@@ -63,14 +63,34 @@ namespace notification {
   public:
     template <typename T>
     static void log_container(std::string const& container_name,
-                              T& container) {
+                              T const& container) {
       logging::info(logging::low) << "Logging container called " <<
                                      container_name;
-      for (typename T::iterator it(container.begin()), end(container.end());
+      for (typename T::const_iterator it(container.begin()), end(container.end());
            it != end; ++it)
       logging::info(logging::low) << (*it);
     }
-  };
+
+    template <typename T>
+    static void log_ptr_container(std::string const& container_name,
+                                  T const& container) {
+        logging::info(logging::low) << "Logging ptr container called " <<
+                                     container_name;
+        for (typename T::const_iterator it(container.begin()), end(container.end());
+             it != end; ++it)
+        logging::info(logging::low) << (**it);
+      }
+
+      template <typename T>
+      static void log_pair_container(std::string const& container_name,
+                                     T const& container) {
+        logging::info(logging::low) << "Logging pair container called " <<
+                                     container_name;
+        for (typename T::const_iterator it(container.begin()), end(container.end());
+             it != end; ++it)
+        logging::info(logging::low) << it->second;
+      }
+   };
 }
 
 CCB_END()

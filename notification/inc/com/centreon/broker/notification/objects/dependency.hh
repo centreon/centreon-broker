@@ -76,7 +76,6 @@ namespace       notification {
     void                  set_execution_failure_options(action_on val) throw();
     void                  set_execution_failure_option(action_on val) throw();
     bool                  is_execution_failure_option_set(action_on val) throw();
-    void                  set_hosts(group const& val);
     bool                  get_inherits_parent() const throw();
     void                  set_inherits_parent(bool val) throw();
     action_on             get_notification_failure_options() const throw();

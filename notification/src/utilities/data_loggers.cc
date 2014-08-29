@@ -18,66 +18,121 @@
 */
 
 #include "com/centreon/broker/notification/utilities/data_loggers.hh"
+#define LOG_MEMBER(klass, getter)\
+  << #klass "::" #getter "() : " \
+  << (obj.getter())
 
 using namespace com::centreon::broker;
 
 logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
-                                          notification::node_id const& node) throw()
+                                          notification::node_id const& obj) throw()
 {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
-  tmp << "node_id::get_host_id() : "
-       << node.get_host_id()
-       << "node_id::get_service_id() : "
-       << node.get_service_id();
+  tmp LOG_MEMBER(node_id, get_host_id)
+      LOG_MEMBER(node_id, get_service_id);
   return (tmp);
 }
 
 logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
-                                          notification::command const& com) throw() {
+                                          notification::command const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
-  tmp << "command::get_name() : "
-       << com.get_name();
+  tmp LOG_MEMBER(command, get_name);
   return (tmp);
 }
 
 logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
-                                          notification::downtime const& down) throw() {
+                                          notification::downtime const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+  tmp LOG_MEMBER(downtime, get_entry_time)
+      LOG_MEMBER(downtime, get_host_id)
+      LOG_MEMBER(downtime, get_service_id)
+      LOG_MEMBER(downtime, get_author)
+      LOG_MEMBER(downtime, get_cancelled)
+      LOG_MEMBER(downtime, get_deletion_time)
+      LOG_MEMBER(downtime, get_duration)
+      LOG_MEMBER(downtime, get_end_time)
+      LOG_MEMBER(downtime, get_fixed)
+      LOG_MEMBER(downtime, get_start_time)
+      LOG_MEMBER(downtime, get_actual_start_time)
+      LOG_MEMBER(downtime, get_actual_end_time)
+      LOG_MEMBER(downtime, get_started)
+      LOG_MEMBER(downtime, get_triggered_by)
+      LOG_MEMBER(downtime, get_type);
   return (tmp);
 }
 
 logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
-                                          notification::escalation const& esc) throw() {
+                                          notification::escalation const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+  tmp LOG_MEMBER(escalation, get_escalation_options)
+      LOG_MEMBER(escalation, get_escalation_period)
+      LOG_MEMBER(escalation, get_first_notification)
+      LOG_MEMBER(escalation, get_last_notification)
+      LOG_MEMBER(escalation, get_notification_interval);
   return (tmp);
 }
 
 logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
-                                          notification::dependency const&) throw() {
+                                          notification::dependency const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+  tmp LOG_MEMBER(dependency, is_host_dependency)
+      LOG_MEMBER(dependency, is_service_dependency)
+      LOG_MEMBER(dependency, get_period)
+      LOG_MEMBER(dependency, get_kind)
+      LOG_MEMBER(dependency, get_execution_failure_options)
+      LOG_MEMBER(dependency, get_inherits_parent)
+      LOG_MEMBER(dependency, get_notification_failure_options);
   return (tmp);
 }
 
 logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
-                                          notification::contact const&) throw() {
+                                          notification::contact const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+  notification::data_logger::log_container("contact::get_address", obj.get_address());
+  notification::data_logger::log_pair_container("contact::get_customvariables", obj.get_customvariables());
+  tmp LOG_MEMBER(contact, get_alias)
+      LOG_MEMBER(contact, get_can_submit_commands)
+      LOG_MEMBER(contact, get_name)
+      LOG_MEMBER(contact, get_email)
+      LOG_MEMBER(contact, get_host_notifications_enabled)
+      LOG_MEMBER(contact, get_host_notification_options)
+      LOG_MEMBER(contact, get_host_notification_period)
+      LOG_MEMBER(contact, get_retain_nonstatus_information)
+      LOG_MEMBER(contact, get_retain_status_information)
+      LOG_MEMBER(contact, get_pager)
+      LOG_MEMBER(contact, get_service_notification_options)
+      LOG_MEMBER(contact, get_service_notification_period)
+      LOG_MEMBER(contact, get_service_notifications_enabled);
   return (tmp);
 }
 
 logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
-                                          notification::timeperiod const&) throw() {
+                                          notification::timeperiod const& obj) throw() {
+  // TODO: Exceptions, timeranges.
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+  tmp LOG_MEMBER(timeperiod, get_alias)
+      LOG_MEMBER(timeperiod, get_name)
+      LOG_MEMBER(timeperiod, get_timezone);
   return (tmp);
 }
 
 logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
-                                          notification::node const&) throw() {
+                                          notification::node const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+  tmp LOG_MEMBER(node, get_notification_number)
+      LOG_MEMBER(node, get_last_notification_time)
+      LOG_MEMBER(node, get_hard_state)
+      LOG_MEMBER(node, get_soft_state)
+      LOG_MEMBER(node, get_node_id);
   return (tmp);
 }
 
 logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
-                                          notification::acknowledgement const&) throw() {
+                                          notification::acknowledgement const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+  tmp LOG_MEMBER(acknowledgement, get_type)
+      LOG_MEMBER(acknowledgement, get_acknowledgement_type)
+      LOG_MEMBER(acknowledgement, get_host_id)
+      LOG_MEMBER(acknowledgement, get_service_id);
   return (tmp);
 }
