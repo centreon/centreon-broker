@@ -33,5 +33,6 @@ void escalation_by_node_id_builder::add_escalation(unsigned int id,
 void escalation_by_node_id_builder::connect_escalation_node_id(
     unsigned int esc_id,
     node_id id) {
-  _table.insert(id, _cache[esc_id]);
+  if (_cache.contains(esc_id))
+    _table.insert(id, _cache[esc_id]);
 }

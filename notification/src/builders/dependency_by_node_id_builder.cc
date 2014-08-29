@@ -36,11 +36,13 @@ void dependency_by_node_id_builder::add_dependency(
 void dependency_by_node_id_builder::dependency_node_id_parent_relation(
     unsigned int dep_id,
     node_id id) {
-  _table_parent_id.insert(id, _cache[dep_id]);
+  if (_cache.contains(dep_id))
+    _table_parent_id.insert(id, _cache[dep_id]);
 }
 
 void dependency_by_node_id_builder::dependency_node_id_child_relation(
     unsigned int dep_id,
     node_id id) {
-  _table_child_id.insert(id, _cache[dep_id]);
+  if (_cache.contains(dep_id))
+    _table_child_id.insert(id, _cache[dep_id]);
 }
