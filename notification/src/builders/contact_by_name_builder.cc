@@ -27,5 +27,5 @@ contact_by_name_builder::contact_by_name_builder(QHash<std::string, contact::ptr
 
 void contact_by_name_builder::add_contact(unsigned int id,
                                            contact::ptr con) {
-  _table[con->get_name()];
+  _table[con->get_name()] = con;
 }

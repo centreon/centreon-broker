@@ -31,5 +31,6 @@ void contact_by_node_builder::add_contact(unsigned int id,
 
 void contact_by_node_builder::connect_contact_node_id(unsigned int contact_id,
                                                       node_id id) {
-  _table.insert(id, _cache[contact_id]);
+  if (_cache.contains(contact_id))
+    _table.insert(id, _cache[contact_id]);
 }

@@ -483,7 +483,7 @@ void stream::_update_objects_from_db() {
     data_logger::log_container("_nodes", _nodes);
     data_logger::log_container("_acks", _acks);
     data_logger::log_container("_commands", _commands);
-    data_logger::log_container("_contact_by_name", _contacts);
+    data_logger::log_container("_contact_by_name", _contact_by_name);
     data_logger::log_container("_contacts", _contacts);
     data_logger::log_container("_dependency_by_child_id", _dependency_by_child_id);
     data_logger::log_container("_dependency_by_parent_id", _dependency_by_parent_id);
