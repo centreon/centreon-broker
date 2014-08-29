@@ -70,8 +70,11 @@ namespace logging {
                           std::vector<T> const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename std::vector<T>::const_iterator it(obj.begin()), end(obj.end());
-         it != end; ++it)
-      tmp << *it;
+         it != end; ++it) {
+      tmp << "{"
+          << *it
+          << "}\n";
+    }
     return (tmp);
   }
 
@@ -80,8 +83,11 @@ namespace logging {
                           std::list<T> const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename std::list<T>::const_iterator it(obj.begin()), end(obj.end());
-         it != end; ++it)
-      tmp << *it;
+         it != end; ++it) {
+      tmp << "{"
+          << *it
+          << "}\n";
+    }
     return (tmp);
   }
 
@@ -90,8 +96,11 @@ namespace logging {
                           std::set<T> const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename std::set<T>::const_iterator it(obj.begin()), end(obj.end());
-         it != end; ++it)
-      tmp << *it;
+         it != end; ++it) {
+      tmp << "{"
+          << *it
+          << "}\n";
+    }
     return (tmp);
   }
 
@@ -100,8 +109,11 @@ namespace logging {
                           std::deque<T> const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename std::deque<T>::const_iterator it(obj.begin()), end(obj.end());
-         it != end; ++it)
-      tmp << *it;
+         it != end; ++it) {
+      tmp << "{"
+          << *it
+          << "}\n";
+    }
     return (tmp);
   }
 
@@ -110,8 +122,11 @@ namespace logging {
                           std::map<T, U> const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename std::map<T, U>::const_iterator it(obj.begin()), end(obj.end());
-         it != end; ++it)
-      tmp << it->second;
+         it != end; ++it) {
+      tmp << "{"
+          << it->second
+          << "}\n";
+    }
     return (tmp);
   }
 
@@ -120,8 +135,11 @@ namespace logging {
                           QHash<T, U> const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename QHash<T, U>::const_iterator it(obj.begin()), end(obj.end());
-         it != end; ++it)
-      tmp << *it;
+         it != end; ++it) {
+      tmp << "{"
+          << *it
+          << "}\n";
+    }
     return (tmp);
   }
 
@@ -130,8 +148,11 @@ namespace logging {
                           QSet<T> const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename QSet<T>::const_iterator it(obj.begin()), end(obj.end());
-         it != end; ++it)
-      tmp << *it;
+         it != end; ++it) {
+      tmp << "{"
+          << *it
+          << "}\n";
+    }
     return (tmp);
   }
 
@@ -140,8 +161,11 @@ namespace logging {
                           QMultiHash<T, U> const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename QMultiHash<T, U>::const_iterator it(obj.begin()), end(obj.end());
-         it != end; ++it)
-      tmp << *it;
+         it != end; ++it) {
+      tmp << "{"
+          << *it
+          << "}\n";
+    }
     return (tmp);
   }
 
@@ -160,9 +184,9 @@ namespace notification {
     template <typename T>
     static void log_container(std::string const& container_name,
                               T const& container) {
-      logging::info(logging::low) << "Logging container called " <<
+      logging::debug(logging::low) << "Notification: Logging container called " <<
                                      container_name;
-      logging::info(logging::low) << container;
+      logging::debug(logging::low) << container;
     }
    };
 }

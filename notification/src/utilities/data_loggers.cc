@@ -20,7 +20,7 @@
 #include "com/centreon/broker/notification/utilities/data_loggers.hh"
 #define LOG_MEMBER(klass, getter)\
   << #klass "::" #getter "() : " \
-  << (obj.getter())
+  << (obj.getter()) << "; "
 
 using namespace com::centreon::broker;
 
