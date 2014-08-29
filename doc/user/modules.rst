@@ -295,8 +295,9 @@ Example
 BAM
 ===
 
-Compute Business Activity and Key Performance Indicator levels. This is
-the Centreon Broker module of the Centreon BAM extension.
+Compute Business Activity and Key Performance Indicator levels as well
+as meta-services. This is the improved version (as a Centreon Broker
+module) of the Centreon BAM extension.
 
 ===================== ===
 **Type**              bam
