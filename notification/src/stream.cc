@@ -418,6 +418,8 @@ void stream::_clone_db(std::auto_ptr<QSqlDatabase>& db,
 }
 
 void stream::_update_objects_from_db() {
+  std::vector<int> test;
+  logging::info(logging::low) << test;
   {
     node_loader node;
     composed_node_builder composed;

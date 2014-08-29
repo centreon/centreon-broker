@@ -21,6 +21,13 @@
 #  define CCB_NOTIFICATION_UTILITIES_DATA_LOGGERS_TYPEDEF_HH
 
 #  include <string>
+#  include <vector>
+#  include <list>
+#  include <deque>
+#  include <map>
+#  include <set>
+#  include <QHash>
+#  include <QSet>
 #  include "com/centreon/broker/logging/logging.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
 #  include "com/centreon/broker/notification/objects/command.hh"
@@ -56,6 +63,76 @@ namespace logging {
                           notification::node const&) throw();
   temp_logger& operator<<(temp_logger const& left,
                           notification::acknowledgement const&) throw();
+
+  template <typename T>
+  temp_logger& operator<<(temp_logger const& left,
+                          std::vector<T> const& obj) throw() {
+    logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+    for (typename std::vector<T>::const_iterator it(obj.begin()), end(obj.end());
+         it != end; ++it)
+      tmp << *it;
+    return (tmp);
+  }
+
+  template <typename T>
+  temp_logger& operator<<(temp_logger const& left,
+                          std::list<T> const& obj) throw() {
+    logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+    for (typename std::list<T>::const_iterator it(obj.begin()), end(obj.end());
+         it != end; ++it)
+      tmp << *it;
+    return (tmp);
+  }
+
+  template <typename T>
+  temp_logger& operator<<(temp_logger const& left,
+                          std::set<T> const& obj) throw() {
+    logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+    for (typename std::set<T>::const_iterator it(obj.begin()), end(obj.end());
+         it != end; ++it)
+      tmp << *it;
+    return (tmp);
+  }
+
+  template <typename T>
+  temp_logger& operator<<(temp_logger const& left,
+                          std::deque<T> const& obj) throw() {
+    logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+    for (typename std::deque<T>::const_iterator it(obj.begin()), end(obj.end());
+         it != end; ++it)
+      tmp << *it;
+    return (tmp);
+  }
+
+  template <typename T, typename U>
+  temp_logger& operator<<(temp_logger const& left,
+                          std::map<T, U> const& obj) throw() {
+    logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+    for (typename std::map<T, U>::const_iterator it(obj.begin()), end(obj.end());
+         it != end; ++it)
+      tmp << it->second;
+    return (tmp);
+  }
+
+  template <typename T, typename U>
+  temp_logger& operator<<(temp_logger const& left,
+                          QHash<T, U> const& obj) throw() {
+    logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+    for (typename QHash<T, U>::const_iterator it(obj.begin()), end(obj.end());
+         it != end; ++it)
+      tmp << *it;
+    return (tmp);
+  }
+
+  template <typename T>
+  temp_logger& operator<<(temp_logger const& left,
+                          QSet<T> const& obj) throw() {
+    logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+    for (typename QSet<T>::const_iterator it(obj.begin()), end(obj.end());
+         it != end; ++it)
+      tmp << *it;
+    return (tmp);
+  }
 }
 
 namespace notification {
@@ -66,9 +143,7 @@ namespace notification {
                               T const& container) {
       logging::info(logging::low) << "Logging container called " <<
                                      container_name;
-      for (typename T::const_iterator it(container.begin()), end(container.end());
-           it != end; ++it)
-      logging::info(logging::low) << (*it);
+      logging::info(logging::low) << container;
     }
 
     template <typename T>
@@ -76,9 +151,7 @@ namespace notification {
                                   T const& container) {
         logging::info(logging::low) << "Logging ptr container called " <<
                                      container_name;
-        for (typename T::const_iterator it(container.begin()), end(container.end());
-             it != end; ++it)
-        logging::info(logging::low) << (**it);
+        logging::info(logging::low) << container;
       }
 
       template <typename T>
@@ -86,9 +159,7 @@ namespace notification {
                                      T const& container) {
         logging::info(logging::low) << "Logging pair container called " <<
                                      container_name;
-        for (typename T::const_iterator it(container.begin()), end(container.end());
-             it != end; ++it)
-        logging::info(logging::low) << it->second;
+        logging::info(logging::low) << container;
       }
    };
 }
