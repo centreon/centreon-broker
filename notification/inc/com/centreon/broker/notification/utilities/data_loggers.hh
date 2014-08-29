@@ -28,6 +28,7 @@
 #  include <set>
 #  include <QHash>
 #  include <QSet>
+#  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/broker/logging/logging.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
 #  include "com/centreon/broker/notification/objects/command.hh"
@@ -133,6 +134,24 @@ namespace logging {
       tmp << *it;
     return (tmp);
   }
+
+  template <typename T, typename U>
+  temp_logger& operator<<(temp_logger const& left,
+                          QMultiHash<T, U> const& obj) throw() {
+    logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+    for (typename QMultiHash<T, U>::const_iterator it(obj.begin()), end(obj.end());
+         it != end; ++it)
+      tmp << *it;
+    return (tmp);
+  }
+
+  template <typename T>
+  temp_logger& operator<<(temp_logger const& left,
+                          shared_ptr<T> const& obj) throw() {
+    logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+    tmp << *obj;
+    return (tmp);
+  }
 }
 
 namespace notification {
@@ -145,22 +164,6 @@ namespace notification {
                                      container_name;
       logging::info(logging::low) << container;
     }
-
-    template <typename T>
-    static void log_ptr_container(std::string const& container_name,
-                                  T const& container) {
-        logging::info(logging::low) << "Logging ptr container called " <<
-                                     container_name;
-        logging::info(logging::low) << container;
-      }
-
-      template <typename T>
-      static void log_pair_container(std::string const& container_name,
-                                     T const& container) {
-        logging::info(logging::low) << "Logging pair container called " <<
-                                     container_name;
-        logging::info(logging::low) << container;
-      }
    };
 }
 

@@ -418,15 +418,12 @@ void stream::_clone_db(std::auto_ptr<QSqlDatabase>& db,
 }
 
 void stream::_update_objects_from_db() {
-  std::vector<int> test;
-  logging::info(logging::low) << test;
   {
     node_loader node;
     composed_node_builder composed;
     node_set_builder set_builder(_nodes);
     composed.push_back(set_builder);
     node.load(_centreon_db.get(), &composed);
-    data_logger::log_container("_nodes", _nodes);
   }
   {
     command_loader command;
@@ -480,4 +477,18 @@ void stream::_update_objects_from_db() {
     composed.push_back(by_node_builder);
     ack.load(_centreon_storage_db.get(), &composed);
   }
+
+  // Debug logging for all the data loaded.
+#ifndef NDEBUG
+    data_logger::log_container("_nodes", _nodes);
+    data_logger::log_container("_acks", _acks);
+    data_logger::log_container("_commands", _commands);
+    data_logger::log_container("_contact_by_name", _contacts);
+    data_logger::log_container("_contacts", _contacts);
+    data_logger::log_container("_dependency_by_child_id", _dependency_by_child_id);
+    data_logger::log_container("_dependency_by_parent_id", _dependency_by_parent_id);
+    data_logger::log_container("_downtimes", _downtimes);
+    data_logger::log_container("_escalations", _escalations);
+    data_logger::log_container("_timeperiod_by_name", _timeperiod_by_name);
+#endif //!NDEBUG
 }

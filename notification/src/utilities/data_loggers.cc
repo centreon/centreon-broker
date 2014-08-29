@@ -89,7 +89,7 @@ logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
                                           notification::contact const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
   notification::data_logger::log_container("contact::get_address", obj.get_address());
-  notification::data_logger::log_pair_container("contact::get_customvariables", obj.get_customvariables());
+  notification::data_logger::log_container("contact::get_customvariables", obj.get_customvariables());
   tmp LOG_MEMBER(contact, get_alias)
       LOG_MEMBER(contact, get_can_submit_commands)
       LOG_MEMBER(contact, get_name)
