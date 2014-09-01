@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/notification/objects/qhash_func.hh"
+#include "com/centreon/broker/notification/utilities/qhash_func.hh"
 #include "com/centreon/broker/notification/builders/contact_by_name_builder.hh"
 
 using namespace com::centreon::broker::notification;

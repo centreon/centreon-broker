@@ -19,7 +19,7 @@
 
 #include <QHash>
 #include <QString>
-#include "com/centreon/broker/notification/objects/qhash_func.hh"
+#include "com/centreon/broker/notification/utilities/qhash_func.hh"
 
 uint qHash(std::string const& str) {
   return (qHash(QString::fromStdString(str)));
