@@ -55,6 +55,7 @@
 
 #include "com/centreon/broker/notification/builders/acknowledgement_by_node_id_builder.hh"
 #include "com/centreon/broker/notification/builders/command_by_name_builder.hh"
+#include "com/centreon/broker/notification/builders/contact_by_command_builder.hh"
 #include "com/centreon/broker/notification/builders/contact_by_name_builder.hh"
 #include "com/centreon/broker/notification/builders/contact_by_node_builder.hh"
 #include "com/centreon/broker/notification/builders/dependency_by_node_id_builder.hh"
@@ -435,8 +436,10 @@ void stream::_update_objects_from_db() {
   {
     contact_loader contact;
     composed_contact_builder composed;
+    contact_by_command_builder by_command_builder(_contact_by_command);
     contact_by_name_builder by_name_builder(_contact_by_name);
     contact_by_node_builder by_node_builder(_contacts);
+    composed.push_back(by_command_builder);
     composed.push_back(by_name_builder);
     composed.push_back(by_node_builder);
     contact.load(_centreon_db.get(), &composed);
@@ -483,6 +486,7 @@ void stream::_update_objects_from_db() {
     data_logger::log_container("_nodes", _nodes);
     data_logger::log_container("_acks", _acks);
     data_logger::log_container("_commands", _commands);
+    data_logger::log_container("_contact_by_command", _contact_by_name);
     data_logger::log_container("_contact_by_name", _contact_by_name);
     data_logger::log_container("_contacts", _contacts);
     data_logger::log_container("_dependency_by_child_id", _dependency_by_child_id);

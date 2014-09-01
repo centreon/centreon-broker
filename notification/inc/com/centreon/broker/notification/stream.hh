@@ -88,6 +88,7 @@ namespace        notification {
     QHash<std::string, command::ptr>      _commands;
     QHash<std::string, contact::ptr>      _contact_by_name;
     QMultiHash<node_id, contact::ptr>     _contacts;
+    QMultiHash<std::string, contact::ptr> _contact_by_command;
     QMultiHash<node_id, dependency::ptr>  _dependency_by_child_id;
     QMultiHash<node_id, dependency::ptr>  _dependency_by_parent_id;
     QMultiHash<node_id, downtime::ptr>    _downtimes;
