@@ -40,9 +40,9 @@ namespace       notification {
     virtual void  connect_contact_contactgroup(unsigned int contact_id,
                                                unsigned int contactgroup_id);
     virtual void  connect_contact_hostcommand(unsigned int contact_id,
-                                              unsigned int command_id);
+                                              std::string const& command_name);
     virtual void  connect_contact_servicecommand(unsigned int contact_id,
-                                                 unsigned int service_id);
+                                                 std::string const& command_name);
     virtual void  add_contact_param(unsigned int contact_id,
                                     std::string const& key,
                                     std::string const& value);

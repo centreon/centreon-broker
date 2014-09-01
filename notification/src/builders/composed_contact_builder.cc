@@ -42,21 +42,21 @@ void composed_contact_builder::connect_contact_contactgroup(unsigned int contact
 }
 
 void composed_contact_builder::connect_contact_hostcommand(unsigned int contact_id,
-                                                           unsigned int command_id) {
+                                                           std::string const& command_name) {
   for (composed_builder<contact_builder>::iterator it(begin()),
        end_it(end());
        it != end_it;
        ++it)
-    (*it)->connect_contact_hostcommand(contact_id, command_id);
+    (*it)->connect_contact_hostcommand(contact_id, command_name);
 }
 
 void composed_contact_builder::connect_contact_servicecommand(unsigned int contact_id,
-                                                              unsigned int service_id) {
+                                                              std::string const& command_name) {
   for (composed_builder<contact_builder>::iterator it(begin()),
        end_it(end());
        it != end_it;
        ++it)
-    (*it)->connect_contact_servicecommand(contact_id, service_id);
+    (*it)->connect_contact_servicecommand(contact_id, command_name);
 }
 
 void composed_contact_builder::add_contact_param(unsigned int contact_id,

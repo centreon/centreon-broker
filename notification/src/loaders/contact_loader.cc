@@ -98,24 +98,26 @@ void contact_loader::_load_relations(QSqlQuery& query,
                  "contactgroup_cg_id",
                  "contactgroup_contact_relation",
                  &contact_builder::connect_contact_contactgroup);
-  _load_relation(query,
-                 output,
-                 "contact_contact_id",
-                 "command_command_id",
-                 "contact_hostcommands_relation",
-                 &contact_builder::connect_contact_hostcommand);
-  _load_relation(query,
-                 output,
-                 "contact_contact_id",
-                 "command_command_id",
-                 "contact_servicecommands_relation",
-                 &contact_builder::connect_contact_servicecommand);
-  _load_relation(query,
-                 output,
-                 "contact_contact_id",
-                 "command_command_id",
-                 "contact_servicecommands_relation",
-                 &contact_builder::connect_contact_servicecommand);
+
+
+  if (!query.exec("select a.contact_contact_id, b.command_name from contact_hostcommands_relation as a LEFT JOIN command as b ON a.command_command_id = b.command_id;"))
+    throw (exceptions::msg()
+      << "Notification: cannot select contact_hostcommands_relation in loader: "
+      << query.lastError().text());
+
+  while (query.next())
+    output.connect_contact_hostcommand(query.value(0).toUInt(),
+                                       query.value(1).toString().toStdString());
+
+  if (!query.exec("select a.contact_contact_id, b.command_name from contact_servicecommands_relation as a LEFT JOIN command as b ON a.command_command_id = b.command_id;"))
+    throw (exceptions::msg()
+      << "Notification: cannot select contact_servicecommands_relation in loader: "
+      << query.lastError().text());
+
+  while (query.next())
+    output.connect_contact_servicecommand(query.value(0).toUInt(),
+                                          query.value(1).toString().toStdString());
+
 
   if (!query.exec("SELECT contact_id, host_host_id FROM contact_host_relation"))
     throw (exceptions::msg()
