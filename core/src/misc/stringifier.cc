@@ -48,7 +48,11 @@ stringifier::stringifier(char const* buffer) throw ()
  *
  *  @param[in] right  Object to copy.
  */
-stringifier::stringifier(stringifier const& right) {
+stringifier::stringifier(stringifier const& right)
+  : _buffer(_static_buffer),
+    _current(0),
+    _precision(-1),
+    _size(_static_buffer_size) {
   _internal_copy(right);
 }
 

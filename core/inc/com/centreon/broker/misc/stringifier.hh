@@ -32,7 +32,7 @@ namespace                     misc {
    *  @brief Provide method to converting data to string.
    *
    *  Stringifier is a simple way to convert different data type to
-   *  C-String (null pointer terminate).
+   *  C-String (null pointer terminated).
    */
   class                       stringifier {
    public:
