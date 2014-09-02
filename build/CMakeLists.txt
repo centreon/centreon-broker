@@ -576,6 +576,8 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/sql_instance_update_outdated_1.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_instance_update_outdated_2.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/sql_instance_update_outdated_2.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_cleanup.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/sql_cleanup.xml")
 
   # Test library.
   include_directories("${PROJECT_SOURCE_DIR}")
@@ -670,6 +672,18 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/filtering_to_sql.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Instance update when outdated.
+  set(TEST_NAME "running_sql_instance_update_outdated")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/sql_instance_update_outdated.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # SQL cleanup.
+  set(TEST_NAME "running_sql_cleanup")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/sql_cleanup.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 
   # Protocols.
   set(TEST_NAME "running_compression_to_sql")
@@ -762,13 +776,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_stats_events")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/stats_events.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # Instance update when outdated.
-  set(TEST_NAME "running_sql_instance_update_outdated")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/sql_instance_update_outdated.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
   add_test("${TEST_NAME}" "${TEST_NAME}")
 

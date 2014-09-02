@@ -117,7 +117,7 @@ void cleanup::run() {
         {
           QSqlQuery q(_db);
           if (!q.exec(
-                   "DELETE FROM hosts INNER JOIN instances"
+                   "DELETE hosts FROM hosts INNER JOIN instances"
                    " ON hosts.instance_id=instances.instance_id"
                    " WHERE instances.deleted=1"))
             throw (exceptions::msg() << "could not delete outdated "
@@ -127,7 +127,7 @@ void cleanup::run() {
         {
           QSqlQuery q(_db);
           if (!q.exec(
-                   "DELETE FROM modules INNER JOIN instances"
+                   "DELETE modules FROM modules INNER JOIN instances"
                    " ON modules.instance_id=instances.instance_id"
                    " WHERE instances.deleted=1"))
             throw (exceptions::msg() << "could not delete outdated "
