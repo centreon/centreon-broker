@@ -210,6 +210,9 @@ read_timeout            When using transactions, maximum time between
 check_replication       Useful when using DB replication. Enable or
                         disable replication check when connecting.
                         Default is enabled.
+cleanup_check_interval  How often the cleanup thread should run. This
+                        thread cleans multiple tables of the database
+                        containing outdated data.
 ======================= ===============================================
 
 Example
