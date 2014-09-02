@@ -16,9 +16,8 @@
   <input>
     <name>InputInstanceUpdateTest</name>
     <type>tcp</type>
-    <port>5678</port>
+    <port>5689</port>
     <protocol>bbdo</protocol>
-    <compression>yes</compression>
   </input>
   <output>
     <name>OutputInstanceUpdatetTest</name>
@@ -28,7 +27,7 @@
     <db_port>@DB_PORT@</db_port>
     <db_user>@DB_USER@</db_user>
     <db_password>@DB_PASSWORD@</db_password>
-    <db_name>sql_instance_update_outdated</db_name>
+    <db_name>broker_sql_instance_update_outdated</db_name>
     <queries_per_transaction>0</queries_per_transaction>
   </output>
 </centreonbroker>

@@ -3,8 +3,9 @@
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
   <instance>42</instance>
   <instance_name>MyBroker</instance_name>
+  <!--
   <stats>
-    <fifo>/tmp/cbd.fifo</fifo>
+    <fifo>/tmp/cbmod.fifo</fifo>
   </stats>
   <logger>
     <type>file</type>
@@ -15,15 +16,13 @@
     <info>1</info>
     <level>3</level>
   </logger>
+  -->
   <output>
     <name>OutputToInstanceUpdateTest</name>
     <type>tcp</type>
     <host>localhost</host>
-    <port>5678</port>
+    <port>5689</port>
     <protocol>bbdo</protocol>
-    <compression>yes</compression>
-    <compression_level>8</compression_level>
-    <compression_buffer>8000</compression_buffer>
     <read_timeout>5</read_timeout>
   </output>
 </centreonbroker>

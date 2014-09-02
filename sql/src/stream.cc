@@ -2040,35 +2040,36 @@ void stream::_update_hosts_and_services_of_instance(
                unsigned int id,
                bool responsive) {
   std::ostringstream ss;
-
   if (responsive) {
     ss << "UPDATE " << mapped_type<neb::instance>::table
-       << " SET outdated = FALSE where instance_id = " << id;
+       << "  SET outdated=FALSE"
+       << "  WHERE instance_id=" << id;
     _execute(ss.str().c_str());
     ss.str("");
     ss.clear();
-    ss << "UPDATE " << mapped_type<neb::service>::table << " AS a "
-       << "INNER JOIN " << mapped_type<neb::host>::table << " AS b "
-       << "ON a.host_id=b.host_id "
-       << "SET b.last_hard_state = b.real_last_hard_state, "
-       << "a.last_hard_state = a.real_last_hard_state "
-       << "WHERE b.instance_id = " << id;
+    ss << "UPDATE " << mapped_type<neb::host>::table << " AS h"
+       << "  LEFT JOIN " << mapped_type<neb::service>::table << " AS s"
+       << "  ON h.host_id=s.host_id"
+       << "  SET h.state=h.real_state,"
+       << "      s.state=s.real_state"
+       << "  WHERE h.instance_id = " << id;
     _execute(ss.str().c_str());
   }
   else {
     ss << "UPDATE " << mapped_type<neb::instance>::table
-       << " SET outdated = TRUE where instance_id = " << id;
+       << "  SET outdated=TRUE"
+       << "  WHERE instance_id=" << id;
     _execute(ss.str().c_str());
     ss.str("");
     ss.clear();
-    ss << "UPDATE " << mapped_type<neb::service>::table << " AS a "
-       << "INNER JOIN " << mapped_type<neb::host>::table << " AS b "
-       << "ON a.host_id=b.host_id "
-       << "SET b.real_last_hard_state=b.last_hard_state, "
-       << "a.real_last_hard_state=a.last_hard_state, "
-       << "b.last_hard_state = " << HOST_UNREACHABLE
-       << ", a.last_hard_state = " << STATE_UNKNOWN
-       << " WHERE b.instance_id = " << id;
+    ss << "UPDATE " << mapped_type<neb::host>::table << " AS h"
+       << "  LEFT JOIN " << mapped_type<neb::service>::table << " AS s"
+       << "  ON h.host_id=s.host_id"
+       << "  SET h.real_state=h.state,"
+       << "      s.real_state=s.state,"
+       << "      h.state=" << HOST_UNREACHABLE << ","
+       << "      s.state=" << STATE_UNKNOWN
+       << "  WHERE h.instance_id=" << id;
     _execute(ss.str().c_str());
   }
 }
@@ -2109,7 +2110,7 @@ stream::stream(
     _queries_per_transaction((qpt >= 2) ? qpt : 1),
     _transaction_queries(0),
     _with_state_events(wse),
-    _instance_timeout(15),
+    _instance_timeout(30),
     _oldest_timestamp(std::numeric_limits<time_t>::max()) {
   // Get the driver ID.
   QString t;
@@ -2238,6 +2239,7 @@ stream::stream(
 stream::stream(stream const& s) : io::stream(s) {
   // Output processing.
   _process_out = s._process_out;
+  _instance_timeout = s._instance_timeout;
 
   // Queries per transaction.
   _queries_per_transaction = s._queries_per_transaction;
