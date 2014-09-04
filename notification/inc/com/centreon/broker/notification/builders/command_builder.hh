@@ -26,11 +26,24 @@
 CCB_BEGIN()
 
 namespace       notification {
-
+  /**
+   *  @class command_builder command_builder.hh "com/centreon/broker/notification/builders/command_builder.hh"
+   *  @brief Command builder interface.
+   *
+   *  This interface define what methods command builders need to implement.
+   */
   class           command_builder {
   public:
+    /**
+     *  Virtual destructor.
+     */
     virtual       ~command_builder() {}
 
+    /**
+     *
+     * @param id
+     * @param com
+     */
     virtual void  add_command(unsigned int id,
                               command::ptr com) {}
   };

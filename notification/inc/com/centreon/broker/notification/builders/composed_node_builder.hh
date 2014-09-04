@@ -29,11 +29,15 @@
 CCB_BEGIN()
 
 namespace       notification {
-
+  /**
+   *  @class composed_node_builder composed_node_builder.hh "com/centreon/broker/notification/builders/composed_node_builder.hh"
+   *  @brief Composed node builder.
+   *
+   *  This class forward its method call to several other builders.
+   */
   class           composed_node_builder : public composed_builder<node_builder> {
   public:
                   composed_node_builder();
-    virtual       ~composed_node_builder() {}
 
     virtual void  add_node(node::ptr node);
   };

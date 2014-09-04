@@ -28,10 +28,15 @@
 CCB_BEGIN()
 
 namespace        notification {
-
+  /**
+   *  @class node node.hh "com/centreon/broker/notification/objects/node.hh"
+   *  @brief A node object.
+   *
+   *  The object containing a node of the notification module.
+   */
   class     node {
   public:
-    DECLARE_SHARED_PTR(node);
+            DECLARE_SHARED_PTR(node);
 
             node();
             node(node const& obj);

@@ -29,7 +29,7 @@ CCB_BEGIN()
 namespace notification  {
 
 /**
- *  @class timezone_manager timezone_manager.hh "com/centreon/engine/timezone_manager.hh"
+ *  @class timezone_manager timezone_manager.hh "com/centreon/broker/notification/objects/timezone_manager.hh"
  *  @brief Manage timezone changes.
  *
  *  This class handle timezone change. This can either be setting a new

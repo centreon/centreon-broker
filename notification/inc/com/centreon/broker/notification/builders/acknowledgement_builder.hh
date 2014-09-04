@@ -27,11 +27,25 @@
 CCB_BEGIN()
 
 namespace       notification {
-
+  /**
+   *  @class acknowledgement_builder acknowledgement_builder.hh "com/centreon/broker/notification/builders/acknowledgement_builder.hh"
+   *  @brief Acknowledgement builder interface.
+   *
+   *  This interface define what methods acknowledgement builders need to implement.
+   */
   class         acknowledgement_builder {
   public:
+    /**
+     *  Virtual destructor.
+     */
     virtual     ~acknowledgement_builder() {}
 
+    /**
+     *  Add an acknowledgement to the builder.
+     *
+     *  @param[in] id The id of the node being acknowledged.
+     *  @param[in] ack The acknowledgement.
+     */
     virtual void add_ack(node_id id,
                          acknowledgement::ptr ack) {}
   };

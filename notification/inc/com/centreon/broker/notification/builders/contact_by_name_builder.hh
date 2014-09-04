@@ -29,8 +29,13 @@
 
 CCB_BEGIN()
 
-namespace       notification {
-
+namespace         notification {
+  /**
+   *  @class contact_by_name_builder contact_by_name_builder.hh "com/centreon/broker/notification/builders/contact_by_name_builder.hh"
+   *  @brief Contact builder by name.
+   *
+   *  This class build a map of contacts by their names.
+   */
   class           contact_by_name_builder : public contact_builder {
   public:
                   contact_by_name_builder(QHash<std::string, contact::ptr>& table);

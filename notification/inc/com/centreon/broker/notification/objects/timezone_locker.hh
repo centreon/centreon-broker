@@ -27,7 +27,7 @@ CCB_BEGIN()
 namespace notification {
 
 /**
- *  @class timezone_locker timezone_locker.hh "com/centreon/engine/timezone_locker.hh"
+ *  @class timezone_locker timezone_locker.hh "com/centreon/broker/notification/objects/timezone_locker.hh"
  *  @brief Handle timezone changes, even in case of exception.
  *
  *  This class works on a timezone_manager to push a new timezone at

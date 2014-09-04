@@ -25,14 +25,22 @@
 
 CCB_BEGIN()
 
-namespace       notification {
-
-  class         downtime_builder {
+namespace         notification {
+  /**
+   *  @class downtime_builder downtime_builder.hh "com/centreon/broker/notification/builders/downtime_builder.hh"
+   *  @brief Downtime builder interface.
+   *
+   *  This interface define what methods downtime builders need to implement.
+   */
+  class           downtime_builder {
   public:
-    virtual ~downtime_builder() {}
+    /**
+     *  Virtual destructor.
+     */
+    virtual       ~downtime_builder() {}
 
-    virtual void add_downtime(unsigned int downtime_id,
-                              downtime::ptr downtime) {}
+    virtual void  add_downtime(unsigned int downtime_id,
+                               downtime::ptr downtime) {}
   };
 
 }

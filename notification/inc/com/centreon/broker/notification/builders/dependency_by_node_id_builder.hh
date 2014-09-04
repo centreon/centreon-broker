@@ -29,13 +29,17 @@
 CCB_BEGIN()
 
 namespace       notification {
-
+  /**
+   *  @class dependency_by_node_id_builder dependency_by_node_id_builder.hh "com/centreon/broker/notification/builders/dependency_by_node_id_builder.hh"
+   *  @brief Dependency builder by node id.
+   *
+   *  This class build a map of dependencies by their node id.
+   */
   class           dependency_by_node_id_builder : public dependency_builder {
   public:
                   dependency_by_node_id_builder(
                         QMultiHash<node_id, dependency::ptr>& by_child_id,
                         QMultiHash<node_id, dependency::ptr>& by_parent_id);
-    virtual       ~dependency_by_node_id_builder() {}
 
     virtual void  add_dependency(unsigned int id,
                                  dependency::ptr d);

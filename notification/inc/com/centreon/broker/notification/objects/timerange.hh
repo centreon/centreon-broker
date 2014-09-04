@@ -28,6 +28,12 @@
 CCB_BEGIN()
 
 namespace         notification {
+  /**
+   *  @class timerange timerange.hh "com/centreon/broker/notification/objects/timerange.hh"
+   *  @brief Timerange object.
+   *
+   *  The object containing a timerange.
+   */
   class           timerange {
   public:
                   timerange(
@@ -52,8 +58,9 @@ namespace         notification {
                             time_t& range_start,
                             time_t& range_end) const;
 
-    static bool   build_timeranges_from_string(std::string const& line,
-                                               std::list<timerange>& timeranges);
+    static bool   build_timeranges_from_string(
+                    std::string const& line,
+                    std::list<timerange>& timeranges);
 
   private:
     unsigned long _end;

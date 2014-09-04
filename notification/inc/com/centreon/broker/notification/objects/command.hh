@@ -29,11 +29,16 @@
 
 CCB_BEGIN()
 
-namespace       notification {
-
+namespace               notification {
+  /**
+   *  @class command command.hh "com/centreon/broker/notification/objects/command.hh"
+   *  @brief Command object.
+   *
+   *  The object containing a command.
+   */
   class                 command {
   public:
-    DECLARE_SHARED_PTR(command);
+                        DECLARE_SHARED_PTR(command);
 
                         command(std::string const& base_command);
                         command(command const& obj);

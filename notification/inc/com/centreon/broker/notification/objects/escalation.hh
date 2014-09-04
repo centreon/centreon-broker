@@ -27,11 +27,16 @@
 
 CCB_BEGIN()
 
-namespace       notification {
-
+namespace             notification {
+  /**
+   *  @class escalation escalation.hh "com/centreon/broker/notification/objects/escalation.hh"
+   *  @brief Escalation object.
+   *
+   *  The object containing an escalation.
+   */
   class               escalation {
   public:
-    DECLARE_SHARED_PTR(escalation);
+                      DECLARE_SHARED_PTR(escalation);
 
     enum              type {
       unknown = 0,
@@ -65,7 +70,8 @@ namespace       notification {
     void              set_escalation_options(action_on val) throw();
     void              set_escalation_option(action_on val) throw();
     bool              is_escalation_option_set(action_on val) const throw();
-    std::string const& get_escalation_period() const throw();
+    std::string const&
+                      get_escalation_period() const throw();
     void              set_escalation_period(const std::string& val);
     unsigned int      get_first_notification() const throw();
     void              set_first_notification(unsigned int val) throw();
@@ -86,13 +92,15 @@ namespace       notification {
     unsigned int      _last_notification;
     unsigned int      _notification_interval;
 
-    struct name_to_action {
+    struct            name_to_action {
       const char* name;
       action_on action;
     };
 
-    static const name_to_action _service_actions[];
-    static const name_to_action _host_actions[];
+    static const name_to_action
+                      _service_actions[];
+    static const name_to_action
+                      _host_actions[];
   };
 
 }

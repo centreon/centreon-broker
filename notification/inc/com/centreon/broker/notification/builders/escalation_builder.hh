@@ -26,10 +26,18 @@
 
 CCB_BEGIN()
 
-namespace       notification {
-
+namespace         notification {
+  /**
+   *  @class escalation_builder escalation_builder.hh "com/centreon/broker/notification/builders/escalation_builder.hh"
+   *  @brief Escalation builder interface.
+   *
+   *  This interface define what methods escalation builders need to implement.
+   */
   class           escalation_builder {
   public:
+    /**
+     *  Virtual destructor.
+     */
     virtual       ~escalation_builder() {}
 
     virtual void  add_escalation(unsigned int id,

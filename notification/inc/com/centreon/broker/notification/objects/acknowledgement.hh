@@ -25,13 +25,18 @@
 
 CCB_BEGIN()
 
-namespace       notification {
-
-  class acknowledgement {
+namespace        notification {
+  /**
+   *  @class acknowledgement acknowledgement.hh "com/centreon/broker/notification/objects/acknowledgement.hh"
+   *  @brief Acknowledgement object.
+   *
+   *  The object containing the acknowledgement information.
+   */
+  class           acknowledgement {
   public:
-    DECLARE_SHARED_PTR(acknowledgement);
+                  DECLARE_SHARED_PTR(acknowledgement);
 
-    enum type {
+    enum          type {
       unknown = 0,
       host = 1,
       service = 2

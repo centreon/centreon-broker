@@ -21,6 +21,12 @@
 #include <QString>
 #include "com/centreon/broker/notification/utilities/qhash_func.hh"
 
+/**
+ *  QHash function for std::string.
+ *
+ *  @param str The std::string to hash.
+ *  @return The hashed value for str.
+ */
 uint qHash(std::string const& str) {
   return (qHash(QString::fromStdString(str)));
 }

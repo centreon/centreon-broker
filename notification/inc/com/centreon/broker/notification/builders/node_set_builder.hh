@@ -28,7 +28,12 @@
 CCB_BEGIN()
 
 namespace           notification {
-
+  /**
+   *  @class node_set_builder node_set_builder.hh "com/centreon/broker/notification/builders/node_set_builder.hh"
+   *  @brief Build the set of node id.
+   *
+   *  This class build the set of all the node id of the db.
+   */
   class             node_set_builder : public node_builder{
   public:
                     node_set_builder(QSet<node_id>& set);

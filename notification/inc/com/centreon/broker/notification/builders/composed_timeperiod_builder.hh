@@ -29,7 +29,12 @@
 CCB_BEGIN()
 
 namespace       notification {
-
+  /**
+   *  @class composed_timeperiod_builder composed_timeperiod_builder.hh "com/centreon/broker/notification/builders/composed_timeperiod_builder.hh"
+   *  @brief Composed timeperiod builder.
+   *
+   *  This class forward its method call to several other builders.
+   */
   class           composed_timeperiod_builder : public composed_builder<timeperiod_builder> {
   public:
                   composed_timeperiod_builder();

@@ -28,13 +28,17 @@
 
 CCB_BEGIN()
 
-namespace       notification {
-
+namespace         notification {
+  /**
+   *  @class escalation_by_node_id_builder escalation_by_node_id_builder.hh "com/centreon/broker/notification/builders/escalation_by_node_id_builder.hh"
+   *  @brief Escalation builder by node id.
+   *
+   *  This class build a map of escalations by their node id.
+   */
   class           escalation_by_node_id_builder : public escalation_builder {
   public:
                   escalation_by_node_id_builder(
                       QMultiHash<node_id, escalation::ptr>& table);
-    virtual       ~escalation_by_node_id_builder() {}
 
     virtual void  add_escalation(unsigned int id,
                                  escalation::ptr esc);

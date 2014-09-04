@@ -29,7 +29,12 @@
 CCB_BEGIN()
 
 namespace       notification {
-
+  /**
+   *  @class acknowledgement_loader acknowledgement_loader.hh "com/centreon/broker/notification/loaders/acknowledgement_loader.hh"
+   *  @brief Loader for acknowledgement objects.
+   *
+   *  This loader loads the acknowledgements from the database.
+   */
   class         acknowledgement_loader {
   public:
                 acknowledgement_loader();

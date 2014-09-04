@@ -26,9 +26,17 @@
 CCB_BEGIN()
 
 namespace         notification {
-
+  /**
+   *  @class timeperiod_builder timeperiod_builder.hh "com/centreon/broker/notification/builders/timeperiod_builder.hh"
+   *  @brief Timeperiod builder interface.
+   *
+   *  This interface define what methods timeperiod builders need to implement.
+   */
   class           timeperiod_builder {
   public:
+    /**
+     *  Virtual destructor.
+     */
     virtual       ~timeperiod_builder() {}
 
     virtual void  add_timeperiod(unsigned int id,

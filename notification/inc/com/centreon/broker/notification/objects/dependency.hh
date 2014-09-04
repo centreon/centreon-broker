@@ -28,19 +28,24 @@
 
 CCB_BEGIN()
 
-namespace       notification {
-
-  class                     dependency {
+namespace                 notification {
+  /**
+   *  @class dependency dependency.hh "com/centreon/broker/notification/objects/dependency.hh"
+   *  @brief Dependency object.
+   *
+   *  The object containing a dependency.
+   */
+  class                   dependency {
   public:
-    DECLARE_SHARED_PTR(dependency);
+                          DECLARE_SHARED_PTR(dependency);
 
-    enum        type {
+    enum                  type {
       unknown = 0,
       host,
       service
     };
 
-    enum        action_on {
+    enum                  action_on {
       none = 0,
       host_up = (1 << 0),
       host_down = (1 << 1),
@@ -53,7 +58,7 @@ namespace       notification {
       service_pending = (1 << 8)
     };
 
-    enum        dependency_kind {
+    enum                  dependency_kind {
       unknown_dependency = 0,
       notification_dependency,
       execution_dependency
@@ -75,35 +80,44 @@ namespace       notification {
     action_on             get_execution_failure_options() const throw();
     void                  set_execution_failure_options(action_on val) throw();
     void                  set_execution_failure_option(action_on val) throw();
-    bool                  is_execution_failure_option_set(action_on val) throw();
+    bool                  is_execution_failure_option_set(
+                            action_on val) throw();
     bool                  get_inherits_parent() const throw();
     void                  set_inherits_parent(bool val) throw();
     action_on             get_notification_failure_options() const throw();
-    void                  set_notification_failure_options(action_on val) throw();
-    void                  set_notification_failure_option(action_on val) throw();
-    bool                  is_notification_failure_option_set(action_on val) const throw();
+    void                  set_notification_failure_options(
+                            action_on val) throw();
+    void                  set_notification_failure_option(
+                            action_on val) throw();
+    bool                  is_notification_failure_option_set(
+                            action_on val) const throw();
 
-    void                  parse_notification_failure_options(std::string const& line);
-    void                  parse_execution_failure_options(std::string const& line);
+    void                  parse_notification_failure_options(
+                            std::string const& line);
+    void                  parse_execution_failure_options(
+                            std::string const& line);
 
   private:
-    type                   _type;
-    std::string            _dependency_period;
-    dependency_kind        _dependency_type;
-    action_on              _execution_failure_options;
-    bool                   _inherits_parent;
-    action_on              _notification_failure_options;
+    type                  _type;
+    std::string           _dependency_period;
+    dependency_kind       _dependency_type;
+    action_on             _execution_failure_options;
+    bool                  _inherits_parent;
+    action_on             _notification_failure_options;
 
-    struct name_to_action {
+    struct                name_to_action {
       const char* name;
       action_on action;
     };
 
-    static const name_to_action _service_actions[];
-    static const name_to_action _host_actions[];
+    static const name_to_action
+                          _service_actions[];
+    static const name_to_action
+                          _host_actions[];
 
-    void _parse_failure_options(std::string const& line,
-                                void (dependency::*func_to_call)(action_on));
+    void _parse_failure_options(
+            std::string const& line,
+            void (dependency::*func_to_call)(action_on));
   };
 
 }

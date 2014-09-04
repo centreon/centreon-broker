@@ -30,7 +30,12 @@
 CCB_BEGIN()
 
 namespace       notification {
-
+  /**
+   *  @class escalation_loader escalation_loader.hh "com/centreon/broker/notification/loaders/escalation_loader.hh"
+   *  @brief Loader for escalation objects.
+   *
+   *  This loader loads the escalations from the database.
+   */
   class         escalation_loader {
   public:
     escalation_loader();

@@ -29,7 +29,12 @@
 CCB_BEGIN()
 
 namespace       notification {
-
+  /**
+   *  @class contact_loader contact_loader.hh "com/centreon/broker/notification/loaders/contact_loader.hh"
+   *  @brief Loader for contact objects.
+   *
+   *  This loader loads the contacts from the database.
+   */
   class  contact_loader {
   public:
          contact_loader();

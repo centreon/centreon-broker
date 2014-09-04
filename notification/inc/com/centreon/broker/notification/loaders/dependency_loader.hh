@@ -28,7 +28,12 @@
 CCB_BEGIN()
 
 namespace       notification {
-
+  /**
+   *  @class dependency_loader dependency_loader.hh "com/centreon/broker/notification/loaders/dependency_loader.hh"
+   *  @brief Loader for dependency objects.
+   *
+   *  This loader loads the dependencies from the database.
+   */
   class   dependency_loader {
   public:
           dependency_loader();

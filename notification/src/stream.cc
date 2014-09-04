@@ -303,6 +303,19 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   return (retval);
 }
 
+/**
+ *  Open a database connexion.
+ *
+ *  @param[out] db                The pointer to the new database connection.
+ *  @param[in] t                  The type of the database.
+ *  @param[in] host               The host of the database.
+ *  @param[in] port               The port of the database.
+ *  @param[in] user               The user to connect with the database.
+ *  @param[in] password           The password to use.
+ *  @param[in] db_name            The name of the db to connect with.
+ *  @param[in] id                 An unique id identifying the connection.
+ *  @param[in] check_replication  True if we need to check the replication.
+ */
 void stream::_open_db(std::auto_ptr<QSqlDatabase>& db,
                       QString const& t,
                       QString const& host,
@@ -328,8 +341,9 @@ void stream::_open_db(std::auto_ptr<QSqlDatabase>& db,
     {
       QMutexLocker lock(&global_lock);
       if (!db->open())
-        throw (exceptions::msg() << "NOTIFICATION: could not open SQL database: "
-               << db->lastError().text());
+        throw (exceptions::msg()
+          << "NOTIFICATION: could not open SQL database: "
+          << db->lastError().text());
     }
 
     // Check that replication is OK.
@@ -383,6 +397,13 @@ void stream::_open_db(std::auto_ptr<QSqlDatabase>& db,
   }
 }
 
+/**
+ *  Clone a database connection.
+ *
+ *  @param[out] db          A pointer to the new db connection.
+ *  @param[in] db_to_clone  A pointer to the db connection to clone.
+ *  @param[in] id           An unique id identifiying the new connection.
+ */
 void stream::_clone_db(std::auto_ptr<QSqlDatabase>& db,
                        std::auto_ptr<QSqlDatabase> const& db_to_clone,
                        QString const& id) {
@@ -394,8 +415,9 @@ void stream::_clone_db(std::auto_ptr<QSqlDatabase>& db,
       QMutexLocker lock(&global_lock);
       // Open database.
       if (!db->open())
-        throw (exceptions::msg() << "NOTIFICATION: could not open SQL database: "
-               << db->lastError().text());
+        throw (exceptions::msg()
+          << "NOTIFICATION: could not open SQL database: "
+          << db->lastError().text());
     }
 
     // First transaction.
@@ -418,8 +440,26 @@ void stream::_clone_db(std::auto_ptr<QSqlDatabase>& db,
   }
 }
 
+/**
+ *  Get the objects from the db.
+ */
 void stream::_update_objects_from_db() {
+  // Remove old objects.
+  _nodes.clear();
+  _acks.clear();
+  _commands.clear();
+  _contact_by_name.clear();
+  _contacts.clear();
+  _contact_by_command.clear();
+  _dependency_by_child_id.clear();
+  _dependency_by_parent_id.clear();
+  _downtimes.clear();
+  _escalations.clear();
+  _timeperiod_by_name.clear();
+
+  // Get new objects
   {
+    // Get nodes.
     node_loader node;
     composed_node_builder composed;
     node_set_builder set_builder(_nodes);
@@ -427,6 +467,7 @@ void stream::_update_objects_from_db() {
     node.load(_centreon_db.get(), &composed);
   }
   {
+    // Get commands.
     command_loader command;
     composed_command_builder composed;
     command_by_name_builder by_name_builder(_commands);
@@ -434,6 +475,7 @@ void stream::_update_objects_from_db() {
     command.load(_centreon_db.get(), &composed);
   }
   {
+    // Get contacts.
     contact_loader contact;
     composed_contact_builder composed;
     contact_by_command_builder by_command_builder(_contact_by_command);
@@ -445,6 +487,7 @@ void stream::_update_objects_from_db() {
     contact.load(_centreon_db.get(), &composed);
   }
   {
+    // Get dependencies.
     dependency_loader dependency;
     composed_dependency_builder composed;
     dependency_by_node_id_builder by_node_builder(_dependency_by_child_id,
@@ -453,6 +496,7 @@ void stream::_update_objects_from_db() {
     dependency.load(_centreon_db.get(), &composed);
   }
   {
+    // Get escalations.
     escalation_loader escalation;
     composed_escalation_builder composed;
     escalation_by_node_id_builder by_node_builder(_escalations);
@@ -460,6 +504,7 @@ void stream::_update_objects_from_db() {
     escalation.load(_centreon_db.get(), &composed);
   }
   {
+    // Get timeperiods.
     timeperiod_loader timeperiod;
     composed_timeperiod_builder composed;
     timeperiod_by_name_builder by_name_builder(_timeperiod_by_name);
@@ -467,6 +512,7 @@ void stream::_update_objects_from_db() {
     timeperiod.load(_centreon_db.get(), &composed);
   }
   {
+    // Get downtimes.
     downtime_loader downtime;
     composed_downtime_builder composed;
     downtime_by_node_id_builder by_node_builder(_downtimes);
@@ -474,6 +520,7 @@ void stream::_update_objects_from_db() {
     downtime.load(_centreon_storage_db.get(), &composed);
   }
   {
+    // Get acknowledgements.
     acknowledgement_loader ack;
     composed_acknowledgement_builder composed;
     acknowledgement_by_node_id_builder by_node_builder(_acks);
@@ -489,8 +536,10 @@ void stream::_update_objects_from_db() {
     data_logger::log_container("_contact_by_command", _contact_by_name);
     data_logger::log_container("_contact_by_name", _contact_by_name);
     data_logger::log_container("_contacts", _contacts);
-    data_logger::log_container("_dependency_by_child_id", _dependency_by_child_id);
-    data_logger::log_container("_dependency_by_parent_id", _dependency_by_parent_id);
+    data_logger::log_container("_dependency_by_child_id",
+                               _dependency_by_child_id);
+    data_logger::log_container("_dependency_by_parent_id",
+                               _dependency_by_parent_id);
     data_logger::log_container("_downtimes", _downtimes);
     data_logger::log_container("_escalations", _escalations);
     data_logger::log_container("_timeperiod_by_name", _timeperiod_by_name);

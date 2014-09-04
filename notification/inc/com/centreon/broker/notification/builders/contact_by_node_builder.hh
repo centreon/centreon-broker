@@ -31,11 +31,15 @@
 CCB_BEGIN()
 
 namespace       notification {
-
+  /**
+   *  @class contact_by_node_builder contact_by_node_builder.hh "com/centreon/broker/notification/builders/contact_by_node_builder.hh"
+   *  @brief Contact builder by node id.
+   *
+   *  This class build a map of contacts by their node id.
+   */
   class           contact_by_node_builder : public contact_builder {
   public:
                   contact_by_node_builder(QMultiHash<node_id, contact::ptr>& table);
-    virtual       ~contact_by_node_builder() {}
 
     virtual void  add_contact(unsigned int id,
                               contact::ptr con);

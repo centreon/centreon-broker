@@ -30,11 +30,16 @@
 CCB_BEGIN()
 
 namespace       notification {
-
-  class           composed_acknowledgement_builder : public composed_builder<acknowledgement_builder> {
+  /**
+   *  @class composed_acknowledgement_builder composed_acknowledgement_builder.hh "com/centreon/broker/notification/builders/composed_acknowledgement_builder.hh"
+   *  @brief Composed acknowledgement builder.
+   *
+   *  This class forward its method call to several other builders.
+   */
+  class           composed_acknowledgement_builder
+                    : public composed_builder<acknowledgement_builder> {
   public:
                   composed_acknowledgement_builder();
-    virtual       ~composed_acknowledgement_builder() {}
 
     virtual void  add_ack(node_id,
                           acknowledgement::ptr ack);

@@ -29,7 +29,12 @@
 CCB_BEGIN()
 
 namespace       notification {
-
+  /**
+   *  @class node_loader node_loader.hh "com/centreon/broker/notification/loaders/node_loader.hh"
+   *  @brief Loader for node objects.
+   *
+   *  This loader loads the nodes from the database.
+   */
   class         node_loader {
   public:
     node_loader();

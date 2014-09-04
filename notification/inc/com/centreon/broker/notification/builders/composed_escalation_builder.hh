@@ -29,11 +29,15 @@
 CCB_BEGIN()
 
 namespace       notification {
-
+  /**
+   *  @class composed_escalation_builder composed_escalation_builder.hh "com/centreon/broker/notification/builders/composed_escalation_builder.hh"
+   *  @brief Composed escalation builder.
+   *
+   *  This class forward its method call to several other builders.
+   */
   class           composed_escalation_builder : public composed_builder<escalation_builder> {
   public:
                   composed_escalation_builder();
-    virtual       ~composed_escalation_builder() {}
 
     virtual void  add_escalation(unsigned int id,
                                  escalation::ptr esc);

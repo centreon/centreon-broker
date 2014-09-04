@@ -95,21 +95,24 @@ namespace        notification {
     QMultiHash<node_id, escalation::ptr>  _escalations;
     QHash<std::string, timeperiod::ptr>   _timeperiod_by_name;
 
-    void                        _open_db(std::auto_ptr<QSqlDatabase>& db,
-                                         QString const& t,
-                                         QString const& host,
-                                         unsigned short port,
-                                         QString const& user,
-                                         QString const& password,
-                                         QString const& db_name,
-                                         QString const& id,
-                                         bool check_replication);
-    void                        _clone_db(std::auto_ptr<QSqlDatabase>& db,
-                                          std::auto_ptr<QSqlDatabase> const& db_to_clone,
-                                          QString const& id);
-    void                        _update_objects_from_db();
-    void                        _process_service_status_event(neb::service_status& event);
-    void                        _process_host_status_event(neb::host_status& event);
+    void                    _open_db(std::auto_ptr<QSqlDatabase>& db,
+                                     QString const& t,
+                                     QString const& host,
+                                     unsigned short port,
+                                     QString const& user,
+                                     QString const& password,
+                                     QString const& db_name,
+                                     QString const& id,
+                                     bool check_replication);
+    void                    _clone_db(
+                              std::auto_ptr<QSqlDatabase>& db,
+                              std::auto_ptr<QSqlDatabase> const& db_to_clone,
+                              QString const& id);
+    void                    _update_objects_from_db();
+    void                    _process_service_status_event(
+                              neb::service_status& event);
+    void                    _process_host_status_event(
+                              neb::host_status& event);
   };
 }
 

@@ -30,12 +30,17 @@
 CCB_BEGIN()
 
 namespace notification {
-
+  /**
+   *  @class contact contact.hh "com/centreon/broker/notification/objects/contact.hh"
+   *  @brief Contact object.
+   *
+   *  The object containing a contact.
+   */
   class                      contact {
   public:
-    DECLARE_SHARED_PTR(contact);
+                             DECLARE_SHARED_PTR(contact);
 
-    enum host_action_on {
+    enum                     host_action_on {
       host_none = 0,
       host_up = (1 << 0),
       host_down = (1 << 1),
@@ -44,7 +49,7 @@ namespace notification {
       host_downtime = (1 << 4)
     };
 
-    enum service_action_on {
+    enum                     service_action_on {
       service_none = 0,
       service_ok = (1 << 0),
       service_warning = (1 << 1),
@@ -75,29 +80,41 @@ namespace notification {
     bool                     get_host_notifications_enabled() const throw();
     void                     set_host_notifications_enabled(bool value) throw();
     group const&             get_host_notification_commands() const throw();
-    void                     set_host_notification_commands(group const& value);
+    void                     set_host_notification_commands(
+                                group const& value);
     host_action_on           get_host_notification_options() const throw();
-    void                     set_host_notification_options(host_action_on value) throw();
-    void                     set_host_notification_option(host_action_on value) throw();
-    bool                     can_be_notified_for_host(host_action_on value) const throw();
+    void                     set_host_notification_options(
+                                host_action_on value) throw();
+    void                     set_host_notification_option(
+                                host_action_on value) throw();
+    bool                     can_be_notified_for_host(
+                                host_action_on value) const throw();
     std::string const&       get_host_notification_period() const throw();
-    void                     set_host_notification_period(std::string const& value);
+    void                     set_host_notification_period(
+                                std::string const& value);
     bool                     get_retain_nonstatus_information() const throw();
-    void                     set_retain_nonstatus_information(bool value) throw();
+    void                     set_retain_nonstatus_information(
+                                bool value) throw();
     bool                     get_retain_status_information() const throw();
     void                     set_retain_status_information(bool value) throw();
     std::string const&       get_pager() const throw();
     void                     set_pager(std::string const& value);
-    group const&              get_service_notification_commands() const throw();
-    void                     set_service_notification_commands(group const& value);
+    group const&             get_service_notification_commands() const throw();
+    void                     set_service_notification_commands(
+                                group const& value);
     service_action_on        get_service_notification_options() const throw();
-    void                     set_service_notification_options(service_action_on value) throw();
-    void                     set_service_notification_option(service_action_on value) throw();
-    bool                     can_be_notified_for_service(service_action_on value) const throw();
+    void                     set_service_notification_options(
+                                service_action_on value) throw();
+    void                     set_service_notification_option(
+                                service_action_on value) throw();
+    bool                     can_be_notified_for_service(
+                                service_action_on value) const throw();
     std::string const&       get_service_notification_period() const throw();
-    void                     set_service_notification_period(std::string const&);
+    void                     set_service_notification_period(
+                                std::string const&);
     bool                     get_service_notifications_enabled() const throw();
-    void                     set_service_notifications_enabled(bool value) throw();
+    void                     set_service_notifications_enabled(
+                                bool value) throw();
 
   private:
     std::vector<std::string> _address;

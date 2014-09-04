@@ -28,7 +28,12 @@
 CCB_BEGIN()
 
 namespace       notification {
-
+  /**
+   *  @class timeperiod_loader timeperiod_loader.hh "com/centreon/broker/notification/loaders/timeperiod_loader.hh"
+   *  @brief Loader for timeperiod objects.
+   *
+   *  This loader loads the timeperiods from the database.
+   */
   class         timeperiod_loader {
   public:
     timeperiod_loader();

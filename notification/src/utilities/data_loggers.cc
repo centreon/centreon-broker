@@ -24,6 +24,13 @@
 
 using namespace com::centreon::broker;
 
+/**
+ *  Stream operator overload for node_id.
+ *
+ *  @param left The logging stream.
+ *  @param obj The object to log.
+ *  @return The logging stream.
+ */
 logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
                                           notification::node_id const& obj) throw()
 {
@@ -33,6 +40,13 @@ logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
   return (tmp);
 }
 
+/**
+ *  Stream operator overload for command.
+ *
+ *  @param left The logging stream.
+ *  @param obj The object to log.
+ *  @return The logging stream.
+ */
 logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
                                           notification::command const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
@@ -40,6 +54,13 @@ logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
   return (tmp);
 }
 
+/**
+ *  Stream operator overload for downtime.
+ *
+ *  @param left The logging stream.
+ *  @param obj The object to log.
+ *  @return The logging stream.
+ */
 logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
                                           notification::downtime const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
@@ -61,6 +82,13 @@ logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
   return (tmp);
 }
 
+/**
+ *  Stream operator overload for escalation.
+ *
+ *  @param left The logging stream.
+ *  @param obj The object to log.
+ *  @return The logging stream.
+ */
 logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
                                           notification::escalation const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
@@ -72,6 +100,13 @@ logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
   return (tmp);
 }
 
+/**
+ *  Stream operator overload for dependency.
+ *
+ *  @param left The logging stream.
+ *  @param obj The object to log.
+ *  @return The logging stream.
+ */
 logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
                                           notification::dependency const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
@@ -85,6 +120,13 @@ logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
   return (tmp);
 }
 
+/**
+ *  Stream operator overload for contact.
+ *
+ *  @param left The logging stream.
+ *  @param obj The object to log.
+ *  @return The logging stream.
+ */
 logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
                                           notification::contact const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
@@ -106,6 +148,13 @@ logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
   return (tmp);
 }
 
+/**
+ *  Stream operator overload for node_timeperiod.
+ *
+ *  @param left The logging stream.
+ *  @param obj The object to log.
+ *  @return The logging stream.
+ */
 logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
                                           notification::timeperiod const& obj) throw() {
   // TODO: Exceptions, timeranges.
@@ -116,6 +165,13 @@ logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
   return (tmp);
 }
 
+/**
+ *  Stream operator overload for node.
+ *
+ *  @param left The logging stream.
+ *  @param obj The object to log.
+ *  @return The logging stream.
+ */
 logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
                                           notification::node const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
@@ -127,6 +183,13 @@ logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
   return (tmp);
 }
 
+/**
+ *  Stream operator overload for acknowledgement.
+ *
+ *  @param left The logging stream.
+ *  @param obj The object to log.
+ *  @return The logging stream.
+ */
 logging::temp_logger& logging::operator<<(logging::temp_logger const& left,
                                           notification::acknowledgement const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);

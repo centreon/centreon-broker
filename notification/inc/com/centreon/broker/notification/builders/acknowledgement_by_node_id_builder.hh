@@ -29,18 +29,23 @@
 CCB_BEGIN()
 
 namespace       notification {
-
-  class           acknowledgement_by_node_id_builder : public acknowledgement_builder {
+  /**
+   *  @class acknowledgement_by_node_id_builder acknowledgement_by_node_id_builder.hh "com/centreon/broker/notification/builders/acknowledgement_by_node_id_builder.hh"
+   *  @brief Acknowledgement builder by node_id.
+   *
+   *  This class build a map of acknowledgement by node_id.
+   */
+  class           acknowledgement_by_node_id_builder
+                    : public acknowledgement_builder {
   public:
                   acknowledgement_by_node_id_builder(
                        QMultiHash<node_id, acknowledgement::ptr>& table);
-    virtual       ~acknowledgement_by_node_id_builder() {}
 
     virtual void  add_ack(node_id id, acknowledgement::ptr ack);
 
   private:
     QMultiHash<node_id, acknowledgement::ptr>&
-        _table;
+                  _table;
   };
 
 }

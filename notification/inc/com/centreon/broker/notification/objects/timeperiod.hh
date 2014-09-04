@@ -31,11 +31,16 @@
 
 CCB_BEGIN()
 
-namespace       notification {
-
+namespace               notification {
+  /**
+   *  @class timeperiod timeperiod.hh "com/centreon/broker/notification/objects/timeperiod.hh"
+   *  @brief Timeperiod object.
+   *
+   *  The object containing a timeperiod.
+   */
   class                 timeperiod {
   public:
-    DECLARE_SHARED_PTR(timeperiod);
+                        DECLARE_SHARED_PTR(timeperiod);
 
                         timeperiod();
                         timeperiod(timeperiod const& obj);
@@ -71,14 +76,14 @@ namespace       notification {
     time_t              get_next_valid(time_t preferred_time) const;
 
   private:
-    std::string            _alias;
+    std::string         _alias;
     std::vector<std::list<daterange> >
-                           _exceptions;
-    group                  _exclude;
-    std::string            _timeperiod_name;
+                        _exceptions;
+    group               _exclude;
+    std::string         _timeperiod_name;
     std::vector<std::list<timerange> >
-                           _timeranges;
-    std::string            _timezone;
+                        _timeranges;
+    std::string         _timezone;
   };
 
 }

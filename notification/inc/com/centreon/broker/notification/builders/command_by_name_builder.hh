@@ -31,17 +31,24 @@
 CCB_BEGIN()
 
 namespace       notification {
-
-  class           command_by_name_builder : public composed_builder<command_builder> {
+  /**
+   *  @class command_by_name_builder command_by_name_builder.hh "com/centreon/broker/notification/builders/command_by_name_builder.hh"
+   *  @brief Command builder by name.
+   *
+   *  This class build a map of commands by their names.
+   */
+  class           command_by_name_builder
+                    : public composed_builder<command_builder> {
   public:
-                  command_by_name_builder(QHash<std::string, command::ptr>& table);
-    virtual       ~command_by_name_builder() {}
+                  command_by_name_builder(
+                        QHash<std::string, command::ptr>& table);
 
     virtual void  add_command(unsigned int id,
                               command::ptr com);
 
   private:
-    QHash<std::string, command::ptr>& _table;
+    QHash<std::string, command::ptr>&
+                  _table;
   };
 
 }

@@ -29,11 +29,15 @@
 CCB_BEGIN()
 
 namespace       notification {
-
+  /**
+   *  @class composed_dependency_builder composed_dependency_builder.hh "com/centreon/broker/notification/builders/composed_dependency_builder.hh"
+   *  @brief Composed dependency builder.
+   *
+   *  This class forward its method call to several other builders.
+   */
   class           composed_dependency_builder : public composed_builder<dependency_builder> {
   public:
                   composed_dependency_builder();
-    virtual       ~composed_dependency_builder() {}
 
     virtual void  add_dependency(unsigned int id,
                                  dependency::ptr d);

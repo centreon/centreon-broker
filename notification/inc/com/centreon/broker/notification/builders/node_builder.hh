@@ -25,10 +25,18 @@
 
 CCB_BEGIN()
 
-namespace       notification {
-
+namespace        notification {
+  /**
+   *  @class node_builder node_builder.hh "com/centreon/broker/notification/builders/node_builder.hh"
+   *  @brief Node builder interface.
+   *
+   *  This interface define what methods node builders need to implement.
+   */
   class          node_builder {
   public:
+    /**
+     *  Virtual destructor.
+     */
     virtual      ~node_builder() {}
 
     virtual void add_node(node::ptr node) {}

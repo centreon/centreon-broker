@@ -26,10 +26,18 @@
 
 CCB_BEGIN()
 
-namespace       notification {
-
+namespace         notification {
+  /**
+   *  @class dependency_builder dependency_builder.hh "com/centreon/broker/notification/builders/dependency_builder.hh"
+   *  @brief Dependency builder interface.
+   *
+   *  This interface define what methods dependency builders need to implement.
+   */
   class           dependency_builder {
   public:
+    /**
+     *  Virtual destructor.
+     */
     virtual       ~dependency_builder() {}
 
     virtual void  add_dependency(unsigned int id,
@@ -39,17 +47,17 @@ namespace       notification {
     virtual void  dependency_node_id_child_relation(unsigned int dep_id,
                                                     node_id id) {}
     virtual void  dependency_hostgroup_parent_relation(
-           unsigned int dep_id,
-           unsigned int hostgroup_id) {}
+                    unsigned int dep_id,
+                    unsigned int hostgroup_id) {}
     virtual void  dependency_hostgroup_child_relation(
-           unsigned int dep_id,
-           unsigned int hostgroup_id) {}
+                    unsigned int dep_id,
+                    unsigned int hostgroup_id) {}
     virtual void  dependency_servicegroup_child_relation(
-           unsigned int dep_id,
-           unsigned int servicegroup_id) {}
+                    unsigned int dep_id,
+                    unsigned int servicegroup_id) {}
     virtual void  dependency_servicegroup_parent_relation(
-           unsigned int dep_id,
-           unsigned int servicegroup_id) {}
+                    unsigned int dep_id,
+                    unsigned int servicegroup_id) {}
 
     virtual void  set_notification_failure_options(unsigned int dep_id,
                                                    std::string const& line) {}

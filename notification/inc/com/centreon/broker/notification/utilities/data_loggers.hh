@@ -69,8 +69,10 @@ namespace logging {
   temp_logger& operator<<(temp_logger const& left,
                           std::vector<T> const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
-    for (typename std::vector<T>::const_iterator it(obj.begin()), end(obj.end());
-         it != end; ++it) {
+    for (typename std::vector<T>::const_iterator it(obj.begin()),
+         end(obj.end());
+         it != end;
+         ++it) {
       tmp << "{"
           << *it
           << "}\n";
@@ -108,8 +110,10 @@ namespace logging {
   temp_logger& operator<<(temp_logger const& left,
                           std::deque<T> const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
-    for (typename std::deque<T>::const_iterator it(obj.begin()), end(obj.end());
-         it != end; ++it) {
+    for (typename std::deque<T>::const_iterator it(obj.begin()),
+         end(obj.end());
+         it != end;
+         ++it) {
       tmp << "{"
           << *it
           << "}\n";
@@ -121,8 +125,10 @@ namespace logging {
   temp_logger& operator<<(temp_logger const& left,
                           std::map<T, U> const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
-    for (typename std::map<T, U>::const_iterator it(obj.begin()), end(obj.end());
-         it != end; ++it) {
+    for (typename std::map<T, U>::const_iterator it(obj.begin()),
+         end(obj.end());
+         it != end;
+         ++it) {
       tmp << "{"
           << it->second
           << "}\n";
@@ -160,8 +166,10 @@ namespace logging {
   temp_logger& operator<<(temp_logger const& left,
                           QMultiHash<T, U> const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
-    for (typename QMultiHash<T, U>::const_iterator it(obj.begin()), end(obj.end());
-         it != end; ++it) {
+    for (typename QMultiHash<T, U>::const_iterator it(obj.begin()),
+         end(obj.end());
+         it != end;
+         ++it) {
       tmp << "{"
           << *it
           << "}\n";
@@ -184,8 +192,9 @@ namespace notification {
     template <typename T>
     static void log_container(std::string const& container_name,
                               T const& container) {
-      logging::debug(logging::low) << "Notification: Logging container called " <<
-                                     container_name;
+      logging::debug(logging::low)
+          << "Notification: Logging container called "
+          << container_name;
       logging::debug(logging::low) << container;
     }
    };

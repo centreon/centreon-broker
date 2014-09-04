@@ -29,11 +29,15 @@
 CCB_BEGIN()
 
 namespace       notification {
-
+  /**
+   *  @class composed_command_builder composed_command_builder.hh "com/centreon/broker/notification/builders/composed_command_builder.hh"
+   *  @brief Composed command builder.
+   *
+   *  This class forward its method call to several other builders.
+   */
   class           composed_command_builder : public composed_builder<command_builder> {
   public:
                   composed_command_builder();
-    virtual       ~composed_command_builder() {}
 
     virtual void  add_command(unsigned int id,
                               command::ptr com);

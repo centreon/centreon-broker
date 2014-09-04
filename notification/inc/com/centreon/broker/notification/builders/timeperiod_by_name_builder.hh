@@ -28,7 +28,12 @@
 CCB_BEGIN()
 
 namespace         notification {
-
+  /**
+   *  @class timeperiod_by_name_builder timeperiod_by_name_builder.hh "com/centreon/broker/notification/builders/timeperiod_by_name_builder.hh"
+   *  @brief Timeperiod builder by name.
+   *
+   *  This class build a map of timeperiods by their names.
+   */
   class           timeperiod_by_name_builder : public timeperiod_builder {
   public:
                   timeperiod_by_name_builder(

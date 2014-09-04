@@ -29,12 +29,16 @@
 CCB_BEGIN()
 
 namespace         notification {
-
+  /**
+   *  @class downtime_by_node_id_builder downtime_by_node_id_builder.hh "com/centreon/broker/notification/builders/downtime_by_node_id_builder.hh"
+   *  @brief Downtime builder by node id.
+   *
+   *  This class build a map of downtimes by their node id.
+   */
   class           downtime_by_node_id_builder : public downtime_builder {
   public:
                   downtime_by_node_id_builder(
                         QMultiHash<node_id, downtime::ptr>& table);
-    virtual       ~downtime_by_node_id_builder() {}
 
     virtual void  add_downtime(unsigned int downtime_id,
                                downtime::ptr downtime);

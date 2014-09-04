@@ -28,7 +28,12 @@
 CCB_BEGIN()
 
 namespace       notification {
-
+  /**
+   *  @class command_loader command_loader.hh "com/centreon/broker/notification/loaders/command_loader.hh"
+   *  @brief Loader for command objects.
+   *
+   *  This loader loads the commands from the database.
+   */
   class         command_loader {
   public:
     command_loader();

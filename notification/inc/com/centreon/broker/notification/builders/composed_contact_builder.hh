@@ -29,11 +29,15 @@
 CCB_BEGIN()
 
 namespace       notification {
-
+  /**
+   *  @class composed_contact_builder composed_contact_builder.hh "com/centreon/broker/notification/builders/composed_contact_builder.hh"
+   *  @brief Composed contact builder.
+   *
+   *  This class forward its method call to several other builders.
+   */
   class           composed_contact_builder : public composed_builder<contact_builder> {
   public:
                   composed_contact_builder();
-    virtual       ~composed_contact_builder() {}
 
     virtual void  add_contact(unsigned int id,
                               contact::ptr con);
