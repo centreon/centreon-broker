@@ -40,6 +40,12 @@ namespace         notification {
      */
     virtual       ~dependency_builder() {}
 
+    /**
+     *  Add a dependency to the builder.
+     *
+     *  @param[in] id The id of the dependency.
+     *  @param[in] d The dependency.
+     */
     virtual void  add_dependency(unsigned int id,
                                  dependency::ptr d) {}
     virtual void  dependency_node_id_parent_relation(unsigned int dep_id,

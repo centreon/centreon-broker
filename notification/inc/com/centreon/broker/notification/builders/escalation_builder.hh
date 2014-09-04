@@ -40,6 +40,12 @@ namespace         notification {
      */
     virtual       ~escalation_builder() {}
 
+    /**
+     *  Add an escalation to the builder.
+     *
+     *  @param[in] id The id of the escalation.
+     *  @param[in] esc The escalation.
+     */
     virtual void  add_escalation(unsigned int id,
                                  escalation::ptr esc) {}
     virtual void  connect_escalation_node_id(unsigned int esc_id,

@@ -39,6 +39,12 @@ namespace         notification {
      */
     virtual       ~timeperiod_builder() {}
 
+    /**
+     *  Add a timeperiod to the builder.
+     *
+     *  @param[in] id The id of the timeperiod.
+     *  @param[in] tperiod The timeperiod.
+     */
     virtual void  add_timeperiod(unsigned int id,
                                  timeperiod::ptr tperiod) {}
     virtual void  add_timeperiod_exception(unsigned int timeperiod_id,

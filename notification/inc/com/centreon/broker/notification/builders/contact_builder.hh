@@ -40,6 +40,12 @@ namespace       notification {
      */
     virtual ~contact_builder() {}
 
+    /**
+     *  Add a contact to the builder.
+     *
+     *  @param[in] id The id of the contact.
+     *  @param[in] con The contact.
+     */
     virtual void add_contact(unsigned int id,
                              contact::ptr con) {}
     virtual void connect_contact_contactgroup(unsigned int contact_id,

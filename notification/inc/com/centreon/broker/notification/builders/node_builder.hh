@@ -39,6 +39,11 @@ namespace        notification {
      */
     virtual      ~node_builder() {}
 
+    /**
+     *  Add a node to the builder.
+     *
+     *  @param[in] node The node.
+     */
     virtual void add_node(node::ptr node) {}
   };
 

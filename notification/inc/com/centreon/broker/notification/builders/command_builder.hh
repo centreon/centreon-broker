@@ -40,9 +40,10 @@ namespace       notification {
     virtual       ~command_builder() {}
 
     /**
+     *  Add a command to the builder.
      *
-     * @param id
-     * @param com
+     *  @param[in] id The id of the command.
+     *  @param[in] com The command.
      */
     virtual void  add_command(unsigned int id,
                               command::ptr com) {}

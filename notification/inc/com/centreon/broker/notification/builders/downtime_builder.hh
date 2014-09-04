@@ -39,6 +39,12 @@ namespace         notification {
      */
     virtual       ~downtime_builder() {}
 
+    /**
+     *  Add a downtime to the builder.
+     *
+     *  @param[in] id The id of the downtime.
+     *  @param[in] downtime The downtime.
+     */
     virtual void  add_downtime(unsigned int downtime_id,
                                downtime::ptr downtime) {}
   };
