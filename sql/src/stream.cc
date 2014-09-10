@@ -2391,6 +2391,25 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
         << data->instance_id << ")";
       return (retval);
     }
+    // Check that both child and parent of a correlation issue_parent event
+    // are not from a deleted instance.
+    else if (io::events::category_of_type(data->type())
+                == io::events::correlation
+             && io::events::element_of_type(data->type())
+                == correlation::de_issue_parent) {
+      correlation::issue_parent const&
+        ip(*static_cast<correlation::issue_parent const*>(data.data()));
+      if (_cache_deleted_instance_id.find(ip.child_instance_id)
+          != _cache_deleted_instance_id.end()
+          && _cache_deleted_instance_id.find(ip.parent_instance_id)
+          != _cache_deleted_instance_id.end()) {
+        logging::info(logging::low)
+          << "SQL: discarding some issue parent correlation event related to "
+             << "deleted instances (child = " << ip.child_instance_id
+             << ", parent = " << ip.parent_instance_id << ")";
+        return (retval);
+      }
+    }
 
     // Update the timestamp of this instance.
     _update_timestamp(data->instance_id);
