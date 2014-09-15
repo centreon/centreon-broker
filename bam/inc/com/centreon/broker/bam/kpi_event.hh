@@ -27,10 +27,9 @@ CCB_BEGIN()
 
 namespace        bam {
   /**
-   *  @class ba_status ba_status.hh "com/centreon/broker/bam/ba_status.hh"
-   *  @brief Update status of a BA.
+   *  @class kpi_event kpi_event.hh "com/centreon/broker/bam/kpi_event.hh"
+   *  @brief Kpi event
    *
-   *  Update the status of a BA, used to update the mod_bam table.
    */
   class          kpi_event : public io::data {
   public:
