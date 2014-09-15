@@ -17,25 +17,34 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_BAM_INTERNAL_HH
-#  define CCB_BAM_INTERNAL_HH
+#ifndef CCB_BAM_BA_EVENT_HH
+#  define CCB_BAM_BA_EVENT_HH
 
+#  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace bam {
-  // Data elements.
-  enum data_element {
-    de_ba_status = 1,
-    de_bool_status,
-    de_kpi_status,
-    de_meta_service_status,
-    de_ba_event,
-    de_kpi_event
+namespace        bam {
+  /**
+   *  @class ba_status ba_status.hh "com/centreon/broker/bam/ba_status.hh"
+   *  @brief Update status of a BA.
+   *
+   *  Update the status of a BA, used to update the mod_bam table.
+   */
+  class          ba_event : public io::data {
+  public:
+                 ba_event();
+                 ba_event(ba_event const& other);
+                 ~ba_event();
+    ba_event&    operator=(ba_event const& other);
+    unsigned int type() const;
+
+  private:
+    void         _internal_copy(ba_event const& other);
   };
 }
 
 CCB_END()
 
-#endif // !CCB_BAM_INTERNAL_HH
+#endif // !CCB_BAM_BA_EVENT_HH

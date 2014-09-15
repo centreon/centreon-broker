@@ -33,6 +33,7 @@ add_library("${BAM}" SHARED
   # Sources.
   "${SRC_DIR}/ba.cc"
   "${SRC_DIR}/ba_status.cc"
+  "${SRC_DIR}/ba_event.cc"
   "${SRC_DIR}/bool_and.cc"
   "${SRC_DIR}/bool_binary_operator.cc"
   "${SRC_DIR}/bool_expression.cc"
@@ -71,6 +72,7 @@ add_library("${BAM}" SHARED
   "${SRC_DIR}/meta_service_status.cc"
   "${SRC_DIR}/metric_book.cc"
   "${SRC_DIR}/metric_listener.cc"
+  "${SRC_DIR}/kpi_event.cc"
   "${SRC_DIR}/service_book.cc"
   "${SRC_DIR}/service_listener.cc"
   "${SRC_DIR}/sql_mapping.cc"
@@ -78,6 +80,7 @@ add_library("${BAM}" SHARED
   # Headers.
   "${INC_DIR}/ba.hh"
   "${INC_DIR}/ba_status.hh"
+  "${INC_DIR}/ba_event.hh"
   "${INC_DIR}/bool_and.hh"
   "${INC_DIR}/bool_binary_operator.hh"
   "${INC_DIR}/bool_expression.hh"
@@ -109,6 +112,7 @@ add_library("${BAM}" SHARED
   "${INC_DIR}/impact_values.hh"
   "${INC_DIR}/kpi.hh"
   "${INC_DIR}/kpi_ba.hh"
+  "${INC_DIR}/kpi_event.hh"
   "${INC_DIR}/kpi_service.hh"
   "${INC_DIR}/kpi_status.hh"
   "${INC_DIR}/meta_service.hh"
