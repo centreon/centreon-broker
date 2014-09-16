@@ -21,6 +21,7 @@
 #  define CCB_BAM_STREAM_HH
 
 #  include <memory>
+#  include <QList>
 #  include <QSqlDatabase>
 #  include <QSqlQuery>
 #  include "com/centreon/broker/bam/configuration/applier/state.hh"
@@ -84,6 +85,8 @@ namespace          bam {
                    _meta_service_update;
     std::auto_ptr<QSqlDatabase>
                    _db;
+    QList<misc::shared_ptr<io::data> >
+                   _events;
   };
 }
 

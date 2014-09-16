@@ -194,14 +194,17 @@ void stream::process(bool in, bool out) {
 }
 
 /**
- *  Read from the datbase.
+ *  Get the next available bam event.
  *
- *  @param[out] d Cleared.
+ *  @param[out] d The next available bam event.
  */
 void stream::read(misc::shared_ptr<io::data>& d) {
   d.clear();
-  throw (exceptions::msg()
-         << "BAM: attempt to read from a BAM stream (not supported)");
+
+  if (!_events.empty()) {
+    d = _events.front();
+    _events.pop_front();
+  }
   return ;
 }
 
