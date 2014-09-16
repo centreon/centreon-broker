@@ -347,16 +347,19 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
              == io::events::data_type<io::events::bam, bam::de_kpi_event>::value) {
       logging::debug(logging::low)
         << "BAM: processing kpi event";
+      _process_kpi_event(data);
     }
     else if (data->type()
              == io::events::data_type<io::events::bam, bam::de_ba_event>::value) {
       logging::debug(logging::low)
         << "BAM: processing ba event";
+      _process_ba_event(data);
     }
     else if (data->type()
              == io::events::data_type<io::events::bam, bam::de_event_parent>::value) {
       logging::debug(logging::low)
         << "BAM: processing event parent event";
+      _process_event_parent(data);
     }
   }
 }
