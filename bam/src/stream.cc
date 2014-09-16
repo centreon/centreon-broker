@@ -25,11 +25,14 @@
 #include <QSqlRecord>
 #include <QVariant>
 #include "com/centreon/broker/bam/ba_status.hh"
+#include "com/centreon/broker/bam/ba_event.hh"
 #include "com/centreon/broker/bam/bool_status.hh"
 #include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/state.hh"
+#include "com/centreon/broker/bam/event_parent.hh"
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
+#include "com/centreon/broker/bam/kpi_event.hh"
 #include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/bam/stream.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -526,7 +529,7 @@ void stream::_update_status(std::string const& status) {
  *  @param[in] e The event.
  */
 void stream::_process_kpi_event(misc::shared_ptr<io::data> const& e) {
-
+  bam::kpi_event const& ke(*static_cast<bam::kpi_event const*>(e.data()));
 }
 
 /**
@@ -535,7 +538,7 @@ void stream::_process_kpi_event(misc::shared_ptr<io::data> const& e) {
  *  @param[in] e The event.
  */
 void stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
-
+  bam::ba_event const& be(*static_cast<bam::ba_event const*>(e.data()));
 }
 
 /**
@@ -544,5 +547,6 @@ void stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
  * @param[in] e The event.
  */
 void stream::_process_event_parent(misc::shared_ptr<io::data> const& e) {
-
+  bam::event_parent const&
+    ep(*static_cast<bam::event_parent const*>(e.data()));
 }

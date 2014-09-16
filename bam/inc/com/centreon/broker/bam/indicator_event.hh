@@ -17,36 +17,38 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_BAM_KPI_EVENT_HH
-#  define CCB_BAM_KPI_EVENT_HH
+#ifndef CCB_BAM_INDICATOR_EVENT_HH
+#  define CCB_BAM_INDICATOR_EVENT_HH
 
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/bam/indicator_event.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace        bam {
+namespace             bam {
   /**
-   *  @class kpi_event kpi_event.hh "com/centreon/broker/bam/kpi_event.hh"
-   *  @brief Kpi event
+   *  @class indicator_event indicator_event.hh "com/centreon/broker/bam/indicator_event.hh"
+   *  @brief Indicator event specialized by kpi and ba event.
    *
    */
-  class          kpi_event : public indicator_event {
+  class               indicator_event : public io::data {
   public:
-                 kpi_event();
-                 kpi_event(kpi_event const& other);
-                 ~kpi_event();
-    kpi_event&   operator=(kpi_event const& other);
-    unsigned int type() const;
+                      indicator_event();
+                      indicator_event(indicator_event const& other);
+                      ~indicator_event();
+    indicator_event&  operator=(indicator_event const& other);
 
-    unsigned int kpi_id;
+    unsigned int      status;
+    bool              in_downtime;
+    timestamp         start_time;
+    unsigned int      duration;
 
   private:
-    void         _internal_copy(kpi_event const& other);
+    void              _internal_copy(indicator_event const& other);
   };
 }
 
 CCB_END()
 
-#endif // !CCB_BAM_KPI_EVENT_HH
+#endif // !CCB_BAM_INDICATOR_EVENT_HH

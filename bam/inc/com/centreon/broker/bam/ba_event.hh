@@ -22,7 +22,7 @@
 
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
+#  include "com/centreon/broker/bam/indicator_event.hh"
 
 CCB_BEGIN()
 
@@ -32,7 +32,7 @@ namespace        bam {
    *  @brief Ba event
    *
    */
-  class          ba_event : public io::data {
+  class          ba_event : public indicator_event {
   public:
                  ba_event();
                  ba_event(ba_event const& other);
@@ -41,8 +41,6 @@ namespace        bam {
     unsigned int type() const;
 
     unsigned int ba_id;
-    unsigned int status;
-    timestamp    in_downtime;
 
   private:
     void         _internal_copy(ba_event const& other);

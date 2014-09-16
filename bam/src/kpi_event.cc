@@ -28,16 +28,14 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 kpi_event::kpi_event()
-  : kpi_id(0),
-    status(0),
-    in_downtime(0) {}
+  : kpi_id(0) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other Object to copy.
  */
-kpi_event::kpi_event(kpi_event const& other) : io::data(other) {
+kpi_event::kpi_event(kpi_event const& other) : indicator_event(other) {
   _internal_copy(other);
 }
 
@@ -55,7 +53,7 @@ kpi_event::~kpi_event() {}
  */
 kpi_event& kpi_event::operator=(kpi_event const& other) {
   if (this != &other) {
-    io::data::operator=(other);
+    indicator_event::operator=(other);
     _internal_copy(other);
   }
   return (*this);
@@ -77,7 +75,5 @@ unsigned int kpi_event::type() const {
  */
 void kpi_event::_internal_copy(kpi_event const& other) {
   kpi_id = other.kpi_id;
-  status = other.status;
-  in_downtime = other.in_downtime;
   return ;
 }
