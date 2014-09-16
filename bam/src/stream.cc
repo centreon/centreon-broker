@@ -538,10 +538,10 @@ void stream::_process_kpi_event(misc::shared_ptr<io::data> const& e) {
   QSqlQuery query(*_db);
   std::stringstream ss;
 
-  ss << "INSERT INTO kpi_events "
-        "(kpi_id, status, in_downtime, start_time, end_time, duration, "
-        "impact_level, first_output, first_perfdata, timeperiod_id, "
-        "timeperiod_is_default) VALUES ("
+  ss << "INSERT INTO kpi_events"
+        "  (kpi_id, status, in_downtime, start_time, end_time, duration, "
+        "    impact_level, first_output, first_perfdata, timeperiod_id, "
+        "    timeperiod_is_default) VALUES ("
      << ke.kpi_id << ", "
      << ke.status << ","
      << ke.in_downtime << ","
@@ -571,9 +571,9 @@ void stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
   QSqlQuery query(*_db);
   std::stringstream ss;
 
-  ss << "INSERT INTO ba_events "
-        "(ba_id, status, in_downtime, start_time, end_time, duration, "
-        "sla_duration, timeperiod_id, timeperiod_is_default) VALUES ("
+  ss << "INSERT INTO ba_events"
+        "  (ba_id, status, in_downtime, start_time, end_time, duration, "
+        "    sla_duration, timeperiod_id, timeperiod_is_default) VALUES ("
      << be.ba_id << ", "
      << be.status << ", "
      << be.in_downtime << ", "
