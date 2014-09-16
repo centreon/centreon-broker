@@ -46,7 +46,7 @@ namespace        bam {
                  ~ba();
     ba&          operator=(ba const& right);
     void         add_impact(misc::shared_ptr<kpi> const& impact);
-    void         child_has_update(
+    bool         child_has_update(
                    computable* child,
                    stream* visitor = NULL);
     double       get_ack_impact_hard();

@@ -39,7 +39,7 @@ namespace        bam {
                  kpi_service(kpi_service const& right);
                  ~kpi_service();
     kpi_service& operator=(kpi_service const& right);
-    void         child_has_update(
+    bool         child_has_update(
                    computable* child,
                    stream* visitor = NULL);
     unsigned int get_host_id() const;

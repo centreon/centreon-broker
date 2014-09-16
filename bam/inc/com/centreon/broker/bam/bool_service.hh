@@ -44,7 +44,7 @@ namespace         bam {
                   bool_service(bool_service const& right);
                   ~bool_service();
     bool_service& operator=(bool_service const& right);
-    void          child_has_update(
+    bool          child_has_update(
                     computable* child,
                     stream* visitor = NULL);
     unsigned int  get_host_id() const;

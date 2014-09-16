@@ -84,13 +84,15 @@ void meta_service::add_metric(unsigned int metric_id) {
  *
  *  @param[in] child     Unused.
  *  @param[out] visitor  Unused.
+ *
+ *  @return              True.
  */
-void meta_service::child_has_update(
+bool meta_service::child_has_update(
                      computable* child,
                      stream* visitor) {
   (void)child;
   (void)visitor;
-  return ;
+  return true;
 }
 
 /**

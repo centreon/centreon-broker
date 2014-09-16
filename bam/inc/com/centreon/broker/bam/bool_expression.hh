@@ -42,7 +42,7 @@ namespace            bam {
                      bool_expression(bool_expression const& right);
                      ~bool_expression();
     bool_expression& operator=(bool_expression const& right);
-    void             child_has_update(
+    bool             child_has_update(
                        computable* child,
                        stream* visitor = NULL);
     void             impact_hard(impact_values& hard_impact);

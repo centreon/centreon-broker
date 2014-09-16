@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <vector>
 #include "com/centreon/broker/bam/computable.hh"
 
 using namespace com::centreon::broker::bam;
@@ -73,18 +74,24 @@ void computable::add_parent(
  *  @param[out] visitor  Object that will receive events.
  */
 void computable::propagate_update(stream* visitor) {
+  std::vector<bool> filter;
+  filter.resize(_parents.size());
+  unsigned int i = 0;
+  for (std::list<misc::shared_ptr<computable> >::iterator
+         it(_parents.begin()),
+         end(_parents.end());
+       it != end;
+       ++it) {
+    filter[i++] = (*it)->child_has_update(this, visitor);
+  }
+  i = 0;
   for (std::list<misc::shared_ptr<computable> >::iterator
          it(_parents.begin()),
          end(_parents.end());
        it != end;
        ++it)
-    (*it)->child_has_update(this, visitor);
-  for (std::list<misc::shared_ptr<computable> >::iterator
-         it(_parents.begin()),
-         end(_parents.end());
-       it != end;
-       ++it)
-    (*it)->propagate_update(visitor);
+    if (filter[i++] == true)
+      (*it)->propagate_update(visitor);
   return ;
 }
 

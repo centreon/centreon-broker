@@ -109,8 +109,10 @@ void ba::add_impact(misc::shared_ptr<kpi> const& impact) {
  *
  *  @param[in]  child    Child impact that got updated.
  *  @param[out] visitor  Object that will receive generated events.
+ *
+ *  @return True if the value of this ba was modified.
  */
-void ba::child_has_update(computable* child, stream* visitor) {
+bool ba::child_has_update(computable* child, stream* visitor) {
   umap<kpi*, impact_info>::iterator
     it(_impacts.find(static_cast<kpi*>(child)));
   if (it != _impacts.end()) {
@@ -127,7 +129,7 @@ void ba::child_has_update(computable* child, stream* visitor) {
     // If the new impact is the same as the old, don't update.
     if (it->second.hard_impact == new_hard_impact &&
         it->second.soft_impact == new_soft_impact)
-      return ;
+      return false;
 
     // Discard old data.
     _unapply_impact(it->second);
@@ -140,7 +142,7 @@ void ba::child_has_update(computable* child, stream* visitor) {
     // Generate status event.
     visit(visitor);
   }
-  return ;
+  return true;
 }
 
 

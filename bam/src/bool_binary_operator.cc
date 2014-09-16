@@ -67,22 +67,30 @@ bool_binary_operator& bool_binary_operator::operator=(
  *
  *  @param[in] child     Child that got updated.
  *  @param[out] visitor  Visitor.
+ *
+ *  @return              True if the values of this object were modified.
  */
-void bool_binary_operator::child_has_update(
+bool bool_binary_operator::child_has_update(
                              computable* child,
                              stream* visitor) {
   (void)visitor;
   if (child) {
     if (child == _left.data()) {
+      if (_left_hard == _left->value_hard()
+            && _left_soft == _left->value_soft())
+        return false;
       _left_hard = _left->value_hard();
       _left_soft = _left->value_soft();
     }
     else if (child == _right.data()) {
+      if (_right_hard == _right->value_hard()
+            && _right_soft == _right->value_soft())
+        return false;
       _right_hard = _right->value_hard();
       _right_soft = _right->value_soft();
     }
   }
-  return ;
+  return true;
 }
 
 /**

@@ -73,11 +73,13 @@ bool_service& bool_service::operator=(bool_service const& right) {
  *
  *  @param[in]  child   Unused.
  *  @param[out] visitor Unused.
+ *
+ *  @return             True.
  */
-void bool_service::child_has_update(computable* child, stream* visitor) {
+bool bool_service::child_has_update(computable* child, stream* visitor) {
   (void)child;
   (void)visitor;
-  return ;
+  return true;
 }
 
 /**

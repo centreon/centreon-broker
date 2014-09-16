@@ -43,7 +43,7 @@ namespace     bam {
               bool_not(bool_not const& right);
               ~bool_not();
     bool_not& operator=(bool_not const& right);
-    void      child_has_update(
+    bool      child_has_update(
                 computable* child,
                 stream* visitor = NULL);
     void      set_value(misc::shared_ptr<bool_value>& value);

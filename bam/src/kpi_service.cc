@@ -80,11 +80,13 @@ kpi_service& kpi_service::operator=(kpi_service const& right) {
  *
  *  @param[in]  child    Unused.
  *  @param[out] visitor  Unused.
+ *
+ *  @return              True.
  */
-void kpi_service::child_has_update(computable* child, stream* visitor) {
+bool kpi_service::child_has_update(computable* child, stream* visitor) {
   (void)child;
   (void)visitor;
-  return ;
+  return true;
 }
 
 /**

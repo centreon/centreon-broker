@@ -57,7 +57,7 @@ namespace            bam {
                      ~meta_service();
     meta_service&    operator=(meta_service const& other);
     void             add_metric(unsigned int metric_id);
-    void             child_has_update(
+    bool             child_has_update(
                        computable* child,
                        stream* visitor = NULL);
     unsigned int     get_id() const;

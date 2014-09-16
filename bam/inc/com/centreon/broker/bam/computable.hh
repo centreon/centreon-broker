@@ -56,8 +56,10 @@ namespace        bam {
      *  update the node value.
      *
      *  @param[in] child Recently updated child node.
+     *
+     *  @return True if the parent was modified.
      */
-    virtual void child_has_update(
+    virtual bool child_has_update(
                    computable* child,
                    stream* visitor = NULL) = 0;
 
