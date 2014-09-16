@@ -19,6 +19,7 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <sstream>
 #include <QMutexLocker>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -530,6 +531,8 @@ void stream::_update_status(std::string const& status) {
  */
 void stream::_process_kpi_event(misc::shared_ptr<io::data> const& e) {
   bam::kpi_event const& ke(*static_cast<bam::kpi_event const*>(e.data()));
+
+
 }
 
 /**
@@ -549,4 +552,15 @@ void stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
 void stream::_process_event_parent(misc::shared_ptr<io::data> const& e) {
   bam::event_parent const&
     ep(*static_cast<bam::event_parent const*>(e.data()));
+
+  QSqlQuery query(*_db);
+  std::stringstream ss;
+
+  ss << "INSERT INTO relations_ba_kpi_events (kpi_id, ba_id) VALUES ("
+     << ep.kpi_id << ", " << ep.ba_id << ")";
+
+  if (!query.exec(ss.str().c_str()))
+    throw (exceptions::msg()
+           << "BAM: could not insert an event parent event: "
+           << query.lastError().text());
 }
