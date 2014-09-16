@@ -63,6 +63,8 @@ namespace          bam {
     void           _clear_qsql();
     void           _prepare();
     void           _update_status(std::string const& status);
+    void           _process_kpi_event(misc::shared_ptr<io::data> const& e);
+    void           _process_ba_event(misc::shared_ptr<io::data> const& e);
 
     configuration::applier::state
                    _applier;

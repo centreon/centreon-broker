@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/bam/kpi_event.hh"
+#include "com/centreon/broker/bam/event_parent.hh"
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/io/events.hh"
 
@@ -27,24 +27,23 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-kpi_event::kpi_event()
+event_parent::event_parent()
   : kpi_id(0),
-    status(0),
-    in_downtime(0) {}
+    ba_id(0) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other Object to copy.
  */
-kpi_event::kpi_event(kpi_event const& other) : io::data(other) {
+event_parent::event_parent(event_parent const& other) : io::data(other) {
   _internal_copy(other);
 }
 
 /**
  *  Destructor.
  */
-kpi_event::~kpi_event() {}
+event_parent::~event_parent() {}
 
 /**
  *  Assignment operator.
@@ -53,7 +52,7 @@ kpi_event::~kpi_event() {}
  *
  *  @return This object.
  */
-kpi_event& kpi_event::operator=(kpi_event const& other) {
+event_parent& event_parent::operator=(event_parent const& other) {
   if (this != &other) {
     io::data::operator=(other);
     _internal_copy(other);
@@ -66,8 +65,8 @@ kpi_event& kpi_event::operator=(kpi_event const& other) {
  *
  *  @return Event type.
  */
-unsigned int kpi_event::type() const {
-  return (io::events::data_type<io::events::bam, bam::de_kpi_event>::value);
+unsigned int event_parent::type() const {
+  return (io::events::data_type<io::events::bam, bam::de_event_parent>::value);
 }
 
 /**
@@ -75,9 +74,8 @@ unsigned int kpi_event::type() const {
  *
  *  @param[in] other Object to copy.
  */
-void kpi_event::_internal_copy(kpi_event const& other) {
+void event_parent::_internal_copy(event_parent const& other) {
   kpi_id = other.kpi_id;
-  status = other.status;
-  in_downtime = other.in_downtime;
+  ba_id = other.ba_id;
   return ;
 }

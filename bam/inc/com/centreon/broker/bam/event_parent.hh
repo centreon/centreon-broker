@@ -17,26 +17,37 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_BAM_INTERNAL_HH
-#  define CCB_BAM_INTERNAL_HH
+#ifndef CCB_BAM_EVENT_PARENT_HH
+#  define CCB_BAM_EVENT_PARENT_HH
 
+#  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace bam {
-  // Data elements.
-  enum data_element {
-    de_ba_status = 1,
-    de_bool_status,
-    de_kpi_status,
-    de_meta_service_status,
-    de_ba_event,
-    de_kpi_event,
-    de_event_parent
+namespace        bam {
+  /**
+   *  @class event_parent event_parent.hh "com/centreon/broker/bam/event_parent.hh"
+   *  @brief Parent event
+   *
+   *  An event linking kpi and ba events.
+   */
+  class           event_parent : public io::data {
+  public:
+                  event_parent();
+                  event_parent(event_parent const& other);
+                  ~event_parent();
+    event_parent& operator=(event_parent const& other);
+    unsigned int  type() const;
+
+    unsigned int  kpi_id;
+    unsigned int  ba_id;
+
+  private:
+    void          _internal_copy(event_parent const& other);
   };
 }
 
 CCB_END()
 
-#endif // !CCB_BAM_INTERNAL_HH
+#endif // !CCB_BAM_EVENT_PARENT_HH

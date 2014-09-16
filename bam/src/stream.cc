@@ -339,6 +339,16 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
                << status->meta_service_id << ": "
                << _meta_service_update->lastError().text());
     }
+    else if (data->type()
+             == io::events::data_type<io::events::bam, bam::de_kpi_event>::value) {
+      logging::debug(logging::low)
+        << "BAM: processing kpi event";
+    }
+    else if (data->type()
+             == io::events::data_type<io::events::bam, bam::de_ba_event>::value) {
+      logging::debug(logging::low)
+        << "BAM: processing ba event";
+    }
   }
 }
 
@@ -502,5 +512,23 @@ void stream::_prepare() {
  *  @param[in] status New status.
  */
 void stream::_update_status(std::string const& status) {
+
+}
+
+/**
+ *  Process a kpi event and write it to the db.
+ *
+ *  @param[in] e The event.
+ */
+void stream::_process_kpi_event(misc::shared_ptr<io::data> const& e) {
+
+}
+
+/**
+ *  Process a ba event and write it to the db.
+ *
+ *  @param[in] e The event.
+ */
+void stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
 
 }
