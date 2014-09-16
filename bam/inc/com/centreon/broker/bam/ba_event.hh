@@ -41,6 +41,7 @@ namespace        bam {
     unsigned int type() const;
 
     unsigned int ba_id;
+    unsigned int sla_duration;
 
   private:
     void         _internal_copy(ba_event const& other);

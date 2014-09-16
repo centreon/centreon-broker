@@ -28,7 +28,8 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 ba_event::ba_event()
-  : ba_id(0) {}
+  : ba_id(0),
+    sla_duration(0) {}
 
 /**
  *  Copy constructor.
@@ -75,5 +76,6 @@ unsigned int ba_event::type() const {
  */
 void ba_event::_internal_copy(ba_event const& other) {
   ba_id = other.ba_id;
+  sla_duration = other.sla_duration;
   return ;
 }

@@ -31,7 +31,9 @@ indicator_event::indicator_event()
   : status(0),
     in_downtime(false),
     start_time(0),
-    duration(0) {}
+    duration(0),
+    timeperiod_id(0),
+    timeperiod_is_default(false) {}
 
 /**
  *  Copy constructor.
@@ -72,5 +74,7 @@ void indicator_event::_internal_copy(indicator_event const& other) {
   in_downtime = other.in_downtime;
   start_time = other.start_time;
   duration = other.duration;
+  timeperiod_id = other.timeperiod_id;
+  timeperiod_is_default = other.timeperiod_is_default;
   return ;
 }

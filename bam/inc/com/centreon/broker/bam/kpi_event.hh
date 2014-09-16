@@ -20,6 +20,7 @@
 #ifndef CCB_BAM_KPI_EVENT_HH
 #  define CCB_BAM_KPI_EVENT_HH
 
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/bam/indicator_event.hh"
@@ -41,6 +42,9 @@ namespace        bam {
     unsigned int type() const;
 
     unsigned int kpi_id;
+    int          impact_level;
+    std::string  first_output;
+    std::string  first_perfdata;
 
   private:
     void         _internal_copy(kpi_event const& other);

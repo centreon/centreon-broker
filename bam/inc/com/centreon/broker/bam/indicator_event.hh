@@ -43,6 +43,8 @@ namespace             bam {
     bool              in_downtime;
     timestamp         start_time;
     unsigned int      duration;
+    unsigned int      timeperiod_id;
+    bool              timeperiod_is_default;
 
   private:
     void              _internal_copy(indicator_event const& other);

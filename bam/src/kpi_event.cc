@@ -28,7 +28,10 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 kpi_event::kpi_event()
-  : kpi_id(0) {}
+  : kpi_id(0),
+    impact_level(0),
+    first_output(),
+    first_perfdata() {}
 
 /**
  *  Copy constructor.
@@ -75,5 +78,8 @@ unsigned int kpi_event::type() const {
  */
 void kpi_event::_internal_copy(kpi_event const& other) {
   kpi_id = other.kpi_id;
+  impact_level = other.impact_level;
+  first_output = other.first_output;
+  first_perfdata = other.first_perfdata;
   return ;
 }
