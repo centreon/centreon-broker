@@ -349,6 +349,11 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
       logging::debug(logging::low)
         << "BAM: processing ba event";
     }
+    else if (data->type()
+             == io::events::data_type<io::events::bam, bam::de_event_parent>::value) {
+      logging::debug(logging::low)
+        << "BAM: processing event parent event";
+    }
   }
 }
 
@@ -530,5 +535,14 @@ void stream::_process_kpi_event(misc::shared_ptr<io::data> const& e) {
  *  @param[in] e The event.
  */
 void stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
+
+}
+
+/**
+ *  Process a event parent event and write it to the db.
+ *
+ * @param[in] e The event.
+ */
+void stream::_process_event_parent(misc::shared_ptr<io::data> const& e) {
 
 }
