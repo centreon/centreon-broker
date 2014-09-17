@@ -37,21 +37,9 @@ downtime::downtime() :
   _triggered_by(0),
   _type(0) {}
 
-downtime::downtime(downtime const& obj) :
-  _entry_time(obj._entry_time),
-  _host_id(obj._host_id),
-  _service_id(obj._service_id),
-  _cancelled(obj._cancelled),
-  _deletion_time(obj._deletion_time),
-  _duration(obj._duration),
-  _end_time(obj._end_time),
-  _fixed(obj._fixed),
-  _start_time(obj._start_time),
-  _actual_start_time(obj._actual_start_time),
-  _actual_end_time(obj._actual_end_time),
-  _started(obj._started),
-  _triggered_by(obj._triggered_by),
-  _type(obj._type) {}
+downtime::downtime(downtime const& obj) {
+  downtime::operator=(obj);
+}
 
 downtime& downtime::operator=(downtime const& obj) {
   if (this != &obj) {

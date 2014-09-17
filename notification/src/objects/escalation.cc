@@ -42,14 +42,8 @@ escalation::escalation() :
 
 }
 
-escalation::escalation(escalation const& obj) :
-  _type(obj._type),
-  _escalation_options(obj._escalation_options),
-  _escalation_period(obj._escalation_period),
-  _first_notification(obj._first_notification),
-  _last_notification(obj._last_notification),
-  _notification_interval(obj._notification_interval) {
-
+escalation::escalation(escalation const& obj) {
+  escalation::operator=(obj);
 }
 
 escalation& escalation::operator=(escalation const& obj) {

@@ -34,13 +34,9 @@ timeperiod::timeperiod()
   _exceptions.resize(daterange::daterange_types);
 }
 
-timeperiod::timeperiod(timeperiod const& obj) :
-  _alias(obj._alias),
-  _exceptions(obj._exceptions),
-  _exclude(obj._exclude),
-  _timeperiod_name(obj._timeperiod_name),
-  _timeranges(obj._timeranges),
-  _timezone(obj._timezone) {}
+timeperiod::timeperiod(timeperiod const& obj) {
+  timeperiod::operator=(obj);
+}
 
 timeperiod timeperiod::operator=(timeperiod const& obj) {
   if (this != &obj) {
@@ -215,11 +211,10 @@ time_t timeperiod::get_next_valid(time_t preferred_time) const {
   // First check for possible timeperiod exclusions
   // before getting a valid_time.
   timezone_locker tzlock(_timezone.c_str());
-    return (_get_next_valid_time_per_timeperiod(
-      preferred_time,
-      current_time,
-      *this));
-  return (time_t()); // STUB
+  return (_get_next_valid_time_per_timeperiod(
+          preferred_time,
+          current_time,
+          *this));
 }
 
 /**

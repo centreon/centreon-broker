@@ -25,11 +25,13 @@ using namespace com::centreon::broker::notification;
 command::command(std::string const& base_command) :
   _base_command(base_command) {}
 
-command::command(command const& obj) :
-  _base_command(obj._base_command) {}
+command::command(command const& obj) {
+  command::operator=(obj);
+}
 
 command& command::operator=(command const& obj) {
   if (this != &obj) {
+    _name = obj._name;
     _base_command = obj._base_command;
   }
   return (*this);

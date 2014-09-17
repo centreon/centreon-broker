@@ -42,13 +42,9 @@ dependency::dependency() :
   _inherits_parent(false),
   _notification_failure_options(none) {}
 
-dependency::dependency(dependency const& obj) :
-  _type(obj._type),
-  _dependency_period(obj._dependency_period),
-  _dependency_type(obj._dependency_type),
-  _execution_failure_options(obj._execution_failure_options),
-  _inherits_parent(obj._inherits_parent),
-  _notification_failure_options(obj._notification_failure_options) {}
+dependency::dependency(dependency const& obj) {
+  dependency::operator=(obj);
+}
 
 dependency& dependency::operator=(dependency const& obj) {
   if (this != &obj) {

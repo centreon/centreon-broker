@@ -35,11 +35,9 @@ acknowledgement::acknowledgement() :
  *
  * @param[in] obj The object to copy.
  */
-acknowledgement::acknowledgement(acknowledgement const& obj) :
-  _type(obj._type),
-  _acknowledgement_type(obj._acknowledgement_type),
-  _host_id(obj._host_id),
-  _service_id(obj._service_id) {}
+acknowledgement::acknowledgement(acknowledgement const& obj) {
+  acknowledgement::operator=(obj);
+}
 
 /**
  *  Copy operator.

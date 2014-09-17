@@ -27,11 +27,9 @@ node::node() :
   _hard_state(0),
   _soft_state(0) {}
 
-node::node(node const& obj) :
-  _notification_number(obj._notification_number),
-  _last_notification_time(obj._last_notification_time),
-  _hard_state(obj._hard_state),
-  _soft_state(obj._soft_state) {}
+node::node(node const& obj) {
+  node::operator=(obj);
+}
 
 node& node::operator=(node const& obj) {
   if (this != &obj) {

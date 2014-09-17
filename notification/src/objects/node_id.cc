@@ -27,9 +27,9 @@ node_id::node_id() :
   _host_id(0),
   _service_id(0) {}
 
-node_id::node_id(node_id const& obj) :
-  _host_id(obj._host_id),
-  _service_id(obj._service_id) {}
+node_id::node_id(node_id const& obj) {
+  node_id::operator=(obj);
+}
 
 node_id& node_id::operator=(node_id const& obj) {
   if (this != &obj) {
