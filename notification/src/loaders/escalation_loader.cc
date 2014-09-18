@@ -39,7 +39,10 @@ void escalation_loader::load(QSqlDatabase* db, escalation_builder* output) {
   // Performance improvement, as we never go back.
   query.setForwardOnly(true);
 
-  if (!query.exec("SELECT esc_id, esc_name, esc_alias, first_notification, last_notification, notification_interval, escalation_period, escalation_options1, escalation_options2 from escalation"))
+  if (!query.exec("SELECT esc_id, esc_name, esc_alias, first_notification,"
+                  "last_notification, notification_interval, escalation_period,"
+                  "escalation_options1, escalation_options2"
+                  " FROM escalation"))
     throw (exceptions::msg()
       << "Notification: cannot select escalation in loader: "
       << query.lastError().text());
@@ -64,7 +67,8 @@ void escalation_loader::load(QSqlDatabase* db, escalation_builder* output) {
 
 void escalation_loader::_load_relations(QSqlQuery& query,
                                         escalation_builder& output) {
-  if (!query.exec("SELECT escalation_esc_id, host_host_id FROM escalation_host_relation"))
+  if (!query.exec("SELECT escalation_esc_id, host_host_id"
+                  " FROM escalation_host_relation"))
     throw (exceptions::msg()
       << "Notification: cannot select escalation_host_relation in loader: "
       << query.lastError().text());
@@ -72,7 +76,8 @@ void escalation_loader::_load_relations(QSqlQuery& query,
     output.connect_escalation_node_id(query.value(0).toUInt(),
                                       node_id(query.value(1).toUInt()));
 
-  if (!query.exec("SELECT escalation_esc_id, host_host_id, service_service_id FROM escalation_service_relation"))
+  if (!query.exec("SELECT escalation_esc_id, host_host_id, service_service_id"
+                  " FROM escalation_service_relation"))
     throw (exceptions::msg()
       << "Notification: cannot select escalation_host_relation in loader: "
       << query.lastError().text());

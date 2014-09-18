@@ -41,7 +41,11 @@ void downtime_loader::load(QSqlDatabase* db, downtime_builder* output) {
   // Performance improvement, as we never go back.
   query.setForwardOnly(true);
 
-  if (!query.exec("SELECT downtime_id, entry_time, host_id, service_id, author, cancelled, deletion_time, duration, end_time, fixed, start_time, actual_start_time, actual_end_time, started, triggered_by, type FROM downtimes"))
+  if (!query.exec("SELECT downtime_id, entry_time, host_id, service_id, author,"
+                  "cancelled, deletion_time, duration, end_time, fixed,"
+                  "start_time, actual_start_time, actual_end_time, started,"
+                  "triggered_by, type"
+                  " FROM downtimes"))
     throw (exceptions::msg()
       << "Notification: cannot select downtimes in loader: "
       << query.lastError().text());

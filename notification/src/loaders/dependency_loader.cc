@@ -45,7 +45,9 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
   // Performance improvement, as we never go back.
   query.setForwardOnly(true);
 
-  if (!query.exec("SELECT dep_id, dep_name, dep_description, inherits_parent, execution_failure_criteria, notification_failure_criteria FROM dependency"))
+  if (!query.exec("SELECT dep_id, dep_name, dep_description, inherits_parent,"
+                  "execution_failure_criteria, notification_failure_criteria"
+                  " FROM dependency"))
     throw (exceptions::msg()
       << "Notification: cannot select dependency in loader: "
       << query.lastError().text());
@@ -81,7 +83,8 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
 void dependency_loader::_load_relations(QSqlQuery& query,
                                         dependency_builder& output) {
 
-  if (!query.exec("SELECT dependency_dep_id, host_host_id FROM dependency_hostChild_relation"))
+  if (!query.exec("SELECT dependency_dep_id, host_host_id"
+                  " FROM dependency_hostChild_relation"))
     throw (exceptions::msg()
       << "Notification: cannot select dependency_hostChild_relation in loader: "
       << query.lastError().text());
@@ -89,7 +92,8 @@ void dependency_loader::_load_relations(QSqlQuery& query,
     output.dependency_node_id_child_relation(query.value(0).toUInt(),
                                              node_id(query.value(1).toUInt()));
 
-  if (!query.exec("SELECT dependency_dep_id, host_host_id FROM dependency_hostParent_relation"))
+  if (!query.exec("SELECT dependency_dep_id, host_host_id"
+                  " FROM dependency_hostParent_relation"))
     throw (exceptions::msg()
       << "Notification: cannot select dependency_hostParent_relation in loader: "
       << query.lastError().text());
@@ -97,7 +101,8 @@ void dependency_loader::_load_relations(QSqlQuery& query,
     output.dependency_node_id_parent_relation(query.value(0).toUInt(),
                                               node_id(query.value(1).toUInt()));
 
-  if (!query.exec("SELECT dependency_dep_id, service_service_id, host_host_id FROM dependency_serviceChild_relation"))
+  if (!query.exec("SELECT dependency_dep_id, service_service_id, host_host_id"
+                  " FROM dependency_serviceChild_relation"))
     throw (exceptions::msg()
       << "Notification: cannot select dependency_serviceChild_relation in loader: "
       << query.lastError().text());
@@ -106,7 +111,8 @@ void dependency_loader::_load_relations(QSqlQuery& query,
                                              node_id(query.value(2).toUInt(),
                                                      query.value(1).toUInt()));
 
-  if (!query.exec("SELECT dependency_dep_id, service_service_id, host_host_id FROM dependency_serviceParent_relation"))
+  if (!query.exec("SELECT dependency_dep_id, service_service_id, host_host_id"
+                  " FROM dependency_serviceParent_relation"))
     throw (exceptions::msg()
       << "Notification: cannot select dependency_serviceParent_relation in loader: "
       << query.lastError().text());
@@ -132,11 +138,12 @@ void dependency_loader::_load_relations(QSqlQuery& query,
                   &dependency_builder::dependency_hostgroup_child_relation);
 }
 
-void dependency_loader::_load_relation(QSqlQuery& query,
-                                       dependency_builder& output,
-                                       std::string const& relation_id_name,
-                                       std::string const& table,
-                                       void (dependency_builder::*register_method)(unsigned int, unsigned int)) {
+void dependency_loader::_load_relation(
+       QSqlQuery& query,
+       dependency_builder& output,
+       std::string const& relation_id_name,
+       std::string const& table,
+       void (dependency_builder::*register_method)(unsigned int, unsigned int)) {
   std::stringstream ss;
   ss << "SELECT dependency_dep_id, " << relation_id_name << " FROM " << table;
   if (!query.exec(ss.str().c_str()))

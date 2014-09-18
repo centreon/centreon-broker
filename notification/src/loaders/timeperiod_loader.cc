@@ -41,7 +41,10 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
   // Performance improvement, as we never go back.
   query.setForwardOnly(true);
 
-  if (!query.exec("SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday, tp_tuesday, tp_wednesday, tp_thursday, tp_friday, tp_saturday sunday from timeperiod"))
+  if (!query.exec("SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday,"
+                  "tp_tuesday, tp_wednesday, tp_thursday, tp_friday,"
+                  "tp_saturday sunday"
+                  " FROM timeperiod"))
     throw (exceptions::msg()
       << "Notification: cannot select timeperiod in loader: "
       << query.lastError().text());
@@ -63,7 +66,8 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
                            tperiod);
   }
 
-  if (!query.exec("SELECT exception_id, timeperiod_id, days, timerange from timeperiod_exceptions"))
+  if (!query.exec("SELECT exception_id, timeperiod_id, days, timerange"
+                  " FROM timeperiod_exceptions"))
     throw (exceptions::msg()
       << "Notification: cannot select timeperiod_exceptions in loader: "
       << query.lastError().text());
@@ -76,7 +80,8 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
     output->add_timeperiod_exception(timeperiod_id, days, timerange);
   }
 
-  if (!query.exec("SELECT exclude_id, timeperiod_id, timeperiod_exclude_id from timeperiod_exclude_relations"))
+  if (!query.exec("SELECT exclude_id, timeperiod_id, timeperiod_exclude_id"
+                  " FROM timeperiod_exclude_relations"))
     throw (exceptions::msg()
       << "Notification: cannot select timeperiod_exclude_relations in loader: "
       << query.lastError().text());
@@ -88,7 +93,8 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
     output->add_timeperiod_exclude_relation(timeperiod_id, timeperiod_exclude_id);
   }
 
-  if (!query.exec("SELECT include_id, timeperiod_id, timeperiod_include_id from timeperiod_include_relations"))
+  if (!query.exec("SELECT include_id, timeperiod_id, timeperiod_include_id"
+                  " FROM timeperiod_include_relations"))
     throw (exceptions::msg()
       << "Notification: cannot select timeperiod_include_relations in loader: "
       << query.lastError().text());

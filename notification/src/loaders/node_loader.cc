@@ -58,7 +58,8 @@ void node_loader::load(QSqlDatabase* db, node_builder* output) {
 
   QSet<unsigned int> service_cache;
 
-  if (!query.exec("SELECT host_host_id, service_service_id FROM host_service_relation"))
+  if (!query.exec("SELECT host_host_id, service_service_id"
+                  " FROM host_service_relation"))
     throw (exceptions::msg()
       << "Notification: cannot select host_service_relation in loader: "
       << query.lastError().text());

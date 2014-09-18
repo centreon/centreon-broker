@@ -42,7 +42,8 @@ void acknowledgement_loader::load(QSqlDatabase* db,
   // Performance improvement, as we never go back.
   query.setForwardOnly(true);
 
-  if (!query.exec("SELECT host_id, acknowledgement_type FROM hosts WHERE acknowledged = true"))
+  if (!query.exec("SELECT host_id, acknowledgement_type"
+                  " FROM hosts WHERE acknowledged = true"))
     throw (exceptions::msg()
       << "Notification: cannot select hosts in loader: "
       << query.lastError().text());
@@ -57,7 +58,8 @@ void acknowledgement_loader::load(QSqlDatabase* db,
     output->add_ack(node_id(host_id), ack);
   }
 
-  if (!query.exec("SELECT host_id, service_id, acknowledgement_type FROM services WHERE acknowledged = true"))
+  if (!query.exec("SELECT host_id, service_id, acknowledgement_type"
+                  " FROM services WHERE acknowledged = true"))
     throw (exceptions::msg()
       << "Notification: cannot select services in loader: "
       << query.lastError().text());

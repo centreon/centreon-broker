@@ -44,7 +44,14 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
 
   QSqlQuery query(*db);
 
-  if (!query.exec("SELECT contact_id, timeperiod_tp_id, timeperiod_tp_id2, contact_name, contact_alias, contact_host_notification_options, contact_service_notification_options, contact_email, contact_pager, contact_address1, contact_address2, contact_address3, contact_address4, contact_address5, contact_address6, contact_enable_notifications from contact"))
+  if (!query.exec("SELECT contact_id, timeperiod_tp_id, timeperiod_tp_id2,"
+                  "contact_name, contact_alias,"
+                  "contact_host_notification_options,"
+                  "contact_service_notification_options, contact_email,"
+                  "contact_pager, contact_address1, contact_address2,"
+                  "contact_address3, contact_address4, contact_address5,"
+                  "contact_address6, contact_enable_notifications"
+                  " FROM contact"))
     throw (exceptions::msg()
       << "Notification: cannot select contact in loader: "
       << query.lastError().text());
@@ -101,7 +108,10 @@ void contact_loader::_load_relations(QSqlQuery& query,
                  &contact_builder::connect_contact_contactgroup);
 
 
-  if (!query.exec("select a.contact_contact_id, b.command_name from contact_hostcommands_relation as a LEFT JOIN command as b ON a.command_command_id = b.command_id;"))
+  if (!query.exec("select a.contact_contact_id, b.command_name"
+                  " FROM contact_hostcommands_relation as a"
+                  " LEFT JOIN command as b"
+                  " ON a.command_command_id = b.command_id;"))
     throw (exceptions::msg()
       << "Notification: cannot select contact_hostcommands_relation in loader: "
       << query.lastError().text());
@@ -110,7 +120,10 @@ void contact_loader::_load_relations(QSqlQuery& query,
     output.connect_contact_hostcommand(query.value(0).toUInt(),
                                        query.value(1).toString().toStdString());
 
-  if (!query.exec("select a.contact_contact_id, b.command_name from contact_servicecommands_relation as a LEFT JOIN command as b ON a.command_command_id = b.command_id;"))
+  if (!query.exec("select a.contact_contact_id, b.command_name"
+                  " FROM contact_servicecommands_relation as a"
+                  " LEFT JOIN command as b"
+                  " ON a.command_command_id = b.command_id;"))
     throw (exceptions::msg()
       << "Notification: cannot select contact_servicecommands_relation in loader: "
       << query.lastError().text());
@@ -120,7 +133,8 @@ void contact_loader::_load_relations(QSqlQuery& query,
                                           query.value(1).toString().toStdString());
 
 
-  if (!query.exec("SELECT contact_id, host_host_id FROM contact_host_relation"))
+  if (!query.exec("SELECT contact_id, host_host_id"
+                  " FROM contact_host_relation"))
     throw (exceptions::msg()
       << "Notification: cannot select contact_host_relation in loader: "
       << query.lastError().text());
@@ -133,7 +147,10 @@ void contact_loader::_load_relations(QSqlQuery& query,
   // twice insertion of services later.
   QSet<unsigned int> service_ids;
 
-  if (!query.exec("SELECT a.host_host_id, a.service_service_id, b.contact_id FROM host_service_relation AS a LEFT JOIN contact_service_relation AS b ON a.service_service_id = b.service_service_id"))
+  if (!query.exec("SELECT a.host_host_id, a.service_service_id, b.contact_id"
+                  " FROM host_service_relation AS a"
+                  " LEFT JOIN contact_service_relation AS b"
+                  " ON a.service_service_id = b.service_service_id"))
     throw (exceptions::msg()
       << "Notification: cannot select contact_service_relation in loader: "
       << query.lastError().text());
@@ -145,7 +162,8 @@ void contact_loader::_load_relations(QSqlQuery& query,
   }
 
 
-  if (!query.exec("SELECT contact_id, service_service_id FROM contact_service_relation"))
+  if (!query.exec("SELECT contact_id, service_service_id"
+                  " FROM contact_service_relation"))
     throw (exceptions::msg()
       << "Notification: cannot select contact_service_relation in loader: "
       << query.lastError().text());
