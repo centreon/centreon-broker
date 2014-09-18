@@ -31,6 +31,12 @@ using namespace com::centreon::broker::notification::objects;
 
 acknowledgement_loader::acknowledgement_loader() {}
 
+/**
+ *  Load the acknowledgements from the database.
+ *
+ *  @param[in] db       An open connection to the database.
+ * @param[out] output   An acknowledgement builder object to register the acknowledgements.
+ */
 void acknowledgement_loader::load(QSqlDatabase* db,
                                   acknowledgement_builder* output) {
   // If we don't have any db or output, don't do anything.
@@ -77,6 +83,12 @@ void acknowledgement_loader::load(QSqlDatabase* db,
   }
 }
 
+/**
+ *  Update the acknowledgements from a new event.
+ *
+ *  @param[in] new_ack       The acknowledgement event.
+ * @param[out] output        The acknowledgement builder used to register the downtime.
+ */
 void acknowledgement_loader::new_ack(neb::acknowledgement& new_ack,
                                      acknowledgement_builder& output) {
   shared_ptr<acknowledgement> ack;

@@ -31,6 +31,12 @@ using namespace com::centreon::broker::notification::objects;
 
 dependency_loader::dependency_loader() {}
 
+/**
+ *  Load the dependencies from the database.
+ *
+ *  @param[in] db       An open connection to the database.
+ * @param[out] output   A dependency builder object to register the dependencies.
+ */
 void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
   // If we don't have any db or output, don't do anything.
   if (!db || !output)
@@ -80,6 +86,12 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
     output->set_notification_failure_options(it->first, it->second);
 }
 
+/**
+ *  Load the relations from the database.
+ *
+ *  @param[in] query    A query object linked to the db.
+ *  @param[out] output  An output dependency builder to load the relations.
+ */
 void dependency_loader::_load_relations(QSqlQuery& query,
                                         dependency_builder& output) {
 
@@ -138,6 +150,15 @@ void dependency_loader::_load_relations(QSqlQuery& query,
                   &dependency_builder::dependency_hostgroup_child_relation);
 }
 
+/**
+ *  Load a relation between two ids, one of which is dependency_dep_id, from a table in the database.
+ *
+ *  @param[in,out] query                A query object linked to the db.
+ *  @param[out] output                  The output dependency builder.
+ *  @param[in] relation_id_name         The name of the second relation identifier.
+ *  @param[in] table                    The table to load the relations from.
+ *  @param[in] register_method          The dependency builder method to call to register the escalation.
+ */
 void dependency_loader::_load_relation(
        QSqlQuery& query,
        dependency_builder& output,

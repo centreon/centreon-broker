@@ -37,6 +37,12 @@ static void _parse_host_notification_options(std::string const& line,
 static void _parse_service_notification_options(std::string const& line,
                                                 contact& cont);
 
+/**
+ *  Load the contacts from the database.
+ *
+ *  @param[in] db       An open connection to the database.
+ * @param[out] output   A contact builder object to register the contacts.
+ */
 void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
   // If we don't have any db or output, don't do anything.
   if (!db || !output)
@@ -59,14 +65,17 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
   while (query.next()) {
     shared_ptr<contact> cont(new contact);
     unsigned int id = query.value(0).toUInt();
-    cont->set_host_notification_period(query.value(1).toString().toStdString());
-    cont->set_service_notification_period(query.value(2).toString().toStdString());
+    cont->set_host_notification_period(
+          query.value(1).toString().toStdString());
+    cont->set_service_notification_period(
+          query.value(2).toString().toStdString());
     cont->set_name(query.value(3).toString().toStdString());
     cont->set_alias(query.value(4).toString().toStdString());
     _parse_host_notification_options(query.value(5).toString().toStdString(),
                                      *cont);
-    _parse_service_notification_options(query.value(6).toString().toStdString(),
-                                        *cont);
+    _parse_service_notification_options(
+          query.value(6).toString().toStdString(),
+          *cont);
     cont->set_email(query.value(7).toString().toStdString());
     cont->set_pager(query.value(8).toString().toStdString());
     cont->add_address(query.value(9).toString().toStdString());
@@ -98,6 +107,12 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
   }
 }
 
+/**
+ *  Load the relations from the database.
+ *
+ *  @param[in] query    A query object linked to the db.
+ *  @param[out] output  An output contact builder to load the relations.
+ */
 void contact_loader::_load_relations(QSqlQuery& query,
                                      contact_builder& output) {
   _load_relation(query,
@@ -117,8 +132,9 @@ void contact_loader::_load_relations(QSqlQuery& query,
       << query.lastError().text());
 
   while (query.next())
-    output.connect_contact_hostcommand(query.value(0).toUInt(),
-                                       query.value(1).toString().toStdString());
+    output.connect_contact_hostcommand(
+      query.value(0).toUInt(),
+      query.value(1).toString().toStdString());
 
   if (!query.exec("select a.contact_contact_id, b.command_name"
                   " FROM contact_servicecommands_relation as a"
@@ -129,8 +145,9 @@ void contact_loader::_load_relations(QSqlQuery& query,
       << query.lastError().text());
 
   while (query.next())
-    output.connect_contact_servicecommand(query.value(0).toUInt(),
-                                          query.value(1).toString().toStdString());
+    output.connect_contact_servicecommand(
+      query.value(0).toUInt(),
+      query.value(1).toString().toStdString());
 
 
   if (!query.exec("SELECT contact_id, host_host_id"
@@ -157,8 +174,9 @@ void contact_loader::_load_relations(QSqlQuery& query,
 
   while (query.next()) {
     service_ids.insert(query.value(1).toUInt());
-    output.connect_contact_node_id(query.value(2).toUInt(),
-                                   node_id(query.value(0).toUInt(), query.value(1).toUInt()));
+    output.connect_contact_node_id(
+      query.value(2).toUInt(),
+      node_id(query.value(0).toUInt(), query.value(1).toUInt()));
   }
 
 
@@ -174,6 +192,16 @@ void contact_loader::_load_relations(QSqlQuery& query,
                                      node_id(0, query.value(1).toUInt()));
 }
 
+/**
+ *  Load a relation between two ids from a table in the database.
+ *
+ *  @param[in,out] query                A query object linked to the db.
+ *  @param[out] output                  The output contact builder.
+ *  @param[in] first_relation_id_name   The name of the first relation identifier.
+ *  @param[in] second_relation_id_name  The name of the second relation identifier.
+ *  @param[in] table                    The table to load the relations from.
+ *  @param[in] register_method          The contact builder method to call to register the relation.
+ */
 void contact_loader::_load_relation(QSqlQuery& query,
                                     contact_builder& output,
                                     std::string const& first_relation_id_name,
@@ -221,6 +249,12 @@ static void _parse_host_notification_options(std::string const& line,
   }
 }
 
+/**
+ *  Parse the notification options from a string list of options.
+ *
+ *  @param[in] line   The line to parse
+ *  @param[out] cont  The object to fill.
+ */
 static void _parse_service_notification_options(std::string const& line,
                                                 contact& cont) {
   if (line == "n")

@@ -29,6 +29,12 @@ using namespace com::centreon::broker::notification::objects;
 
 escalation_loader::escalation_loader() {}
 
+/**
+ *  Load the escalations from the database.
+ *
+ *  @param[in] db       An open connection to the database.
+ * @param[out] output   An escalation builder object to register the escalations.
+ */
 void escalation_loader::load(QSqlDatabase* db, escalation_builder* output) {
   // If we don't have any db or output, don't do anything.
   if (!db || !output)
@@ -103,6 +109,16 @@ void escalation_loader::_load_relations(QSqlQuery& query,
                  &escalation_builder::connect_escalation_servicegroup);
 }
 
+
+/**
+ *  Load a relation between two ids, one of which is escalation_esc_id, from a table in the database.
+ *
+ *  @param[in,out] query                A query object linked to the db.
+ *  @param[out] output                  The output escalation builder.
+ *  @param[in] relation_id_name         The name of the second relation identifier.
+ *  @param[in] table                    The table to load the relations from.
+ *  @param[in] register_method          The escalation builder method to call to register the escalation.
+ */
 void escalation_loader::_load_relation(QSqlQuery& query,
                                        escalation_builder& output,
                                        std::string const& relation_id_name,

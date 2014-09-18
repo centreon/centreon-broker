@@ -31,6 +31,12 @@ using namespace com::centreon::broker::notification::objects;
 
 downtime_loader::downtime_loader() {}
 
+/**
+ *  Load the downtime from the database.
+ *
+ *  @param[in] db       An open connection to the database.
+ * @param[out] output   A downtime builder object to register the downtimes.
+ */
 void downtime_loader::load(QSqlDatabase* db, downtime_builder* output) {
   // If we don't have any db or output, don't do anything.
   if (!db || !output)
@@ -73,6 +79,12 @@ void downtime_loader::load(QSqlDatabase* db, downtime_builder* output) {
   }
 }
 
+/**
+ *  Update the downtimes from a new event.
+ *
+ *  @param[in] new_downtime  The downtime event.
+ * @param[out] output        The downtime builder used to register the downtime.
+ */
 void downtime_loader::new_downtime(neb::downtime& new_downtime,
                                    downtime_builder& output) {
   shared_ptr<downtime> down(new downtime);

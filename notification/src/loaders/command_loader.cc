@@ -28,6 +28,12 @@ using namespace com::centreon::broker::notification::objects;
 
 command_loader::command_loader() {}
 
+/**
+ *  Load the commands from the database.
+ *
+ *  @param[in] db       An open connection to the database.
+ * @param[out] output   A command builder object to register the commands.
+ */
 void command_loader::load(QSqlDatabase* db, command_builder* output) {
   // If we don't have any db or output, don't do anything.
   if (!db || !output)
