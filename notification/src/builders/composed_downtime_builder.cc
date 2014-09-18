@@ -22,6 +22,9 @@
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
+/**
+ *  Default constructor
+ */
 composed_downtime_builder::composed_downtime_builder() {}
 
 void composed_downtime_builder::add_downtime(unsigned int downtime_id,

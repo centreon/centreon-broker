@@ -22,6 +22,9 @@
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
+/**
+ *  Default constructor
+ */
 composed_timeperiod_builder::composed_timeperiod_builder() {}
 
 void composed_timeperiod_builder::add_timeperiod(

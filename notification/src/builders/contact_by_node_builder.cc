@@ -22,6 +22,11 @@
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
+/**
+ *  Construct the object.
+ *
+ *  @param[in,out] table  The table to fill.
+ */
 contact_by_node_builder::contact_by_node_builder(QMultiHash<node_id, contact::ptr>& table) :
   _table(table) {}
 

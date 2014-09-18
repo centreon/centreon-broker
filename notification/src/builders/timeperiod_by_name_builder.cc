@@ -23,6 +23,11 @@
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
+/**
+ *  Construct the object.
+ *
+ *  @param[in,out] table  The table to fill.
+ */
 timeperiod_by_name_builder::timeperiod_by_name_builder(
       QHash<std::string, timeperiod::ptr>& table) :
   _table(table) {}

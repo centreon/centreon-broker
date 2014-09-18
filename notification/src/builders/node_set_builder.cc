@@ -22,6 +22,11 @@
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
+/**
+ *  Construct the object.
+ *
+ *  @param[in,out] set  The set to fill.
+ */
 node_set_builder::node_set_builder(QSet<node_id>& set) :
   _set(set) {}
 

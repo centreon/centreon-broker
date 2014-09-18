@@ -22,6 +22,11 @@
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
+/**
+ *  Construct the object.
+ *
+ *  @param[in,out] table  The table to fill.
+ */
 downtime_by_node_id_builder::downtime_by_node_id_builder(
     QMultiHash<node_id, downtime::ptr>& table) :
   _table(table) {}

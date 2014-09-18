@@ -22,6 +22,9 @@
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
+/**
+ *  Default constructor
+ */
 composed_command_builder::composed_command_builder() {}
 
 void composed_command_builder::add_command(unsigned int id,

@@ -22,6 +22,9 @@
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
+/**
+ *  Default constructor
+ */
 composed_dependency_builder::composed_dependency_builder() {}
 
 void composed_dependency_builder::add_dependency(unsigned int id,

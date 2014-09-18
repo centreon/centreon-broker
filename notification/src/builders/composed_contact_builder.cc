@@ -22,6 +22,9 @@
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
+/**
+ *  Default constructor
+ */
 composed_contact_builder::composed_contact_builder() {}
 
 void composed_contact_builder::add_contact(unsigned int id,

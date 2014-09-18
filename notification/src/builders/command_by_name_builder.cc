@@ -23,6 +23,11 @@
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
+/**
+ *  Construct the object.
+ *
+ *  @param[in,out] table  The table to fill.
+ */
 command_by_name_builder::command_by_name_builder(QHash<std::string, command::ptr>& table) :
   _table(table) {}
 

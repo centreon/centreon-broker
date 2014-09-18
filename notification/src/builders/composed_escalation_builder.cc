@@ -22,6 +22,9 @@
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
+/**
+ *  Default constructor
+ */
 composed_escalation_builder::composed_escalation_builder() {}
 
 void composed_escalation_builder::add_escalation(unsigned int id,

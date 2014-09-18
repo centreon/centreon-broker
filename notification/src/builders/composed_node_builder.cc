@@ -22,6 +22,9 @@
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
+/**
+ *  Default constructor
+ */
 composed_node_builder::composed_node_builder() {}
 
 void composed_node_builder::add_node(node::ptr node) {

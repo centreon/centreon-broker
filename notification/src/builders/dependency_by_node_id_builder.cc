@@ -22,6 +22,12 @@
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
+/**
+ *  Construct the object.
+ *
+ *  @param[in,out] by_child_id  The table of dependency by child id to fill.
+ *  @param[in,out] by_parent_id  The table of dependency by parent id to fill.
+ */
 dependency_by_node_id_builder::dependency_by_node_id_builder(
     QMultiHash<node_id, dependency::ptr>& by_child_id,
     QMultiHash<node_id, dependency::ptr>& by_parent_id) :

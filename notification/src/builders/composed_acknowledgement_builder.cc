@@ -22,6 +22,9 @@
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
+/**
+ *  Default constructor
+ */
 composed_acknowledgement_builder::composed_acknowledgement_builder() {}
 
 void composed_acknowledgement_builder::add_ack(node_id id,
