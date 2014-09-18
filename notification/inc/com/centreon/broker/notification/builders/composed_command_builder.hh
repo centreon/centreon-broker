@@ -40,7 +40,7 @@ namespace       notification {
                   composed_command_builder();
 
     virtual void  add_command(unsigned int id,
-                              command::ptr com);
+                              objects::command::ptr com);
 
   };
 

@@ -25,6 +25,7 @@
 #include "com/centreon/broker/notification/loaders/node_loader.hh"
 
 using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 node_loader::node_loader() {
 

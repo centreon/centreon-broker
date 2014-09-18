@@ -39,12 +39,14 @@ namespace       notification {
                     : public acknowledgement_builder {
   public:
                   acknowledgement_by_node_id_builder(
-                       QMultiHash<node_id, acknowledgement::ptr>& table);
+                     QMultiHash<objects::node_id,
+                                objects::acknowledgement::ptr>& table);
 
-    virtual void  add_ack(node_id id, acknowledgement::ptr ack);
+    virtual void  add_ack(objects::node_id id,
+                          objects::acknowledgement::ptr ack);
 
   private:
-    QMultiHash<node_id, acknowledgement::ptr>&
+    QMultiHash<objects::node_id, objects::acknowledgement::ptr>&
                   _table;
   };
 

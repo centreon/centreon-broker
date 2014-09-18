@@ -20,6 +20,7 @@
 #include "com/centreon/broker/notification/builders/composed_downtime_builder.hh"
 
 using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 composed_downtime_builder::composed_downtime_builder() {}
 

@@ -38,16 +38,17 @@ namespace         notification {
   class           escalation_by_node_id_builder : public escalation_builder {
   public:
                   escalation_by_node_id_builder(
-                      QMultiHash<node_id, escalation::ptr>& table);
+                      QMultiHash<objects::node_id,
+                                 objects::escalation::ptr>& table);
 
     virtual void  add_escalation(unsigned int id,
-                                 escalation::ptr esc);
+                                 objects::escalation::ptr esc);
     virtual void  connect_escalation_node_id(unsigned int esc_id,
-                                             node_id id);
+                                             objects::node_id id);
   private:
-    QHash<unsigned int, escalation::ptr>
+    QHash<unsigned int, objects::escalation::ptr>
                   _cache;
-    QMultiHash<node_id, escalation::ptr>&
+    QMultiHash<objects::node_id, objects::escalation::ptr>&
                   _table;
   };
 

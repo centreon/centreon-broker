@@ -27,6 +27,7 @@
 #include "com/centreon/broker/notification/loaders/dependency_loader.hh"
 
 using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 dependency_loader::dependency_loader() {}
 

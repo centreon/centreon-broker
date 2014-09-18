@@ -21,6 +21,7 @@
 #include "com/centreon/broker/notification/builders/timeperiod_by_name_builder.hh"
 
 using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 timeperiod_by_name_builder::timeperiod_by_name_builder(
       QHash<std::string, timeperiod::ptr>& table) :

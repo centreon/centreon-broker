@@ -41,7 +41,7 @@ namespace       notification {
     virtual       ~composed_timeperiod_builder() {}
 
     virtual void  add_timeperiod(unsigned int id,
-                                 timeperiod::ptr tperiod);
+                                 objects::timeperiod::ptr tperiod);
     virtual void  add_timeperiod_exception(unsigned int timeperiod_id,
                                            std::string const& days,
                                            std::string const& timerange);

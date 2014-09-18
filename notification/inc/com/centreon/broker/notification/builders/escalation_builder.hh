@@ -47,9 +47,9 @@ namespace         notification {
      *  @param[in] esc The escalation.
      */
     virtual void  add_escalation(unsigned int id,
-                                 escalation::ptr esc) {}
+                                 objects::escalation::ptr esc) {}
     virtual void  connect_escalation_node_id(unsigned int esc_id,
-                                             node_id id) {}
+                                             objects::node_id id) {}
     virtual void  connect_escalation_contactgroup(unsigned int id,
                                                   unsigned int contactgroup_id) {}
     virtual void  connect_escalation_hostgroup(unsigned int id,

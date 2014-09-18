@@ -21,7 +21,7 @@
 #include "com/centreon/broker/notification/objects/timezone_locker.hh"
 #include "com/centreon/broker/notification/objects/timeperiod.hh"
 
-using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 static time_t _get_next_valid_time_per_timeperiod(
               time_t preferred_time,

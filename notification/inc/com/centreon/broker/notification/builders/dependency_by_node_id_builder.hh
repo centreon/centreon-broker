@@ -38,23 +38,25 @@ namespace       notification {
   class           dependency_by_node_id_builder : public dependency_builder {
   public:
                   dependency_by_node_id_builder(
-                        QMultiHash<node_id, dependency::ptr>& by_child_id,
-                        QMultiHash<node_id, dependency::ptr>& by_parent_id);
+                        QMultiHash<objects::node_id,
+                                   objects::dependency::ptr>& by_child_id,
+                        QMultiHash<objects::node_id,
+                                   objects::dependency::ptr>& by_parent_id);
 
     virtual void  add_dependency(unsigned int id,
-                                 dependency::ptr d);
+                                 objects::dependency::ptr d);
     virtual void  dependency_node_id_parent_relation(unsigned int dep_id,
-                                                    node_id id);
+                                                     objects::node_id id);
     virtual void  dependency_node_id_child_relation(unsigned int dep_id,
-                                                   node_id id);
+                                                    objects::node_id id);
   private:
                   dependency_by_node_id_builder();
 
-     QHash<unsigned int, dependency::ptr>
+     QHash<unsigned int, objects::dependency::ptr>
                   _cache;
-     QMultiHash<node_id, dependency::ptr>&
+     QMultiHash<objects::node_id, objects::dependency::ptr>&
                   _table_child_id;
-     QMultiHash<node_id, dependency::ptr>&
+     QMultiHash<objects::node_id, objects::dependency::ptr>&
                   _table_parent_id;
   };
 

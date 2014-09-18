@@ -19,7 +19,7 @@
 
 #include "com/centreon/broker/notification/objects/contact.hh"
 
-using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 contact::contact() :
   _can_submit_commands(false),

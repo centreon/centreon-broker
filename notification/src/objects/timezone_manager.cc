@@ -21,7 +21,7 @@
 #include <ctime>
 #include "com/centreon/broker/notification/objects/timezone_manager.hh"
 
-using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 // Class instance.
 timezone_manager* timezone_manager::_instance(NULL);

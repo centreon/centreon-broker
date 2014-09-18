@@ -20,7 +20,7 @@
 #include "com/centreon/broker/notification/objects/string.hh"
 #include "com/centreon/broker/notification/objects/group.hh"
 
-using namespace  com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 /**
  *  Constructor.

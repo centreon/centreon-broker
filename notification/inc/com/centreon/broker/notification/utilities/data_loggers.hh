@@ -47,23 +47,23 @@ namespace logging {
   // is a rvalue, and can only be accessed by a const reference.
   // Am I pushing the boundary of the language too far?
   temp_logger& operator<<(temp_logger const& left,
-                          notification::node_id const&) throw();
+                          notification::objects::node_id const&) throw();
   temp_logger& operator<<(temp_logger const& left,
-                          notification::command const&) throw();
+                          notification::objects::command const&) throw();
   temp_logger& operator<<(temp_logger const& left,
-                          notification::downtime const&) throw();
+                          notification::objects::downtime const&) throw();
   temp_logger& operator<<(temp_logger const& left,
-                          notification::escalation const&) throw();
+                          notification::objects::escalation const&) throw();
   temp_logger& operator<<(temp_logger const& left,
-                          notification::dependency const&) throw();
+                          notification::objects::dependency const&) throw();
   temp_logger& operator<<(temp_logger const& left,
-                          notification::contact const&) throw();
+                          notification::objects::contact const&) throw();
   temp_logger& operator<<(temp_logger const& left,
-                          notification::timeperiod const&) throw();
+                          notification::objects::timeperiod const&) throw();
   temp_logger& operator<<(temp_logger const& left,
-                          notification::node const&) throw();
+                          notification::objects::node const&) throw();
   temp_logger& operator<<(temp_logger const& left,
-                          notification::acknowledgement const&) throw();
+                          notification::objects::acknowledgement const&) throw();
 
   template <typename T>
   temp_logger& operator<<(temp_logger const& left,

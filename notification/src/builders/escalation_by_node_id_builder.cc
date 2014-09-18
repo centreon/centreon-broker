@@ -20,6 +20,7 @@
 #include "com/centreon/broker/notification/builders/escalation_by_node_id_builder.hh"
 
 using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 escalation_by_node_id_builder::escalation_by_node_id_builder(
     QMultiHash<node_id, escalation::ptr>& table) :

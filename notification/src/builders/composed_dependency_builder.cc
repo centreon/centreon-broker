@@ -20,6 +20,7 @@
 #include "com/centreon/broker/notification/builders/composed_dependency_builder.hh"
 
 using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 composed_dependency_builder::composed_dependency_builder() {}
 

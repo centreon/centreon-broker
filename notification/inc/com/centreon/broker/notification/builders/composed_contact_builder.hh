@@ -40,7 +40,7 @@ namespace       notification {
                   composed_contact_builder();
 
     virtual void  add_contact(unsigned int id,
-                              contact::ptr con);
+                              objects::contact::ptr con);
     virtual void  connect_contact_contactgroup(unsigned int contact_id,
                                                unsigned int contactgroup_id);
     virtual void  connect_contact_hostcommand(unsigned int contact_id,
@@ -51,7 +51,7 @@ namespace       notification {
                                     std::string const& key,
                                     std::string const& value);
     virtual void  connect_contact_node_id(unsigned int contact_id,
-                                          node_id id);
+                                          objects::node_id id);
   };
 
 }

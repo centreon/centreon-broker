@@ -20,6 +20,7 @@
 #include "com/centreon/broker/notification/builders/composed_timeperiod_builder.hh"
 
 using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 composed_timeperiod_builder::composed_timeperiod_builder() {}
 

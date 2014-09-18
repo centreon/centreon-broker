@@ -37,13 +37,13 @@ namespace         notification {
   class           timeperiod_by_name_builder : public timeperiod_builder {
   public:
                   timeperiod_by_name_builder(
-                        QHash<std::string, timeperiod::ptr>& table);
+                        QHash<std::string, objects::timeperiod::ptr>& table);
     virtual       ~timeperiod_by_name_builder() {}
 
     virtual void  add_timeperiod(unsigned int id,
-                                 timeperiod::ptr tperiod);
+                                 objects::timeperiod::ptr tperiod);
   private:
-    QHash<std::string, timeperiod::ptr>&
+    QHash<std::string, objects::timeperiod::ptr>&
                   _table;
   };
 

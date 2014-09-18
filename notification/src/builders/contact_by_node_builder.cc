@@ -20,6 +20,7 @@
 #include "com/centreon/broker/notification/builders/contact_by_node_builder.hh"
 
 using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 contact_by_node_builder::contact_by_node_builder(QMultiHash<node_id, contact::ptr>& table) :
   _table(table) {}

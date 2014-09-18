@@ -26,16 +26,17 @@
 CCB_BEGIN()
 
 namespace        notification {
+  namespace      objects {
 
-  struct         record {
-    record(const char* name, unsigned int index) :
-      name(name), index(index) {}
-    record() : name(NULL), index(0) {}
+    struct         record {
+      record(const char* name, unsigned int index) :
+        name(name), index(index) {}
+      record() : name(NULL), index(0) {}
 
-    const char*  name;
-    unsigned int index;
-  };
-
+      const char*  name;
+      unsigned int index;
+    };
+  }
 }
 
 CCB_END()

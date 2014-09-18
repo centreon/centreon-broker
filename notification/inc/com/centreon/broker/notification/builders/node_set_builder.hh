@@ -36,15 +36,16 @@ namespace           notification {
    */
   class             node_set_builder : public node_builder{
   public:
-                    node_set_builder(QSet<node_id>& set);
+                    node_set_builder(QSet<objects::node_id>& set);
     virtual         ~node_set_builder() {}
 
-    virtual void    add_node(node::ptr node);
+    virtual void    add_node(objects::node::ptr node);
 
   private:
                     node_set_builder();
 
-    QSet<node_id>&  _set;
+    QSet<objects::node_id>&
+                    _set;
   };
 
 }

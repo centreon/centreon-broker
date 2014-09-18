@@ -20,7 +20,7 @@
 #include "com/centreon/broker/notification/objects/string.hh"
 #include "com/centreon/broker/notification/objects/command.hh"
 
-using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 command::command(std::string const& base_command) :
   _base_command(base_command) {}

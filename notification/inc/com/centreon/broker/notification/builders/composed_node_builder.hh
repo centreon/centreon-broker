@@ -39,7 +39,7 @@ namespace       notification {
   public:
                   composed_node_builder();
 
-    virtual void  add_node(node::ptr node);
+    virtual void  add_node(objects::node::ptr node);
   };
 
 }

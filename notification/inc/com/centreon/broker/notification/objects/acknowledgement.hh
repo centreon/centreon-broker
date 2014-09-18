@@ -26,41 +26,42 @@
 CCB_BEGIN()
 
 namespace        notification {
-  /**
-   *  @class acknowledgement acknowledgement.hh "com/centreon/broker/notification/objects/acknowledgement.hh"
-   *  @brief Acknowledgement object.
-   *
-   *  The object containing the acknowledgement information.
-   */
-  class           acknowledgement {
-  public:
-                  DECLARE_SHARED_PTR(acknowledgement);
+  namespace      objects {
+    /**
+     *  @class acknowledgement acknowledgement.hh "com/centreon/broker/notification/objects/acknowledgement.hh"
+     *  @brief Acknowledgement object.
+     *
+     *  The object containing the acknowledgement information.
+     */
+    class           acknowledgement {
+    public:
+                    DECLARE_SHARED_PTR(acknowledgement);
 
-    enum          type {
-      unknown = 0,
-      host = 1,
-      service = 2
+      enum          type {
+        unknown = 0,
+        host = 1,
+        service = 2
+      };
+                    acknowledgement();
+                    acknowledgement(acknowledgement const& obj);
+                    acknowledgement& operator=(acknowledgement const& obj);
+
+      type          get_type() const throw();
+      void          set_type(type val) throw();
+      int           get_acknowledgement_type() const throw();
+      void          set_acknowledgement_type(int val) throw();
+      unsigned int  get_host_id() const throw();
+      void          set_host_id(unsigned int val) throw();
+      unsigned int  get_service_id() const throw();
+      void          set_service_id(unsigned int val) throw();
+
+    private:
+      type          _type;
+      int           _acknowledgement_type;
+      unsigned int  _host_id;
+      unsigned int  _service_id;
     };
-                  acknowledgement();
-                  acknowledgement(acknowledgement const& obj);
-                  acknowledgement& operator=(acknowledgement const& obj);
-
-    type          get_type() const throw();
-    void          set_type(type val) throw();
-    int           get_acknowledgement_type() const throw();
-    void          set_acknowledgement_type(int val) throw();
-    unsigned int  get_host_id() const throw();
-    void          set_host_id(unsigned int val) throw();
-    unsigned int  get_service_id() const throw();
-    void          set_service_id(unsigned int val) throw();
-
-  private:
-    type          _type;
-    int           _acknowledgement_type;
-    unsigned int  _host_id;
-    unsigned int  _service_id;
-  };
-
+  }
 }
 
 CCB_END()

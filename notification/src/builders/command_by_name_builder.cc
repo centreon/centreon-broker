@@ -21,6 +21,7 @@
 #include "com/centreon/broker/notification/builders/command_by_name_builder.hh"
 
 using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 command_by_name_builder::command_by_name_builder(QHash<std::string, command::ptr>& table) :
   _table(table) {}

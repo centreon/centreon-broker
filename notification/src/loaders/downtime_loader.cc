@@ -27,6 +27,7 @@
 #include "com/centreon/broker/notification/loaders/downtime_loader.hh"
 
 using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 downtime_loader::downtime_loader() {}
 

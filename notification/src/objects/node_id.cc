@@ -21,7 +21,7 @@
 #include <QPair>
 #include "com/centreon/broker/notification/objects/node_id.hh"
 
-using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 node_id::node_id() :
   _host_id(0),
@@ -72,7 +72,7 @@ bool node_id::has_service() const throw() {
 }
 
 // QHash function for hash and sets.
-uint ::com::centreon::broker::notification::qHash(node_id id) {
+uint com::centreon::broker::notification::objects::qHash(node_id id) {
   return (qHash(qMakePair(id.get_host_id(),
                           id.get_service_id())));
 }

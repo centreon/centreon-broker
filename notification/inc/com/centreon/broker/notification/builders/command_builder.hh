@@ -46,7 +46,7 @@ namespace       notification {
      *  @param[in] com The command.
      */
     virtual void  add_command(unsigned int id,
-                              command::ptr com) {}
+                              objects::command::ptr com) {}
   };
 
 }

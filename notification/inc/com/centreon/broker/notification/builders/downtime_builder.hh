@@ -46,7 +46,7 @@ namespace         notification {
      *  @param[in] downtime The downtime.
      */
     virtual void  add_downtime(unsigned int downtime_id,
-                               downtime::ptr downtime) {}
+                               objects::downtime::ptr downtime) {}
   };
 
 }

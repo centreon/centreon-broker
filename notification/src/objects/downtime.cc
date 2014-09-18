@@ -19,7 +19,7 @@
 
 #include "com/centreon/broker/notification/objects/downtime.hh"
 
-using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 downtime::downtime() :
   _entry_time(0),

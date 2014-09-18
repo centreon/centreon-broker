@@ -24,25 +24,25 @@
 
 CCB_BEGIN()
 
-namespace notification {
+namespace   notification {
+  namespace objects {
+  /**
+   *  @class timezone_locker timezone_locker.hh "com/centreon/broker/notification/objects/timezone_locker.hh"
+   *  @brief Handle timezone changes, even in case of exception.
+   *
+   *  This class works on a timezone_manager to push a new timezone at
+   *  construction and pop it when destructed.
+   */
+    class                 timezone_locker {
+    public:
+                          timezone_locker(char const* tz);
+                          ~timezone_locker();
 
-/**
- *  @class timezone_locker timezone_locker.hh "com/centreon/broker/notification/objects/timezone_locker.hh"
- *  @brief Handle timezone changes, even in case of exception.
- *
- *  This class works on a timezone_manager to push a new timezone at
- *  construction and pop it when destructed.
- */
-  class                 timezone_locker {
-  public:
-                        timezone_locker(char const* tz);
-                        ~timezone_locker();
-
-  private:
-                        timezone_locker(timezone_locker const& other);
-    timezone_locker&    operator=(timezone_locker const& other);
-  };
-
+    private:
+                          timezone_locker(timezone_locker const& other);
+      timezone_locker&    operator=(timezone_locker const& other);
+    };
+  }
 }
 
 CCB_END()

@@ -20,6 +20,7 @@
 #include "com/centreon/broker/notification/builders/dependency_by_node_id_builder.hh"
 
 using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 dependency_by_node_id_builder::dependency_by_node_id_builder(
     QMultiHash<node_id, dependency::ptr>& by_child_id,

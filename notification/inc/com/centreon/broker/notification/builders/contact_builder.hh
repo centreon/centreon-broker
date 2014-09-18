@@ -47,7 +47,7 @@ namespace       notification {
      *  @param[in] con The contact.
      */
     virtual void add_contact(unsigned int id,
-                             contact::ptr con) {}
+                             objects::contact::ptr con) {}
     virtual void connect_contact_contactgroup(unsigned int contact_id,
                                               unsigned int contactgroup_id) {}
     virtual void connect_contact_hostcommand(
@@ -57,7 +57,7 @@ namespace       notification {
                   unsigned int contact_id,
                   std::string const& command_name) {}
     virtual void connect_contact_node_id(unsigned int contact_id,
-                                         node_id id) {}
+                                         objects::node_id id) {}
     virtual void add_contact_param(unsigned int contact_id,
                                    std::string const& key,
                                    std::string const& value) {}

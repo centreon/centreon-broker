@@ -20,7 +20,7 @@
 #include "com/centreon/broker/notification/objects/string.hh"
 #include "com/centreon/broker/notification/objects/dependency.hh"
 
-using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 const dependency::name_to_action dependency::_service_actions[] =
 {{"o", service_ok},

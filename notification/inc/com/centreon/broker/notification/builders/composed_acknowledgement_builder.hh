@@ -41,8 +41,8 @@ namespace       notification {
   public:
                   composed_acknowledgement_builder();
 
-    virtual void  add_ack(node_id,
-                          acknowledgement::ptr ack);
+    virtual void  add_ack(objects::node_id,
+                          objects::acknowledgement::ptr ack);
   };
 
 }

@@ -38,11 +38,12 @@ namespace         notification {
    */
   class           contact_by_command_builder : public contact_builder {
   public:
-                  contact_by_command_builder(QMultiHash<std::string, contact::ptr>& table);
+                  contact_by_command_builder(QMultiHash<std::string,
+                                                        objects::contact::ptr>& table);
     virtual       ~contact_by_command_builder() {}
 
     virtual void  add_contact(unsigned int id,
-                              contact::ptr con);
+                              objects::contact::ptr con);
     virtual void connect_contact_hostcommand(
                               unsigned int contact_id,
                               std::string const& command_name);
@@ -51,9 +52,9 @@ namespace         notification {
                               std::string const& command_name);
 
   private:
-    QHash<unsigned int, contact::ptr>
+    QHash<unsigned int, objects::contact::ptr>
                   _cache;
-    QMultiHash<std::string, contact::ptr>&
+    QMultiHash<std::string, objects::contact::ptr>&
                   _table;
                   contact_by_command_builder();
   };

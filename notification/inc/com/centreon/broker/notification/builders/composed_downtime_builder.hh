@@ -40,7 +40,7 @@ namespace       notification {
                   composed_downtime_builder();
 
     virtual void  add_downtime(unsigned int downtime_id,
-                               downtime::ptr downtime);
+                               objects::downtime::ptr downtime);
   };
 
 }

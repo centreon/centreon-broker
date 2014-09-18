@@ -67,6 +67,7 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
 using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 /**************************************
 *                                     *

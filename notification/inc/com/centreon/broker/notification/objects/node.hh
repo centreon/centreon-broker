@@ -28,39 +28,40 @@
 CCB_BEGIN()
 
 namespace        notification {
-  /**
-   *  @class node node.hh "com/centreon/broker/notification/objects/node.hh"
-   *  @brief A node object.
-   *
-   *  The object containing a node of the notification module.
-   */
-  class     node {
-  public:
-            DECLARE_SHARED_PTR(node);
+  namespace      objects {
+    /**
+     *  @class node node.hh "com/centreon/broker/notification/objects/node.hh"
+     *  @brief A node object.
+     *
+     *  The object containing a node of the notification module.
+     */
+    class     node {
+    public:
+              DECLARE_SHARED_PTR(node);
 
-            node();
-            node(node const& obj);
-            node& operator=(node const& obj);
+              node();
+              node(node const& obj);
+              node& operator=(node const& obj);
 
-    int     get_notification_number() const throw();
-    void    set_notification_number(int value);
-    time_t  get_last_notification_time() const throw();
-    void    set_last_notification_time(time_t value);
-    short   get_hard_state() const throw();
-    void    set_hard_state(short value);
-    short   get_soft_state() const throw();
-    void    set_soft_state(short value);
-    node_id get_node_id() const throw();
-    void    set_node_id(node_id) throw();
+      int     get_notification_number() const throw();
+      void    set_notification_number(int value);
+      time_t  get_last_notification_time() const throw();
+      void    set_last_notification_time(time_t value);
+      short   get_hard_state() const throw();
+      void    set_hard_state(short value);
+      short   get_soft_state() const throw();
+      void    set_soft_state(short value);
+      node_id get_node_id() const throw();
+      void    set_node_id(node_id) throw();
 
-  private:
-    int     _notification_number;
-    time_t  _last_notification_time;
-    short   _hard_state;
-    short   _soft_state;
-    node_id _id;
-  };
-
+    private:
+      int     _notification_number;
+      time_t  _last_notification_time;
+      short   _hard_state;
+      short   _soft_state;
+      node_id _id;
+    };
+  }
 }
 
 CCB_END()

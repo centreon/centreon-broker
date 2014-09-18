@@ -26,37 +26,38 @@
 CCB_BEGIN()
 
 namespace         notification {
-  /**
-   *  @class node_id node_id.hh "com/centreon/broker/notification/objects/node_id.hh"
-   *  @brief Node id object.
-   *
-   *  This object contains the id of a node: a host id and an associated
-   *  service id.  Both the host id or the service id can be zero for service
-   *  associated with no hosts and inversely.
-   */
-  class           node_id {
-  public:
-                  node_id();
-                  node_id(node_id const& obj);
-    node_id&      operator=(node_id const& obj);
-                  node_id(unsigned int host_id,
-                          unsigned int service_id = 0);
-    bool          operator<(node_id const& obj) const throw();
-    bool          operator==(node_id const& obj) const throw();
+  namespace       objects {
+    /**
+     *  @class node_id node_id.hh "com/centreon/broker/notification/objects/node_id.hh"
+     *  @brief Node id object.
+     *
+     *  This object contains the id of a node: a host id and an associated
+     *  service id.  Both the host id or the service id can be zero for service
+     *  associated with no hosts and inversely.
+     */
+    class           node_id {
+    public:
+                    node_id();
+                    node_id(node_id const& obj);
+      node_id&      operator=(node_id const& obj);
+                    node_id(unsigned int host_id,
+                            unsigned int service_id = 0);
+      bool          operator<(node_id const& obj) const throw();
+      bool          operator==(node_id const& obj) const throw();
 
-    unsigned int  get_host_id() const throw();
-    unsigned int  get_service_id() const throw();
-    bool          has_host() const throw();
-    bool          has_service() const throw();
+      unsigned int  get_host_id() const throw();
+      unsigned int  get_service_id() const throw();
+      bool          has_host() const throw();
+      bool          has_service() const throw();
 
-  private:
-    unsigned int  _host_id;
-    unsigned int  _service_id;
-  };
+    private:
+      unsigned int  _host_id;
+      unsigned int  _service_id;
+    };
 
-  // QHash function for hash and sets.
-  uint qHash(node_id id);
-
+    // QHash function for hash and sets.
+    uint qHash(objects::node_id id);
+  }
 }
 
 CCB_END()

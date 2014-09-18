@@ -19,7 +19,7 @@
 
 #include "com/centreon/broker/notification/objects/node.hh"
 
-using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 node::node() :
   _notification_number(0),

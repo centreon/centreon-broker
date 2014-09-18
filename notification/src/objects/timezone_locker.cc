@@ -20,7 +20,7 @@
 #include "com/centreon/broker/notification/objects/timezone_locker.hh"
 #include "com/centreon/broker/notification/objects/timezone_manager.hh"
 
-using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 /**
  *  Constructor.

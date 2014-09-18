@@ -21,7 +21,7 @@
 #include <cstring>
 #include "com/centreon/broker/notification/objects/daterange.hh"
 
-using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 /**
  *  Constructor.

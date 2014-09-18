@@ -28,6 +28,7 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 contact_loader::contact_loader() {}
 

@@ -83,17 +83,27 @@ namespace        notification {
     bool                                  _with_state_events;
     unsigned int                          _instance_timeout;
 
-    QSet<node_id>                         _nodes;
-    QMultiHash<node_id, acknowledgement::ptr> _acks;
-    QHash<std::string, command::ptr>      _commands;
-    QHash<std::string, contact::ptr>      _contact_by_name;
-    QMultiHash<node_id, contact::ptr>     _contacts;
-    QMultiHash<std::string, contact::ptr> _contact_by_command;
-    QMultiHash<node_id, dependency::ptr>  _dependency_by_child_id;
-    QMultiHash<node_id, dependency::ptr>  _dependency_by_parent_id;
-    QMultiHash<node_id, downtime::ptr>    _downtimes;
-    QMultiHash<node_id, escalation::ptr>  _escalations;
-    QHash<std::string, timeperiod::ptr>   _timeperiod_by_name;
+    QSet<objects::node_id>                _nodes;
+    QMultiHash<objects::node_id, objects::acknowledgement::ptr>
+                                          _acks;
+    QHash<std::string, objects::command::ptr>
+                                          _commands;
+    QHash<std::string, objects::contact::ptr>
+                                          _contact_by_name;
+    QMultiHash<objects::node_id, objects::contact::ptr>
+                                          _contacts;
+    QMultiHash<std::string, objects::contact::ptr>
+                                          _contact_by_command;
+    QMultiHash<objects::node_id, objects::dependency::ptr>
+                                          _dependency_by_child_id;
+    QMultiHash<objects::node_id, objects::dependency::ptr>
+                                          _dependency_by_parent_id;
+    QMultiHash<objects::node_id, objects::downtime::ptr>
+                                          _downtimes;
+    QMultiHash<objects::node_id, objects::escalation::ptr>
+                                          _escalations;
+    QHash<std::string, objects::timeperiod::ptr>
+                                          _timeperiod_by_name;
 
     void                    _open_db(std::auto_ptr<QSqlDatabase>& db,
                                      QString const& t,

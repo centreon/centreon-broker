@@ -39,17 +39,18 @@ namespace       notification {
    */
   class           contact_by_node_builder : public contact_builder {
   public:
-                  contact_by_node_builder(QMultiHash<node_id, contact::ptr>& table);
+                  contact_by_node_builder(QMultiHash<objects::node_id,
+                                                     objects::contact::ptr>& table);
 
     virtual void  add_contact(unsigned int id,
-                              contact::ptr con);
+                              objects::contact::ptr con);
     virtual void  connect_contact_node_id(unsigned int contact_id,
-                                          node_id id);
+                                          objects::node_id id);
 
   private:
-    QHash<unsigned int, contact::ptr>
+    QHash<unsigned int, objects::contact::ptr>
                   _cache;
-    QMultiHash<node_id, contact::ptr>&
+    QMultiHash<objects::node_id, objects::contact::ptr>&
                   _table;
                   contact_by_node_builder();
   };

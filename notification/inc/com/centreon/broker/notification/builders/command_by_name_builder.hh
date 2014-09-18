@@ -41,13 +41,13 @@ namespace       notification {
                     : public composed_builder<command_builder> {
   public:
                   command_by_name_builder(
-                        QHash<std::string, command::ptr>& table);
+                        QHash<std::string, objects::command::ptr>& table);
 
     virtual void  add_command(unsigned int id,
-                              command::ptr com);
+                              objects::command::ptr com);
 
   private:
-    QHash<std::string, command::ptr>&
+    QHash<std::string, objects::command::ptr>&
                   _table;
   };
 

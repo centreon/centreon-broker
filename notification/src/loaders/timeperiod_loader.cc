@@ -25,6 +25,7 @@
 #include "com/centreon/broker/notification/loaders/timeperiod_loader.hh"
 
 using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 timeperiod_loader::timeperiod_loader() {
 

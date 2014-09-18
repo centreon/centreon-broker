@@ -20,7 +20,7 @@
 #include "com/centreon/broker/notification/objects/string.hh"
 #include "com/centreon/broker/notification/objects/escalation.hh"
 
-using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 const escalation::name_to_action escalation::_service_actions[] =
 {{"w", service_warning},

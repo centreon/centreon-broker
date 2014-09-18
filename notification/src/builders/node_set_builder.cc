@@ -20,6 +20,7 @@
 #include "com/centreon/broker/notification/builders/node_set_builder.hh"
 
 using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 node_set_builder::node_set_builder(QSet<node_id>& set) :
   _set(set) {}

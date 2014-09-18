@@ -25,6 +25,7 @@
 #include "com/centreon/broker/notification/loaders/escalation_loader.hh"
 
 using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 escalation_loader::escalation_loader() {}
 

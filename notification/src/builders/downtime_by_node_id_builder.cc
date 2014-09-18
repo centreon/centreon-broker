@@ -20,6 +20,7 @@
 #include "com/centreon/broker/notification/builders/downtime_by_node_id_builder.hh"
 
 using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::notification::objects;
 
 downtime_by_node_id_builder::downtime_by_node_id_builder(
     QMultiHash<node_id, downtime::ptr>& table) :

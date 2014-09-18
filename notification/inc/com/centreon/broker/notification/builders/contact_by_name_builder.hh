@@ -38,14 +38,15 @@ namespace         notification {
    */
   class           contact_by_name_builder : public contact_builder {
   public:
-                  contact_by_name_builder(QHash<std::string, contact::ptr>& table);
+                  contact_by_name_builder(QHash<std::string,
+                                                objects::contact::ptr>& table);
     virtual       ~contact_by_name_builder() {}
 
     virtual void  add_contact(unsigned int id,
-                              contact::ptr con);
+                              objects::contact::ptr con);
 
   private:
-    QHash<std::string, contact::ptr>&
+    QHash<std::string, objects::contact::ptr>&
                   _table;
                   contact_by_name_builder();
   };

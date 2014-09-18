@@ -30,36 +30,38 @@ typedef std::list<std::string> list_string;
 CCB_BEGIN()
 
 namespace              notification {
-  class                group {
-  public:
-    DECLARE_SHARED_PTR(group);
+  namespace            objects {
+    class                group {
+    public:
+      DECLARE_SHARED_PTR(group);
 
-                       group(bool inherit = false);
-                       group(group const& right);
-                       ~group() throw ();
-    group&             operator=(group const& right);
-    group&             operator=(std::string const& right);
-    group&             operator+=(group const& right);
-    bool               operator==(group const& right) const throw ();
-    bool               operator!=(group const& right) const throw ();
-    bool               operator<(group const& right) const throw ();
-    list_string&       operator*() throw () { return (_data); }
-    list_string const& operator*() const throw () { return (_data); }
-    list_string*       operator->() throw () { return (&_data); }
-    list_string const* operator->() const throw () { return (&_data); }
-    list_string&       get() throw () { return (_data); }
-    list_string const& get() const throw () { return (_data); }
-    bool               is_inherit() const throw () { return (_is_inherit); }
-    void               is_inherit(bool enable) throw () { _is_inherit = enable; }
-    bool               is_set() const throw () { return (_is_set); }
-    void               reset();
+                         group(bool inherit = false);
+                         group(group const& right);
+                         ~group() throw ();
+      group&             operator=(group const& right);
+      group&             operator=(std::string const& right);
+      group&             operator+=(group const& right);
+      bool               operator==(group const& right) const throw ();
+      bool               operator!=(group const& right) const throw ();
+      bool               operator<(group const& right) const throw ();
+      list_string&       operator*() throw () { return (_data); }
+      list_string const& operator*() const throw () { return (_data); }
+      list_string*       operator->() throw () { return (&_data); }
+      list_string const* operator->() const throw () { return (&_data); }
+      list_string&       get() throw () { return (_data); }
+      list_string const& get() const throw () { return (_data); }
+      bool               is_inherit() const throw () { return (_is_inherit); }
+      void               is_inherit(bool enable) throw () { _is_inherit = enable; }
+      bool               is_set() const throw () { return (_is_set); }
+      void               reset();
 
-  private:
-    list_string        _data;
-    bool               _is_inherit;
-    bool               _is_null;
-    bool               _is_set;
-  };
+    private:
+      list_string        _data;
+      bool               _is_inherit;
+      bool               _is_null;
+      bool               _is_set;
+    };
+  }
 }
 
 CCB_END()
