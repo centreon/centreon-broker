@@ -95,6 +95,8 @@ namespace        bam {
                  _event;
 
     void         _open_new_event();
+    void         _generate_events(kpi const& kpi_obj,
+                                  stream* visitor);
   };
 }
 

@@ -19,6 +19,7 @@
 
 #include "com/centreon/broker/bam/ba.hh"
 #include "com/centreon/broker/bam/ba_status.hh"
+#include "com/centreon/broker/bam/event_parent.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi.hh"
 #include "com/centreon/broker/bam/stream.hh"
@@ -141,6 +142,7 @@ bool ba::child_has_update(computable* child, stream* visitor) {
 
     // Generate status event.
     visit(visitor);
+    _generate_events(*static_cast<kpi*>(child), visitor);
   }
   return true;
 }
@@ -271,6 +273,7 @@ void ba::set_level_warning(double level) {
 /**
  *  Visit BA.
  *
+ *  @param[in]  kpi_obj  Kpi that was updated.
  *  @param[out] visitor  Visitor that will receive BA status and events.
  */
 void ba::visit(stream* visitor) {
@@ -281,21 +284,6 @@ void ba::visit(stream* visitor) {
     status->level_downtime = normalize(_downtime_hard);
     status->level_nominal = normalize(_level_hard);
     visitor->write(status.staticCast<io::data>());
-
-    // If no event was cached, create one.
-    if (_event.isNull()) {
-      _open_new_event();
-      return;
-    }
-
-    // If the status was changed, close the current event, write it
-    // and create a new one
-    short actual_status = get_state_hard();
-    if (actual_status != _event->status) {
-      _event->duration = std::difftime(time(NULL), _event->start_time);
-      visitor->write(_event.staticCast<io::data>());
-      _open_new_event();
-    }
   }
   return ;
 }
@@ -398,4 +386,41 @@ void ba::_open_new_event() {
   _event->ba_id = _id;
   _event->start_time = time(NULL);
   _event->status = get_state_hard();
+}
+
+/**
+ *  Generate a ba event and its parenting with a kpi event.
+ *
+ *  @param[in] kpi_obj    The kpi that has been updated.
+ *  @param[out] visitor   The stream to write the event to.
+ */
+void ba::_generate_events(kpi const& kpi_obj,
+                          stream* visitor) {
+  if (!visitor)
+    return;
+
+  // If no event was cached, create one.
+  if (_event.isNull()) {
+    _open_new_event();
+    return;
+  }
+
+  // If the status was changed, close the current event, write it
+  // and create a new one
+  short actual_status = get_state_hard();
+  if (actual_status != _event->status) {
+    _event->duration = std::difftime(time(NULL), _event->start_time);
+    visitor->write(_event.staticCast<io::data>());
+
+    // Generate the event parenting with the kpi.
+    misc::shared_ptr<event_parent> parent_event(new event_parent);
+    parent_event->kpi_id = kpi_obj.get_id();
+    parent_event->kpi_start_time = _event->start_time;
+    parent_event->ba_id = _id;
+    parent_event->ba_start_time = _event->start_time;
+    visitor->write(parent_event.staticCast<io::data>());
+
+    // Open a new event.
+    _open_new_event();
+  }
 }

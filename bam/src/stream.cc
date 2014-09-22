@@ -594,7 +594,7 @@ void stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
 /**
  *  Process a event parent event and write it to the db.
  *
- * @param[in] e The event.
+ *  @param[in] e The event.
  */
 void stream::_process_event_parent(misc::shared_ptr<io::data> const& e) {
   bam::event_parent const&
