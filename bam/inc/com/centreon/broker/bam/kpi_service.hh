@@ -21,6 +21,7 @@
 #  define CCB_BAM_KPI_SERVICE_HH
 
 #  include "com/centreon/broker/bam/kpi.hh"
+#  include "com/centreon/broker/bam/kpi_event.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/bam/service_listener.hh"
 
@@ -81,6 +82,11 @@ namespace        bam {
     short        _state_hard;
     short        _state_soft;
     short        _state_type;
+
+    misc::shared_ptr<kpi_event>
+                 _event;
+
+    void        _open_new_event();
   };
 }
 

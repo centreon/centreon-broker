@@ -356,8 +356,22 @@ void kpi_service::visit(stream* visitor) {
     status->state_hard = _state_hard;
     status->state_soft = _state_soft;
     visitor->write(status.staticCast<io::data>());
+
+    // If no event was cached, create one.
+    if (_event.isNull()) {
+      _open_new_event();
+      return ;
+    }
+
+    // If the status was changed, close the current event, write it
+    // and create a new one
+    if (_state_hard != _event->status) {
+      _event->duration = std::difftime(time(NULL), _event->start_time);
+      visitor->write(_event.staticCast<io::data>());
+      _open_new_event();
+    }
+    return;
   }
-  return ;
 }
 
 /**
@@ -395,4 +409,15 @@ void kpi_service::_internal_copy(kpi_service const& right) {
   _state_soft = right._state_soft;
   _state_type = right._state_type;
   return ;
+}
+
+/**
+ *  Open a new event for this kpi.
+ */
+void kpi_service::_open_new_event() {
+  _event = new(kpi_event);
+
+  _event->kpi_id = _id;
+  _event->start_time = time(NULL);
+  _event->status = _state_hard;
 }
