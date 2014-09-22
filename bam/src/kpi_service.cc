@@ -368,7 +368,8 @@ void kpi_service::visit(stream* visitor) {
     if (_state_hard != _event->status ||
         _downtimed != _event->in_downtime) {
       _event->duration = std::difftime(time(NULL), _event->start_time);
-      _event->impact_level = hard_values.get_nominal();
+      _event->impact_level = _event->in_downtime ? hard_values.get_downtime() :
+                                                   hard_values.get_nominal();
       visitor->write(_event.staticCast<io::data>());
       _open_new_event();
     }
