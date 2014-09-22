@@ -271,7 +271,7 @@ void ba::set_level_warning(double level) {
 /**
  *  Visit BA.
  *
- *  @param[out] visitor  Visitor that will receive BA status.
+ *  @param[out] visitor  Visitor that will receive BA status and events.
  */
 void ba::visit(stream* visitor) {
   if (visitor) {
@@ -281,6 +281,21 @@ void ba::visit(stream* visitor) {
     status->level_downtime = normalize(_downtime_hard);
     status->level_nominal = normalize(_level_hard);
     visitor->write(status.staticCast<io::data>());
+
+    // If no event was cached, create one.
+    if (_event.isNull()) {
+      _open_new_event();
+      return;
+    }
+
+    // If the status was changed, close the current event, write it
+    // and create a new one
+    short actual_status = get_state_hard();
+    if (actual_status != _event->status) {
+      _event->duration = std::difftime(time(NULL), _event->start_time);
+      visitor->write(_event.staticCast<io::data>());
+      _open_new_event();
+    }
   }
   return ;
 }
@@ -372,4 +387,15 @@ void ba::_unapply_impact(ba::impact_info& impact) {
     _recompute();
 
   return ;
+}
+
+/**
+ *  Open a new event for this ba.
+ */
+void ba::_open_new_event() {
+  _event = new(ba_event);
+
+  _event->ba_id = _id;
+  _event->start_time = time(NULL);
+  _event->status = get_state_hard();
 }

@@ -24,6 +24,7 @@
 #  include <QList>
 #  include <QSqlDatabase>
 #  include <QSqlQuery>
+#  include <QMap>
 #  include "com/centreon/broker/bam/configuration/applier/state.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"

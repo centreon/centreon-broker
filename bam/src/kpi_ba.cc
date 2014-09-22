@@ -169,7 +169,7 @@ void kpi_ba::unlink_ba() {
 /**
  *  Visit BA KPI.
  *
- *  @param[out] visitor  Object that will receive status.
+ *  @param[out] visitor  Object that will receive status and events.
  */
 void kpi_ba::visit(stream* visitor) {
   if (visitor) {
@@ -191,6 +191,21 @@ void kpi_ba::visit(stream* visitor) {
     status->state_hard = _ba->get_state_hard();
     status->state_soft = _ba->get_state_soft();
     visitor->write(status.staticCast<io::data>());
+
+    // If no event was cached, create one.
+    if (_event.isNull()) {
+      _open_new_event();
+      return ;
+    }
+
+    // If the status was changed, close the current event, write it
+    // and create a new one
+    short stat = _ba->get_state_hard();
+    if (stat != _event->status) {
+      _event->duration = std::difftime(time(NULL), _event->start_time);
+      visitor->write(_event.staticCast<io::data>());
+      _open_new_event();
+    }
   }
   return ;
 }
@@ -245,4 +260,15 @@ void kpi_ba::_internal_copy(kpi_ba const& right) {
   _impact_critical = right._impact_critical;
   _impact_warning = right._impact_warning;
   return ;
+}
+
+/**
+ *  Open a new event for this kpi.
+ */
+void kpi_ba::_open_new_event() {
+  _event = new(kpi_event);
+
+  _event->kpi_id = _id;
+  _event->start_time = time(NULL);
+  _event->status = _ba->get_state_hard();
 }

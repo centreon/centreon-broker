@@ -217,6 +217,20 @@ time_t timeperiod::get_next_valid(time_t preferred_time) const {
           *this));
 }
 
+void timeperiod::duration_intersect(time_t start_time,
+                                    time_t end_time,
+                                    time_t& out_start_time,
+                                    time_t& out_end_time) const {
+  time_t next_valid_time = get_next_valid(start_time);
+  if (next_valid_time >= end_time) {
+    out_start_time = end_time;
+    out_end_time = end_time;
+    return;
+  }
+  out_start_time = next_valid_time;
+  // STUB
+}
+
 /**
  *  Add a round number of days (expressed in seconds) to a date.
  *

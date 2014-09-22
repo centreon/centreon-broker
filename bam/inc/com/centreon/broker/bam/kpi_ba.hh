@@ -21,6 +21,7 @@
 #  define CCB_BAM_KPI_BA_HH
 
 #  include "com/centreon/broker/bam/kpi.hh"
+#  include "com/centreon/broker/bam/kpi_event.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -67,6 +68,11 @@ namespace   bam {
             _ba;
     double  _impact_critical;
     double  _impact_warning;
+
+    misc::shared_ptr<kpi_event>
+            _event;
+
+    void    _open_new_event();
   };
 }
 

@@ -20,8 +20,10 @@
 #ifndef CCB_BAM_BA_HH
 #  define CCB_BAM_BA_HH
 
+#  include "com/centreon/broker/bam/ba_event.hh"
 #  include "com/centreon/broker/bam/computable.hh"
 #  include "com/centreon/broker/bam/impact_values.hh"
+#  include "com/centreon/broker/bam/indicator_event.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -88,6 +90,11 @@ namespace        bam {
     double       _level_soft;
     double       _level_warning;
     int          _recompute_count;
+
+    misc::shared_ptr<ba_event>
+                 _event;
+
+    void         _open_new_event();
   };
 }
 
