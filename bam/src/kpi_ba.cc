@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/bam/ba.hh"
+#include "com/centreon/broker/bam/event_parent.hh"
 #include "com/centreon/broker/bam/kpi_ba.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/bam/stream.hh"
@@ -205,6 +206,11 @@ void kpi_ba::visit(stream* visitor) {
       _event->duration = std::difftime(time(NULL), _event->start_time);
       visitor->write(_event.staticCast<io::data>());
       _open_new_event();
+
+      misc::shared_ptr<event_parent> parent_event(new event_parent);
+      parent_event->kpi_id = _id;
+      parent_event->ba_id = _ba->get_id();
+      visitor->write(parent_event.staticCast<io::data>());
     }
   }
   return ;
