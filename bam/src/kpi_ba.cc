@@ -204,6 +204,7 @@ void kpi_ba::visit(stream* visitor) {
     short stat = _ba->get_state_hard();
     if (stat != _event->status) {
       _event->duration = std::difftime(time(NULL), _event->start_time);
+      _event->impact_level = hard_values.get_nominal();
       visitor->write(_event.staticCast<io::data>());
       _open_new_event();
 
