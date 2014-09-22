@@ -86,8 +86,6 @@ namespace          bam {
                    _meta_service_update;
     std::auto_ptr<QSqlDatabase>
                    _db;
-    QList<misc::shared_ptr<io::data> >
-                   _events;
   };
 }
 
