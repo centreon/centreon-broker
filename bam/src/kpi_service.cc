@@ -365,7 +365,8 @@ void kpi_service::visit(stream* visitor) {
 
     // If the status was changed, close the current event, write it
     // and create a new one
-    if (_state_hard != _event->status) {
+    if (_state_hard != _event->status ||
+        _downtimed != _event->in_downtime) {
       _event->duration = std::difftime(time(NULL), _event->start_time);
       visitor->write(_event.staticCast<io::data>());
       _open_new_event();
@@ -420,4 +421,5 @@ void kpi_service::_open_new_event() {
   _event->kpi_id = _id;
   _event->start_time = time(NULL);
   _event->status = _state_hard;
+  _event->in_downtime = _downtimed;
 }
