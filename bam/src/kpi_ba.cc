@@ -203,14 +203,18 @@ void kpi_ba::visit(stream* visitor) {
     // and create a new one
     short stat = _ba->get_state_hard();
     if (stat != _event->status) {
-      _event->duration = std::difftime(time(NULL), _event->start_time);
-      _event->impact_level = hard_values.get_nominal();
-      visitor->write(_event.staticCast<io::data>());
+      misc::shared_ptr<kpi_event> ev(_event);
+      ev->duration = std::difftime(time(NULL), ev->start_time);
+      ev->impact_level = hard_values.get_nominal();
+      visitor->write(ev.staticCast<io::data>());
       _open_new_event();
 
       misc::shared_ptr<event_parent> parent_event(new event_parent);
       parent_event->kpi_id = _id;
+      parent_event->kpi_start_time = ev->start_time;
       parent_event->ba_id = _ba->get_id();
+      // TODO: Proper start time for ba.
+      parent_event->ba_start_time = ev->start_time;
       visitor->write(parent_event.staticCast<io::data>());
     }
   }

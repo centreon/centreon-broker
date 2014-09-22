@@ -22,6 +22,7 @@
 
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -41,7 +42,9 @@ namespace        bam {
     unsigned int  type() const;
 
     unsigned int  kpi_id;
+    timestamp     kpi_start_time;
     unsigned int  ba_id;
+    timestamp     ba_start_time;
 
   private:
     void          _internal_copy(event_parent const& other);

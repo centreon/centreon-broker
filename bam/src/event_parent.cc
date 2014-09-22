@@ -29,7 +29,9 @@ using namespace com::centreon::broker::bam;
  */
 event_parent::event_parent()
   : kpi_id(0),
-    ba_id(0) {}
+    kpi_start_time(0),
+    ba_id(0),
+    ba_start_time(0) {}
 
 /**
  *  Copy constructor.
@@ -76,6 +78,8 @@ unsigned int event_parent::type() const {
  */
 void event_parent::_internal_copy(event_parent const& other) {
   kpi_id = other.kpi_id;
+  kpi_start_time = other.kpi_start_time;
   ba_id = other.ba_id;
+  ba_start_time = other.ba_start_time;
   return ;
 }
