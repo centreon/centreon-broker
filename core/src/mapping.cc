@@ -2319,151 +2319,152 @@ namespace     com {
       template <> const mapped_data<neb::acknowledgement>*
         mapped_type<neb::acknowledgement>::members(acknowledgement_mapping);
       template <> const char*
-        mapped_type<neb::acknowledgement>::table("acknowledgements");
+        mapped_type<neb::acknowledgement>::table("rt_acknowledgements");
 
       // Comment mapping.
       template <> const mapped_data<neb::comment>*
         mapped_type<neb::comment>::members(comment_mapping);
       template <> const char*
-        mapped_type<neb::comment>::table("comments");
+        mapped_type<neb::comment>::table("rt_comments");
 
       // Custom variable mapping.
       template <> const mapped_data<neb::custom_variable>*
         mapped_type<neb::custom_variable>::members(custom_variable_mapping);
       template <> char const*
-        mapped_type<neb::custom_variable>::table("customvariables");
+        mapped_type<neb::custom_variable>::table("rt_customvariables");
 
       // Custom variable status mapping.
       template <> const mapped_data<neb::custom_variable_status>*
         mapped_type<neb::custom_variable_status>::members(custom_variable_status_mapping);
       template <> char const*
-        mapped_type<neb::custom_variable_status>::table("customvariables");
+        mapped_type<neb::custom_variable_status>::table("rt_customvariables");
 
       // downtime mapping.
       template <> const mapped_data<neb::downtime>*
         mapped_type<neb::downtime>::members(downtime_mapping);
       template <> const char*
-        mapped_type<neb::downtime>::table("downtimes");
+        mapped_type<neb::downtime>::table("rt_downtimes");
 
       // Event handler mapping.
       template <> const mapped_data<neb::event_handler>*
         mapped_type<neb::event_handler>::members(event_handler_mapping);
       template <> const char*
-        mapped_type<neb::event_handler>::table("eventhandlers");
+        mapped_type<neb::event_handler>::table("rt_eventhandlers");
 
       // Flapping status mapping.
       template <> const mapped_data<neb::flapping_status>*
         mapped_type<neb::flapping_status>::members(flapping_status_mapping);
       template <> char const*
-        mapped_type<neb::flapping_status>::table("flappingstatuses");
+        mapped_type<neb::flapping_status>::table("rt_flappingstatuses");
 
       // host mapping.
       template <> const mapped_data<neb::host>*
         mapped_type<neb::host>::members(host_mapping);
       template <> const char*
-        mapped_type<neb::host>::table("hosts");
+        mapped_type<neb::host>::table("rt_hosts");
 
       // host_check mapping.
       template <> const mapped_data<neb::host_check>*
         mapped_type<neb::host_check>::members(host_check_mapping);
       template <> const char*
-        mapped_type<neb::host_check>::table("hosts");
+        mapped_type<neb::host_check>::table("rt_hosts");
 
       // host_dependency mapping.
       template <> const mapped_data<neb::host_dependency>*
         mapped_type<neb::host_dependency>::members(host_dependency_mapping);
       template <> const char*
-        mapped_type<neb::host_dependency>::table("hosts_hosts_dependencies");
+        mapped_type<neb::host_dependency>::table("rt_hosts_hosts_dependencies");
 
       // host_group mapping.
       template <> const mapped_data<neb::host_group>*
         mapped_type<neb::host_group>::members(host_group_mapping);
       template <> const char*
-        mapped_type<neb::host_group>::table("hostgroups");
+        mapped_type<neb::host_group>::table("rt_hostgroups");
 
       // host_group_member mapping.
       template <> const mapped_data<neb::host_group_member>*
         mapped_type<neb::host_group_member>::members(host_group_member_mapping);
       template <> const char*
-        mapped_type<neb::host_group_member>::table("hosts_hostgroups");
+        mapped_type<neb::host_group_member>::table("rt_hosts_hostgroups");
 
       // host_parent mapping.
       template <> const mapped_data<neb::host_parent>*
         mapped_type<neb::host_parent>::members(host_parent_mapping);
       template <> const char*
-        mapped_type<neb::host_parent>::table("hosts_hosts_parents");
+        mapped_type<neb::host_parent>::table("rt_hosts_hosts_parents");
 
       // host_status mapping.
       template <> const mapped_data<neb::host_status>*
         mapped_type<neb::host_status>::members(host_status_mapping);
       template <> const char*
-        mapped_type<neb::host_status>::table("hosts");
+        mapped_type<neb::host_status>::table("rt_hosts");
 
       // instance mapping.
       template <> const mapped_data<neb::instance>*
         mapped_type<neb::instance>::members(instance_mapping);
       template <> const char*
-        mapped_type<neb::instance>::table("instances");
+        mapped_type<neb::instance>::table("rt_instances");
 
       // instance_status mapping.
       template <> const mapped_data<neb::instance_status>*
         mapped_type<neb::instance_status>::members(instance_status_mapping);
       template <> const char*
-        mapped_type<neb::instance_status>::table("instances");
+        mapped_type<neb::instance_status>::table("rt_instances");
 
       // log_entry mapping.
       template <> const mapped_data<neb::log_entry>*
         mapped_type<neb::log_entry>::members(log_mapping);
       template <> const char*
-        mapped_type<neb::log_entry>::table("logs");
+        mapped_type<neb::log_entry>::table("log_logs");
 
       // module mapping.
       template <> mapped_data<neb::module> const*
         mapped_type<neb::module>::members(module_mapping);
       template <> char const*
-        mapped_type<neb::module>::table("modules");
+        mapped_type<neb::module>::table("rt_modules");
+    // SQL 3.0: Or is it cfg_modules ?
 
       // notification mapping.
       template <> mapped_data<neb::notification> const*
         mapped_type<neb::notification>::members(notification_mapping);
       template <> char const*
-        mapped_type<neb::notification>::table("notifications");
+        mapped_type<neb::notification>::table("rt_notifications");
 
       // service mapping.
       template <> const mapped_data<neb::service>*
         mapped_type<neb::service>::members(service_mapping);
       template <> const char*
-        mapped_type<neb::service>::table("services");
+        mapped_type<neb::service>::table("rt_services");
 
       // service_check mapping.
       template <> const mapped_data<neb::service_check>*
         mapped_type<neb::service_check>::members(service_check_mapping);
       template <> const char*
-        mapped_type<neb::service_check>::table("services");
+        mapped_type<neb::service_check>::table("rt_services");
 
       // service_dependency mapping.
       template <> const mapped_data<neb::service_dependency>*
         mapped_type<neb::service_dependency>::members(service_dependency_mapping);
       template <> const char*
-        mapped_type<neb::service_dependency>::table("services_services_dependencies");
+        mapped_type<neb::service_dependency>::table("rt_services_services_dependencies");
 
       // service_group mapping.
       template <> const mapped_data<neb::service_group>*
         mapped_type<neb::service_group>::members(service_group_mapping);
       template <> const char*
-        mapped_type<neb::service_group>::table("servicegroups");
+        mapped_type<neb::service_group>::table("rt_servicegroups");
 
       // service_group_member mapping.
       template <> const mapped_data<neb::service_group_member>*
         mapped_type<neb::service_group_member>::members(service_group_member_mapping);
       template <> const char*
-        mapped_type<neb::service_group_member>::table("services_servicegroups");
+        mapped_type<neb::service_group_member>::table("rt_services_servicegroups");
 
       // service_status mapping.
       template <> const mapped_data<neb::service_status>*
         mapped_type<neb::service_status>::members(service_status_mapping);
       template <> const char*
-        mapped_type<neb::service_status>::table("services");
+        mapped_type<neb::service_status>::table("rt_services");
 
       // Dumper output mapping.
       template <> const mapped_data<dumper::dump>*
@@ -2481,25 +2482,25 @@ namespace     com {
       template <> const mapped_data<correlation::host_state>*
         mapped_type<correlation::host_state>::members(host_state_mapping);
       template <> const char*
-        mapped_type<correlation::host_state>::table("hoststateevents");
+        mapped_type<correlation::host_state>::table("rt_hoststateevents");
 
       // issue mapping.
       template <> const mapped_data<correlation::issue>*
         mapped_type<correlation::issue>::members(issue_mapping);
       template <> const char*
-        mapped_type<correlation::issue>::table("issues");
+        mapped_type<correlation::issue>::table("rt_issues");
 
       // issue_parent mapping.
       template <> const mapped_data<correlation::issue_parent>*
         mapped_type<correlation::issue_parent>::members(issue_parent_mapping);
       template <> const char*
-        mapped_type<correlation::issue_parent>::table("issues_issues_parents");
+        mapped_type<correlation::issue_parent>::table("rt_issues_issues_parents");
 
       // service_state mapping.
       template <> const mapped_data<correlation::service_state>*
         mapped_type<correlation::service_state>::members(service_state_mapping);
       template <> const char*
-        mapped_type<correlation::service_state>::table("servicestateevents");
+        mapped_type<correlation::service_state>::table("rt_servicestateevents");
 
     }
   }

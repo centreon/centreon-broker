@@ -153,7 +153,7 @@ int main() {
     // Check that retention was successfully replayed.
     {
       std::ostringstream oss;
-      oss << "SELECT last_check FROM services";
+      oss << "SELECT last_check FROM rt_services";
       QSqlQuery q(db);
       if (!q.exec(oss.str().c_str()))
         throw (exceptions::msg()
@@ -172,7 +172,7 @@ int main() {
       }
       if (q.next())
         throw (exceptions::msg()
-               << "invalid entry count in services table");
+               << "invalid entry count in rt_services table");
     }
 
     // Stop Broker daemon.
@@ -199,7 +199,7 @@ int main() {
     // Check that retention was successfully replayed.
     {
       std::ostringstream oss;
-      oss << "SELECT last_check FROM services";
+      oss << "SELECT last_check FROM rt_services";
       QSqlQuery q(db);
       if (!q.exec(oss.str().c_str()))
         throw (exceptions::msg()

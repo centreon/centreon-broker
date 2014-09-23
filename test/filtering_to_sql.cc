@@ -87,7 +87,7 @@ int main() {
     // Check 'instances' table.
     {
       std::ostringstream query;
-      query << "SELECT * FROM instances";
+      query << "SELECT * FROM rt_instances";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read instances from DB: "
@@ -100,7 +100,7 @@ int main() {
     // Check 'logs' table.
     {
       std::ostringstream query;
-      query << "SELECT * FROM logs";
+      query << "SELECT * FROM log_logs";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read logs from DB: "

@@ -207,7 +207,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT hostgroup_id, name, instance_id, action_url, alias, notes, notes_url"
-            << "  FROM hostgroups"
+            << "  FROM rt_hostgroups"
             << "  ORDER BY name";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
@@ -255,7 +255,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT servicegroup_id, name, instance_id, action_url, alias, notes, notes_url"
-            << "  FROM servicegroups"
+            << "  FROM rt_servicegroups"
             << "  ORDER BY name";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
@@ -308,7 +308,7 @@ int main() {
            ++it, ++i) {
         std::ostringstream oss;
         oss << "SELECT host_id"
-            << " FROM hosts_hostgroups"
+            << " FROM rt_hosts_hostgroups"
             << " WHERE hostgroup_id=" << *it
             << " ORDER BY host_id ASC";
         QSqlQuery q(db);
@@ -346,7 +346,7 @@ int main() {
            ++it, ++i) {
         std::ostringstream oss;
         oss << "SELECT service_id"
-            << " FROM services_servicegroups"
+            << " FROM rt_services_servicegroups"
             << " WHERE servicegroup_id=" << *it
             << " ORDER BY service_id ASC";
         QSqlQuery q(db);
@@ -383,7 +383,7 @@ int main() {
     // Check that host groups were deleted from DB.
     {
       QSqlQuery q(db);
-      if (!q.exec("SELECT COUNT(*) FROM hostgroups WHERE enabled=1")
+      if (!q.exec("SELECT COUNT(*) FROM rt_hostgroups WHERE enabled=1")
           || !q.next())
         throw (exceptions::msg()
                << "cannot get host group count from DB: "
@@ -396,7 +396,7 @@ int main() {
     // Check that service groups were deleted from DB.
     {
       QSqlQuery q(db);
-      if (!q.exec("SELECT COUNT(*) FROM servicegroups WHERE enabled=1")
+      if (!q.exec("SELECT COUNT(*) FROM rt_servicegroups WHERE enabled=1")
           || !q.next())
         throw (exceptions::msg()
                << "cannot get service group count from DB: "

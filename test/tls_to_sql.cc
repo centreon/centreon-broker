@@ -99,7 +99,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(host_id)"
-            << "  FROM hosts";
+            << "  FROM rt_hosts";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read host count from DB: "
@@ -114,7 +114,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(service_id)"
-            << "  FROM services";
+            << "  FROM rt_services";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()

@@ -126,7 +126,7 @@ int main() {
       };
       std::ostringstream query;
       query << "SELECT internal_id, host_id, service_id, author, data, persistent, entry_time, deletion_time"
-            << "  FROM comments"
+            << "  FROM rt_comments"
             << "  ORDER BY internal_id";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
@@ -203,7 +203,7 @@ int main() {
       };
       std::ostringstream query;
       query << "SELECT internal_id, deletion_time"
-            << "  FROM comments"
+            << "  FROM rt_comments"
             << "  ORDER BY internal_id";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))

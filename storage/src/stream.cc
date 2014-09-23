@@ -578,10 +578,10 @@ void stream::_check_deleted_index() {
     unsigned long long index_id;
     {
       QSqlQuery q(*_storage_db);
-      if (!q.exec("SELECT id FROM index_data WHERE to_delete=1 LIMIT 1")
+      if (!q.exec("SELECT id FROM rt_index_data WHERE to_delete=1 LIMIT 1")
           || q.lastError().isValid())
         throw (broker::exceptions::msg()
-               << "storage: could not query index_data to get index to delete: "
+               << "storage: could not query rt_index_data to get index to delete: "
                << q.lastError().text());
       if (!q.next())
         break ;
@@ -592,11 +592,11 @@ void stream::_check_deleted_index() {
     std::list<unsigned long long> metrics_to_delete;
     {
       std::ostringstream oss;
-      oss << "SELECT metric_id FROM metrics WHERE index_id=" << index_id;
+      oss << "SELECT metric_id FROM rt_metrics WHERE index_id=" << index_id;
       QSqlQuery q(*_storage_db);
       if (!q.exec(oss.str().c_str()) || q.lastError().isValid())
         throw (broker::exceptions::msg()
-               << "storage: could not get metrics of index "
+               << "storage: could not get rt_metrics of index "
                << index_id);
       while (q.next())
         metrics_to_delete.push_back(q.value(0).toULongLong());
@@ -609,7 +609,7 @@ void stream::_check_deleted_index() {
     // Delete index from DB.
     {
       std::ostringstream oss;
-      oss << "DELETE FROM index_data WHERE id=" << index_id;
+      oss << "DELETE FROM rt_index_data WHERE id=" << index_id;
       QSqlQuery q(*_storage_db);
       if (!q.exec(oss.str().c_str()) || q.lastError().isValid())
         logging::error(logging::low) << "storage: cannot delete index "
@@ -628,7 +628,7 @@ void stream::_check_deleted_index() {
   std::list<unsigned long long> metrics_to_delete;
   {
     QSqlQuery q(*_storage_db);
-    if (!q.exec("SELECT metric_id FROM metrics WHERE to_delete=1")
+    if (!q.exec("SELECT metric_id FROM rt_metrics WHERE to_delete=1")
         || q.lastError().isValid())
       throw (broker::exceptions::msg()
              << "storage: could not get the list of metrics to delete");
@@ -697,7 +697,7 @@ void stream::_delete_metrics(
     // Delete from DB.
     {
       std::ostringstream oss;
-      oss << "DELETE FROM metrics WHERE metric_id=" << metric_id;
+      oss << "DELETE FROM rt_metrics WHERE metric_id=" << metric_id;
       QSqlQuery q(*_storage_db);
       if (!q.exec(oss.str().c_str()) || q.lastError().isValid())
         logging::error(logging::low)
@@ -765,7 +765,7 @@ unsigned int stream::_find_index_id(
         << service_id << ") (host: " << host_name << ", service: "
         << service_desc << ", special: " << special << ")";
       // Update index_data table.
-      QString query("UPDATE index_data"
+      QString query("UPDATE rt_index_data"
                     " SET host_name=:host_name,"
                     "     service_description=:service_description,"
                     "     special=:special"
@@ -780,7 +780,7 @@ unsigned int stream::_find_index_id(
       q.bindValue(":service_id", service_id);
       if (!q.exec() || q.lastError().isValid())
         throw (broker::exceptions::msg() << "storage: could not update "
-                  "service information in index_data (host_id "
+                  "service information in rt_index_data (host_id "
                << host_id << ", service_id " << service_id
                << ", host_name " << host_name
                << ", service_description " << service_desc
@@ -813,7 +813,7 @@ unsigned int stream::_find_index_id(
         << service_id << ")";
       // Build query.
       std::ostringstream oss;
-      oss << "INSERT INTO index_data (" \
+      oss << "INSERT INTO rt_index_data (" \
              "  host_id, host_name," \
              "  service_id, service_description, " \
              "  must_be_rebuild, special)" \
@@ -839,7 +839,7 @@ unsigned int stream::_find_index_id(
 #endif // Qt >= 4.3.2
         std::ostringstream oss2;
         oss2 << "SELECT id" \
-                " FROM index_data" \
+                " FROM rt_index_data" \
                 " WHERE host_id=" << host_id
              << " AND service_id=" << service_id;
         QSqlQuery q2(oss2.str().c_str(), *_storage_db);
@@ -968,7 +968,7 @@ unsigned int stream::_find_metric_id(
     if (*type == perfdata::automatic)
       *type = perfdata::gauge;
     QString query(
-              "INSERT INTO metrics "
+              "INSERT INTO rt_metrics "
               "  (index_id, metric_name, unit_name, warn, warn_low, "
               "   warn_threshold_mode, crit, crit_low, "
               "   crit_threshold_mode, min, max, current_value,"
@@ -1009,7 +1009,7 @@ unsigned int stream::_find_metric_id(
       q.finish();
 #endif // Qt >= 4.3.2
       QString query("SELECT metric_id"
-                    " FROM metrics"
+                    " FROM rt_metrics"
                     " WHERE index_id=:index_id"
                     " AND metric_name=:metric_name");
       QSqlQuery q2(*_storage_db);
@@ -1058,7 +1058,7 @@ void stream::_insert_perfdatas() {
       metric_value& mv(_perfdata_queue.front());
       query.precision(10);
       query << std::scientific
-            << "INSERT INTO data_bin (id_metric, ctime, status, value)"
+            << "INSERT INTO rt_data_bin (id_metric, ctime, status, value)"
                " VALUES (" << mv.metric_id << ", " << mv.c_time << ", "
             << mv.status << ", '";
       if (isinf(mv.value))
@@ -1110,7 +1110,7 @@ void stream::_prepare() {
 
   // Prepare metrics update query.
   _update_metrics.reset(new QSqlQuery(*_storage_db));
-  if (!_update_metrics->prepare("UPDATE metrics" \
+  if (!_update_metrics->prepare("UPDATE rt_metrics" \
                                 " SET unit_name=:unit_name," \
                                 " warn=:warn," \
                                 " warn_low=:warn_low," \
@@ -1145,7 +1145,7 @@ void stream::_rebuild_cache() {
   {
     // Execute query.
     QSqlQuery q("SELECT id, host_id, service_id, host_name, rrd_retention, service_description, special, locked" \
-                " FROM index_data",
+                " FROM rt_index_data",
                 *_storage_db);
     if (!q.exec() || q.lastError().isValid())
       throw (broker::exceptions::msg() << "storage: could not fetch " \
@@ -1177,7 +1177,7 @@ void stream::_rebuild_cache() {
     // Execute query.
     QSqlQuery q("SELECT metric_id, index_id, metric_name," \
                 "       data_source_type, locked" \
-                " FROM metrics",
+                " FROM rt_metrics",
                 *_storage_db);
     if (!q.exec() || q.lastError().isValid())
       throw (broker::exceptions::msg() << "storage: could not fetch " \

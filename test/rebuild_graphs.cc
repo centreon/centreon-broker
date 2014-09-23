@@ -176,7 +176,7 @@ int main() {
       QSqlQuery q(db);
       for (unsigned int i(1); i <= HOST_COUNT * SERVICES_BY_HOST; ++i) {
         std::ostringstream query;
-        query << "INSERT INTO index_data (host_id, service_id)"
+        query << "INSERT INTO rt_index_data (host_id, service_id)"
               << "  VALUES(" << (i - 1) / SERVICES_BY_HOST + 1 << ", "
               << i << ")";
         if (!q.exec(query.str().c_str()))
@@ -204,14 +204,14 @@ int main() {
     std::map<unsigned int, time_t> indexes;
     {
       QSqlQuery q(db);
-      if (!q.exec("SELECT id FROM index_data"))
+      if (!q.exec("SELECT id FROM rt_index_data"))
         throw (exceptions::msg() << "cannot get index list: "
                << qPrintable(q.lastError().text()));
       while (q.next())
         indexes[q.value(0).toUInt()];
       if (indexes.size() != HOST_COUNT * SERVICES_BY_HOST)
         throw (exceptions::msg()
-               << "not enough entries in index_data: got "
+               << "not enough entries in rt_index_data: got "
                << indexes.size() << ", expected "
                << HOST_COUNT * SERVICES_BY_HOST);
     }
@@ -237,7 +237,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT m.metric_id"
-            << "  FROM metrics AS m LEFT JOIN index_data AS i"
+            << "  FROM rt_metrics AS m LEFT JOIN rt_index_data AS i"
             << "  ON m.index_id = i.id"
             << "  ORDER BY i.host_id, i.service_id";
       QSqlQuery q(db);
@@ -249,7 +249,7 @@ int main() {
         metrics[q.value(0).toUInt()].is_infinity = !(++i % 2);
       if (metrics.size() != HOST_COUNT * SERVICES_BY_HOST)
         throw (exceptions::msg()
-               << "not enough entries in metrics: got "
+               << "not enough entries in rt_metrics: got "
                << metrics.size() << ", expected "
                << HOST_COUNT * SERVICES_BY_HOST);
     }
@@ -277,7 +277,7 @@ int main() {
     // Launch rebuild.
     {
       QSqlQuery q(db);
-      if (!q.exec("UPDATE index_data SET must_be_rebuild='1'"))
+      if (!q.exec("UPDATE rt_index_data SET must_be_rebuild='1'"))
         throw (exceptions::msg() << "cannot launch rebuild from DB: "
                << qPrintable(q.lastError().text()));
       sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
@@ -287,7 +287,7 @@ int main() {
     {
       QSqlQuery q(db);
       if (!q.exec("SELECT COUNT(*)"
-                  " FROM index_data"
+                  " FROM rt_index_data"
                   " WHERE must_be_rebuild!='0'")
           || !q.next())
         throw (exceptions::msg()

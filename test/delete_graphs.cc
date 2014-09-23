@@ -170,7 +170,7 @@ int main() {
       for (unsigned int i(1); i <= HOST_COUNT * SERVICES_BY_HOST; ++i) {
         unsigned int host_id((i - 1) / SERVICES_BY_HOST + 1);
         std::ostringstream query;
-        query << "INSERT INTO index_data (host_id, service_id)"
+        query << "INSERT INTO rt_index_data (host_id, service_id)"
               << "  VALUES(" << host_id << ", " << i << ")";
         if (!q.exec(query.str().c_str()))
           throw (exceptions::msg() << "cannot create index of service ("
@@ -204,7 +204,7 @@ int main() {
     {
       QSqlQuery q(db);
       std::string query("SELECT host_id, service_id, id"
-                        "  FROM index_data"
+                        "  FROM rt_index_data"
                         "  ORDER BY host_id, service_id");
       if (!q.exec(query.c_str()))
         throw (exceptions::msg() << "cannot get index list: "
@@ -279,7 +279,7 @@ int main() {
     // Flag an index to delete.
     {
       QSqlQuery q(db);
-      std::string query("UPDATE index_data"
+      std::string query("UPDATE rt_index_data"
                         "  SET to_delete=1"
                         "  WHERE host_id=2");
       if (!q.exec(query.c_str()))
@@ -290,7 +290,7 @@ int main() {
     // Flag metrics to delete.
     {
       QSqlQuery q(db);
-      std::string query("UPDATE metrics AS m JOIN index_data AS i"
+      std::string query("UPDATE rt_metrics AS m JOIN index_data AS i"
                         "  ON m.index_id=i.id"
                         "  SET m.to_delete=1"
                         "  WHERE i.host_id=1 AND i.service_id<>1");
@@ -310,7 +310,7 @@ int main() {
     // Check that only one entry remains in index_data (1, 1).
     {
       QSqlQuery q(db);
-      std::string query("SELECT host_id, service_id FROM index_data");
+      std::string query("SELECT host_id, service_id FROM rt_index_data");
       if (!q.exec(query.c_str()))
         throw (exceptions::msg() << "cannot read index_data: "
                << qPrintable(q.lastError().text()));
@@ -335,7 +335,7 @@ int main() {
     {
       QSqlQuery q(db);
       std::string query("SELECT i.host_id, i.service_id"
-                        "  FROM metrics AS m JOIN index_data AS i"
+                        "  FROM rt_metrics AS m JOIN index_data AS i"
                         "  ON m.index_id=i.id");
       if (!q.exec(query.c_str()))
         throw (exceptions::msg() << "cannot read metrics: "

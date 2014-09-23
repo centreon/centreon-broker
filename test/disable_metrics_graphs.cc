@@ -174,7 +174,7 @@ int main() {
       // Host does not have status graph (yet).
       // for (unsigned int i(0); i < HOST_COUNT; ++i) {
       //   std::ostringstream query;
-      //   query << "INSERT INTO index_data (host_id, service_id)"
+      //   query << "INSERT INTO rt_index_data (host_id, service_id)"
       //         << "  VALUES (" << i + 1 << ", NULL)";
       //   if (!q.exec(query.str().c_str()))
       //     throw (exceptions::msg() << "cannot create index of host "
@@ -182,7 +182,7 @@ int main() {
       // }
       for (unsigned int i(1); i <= HOST_COUNT * SERVICES_BY_HOST; ++i) {
         std::ostringstream query;
-        query << "INSERT INTO index_data (host_id, service_id)"
+        query << "INSERT INTO rt_index_data (host_id, service_id)"
               << "  VALUES (" << (i - 1) / SERVICES_BY_HOST + 1
               << ", " << i << ")";
         if (!q.exec(query.str().c_str()))

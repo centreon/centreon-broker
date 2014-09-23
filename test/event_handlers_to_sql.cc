@@ -256,7 +256,7 @@ int main() {
         "SELECT host_id, service_id, start_time, command_args,"
         "       command_line, early_timeout, end_time, execution_time,"
         "       output, return_code, state, state_type, timeout, type"
-        "  FROM eventhandlers"
+        "  FROM rt_eventhandlers"
         "  ORDER BY host_id DESC, COALESCE(service_id, -1) ASC, start_time ASC");
       QSqlQuery q(db);
       if (!q.exec(query.c_str()))

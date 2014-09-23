@@ -99,7 +99,7 @@ int main() {
     // Check for outdated instance
     {
       std::ostringstream query;
-      query << "SELECT COUNT(instance_id) from instances where outdated = TRUE";
+      query << "SELECT COUNT(instance_id) from rt_instances where outdated = TRUE";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check outdated instances from DB: "
@@ -114,7 +114,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(service_id)"
-            << "  FROM services WHERE state = " << STATE_UNKNOWN;
+            << "  FROM rt_services WHERE state = " << STATE_UNKNOWN;
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check outdated services from DB: "
@@ -130,7 +130,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(host_id)"
-            << "  FROM hosts WHERE state = " << HOST_UNREACHABLE;
+            << "  FROM rt_hosts WHERE state = " << HOST_UNREACHABLE;
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check outdated hosts from DB: "
@@ -150,7 +150,7 @@ int main() {
     {
       std::ostringstream query;
       query
-        << "SELECT COUNT(instance_id) from instances WHERE outdated=FALSE";
+        << "SELECT COUNT(instance_id) from rt_instances WHERE outdated=FALSE";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check living instances from DB: "
@@ -165,7 +165,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(service_id)"
-            << "  FROM services WHERE state != " << STATE_UNKNOWN;
+            << "  FROM rt_services WHERE state != " << STATE_UNKNOWN;
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check living services from DB: "
@@ -181,7 +181,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(host_id)"
-            << "  FROM hosts WHERE state != " << HOST_UNREACHABLE;
+            << "  FROM rt_hosts WHERE state != " << HOST_UNREACHABLE;
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check living hosts from DB: "

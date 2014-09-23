@@ -170,7 +170,7 @@ int main() {
             << "       cancelled, comment_data, deletion_time,"
             << "       duration, end_time, fixed, start_time, started,"
             << "       triggered_by, type"
-            << "  FROM downtimes"
+            << "  FROM rt_downtimes"
             << "  ORDER BY internal_id ASC";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
@@ -270,7 +270,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(*)"
-            << "  FROM hosts"
+            << "  FROM rt_hosts"
             << "  WHERE scheduled_downtime_depth=0";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
@@ -289,7 +289,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(*)"
-            << "  FROM services"
+            << "  FROM rt_services"
             << "  WHERE scheduled_downtime_depth=0";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
@@ -321,7 +321,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT internal_id, actual_end_time, cancelled, deletion_time"
-            << "  FROM downtimes"
+            << "  FROM rt_downtimes"
             << "  ORDER BY internal_id";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))

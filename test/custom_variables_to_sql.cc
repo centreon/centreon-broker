@@ -72,7 +72,7 @@ static void check_host_custom_variables(
   // Execute query.
   char const* query("SELECT host_id, name, default_value, modified,"
                     "       type, update_time, value"
-                    "  FROM customvariables"
+                    "  FROM rt_customvariables"
                     "  WHERE service_id IS NULL"
                     "  ORDER BY host_id");
   QSqlQuery q(db);
@@ -140,7 +140,7 @@ static void check_service_custom_variables(
   char const* query("SELECT host_id, service_id, name,"
                     "       default_value, modified, type, "
                     "       update_time, value"
-                    "  FROM customvariables"
+                    "  FROM rt_customvariables"
                     "  WHERE service_id IS NOT NULL"
                     "  ORDER BY host_id, service_id");
   QSqlQuery q(db);

@@ -160,7 +160,7 @@ int main() {
       };
       std::ostringstream query;
       query << "SELECT dependent_host_id, host_id"
-            << "  FROM hosts_hosts_dependencies"
+            << "  FROM rt_hosts_hosts_dependencies"
             << "  ORDER BY dependent_host_id, host_id";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
@@ -200,7 +200,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT dependent_host_id, dependent_service_id,"
             << "       host_id, service_id"
-            << "  FROM services_services_dependencies"
+            << "  FROM rt_services_services_dependencies"
             << "  ORDER BY dependent_host_id, dependent_service_id,"
             << "           host_id, service_id";
       QSqlQuery q(db);
@@ -248,7 +248,7 @@ int main() {
         { 6, 5 }
       };
       std::ostringstream query;
-      query << "SELECT child_id, parent_id FROM hosts_hosts_parents";
+      query << "SELECT child_id, parent_id FROM rt_hosts_hosts_parents";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read host parents from DB: "
@@ -280,7 +280,7 @@ int main() {
     // Check that host dependencies were deleted.
     {
       QSqlQuery q(db);
-      if (!q.exec("SELECT COUNT(*) FROM hosts_hosts_dependencies")
+      if (!q.exec("SELECT COUNT(*) FROM rt_hosts_hosts_dependencies")
           || !q.next()
           || q.value(0).toUInt())
         throw (exceptions::msg() << "host dependencies were not deleted"
@@ -291,7 +291,7 @@ int main() {
     // Check that service dependencies were deleted.
     {
       QSqlQuery q(db);
-      if (!q.exec("SELECT COUNT(*) FROM services_services_dependencies")
+      if (!q.exec("SELECT COUNT(*) FROM rt_services_services_dependencies")
           || !q.next()
           || q.value(0).toUInt())
         throw (exceptions::msg() << "service dependencies were not "
@@ -302,7 +302,7 @@ int main() {
     // Check that host parents were deleted.
     {
       QSqlQuery q(db);
-      if (!q.exec("SELECT COUNT(*) FROM hosts_hosts_parents")
+      if (!q.exec("SELECT COUNT(*) FROM rt_hosts_hosts_parents")
           || !q.next()
           || q.value(0).toUInt())
         throw (exceptions::msg() << "host parents were not deleted "

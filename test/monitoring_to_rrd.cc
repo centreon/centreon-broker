@@ -236,7 +236,7 @@ int main(int argc, char* argv[]) {
       // Host does not have status graph (yet).
       // for (unsigned int i(0); i < HOST_COUNT; ++i) {
       //   std::ostringstream query;
-      //   query << "INSERT INTO index_data (host_id, service_id)"
+      //   query << "INSERT INTO rt_index_data (host_id, service_id)"
       //         << "  VALUES (" << i + 1 << ", NULL)";
       //   if (!q.exec(query.str().c_str()))
       //     throw (exceptions::msg() << "cannot create index of host "
@@ -244,7 +244,7 @@ int main(int argc, char* argv[]) {
       // }
       for (unsigned int i(1); i <= HOST_COUNT * SERVICES_BY_HOST; ++i) {
         std::ostringstream query;
-        query << "INSERT INTO index_data (host_id, service_id)"
+        query << "INSERT INTO rt_index_data (host_id, service_id)"
               << "  VALUES (" << i << ", " << i << ")";
         if (!q.exec(query.str().c_str()))
           throw (exceptions::msg() << "cannot create index of service ("
@@ -256,7 +256,7 @@ int main(int argc, char* argv[]) {
     std::list<unsigned int> indexes;
     {
       QSqlQuery q(db);
-      if (!q.exec("SELECT id FROM index_data"))
+      if (!q.exec("SELECT id FROM rt_index_data"))
         throw (exceptions::msg() << "cannot get index list: "
                << qPrintable(q.lastError().text()));
       while (q.next())
@@ -323,7 +323,7 @@ int main(int argc, char* argv[]) {
             << "       m.unit_name, m.warn, m.warn_low, "
             << "       m.warn_threshold_mode, m.crit, m.crit_low, "
             << "       m.crit_threshold_mode, m.min, m.max"
-            << "  FROM metrics AS m INNER JOIN index_data AS i"
+            << "  FROM rt_metrics AS m INNER JOIN rt_index_data AS i"
             << "  ON m.index_id=i.id"
             << "  ORDER BY i.host_id ASC, i.service_id ASC";
       QSqlQuery q(db);
@@ -439,13 +439,13 @@ int main(int argc, char* argv[]) {
            ++it) {
         std::ostringstream query;
         query << "SELECT COUNT(*)"
-              << "  FROM data_bin"
+              << "  FROM log_data_bin"
               << "  WHERE id_metric=" << *it;
         QSqlQuery q(db);
         if (!q.exec(query.str().c_str())
             || !q.next()
             || !q.value(0).toUInt())
-          throw (exceptions::msg() << "data_bin is invalid for metric "
+          throw (exceptions::msg() << "log_data_bin is invalid for metric "
                  << *it << ": " << qPrintable(q.lastError().text()));
       }
     }

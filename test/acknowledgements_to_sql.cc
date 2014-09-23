@@ -156,7 +156,7 @@ int main() {
       query << "SELECT host_id, service_id, entry_time, author,"
             << "       comment_data, deletion_time, notify_contacts,"
             << "       persistent_comment, sticky, type"
-            << "  FROM acknowledgements"
+            << "  FROM rt_acknowledgements"
             << "  ORDER BY service_id ASC, host_id ASC";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
@@ -255,7 +255,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT host_id, acknowledged"
-            << "  FROM hosts"
+            << "  FROM rt_hosts"
             << "  ORDER BY host_id";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
@@ -276,7 +276,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT host_id, service_id, acknowledged"
-            << "  FROM services"
+            << "  FROM rt_services"
             << "  ORDER BY host_id ASC, service_id ASC";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
@@ -299,7 +299,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT host_id, service_id, deletion_time"
-            << "  FROM acknowledgements"
+            << "  FROM rt_acknowledgements"
             << "  ORDER BY service_id ASC, host_id ASC";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))

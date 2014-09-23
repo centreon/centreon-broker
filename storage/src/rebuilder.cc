@@ -150,7 +150,7 @@ void rebuilder::run() {
           QSqlQuery index_to_rebuild_query(_db);
           if (!index_to_rebuild_query.exec(
                  "SELECT id, host_id, service_id, rrd_retention"
-                 " FROM index_data"
+                 " FROM rt_index_data"
                  " WHERE must_be_rebuild='1'"))
             throw (broker::exceptions::msg() << "storage: rebuilder: "
                       "could not fetch index to rebuild: "
@@ -185,11 +185,11 @@ void rebuilder::run() {
             std::ostringstream oss;
             if (!info.service_id)
               oss << "SELECT check_interval"
-                  << " FROM hosts"
+                  << " FROM rt_hosts"
                   << " WHERE host_id=" << info.host_id;
             else
               oss << "SELECT check_interval"
-                  << " FROM services"
+                  << " FROM rt_services"
                   << " WHERE host_id=" << info.host_id
                   << "  AND service_id=" << info.service_id;
             QSqlQuery query(_db);
@@ -211,7 +211,7 @@ void rebuilder::run() {
             {
               std::ostringstream oss;
               oss << "SELECT metric_id, metric_name, data_source_type"
-                  << " FROM metrics"
+                  << " FROM rt_metrics"
                   << " WHERE index_id=" << index_id;
               QSqlQuery metrics_to_rebuild_query(_db);
               if (!metrics_to_rebuild_query.exec(oss.str().c_str()))
@@ -387,7 +387,7 @@ void rebuilder::_rebuild_metric(
     // Get data.
     std::ostringstream oss;
     oss << "SELECT ctime, value"
-        << " FROM data_bin"
+        << " FROM rt_data_bin"
         << " WHERE id_metric=" << metric_id
         << " ORDER BY ctime ASC";
     QSqlQuery data_bin_query(_db);
@@ -448,8 +448,8 @@ void rebuilder::_rebuild_status(
     // Get data.
     std::ostringstream oss;
     oss << "SELECT d.ctime, d.status"
-        << " FROM metrics AS m"
-        << " JOIN data_bin AS d"
+        << " FROM rt_metrics AS m"
+        << " JOIN rt_data_bin AS d"
         << " ON m.metric_id=d.id_metric"
         << " WHERE m.index_id=" << index_id
         << " ORDER BY d.ctime ASC";
@@ -511,7 +511,7 @@ void rebuilder::_send_rebuild_event(
  */
 void rebuilder::_set_index_rebuild(unsigned int index_id, short state) {
   std::ostringstream oss;
-  oss << "UPDATE index_data"
+  oss << "UPDATE rt_index_data"
       << " SET must_be_rebuild=" << state + 1
       << " WHERE id=" << index_id;
   QSqlQuery update_index_query(_db);

@@ -392,7 +392,7 @@ void stream::_prepare() {
   _issue_parent_insert.reset(new QSqlQuery(*_db));
   {
     QString query(
-      "INSERT INTO issues_issues_parents (child_id, end_time, start_time, parent_id)"
+      "INSERT INTO rt_issues_issues_parents (child_id, end_time, start_time, parent_id)"
       " VALUES (:child_id, :end_time, :start_time, :parent_id)");
     logging::info(logging::low) << "SQL: preparing statement: "
       << query;
@@ -403,7 +403,7 @@ void stream::_prepare() {
   _issue_select.reset(new QSqlQuery(*_db));
   {
     QString query(
-              "SELECT issue_id FROM issues"
+              "SELECT issue_id FROM rt_issues"
               " WHERE host_id=:host_id"
               " AND service_id=:service_id"
               " AND start_time=:start_time");
@@ -561,7 +561,7 @@ void stream::_prepare() {
   _issue_parent_update.reset(new QSqlQuery(*_db));
   {
     QString query(
-      "UPDATE issues_issues_parents SET end_time=:end_time"
+      "UPDATE rt_issues_issues_parents SET end_time=:end_time"
       " WHERE child_id=:child_id"
       "       AND start_time=:start_time"
       "       AND parent_id=:parent_id");
@@ -848,13 +848,13 @@ void stream::_process_engine(
     time_t now(time(NULL));
     {
       std::ostringstream ss;
-      ss << "UPDATE issues SET end_time=" << now
+      ss << "UPDATE rt_issues SET end_time=" << now
          << " WHERE end_time=0 OR end_time IS NULL";
       _execute(ss.str().c_str());
     }
     {
       std::ostringstream ss;
-      ss << "UPDATE issues_issues_parents SET end_time=" << now
+      ss << "UPDATE rt_issues_issues_parents SET end_time=" << now
          << " WHERE end_time=0 OR end_time IS NULL";
       _execute(ss.str().c_str());
     }
@@ -998,7 +998,7 @@ void stream::_process_host_dependency(
       << "SQL: removing host dependency of " << hd.dependent_host_id
       << " on " << hd.host_id;
     std::ostringstream oss;
-    oss << "DELETE FROM hosts_hosts_dependencies "
+    oss << "DELETE FROM rt_hosts_hosts_dependencies "
            "WHERE dependent_host_id=" << hd.dependent_host_id
         << "  AND host_id=" << hd.host_id;
     _execute(oss.str().c_str());
@@ -1437,7 +1437,7 @@ void stream::_process_module(
   else {
     QSqlQuery q(*_db);
     q.prepare(
-      "DELETE FROM modules "
+      "DELETE FROM rt_modules "
       "WHERE instance_id=:instance_id"
       "  AND filename=:filename");
     q.bindValue(":instance_id", m.instance_id);
@@ -1569,7 +1569,7 @@ void stream::_process_service_dependency(
       << ", " << sd.dependent_service_id << ") on (" << sd.host_id
       << ", " << sd.service_id << ")";
     std::ostringstream oss;
-    oss << "DELETE FROM services_services_dependencies "
+    oss << "DELETE FROM rt_services_services_dependencies "
            "WHERE dependent_host_id=" << sd.dependent_host_id
         << "  AND dependent_service_id=" << sd.dependent_service_id
         << "  AND host_id=" << sd.host_id

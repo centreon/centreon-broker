@@ -140,7 +140,7 @@ int main() {
     // Lock tables.
     {
       QSqlQuery q(db);
-      std::string query("LOCK TABLES logs WRITE, instances WRITE");
+      std::string query("LOCK TABLES log_logs WRITE, rt_instances WRITE");
       if (!q.exec(query.c_str()))
         throw (exceptions::msg() << "cannot lock tables: "
                << q.lastError().text());
@@ -227,7 +227,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(host_id)"
-            << "  FROM hosts";
+            << "  FROM rt_hosts";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read host count from DB: "
@@ -242,7 +242,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(service_id)"
-            << "  FROM services";
+            << "  FROM rt_services";
       QSqlQuery q(db);
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()

@@ -389,7 +389,7 @@ int main() {
       QSqlQuery q(db);
       if (!q.exec("SELECT host_id, start_time, end_time, state,"
                   "       ack_time, in_downtime"
-                  " FROM hoststateevents"
+                  " FROM rt_hoststateevents"
                   " ORDER BY host_id, start_time"))
         throw (exceptions::msg() << "cannot get host state events: "
                << q.lastError().text());
@@ -570,7 +570,7 @@ int main() {
       QSqlQuery q(db);
       if (!q.exec("SELECT host_id, service_id, start_time, end_time,"
                   "       state, ack_time, in_downtime"
-                  " FROM servicestateevents"
+                  " FROM rt_servicestateevents"
                   " ORDER BY host_id, service_id, start_time"))
         throw (exceptions::msg() << "cannot get service state events: "
                << q.lastError().text());
