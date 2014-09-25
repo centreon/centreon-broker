@@ -47,7 +47,8 @@ void notification_scheduler::run() {
     if (_should_exit)
       break;
 
-    // Processing.
+    // Process the actions.
+    _process_actions();
   }
 }
 
@@ -75,4 +76,16 @@ void notification_scheduler::add_action_to_queue(time_t at, action a) {
   // Wake the notification scheduling thread if needed.
   if (need_to_wake)
     _general_condition.wakeAll();
+}
+
+void notification_scheduler::_process_actions() {
+  time_t now = time(NULL);
+  for (run_queue::iterator it(_queue.begin()), end(_queue.end());
+       it != end;
+       ++it) {
+    if (it->first > now)
+      return;
+
+    // Processing
+  }
 }
