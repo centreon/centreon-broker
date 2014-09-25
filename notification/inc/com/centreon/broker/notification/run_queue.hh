@@ -45,6 +45,7 @@ namespace           notification {
     run_queue&        operator=(run_queue const& obj);
 
     void              run(time_t at, action a);
+    void              remove_first();
 
     iterator          begin();
     const_iterator    begin() const;

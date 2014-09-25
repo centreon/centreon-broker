@@ -54,6 +54,8 @@ namespace             notification {
     QWaitCondition
                _general_condition;
 
+    void       _process_actions();
+
     notification_scheduler(notification_scheduler const& obj);
     notification_scheduler& operator=(notification_scheduler const& obj);
   };

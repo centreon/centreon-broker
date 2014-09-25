@@ -61,3 +61,8 @@ time_t run_queue::get_first_time() const throw() {
   else
     return (_actions.begin()->first);
 }
+
+void run_queue::remove_first() {
+  if (!_actions.empty())
+    _actions.erase(_actions.begin());
+}
