@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <limits>
 #include <QMutexLocker>
 #include "com/centreon/broker/notification/notification_scheduler.hh"
 
@@ -24,12 +25,25 @@ using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
 notification_scheduler::notification_scheduler()
-  : _should_exit(false) {}
+  : _should_exit(false),
+    _general_mutex(QMutex::Recursive) {}
 
 void notification_scheduler::run() {
   _general_mutex.lock();
   while (1) {
-    _general_condition.wait(&_general_mutex);
+    // Wait until the first action in the queue - or forever until awakened
+    // if the queue is empty.
+    time_t first_time = _queue.get_first_time();
+    time_t now = time(NULL);
+    unsigned long wait_for = first_time == time_t(-1) ?
+                               std::numeric_limits<unsigned long>::max()
+                               : (first_time >= now) ?
+                                   (first_time - now) * 1000
+                                   : 0;
+
+    _general_condition.wait(&_general_mutex, wait_for);
+
+    // The should exit flag was set - exit.
     if (_should_exit)
       break;
 
@@ -38,9 +52,27 @@ void notification_scheduler::run() {
 }
 
 void notification_scheduler::exit() throw () {
+  // Set the should exit flag.
   {
     QMutexLocker lock(&_general_mutex);
     _should_exit = true;
   }
+  // Wake the notification scheduling thread.
   _general_condition.wakeAll();
+}
+
+void notification_scheduler::add_action_to_queue(time_t at, action a) {
+  bool need_to_wake = false;
+  // Add the action to the queue.
+  {
+    QMutexLocker lock(&_general_mutex);
+    // If we just replaced the first event, we need to wake the scheduling
+    // thread.
+    if (_queue.get_first_time() > at)
+      need_to_wake = true;
+    _queue.run(at, a);
+  }
+  // Wake the notification scheduling thread if needed.
+  if (need_to_wake)
+    _general_condition.wakeAll();
 }

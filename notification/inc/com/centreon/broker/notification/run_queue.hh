@@ -51,6 +51,8 @@ namespace           notification {
     iterator          end();
     const_iterator    end() const;
 
+    time_t            get_first_time() const throw();
+
   private:
     action_map        _actions;
   };

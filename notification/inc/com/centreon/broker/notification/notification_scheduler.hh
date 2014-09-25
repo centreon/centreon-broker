@@ -45,6 +45,8 @@ namespace             notification {
     void       run();
     void       exit() throw ();
 
+    void       add_action_to_queue(time_t at, action a);
+
   private:
     run_queue  _queue;
     bool       _should_exit;

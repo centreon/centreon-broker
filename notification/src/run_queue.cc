@@ -54,3 +54,10 @@ run_queue::iterator run_queue::end() {
 run_queue::const_iterator run_queue::end() const {
   return (_actions.end());
 }
+
+time_t run_queue::get_first_time() const throw() {
+  if (_actions.empty())
+    return (time_t(-1));
+  else
+    return (_actions.begin()->first);
+}
