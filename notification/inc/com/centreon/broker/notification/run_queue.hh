@@ -32,7 +32,7 @@ namespace           notification {
    *  @class run_queue run_queue.hh "com/centreon/broker/notification/run_queue.hh"
    *  @brief A run queue of actions.
    *
-   *  Store action tried by time of beginning.
+   *  Store actions tried by start time.
    */
   class               run_queue {
   public:
