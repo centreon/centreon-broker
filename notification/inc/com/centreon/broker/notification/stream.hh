@@ -41,6 +41,7 @@
 #  include "com/centreon/broker/notification/loaders/acknowledgement_loader.hh"
 #  include "com/centreon/broker/notification/loaders/downtime_loader.hh"
 #  include "com/centreon/broker/notification/builders/node_set_builder.hh"
+#  include "com/centreon/broker/notification/notification_scheduler.hh"
 
 CCB_BEGIN()
 
@@ -77,6 +78,7 @@ namespace        notification {
     stream&      operator=(stream const& s);
     std::auto_ptr<QSqlDatabase>           _centreon_db;
     std::auto_ptr<QSqlDatabase>           _centreon_storage_db;
+    std::auto_ptr<notification_scheduler> _notif_scheduler;
     bool                                  _process_out;
     unsigned int                          _queries_per_transaction;
     unsigned int                          _transaction_queries;

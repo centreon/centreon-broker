@@ -30,8 +30,11 @@ set(NOTIFICATION "80-notification")
 set(NOTIFICATION "${NOTIFICATION}" PARENT_SCOPE)
 add_library("${NOTIFICATION}" SHARED
   # Sources.
+  "${SRC_DIR}/action.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
+  "${SRC_DIR}/notification_scheduler.cc"
+  "${SRC_DIR}/run_queue.cc"
   "${SRC_DIR}/stream.cc"
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/objects/command.cc"
@@ -79,7 +82,10 @@ add_library("${NOTIFICATION}" SHARED
   "${SRC_DIR}/utilities/qhash_func.cc"
   "${PROJECT_SOURCE_DIR}/core/src/mapping.cc"
   # Headers.
+  "${INC_DIR}/com/centreon/broker/notification/action.hh"
   "${INC_DIR}/com/centreon/broker/notification/factory.hh"
+  "${INC_DIR}/com/centreon/broker/notification/notification_scheduler.hh"
+  "${INC_DIR}/com/centreon/broker/notification/run_queue.hh"
   "${INC_DIR}/com/centreon/broker/notification/stream.hh"
   "${INC_DIR}/com/centreon/broker/notification/connector.hh"
   "${INC_DIR}/com/centreon/broker/notification/objects/command.hh"

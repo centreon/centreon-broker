@@ -166,6 +166,10 @@ stream::stream(
            centreon_storage_db,
            id,
            check_replication);
+
+  // Create notification scheduler
+  _notif_scheduler.reset(new notification_scheduler);
+  _notif_scheduler->start();
 }
 
 /**
@@ -194,6 +198,10 @@ stream::stream(stream const& s) : io::stream(s) {
   _clone_db(_centreon_db, s._centreon_db, id);
   // Clone centreon storage database.
   _clone_db(_centreon_storage_db, s._centreon_storage_db, id);
+
+  // Create notification scheduler
+  _notif_scheduler.reset(new notification_scheduler);
+  _notif_scheduler->start();
 }
 
 /**
@@ -229,6 +237,10 @@ stream::~stream() {
 
   // Add this connection to the connections to be deleted.
   QSqlDatabase::removeDatabase(id);
+
+  // Wait for the termination of the thread.
+  _notif_scheduler->exit();
+  _notif_scheduler->wait();
 }
 
 /**
