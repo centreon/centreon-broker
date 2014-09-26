@@ -32,6 +32,7 @@
 #  include <set>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/correlation/issue_parent.hh"
 #  include "com/centreon/broker/notification/loaders/command_loader.hh"
 #  include "com/centreon/broker/notification/loaders/contact_loader.hh"
 #  include "com/centreon/broker/notification/loaders/dependency_loader.hh"
@@ -86,6 +87,8 @@ namespace        notification {
     unsigned int                          _instance_timeout;
 
     QSet<objects::node_id>                _nodes;
+    QHash<objects::node_id, objects::node::ptr>
+                                          _node_by_id;
     QMultiHash<objects::node_id, objects::acknowledgement::ptr>
                                           _acks;
     QHash<std::string, objects::command::ptr>
@@ -122,9 +125,11 @@ namespace        notification {
                               QString const& id);
     void                    _update_objects_from_db();
     void                    _process_service_status_event(
-                              neb::service_status& event);
+                              neb::service_status const& event);
     void                    _process_host_status_event(
-                              neb::host_status& event);
+                              neb::host_status const& event);
+    void                    _process_issue_parent_event(
+                              correlation::issue_parent const& event);
   };
 }
 

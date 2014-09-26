@@ -62,6 +62,7 @@
 #include "com/centreon/broker/notification/builders/downtime_by_node_id_builder.hh"
 #include "com/centreon/broker/notification/builders/escalation_by_node_id_builder.hh"
 #include "com/centreon/broker/notification/builders/node_set_builder.hh"
+#include "com/centreon/broker/notification/builders/node_by_node_id_builder.hh"
 #include "com/centreon/broker/notification/builders/timeperiod_by_name_builder.hh"
 
 using namespace com::centreon::broker;
@@ -311,6 +312,17 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
     else if (elem == neb::de_acknowledgement) {
       // Load acknowledgement
     }
+    else if (elem == neb::de_host_status) {
+
+    }
+    else if (elem == neb::de_service_status) {
+
+    }
+  }
+  else if(cat == io::events::correlation) {
+    if (elem == correlation::de_issue_parent) {
+
+    }
   }
 
   return (retval);
@@ -476,7 +488,9 @@ void stream::_update_objects_from_db() {
     node_loader node;
     composed_node_builder composed;
     node_set_builder set_builder(_nodes);
+    node_by_node_id_builder by_node_id_builder(_node_by_id);
     composed.push_back(set_builder);
+    composed.push_back(by_node_id_builder);
     node.load(_centreon_db.get(), &composed);
   }
   {
@@ -544,6 +558,7 @@ void stream::_update_objects_from_db() {
   // Debug logging for all the data loaded.
 #ifndef NDEBUG
     data_logger::log_container("_nodes", _nodes);
+    data_logger::log_container("_node_by_id", _node_by_id);
     data_logger::log_container("_acks", _acks);
     data_logger::log_container("_commands", _commands);
     data_logger::log_container("_contact_by_command", _contact_by_name);
@@ -557,4 +572,16 @@ void stream::_update_objects_from_db() {
     data_logger::log_container("_escalations", _escalations);
     data_logger::log_container("_timeperiod_by_name", _timeperiod_by_name);
 #endif //!NDEBUG
+}
+
+void stream::_process_service_status_event(neb::service_status const& event) {
+  node_id id(event.host_id, event.service_id);
+}
+
+void stream::_process_host_status_event(neb::host_status const& event) {
+  node_id id(event.host_id);
+}
+
+void stream::_process_issue_parent_event(correlation::issue_parent const& event) {
+
 }
