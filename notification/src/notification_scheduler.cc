@@ -24,10 +24,16 @@
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
+/**
+ *  Default constructor.
+ */
 notification_scheduler::notification_scheduler()
   : _should_exit(false),
     _general_mutex(QMutex::Recursive) {}
 
+/**
+ *  Called by the notification thread when it starts.
+ */
 void notification_scheduler::run() {
   _general_mutex.lock();
   while (1) {
@@ -52,6 +58,9 @@ void notification_scheduler::run() {
   }
 }
 
+/**
+ *  Ask gracefully for the notification thread to exit.
+ */
 void notification_scheduler::exit() throw () {
   // Set the should exit flag.
   {
@@ -62,6 +71,14 @@ void notification_scheduler::exit() throw () {
   _general_condition.wakeAll();
 }
 
+/**
+ *  @brief Add an action to the internal queue.
+ *
+ *  This is perfectly thread safe in and out of the notification thread.
+ *
+ *  @param at  The time of the action.
+ *  @param a   The action.
+ */
 void notification_scheduler::add_action_to_queue(time_t at, action a) {
   bool need_to_wake = false;
   // Add the action to the queue.
@@ -78,6 +95,9 @@ void notification_scheduler::add_action_to_queue(time_t at, action a) {
     _general_condition.wakeAll();
 }
 
+/**
+ *  Called repeatedly by the notification thread to process actions.
+ */
 void notification_scheduler::_process_actions() {
   time_t now = time(NULL);
   for (run_queue::iterator it(_queue.begin()), end(_queue.end());

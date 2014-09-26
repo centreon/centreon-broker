@@ -22,12 +22,27 @@
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
+/**
+ *  Default constructor.
+ */
 run_queue::run_queue() {}
 
+/**
+ *  Copy constructor.
+ *
+ * @param obj  The object to be copied.
+ */
 run_queue::run_queue(run_queue const& obj) {
   run_queue::operator=(obj);
 }
 
+/**
+ *  Assignment operator.
+ *
+ *  @param obj  The object to be copied.
+ *
+ *  @return  A reference to this object.
+ */
 run_queue& run_queue::operator=(run_queue const& obj) {
   if (this != &obj) {
     _actions = obj._actions;
@@ -35,26 +50,57 @@ run_queue& run_queue::operator=(run_queue const& obj) {
   return (*this);
 }
 
+/**
+ *  Add an action to the run_queue, to be runned at a specified time.
+ *
+ *  @param at  The specified time to run the action.
+ *  @param a   The action to run.
+ */
 void run_queue::run(time_t at, action a) {
   _actions.insert(std::make_pair(at, a));
 }
 
+/**
+ *  Get an iterator to the beginning of the run_queue.
+ *
+ *  @return  An iterator to the beginning of the run_queue.
+ */
 run_queue::iterator run_queue::begin() {
   return (_actions.begin());
 }
 
+/**
+ *  Get a const iterator to the beginning of the run_queue.
+ *
+ *  @return  A const iterator to the beginning of the run_queue.
+ */
 run_queue::const_iterator run_queue::begin() const {
   return (_actions.begin());
 }
 
+/**
+ *  Get an iterator to the end of the run_queue.
+ *
+ *  @return  An iterator to the end of the run_queue.
+ */
 run_queue::iterator run_queue::end() {
   return (_actions.end());
 }
 
+/**
+ *  Get a const iterator to the end of the run_queue.
+ *
+ *  @return  A const iterator to the end of the run_queue.
+ */
 run_queue::const_iterator run_queue::end() const {
   return (_actions.end());
 }
 
+/**
+ *  Get the time of the next action, or time_t(-1) if no action.
+ *
+ *  @return  The time of the next action, or time_t(-1) if no action.
+ */
 time_t run_queue::get_first_time() const throw() {
   if (_actions.empty())
     return (time_t(-1));
@@ -62,6 +108,9 @@ time_t run_queue::get_first_time() const throw() {
     return (_actions.begin()->first);
 }
 
+/**
+ *  Remove the next action.
+ */
 void run_queue::remove_first() {
   if (!_actions.empty())
     _actions.erase(_actions.begin());

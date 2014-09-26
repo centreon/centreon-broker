@@ -34,6 +34,9 @@ namespace           notification {
    */
   class               action {
   public:
+    /**
+     *  The type of the action.
+     */
     enum              action_type {
       unknown = 0,
       notification_attempt

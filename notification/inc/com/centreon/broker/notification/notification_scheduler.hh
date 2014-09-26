@@ -42,10 +42,11 @@ namespace             notification {
   public:
                notification_scheduler();
 
-    void       run();
     void       exit() throw ();
-
     void       add_action_to_queue(time_t at, action a);
+
+  protected:
+    void       run();
 
   private:
     run_queue  _queue;
