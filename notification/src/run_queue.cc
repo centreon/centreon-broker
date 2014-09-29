@@ -51,6 +51,15 @@ run_queue& run_queue::operator=(run_queue const& obj) {
 }
 
 /**
+ *  Move the content of this queue to another queue.
+ *
+ *  @param obj  The object from where to move the content of this queue.
+ */
+void run_queue::swap(run_queue& obj) {
+  obj._actions.swap(_actions);
+}
+
+/**
  *  Add an action to the run_queue, to be runned at a specified time.
  *
  *  @param at  The specified time to run the action.

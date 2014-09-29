@@ -35,8 +35,9 @@ notification_scheduler::notification_scheduler()
  *  Called by the notification thread when it starts.
  */
 void notification_scheduler::run() {
-  _general_mutex.lock();
   while (1) {
+    // Lock the general mutex used by the notification scheduler.
+    _general_mutex.lock();
     // Wait until the first action in the queue - or forever until awakened
     // if the queue is empty.
     time_t first_time = _queue.get_first_time();
@@ -99,8 +100,16 @@ void notification_scheduler::add_action_to_queue(time_t at, action a) {
  *  Called repeatedly by the notification thread to process actions.
  */
 void notification_scheduler::_process_actions() {
+  // Move the global queue to a local queue and release the global mutex.
+  // That way, we can add new actions from an external thread while processing
+  // those actions.
+  run_queue local_queue;
+  _queue.swap(local_queue);
+  _general_mutex.unlock();
+
+  // Iterate on the local queue.
   time_t now = time(NULL);
-  for (run_queue::iterator it(_queue.begin()), end(_queue.end());
+  for (run_queue::iterator it(local_queue.begin()), end(local_queue.end());
        it != end;) {
     if (it->first > now)
       return;
@@ -108,6 +117,5 @@ void notification_scheduler::_process_actions() {
     // Processing
 
       ++it;
-      _queue.remove_first();
   }
 }
