@@ -80,3 +80,11 @@ node_id node::get_node_id() const throw() {
 void node::set_node_id(node_id id) throw() {
   _id = id;
 }
+
+std::set<node_id> const& node::get_parents() const throw() {
+  return (_parents);
+}
+
+void node::add_parent(node_id id) {
+  _parents.insert(id);
+}

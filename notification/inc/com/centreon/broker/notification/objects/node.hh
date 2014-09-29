@@ -21,6 +21,7 @@
 #  define CCB_NOTIFICATION_NODE_HH
 
 #  include <ctime>
+#  include <set>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
@@ -53,6 +54,9 @@ namespace        notification {
       void    set_soft_state(short value);
       node_id get_node_id() const throw();
       void    set_node_id(node_id) throw();
+      std::set<node_id> const&
+              get_parents() const throw();
+      void    add_parent(node_id id);
 
     private:
       int     _notification_number;
@@ -60,6 +64,8 @@ namespace        notification {
       short   _hard_state;
       short   _soft_state;
       node_id _id;
+      std::set<node_id>
+              _parents;
     };
   }
 }

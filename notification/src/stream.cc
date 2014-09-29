@@ -502,5 +502,14 @@ void stream::_process_host_status_event(neb::host_status const& event) {
 }
 
 void stream::_process_issue_parent_event(correlation::issue_parent const& event) {
+  node_id id(event.child_host_id, event.child_service_id);
 
+  node::ptr n = _state.get_node_by_id(id);
+  if (!n)
+    throw (exceptions::msg()
+      << "NOTIFICATION: got an unknown issue parent (child host id: "
+      << id.get_host_id() << ", child service id: " << id.get_service_id())
+      << ")";
+
+  n->add_parent(node_id(event.parent_host_id, event.parent_service_id));
 }
