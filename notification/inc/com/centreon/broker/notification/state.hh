@@ -55,6 +55,9 @@ namespace             notification {
     void              update_objects_from_db(QSqlDatabase& centreon_db,
                                              QSqlDatabase& centreon_storage_db);
 
+
+    objects::node::ptr get_node_by_id(objects::node_id);
+
   private:
     QSet<objects::node_id>
                       _nodes;

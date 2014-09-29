@@ -63,7 +63,7 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
       << query.lastError().text());
 
   while (query.next()) {
-    shared_ptr<contact> cont(new contact);
+    contact::ptr cont(new contact);
     unsigned int id = query.value(0).toUInt();
     cont->set_host_notification_period(
           query.value(1).toString().toStdString());

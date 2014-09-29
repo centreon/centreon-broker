@@ -57,7 +57,7 @@ void downtime_loader::load(QSqlDatabase* db, downtime_builder* output) {
       << query.lastError().text());
 
   while (query.next()) {
-    shared_ptr<downtime> down(new downtime);
+    downtime::ptr down(new downtime);
     unsigned int downtime_id = query.value(0).toUInt();
     down->set_entry_time(query.value(1).toUInt());
     down->set_host_id(query.value(2).toUInt());
@@ -87,7 +87,7 @@ void downtime_loader::load(QSqlDatabase* db, downtime_builder* output) {
  */
 void downtime_loader::new_downtime(neb::downtime& new_downtime,
                                    downtime_builder& output) {
-  shared_ptr<downtime> down(new downtime);
+  downtime::ptr down(new downtime);
   down->set_actual_end_time(new_downtime.actual_end_time);
   down->set_actual_start_time(new_downtime.actual_start_time);
   down->set_author(new_downtime.author.toStdString());

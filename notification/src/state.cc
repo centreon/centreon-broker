@@ -194,3 +194,7 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db,
     data_logger::log_container("_timeperiod_by_name", _timeperiod_by_name);
 #endif //!NDEBUG
 }
+
+node::ptr state::get_node_by_id(node_id id) {
+  return (_node_by_id[id]);
+}

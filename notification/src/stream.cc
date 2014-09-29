@@ -44,27 +44,6 @@
 #include "com/centreon/broker/notification/utilities/data_loggers.hh"
 #include "com/centreon/broker/notification/stream.hh"
 
-#include "com/centreon/broker/notification/builders/composed_acknowledgement_builder.hh"
-#include "com/centreon/broker/notification/builders/composed_command_builder.hh"
-#include "com/centreon/broker/notification/builders/composed_contact_builder.hh"
-#include "com/centreon/broker/notification/builders/composed_dependency_builder.hh"
-#include "com/centreon/broker/notification/builders/composed_downtime_builder.hh"
-#include "com/centreon/broker/notification/builders/composed_escalation_builder.hh"
-#include "com/centreon/broker/notification/builders/composed_node_builder.hh"
-#include "com/centreon/broker/notification/builders/composed_timeperiod_builder.hh"
-
-#include "com/centreon/broker/notification/builders/acknowledgement_by_node_id_builder.hh"
-#include "com/centreon/broker/notification/builders/command_by_name_builder.hh"
-#include "com/centreon/broker/notification/builders/contact_by_command_builder.hh"
-#include "com/centreon/broker/notification/builders/contact_by_name_builder.hh"
-#include "com/centreon/broker/notification/builders/contact_by_node_builder.hh"
-#include "com/centreon/broker/notification/builders/dependency_by_node_id_builder.hh"
-#include "com/centreon/broker/notification/builders/downtime_by_node_id_builder.hh"
-#include "com/centreon/broker/notification/builders/escalation_by_node_id_builder.hh"
-#include "com/centreon/broker/notification/builders/node_set_builder.hh"
-#include "com/centreon/broker/notification/builders/node_by_node_id_builder.hh"
-#include "com/centreon/broker/notification/builders/timeperiod_by_name_builder.hh"
-
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
 using namespace com::centreon::broker::notification;
@@ -476,6 +455,12 @@ void stream::_update_objects_from_db() {
 
 void stream::_process_service_status_event(neb::service_status const& event) {
   node_id id(event.host_id, event.service_id);
+
+  node::ptr n = _state.get_node_by_id(id);
+  if (!n)
+    throw (exceptions::msg()
+      << "NOTIFICATION: got an unknown service id: "
+      << id.get_service_id());
 }
 
 void stream::_process_host_status_event(neb::host_status const& event) {

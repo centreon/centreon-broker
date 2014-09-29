@@ -59,7 +59,7 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
       << query.lastError().text());
 
   while (query.next()) {
-    shared_ptr<dependency> dep(new dependency);
+    dependency::ptr dep(new dependency);
     unsigned int id = query.value(0).toUInt();
     dep->set_inherits_parent(query.value(3).toBool());
     dep_execution_failure_options.push_back(

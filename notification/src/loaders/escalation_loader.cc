@@ -54,7 +54,7 @@ void escalation_loader::load(QSqlDatabase* db, escalation_builder* output) {
       << query.lastError().text());
 
   while (query.next()) {
-    shared_ptr<escalation> esc(new escalation);
+    escalation::ptr esc(new escalation);
     unsigned int id = query.value(0).toUInt();
 
     esc->set_first_notification(query.value(3).toUInt());

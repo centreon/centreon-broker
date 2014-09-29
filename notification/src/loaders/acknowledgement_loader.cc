@@ -56,7 +56,7 @@ void acknowledgement_loader::load(QSqlDatabase* db,
 
   while (query.next()) {
     unsigned int host_id = query.value(0).toUInt();
-    shared_ptr<acknowledgement> ack(new acknowledgement);
+    acknowledgement::ptr ack(new acknowledgement);
     ack->set_type(acknowledgement::host);
     ack->set_host_id(host_id);
     ack->set_acknowledgement_type(query.value(1).toInt());
@@ -73,7 +73,7 @@ void acknowledgement_loader::load(QSqlDatabase* db,
   while (query.next()) {
     unsigned int host_id = query.value(0).toUInt();
     unsigned int service_id = query.value(1).toUInt();
-    shared_ptr<acknowledgement> ack(new acknowledgement);
+    acknowledgement::ptr ack(new acknowledgement);
     ack->set_type(acknowledgement::service);
     ack->set_host_id(host_id);
     ack->set_service_id(service_id);
@@ -91,7 +91,7 @@ void acknowledgement_loader::load(QSqlDatabase* db,
  */
 void acknowledgement_loader::new_ack(neb::acknowledgement& new_ack,
                                      acknowledgement_builder& output) {
-  shared_ptr<acknowledgement> ack;
+  acknowledgement::ptr ack;
   ack->set_acknowledgement_type(new_ack.acknowledgement_type);
   ack->set_host_id(new_ack.host_id);
   ack->set_service_id(new_ack.service_id);

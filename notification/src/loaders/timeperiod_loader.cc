@@ -56,7 +56,7 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
       << query.lastError().text());
 
   while(query.next()) {
-    shared_ptr<timeperiod> tperiod(new timeperiod);
+    timeperiod::ptr tperiod(new timeperiod);
     unsigned int timeperiod_id = query.value(0).toUInt();
     tperiod->set_name(query.value(1).toString().toStdString());
     tperiod->set_alias(query.value(2).toString().toStdString());
