@@ -453,9 +453,15 @@ void stream::_update_objects_from_db() {
                                   *_centreon_storage_db.get());
 }
 
+/**
+ *  Process a service status event.
+ *
+ *  @param event  The event to process.
+ */
 void stream::_process_service_status_event(neb::service_status const& event) {
   node_id id(event.host_id, event.service_id);
 
+  // Get the node corresponding to this id.
   node::ptr n = _state.get_node_by_id(id);
   if (!n)
     throw (exceptions::msg()
@@ -477,9 +483,15 @@ void stream::_process_service_status_event(neb::service_status const& event) {
   }
 }
 
+/**
+ *  Process a host status event.
+ *
+ *  @param event  The event to process.
+ */
 void stream::_process_host_status_event(neb::host_status const& event) {
   node_id id(event.host_id);
 
+  // Get the node corresponding to this id.
   node::ptr n = _state.get_node_by_id(id);
   if (!n)
     throw (exceptions::msg()
@@ -501,9 +513,15 @@ void stream::_process_host_status_event(neb::host_status const& event) {
   }
 }
 
+/**
+ *  Process an issue parent event.
+ *
+ *  @param event  The event to process.
+ */
 void stream::_process_issue_parent_event(correlation::issue_parent const& event) {
   node_id id(event.child_host_id, event.child_service_id);
 
+  // Get the node corresponding to this id.
   node::ptr n = _state.get_node_by_id(id);
   if (!n)
     throw (exceptions::msg()
@@ -511,5 +529,6 @@ void stream::_process_issue_parent_event(correlation::issue_parent const& event)
       << id.get_host_id() << ", child service id: " << id.get_service_id())
       << ")";
 
+  // Add a parent relationship between correlated node.
   n->add_parent(node_id(event.parent_host_id, event.parent_service_id));
 }

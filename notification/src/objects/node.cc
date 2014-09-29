@@ -23,6 +23,8 @@ using namespace com::centreon::broker::notification::objects;
 
 node::node() :
   _notification_number(0),
+  _notifications_enabled(true),
+  _notification_interval(0),
   _last_notification_time(0),
   _hard_state(0),
   _soft_state(0) {}
@@ -34,9 +36,13 @@ node::node(node const& obj) {
 node& node::operator=(node const& obj) {
   if (this != &obj) {
     _notification_number = obj._notification_number;
+    _notifications_enabled = obj._notifications_enabled;
+    _notification_interval = obj._notification_interval;
     _last_notification_time = obj._last_notification_time;
     _hard_state = obj._hard_state;
     _soft_state = obj._soft_state;
+    _parents = obj._parents;
+    _notification_period = obj._notification_period;
   }
   return *this;
 }
@@ -87,4 +93,38 @@ std::set<node_id> const& node::get_parents() const throw() {
 
 void node::add_parent(node_id id) {
   _parents.insert(id);
+}
+
+void node::remove_parent(node_id id) {
+  std::set<node_id>::iterator it(_parents.find(id));
+  if (it != _parents.end())
+    _parents.erase(it);
+}
+
+bool node::has_parent() const throw() {
+  return (!_parents.empty());
+}
+
+bool node::get_notifications_enabled() const throw() {
+  return (_notifications_enabled);
+}
+
+void node::set_notifications_enabled(bool enable) throw() {
+  _notifications_enabled = enable;
+}
+
+timeperiod const& node::get_notification_timeperiod() const throw() {
+  return (_notification_period);
+}
+
+void node::set_notification_timeperiod(timeperiod const& tp) {
+  _notification_period = tp;
+}
+
+double node::get_notification_interval() const throw() {
+  return (_notification_interval);
+}
+
+void node::set_notification_interval(double val) throw() {
+  _notification_interval = val;
 }

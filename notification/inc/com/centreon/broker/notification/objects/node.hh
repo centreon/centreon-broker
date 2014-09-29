@@ -25,6 +25,7 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
+#  include "com/centreon/broker/notification/objects/timeperiod.hh"
 
 CCB_BEGIN()
 
@@ -57,15 +58,28 @@ namespace        notification {
       std::set<node_id> const&
               get_parents() const throw();
       void    add_parent(node_id id);
+      void    remove_parent(node_id id);
+      bool    has_parent() const throw();
+      bool    get_notifications_enabled() const throw();
+      void    set_notifications_enabled(bool enable) throw();
+      timeperiod const&
+              get_notification_timeperiod() const throw();
+      void    set_notification_timeperiod(timeperiod const& tp);
+      double  get_notification_interval() const throw();
+      void    set_notification_interval(double val) throw();
 
     private:
       int     _notification_number;
+      bool    _notifications_enabled;
+      double  _notification_interval;
       time_t  _last_notification_time;
       short   _hard_state;
       short   _soft_state;
       node_id _id;
       std::set<node_id>
               _parents;
+      timeperiod
+              _notification_period;
     };
   }
 }
