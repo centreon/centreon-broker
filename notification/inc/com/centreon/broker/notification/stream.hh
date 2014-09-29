@@ -32,17 +32,8 @@
 #  include <set>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/state.hh"
 #  include "com/centreon/broker/correlation/issue_parent.hh"
-#  include "com/centreon/broker/notification/loaders/command_loader.hh"
-#  include "com/centreon/broker/notification/loaders/contact_loader.hh"
-#  include "com/centreon/broker/notification/loaders/dependency_loader.hh"
-#  include "com/centreon/broker/notification/loaders/escalation_loader.hh"
-#  include "com/centreon/broker/notification/loaders/node_loader.hh"
-#  include "com/centreon/broker/notification/loaders/timeperiod_loader.hh"
-#  include "com/centreon/broker/notification/loaders/acknowledgement_loader.hh"
-#  include "com/centreon/broker/notification/loaders/downtime_loader.hh"
-#  include "com/centreon/broker/notification/builders/node_set_builder.hh"
-#  include "com/centreon/broker/notification/notification_scheduler.hh"
 
 CCB_BEGIN()
 
@@ -86,29 +77,7 @@ namespace        notification {
     bool                                  _with_state_events;
     unsigned int                          _instance_timeout;
 
-    QSet<objects::node_id>                _nodes;
-    QHash<objects::node_id, objects::node::ptr>
-                                          _node_by_id;
-    QMultiHash<objects::node_id, objects::acknowledgement::ptr>
-                                          _acks;
-    QHash<std::string, objects::command::ptr>
-                                          _commands;
-    QHash<std::string, objects::contact::ptr>
-                                          _contact_by_name;
-    QMultiHash<objects::node_id, objects::contact::ptr>
-                                          _contacts;
-    QMultiHash<std::string, objects::contact::ptr>
-                                          _contact_by_command;
-    QMultiHash<objects::node_id, objects::dependency::ptr>
-                                          _dependency_by_child_id;
-    QMultiHash<objects::node_id, objects::dependency::ptr>
-                                          _dependency_by_parent_id;
-    QMultiHash<objects::node_id, objects::downtime::ptr>
-                                          _downtimes;
-    QMultiHash<objects::node_id, objects::escalation::ptr>
-                                          _escalations;
-    QHash<std::string, objects::timeperiod::ptr>
-                                          _timeperiod_by_name;
+    state                                 _state;
 
     void                    _open_db(std::auto_ptr<QSqlDatabase>& db,
                                      QString const& t,
