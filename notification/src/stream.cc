@@ -460,11 +460,45 @@ void stream::_process_service_status_event(neb::service_status const& event) {
   if (!n)
     throw (exceptions::msg()
       << "NOTIFICATION: got an unknown service id: "
-      << id.get_service_id());
+      << id.get_service_id() << ", host_id: " << id.get_host_id());
+
+  // Save the old state and copy the current state.
+  short old_hard_state = n->get_hard_state();
+  short old_soft_state = n->get_soft_state();
+  n->set_hard_state(event.last_hard_state);
+  n->set_soft_state(event.current_state);
+
+  // From OK to NOT-OK
+  if (old_hard_state != event.last_hard_state) {
+    action a;
+    a.set_type(action::notification_attempt);
+    a.set_node_id(id);
+    _notif_scheduler->add_action_to_queue(time(NULL) + 1, a);
+  }
 }
 
 void stream::_process_host_status_event(neb::host_status const& event) {
   node_id id(event.host_id);
+
+  node::ptr n = _state.get_node_by_id(id);
+  if (!n)
+    throw (exceptions::msg()
+      << "NOTIFICATION: got an unknown host id: "
+      << id.get_host_id());
+
+  // Save the old state and copy the current state.
+  short old_hard_state = n->get_hard_state();
+  short old_soft_state = n->get_soft_state();
+  n->set_hard_state(event.last_hard_state);
+  n->set_soft_state(event.current_state);
+
+  // From OK to NOT-OK
+  if (old_hard_state != event.last_hard_state) {
+    action a;
+    a.set_type(action::notification_attempt);
+    a.set_node_id(id);
+    _notif_scheduler->add_action_to_queue(time(NULL) + 1, a);
+  }
 }
 
 void stream::_process_issue_parent_event(correlation::issue_parent const& event) {
