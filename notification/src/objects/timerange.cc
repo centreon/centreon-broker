@@ -212,6 +212,14 @@ static bool _build_time_t(std::string const& time_str,
   return (true);
 }
 
+/**
+ *  Build several timeranges from a string describing them.
+ *
+ *  @param[in] line        The string describing them.
+ *  @param[out] timeranges A list of the timeranges built.
+ *
+ *  @return  True if the string was successfully parsed.
+ */
 bool timerange::build_timeranges_from_string(std::string const& line,
                                              std::list<timerange>& timeranges) {
   std::list<std::string> timeranges_str;

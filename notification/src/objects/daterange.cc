@@ -1378,6 +1378,13 @@ bool daterange::build_other_date(std::string const& line,
   return (false);
 }
 
+/**
+ *  Build several dateranges from a string describing them.
+ *
+ *  @param[in] value  The string to be parsed.
+ *  @param[out] list  A vector of a list of dateranges to be filled.
+ *  @return  True if the string was correctly parsed.
+ */
 bool daterange::build_dateranges_from_string(std::string const& value,
                              std::vector<std::list<daterange> >& list) {
   return (build_calendar_date(value, list) || build_other_date(value, list));
