@@ -21,11 +21,14 @@
 #  define CCB_NOTIFICATION_STATE_HH
 
 #  include <ctime>
+#  include <memory>
 #  include <QSet>
 #  include <QPair>
 #  include <QSqlDatabase>
 #  include <QSqlQuery>
 #  include <QString>
+#  include <QMutex>
+#  include <QMutexLocker>
 #  include <QVector>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/loaders/command_loader.hh"
@@ -58,6 +61,9 @@ namespace             notification {
 
     objects::node::ptr get_node_by_id(objects::node_id);
 
+    std::auto_ptr<QMutexLocker>
+                      lock();
+
   private:
     QSet<objects::node_id>
                       _nodes;
@@ -83,6 +89,8 @@ namespace             notification {
                       _escalations;
     QHash<std::string, objects::timeperiod::ptr>
                       _timeperiod_by_name;
+
+    QMutex            _state_mutex;
   };
 }
 

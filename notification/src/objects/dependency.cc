@@ -35,6 +35,9 @@ const dependency::name_to_action dependency::_host_actions[] =
  {"u", host_unreachable},
  {"p", host_pending}};
 
+/**
+ *  Default constructor.
+ */
 dependency::dependency() :
   _type(unknown),
   _dependency_type(unknown_dependency),
@@ -42,10 +45,22 @@ dependency::dependency() :
   _inherits_parent(false),
   _notification_failure_options(none) {}
 
+/**
+ *  Copy constructor.
+ *
+ *  @param obj  The object to copy.
+ */
 dependency::dependency(dependency const& obj) {
   dependency::operator=(obj);
 }
 
+/**
+ *  Assignment operator.
+ *
+ *  @param obj  The object to copy.
+ *
+ *  @return     A reference to this object.
+ */
 dependency& dependency::operator=(dependency const& obj) {
   if (this != &obj) {
     _type = obj._type;
@@ -58,10 +73,20 @@ dependency& dependency::operator=(dependency const& obj) {
   return (*this);
 }
 
+/**
+ *  Return true if this dependency is a host dependency.
+ *
+ *  @return  True if this dependency is a host dependency.
+ */
 bool dependency::is_host_dependency() const throw() {
   return (_type == host);
 }
 
+/**
+ *  Set if this dependency is a host dependency.
+ *
+ *  @param val  The new value of the host dependency flag.
+ */
 void dependency::set_is_host_dependency(bool val) throw() {
   if (val)
     _type = host;
@@ -69,10 +94,20 @@ void dependency::set_is_host_dependency(bool val) throw() {
     _type = service;
 }
 
+/**
+ *  Return true if this dependency is a service dependency.
+ *
+ *  @return  True if this dependency is a service dependency.
+ */
 bool dependency::is_service_dependency() const throw() {
   return (_type == service);
 }
 
+/**
+ *  Set if this dependency is a service dependency.
+ *
+ *  @param val  The new value of the service dependency flag.
+ */
 void dependency::set_is_service_dependency(bool val) throw() {
   if (val)
     _type = service;
@@ -80,42 +115,94 @@ void dependency::set_is_service_dependency(bool val) throw() {
     _type = host;
 }
 
+/**
+ *  Get the period of the dependency.
+ *
+ *  @return  The name of period of the dependency.
+ */
 std::string const& dependency::get_period() const throw() {
   return (_dependency_period);
 }
 
+/**
+ *  Set the period of the dependency.
+ *
+ *  @param val  The new value of the period of the dependency.
+ */
 void dependency::set_period(std::string const& val) {
   _dependency_period = val;
 }
 
+/**
+ *  Get the kind of this dependency.
+ *
+ *  @return  The kind of this dependency.
+ */
 dependency::dependency_kind dependency::get_kind() const throw() {
   return (_dependency_type);
 }
 
+/**
+ *  Set the kind of this dependency.
+ *
+ *  @param val  The new value of the kind of this dependency.
+ */
 void dependency::set_kind(dependency::dependency_kind val) throw() {
   _dependency_type = val;
 }
 
+/**
+ *  Get the notification failure options.
+ *
+ *  @return  The notification failure options.
+ */
 dependency::action_on dependency::get_notification_failure_options() const throw() {
   return (_notification_failure_options);
 }
 
+/**
+ *  Set the notification failure options.
+ *
+ *  @param val  The new value of the notification failure options.
+ */
 void dependency::set_notification_failure_options(action_on val) throw() {
   _notification_failure_options = val;
 }
 
+/**
+ *  Add a notification failure option to the set.
+ *
+ *  @param val  A notification failure option to add to the set.
+ */
 void dependency::set_notification_failure_option(action_on val) throw() {
   _notification_failure_options = (action_on)(_notification_failure_options | val);
 }
 
+/**
+ *  Check if a notification failure option is set.
+ *
+ *  @param val  The notification failure option to check.
+ *
+ *  @return     True if the notification failure option is set.
+ */
 bool dependency::is_notification_failure_option_set(action_on val) const throw() {
   return (_notification_failure_options & val);
 }
 
+/**
+ *  Return true if the dependency inherit from its parent.
+ *
+ *  @return  True if the dependency inherit from its parent.
+ */
 bool dependency::get_inherits_parent() const throw() {
   return (_inherits_parent);
 }
 
+/**
+ *  Set if the dependency inherit from its parent.
+ *
+ *  @param val  The new value of the inherit from its parent flag.
+ */
 void dependency::set_inherits_parent(bool val) throw() {
   _inherits_parent = val;
 }

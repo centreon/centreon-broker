@@ -47,7 +47,8 @@ using namespace com::centreon::broker::notification::objects;
 /**
  *  Default constructor.
  */
-state::state() {}
+state::state() :
+  _state_mutex(QMutex::Recursive) {}
 
 /**
  *  Copy constructor.
@@ -83,12 +84,14 @@ state& state::operator=(state const& obj) {
   return (*this);
 }
 
-
 /**
  *  Get the objects from the db.
  */
 void state::update_objects_from_db(QSqlDatabase& centreon_db,
                                    QSqlDatabase& centreon_storage_db) {
+  // Acquire mutex.
+  QMutexLocker lock(&_state_mutex);
+
   // Remove old objects.
   _nodes.clear();
   _node_by_id.clear();
@@ -197,4 +200,14 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db,
 
 node::ptr state::get_node_by_id(node_id id) {
   return (_node_by_id[id]);
+}
+
+/**
+ *  Lock the internal mutex of this state.
+ *
+ *  @return  A QMutexLocker locking the internal mutex of this state.
+ */
+std::auto_ptr<QMutexLocker> state::lock() {
+  std::auto_ptr<QMutexLocker> ret(new QMutexLocker(&_state_mutex));
+  return (ret);
 }

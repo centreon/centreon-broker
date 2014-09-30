@@ -32,6 +32,9 @@
 CCB_BEGIN()
 
 namespace             notification {
+  // Forward declaration.
+  class state;
+
   /**
    *  @class notification_scheduler notification_scheduler.hh "com/centreon/broker/notification/notification_scheduler.hh"
    *  @brief The notification scheduler.
@@ -40,7 +43,8 @@ namespace             notification {
    */
   class        notification_scheduler : public QThread {
   public:
-               notification_scheduler();
+               notification_scheduler(
+                  ::com::centreon::broker::notification::state& st);
 
     void       exit() throw ();
     void       add_action_to_queue(time_t at, action a);
@@ -59,6 +63,9 @@ namespace             notification {
 
     notification_scheduler(notification_scheduler const& obj);
     notification_scheduler& operator=(notification_scheduler const& obj);
+
+    ::com::centreon::broker::notification::state&
+                _state;
   };
 }
 

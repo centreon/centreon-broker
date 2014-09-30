@@ -26,6 +26,8 @@
 CCB_BEGIN()
 
 namespace           notification {
+  // Forward declaration.
+  class state;
   /**
    *  @class action action.hh "com/centreon/broker/notification/action.hh"
    *  @brief Action object.
@@ -51,9 +53,13 @@ namespace           notification {
     objects::node_id  get_node_id() const throw();
     void              set_node_id(objects::node_id id) throw();
 
+    void              process_action(state& st);
+
   private:
     action_type       _act;
     objects::node_id  _id;
+
+    void              _process_notification(::com::centreon::broker::notification::state& st);
   };
 }
 

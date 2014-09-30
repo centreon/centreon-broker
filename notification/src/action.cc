@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/notification/action.hh"
+#include "com/centreon/broker/notification/state.hh"
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
@@ -32,7 +33,7 @@ action::action()
 /**
  *  Copy constructor.
  *
- *  @param obj  The object to be copied.
+ *  @param[in] obj  The object to be copied.
  */
 action::action(action const& obj) {
   action::operator=(obj);
@@ -41,9 +42,9 @@ action::action(action const& obj) {
 /**
  *  Assignment operator.
  *
- *  @param obj  The object to be copied.
+ *  @param[in] obj  The object to be copied.
  *
- *  @return     A reference to this object.
+ *  @return         A reference to this object.
  */
 action& action::operator=(action const& obj) {
   if (this != &obj) {
@@ -56,7 +57,7 @@ action& action::operator=(action const& obj) {
 /**
  *  Get the type of this action.
  *
- *  @return  The type of this action.
+ *  @return[in]  The type of this action.
  */
 action::action_type action::get_type() const throw() {
   return (_act);
@@ -65,7 +66,7 @@ action::action_type action::get_type() const throw() {
 /**
  *  Set the type of this action.
  *
- *  @param type  The type of this action.
+ *  @param[in] type  The type of this action.
  */
 void action::set_type(action_type type) throw() {
   _act = type;
@@ -83,8 +84,31 @@ node_id action::get_node_id() const throw() {
 /**
  *  Set the node id associated with this actions.
  *
- *  @param id  The node id associated with this action.
+ *  @param[in] id  The node id associated with this action.
  */
 void action::set_node_id(objects::node_id id) throw() {
   _id = id;
+}
+
+/**
+ *  Process the action.
+ *
+ *  @param[in] state  The notification state of the.
+ */
+void action::process_action(state& st) {
+  // Don't do anything if the action is an empty one.
+  if (_act == unknown || _id == node_id())
+    return;
+
+  switch (_act) {
+  case notification_attempt:
+    _process_notification(st);
+    break;
+  default:
+    break;
+  }
+}
+
+void action::_process_notification(state& st) {
+
 }
