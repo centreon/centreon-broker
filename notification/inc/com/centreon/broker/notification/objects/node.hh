@@ -22,6 +22,7 @@
 
 #  include <ctime>
 #  include <set>
+#  include <string>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
@@ -62,9 +63,9 @@ namespace        notification {
       bool    has_parent() const throw();
       bool    get_notifications_enabled() const throw();
       void    set_notifications_enabled(bool enable) throw();
-      timeperiod const&
+      std::string const&
               get_notification_timeperiod() const throw();
-      void    set_notification_timeperiod(timeperiod const& tp);
+      void    set_notification_timeperiod(std::string const& tp);
       double  get_notification_interval() const throw();
       void    set_notification_interval(double val) throw();
 
@@ -78,7 +79,7 @@ namespace        notification {
       node_id _id;
       std::set<node_id>
               _parents;
-      timeperiod
+      std::string
               _notification_period;
     };
   }

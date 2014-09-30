@@ -217,7 +217,7 @@ void node::set_notifications_enabled(bool enable) throw() {
  *
  *  @return  The notification timeperiod of this node.
  */
-timeperiod const& node::get_notification_timeperiod() const throw() {
+std::string const& node::get_notification_timeperiod() const throw() {
   return (_notification_period);
 }
 
@@ -226,7 +226,7 @@ timeperiod const& node::get_notification_timeperiod() const throw() {
  *
  *  @param[in] tp  The notification timeperiod attached to this node.
  */
-void node::set_notification_timeperiod(timeperiod const& tp) {
+void node::set_notification_timeperiod(std::string const& tp) {
   _notification_period = tp;
 }
 

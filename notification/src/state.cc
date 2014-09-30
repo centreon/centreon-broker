@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/notification/utilities/qhash_func.hh"
 #include "com/centreon/broker/notification/state.hh"
 #include "com/centreon/broker/notification/utilities/data_loggers.hh"
 
@@ -200,6 +201,15 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db,
 
 node::ptr state::get_node_by_id(node_id id) {
   return (_node_by_id[id]);
+}
+
+objects::node::ptr state::get_host_from_service(objects::node_id service_id) {
+  return (_node_by_id[node_id(service_id.get_host_id())]);
+}
+
+
+objects::timeperiod::ptr state::get_timeperiod_by_name(std::string const& name) {
+  return (_timeperiod_by_name[name]);
 }
 
 /**

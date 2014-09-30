@@ -42,7 +42,7 @@ namespace        notification {
    *  @class stream stream.hh "com/centreon/broker/notification/stream.hh"
    *  @brief Notification stream.
    *
-   *  Stream events into notification database.
+   *  Stream events into the notification database.
    */
   class          stream : public io::stream {
   public:

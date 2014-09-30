@@ -112,3 +112,31 @@ void action::process_action(state& st) {
 void action::_process_notification(state& st) {
 
 }
+
+bool action::_check_notification_viability(::com::centreon::broker::notification::state& st) {
+  // Get current time.
+  time_t current_time;
+  time(&current_time);
+
+  // Find the node this notification is associated with.
+  node::ptr n = st.get_node_by_id(_id);
+  if (!n)
+    return false;
+
+  // If the node has no notification period and is a service, inherit one from the host
+  timeperiod::ptr tp =
+      st.get_timeperiod_by_name(n->get_notification_timeperiod());
+  if (!tp) {
+    if (_id.has_host())
+      return false;
+    node::ptr host = st.get_host_from_service(_id);
+    if (!host)
+      return false;
+    tp = st.get_timeperiod_by_name(host->get_notification_timeperiod());
+    if (!tp)
+      return false;
+  }
+
+  // See if the node can have notifications sent out at this time
+
+}

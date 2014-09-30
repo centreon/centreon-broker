@@ -59,7 +59,10 @@ namespace           notification {
     action_type       _act;
     objects::node_id  _id;
 
-    void              _process_notification(::com::centreon::broker::notification::state& st);
+    void              _process_notification(
+                        ::com::centreon::broker::notification::state& st);
+    bool              _check_notification_viability(
+                        ::com::centreon::broker::notification::state& st);
   };
 }
 

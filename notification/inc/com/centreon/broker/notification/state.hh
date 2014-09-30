@@ -59,7 +59,12 @@ namespace             notification {
                                              QSqlDatabase& centreon_storage_db);
 
 
-    objects::node::ptr get_node_by_id(objects::node_id);
+    objects::node::ptr
+                      get_node_by_id(objects::node_id);
+    objects::node::ptr
+                      get_host_from_service(objects::node_id service_id);
+    objects::timeperiod::ptr
+                      get_timeperiod_by_name(std::string const& name);
 
     std::auto_ptr<QMutexLocker>
                       lock();
