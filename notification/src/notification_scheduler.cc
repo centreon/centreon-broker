@@ -117,18 +117,16 @@ void notification_scheduler::_process_actions() {
       return;
 
     // Get the viability of this action.
-    action::viability action_viability;
+    bool should_reschedule = false;
     {
       // Lock the state mutex.
       std::auto_ptr<QMutexLocker> lock(_state.lock());
       // Process the action.
-      action_viability = it->second.check_action_viability(_state);
+      should_reschedule = it->second.process_action(_state);
     }
     // A rescheduling was asked.
-    if (action_viability == action::reschedule)
+    if (should_reschedule == true)
       _reschedule_action(it->first, it->second);
-    // The action is ok: process it.
-    else if (action_viability == action::ok);
 
     ++it;
   }

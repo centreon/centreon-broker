@@ -93,12 +93,14 @@ void action::set_node_id(objects::node_id id) throw() {
 /**
  *  Process the action.
  *
- *  @param[in] state  The notification state of the.
+ *  @param[in] state  The notification state of the engine.
+ *
+ *  @return           True if the action should be rescheduled.
  */
-action::viability action::check_action_viability(state& st) {
+bool action::process_action(state& st) {
   // Don't do anything if the action is an empty one.
   if (_act == unknown || _id == node_id())
-    return (ok);
+    return (false);
 
   switch (_act) {
   case notification_attempt:
@@ -107,18 +109,18 @@ action::viability action::check_action_viability(state& st) {
   default:
     break;
   }
-  return (ok);
+  return (false);
 }
 
-action::viability action::_process_notification(state& st) {
-  viability node_viability = _check_notification_node_viability(st);
-  if (node_viability != ok)
+bool action::_process_notification(state& st) {
+  bool node_viability = _check_notification_node_viability(st);
+  if (node_viability == false)
     return (node_viability);
   else
     return (_check_notification_contact_viability(st));
 }
 
-action::viability action::_check_notification_node_viability(state& st) {
+bool action::_check_notification_node_viability(state& st) {
   // Get current time.
   time_t current_time;
   time(&current_time);
@@ -126,36 +128,38 @@ action::viability action::_check_notification_node_viability(state& st) {
   // Find the node this notification is associated with.
   node::ptr n = st.get_node_by_id(_id);
   if (!n)
-    return (remove);
+    return (false);
 
   // If the node has no notification period and is a service, inherit one from the host
   timeperiod::ptr tp =
       st.get_timeperiod_by_name(n->get_notification_timeperiod());
   if (!tp) {
     if (_id.has_host())
-      return (remove);
+      return (false);
     node::ptr host = st.get_host_from_service(_id);
     if (!host)
-      return (remove);
+      return (false);
     tp = st.get_timeperiod_by_name(host->get_notification_timeperiod());
     if (!tp)
-      return (remove);
+      return (false);
   }
 
   // See if the node can have notifications sent out at this time
   if (tp->is_valid(current_time) != 0)
-    return (reschedule);
+    return (true);
 
   // Are notifications temporarily disabled for this node?
   if (!n->get_notifications_enabled())
-    return (reschedule);
+    return (true);
 
-  node_state hard_state = n->get_hard_state();
-  if (hard_state == node_state::service_unknown)
-      //if (n->get_hard_state() == )
-  return (ok);
+  // See if we should notify problems for this service.
+  if (n->should_be_notified())
+    return (true);
+
+  return (false);
 }
 
-action::viability action::_check_notification_contact_viability(state& st) {
-  return (ok);
+bool action::_check_notification_contact_viability(state& st) {
+
+  return (false);
 }
