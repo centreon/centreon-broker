@@ -113,14 +113,28 @@ bool action::process_action(state& st) {
 }
 
 bool action::_process_notification(state& st) {
-  bool node_viability = _check_notification_node_viability(st);
-  if (node_viability == false)
-    return (node_viability);
-  else
-    return (_check_notification_contact_viability(st));
+  return_value node_viability = _check_notification_node_viability(st);
+  if (node_viability == error_should_remove)
+    return (false);
+  else if (node_viability == error_should_reschedule)
+    return (true);
+
+  QList<objects::contact::ptr> contacts =
+    st.get_contacts_by_node(_id);
+
+  for (QList<objects::contact::ptr>::iterator it(contacts.begin()),
+         end(contacts.end());
+       it != end;
+       ++it) {
+    return_value contact_viability = _check_notification_contact_viability(**it, st);
+  }
+
+  return false;
+  /*else
+    return (_check_notification_contact_viability(st));*/
 }
 
-bool action::_check_notification_node_viability(state& st) {
+action::return_value action::_check_notification_node_viability(state& st) {
   // Get current time.
   time_t current_time;
   time(&current_time);
@@ -128,38 +142,39 @@ bool action::_check_notification_node_viability(state& st) {
   // Find the node this notification is associated with.
   node::ptr n = st.get_node_by_id(_id);
   if (!n)
-    return (false);
+    return (error_should_remove);
 
   // If the node has no notification period and is a service, inherit one from the host
   timeperiod::ptr tp =
       st.get_timeperiod_by_name(n->get_notification_timeperiod());
   if (!tp) {
     if (_id.has_host())
-      return (false);
+      return (error_should_remove);
     node::ptr host = st.get_host_from_service(_id);
     if (!host)
-      return (false);
+      return (error_should_remove);
     tp = st.get_timeperiod_by_name(host->get_notification_timeperiod());
     if (!tp)
-      return (false);
+      return (error_should_remove);
   }
 
   // See if the node can have notifications sent out at this time
   if (tp->is_valid(current_time) != 0)
-    return (true);
+    return (error_should_reschedule);
 
   // Are notifications temporarily disabled for this node?
   if (!n->get_notifications_enabled())
-    return (true);
+    return (error_should_reschedule);
 
   // See if we should notify problems for this service.
   if (n->should_be_notified())
-    return (true);
+    return (error_should_remove);
 
-  return (false);
+  return (ok);
 }
 
-bool action::_check_notification_contact_viability(state& st) {
+action::return_value action::_check_notification_contact_viability(contact& con,
+                                                   state& st) {
 
-  return (false);
+  return (ok);
 }

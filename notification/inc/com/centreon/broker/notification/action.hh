@@ -22,6 +22,7 @@
 
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
+#  include "com/centreon/broker/notification/objects/contact.hh"
 
 CCB_BEGIN()
 
@@ -59,12 +60,19 @@ namespace           notification {
     action_type       _act;
     objects::node_id  _id;
 
-    bool               _process_notification(
-                        ::com::centreon::broker::notification::state& st);
-    bool               _check_notification_node_viability(
-                        ::com::centreon::broker::notification::state& st);
-    bool               _check_notification_contact_viability(
-                        ::com::centreon::broker::notification::state& st);
+    enum              return_value {
+      ok = 0,
+      error_should_reschedule,
+      error_should_remove
+    };
+
+    bool              _process_notification(
+                       ::com::centreon::broker::notification::state& st);
+    return_value      _check_notification_node_viability(
+                       ::com::centreon::broker::notification::state& st);
+    return_value      _check_notification_contact_viability(
+                       objects::contact& con,
+                       ::com::centreon::broker::notification::state& st);
   };
 }
 

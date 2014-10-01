@@ -212,6 +212,12 @@ objects::timeperiod::ptr state::get_timeperiod_by_name(std::string const& name) 
   return (_timeperiod_by_name[name]);
 }
 
+QList<objects::contact::ptr> state::get_contacts_by_node(objects::node_id id) {
+  return (_contacts.values(id));
+}
+
+
+
 /**
  *  Lock the internal mutex of this state.
  *
