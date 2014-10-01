@@ -53,15 +53,23 @@ namespace           notification {
     objects::node_id  get_node_id() const throw();
     void              set_node_id(objects::node_id id) throw();
 
-    void              process_action(state& st);
+    enum              viability {
+      ok,
+      reschedule,
+      remove
+    };
+
+    viability         process_action(state& st);
 
   private:
     action_type       _act;
     objects::node_id  _id;
 
-    void              _process_notification(
+    viability         _process_notification(
                         ::com::centreon::broker::notification::state& st);
-    bool              _check_notification_viability(
+    viability         _check_notification_node_viability(
+                        ::com::centreon::broker::notification::state& st);
+    viability         _check_notification_contact_viability(
                         ::com::centreon::broker::notification::state& st);
   };
 }

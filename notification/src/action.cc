@@ -95,25 +95,30 @@ void action::set_node_id(objects::node_id id) throw() {
  *
  *  @param[in] state  The notification state of the.
  */
-void action::process_action(state& st) {
+action::viability action::process_action(state& st) {
   // Don't do anything if the action is an empty one.
   if (_act == unknown || _id == node_id())
-    return;
+    return (ok);
 
   switch (_act) {
   case notification_attempt:
-    _process_notification(st);
+    return (_process_notification(st));
     break;
   default:
     break;
   }
+  return (ok);
 }
 
-void action::_process_notification(state& st) {
-
+action::viability action::_process_notification(state& st) {
+  viability node_viability = _check_notification_node_viability(st);
+  if (node_viability != ok)
+    return (node_viability);
+  viability contact_viability = _check_notification_contact_viability(st);
+  return (contact_viability);
 }
 
-bool action::_check_notification_viability(::com::centreon::broker::notification::state& st) {
+action::viability action::_check_notification_node_viability(state& st) {
   // Get current time.
   time_t current_time;
   time(&current_time);
@@ -121,22 +126,26 @@ bool action::_check_notification_viability(::com::centreon::broker::notification
   // Find the node this notification is associated with.
   node::ptr n = st.get_node_by_id(_id);
   if (!n)
-    return false;
+    return (remove);
 
   // If the node has no notification period and is a service, inherit one from the host
   timeperiod::ptr tp =
       st.get_timeperiod_by_name(n->get_notification_timeperiod());
   if (!tp) {
     if (_id.has_host())
-      return false;
+      return (remove);
     node::ptr host = st.get_host_from_service(_id);
     if (!host)
-      return false;
+      return (remove);
     tp = st.get_timeperiod_by_name(host->get_notification_timeperiod());
     if (!tp)
-      return false;
+      return (remove);
   }
 
   // See if the node can have notifications sent out at this time
+  return (ok);
+}
 
+action::viability action::_check_notification_contact_viability(state& st) {
+  return (ok);
 }

@@ -292,15 +292,15 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
       // Load acknowledgement
     }
     else if (elem == neb::de_host_status) {
-
+      _process_host_status_event(*data.staticCast<neb::host_status>());
     }
     else if (elem == neb::de_service_status) {
-
+      _process_service_status_event(*data.staticCast<neb::service_status>());
     }
   }
   else if(cat == io::events::correlation) {
     if (elem == correlation::de_issue_parent) {
-
+      _process_issue_parent_event(*data.staticCast<correlation::issue_parent>());
     }
   }
 
@@ -462,6 +462,7 @@ void stream::_process_service_status_event(neb::service_status const& event) {
   node_id id(event.host_id, event.service_id);
   short old_hard_state;
   short old_soft_state;
+  time_t when_to_schedule(time(NULL) + 1);
 
   // Get the node corresponding to this id.
   {
@@ -478,6 +479,15 @@ void stream::_process_service_status_event(neb::service_status const& event) {
     old_soft_state = n->get_soft_state();
     n->set_hard_state(event.last_hard_state);
     n->set_soft_state(event.current_state);
+
+    // Schedule at the next valid time.
+    timeperiod::ptr tp = _state.get_timeperiod_by_name(n->get_notification_timeperiod());
+    if (!tp)
+      throw (exceptions::msg()
+        << "NOTIFICATION: got an unknown timeperiod name"
+        << n->get_notification_timeperiod());
+
+    tp->get_next_valid(when_to_schedule);
   }
 
   // From OK to NOT-OK
@@ -498,6 +508,7 @@ void stream::_process_host_status_event(neb::host_status const& event) {
   node_id id(event.host_id);
   short old_hard_state;
   short old_soft_state;
+  time_t when_to_schedule(time(NULL) + 1);
 
   // Get the node corresponding to this id.
   {
@@ -514,6 +525,15 @@ void stream::_process_host_status_event(neb::host_status const& event) {
     old_soft_state = n->get_soft_state();
     n->set_hard_state(event.last_hard_state);
     n->set_soft_state(event.current_state);
+
+    // Schedule at the next valid time.
+    timeperiod::ptr tp = _state.get_timeperiod_by_name(n->get_notification_timeperiod());
+    if (!tp)
+      throw (exceptions::msg()
+        << "NOTIFICATION: got an unknown timeperiod name"
+        << n->get_notification_timeperiod());
+
+    tp->get_next_valid(when_to_schedule);
   }
 
   // From OK to NOT-OK
@@ -521,7 +541,7 @@ void stream::_process_host_status_event(neb::host_status const& event) {
     action a;
     a.set_type(action::notification_attempt);
     a.set_node_id(id);
-    _notif_scheduler->add_action_to_queue(time(NULL) + 1, a);
+    _notif_scheduler->add_action_to_queue(when_to_schedule, a);
   }
 }
 

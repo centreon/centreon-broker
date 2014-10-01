@@ -60,6 +60,8 @@ namespace             notification {
                _general_condition;
 
     void       _process_actions();
+    void       _reschedule_action(time_t previously_scheduled,
+                                  action a);
 
     notification_scheduler(notification_scheduler const& obj);
     notification_scheduler& operator=(notification_scheduler const& obj);
