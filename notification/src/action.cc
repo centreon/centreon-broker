@@ -150,7 +150,7 @@ action::viability action::_check_notification_node_viability(state& st) {
   if (!n->get_notifications_enabled())
     return (reschedule);
 
-  /*if (n->get_hard_state() == )*/
+  //if (n->get_hard_state() == )
   return (ok);
 }
 

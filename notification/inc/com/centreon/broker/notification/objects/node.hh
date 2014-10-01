@@ -24,6 +24,7 @@
 #  include <set>
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/objects/defines.hh"
 #  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
 #  include "com/centreon/broker/notification/objects/timeperiod.hh"
@@ -62,10 +63,12 @@ namespace        notification {
       void    set_notification_number(int value);
       time_t  get_last_notification_time() const throw();
       void    set_last_notification_time(time_t value);
-      short   get_hard_state() const throw();
-      void    set_hard_state(short value);
-      short   get_soft_state() const throw();
-      void    set_soft_state(short value);
+      node_state
+              get_hard_state() const throw();
+      void    set_hard_state(node_state value);
+      node_state
+              get_soft_state() const throw();
+      void    set_soft_state(node_state value);
       node_id get_node_id() const throw();
       void    set_node_id(node_id) throw();
       std::set<node_id> const&
@@ -83,15 +86,18 @@ namespace        notification {
       notification_option_type
               get_notification_options() const throw();
       void    set_notification_options(notification_option_type val) throw();
-      bool    check_notification_options(notification_option_type val) const throw();
+      bool    check_notification_option(notification_option_type val) const throw();
+      void    should_be_notified() const throw();
 
     private:
       int     _notification_number;
       bool    _notifications_enabled;
       double  _notification_interval;
       time_t  _last_notification_time;
-      short   _hard_state;
-      short   _soft_state;
+      node_state
+              _hard_state;
+      node_state
+              _soft_state;
       node_id _id;
       std::set<node_id>
               _parents;

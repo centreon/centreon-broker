@@ -30,8 +30,8 @@ node::node() :
   _notification_interval(0),
   _notification_options(none),
   _last_notification_time(0),
-  _hard_state(0),
-  _soft_state(0) {}
+  _hard_state(),
+  _soft_state() {}
 
 /**
  *  Copy constructor.
@@ -109,7 +109,7 @@ void node::set_last_notification_time(time_t value) {
  *
  *  @return  The hard state of this node.
  */
-short node::get_hard_state() const throw() {
+node_state node::get_hard_state() const throw() {
   return (_hard_state);
 }
 
@@ -118,7 +118,7 @@ short node::get_hard_state() const throw() {
  *
  *  @param[in] value  The new value for the hard state of this node.
  */
-void node::set_hard_state(short value) {
+void node::set_hard_state(node_state value) {
   _hard_state = value;
 }
 
@@ -127,7 +127,7 @@ void node::set_hard_state(short value) {
  *
  *  @return  The soft state of this node.
  */
-short node::get_soft_state() const throw() {
+node_state node::get_soft_state() const throw() {
   return (_soft_state);
 }
 
@@ -136,7 +136,7 @@ short node::get_soft_state() const throw() {
  *
  *  @param[în] value  The new value for the soft state of this node.
  */
-void node::set_soft_state(short value) {
+void node::set_soft_state(node_state value) {
   _soft_state = value;
 }
 
@@ -258,6 +258,10 @@ void node::set_notification_options(notification_option_type val) throw() {
   _notification_options = val;
 }
 
-bool node::check_notification_options(notification_option_type val) const throw() {
+bool node::check_notification_option(notification_option_type val) const throw() {
   return (_notification_options & val);
+}
+
+void node::should_be_notified() const throw() {
+
 }

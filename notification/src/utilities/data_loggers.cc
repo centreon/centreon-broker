@@ -21,6 +21,9 @@
 #define LOG_MEMBER(klass, getter)\
   << #klass "::" #getter "() : " \
   << (obj.getter()) << "; "
+#define LOG_MEMBER_AS(klass, getter, cast)\
+  << #klass "::" #getter "() : "\
+  << ((cast)obj.getter()) << "; "
 
 using namespace com::centreon::broker;
 
@@ -185,8 +188,8 @@ logging::temp_logger& logging::operator<<(
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
   tmp LOG_MEMBER(node, get_notification_number)
       LOG_MEMBER(node, get_last_notification_time)
-      LOG_MEMBER(node, get_hard_state)
-      LOG_MEMBER(node, get_soft_state)
+      LOG_MEMBER_AS(node, get_hard_state, int)
+      LOG_MEMBER_AS(node, get_soft_state, int)
       LOG_MEMBER(node, get_node_id);
   return (tmp);
 }
