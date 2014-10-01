@@ -46,6 +46,18 @@ namespace        notification {
               node(node const& obj);
               node& operator=(node const& obj);
 
+      enum    notification_option_type {
+        none = 0,
+        service_unknown = (1 << 1),
+        service_warning = (1 << 2),
+        service_critical = (1 << 3),
+        service_pending = (1 << 4),
+        service_recovery = (1 << 5),
+        host_down = (1 << 6),
+        host_unreachable = (1 << 7),
+        host_recovery = (1 << 8)
+      };
+
       int     get_notification_number() const throw();
       void    set_notification_number(int value);
       time_t  get_last_notification_time() const throw();
@@ -68,9 +80,10 @@ namespace        notification {
       void    set_notification_timeperiod(std::string const& tp);
       double  get_notification_interval() const throw();
       void    set_notification_interval(double val) throw();
-      unsigned int
+      notification_option_type
               get_notification_options() const throw();
-      void    set_notification_options(unsigned int) throw();
+      void    set_notification_options(notification_option_type val) throw();
+      bool    check_notification_options(notification_option_type val) const throw();
 
     private:
       int     _notification_number;
@@ -84,7 +97,7 @@ namespace        notification {
               _parents;
       std::string
               _notification_period;
-      unsigned int
+      notification_option_type
               _notification_options;
     };
   }
