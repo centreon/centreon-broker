@@ -83,10 +83,9 @@ namespace        notification {
       void    set_notification_timeperiod(std::string const& tp);
       double  get_notification_interval() const throw();
       void    set_notification_interval(double val) throw();
-      notification_option_type
+      node_notification_opt
               get_notification_options() const throw();
-      void    set_notification_options(notification_option_type val) throw();
-      bool    check_notification_option(notification_option_type val) const throw();
+      void    set_notification_options(node_notification_opt val) throw();
       void    should_be_notified() const throw();
 
     private:
@@ -103,7 +102,7 @@ namespace        notification {
               _parents;
       std::string
               _notification_period;
-      notification_option_type
+      node_notification_opt
               _notification_options;
     };
   }

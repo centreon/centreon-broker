@@ -47,3 +47,30 @@ node_state::operator short() {
 node_state::operator int() {
   return ((int)(value));
 }
+
+node_notification_opt::node_notification_opt()
+  : value(none) {}
+
+node_notification_opt::node_notification_opt(int val)
+  : value((notification_type)val) {}
+
+node_notification_opt::node_notification_opt(node_notification_opt const& obj)
+  : value(obj.value) {}
+
+node_notification_opt& node_notification_opt::operator=(node_notification_opt const& obj) {
+  if (this != &obj)
+    value = obj.value;
+  return (*this);
+}
+
+node_notification_opt::operator int() {
+  return ((int)(value));
+}
+
+bool node_notification_opt::check_for_option(notification_type opt) {
+  return (value & opt);
+}
+
+void node_notification_opt::add_option(notification_type opt) {
+  value = (notification_type)(value | opt);
+}

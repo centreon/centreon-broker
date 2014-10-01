@@ -28,7 +28,7 @@ node::node() :
   _notification_number(0),
   _notifications_enabled(true),
   _notification_interval(0),
-  _notification_options(none),
+  _notification_options(node_notification_opt::none),
   _last_notification_time(0),
   _hard_state(),
   _soft_state() {}
@@ -250,16 +250,12 @@ void node::set_notification_interval(double val) throw() {
   _notification_interval = val;
 }
 
-node::notification_option_type node::get_notification_options() const throw() {
+node_notification_opt node::get_notification_options() const throw() {
   return (_notification_options);
 }
 
-void node::set_notification_options(notification_option_type val) throw() {
+void node::set_notification_options(node_notification_opt val) throw() {
   _notification_options = val;
-}
-
-bool node::check_notification_option(notification_option_type val) const throw() {
-  return (_notification_options & val);
 }
 
 void node::should_be_notified() const throw() {
