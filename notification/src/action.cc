@@ -150,7 +150,9 @@ action::viability action::_check_notification_node_viability(state& st) {
   if (!n->get_notifications_enabled())
     return (reschedule);
 
-  //if (n->get_hard_state() == )
+  node_state hard_state = n->get_hard_state();
+  if (hard_state == node_state::service_unknown)
+      //if (n->get_hard_state() == )
   return (ok);
 }
 

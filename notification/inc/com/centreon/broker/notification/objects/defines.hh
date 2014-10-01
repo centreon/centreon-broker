@@ -41,13 +41,16 @@ namespace               notification {
       };
 
                         node_state();
+                        node_state(state_type type);
                         node_state(short);
                         node_state(int);
                         node_state(node_state const& st);
       node_state&       operator=(node_state const& st);
+      bool              operator==(node_state const& st) const throw();
+      bool              operator==(node_state::state_type type) const throw();
 
-      operator          short();
-      operator          int();
+      operator          short() const throw();
+      operator          int() const throw();
 
       state_type        value;
     };
@@ -67,14 +70,18 @@ namespace               notification {
       };
 
                         node_notification_opt();
+                        node_notification_opt(notification_type type);
                         node_notification_opt(int);
                         node_notification_opt(node_notification_opt const&);
       node_notification_opt& operator=(node_notification_opt const&);
+      bool              operator==(node_notification_opt const& opt) const throw();
+      bool              operator==(node_notification_opt::notification_type type) const throw();
 
-      operator          int();
 
-      bool              check_for_option(notification_type opt);
-      void              add_option(notification_type opt);
+      operator          int() const throw();
+
+      bool              check_for(notification_type opt) const throw();
+      void              add_option(notification_type opt) throw();
 
       notification_type value;
     };

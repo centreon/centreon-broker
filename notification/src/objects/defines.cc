@@ -25,6 +25,9 @@ using namespace com::centreon::broker::notification::objects;
 node_state::node_state()
   : value(ok) {}
 
+node_state::node_state(state_type type)
+  : value(type) {}
+
 node_state::node_state(short val)
   : value((state_type)val) {}
 
@@ -40,16 +43,27 @@ node_state& node_state::operator=(node_state const& st) {
   return (*this);
 }
 
-node_state::operator short() {
+bool node_state::operator==(node_state const& st) const throw() {
+  return (value == st.value);
+}
+
+bool node_state::operator==(node_state::state_type type) const throw() {
+  return (value == type);
+}
+
+node_state::operator short() const throw() {
   return ((short)(value));
 }
 
-node_state::operator int() {
+node_state::operator int() const throw() {
   return ((int)(value));
 }
 
 node_notification_opt::node_notification_opt()
   : value(none) {}
+
+node_notification_opt::node_notification_opt(notification_type type)
+  : value(type) {}
 
 node_notification_opt::node_notification_opt(int val)
   : value((notification_type)val) {}
@@ -63,14 +77,22 @@ node_notification_opt& node_notification_opt::operator=(node_notification_opt co
   return (*this);
 }
 
-node_notification_opt::operator int() {
+bool node_notification_opt::operator==(node_notification_opt const& opt) const throw() {
+  return (value == opt.value);
+}
+
+bool node_notification_opt::operator==(node_notification_opt::notification_type type) const throw() {
+  return (value == type);
+}
+
+node_notification_opt::operator int() const throw() {
   return ((int)(value));
 }
 
-bool node_notification_opt::check_for_option(notification_type opt) {
+bool node_notification_opt::check_for(notification_type opt) const throw() {
   return (value & opt);
 }
 
-void node_notification_opt::add_option(notification_type opt) {
+void node_notification_opt::add_option(notification_type opt) throw() {
   value = (notification_type)(value | opt);
 }

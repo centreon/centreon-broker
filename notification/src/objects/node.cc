@@ -258,6 +258,28 @@ void node::set_notification_options(node_notification_opt val) throw() {
   _notification_options = val;
 }
 
-void node::should_be_notified() const throw() {
+bool node::should_be_notified() const throw() {
+  if (_hard_state == node_state::ok)
+    return (false);
 
+  if (_id.has_host()) {
+    if(_hard_state == node_state::host_down &&
+        _notification_options.check_for(node_notification_opt::host_down))
+      return (true);
+    else if(_hard_state == node_state::host_unreachable &&
+              _notification_options.check_for(node_notification_opt::host_unreachable))
+      return (true);
+  }
+  else if (_id.has_service()) {
+    if (_hard_state == node_state::service_warning &&
+          _notification_options.check_for(node_notification_opt::service_warning))
+      return (true);
+    else if (_hard_state == node_state::service_critical &&
+               _notification_options.check_for(node_notification_opt::service_critical))
+      return (true);
+    else if (_hard_state == node_state::service_unknown &&
+               _notification_options.check_for(node_notification_opt::service_unknown))
+      return (true);
+  }
+  return (false);
 }

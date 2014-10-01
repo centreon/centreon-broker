@@ -47,18 +47,6 @@ namespace        notification {
               node(node const& obj);
               node& operator=(node const& obj);
 
-      enum    notification_option_type {
-        none = 0,
-        service_unknown = (1 << 1),
-        service_warning = (1 << 2),
-        service_critical = (1 << 3),
-        service_pending = (1 << 4),
-        service_recovery = (1 << 5),
-        host_down = (1 << 6),
-        host_unreachable = (1 << 7),
-        host_recovery = (1 << 8)
-      };
-
       int     get_notification_number() const throw();
       void    set_notification_number(int value);
       time_t  get_last_notification_time() const throw();
@@ -86,7 +74,7 @@ namespace        notification {
       node_notification_opt
               get_notification_options() const throw();
       void    set_notification_options(node_notification_opt val) throw();
-      void    should_be_notified() const throw();
+      bool    should_be_notified() const throw();
 
     private:
       int     _notification_number;
