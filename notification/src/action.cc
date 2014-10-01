@@ -95,7 +95,7 @@ void action::set_node_id(objects::node_id id) throw() {
  *
  *  @param[in] state  The notification state of the.
  */
-action::viability action::process_action(state& st) {
+action::viability action::check_action_viability(state& st) {
   // Don't do anything if the action is an empty one.
   if (_act == unknown || _id == node_id())
     return (ok);
@@ -114,8 +114,8 @@ action::viability action::_process_notification(state& st) {
   viability node_viability = _check_notification_node_viability(st);
   if (node_viability != ok)
     return (node_viability);
-  viability contact_viability = _check_notification_contact_viability(st);
-  return (contact_viability);
+  else
+    return (_check_notification_contact_viability(st));
 }
 
 action::viability action::_check_notification_node_viability(state& st) {
@@ -143,6 +143,14 @@ action::viability action::_check_notification_node_viability(state& st) {
   }
 
   // See if the node can have notifications sent out at this time
+  if (tp->is_valid(current_time) != 0)
+    return (reschedule);
+
+  // Are notifications temporarily disabled for this node?
+  if (!n->get_notifications_enabled())
+    return (reschedule);
+
+  /*if (n->get_hard_state() == )*/
   return (ok);
 }
 

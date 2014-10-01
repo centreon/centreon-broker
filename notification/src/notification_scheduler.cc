@@ -116,27 +116,32 @@ void notification_scheduler::_process_actions() {
     if (it->first > now)
       return;
 
+    // Get the viability of this action.
     action::viability action_viability;
     {
       // Lock the state mutex.
       std::auto_ptr<QMutexLocker> lock(_state.lock());
       // Process the action.
-      action_viability = it->second.process_action(_state);
+      action_viability = it->second.check_action_viability(_state);
     }
-
     // A rescheduling was asked.
     if (action_viability == action::reschedule)
       _reschedule_action(it->first, it->second);
+    // The action is ok: process it.
+    else if (action_viability == action::ok);
+
     ++it;
   }
 }
 
 void notification_scheduler::_reschedule_action(time_t previously_scheduled,
                                                 action a) {
+  // Reschedule at the previous scheduling + the notification interval of the node.
   double notification_interval = 0;
   {
     std::auto_ptr<QMutexLocker> lock(_state.lock());
     node::ptr n = _state.get_node_by_id(a.get_node_id());
+    // The node doesn't exist anymore. Silently eat the action.
     if (!n)
       return;
     notification_interval = n->get_notification_interval();

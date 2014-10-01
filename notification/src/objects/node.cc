@@ -28,6 +28,7 @@ node::node() :
   _notification_number(0),
   _notifications_enabled(true),
   _notification_interval(0),
+  _notification_options(0),
   _last_notification_time(0),
   _hard_state(0),
   _soft_state(0) {}
@@ -53,6 +54,7 @@ node& node::operator=(node const& obj) {
     _notification_number = obj._notification_number;
     _notifications_enabled = obj._notifications_enabled;
     _notification_interval = obj._notification_interval;
+    _notification_options = obj._notification_options;
     _last_notification_time = obj._last_notification_time;
     _hard_state = obj._hard_state;
     _soft_state = obj._soft_state;
@@ -246,4 +248,12 @@ double node::get_notification_interval() const throw() {
  */
 void node::set_notification_interval(double val) throw() {
   _notification_interval = val;
+}
+
+unsigned int node::get_notification_options() const throw() {
+  return (_notification_options);
+}
+
+void node::set_notification_options(unsigned int value) throw() {
+  _notification_options = value;
 }

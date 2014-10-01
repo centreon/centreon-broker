@@ -68,6 +68,9 @@ namespace        notification {
       void    set_notification_timeperiod(std::string const& tp);
       double  get_notification_interval() const throw();
       void    set_notification_interval(double val) throw();
+      unsigned int
+              get_notification_options() const throw();
+      void    set_notification_options(unsigned int) throw();
 
     private:
       int     _notification_number;
@@ -81,6 +84,8 @@ namespace        notification {
               _parents;
       std::string
               _notification_period;
+      unsigned int
+              _notification_options;
     };
   }
 }

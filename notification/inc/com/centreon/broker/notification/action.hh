@@ -59,7 +59,7 @@ namespace           notification {
       remove
     };
 
-    viability         process_action(state& st);
+    viability         check_action_viability(state& st);
 
   private:
     action_type       _act;
