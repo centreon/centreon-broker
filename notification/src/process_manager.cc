@@ -19,31 +19,14 @@
 
 #include <QStringList>
 #include "com/centreon/broker/notification/process.hh"
+#include "com/centreon/broker/notification/process_manager.hh"
 
 using namespace com::centreon::broker::notification;
 
-process::process(int timeout)
-  : _timeout(timeout),
-    _process(new QProcess),
-    _running(false) {}
+process_manager* process_manager::_instance_ptr = 0;
 
-
-bool process::exec(std::string const& program,
-                   std::list<std::string> const& arguments) {
-  if (_running)
-    return (false);
-  _running = true;
-
-  QStringList args;
-  for (std::list<std::string>::const_iterator it(arguments.begin()),
-                                              end(arguments.end());
-       it != end; ++it)
-    args << it->c_str();
-
-  _process->start(program.c_str(), args);
-  return (true);
-}
-
-unsigned int process::get_timeout() const throw() {
-  return (_timeout);
+process_manager* process_manager::instance() {
+  if (!_instance_ptr)
+    _instance_ptr = new process_manager;
+  return (_instance_ptr);
 }

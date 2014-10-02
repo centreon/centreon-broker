@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NOTIFICATION_PROCESS_HH
-#  define CCB_NOTIFICATION_PROCESS_HH
+#ifndef CCB_NOTIFICATION_PROCESS_MANAGER_HH
+#  define CCB_NOTIFICATION_PROCESS_MANAGER_HH
 
 #  include <memory>
 #  include <string>
@@ -27,30 +27,24 @@
 
 CCB_BEGIN()
 
-namespace             notification {
+namespace                     notification {
   /**
-   *  @class process process.hh "com/centreon/broker/notification/process.hh"
-   *  @brief Represent a process being executed.
+   *  @class process_manager process_manager.hh "com/centreon/broker/notification/processprocess_manager.hh"
+   *  @brief Manage the processes
    */
-  class               process {
+  class                       process_manager {
   public:
-                      process(int timeout = 0);
+    process_manager*          instance();
 
-    bool              exec(std::string const& program,
-                           std::list<std::string> const& arguments);
-
-    unsigned int      get_timeout() const throw();
   private:
-                      process(process const&);
-    process&          operator=(process const&);
-
-    unsigned int      _timeout;
-    bool              _running;
-    std::auto_ptr<QProcess>
-                      _process;
+    static process_manager*
+                              _instance_ptr;
+                              process_manager();
+                              process_manager(process_manager const&);
+    process_manager&          operator=(process_manager const&);
   };
 }
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_PROCESS_HH
+#endif // !CCB_NOTIFICATION_PROCESS_MANAGER_HH
