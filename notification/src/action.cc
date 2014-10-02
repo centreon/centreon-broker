@@ -103,14 +103,10 @@ bool action::process_action(state& st) {
   if (_act == unknown || _id == node_id())
     return (false);
 
-  switch (_act) {
-  case notification_attempt:
+  if (_act == notification_attempt)
     return (_process_notification(st));
-    break;
-  default:
-    break;
-  }
-  return (false);
+  else
+    return (false);
 }
 
 bool action::_process_notification(state& st) {
@@ -137,7 +133,7 @@ bool action::_process_notification(state& st) {
 
   // Iterate the list and get the viability.
   for (QList<objects::contact::ptr>::iterator it(contacts.begin()),
-         end(contacts.end());
+                                              end(contacts.end());
        it != end;
        ++it) {
     return_value contact_viability = _check_notification_contact_viability(*it, st);

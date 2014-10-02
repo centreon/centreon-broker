@@ -58,6 +58,8 @@ namespace             notification {
     void              update_objects_from_db(QSqlDatabase& centreon_db,
                                              QSqlDatabase& centreon_storage_db);
 
+    std::auto_ptr<QMutexLocker>
+                      lock();
 
     objects::node::ptr
                       get_node_by_id(objects::node_id);
@@ -71,9 +73,6 @@ namespace             notification {
                       get_host_commands_by_contact(objects::contact::ptr cnt);
     QList<objects::command::ptr>
                       get_service_commands_by_contact(objects::contact::ptr cnt);
-
-    std::auto_ptr<QMutexLocker>
-                      lock();
 
   private:
     QSet<objects::node_id>
