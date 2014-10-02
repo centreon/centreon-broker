@@ -73,6 +73,9 @@ namespace           notification {
     return_value      _check_notification_contact_viability(
                        objects::contact& con,
                        ::com::centreon::broker::notification::state& st);
+    void              _notify_contact_of_node(
+                        objects::contact& con,
+                        ::com::centreon::broker::notification::state& st);
   };
 }
 

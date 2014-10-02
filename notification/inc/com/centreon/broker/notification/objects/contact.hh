@@ -81,9 +81,6 @@ namespace   notification {
       void                     set_email(std::string const& value);
       bool                     get_host_notifications_enabled() const throw();
       void                     set_host_notifications_enabled(bool value) throw();
-      group const&             get_host_notification_commands() const throw();
-      void                     set_host_notification_commands(
-                                  group const& value);
       host_action_on           get_host_notification_options() const throw();
       void                     set_host_notification_options(
                                   host_action_on value) throw();
@@ -101,9 +98,6 @@ namespace   notification {
       void                     set_retain_status_information(bool value) throw();
       std::string const&       get_pager() const throw();
       void                     set_pager(std::string const& value);
-      group const&             get_service_notification_commands() const throw();
-      void                     set_service_notification_commands(
-                                  group const& value);
       service_action_on        get_service_notification_options() const throw();
       void                     set_service_notification_options(
                                   service_action_on value) throw();
@@ -128,13 +122,11 @@ namespace   notification {
                                _customvariables;
       std::string              _email;
       bool                     _host_notifications_enabled;
-      group                    _host_notification_commands;
       host_action_on           _host_notification_options;
       std::string              _host_notification_period;
       bool                     _retain_nonstatus_information;
       bool                     _retain_status_information;
       std::string              _pager;
-      group                    _service_notification_commands;
       service_action_on        _service_notification_options;
       std::string              _service_notification_period;
       bool                     _service_notifications_enabled;

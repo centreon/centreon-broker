@@ -129,6 +129,8 @@ bool action::_process_notification(state& st) {
        it != end;
        ++it) {
     return_value contact_viability = _check_notification_contact_viability(**it, st);
+    if (contact_viability == ok)
+      _notify_contact_of_node(**it, st);
   }
 
   return false;
@@ -180,7 +182,7 @@ action::return_value action::_check_notification_contact_viability(
   // Get current time.
   time_t current_time = time(NULL);
 
-  // Are notifications enabled for this node?
+  // Are notifications enabled for this contact?
   if ((_id.has_host() && !con.get_host_notifications_enabled()) ||
       (_id.has_service() && !con.get_service_notifications_enabled()))
     return (error_should_remove);
@@ -192,7 +194,6 @@ action::return_value action::_check_notification_contact_viability(
   timeperiod::ptr tp = st.get_timeperiod_by_name(notification_period);
   if (!tp)
     return (error_should_remove);
-
   if (tp->is_valid(current_time))
     return (error_should_reschedule);
 
@@ -202,4 +203,12 @@ action::return_value action::_check_notification_contact_viability(
     return (error_should_remove);
 
   return (ok);
+}
+
+void action::_notify_contact_of_node(objects::contact& con,
+                                     state& st) {
+  /*group commands = _id.has_host() ? con.get_host_notification_command() :
+                                    con.get_service_notification_command();
+
+  for*/
 }

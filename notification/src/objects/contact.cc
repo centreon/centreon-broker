@@ -43,13 +43,11 @@ contact& contact::operator=(contact const& obj) {
     _customvariables = obj._customvariables;
     _email = obj._email;
     _host_notifications_enabled = obj._host_notifications_enabled;
-    _host_notification_commands = obj._host_notification_commands;
     _host_notification_options = obj._host_notification_options;
     _host_notification_period = obj._host_notification_period;
     _retain_nonstatus_information = obj._retain_nonstatus_information;
     _retain_status_information = obj._retain_status_information;
     _pager = obj._pager;
-    _service_notification_commands = obj._service_notification_commands;
     _service_notification_options = obj._service_notification_options;
     _service_notification_period = obj._service_notification_period;
     _service_notifications_enabled = obj._service_notifications_enabled;
@@ -115,14 +113,6 @@ void contact::set_host_notifications_enabled(bool value) throw() {
   _host_notifications_enabled = value;
 }
 
-group const& contact::get_host_notification_commands() const throw() {
-  return (_host_notification_commands);
-}
-
-void contact::set_host_notification_commands(group const& value) {
-  _host_notification_commands = value;
-}
-
 contact::host_action_on contact::get_host_notification_options() const throw() {
   return (_host_notification_options);
 }
@@ -169,14 +159,6 @@ std::string const& contact::get_pager() const throw() {
 
 void contact::set_pager(std::string const& value) {
   _pager = value;
-}
-
-group const& contact::get_service_notification_commands() const throw() {
-  return (_service_notification_commands);
-}
-
-void contact::set_service_notification_commands(group const& value) {
-  _service_notification_commands = value;
 }
 
 contact::service_action_on contact::get_service_notification_options() const throw() {
