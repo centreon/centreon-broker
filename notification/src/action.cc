@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/action.hh"
 #include "com/centreon/broker/notification/state.hh"
 
@@ -113,6 +114,12 @@ bool action::process_action(state& st) {
 }
 
 bool action::_process_notification(state& st) {
+
+  logging::debug(logging::low)
+      << "Notification: Processing notification action for node (host id = "
+      << _id.get_host_id() << ", service_id = " << _id.get_service_id()
+      << ").";
+
   return_value node_viability = _check_notification_node_viability(st);
   if (node_viability == error_should_remove)
     return (false);
@@ -122,6 +129,11 @@ bool action::_process_notification(state& st) {
   // Get the contact list attached to this node.
   QList<objects::contact::ptr> contacts =
     st.get_contacts_by_node(_id);
+
+  logging::debug(logging::low)
+      << "Notification: Processing notification contacts for node (host id = "
+      << _id.get_host_id() << ", service_id = " << _id.get_service_id()
+      << ").";
 
   // Iterate the list and get the viability.
   for (QList<objects::contact::ptr>::iterator it(contacts.begin()),
@@ -142,34 +154,55 @@ action::return_value action::_check_notification_node_viability(state& st) {
 
   // Find the node this notification is associated with.
   node::ptr n = st.get_node_by_id(_id);
-  if (!n)
+  if (!n) {
+    logging::debug(logging::low)
+      << "Notification: Error: Could not find the node for this notification.";
     return (error_should_remove);
+  }
 
   // If the node has no notification period and is a service, inherit one from the host
   timeperiod::ptr tp =
       st.get_timeperiod_by_name(n->get_notification_timeperiod());
   if (!tp) {
-    if (_id.has_host())
+    if (_id.has_host()) {
+      logging::debug(logging::low)
+        << "Notification: Error: Could not find the timeperiod for this notification.";
       return (error_should_remove);
+    }
     node::ptr host = st.get_host_from_service(_id);
-    if (!host)
+    if (!host) {
+      logging::debug(logging::low)
+        << "Notification: Error: Could not find the host for this service in notification.";
       return (error_should_remove);
+    }
     tp = st.get_timeperiod_by_name(host->get_notification_timeperiod());
-    if (!tp)
+    if (!tp) {
+      logging::debug(logging::low)
+        << "Notification: Error: Could not find the timeperiod for this notification.";
       return (error_should_remove);
+    }
   }
 
   // See if the node can have notifications sent out at this time
-  if (tp->is_valid(current_time))
+  if (tp->is_valid(current_time)) {
+    logging::debug(logging::low)
+      << "Notification: The notification shouldn't be sent at this time.";
     return (error_should_reschedule);
+  }
 
   // Are notifications temporarily disabled for this node?
-  if (!n->get_notifications_enabled())
+  if (!n->get_notifications_enabled()) {
+    logging::debug(logging::low)
+      << "Notification: Notification are temporarily disabled for this node.";
     return (error_should_reschedule);
+  }
 
   // See if we should notify problems for this service.
-  if (n->should_be_notified())
+  if (n->should_be_notified()) {
+    logging::debug(logging::low)
+      << "Notification: This node should not be notified for this state.";
     return (error_should_remove);
+  }
 
   return (ok);
 }
@@ -177,28 +210,43 @@ action::return_value action::_check_notification_node_viability(state& st) {
 action::return_value action::_check_notification_contact_viability(
                       contact::ptr con,
                       state& st) {
+  logging::debug(logging::low)
+      << "Notification: Processing notification contact " << con->get_name()
+      << ".";
   // Get current time.
   time_t current_time = time(NULL);
 
   // Are notifications enabled for this contact?
   if ((_id.has_host() && !con->get_host_notifications_enabled()) ||
-      (_id.has_service() && !con->get_service_notifications_enabled()))
+      (_id.has_service() && !con->get_service_notifications_enabled())) {
+    logging::debug(logging::low)
+        << "Notification: Notification not enabled for this contact.";
     return (error_should_remove);
+  }
 
   // See if the contact can be notified at this time
   std::string notification_period = _id.has_service() ?
                                       con->get_service_notification_period() :
                                       con->get_host_notification_period();
   timeperiod::ptr tp = st.get_timeperiod_by_name(notification_period);
-  if (!tp)
+  if (!tp) {
+    logging::debug(logging::low)
+        << "Notification: Error: Could not find timeperiod for this contact.";
     return (error_should_remove);
-  if (tp->is_valid(current_time))
+  }
+  if (tp->is_valid(current_time)) {
+    logging::debug(logging::low)
+        << "Notification: The notification shouldn't be sent at this time for this contact.";
     return (error_should_reschedule);
+  }
 
   // See if we should notify about problems with this service
   if (!con->can_be_notified(st.get_node_by_id(_id)->get_hard_state(),
-                           !_id.has_service()))
+                           !_id.has_service())) {
+    logging::debug(logging::low)
+        << "Notification: This contact should not be notified for this state.";
     return (error_should_remove);
+  }
 
   return (ok);
 }
