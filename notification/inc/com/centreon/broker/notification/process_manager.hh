@@ -26,6 +26,7 @@
 #  include <QMutex>
 #  include <QMutexLocker>
 #  include <QThread>
+#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/process.hh"
 
@@ -57,7 +58,8 @@ namespace                     notification {
     process_manager&          operator=(process_manager const&);
 
     QMutex                    _process_list_mutex;
-    std::list<process*>       _process_list;
+    std::list<misc::shared_ptr<process> >
+                              _process_list;
   };
 }
 

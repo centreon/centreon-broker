@@ -43,13 +43,13 @@ namespace             notification {
                            process_manager* manager = NULL);
 
     unsigned int      get_timeout() const throw();
+    bool              is_running() const;
 
   private:
                       process(process const&);
     process&          operator=(process const&);
 
     unsigned int      _timeout;
-    bool              _running;
     std::auto_ptr<QProcess>
                       _process;
   };

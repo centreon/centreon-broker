@@ -54,7 +54,7 @@ void process_manager::create_process(std::string const& command,
 
   {
     QMutexLocker lock(&_process_list_mutex);
-    _process_list.push_back(pr);
+    _process_list.push_back(misc::shared_ptr<process>(pr));
   }
 
   pr->exec(command, args, this);
@@ -64,5 +64,20 @@ process_manager::process_manager()
   : _process_list_mutex(QMutex::Recursive) {}
 
 void process_manager::process_finished() {
-  ;
+  QMutexLocker lock(&_process_list_mutex);
+
+  for (std::list<misc::shared_ptr<process> >::iterator it(_process_list.begin()),
+                                                       end(_process_list.end());
+       ++it != end;) {
+    if (!(*it)->is_running()) {
+      // Do something with the process.
+
+      // Remove the process.
+      std::list<misc::shared_ptr<process> >::iterator tmp = it;
+      ++it;
+      _process_list.erase(tmp);
+    }
+    else
+      ++it;
+  }
 }

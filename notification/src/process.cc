@@ -26,16 +26,14 @@ using namespace com::centreon::broker::notification;
 
 process::process(int timeout /* = 0 */)
   : _timeout(timeout),
-    _process(new QProcess),
-    _running(false) {}
+    _process(new QProcess) {}
 
 
 bool process::exec(std::string const& program,
                    std::list<std::string> const& arguments,
                    process_manager* manager /* = NULL */) {
-  if (_running)
+  if (is_running())
     return (false);
-  _running = true;
 
   QStringList args;
   for (std::list<std::string>::const_iterator it(arguments.begin()),
@@ -53,4 +51,8 @@ bool process::exec(std::string const& program,
 
 unsigned int process::get_timeout() const throw() {
   return (_timeout);
+}
+
+bool process::is_running() const {
+  return (_process->state() == QProcess::NotRunning);
 }
