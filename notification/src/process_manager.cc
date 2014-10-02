@@ -26,8 +26,10 @@ using namespace com::centreon::broker::notification;
 process_manager* process_manager::_instance_ptr = 0;
 
 process_manager* process_manager::instance() {
-  if (!_instance_ptr)
+  if (!_instance_ptr) {
     _instance_ptr = new process_manager;
+    _instance_ptr->start();
+  }
   return (_instance_ptr);
 }
 
