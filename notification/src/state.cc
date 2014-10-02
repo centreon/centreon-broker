@@ -41,6 +41,7 @@
 #include "com/centreon/broker/notification/builders/node_set_builder.hh"
 #include "com/centreon/broker/notification/builders/node_by_node_id_builder.hh"
 #include "com/centreon/broker/notification/builders/timeperiod_by_name_builder.hh"
+#include "com/centreon/broker/notification/builders/command_by_contact_builder.hh"
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
@@ -76,6 +77,7 @@ state& state::operator=(state const& obj) {
     _contact_by_name = obj._contact_by_name;
     _contacts = obj._contacts;
     _contact_by_command = obj._contact_by_command;
+    _command_by_contact = obj._command_by_contact;
     _dependency_by_child_id = obj._dependency_by_child_id;
     _dependency_by_parent_id = obj._dependency_by_parent_id;
     _downtimes = obj._downtimes;
@@ -101,6 +103,7 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db,
   _contact_by_name.clear();
   _contacts.clear();
   _contact_by_command.clear();
+  _command_by_contact.clear();
   _dependency_by_child_id.clear();
   _dependency_by_parent_id.clear();
   _downtimes.clear();
@@ -133,9 +136,11 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db,
     contact_by_command_builder by_command_builder(_contact_by_command);
     contact_by_name_builder by_name_builder(_contact_by_name);
     contact_by_node_builder by_node_builder(_contacts);
+    command_by_contact_builder by_contact_builder(_command_by_contact);
     composed.push_back(by_command_builder);
     composed.push_back(by_name_builder);
     composed.push_back(by_node_builder);
+    composed.push_back(by_contact_builder);
     contact.load(&centreon_db, &composed);
   }
   {
