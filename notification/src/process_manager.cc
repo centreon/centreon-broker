@@ -30,3 +30,17 @@ process_manager* process_manager::instance() {
     _instance_ptr = new process_manager;
   return (_instance_ptr);
 }
+
+void process_manager::release() {
+  if (_instance_ptr) {
+    if (_instance_ptr->isRunning()) {
+      _instance_ptr->exit(0);
+      _instance_ptr->wait();
+    }
+    delete _instance_ptr;
+  }
+}
+
+void process_manager::run() {
+  exec();
+}

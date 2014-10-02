@@ -23,6 +23,7 @@
 #  include <memory>
 #  include <string>
 #  include <QProcess>
+#  include <QThread>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -32,9 +33,13 @@ namespace                     notification {
    *  @class process_manager process_manager.hh "com/centreon/broker/notification/processprocess_manager.hh"
    *  @brief Manage the processes
    */
-  class                       process_manager {
+  class                       process_manager : public QThread {
   public:
-    process_manager*          instance();
+    Q_OBJECT
+    static process_manager*   instance();
+    static void               release();
+
+    virtual void              run();
 
   private:
     static process_manager*
