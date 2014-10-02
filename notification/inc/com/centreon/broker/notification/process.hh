@@ -28,6 +28,8 @@
 CCB_BEGIN()
 
 namespace             notification {
+  // Forward declaration.
+  class               process_manager;
   /**
    *  @class process process.hh "com/centreon/broker/notification/process.hh"
    *  @brief Represent a process being executed.
@@ -37,9 +39,11 @@ namespace             notification {
                       process(int timeout = 0);
 
     bool              exec(std::string const& program,
-                           std::list<std::string> const& arguments);
+                           std::list<std::string> const& arguments,
+                           process_manager* manager = NULL);
 
     unsigned int      get_timeout() const throw();
+
   private:
                       process(process const&);
     process&          operator=(process const&);

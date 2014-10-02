@@ -46,3 +46,23 @@ void process_manager::release() {
 void process_manager::run() {
   exec();
 }
+
+void process_manager::create_process(std::string const& command,
+                                     std::list<std::string> const& args,
+                                     unsigned int timeout) {
+  process* pr = new process(timeout);
+
+  {
+    QMutexLocker lock(&_process_list_mutex);
+    _process_list.push_back(pr);
+  }
+
+  pr->exec(command, args, this);
+}
+
+process_manager::process_manager()
+  : _process_list_mutex(QMutex::Recursive) {}
+
+void process_manager::process_finished() {
+  ;
+}

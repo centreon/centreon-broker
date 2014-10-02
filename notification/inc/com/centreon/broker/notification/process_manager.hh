@@ -21,7 +21,10 @@
 #  define CCB_NOTIFICATION_PROCESS_MANAGER_HH
 
 #  include <memory>
+#  include <list>
 #  include <string>
+#  include <QMutex>
+#  include <QMutexLocker>
 #  include <QThread>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/process.hh"
@@ -40,13 +43,21 @@ namespace                     notification {
     static void               release();
 
     virtual void              run();
+    void                      create_process(std::string const& command,
+                                             std::list<std::string> const& args,
+                                             unsigned int timeout = 0);
+
+  public slots:
+    void                      process_finished();
 
   private:
-    static process_manager*
-                              _instance_ptr;
+    static process_manager*   _instance_ptr;
                               process_manager();
                               process_manager(process_manager const&);
     process_manager&          operator=(process_manager const&);
+
+    QMutex                    _process_list_mutex;
+    std::list<process*>       _process_list;
   };
 }
 

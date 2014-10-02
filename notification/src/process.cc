@@ -17,19 +17,22 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QObject>
 #include <QStringList>
 #include "com/centreon/broker/notification/process.hh"
+#include "com/centreon/broker/notification/process_manager.hh"
 
 using namespace com::centreon::broker::notification;
 
-process::process(int timeout)
+process::process(int timeout /* = 0 */)
   : _timeout(timeout),
     _process(new QProcess),
     _running(false) {}
 
 
 bool process::exec(std::string const& program,
-                   std::list<std::string> const& arguments) {
+                   std::list<std::string> const& arguments,
+                   process_manager* manager /* = NULL */) {
   if (_running)
     return (false);
   _running = true;
@@ -40,6 +43,10 @@ bool process::exec(std::string const& program,
        it != end; ++it)
     args << it->c_str();
 
+  if (manager) {
+    QObject::connect(_process.get(), SIGNAL(finished(int, QProcess::ExitStatus)),
+                     manager, SLOT(process_finished()));
+  }
   _process->start(program.c_str(), args);
   return (true);
 }
