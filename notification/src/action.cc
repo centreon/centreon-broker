@@ -119,9 +119,11 @@ bool action::_process_notification(state& st) {
   else if (node_viability == error_should_reschedule)
     return (true);
 
+  // Get the contact list attached to this node.
   QList<objects::contact::ptr> contacts =
     st.get_contacts_by_node(_id);
 
+  // Iterate the list and get the viability.
   for (QList<objects::contact::ptr>::iterator it(contacts.begin()),
          end(contacts.end());
        it != end;
@@ -136,8 +138,7 @@ bool action::_process_notification(state& st) {
 
 action::return_value action::_check_notification_node_viability(state& st) {
   // Get current time.
-  time_t current_time;
-  time(&current_time);
+  time_t current_time = time(NULL);
 
   // Find the node this notification is associated with.
   node::ptr n = st.get_node_by_id(_id);
@@ -159,7 +160,7 @@ action::return_value action::_check_notification_node_viability(state& st) {
   }
 
   // See if the node can have notifications sent out at this time
-  if (tp->is_valid(current_time) != 0)
+  if (tp->is_valid(current_time))
     return (error_should_reschedule);
 
   // Are notifications temporarily disabled for this node?
@@ -173,8 +174,32 @@ action::return_value action::_check_notification_node_viability(state& st) {
   return (ok);
 }
 
-action::return_value action::_check_notification_contact_viability(contact& con,
-                                                   state& st) {
+action::return_value action::_check_notification_contact_viability(
+                      contact& con,
+                      state& st) {
+  // Get current time.
+  time_t current_time = time(NULL);
+
+  // Are notifications enabled for this node?
+  if ((_id.has_host() && !con.get_host_notifications_enabled()) ||
+      (_id.has_service() && !con.get_service_notifications_enabled()))
+    return (error_should_remove);
+
+  // See if the contact can be notified at this time
+  std::string notification_period = _id.has_service() ?
+                                      con.get_service_notification_period() :
+                                      con.get_host_notification_period();
+  timeperiod::ptr tp = st.get_timeperiod_by_name(notification_period);
+  if (!tp)
+    return (error_should_remove);
+
+  if (tp->is_valid(current_time))
+    return (error_should_reschedule);
+
+  // See if we should notify about problems with this service
+  if (!con.can_be_notified(st.get_node_by_id(_id)->get_hard_state(),
+                           !_id.has_service()))
+    return (error_should_remove);
 
   return (ok);
 }

@@ -210,3 +210,25 @@ bool contact::get_service_notifications_enabled() const throw() {
 void contact::set_service_notifications_enabled(bool value) throw() {
   _service_notifications_enabled = value;
 }
+
+bool contact::can_be_notified(node_state state, bool isHost) const throw() {
+  if (isHost) {
+    if (state == node_state::ok && can_be_notified_for_host(host_up))
+      return (true);
+    else if (state == node_state::host_down && can_be_notified_for_host(host_down))
+      return (true);
+    else if (state == node_state::host_unreachable && can_be_notified_for_host(host_unreachable))
+      return (true);
+  }
+  else {
+    if (state == node_state::ok && can_be_notified_for_service(service_ok))
+      return (true);
+    else if (state == node_state::service_warning && can_be_notified_for_service(service_warning))
+      return (true);
+    else if (state == node_state::service_critical && can_be_notified_for_service(service_critical))
+      return (true);
+    else if (state == node_state::service_unknown && can_be_notified_for_service(service_unknown))
+      return (true);
+  }
+  return (false);
+}

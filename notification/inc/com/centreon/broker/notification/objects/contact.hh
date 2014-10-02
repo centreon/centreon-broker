@@ -24,6 +24,7 @@
 #  include <vector>
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/objects/defines.hh"
 #  include "com/centreon/broker/notification/objects/group.hh"
 #  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
 
@@ -116,6 +117,7 @@ namespace   notification {
       bool                     get_service_notifications_enabled() const throw();
       void                     set_service_notifications_enabled(
                                   bool value) throw();
+      bool                     can_be_notified(node_state state, bool isHost) const throw();
 
     private:
       std::vector<std::string> _address;
