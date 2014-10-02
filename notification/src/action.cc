@@ -207,6 +207,7 @@ action::return_value action::_check_notification_contact_viability(
 
 void action::_notify_contact_of_node(objects::contact& con,
                                      state& st) {
+  //Qlist<command::ptr> commands = _id.has_host() ? st.get_host_commands_by_contact(cnt)
   /*group commands = _id.has_host() ? con.get_host_notification_command() :
                                     con.get_service_notification_command();
 

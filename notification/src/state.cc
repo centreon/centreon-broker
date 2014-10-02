@@ -195,6 +195,8 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db,
     data_logger::log_container("_acks", _acks);
     data_logger::log_container("_commands", _commands);
     data_logger::log_container("_contact_by_command", _contact_by_name);
+    data_logger::log_container("_host_command_by_contact", _host_command_by_contact);
+    data_logger::log_container("_service_command_by_contact", _service_command_by_contact);
     data_logger::log_container("_contact_by_name", _contact_by_name);
     data_logger::log_container("_contacts", _contacts);
     data_logger::log_container("_dependency_by_child_id",
@@ -224,12 +226,24 @@ QList<objects::contact::ptr> state::get_contacts_by_node(objects::node_id id) {
   return (_contacts.values(id));
 }
 
-QList<std::string> state::get_host_commands_by_contact(contact::ptr cnt) {
-  return (_host_command_by_contact.values(cnt));
+QList<command::ptr> state::get_host_commands_by_contact(contact::ptr cnt) {
+  QList<command::ptr> commands;
+  QList<std::string> command_names = _host_command_by_contact.values(cnt);
+
+  for (QList<std::string>::iterator it(command_names.begin()),
+        end(command_names.end()); it != end; ++it)
+    commands.push_back(_commands[*it]);
+  return (commands);
 }
 
-QList<std::string> state::get_service_commands_by_contact(contact::ptr cnt) {
-  return (_service_command_by_contact.values(cnt));
+QList<command::ptr> state::get_service_commands_by_contact(contact::ptr cnt) {
+  QList<command::ptr> commands;
+  QList<std::string> command_names = _service_command_by_contact.values(cnt);
+
+  for (QList<std::string>::iterator it(command_names.begin()),
+        end(command_names.end()); it != end; ++it)
+    commands.push_back(_commands[*it]);
+  return (commands);
 }
 
 /**
