@@ -224,7 +224,13 @@ QList<objects::contact::ptr> state::get_contacts_by_node(objects::node_id id) {
   return (_contacts.values(id));
 }
 
+QList<std::string> state::get_host_commands_by_contact(contact::ptr cnt) {
+  return (_host_command_by_contact.values(cnt));
+}
 
+QList<std::string> state::get_service_commands_by_contact(contact::ptr cnt) {
+  return (_service_command_by_contact.values(cnt));
+}
 
 /**
  *  Lock the internal mutex of this state.

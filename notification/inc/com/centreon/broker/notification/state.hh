@@ -67,6 +67,10 @@ namespace             notification {
                       get_timeperiod_by_name(std::string const& name);
     QList<objects::contact::ptr>
                       get_contacts_by_node(objects::node_id id);
+    QList<std::string>
+                      get_host_commands_by_contact(objects::contact::ptr cnt);
+    QList<std::string>
+                      get_service_commands_by_contact(objects::contact::ptr cnt);
 
     std::auto_ptr<QMutexLocker>
                       lock();
