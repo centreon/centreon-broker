@@ -128,14 +128,12 @@ bool action::_process_notification(state& st) {
          end(contacts.end());
        it != end;
        ++it) {
-    return_value contact_viability = _check_notification_contact_viability(**it, st);
+    return_value contact_viability = _check_notification_contact_viability(*it, st);
     if (contact_viability == ok)
-      _notify_contact_of_node(**it, st);
+      _notify_contact_of_node(*it, st);
   }
 
   return false;
-  /*else
-    return (_check_notification_contact_viability(st));*/
 }
 
 action::return_value action::_check_notification_node_viability(state& st) {
@@ -177,20 +175,20 @@ action::return_value action::_check_notification_node_viability(state& st) {
 }
 
 action::return_value action::_check_notification_contact_viability(
-                      contact& con,
+                      contact::ptr con,
                       state& st) {
   // Get current time.
   time_t current_time = time(NULL);
 
   // Are notifications enabled for this contact?
-  if ((_id.has_host() && !con.get_host_notifications_enabled()) ||
-      (_id.has_service() && !con.get_service_notifications_enabled()))
+  if ((_id.has_host() && !con->get_host_notifications_enabled()) ||
+      (_id.has_service() && !con->get_service_notifications_enabled()))
     return (error_should_remove);
 
   // See if the contact can be notified at this time
   std::string notification_period = _id.has_service() ?
-                                      con.get_service_notification_period() :
-                                      con.get_host_notification_period();
+                                      con->get_service_notification_period() :
+                                      con->get_host_notification_period();
   timeperiod::ptr tp = st.get_timeperiod_by_name(notification_period);
   if (!tp)
     return (error_should_remove);
@@ -198,18 +196,20 @@ action::return_value action::_check_notification_contact_viability(
     return (error_should_reschedule);
 
   // See if we should notify about problems with this service
-  if (!con.can_be_notified(st.get_node_by_id(_id)->get_hard_state(),
+  if (!con->can_be_notified(st.get_node_by_id(_id)->get_hard_state(),
                            !_id.has_service()))
     return (error_should_remove);
 
   return (ok);
 }
 
-void action::_notify_contact_of_node(objects::contact& con,
+void action::_notify_contact_of_node(contact::ptr cnt,
                                      state& st) {
-  //Qlist<command::ptr> commands = _id.has_host() ? st.get_host_commands_by_contact(cnt)
-  /*group commands = _id.has_host() ? con.get_host_notification_command() :
-                                    con.get_service_notification_command();
+  QList<command::ptr> commands = _id.has_host() ? st.get_host_commands_by_contact(cnt) :
+                                                  st.get_service_commands_by_contact(cnt);
 
-  for*/
+  for (QList<command::ptr>::iterator it(commands.begin()), end(commands.end());
+       it != end; ++it) {
+    // Process command.
+  }
 }

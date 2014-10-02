@@ -71,10 +71,10 @@ namespace           notification {
     return_value      _check_notification_node_viability(
                        ::com::centreon::broker::notification::state& st);
     return_value      _check_notification_contact_viability(
-                       objects::contact& con,
+                       objects::contact::ptr con,
                        ::com::centreon::broker::notification::state& st);
     void              _notify_contact_of_node(
-                        objects::contact& con,
+                        objects::contact::ptr con,
                         ::com::centreon::broker::notification::state& st);
   };
 }
