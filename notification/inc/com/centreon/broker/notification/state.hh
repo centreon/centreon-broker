@@ -87,7 +87,9 @@ namespace             notification {
     QMultiHash<std::string, objects::contact::ptr>
                       _contact_by_command;
     QMultiHash<objects::contact::ptr, std::string>
-                      _command_by_contact;
+                      _host_command_by_contact;
+    QMultiHash<objects::contact::ptr, std::string>
+                      _service_command_by_contact;
     QMultiHash<objects::node_id, objects::dependency::ptr>
                       _dependency_by_child_id;
     QMultiHash<objects::node_id, objects::dependency::ptr>

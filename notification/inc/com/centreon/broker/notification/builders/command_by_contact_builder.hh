@@ -39,7 +39,9 @@ namespace         notification {
   class           command_by_contact_builder : public contact_builder {
   public:
                   command_by_contact_builder(QMultiHash<objects::contact::ptr,
-                                             std::string>& table);
+                                                        std::string>& host_table,
+                                             QMultiHash<objects::contact::ptr,
+                                                        std::string>& service_table);
     virtual       ~command_by_contact_builder() {}
 
     virtual void  add_contact(unsigned int id,
@@ -55,7 +57,9 @@ namespace         notification {
     QHash<unsigned int, objects::contact::ptr>
                   _cache;
     QMultiHash<objects::contact::ptr, std::string>&
-                  _table;
+                  _host_table;
+    QMultiHash<objects::contact::ptr, std::string>&
+                  _service_table;
                   command_by_contact_builder();
   };
 

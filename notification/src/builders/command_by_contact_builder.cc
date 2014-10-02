@@ -26,11 +26,14 @@ using namespace com::centreon::broker::notification::objects;
 /**
  *  Construct the object.
  *
- *  @param[in,out] table  The table to fill.
+ *  @param[in,out] host_table  The table to fill.
+ *  @param[in,out] service_table  The table to fill.
  */
 command_by_contact_builder::command_by_contact_builder(
-    QMultiHash<contact::ptr, std::string>& table) :
-  _table(table) {}
+    QMultiHash<contact::ptr, std::string>& host_table,
+    QMultiHash<contact::ptr, std::string>& service_table) :
+  _host_table(host_table),
+  _service_table(service_table) {}
 
 void command_by_contact_builder::add_contact(unsigned int id,
                                              contact::ptr con) {
@@ -41,12 +44,12 @@ void command_by_contact_builder::connect_contact_hostcommand(
     unsigned int contact_id,
     std::string const& command_name) {
   if (_cache.contains(contact_id))
-  _table.insert(_cache[contact_id], command_name);
+  _host_table.insert(_cache[contact_id], command_name);
 }
 
 void command_by_contact_builder::connect_contact_servicecommand(
     unsigned int contact_id,
     std::string const& command_name) {
   if (_cache.contains(contact_id))
-    _table.insert(_cache[contact_id], command_name);
+    _service_table.insert(_cache[contact_id], command_name);
 }
