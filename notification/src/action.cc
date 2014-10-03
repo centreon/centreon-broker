@@ -162,7 +162,7 @@ action::return_value action::_check_notification_node_viability(state& st) {
   timeperiod::ptr tp =
       st.get_timeperiod_by_name(n->get_notification_timeperiod());
   if (!tp) {
-    if (_id.has_host()) {
+    if (_id.is_host()) {
       logging::debug(logging::low)
         << "Notification: Error: Could not find the timeperiod for this "
            "notification.";
@@ -232,15 +232,15 @@ action::return_value action::_check_notification_contact_viability(
   time_t current_time = time(NULL);
 
   // Are notifications enabled for this contact?
-  if ((_id.has_host() && !con->get_host_notifications_enabled()) ||
-      (_id.has_service() && !con->get_service_notifications_enabled())) {
+  if ((_id.is_host() && !con->get_host_notifications_enabled()) ||
+      (_id.is_service() && !con->get_service_notifications_enabled())) {
     logging::debug(logging::low)
         << "Notification: Notification not enabled for this contact.";
     return (error_should_remove);
   }
 
   // See if the contact can be notified at this time
-  std::string notification_period = _id.has_service() ?
+  std::string notification_period = _id.is_service() ?
                                       con->get_service_notification_period() :
                                       con->get_host_notification_period();
   timeperiod::ptr tp = st.get_timeperiod_by_name(notification_period);
@@ -258,7 +258,7 @@ action::return_value action::_check_notification_contact_viability(
 
   // See if we should notify about problems with this service
   if (!con->can_be_notified(st.get_node_by_id(_id)->get_hard_state(),
-                           !_id.has_service())) {
+                           !_id.is_service())) {
     logging::debug(logging::low)
         << "Notification: This contact should not be notified for this state.";
     return (error_should_remove);
@@ -273,7 +273,7 @@ void action::_notify_contact_of_node(contact::ptr cnt,
   process_manager& manager = process_manager::instance();
 
   // Iterate on the commands associated with this contact.
-  QList<command::ptr> commands = _id.has_host() ?
+  QList<command::ptr> commands = _id.is_host() ?
         st.get_host_commands_by_contact(cnt) :
         st.get_service_commands_by_contact(cnt);
 

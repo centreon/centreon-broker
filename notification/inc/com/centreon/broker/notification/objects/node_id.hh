@@ -47,8 +47,8 @@ namespace         notification {
 
       unsigned int  get_host_id() const throw();
       unsigned int  get_service_id() const throw();
-      bool          has_host() const throw();
-      bool          has_service() const throw();
+      bool          is_host() const throw();
+      bool          is_service() const throw();
 
     private:
       unsigned int  _host_id;

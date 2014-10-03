@@ -262,7 +262,7 @@ bool node::should_be_notified() const throw() {
   if (_hard_state == node_state::ok)
     return (false);
 
-  if (_id.has_host()) {
+  if (_id.is_host()) {
     if(_hard_state == node_state::host_down &&
         _notification_options.check_for(node_notification_opt::host_down))
       return (true);
@@ -270,7 +270,7 @@ bool node::should_be_notified() const throw() {
               _notification_options.check_for(node_notification_opt::host_unreachable))
       return (true);
   }
-  else if (_id.has_service()) {
+  else if (_id.is_service()) {
     if (_hard_state == node_state::service_warning &&
           _notification_options.check_for(node_notification_opt::service_warning))
       return (true);

@@ -63,11 +63,11 @@ unsigned int node_id::get_service_id() const throw() {
   return (_service_id);
 }
 
-bool node_id::has_host() const throw() {
+bool node_id::is_host() const throw() {
   return (_host_id != 0);
 }
 
-bool node_id::has_service() const throw() {
+bool node_id::is_service() const throw() {
   return (_service_id != 0);
 }
 
