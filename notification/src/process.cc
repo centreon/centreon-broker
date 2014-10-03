@@ -40,6 +40,11 @@ bool process::is_timeout() const throw() {
   return (_timeout > 0 ? difftime(time(NULL), _start_time) > _timeout : 0);
 }
 
+void process::kill() {
+  if (!is_running())
+    _process->kill();
+}
+
 bool process::exec(std::string const& program,
                    process_manager* manager /* = NULL */) {
   if (is_running())

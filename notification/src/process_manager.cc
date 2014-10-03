@@ -88,6 +88,8 @@ void process_manager::process_timeouted() {
                                                        end(_process_list.end());
        it != end;) {
     if ((*it)->is_timeout()) {
+      // Kill the process.
+      (*it)->kill();
       // Remove the process.
       std::list<misc::shared_ptr<process> >::iterator tmp = it;
       ++it;
