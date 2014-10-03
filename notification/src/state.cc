@@ -210,16 +210,16 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db,
 }
 
 node::ptr state::get_node_by_id(node_id id) {
-  return (_node_by_id[id]);
+  return (_node_by_id.value(id));
 }
 
-objects::node::ptr state::get_host_from_service(objects::node_id service_id) {
-  return (_node_by_id[node_id(service_id.get_host_id())]);
+node::ptr state::get_host_from_service(objects::node_id service_id) {
+  return (_node_by_id.value(node_id(service_id.get_host_id())));
 }
 
 
-objects::timeperiod::ptr state::get_timeperiod_by_name(std::string const& name) {
-  return (_timeperiod_by_name[name]);
+timeperiod::ptr state::get_timeperiod_by_name(std::string const& name) {
+  return (_timeperiod_by_name.value(name));
 }
 
 QList<objects::contact::ptr> state::get_contacts_by_node(objects::node_id id) {
@@ -260,7 +260,8 @@ bool state::is_node_in_downtime(objects::node_id id) {
   time_t current_time = time(NULL);
   QList<downtime::ptr> downtimes = _downtimes.values(id);
 
-  for (QList<downtime::ptr>::iterator it(downtimes.begin()), end(downtimes.end());
+  for (QList<downtime::ptr>::iterator it(downtimes.begin()),
+                                      end(downtimes.end());
        it != end;
        ++it) {
     if ((*it)->get_actual_end_time() > current_time &&
@@ -277,7 +278,8 @@ bool state::has_node_been_acknowledged(objects::node_id id) {
   time_t current_time = time(NULL);
   QList<acknowledgement::ptr> acknowledgements = _acks.values(id);
 
-  for (QList<acknowledgement::ptr>::iterator it (acknowledgements.begin()), end(acknowledgements.end());
+  for (QList<acknowledgement::ptr>::iterator it(acknowledgements.begin()),
+                                             end(acknowledgements.end());
        it != end;
        ++it) {
     return (true);
