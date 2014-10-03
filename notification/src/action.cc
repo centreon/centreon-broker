@@ -200,6 +200,8 @@ action::return_value action::_check_notification_node_viability(state& st) {
     return (error_should_remove);
   }
 
+  // TODO: Acknowledgement and downtimes
+
   return (ok);
 }
 
@@ -232,7 +234,8 @@ action::return_value action::_check_notification_contact_viability(
   }
   if (tp->is_valid(current_time)) {
     logging::debug(logging::low)
-        << "Notification: The notification shouldn't be sent at this time for this contact.";
+        << "Notification: The notification shouldn't be sent at this time for"
+           " this contact.";
     return (error_should_reschedule);
   }
 
@@ -249,11 +252,15 @@ action::return_value action::_check_notification_contact_viability(
 
 void action::_notify_contact_of_node(contact::ptr cnt,
                                      state& st) {
-  QList<command::ptr> commands = _id.has_host() ? st.get_host_commands_by_contact(cnt) :
-                                                  st.get_service_commands_by_contact(cnt);
+  QList<command::ptr> commands = _id.has_host() ?
+        st.get_host_commands_by_contact(cnt) :
+        st.get_service_commands_by_contact(cnt);
 
   for (QList<command::ptr>::iterator it(commands.begin()), end(commands.end());
        it != end; ++it) {
     // Process command.
+    std::string command /* = it->resolve()*/;
+
+
   }
 }

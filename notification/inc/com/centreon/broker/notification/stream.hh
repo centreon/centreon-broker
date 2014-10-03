@@ -34,6 +34,7 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/state.hh"
 #  include "com/centreon/broker/correlation/issue_parent.hh"
+#  include "com/centreon/broker/notification/process_manager.hh"
 
 CCB_BEGIN()
 

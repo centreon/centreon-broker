@@ -150,6 +150,9 @@ stream::stream(
   // Create notification scheduler
   _notif_scheduler.reset(new notification_scheduler(_state));
   _notif_scheduler->start();
+
+  // Create the process manager.
+  process_manager::instance();
 }
 
 /**
@@ -182,6 +185,9 @@ stream::stream(stream const& s) : io::stream(s) {
   // Move the notification scheduler thread from the first stream.
   _notif_scheduler.reset(const_cast<stream&>(s)._notif_scheduler.release());
   _notif_scheduler->start();
+
+  // Create the process manager.
+  process_manager::instance();
 }
 
 /**
@@ -221,6 +227,9 @@ stream::~stream() {
   // Wait for the termination of the thread.
   _notif_scheduler->exit();
   _notif_scheduler->wait();
+
+  // Wait for the termination of the process manager.
+  process_manager::release();
 }
 
 /**

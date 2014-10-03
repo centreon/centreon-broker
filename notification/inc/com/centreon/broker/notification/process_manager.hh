@@ -39,7 +39,6 @@ namespace                     notification {
    */
   class                       process_manager : public QThread {
   public:
-    Q_OBJECT
     static process_manager*   instance();
     static void               release();
 
@@ -51,6 +50,8 @@ namespace                     notification {
   public slots:
     void                      process_finished();
 
+  public:
+    Q_OBJECT
   private:
     static process_manager*   _instance_ptr;
                               process_manager();
