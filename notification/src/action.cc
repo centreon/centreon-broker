@@ -20,6 +20,7 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/action.hh"
 #include "com/centreon/broker/notification/state.hh"
+#include "com/centreon/broker/notification/process_manager.hh"
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
@@ -252,6 +253,10 @@ action::return_value action::_check_notification_contact_viability(
 
 void action::_notify_contact_of_node(contact::ptr cnt,
                                      state& st) {
+  // Get the process manager.
+  process_manager& manager = process_manager::instance();
+
+  // Iterate on the commands associated with this contact.
   QList<command::ptr> commands = _id.has_host() ?
         st.get_host_commands_by_contact(cnt) :
         st.get_service_commands_by_contact(cnt);
@@ -261,6 +266,6 @@ void action::_notify_contact_of_node(contact::ptr cnt,
     // Process command.
     std::string command /* = it->resolve()*/;
 
-
+    manager.create_process(command);
   }
 }

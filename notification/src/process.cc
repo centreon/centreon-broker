@@ -37,22 +37,15 @@ bool process::is_running() const {
 }
 
 bool process::exec(std::string const& program,
-                   std::list<std::string> const& arguments,
                    process_manager* manager /* = NULL */) {
   if (is_running())
     return (false);
-
-  QStringList args;
-  for (std::list<std::string>::const_iterator it(arguments.begin()),
-                                              end(arguments.end());
-       it != end; ++it)
-    args << it->c_str();
 
   if (manager) {
     _process->moveToThread(manager);
     QObject::connect(_process.get(), SIGNAL(finished(int, QProcess::ExitStatus)),
                      manager, SLOT(process_finished()));
   }
-  _process->start(program.c_str(), args);
+  _process->start(program.c_str());
   return (true);
 }

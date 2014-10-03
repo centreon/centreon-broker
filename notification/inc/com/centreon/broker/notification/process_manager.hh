@@ -39,12 +39,11 @@ namespace                     notification {
    */
   class                       process_manager : public QThread {
   public:
-    static process_manager*   instance();
+    static process_manager&   instance();
     static void               release();
 
     virtual void              run();
     void                      create_process(std::string const& command,
-                                             std::list<std::string> const& args,
                                              unsigned int timeout = 0);
 
   public slots:

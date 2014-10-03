@@ -42,7 +42,6 @@ namespace             notification {
     bool              is_running() const;
 
     bool              exec(std::string const& program,
-                           std::list<std::string> const& arguments,
                            process_manager* manager = NULL);
 
   private:

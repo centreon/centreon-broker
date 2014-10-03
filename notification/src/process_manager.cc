@@ -25,12 +25,12 @@ using namespace com::centreon::broker::notification;
 
 process_manager* process_manager::_instance_ptr = 0;
 
-process_manager* process_manager::instance() {
+process_manager& process_manager::instance() {
   if (!_instance_ptr) {
     _instance_ptr = new process_manager;
     _instance_ptr->start();
   }
-  return (_instance_ptr);
+  return (*_instance_ptr);
 }
 
 void process_manager::release() {
@@ -48,7 +48,6 @@ void process_manager::run() {
 }
 
 void process_manager::create_process(std::string const& command,
-                                     std::list<std::string> const& args,
                                      unsigned int timeout) {
   process* pr = new process(timeout);
 
@@ -57,7 +56,7 @@ void process_manager::create_process(std::string const& command,
     _process_list.push_back(misc::shared_ptr<process>(pr));
   }
 
-  pr->exec(command, args, this);
+  pr->exec(command, this);
 }
 
 process_manager::process_manager()
