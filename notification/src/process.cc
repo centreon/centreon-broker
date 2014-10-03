@@ -69,11 +69,12 @@ void process::kill() {
 }
 
 /**
- *  Start this process with a command and an optional process manager.
+ *  @brief Start this process with a command and an optional process manager.
  *
+ *  If a process manager is given, the process manager will process timeout,
+ *  process termination, and process freeing.
  *
  *  @param[in] program      The program to execute, with its arguments.
- *
  *  @param[in,out] manager  The manager to which register the process.
  *
  *  @return                 True of the process was started.
@@ -85,7 +86,8 @@ bool process::exec(std::string const& program,
 
   if (manager) {
     _process->moveToThread(manager);
-    QObject::connect(_process.get(), SIGNAL(finished(int, QProcess::ExitStatus)),
+    QObject::connect(_process.get(), SIGNAL(finished(int,
+                                                     QProcess::ExitStatus)),
                      manager, SLOT(process_finished()));
     if (_timeout != 0)
       manager->add_timeout(_timeout);

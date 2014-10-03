@@ -132,6 +132,12 @@ void notification_scheduler::_process_actions() {
   }
 }
 
+/**
+ *  Reschedule an action previously scheduled.
+ *
+ *  @param[in] previously_scheduled  The time of the previous action.
+ *  @param[in] a                     The action to reschedule.
+ */
 void notification_scheduler::_reschedule_action(time_t previously_scheduled,
                                                 action a) {
   // Reschedule at the previous scheduling + the notification interval of the node.

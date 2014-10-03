@@ -209,23 +209,60 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db,
 #endif //!NDEBUG
 }
 
+/**
+ *  Get a node by its node id.
+ *
+ *  @param[in] id  The id of the node.
+ *
+ *  @return        A node::ptr to the node, or a null node::ptr.
+ */
 node::ptr state::get_node_by_id(node_id id) {
   return (_node_by_id.value(id));
 }
 
+/**
+ *  Get the host of a service.
+ *
+ *  @param[in] service_id  The node id of the service.
+ *
+ *  @return                A node::ptr to the host, or a null node::ptr.
+ */
 node::ptr state::get_host_from_service(objects::node_id service_id) {
-  return (_node_by_id.value(node_id(service_id.get_host_id())));
+  if (!service_id.is_service())
+    return (node::ptr());
+  else
+    return (_node_by_id.value(node_id(service_id.get_host_id())));
 }
 
-
+/**
+ *  Get a timeperiod by its name.
+ *
+ *  @param[in] name  The name of the timeperiod.
+ *
+ *  @return          A timeperiod::ptr to the timeperiod, or a null timeperiod::ptr.
+ */
 timeperiod::ptr state::get_timeperiod_by_name(std::string const& name) {
   return (_timeperiod_by_name.value(name));
 }
 
-QList<objects::contact::ptr> state::get_contacts_by_node(objects::node_id id) {
+/**
+ *  Get the contacts associated with a node.
+ *
+ *  @param[in] id  The node id of the node.
+ *
+ *  @return        A list of contact::ptr to the contacts of this node.
+ */
+QList<contact::ptr> state::get_contacts_by_node(objects::node_id id) {
   return (_contacts.values(id));
 }
 
+/**
+ *  Get the host commands of a contact.
+ *
+ *  @param[in] cnt  The contact.
+ *
+ *  @return         A list of command::ptr to the host commands of this contact.
+ */
 QList<command::ptr> state::get_host_commands_by_contact(contact::ptr cnt) {
   QList<command::ptr> commands;
   QList<std::string> command_names = _host_command_by_contact.values(cnt);
@@ -236,6 +273,13 @@ QList<command::ptr> state::get_host_commands_by_contact(contact::ptr cnt) {
   return (commands);
 }
 
+/**
+ *  Get the service commands of a contact.
+ *
+ *  @param[in] cnt  The contact.
+ *
+ *  @return         A list of command::ptr to the service commands of this contact.
+ */
 QList<command::ptr> state::get_service_commands_by_contact(contact::ptr cnt) {
   QList<command::ptr> commands;
   QList<std::string> command_names = _service_command_by_contact.values(cnt);
@@ -256,6 +300,13 @@ std::auto_ptr<QMutexLocker> state::lock() {
   return (ret);
 }
 
+/**
+ *  Is this node in downtime?
+ *
+ *  @param[in] id  The node id of the node.
+ *
+ *  @return        True of the node is in downtime.
+ */
 bool state::is_node_in_downtime(objects::node_id id) {
   time_t current_time = time(NULL);
   QList<downtime::ptr> downtimes = _downtimes.values(id);
@@ -274,6 +325,13 @@ bool state::is_node_in_downtime(objects::node_id id) {
   return (false);
 }
 
+/**
+ *  Has this node been acknowledged?
+ *
+ *  @param[in] id  The node id of the node.
+ *
+ *  @return        True of the node has been acknowledged.
+ */
 bool state::has_node_been_acknowledged(objects::node_id id) {
   time_t current_time = time(NULL);
   QList<acknowledgement::ptr> acknowledgements = _acks.values(id);
