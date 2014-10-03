@@ -73,6 +73,8 @@ namespace             notification {
                       get_host_commands_by_contact(objects::contact::ptr cnt);
     QList<objects::command::ptr>
                       get_service_commands_by_contact(objects::contact::ptr cnt);
+    bool              is_node_in_downtime(objects::node_id id);
+    bool              has_node_been_acknowledged(objects::node_id id);
 
   private:
     QSet<objects::node_id>

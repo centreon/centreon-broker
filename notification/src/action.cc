@@ -137,7 +137,8 @@ bool action::_process_notification(state& st) {
                                               end(contacts.end());
        it != end;
        ++it) {
-    return_value contact_viability = _check_notification_contact_viability(*it, st);
+    return_value contact_viability =
+      _check_notification_contact_viability(*it, st);
     if (contact_viability == ok)
       _notify_contact_of_node(*it, st);
   }
@@ -163,19 +164,22 @@ action::return_value action::_check_notification_node_viability(state& st) {
   if (!tp) {
     if (_id.has_host()) {
       logging::debug(logging::low)
-        << "Notification: Error: Could not find the timeperiod for this notification.";
+        << "Notification: Error: Could not find the timeperiod for this "
+           "notification.";
       return (error_should_remove);
     }
     node::ptr host = st.get_host_from_service(_id);
     if (!host) {
       logging::debug(logging::low)
-        << "Notification: Error: Could not find the host for this service in notification.";
+        << "Notification: Error: Could not find the host for this "
+           "service in notification.";
       return (error_should_remove);
     }
     tp = st.get_timeperiod_by_name(host->get_notification_timeperiod());
     if (!tp) {
       logging::debug(logging::low)
-        << "Notification: Error: Could not find the timeperiod for this notification.";
+        << "Notification: Error: Could not find the timeperiod for this"
+           " notification.";
       return (error_should_remove);
     }
   }
@@ -194,14 +198,26 @@ action::return_value action::_check_notification_node_viability(state& st) {
     return (error_should_reschedule);
   }
 
-  // See if we should notify problems for this service.
+  // See if we should notify problems for this node.
   if (n->should_be_notified()) {
     logging::debug(logging::low)
       << "Notification: This node should not be notified for this state.";
     return (error_should_remove);
   }
 
-  // TODO: Acknowledgement and downtimes
+  // See if the node is in downtime.
+  if (st.is_node_in_downtime(_id) == true) {
+    logging::debug(logging::low)
+      << "Notification: This node is in downtime: don't send anything.";
+    return (error_should_reschedule);
+  }
+
+  // See if the node has been acknowledged.
+  if (st.has_node_been_acknowledged(_id) == true) {
+    logging::debug(logging::low)
+      << "Notification: This node has been acknowledged: don't send anything.";
+    return (error_should_remove);
+  }
 
   return (ok);
 }

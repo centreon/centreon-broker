@@ -255,3 +255,32 @@ std::auto_ptr<QMutexLocker> state::lock() {
   std::auto_ptr<QMutexLocker> ret(new QMutexLocker(&_state_mutex));
   return (ret);
 }
+
+bool state::is_node_in_downtime(objects::node_id id) {
+  time_t current_time = time(NULL);
+  QList<downtime::ptr> downtimes = _downtimes.values(id);
+
+  for (QList<downtime::ptr>::iterator it(downtimes.begin()), end(downtimes.end());
+       it != end;
+       ++it) {
+    if ((*it)->get_actual_end_time() > current_time &&
+        (*it)->get_cancelled() == false &&
+        (*it)->get_started() == true &&
+        (*it)->get_actual_start_time() + (*it)->get_duration() > current_time)
+      return (true);
+  }
+
+  return (false);
+}
+
+bool state::has_node_been_acknowledged(objects::node_id id) {
+  time_t current_time = time(NULL);
+  QList<acknowledgement::ptr> acknowledgements = _acks.values(id);
+
+  for (QList<acknowledgement::ptr>::iterator it (acknowledgements.begin()), end(acknowledgements.end());
+       it != end;
+       ++it) {
+    return (true);
+  }
+  return (false);
+}

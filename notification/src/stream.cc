@@ -147,12 +147,12 @@ stream::stream(
            id,
            check_replication);
 
+  // Create the process manager.
+  process_manager::instance();
+
   // Create notification scheduler
   _notif_scheduler.reset(new notification_scheduler(_state));
   _notif_scheduler->start();
-
-  // Create the process manager.
-  process_manager::instance();
 }
 
 /**
@@ -182,12 +182,12 @@ stream::stream(stream const& s) : io::stream(s) {
   // Clone centreon storage database.
   _clone_db(_centreon_storage_db, s._centreon_storage_db, id);
 
+  // Create the process manager.
+  process_manager::instance();
+
   // Move the notification scheduler thread from the first stream.
   _notif_scheduler.reset(const_cast<stream&>(s)._notif_scheduler.release());
   _notif_scheduler->start();
-
-  // Create the process manager.
-  process_manager::instance();
 }
 
 /**
