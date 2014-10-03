@@ -38,12 +38,12 @@ namespace             notification {
   public:
                       process(int timeout = 0);
 
+    unsigned int      get_timeout() const throw();
+    bool              is_running() const;
+
     bool              exec(std::string const& program,
                            std::list<std::string> const& arguments,
                            process_manager* manager = NULL);
-
-    unsigned int      get_timeout() const throw();
-    bool              is_running() const;
 
   private:
                       process(process const&);

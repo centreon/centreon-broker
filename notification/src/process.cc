@@ -28,6 +28,13 @@ process::process(int timeout /* = 0 */)
   : _timeout(timeout),
     _process(new QProcess) {}
 
+unsigned int process::get_timeout() const throw() {
+  return (_timeout);
+}
+
+bool process::is_running() const {
+  return (_process->state() == QProcess::NotRunning);
+}
 
 bool process::exec(std::string const& program,
                    std::list<std::string> const& arguments,
@@ -42,17 +49,10 @@ bool process::exec(std::string const& program,
     args << it->c_str();
 
   if (manager) {
+    _process->moveToThread(manager);
     QObject::connect(_process.get(), SIGNAL(finished(int, QProcess::ExitStatus)),
                      manager, SLOT(process_finished()));
   }
   _process->start(program.c_str(), args);
   return (true);
-}
-
-unsigned int process::get_timeout() const throw() {
-  return (_timeout);
-}
-
-bool process::is_running() const {
-  return (_process->state() == QProcess::NotRunning);
 }
