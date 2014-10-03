@@ -26,6 +26,7 @@
 #  include <QMutex>
 #  include <QMutexLocker>
 #  include <QThread>
+#  include <QTimer>
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/process.hh"
@@ -46,8 +47,11 @@ namespace                     notification {
     void                      create_process(std::string const& command,
                                              unsigned int timeout = 0);
 
+    void                      add_timeout(unsigned int timeout);
+
   public slots:
     void                      process_finished();
+    void                      process_timeouted();
 
   public:
     Q_OBJECT
@@ -60,6 +64,8 @@ namespace                     notification {
     QMutex                    _process_list_mutex;
     std::list<misc::shared_ptr<process> >
                               _process_list;
+    std::list<misc::shared_ptr<QTimer> >
+                              _timer_list;
   };
 }
 

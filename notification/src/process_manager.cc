@@ -60,7 +60,7 @@ void process_manager::create_process(std::string const& command,
 }
 
 process_manager::process_manager()
-  : _process_list_mutex(QMutex::Recursive) {}
+  : _process_list_mutex(QMutex::Recursive) {moveToThread(this);}
 
 void process_manager::process_finished() {
   QMutexLocker lock(&_process_list_mutex);
@@ -79,4 +79,44 @@ void process_manager::process_finished() {
     else
       ++it;
   }
+}
+
+void process_manager::process_timeouted() {
+  QMutexLocker lock(&_process_list_mutex);
+
+  for (std::list<misc::shared_ptr<process> >::iterator it(_process_list.begin()),
+                                                       end(_process_list.end());
+       it != end;) {
+    if ((*it)->is_timeout()) {
+      // Remove the process.
+      std::list<misc::shared_ptr<process> >::iterator tmp = it;
+      ++it;
+      _process_list.erase(tmp);
+    }
+    else
+      ++it;
+  }
+
+  for (std::list<misc::shared_ptr<QTimer> >::iterator it(_timer_list.begin()),
+                                                      end(_timer_list.end());
+       it != end;) {
+    if (!(*it)->isActive()) {
+      std::list<misc::shared_ptr<QTimer> >::iterator tmp = it;
+      ++it;
+      _timer_list.erase(tmp);
+    }
+    else
+      ++it;
+  }
+}
+
+void process_manager::add_timeout(unsigned int timeout) {
+  QMutexLocker lock(&_process_list_mutex);
+
+  QTimer* timer = new QTimer(this);
+  timer->moveToThread(this);
+  timer->setSingleShot(true);
+  connect(timer, SIGNAL(timeout()), this, SLOT(process_timeouted()));
+  timer->start(timeout * 1000);
+  _timer_list.push_back(misc::shared_ptr<QTimer>(timer));
 }

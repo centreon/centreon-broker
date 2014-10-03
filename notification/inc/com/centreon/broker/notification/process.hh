@@ -44,11 +44,14 @@ namespace             notification {
     bool              exec(std::string const& program,
                            process_manager* manager = NULL);
 
+    bool              is_timeout() const throw();
+
   private:
                       process(process const&);
     process&          operator=(process const&);
 
     unsigned int      _timeout;
+    time_t            _start_time;
     std::auto_ptr<QProcess>
                       _process;
   };

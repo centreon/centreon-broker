@@ -36,6 +36,10 @@ bool process::is_running() const {
   return (_process->state() == QProcess::NotRunning);
 }
 
+bool process::is_timeout() const throw() {
+  return (_timeout > 0 ? difftime(time(NULL), _start_time) > _timeout : 0);
+}
+
 bool process::exec(std::string const& program,
                    process_manager* manager /* = NULL */) {
   if (is_running())
@@ -45,7 +49,10 @@ bool process::exec(std::string const& program,
     _process->moveToThread(manager);
     QObject::connect(_process.get(), SIGNAL(finished(int, QProcess::ExitStatus)),
                      manager, SLOT(process_finished()));
+    if (_timeout != 0)
+      manager->add_timeout(_timeout);
   }
+  time(&_start_time);
   _process->start(program.c_str());
   return (true);
 }
