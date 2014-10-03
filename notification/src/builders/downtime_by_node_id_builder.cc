@@ -33,6 +33,11 @@ downtime_by_node_id_builder::downtime_by_node_id_builder(
 
 void downtime_by_node_id_builder::add_downtime(unsigned int downtime_id,
                                                downtime::ptr downtime) {
-  _table.insert(node_id(downtime->get_host_id(), downtime->get_service_id()),
-                downtime);
+  _cache[downtime_id] = downtime;
+}
+
+void downtime_by_node_id_builder::connect_downtime_to_node(unsigned int downtime_id,
+                                                           node_id id) {
+  if (_cache.contains(downtime_id))
+    _table.insert(id, _cache.value(downtime_id));
 }

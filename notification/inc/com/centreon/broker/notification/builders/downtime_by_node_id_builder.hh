@@ -43,10 +43,15 @@ namespace         notification {
 
     virtual void  add_downtime(unsigned int downtime_id,
                                objects::downtime::ptr downtime);
+    virtual void connect_downtime_to_node(unsigned int downtime_id,
+                                          objects::node_id id);
 
   private:
     QMultiHash<objects::node_id, objects::downtime::ptr>
                   _table;
+
+    QHash<unsigned int, objects::downtime::ptr>
+                  _cache;
   };
 
 }

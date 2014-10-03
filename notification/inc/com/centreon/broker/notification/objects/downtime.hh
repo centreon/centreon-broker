@@ -45,10 +45,6 @@ namespace             notification {
 
       time_t              get_entry_time() const throw();
       void                set_entry_time(time_t val) throw();
-      unsigned int        get_host_id() const throw();
-      void                set_host_id(unsigned int val) throw();
-      unsigned int        get_service_id() const throw();
-      void                set_service_id(unsigned int val) throw();
       std::string const&  get_author() const throw();
       void                set_author(std::string const& val);
       bool                get_cancelled() const throw();

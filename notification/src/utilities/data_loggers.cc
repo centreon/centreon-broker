@@ -71,8 +71,6 @@ logging::temp_logger& logging::operator<<(
     notification::objects::downtime const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
   tmp LOG_MEMBER(downtime, get_entry_time)
-      LOG_MEMBER(downtime, get_host_id)
-      LOG_MEMBER(downtime, get_service_id)
       LOG_MEMBER(downtime, get_author)
       LOG_MEMBER(downtime, get_cancelled)
       LOG_MEMBER(downtime, get_deletion_time)

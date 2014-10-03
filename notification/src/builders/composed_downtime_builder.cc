@@ -34,3 +34,13 @@ void composed_downtime_builder::add_downtime(unsigned int downtime_id,
     (*it)->add_downtime(downtime_id,
                         downtime);
 }
+
+ void composed_downtime_builder::connect_downtime_to_node(
+        unsigned int downtime_id,
+        objects::node_id id) {
+ for (composed_builder<downtime_builder>::iterator it(begin()),
+                                                   it_end(end());
+      it != it_end;
+      ++it)
+   (*it)->connect_downtime_to_node(downtime_id, id);
+}

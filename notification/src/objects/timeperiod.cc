@@ -28,16 +28,30 @@ static time_t _get_next_valid_time_per_timeperiod(
               time_t current_time,
               timeperiod const& tperiod);
 
+/**
+ *  Default constructor.
+ */
 timeperiod::timeperiod()
 {
   _timeranges.resize(7);
   _exceptions.resize(daterange::daterange_types);
 }
 
+/**
+ *  Copy constructor.
+ *
+ *  @param[in] obj  The object to copy.
+ */
 timeperiod::timeperiod(timeperiod const& obj) {
   timeperiod::operator=(obj);
 }
 
+/**
+ *  Assignment operator for timeperiod.
+ *
+ *  @param[in] obj  The object to copy.
+ *  @return         A reference to this object.
+ */
 timeperiod timeperiod::operator=(timeperiod const& obj) {
   if (this != &obj) {
     _alias = obj._alias;

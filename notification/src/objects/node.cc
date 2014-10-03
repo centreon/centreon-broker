@@ -250,14 +250,29 @@ void node::set_notification_interval(double val) throw() {
   _notification_interval = val;
 }
 
+/**
+ *  Get the notification options.
+ *
+ *  @return  The notification options.
+ */
 node_notification_opt node::get_notification_options() const throw() {
   return (_notification_options);
 }
 
+/**
+ *  Set the notification options.
+ *
+ *  @param[in] val  The notification options of this node.
+ */
 void node::set_notification_options(node_notification_opt val) throw() {
   _notification_options = val;
 }
 
+/**
+ *  Should this node be notified based on options and current state?
+ *
+ *  @return  True if the node should be notified.
+ */
 bool node::should_be_notified() const throw() {
   if (_hard_state == node_state::ok)
     return (false);

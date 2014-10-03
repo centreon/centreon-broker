@@ -22,6 +22,7 @@
 
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/downtime.hh"
+#  include "com/centreon/broker/notification/objects/node_id.hh"
 
 CCB_BEGIN()
 
@@ -47,6 +48,15 @@ namespace         notification {
      */
     virtual void  add_downtime(unsigned int downtime_id,
                                objects::downtime::ptr downtime) {}
+
+    /**
+     *  Connect a downtime to a node_id.
+     *
+     *  @param[in] downtime  The id of the downtime.
+     *  @param[in] node_id   The node id associated with this downtime.
+     */
+    virtual void  connect_downtime_to_node(unsigned int downtime_id,
+                                           objects::node_id node_id) {};
   };
 
 }
