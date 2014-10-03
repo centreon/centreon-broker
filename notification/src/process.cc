@@ -24,27 +24,60 @@
 
 using namespace com::centreon::broker::notification;
 
+/**
+ *  Constructor.
+ *
+ *  @param[in] timeout  The timeout of this process, default 0 (none).
+ */
 process::process(int timeout /* = 0 */)
   : _timeout(timeout),
     _process(new QProcess) {}
 
+/**
+ *  Get the timeout of this process.
+ *
+ *  @return   The timeout of this process.
+ */
 unsigned int process::get_timeout() const throw() {
   return (_timeout);
 }
 
+/**
+ *  Is this process running?
+ *
+ *  @return  True if this process is running.
+ */
 bool process::is_running() const {
   return (_process->state() == QProcess::NotRunning);
 }
 
+/**
+ *  Has this process timeouted?
+ *
+ *  @return  True if this process has timeouted.
+ */
 bool process::is_timeout() const throw() {
   return (_timeout > 0 ? difftime(time(NULL), _start_time) > _timeout : 0);
 }
 
+/**
+ *  Kill this process.
+ */
 void process::kill() {
   if (!is_running())
     _process->kill();
 }
 
+/**
+ *  Start this process with a command and an optional process manager.
+ *
+ *
+ *  @param[in] program      The program to execute, with its arguments.
+ *
+ *  @param[in,out] manager  The manager to which register the process.
+ *
+ *  @return                 True of the process was started.
+ */
 bool process::exec(std::string const& program,
                    process_manager* manager /* = NULL */) {
   if (is_running())

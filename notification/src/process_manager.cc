@@ -25,6 +25,11 @@ using namespace com::centreon::broker::notification;
 
 process_manager* process_manager::_instance_ptr = 0;
 
+/**
+ *  Get the singleton.
+ *
+ *  @return  The singleton.
+ */
 process_manager& process_manager::instance() {
   if (!_instance_ptr) {
     _instance_ptr = new process_manager;
@@ -33,6 +38,9 @@ process_manager& process_manager::instance() {
   return (*_instance_ptr);
 }
 
+/**
+ *  Release (destroy and free) the singleton. Wait until the thread termination.
+ */
 void process_manager::release() {
   if (_instance_ptr) {
     if (_instance_ptr->isRunning()) {
@@ -43,10 +51,21 @@ void process_manager::release() {
   }
 }
 
+/**
+ *  Called when the thread start. Run the event loop.
+ */
 void process_manager::run() {
   exec();
 }
 
+/**
+ *  @brief Create and execute a process.
+ *
+ *  Thread safe in and out the process manager thread.
+ *
+ *  @param[in] command  The command to be executed.
+ *  @param[in] timeout  The timeout of the command.
+ */
 void process_manager::create_process(std::string const& command,
                                      unsigned int timeout) {
   process* pr = new process(timeout);
@@ -59,14 +78,23 @@ void process_manager::create_process(std::string const& command,
   pr->exec(command, this);
 }
 
+/**
+ *  Default constructor.
+ */
 process_manager::process_manager()
   : _process_list_mutex(QMutex::Recursive) {moveToThread(this);}
 
+/**
+ *  @brief A process was finished: reap the finished processes.
+ *
+ *  It is always executed from the QT event loop of the process manager thread.
+ */
 void process_manager::process_finished() {
   QMutexLocker lock(&_process_list_mutex);
 
-  for (std::list<misc::shared_ptr<process> >::iterator it(_process_list.begin()),
-                                                       end(_process_list.end());
+  for (std::list<misc::shared_ptr<process> >::iterator
+                                                it(_process_list.begin()),
+                                                end(_process_list.end());
        ++it != end;) {
     if (!(*it)->is_running()) {
       // Do something with the process.
@@ -81,11 +109,17 @@ void process_manager::process_finished() {
   }
 }
 
+/**
+ *  @brief A process was timeouted: reap the timeouted processes.
+ *
+ *  It is always executed from the QT event loop of the process manager thread.
+ */
 void process_manager::process_timeouted() {
   QMutexLocker lock(&_process_list_mutex);
 
-  for (std::list<misc::shared_ptr<process> >::iterator it(_process_list.begin()),
-                                                       end(_process_list.end());
+  for (std::list<misc::shared_ptr<process> >::iterator
+                                                it(_process_list.begin()),
+                                                end(_process_list.end());
        it != end;) {
     if ((*it)->is_timeout()) {
       // Kill the process.
@@ -112,6 +146,13 @@ void process_manager::process_timeouted() {
   }
 }
 
+/**
+ *  @brief Add a timeout.
+ *
+ *  Thread safe in and out the of the process manager thread.
+ *
+ *  @param[in] timeout  The timeout to add, in second.
+ */
 void process_manager::add_timeout(unsigned int timeout) {
   QMutexLocker lock(&_process_list_mutex);
 
