@@ -158,6 +158,13 @@ action::return_value action::_check_notification_node_viability(state& st) {
     return (error_should_remove);
   }
 
+  // If the node has a parent, don't send anything.
+  if (n->has_parent()) {
+    logging::debug(logging::low)
+      << "Notification: This node has a correlated parent. Don't notify.";
+    return (error_should_remove);
+  }
+
   // If the node has no notification period and is a service, inherit one from the host
   timeperiod::ptr tp =
       st.get_timeperiod_by_name(n->get_notification_timeperiod());
