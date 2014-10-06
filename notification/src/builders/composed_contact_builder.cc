@@ -81,3 +81,33 @@ void composed_contact_builder::connect_contact_node_id(unsigned int contact_id,
        ++it)
     (*it)->connect_contact_node_id(contact_id, id);
 }
+
+void composed_contact_builder::connect_contactgroup_node_id(
+                                unsigned int contactgroup_id,
+                                objects::node_id id) {
+  for (composed_builder<contact_builder>::iterator it(begin()),
+       end_it(end());
+       it != end_it;
+       ++it)
+    (*it)->connect_contactgroup_node_id(contactgroup_id, id);
+}
+
+void composed_contact_builder::connect_contactgroup_hostgroup(
+                                unsigned int contactgroup_id,
+                                unsigned int hostgroup_id) {
+  for (composed_builder<contact_builder>::iterator it(begin()),
+       end_it(end());
+       it != end_it;
+       ++it)
+    (*it)->connect_contactgroup_hostgroup(contactgroup_id, hostgroup_id);
+}
+
+void composed_contact_builder::connect_contactgroup_servicegroup(
+                                unsigned int contactgroup_id,
+                                unsigned int servicegroup_id) {
+  for (composed_builder<contact_builder>::iterator it(begin()),
+       end_it(end());
+       it != end_it;
+       ++it)
+    (*it)->connect_contactgroup_servicegroup(contactgroup_id, servicegroup_id);
+}

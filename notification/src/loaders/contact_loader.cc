@@ -122,7 +122,7 @@ void contact_loader::_load_relations(QSqlQuery& query,
                  "contactgroup_contact_relation",
                  &contact_builder::connect_contact_contactgroup);
 
-
+  // Load contact to hostcommands relations.
   if (!query.exec("select a.contact_contact_id, b.command_name"
                   " FROM contact_hostcommands_relation as a"
                   " LEFT JOIN command as b"
@@ -130,12 +130,12 @@ void contact_loader::_load_relations(QSqlQuery& query,
     throw (exceptions::msg()
       << "Notification: cannot select contact_hostcommands_relation in loader: "
       << query.lastError().text());
-
   while (query.next())
     output.connect_contact_hostcommand(
       query.value(0).toUInt(),
       query.value(1).toString().toStdString());
 
+  // Load contact to servicecommands relations.
   if (!query.exec("select a.contact_contact_id, b.command_name"
                   " FROM contact_servicecommands_relation as a"
                   " LEFT JOIN command as b"
@@ -143,19 +143,17 @@ void contact_loader::_load_relations(QSqlQuery& query,
     throw (exceptions::msg()
       << "Notification: cannot select contact_servicecommands_relation in loader: "
       << query.lastError().text());
-
   while (query.next())
     output.connect_contact_servicecommand(
       query.value(0).toUInt(),
       query.value(1).toString().toStdString());
 
-
+  // Load contact to node relations.
   if (!query.exec("SELECT contact_id, host_host_id"
                   " FROM contact_host_relation"))
     throw (exceptions::msg()
       << "Notification: cannot select contact_host_relation in loader: "
       << query.lastError().text());
-
   while (query.next())
     output.connect_contact_node_id(query.value(1).toUInt(),
                                    node_id(query.value(0).toUInt()));
@@ -171,14 +169,12 @@ void contact_loader::_load_relations(QSqlQuery& query,
     throw (exceptions::msg()
       << "Notification: cannot select contact_service_relation in loader: "
       << query.lastError().text());
-
   while (query.next()) {
     service_ids.insert(query.value(1).toUInt());
     output.connect_contact_node_id(
       query.value(2).toUInt(),
       node_id(query.value(0).toUInt(), query.value(1).toUInt()));
   }
-
 
   if (!query.exec("SELECT contact_id, service_service_id"
                   " FROM contact_service_relation"))
@@ -190,6 +186,59 @@ void contact_loader::_load_relations(QSqlQuery& query,
     if(!service_ids.contains(query.value(1).toUInt()))
       output.connect_contact_node_id(query.value(0).toUInt(),
                                      node_id(0, query.value(1).toUInt()));
+
+  // Load contactgroups to node relations.
+  if (!query.exec("SELECT host_host_id, contactgroup_cg_id"
+                  " FROM contactgroup_host_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select contactgroup_host_relation in loader: "
+      << query.lastError().text());
+  while (query.next())
+    if(!service_ids.contains(query.value(1).toUInt()))
+      output.connect_contactgroup_node_id(query.value(1).toUInt(),
+                                          node_id(query.value(0).toUInt()));
+
+  service_ids.clear();
+  if (!query.exec("SELECT a.host_host_id, a.service_service_id, b.contactgroup_cg_id"
+                  " FROM servicegroup_relation AS a"
+                  " LEFT JOIN contactgroup_service_relation AS b"
+                  " ON a.service_service_id = b.service_service_id"))
+    throw (exceptions::msg()
+      << "Notification: cannot select contactgroup_service_relation in loader: "
+      << query.lastError().text());
+  while (query.next()) {
+    service_ids.insert(query.value(1).toUInt());
+    output.connect_contactgroup_node_id(
+      query.value(2).toUInt(),
+      node_id(query.value(0).toUInt(), query.value(1).toUInt()));
+  }
+
+  if (!query.exec("SELECT contactgroup_id, service_service_id"
+                  " FROM contactgroup_service_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select contactgroup_service_relation in loader: "
+      << query.lastError().text());
+
+  while (query.next())
+    if(!service_ids.contains(query.value(1).toUInt()))
+      output.connect_contactgroup_node_id(query.value(0).toUInt(),
+                                          node_id(0, query.value(1).toUInt()));
+
+  // Load contactgroups to hostgroups relations.
+  _load_relation(query,
+                 output,
+                 "contactgroup_cg_id",
+                 "hostgroup_hg_id",
+                 "contactgroup_hostgroup_relation",
+                 &contact_builder::connect_contactgroup_hostgroup);
+
+  // Load contactgroups to servicegroups relations.
+  _load_relation(query,
+                 output,
+                 "contactgroup_cg_id",
+                 "servicegroup_sg_id",
+                 "contactgroup_servicegroup_relation",
+                 &contact_builder::connect_contactgroup_servicegroup);
 }
 
 /**

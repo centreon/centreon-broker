@@ -52,6 +52,16 @@ namespace       notification {
                                     std::string const& value);
     virtual void  connect_contact_node_id(unsigned int contact_id,
                                           objects::node_id id);
+
+    virtual void connect_contactgroup_node_id(
+                    unsigned int contactgroup_id,
+                    objects::node_id id);
+    virtual void connect_contactgroup_hostgroup(
+                    unsigned int contactgroup_id,
+                    unsigned int hostgroup_id);
+    virtual void connect_contactgroup_servicegroup(
+                    unsigned int contactgroup_id,
+                    unsigned int servicegroup_id);
   };
 
 }
