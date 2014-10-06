@@ -45,6 +45,7 @@ void escalation_loader::load(QSqlDatabase* db, escalation_builder* output) {
   // Performance improvement, as we never go back.
   query.setForwardOnly(true);
 
+  // Load the escalations.
   if (!query.exec("SELECT esc_id, esc_name, esc_alias, first_notification,"
                   "last_notification, notification_interval, escalation_period,"
                   "escalation_options1, escalation_options2"
@@ -73,6 +74,8 @@ void escalation_loader::load(QSqlDatabase* db, escalation_builder* output) {
 
 void escalation_loader::_load_relations(QSqlQuery& query,
                                         escalation_builder& output) {
+
+  // Load the escalation to node id relations.
   if (!query.exec("SELECT escalation_esc_id, host_host_id"
                   " FROM escalation_host_relation"))
     throw (exceptions::msg()
@@ -92,16 +95,19 @@ void escalation_loader::_load_relations(QSqlQuery& query,
                                       node_id(query.value(1).toUInt(),
                                               query.value(2).toUInt()));
 
+  // Load the escalation to contactgroup relations.
   _load_relation(query,
                  output,
                  "contactgroup_cg_id",
                  "escalation_contactgroup_relation",
                  &escalation_builder::connect_escalation_contactgroup);
+  // Load the escalation to hostgroup relations.
   _load_relation(query,
                  output,
                  "hostgroup_hg_id",
                  "escalation_hostgroup_relation",
                  &escalation_builder::connect_escalation_hostgroup);
+  // Load the escalation to servicegroup relation.
   _load_relation(query,
                  output,
                  "servicegroup_sg_id",

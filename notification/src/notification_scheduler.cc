@@ -99,12 +99,15 @@ void notification_scheduler::add_action_to_queue(time_t at, action a) {
 }
 
 /**
- *  Called repeatedly by the notification thread to process actions.
+ *  @brief Called repeatedly by the notification thread to process actions.
+ *
+ *  This method releases the mutex as soon as possible to prevent long
+ *  mutex locking.
  */
 void notification_scheduler::_process_actions() {
   // Move the global queue to a local queue and release the global mutex.
   // That way, we can add new actions in an external thread while this thread
-  // processing those actions.
+  // is processing those actions.
   run_queue local_queue;
   _queue.swap(local_queue);
   _general_mutex.unlock();

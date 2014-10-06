@@ -36,7 +36,7 @@ downtime_loader::downtime_loader() {}
  *  Load the downtime from the database.
  *
  *  @param[in] db       An open connection to the database.
- * @param[out] output   A downtime builder object to register the downtimes.
+ *  @param[out] output  A downtime builder object to register the downtimes.
  */
 void downtime_loader::load(QSqlDatabase* db, downtime_builder* output) {
   // If we don't have any db or output, don't do anything.
@@ -48,6 +48,7 @@ void downtime_loader::load(QSqlDatabase* db, downtime_builder* output) {
   // Performance improvement, as we never go back.
   query.setForwardOnly(true);
 
+  // Load the downtimes.
   if (!query.exec("SELECT downtime_id, entry_time, host_id, service_id, author,"
                   "cancelled, deletion_time, duration, end_time, fixed,"
                   "start_time, actual_start_time, actual_end_time, started,"

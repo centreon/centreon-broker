@@ -35,7 +35,7 @@ node_loader::node_loader() {
  *  Load the nodes from the database.
  *
  *  @param[in] db       An open connection to the database.
- * @param[out] output   A node builder object to register the nodes.
+ *  @param[out] output  A node builder object to register the nodes.
  */
 void node_loader::load(QSqlDatabase* db, node_builder* output) {
   // If we don't have any db or output, don't do anything.

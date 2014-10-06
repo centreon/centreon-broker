@@ -47,6 +47,7 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
   // Performance improvement, as we never go back.
   query.setForwardOnly(true);
 
+  // Load the timeperiods.
   if (!query.exec("SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday,"
                   "tp_tuesday, tp_wednesday, tp_thursday, tp_friday,"
                   "tp_saturday sunday"
@@ -72,43 +73,36 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
                            tperiod);
   }
 
+  // Load the timeperiod exceptions.
   if (!query.exec("SELECT exception_id, timeperiod_id, days, timerange"
                   " FROM timeperiod_exceptions"))
     throw (exceptions::msg()
       << "Notification: cannot select timeperiod_exceptions in loader: "
       << query.lastError().text());
-
   while (query.next()) {
     unsigned int timeperiod_id = query.value(1).toUInt();
     std::string days = query.value(2).toString().toStdString();
     std::string timerange = query.value(3).toString().toStdString();
-
     output->add_timeperiod_exception(timeperiod_id, days, timerange);
   }
 
+  // Load the timeperiod exclude relations.
   if (!query.exec("SELECT exclude_id, timeperiod_id, timeperiod_exclude_id"
                   " FROM timeperiod_exclude_relations"))
     throw (exceptions::msg()
       << "Notification: cannot select timeperiod_exclude_relations in loader: "
       << query.lastError().text());
+  while (query.next())
+    output->add_timeperiod_exclude_relation(query.value(1).toUInt(),
+                                            query.value(0).toUInt());
 
-  while (query.next()) {
-    unsigned int timeperiod_id = query.value(0).toUInt();
-    unsigned int timeperiod_exclude_id = query.value(0).toUInt();
-
-    output->add_timeperiod_exclude_relation(timeperiod_id, timeperiod_exclude_id);
-  }
-
+  // Load the timeperiod include relations.
   if (!query.exec("SELECT include_id, timeperiod_id, timeperiod_include_id"
                   " FROM timeperiod_include_relations"))
     throw (exceptions::msg()
       << "Notification: cannot select timeperiod_include_relations in loader: "
       << query.lastError().text());
-
-  while (query.next()) {
-    unsigned int timeperiod_id = query.value(0).toUInt();
-    unsigned int timeperiod_include_id = query.value(0).toUInt();
-
-    output->add_timeperiod_include_relation(timeperiod_id, timeperiod_include_id);
-  }
+  while (query.next())
+    output->add_timeperiod_include_relation(query.value(1).toUInt(),
+                                            query.value(0).toUInt());
 }

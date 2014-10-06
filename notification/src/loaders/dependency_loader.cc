@@ -51,6 +51,7 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
   // Performance improvement, as we never go back.
   query.setForwardOnly(true);
 
+  // Load the dependencies.
   if (!query.exec("SELECT dep_id, dep_name, dep_description, inherits_parent,"
                   "execution_failure_criteria, notification_failure_criteria"
                   " FROM dependency"))

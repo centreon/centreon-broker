@@ -44,6 +44,7 @@ void command_loader::load(QSqlDatabase* db, command_builder* output) {
   // Performance improvement, as we never go back.
   query.setForwardOnly(true);
 
+  // Load the commands
   if (!query.exec("SELECT command_id, connector_id, command_name, command_line,"
                   "command_example, command_type, enable_shell,"
                   "command_comment, graph_id, cmd_cat_id"
