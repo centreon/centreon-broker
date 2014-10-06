@@ -94,4 +94,39 @@ void node_loader::load(QSqlDatabase* db, node_builder* output) {
       output->add_node(n);
     }
   }
+
+  // Load host groups
+  if (!query.exec("SELECT host_host_id, hostgroup_hg_id"
+                  " FROM hostgroup_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select hostgroup_relation in loader: "
+      << query.lastError().text());
+  while (query.next())
+    output->connect_node_hostgroup(node_id(query.value(0).toUInt()),
+                                   query.value(1).toUInt());
+
+  // Load service groups
+  if (!query.exec("SELECT service_service_id, servicegroup_sg_id, "
+                  "host_host_id, hostgroup_hg_id"
+                  " FROM servicegroup_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select servicegroup_relation in loader: "
+      << query.lastError().text());
+  while (query.next()) {
+    output->connect_node_servicegroup(node_id(query.value(2).toUInt(),
+                                              query.value(0).toUInt()),
+                                      query.value(1).toUInt());
+    output->connect_hostgroup_servicegroup(query.value(3).toUInt(),
+                                           query.value(1).toUInt());
+  }
+
+  // Load host groups parent relations.
+  if (!query.exec("SELECT hg_child_id, hg_parent_id"
+                  " FROM hostgroup_hg_relation"))
+    throw (exceptions::msg()
+      << "Notification: cannot select hostgroup_hg_relation in loader: "
+      << query.lastError().text());
+  while (query.next())
+    output->connect_hostgroup_parent_hostgroup(query.value(0).toUInt(),
+                                               query.value(1).toUInt());
 }

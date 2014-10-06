@@ -32,3 +32,36 @@ void composed_node_builder::add_node(node::ptr node) {
        it_end(end()); it != it_end; ++it)
     (*it)->add_node(node);
 }
+
+void composed_node_builder::connect_node_servicegroup(
+        objects::node_id id,
+        unsigned int group_id) {
+  for (composed_builder<node_builder>::iterator it(begin()),
+       it_end(end()); it != it_end; ++it)
+    (*it)->connect_node_servicegroup(id, group_id);
+}
+
+void composed_node_builder::connect_node_hostgroup(
+        objects::node_id id,
+        unsigned int group_id) {
+  for (composed_builder<node_builder>::iterator it(begin()),
+       it_end(end()); it != it_end; ++it)
+    (*it)->connect_node_hostgroup(id, group_id);
+}
+
+void composed_node_builder::connect_hostgroup_servicegroup(
+        unsigned int hostgroup_id,
+        unsigned int servicegroup_id) {
+  for (composed_builder<node_builder>::iterator it(begin()),
+       it_end(end()); it != it_end; ++it)
+    (*it)->connect_hostgroup_servicegroup(hostgroup_id, servicegroup_id);
+}
+
+void composed_node_builder::connect_hostgroup_parent_hostgroup(
+        unsigned int hostgroup_id,
+        unsigned int parent_hostgroup_id) {
+  for (composed_builder<node_builder>::iterator it(begin()),
+       it_end(end()); it != it_end; ++it)
+    (*it)->connect_hostgroup_parent_hostgroup(hostgroup_id,
+                                              parent_hostgroup_id);
+}
