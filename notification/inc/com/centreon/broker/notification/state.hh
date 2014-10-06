@@ -81,6 +81,14 @@ namespace             notification {
                       _nodes;
     QHash<objects::node_id, objects::node::ptr>
                       _node_by_id;
+    QMultiHash<objects::node_id, unsigned int>
+                      _hostgroups_by_node;
+    QMultiHash<objects::node_id, unsigned int>
+                      _servicegroups_by_node;
+    QMultiHash<unsigned int, unsigned int>
+                      _servicegroups_by_hostgroup;
+    QMultiHash<unsigned int, unsigned int>
+                      _parent_hostgroups;
     QMultiHash<objects::node_id, objects::acknowledgement::ptr>
                       _acks;
     QHash<std::string, objects::command::ptr>

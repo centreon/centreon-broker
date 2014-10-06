@@ -42,6 +42,7 @@
 #include "com/centreon/broker/notification/builders/node_by_node_id_builder.hh"
 #include "com/centreon/broker/notification/builders/timeperiod_by_name_builder.hh"
 #include "com/centreon/broker/notification/builders/command_by_contact_builder.hh"
+#include "com/centreon/broker/notification/builders/groups_builder.hh"
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
@@ -78,6 +79,10 @@ state& state::operator=(state const& obj) {
     _contacts = obj._contacts;
     _contact_by_command = obj._contact_by_command;
     _host_command_by_contact = obj._host_command_by_contact;
+    _hostgroups_by_node = obj._hostgroups_by_node;
+    _servicegroups_by_node = obj._servicegroups_by_node;
+    _servicegroups_by_hostgroup = obj._servicegroups_by_hostgroup;
+    _parent_hostgroups = obj._parent_hostgroups;
     _service_command_by_contact = obj._service_command_by_contact;
     _dependency_by_child_id = obj._dependency_by_child_id;
     _dependency_by_parent_id = obj._dependency_by_parent_id;
@@ -99,6 +104,11 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db,
   // Remove old objects.
   _nodes.clear();
   _node_by_id.clear();
+  _hostgroups_by_node.clear();
+  _servicegroups_by_node.clear();
+  _servicegroups_by_hostgroup.clear();
+  _parent_hostgroups.clear();
+
   _acks.clear();
   _commands.clear();
   _contact_by_name.clear();
@@ -119,8 +129,11 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db,
     composed_node_builder composed;
     node_set_builder set_builder(_nodes);
     node_by_node_id_builder by_node_id_builder(_node_by_id);
+    groups_builder grps(_hostgroups_by_node, _servicegroups_by_node,
+                        _servicegroups_by_hostgroup, _parent_hostgroups);
     composed.push_back(set_builder);
     composed.push_back(by_node_id_builder);
+    composed.push_back(grps);
     node.load(&centreon_db, &composed);
   }
   {
@@ -192,6 +205,10 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db,
 #ifndef NDEBUG
     data_logger::log_container("_nodes", _nodes);
     data_logger::log_container("_node_by_id", _node_by_id);
+    data_logger::log_container("_hostgroups_by_node", _hostgroups_by_node);
+    data_logger::log_container("_servicegroups_by_node", _servicegroups_by_node);
+    data_logger::log_container("_servicegroups_by_hostgroup", _servicegroups_by_hostgroup);
+    data_logger::log_container("_parent_hostgroups", _parent_hostgroups);
     data_logger::log_container("_acks", _acks);
     data_logger::log_container("_commands", _commands);
     data_logger::log_container("_contact_by_command", _contact_by_name);
