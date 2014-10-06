@@ -156,10 +156,15 @@ void process_manager::process_timeouted() {
 void process_manager::add_timeout(unsigned int timeout) {
   QMutexLocker lock(&_process_list_mutex);
 
+  // Warning: This does some Qt black magic to create a thread safe timer
+  // executed in the context of the process manager thread.
+  // The Timer is moved to the process manager thread, which means all of its
+  // events will be processed by that thread. Then we call invokeMethod()
+  // to queue the invocation of the start of the timer in that thread.
   QTimer* timer = new QTimer(this);
   timer->moveToThread(this);
   timer->setSingleShot(true);
   connect(timer, SIGNAL(timeout()), this, SLOT(process_timeouted()));
-  timer->start(timeout * 1000);
   _timer_list.push_back(misc::shared_ptr<QTimer>(timer));
+  QMetaObject::invokeMethod(timer, "start", Qt::QueuedConnection, Q_ARG(unsigned int, timeout * 1000));
 }
