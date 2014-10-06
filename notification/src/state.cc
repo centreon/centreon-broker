@@ -252,6 +252,14 @@ node::ptr state::get_host_from_service(objects::node_id service_id) {
 }
 
 /**
+ * @brief state::get_timeperiod_by_node
+ * @return
+ */
+objects::timeperiod::ptr state::get_timeperiod_by_node(objects::node_id) {
+  return (timeperiod::ptr());
+}
+
+/**
  *  Get a timeperiod by its name.
  *
  *  @param[in] name  The name of the timeperiod.

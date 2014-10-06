@@ -27,8 +27,9 @@ using namespace com::centreon::broker::notification::objects;
  */
 composed_contact_builder::composed_contact_builder() {}
 
-void composed_contact_builder::add_contact(unsigned int id,
-                                           contact::ptr con) {
+void composed_contact_builder::add_contact(
+                                unsigned int id,
+                                contact::ptr con) {
   for (composed_builder<contact_builder>::iterator it(begin()),
        end_it(end());
        it != end_it;
@@ -36,8 +37,9 @@ void composed_contact_builder::add_contact(unsigned int id,
     (*it)->add_contact(id, con);
 }
 
-void composed_contact_builder::connect_contact_contactgroup(unsigned int contact_id,
-                                                            unsigned int contactgroup_id) {
+void composed_contact_builder::connect_contact_contactgroup(
+                                unsigned int contact_id,
+                                unsigned int contactgroup_id) {
   for (composed_builder<contact_builder>::iterator it(begin()),
        end_it(end());
        it != end_it;
@@ -45,8 +47,9 @@ void composed_contact_builder::connect_contact_contactgroup(unsigned int contact
     (*it)->connect_contact_contactgroup(contact_id, contactgroup_id);
 }
 
-void composed_contact_builder::connect_contact_hostcommand(unsigned int contact_id,
-                                                           std::string const& command_name) {
+void composed_contact_builder::connect_contact_hostcommand(
+                                unsigned int contact_id,
+                                std::string const& command_name) {
   for (composed_builder<contact_builder>::iterator it(begin()),
        end_it(end());
        it != end_it;
@@ -54,8 +57,9 @@ void composed_contact_builder::connect_contact_hostcommand(unsigned int contact_
     (*it)->connect_contact_hostcommand(contact_id, command_name);
 }
 
-void composed_contact_builder::connect_contact_servicecommand(unsigned int contact_id,
-                                                              std::string const& command_name) {
+void composed_contact_builder::connect_contact_servicecommand(
+                                unsigned int contact_id,
+                                std::string const& command_name) {
   for (composed_builder<contact_builder>::iterator it(begin()),
        end_it(end());
        it != end_it;
@@ -63,9 +67,10 @@ void composed_contact_builder::connect_contact_servicecommand(unsigned int conta
     (*it)->connect_contact_servicecommand(contact_id, command_name);
 }
 
-void composed_contact_builder::add_contact_param(unsigned int contact_id,
-                                                 std::string const& key,
-                                                 std::string const& value) {
+void composed_contact_builder::add_contact_param(
+                                unsigned int contact_id,
+                                std::string const& key,
+                                std::string const& value) {
   for (composed_builder<contact_builder>::iterator it(begin()),
        end_it(end());
        it != end_it;
@@ -73,8 +78,9 @@ void composed_contact_builder::add_contact_param(unsigned int contact_id,
     (*it)->add_contact_param(contact_id, key, value);
 }
 
-void composed_contact_builder::connect_contact_node_id(unsigned int contact_id,
-                                                       node_id id) {
+void composed_contact_builder::connect_contact_node_id(
+                                unsigned int contact_id,
+                                node_id id) {
   for (composed_builder<contact_builder>::iterator it(begin()),
        end_it(end());
        it != end_it;
