@@ -123,7 +123,7 @@ void notification_scheduler::_process_actions() {
     bool should_reschedule = false;
     {
       // Lock the state mutex.
-      std::auto_ptr<QMutexLocker> lock(_state.lock());
+      std::auto_ptr<QReadLocker> lock(_state.read_lock());
       // Process the action.
       should_reschedule = it->second.process_action(_state);
     }
@@ -146,7 +146,7 @@ void notification_scheduler::_reschedule_action(time_t previously_scheduled,
   // Reschedule at the previous scheduling + the notification interval of the node.
   double notification_interval = 0;
   {
-    std::auto_ptr<QMutexLocker> lock(_state.lock());
+    std::auto_ptr<QReadLocker> lock(_state.read_lock());
     node::ptr n = _state.get_node_by_id(a.get_node_id());
     // The node doesn't exist anymore. Silently eat the action.
     if (!n)

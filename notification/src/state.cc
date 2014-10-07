@@ -51,7 +51,7 @@ using namespace com::centreon::broker::notification::objects;
  *  Default constructor.
  */
 state::state() :
-  _state_mutex(QMutex::Recursive) {}
+  _state_mutex(QReadWriteLock::Recursive) {}
 
 /**
  *  Copy constructor.
@@ -99,7 +99,7 @@ state& state::operator=(state const& obj) {
 void state::update_objects_from_db(QSqlDatabase& centreon_db,
                                    QSqlDatabase& centreon_storage_db) {
   // Acquire mutex.
-  QMutexLocker lock(&_state_mutex);
+  QWriteLocker lock(&_state_mutex);
 
   // Remove old objects.
   _nodes.clear();
@@ -316,13 +316,22 @@ QList<command::ptr> state::get_service_commands_by_contact(contact::ptr cnt) {
 }
 
 /**
- *  Lock the internal mutex of this state.
+ *  Get a read lock on this state.
  *
- *  @return  A QMutexLocker locking the internal mutex of this state.
+ *  @return  A QReadLocker locking this state.
  */
-std::auto_ptr<QMutexLocker> state::lock() {
-  std::auto_ptr<QMutexLocker> ret(new QMutexLocker(&_state_mutex));
-  return (ret);
+std::auto_ptr<QReadLocker> state::read_lock() {
+  return (std::auto_ptr<QReadLocker>(new QReadLocker(&_state_mutex)));
+}
+
+/**
+ *  Get a write lock on this state.
+ *
+ *  @return  A QWriteLocker locking this state.
+ */
+std::auto_ptr<QWriteLocker> state::write_lock() {
+  return (std::auto_ptr<QWriteLocker>(new QWriteLocker(&_state_mutex)));
+
 }
 
 /**

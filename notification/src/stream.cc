@@ -476,7 +476,7 @@ void stream::_process_service_status_event(neb::service_status const& event) {
   // Get the node corresponding to this id.
   {
     // Get the state lock.
-    std::auto_ptr<QMutexLocker> lock(_state.lock());
+    std::auto_ptr<QReadLocker> lock(_state.read_lock());
     node::ptr n = _state.get_node_by_id(id);
     if (!n)
       throw (exceptions::msg()
@@ -522,7 +522,7 @@ void stream::_process_host_status_event(neb::host_status const& event) {
   // Get the node corresponding to this id.
   {
     // Get the state lock.
-    std::auto_ptr<QMutexLocker> lock(_state.lock());
+    std::auto_ptr<QReadLocker> lock(_state.read_lock());
     node::ptr n = _state.get_node_by_id(id);
     if (!n)
       throw (exceptions::msg()
@@ -564,7 +564,8 @@ void stream::_process_issue_parent_event(correlation::issue_parent const& event)
 
   // Get the node corresponding to this id.
   // Get the state lock.
-  std::auto_ptr<QMutexLocker> lock(_state.lock());
+  // TODO: The write lock here kills the perf. Use a read lock instead.
+  std::auto_ptr<QWriteLocker> lock(_state.write_lock());
   node::ptr n = _state.get_node_by_id(id);
   if (!n)
     throw (exceptions::msg()

@@ -48,6 +48,7 @@ void acknowledgement_loader::load(QSqlDatabase* db,
   // Performance improvement, as we never go back.
   query.setForwardOnly(true);
 
+  // Load the acknowledgements for the hosts.
   if (!query.exec("SELECT host_id, acknowledgement_type"
                   " FROM hosts WHERE acknowledged = true"))
     throw (exceptions::msg()
@@ -64,6 +65,7 @@ void acknowledgement_loader::load(QSqlDatabase* db,
     output->add_ack(node_id(host_id), ack);
   }
 
+  // Loads the acknowledgements for the services.
   if (!query.exec("SELECT host_id, service_id, acknowledgement_type"
                   " FROM services WHERE acknowledged = true"))
     throw (exceptions::msg()

@@ -50,6 +50,7 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
 
   QSqlQuery query(*db);
 
+  // Load the contacts.
   if (!query.exec("SELECT contact_id, timeperiod_tp_id, timeperiod_tp_id2,"
                   "contact_name, contact_alias,"
                   "contact_host_notification_options,"

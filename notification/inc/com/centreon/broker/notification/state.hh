@@ -27,9 +27,8 @@
 #  include <QSqlDatabase>
 #  include <QSqlQuery>
 #  include <QString>
-#  include <QMutex>
-#  include <QMutexLocker>
 #  include <QVector>
+#  include <QReadWriteLock>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/loaders/command_loader.hh"
 #  include "com/centreon/broker/notification/loaders/contact_loader.hh"
@@ -58,8 +57,10 @@ namespace             notification {
     void              update_objects_from_db(QSqlDatabase& centreon_db,
                                              QSqlDatabase& centreon_storage_db);
 
-    std::auto_ptr<QMutexLocker>
-                      lock();
+    std::auto_ptr<QReadLocker>
+                      read_lock();
+    std::auto_ptr<QWriteLocker>
+                      write_lock();
 
     objects::node::ptr
                       get_node_by_id(objects::node_id);
@@ -116,7 +117,7 @@ namespace             notification {
     QHash<std::string, objects::timeperiod::ptr>
                       _timeperiod_by_name;
 
-    QMutex            _state_mutex;
+    QReadWriteLock    _state_mutex;
   };
 }
 

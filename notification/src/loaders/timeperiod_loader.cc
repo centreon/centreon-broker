@@ -35,7 +35,7 @@ timeperiod_loader::timeperiod_loader() {
  *  Load the timeperiods from the database.
  *
  *  @param[in] db       An open connection to the database.
- * @param[out] output   A timeperiod builder object to register the timeperiods.
+ *  @param[out] output   A timeperiod builder object to register the timeperiods.
  */
 void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
   // If we don't have any db or output, don't do anything.
