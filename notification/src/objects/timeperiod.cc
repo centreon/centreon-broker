@@ -175,11 +175,15 @@ std::list<timerange> const&
  */
 void timeperiod::set_timerange(std::list<timerange> const& val,
                                int day) {
+  if (day < 0 || day > 6)
+    return;
   _timeranges[day] = val;
 }
 
 void timeperiod::set_timerange(std::string const& timerange_text,
                                int day) {
+  if (day < 0 || day > 6)
+    return;
   timerange::build_timeranges_from_string(timerange_text, _timeranges[day]);
 }
 
