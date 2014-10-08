@@ -226,11 +226,25 @@ node::ptr state::get_host_from_service(objects::node_id service_id) {
 }
 
 /**
- * @brief state::get_timeperiod_by_node
- * @return
+ *  Get all the notification rules associated to a node.
+ *
+ *  @param[in] id  The id of the node.
+ *
+ *  @return        A list of notification_rule::ptr associated to this node.
  */
-objects::timeperiod::ptr state::get_timeperiod_by_node(objects::node_id id) {
-  return (timeperiod::ptr());
+QList<notification_rule::ptr> state::get_notification_rule_by_node(node_id id) {
+  return (_notification_rules_by_node.values(id));
+}
+
+/**
+ *  Get a notification method from its id.
+ *
+ *  @param[in] id  The notification method id.
+ *
+ *  @return        A notification_method::ptr the notification method, or a null notification_method::ptr.
+ */
+notification_method::ptr state::get_notification_method_by_id(unsigned int id) {
+  return (_notification_methods.value(id));
 }
 
 /**

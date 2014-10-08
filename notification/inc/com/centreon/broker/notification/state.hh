@@ -69,8 +69,10 @@ namespace             notification {
                       get_host_from_service(objects::node_id service_id);
     objects::timeperiod::ptr
                       get_timeperiod_by_id(unsigned int id);
-    objects::timeperiod::ptr
-                      get_timeperiod_by_node(objects::node_id);
+    QList<objects::notification_rule::ptr>
+                      get_notification_rule_by_node(objects::node_id id);
+    objects::notification_method::ptr
+                      get_notification_method_by_id(unsigned int id);
     QList<objects::contact::ptr>
                       get_contacts_by_node(objects::node_id id);
     QList<objects::command::ptr>

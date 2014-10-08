@@ -54,7 +54,7 @@ namespace           notification {
     objects::node_id  get_node_id() const throw();
     void              set_node_id(objects::node_id id) throw();
 
-    bool              process_action(state& st);
+    time_t            process_action(state& st);
 
   private:
     action_type       _act;

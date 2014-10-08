@@ -99,7 +99,7 @@ void action::set_node_id(objects::node_id id) throw() {
  *
  *  @return           True if the action should be rescheduled.
  */
-bool action::process_action(state& st) {
+time_t action::process_action(state& st) {
   // Don't do anything if the action is an empty one.
   if (_act == unknown || _id == node_id())
     return (false);
@@ -164,6 +164,13 @@ action::return_value action::_check_notification_node_viability(state& st) {
       << "Notification: This node has a correlated parent. Don't notify.";
     return (error_should_remove);
   }
+
+  // Get the notification rules.
+  QList<notification_rule::ptr> rules = st.get_notification_rule_by_node(_id);
+
+  // If no rules, don't do anything.
+  if (rules.empty())
+    return (error_should_remove);
 
   // If the node has no notification period and is a service, inherit one from the host
   /*timeperiod::ptr tp =
