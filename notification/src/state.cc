@@ -29,6 +29,7 @@
 #include "com/centreon/broker/notification/builders/composed_escalation_builder.hh"
 #include "com/centreon/broker/notification/builders/composed_node_builder.hh"
 #include "com/centreon/broker/notification/builders/composed_timeperiod_builder.hh"
+#include "com/centreon/broker/notification/builders/composed_notification_method_builder.hh"
 
 #include "com/centreon/broker/notification/builders/acknowledgement_by_node_id_builder.hh"
 #include "com/centreon/broker/notification/builders/command_by_name_builder.hh"
@@ -43,6 +44,7 @@
 #include "com/centreon/broker/notification/builders/timeperiod_by_name_builder.hh"
 #include "com/centreon/broker/notification/builders/command_by_contact_builder.hh"
 #include "com/centreon/broker/notification/builders/groups_builder.hh"
+#include "com/centreon/broker/notification/builders/notification_method_by_id_builder.hh"
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
@@ -89,6 +91,7 @@ state& state::operator=(state const& obj) {
     _downtimes = obj._downtimes;
     _escalations = obj._escalations;
     _timeperiod_by_name = obj._timeperiod_by_name;
+    _notification_methods = obj._notification_methods;
   }
   return (*this);
 }
@@ -108,7 +111,6 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db,
   _servicegroups_by_node.clear();
   _servicegroups_by_hostgroup.clear();
   _parent_hostgroups.clear();
-
   _acks.clear();
   _commands.clear();
   _contact_by_name.clear();
@@ -121,6 +123,7 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db,
   _downtimes.clear();
   _escalations.clear();
   _timeperiod_by_name.clear();
+  _notification_methods.clear();
 
   // Get new objects
   {
@@ -199,6 +202,14 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db,
     acknowledgement_by_node_id_builder by_node_builder(_acks);
     composed.push_back(by_node_builder);
     ack.load(&centreon_storage_db, &composed);
+  }
+  {
+    // Get notification methods.
+    notification_method_loader nml;
+    composed_notification_method_builder composed;
+    notification_method_by_id_builder by_id_builder(_notification_methods);
+    composed.push_back(by_id_builder);
+    nml.load(&centreon_db, &composed);
   }
 
   // Debug logging for all the data loaded.

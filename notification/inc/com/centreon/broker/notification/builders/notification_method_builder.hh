@@ -35,7 +35,7 @@ namespace           notification {
 
     virtual void    add_notification_method(
                       unsigned int method_id,
-                      objects::notification_method::ptr method);
+                      objects::notification_method::ptr method) {}
   };
 
 }

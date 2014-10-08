@@ -38,8 +38,10 @@
 #  include "com/centreon/broker/notification/loaders/timeperiod_loader.hh"
 #  include "com/centreon/broker/notification/loaders/acknowledgement_loader.hh"
 #  include "com/centreon/broker/notification/loaders/downtime_loader.hh"
+#  include "com/centreon/broker/notification/loaders/notification_method_loader.hh"
 #  include "com/centreon/broker/notification/builders/node_set_builder.hh"
 #  include "com/centreon/broker/notification/notification_scheduler.hh"
+
 
 CCB_BEGIN()
 
@@ -116,6 +118,8 @@ namespace             notification {
                       _escalations;
     QHash<std::string, objects::timeperiod::ptr>
                       _timeperiod_by_name;
+    QHash<unsigned int, objects::notification_method::ptr>
+                      _notification_methods;
 
     QReadWriteLock    _state_mutex;
   };
