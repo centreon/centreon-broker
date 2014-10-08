@@ -166,7 +166,7 @@ action::return_value action::_check_notification_node_viability(state& st) {
   }
 
   // If the node has no notification period and is a service, inherit one from the host
-  timeperiod::ptr tp =
+  /*timeperiod::ptr tp =
       st.get_timeperiod_by_name(n->get_notification_timeperiod());
   if (!tp) {
     if (_id.is_host()) {
@@ -224,7 +224,7 @@ action::return_value action::_check_notification_node_viability(state& st) {
     logging::debug(logging::low)
       << "Notification: This node has been acknowledged: don't send anything.";
     return (error_should_remove);
-  }
+  }*/
 
   return (ok);
 }
@@ -250,7 +250,7 @@ action::return_value action::_check_notification_contact_viability(
   std::string notification_period = _id.is_service() ?
                                       con->get_service_notification_period() :
                                       con->get_host_notification_period();
-  timeperiod::ptr tp = st.get_timeperiod_by_name(notification_period);
+  /*timeperiod::ptr tp = st.get_timeperiod_by_name(notification_period);
   if (!tp) {
     logging::debug(logging::low)
         << "Notification: Error: Could not find timeperiod for this contact.";
@@ -269,7 +269,7 @@ action::return_value action::_check_notification_contact_viability(
     logging::debug(logging::low)
         << "Notification: This contact should not be notified for this state.";
     return (error_should_remove);
-  }
+  }*/
 
   return (ok);
 }

@@ -87,25 +87,6 @@ logging::temp_logger& logging::operator<<(
 }
 
 /**
- *  Stream operator overload for escalation.
- *
- *  @param left The logging stream.
- *  @param obj The object to log.
- *  @return The logging stream.
- */
-logging::temp_logger& logging::operator<<(
-    logging::temp_logger const& left,
-    notification::objects::escalation const& obj) throw() {
-  logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
-  tmp LOG_MEMBER(escalation, get_escalation_options)
-      LOG_MEMBER(escalation, get_escalation_period)
-      LOG_MEMBER(escalation, get_first_notification)
-      LOG_MEMBER(escalation, get_last_notification)
-      LOG_MEMBER(escalation, get_notification_interval);
-  return (tmp);
-}
-
-/**
  *  Stream operator overload for dependency.
  *
  *  @param left The logging stream.

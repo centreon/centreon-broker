@@ -40,14 +40,6 @@ namespace       notification {
                   composed_node_builder();
 
     virtual void  add_node(objects::node::ptr node);
-    virtual void connect_node_servicegroup(objects::node_id id,
-                                           unsigned int group_id);
-    virtual void connect_node_hostgroup(objects::node_id id,
-                                        unsigned int group_id);
-    virtual void connect_hostgroup_servicegroup(unsigned int hostgroup_id,
-                                                unsigned int servicegroup_id);
-    virtual void connect_hostgroup_parent_hostgroup(unsigned int hostgroup_id,
-                                                    unsigned int parent_hostgroup_id);
   };
 
 }

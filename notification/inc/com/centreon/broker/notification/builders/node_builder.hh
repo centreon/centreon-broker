@@ -45,44 +45,6 @@ namespace        notification {
      *  @param[in] node The node.
      */
     virtual void add_node(objects::node::ptr node) {}
-
-    /**
-     *  Connect a node to its servicegroup.
-     *
-     *  @param[in] id         The id of the node.
-     *  @param[in] group_id   The id of the group.
-     */
-    virtual void connect_node_servicegroup(objects::node_id id,
-                                           unsigned int group_id) {}
-
-    /**
-     *  Connect a node to its hostgroup.
-     *
-     *  @param[in] id         The id of the node.
-     *  @param[in] group_id   The id of the group.
-     */
-    virtual void connect_node_hostgroup(objects::node_id id,
-                                        unsigned int group_id) {}
-
-    /**
-     *  Connect a hostgroup to its servicegroup.
-     *
-     *  @param[in] hostgroup_id     The id of the hostgroup.
-     *  @param[in] servicegroup_id  The id of the servicegroup.
-     */
-    virtual void connect_hostgroup_servicegroup(
-                    unsigned int hostgroup_id,
-                    unsigned int servicegroup_id) {}
-
-    /**
-     *  Connect a hostgroup to its parent hostgroup.
-     *
-     *  @param[in] hostgroup_id         The id of the hostgroup.
-     *  @param[in] parent_hostgroup_id  The id of the servicegroup.
-     */
-    virtual void connect_hostgroup_parent_hostgroup(
-                    unsigned int hostgroup_id,
-                    unsigned int parent_hostgroup_id) {}
   };
 
 }

@@ -488,15 +488,6 @@ void stream::_process_service_status_event(neb::service_status const& event) {
     old_soft_state = n->get_soft_state();
     n->set_hard_state(event.last_hard_state);
     n->set_soft_state(event.current_state);
-
-    // Schedule at the next valid time.
-    timeperiod::ptr tp = _state.get_timeperiod_by_name(n->get_notification_timeperiod());
-    if (!tp)
-      throw (exceptions::msg()
-        << "NOTIFICATION: got an unknown timeperiod name"
-        << n->get_notification_timeperiod());
-
-    tp->get_next_valid(when_to_schedule);
   }
 
   // From OK to NOT-OK
@@ -534,15 +525,6 @@ void stream::_process_host_status_event(neb::host_status const& event) {
     old_soft_state = n->get_soft_state();
     n->set_hard_state(event.last_hard_state);
     n->set_soft_state(event.current_state);
-
-    // Schedule at the next valid time.
-    timeperiod::ptr tp = _state.get_timeperiod_by_name(n->get_notification_timeperiod());
-    if (!tp)
-      throw (exceptions::msg()
-        << "NOTIFICATION: got an unknown timeperiod name"
-        << n->get_notification_timeperiod());
-
-    tp->get_next_valid(when_to_schedule);
   }
 
   // From OK to NOT-OK

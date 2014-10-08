@@ -33,7 +33,6 @@
 #  include "com/centreon/broker/notification/objects/node_id.hh"
 #  include "com/centreon/broker/notification/objects/command.hh"
 #  include "com/centreon/broker/notification/objects/downtime.hh"
-#  include "com/centreon/broker/notification/objects/escalation.hh"
 #  include "com/centreon/broker/notification/objects/dependency.hh"
 #  include "com/centreon/broker/notification/objects/contact.hh"
 #  include "com/centreon/broker/notification/objects/timeperiod.hh"
@@ -52,8 +51,6 @@ namespace logging {
                           notification::objects::command const&) throw();
   temp_logger& operator<<(temp_logger const& left,
                           notification::objects::downtime const&) throw();
-  temp_logger& operator<<(temp_logger const& left,
-                          notification::objects::escalation const&) throw();
   temp_logger& operator<<(temp_logger const& left,
                           notification::objects::dependency const&) throw();
   temp_logger& operator<<(temp_logger const& left,

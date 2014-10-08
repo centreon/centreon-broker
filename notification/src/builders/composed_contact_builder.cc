@@ -37,36 +37,6 @@ void composed_contact_builder::add_contact(
     (*it)->add_contact(id, con);
 }
 
-void composed_contact_builder::connect_contact_contactgroup(
-                                unsigned int contact_id,
-                                unsigned int contactgroup_id) {
-  for (composed_builder<contact_builder>::iterator it(begin()),
-       end_it(end());
-       it != end_it;
-       ++it)
-    (*it)->connect_contact_contactgroup(contact_id, contactgroup_id);
-}
-
-void composed_contact_builder::connect_contact_hostcommand(
-                                unsigned int contact_id,
-                                std::string const& command_name) {
-  for (composed_builder<contact_builder>::iterator it(begin()),
-       end_it(end());
-       it != end_it;
-       ++it)
-    (*it)->connect_contact_hostcommand(contact_id, command_name);
-}
-
-void composed_contact_builder::connect_contact_servicecommand(
-                                unsigned int contact_id,
-                                std::string const& command_name) {
-  for (composed_builder<contact_builder>::iterator it(begin()),
-       end_it(end());
-       it != end_it;
-       ++it)
-    (*it)->connect_contact_servicecommand(contact_id, command_name);
-}
-
 void composed_contact_builder::add_contact_param(
                                 unsigned int contact_id,
                                 std::string const& key,
@@ -76,44 +46,4 @@ void composed_contact_builder::add_contact_param(
        it != end_it;
        ++it)
     (*it)->add_contact_param(contact_id, key, value);
-}
-
-void composed_contact_builder::connect_contact_node_id(
-                                unsigned int contact_id,
-                                node_id id) {
-  for (composed_builder<contact_builder>::iterator it(begin()),
-       end_it(end());
-       it != end_it;
-       ++it)
-    (*it)->connect_contact_node_id(contact_id, id);
-}
-
-void composed_contact_builder::connect_contactgroup_node_id(
-                                unsigned int contactgroup_id,
-                                objects::node_id id) {
-  for (composed_builder<contact_builder>::iterator it(begin()),
-       end_it(end());
-       it != end_it;
-       ++it)
-    (*it)->connect_contactgroup_node_id(contactgroup_id, id);
-}
-
-void composed_contact_builder::connect_contactgroup_hostgroup(
-                                unsigned int contactgroup_id,
-                                unsigned int hostgroup_id) {
-  for (composed_builder<contact_builder>::iterator it(begin()),
-       end_it(end());
-       it != end_it;
-       ++it)
-    (*it)->connect_contactgroup_hostgroup(contactgroup_id, hostgroup_id);
-}
-
-void composed_contact_builder::connect_contactgroup_servicegroup(
-                                unsigned int contactgroup_id,
-                                unsigned int servicegroup_id) {
-  for (composed_builder<contact_builder>::iterator it(begin()),
-       end_it(end());
-       it != end_it;
-       ++it)
-    (*it)->connect_contactgroup_servicegroup(contactgroup_id, servicegroup_id);
 }
