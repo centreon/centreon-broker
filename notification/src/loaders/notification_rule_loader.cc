@@ -40,7 +40,7 @@ void notification_rule_loader::load(QSqlDatabase *db, notification_rule_builder 
   query.setForwardOnly(true);
 
   if (!query.exec("SELECT rule_id, method_id, timeperiod_id, contact_id, "
-                  "host_id, service_id FROM cfg_configuration_method"))
+                  "host_id, service_id FROM rt_notification_rules"))
     throw (exceptions::msg()
       << "Notification: cannot select rt_notification_rules in loader: "
       << query.lastError().text());

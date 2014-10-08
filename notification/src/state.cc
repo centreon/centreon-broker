@@ -30,6 +30,7 @@
 #include "com/centreon/broker/notification/builders/composed_node_builder.hh"
 #include "com/centreon/broker/notification/builders/composed_timeperiod_builder.hh"
 #include "com/centreon/broker/notification/builders/composed_notification_method_builder.hh"
+#include "com/centreon/broker/notification/builders/composed_notification_rule_builder.hh"
 
 #include "com/centreon/broker/notification/builders/acknowledgement_by_node_id_builder.hh"
 #include "com/centreon/broker/notification/builders/command_by_name_builder.hh"
@@ -210,6 +211,12 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db,
     notification_method_by_id_builder by_id_builder(_notification_methods);
     composed.push_back(by_id_builder);
     nml.load(&centreon_db, &composed);
+  }
+  {
+    // Get notification rules.
+    notification_rule_loader nrl;
+    composed_notification_rule_builder composed;
+    nrl.load(&centreon_db, &composed);
   }
 
   // Debug logging for all the data loaded.

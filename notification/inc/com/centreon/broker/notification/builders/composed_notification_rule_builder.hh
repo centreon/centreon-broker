@@ -17,36 +17,36 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NOTIFICATION_BUILDERS_COMPOSED_NOTIFICATION_METHOD_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_COMPOSED_NOTIFICATION_METHOD_BUILDER_HH
+#ifndef CCB_NOTIFICATION_BUILDERS_COMPOSED_NOTIFICATION_RULE_BUILDER_HH
+#  define CCB_NOTIFICATION_BUILDERS_COMPOSED_NOTIFICATION_RULE_BUILDER_HH
 
 #  include <vector>
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/notification_method.hh"
-#  include "com/centreon/broker/notification/builders/notification_method_builder.hh"
+#  include "com/centreon/broker/notification/builders/notification_rule_builder.hh"
 #  include "com/centreon/broker/notification/builders/composed_builder.hh"
 
 CCB_BEGIN()
 
 namespace       notification {
   /**
-   *  @class composed_notification_method_builder composed_notification_method_builder.hh "com/centreon/broker/notification/builders/composed_notification_method_builder.hh"
-   *  @brief Composed notification method builder.
+   *  @class composed_notification_rule_builder composed_notification_rule_builder.hh "com/centreon/broker/notification/builders/composed_notification_rule_builder.hh"
+   *  @brief Composed notification rule builder.
    *
    *  This class forward its method call to several other builders.
    */
-  class           composed_notification_method_builder :
-                    public composed_builder<notification_method_builder> {
+  class           composed_notification_rule_builder :
+                    public composed_builder<notification_rule_builder> {
   public:
-                  composed_notification_method_builder();
+                  composed_notification_rule_builder();
 
-    virtual void  add_notification_method(
-                    unsigned int method_id,
-                    objects::notification_method::ptr method);
+    virtual void  add_rule(unsigned int method_id,
+                           unsigned int timeperiod_id,
+                           unsigned int contact_id,
+                           objects::node_id node_id);
   };
 
 }
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_COMPOSED_NOTIFICATION_METHOD_BUILDER_HH
+#endif // !CCB_NOTIFICATION_BUILDERS_COMPOSED_NOTIFICATION_RULE_BUILDER_HH
