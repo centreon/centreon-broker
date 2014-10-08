@@ -45,9 +45,13 @@ void notification_rule_loader::load(QSqlDatabase *db, notification_rule_builder 
       << "Notification: cannot select rt_notification_rules in loader: "
       << query.lastError().text());
 
-  while (query.next())
-    output->add_rule(query.value(1).toUInt(),
-                     query.value(2).toUInt(),
-                     query.value(3).toUInt(),
-                     node_id(query.value(4).toUInt(), query.value(5).toUInt()));
+  while (query.next()) {
+    notification_rule::ptr rule(new notification_rule);
+    rule->set_method_id(query.value(1).toUInt());
+    rule->set_timeperiod_id(query.value(2).toUInt());
+    rule->set_contact_id(query.value(3).toUInt());
+    rule->set_node_id(node_id(query.value(4).toUInt(),
+                              query.value(5).toUInt()));
+    output->add_rule(query.value(0).toUInt(), rule);
+  }
 }

@@ -22,7 +22,7 @@
 
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
-#  include "com/centreon/broker/notification/objects/notification_method.hh"
+#  include "com/centreon/broker/notification/objects/notification_rule.hh"
 
 CCB_BEGIN()
 
@@ -34,10 +34,8 @@ namespace           notification {
   public:
     virtual         ~notification_rule_builder() {}
 
-    virtual void    add_rule(unsigned int method_id,
-                             unsigned int timeperiod_id,
-                             unsigned int contact_id,
-                             objects::node_id node_id) {}
+    virtual void    add_rule(unsigned int rule_id,
+                             objects::notification_rule::ptr rule) {}
   };
 
 }

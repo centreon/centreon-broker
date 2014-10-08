@@ -39,10 +39,8 @@ namespace       notification {
   public:
                   composed_notification_rule_builder();
 
-    virtual void  add_rule(unsigned int method_id,
-                           unsigned int timeperiod_id,
-                           unsigned int contact_id,
-                           objects::node_id node_id);
+    virtual void  add_rule(unsigned int rule_id,
+                           objects::notification_rule::ptr rule);
   };
 
 }

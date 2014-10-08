@@ -21,7 +21,11 @@
 
 using namespace com::centreon::broker::notification::objects;
 
-notification_method::notification_method() {}
+notification_method::notification_method()
+  : _command_id(0),
+    _interval(0),
+    _start(0),
+    _end(0) {}
 
 notification_method::notification_method(notification_method const& obj) {
   notification_method::operator=(obj);
