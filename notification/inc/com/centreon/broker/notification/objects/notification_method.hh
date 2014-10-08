@@ -22,6 +22,7 @@
 
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
 
 CCB_BEGIN()
 
@@ -34,6 +35,8 @@ namespace         notification {
      */
     class           notification_method {
     public:
+                    DECLARE_SHARED_PTR(notification_method);
+
                     notification_method();
                     notification_method(notification_method const& obj);
       notification_method&
