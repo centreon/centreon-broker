@@ -46,6 +46,7 @@
 #include "com/centreon/broker/notification/builders/command_by_contact_builder.hh"
 #include "com/centreon/broker/notification/builders/groups_builder.hh"
 #include "com/centreon/broker/notification/builders/notification_method_by_id_builder.hh"
+#include "com/centreon/broker/notification/builders/notification_rule_by_node_builder.hh"
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
@@ -93,6 +94,7 @@ state& state::operator=(state const& obj) {
     _escalations = obj._escalations;
     _timeperiod_by_name = obj._timeperiod_by_name;
     _notification_methods = obj._notification_methods;
+    _notification_rules_by_node = obj._notification_rules_by_node;
   }
   return (*this);
 }
@@ -125,6 +127,7 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db,
   _escalations.clear();
   _timeperiod_by_name.clear();
   _notification_methods.clear();
+  _notification_rules_by_node.clear();
 
   // Get new objects
   {
@@ -216,6 +219,8 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db,
     // Get notification rules.
     notification_rule_loader nrl;
     composed_notification_rule_builder composed;
+    notification_rule_by_node_builder by_node_builder(_notification_rules_by_node);
+    composed.push_back(by_node_builder);
     nrl.load(&centreon_db, &composed);
   }
 
@@ -241,6 +246,8 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db,
     data_logger::log_container("_downtimes", _downtimes);
     data_logger::log_container("_escalations", _escalations);
     data_logger::log_container("_timeperiod_by_name", _timeperiod_by_name);
+    /*data_logger::log_container("_notification_methods", _notification_methods);
+    data_logger::log_container("_notification_rules_by_node", _notification_rules_by_node);*/
 #endif //!NDEBUG
 }
 

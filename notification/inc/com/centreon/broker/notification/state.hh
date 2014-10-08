@@ -120,6 +120,8 @@ namespace             notification {
                       _timeperiod_by_name;
     QHash<unsigned int, objects::notification_method::ptr>
                       _notification_methods;
+    QMultiHash<objects::node_id, objects::notification_rule::ptr>
+                      _notification_rules_by_node;
 
     QReadWriteLock    _state_mutex;
   };
