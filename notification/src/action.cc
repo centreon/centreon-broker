@@ -30,7 +30,8 @@ using namespace com::centreon::broker::notification::objects;
  */
 action::action()
   : _act(action::unknown),
-    _id() {}
+    _id(),
+    _notification_rule_id(0) {}
 
 /**
  *  Copy constructor.
@@ -52,6 +53,7 @@ action& action::operator=(action const& obj) {
   if (this != &obj) {
     _act = obj._act;
     _id = obj._id;
+    _notification_rule_id = obj._notification_rule_id;
   }
   return (*this);
 }
@@ -95,55 +97,122 @@ void action::set_node_id(objects::node_id id) throw() {
 /**
  *  Process the action.
  *
- *  @param[in] state  The notification state of the engine.
+ *  @param[in] state            The notification state of the engine.
+ *  @param[out] spawned_actions The action to add to the queue after the processing.
  *
- *  @return           True if the action should be rescheduled.
  */
-time_t action::process_action(state& st) {
-  // Don't do anything if the action is an empty one.
+void action::process_action(
+      state& st,
+      std::vector<std::pair<time_t, action> >& spawned_actions) {
   if (_act == unknown || _id == node_id())
-    return (false);
+    return;
 
-  if (_act == notification_attempt)
-    return (_process_notification(st));
-  else
-    return (false);
+  if (_act == notification_processing)
+    _spawn_notification_attempts(st, spawned_actions);
+  else if (_act == notification_attempt)
+    _process_notification(st, spawned_actions);
 }
 
-bool action::_process_notification(state& st) {
-
+void action::_spawn_notification_attempts(
+               ::com::centreon::broker::notification::state& st,
+               std::vector<std::pair<time_t, action> >& spawned_actions) {
   logging::debug(logging::low)
-      << "Notification: Processing notification action for node (host id = "
+      << "Notification: Spawning notification attempts for node (host id = "
       << _id.get_host_id() << ", service_id = " << _id.get_service_id()
       << ").";
 
-  return_value node_viability = _check_notification_node_viability(st);
-  if (node_viability == error_should_remove)
-    return (false);
-  else if (node_viability == error_should_reschedule)
-    return (true);
+  // If the action shouldn't be executed, do nothing.
+  if (!_check_action_viability(st))
+    return;
 
-  // Get the contact list attached to this node.
-  QList<objects::contact::ptr> contacts =
-    st.get_contacts_by_node(_id);
+  node::ptr n = st.get_node_by_id(_id);
+  // Spawn an action for each compatible rules.
+  QList<notification_rule::ptr> rules = st.get_notification_rules_by_node(_id);
 
-  logging::debug(logging::low)
-      << "Notification: Processing notification contacts for node (host id = "
-      << _id.get_host_id() << ", service_id = " << _id.get_service_id()
-      << ").";
-
-  // Iterate the list and get the viability.
-  for (QList<objects::contact::ptr>::iterator it(contacts.begin()),
-                                              end(contacts.end());
+  for (QList<notification_rule::ptr>::iterator it(rules.begin()),
+                                               end(rules.end());
        it != end;
        ++it) {
-    return_value contact_viability =
-      _check_notification_contact_viability(*it, st);
-    if (contact_viability == ok)
-      _notify_contact_of_node(*it, st);
-  }
+    // TODO: Compatibility check.
 
-  return false;
+    action a;
+    time_t at = time(NULL);
+
+    a.set_node_id(_id);
+    a.set_type(action::notification_attempt);
+    a.set_notification_rule_id((*it)->get_id());
+    timeperiod::ptr tp = st.get_timeperiod_by_id((*it)->get_timeperiod_id());
+    // If no timeperiod, don't spawn the action.
+    if (!tp)
+      continue;
+    tp->get_next_valid(at);
+    spawned_actions.push_back(std::make_pair(at, action()));
+  }
+}
+
+bool action::_check_action_viability(
+              ::com::centreon::broker::notification::state& st) {
+  logging::debug(logging::low)
+      << "Notification: Checking action viability for node (host id = "
+      << _id.get_host_id() << ", service_id = " << _id.get_service_id()
+      << ").";
+
+  node::ptr n;
+  // Check the node's existence.
+  if (!(n = st.get_node_by_id(_id)))
+    return (false);
+
+  // Check the existence of correlated parent.
+  if (n->has_parent())
+    return (false);
+
+  return (true);
+}
+
+void action::_process_notification(state& st,
+                                   std::vector<std::pair<time_t, action> >& spawned_actions) {
+
+  logging::debug(logging::low)
+      << "Notification: Processing notification action for notification_rule (host id = "
+      << _id.get_host_id() << ", service_id = " << _id.get_service_id()
+      << ", notification_rule_id = " << _notification_rule_id << ").";
+
+  // Check action viability.
+  if (!_check_action_viability(st))
+    return;
+
+  // Get all the necessary data.
+  notification_rule::ptr rule = st.get_notification_rule_by_id(_notification_rule_id);
+  if (!rule)
+    return;
+
+  timeperiod::ptr tp = st.get_timeperiod_by_id(rule->get_timeperiod_id());
+  if (!tp)
+    return;
+
+  notification_method::ptr method = st.get_notification_method_by_id(rule->get_method_id());
+  if (!method)
+    return;
+
+  contact::ptr cnt = st.get_contact_by_id(rule->get_contact_id());
+  if (!cnt)
+    return;
+
+  command::ptr cmd = st.get_command_by_id(method->get_command_id());
+  if (!cmd)
+    return;
+
+  node::ptr n = st.get_node_by_id(_id);
+
+  // Check if the notification should be sent.
+  // TODO
+
+  // Send the notification.
+  std::string resolved_command /*= cmd.resolve()*/;
+  process_manager& manager = process_manager::instance();
+
+  manager.create_process(resolved_command);
+
 }
 
 action::return_value action::_check_notification_node_viability(state& st) {
@@ -279,23 +348,4 @@ action::return_value action::_check_notification_contact_viability(
   }*/
 
   return (ok);
-}
-
-void action::_notify_contact_of_node(contact::ptr cnt,
-                                     state& st) {
-  // Get the process manager.
-  process_manager& manager = process_manager::instance();
-
-  // Iterate on the commands associated with this contact.
-  QList<command::ptr> commands = _id.is_host() ?
-        st.get_host_commands_by_contact(cnt) :
-        st.get_service_commands_by_contact(cnt);
-
-  for (QList<command::ptr>::iterator it(commands.begin()), end(commands.end());
-       it != end; ++it) {
-    // Process command.
-    std::string command /* = it->resolve()*/;
-
-    manager.create_process(command);
-  }
 }

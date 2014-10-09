@@ -72,12 +72,13 @@ namespace             notification {
                       get_notification_rules_by_node(objects::node_id id);
     objects::notification_method::ptr
                       get_notification_method_by_id(unsigned int id);
-    QList<objects::contact::ptr>
-                      get_contacts_by_node(objects::node_id id);
-    QList<objects::command::ptr>
-                      get_host_commands_by_contact(objects::contact::ptr cnt);
-    QList<objects::command::ptr>
-                      get_service_commands_by_contact(objects::contact::ptr cnt);
+    objects::notification_rule::ptr
+                      get_notification_rule_by_id(unsigned int id);
+    objects::contact::ptr
+                      get_contact_by_id(unsigned int id);
+    objects::command::ptr
+                      get_command_by_id(unsigned int id);
+
     bool              is_node_in_downtime(objects::node_id id);
     bool              has_node_been_acknowledged(objects::node_id id);
 
@@ -88,7 +89,7 @@ namespace             notification {
                       _node_by_id;
     QMultiHash<objects::node_id, objects::acknowledgement::ptr>
                       _acks;
-    QHash<std::string, objects::command::ptr>
+    QHash<unsigned int, objects::command::ptr>
                       _commands;
     QHash<unsigned int, objects::contact::ptr>
                       _contacts;
@@ -104,6 +105,8 @@ namespace             notification {
                       _notification_methods;
     QMultiHash<objects::node_id, objects::notification_rule::ptr>
                       _notification_rules_by_node;
+    QHash<unsigned int, objects::notification_rule::ptr>
+                      _notification_rule_by_id;
 
     QReadWriteLock    _state_mutex;
   };

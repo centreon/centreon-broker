@@ -23,7 +23,7 @@ using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
 notification_rule_by_node_builder::notification_rule_by_node_builder(
-    QHash<objects::node_id,objects::notification_rule::ptr>& map)
+    QMultiHash<objects::node_id,objects::notification_rule::ptr>& map)
   : _map(map) {}
 
 void notification_rule_by_node_builder::add_rule(

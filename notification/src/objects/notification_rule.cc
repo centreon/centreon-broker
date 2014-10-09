@@ -22,7 +22,8 @@
 using namespace com::centreon::broker::notification::objects;
 
 notification_rule::notification_rule()
-  : _method_id(0),
+  : _id(0),
+    _method_id(0),
     _timeperiod_id(0),
     _contact_id(0) {}
 
@@ -32,12 +33,21 @@ notification_rule::notification_rule(notification_rule const& obj) {
 
 notification_rule& notification_rule::operator=(notification_rule const& obj) {
   if (this != &obj) {
+    _id = obj._id;
     _method_id = obj._method_id;
     _timeperiod_id = obj._timeperiod_id;
     _contact_id = obj._contact_id;
     _node_id = obj._node_id;
   }
   return (*this);
+}
+
+unsigned int notification_rule::get_id() {
+  return (_id);
+}
+
+void notification_rule::set_id(unsigned int id) {
+  _id = id;
 }
 
 unsigned int notification_rule::get_method_id() const throw() {

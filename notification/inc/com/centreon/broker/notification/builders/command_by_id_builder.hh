@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NOTIFICATION_BUILDERS_COMMAND_BY_NAME_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_COMMAND_BY_NAME_BUILDER_HH
+#ifndef CCB_NOTIFICATION_BUILDERS_COMMAND_BY_ID_BUILDER_HH
+#  define CCB_NOTIFICATION_BUILDERS_COMMAND_BY_ID_BUILDER_HH
 
 #  include <string>
 #  include <QHash>
@@ -32,22 +32,22 @@ CCB_BEGIN()
 
 namespace       notification {
   /**
-   *  @class command_by_name_builder command_by_name_builder.hh "com/centreon/broker/notification/builders/command_by_name_builder.hh"
-   *  @brief Command builder by name.
+   *  @class command_by_id_builder command_by_id_builder.hh "com/centreon/broker/notification/builders/command_by_id_builder.hh"
+   *  @brief Command builder by id.
    *
-   *  This class build a map of commands by their names.
+   *  This class build a map of commands by their id.
    */
-  class           command_by_name_builder
+  class           command_by_id_builder
                     : public composed_builder<command_builder> {
   public:
-                  command_by_name_builder(
-                        QHash<std::string, objects::command::ptr>& table);
+                  command_by_id_builder(
+                        QHash<unsigned int, objects::command::ptr>& table);
 
     virtual void  add_command(unsigned int id,
                               objects::command::ptr com);
 
   private:
-    QHash<std::string, objects::command::ptr>&
+    QHash<unsigned int, objects::command::ptr>&
                   _table;
   };
 
@@ -55,4 +55,4 @@ namespace       notification {
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_COMMAND_BY_NAME_BUILDER_HH
+#endif // !CCB_NOTIFICATION_BUILDERS_COMMAND_BY_ID_BUILDER_HH

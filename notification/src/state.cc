@@ -32,7 +32,7 @@
 #include "com/centreon/broker/notification/builders/composed_notification_rule_builder.hh"
 
 #include "com/centreon/broker/notification/builders/acknowledgement_by_node_id_builder.hh"
-#include "com/centreon/broker/notification/builders/command_by_name_builder.hh"
+#include "com/centreon/broker/notification/builders/command_by_id_builder.hh"
 #include "com/centreon/broker/notification/builders/contact_by_id_builder.hh"
 #include "com/centreon/broker/notification/builders/dependency_by_node_id_builder.hh"
 #include "com/centreon/broker/notification/builders/downtime_by_node_id_builder.hh"
@@ -41,6 +41,7 @@
 #include "com/centreon/broker/notification/builders/timeperiod_by_id_builder.hh"
 #include "com/centreon/broker/notification/builders/notification_method_by_id_builder.hh"
 #include "com/centreon/broker/notification/builders/notification_rule_by_node_builder.hh"
+#include "com/centreon/broker/notification/builders/notification_rule_by_id_builder.hh"
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
@@ -80,6 +81,7 @@ state& state::operator=(state const& obj) {
     _timeperiod_by_id = obj._timeperiod_by_id;
     _notification_methods = obj._notification_methods;
     _notification_rules_by_node = obj._notification_rules_by_node;
+    _notification_rule_by_id = obj._notification_rule_by_id;
   }
   return (*this);
 }
@@ -103,6 +105,7 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
   _timeperiod_by_id.clear();
   _notification_methods.clear();
   _notification_rules_by_node.clear();
+  _notification_rule_by_id.clear();
 
   // Get new objects
   {
@@ -119,8 +122,8 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
     // Get commands.
     command_loader command;
     composed_command_builder composed;
-    command_by_name_builder by_name_builder(_commands);
-    composed.push_back(by_name_builder);
+    command_by_id_builder by_id_builder(_commands);
+    composed.push_back(by_id_builder);
     command.load(&centreon_db, &composed);
   }
   {
@@ -177,7 +180,9 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
     notification_rule_loader nrl;
     composed_notification_rule_builder composed;
     notification_rule_by_node_builder by_node_builder(_notification_rules_by_node);
+    notification_rule_by_id_builder by_id_builder(_notification_rule_by_id);
     composed.push_back(by_node_builder);
+    composed.push_back(by_id_builder);
     nrl.load(&centreon_db, &composed);
   }
 
@@ -236,6 +241,18 @@ QList<notification_rule::ptr> state::get_notification_rules_by_node(node_id id) 
 }
 
 /**
+ *  Get the notification rule associated to a id.
+ *
+ *  @param[in] id  The id of the notification rule.
+ *
+ *  @return        A notification_rule::ptr to the notification rule, or a null ptr.
+ */
+notification_rule::ptr state::get_notification_rule_by_id(unsigned int id) {
+  return (_notification_rule_by_id.value(id));
+}
+
+
+/**
  *  Get a notification method from its id.
  *
  *  @param[in] id  The notification method id.
@@ -257,38 +274,12 @@ timeperiod::ptr state::get_timeperiod_by_id(unsigned int id) {
   return (_timeperiod_by_id.value(id));
 }
 
-/**
- *  Get the contacts associated with a node.
- *
- *  @param[in] id  The node id of the node.
- *
- *  @return        A list of contact::ptr to the contacts of this node.
- */
-QList<contact::ptr> state::get_contacts_by_node(objects::node_id id) {
-  return (QList<contact::ptr>());
-  //return (_contacts.values(id));
+objects::contact::ptr state::get_contact_by_id(unsigned int id) {
+  return (_contacts.value(id));
 }
 
-/**
- *  Get the host commands of a contact.
- *
- *  @param[in] cnt  The contact.
- *
- *  @return         A list of command::ptr to the host commands of this contact.
- */
-QList<command::ptr> state::get_host_commands_by_contact(contact::ptr cnt) {
-  return (QList<command::ptr>());
-}
-
-/**
- *  Get the service commands of a contact.
- *
- *  @param[in] cnt  The contact.
- *
- *  @return         A list of command::ptr to the service commands of this contact.
- */
-QList<command::ptr> state::get_service_commands_by_contact(contact::ptr cnt) {
-  return (QList<command::ptr>());
+objects::command::ptr state::get_command_by_id(unsigned int id) {
+  return (_commands.value(id));
 }
 
 /**
@@ -299,6 +290,7 @@ QList<command::ptr> state::get_service_commands_by_contact(contact::ptr cnt) {
 std::auto_ptr<QReadLocker> state::read_lock() {
   return (std::auto_ptr<QReadLocker>(new QReadLocker(&_state_mutex)));
 }
+
 
 /**
  *  Get a write lock on this state.

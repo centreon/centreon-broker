@@ -28,21 +28,21 @@ CCB_BEGIN()
 
 namespace           notification {
   /**
-   *  @class notification_method_by_id_builder notification_method_by_id_builder.hh "com/centreon/broker/notification/builders/notification_method_by_id_builder.hh"
+   *  @class notification_method_by_node_builder notification_method_by_node_builder.hh "com/centreon/broker/notification/builders/notification_method_by_node_builder.hh"
    */
   class             notification_rule_by_node_builder
                       : public notification_rule_builder {
   public:
                     notification_rule_by_node_builder(
-                      QHash<objects::node_id,
-                            objects::notification_rule::ptr>& map);
+                      QMultiHash<objects::node_id,
+                                 objects::notification_rule::ptr>& map);
 
     virtual void    add_rule(unsigned int rule_id,
                              objects::notification_rule::ptr rule);
   private:
                     notification_rule_by_node_builder();
 
-    QHash<objects::node_id, objects::notification_rule::ptr>&
+    QMultiHash<objects::node_id, objects::notification_rule::ptr>&
                     _map;
   };
 

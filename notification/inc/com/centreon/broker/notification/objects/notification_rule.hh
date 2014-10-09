@@ -43,6 +43,9 @@ namespace         notification {
       notification_rule&
                     operator=(notification_rule const& obj);
 
+      unsigned int  get_id();
+      void          set_id(unsigned int id);
+
       unsigned int  get_method_id() const throw();
       void          set_method_id(unsigned int) throw();
 
@@ -56,6 +59,7 @@ namespace         notification {
       void          set_node_id(node_id val) throw();
 
     private:
+      unsigned int  _id;
       unsigned int  _method_id;
       unsigned int  _timeperiod_id;
       unsigned int  _contact_id;

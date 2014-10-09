@@ -20,6 +20,8 @@
 #ifndef CCB_NOTIFICATION_ACTION_HH
 #  define CCB_NOTIFICATION_ACTION_HH
 
+#  include <vector>
+#  include <utility>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
 #  include "com/centreon/broker/notification/objects/contact.hh"
@@ -42,6 +44,7 @@ namespace           notification {
      */
     enum              action_type {
       unknown = 0,
+      notification_processing,
       notification_attempt
     };
                       action();
@@ -54,11 +57,16 @@ namespace           notification {
     objects::node_id  get_node_id() const throw();
     void              set_node_id(objects::node_id id) throw();
 
-    time_t            process_action(state& st);
+    unsigned int      get_notification_rule_id() const throw();
+    void              set_notification_rule_id(unsigned int id) throw();
 
+    void            process_action(
+                        state& st,
+                        std::vector<std::pair<time_t, action> >& spawned_actions);
   private:
     action_type       _act;
     objects::node_id  _id;
+    unsigned int      _notification_rule_id;
 
     enum              return_value {
       ok = 0,
@@ -66,16 +74,21 @@ namespace           notification {
       error_should_remove
     };
 
-    bool              _process_notification(
-                       ::com::centreon::broker::notification::state& st);
+    void              _spawn_notification_attempts(
+                        ::com::centreon::broker::notification::state& st,
+                        std::vector<std::pair<time_t, action> >& spawned_actions);
+    bool              _check_action_viability(
+                        ::com::centreon::broker::notification::state& st);
+
+
+    void              _process_notification(
+                       ::com::centreon::broker::notification::state& st,
+                        std::vector<std::pair<time_t, action> >& spawned_actions);
     return_value      _check_notification_node_viability(
                        ::com::centreon::broker::notification::state& st);
     return_value      _check_notification_contact_viability(
                        objects::contact::ptr con,
                        ::com::centreon::broker::notification::state& st);
-    void              _notify_contact_of_node(
-                        objects::contact::ptr con,
-                        ::com::centreon::broker::notification::state& st);
   };
 }
 

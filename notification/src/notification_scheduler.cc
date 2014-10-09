@@ -120,38 +120,29 @@ void notification_scheduler::_process_actions() {
       return;
 
     // Get the viability of this action.
-    bool should_reschedule = false;
+    std::vector<std::pair<time_t, action> > spawned_actions;
     {
       // Lock the state mutex.
       std::auto_ptr<QReadLocker> lock(_state.read_lock());
       // Process the action.
-      should_reschedule = it->second.process_action(_state);
+      it->second.process_action(_state, spawned_actions);
     }
-    // A rescheduling was asked.
-    if (should_reschedule == true)
-      _reschedule_action(it->first, it->second);
+    // Add the spawned action to the queue.
+    _schedule_actions(spawned_actions);
 
     ++it;
   }
 }
 
 /**
- *  Reschedule an action previously scheduled.
+ *  Schedule several actions.
  *
- *  @param[in] previously_scheduled  The time of the previous action.
- *  @param[in] a                     The action to reschedule.
+ *  @param[in] actions  The actions to schedule.
  */
-void notification_scheduler::_reschedule_action(time_t previously_scheduled,
-                                                action a) {
-  // Reschedule at the previous scheduling + the notification interval of the node.
-  double notification_interval = 0;
-  {
-    std::auto_ptr<QReadLocker> lock(_state.read_lock());
-    node::ptr n = _state.get_node_by_id(a.get_node_id());
-    // The node doesn't exist anymore. Silently eat the action.
-    if (!n)
-      return;
-    notification_interval = n->get_notification_interval();
-  }
-  add_action_to_queue(previously_scheduled + notification_interval, a);
+void notification_scheduler::_schedule_actions(std::vector<std::pair<time_t, action> >& actions) {
+  for (std::vector<std::pair<time_t, action> >::iterator it(actions.begin()),
+                                                        end(actions.end());
+       it != end;
+       ++it)
+    add_action_to_queue(it->first, it->second);
 }

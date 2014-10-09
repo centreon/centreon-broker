@@ -47,6 +47,7 @@ void notification_rule_loader::load(QSqlDatabase *db, notification_rule_builder 
 
   while (query.next()) {
     notification_rule::ptr rule(new notification_rule);
+    rule->set_id(query.value(0).toUInt());
     rule->set_method_id(query.value(1).toUInt());
     rule->set_timeperiod_id(query.value(2).toUInt());
     rule->set_contact_id(query.value(3).toUInt());
