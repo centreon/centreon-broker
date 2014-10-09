@@ -48,6 +48,7 @@ namespace             notification {
 
     void       exit() throw ();
     void       add_action_to_queue(time_t at, action a);
+    void       remove_action_of_node(objects::node_id id);
 
   protected:
     void       run();

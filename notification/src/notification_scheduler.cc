@@ -98,6 +98,29 @@ void notification_scheduler::add_action_to_queue(time_t at, action a) {
     _general_condition.wakeAll();
 }
 
+void notification_scheduler::remove_action_of_node(objects::node_id id) {
+  bool need_to_wake = false;
+  {
+    QMutexLocker lock(&_general_mutex);
+    // Get all the action of a particular node.
+    time_t first_time = _queue.get_first_time();
+    std::vector<const action*> actions = _queue.get_actions_of_node(id);
+    // Iterate over the actions to remove them.
+    for (std::vector<const action*>::iterator it(actions.begin()),
+                                              end(actions.end());
+         it != end;
+         ++it)
+      _queue.remove(**it);
+    // If we just deleted the first event, we need to wake the scheduling thread.
+    if (_queue.get_first_time() != first_time)
+      need_to_wake = true;
+  }
+  // Wake the notification scheduling thread if needed.
+  if (need_to_wake)
+    _general_condition.wakeAll();
+}
+
+
 /**
  *  @brief Called repeatedly by the notification thread to process actions.
  *
