@@ -31,7 +31,8 @@ using namespace com::centreon::broker::notification::objects;
 action::action()
   : _act(action::unknown),
     _id(),
-    _notification_rule_id(0) {}
+    _notification_rule_id(0),
+    _notification_number(0) {}
 
 /**
  *  Copy constructor.
@@ -54,6 +55,7 @@ action& action::operator=(action const& obj) {
     _act = obj._act;
     _id = obj._id;
     _notification_rule_id = obj._notification_rule_id;
+    _notification_number = obj._notification_number;
   }
   return (*this);
 }
@@ -207,19 +209,26 @@ void action::_process_notification(state& st,
 
   // Check if the notification should be sent.
 
-  // See if the timeperiod is valid
-  time_t now = time(NULL);
-  if (!tp->is_valid(now))
-    return;
-
-  // See if the sate is valid.
+  // See if the state is valid.
   if(!rule->should_be_notified_for(n->get_hard_state()))
     return;
+
+  // See if the timeperiod is valid
+  time_t now = time(NULL);
+  if (!tp->is_valid(now)) {
+    logging::debug(logging::low)
+      << "Notification: The timeperiod is not valid: don't send anything.";
+    spawned_actions.push_back(std::make_pair(tp->get_next_valid(now), *this));
+    return;
+  }
+
+  bool should_send_the_notification = true;
 
   // See if the node is in downtime.
   if (st.is_node_in_downtime(_id) == true) {
     logging::debug(logging::low)
       << "Notification: This node is in downtime: don't send anything.";
+    should_send_the_notification = false;
     return;
   }
 
@@ -227,13 +236,23 @@ void action::_process_notification(state& st,
   if (st.has_node_been_acknowledged(_id) == true) {
     logging::debug(logging::low)
       << "Notification: This node has been acknowledged: don't send anything.";
+    should_send_the_notification = false;
     return;
   }
 
+  // See if this notification is between the start and end.
+  if (_notification_number < method->get_start() || _notification_number >= method->get_end())
+    should_send_the_notification = false;
+
   // Send the notification.
-  std::string resolved_command /*= cmd.resolve()*/;
-  process_manager& manager = process_manager::instance();
+  if (should_send_the_notification) {
+    std::string resolved_command /*= cmd.resolve()*/;
+    process_manager& manager = process_manager::instance();
+    manager.create_process(resolved_command);
+  }
 
-  manager.create_process(resolved_command);
-
+  // Create the next notification.
+  action next = *this;
+  next.set_notification_number(_notification_number + 1);
+  spawned_actions.push_back(std::make_pair(now + method->get_interval(), next));
 }

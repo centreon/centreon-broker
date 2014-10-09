@@ -60,13 +60,17 @@ namespace           notification {
     unsigned int      get_notification_rule_id() const throw();
     void              set_notification_rule_id(unsigned int id) throw();
 
-    void            process_action(
+    unsigned int      get_notification_number() const throw();
+    void              set_notification_number(unsigned int num) throw();
+
+    void              process_action(
                         state& st,
                         std::vector<std::pair<time_t, action> >& spawned_actions);
   private:
     action_type       _act;
     objects::node_id  _id;
     unsigned int      _notification_rule_id;
+    unsigned int      _notification_number;
 
     void              _spawn_notification_attempts(
                         ::com::centreon::broker::notification::state& st,
