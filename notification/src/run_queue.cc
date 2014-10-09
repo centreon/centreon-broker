@@ -45,9 +45,20 @@ run_queue::run_queue(run_queue const& obj) {
  */
 run_queue& run_queue::operator=(run_queue const& obj) {
   if (this != &obj) {
-    _actions = obj._actions;
+    _action_set = obj._action_set;
+    rebuild_set();
   }
   return (*this);
+}
+
+void run_queue::rebuild_set() {
+  for (std::set<action>::iterator it(_action_set.begin()),
+                                  end(_action_set.end());
+       it != end;
+       ++it) {
+    _action_by_time.insert(std::make_pair(it->get_at(), &*it));
+    _action_by_node.insert(std::make_pair(it->get_node_id(), &*it));
+  }
 }
 
 /**
@@ -56,7 +67,9 @@ run_queue& run_queue::operator=(run_queue const& obj) {
  *  @param obj  The object from where to move the content of this queue.
  */
 void run_queue::swap(run_queue& obj) {
-  obj._actions.swap(_actions);
+  obj._action_set.swap(_action_set);
+  obj._action_by_node.swap(_action_by_node);
+  obj._action_by_time.swap(_action_by_time);
 }
 
 /**
@@ -66,7 +79,13 @@ void run_queue::swap(run_queue& obj) {
  *  @param a   The action to run.
  */
 void run_queue::run(time_t at, action a) {
-  _actions.insert(std::make_pair(at, a));
+  a.set_at(at);
+
+  std::pair<std::set<action>::iterator, bool> res
+      = _action_set.insert(a);
+
+  _action_by_node.insert(std::make_pair(a.get_node_id(), &*res.first));
+  _action_by_time.insert(std::make_pair(at, &*res.first));
 }
 
 /**
@@ -75,7 +94,7 @@ void run_queue::run(time_t at, action a) {
  *  @return  An iterator to the beginning of the run_queue.
  */
 run_queue::iterator run_queue::begin() {
-  return (_actions.begin());
+  return (_action_by_time.begin());
 }
 
 /**
@@ -84,7 +103,7 @@ run_queue::iterator run_queue::begin() {
  *  @return  A const iterator to the beginning of the run_queue.
  */
 run_queue::const_iterator run_queue::begin() const {
-  return (_actions.begin());
+  return (_action_by_time.begin());
 }
 
 /**
@@ -93,7 +112,7 @@ run_queue::const_iterator run_queue::begin() const {
  *  @return  An iterator to the end of the run_queue.
  */
 run_queue::iterator run_queue::end() {
-  return (_actions.end());
+  return (_action_by_time.end());
 }
 
 /**
@@ -102,7 +121,7 @@ run_queue::iterator run_queue::end() {
  *  @return  A const iterator to the end of the run_queue.
  */
 run_queue::const_iterator run_queue::end() const {
-  return (_actions.end());
+  return (_action_by_time.end());
 }
 
 /**
@@ -111,16 +130,46 @@ run_queue::const_iterator run_queue::end() const {
  *  @return  The time of the next action, or time_t(-1) if no action.
  */
 time_t run_queue::get_first_time() const throw() {
-  if (_actions.empty())
+  if (_action_by_time.empty())
     return (time_t(-1));
   else
-    return (_actions.begin()->first);
+    return (_action_by_time.begin()->first);
 }
 
 /**
  *  Remove the next action.
  */
 void run_queue::remove_first() {
-  if (!_actions.empty())
-    _actions.erase(_actions.begin());
+  if (!_action_by_time.empty())
+    remove(*_action_by_time.begin()->second);
+}
+
+void run_queue::remove(action const& a) {
+  std::set<action>::iterator it = _action_set.find(a);
+  if (it == _action_set.end())
+    return;
+
+  const action* ptr = &*it;
+
+  // Erase from _action_by_node
+  std::pair<std::multimap<objects::node_id, const action*>::iterator,
+            std::multimap<objects::node_id, const action*>::iterator>
+      node_range = _action_by_node.equal_range(ptr->get_node_id());
+
+  for (; node_range.first != node_range.second; ++node_range.first)
+    if (node_range.first->second == ptr) {
+      _action_by_node.erase(node_range.first);
+      break;
+    }
+
+  // Erase from _action_by_time
+  std::pair<action_map::iterator,
+            action_map::iterator>
+      time_range = _action_by_time.equal_range(ptr->get_at());
+
+  for (; time_range.first != time_range.second; ++time_range.first)
+    if (time_range.first->second == ptr) {
+      _action_by_time.erase(time_range.first);
+      break;
+    }
 }

@@ -32,7 +32,8 @@ action::action()
   : _act(action::unknown),
     _id(),
     _notification_rule_id(0),
-    _notification_number(0) {}
+    _notification_number(0),
+    _at(0) {}
 
 /**
  *  Copy constructor.
@@ -56,8 +57,30 @@ action& action::operator=(action const& obj) {
     _id = obj._id;
     _notification_rule_id = obj._notification_rule_id;
     _notification_number = obj._notification_number;
+    _at = obj._at;
   }
   return (*this);
+}
+
+bool action::operator==(action const& obj) const {
+  return (_act == obj._act &&
+          _id == obj._id &&
+          _notification_rule_id == obj._notification_rule_id &&
+          _notification_number == obj._notification_number &&
+          _at == obj._at);
+}
+
+bool action::operator<(action const& obj) const {
+  if (_act != obj._act)
+    return (_act < obj._act);
+  else if(_id != obj._id)
+    return (_id < obj._id);
+  else if (_notification_rule_id != obj._notification_rule_id)
+    return (_notification_rule_id < obj._notification_rule_id);
+  else if (_notification_number == obj._notification_number)
+    return (_notification_number < obj._notification_number);
+  else
+    return (_at < obj._at);
 }
 
 /**
@@ -96,6 +119,14 @@ void action::set_node_id(objects::node_id id) throw() {
   _id = id;
 }
 
+time_t action::get_at() const throw() {
+  return (_at);
+}
+
+void action::set_at(time_t at) throw() {
+  _at = at;
+}
+
 /**
  *  Process the action.
  *
@@ -105,7 +136,7 @@ void action::set_node_id(objects::node_id id) throw() {
  */
 void action::process_action(
       state& st,
-      std::vector<std::pair<time_t, action> >& spawned_actions) {
+      std::vector<std::pair<time_t, action> >& spawned_actions) const {
   if (_act == unknown || _id == node_id())
     return;
 
@@ -117,7 +148,7 @@ void action::process_action(
 
 void action::_spawn_notification_attempts(
                ::com::centreon::broker::notification::state& st,
-               std::vector<std::pair<time_t, action> >& spawned_actions) {
+               std::vector<std::pair<time_t, action> >& spawned_actions) const {
   logging::debug(logging::low)
       << "Notification: Spawning notification attempts for node (host id = "
       << _id.get_host_id() << ", service_id = " << _id.get_service_id()
@@ -154,7 +185,7 @@ void action::_spawn_notification_attempts(
 }
 
 bool action::_check_action_viability(
-              ::com::centreon::broker::notification::state& st) {
+              ::com::centreon::broker::notification::state& st) const {
   logging::debug(logging::low)
       << "Notification: Checking action viability for node (host id = "
       << _id.get_host_id() << ", service_id = " << _id.get_service_id()
@@ -173,7 +204,7 @@ bool action::_check_action_viability(
 }
 
 void action::_process_notification(state& st,
-                                   std::vector<std::pair<time_t, action> >& spawned_actions) {
+                                   std::vector<std::pair<time_t, action> >& spawned_actions) const {
 
   logging::debug(logging::low)
       << "Notification: Processing notification action for notification_rule (host id = "
@@ -208,7 +239,6 @@ void action::_process_notification(state& st,
   node::ptr n = st.get_node_by_id(_id);
 
   // Check if the notification should be sent.
-
   // See if the state is valid.
   if(!rule->should_be_notified_for(n->get_hard_state()))
     return;
@@ -217,12 +247,13 @@ void action::_process_notification(state& st,
   time_t now = time(NULL);
   if (!tp->is_valid(now)) {
     logging::debug(logging::low)
-      << "Notification: The timeperiod is not valid: don't send anything.";
+      << "Notification: The timeperiod is not valid: reschedule it for the next valid time.";
     spawned_actions.push_back(std::make_pair(tp->get_next_valid(now), *this));
     return;
   }
 
   bool should_send_the_notification = true;
+  action next = *this;
 
   // See if the node is in downtime.
   if (st.is_node_in_downtime(_id) == true) {
@@ -241,8 +272,10 @@ void action::_process_notification(state& st,
   }
 
   // See if this notification is between the start and end.
-  if (_notification_number < method->get_start() || _notification_number >= method->get_end())
+  if (_notification_number < method->get_start() || _notification_number >= method->get_end()) {
     should_send_the_notification = false;
+    next.set_notification_number(_notification_number + 1);
+  }
 
   // Send the notification.
   if (should_send_the_notification) {
@@ -252,7 +285,5 @@ void action::_process_notification(state& st,
   }
 
   // Create the next notification.
-  action next = *this;
-  next.set_notification_number(_notification_number + 1);
   spawned_actions.push_back(std::make_pair(now + method->get_interval(), next));
 }

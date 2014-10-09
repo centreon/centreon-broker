@@ -44,6 +44,7 @@ namespace         notification {
                             unsigned int service_id = 0);
       bool          operator<(node_id const& obj) const throw();
       bool          operator==(node_id const& obj) const throw();
+      bool          operator!=(node_id const& obj) const throw();
 
       unsigned int  get_host_id() const throw();
       unsigned int  get_service_id() const throw();

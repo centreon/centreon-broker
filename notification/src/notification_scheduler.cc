@@ -125,7 +125,7 @@ void notification_scheduler::_process_actions() {
       // Lock the state mutex.
       std::auto_ptr<QReadLocker> lock(_state.read_lock());
       // Process the action.
-      it->second.process_action(_state, spawned_actions);
+      it->second->process_action(_state, spawned_actions);
     }
     // Add the spawned action to the queue.
     _schedule_actions(spawned_actions);

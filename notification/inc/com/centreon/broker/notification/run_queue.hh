@@ -22,6 +22,7 @@
 
 #  include <ctime>
 #  include <map>
+#  include <set>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/action.hh"
 
@@ -32,11 +33,11 @@ namespace           notification {
    *  @class run_queue run_queue.hh "com/centreon/broker/notification/run_queue.hh"
    *  @brief A run queue of actions.
    *
-   *  Store actions tried by start time.
+   *  This class is optimized to search an action by time and by node.
    */
   class               run_queue {
   public:
-    typedef           std::multimap<time_t, action> action_map;
+    typedef           std::multimap<time_t, const action*> action_map;
     typedef           action_map::iterator iterator;
     typedef           action_map::const_iterator const_iterator;
 
@@ -47,6 +48,7 @@ namespace           notification {
 
     void              run(time_t at, action a);
     void              remove_first();
+    void              remove(action const& a);
 
     iterator          begin();
     const_iterator    begin() const;
@@ -56,7 +58,12 @@ namespace           notification {
     time_t            get_first_time() const throw();
 
   private:
-    action_map        _actions;
+    action_map        _action_by_time;
+    std::multimap<objects::node_id, const action*>
+                      _action_by_node;
+    std::set<action>  _action_set;
+
+    void              rebuild_set();
   };
 }
 

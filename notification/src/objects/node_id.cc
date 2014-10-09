@@ -90,6 +90,10 @@ bool node_id::operator==(node_id const& obj) const throw() {
   return (_host_id == obj._host_id && _service_id == obj._service_id);
 }
 
+bool node_id::operator!=(node_id const& obj) const throw() {
+  return (!node_id::operator==(obj));
+}
+
 /**
  *  Get the host id of this node. 0 if none.
  *

@@ -50,6 +50,8 @@ namespace           notification {
                       action();
                       action(action const& obj);
     action&           operator=(action const& obj);
+    bool              operator==(action const& obj) const;
+    bool              operator<(action const& obj) const;
 
     action_type       get_type() const throw();
     void              set_type(action_type type) throw();
@@ -63,23 +65,27 @@ namespace           notification {
     unsigned int      get_notification_number() const throw();
     void              set_notification_number(unsigned int num) throw();
 
+    time_t            get_at() const throw();
+    void              set_at(time_t at) throw();
+
     void              process_action(
                         state& st,
-                        std::vector<std::pair<time_t, action> >& spawned_actions);
+                        std::vector<std::pair<time_t, action> >& spawned_actions) const;
   private:
     action_type       _act;
     objects::node_id  _id;
     unsigned int      _notification_rule_id;
     unsigned int      _notification_number;
+    time_t            _at;
 
     void              _spawn_notification_attempts(
                         ::com::centreon::broker::notification::state& st,
-                        std::vector<std::pair<time_t, action> >& spawned_actions);
+                        std::vector<std::pair<time_t, action> >& spawned_actions) const;
     bool              _check_action_viability(
-                        ::com::centreon::broker::notification::state& st);
+                        ::com::centreon::broker::notification::state& st) const;
     void              _process_notification(
                        ::com::centreon::broker::notification::state& st,
-                        std::vector<std::pair<time_t, action> >& spawned_actions);
+                        std::vector<std::pair<time_t, action> >& spawned_actions) const;
   };
 }
 
