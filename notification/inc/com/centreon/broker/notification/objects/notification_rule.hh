@@ -24,6 +24,7 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
+#  include "com/centreon/broker/notification/objects/defines.hh"
 
 CCB_BEGIN()
 
@@ -57,6 +58,8 @@ namespace         notification {
 
       node_id       get_node_id() const throw();
       void          set_node_id(node_id val) throw();
+
+      bool          should_be_notified_for(node_state nst) const throw();
 
     private:
       unsigned int  _id;

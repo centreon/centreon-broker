@@ -81,3 +81,8 @@ node_id notification_rule::get_node_id() const throw() {
 void notification_rule::set_node_id(node_id val) throw() {
   _node_id = val;
 }
+
+bool notification_rule::should_be_notified_for(node_state nst) const throw() {
+  // STUB
+  return (true);
+}

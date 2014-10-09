@@ -128,12 +128,13 @@ void action::_spawn_notification_attempts(
   node::ptr n = st.get_node_by_id(_id);
   // Spawn an action for each compatible rules.
   QList<notification_rule::ptr> rules = st.get_notification_rules_by_node(_id);
-
   for (QList<notification_rule::ptr>::iterator it(rules.begin()),
                                                end(rules.end());
        it != end;
        ++it) {
-    // TODO: Compatibility check.
+
+    if (!(*it)->should_be_notified_for(n->get_hard_state()))
+      continue;
 
     action a;
     time_t at = time(NULL);
@@ -205,7 +206,29 @@ void action::_process_notification(state& st,
   node::ptr n = st.get_node_by_id(_id);
 
   // Check if the notification should be sent.
-  // TODO
+
+  // See if the timeperiod is valid
+  time_t now = time(NULL);
+  if (!tp->is_valid(now))
+    return;
+
+  // See if the sate is valid.
+  if(!rule->should_be_notified_for(n->get_hard_state()))
+    return;
+
+  // See if the node is in downtime.
+  if (st.is_node_in_downtime(_id) == true) {
+    logging::debug(logging::low)
+      << "Notification: This node is in downtime: don't send anything.";
+    return;
+  }
+
+  // See if the node has been acknowledged.
+  if (st.has_node_been_acknowledged(_id) == true) {
+    logging::debug(logging::low)
+      << "Notification: This node has been acknowledged: don't send anything.";
+    return;
+  }
 
   // Send the notification.
   std::string resolved_command /*= cmd.resolve()*/;
@@ -213,139 +236,4 @@ void action::_process_notification(state& st,
 
   manager.create_process(resolved_command);
 
-}
-
-action::return_value action::_check_notification_node_viability(state& st) {
-  // Get current time.
-  time_t current_time = time(NULL);
-
-  // Find the node this notification is associated with.
-  node::ptr n = st.get_node_by_id(_id);
-  if (!n) {
-    logging::debug(logging::low)
-      << "Notification: Error: Could not find the node for this notification.";
-    return (error_should_remove);
-  }
-
-  // If the node has a parent, don't send anything.
-  if (n->has_parent()) {
-    logging::debug(logging::low)
-      << "Notification: This node has a correlated parent. Don't notify.";
-    return (error_should_remove);
-  }
-
-  // Get the notification rules.
-  QList<notification_rule::ptr> rules = st.get_notification_rules_by_node(_id);
-
-  // If no rules, don't do anything.
-  if (rules.empty())
-    return (error_should_remove);
-
-  // If the node has no notification period and is a service, inherit one from the host
-  /*timeperiod::ptr tp =
-      st.get_timeperiod_by_name(n->get_notification_timeperiod());
-  if (!tp) {
-    if (_id.is_host()) {
-      logging::debug(logging::low)
-        << "Notification: Error: Could not find the timeperiod for this "
-           "notification.";
-      return (error_should_remove);
-    }
-    node::ptr host = st.get_host_from_service(_id);
-    if (!host) {
-      logging::debug(logging::low)
-        << "Notification: Error: Could not find the host for this "
-           "service in notification.";
-      return (error_should_remove);
-    }
-    tp = st.get_timeperiod_by_name(host->get_notification_timeperiod());
-    if (!tp) {
-      logging::debug(logging::low)
-        << "Notification: Error: Could not find the timeperiod for this"
-           " notification.";
-      return (error_should_remove);
-    }
-  }
-
-  // See if the node can have notifications sent out at this time
-  if (tp->is_valid(current_time)) {
-    logging::debug(logging::low)
-      << "Notification: The notification shouldn't be sent at this time.";
-    return (error_should_reschedule);
-  }
-
-  // Are notifications temporarily disabled for this node?
-  if (!n->get_notifications_enabled()) {
-    logging::debug(logging::low)
-      << "Notification: Notification are temporarily disabled for this node.";
-    return (error_should_reschedule);
-  }
-
-  // See if we should notify problems for this node.
-  if (n->should_be_notified()) {
-    logging::debug(logging::low)
-      << "Notification: This node should not be notified for this state.";
-    return (error_should_remove);
-  }
-
-  // See if the node is in downtime.
-  if (st.is_node_in_downtime(_id) == true) {
-    logging::debug(logging::low)
-      << "Notification: This node is in downtime: don't send anything.";
-    return (error_should_reschedule);
-  }
-
-  // See if the node has been acknowledged.
-  if (st.has_node_been_acknowledged(_id) == true) {
-    logging::debug(logging::low)
-      << "Notification: This node has been acknowledged: don't send anything.";
-    return (error_should_remove);
-  }*/
-
-  return (ok);
-}
-
-action::return_value action::_check_notification_contact_viability(
-                      contact::ptr con,
-                      state& st) {
-  logging::debug(logging::low)
-      << "Notification: Processing notification contact " << con->get_name()
-      << ".";
-  // Get current time.
-  time_t current_time = time(NULL);
-
-  // Are notifications enabled for this contact?
-  if ((_id.is_host() && !con->get_host_notifications_enabled()) ||
-      (_id.is_service() && !con->get_service_notifications_enabled())) {
-    logging::debug(logging::low)
-        << "Notification: Notification not enabled for this contact.";
-    return (error_should_remove);
-  }
-
-  // See if the contact can be notified at this time
-  std::string notification_period = _id.is_service() ?
-                                      con->get_service_notification_period() :
-                                      con->get_host_notification_period();
-  /*timeperiod::ptr tp = st.get_timeperiod_by_name(notification_period);
-  if (!tp) {
-    logging::debug(logging::low)
-        << "Notification: Error: Could not find timeperiod for this contact.";
-    return (error_should_remove);
-  }
-  if (tp->is_valid(current_time)) {
-    logging::debug(logging::low)
-        << "Notification: The notification shouldn't be sent at this time for"
-           " this contact.";
-    return (error_should_reschedule);
-  }
-
-  // See if we should notify about problems with this service
-  if (!con->can_be_notified(st.get_node_by_id(_id)->get_hard_state(),
-                           !_id.is_service())) {
-    logging::debug(logging::low)
-        << "Notification: This contact should not be notified for this state.";
-    return (error_should_remove);
-  }*/
-
-  return (ok);
 }

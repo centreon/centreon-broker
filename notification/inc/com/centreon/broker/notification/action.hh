@@ -68,27 +68,14 @@ namespace           notification {
     objects::node_id  _id;
     unsigned int      _notification_rule_id;
 
-    enum              return_value {
-      ok = 0,
-      error_should_reschedule,
-      error_should_remove
-    };
-
     void              _spawn_notification_attempts(
                         ::com::centreon::broker::notification::state& st,
                         std::vector<std::pair<time_t, action> >& spawned_actions);
     bool              _check_action_viability(
                         ::com::centreon::broker::notification::state& st);
-
-
     void              _process_notification(
                        ::com::centreon::broker::notification::state& st,
                         std::vector<std::pair<time_t, action> >& spawned_actions);
-    return_value      _check_notification_node_viability(
-                       ::com::centreon::broker::notification::state& st);
-    return_value      _check_notification_contact_viability(
-                       objects::contact::ptr con,
-                       ::com::centreon::broker::notification::state& st);
   };
 }
 
