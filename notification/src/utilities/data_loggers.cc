@@ -173,6 +173,31 @@ logging::temp_logger& logging::operator<<(
   return (tmp);
 }
 
+logging::temp_logger& logging::operator<<(
+    temp_logger const& left,
+    notification::objects::notification_method const& obj) throw() {
+  logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+  tmp LOG_MEMBER(notification_method, get_name)
+      LOG_MEMBER(notification_method, get_command_id)
+      LOG_MEMBER(notification_method, get_interval)
+      LOG_MEMBER(notification_method, get_status)
+      LOG_MEMBER(notification_method, get_types)
+      LOG_MEMBER(notification_method, get_start)
+      LOG_MEMBER(notification_method, get_end);
+  return (tmp);
+}
+
+logging::temp_logger& logging::operator<<(
+    temp_logger const& left,
+    notification::objects::notification_rule const& obj) throw() {
+  logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
+  tmp LOG_MEMBER(notification_rule, get_method_id)
+      LOG_MEMBER(notification_rule, get_timeperiod_id)
+      LOG_MEMBER(notification_rule, get_contact_id)
+      LOG_MEMBER(notification_rule, get_node_id);
+  return (tmp);
+}
+
 /**
  *  Stream operator overload for acknowledgement.
  *

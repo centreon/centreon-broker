@@ -194,8 +194,8 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
                                _dependency_by_parent_id);
     data_logger::log_container("_downtimes", _downtimes);
     data_logger::log_container("_timeperiod_by_id", _timeperiod_by_id);
-    /*data_logger::log_container("_notification_methods", _notification_methods);
-    data_logger::log_container("_notification_rules_by_node", _notification_rules_by_node);*/
+    data_logger::log_container("_notification_methods", _notification_methods);
+    data_logger::log_container("_notification_rules_by_node", _notification_rules_by_node);
 #endif //!NDEBUG
 }
 
