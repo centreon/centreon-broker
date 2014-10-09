@@ -54,7 +54,6 @@ namespace        notification {
                    QString const& user,
                    QString const& password,
                    QString const& centreon_db,
-                   QString const& centreon_storage_db,
                    unsigned int queries_per_transaction,
                    unsigned int cleanup_check_interval,
                    bool check_replication,
@@ -70,7 +69,6 @@ namespace        notification {
   private:
     stream&      operator=(stream const& s);
     std::auto_ptr<QSqlDatabase>           _centreon_db;
-    std::auto_ptr<QSqlDatabase>           _centreon_storage_db;
     std::auto_ptr<notification_scheduler> _notif_scheduler;
     bool                                  _process_out;
     unsigned int                          _queries_per_transaction;

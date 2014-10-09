@@ -48,7 +48,6 @@ namespace                        notification {
                                    QString const& user,
                                    QString const& password,
                                    QString const& centreon_db,
-                                   QString const& centreon_storage_db,
                                    unsigned int queries_per_transaction = 1,
                                    unsigned int cleanup_check_interval = 0,
                                    bool check_replication = true,
@@ -60,7 +59,6 @@ namespace                        notification {
     bool                         _check_replication;
     unsigned int                 _cleanup_check_interval;
     QString                      _centreon_db;
-    QString                      _centreon_storage_db;
     QString                      _host;
     QString                      _password;
     unsigned short               _port;

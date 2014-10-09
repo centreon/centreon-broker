@@ -50,9 +50,9 @@ void node_loader::load(QSqlDatabase* db, node_builder* output) {
   // Instead of doing crosses select from host_id and service_id,
   // we only do three selects and internally do the connexions. It's faster.
 
-  if (!query.exec("SELECT host_id FROM host"))
+  if (!query.exec("SELECT host_id FROM rt_host"))
     throw (exceptions::msg()
-      << "Notification: cannot select host in loader: "
+      << "Notification: cannot select rt_host in loader: "
       << query.lastError().text());
 
   while (query.next()) {
@@ -65,9 +65,9 @@ void node_loader::load(QSqlDatabase* db, node_builder* output) {
   QSet<unsigned int> service_cache;
 
   if (!query.exec("SELECT host_host_id, service_service_id"
-                  " FROM host_service_relation"))
+                  " FROM rt_host_service_relation"))
     throw (exceptions::msg()
-      << "Notification: cannot select host_service_relation in loader: "
+      << "Notification: cannot select rt_host_service_relation in loader: "
       << query.lastError().text());
 
   while (query.next()) {
@@ -79,9 +79,9 @@ void node_loader::load(QSqlDatabase* db, node_builder* output) {
     output->add_node(n);
   }
 
-  if (!query.exec("SELECT service_id FROM service"))
+  if (!query.exec("SELECT service_id FROM rt_service"))
     throw (exceptions::msg()
-      << "Notification: cannot select host in loader: "
+      << "Notification: cannot select rt_service in loader: "
       << query.lastError().text());
 
   while (query.next()) {

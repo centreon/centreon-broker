@@ -166,7 +166,7 @@ action::return_value action::_check_notification_node_viability(state& st) {
   }
 
   // Get the notification rules.
-  QList<notification_rule::ptr> rules = st.get_notification_rule_by_node(_id);
+  QList<notification_rule::ptr> rules = st.get_notification_rules_by_node(_id);
 
   // If no rules, don't do anything.
   if (rules.empty())

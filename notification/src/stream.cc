@@ -84,7 +84,6 @@ stream::stream(
           QString const& user,
           QString const& password,
           QString const& centreon_db,
-          QString const& centreon_storage_db,
           unsigned int qpt,
           unsigned int cleanup_check_interval,
           bool check_replication,
@@ -135,18 +134,6 @@ stream::stream(
            id,
            check_replication);
 
-  // Open centreon storage database.
-  id.setNum(((qulonglong)this) + 1, 16);
-  _open_db(_centreon_storage_db,
-           t,
-           host,
-           port,
-           user,
-           password,
-           centreon_storage_db,
-           id,
-           check_replication);
-
   // Create the process manager.
   process_manager::instance();
 
@@ -179,8 +166,6 @@ stream::stream(stream const& s) : io::stream(s) {
 
   // Clone centreon database.
   _clone_db(_centreon_db, s._centreon_db, id);
-  // Clone centreon storage database.
-  _clone_db(_centreon_storage_db, s._centreon_storage_db, id);
 
   // Create the process manager.
   process_manager::instance();
@@ -208,17 +193,6 @@ stream::~stream() {
       _centreon_db->close();
     }
     _centreon_db.reset();
-  }
-
-  {
-    QMutexLocker lock(&global_lock);
-    // Close database.
-    if (_centreon_storage_db->isOpen()) {
-      if (_queries_per_transaction > 1)
-        _centreon_storage_db->commit();
-      _centreon_storage_db->close();
-    }
-    _centreon_storage_db.reset();
   }
 
   // Add this connection to the connections to be deleted.
@@ -457,9 +431,8 @@ void stream::_clone_db(std::auto_ptr<QSqlDatabase>& db,
  *  Get the objects from the db.
  */
 void stream::_update_objects_from_db() {
-  if (_centreon_db.get() && _centreon_storage_db.get())
-    _state.update_objects_from_db(*_centreon_db.get(),
-                                  *_centreon_storage_db.get());
+  if (_centreon_db.get())
+    _state.update_objects_from_db(*_centreon_db.get());
 }
 
 /**

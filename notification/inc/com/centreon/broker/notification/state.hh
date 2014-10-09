@@ -55,8 +55,7 @@ namespace             notification {
                       state(state const& obj);
     state&            operator=(state const& obj);
 
-    void              update_objects_from_db(QSqlDatabase& centreon_db,
-                                             QSqlDatabase& centreon_storage_db);
+    void              update_objects_from_db(QSqlDatabase& centreon_db);
 
     std::auto_ptr<QReadLocker>
                       read_lock();
@@ -70,7 +69,7 @@ namespace             notification {
     objects::timeperiod::ptr
                       get_timeperiod_by_id(unsigned int id);
     QList<objects::notification_rule::ptr>
-                      get_notification_rule_by_node(objects::node_id id);
+                      get_notification_rules_by_node(objects::node_id id);
     objects::notification_method::ptr
                       get_notification_method_by_id(unsigned int id);
     QList<objects::contact::ptr>

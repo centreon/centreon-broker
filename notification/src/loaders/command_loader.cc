@@ -48,9 +48,9 @@ void command_loader::load(QSqlDatabase* db, command_builder* output) {
   if (!query.exec("SELECT command_id, connector_id, command_name, command_line,"
                   "command_example, command_type, enable_shell,"
                   "command_comment, graph_id, cmd_cat_id"
-                  " FROM command"))
+                  " FROM rt_command"))
     throw (exceptions::msg()
-      << "Notification: cannot select command in loader: "
+      << "Notification: cannot select rt_command in loader: "
       << query.lastError().text());
 
   while (query.next()) {

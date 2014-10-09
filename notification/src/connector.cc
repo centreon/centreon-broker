@@ -44,7 +44,6 @@ connector::connector(connector const& c)
     _check_replication(c._check_replication),
     _cleanup_check_interval(c._cleanup_check_interval),
     _centreon_db(c._centreon_db),
-    _centreon_storage_db(c._centreon_storage_db),
     _host(c._host),
     _password(c._password),
     _port(c._port),
@@ -71,7 +70,6 @@ connector& connector::operator=(connector const& c) {
     _check_replication = c._check_replication;
     _cleanup_check_interval = c._cleanup_check_interval;
     _centreon_db = c._centreon_db;
-    _centreon_storage_db = c._centreon_storage_db;
     _host = c._host;
     _password = c._password;
     _port = c._port;
@@ -121,7 +119,6 @@ void connector::connect_to(
                   QString const& user,
                   QString const& password,
                   QString const& centreon_db,
-                  QString const& centreon_storage_db,
                   unsigned int queries_per_transaction,
                   unsigned int cleanup_check_interval,
                   bool check_replication,
@@ -129,7 +126,6 @@ void connector::connect_to(
   _cleanup_check_interval = cleanup_check_interval;
   _check_replication = check_replication;
   _centreon_db = centreon_db;
-  _centreon_storage_db = centreon_storage_db;
   _host = host;
   _password = password;
   _port = port;
@@ -153,7 +149,6 @@ misc::shared_ptr<io::stream> connector::open() {
                                              _user,
                                              _password,
                                              _centreon_db,
-                                             _centreon_storage_db,
                                              _queries_per_transaction,
                                              _cleanup_check_interval,
                                              _check_replication,

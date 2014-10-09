@@ -58,9 +58,9 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
                   "contact_pager, contact_address1, contact_address2,"
                   "contact_address3, contact_address4, contact_address5,"
                   "contact_address6, contact_enable_notifications"
-                  " FROM contact"))
+                  " FROM rt_contact"))
     throw (exceptions::msg()
-      << "Notification: cannot select contact in loader: "
+      << "Notification: cannot select rt_contact in loader: "
       << query.lastError().text());
 
   while (query.next()) {
@@ -93,9 +93,9 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
   }
 
   // Load the custom variables of the contact.
-  if (!query.exec("SELECT cp_key, cp_value, cp_contact_id FROM contact_param"))
+  if (!query.exec("SELECT cp_key, cp_value, cp_contact_id FROM rt_contact_param"))
     throw (exceptions::msg()
-      << "Notification: cannot select contact_param in loader: "
+      << "Notification: cannot select rt_contact_param in loader: "
       << query.lastError().text());
 
   while (query.next()) {

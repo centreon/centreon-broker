@@ -54,9 +54,9 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
   // Load the dependencies.
   if (!query.exec("SELECT dep_id, dep_name, dep_description, inherits_parent,"
                   "execution_failure_criteria, notification_failure_criteria"
-                  " FROM dependency"))
+                  " FROM rt_dependency"))
     throw (exceptions::msg()
-      << "Notification: cannot select dependency in loader: "
+      << "Notification: cannot select rt_dependency in loader: "
       << query.lastError().text());
 
   while (query.next()) {
@@ -97,27 +97,27 @@ void dependency_loader::_load_relations(QSqlQuery& query,
                                         dependency_builder& output) {
 
   if (!query.exec("SELECT dependency_dep_id, host_host_id"
-                  " FROM dependency_hostChild_relation"))
+                  " FROM rt_dependency_hostChild_relation"))
     throw (exceptions::msg()
-      << "Notification: cannot select dependency_hostChild_relation in loader: "
+      << "Notification: cannot select rt_dependency_hostChild_relation in loader: "
       << query.lastError().text());
   while (query.next())
     output.dependency_node_id_child_relation(query.value(0).toUInt(),
                                              node_id(query.value(1).toUInt()));
 
   if (!query.exec("SELECT dependency_dep_id, host_host_id"
-                  " FROM dependency_hostParent_relation"))
+                  " FROM rt_dependency_hostParent_relation"))
     throw (exceptions::msg()
-      << "Notification: cannot select dependency_hostParent_relation in loader: "
+      << "Notification: cannot select rt_dependency_hostParent_relation in loader: "
       << query.lastError().text());
   while (query.next())
     output.dependency_node_id_parent_relation(query.value(0).toUInt(),
                                               node_id(query.value(1).toUInt()));
 
   if (!query.exec("SELECT dependency_dep_id, service_service_id, host_host_id"
-                  " FROM dependency_serviceChild_relation"))
+                  " FROM rt_dependency_serviceChild_relation"))
     throw (exceptions::msg()
-      << "Notification: cannot select dependency_serviceChild_relation in loader: "
+      << "Notification: cannot select rt_dependency_serviceChild_relation in loader: "
       << query.lastError().text());
   while (query.next())
     output.dependency_node_id_child_relation(query.value(0).toUInt(),
@@ -125,9 +125,9 @@ void dependency_loader::_load_relations(QSqlQuery& query,
                                                      query.value(1).toUInt()));
 
   if (!query.exec("SELECT dependency_dep_id, service_service_id, host_host_id"
-                  " FROM dependency_serviceParent_relation"))
+                  " FROM rt_dependency_serviceParent_relation"))
     throw (exceptions::msg()
-      << "Notification: cannot select dependency_serviceParent_relation in loader: "
+      << "Notification: cannot select rt_dependency_serviceParent_relation in loader: "
       << query.lastError().text());
   while (query.next())
     output.dependency_node_id_parent_relation(query.value(0).toUInt(),
@@ -135,19 +135,19 @@ void dependency_loader::_load_relations(QSqlQuery& query,
                                                       query.value(1).toUInt()));
   _load_relation(query, output,
                  "servicegroup_sg_id",
-                 "dependency_servicegroupParent_relation",
+                 "rt_dependency_servicegroupParent_relation",
                   &dependency_builder::dependency_servicegroup_parent_relation);
   _load_relation(query, output,
                  "servicegroup_sg_id",
-                 "dependency_servicegroupChild_relation",
+                 "rt_dependency_servicegroupChild_relation",
                   &dependency_builder::dependency_servicegroup_child_relation);
   _load_relation(query, output,
                  "hostgroup_hg_id",
-                 "dependency_hostgroupParent_relation",
+                 "rt_dependency_hostgroupParent_relation",
                   &dependency_builder::dependency_hostgroup_parent_relation);
   _load_relation(query, output,
                  "hostgroup_hg_id",
-                 "dependency_hostgroupChild_relation",
+                 "rt_dependency_hostgroupChild_relation",
                   &dependency_builder::dependency_hostgroup_child_relation);
 }
 

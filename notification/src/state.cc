@@ -87,8 +87,7 @@ state& state::operator=(state const& obj) {
 /**
  *  Get the objects from the db.
  */
-void state::update_objects_from_db(QSqlDatabase& centreon_db,
-                                   QSqlDatabase& centreon_storage_db) {
+void state::update_objects_from_db(QSqlDatabase& centreon_db) {
   // Acquire mutex.
   QWriteLocker lock(&_state_mutex);
 
@@ -155,7 +154,7 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db,
     composed_downtime_builder composed;
     downtime_by_node_id_builder by_node_builder(_downtimes);
     composed.push_back(by_node_builder);
-    downtime.load(&centreon_storage_db, &composed);
+    downtime.load(&centreon_db, &composed);
   }
   {
     // Get acknowledgements.
@@ -163,7 +162,7 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db,
     composed_acknowledgement_builder composed;
     acknowledgement_by_node_id_builder by_node_builder(_acks);
     composed.push_back(by_node_builder);
-    ack.load(&centreon_storage_db, &composed);
+    ack.load(&centreon_db, &composed);
   }
   {
     // Get notification methods.
@@ -232,7 +231,7 @@ node::ptr state::get_host_from_service(objects::node_id service_id) {
  *
  *  @return        A list of notification_rule::ptr associated to this node.
  */
-QList<notification_rule::ptr> state::get_notification_rule_by_node(node_id id) {
+QList<notification_rule::ptr> state::get_notification_rules_by_node(node_id id) {
   return (_notification_rules_by_node.values(id));
 }
 
