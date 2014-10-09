@@ -173,3 +173,13 @@ void run_queue::remove(action const& a) {
       break;
     }
 }
+
+std::vector<const action*> run_queue::get_actions_of_node(objects::node_id id) {
+  std::vector<const action*> ret;
+  std::pair<std::multimap<objects::node_id, const action*>::iterator,
+            std::multimap<objects::node_id, const action*>::iterator>
+      node_range = _action_by_node.equal_range(id);
+  for (; node_range.first != node_range.second; ++node_range.first)
+    ret.push_back(node_range.first->second);
+  return (ret);
+}

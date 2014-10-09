@@ -55,6 +55,9 @@ namespace           notification {
     iterator          end();
     const_iterator    end() const;
 
+    std::vector<const action*>
+                      get_actions_of_node(objects::node_id id);
+
     time_t            get_first_time() const throw();
 
   private:
