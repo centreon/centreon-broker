@@ -22,13 +22,30 @@
 
 using namespace com::centreon::broker::notification::objects;
 
+/**
+ *  Constructor from a base command string.
+ *
+ *  @param[in] base_command  The command from which to construct this object.
+ */
 command::command(std::string const& base_command) :
   _base_command(base_command) {}
 
+/**
+ *  Copy constructor.
+ *
+ *  @param[in] obj  The object to copy.
+ */
 command::command(command const& obj) {
   command::operator=(obj);
 }
 
+/**
+ *  Assignment operator.
+ *
+ *  @param[in] obj  The object to copy.
+ *
+ *  @return         A reference to this object.
+ */
 command& command::operator=(command const& obj) {
   if (this != &obj) {
     _name = obj._name;
@@ -37,14 +54,29 @@ command& command::operator=(command const& obj) {
   return (*this);
 }
 
+/**
+ *  Get the name of this command.
+ *
+ *  @return  The name of this command.
+ */
 std::string const& command::get_name() const throw() {
   return (_name);
 }
 
+/**
+ *  Set the name of this command.
+ *
+ *  @param[in] name  The new name of this command.
+ */
 void command::set_name(std::string const& name) {
   _name = name;
 }
 
+/**
+ *  Resolve this command.
+ *
+ *  @return  A string containing the resolved command.
+ */
 std::string command::resolve(neb::host_status) {
   std::string ret(_base_command);
 
@@ -52,6 +84,11 @@ std::string command::resolve(neb::host_status) {
   return (ret);
 }
 
+/**
+ *  Resolve this command.
+ *
+ *  @return  A string containing the resolved command.
+ */
 std::string command::resolve(neb::service_status) {
   return (_base_command); // STUB
 }

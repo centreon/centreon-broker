@@ -21,6 +21,9 @@
 
 using namespace com::centreon::broker::notification::objects;
 
+/**
+ *  Default constructor.
+ */
 contact::contact() :
   _can_submit_commands(false),
   _host_notifications_enabled(false),
@@ -30,10 +33,22 @@ contact::contact() :
   _service_notification_options(service_none),
   _service_notifications_enabled(false) {}
 
+/**
+ *  Copy constructor.
+ *
+ *  @param[in] obj  The object to copy.
+ */
 contact::contact(contact const& obj) {
   contact::operator=(obj);
 }
 
+/**
+ *  Assignment operator.
+ *
+ *  @param[in] obj  The object to copy.
+ *
+ *  @return         A reference to this object.
+ */
 contact& contact::operator=(contact const& obj) {
   if (this != &obj) {
     _address =  obj._address;
@@ -55,60 +70,131 @@ contact& contact::operator=(contact const& obj) {
   return *this;
 }
 
+/**
+ *  Get the addresses of the contact.
+ *
+ *  @return  The addresses of the contact.
+ */
 std::vector<std::string> const& contact::get_address() const throw() {
   return (_address);
 }
 
+/**
+ *  Add an address to the contact.
+ *
+ *  @param[in] value  The address to add.
+ */
 void contact::add_address(std::string const& value) {
   _address.push_back(value);
 }
 
+/**
+ *  Get the alias of the contact.
+ *
+ *  @return  The alias of the contact.
+ */
 std::string const& contact::get_alias() const throw() {
   return (_alias);
 }
 
+/**
+ *  Set the alias of the contact.
+ *
+ *  @param[in] value  The new alias of the contact.
+ */
 void contact::set_alias(std::string const& value) {
   _alias = value;
 }
 
+/**
+ *  Can this contact submit commands?
+ *
+ *  @return  True if this contact can submit commands.
+ */
 bool contact::get_can_submit_commands() const throw() {
   return (_can_submit_commands);
 }
 
+/**
+ *  Set if this contact can submit commands.
+ *
+ *  @param[in] value  The new value of the submit command flag.
+ */
 void contact::set_can_submit_commands(bool value) throw() {
   _can_submit_commands = value;
 }
 
+/**
+ *  Get the name of the contact.
+ *
+ *  @return  The name of the contact.
+ */
 std::string const& contact::get_name() const throw() {
   return (_contact_name);
 }
 
+/**
+ *  Set the name of the contact.
+ *
+ *  @param[in] value  The new name of the contact.
+ */
 void contact::set_name(std::string const& value) {
   _contact_name = value;
 }
 
+/**
+ *  Get the custom variables of this contact.
+ *
+ *  @return  The custom variables of this contact.
+ */
 std::map<std::string, std::string> const&
                          contact::get_customvariables() const throw() {
   return (_customvariables);
 }
 
+/**
+ *  Add a custom variable to this contact.
+ *
+ * @param[in] name  The name of the new custom variable.
+ * @param[in] value The value of the new custom variable.
+ */
 void contact::add_customvariables(std::string const& name,
                                   std::string const& value) {
   _customvariables[name] = value;
 }
 
+/**
+ *  Get the email of the contact.
+ *
+ *  @return  The email of the contact.
+ */
 std::string const& contact::get_email() const throw() {
   return (_email);
 }
 
+/**
+ *  Set the email of the contact.
+ *
+ *  @param[in] value  The new email of the contact.
+ */
 void contact::set_email(std::string const& value) {
   _email = value;
 }
 
+/**
+ *  Are the host notifications enabled for this contact?
+ *
+ *  @return  True if the host notifications are enabled for this contact.
+ */
 bool contact::get_host_notifications_enabled() const throw() {
   return (_host_notifications_enabled);
 }
 
+/**
+ *  Set if the host notifications are enabled for this contact.
+ *
+ *  @param[in] value  Set the new value for the host notifications are enabled flag.
+ */
 void contact::set_host_notifications_enabled(bool value) throw() {
   _host_notifications_enabled = value;
 }
@@ -153,10 +239,20 @@ void contact::set_retain_status_information(bool value) throw() {
   _retain_status_information = value;
 }
 
+/**
+ *  Get the pager of the contact.
+ *
+ *  @return  The pager of the contact.
+ */
 std::string const& contact::get_pager() const throw() {
   return (_pager);
 }
 
+/**
+ *  Set the pager of the contact.
+ *
+ *  @param[in] value  The new value for the pager of the contact.
+ */
 void contact::set_pager(std::string const& value) {
   _pager = value;
 }

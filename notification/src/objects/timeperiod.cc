@@ -159,7 +159,7 @@ void timeperiod::add_timerange(std::list<timerange> const& val) {
 /**
  *  Get the timerange of a particular day.
  *
- *  @param day The day (from 0 to 6).
+ *  @param[in] day The day (from 0 to 6).
  *  @return The timerange on this day.
  */
 std::list<timerange> const&
@@ -170,8 +170,8 @@ std::list<timerange> const&
 /**
  *  Set the timerange of a particular day.
  *
- *  @param val The new timeranges to set.
- *  @param day The day (from 0 to 6).
+ *  @param[in] val The new timeranges to set.
+ *  @param[in] day The day (from 0 to 6).
  */
 void timeperiod::set_timerange(std::list<timerange> const& val,
                                int day) {
@@ -180,6 +180,12 @@ void timeperiod::set_timerange(std::list<timerange> const& val,
   _timeranges[day] = val;
 }
 
+/**
+ *  Set the timerange of a particular day.
+ *
+ *  @param[in] timerange_text  The timerange in a textual format.
+ *  @param[in] day             The day of the timerange.
+ */
 void timeperiod::set_timerange(std::string const& timerange_text,
                                int day) {
   if (day < 0 || day > 6)
@@ -199,7 +205,7 @@ std::string const& timeperiod::get_timezone() const throw() {
 /**
  *  Set the timezone of this timeperiod.
  *
- *  @param tz The timezone to set.
+ *  @param[in] tz The timezone to set.
  */
 void timeperiod::set_timezone(std::string const& tz) {
   _timezone = tz;
@@ -208,7 +214,7 @@ void timeperiod::set_timezone(std::string const& tz) {
 /**
  *  Check if the preferred time is valid in this timeperiod.
  *
- *  @param preferred_time The time to check.
+ *  @param[in] preferred_time The time to check.
  *  @return True if it is valid.
  */
 bool timeperiod::is_valid(time_t preferred_time) const {
@@ -218,7 +224,7 @@ bool timeperiod::is_valid(time_t preferred_time) const {
 /**
  *  Get the next valid time from preferred time in this timeperiod.
  *
- *  @param preferred_time The preferred time.
+ *  @param[in] preferred_time The preferred time.
  *  @return The next valid time.
  */
 time_t timeperiod::get_next_valid(time_t preferred_time) const {
