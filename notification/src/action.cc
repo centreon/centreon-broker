@@ -62,6 +62,13 @@ action& action::operator=(action const& obj) {
   return (*this);
 }
 
+/**
+ *  Equality operator.
+ *
+ *  @param[in] obj  The object from which to test equality.
+ *
+ *  @return         True if the two objects are equal.
+ */
 bool action::operator==(action const& obj) const {
   return (_act == obj._act &&
           _id == obj._id &&
@@ -70,6 +77,13 @@ bool action::operator==(action const& obj) const {
           _at == obj._at);
 }
 
+/**
+ *  Comparison operator.
+ *
+ *  @param[in] obj  The compared object.
+ *
+ *  @return         True if this object is less than the other.
+ */
 bool action::operator<(action const& obj) const {
   if (_act != obj._act)
     return (_act < obj._act);
@@ -119,19 +133,31 @@ void action::set_node_id(objects::node_id id) throw() {
   _id = id;
 }
 
+/**
+ *  Get the scheduled time of this action.
+ *
+ *  @return  The scheduled time of this action.
+ */
 time_t action::get_at() const throw() {
   return (_at);
 }
 
+/**
+ *  Set the scheduled time of this action.
+ *
+ *  @param[in] at  The scheduled time of this action.
+ */
 void action::set_at(time_t at) throw() {
   _at = at;
 }
 
 /**
- *  Process the action.
+ *  @brief Process the action.
+ *
+ *  What is done changes based on the type of this notification.
  *
  *  @param[in] state            The notification state of the engine.
- *  @param[out] spawned_actions The action to add to the queue after the processing.
+ *  @param[out] spawned_actions The actions to add to the queue after the processing.
  *
  */
 void action::process_action(
@@ -146,9 +172,18 @@ void action::process_action(
     _process_notification(st, spawned_actions);
 }
 
+/**
+ *  @brief Spawn the notification attempts from a notification processing.
+ *
+ *  A notification processing spawn one notification attempt for each rule
+ *  associated to a particular node.
+ *
+ *  @param[in] st               The notification state of the engine.
+ *  @param[out] spawned_actions The actions to add to the queue after the processing.
+ */
 void action::_spawn_notification_attempts(
                ::com::centreon::broker::notification::state& st,
-               std::vector<std::pair<time_t, action> >& spawned_actions) const {
+               std::vector<std::pair<time_t, action> >& spawned_actions) const{
   logging::debug(logging::low)
       << "Notification: Spawning notification attempts for node (host id = "
       << _id.get_host_id() << ", service_id = " << _id.get_service_id()
@@ -184,6 +219,13 @@ void action::_spawn_notification_attempts(
   }
 }
 
+/**
+ *  Generic checks of action viability.
+ *
+ *  @param[in] st  The notification state of the engine.
+ *
+ *  @return        True if the checks were successful.
+ */
 bool action::_check_action_viability(
               ::com::centreon::broker::notification::state& st) const {
   logging::debug(logging::low)
@@ -203,20 +245,29 @@ bool action::_check_action_viability(
   return (true);
 }
 
-void action::_process_notification(state& st,
-                                   std::vector<std::pair<time_t, action> >& spawned_actions) const {
+/**
+ *  Process a notification attempt.
+ *
+ *  @param[in] st                 The notification state of the engine.
+ *  @param[out] spawned_actions   The action to add to the queue after the processing.
+ */
+void action::_process_notification(
+      state& st,
+      std::vector<std::pair<time_t, action> >& spawned_actions) const {
 
   logging::debug(logging::low)
-      << "Notification: Processing notification action for notification_rule (host id = "
-      << _id.get_host_id() << ", service_id = " << _id.get_service_id()
-      << ", notification_rule_id = " << _notification_rule_id << ").";
+      << "Notification: Processing notification action for notification_rule ("
+      << "host id = " << _id.get_host_id() << ", "
+      << "service_id = " << _id.get_service_id() << ", "
+      << "notification_rule_id = " << _notification_rule_id << ").";
 
   // Check action viability.
   if (!_check_action_viability(st))
     return;
 
   // Get all the necessary data.
-  notification_rule::ptr rule = st.get_notification_rule_by_id(_notification_rule_id);
+  notification_rule::ptr rule =
+      st.get_notification_rule_by_id(_notification_rule_id);
   if (!rule)
     return;
 
@@ -224,7 +275,8 @@ void action::_process_notification(state& st,
   if (!tp)
     return;
 
-  notification_method::ptr method = st.get_notification_method_by_id(rule->get_method_id());
+  notification_method::ptr method =
+      st.get_notification_method_by_id(rule->get_method_id());
   if (!method)
     return;
 
@@ -247,7 +299,8 @@ void action::_process_notification(state& st,
   time_t now = time(NULL);
   if (!tp->is_valid(now)) {
     logging::debug(logging::low)
-      << "Notification: The timeperiod is not valid: reschedule it for the next valid time.";
+      << "Notification: The timeperiod is not valid: "
+         "reschedule it for the next valid time.";
     spawned_actions.push_back(std::make_pair(tp->get_next_valid(now), *this));
     return;
   }
@@ -272,7 +325,8 @@ void action::_process_notification(state& st,
   }
 
   // See if this notification is between the start and end.
-  if (_notification_number < method->get_start() || _notification_number >= method->get_end()) {
+  if (_notification_number < method->get_start()
+      || _notification_number >= method->get_end()) {
     should_send_the_notification = false;
     next.set_notification_number(_notification_number + 1);
   }
@@ -285,5 +339,6 @@ void action::_process_notification(state& st,
   }
 
   // Create the next notification.
-  spawned_actions.push_back(std::make_pair(now + method->get_interval(), next));
+  spawned_actions.push_back(std::make_pair(now + method->get_interval(),
+                                           next));
 }

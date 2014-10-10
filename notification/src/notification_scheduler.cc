@@ -69,9 +69,9 @@ void notification_scheduler::exit() throw () {
   {
     QMutexLocker lock(&_general_mutex);
     _should_exit = true;
+    // Wake the notification scheduling thread.
+    _general_condition.wakeAll();
   }
-  // Wake the notification scheduling thread.
-  _general_condition.wakeAll();
 }
 
 /**
@@ -92,14 +92,20 @@ void notification_scheduler::add_action_to_queue(time_t at, action a) {
     if (_queue.get_first_time() > at)
       need_to_wake = true;
     _queue.run(at, a);
+    // Wake the notification scheduling thread if needed.
+    if (need_to_wake)
+      _general_condition.wakeAll();
   }
-  // Wake the notification scheduling thread if needed.
-  if (need_to_wake)
-    _general_condition.wakeAll();
 }
 
-void notification_scheduler::remove_action_of_node(objects::node_id id) {
-  bool need_to_wake = false;
+/**
+ *  @brief Remove all the actions associated to a node.
+ *
+ *  This is perfectly thread safe in and out of the notification thread.
+ *
+ *  @param[in] id   The id of the node.
+ */
+void notification_scheduler::remove_actions_of_node(objects::node_id id) {
   {
     QMutexLocker lock(&_general_mutex);
     // Get all the action of a particular node.
@@ -111,15 +117,12 @@ void notification_scheduler::remove_action_of_node(objects::node_id id) {
          it != end;
          ++it)
       _queue.remove(**it);
-    // If we just deleted the first event, we need to wake the scheduling thread.
+    // If we just deleted the first event, we need to wake
+    // the scheduling thread.
     if (_queue.get_first_time() != first_time)
-      need_to_wake = true;
+      _general_condition.wakeAll();
   }
-  // Wake the notification scheduling thread if needed.
-  if (need_to_wake)
-    _general_condition.wakeAll();
 }
-
 
 /**
  *  @brief Called repeatedly by the notification thread to process actions.
@@ -132,17 +135,17 @@ void notification_scheduler::_process_actions() {
   // That way, we can add new actions in an external thread while this thread
   // is processing those actions.
   run_queue local_queue;
-  _queue.swap(local_queue);
+  time_t now = time(NULL);
+  _queue.move_to_queue(local_queue, now);
   _general_mutex.unlock();
 
   // Iterate on the local queue.
-  time_t now = time(NULL);
   for (run_queue::iterator it(local_queue.begin()), end(local_queue.end());
        it != end;) {
     if (it->first > now)
       return;
 
-    // Get the viability of this action.
+    // The action processing can add other actions to the queue.
     std::vector<std::pair<time_t, action> > spawned_actions;
     {
       // Lock the state mutex.
@@ -162,9 +165,11 @@ void notification_scheduler::_process_actions() {
  *
  *  @param[in] actions  The actions to schedule.
  */
-void notification_scheduler::_schedule_actions(std::vector<std::pair<time_t, action> >& actions) {
-  for (std::vector<std::pair<time_t, action> >::iterator it(actions.begin()),
-                                                        end(actions.end());
+void notification_scheduler::_schedule_actions(
+          std::vector<std::pair<time_t, action> > const& actions) {
+  for (std::vector<std::pair<time_t, action> >::const_iterator
+          it(actions.begin()),
+          end(actions.end());
        it != end;
        ++it)
     add_action_to_queue(it->first, it->second);

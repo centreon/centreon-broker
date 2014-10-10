@@ -64,12 +64,19 @@ void run_queue::rebuild_set() {
 /**
  *  Move the content of this queue to another queue.
  *
- *  @param obj  The object from where to move the content of this queue.
+ *  @param[out] obj  The object where to move the content of this queue.
+ *  @param[in] until The max time of all moved object.
  */
-void run_queue::swap(run_queue& obj) {
-  obj._action_set.swap(_action_set);
-  obj._action_by_node.swap(_action_by_node);
-  obj._action_by_time.swap(_action_by_time);
+void run_queue::move_to_queue(run_queue& obj,
+                              time_t until) {
+  for (iterator it(begin()),
+                it_end(end());
+       it != it_end && it->first <= until;) {
+    obj.run(it->first, *it->second);
+    iterator tmp = it;
+    ++it;
+    remove(*tmp->second);
+  }
 }
 
 /**

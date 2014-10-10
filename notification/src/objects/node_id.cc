@@ -90,6 +90,13 @@ bool node_id::operator==(node_id const& obj) const throw() {
   return (_host_id == obj._host_id && _service_id == obj._service_id);
 }
 
+/**
+ *  Inequality operator.
+ *
+ *  @param[in] obj  The object to compare with.
+ *
+ *  @return         True if the objects are inequal.
+ */
 bool node_id::operator!=(node_id const& obj) const throw() {
   return (!node_id::operator==(obj));
 }

@@ -44,7 +44,8 @@ namespace           notification {
                       run_queue();
                       run_queue(run_queue const& obj);
     run_queue&        operator=(run_queue const& obj);
-    void              swap(run_queue& obj);
+    void              move_to_queue(run_queue& obj,
+                                    time_t until);
 
     void              run(time_t at, action a);
     void              remove_first();

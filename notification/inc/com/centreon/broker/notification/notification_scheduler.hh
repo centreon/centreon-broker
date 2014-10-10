@@ -48,7 +48,7 @@ namespace             notification {
 
     void       exit() throw ();
     void       add_action_to_queue(time_t at, action a);
-    void       remove_action_of_node(objects::node_id id);
+    void       remove_actions_of_node(objects::node_id id);
 
   protected:
     void       run();
@@ -61,7 +61,7 @@ namespace             notification {
                _general_condition;
 
     void       _process_actions();
-    void       _schedule_actions(std::vector<std::pair<time_t, action> >& actions);
+    void       _schedule_actions(std::vector<std::pair<time_t, action> > const& actions);
 
     notification_scheduler(notification_scheduler const& obj);
     notification_scheduler& operator=(notification_scheduler const& obj);

@@ -70,7 +70,8 @@ namespace           notification {
 
     void              process_action(
                         state& st,
-                        std::vector<std::pair<time_t, action> >& spawned_actions) const;
+                        std::vector<std::pair<time_t, action> >&
+                          spawned_actions) const;
   private:
     action_type       _act;
     objects::node_id  _id;

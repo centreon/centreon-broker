@@ -71,8 +71,8 @@ void process::kill() {
 /**
  *  @brief Start this process with a command and an optional process manager.
  *
- *  If a process manager is given, the process manager will process timeout,
- *  process termination, and process freeing.
+ *  If a process manager is given, the process manager will manage
+ *  process timeout, process termination, and process freeing.
  *
  *  @param[in] program      The program to execute, with its arguments.
  *  @param[in,out] manager  The manager to which register the process.
