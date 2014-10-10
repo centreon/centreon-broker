@@ -449,7 +449,8 @@ void stream::_process_service_status_event(neb::service_status const& event) {
   // Get the node corresponding to this id.
   {
     // Get the state lock.
-    std::auto_ptr<QReadLocker> lock(_state.read_lock());
+    // TODO: The write lock here kills the perf. Use a read lock instead.
+    std::auto_ptr<QWriteLocker> lock(_state.write_lock());
     node::ptr n = _state.get_node_by_id(id);
     if (!n)
       throw (exceptions::msg()
@@ -464,12 +465,17 @@ void stream::_process_service_status_event(neb::service_status const& event) {
   }
 
   // From OK to NOT-OK
-  if (old_hard_state != event.last_hard_state) {
+  if (old_hard_state != event.last_hard_state &&
+      old_hard_state == node_state::ok) {
     action a;
     a.set_type(action::notification_attempt);
     a.set_node_id(id);
     _notif_scheduler->add_action_to_queue(time(NULL) + 1, a);
   }
+  // From NOT-OK to OK
+  else if (old_hard_state != event.last_hard_state &&
+           old_hard_state != node_state::ok)
+    _notif_scheduler->remove_actions_of_node(id);
 }
 
 /**
@@ -486,7 +492,8 @@ void stream::_process_host_status_event(neb::host_status const& event) {
   // Get the node corresponding to this id.
   {
     // Get the state lock.
-    std::auto_ptr<QReadLocker> lock(_state.read_lock());
+    // TODO: The write lock here kills the perf. Use a read lock instead.
+    std::auto_ptr<QWriteLocker> lock(_state.write_lock());
     node::ptr n = _state.get_node_by_id(id);
     if (!n)
       throw (exceptions::msg()
@@ -501,12 +508,17 @@ void stream::_process_host_status_event(neb::host_status const& event) {
   }
 
   // From OK to NOT-OK
-  if (old_hard_state != event.last_hard_state) {
+  if (old_hard_state != event.last_hard_state &&
+      old_hard_state == node_state::ok) {
     action a;
     a.set_type(action::notification_attempt);
     a.set_node_id(id);
     _notif_scheduler->add_action_to_queue(when_to_schedule, a);
   }
+  // From NOT-OK to OK
+  else if(old_hard_state != event.last_hard_state &&
+          old_hard_state != node_state::ok)
+    _notif_scheduler->remove_actions_of_node(id);
 }
 
 /**
