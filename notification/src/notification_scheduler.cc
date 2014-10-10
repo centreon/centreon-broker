@@ -132,17 +132,17 @@ void notification_scheduler::_process_actions() {
   // That way, we can add new actions in an external thread while this thread
   // is processing those actions.
   run_queue local_queue;
-  _queue.swap(local_queue);
+  time_t now = time(NULL);
+  _queue.move_to_queue(local_queue, now);
   _general_mutex.unlock();
 
   // Iterate on the local queue.
-  time_t now = time(NULL);
   for (run_queue::iterator it(local_queue.begin()), end(local_queue.end());
        it != end;) {
     if (it->first > now)
       return;
 
-    // Get the viability of this action.
+    // The action processing can add other actions to the queue.
     std::vector<std::pair<time_t, action> > spawned_actions;
     {
       // Lock the state mutex.
@@ -162,9 +162,10 @@ void notification_scheduler::_process_actions() {
  *
  *  @param[in] actions  The actions to schedule.
  */
-void notification_scheduler::_schedule_actions(std::vector<std::pair<time_t, action> >& actions) {
-  for (std::vector<std::pair<time_t, action> >::iterator it(actions.begin()),
-                                                        end(actions.end());
+void notification_scheduler::_schedule_actions(std::vector<std::pair<time_t, action> > const& actions) {
+  for (std::vector<std::pair<time_t, action> >::const_iterator
+          it(actions.begin()),
+          end(actions.end());
        it != end;
        ++it)
     add_action_to_queue(it->first, it->second);
