@@ -450,6 +450,7 @@ void stream::_process_service_status_event(neb::service_status const& event) {
   {
     // Get the state lock.
     // TODO: The write lock here kills the perf. Use a read lock instead.
+    //       and lock on an individual node level.
     std::auto_ptr<QWriteLocker> lock(_state.write_lock());
     node::ptr n = _state.get_node_by_id(id);
     if (!n)
@@ -493,6 +494,7 @@ void stream::_process_host_status_event(neb::host_status const& event) {
   {
     // Get the state lock.
     // TODO: The write lock here kills the perf. Use a read lock instead.
+    //       and lock on an individual node level.
     std::auto_ptr<QWriteLocker> lock(_state.write_lock());
     node::ptr n = _state.get_node_by_id(id);
     if (!n)
@@ -526,12 +528,14 @@ void stream::_process_host_status_event(neb::host_status const& event) {
  *
  *  @param event  The event to process.
  */
-void stream::_process_issue_parent_event(correlation::issue_parent const& event) {
+void stream::_process_issue_parent_event(
+                correlation::issue_parent const& event) {
   node_id id(event.child_host_id, event.child_service_id);
 
   // Get the node corresponding to this id.
   // Get the state lock.
   // TODO: The write lock here kills the perf. Use a read lock instead.
+  //       and lock on an individual node level.
   std::auto_ptr<QWriteLocker> lock(_state.write_lock());
   node::ptr n = _state.get_node_by_id(id);
   if (!n)

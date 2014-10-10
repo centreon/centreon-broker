@@ -141,10 +141,8 @@ void notification_scheduler::_process_actions() {
 
   // Iterate on the local queue.
   for (run_queue::iterator it(local_queue.begin()), end(local_queue.end());
-       it != end;) {
-    if (it->first > now)
-      return;
-
+       it != end;
+       ++it) {
     // The action processing can add other actions to the queue.
     std::vector<std::pair<time_t, action> > spawned_actions;
     {
@@ -155,8 +153,6 @@ void notification_scheduler::_process_actions() {
     }
     // Add the spawned action to the queue.
     _schedule_actions(spawned_actions);
-
-    ++it;
   }
 }
 
