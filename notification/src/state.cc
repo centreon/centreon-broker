@@ -216,20 +216,6 @@ node::ptr state::get_node_by_id(node_id id) {
 }
 
 /**
- *  Get the host of a service.
- *
- *  @param[in] service_id  The node id of the service.
- *
- *  @return                A node::ptr to the host, or a null node::ptr.
- */
-node::ptr state::get_host_from_service(objects::node_id service_id) {
-  if (!service_id.is_service())
-    return (node::ptr());
-  else
-    return (_node_by_id.value(node_id(service_id.get_host_id())));
-}
-
-/**
  *  Get all the notification rules associated to a node.
  *
  *  @param[in] id  The id of the node.
@@ -274,10 +260,24 @@ timeperiod::ptr state::get_timeperiod_by_id(unsigned int id) {
   return (_timeperiod_by_id.value(id));
 }
 
+/**
+ *  Get a contact by its id.
+ *
+ *  @param[in] id   The id of the contact.
+ *
+ *  @return         A contact::ptr to the contact, or a null contact::ptr.
+ */
 objects::contact::ptr state::get_contact_by_id(unsigned int id) {
   return (_contacts.value(id));
 }
 
+/**
+ *  Get a command by its id.
+ *
+ *  @param[în] id  The id of the command.
+ *
+ *  @return         A command::ptr to the command, or a null command::ptr.
+ */
 objects::command::ptr state::get_command_by_id(unsigned int id) {
   return (_commands.value(id));
 }
