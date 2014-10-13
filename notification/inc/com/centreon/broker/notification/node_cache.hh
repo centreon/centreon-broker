@@ -22,6 +22,10 @@
 
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/bbdo/stream.hh"
+#  include "com/centreon/broker/compression/stream.hh"
+#  include "com/centreon/broker/file/stream.hh"
 
 CCB_BEGIN()
 
@@ -30,7 +34,7 @@ namespace         notification {
    *  @class node_cache node_cache.hh "com/centreon/broker/notification/node_cache.hh"
    *  @brief Contain and update a cache of node information.
    */
-  class           node_cache {
+  class           node_cache : public io::stream {
   public:
                   node_cache();
                   node_cache(node_cache const& f);
@@ -38,6 +42,11 @@ namespace         notification {
 
     bool          load(std::string const& cache_file);
     bool          unload(std::string const& cache_file);
+
+    virtual void  process(bool in, bool out);
+    virtual void  read(misc::shared_ptr<io::data> &d);
+    virtual unsigned int
+                  write(const misc::shared_ptr<io::data> &d);
 
   private:
   };

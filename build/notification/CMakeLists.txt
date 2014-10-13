@@ -24,6 +24,9 @@ include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
 include_directories("${PROJECT_SOURCE_DIR}/dumper/inc")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
+include_directories("${PROJECT_SOURCE_DIR}/file/inc")
+include_directories("${PROJECT_SOURCE_DIR}/bbdo/inc")
+include_directories("${PROJECT_SOURCE_DIR}/compression/inc")
 
 # NOTIFICATION module.
 set(NOTIFICATION "80-notification")
@@ -33,6 +36,7 @@ add_library("${NOTIFICATION}" SHARED
   "${SRC_DIR}/action.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
+  "${SRC_DIR}/node_cache.cc"
   "${SRC_DIR}/notification_scheduler.cc"
   "${SRC_DIR}/process.cc"
   "${SRC_DIR}/process_manager.cc"
@@ -92,6 +96,7 @@ add_library("${NOTIFICATION}" SHARED
   # Headers.
   "${INC_DIR}/com/centreon/broker/notification/action.hh"
   "${INC_DIR}/com/centreon/broker/notification/factory.hh"
+  "${INC_DIR}/com/centreon/broker/notification/node_cache.hh"
   "${INC_DIR}/com/centreon/broker/notification/notification_scheduler.hh"
   "${INC_DIR}/com/centreon/broker/notification/process.hh"
   "${INC_DIR}/com/centreon/broker/notification/process_manager.hh"
