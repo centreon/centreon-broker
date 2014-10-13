@@ -32,7 +32,8 @@ node_cache::node_cache(node_cache const& obj) {
 
 node_cache& node_cache::operator=(node_cache const& obj) {
   if (this != &obj) {
-
+    _service_statuses = obj._service_statuses;
+    _host_statuses = obj._host_statuses;
   }
   return (*this);
 }
@@ -56,7 +57,7 @@ bool node_cache::load(std::string const& cache_file) {
   try {
     while (true) {
       bbdo->read(data);
-      read(data);
+      write(data);
     }
   }
   catch (io::exceptions::shutdown) {
@@ -92,8 +93,8 @@ bool node_cache::unload(std::string const& cache_file) {
 
   try {
     while (true) {
+      bbdo->read(data);
       write(data);
-      bbdo->write(data);
     }
   }
   catch (io::exceptions::shutdown) {
@@ -119,9 +120,21 @@ void node_cache::process(bool in, bool out) {
 }
 
 void node_cache::read(misc::shared_ptr<io::data> &d) {
+  //if (!_process_out)
+    throw (io::exceptions::shutdown(true, true)
+           << "Node cache is empty");
 
 }
 
 unsigned int node_cache::write(const misc::shared_ptr<io::data> &d) {
+  // Check that data exists.
+  unsigned int retval(1);
+  if (data.isNull())
+    return 1;
+
+  unsigned int type(data->type());
+  unsigned short cat(io::events::category_of_type(type));
+  unsigned short elem(io::events::element_of_type(type));
+
 
 }

@@ -21,11 +21,16 @@
 #  define CCB_NOTIFICATION_NODE_CACHE_HH
 
 #  include <string>
+#  include <vector>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/bbdo/stream.hh"
 #  include "com/centreon/broker/compression/stream.hh"
 #  include "com/centreon/broker/file/stream.hh"
+#  include "com/centreon/broker/notification/object_cache.hh"
+
+#  include "com/centreon/broker/neb/service_status.hh"
+#  include "com/centreon/broker/neb/host_status.hh"
 
 CCB_BEGIN()
 
@@ -33,6 +38,9 @@ namespace         notification {
   /**
    *  @class node_cache node_cache.hh "com/centreon/broker/notification/node_cache.hh"
    *  @brief Contain and update a cache of node information.
+   *
+   *  Used by and for the macro processing. Load from a file at startup,
+   *  unload at shutdown.
    */
   class           node_cache : public io::stream {
   public:
@@ -49,7 +57,10 @@ namespace         notification {
                   write(const misc::shared_ptr<io::data> &d);
 
   private:
-
+    object_cache<neb::service_status>
+                  _service_statuses;
+    object_cache<neb::host_status>
+                  _host_statuses;
   };
 }
 

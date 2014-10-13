@@ -165,8 +165,6 @@ stream::stream(stream const& s) : io::stream(s),
   // Connection ID.
   QString id;
   id.setNum((qulonglong)this, 16);
-  QString id2;
-  id.setNum(((qulonglong)this) + 1, 16);
 
   // Clone centreon database.
   _clone_db(_centreon_db, s._centreon_db, id);
