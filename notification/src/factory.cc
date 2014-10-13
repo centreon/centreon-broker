@@ -156,6 +156,9 @@ io::endpoint* factory::new_endpoint(
   // Find centreon DB name.
   QString centreon_db_name(find_param(cfg, "centreon_db_name"));
 
+  // Find node cache file.
+  QString node_cache_file(find_param(cfg, "node_cache_file"));
+
   // Transaction size.
   unsigned int queries_per_transaction(0);
   {
@@ -203,6 +206,7 @@ io::endpoint* factory::new_endpoint(
        user,
        password,
        centreon_db_name,
+       node_cache_file,
        queries_per_transaction,
        cleanup_check_interval,
        check_replication,

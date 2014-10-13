@@ -50,7 +50,9 @@ connector::connector(connector const& c)
     _queries_per_transaction(0),
     _type(c._type),
     _user(c._user),
-    _with_state_events(c._with_state_events) {}
+    _with_state_events(c._with_state_events),
+    _node_cache_file(c._node_cache_file),
+    _node_cache(c._node_cache) {}
 
 /**
  *  Destructor.
@@ -77,6 +79,8 @@ connector& connector::operator=(connector const& c) {
     _type = c._type;
     _user = c._user;
     _with_state_events = c._with_state_events;
+    _node_cache_file = c._node_cache_file;
+    _node_cache = c._node_cache;
   }
   return (*this);
 }
@@ -94,6 +98,7 @@ io::endpoint* connector::clone() const {
  *  Close the connector.
  */
 void connector::close() {
+  _node_cache.unload(_node_cache_file.toStdString());
   return ;
 }
 
@@ -105,7 +110,8 @@ void connector::close() {
  *  @param[in] port                    Database port.
  *  @param[in] user                    User.
  *  @param[in] password                Password.
- *  @param[in] db                      Database name.
+ *  @param[in] centreon_db             Database name.
+ *  @param[in] node_cache_file         The node cache filename.
  *  @param[in] queries_per_transaction Queries per transaction.
  *  @param[in] cleanup_check_interval  How often the stream must
  *                                     check for cleanup database.
@@ -119,6 +125,7 @@ void connector::connect_to(
                   QString const& user,
                   QString const& password,
                   QString const& centreon_db,
+                  QString const& node_cache_file,
                   unsigned int queries_per_transaction,
                   unsigned int cleanup_check_interval,
                   bool check_replication,
@@ -133,6 +140,8 @@ void connector::connect_to(
   _type = type;
   _user = user;
   _with_state_events = with_state_events;
+  _node_cache_file = node_cache_file;
+  _node_cache.load(_node_cache_file.toStdString());
   return ;
 }
 
@@ -152,7 +161,8 @@ misc::shared_ptr<io::stream> connector::open() {
                                              _queries_per_transaction,
                                              _cleanup_check_interval,
                                              _check_replication,
-                                             _with_state_events)));
+                                             _with_state_events,
+                                             _node_cache)));
 }
 
 /**

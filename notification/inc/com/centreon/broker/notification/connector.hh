@@ -23,6 +23,7 @@
 #  include <QString>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/node_cache.hh"
 
 CCB_BEGIN()
 
@@ -48,6 +49,7 @@ namespace                        notification {
                                    QString const& user,
                                    QString const& password,
                                    QString const& centreon_db,
+                                   QString const& node_cache_file,
                                    unsigned int queries_per_transaction = 1,
                                    unsigned int cleanup_check_interval = 0,
                                    bool check_replication = true,
@@ -66,6 +68,8 @@ namespace                        notification {
     QString                      _type;
     QString                      _user;
     bool                         _with_state_events;
+    QString                      _node_cache_file;
+    node_cache                   _node_cache;
   };
 }
 

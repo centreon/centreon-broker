@@ -35,6 +35,7 @@
 #  include "com/centreon/broker/notification/state.hh"
 #  include "com/centreon/broker/correlation/issue_parent.hh"
 #  include "com/centreon/broker/notification/process_manager.hh"
+#  include "com/centreon/broker/notification/node_cache.hh"
 
 CCB_BEGIN()
 
@@ -57,7 +58,8 @@ namespace        notification {
                    unsigned int queries_per_transaction,
                    unsigned int cleanup_check_interval,
                    bool check_replication,
-                   bool with_state_events);
+                   bool with_state_events,
+                   node_cache& cache);
                  stream(stream const& s);
                  ~stream();
     static void  initialize();
@@ -77,6 +79,7 @@ namespace        notification {
     unsigned int                          _instance_timeout;
 
     state                                 _state;
+    node_cache&                           _node_cache;
 
     void                    _open_db(std::auto_ptr<QSqlDatabase>& db,
                                      QString const& t,

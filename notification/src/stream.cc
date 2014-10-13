@@ -70,12 +70,13 @@ using namespace com::centreon::broker::notification::objects;
  *  @param[in] port                    Database port.
  *  @param[in] user                    User.
  *  @param[in] password                Password.
- *  @param[in] db                      Database name.
+ *  @param[in] centreon_db             Database name.
  *  @param[in] qpt                     Queries per transaction.
  *  @param[in] cleanup_thread_interval How often the stream must
  *                                     check for cleanup database.
  *  @param[in] check_replication       true to check replication status.
  *  @param[in] wse                     With state events.
+ *  @param[in] node_cache              A loaded node event cache.
  */
 stream::stream(
           QString const& type,
@@ -87,12 +88,14 @@ stream::stream(
           unsigned int qpt,
           unsigned int cleanup_check_interval,
           bool check_replication,
-          bool wse)
+          bool wse,
+          node_cache& cache)
   : _process_out(true),
     _queries_per_transaction((qpt >= 2) ? qpt : 1),
     _transaction_queries(0),
     _with_state_events(wse),
-    _instance_timeout(15) {
+    _instance_timeout(15),
+    _node_cache(cache) {
   // Get the driver ID.
   QString t;
   if (!type.compare("db2", Qt::CaseInsensitive))
@@ -147,7 +150,8 @@ stream::stream(
  *
  *  @param[in] s Object to copy.
  */
-stream::stream(stream const& s) : io::stream(s) {
+stream::stream(stream const& s) : io::stream(s),
+  _node_cache(s._node_cache) {
   // Output processing.
   _process_out = s._process_out;
 
