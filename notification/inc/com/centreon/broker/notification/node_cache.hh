@@ -49,6 +49,7 @@ namespace         notification {
                   write(const misc::shared_ptr<io::data> &d);
 
   private:
+
   };
 }
 

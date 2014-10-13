@@ -68,7 +68,7 @@ bool node_cache::load(std::string const& cache_file) {
   catch (std::exception e) {
     // Abnormal termination of the stream.
     logging::error(logging::high)
-      << "Notification: could not load "
+      << "Notification: could not load the node cache "
       << cache_file << ": " << e.what();
     return (false);
   }
@@ -91,13 +91,21 @@ bool node_cache::unload(std::string const& cache_file) {
   misc::shared_ptr<io::data> data;
 
   try {
-    write(data);
-    bbdo->write(data);
+    while (true) {
+      write(data);
+      bbdo->write(data);
+    }
+  }
+  catch (io::exceptions::shutdown) {
+    // Normal termination of the stream (ie nothing to write anymore)
+    logging::debug(logging::low)
+      << "Notification: finished writing the node cache "
+      << cache_file << " succesfully.";
   }
   catch (std::exception e) {
     // Abnormal termination of the stream.
     logging::error(logging::high)
-      << "Notification: could not write "
+      << "Notification: could not write the node cache "
       << cache_file << ": " << e.what();
     return (false);
   }
@@ -106,10 +114,12 @@ bool node_cache::unload(std::string const& cache_file) {
 }
 
 void node_cache::process(bool in, bool out) {
-
+  (void)in;
+  (void)out;
 }
 
 void node_cache::read(misc::shared_ptr<io::data> &d) {
+
 }
 
 unsigned int node_cache::write(const misc::shared_ptr<io::data> &d) {
