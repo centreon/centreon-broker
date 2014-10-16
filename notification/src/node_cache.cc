@@ -18,6 +18,7 @@
 */
 
 #include <exception>
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/notification/node_cache.hh"
@@ -126,15 +127,14 @@ void node_cache::read(misc::shared_ptr<io::data> &d) {
 
 }
 
-unsigned int node_cache::write(const misc::shared_ptr<io::data> &d) {
+unsigned int node_cache::write(const misc::shared_ptr<io::data> &data) {
   // Check that data exists.
   unsigned int retval(1);
+
   if (data.isNull())
     return 1;
 
   unsigned int type(data->type());
   unsigned short cat(io::events::category_of_type(type));
   unsigned short elem(io::events::element_of_type(type));
-
-
 }
