@@ -171,7 +171,7 @@ misc::shared_ptr<io::stream> acceptor::open() {
   logging::info(logging::medium) << "TCP: new client connected";
 
   // Set the SO_KEEPALIVE option.
-  _socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+  incoming->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 
   // Create child objects.
   misc::shared_ptr<QMutex> mutex(new QMutex);
