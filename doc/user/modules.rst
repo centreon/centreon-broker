@@ -136,21 +136,26 @@ intelligence on what to update and when is not done here.
 Configuration
 -------------
 
-============= ===========================================================
-Tag           Description
-============= ===========================================================
-metrics_path  Path to where the metrics graphs should be written.
-status_path   Path to where the status graphs should be written.
-path          If using *rrdcached* software with local socket connection,
-              path to this socket.
-port          If using *rrdcached* software with a network connection,
-              port on which rrdcached listens. The RRD module onlys
-              supports connection with localhost *rrdcached*.
-write_metrics Enable or disable metrics graph creation and update.
-              Enabled by default.
-write_status  Enable or disable status graph creation and update. Enabled
-              by default.
-============= ===========================================================
+==================== ===================================================
+Tag                  Description
+==================== ===================================================
+metrics_path         Path to where the metrics graphs should be written.
+status_path          Path to where the status graphs should be written.
+path                 If using *rrdcached* software with local socket
+                     connection, path to this socket.
+port                 If using *rrdcached* software with a network
+                     connection, port on which rrdcached listens. The
+                     RRD module onlys supports connection with localhost
+                     *rrdcached*.
+write_metrics        Enable or disable metrics graph creation and
+                     update. Enabled by default.
+write_status         Enable or disable status graph creation and update.
+                     Enabled by default.
+cache_size           Maximum number of templates (used for file
+                     creation) kept on disk.
+ignore_update_errors Ignore RRD files update errors (Broker 2.4
+                     compatible behavior).
+==================== ===================================================
 
 Example
 -------
@@ -213,6 +218,9 @@ check_replication       Useful when using DB replication. Enable or
 cleanup_check_interval  How often the cleanup thread should run. This
                         thread cleans multiple tables of the database
                         containing outdated data.
+with_state_events       Generate host/service state events. This is an
+                        *experimental* feature used to compute
+                        real-time BI information.
 ======================= ===============================================
 
 Example
@@ -256,9 +264,10 @@ Tag                     Description
 ======================= ===============================================
 interval                Monitoring engine base interval (usually 60
                         seconds).
-length RRD              file length in seconds (ie. how much data your
-                        RRD file will contain). For 180 days
-                        (recommanded), 15552000.
+length                  RRD file length in seconds (ie. how much data
+                        your RRD file will contain). For 180 days
+                        (recommended), use 15552000
+                        (180 * 24 * 60 * 60).
 db_type                 Database type. One of db2, ibase, mysql,
                         oracle, odbc, postgresql, sqlite, tds.
 db_host                 Database host.
@@ -275,6 +284,14 @@ read_timeout            When using transactions, maximum time between
 check_replication       Useful when using DB replication. Enable or
                         disable replication check when connecting.
                         Default is enabled.
+rebuild_check_interval  How often (in seconds) metrics should be
+                        checked for rebuild.
+store_in_data_bin       This can be used to avoid keeping performance
+                        data in the *data_bin* table. *Warning*: this
+                        will prevent you to rebuild RRD files.
+insert_in_index_data    Internal option used by Centreon to allow
+                        graphs to properly work on satellite (deported
+                        interface).
 ======================= ===============================================
 
 Example
@@ -385,11 +402,12 @@ possible, to use compression and TLS modules.
 Configuration
 -------------
 
-======== =====================
-Tag      Description
-======== =====================
-protocol Must be set to *bbdo*.
-======== =====================
+=========== =====================================================
+Tag         Description
+=========== =====================================================
+protocol    Must be set to *bbdo*.
+negociation Enable or disable BBDO automatic feature negociation.
+=========== =====================================================
 
 NDO
 ===
