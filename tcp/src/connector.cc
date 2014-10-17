@@ -122,9 +122,6 @@ misc::shared_ptr<io::stream> connector::open() {
     << _host << ":" << _port;
   _socket = misc::shared_ptr<QTcpSocket>(new QTcpSocket);
 
-  // Set the SO_KEEPALIVE option.
-  _socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
-
   _socket->connectToHost(_host, _port);
 
   // Wait for connection result.
@@ -134,6 +131,9 @@ misc::shared_ptr<io::stream> connector::open() {
            << _socket->errorString());
   logging::info(logging::medium) << "TCP: successfully connected to "
     << _host << ":" << _port;
+
+  // Set the SO_KEEPALIVE option.
+  _socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 
   // Return stream.
   misc::shared_ptr<stream> s(new stream(_socket, _mutex));
