@@ -20,9 +20,9 @@
 #ifndef CCB_BAM_TIME_PTR_TYPEDEF_HH
 #  define CCB_BAM_TIME_PTR_TYPEDEF_HH
 
-#  include "com/centreon/shared_ptr.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
 
 #define DECLARE_SHARED_PTR(klass)\
-  typedef shared_ptr<klass> ptr
+  typedef ::com::centreon::broker::misc::shared_ptr<klass> ptr
 
 #endif //!CCB_BAM_TIME_PTR_TYPEDEF_HH
