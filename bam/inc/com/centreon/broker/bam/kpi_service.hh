@@ -73,20 +73,23 @@ namespace        bam {
   private:
     void         _fill_impact(impact_values& impact, short state);
     void         _internal_copy(kpi_service const& right);
+    void         _open_new_event(
+                   stream* visitor,
+                   impact_values const& impacts);
 
     bool         _acknowledged;
     bool         _downtimed;
+    misc::shared_ptr<kpi_event>
+                 _event;
     unsigned int _host_id;
     double       _impacts[5];
+    timestamp    _last_update;
+    std::string  _output;
+    std::string  _perfdata;
     unsigned int _service_id;
     short        _state_hard;
     short        _state_soft;
     short        _state_type;
-
-    misc::shared_ptr<kpi_event>
-                 _event;
-
-    void        _open_new_event();
   };
 }
 

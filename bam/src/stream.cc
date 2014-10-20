@@ -534,31 +534,31 @@ void stream::_update_status(std::string const& status) {
  *  @param[in] e The event.
  */
 void stream::_process_kpi_event(misc::shared_ptr<io::data> const& e) {
-  bam::kpi_event const& ke(*static_cast<bam::kpi_event const*>(e.data()));
+  // bam::kpi_event const& ke(*static_cast<bam::kpi_event const*>(e.data()));
 
-  QSqlQuery query(*_db);
-  std::stringstream ss;
+  // QSqlQuery query(*_db);
+  // std::stringstream ss;
 
-  ss << "INSERT INTO kpi_events"
-        "  (kpi_id, status, in_downtime, start_time, end_time, duration, "
-        "    impact_level, first_output, first_perfdata, timeperiod_id, "
-        "    timeperiod_is_default) VALUES ("
-     << ke.kpi_id << ", "
-     << ke.status << ","
-     << ke.in_downtime << ","
-     << ke.start_time << ","
-     << ke.start_time + ke.duration << ", "
-     << ke.duration << ", "
-     << ke.impact_level << ", "
-     << ke.first_output.c_str() << ", "
-     << ke.first_perfdata.c_str() << ", "
-     << ke.timeperiod_id << ", "
-     << ke.timeperiod_is_default << ")";
+  // ss << "INSERT INTO kpi_events"
+  //       "  (kpi_id, status, in_downtime, start_time, end_time, duration, "
+  //       "    impact_level, first_output, first_perfdata, timeperiod_id, "
+  //       "    timeperiod_is_default) VALUES ("
+  //    << ke.kpi_id << ", "
+  //    << ke.status << ","
+  //    << ke.in_downtime << ","
+  //    << ke.start_time << ","
+  //    << ke.start_time + ke.duration << ", "
+  //    << ke.duration << ", "
+  //    << ke.impact_level << ", "
+  //    << ke.first_output.c_str() << ", "
+  //    << ke.first_perfdata.c_str() << ", "
+  //    << ke.timeperiod_id << ", "
+  //    << ke.timeperiod_is_default << ")";
 
-  if (!query.exec(ss.str().c_str()))
-    throw (exceptions::msg()
-           << "BAM: could not insert a kpi event: "
-           << query.lastError().text());
+  // if (!query.exec(ss.str().c_str()))
+  //   throw (exceptions::msg()
+  //          << "BAM: could not insert a kpi event: "
+  //          << query.lastError().text());
 }
 
 /**
@@ -567,28 +567,28 @@ void stream::_process_kpi_event(misc::shared_ptr<io::data> const& e) {
  *  @param[in] e The event.
  */
 void stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
-  bam::ba_event const& be(*static_cast<bam::ba_event const*>(e.data()));
+  // bam::ba_event const& be(*static_cast<bam::ba_event const*>(e.data()));
 
-  QSqlQuery query(*_db);
-  std::stringstream ss;
+  // QSqlQuery query(*_db);
+  // std::stringstream ss;
 
-  ss << "INSERT INTO ba_events"
-        "  (ba_id, status, in_downtime, start_time, end_time, duration, "
-        "    sla_duration, timeperiod_id, timeperiod_is_default) VALUES ("
-     << be.ba_id << ", "
-     << be.status << ", "
-     << be.in_downtime << ", "
-     << be.start_time << ", "
-     << be.start_time + be.duration << ", "
-     << be.duration << ", "
-     << be.sla_duration << ", "
-     << be.timeperiod_id << ", "
-     << be.timeperiod_is_default << ")";
+  // ss << "INSERT INTO ba_events"
+  //       "  (ba_id, status, in_downtime, start_time, end_time, duration, "
+  //       "    sla_duration, timeperiod_id, timeperiod_is_default) VALUES ("
+  //    << be.ba_id << ", "
+  //    << be.status << ", "
+  //    << be.in_downtime << ", "
+  //    << be.start_time << ", "
+  //    << be.start_time + be.duration << ", "
+  //    << be.duration << ", "
+  //    << be.sla_duration << ", "
+  //    << be.timeperiod_id << ", "
+  //    << be.timeperiod_is_default << ")";
 
-  if (!query.exec(ss.str().c_str()))
-    throw (exceptions::msg()
-           << "BAM: could not insert a ba event: "
-           << query.lastError().text());
+  // if (!query.exec(ss.str().c_str()))
+  //   throw (exceptions::msg()
+  //          << "BAM: could not insert a ba event: "
+  //          << query.lastError().text());
 }
 
 /**
@@ -639,4 +639,3 @@ void stream::_process_event_parent(misc::shared_ptr<io::data> const& e) {
            << "BAM: could not insert an event parent event: "
            << query.lastError().text());
 }
-

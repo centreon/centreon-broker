@@ -81,8 +81,8 @@ void kpi_event::_internal_copy(kpi_event const& other) {
   kpi_id = other.kpi_id;
   impact_level = other.impact_level;
   in_downtime = other.in_downtime;
-  output = other.first_output;
-  perfdata = other.first_perfdata;
+  output = other.output;
+  perfdata = other.perfdata;
   start_time = other.start_time;
   status = other.status;
   return ;

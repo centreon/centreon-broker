@@ -26,6 +26,7 @@
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
 /**
@@ -52,15 +53,15 @@ ba::ba()
     _acknowledgement_soft(0.0),
     _downtime_hard(0.0),
     _downtime_soft(0.0),
+    _host_id(0),
     _id(0),
     _in_downtime(false),
-    _service_id(0),
-    _host_id(0),
     _level_critical(0.0),
     _level_hard(100.0),
     _level_soft(100.0),
     _level_warning(0.0),
-    _recompute_count(0) {}
+    _recompute_count(0),
+    _service_id(0) {}
 
 /**
  *  Copy constructor.
@@ -198,6 +199,15 @@ unsigned int ba::get_id() {
 }
 
 /**
+ *  Get the id of the host associated to this ba.
+ *
+ *  @return  An integer representing the value of this id.
+ */
+unsigned int ba::get_host_id() const {
+  return (_host_id);
+}
+
+/**
  *  Get the id of the service associated to this ba.
  *
  *  @return  An integer representing the value of this id.
@@ -207,12 +217,41 @@ unsigned int ba::get_service_id() const {
 }
 
 /**
- *  Get the id of the host associated to this ba.
+ *  @brief Check if the BA is in downtime.
  *
- *  @return  An integer representing the value of this id.
+ *  The flag comes from the attached monitoring service.
+ *
+ *  @return True if the BA is in downtime, false otherwise.
  */
-unsigned int ba::get_host_id() const {
-  return (_host_id);
+bool ba::get_in_downtime() const {
+  return (_in_downtime);
+}
+
+/**
+ *  Get the time of the last update of the attached service.
+ *
+ *  @return Time of the last update of the attached service.
+ */
+timestamp ba::get_last_service_update() const {
+  return (_last_service_update);
+}
+
+/**
+ *  Get the output.
+ *
+ *  @return Service output.
+ */
+std::string const& ba::get_output() const {
+  return (_output);
+}
+
+/**
+ *  Get the performance data.
+ *
+ *  @return Performance data.
+ */
+std::string const& ba::get_perfdata() const {
+  return (_perfdata);
 }
 
 /**
@@ -449,8 +488,8 @@ void ba::_open_new_event(stream* visitor) {
   _event->status = get_state_hard();
   _event->start_time = _last_service_update;
   if (visitor) {
-    misc::shared_ptr<ba_event> be(new ba_event(*_event));
-    visitor->write(be.staticCast<io::data>());
+    misc::shared_ptr<io::data> be(new ba_event(*_event));
+    visitor->write(be);
   }
   return ;
 }

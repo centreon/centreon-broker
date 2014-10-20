@@ -201,9 +201,9 @@ void kpi_ba::visit(stream* visitor) {
         _open_new_event(visitor, hard_values.get_nominal());
       }
       // If state changed, close event and open a new one.
-      else if ((_ba->in_downtime() != _event->in_downtime)
+      else if ((_ba->get_in_downtime() != _event->in_downtime)
                || (_ba->get_state_hard() != _event->status)) {
-        _event->end_time = _ba->last_service_update();
+        _event->end_time = _ba->get_last_service_update();
         visitor->write(_event.staticCast<io::data>());
         _event.clear();
         _open_new_event(visitor, hard_values.get_nominal());
@@ -273,13 +273,17 @@ void kpi_ba::_internal_copy(kpi_ba const& right) {
  *  @param[in]  impact   Current impact of this KPI.
  */
 void kpi_ba::_open_new_event(stream* visitor, int impact) {
-  _event = new(kpi_event);
+  _event = new kpi_event;
   _event->kpi_id = _id;
   _event->impact_level = impact;
-  _event->in_downtime = _ba->in_downtime();
-  _event->output = _ba->output();
-  _event->perfdata = _ba->perfdata();
-  _event->start_time = ba->last_service_update();
+  _event->in_downtime = _ba->get_in_downtime();
+  _event->output = _ba->get_output();
+  _event->perfdata = _ba->get_perfdata();
+  _event->start_time = _ba->get_last_service_update();
   _event->status = _ba->get_state_hard();
+  if (visitor) {
+    misc::shared_ptr<io::data> ke(new kpi_event(*_event));
+    visitor->write(ke);
+  }
   return ;
 }

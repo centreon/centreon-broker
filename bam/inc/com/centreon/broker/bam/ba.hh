@@ -59,6 +59,12 @@ namespace        bam {
     unsigned int get_id();
     unsigned int get_host_id() const;
     unsigned int get_service_id() const;
+    bool         get_in_downtime() const;
+    timestamp    get_last_service_update() const;
+    std::string const&
+                 get_output() const;
+    std::string const&
+                 get_perfdata() const;
     short        get_state_hard();
     short        get_state_soft();
     void         remove_impact(misc::shared_ptr<kpi> const& impact);
@@ -93,10 +99,8 @@ namespace        bam {
     double       _downtime_soft;
     misc::shared_ptr<ba_event>
                  _event;
-    unsigned int _id;
-    unsigned int _service_id;
     unsigned int _host_id;
-    bool         _in_downtime;
+    unsigned int _id;
     umap<kpi*, impact_info>
                  _impacts;
     bool         _in_downtime;
@@ -108,6 +112,7 @@ namespace        bam {
     std::string  _output;
     std::string  _perfdata;
     int          _recompute_count;
+    unsigned int _service_id;
   };
 }
 
