@@ -189,6 +189,16 @@ void reader::_load(state::bas& bas) {
       found->second.set_service_id(query.value(0).toUInt());
     }
   }
+
+  // Test for ba without service id.
+  for (state::bas::const_iterator it(bas.begin()),
+                                  end(bas.end());
+       it != end;
+       ++it)
+    if (it->second.get_service_id() == 0)
+      throw (reader_exception()
+               << "BAM: found a ba without an associated service, id: "
+               << it->second.get_id());
   return ;
 }
 
