@@ -28,6 +28,7 @@
 #include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/reader_exception.hh"
 #include "com/centreon/broker/bam/sql_mapping.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
@@ -181,11 +182,21 @@ void reader::_load(state::bas& bas) {
     if (!service_description.empty()) {
       bool ok = false;
       unsigned int ba_id = QString(service_description.c_str()).toUInt(&ok);
-      if (!ok)
+      if (!ok) {
+        logging::error(logging::medium)
+          << "BAM: BA service: "
+          << query.value(1).toString()
+          << "unknown when attempting to retrieve services.";
         continue;
+      }
       state::bas::iterator found = bas.find(ba_id);
-      if (found == bas.end())
+      if (found == bas.end()) {
+        logging::error(logging::medium)
+          << "BAM: BA service: "
+          << query.value(1).toString()
+          << "not found when attempting to retrieve services.";
         continue;
+      }
       found->second.set_service_id(query.value(0).toUInt());
     }
   }
