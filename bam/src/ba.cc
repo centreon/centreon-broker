@@ -23,6 +23,7 @@
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi.hh"
 #include "com/centreon/broker/bam/stream.hh"
+#include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker::bam;
@@ -53,6 +54,8 @@ ba::ba()
     _downtime_soft(0.0),
     _id(0),
     _in_downtime(false),
+    _service_id(0),
+    _host_id(0),
     _level_critical(0.0),
     _level_hard(100.0),
     _level_soft(100.0),
@@ -64,7 +67,7 @@ ba::ba()
  *
  *  @param[in] right Object to copy.
  */
-ba::ba(ba const& right) : computable(right) {
+ba::ba(ba const& right) : computable(right), service_listener(right) {
   _internal_copy(right);
 }
 
@@ -83,6 +86,7 @@ ba::~ba() {}
 ba& ba::operator=(ba const& right) {
   if (this != &right) {
     computable::operator=(right);
+    service_listener::operator=(right);
     _internal_copy(right);
   }
   return (*this);
@@ -194,6 +198,24 @@ unsigned int ba::get_id() {
 }
 
 /**
+ *  Get the id of the service associated to this ba.
+ *
+ *  @return  An integer representing the value of this id.
+ */
+unsigned int ba::get_service_id() const {
+  return (_service_id);
+}
+
+/**
+ *  Get the id of the host associated to this ba.
+ *
+ *  @return  An integer representing the value of this id.
+ */
+unsigned int ba::get_host_id() const {
+  return (_host_id);
+}
+
+/**
  *  Get BA hard state.
  *
  *  @return BA hard state.
@@ -248,6 +270,24 @@ void ba::remove_impact(misc::shared_ptr<kpi> const& impact) {
 void ba::set_id(unsigned int id) {
   _id = id;
   return ;
+}
+
+/**
+ *  Set the service id associated to this ba.
+ *
+ *  @param[in] service_id  Set the service id.
+ */
+void ba::set_service_id(unsigned int service_id) {
+  _service_id = service_id;
+}
+
+/**
+ *  Set the host id associated to this ba.
+ *
+ *  @param[in] host_id  Set the service id.
+ */
+void ba::set_host_id(unsigned int host_id) {
+  _host_id = host_id;
 }
 
 /**
@@ -308,6 +348,47 @@ void ba::visit(stream* visitor) {
 }
 
 /**
+ *  @brief The service associated to this ba was updated.
+ *
+ *  Used to watch for downtime and update output and perfdata.
+ *
+ *  @param status   Status of the service.
+ *  @param visitor  Visitor that will receive events.
+ */
+void ba::service_update(
+          misc::shared_ptr<neb::service_status> const& status,
+          stream* visitor) {
+  (void) visitor;
+  logging::debug(logging::low)
+    << "BAM: BA " << _id << " is getting notified of service update";
+
+  if (status->host_id == _host_id
+      && status->service_id == _service_id) {
+    // Set downtime.
+    _in_downtime = (status->scheduled_downtime_depth > 0);
+    // Set last service update.
+    _last_service_update = status->last_update;
+    // Set output.
+    _output = status->output.toStdString();
+    // Set perfdata.
+    _perfdata = status->perf_data.toStdString();
+
+    // Generate status event.
+    visit(visitor);
+
+    // Propagate change.
+    propagate_update(visitor);
+  }
+  else
+    logging::error(logging::medium)
+      << "BAM: BA " << _id << " has got an invalid status service."
+         " This should never happen : check your database. "
+         "(BA host id = " << _host_id << ", service id = " << _service_id <<
+         ", inbound host id = " << status->host_id
+      << ", service_id = " << status->service_id << ").";
+}
+
+/**
  *  Apply some impact.
  *
  *  @param[in] impact Impact information.
@@ -342,6 +423,8 @@ void ba::_internal_copy(ba const& right) {
   _downtime_soft = right._downtime_soft;
   _event = right._event;
   _id = right._id;
+  _service_id = right._service_id;
+  _host_id = right._host_id;
   _impacts = right._impacts;
   _in_downtime = right._in_downtime;
   _last_service_update = right._last_service_update;

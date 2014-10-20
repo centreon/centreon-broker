@@ -21,6 +21,7 @@
 #  define CCB_BAM_CONFIGURATION_STATE_HH
 
 #  include <deque>
+#  include <map>
 #  include "com/centreon/broker/bam/configuration/kpi.hh"
 #  include "com/centreon/broker/bam/configuration/bool_expression.hh"
 #  include "com/centreon/broker/bam/configuration/ba.hh"
@@ -41,7 +42,7 @@ namespace                    bam {
     class                    state {
     public:
       /* Typedefs */
-      typedef std::deque<ba>              bas;
+      typedef std::map<int, ba>  bas;
       typedef std::deque<kpi>             kpis;
       typedef std::deque<bool_expression> bool_exps;
       typedef std::deque<meta_service>    meta_services;

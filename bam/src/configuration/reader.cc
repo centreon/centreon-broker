@@ -28,6 +28,7 @@
 #include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/reader_exception.hh"
 #include "com/centreon/broker/bam/sql_mapping.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
@@ -157,13 +158,62 @@ void reader::_load(state::bas& bas) {
            << _db->lastError().text());
 
   while (query.next()) {
-    bas.push_back(
+    bas[query.value(0).toUInt()] =
       ba(
-        query.value(0).toInt(), // ID.
+        query.value(0).toUInt(), // ID.
         query.value(1).toString().toStdString(), // Name.
         query.value(2).toFloat(), // Warning level.
-        query.value(3).toFloat())); // Critical level.
+        query.value(3).toFloat()); // Critical level.
   }
+
+  // Load the associated ba_id from the table services.
+  // All the associated services have for description 'ba_[id]'.
+  query = _db->exec("SELECT service_description, host_id, service_id"
+                    "  FROM services"
+                    "  WHERE service_description LIKE 'ba_%'");
+  if (_db->lastError().isValid())
+    throw (reader_exception()
+           << "BAM: could not retrieve BA service ids from DB: "
+           << _db->lastError().text());
+
+  while (query.next()) {
+    std::string service_description = query.value(0).toString().toStdString();
+    QString host_id = query.value(1).toString();
+    QString service_id = query.value(2).toString();
+    service_description.erase(0, strlen("ba_"));
+
+    if (!service_description.empty()) {
+      bool ok = false;
+      unsigned int ba_id = QString(service_description.c_str()).toUInt(&ok);
+      if (!ok) {
+        logging::error(logging::medium)
+          << "BAM: BA host:" << host_id
+          << "service: " << service_id
+          << "unknown when attempting to retrieve services.";
+        continue;
+      }
+      state::bas::iterator found = bas.find(ba_id);
+      if (found == bas.end()) {
+        logging::error(logging::medium)
+          << "BAM: BA service: "
+          << query.value(0).toString()
+          << "not found when attempting to retrieve services.";
+        continue;
+      }
+      found->second.set_host_id(host_id.toUInt());
+      found->second.set_service_id(service_id.toUInt());
+    }
+  }
+
+  // Test for ba without service id.
+  for (state::bas::const_iterator it(bas.begin()),
+                                  end(bas.end());
+       it != end;
+       ++it)
+    if (it->second.get_service_id() == 0)
+      throw (reader_exception()
+               << "BAM: found a ba without an associated service, id: "
+               << it->second.get_id());
   return ;
 }
 

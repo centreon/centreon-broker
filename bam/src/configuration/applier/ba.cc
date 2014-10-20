@@ -59,8 +59,10 @@ applier::ba& applier::ba::operator=(applier::ba const& right) {
  *  Apply configuration.
  *
  *  @param[in] my_bas BAs to apply.
+ *  @param[in] book   The service book.
  */
-void applier::ba::apply(bam::configuration::state::bas const& my_bas) {
+void applier::ba::apply(bam::configuration::state::bas const& my_bas,
+                        service_book& book) {
   //
   // DIFF
   //
@@ -83,14 +85,16 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas) {
          end(to_create.end());
        it != end;) {
     std::map<unsigned int, applied>::iterator
-      cfg_it(to_delete.find(it->get_id()));
+      cfg_it(to_delete.find(it->first));
     // Found = modify (or not).
     if (cfg_it != to_delete.end()) {
       // Configuration mismatch, modify object.
-      if (cfg_it->second.cfg != *it)
-        to_modify.push_back(*it);
+      if (cfg_it->second.cfg != it->second)
+        to_modify.push_back(it->second);
       to_delete.erase(cfg_it);
-      it = to_create.erase(it);
+      bam::configuration::state::bas::iterator tmp = it;
+      ++it;
+      to_create.erase(tmp);
     }
     // Not found = create.
     else
@@ -109,6 +113,10 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas) {
        ++it) {
     logging::config(logging::medium)
       << "BAM: removing BA " << it->first;
+    book.unlisten(
+           it->second.cfg.get_host_id(),
+           it->second.cfg.get_service_id(),
+           static_cast<bam::ba*>(it->second.obj.data()));
     _applied.erase(it->first);
   }
   to_delete.clear();
@@ -120,10 +128,10 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas) {
        it != end;
        ++it) {
     logging::config(logging::medium)
-      << "BAM: creating BA " << it->get_id();
-    misc::shared_ptr<bam::ba> new_ba(_new_ba(*it));
-    applied& content(_applied[it->get_id()]);
-    content.cfg = *it;
+      << "BAM: creating BA " << it->first;
+    misc::shared_ptr<bam::ba> new_ba(_new_ba(it->second, book));
+    applied& content(_applied[it->first]);
+    content.cfg = it->second;
     content.obj = new_ba;
   }
 
@@ -201,10 +209,14 @@ void applier::ba::_internal_copy(applier::ba const& right) {
  *  @return New BA object.
  */
 misc::shared_ptr<bam::ba> applier::ba::_new_ba(
-                                         configuration::ba const& cfg) {
+                                         configuration::ba const& cfg,
+                                         service_book& book) {
   misc::shared_ptr<bam::ba> obj(new bam::ba);
   obj->set_id(cfg.get_id());
+  obj->set_host_id(cfg.get_host_id());
+  obj->set_service_id(cfg.get_service_id());
   obj->set_level_warning(cfg.get_warning_level());
   obj->set_level_critical(cfg.get_critical_level());
+  book.listen(cfg.get_host_id(), cfg.get_service_id(), obj.data());
   return (obj);
 }

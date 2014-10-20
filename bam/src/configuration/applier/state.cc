@@ -60,7 +60,7 @@ applier::state& applier::state::operator=(applier::state const& other) {
  *  @param[in] my_state  Configuration state.
  */
 void applier::state::apply(bam::configuration::state const& my_state) {
-  _ba_applier.apply(my_state.get_bas());
+  _ba_applier.apply(my_state.get_bas(), _book_service);
   _kpi_applier.apply(my_state.get_kpis(), _ba_applier, _book_service);
   _bool_exp_applier.apply(
                       my_state.get_bool_exps(),

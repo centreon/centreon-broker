@@ -48,17 +48,23 @@ namespace                bam {
       bool               operator!=(ba const& right) const;
 
       unsigned int       get_id() const;
+      unsigned int       get_host_id() const;
+      unsigned int       get_service_id() const;
       std::string const& get_name() const;
       double             get_warning_level() const;
       double             get_critical_level() const;
 
       void               set_id(unsigned int id);
+      void               set_host_id(unsigned int host_id);
+      void               set_service_id(unsigned int service_id);
       void               set_name(std::string const& name);
       void               set_warning_level(double warning_level);
       void               set_critical_level(double critical_level);
 
     private:
       unsigned int       _id;
+      unsigned int       _host_id;
+      unsigned int       _service_id;
       std::string        _name;
       double             _warning_level;
       double             _critical_level;

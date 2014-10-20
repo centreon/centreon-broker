@@ -24,6 +24,7 @@
 #  include "com/centreon/broker/bam/ba.hh"
 #  include "com/centreon/broker/bam/configuration/ba.hh"
 #  include "com/centreon/broker/bam/configuration/state.hh"
+#  include "com/centreon/broker/bam/service_book.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -44,7 +45,8 @@ namespace     bam {
               ba(ba const& right);
               ~ba();
         ba&   operator=(ba const& right);
-        void  apply(configuration::state::bas const& my_bas);
+        void  apply(configuration::state::bas const& my_bas,
+                    service_book& book);
         misc::shared_ptr<bam::ba>
               find_ba(unsigned int id);
         void  visit(stream* visitor);
@@ -57,7 +59,8 @@ namespace     bam {
 
         void  _internal_copy(ba const& right);
         misc::shared_ptr<bam::ba>
-              _new_ba(configuration::ba const& cfg);
+              _new_ba(configuration::ba const& cfg,
+                      service_book& book);
 
         std::map<unsigned int, applied>
               _applied;
