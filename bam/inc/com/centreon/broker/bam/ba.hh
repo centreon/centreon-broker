@@ -20,10 +20,12 @@
 #ifndef CCB_BAM_BA_HH
 #  define CCB_BAM_BA_HH
 
+#  include <string>
 #  include "com/centreon/broker/bam/ba_event.hh"
 #  include "com/centreon/broker/bam/computable.hh"
 #  include "com/centreon/broker/bam/impact_values.hh"
 #  include "com/centreon/broker/bam/indicator_event.hh"
+#  include "com/centreon/broker/bam/service_listener.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -41,7 +43,7 @@ namespace        bam {
    *  Represents a BA that gets computed every time an impact change
    *  of value.
    */
-  class          ba : public computable {
+  class          ba : public computable, public service_listener {
   public:
                  ba();
                  ba(ba const& right);
@@ -56,15 +58,20 @@ namespace        bam {
     double       get_downtime_impact_hard();
     double       get_downtime_impact_soft();
     unsigned int get_id();
+    unsigned int get_host_id() const;
     unsigned int get_service_id() const;
     short        get_state_hard();
     short        get_state_soft();
     void         remove_impact(misc::shared_ptr<kpi> const& impact);
     void         set_id(unsigned int id);
+    void         set_host_id(unsigned int host_id);
     void         set_service_id(unsigned int service_id);
     void         set_level_critical(double level);
     void         set_level_warning(double level);
     void         visit(stream* visitor);
+    void         service_update(
+                   misc::shared_ptr<neb::service_status> const& status,
+                   stream* visitor);
 
   private:
     static int const        _recompute_limit = 100;
@@ -86,12 +93,16 @@ namespace        bam {
     double       _downtime_soft;
     unsigned int _id;
     unsigned int _service_id;
+    unsigned int _host_id;
+    bool         _in_downtime;
     umap<kpi*, impact_info>
                  _impacts;
     double       _level_critical;
     double       _level_hard;
     double       _level_soft;
     double       _level_warning;
+    std::string  _output;
+    std::string  _perfdata;
     int          _recompute_count;
 
     misc::shared_ptr<ba_event>

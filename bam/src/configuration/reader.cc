@@ -168,7 +168,7 @@ void reader::_load(state::bas& bas) {
 
   // Load the associated ba_id from the table services.
   // All the associated services have for description 'ba_[id]'.
-  query = _db->exec("SELECT service_id, service_description"
+  query = _db->exec("SELECT service_description, host_id, service_id"
                     "  FROM services"
                     "  WHERE service_description LIKE 'ba_%'");
   if (_db->lastError().isValid())
@@ -177,15 +177,18 @@ void reader::_load(state::bas& bas) {
            << _db->lastError().text());
 
   while (query.next()) {
-    std::string service_description = query.value(1).toString().toStdString();
+    std::string service_description = query.value(0).toString().toStdString();
+    QString host_id = query.value(1).toString();
+    QString service_id = query.value(2).toString();
     service_description.erase(0, strlen("ba_"));
+
     if (!service_description.empty()) {
       bool ok = false;
       unsigned int ba_id = QString(service_description.c_str()).toUInt(&ok);
       if (!ok) {
         logging::error(logging::medium)
-          << "BAM: BA service: "
-          << query.value(1).toString()
+          << "BAM: BA host:" << host_id
+          << "service: " << service_id
           << "unknown when attempting to retrieve services.";
         continue;
       }
@@ -193,11 +196,12 @@ void reader::_load(state::bas& bas) {
       if (found == bas.end()) {
         logging::error(logging::medium)
           << "BAM: BA service: "
-          << query.value(1).toString()
+          << query.value(0).toString()
           << "not found when attempting to retrieve services.";
         continue;
       }
-      found->second.set_service_id(query.value(0).toUInt());
+      found->second.set_host_id(host_id.toUInt());
+      found->second.set_service_id(service_id.toUInt());
     }
   }
 

@@ -639,3 +639,4 @@ void stream::_process_event_parent(misc::shared_ptr<io::data> const& e) {
            << "BAM: could not insert an event parent event: "
            << query.lastError().text());
 }
+
