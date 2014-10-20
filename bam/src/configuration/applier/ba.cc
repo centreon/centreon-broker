@@ -83,14 +83,16 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas) {
          end(to_create.end());
        it != end;) {
     std::map<unsigned int, applied>::iterator
-      cfg_it(to_delete.find(it->get_id()));
+      cfg_it(to_delete.find(it->first));
     // Found = modify (or not).
     if (cfg_it != to_delete.end()) {
       // Configuration mismatch, modify object.
-      if (cfg_it->second.cfg != *it)
-        to_modify.push_back(*it);
+      if (cfg_it->second.cfg != it->second)
+        to_modify.push_back(it->second);
       to_delete.erase(cfg_it);
-      it = to_create.erase(it);
+      bam::configuration::state::bas::iterator tmp = it;
+      ++it;
+      to_create.erase(tmp);
     }
     // Not found = create.
     else
@@ -120,10 +122,10 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas) {
        it != end;
        ++it) {
     logging::config(logging::medium)
-      << "BAM: creating BA " << it->get_id();
-    misc::shared_ptr<bam::ba> new_ba(_new_ba(*it));
-    applied& content(_applied[it->get_id()]);
-    content.cfg = *it;
+      << "BAM: creating BA " << it->first;
+    misc::shared_ptr<bam::ba> new_ba(_new_ba(it->second));
+    applied& content(_applied[it->first]);
+    content.cfg = it->second;
     content.obj = new_ba;
   }
 
@@ -204,6 +206,7 @@ misc::shared_ptr<bam::ba> applier::ba::_new_ba(
                                          configuration::ba const& cfg) {
   misc::shared_ptr<bam::ba> obj(new bam::ba);
   obj->set_id(cfg.get_id());
+  obj->set_service_id(cfg.get_service_id());
   obj->set_level_warning(cfg.get_warning_level());
   obj->set_level_critical(cfg.get_critical_level());
   return (obj);

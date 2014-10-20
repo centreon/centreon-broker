@@ -157,12 +157,37 @@ void reader::_load(state::bas& bas) {
            << _db->lastError().text());
 
   while (query.next()) {
-    bas.push_back(
+    bas[query.value(0).toUInt()] =
       ba(
-        query.value(0).toInt(), // ID.
+        query.value(0).toUInt(), // ID.
         query.value(1).toString().toStdString(), // Name.
         query.value(2).toFloat(), // Warning level.
-        query.value(3).toFloat())); // Critical level.
+        query.value(3).toFloat()); // Critical level.
+  }
+
+  // Load the associated ba_id from the table services.
+  // All the associated services have for description 'ba_[id]'.
+  query = _db->exec("SELECT service_id, service_description"
+                    "  FROM services"
+                    "  WHERE service_description LIKE 'ba_%'");
+  if (_db->lastError().isValid())
+    throw (reader_exception()
+           << "BAM: could not retrieve BA service ids from DB: "
+           << _db->lastError().text());
+
+  while (query.next()) {
+    std::string service_description = query.value(1).toString().toStdString();
+    service_description.erase(0, strlen("ba_"));
+    if (!service_description.empty()) {
+      bool ok = false;
+      unsigned int ba_id = QString(service_description.c_str()).toUInt(&ok);
+      if (!ok)
+        continue;
+      state::bas::iterator found = bas.find(ba_id);
+      if (found == bas.end())
+        continue;
+      found->second.set_service_id(query.value(0).toUInt());
+    }
   }
   return ;
 }

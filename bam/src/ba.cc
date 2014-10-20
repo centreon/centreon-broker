@@ -52,6 +52,7 @@ ba::ba()
     _downtime_hard(0.0),
     _downtime_soft(0.0),
     _id(0),
+    _service_id(0),
     _level_critical(0.0),
     _level_hard(100.0),
     _level_soft(100.0),
@@ -194,6 +195,15 @@ unsigned int ba::get_id() {
 }
 
 /**
+ *  Get the id of the service associated to this ba.
+ *
+ *  @return  An integer representing the value of this id.
+ */
+unsigned int ba::get_service_id() const {
+  return (_service_id);
+}
+
+/**
  *  Get BA hard state.
  *
  *  @return BA hard state.
@@ -249,6 +259,16 @@ void ba::set_id(unsigned int id) {
   _id = id;
   return ;
 }
+
+/**
+ *  Set the service id associated to this ba.
+ *
+ *  @param[in] service_id  Set the service id.
+ */
+void ba::set_service_id(unsigned int service_id) {
+  _service_id = service_id;
+}
+
 
 /**
  *  Set critical level.
@@ -322,6 +342,7 @@ void ba::_internal_copy(ba const& right) {
   _downtime_hard = right._downtime_hard;
   _downtime_soft = right._downtime_soft;
   _id = right._id;
+  _service_id = right._service_id;
   _impacts = right._impacts;
   _level_critical = right._level_critical;
   _level_hard = right._level_hard;

@@ -56,10 +56,12 @@ namespace        bam {
     double       get_downtime_impact_hard();
     double       get_downtime_impact_soft();
     unsigned int get_id();
+    unsigned int get_service_id() const;
     short        get_state_hard();
     short        get_state_soft();
     void         remove_impact(misc::shared_ptr<kpi> const& impact);
     void         set_id(unsigned int id);
+    void         set_service_id(unsigned int service_id);
     void         set_level_critical(double level);
     void         set_level_warning(double level);
     void         visit(stream* visitor);
@@ -83,6 +85,7 @@ namespace        bam {
     double       _downtime_hard;
     double       _downtime_soft;
     unsigned int _id;
+    unsigned int _service_id;
     umap<kpi*, impact_info>
                  _impacts;
     double       _level_critical;
