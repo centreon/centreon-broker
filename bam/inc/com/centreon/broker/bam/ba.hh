@@ -20,10 +20,10 @@
 #ifndef CCB_BAM_BA_HH
 #  define CCB_BAM_BA_HH
 
+#  include <string>
 #  include "com/centreon/broker/bam/ba_event.hh"
 #  include "com/centreon/broker/bam/computable.hh"
 #  include "com/centreon/broker/bam/impact_values.hh"
-#  include "com/centreon/broker/bam/indicator_event.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -75,6 +75,7 @@ namespace        bam {
 
     void         _apply_impact(impact_info& impact);
     void         _internal_copy(ba const& right);
+    void         _open_new_event(stream* visitor);
     void         _recompute();
     void         _unapply_impact(impact_info& impact);
 
@@ -82,21 +83,20 @@ namespace        bam {
     double       _acknowledgement_soft;
     double       _downtime_hard;
     double       _downtime_soft;
+    misc::shared_ptr<ba_event>
+                 _event;
     unsigned int _id;
     umap<kpi*, impact_info>
                  _impacts;
+    bool         _in_downtime;
+    timestamp    _last_service_update;
     double       _level_critical;
     double       _level_hard;
     double       _level_soft;
     double       _level_warning;
+    std::string  _output;
+    std::string  _perfdata;
     int          _recompute_count;
-
-    misc::shared_ptr<ba_event>
-                 _event;
-
-    void         _open_new_event();
-    void         _generate_events(kpi const& kpi_obj,
-                                  stream* visitor);
   };
 }
 

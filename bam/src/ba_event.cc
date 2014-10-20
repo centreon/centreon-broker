@@ -29,14 +29,15 @@ using namespace com::centreon::broker::bam;
  */
 ba_event::ba_event()
   : ba_id(0),
-    sla_duration(0) {}
+    in_downtime(false),
+    status(3) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] other Object to copy.
+ *  @param[in] other  Object to copy.
  */
-ba_event::ba_event(ba_event const& other) : indicator_event(other) {
+ba_event::ba_event(ba_event const& other) : io::data(other) {
   _internal_copy(other);
 }
 
@@ -48,13 +49,13 @@ ba_event::~ba_event() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] other Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
 ba_event& ba_event::operator=(ba_event const& other) {
   if (this != &other) {
-    indicator_event::operator=(other);
+    io::data::operator=(other);
     _internal_copy(other);
   }
   return (*this);
@@ -76,6 +77,9 @@ unsigned int ba_event::type() const {
  */
 void ba_event::_internal_copy(ba_event const& other) {
   ba_id = other.ba_id;
-  sla_duration = other.sla_duration;
+  end_time = other.end_time;
+  in_downtime = other.in_downtime;
+  start_time = other.start_time;
+  status = other.status;
   return ;
 }

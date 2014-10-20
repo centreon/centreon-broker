@@ -30,15 +30,15 @@ using namespace com::centreon::broker::bam;
 kpi_event::kpi_event()
   : kpi_id(0),
     impact_level(0),
-    first_output(),
-    first_perfdata() {}
+    in_downtime(false),
+    status(3) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] other Object to copy.
+ *  @param[in] other  Object to copy.
  */
-kpi_event::kpi_event(kpi_event const& other) : indicator_event(other) {
+kpi_event::kpi_event(kpi_event const& other) : io::data(other) {
   _internal_copy(other);
 }
 
@@ -50,13 +50,13 @@ kpi_event::~kpi_event() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] other Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
 kpi_event& kpi_event::operator=(kpi_event const& other) {
   if (this != &other) {
-    indicator_event::operator=(other);
+    io::data::operator=(other);
     _internal_copy(other);
   }
   return (*this);
@@ -77,9 +77,13 @@ unsigned int kpi_event::type() const {
  *  @param[in] other Object to copy.
  */
 void kpi_event::_internal_copy(kpi_event const& other) {
+  end_time = other.end_time;
   kpi_id = other.kpi_id;
   impact_level = other.impact_level;
-  first_output = other.first_output;
-  first_perfdata = other.first_perfdata;
+  in_downtime = other.in_downtime;
+  output = other.first_output;
+  perfdata = other.first_perfdata;
+  start_time = other.start_time;
+  status = other.status;
   return ;
 }

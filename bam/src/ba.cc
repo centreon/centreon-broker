@@ -52,6 +52,7 @@ ba::ba()
     _downtime_hard(0.0),
     _downtime_soft(0.0),
     _id(0),
+    _in_downtime(false),
     _level_critical(0.0),
     _level_hard(100.0),
     _level_soft(100.0),
@@ -142,7 +143,6 @@ bool ba::child_has_update(computable* child, stream* visitor) {
 
     // Generate status event.
     visit(visitor);
-    _generate_events(*static_cast<kpi*>(child), visitor);
   }
   return true;
 }
@@ -278,12 +278,31 @@ void ba::set_level_warning(double level) {
  */
 void ba::visit(stream* visitor) {
   if (visitor) {
-    misc::shared_ptr<ba_status> status(new ba_status);
-    status->ba_id = _id;
-    status->level_acknowledgement = normalize(_acknowledgement_hard);
-    status->level_downtime = normalize(_downtime_hard);
-    status->level_nominal = normalize(_level_hard);
-    visitor->write(status.staticCast<io::data>());
+    // Generate status event.
+    {
+      misc::shared_ptr<ba_status> status(new ba_status);
+      status->ba_id = _id;
+      status->level_acknowledgement = normalize(_acknowledgement_hard);
+      status->level_downtime = normalize(_downtime_hard);
+      status->level_nominal = normalize(_level_hard);
+      visitor->write(status.staticCast<io::data>());
+    }
+
+    // Generate BI events.
+    {
+      // If no event was cached, create one.
+      if (_event.isNull())
+        _open_new_event(visitor);
+      // If state changed, close event and open a new one.
+      else if ((_in_downtime != _event->in_downtime)
+               || (get_state_hard() != _event->status)) {
+        _event->end_time = _last_service_update;
+        visitor->write(_event.staticCast<io::data>());
+        // XXX : send BA/KPI events relations
+        _event.clear();
+        _open_new_event(visitor);
+      }
+    }
   }
   return ;
 }
@@ -321,12 +340,35 @@ void ba::_internal_copy(ba const& right) {
   _acknowledgement_soft = right._acknowledgement_soft;
   _downtime_hard = right._downtime_hard;
   _downtime_soft = right._downtime_soft;
+  _event = right._event;
   _id = right._id;
   _impacts = right._impacts;
+  _in_downtime = right._in_downtime;
+  _last_service_update = right._last_service_update;
   _level_critical = right._level_critical;
   _level_hard = right._level_hard;
   _level_soft = right._level_soft;
   _level_warning = right._level_warning;
+  _output = right._output;
+  _perfdata = right._perfdata;
+  return ;
+}
+
+/**
+ *  Open a new event for this BA.
+ *
+ *  @param[out] visitor  Visitor that will receive events.
+ */
+void ba::_open_new_event(stream* visitor) {
+  _event = new ba_event;
+  _event->ba_id = _id;
+  _event->in_downtime = _in_downtime;
+  _event->status = get_state_hard();
+  _event->start_time = _last_service_update;
+  if (visitor) {
+    misc::shared_ptr<ba_event> be(new ba_event(*_event));
+    visitor->write(be.staticCast<io::data>());
+  }
   return ;
 }
 
@@ -375,52 +417,4 @@ void ba::_unapply_impact(ba::impact_info& impact) {
     _recompute();
 
   return ;
-}
-
-/**
- *  Open a new event for this ba.
- */
-void ba::_open_new_event() {
-  _event = new(ba_event);
-
-  _event->ba_id = _id;
-  _event->start_time = time(NULL);
-  _event->status = get_state_hard();
-}
-
-/**
- *  Generate a ba event and its parenting with a kpi event.
- *
- *  @param[in] kpi_obj    The kpi that has been updated.
- *  @param[out] visitor   The stream to write the event to.
- */
-void ba::_generate_events(kpi const& kpi_obj,
-                          stream* visitor) {
-  if (!visitor)
-    return;
-
-  // If no event was cached, create one.
-  if (_event.isNull()) {
-    _open_new_event();
-    return;
-  }
-
-  // If the status was changed, close the current event, write it
-  // and create a new one
-  short actual_status = get_state_hard();
-  if (actual_status != _event->status) {
-    _event->duration = std::difftime(time(NULL), _event->start_time);
-    visitor->write(_event.staticCast<io::data>());
-
-    // Generate the event parenting with the kpi.
-    misc::shared_ptr<event_parent> parent_event(new event_parent);
-    parent_event->kpi_id = kpi_obj.get_id();
-    parent_event->kpi_start_time = _event->start_time;
-    parent_event->ba_id = _id;
-    parent_event->ba_start_time = _event->start_time;
-    visitor->write(parent_event.staticCast<io::data>());
-
-    // Open a new event.
-    _open_new_event();
-  }
 }
