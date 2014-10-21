@@ -40,6 +40,7 @@ namespace        bam {
                  kpi_event(kpi_event const& other);
                  ~kpi_event();
     kpi_event&   operator=(kpi_event const& other);
+    bool         operator==(kpi_event const& other) const;
     unsigned int type() const;
 
     timestamp    end_time;

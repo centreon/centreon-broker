@@ -91,16 +91,18 @@ void applier::kpi::apply(
          end(to_create.end());
        it != end;) {
     std::map<unsigned int, applied>::iterator
-      cfg_it(to_delete.find(it->get_id()));
+      cfg_it(to_delete.find(it->first));
     // Found = modify (or not).
     if (cfg_it != to_delete.end()) {
       // Configuration mismatch, modify object
       // (indeed deletion + recreation).
-      if (cfg_it->second.cfg != *it)
+      if (cfg_it->second.cfg != it->second)
         ++it;
       else {
         to_delete.erase(cfg_it);
-        it = to_create.erase(it);
+        bam::configuration::state::kpis::iterator tmp = it;
+        ++it;
+        to_create.erase(tmp);
       }
     }
     // Not found = create.
@@ -135,9 +137,9 @@ void applier::kpi::apply(
          end(to_create.end());
        it != end;
        ++it) {
-    misc::shared_ptr<bam::kpi> new_kpi(_new_kpi(*it, my_bas, book));
-    applied& content(_applied[it->get_id()]);
-    content.cfg = *it;
+    misc::shared_ptr<bam::kpi> new_kpi(_new_kpi(it->second, my_bas, book));
+    applied& content(_applied[it->first]);
+    content.cfg = it->second;
     content.obj = new_kpi;
   }
 
@@ -232,6 +234,8 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
            << "BAM: could not create KPI " << cfg.get_id()
            << ": BA " << cfg.get_ba_id() << " does not exist");
   my_kpi->set_id(cfg.get_id());
+  if (cfg.get_opened_event().kpi_id != 0)
+    my_kpi->set_initial_event(cfg.get_opened_event());
   my_ba->add_impact(my_kpi.staticCast<bam::kpi>());
   my_kpi->add_parent(my_ba.staticCast<bam::computable>());
   return (my_kpi);

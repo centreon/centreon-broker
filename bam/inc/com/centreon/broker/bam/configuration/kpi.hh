@@ -21,6 +21,7 @@
 #  define CCB_BAM_CONFIGURATION_KPI_HH
 
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/bam/kpi_event.hh"
 
 CCB_BEGIN()
 
@@ -75,6 +76,8 @@ namespace           bam {
       double        get_impact_warning() const;
       double        get_impact_critical() const;
       double        get_impact_unknown() const;
+      bam::kpi_event const&
+                    get_opened_event() const;
 
       void          set_id(unsigned int id);
       void          set_state_type(short state_type);
@@ -91,6 +94,7 @@ namespace           bam {
       void          set_impact_warning(double impact);
       void          set_impact_critical(double impact);
       void          set_impact_unknown(double impact);
+      void          set_opened_event(bam::kpi_event const& kpi_event);
 
     private:
       unsigned int  _id;
@@ -108,6 +112,8 @@ namespace           bam {
       double        _impact_warning;
       double        _impact_critical;
       double        _impact_unknown;
+      bam::kpi_event
+                    _event;
     };
   }
 }
