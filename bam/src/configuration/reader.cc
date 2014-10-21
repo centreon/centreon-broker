@@ -237,12 +237,12 @@ void reader::_load(state::bool_exps& bool_exps) {
              << "configuration from DB: " << _db->lastError().text());
 
     while (query.next()) {
-      bool_exps.push_back(
+      bool_exps[query.value(0).toInt()] =
                   bool_expression(
                     query.value(0).toInt(), // ID.
                     query.value(1).toFloat(),// Impact.
                     query.value(2).toString().toStdString(), // Expression.
-                    query.value(3).toBool())); // Impact if.
+                    query.value(3).toBool()); // Impact if.
     }
   }
 
@@ -265,11 +265,31 @@ void reader::_load(state::bool_exps& bool_exps) {
          it != end;
          ++it) {
       std::map<unsigned int, bool_expression::ids_of_bas>::iterator
-        it_impacted_bas(impacted_bas.find(it->get_id()));
+        it_impacted_bas(impacted_bas.find(it->first));
       if (it_impacted_bas != impacted_bas.end())
-        it->impacted_bas().swap(it_impacted_bas->second);
+        it->second.impacted_bas().swap(it_impacted_bas->second);
       else
-        it->impacted_bas().clear();
+        it->second.impacted_bas().clear();
+    }
+  }
+
+  // Load kpi_id associated with boolean BAs.
+  {
+    QSqlQuery q(_db->exec(
+      "SELECT boolean_id, kpi_id FROM mod_bam_kpi WHERE kpi_id != 0"));
+    if (_db->lastError().isValid())
+      throw (reader_exception()
+             << "BAM: could not retrieve the kpi_ids of the boolean "
+                "expressions: " << _db->lastError().text());
+    while (q.next()) {
+      unsigned int boolean_id = q.value(0).toInt();
+      unsigned int kpi_id = q.value(1).toInt();
+      state::bool_exps::iterator found = bool_exps.find(boolean_id);
+      if (found == bool_exps.end())
+        throw (reader_exception())
+                << "BAM: Found a kpi pointing to an inexisting boolean "
+                   "(boolean_id = " << boolean_id;
+      found->second.set_kpi_id(kpi_id);
     }
   }
   return ;

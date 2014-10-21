@@ -44,7 +44,7 @@ namespace                    bam {
       /* Typedefs */
       typedef std::map<int, ba>  bas;
       typedef std::deque<kpi>             kpis;
-      typedef std::deque<bool_expression> bool_exps;
+      typedef std::map<int, bool_expression> bool_exps;
       typedef std::deque<meta_service>    meta_services;
 
                              state();

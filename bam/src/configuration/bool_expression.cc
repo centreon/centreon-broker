@@ -38,7 +38,8 @@ bool_expression::bool_expression(
   : _id(id),
     _impact(impact),
     _expression(expression),
-    _impact_if(impact_if) {}
+    _impact_if(impact_if),
+    _kpi_id(0) {}
 
 /**
  *  Copy constructor.
@@ -50,7 +51,8 @@ bool_expression::bool_expression(bool_expression const& other)
     _impact(other._impact),
     _impacted(other._impacted),
     _expression(other._expression),
-    _impact_if(other._impact_if) {}
+    _impact_if(other._impact_if),
+    _kpi_id(other._kpi_id) {}
 
 /**
  *  Destructor
@@ -71,6 +73,7 @@ bool_expression& bool_expression::operator=(bool_expression const& other) {
     _impacted = other._impacted;
     _expression = other._expression;
     _impact_if = other._impact_if;
+    _kpi_id = other._kpi_id;
   }
   return (*this);
 }
@@ -87,7 +90,8 @@ bool bool_expression::operator==(bool_expression const& other) const {
           && (_impact == other._impact)
           && (_impacted == other._impacted)
           && (_expression == other._expression)
-          && (_impact_if == other._impact_if));
+          && (_impact_if == other._impact_if)
+          && (_kpi_id == other._kpi_id));
 }
 
 /**
@@ -186,4 +190,17 @@ void bool_expression::set_expression(std::string const& exp) {
  */
 void bool_expression::set_impact_if(bool bif) {
   _impact_if = bif;
+}
+
+unsigned int bool_expression::get_kpi_id() const {
+  return (_kpi_id);
+}
+
+/**
+ *  Set the kpi id of this boolean expression.
+ *
+ *  @param[in] id  The id to set.
+ */
+void bool_expression::set_kpi_id(unsigned int id) {
+  _kpi_id = id;
 }

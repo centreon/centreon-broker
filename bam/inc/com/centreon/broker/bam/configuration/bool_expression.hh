@@ -55,11 +55,13 @@ namespace                   bam {
       ids_of_bas const&     get_impacted_bas() const;
       std::string const&    get_expression() const;
       bool                  get_impact_if() const;
+      unsigned int          get_kpi_id() const;
 
       ids_of_bas&           impacted_bas();
       void                  set_impact(double d);
       void                  set_expression(std::string const& s);
       void                  set_impact_if(bool b);
+      void                  set_kpi_id(unsigned int id);
 
     private:
       unsigned int          _id;
@@ -67,6 +69,7 @@ namespace                   bam {
       ids_of_bas            _impacted;
       std::string           _expression;
       bool                  _impact_if;
+      unsigned int          _kpi_id;
     };
   }
 }

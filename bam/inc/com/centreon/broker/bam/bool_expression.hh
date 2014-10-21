@@ -53,6 +53,7 @@ namespace            bam {
     void             set_impact_hard(double impact);
     void             set_impact_if(bool impact_if);
     void             set_impact_soft(double impact);
+    void             set_kpi_id(unsigned int id);
     void             visit(stream* visitor);
 
   private:
