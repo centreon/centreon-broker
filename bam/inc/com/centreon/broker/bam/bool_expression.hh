@@ -20,7 +20,9 @@
 #ifndef CCB_BAM_BOOL_EXPRESSION_HH
 #  define CCB_BAM_BOOL_EXPRESSION_HH
 
+#  include <list>
 #  include "com/centreon/broker/bam/kpi.hh"
+#  include "com/centreon/broker/bam/kpi_event.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -42,6 +44,7 @@ namespace            bam {
                      bool_expression(bool_expression const& right);
                      ~bool_expression();
     bool_expression& operator=(bool_expression const& right);
+    void             add_kpi_id(unsigned int id);
     bool             child_has_update(
                        computable* child,
                        stream* visitor = NULL);
@@ -57,13 +60,18 @@ namespace            bam {
 
   private:
     void             _internal_copy(bool_expression const& right);
+    void             _open_new_event(stream* visitor);
 
+    misc::shared_ptr<kpi_event>
+                     _event;
     misc::shared_ptr<bool_value>
                      _expression;
     unsigned int     _id;
     bool             _impact_if;
     double           _impact_hard;
     double           _impact_soft;
+    std::list<unsigned int>
+                     _kpis;
   };
 }
 

@@ -42,9 +42,9 @@ namespace        bam {
     unsigned int  type() const;
 
     unsigned int  kpi_id;
-    timestamp     kpi_start_time;
     unsigned int  ba_id;
     timestamp     ba_start_time;
+    timestamp     ba_end_time;
 
   private:
     void          _internal_copy(event_parent const& other);
