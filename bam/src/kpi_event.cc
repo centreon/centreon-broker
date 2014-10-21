@@ -28,8 +28,7 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 kpi_event::kpi_event()
-  : historic(false),
-    kpi_id(0),
+  : kpi_id(0),
     impact_level(0),
     in_downtime(false),
     status(3) {}
@@ -79,7 +78,6 @@ unsigned int kpi_event::type() const {
  */
 void kpi_event::_internal_copy(kpi_event const& other) {
   end_time = other.end_time;
-  historic = other.historic;
   kpi_id = other.kpi_id;
   impact_level = other.impact_level;
   in_downtime = other.in_downtime;

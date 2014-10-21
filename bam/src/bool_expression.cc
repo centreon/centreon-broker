@@ -239,7 +239,6 @@ void bool_expression::visit(stream* visitor) {
       }
       // If state changed, close event and open a new one.
       else if (get_state_hard() != _event->status) {
-        _event->historic = _is_historical_event(_event->start_time);
         _event->end_time = time(NULL);
         for (std::list<unsigned int>::const_iterator
                it(_kpis.begin()),

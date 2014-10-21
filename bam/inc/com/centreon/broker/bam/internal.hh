@@ -32,8 +32,7 @@ namespace bam {
     de_kpi_status,
     de_meta_service_status,
     de_ba_event,
-    de_kpi_event,
-    de_event_parent
+    de_kpi_event
   };
 }
 

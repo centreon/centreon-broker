@@ -19,7 +19,6 @@
 
 #include "com/centreon/broker/bam/ba.hh"
 #include "com/centreon/broker/bam/ba_status.hh"
-#include "com/centreon/broker/bam/event_parent.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi.hh"
 #include "com/centreon/broker/bam/stream.hh"
@@ -398,18 +397,6 @@ void ba::visit(stream* visitor) {
                || (get_state_hard() != _event->status)) {
         _event->end_time = _last_service_update;
         visitor->write(_event.staticCast<io::data>());
-        for (umap<kpi*, impact_info>::const_iterator
-               it(_impacts.begin()),
-               end(_impacts.end());
-             it != end;
-             ++it) {
-          misc::shared_ptr<event_parent> ep(new event_parent);
-          ep->kpi_id = it->first->get_id();
-          ep->ba_id = _id;
-          ep->ba_start_time = _event->start_time;
-          ep->ba_end_time = _event->end_time;
-          visitor->write(ep.staticCast<io::data>());
-        }
         _event.clear();
         _open_new_event(visitor);
       }

@@ -30,7 +30,6 @@
 #include "com/centreon/broker/bam/bool_status.hh"
 #include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/state.hh"
-#include "com/centreon/broker/bam/event_parent.hh"
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/bam/kpi_event.hh"
@@ -355,12 +354,6 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
       logging::debug(logging::low)
         << "BAM: processing ba event";
       _process_ba_event(data);
-    }
-    else if (data->type()
-             == io::events::data_type<io::events::bam, bam::de_event_parent>::value) {
-      logging::debug(logging::low)
-        << "BAM: processing event parent event";
-      _process_event_parent(data);
     }
   }
 }
