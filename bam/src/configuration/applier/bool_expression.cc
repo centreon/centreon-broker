@@ -182,6 +182,8 @@ void applier::bool_expression::apply(
     new_bool_exp->set_impact_if(it->second.get_impact_if());
     new_bool_exp->set_impact_soft(it->second.get_impact());
     new_bool_exp->set_kpi_id(it->second.get_kpi_id());
+    if (it->second.get_opened_event().kpi_id != 0)
+      new_bool_exp->set_initial_event(it->second.get_opened_event());
     logging::config(logging::medium)
       << "BAM: creating new boolexp " << it->first;
     for (bam::configuration::bool_expression::ids_of_bas::const_iterator

@@ -122,7 +122,7 @@ void reader::_load(state::kpis& kpis) {
            << _db->lastError().text());
 
   while (query.next()) {
-    kpis.push_back(
+    kpis[query.value(0).toInt()] =
       kpi(
         query.value(0).toInt(), // ID.
         query.value(1).toInt(), // State type.
@@ -138,8 +138,38 @@ void reader::_load(state::kpis& kpis) {
         query.value(11).toBool(), // Ignore acknowledgement.
         query.value(12).toDouble(), // Warning.
         query.value(13).toDouble(), // Critical.
-        query.value(14).toDouble())); // Unknown.
+        query.value(14).toDouble()); // Unknown.
   }
+
+  // Load opened kpi events associated with KPIs.
+  query = _db->exec(
+      "SELECT kpi_event_id, kpi_id, status, start_time, end_time, impact_level,"
+       " first_output, first_perfdata, in_downtime"
+       "   FROM kpi_events WHERE end_time = 0");
+
+    if (_db->lastError().isValid())
+      throw (reader_exception()
+             << "BAM: could not retrieve KPI events from DB: "
+             << _db->lastError().text());
+
+  while (query.next()) {
+    state::kpis::iterator found = kpis.find(query.value(1).toInt());
+    if (found == kpis.end())
+      continue;
+
+    kpi_event e;
+    e.kpi_id = query.value(1).toInt();
+    e.status = query.value(2).toInt();
+    e.status = query.value(3).toInt();
+    e.start_time = query.value(4).toInt();
+    e.end_time = query.value(5).toInt();
+    e.impact_level = query.value(6).toInt();
+    e.output = query.value(7).toString().toStdString();
+    e.perfdata = query.value(8).toString().toStdString();
+    e.in_downtime = query.value(9).toBool();
+    found->second.set_opened_event(e);
+  }
+
   return ;
 }
 
@@ -316,6 +346,38 @@ void reader::_load(state::bool_exps& bool_exps) {
                 << "BAM: Found a kpi pointing to an inexisting boolean "
                    "(boolean_id = " << boolean_id;
       found->second.set_kpi_id(kpi_id);
+    }
+  }
+
+  // Load opened kpi events associated with boolean expressions.
+  {
+    QSqlQuery query = _db->exec(
+        "SELECT kpi_event_id, kpi_id, status, start_time, end_time, impact_level,"
+         " first_output, first_perfdata, in_downtime"
+         "   FROM kpi_events WHERE end_time = 0");
+
+      if (_db->lastError().isValid())
+        throw (reader_exception()
+               << "BAM: could not retrieve KPI events from DB: "
+               << _db->lastError().text());
+
+    while (query.next()) {
+      state::bool_exps::iterator found
+            = bool_exps.find(query.value(1).toInt());
+      if (found == bool_exps.end())
+        continue;
+
+      kpi_event e;
+      e.kpi_id = query.value(1).toInt();
+      e.status = query.value(2).toInt();
+      e.status = query.value(3).toInt();
+      e.start_time = query.value(4).toInt();
+      e.end_time = query.value(5).toInt();
+      e.impact_level = query.value(6).toInt();
+      e.output = query.value(7).toString().toStdString();
+      e.perfdata = query.value(8).toString().toStdString();
+      e.in_downtime = query.value(9).toBool();
+      found->second.set_opened_event(e);
     }
   }
   return ;

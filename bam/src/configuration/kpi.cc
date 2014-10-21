@@ -77,7 +77,8 @@ kpi::kpi(kpi const& other)
     _ignore_acknowledgement(other._ignore_acknowledgement),
     _impact_warning(other._impact_warning),
     _impact_critical(other._impact_critical),
-    _impact_unknown(other._impact_unknown)
+    _impact_unknown(other._impact_unknown),
+    _event(other._event)
 {}
 
 /**
@@ -108,7 +109,8 @@ kpi& kpi::operator=(kpi const& other) {
     _ignore_acknowledgement = other._ignore_acknowledgement;
     _impact_warning = other._impact_warning;
     _impact_critical = other._impact_critical;
-    _impact_unknown = other._impact_unknown ;
+    _impact_unknown = other._impact_unknown;
+    _event = other._event;
   }
   return (*this);
 }
@@ -135,7 +137,8 @@ bool kpi::operator==(kpi const& other) const {
           && (_ignore_acknowledgement == other._ignore_acknowledgement)
           && (_impact_warning == other._impact_warning)
           && (_impact_critical == other._impact_critical)
-          && (_impact_unknown == other._impact_unknown));
+          && (_impact_unknown == other._impact_unknown)
+          && (_event == other._event));
 }
 
 /**
@@ -303,6 +306,15 @@ double kpi::get_impact_unknown() const {
 }
 
 /**
+ *  Get the opened event associated with this kpi.
+ *
+ *  @return  The opened event associated with this kpi.
+ */
+com::centreon::broker::bam::kpi_event const& kpi::get_opened_event() const {
+  return (_event);
+}
+
+/**
  *  Set state type.
  *
  *  @param[in] s Set the state type.
@@ -427,4 +439,13 @@ void kpi::set_impact_critical(double d) {
  */
 void kpi::set_impact_unknown(double d) {
   _impact_unknown = d;
+}
+
+/**
+ *  Set the opened event associated with this kpi.
+ *
+ *  @param[in] kpi_event  The event.
+ */
+void kpi::set_opened_event(bam::kpi_event const& kpi_event) {
+  _event = kpi_event;
 }

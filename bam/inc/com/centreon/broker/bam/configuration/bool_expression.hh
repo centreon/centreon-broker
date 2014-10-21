@@ -23,6 +23,7 @@
 #  include <list>
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/bam/kpi_event.hh"
 
 CCB_BEGIN()
 
@@ -56,12 +57,14 @@ namespace                   bam {
       std::string const&    get_expression() const;
       bool                  get_impact_if() const;
       unsigned int          get_kpi_id() const;
+      bam::kpi_event const& get_opened_event() const;
 
       ids_of_bas&           impacted_bas();
       void                  set_impact(double d);
       void                  set_expression(std::string const& s);
       void                  set_impact_if(bool b);
       void                  set_kpi_id(unsigned int id);
+      void                  set_opened_event(bam::kpi_event const& e);
 
     private:
       unsigned int          _id;
@@ -70,6 +73,7 @@ namespace                   bam {
       std::string           _expression;
       bool                  _impact_if;
       unsigned int          _kpi_id;
+      bam::kpi_event        _event;
     };
   }
 }

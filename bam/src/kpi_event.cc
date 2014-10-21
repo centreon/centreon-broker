@@ -63,6 +63,24 @@ kpi_event& kpi_event::operator=(kpi_event const& other) {
 }
 
 /**
+ *  Equality test operator.
+ *
+ *  @param[in] other  The object to test.
+ *
+ *  @return  True if the two objects are equal.
+ */
+bool kpi_event::operator==(kpi_event const& other) const {
+  return ((end_time == other.end_time)
+          && (kpi_id == other.kpi_id)
+          && (impact_level == other.impact_level)
+          && (in_downtime == other.in_downtime)
+          && (output == other.output)
+          && (perfdata == other.perfdata)
+          && (start_time == other.start_time)
+          && (status == other.status));
+}
+
+/**
  *  Get the event type.
  *
  *  @return Event type.

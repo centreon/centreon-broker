@@ -52,7 +52,8 @@ bool_expression::bool_expression(bool_expression const& other)
     _impacted(other._impacted),
     _expression(other._expression),
     _impact_if(other._impact_if),
-    _kpi_id(other._kpi_id) {}
+    _kpi_id(other._kpi_id),
+    _event(other._event) {}
 
 /**
  *  Destructor
@@ -74,6 +75,7 @@ bool_expression& bool_expression::operator=(bool_expression const& other) {
     _expression = other._expression;
     _impact_if = other._impact_if;
     _kpi_id = other._kpi_id;
+    _event = other._event;
   }
   return (*this);
 }
@@ -91,7 +93,8 @@ bool bool_expression::operator==(bool_expression const& other) const {
           && (_impacted == other._impacted)
           && (_expression == other._expression)
           && (_impact_if == other._impact_if)
-          && (_kpi_id == other._kpi_id));
+          && (_kpi_id == other._kpi_id)
+          && (_event == other._event));
 }
 
 /**
@@ -156,6 +159,16 @@ bool bool_expression::get_impact_if() const {
 }
 
 /**
+ *  Get the opened event associated with this boolean expression.
+ *
+ *  @return  The event.
+ */
+com::centreon::broker::bam::kpi_event const&
+      bool_expression::get_opened_event() const {
+  return (_event);
+}
+
+/**
  *  Get modifiable list of BAs impacted by this boolean expression.
  *
  *  @return List of BAs impacted by this boolean expression.
@@ -203,4 +216,13 @@ unsigned int bool_expression::get_kpi_id() const {
  */
 void bool_expression::set_kpi_id(unsigned int id) {
   _kpi_id = id;
+}
+
+/**
+ *  Set the initial opened event of this boolean expression.
+ *
+ *  @param[in] event  The event to set.
+ */
+void bool_expression::set_opened_event(bam::kpi_event const& event) {
+  _event = event;
 }
