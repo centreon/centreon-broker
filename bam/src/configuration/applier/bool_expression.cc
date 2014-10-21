@@ -96,16 +96,18 @@ void applier::bool_expression::apply(
          end(to_create.end());
        it != end;) {
     std::map<unsigned int, applied>::iterator
-      cfg_it(to_delete.find(it->get_id()));
+      cfg_it(to_delete.find(it->first));
     // Found = modify (or not).
     if (cfg_it != to_delete.end()) {
       // Configuration mismatch, modify object
       // (indeed deletion + recreation).
-      if (cfg_it->second.cfg != *it)
+      if (cfg_it->second.cfg != it->second)
         ++it;
       else {
         to_delete.erase(cfg_it);
-        it = to_create.erase(it);
+        bam::configuration::state::bool_exps::iterator tmp = it;
+        ++it;
+        to_create.erase(tmp);
       }
     }
     // Not found = create.
@@ -156,13 +158,13 @@ void applier::bool_expression::apply(
     misc::shared_ptr<bam::bool_expression>
       new_bool_exp(new bam::bool_expression);
     {
-      bam::bool_parser p(it->get_expression(), mapping);
+      bam::bool_parser p(it->second.get_expression(), mapping);
       bam::bool_value::ptr tree(p.get_tree());
       new_bool_exp->set_expression(tree);
       if (!tree.isNull())
         tree->add_parent(new_bool_exp.staticCast<bam::computable>());
-      applied& content(_applied[it->get_id()]);
-      content.cfg = *it;
+      applied& content(_applied[it->first]);
+      content.cfg = it->second;
       content.obj = new_bool_exp;
       content.svc = p.get_services();
       for (std::list<bool_service::ptr>::const_iterator
@@ -175,24 +177,25 @@ void applier::bool_expression::apply(
                (*it2)->get_service_id(),
                it2->data());
     }
-    new_bool_exp->set_id(it->get_id());
-    new_bool_exp->set_impact_hard(it->get_impact());
-    new_bool_exp->set_impact_if(it->get_impact_if());
-    new_bool_exp->set_impact_soft(it->get_impact());
+    new_bool_exp->set_id(it->first);
+    new_bool_exp->set_impact_hard(it->second.get_impact());
+    new_bool_exp->set_impact_if(it->second.get_impact_if());
+    new_bool_exp->set_impact_soft(it->second.get_impact());
+    new_bool_exp->set_kpi_id(it->second.get_kpi_id());
     logging::config(logging::medium)
-      << "BAM: creating new boolexp " << it->get_id();
+      << "BAM: creating new boolexp " << it->first;
     for (bam::configuration::bool_expression::ids_of_bas::const_iterator
-           it2(it->get_impacted_bas().begin()),
-           end2(it->get_impacted_bas().end());
+           it2(it->second.get_impacted_bas().begin()),
+           end2(it->second.get_impacted_bas().end());
          it2 != end2;
          ++it2) {
       misc::shared_ptr<bam::ba> target(my_bas.find_ba(*it2));
       if (target.isNull())
         logging::config(logging::high) << "BAM: could not find BA "
-          << *it2 << " for boolean expression " << it->get_id()
+          << *it2 << " for boolean expression " << it->first
           << ", BA won't be impacted by this boolean expression";
       logging::config(logging::low)
-        << "BAM: boolexp " << it->get_id() << " impacts BA " << *it2;
+        << "BAM: boolexp " << it->first << " impacts BA " << *it2;
       target->add_impact(new_bool_exp.staticCast<bam::kpi>());
       new_bool_exp->add_parent(target.staticCast<bam::computable>());
     }

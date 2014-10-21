@@ -204,6 +204,15 @@ void bool_expression::set_impact_soft(double impact) {
 }
 
 /**
+ *  Set the kpi id of this boolean expression.
+ *
+ *  @param[in] id  The kpi id to set.
+ */
+void bool_expression::set_kpi_id(unsigned int id) {
+  kpi::set_id(id);
+}
+
+/**
  *  Visit boolean expression.
  *
  *  @param[out] visitor  Object that will receive status.

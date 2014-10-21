@@ -73,6 +73,7 @@ namespace        bam {
     void         set_service_id(unsigned int service_id);
     void         set_level_critical(double level);
     void         set_level_warning(double level);
+    void         set_initial_event(ba_event const& event);
     void         visit(stream* visitor);
     void         service_update(
                    misc::shared_ptr<neb::service_status> const& status,

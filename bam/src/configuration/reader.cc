@@ -214,6 +214,32 @@ void reader::_load(state::bas& bas) {
       throw (reader_exception()
                << "BAM: found a ba without an associated service, id: "
                << it->second.get_id());
+
+  // Load the opened but not-closed events for all the BAs.
+  query = _db->exec("SELECT ba_event_id, ba_id, start_time, end_time, status, "
+                    "in_downtime FROM ba_events"
+                    "  WHERE end_time = 0");
+  if (_db->lastError().isValid())
+    throw (reader_exception()
+           << "BAM: could not retrieve the BA events associated to the BAs: "
+           << _db->lastError().text());
+
+  while (query.next()) {
+   ba_event e;
+   e.ba_id = query.value(1).toInt();
+   e.start_time = query.value(2).toInt();
+   e.end_time = query.value(3).toInt();
+   e.status = query.value(4).toInt();
+   e.in_downtime = query.value(5).toInt();
+   state::bas::iterator found = bas.find(e.ba_id);
+   if (found == bas.end()) {
+     logging::error(logging::medium)
+       << "BAM: ba id: "
+       << query.value(1).toString()
+       << "not found when reading BA events from db.";
+   }
+   found->second.set_opened_event(e);
+  }
   return ;
 }
 
@@ -237,12 +263,12 @@ void reader::_load(state::bool_exps& bool_exps) {
              << "configuration from DB: " << _db->lastError().text());
 
     while (query.next()) {
-      bool_exps.push_back(
+      bool_exps[query.value(0).toInt()] =
                   bool_expression(
                     query.value(0).toInt(), // ID.
                     query.value(1).toFloat(),// Impact.
                     query.value(2).toString().toStdString(), // Expression.
-                    query.value(3).toBool())); // Impact if.
+                    query.value(3).toBool()); // Impact if.
     }
   }
 
@@ -265,11 +291,31 @@ void reader::_load(state::bool_exps& bool_exps) {
          it != end;
          ++it) {
       std::map<unsigned int, bool_expression::ids_of_bas>::iterator
-        it_impacted_bas(impacted_bas.find(it->get_id()));
+        it_impacted_bas(impacted_bas.find(it->first));
       if (it_impacted_bas != impacted_bas.end())
-        it->impacted_bas().swap(it_impacted_bas->second);
+        it->second.impacted_bas().swap(it_impacted_bas->second);
       else
-        it->impacted_bas().clear();
+        it->second.impacted_bas().clear();
+    }
+  }
+
+  // Load kpi_id associated with boolean BAs.
+  {
+    QSqlQuery q(_db->exec(
+      "SELECT boolean_id, kpi_id FROM mod_bam_kpi WHERE kpi_id != 0"));
+    if (_db->lastError().isValid())
+      throw (reader_exception()
+             << "BAM: could not retrieve the kpi_ids of the boolean "
+                "expressions: " << _db->lastError().text());
+    while (q.next()) {
+      unsigned int boolean_id = q.value(0).toInt();
+      unsigned int kpi_id = q.value(1).toInt();
+      state::bool_exps::iterator found = bool_exps.find(boolean_id);
+      if (found == bool_exps.end())
+        throw (reader_exception())
+                << "BAM: Found a kpi pointing to an inexisting boolean "
+                   "(boolean_id = " << boolean_id;
+      found->second.set_kpi_id(kpi_id);
     }
   }
   return ;

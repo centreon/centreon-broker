@@ -38,6 +38,7 @@ namespace        bam {
                  ba_event(ba_event const& other);
                  ~ba_event();
     ba_event&    operator=(ba_event const& other);
+    bool         operator==(ba_event const& other) const;
     unsigned int type() const;
 
     unsigned int ba_id;

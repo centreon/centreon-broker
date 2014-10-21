@@ -62,6 +62,22 @@ ba_event& ba_event::operator=(ba_event const& other) {
 }
 
 /**
+ *  Equality test operator.
+ *
+ *  @param[in] other  The object to test for equality.
+ *
+ *  @return  True if the two objects are equal.
+ */
+bool ba_event::operator==(ba_event const& other) const {
+  return ((ba_id == other.ba_id)
+          && (end_time == other.end_time)
+          && (in_downtime == other.in_downtime)
+          && (start_time == other.start_time)
+          && (status == other.status));
+}
+
+
+/**
  *  Get the event type.
  *
  *  @return Event type.
