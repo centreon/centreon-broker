@@ -597,45 +597,45 @@ void stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
  *  @param[in] e The event.
  */
 void stream::_process_event_parent(misc::shared_ptr<io::data> const& e) {
-  bam::event_parent const&
-    ep(*static_cast<bam::event_parent const*>(e.data()));
+  // bam::event_parent const&
+  //   ep(*static_cast<bam::event_parent const*>(e.data()));
 
-  QSqlQuery query(*_db);
-  query.setForwardOnly(true);
-  std::stringstream ss;
+  // QSqlQuery query(*_db);
+  // query.setForwardOnly(true);
+  // std::stringstream ss;
 
-  // Get the linked kpi event id.
-  ss << "SELECT kpi_event_id FROM kpi_events WHERE "
-     << "kpi_id = " << ep.kpi_id
-     << " AND start_time = " << ep.kpi_start_time;
+  // // Get the linked kpi event id.
+  // ss << "SELECT kpi_event_id FROM kpi_events WHERE "
+  //    << "kpi_id = " << ep.kpi_id
+  //    << " AND start_time = " << ep.kpi_start_time;
 
-  if (!query.exec(ss.str().c_str()) || !query.next())
-    throw (exceptions::msg()
-           << "BAM: could not get the kpi event id of an event parent event: "
-           << query.lastError().text());
+  // if (!query.exec(ss.str().c_str()) || !query.next())
+  //   throw (exceptions::msg()
+  //          << "BAM: could not get the kpi event id of an event parent event: "
+  //          << query.lastError().text());
 
-  unsigned int kpi_event_id = query.value(0).toUInt();
-  ss.str("");
+  // unsigned int kpi_event_id = query.value(0).toUInt();
+  // ss.str("");
 
-  // Get the linked ba event id.
-  ss << "SELECT ba_event_id FROM ba_events WHERE "
-     << " ba_id = " << ep.ba_id
-     << " AND start_time = " << ep.ba_start_time;
+  // // Get the linked ba event id.
+  // ss << "SELECT ba_event_id FROM ba_events WHERE "
+  //    << " ba_id = " << ep.ba_id
+  //    << " AND start_time = " << ep.ba_start_time;
 
-  if (!query.exec(ss.str().c_str()) || !query.next())
-    throw (exceptions::msg()
-           << "BAM: could not get the ba event id of an event parent event: "
-           << query.lastError().text());
+  // if (!query.exec(ss.str().c_str()) || !query.next())
+  //   throw (exceptions::msg()
+  //          << "BAM: could not get the ba event id of an event parent event: "
+  //          << query.lastError().text());
 
-  unsigned int ba_event_id = query.value(0).toUInt();
-  ss.str("");
+  // unsigned int ba_event_id = query.value(0).toUInt();
+  // ss.str("");
 
-  // Insert the kpi and the ba event ids.
-  ss << "INSERT INTO relations_ba_kpi_events (kpi_event_id, ba_event_id)"
-        " VALUES (" << kpi_event_id << ", " << ba_event_id << ")";
+  // // Insert the kpi and the ba event ids.
+  // ss << "INSERT INTO relations_ba_kpi_events (kpi_event_id, ba_event_id)"
+  //       " VALUES (" << kpi_event_id << ", " << ba_event_id << ")";
 
-  if (!query.exec(ss.str().c_str()))
-    throw (exceptions::msg()
-           << "BAM: could not insert an event parent event: "
-           << query.lastError().text());
+  // if (!query.exec(ss.str().c_str()))
+  //   throw (exceptions::msg()
+  //          << "BAM: could not insert an event parent event: "
+  //          << query.lastError().text());
 }

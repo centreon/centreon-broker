@@ -68,6 +68,18 @@ bool_expression& bool_expression::operator=(
 }
 
 /**
+ *  @brief Add a KPI ID to this boolean expression.
+ *
+ *  Boolean expression are simulated as KPI.
+ *
+ *  @param[in] id  One of the boolean expression KPI ID.
+ */
+void bool_expression::add_kpi_id(unsigned int id) {
+  _kpis.push_back(id);
+  return ;
+}
+
+/**
  *  Base boolean expression got updated.
  *
  *  @param[in]  child    Expression that got updated.
@@ -188,10 +200,42 @@ void bool_expression::set_kpi_id(unsigned int id) {
  *  @param[out] visitor  Object that will receive status.
  */
 void bool_expression::visit(stream* visitor) {
-  misc::shared_ptr<bool_status> b(new bool_status);
-  b->bool_id = _id;
-  b->state = _expression->value_hard();
-  visitor->write(b.staticCast<io::data>());
+  if (visitor) {
+    // Generate status event.
+    {
+      misc::shared_ptr<bool_status> b(new bool_status);
+      b->bool_id = _id;
+      b->state = _expression->value_hard();
+      visitor->write(b.staticCast<io::data>());
+    }
+
+    // Generate BI events.
+    {
+      // Get impact.
+      impact_values impacts;
+      impact_hard(impacts);
+
+      // If no event was cached, create one.
+      if (_event.isNull()) {
+        _open_new_event(visitor);
+      }
+      // If state changed, close event and open a new one.
+      else if (impacts.get_nominal() != _event->impact_level) {
+        _event->end_time = time(NULL);
+        for (std::list<unsigned int>::const_iterator
+               it(_kpis.begin()),
+               end(_kpis.end());
+             it != end;
+             ++it) {
+          misc::shared_ptr<kpi_event> ke(new kpi_event(*_event));
+          ke->kpi_id = *it;
+          visitor->write(ke.staticCast<io::data>());
+        }
+        _event.clear();
+        _open_new_event(visitor);
+      }
+    }
+  }
   return ;
 }
 
@@ -201,10 +245,38 @@ void bool_expression::visit(stream* visitor) {
  *  @param[in] right Object to copy.
  */
 void bool_expression::_internal_copy(bool_expression const& right) {
+  _event = right._event;
   _expression = right._expression;
   _id = right._id;
   _impact_if = right._impact_if;
   _impact_hard = right._impact_hard;
   _impact_soft = right._impact_soft;
+  return ;
+}
+
+/**
+ *  Open a new event.
+ *
+ *  @param[out] visitor  Visitor that will receive events.
+ */
+void bool_expression::_open_new_event(stream* visitor) {
+  impact_values impacts;
+  impact_hard(impacts);
+  _event->impact_level = impacts.get_nominal();
+  _event->in_downtime = false;
+  _event->output = "BAM boolean expression computed by Centreon Broker";
+  _event->perfdata.clear();
+  _event->start_time = time(NULL);
+  _event->status = 0;
+  if (visitor)
+    for (std::list<unsigned int>::const_iterator
+           it(_kpis.begin()),
+           end(_kpis.end());
+         it != end;
+         ++it) {
+      misc::shared_ptr<kpi_event> ke(new kpi_event(*_event));
+      ke->kpi_id = *it;
+      visitor->write(ke.staticCast<io::data>());
+    }
   return ;
 }
