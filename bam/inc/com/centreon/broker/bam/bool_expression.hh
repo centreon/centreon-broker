@@ -65,8 +65,6 @@ namespace            bam {
     void             _internal_copy(bool_expression const& right);
     void             _open_new_event(stream* visitor);
 
-    misc::shared_ptr<kpi_event>
-                     _event;
     misc::shared_ptr<bool_value>
                      _expression;
     unsigned int     _id;

@@ -67,8 +67,6 @@ namespace   bam {
 
     misc::shared_ptr<ba>
             _ba;
-    misc::shared_ptr<kpi_event>
-            _event;
     double  _impact_critical;
     double  _impact_warning;
   };

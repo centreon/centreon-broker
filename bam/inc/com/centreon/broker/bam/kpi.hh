@@ -22,6 +22,8 @@
 
 #  include <list>
 #  include "com/centreon/broker/bam/computable.hh"
+#  include "com/centreon/broker/bam/kpi_event.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
 
@@ -52,6 +54,7 @@ namespace        bam {
     virtual void impact_soft(impact_values& soft_impact) = 0;
     void         remove_ba(misc::shared_ptr<ba> const& parent);
     void         set_id(unsigned int id);
+    void         set_initial_event(kpi_event const& e);
     virtual void visit(stream* visitor) = 0;
 
   protected:
@@ -60,6 +63,8 @@ namespace        bam {
     std::list<misc::shared_ptr<ba> >
                  _bas;
     unsigned int _id;
+    misc::shared_ptr<kpi_event>
+                 _event;
   };
 }
 
