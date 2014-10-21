@@ -79,8 +79,6 @@ namespace        bam {
 
     bool         _acknowledged;
     bool         _downtimed;
-    misc::shared_ptr<kpi_event>
-                 _event;
     unsigned int _host_id;
     double       _impacts[5];
     timestamp    _last_update;

@@ -31,7 +31,10 @@ kpi::kpi() : _id(0) {}
  *
  *  @param[in] right Object to copy.
  */
-kpi::kpi(kpi const& right) : computable(right), _id(right._id) {}
+kpi::kpi(kpi const& right) :
+  computable(right),
+  _id(right._id),
+  _event(right._event) {}
 
 /**
  *  Destructor.
@@ -49,6 +52,7 @@ kpi& kpi::operator=(kpi const& right) {
   if (this != &right) {
     computable::operator=(right);
     _id = right._id;
+    _event = right._event;
   }
   return (*this);
 }
@@ -70,4 +74,14 @@ unsigned int kpi::get_id() const {
 void kpi::set_id(unsigned int id) {
   _id = id;
   return ;
+}
+
+/**
+ *  Set the initial event of the kpi.
+ *
+ *  @param[in] e  The kpi event.
+ */
+void kpi::set_initial_event(kpi_event const& e) {
+  if (_event.isNull())
+    _event = misc::shared_ptr<kpi_event>(new kpi_event(e));
 }

@@ -20,8 +20,10 @@
 #ifndef CCB_BAM_KPI_HH
 #  define CCB_BAM_KPI_HH
 
+#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/bam/computable.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/bam/kpi_event.hh"
 
 CCB_BEGIN()
 
@@ -47,10 +49,13 @@ namespace        bam {
     virtual void impact_hard(impact_values& hard_impact) = 0;
     virtual void impact_soft(impact_values& soft_impact) = 0;
     void         set_id(unsigned int id);
+    void         set_initial_event(kpi_event const& e);
     virtual void visit(stream* visitor) = 0;
 
   protected:
     unsigned int _id;
+    misc::shared_ptr<kpi_event>
+                 _event;
   };
 }
 
