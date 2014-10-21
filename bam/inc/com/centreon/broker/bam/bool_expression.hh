@@ -48,6 +48,8 @@ namespace            bam {
     bool             child_has_update(
                        computable* child,
                        stream* visitor = NULL);
+    short            get_state_hard() const;
+    short            get_state_soft() const;
     void             impact_hard(impact_values& hard_impact);
     void             impact_soft(impact_values& soft_impact);
     void             set_expression(

@@ -104,6 +104,24 @@ bool bool_expression::child_has_update(
 }
 
 /**
+ *  Get the hard state.
+ *
+ *  @return Boolean expression hard state.
+ */
+short bool_expression::get_state_hard() const {
+  return ((_expression->value_hard() == _impact_if) ? 2 : 0);
+}
+
+/**
+ *  Get the soft state.
+ *
+ *  @return Boolean expression soft state.
+ */
+short bool_expression::get_state_soft() const {
+  return ((_expression->value_soft() == _impact_if) ? 2 : 0);
+}
+
+/**
  *  Get the hard impacts.
  *
  *  @param[out] hard_impact Hard impacts.
@@ -211,7 +229,7 @@ void bool_expression::visit(stream* visitor) {
         _open_new_event(visitor);
       }
       // If state changed, close event and open a new one.
-      else if (impacts.get_nominal() != _event->impact_level) {
+      else if (get_state_hard() != _event->status) {
         _event->end_time = time(NULL);
         for (std::list<unsigned int>::const_iterator
                it(_kpis.begin()),
@@ -258,7 +276,7 @@ void bool_expression::_open_new_event(stream* visitor) {
   _event->output = "BAM boolean expression computed by Centreon Broker";
   _event->perfdata.clear();
   _event->start_time = time(NULL);
-  _event->status = 0;
+  _event->status = get_state_hard();
   if (visitor)
     for (std::list<unsigned int>::const_iterator
            it(_kpis.begin()),
