@@ -350,6 +350,18 @@ void ba::set_level_warning(double level) {
 }
 
 /**
+ *  @brief Set the initial, opened event of this ba.
+ *
+ *  Useful for recovery after cbd stop.
+ *
+ *  @param[in] event  The event to set.
+ */
+void ba::set_initial_event(ba_event const& event) {
+  if (_event.isNull())
+    _event = misc::shared_ptr<ba_event>(new ba_event(event));
+}
+
+/**
  *  Visit BA.
  *
  *  @param[in]  kpi_obj  Kpi that was updated.

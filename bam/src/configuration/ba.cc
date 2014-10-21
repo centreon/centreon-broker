@@ -52,7 +52,8 @@ ba::ba(ba const& other)
     _service_id(other._service_id),
     _name(other._name),
     _warning_level(other._warning_level),
-    _critical_level(other._critical_level) {}
+    _critical_level(other._critical_level),
+    _event(other._event) {}
 
 /**
  *  Destructor.
@@ -74,6 +75,7 @@ ba& ba::operator=(ba const& other) {
     _name =  other._name;
     _warning_level = other._warning_level;
     _critical_level = other._critical_level;
+    _event = other._event;
   }
   return (*this);
 }
@@ -91,7 +93,8 @@ bool ba::operator==(ba const& right) const {
           && (_service_id == right._service_id)
           && (_name == right._name)
           && (_warning_level == right._warning_level)
-          && (_critical_level == right._critical_level));
+          && (_critical_level == right._critical_level)
+          && (_event == right._event));
 }
 
 /**
@@ -150,6 +153,10 @@ double ba::get_critical_level() const {
   return (_critical_level);
 }
 
+com::centreon::broker::bam::ba_event const& ba::get_opened_event() const {
+  return (_event);
+}
+
 /**
  *  Set id.
  *
@@ -202,4 +209,13 @@ void ba::set_warning_level(double warning_level) {
  */
 void ba::set_critical_level(double critical_level) {
   _critical_level = critical_level;
+}
+
+/**
+ *  Set the current opened event for this BA.
+ *
+ *  @param[in] e  The current opened event.
+ */
+void ba::set_opened_event(bam::ba_event const& e) {
+  _event = e;
 }

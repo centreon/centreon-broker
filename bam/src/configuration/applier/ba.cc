@@ -217,6 +217,8 @@ misc::shared_ptr<bam::ba> applier::ba::_new_ba(
   obj->set_service_id(cfg.get_service_id());
   obj->set_level_warning(cfg.get_warning_level());
   obj->set_level_critical(cfg.get_critical_level());
+  if (cfg.get_opened_event().ba_id)
+    obj->set_initial_event(cfg.get_opened_event());
   book.listen(cfg.get_host_id(), cfg.get_service_id(), obj.data());
   return (obj);
 }

@@ -214,6 +214,32 @@ void reader::_load(state::bas& bas) {
       throw (reader_exception()
                << "BAM: found a ba without an associated service, id: "
                << it->second.get_id());
+
+  // Load the opened but not-closed events for all the BAs.
+  query = _db->exec("SELECT ba_event_id, ba_id, start_time, end_time, status, "
+                    "in_downtime FROM ba_events"
+                    "  WHERE end_time = 0");
+  if (_db->lastError().isValid())
+    throw (reader_exception()
+           << "BAM: could not retrieve the BA events associated to the BAs: "
+           << _db->lastError().text());
+
+  while (query.next()) {
+   ba_event e;
+   e.ba_id = query.value(1).toInt();
+   e.start_time = query.value(2).toInt();
+   e.end_time = query.value(3).toInt();
+   e.status = query.value(4).toInt();
+   e.in_downtime = query.value(5).toInt();
+   state::bas::iterator found = bas.find(e.ba_id);
+   if (found == bas.end()) {
+     logging::error(logging::medium)
+       << "BAM: ba id: "
+       << query.value(1).toString()
+       << "not found when reading BA events from db.";
+   }
+   found->second.set_opened_event(e);
+  }
   return ;
 }
 
