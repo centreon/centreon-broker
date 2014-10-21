@@ -43,6 +43,7 @@ namespace        bam {
     unsigned int type() const;
 
     timestamp    end_time;
+    bool         historic;
     unsigned int kpi_id;
     int          impact_level;
     bool         in_downtime;

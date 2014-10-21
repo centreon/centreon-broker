@@ -20,13 +20,16 @@
 #ifndef CCB_BAM_KPI_HH
 #  define CCB_BAM_KPI_HH
 
+#  include <list>
 #  include "com/centreon/broker/bam/computable.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
 namespace        bam {
   // Forward declarations.
+  class          ba;
   class          impact_values;
   class          stream;
 
@@ -43,13 +46,19 @@ namespace        bam {
                  kpi(kpi const& right);
     virtual      ~kpi();
     kpi&         operator=(kpi const& right);
+    void         add_ba(misc::shared_ptr<ba> const& parent);
     unsigned int get_id() const;
     virtual void impact_hard(impact_values& hard_impact) = 0;
     virtual void impact_soft(impact_values& soft_impact) = 0;
+    void         remove_ba(misc::shared_ptr<ba> const& parent);
     void         set_id(unsigned int id);
     virtual void visit(stream* visitor) = 0;
 
   protected:
+    bool         _is_historical_event(timestamp event_start_time);
+
+    std::list<misc::shared_ptr<ba> >
+                 _bas;
     unsigned int _id;
   };
 }

@@ -371,6 +371,7 @@ void kpi_service::visit(stream* visitor) {
       // If state changed, close event and open a new one.
       if ((_downtimed != _event->in_downtime)
           || (_state_hard != _event->status)) {
+        _event->historic = _is_historical_event(_event->start_time);
         _event->end_time = _last_update;
         visitor->write(_event.staticCast<io::data>());
         _event.clear();

@@ -54,6 +54,7 @@ namespace        bam {
                    stream* visitor = NULL);
     double       get_ack_impact_hard();
     double       get_ack_impact_soft();
+    ba_event*    get_ba_event();
     double       get_downtime_impact_hard();
     double       get_downtime_impact_soft();
     unsigned int get_id();

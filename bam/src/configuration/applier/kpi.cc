@@ -233,6 +233,6 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
            << ": BA " << cfg.get_ba_id() << " does not exist");
   my_kpi->set_id(cfg.get_id());
   my_ba->add_impact(my_kpi.staticCast<bam::kpi>());
-  my_kpi->add_parent(my_ba.staticCast<bam::computable>());
+  my_kpi->add_ba(my_ba);
   return (my_kpi);
 }

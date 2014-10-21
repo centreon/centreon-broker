@@ -172,6 +172,15 @@ double ba::get_ack_impact_soft() {
 }
 
 /**
+ *  Get the current BA event.
+ *
+ *  @return Current BA event, NULL if none is declared.
+ */
+ba_event* ba::get_ba_event() {
+  return (_event.data());
+}
+
+/**
  *  Get the hard impact introduced by KPI in downtime.
  *
  *  @return Hard impact introduced by KPI in downtime.
