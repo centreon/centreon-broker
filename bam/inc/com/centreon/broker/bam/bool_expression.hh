@@ -24,6 +24,7 @@
 #  include "com/centreon/broker/bam/kpi.hh"
 #  include "com/centreon/broker/bam/kpi_event.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -63,7 +64,9 @@ namespace            bam {
 
   private:
     void             _internal_copy(bool_expression const& right);
-    void             _open_new_event(stream* visitor);
+    void             _open_new_event(
+                       stream* visitor,
+                       timestamp start_time);
 
     misc::shared_ptr<bool_value>
                      _expression;

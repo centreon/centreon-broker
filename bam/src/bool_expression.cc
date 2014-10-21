@@ -235,11 +235,13 @@ void bool_expression::visit(stream* visitor) {
 
       // If no event was cached, create one.
       if (_event.isNull()) {
-        _open_new_event(visitor);
+        _open_new_event(visitor, time(NULL));
       }
       // If state changed, close event and open a new one.
       else if (get_state_hard() != _event->status) {
-        _event->end_time = time(NULL);
+        timestamp now(time(NULL));
+        now = std::max(now, _event->start_time);
+        _event->end_time = now;
         for (std::list<unsigned int>::const_iterator
                it(_kpis.begin()),
                end(_kpis.end());
@@ -250,7 +252,7 @@ void bool_expression::visit(stream* visitor) {
           visitor->write(ke.staticCast<io::data>());
         }
         _event.clear();
-        _open_new_event(visitor);
+        _open_new_event(visitor, now);
       }
     }
   }
@@ -275,16 +277,19 @@ void bool_expression::_internal_copy(bool_expression const& right) {
 /**
  *  Open a new event.
  *
- *  @param[out] visitor  Visitor that will receive events.
+ *  @param[out] visitor     Visitor that will receive events.
+ *  @param[in]  start_time  Event start time.
  */
-void bool_expression::_open_new_event(stream* visitor) {
+void bool_expression::_open_new_event(
+                        stream* visitor,
+                        timestamp start_time) {
   impact_values impacts;
   impact_hard(impacts);
   _event->impact_level = impacts.get_nominal();
   _event->in_downtime = false;
   _event->output = "BAM boolean expression computed by Centreon Broker";
   _event->perfdata.clear();
-  _event->start_time = time(NULL);
+  _event->start_time = start_time;
   _event->status = get_state_hard();
   if (visitor)
     for (std::list<unsigned int>::const_iterator

@@ -36,6 +36,7 @@ kpi_service::kpi_service()
   : _acknowledged(false),
     _downtimed(false),
     _host_id(0),
+    _last_check(0),
     _service_id(0),
     _state_hard(0),
     _state_soft(0),
@@ -218,7 +219,7 @@ void kpi_service::service_update(
     // Update information.
     _acknowledged = status->problem_has_been_acknowledged;
     _downtimed = status->scheduled_downtime_depth;
-    _last_update = status->last_update;
+    _last_check = status->last_check;
     _output = status->output.toStdString();
     _perfdata = status->perf_data.toStdString();
     _state_hard = status->last_hard_state;
@@ -369,9 +370,10 @@ void kpi_service::visit(stream* visitor) {
         _open_new_event(visitor, hard_values);
       }
       // If state changed, close event and open a new one.
-      if ((_downtimed != _event->in_downtime)
-          || (_state_hard != _event->status)) {
-        _event->end_time = _last_update;
+      else if ((_last_check > _event->start_time)
+               && ((_downtimed != _event->in_downtime)
+                   || (_state_hard != _event->status))) {
+        _event->end_time = _last_check;
         visitor->write(_event.staticCast<io::data>());
         _event.clear();
         _open_new_event(visitor, hard_values);
@@ -411,7 +413,7 @@ void kpi_service::_internal_copy(kpi_service const& right) {
   _event = right._event;
   _host_id = right._host_id;
   memcpy(_impacts, right._impacts, sizeof(_impacts));
-  _last_update = right._last_update;
+  _last_check = right._last_check;
   _output = right._output;
   _perfdata = right._perfdata;
   _service_id = right._service_id;
@@ -438,7 +440,7 @@ void kpi_service::_open_new_event(
   _event->in_downtime = _downtimed;
   _event->output = _output;
   _event->perfdata = _perfdata;
-  _event->start_time = _last_update;
+  _event->start_time = _last_check;
   _event->status = _state_hard;
   if (visitor) {
     misc::shared_ptr<io::data> ke(new kpi_event(*_event));

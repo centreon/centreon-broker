@@ -22,8 +22,9 @@
 
 #  include "com/centreon/broker/bam/kpi.hh"
 #  include "com/centreon/broker/bam/kpi_event.hh"
-#  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/bam/service_listener.hh"
+#  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -81,7 +82,7 @@ namespace        bam {
     bool         _downtimed;
     unsigned int _host_id;
     double       _impacts[5];
-    timestamp    _last_update;
+    timestamp    _last_check;
     std::string  _output;
     std::string  _perfdata;
     unsigned int _service_id;
