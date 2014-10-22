@@ -42,7 +42,7 @@ timeperiod::timeperiod() :
  *  @param[in] friday      A string describing the friday timerange.
  *  @param[in] saturday    A string describing the saturday timerange.
  */
-timeperiod::timeperiod(int id,
+timeperiod::timeperiod(unsigned int id,
                        std::string const& name,
                        std::string const& alias,
                        std::string const& sunday,
@@ -148,4 +148,58 @@ void timeperiod::add_include_relation(unsigned int included_tp_id) {
  */
 void timeperiod::add_exclude_relation(unsigned int excluded_tp_id) {
   _exclude.push_back(excluded_tp_id);
+}
+
+unsigned int timeperiod::get_id() const {
+  return (_id);
+}
+
+std::string const& timeperiod::get_name() const {
+  return (_name);
+}
+
+std::string const& timeperiod::get_alias() const {
+  return (_alias);
+}
+
+std::string const& timeperiod::get_sunday() const {
+  return (_sunday);
+}
+
+std::string const& timeperiod::get_monday() const {
+  return (_monday);
+}
+
+std::string const& timeperiod::get_tuesday() const {
+  return (_tuesday);
+}
+
+std::string const& timeperiod::get_wednesday() const {
+  return (_wednesday);
+}
+
+std::string const& timeperiod::get_thursday() const {
+  return (_thursday);
+}
+
+std::string const& timeperiod::get_friday() const {
+  return (_friday);
+}
+
+std::string const& timeperiod::get_saturday() const {
+  return (_saturday);
+}
+
+std::vector<std::pair<std::string,
+                      std::string> > const&
+  timeperiod::get_exceptions() const {
+  return (_exceptions);
+}
+
+std::vector<unsigned int> const& timeperiod::get_include() const {
+  return (_include);
+}
+
+std::vector<unsigned int> const& timeperiod::get_exclude() const {
+  return (_exclude);
 }

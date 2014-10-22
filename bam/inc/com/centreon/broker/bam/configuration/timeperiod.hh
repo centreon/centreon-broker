@@ -37,7 +37,7 @@ namespace                   bam {
     public:
                             timeperiod();
                             timeperiod(
-                                  int id,
+                                  unsigned int id,
                                   std::string const& name,
                                   std::string const& alias,
                                   std::string const& sunday,
@@ -56,8 +56,26 @@ namespace                   bam {
       void                  add_include_relation(unsigned int included_tp_id);
       void                  add_exclude_relation(unsigned int excluded_tp_id);
 
+      unsigned int          get_id() const;
+      std::string const&    get_name() const;
+      std::string const&    get_alias() const;
+      std::string const&    get_sunday() const;
+      std::string const&    get_monday() const;
+      std::string const&    get_tuesday() const;
+      std::string const&    get_wednesday() const;
+      std::string const&    get_thursday() const;
+      std::string const&    get_friday() const;
+      std::string const&    get_saturday() const;
+      std::vector<std::pair<std::string,
+                            std::string> > const&
+                            get_exceptions() const;
+      std::vector<unsigned int> const&
+                            get_include() const;
+      std::vector<unsigned int> const&
+                            get_exclude() const;
+
     private:
-      int                   _id;
+      unsigned int          _id;
       std::string           _name;
       std::string           _alias;
       std::string           _sunday;
