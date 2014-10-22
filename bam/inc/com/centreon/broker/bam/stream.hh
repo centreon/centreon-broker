@@ -64,10 +64,9 @@ namespace          bam {
     void           _check_replication();
     void           _clear_qsql();
     void           _prepare();
-    void           _update_status(std::string const& status);
-    void           _process_kpi_event(misc::shared_ptr<io::data> const& e);
     void           _process_ba_event(misc::shared_ptr<io::data> const& e);
-    void           _process_event_parent(misc::shared_ptr<io::data> const& e);
+    void           _process_kpi_event(misc::shared_ptr<io::data> const& e);
+    void           _update_status(std::string const& status);
 
     configuration::applier::state
                    _applier;
@@ -84,6 +83,16 @@ namespace          bam {
                    _kpi_update;
     std::auto_ptr<QSqlQuery>
                    _meta_service_update;
+    std::auto_ptr<QSqlQuery>
+                   _ba_event_insert;
+    std::auto_ptr<QSqlQuery>
+                   _ba_event_update;
+    std::auto_ptr<QSqlQuery>
+                   _kpi_event_insert;
+    std::auto_ptr<QSqlQuery>
+                   _kpi_event_update;
+    std::auto_ptr<QSqlQuery>
+                   _kpi_event_link;
     std::auto_ptr<QSqlDatabase>
                    _db;
   };
