@@ -20,6 +20,7 @@
 #include <ctime>
 #include "com/centreon/broker/bam/time/timezone_locker.hh"
 #include "com/centreon/broker/bam/time/timeperiod.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker::bam::time;
 
@@ -72,19 +73,35 @@ timeperiod::timeperiod(
   _alias(alias) {
   _timeranges.resize(7);
   _exceptions.resize(daterange::daterange_types);
-  set_timerange(sunday, 0);
-  set_timerange(monday, 1);
-  set_timerange(tuesday, 2);
-  set_timerange(wednesday, 3);
-  set_timerange(thursday, 4);
-  set_timerange(friday, 5);
-  set_timerange(saturday, 6);
+  std::vector<bool> success;
+  if (!set_timerange(sunday, 0))
+    throw (exceptions::msg()
+      << "BAM: Could not parse sunday for timeperiod");
+  if (!set_timerange(monday, 1))
+    throw (exceptions::msg()
+      << "BAM: Could not parse monday for timeperiod");
+  if (!set_timerange(tuesday, 2))
+    throw (exceptions::msg()
+      << "BAM: Could not parse tuesday for timeperiod");
+  if (!set_timerange(wednesday, 3))
+    throw (exceptions::msg()
+      << "BAM: Could not parse wednesday for timeperiod");
+  if (!set_timerange(thursday, 4))
+    throw (exceptions::msg()
+      << "BAM: Could not parse thursday for timeperiod");
+  if (!set_timerange(friday, 5))
+    throw (exceptions::msg()
+      << "BAM: Could not parse friday for timeperiod");
+  if (!set_timerange(saturday, 6))
+    throw (exceptions::msg()
+      << "BAM: Could not parse saturday for timeperiod");
 }
 
 timeperiod timeperiod::operator=(timeperiod const& obj) {
   if (this != &obj) {
     _alias = obj._alias;
     _exceptions = obj._exceptions;
+    _include = obj._include;
     _exclude = obj._exclude;
     _timeperiod_name = obj._timeperiod_name;
     _timeranges = obj._timeranges;
@@ -131,21 +148,51 @@ void timeperiod::add_exceptions(std::list<daterange> const& val) {
 }
 
 /**
+ *  Add a new timeperiod exception from text.
+ *
+ *  @param[in] days    The days to parse.
+ *  @param[in] string  The range of the exception.
+ */
+void timeperiod::add_exception(std::string const& days,
+                               std::string const& range) {
+
+}
+
+/**
+ *  Get the included timeperiods.
+ *
+ *  @return The included timeperiods.
+ */
+std::vector<timeperiod::ptr> const& timeperiod::get_included() const throw() {
+  return (_include);
+}
+
+/**
+ *  Add a new included timeperiod.
+ *
+ *  @param val The new included timeperiod.
+ */
+void timeperiod::add_included(timeperiod::ptr val) {
+  _include.push_back(val);
+}
+
+
+/**
  *  Get the excluded timeperiods.
  *
  *  @return The excluded timeperiods.
  */
-std::vector<std::string> const& timeperiod::get_exclude() const throw() {
+std::vector<timeperiod::ptr> const& timeperiod::get_excluded() const throw() {
   return (_exclude);
 }
 
 /**
- *  Set the excluded timeperiods.
+ *  Add a new excluded timeperiod.
  *
- *  @param val The new excluded timeperiods.
+ *  @param val The new excluded timeperiod.
  */
-void timeperiod::set_exclude(std::vector<std::string> const& val) {
-  _exclude = val;
+void timeperiod::add_excluded(timeperiod::ptr val) {
+  _exclude.push_back(val);
 }
 
 /**
@@ -177,15 +224,6 @@ std::vector<std::list<timerange> > const&
 }
 
 /**
- *  Set the timeperiod timeranges.
- *
- *  @param val The timeranges to be added.
- */
-void timeperiod::add_timerange(std::list<timerange> const& val) {
-  _timeranges.push_back(val);
-}
-
-/**
  *  Get the timerange of a particular day.
  *
  *  @param day The day (from 0 to 6).
@@ -197,25 +235,17 @@ std::list<timerange> const&
 }
 
 /**
- *  Set the timerange of a particular day.
- *
- *  @param val The new timeranges to set.
- *  @param day The day (from 0 to 6).
- */
-void timeperiod::set_timerange(std::list<timerange> const& val,
-                               int day) {
-  _timeranges[day] = val;
-}
-
-/**
  *  Build the timerange of a day from a string.
  *
  *  @param[in] timerange_text  The timerange to build.
  *  @param[in] day             The day.
+ *
+ *  @return  True if the string is valid.
  */
-void timeperiod::set_timerange(std::string const& timerange_text,
+bool timeperiod::set_timerange(std::string const& timerange_text,
                                int day) {
-  timerange::build_timeranges_from_string(timerange_text, _timeranges[day]);
+  return (timerange::build_timeranges_from_string(timerange_text,
+                                                  _timeranges[day]));
 }
 
 /**

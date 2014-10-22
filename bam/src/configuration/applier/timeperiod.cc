@@ -59,11 +59,31 @@ void applier::timeperiod::apply(state::timeperiods const& my_tps) {
   // Recreate all the timeperiods from the cfg.
   _timeperiods.clear();
 
+  // Apply timeperiods.
   for (configuration::state::timeperiods::const_iterator it(my_tps.begin()),
                                                          end(my_tps.end());
        it != end;
        ++it)
-    _timeperiods[it->second.get_id()] = _create_timeperiod(it->second);
+    _timeperiods[it->first] = _create_timeperiod(it->second);
+
+  // Apply timeperiods include/exclude relations.
+  for (configuration::state::timeperiods::const_iterator it(my_tps.begin()),
+                                                         end(my_tps.end());
+       it != end;
+       ++it) {
+    std::vector<unsigned int> const& includes = it->second.get_include();
+    std::vector<unsigned int> const& excludes = it->second.get_exclude();
+    for (std::vector<unsigned int>::const_iterator inc_it(includes.begin()),
+                                                   inc_end(includes.end());
+         inc_it != inc_end;
+         ++inc_it)
+      _timeperiods[it->first]->add_included(_timeperiods[*inc_it]);
+    for (std::vector<unsigned int>::const_iterator exc_it(excludes.begin()),
+                                                   exc_end(excludes.end());
+         exc_it != exc_end;
+         ++exc_it)
+      _timeperiods[it->first]->add_excluded(_timeperiods[*exc_it]);
+  }
 }
 
 /**
@@ -90,5 +110,8 @@ bam::time::timeperiod::ptr applier::timeperiod::_create_timeperiod(
                                                 tp_cfg.get_thursday(),
                                                 tp_cfg.get_friday(),
                                                 tp_cfg.get_saturday()));
+
+  // TODO: Set exceptions
+  //tp->set_timerange();
   return (tp);
 }

@@ -62,20 +62,22 @@ namespace               bam {
       std::vector<std::list<daterange> > const&
                           get_exceptions() const throw();
       void                add_exceptions(std::list<daterange> const& val);
+      void                add_exception(std::string const& days,
+                                        std::string const& range);
 
-      std::vector<std::string> const&
-                          get_exclude() const throw();
-      void                set_exclude(std::vector<std::string> const& val);
+      std::vector<ptr> const&
+                          get_included() const throw();
+      void                add_included(ptr val);
+      std::vector<ptr> const&
+                          get_excluded() const throw();
+      void                add_excluded(ptr val);
 
       std::string const&  get_name() const throw();
       void                set_name(std::string const& value);
 
       std::vector<std::list<timerange> > const&
                           get_timeranges() const throw();
-      void                add_timerange(std::list<timerange> const& val);
-      void                set_timerange(std::list<timerange> const& val,
-                                        int day);
-      void                set_timerange(std::string const& timerange_text,
+      bool                set_timerange(std::string const& timerange_text,
                                         int day);
       std::list<timerange> const&
                           get_timeranges_by_day(int day) const throw();
@@ -95,8 +97,8 @@ namespace               bam {
       std::string         _alias;
       std::vector<std::list<daterange> >
                           _exceptions;
-      std::vector<std::string>
-                          _exclude;
+      std::vector<ptr>    _exclude;
+      std::vector<ptr>    _include;
       std::string         _timeperiod_name;
       std::vector<std::list<timerange> >
                           _timeranges;

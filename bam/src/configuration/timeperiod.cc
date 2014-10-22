@@ -150,56 +150,121 @@ void timeperiod::add_exclude_relation(unsigned int excluded_tp_id) {
   _exclude.push_back(excluded_tp_id);
 }
 
+/**
+ *  Get the timeperiod id.
+ *
+ *  @return  The timeperiod id.
+ */
 unsigned int timeperiod::get_id() const {
   return (_id);
 }
 
+/**
+ *  Get the timeperiod name.
+ *
+ *  @return  The timeperiod name.
+ */
 std::string const& timeperiod::get_name() const {
   return (_name);
 }
 
+/**
+ *  Get the timeperiod alias.
+ *
+ *  @return  The timeperiod alias.
+ */
 std::string const& timeperiod::get_alias() const {
   return (_alias);
 }
 
+/**
+ *  Get the timeperiod sunday.
+ *
+ *  @return  The timeperiod sunday.
+ */
 std::string const& timeperiod::get_sunday() const {
   return (_sunday);
 }
 
+/**
+ *  Get the timeperiod monday.
+ *
+ *  @return  The timeperiod monday.
+ */
 std::string const& timeperiod::get_monday() const {
   return (_monday);
 }
 
+/**
+ *  Get the timeperiod tuesday.
+ *
+ *  @return  The timeperiod tuesday.
+ */
 std::string const& timeperiod::get_tuesday() const {
   return (_tuesday);
 }
 
+/**
+ *  Get the timeperiod wednesday.
+ *
+ *  @return  The timeperiod wednesday.
+ */
 std::string const& timeperiod::get_wednesday() const {
   return (_wednesday);
 }
 
+/**
+ *  Get the timeperiod thursday.
+ *
+ *  @return  The timeperiod thursday.
+ */
 std::string const& timeperiod::get_thursday() const {
   return (_thursday);
 }
 
+/**
+ *  Get the timeperiod friday.
+ *
+ *  @return  The timeperiod friday.
+ */
 std::string const& timeperiod::get_friday() const {
   return (_friday);
 }
 
+/**
+ *  Get the timeperiod saturday.
+ *
+ *  @return  The timeperiod saturday.
+ */
 std::string const& timeperiod::get_saturday() const {
   return (_saturday);
 }
 
+/**
+ *  Get the exceptions.
+ *
+ *  @return  The exceptions.
+ */
 std::vector<std::pair<std::string,
                       std::string> > const&
   timeperiod::get_exceptions() const {
   return (_exceptions);
 }
 
+/**
+ *  Get the included timeperiod.
+ *
+ *  @return  The included timeperiod.
+ */
 std::vector<unsigned int> const& timeperiod::get_include() const {
   return (_include);
 }
 
+/**
+ *  Get the excluded timeperiod.
+ *
+ *  @return  The excluded timeperiod.
+ */
 std::vector<unsigned int> const& timeperiod::get_exclude() const {
   return (_exclude);
 }
