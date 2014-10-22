@@ -43,6 +43,16 @@ namespace               bam {
                           DECLARE_SHARED_PTR(timeperiod);
 
                           timeperiod();
+                          timeperiod(
+                                std::string const& name,
+                                std::string const& alias,
+                                std::string const& sunday,
+                                std::string const& monday,
+                                std::string const& tuesday,
+                                std::string const& wednesday,
+                                std::string const& thursday,
+                                std::string const& friday,
+                                std::string const& saturday);
                           timeperiod(timeperiod const& obj);
                           timeperiod operator=(timeperiod const& obj);
 

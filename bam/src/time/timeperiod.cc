@@ -27,15 +27,58 @@ static time_t _get_next_valid_time_per_timeperiod(
               time_t preferred_time,
               time_t current_time,
               timeperiod const& tperiod);
-
+/**
+ *  Default constructor.
+ */
 timeperiod::timeperiod()
 {
   _timeranges.resize(7);
   _exceptions.resize(daterange::daterange_types);
 }
 
+/**
+ *  Copy constructor.
+ *
+ *  @param[in] obj  The object to copy.
+ */
 timeperiod::timeperiod(timeperiod const& obj) {
   timeperiod::operator=(obj);
+}
+
+/**
+ *  Construct the timeperiod from data.
+ *
+ *  @param[in] name        The name of the timeperiod.
+ *  @param[in] alias       The alias of the timeperiod.
+ *  @param[in] sunday      A string describing the sunday timerange.
+ *  @param[in] monday      A string describing the monday timerange.
+ *  @param[in] tuesday     A string describing the tuesday timerange.
+ *  @param[in] wednesday   A string describing the wednesday timerange.
+ *  @param[in] thursday    A string describing the thursday timerange.
+ *  @param[in] friday      A string describing the friday timerange.
+ *  @param[in] saturday    A string describing the saturday timerange.
+ */
+timeperiod::timeperiod(
+      std::string const& name,
+      std::string const& alias,
+      std::string const& sunday,
+      std::string const& monday,
+      std::string const& tuesday,
+      std::string const& wednesday,
+      std::string const& thursday,
+      std::string const& friday,
+      std::string const& saturday) :
+  _timeperiod_name(name),
+  _alias(alias) {
+  _timeranges.resize(7);
+  _exceptions.resize(daterange::daterange_types);
+  set_timerange(sunday, 0);
+  set_timerange(monday, 1);
+  set_timerange(tuesday, 2);
+  set_timerange(wednesday, 3);
+  set_timerange(thursday, 4);
+  set_timerange(friday, 5);
+  set_timerange(saturday, 6);
 }
 
 timeperiod timeperiod::operator=(timeperiod const& obj) {
@@ -164,6 +207,12 @@ void timeperiod::set_timerange(std::list<timerange> const& val,
   _timeranges[day] = val;
 }
 
+/**
+ *  Build the timerange of a day from a string.
+ *
+ *  @param[in] timerange_text  The timerange to build.
+ *  @param[in] day             The day.
+ */
 void timeperiod::set_timerange(std::string const& timerange_text,
                                int day) {
   timerange::build_timeranges_from_string(timerange_text, _timeranges[day]);

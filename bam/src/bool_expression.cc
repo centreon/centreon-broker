@@ -18,6 +18,7 @@
 
 */
 
+#include <ctime>
 #include "com/centreon/broker/bam/bool_expression.hh"
 #include "com/centreon/broker/bam/bool_status.hh"
 #include "com/centreon/broker/bam/bool_value.hh"
@@ -235,11 +236,11 @@ void bool_expression::visit(stream* visitor) {
 
       // If no event was cached, create one.
       if (_event.isNull()) {
-        _open_new_event(visitor, time(NULL));
+        _open_new_event(visitor, ::time(NULL));
       }
       // If state changed, close event and open a new one.
       else if (get_state_hard() != _event->status) {
-        timestamp now(time(NULL));
+        timestamp now(::time(NULL));
         now = std::max(now, _event->start_time);
         _event->end_time = now;
         for (std::list<unsigned int>::const_iterator
