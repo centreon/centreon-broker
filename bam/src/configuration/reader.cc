@@ -59,6 +59,7 @@ void reader::read(state& st) {
     _load(st.get_bool_exps());
     _load(st.get_meta_services());
     _load(st.get_mapping());
+    _load(st.get_timeperiods());
     _db->rollback();
   }
   catch (std::exception const& e) {
@@ -480,5 +481,113 @@ void reader::_load(bam::hst_svc_mapping& mapping) {
               q.value(3).toString().toStdString(),
               q.value(0).toUInt(),
               q.value(1).toUInt());
+  return ;
+}
+
+/**
+ *  Load timeperiods from the DB.
+ *
+ *  @param[out] tps  Timeperiods.
+ */
+void reader::_load(state::timeperiods& tps) {
+  QSqlQuery q(*_db);
+  q.setForwardOnly(true);
+
+  // Load timeperiods.
+  q.exec("SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday, tp_tuesday, "
+         "tp_wednesday, tp_thursday, tp_friday, tp_saturday"
+         "  FROM timeperiod");
+  if (_db->lastError().isValid())
+    throw (reader_exception()
+           << "BAM: could not retrieve timeperiods: "
+           << _db->lastError().text());
+  while (q.next())
+    tps[q.value(0).toInt()] =
+      timeperiod(
+          q.value(0).toInt(), // Id
+          q.value(1).toString().toStdString(), // name
+          q.value(2).toString().toStdString(), // alias
+          q.value(3).toString().toStdString(), // sunday
+          q.value(4).toString().toStdString(), // monday
+          q.value(5).toString().toStdString(), // tuesday
+          q.value(6).toString().toStdString(), // wednesday
+          q.value(7).toString().toStdString(), // thursday
+          q.value(8).toString().toStdString(), // friday
+          q.value(9).toString().toStdString()  // saturday
+          );
+
+  // Load timeperiod exceptions.
+  {
+    q.exec("SELECT timeperiod_id, days, timerange"
+           "  FROM timeperiod_exceptions");
+    if (_db->lastError().isValid())
+      throw (reader_exception()
+             << "BAM: could not retrieve timeperiod exceptions: "
+             << _db->lastError().text());
+    while (q.next()) {
+      unsigned int timeperiod_id = q.value(0).toInt();
+      state::timeperiods::iterator found = tps.find(timeperiod_id);
+      if (found == tps.end())
+        throw (reader_exception())
+                << "BAM: Found a timeperiod exception pointing to an "
+                   "inexisting timeperiod (timeperiod id = " << timeperiod_id;
+      found->second.add_exception(q.value(1).toString().toStdString(),
+                                  q.value(2).toString().toStdString());
+
+    }
+  }
+
+  // Load timeperiod include relations.
+  {
+    q.exec("SELECT timeperiod_id, timeperiod_include_id"
+           "  FROM timeperiod_include_relations");
+    if (_db->lastError().isValid())
+      throw (reader_exception()
+             << "BAM: could not retrieve timeperiod include relations: "
+             << _db->lastError().text());
+    while (q.next()) {
+      unsigned int timeperiod_id = q.value(0).toInt();
+      unsigned int timeperiod_include_id = q.value(1).toInt();
+      state::timeperiods::iterator found = tps.find(timeperiod_id);
+      if (found == tps.end())
+        throw (reader_exception())
+                << "BAM: Found a timeperiod include pointing to an inexisting "
+                   "timeperiod (timeperiod id = " << timeperiod_id;
+      state::timeperiods::iterator found_included =
+                          tps.find(timeperiod_include_id);
+      if (found_included == tps.end())
+        throw (reader_exception())
+                << "BAM: Found a timeperiod include pointing to an inexisting "
+                   "included timeperiod (included timeperiod id = "
+                << timeperiod_include_id;
+      found->second.add_include_relation(timeperiod_include_id);
+    }
+  }
+  // Load timeperiod exclude relations.
+  {
+    q.exec("SELECT timeperiod_id, timeperiod_exclude_id"
+           "  FROM timeperiod_exclude_relations");
+    if (_db->lastError().isValid())
+      throw (reader_exception()
+             << "BAM: could not retrieve timeperiod exclude relations: "
+             << _db->lastError().text());
+    while (q.next()) {
+      unsigned int timeperiod_id = q.value(0).toInt();
+      unsigned int timeperiod_exclude_id = q.value(1).toInt();
+      state::timeperiods::iterator found = tps.find(timeperiod_id);
+      if (found == tps.end())
+        throw (reader_exception())
+                << "BAM: Found a timeperiod exclude pointing to an inexisting "
+                   "timeperiod (timeperiod id = " << timeperiod_id;
+      state::timeperiods::iterator found_excluded =
+                          tps.find(timeperiod_exclude_id);
+      if (found_excluded == tps.end())
+        throw (reader_exception())
+                << "BAM: Found a timeperiod exclude pointing to an inexisting "
+                   "excluded timeperiod (excluded timeperiod id = "
+                << timeperiod_exclude_id;
+      found->second.add_exclude_relation(timeperiod_exclude_id);
+    }
+  }
   return ;
 }
