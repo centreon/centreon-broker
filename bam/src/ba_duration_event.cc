@@ -74,6 +74,7 @@ ba_duration_event& ba_duration_event::operator=(
  */
 bool ba_duration_event::operator==(ba_duration_event const& other) const {
   return ((ba_id == other.ba_id)
+          && (real_start_time == other.real_start_time)
           && (end_time == other.end_time)
           && (start_time == other.start_time)
           && (duration == other.duration)
@@ -99,6 +100,7 @@ unsigned int ba_duration_event::type() const {
  */
 void ba_duration_event::_internal_copy(ba_duration_event const& other) {
   ba_id = other.ba_id;
+  real_start_time = other.real_start_time;
   end_time = other.end_time;
   start_time = other.start_time;
   duration = other.duration;

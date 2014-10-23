@@ -42,6 +42,7 @@ namespace        bam {
     unsigned int        type() const;
 
     unsigned int        ba_id;
+    timestamp           real_start_time;
     timestamp           end_time;
     timestamp           start_time;
     unsigned int        duration;

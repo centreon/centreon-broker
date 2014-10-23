@@ -65,6 +65,8 @@ namespace          bam {
     void           _clear_qsql();
     void           _prepare();
     void           _process_ba_event(misc::shared_ptr<io::data> const& e);
+    void           _process_ba_duration_event(
+                     misc::shared_ptr<io::data> const& e);
     void           _process_kpi_event(misc::shared_ptr<io::data> const& e);
     void           _update_status(std::string const& status);
 
@@ -93,6 +95,8 @@ namespace          bam {
                    _kpi_event_update;
     std::auto_ptr<QSqlQuery>
                    _kpi_event_link;
+    std::auto_ptr<QSqlQuery>
+                   _ba_duration_event_insert;
     std::auto_ptr<QSqlDatabase>
                    _db;
   };
