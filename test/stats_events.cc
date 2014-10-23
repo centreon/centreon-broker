@@ -72,13 +72,14 @@ int main(int argc, char* argv[]) {
   std::string engine_config_path(tmpnam(NULL));
   std::string metrics_path(tmpnam(NULL));
   engine daemon;
+  test_db db;
 
   // Log.
   std::clog << "metrics directory: " << metrics_path << std::endl;
 
   try {
     // Prepare database.
-    QSqlDatabase db(config_db_open(DB_NAME));
+    db.open(DB_NAME);
 
     // Create RRD paths.
     mkdir(metrics_path.c_str(), S_IRWXU);
@@ -288,7 +289,7 @@ int main(int argc, char* argv[]) {
 
     // Insert entries in index_data.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       for (unsigned int i(1); i <= 33; ++i) {
         std::ostringstream query;
         query << "INSERT INTO index_data (host_id, service_id)"
@@ -302,7 +303,7 @@ int main(int argc, char* argv[]) {
     // Get index list.
     std::list<unsigned int> indexes;
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT id FROM index_data ORDER BY service_id ASC"))
         throw (exceptions::msg() << "cannot get index list: "
                << qPrintable(q.lastError().text()));
@@ -328,7 +329,7 @@ int main(int argc, char* argv[]) {
       std::ostringstream query;
       query << "SELECT metric_id"
             << "  FROM metrics";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot get metric list: "
                << qPrintable(q.lastError().text()));
@@ -350,7 +351,7 @@ int main(int argc, char* argv[]) {
         query << "SELECT COUNT(*)"
               << "  FROM data_bin"
               << "  WHERE id_metric=" << *it;
-        QSqlQuery q(db);
+        QSqlQuery q(*db.centreon_db());
         if (!q.exec(query.str().c_str())
             || !q.next()
             || !q.value(0).toUInt())
@@ -409,7 +410,6 @@ int main(int argc, char* argv[]) {
   daemon.stop();
   config_remove(engine_config_path.c_str());
   ::remove(cbmod_config_path.c_str());
-  config_db_close(DB_NAME);
   recursive_remove(metrics_path);
 
   return (retval);

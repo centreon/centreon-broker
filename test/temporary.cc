@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -60,10 +60,11 @@ int main() {
   std::string temporary_path(tmpnam(NULL));
   engine daemon;
   cbd broker;
+  test_db db;
 
   try {
     // Prepare database.
-    QSqlDatabase db(config_db_open(DB_NAME));
+    db.open(DB_NAME);
 
     // Write cbd configuration file.
     {
@@ -139,7 +140,7 @@ int main() {
 
     // Lock tables.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       std::string query("LOCK TABLES logs WRITE, instances WRITE");
       if (!q.exec(query.c_str()))
         throw (exceptions::msg() << "cannot lock tables: "
@@ -203,7 +204,7 @@ int main() {
 
     // Unlock tables.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec("UNLOCK TABLES"))
         throw (exceptions::msg() << "cannot unlock tables: "
                << q.lastError().text());
@@ -228,7 +229,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT COUNT(host_id)"
             << "  FROM hosts";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read host count from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -243,7 +244,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT COUNT(service_id)"
             << "  FROM services";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()
                << "cannot read service count from DB: "
@@ -269,7 +270,6 @@ int main() {
   broker.stop();
   config_remove(engine_config_path.c_str());
   ::remove(cbd_config_path.c_str());
-  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
 

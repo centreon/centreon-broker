@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -63,6 +63,7 @@ int main() {
   std::string status_path(tmpnam(NULL));
   engine monitoring;
   cbd broker;
+  test_db db;
 
   // Log.
   std::clog << "status directory: " << status_path << "\n"
@@ -70,7 +71,7 @@ int main() {
 
   try {
     // Prepare database.
-    QSqlDatabase db(config_db_open(DB_NAME));
+    db.open(DB_NAME);
 
     // Create RRD paths.
     mkdir(metrics_path.c_str(), S_IRWXU);
@@ -166,7 +167,7 @@ int main() {
 
     // Insert entries in index_data.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       for (unsigned int i(1); i <= HOST_COUNT * SERVICES_BY_HOST; ++i) {
         unsigned int host_id((i - 1) / SERVICES_BY_HOST + 1);
         std::ostringstream query;
@@ -202,7 +203,7 @@ int main() {
     std::map<std::pair<unsigned long, unsigned long>, unsigned long>
       indexes;
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       std::string query("SELECT host_id, service_id, id"
                         "  FROM index_data"
                         "  ORDER BY host_id, service_id");
@@ -229,7 +230,7 @@ int main() {
     // Get metrics entries.
     std::map<unsigned long, std::list<unsigned long> > metrics;
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       std::string query("SELECT index_id, metric_id FROM metrics");
       if (!q.exec(query.c_str()))
         throw (exceptions::msg() << "cannot get metrics list: "
@@ -278,7 +279,7 @@ int main() {
 
     // Flag an index to delete.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       std::string query("UPDATE index_data"
                         "  SET to_delete=1"
                         "  WHERE host_id=2");
@@ -289,7 +290,7 @@ int main() {
 
     // Flag metrics to delete.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       std::string query("UPDATE metrics AS m JOIN index_data AS i"
                         "  ON m.index_id=i.id"
                         "  SET m.to_delete=1"
@@ -309,7 +310,7 @@ int main() {
 
     // Check that only one entry remains in index_data (1, 1).
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       std::string query("SELECT host_id, service_id FROM index_data");
       if (!q.exec(query.c_str()))
         throw (exceptions::msg() << "cannot read index_data: "
@@ -333,7 +334,7 @@ int main() {
 
     // Check that only one entry remains in metrics.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       std::string query("SELECT i.host_id, i.service_id"
                         "  FROM metrics AS m JOIN index_data AS i"
                         "  ON m.index_id=i.id");
@@ -402,7 +403,6 @@ int main() {
   broker.stop();
   config_remove(engine_config_path.c_str());
   ::remove(cbd_config_path.c_str());
-  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
   free_commands(commands);

@@ -31,45 +31,129 @@
 using namespace com::centreon::broker;
 
 /**
- *  Remove DB created previously.
- *
- *  @param[in] db_name DB name.
+ *  Default constructor.
  */
-void config_db_close(char const* db_name) {
-  QString connection_name;
-  {
-    QSqlDatabase db(QSqlDatabase::database());
-    connection_name = db.connectionName();
-    if (db.open()) {
-      std::ostringstream query;
-      query << "DROP DATABASE " << db_name;
-      QSqlQuery q(db);
-      if (!q.exec(query.str().c_str()))
-        std::cerr << q.lastError().text().toStdString() << std::endl;
-      db.close();
-    }
-    else
-      std::cerr << db.lastError().text().toStdString() << std::endl;
-  }
-  QSqlDatabase::removeDatabase(connection_name);
+test_db::test_db() {}
+
+/**
+ *  Destructor.
+ */
+test_db::~test_db() {
+  close();
+}
+
+/**
+ *  Get the BI database.
+ *
+ *  @return BI database object.
+ */
+QSqlDatabase* test_db::bi_db() {
+  return (_bi.get());
+}
+
+/**
+ *  Get the Centreon database.
+ *
+ *  @return Centreon database object.
+ */
+QSqlDatabase* test_db::centreon_db() {
+  return (_centreon.get());
+}
+
+/**
+ *  Close databases.
+ */
+void test_db::close() {
+  if (_centreon.get())
+    _close(_centreon);
+  if (_bi.get())
+    _close(_bi);
   return ;
 }
 
 /**
  *  Connect and install a new database to the DB server.
  *
- *  @param[in] db_name DB name.
- *
- *  @return Initialized and open DB connection.
+ *  @param[in] centreon_db_name  Centreon DB name.
+ *  @param[in] bi_db_name        Centreon BI DB name.
  */
-QSqlDatabase config_db_open(char const* db_name) {
+void test_db::open(
+                char const* centreon_db_name,
+                char const* bi_db_name) {
+  // Close previous connection.
+  close();
+
   // Find DB type.
-  std::string db_type;
+  QString db_type;
   if (!strcmp(DB_TYPE, "mysql"))
     db_type = "QMYSQL";
 
+  // Set connection names.
+  QString centreon_connection;
+  QString bi_connection;
+  {
+    std::ostringstream oss;
+    oss << this;
+    centreon_connection = oss.str().c_str();
+    bi_connection = centreon_connection;
+    centreon_connection.append("_centreon");
+    bi_connection.append("_bi");
+  }
+
+  // Open Centreon DB.
+  if (centreon_db_name) {
+    _centreon.reset(new QSqlDatabase(QSqlDatabase::addDatabase(
+                                                     db_type,
+                                                     centreon_connection)));
+    _open(*_centreon, centreon_db_name);
+    _run_script(*_centreon, PROJECT_SOURCE_DIR "/sql/mysql_schema.sql");
+    _run_script(*_centreon, PROJECT_SOURCE_DIR "/bam/mysql_schema_centreon.sql");
+  }
+  // Open Centreon BI DB.
+  if (bi_db_name) {
+    _bi.reset(new QSqlDatabase(QSqlDatabase::addDatabase(
+                                               db_type,
+                                               bi_connection)));
+    _open(*_bi, bi_db_name);
+    _run_script(*_bi, PROJECT_SOURCE_DIR "/bam/mysql_schema_bi.sql");
+  }
+
+  return ;
+}
+
+/**
+ *  Close a single database.
+ *
+ *  @param[in] db  Database.
+ */
+void test_db::_close(std::auto_ptr<QSqlDatabase>& db) {
+  QString connection_name(db->connectionName());
+
+  {
+    std::ostringstream query;
+    query << "DROP DATABASE " << db->databaseName().toStdString();
+    QSqlQuery q(*db);
+    if (!q.exec(query.str().c_str()))
+      std::cerr << q.lastError().text().toStdString() << std::endl;
+  }
+
+  db->close();
+  db.reset();
+  QSqlDatabase::removeDatabase(connection_name);
+
+  return ;
+}
+
+/**
+ *  Create and open some database.
+ *
+ *  @param[out] db       Database object.
+ *  @param[in]  db_name  Database name.
+ */
+void test_db::_open(
+                QSqlDatabase& db,
+                char const* db_name) {
   // Connect to the DB.
-  QSqlDatabase db(QSqlDatabase::addDatabase(db_type.c_str()));
   db.setHostName(DB_HOST);
   db.setPassword(DB_PASSWORD);
   db.setPort(strtoul(DB_PORT, NULL, 0));
@@ -92,7 +176,7 @@ QSqlDatabase config_db_open(char const* db_name) {
   {
     std::ostringstream query;
     query << "CREATE DATABASE " << db_name;
-    if ("QMYSQL" == db_type)
+    if ("QMYSQL" == db.driverName())
       query << " DEFAULT CHARACTER SET utf8";
     QSqlQuery q(db);
     if (!q.exec(query.str().c_str()))
@@ -107,14 +191,25 @@ QSqlDatabase config_db_open(char const* db_name) {
            << db_name << "': "
            << db.lastError().text().toStdString().c_str());
 
+  return ;
+}
+
+/**
+ *  Run a script on a database.
+ *
+ *  @param[in,out] db           Database object.
+ *  @param[in]     script_name  Path to the script.
+ */
+void test_db::_run_script(QSqlDatabase& db, char const* script_name) {
   // Read table creation script.
   QByteArray table_creation_script;
   {
     std::ifstream ifs;
-    ifs.open(PROJECT_SOURCE_DIR "/sql/mysql_schema.sql");
+    ifs.open(script_name);
     if (ifs.fail())
       throw (exceptions::msg()
-             << "cannot open SQL table creation script");
+             << "cannot open SQL table creation script '"
+             << script_name << "'");
     char buffer[1024];
     std::streamsize rb;
     ifs.read(buffer, sizeof(buffer));
@@ -133,7 +228,7 @@ QSqlDatabase config_db_open(char const* db_name) {
     throw (exceptions::msg()
            << query.lastError().text().toStdString().c_str());
 
-  return (db);
+  return ;
 }
 
 /**

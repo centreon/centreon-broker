@@ -78,6 +78,7 @@ int main(int argc, char* argv[]) {
   std::string status_path(tmpnam(NULL));
   external_command commander;
   engine daemon;
+  test_db db;
 
   // Log.
   std::clog << "status directory: " << status_path << "\n"
@@ -85,7 +86,7 @@ int main(int argc, char* argv[]) {
 
   try {
     // Prepare database.
-    QSqlDatabase db(config_db_open(DB_NAME));
+    db.open(DB_NAME);
 
     // Create RRD paths.
     mkdir(metrics_path.c_str(), S_IRWXU);
@@ -232,7 +233,7 @@ int main(int argc, char* argv[]) {
 
     // Insert entries in index_data.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       // Host does not have status graph (yet).
       // for (unsigned int i(0); i < HOST_COUNT; ++i) {
       //   std::ostringstream query;
@@ -255,7 +256,7 @@ int main(int argc, char* argv[]) {
     // Get index list.
     std::list<unsigned int> indexes;
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT id FROM index_data"))
         throw (exceptions::msg() << "cannot get index list: "
                << qPrintable(q.lastError().text()));
@@ -326,7 +327,7 @@ int main(int argc, char* argv[]) {
             << "  FROM metrics AS m INNER JOIN index_data AS i"
             << "  ON m.index_id=i.id"
             << "  ORDER BY i.host_id ASC, i.service_id ASC";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot get metric list: "
                << qPrintable(q.lastError().text()));
@@ -441,7 +442,7 @@ int main(int argc, char* argv[]) {
         query << "SELECT COUNT(*)"
               << "  FROM data_bin"
               << "  WHERE id_metric=" << *it;
-        QSqlQuery q(db);
+        QSqlQuery q(*db.centreon_db());
         if (!q.exec(query.str().c_str())
             || !q.next()
             || !q.value(0).toUInt())
@@ -565,7 +566,6 @@ int main(int argc, char* argv[]) {
   daemon.stop();
   config_remove(engine_config_path.c_str());
   ::remove(cbmod_config_path.c_str());
-  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
   recursive_remove(metrics_path);

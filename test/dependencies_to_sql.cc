@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -54,10 +54,11 @@ int main() {
   std::list<servicedependency> service_deps;
   std::string engine_config_path(tmpnam(NULL));
   engine daemon;
+  test_db db;
 
   try {
     // Prepare database.
-    QSqlDatabase db(config_db_open(DB_NAME));
+    db.open(DB_NAME);
 
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, HOST_COUNT);
@@ -162,7 +163,7 @@ int main() {
       query << "SELECT dependent_host_id, host_id"
             << "  FROM hosts_hosts_dependencies"
             << "  ORDER BY dependent_host_id, host_id";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()
                << "cannot read host dependencies from DB: "
@@ -203,7 +204,7 @@ int main() {
             << "  FROM services_services_dependencies"
             << "  ORDER BY dependent_host_id, dependent_service_id,"
             << "           host_id, service_id";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()
                << "cannot read service dependencies from DB: "
@@ -249,7 +250,7 @@ int main() {
       };
       std::ostringstream query;
       query << "SELECT child_id, parent_id FROM hosts_hosts_parents";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read host parents from DB: "
                << qPrintable(q.lastError().text()));
@@ -279,7 +280,7 @@ int main() {
 
     // Check that host dependencies were deleted.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT COUNT(*) FROM hosts_hosts_dependencies")
           || !q.next()
           || q.value(0).toUInt())
@@ -290,7 +291,7 @@ int main() {
 
     // Check that service dependencies were deleted.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT COUNT(*) FROM services_services_dependencies")
           || !q.next()
           || q.value(0).toUInt())
@@ -301,7 +302,7 @@ int main() {
 
     // Check that host parents were deleted.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT COUNT(*) FROM hosts_hosts_parents")
           || !q.next()
           || q.value(0).toUInt())
@@ -323,7 +324,6 @@ int main() {
   // Cleanup.
   daemon.stop();
   config_remove(engine_config_path.c_str());
-  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
   free_host_dependencies(host_deps);

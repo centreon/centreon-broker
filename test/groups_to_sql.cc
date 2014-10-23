@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -55,10 +55,11 @@ int main() {
   std::list<servicegroup> service_groups;
   std::string engine_config_path(tmpnam(NULL));
   engine daemon;
+  test_db db;
 
   try {
     // Prepare database.
-    QSqlDatabase db(config_db_open(DB_NAME));
+    db.open(DB_NAME);
 
     // Group data.
     struct {
@@ -209,7 +210,7 @@ int main() {
       query << "SELECT hostgroup_id, name, instance_id, action_url, alias, notes, notes_url"
             << "  FROM hostgroups"
             << "  ORDER BY name";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read hostgroups from DB: "
                << qPrintable(q.lastError().text()));
@@ -257,7 +258,7 @@ int main() {
       query << "SELECT servicegroup_id, name, instance_id, action_url, alias, notes, notes_url"
             << "  FROM servicegroups"
             << "  ORDER BY name";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read servicegroups from DB: "
                << qPrintable(q.lastError().text()));
@@ -311,7 +312,7 @@ int main() {
             << " FROM hosts_hostgroups"
             << " WHERE hostgroup_id=" << *it
             << " ORDER BY host_id ASC";
-        QSqlQuery q(db);
+        QSqlQuery q(*db.centreon_db());
         if (!q.exec(oss.str().c_str()))
           throw (exceptions::msg()
                  << "cannot get hosts/hostgroups links: "
@@ -349,7 +350,7 @@ int main() {
             << " FROM services_servicegroups"
             << " WHERE servicegroup_id=" << *it
             << " ORDER BY service_id ASC";
-        QSqlQuery q(db);
+        QSqlQuery q(*db.centreon_db());
         if (!q.exec(oss.str().c_str()))
           throw (exceptions::msg()
                  << "cannot get services/servicegroups links: "
@@ -382,7 +383,7 @@ int main() {
 
     // Check that host groups were deleted from DB.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT COUNT(*) FROM hostgroups WHERE enabled=1")
           || !q.next())
         throw (exceptions::msg()
@@ -395,7 +396,7 @@ int main() {
 
     // Check that service groups were deleted from DB.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT COUNT(*) FROM servicegroups WHERE enabled=1")
           || !q.next())
         throw (exceptions::msg()
@@ -419,7 +420,6 @@ int main() {
   // Cleanup.
   daemon.stop();
   config_remove(engine_config_path.c_str());
-  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
   free_host_groups(host_groups);

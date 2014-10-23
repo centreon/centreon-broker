@@ -53,9 +53,10 @@ int main() {
   std::string engine_config_path(tmpnam(NULL));
   engine daemon;
   cbd broker;
+  test_db db;
 
   try {
-    QSqlDatabase db(config_db_open(DB_NAME));
+    db.open(DB_NAME);
 
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, 10);
@@ -100,7 +101,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(instance_id) from instances where outdated = TRUE";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check outdated instances from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -115,7 +116,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT COUNT(service_id)"
             << "  FROM services where last_hard_state = " << STATE_UNKNOWN;
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check outdated services from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -131,7 +132,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT COUNT(host_id)"
             << "  FROM hosts where last_hard_state = " << HOST_UNREACHABLE;
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check outdated hosts from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -151,7 +152,7 @@ int main() {
       std::ostringstream query;
       query
           << "SELECT COUNT(instance_id) from instances where outdated = FALSE";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check living instances from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -166,7 +167,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT COUNT(service_id)"
             << "  FROM services where last_hard_state != " << STATE_UNKNOWN;
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check living services from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -182,7 +183,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT COUNT(host_id)"
             << "  FROM hosts where last_hard_state != " << HOST_UNREACHABLE;
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check living hosts from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -208,7 +209,6 @@ int main() {
   daemon.stop();
   broker.stop();
   config_remove(engine_config_path.c_str());
-  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
 
