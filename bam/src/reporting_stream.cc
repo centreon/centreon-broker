@@ -27,6 +27,7 @@
 #include <QVariant>
 #include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/ba_event.hh"
+#include "com/centreon/broker/bam/ba_duration_event.hh"
 #include "com/centreon/broker/bam/bool_status.hh"
 #include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/state.hh"
@@ -316,6 +317,7 @@ void reporting_stream::_check_replication() {
 void reporting_stream::_clear_qsql() {
   _ba_event_insert.reset();
   _ba_event_update.reset();
+  _ba_duration_event_insert.reset();
   _kpi_event_insert.reset();
   _kpi_event_update.reset();
   _kpi_event_link.reset();
@@ -350,6 +352,24 @@ void reporting_stream::_prepare() {
       throw (exceptions::msg()
              << "BAM: could not prepare BA event update query: "
              << _ba_event_update->lastError().text());
+  }
+
+  // BA duration event insert.
+  {
+    QString query;
+    query = "INSERT INTO ba_events_durations ("
+             "                ba_event_id, start_time, "
+             "                end_time, duration, sla_duration, timeperiod_id, "
+             "                timeperiod_is_default)"
+             "  SELECT b.ba_event_id, :start_time, :end_time, :duration, "
+             "         :sla_duration, :timeperiod_id, :timeperiod_is_default"
+             "  FROM ba_events as b"
+             "  WHERE b.ba_id=:ba_id AND b.start_time=:real_start_time";
+    _ba_duration_event_insert.reset(new QSqlQuery(*_db));
+    if (_ba_duration_event_insert->prepare(query))
+      throw (exceptions::msg()
+             << "BAM: could not prepare BA duration event insert query: "
+             << _ba_duration_event_insert->lastError().text());
   }
 
   // KPI event insertion.
@@ -431,6 +451,36 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
       throw (exceptions::msg() << "BAM: could not insert event of BA "
              << be.ba_id << " starting at " << be.start_time);
   }
+  return ;
+}
+
+/**
+ *  Process a ba duration event and write it to the db.
+ *
+ *  @param[in] e  The event.
+ */
+void reporting_stream::_process_ba_duration_event(misc::shared_ptr<io::data> const& e) {
+  bam::ba_duration_event const&
+    bde(*static_cast<bam::ba_duration_event const*>(e.data()));
+  _ba_duration_event_insert->bindValue(":ba_id", bde.ba_id);
+  _ba_duration_event_insert->bindValue(
+    ":real_start_time",
+    static_cast<qlonglong>(bde.real_start_time.get_time_t()));
+  _ba_duration_event_insert->bindValue(
+    ":end_time",
+    static_cast<qlonglong>(bde.end_time.get_time_t()));
+  _ba_duration_event_insert->bindValue(
+    ":start_time",
+    static_cast<qlonglong>(bde.start_time.get_time_t()));
+  _ba_duration_event_insert->bindValue(":duration", bde.duration);
+  _ba_duration_event_insert->bindValue(":sla_duration", bde.sla_duration);
+  _ba_duration_event_insert->bindValue(":timeperiod_id", bde.timeperiod_id);
+  _ba_duration_event_insert->bindValue(
+    ":timeperiod_is_default",
+    bde.timeperiod_is_default);
+  if (_ba_duration_event_insert->exec())
+    throw (exceptions::msg() << "BAM: could not insert duration event of BA "
+           << bde.ba_id << " startint at " << bde.start_time);
   return ;
 }
 
