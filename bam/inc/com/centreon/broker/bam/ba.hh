@@ -23,6 +23,7 @@
 #  include <string>
 #  include <vector>
 #  include "com/centreon/broker/bam/ba_event.hh"
+#  include "com/centreon/broker/bam/ba_duration_event.hh"
 #  include "com/centreon/broker/bam/computable.hh"
 #  include "com/centreon/broker/bam/impact_values.hh"
 #  include "com/centreon/broker/bam/service_listener.hh"
@@ -77,7 +78,7 @@ namespace        bam {
     void         set_level_critical(double level);
     void         set_level_warning(double level);
     void         set_initial_event(ba_event const& event);
-    void         add_timeperiod(time::timeperiod::ptr tp);
+    void         add_timeperiod(time::timeperiod::ptr tp, bool is_default);
     void         clear_timeperiods();
     void         visit(stream* visitor);
     void         service_update(
@@ -98,6 +99,8 @@ namespace        bam {
     void         _open_new_event(stream* visitor);
     void         _recompute();
     void         _unapply_impact(impact_info& impact);
+    void         _compute_event_durations(misc::shared_ptr<ba_event> ev,
+                                          stream* visitor);
 
     double       _acknowledgement_hard;
     double       _acknowledgement_soft;
@@ -119,6 +122,8 @@ namespace        bam {
     std::string  _perfdata;
     int          _recompute_count;
     unsigned int _service_id;
+    time::timeperiod::ptr
+                 _default_tp;
     std::vector<time::timeperiod::ptr>
                  _tps;
   };

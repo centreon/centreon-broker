@@ -372,16 +372,21 @@ void ba::set_initial_event(ba_event const& event) {
 /**
  *  Add a timeperiod associated with this ba.
  *
- *  @param[in] tp  The timeperiod to add.
+ *  @param[in] tp          The timeperiod to add.
+ *  @param[in] is_default  True if this timeperiod is the default timeperiod.
  */
-void ba::add_timeperiod(time::timeperiod::ptr tp) {
-  _tps.push_back(tp);
+void ba::add_timeperiod(time::timeperiod::ptr tp, bool is_default) {
+  if (is_default)
+    _default_tp = tp;
+  else
+    _tps.push_back(tp);
 }
 
 /**
  *  Clear the timeperiods associated with this ba.
  */
 void ba::clear_timeperiods() {
+  _default_tp.clear();
   _tps.clear();
 }
 
@@ -508,6 +513,7 @@ void ba::_internal_copy(ba const& right) {
   _level_warning = right._level_warning;
   _output = right._output;
   _perfdata = right._perfdata;
+  _default_tp = right._default_tp;
   _tps = right._tps;
   return ;
 }
@@ -575,4 +581,29 @@ void ba::_unapply_impact(ba::impact_info& impact) {
     _recompute();
 
   return ;
+}
+
+/**
+ *  @brief Compute and write the duration events associated with a ba event.
+ *
+ *  The event durations are computed from the associated timeperiod of this BA.
+ *
+ *  @param[in] ev       The ba_event generating the durations.
+ *  @param[in] visitor  A visitor stream.
+ */
+void ba::_compute_event_durations(misc::shared_ptr<ba_event> ev,
+                                  stream* visitor) {
+  if (ev.isNull() || !visitor)
+    return ;
+
+  for (std::vector<time::timeperiod::ptr>::iterator it(_tps.begin()),
+                                                    end(_tps.end());
+       it != end;
+       ++it) {
+    misc::shared_ptr<ba_duration_event> dur_ev(new ba_duration_event);
+    dur_ev->ba_id = _id;
+    dur_ev->timeperiod_id = (*it)->get_id();
+    dur_ev->timeperiod_is_default = false;
+    visitor->write(dur_ev);
+  }
 }

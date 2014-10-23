@@ -273,7 +273,7 @@ void reader::_load(state::bas& bas) {
   }
 
   // Load the timeperiods associated with the BAs.
-  query = _db->exec("SELECT ba_id, timeperiod_id FROM mod_bam_ba_tp_rel");
+  query = _db->exec("SELECT ba_id, timeperiod_id, is_default FROM mod_bam_ba_tp_rel");
   if (_db->lastError().isValid())
     throw (reader_exception()
            << "BAM: could not retrieve the timeperiods associated with the BAs: "
@@ -287,7 +287,12 @@ void reader::_load(state::bas& bas) {
         << ba_id
         << "not found when reading timeperiod relations from db.";
     }
-    found->second.add_timeperiod(query.value(1).toInt());
+    // This is a default timeperiod.
+    if (query.value(2).toBool())
+      found->second.set_default_timeperiod(query.value(1).toInt());
+    // This is not a default timeperiod.
+    else
+      found->second.add_timeperiod(query.value(1).toInt());
   }
   return ;
 }
