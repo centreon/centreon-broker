@@ -502,6 +502,91 @@ void monitoring_stream::_prepare() {
 }
 
 /**
+ *  Process a ba event and write it to the db.
+ *
+ *  @param[in] e The event.
+ */
+void stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
+  bam::ba_event const& be(*static_cast<bam::ba_event const*>(e.data()));
+  if ((be.end_time != 0) && (be.end_time != (time_t)-1)) {
+    _ba_event_update->bindValue(":ba_id", be.ba_id);
+    _ba_event_update->bindValue(
+      ":start_time",
+      static_cast<qlonglong>(be.start_time.get_time_t()));
+    _ba_event_update->bindValue(
+      ":end_time",
+      static_cast<qlonglong>(be.end_time.get_time_t()));
+    if (!_ba_event_update->exec())
+      throw (exceptions::msg() << "BAM: could not close event of BA "
+             << be.ba_id << " starting at " << be.start_time
+             << " and ending at " << be.end_time);
+  }
+  else {
+    _ba_event_insert->bindValue(":ba_id", be.ba_id);
+    _ba_event_insert->bindValue(
+      ":start_time",
+      static_cast<qlonglong>(be.start_time.get_time_t()));
+    _ba_event_insert->bindValue(":status", be.status);
+    _ba_event_insert->bindValue(":in_downtime", be.in_downtime);
+    if (!_ba_event_insert->exec())
+      throw (exceptions::msg() << "BAM: could not insert event of BA "
+             << be.ba_id << " starting at " << be.start_time);
+  }
+  return ;
+}
+
+/**
+ *  Process a kpi event and write it to the db.
+ *
+ *  @param[in] e The event.
+ */
+void stream::_process_kpi_event(misc::shared_ptr<io::data> const& e) {
+  bam::kpi_event const& ke(*static_cast<bam::kpi_event const*>(e.data()));
+  if ((ke.end_time != 0) && (ke.end_time != (time_t)-1)) {
+    _kpi_event_update->bindValue(":kpi_id", ke.kpi_id);
+    _kpi_event_update->bindValue(
+      ":start_time",
+      static_cast<qlonglong>(ke.start_time.get_time_t()));
+    _kpi_event_update->bindValue(
+      ":end_time",
+      static_cast<qlonglong>(ke.end_time.get_time_t()));
+    if (!_kpi_event_update->exec())
+      throw (exceptions::msg() << "BAM: could not close event of KPI "
+             << ke.kpi_id << " starting at " << ke.start_time
+             << " and ending at " << ke.end_time << ": "
+             << _kpi_event_update->lastError().text());
+
+    _kpi_event_link->bindValue(
+      ":start_time",
+      static_cast<qlonglong>(ke.start_time.get_time_t()));
+    _kpi_event_link->bindValue(":kpi_id", ke.kpi_id);
+    if (!_kpi_event_link->exec())
+      throw (exceptions::msg()
+             << "BAM: could not create link from event of KPI "
+             << ke.kpi_id << " starting at " << ke.start_time
+             << " to its associated BA event: "
+             << _kpi_event_link->lastError().text());
+  }
+  else {
+    _kpi_event_insert->bindValue(":kpi_id", ke.kpi_id);
+    _kpi_event_insert->bindValue(
+      ":start_time",
+      static_cast<qlonglong>(ke.start_time.get_time_t()));
+    _kpi_event_insert->bindValue(":status", ke.status);
+    _kpi_event_insert->bindValue(":in_downtime", ke.in_downtime);
+    _kpi_event_insert->bindValue(":impact_level", ke.impact_level);
+    _kpi_event_insert->bindValue(":output", ke.output.c_str());
+    _kpi_event_insert->bindValue(":perfdata", ke.perfdata.c_str());
+    if (!_kpi_event_insert->exec())
+      throw (exceptions::msg() << "BAM: could not insert event of KPI "
+             << ke.kpi_id << " starting at " << ke.start_time << ": "
+             << _kpi_event_insert->lastError().text());
+  }
+>>>>>>> f1fd0bcd5e01e6b396e59e4c607932f4a9c048d5:bam/src/stream.cc
+  return ;
+}
+
+/**
  *  Update status of endpoint.
  *
  *  @param[in] status New status.
