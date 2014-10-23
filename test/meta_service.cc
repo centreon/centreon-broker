@@ -51,10 +51,11 @@ int main() {
   std::list<service> services;
   std::string engine_config_path(tmpnam(NULL));
   engine monitoring;
+  test_db db;
 
   try {
     // Prepare database.
-    QSqlDatabase db(config_db_open(DB_NAME));
+    db.open(DB_NAME);
 
     // Prepare monitoring engine configuration parameters.
     generate_commands(commands, SERVICES_BY_HOST);
@@ -145,7 +146,7 @@ int main() {
              end(queries.end());
            it != end;
            ++it) {
-        QSqlQuery q(db);
+        QSqlQuery q(*db.centreon_db());
         if (!q.exec(it->c_str()))
           throw (exceptions::msg() << "could not execute a query: "
                  << q.lastError().text() << " (" << *it << ")");
@@ -167,7 +168,7 @@ int main() {
         42.0 + SERVICES_BY_HOST - 1.0,
         ((SERVICES_BY_HOST - 1) / 2.0 + 42.0) * SERVICES_BY_HOST
       };
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(
                "SELECT value, meta_name"
                "  FROM meta_service"
@@ -206,7 +207,6 @@ int main() {
   // Cleanup.
   monitoring.stop();
   config_remove(engine_config_path.c_str());
-  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
   free_commands(commands);

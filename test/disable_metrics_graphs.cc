@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -61,6 +61,7 @@ int main() {
   std::string metrics_path(tmpnam(NULL));
   std::string status_path(tmpnam(NULL));
   engine daemon;
+  test_db db;
 
   // Log.
   std::clog << "status directory: " << status_path << "\n"
@@ -68,7 +69,7 @@ int main() {
 
   try {
     // Prepare database.
-    QSqlDatabase db(config_db_open(DB_NAME));
+    db.open(DB_NAME);
 
     // Create RRD paths.
     mkdir(metrics_path.c_str(), S_IRWXU);
@@ -170,7 +171,7 @@ int main() {
 
     // Insert entries in index_data.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       // Host does not have status graph (yet).
       // for (unsigned int i(0); i < HOST_COUNT; ++i) {
       //   std::ostringstream query;
@@ -233,7 +234,6 @@ int main() {
   daemon.stop();
   config_remove(engine_config_path.c_str());
   ::remove(cbmod_config_path.c_str());
-  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
   recursive_remove(metrics_path);

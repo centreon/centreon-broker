@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -55,10 +55,11 @@ int main() {
     engine_config_path[i] = tmpnam(NULL);
   engine daemon[ENGINE_COUNT];
   cbd broker;
+  test_db db;
 
   try {
     // Prepare database.
-    QSqlDatabase db(config_db_open(DB_NAME));
+    db.open(DB_NAME);
 
     // Prepare monitoring engine configuration parameters.
     for (unsigned int i(0); i < 3; ++i) {
@@ -110,7 +111,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(host_id) FROM hosts";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read host count from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -125,7 +126,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(service_id) FROM services";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()
                << "cannot read service count from DB: "
@@ -153,7 +154,6 @@ int main() {
   broker.stop();
   for (unsigned int i(0); i < ENGINE_COUNT; ++i)
     config_remove(engine_config_path[i].c_str());
-  config_db_close(DB_NAME);
   for (unsigned int i(0); i < ENGINE_COUNT; ++i) {
     free_hosts(hosts[i]);
     free_services(services[i]);
