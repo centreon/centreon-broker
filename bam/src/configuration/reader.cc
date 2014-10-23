@@ -271,6 +271,24 @@ void reader::_load(state::bas& bas) {
    }
    found->second.set_opened_event(e);
   }
+
+  // Load the timeperiods associated with the BAs.
+  query = _db->exec("SELECT ba_id, timeperiod_id FROM mod_bam_ba_tp_rel");
+  if (_db->lastError().isValid())
+    throw (reader_exception()
+           << "BAM: could not retrieve the timeperiods associated with the BAs: "
+           << _db->lastError().text());
+  while (query.next()) {
+    unsigned int ba_id = query.value(0).toInt();
+    state::bas::iterator found = bas.find(ba_id);
+    if (found == bas.end()) {
+      logging::error(logging::medium)
+        << "BAM: ba id: "
+        << ba_id
+        << "not found when reading timeperiod relations from db.";
+    }
+    found->second.add_timeperiod(query.value(1).toInt());
+  }
   return ;
 }
 

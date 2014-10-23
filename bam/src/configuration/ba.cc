@@ -53,7 +53,8 @@ ba::ba(ba const& other)
     _name(other._name),
     _warning_level(other._warning_level),
     _critical_level(other._critical_level),
-    _event(other._event) {}
+    _event(other._event),
+    _timeperiods(other._timeperiods) {}
 
 /**
  *  Destructor.
@@ -76,6 +77,7 @@ ba& ba::operator=(ba const& other) {
     _warning_level = other._warning_level;
     _critical_level = other._critical_level;
     _event = other._event;
+    _timeperiods = other._timeperiods;
   }
   return (*this);
 }
@@ -94,7 +96,8 @@ bool ba::operator==(ba const& right) const {
           && (_name == right._name)
           && (_warning_level == right._warning_level)
           && (_critical_level == right._critical_level)
-          && (_event == right._event));
+          && (_event == right._event)
+          && (_timeperiods == right._timeperiods));
 }
 
 /**
@@ -153,8 +156,22 @@ double ba::get_critical_level() const {
   return (_critical_level);
 }
 
+/**
+ *  Get the opened event of this ba.
+ *
+ *  @return  The opened event of this ba.
+ */
 com::centreon::broker::bam::ba_event const& ba::get_opened_event() const {
   return (_event);
+}
+
+/**
+ *  Get the timeperiods associated with this ba.
+ *
+ *  @return  The timeperiods.
+ */
+std::vector<unsigned int> const& ba::get_timeperiods() const {
+  return (_timeperiods);
 }
 
 /**
@@ -218,4 +235,13 @@ void ba::set_critical_level(double critical_level) {
  */
 void ba::set_opened_event(bam::ba_event const& e) {
   _event = e;
+}
+
+/**
+ *  Add a timeperiod.
+ *
+ *  @param[in] tp_id  The id of the timeperiod.
+ */
+void ba::add_timeperiod(unsigned int tp_id) {
+  _timeperiods.push_back(tp_id);
 }

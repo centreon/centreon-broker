@@ -21,6 +21,7 @@
 #  define CCB_BAM_CONFIGURATION_BA_HH
 
 #  include <string>
+#  include <vector>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/bam/ba_event.hh"
 
@@ -54,7 +55,10 @@ namespace                bam {
       std::string const& get_name() const;
       double             get_warning_level() const;
       double             get_critical_level() const;
-      void               set_opened_event(bam::ba_event const& e);
+      bam::ba_event const&
+                         get_opened_event() const;
+      std::vector<unsigned int> const&
+                         get_timeperiods() const;
 
       void               set_id(unsigned int id);
       void               set_host_id(unsigned int host_id);
@@ -62,8 +66,8 @@ namespace                bam {
       void               set_name(std::string const& name);
       void               set_warning_level(double warning_level);
       void               set_critical_level(double critical_level);
-      bam::ba_event const&
-                         get_opened_event() const;
+      void               set_opened_event(bam::ba_event const& e);
+      void               add_timeperiod(unsigned int tp_id);
 
     private:
       unsigned int       _id;
@@ -73,6 +77,8 @@ namespace                bam {
       double             _warning_level;
       double             _critical_level;
       bam::ba_event      _event;
+      std::vector<unsigned int>
+                         _timeperiods;
     };
   }
 }
