@@ -33,8 +33,8 @@ namespace         neb {
 
 namespace         bam {
   // Forward declarations.
+  class           monitoring_stream;
   class           service_listener;
-  class           stream;
 
   /**
    *  @class service_book service_book.hh "com/centreon/broker/bam/service_book.hh"
@@ -58,7 +58,7 @@ namespace         bam {
                     service_listener* listnr);
     void          update(
                     misc::shared_ptr<neb::service_status> const& ss,
-                    stream* visitor = NULL);
+                    monitoring_stream* visitor = NULL);
 
   private:
     typedef std::multimap<std::pair<unsigned int, unsigned int>, service_listener*> multimap;

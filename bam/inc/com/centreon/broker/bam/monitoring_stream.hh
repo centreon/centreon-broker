@@ -17,14 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_BAM_STREAM_HH
-#  define CCB_BAM_STREAM_HH
+#ifndef CCB_BAM_MONITORING_STREAM_HH
+#  define CCB_BAM_MONITORING_STREAM_HH
 
 #  include <memory>
-#  include <QList>
 #  include <QSqlDatabase>
 #  include <QSqlQuery>
-#  include <QMap>
 #  include "com/centreon/broker/bam/configuration/applier/state.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -33,15 +31,15 @@ CCB_BEGIN()
 
 namespace          bam {
   /**
-   *  @class stream stream.hh "com/centreon/broker/bam/stream.hh"
-   *  @brief bam stream.
+   *  @class monitoring_stream monitoring_stream.hh "com/centreon/broker/bam/monitoring_stream.hh"
+   *  @brief bam monitoring_stream.
    *
    *  Handle perfdata and insert proper informations in index_data and
    *  metrics table of a centbam DB.
    */
-  class            stream : public io::stream {
+  class            monitoring_stream : public io::stream {
   public:
-                   stream(
+                   monitoring_stream(
                      QString const& db_type,
                      QString const& db_host,
                      unsigned short db_port,
@@ -50,7 +48,7 @@ namespace          bam {
                      QString const& db_name,
                      unsigned int queries_per_transaction,
                      bool check_replication = true);
-                   ~stream();
+                   ~monitoring_stream();
     void           initialize();
     void           process(bool in = false, bool out = true);
     void           read(misc::shared_ptr<io::data>& d);
@@ -59,13 +57,12 @@ namespace          bam {
     unsigned int   write(misc::shared_ptr<io::data> const& d);
 
   private:
-                   stream(stream const& other);
-    stream&        operator=(stream const& other);
+                   monitoring_stream(monitoring_stream const& other);
+    monitoring_stream&
+                   operator=(monitoring_stream const& other);
     void           _check_replication();
     void           _clear_qsql();
     void           _prepare();
-    void           _process_ba_event(misc::shared_ptr<io::data> const& e);
-    void           _process_kpi_event(misc::shared_ptr<io::data> const& e);
     void           _update_status(std::string const& status);
 
     configuration::applier::state
@@ -83,16 +80,6 @@ namespace          bam {
                    _kpi_update;
     std::auto_ptr<QSqlQuery>
                    _meta_service_update;
-    std::auto_ptr<QSqlQuery>
-                   _ba_event_insert;
-    std::auto_ptr<QSqlQuery>
-                   _ba_event_update;
-    std::auto_ptr<QSqlQuery>
-                   _kpi_event_insert;
-    std::auto_ptr<QSqlQuery>
-                   _kpi_event_update;
-    std::auto_ptr<QSqlQuery>
-                   _kpi_event_link;
     std::auto_ptr<QSqlDatabase>
                    _db;
   };
@@ -100,4 +87,4 @@ namespace          bam {
 
 CCB_END()
 
-#endif // !CCB_BAM_STREAM_HH
+#endif // !CCB_BAM_MONITORING_STREAM_HH

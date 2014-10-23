@@ -59,18 +59,18 @@ namespace            bam {
     void             add_metric(unsigned int metric_id);
     bool             child_has_update(
                        computable* child,
-                       stream* visitor = NULL);
+                       monitoring_stream* visitor = NULL);
     unsigned int     get_id() const;
     void             metric_update(
                        misc::shared_ptr<storage::metric> const& m,
-                       stream* visitor = NULL);
+                       monitoring_stream* visitor = NULL);
     void             remove_metric(unsigned int metric_id);
     void             recompute();
     void             set_computation(computation_type type);
     void             set_id(unsigned int id);
     void             set_level_critical(double level);
     void             set_level_warning(double level);
-    void             visit(stream* visitor);
+    void             visit(monitoring_stream* visitor);
 
   private:
     static int const _recompute_limit = 100;

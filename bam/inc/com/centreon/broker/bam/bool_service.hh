@@ -46,7 +46,7 @@ namespace         bam {
     bool_service& operator=(bool_service const& right);
     bool          child_has_update(
                     computable* child,
-                    stream* visitor = NULL);
+                    monitoring_stream* visitor = NULL);
     unsigned int  get_host_id() const;
     unsigned int  get_service_id() const;
     void          set_expected_state(short expected);
@@ -55,7 +55,7 @@ namespace         bam {
     void          set_value_if_state_match(bool value);
     void          service_update(
                     misc::shared_ptr<neb::service_status> const& status,
-                    stream* visitor = NULL);
+                    monitoring_stream* visitor = NULL);
     bool          value_hard();
     bool          value_soft();
 

@@ -35,6 +35,11 @@ namespace          bam {
    */
   class            connector : public io::endpoint {
   public:
+    enum stream_type {
+      bam_type = 1,
+      bam_bi_type
+    };
+
                    connector();
                    connector(connector const& c);
                    ~connector();
@@ -42,6 +47,7 @@ namespace          bam {
     io::endpoint*  clone() const;
     void           close();
     void           connect_to(
+                     stream_type type,
                      QString const& db_type,
                      QString const& db_host,
                      unsigned short db_port,
@@ -66,6 +72,7 @@ namespace          bam {
     QString        _db_user;
     QString        _db_type;
     unsigned int   _queries_per_transaction;
+    stream_type    _type;
   };
 }
 

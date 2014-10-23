@@ -45,7 +45,9 @@ namespace   bam {
             kpi_ba(kpi_ba const& right);
             ~kpi_ba();
     kpi_ba& operator=(kpi_ba const& right);
-    bool    child_has_update(computable* child, stream* visitor = NULL);
+    bool    child_has_update(
+              computable* child,
+              monitoring_stream* visitor = NULL);
     double  get_impact_critical() const;
     double  get_impact_warning() const;
     void    impact_hard(impact_values& hard_impact);
@@ -54,7 +56,7 @@ namespace   bam {
     void    set_impact_critical(double impact);
     void    set_impact_warning(double impact);
     void    unlink_ba();
-    void    visit(stream* visitor);
+    void    visit(monitoring_stream* visitor);
 
   private:
     void    _fill_impact(
@@ -63,7 +65,7 @@ namespace   bam {
               double acknowledgement,
               double downtime);
     void    _internal_copy(kpi_ba const& right);
-    void    _open_new_event(stream* visitor, int impact);
+    void    _open_new_event(monitoring_stream* visitor, int impact);
 
     misc::shared_ptr<ba>
             _ba;

@@ -34,7 +34,7 @@
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/bam/kpi_event.hh"
 #include "com/centreon/broker/bam/meta_service_status.hh"
-#include "com/centreon/broker/bam/stream.hh"
+#include "com/centreon/broker/bam/monitoring_stream.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -66,7 +66,7 @@ using namespace com::centreon::broker::bam;
  *  @param[in] queries_per_transaction Queries per transaction.
  *  @param[in] check_replication       true to check replication status.
  */
-stream::stream(
+monitoring_stream::monitoring_stream(
           QString const& db_type,
           QString const& db_host,
           unsigned short db_port,
@@ -109,7 +109,7 @@ stream::stream(
         QString error(_db->lastError().text());
         _clear_qsql();
         throw (broker::exceptions::msg()
-               << "BAM: could not connect to database '"
+               << "BAM: could not connect to monitoring database '"
                << db_name << "' on host '" << db_host
                << ":" << db_port << "': " << error);
       }
@@ -120,7 +120,7 @@ stream::stream(
       _check_replication();
     else
       logging::debug(logging::medium)
-        << "BAM: NOT checking replication status of database '"
+        << "BAM: NOT checking replication status of monitoring database '"
         << _db->databaseName() << "' on host '" << _db->hostName()
         << ":" << _db->port() << "'";
 
@@ -158,7 +158,7 @@ stream::stream(
 /**
  *  Destructor.
  */
-stream::~stream() {
+monitoring_stream::~monitoring_stream() {
   // Connection ID.
   QString bam_id;
   bam_id.setNum((qulonglong)this, 16);
@@ -176,7 +176,7 @@ stream::~stream() {
 /**
  *  Generate default state.
  */
-void stream::initialize() {
+void monitoring_stream::initialize() {
   _applier.visit(this);
   return ;
 }
@@ -187,7 +187,7 @@ void stream::initialize() {
  *  @param[in] in  Unused.
  *  @param[in] out Set to true to enable output event processing.
  */
-void stream::process(bool in, bool out) {
+void monitoring_stream::process(bool in, bool out) {
   _process_out = in || !out; // Only for immediate shutdown.
   return ;
 }
@@ -199,10 +199,10 @@ void stream::process(bool in, bool out) {
  *  @param[out] d Cleared.
  *  @param[out] d The next available bam event.
  */
-void stream::read(misc::shared_ptr<io::data>& d) {
+void monitoring_stream::read(misc::shared_ptr<io::data>& d) {
   d.clear();
   throw (exceptions::msg()
-         << "BAM: attempt to read from a BAM stream (not supported)");
+         << "BAM: attempt to read from a BAM monitoring stream (not supported)");
   return ;
 }
 /**
@@ -210,7 +210,7 @@ void stream::read(misc::shared_ptr<io::data>& d) {
  *
  *  @param[out] tree Output tree.
  */
-void stream::statistics(io::properties& tree) const {
+void monitoring_stream::statistics(io::properties& tree) const {
   QMutexLocker lock(&_statusm);
   if (!_status.empty()) {
     io::property& p(tree["status"]);
@@ -223,7 +223,7 @@ void stream::statistics(io::properties& tree) const {
 /**
  *  Rebuild index and metrics cache.
  */
-void stream::update() {
+void monitoring_stream::update() {
   // XXX : beware of exceptions ?
   configuration::state s;
   {
@@ -241,11 +241,11 @@ void stream::update() {
  *
  *  @return Number of events acknowledged.
  */
-unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
+unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
   // Check that processing is enabled.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)
-           << "BAM stream is shutdown");
+           << "BAM monitoring stream is shutdown");
 
   if (!data.isNull()) {
     // Process service status events.
@@ -343,18 +343,6 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
                << status->meta_service_id << ": "
                << _meta_service_update->lastError().text());
     }
-    else if (data->type()
-             == io::events::data_type<io::events::bam, bam::de_kpi_event>::value) {
-      logging::debug(logging::low)
-        << "BAM: processing kpi event";
-      _process_kpi_event(data);
-    }
-    else if (data->type()
-             == io::events::data_type<io::events::bam, bam::de_ba_event>::value) {
-      logging::debug(logging::low)
-        << "BAM: processing ba event";
-      _process_ba_event(data);
-    }
   }
 }
 
@@ -369,8 +357,9 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
  *
  *  @param[in] other Unused.
  */
-stream::stream(stream const& other) : io::stream(other) {
-  assert(!"BAM stream is not copyable");
+monitoring_stream::monitoring_stream(monitoring_stream const& other)
+  : io::stream(other) {
+  assert(!"BAM monitoring stream is not copyable");
   abort();
 }
 
@@ -381,9 +370,9 @@ stream::stream(stream const& other) : io::stream(other) {
  *
  *  @return This object.
  */
-stream& stream::operator=(stream const& other) {
+monitoring_stream& monitoring_stream::operator=(monitoring_stream const& other) {
   (void)other;
-  assert(!"BAM stream is not copyable");
+  assert(!"BAM monitoring stream is not copyable");
   abort();
   return (*this);
 }
@@ -391,22 +380,22 @@ stream& stream::operator=(stream const& other) {
 /**
  *  Check that replication is OK.
  */
-void stream::_check_replication() {
+void monitoring_stream::_check_replication() {
   // Check that replication is OK.
   logging::debug(logging::medium)
-    << "BAM: checking replication status of database '"
+    << "BAM: checking replication status of monitoring database '"
     << _db->databaseName() << "' on host '" << _db->hostName()
     << ":" << _db->port() << "'";
   QSqlQuery q(*_db);
   if (!q.exec("SHOW SLAVE STATUS"))
     logging::info(logging::medium)
-      << "BAM: could not check replication status of database '"
+      << "BAM: could not check replication status of monitoring database '"
       << _db->databaseName() << "' on host '" << _db->hostName()
       << ":" << _db->port() << "': " << q.lastError().text();
   else {
     if (!q.next())
       logging::info(logging::medium)
-        << "BAM: database '" << _db->databaseName() << "' on host '"
+        << "BAM: monitoring database '" << _db->databaseName() << "' on host '"
         << _db->hostName() << ":" << _db->port()
         << "' is not under replication";
     else {
@@ -422,15 +411,15 @@ void stream::_check_replication() {
             || ((field == "Seconds_Behind_Master")
                 && (q.value(i).toInt() != 0)))
           throw (broker::exceptions::msg()
-                 << "BAM: replication of database '"
+                 << "BAM: replication of monitoring database '"
                  << _db->databaseName() << "' on host '"
                  << _db->hostName() << ":" << _db->port()
                  << "' is not complete: " << field
                  << "=" << q.value(i).toString());
       logging::info(logging::medium)
-        << "storage: replication of database '" << _db->databaseName()
-        << "' on host '" << _db->hostName() << ":" << _db->port()
-        << "' is complete, connection granted";
+        << "storage: replication of monitoring database '"
+        << _db->databaseName() << "' on host '" << _db->hostName()
+        << ":" << _db->port() << "' is complete, connection granted";
     }
   }
   return ;
@@ -439,7 +428,7 @@ void stream::_check_replication() {
 /**
  *  Clear QtSql objects.
  */
-void stream::_clear_qsql() {
+void monitoring_stream::_clear_qsql() {
   _ba_update.reset();
   _bool_exp_update.reset();
   _kpi_update.reset();
@@ -451,7 +440,7 @@ void stream::_clear_qsql() {
 /**
  *  Prepare queries.
  */
-void stream::_prepare() {
+void monitoring_stream::_prepare() {
   // BA status.
   {
     QString query;
@@ -509,160 +498,6 @@ void stream::_prepare() {
              << _meta_service_update->lastError().text());
   }
 
-  // BA event insertion.
-  {
-    QString query;
-    query = "INSERT INTO ba_events (ba_id, start_time, status, in_downtime)"
-            "  VALUES (:ba_id, :start_time, :status, :in_downtime)";
-    _ba_event_insert.reset(new QSqlQuery(*_db));
-    if (!_ba_event_insert->prepare(query))
-      throw (exceptions::msg()
-             << "BAM: could not prepare BA event insertion query: "
-             << _ba_event_insert->lastError().text());
-  }
-
-  // BA event update.
-  {
-    QString query;
-    query = "UPDATE ba_events"
-            "  SET end_time=:end_time"
-            "  WHERE ba_id=:ba_id AND start_time=:start_time";
-    _ba_event_update.reset(new QSqlQuery(*_db));
-    if (!_ba_event_update->prepare(query))
-      throw (exceptions::msg()
-             << "BAM: could not prepare BA event update query: "
-             << _ba_event_update->lastError().text());
-  }
-
-  // KPI event insertion.
-  {
-    QString query;
-    query = "INSERT INTO kpi_events (kpi_id, start_time, status, "
-            "            in_downtime, impact_level, first_output, "
-            "            first_perfdata)"
-            "  VALUES (:kpi_id, :start_time, :status, :in_downtime, "
-            "         :impact_level, :output, :perfdata)";
-    _kpi_event_insert.reset(new QSqlQuery(*_db));
-    if (!_kpi_event_insert->prepare(query))
-      throw (exceptions::msg()
-             << "BAM: could not prepare KPI event insertion query: "
-             << _kpi_event_insert->lastError().text());
-  }
-
-  // KPI event update.
-  {
-    QString query;
-    query = "UPDATE kpi_events"
-            "  SET end_time=:end_time"
-            "  WHERE kpi_id=:kpi_id AND start_time=:start_time";
-    _kpi_event_update.reset(new QSqlQuery(*_db));
-    if (!_kpi_event_update->prepare(query))
-      throw (exceptions::msg()
-             << "BAM: could not prepare KPI event update query: "
-             << _kpi_event_update->lastError().text());
-  }
-
-  // KPI event link to BA event.
-  {
-    QString query;
-    query = "INSERT INTO relations_ba_kpi_events (ba_event_id, kpi_event_id)"
-            "  SELECT be.ba_event_id, ke.kpi_event_id"
-            "    FROM kpi_events AS ke"
-            "    INNER JOIN ba_events AS be"
-            "    ON ((ke.start_time >= be.start_time)"
-            "       AND (be.end_time IS NULL OR ke.start_time < be.end_time))"
-            "    WHERE ke.kpi_id=:kpi_id AND ke.start_time=:start_time";
-    _kpi_event_link.reset(new QSqlQuery(*_db));
-    if (!_kpi_event_link->prepare(query))
-      throw (exceptions::msg()
-             << "BAM: could not prepare link query of BA and KPI events: "
-             << _kpi_event_link->lastError().text());
-  }
-
-  return ;
-}
-
-/**
- *  Process a ba event and write it to the db.
- *
- *  @param[in] e The event.
- */
-void stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
-  bam::ba_event const& be(*static_cast<bam::ba_event const*>(e.data()));
-  if ((be.end_time != 0) && (be.end_time != (time_t)-1)) {
-    _ba_event_update->bindValue(":ba_id", be.ba_id);
-    _ba_event_update->bindValue(
-      ":start_time",
-      static_cast<qlonglong>(be.start_time.get_time_t()));
-    _ba_event_update->bindValue(
-      ":end_time",
-      static_cast<qlonglong>(be.end_time.get_time_t()));
-    if (!_ba_event_update->exec())
-      throw (exceptions::msg() << "BAM: could not close event of BA "
-             << be.ba_id << " starting at " << be.start_time
-             << " and ending at " << be.end_time);
-  }
-  else {
-    _ba_event_insert->bindValue(":ba_id", be.ba_id);
-    _ba_event_insert->bindValue(
-      ":start_time",
-      static_cast<qlonglong>(be.start_time.get_time_t()));
-    _ba_event_insert->bindValue(":status", be.status);
-    _ba_event_insert->bindValue(":in_downtime", be.in_downtime);
-    if (!_ba_event_insert->exec())
-      throw (exceptions::msg() << "BAM: could not insert event of BA "
-             << be.ba_id << " starting at " << be.start_time);
-  }
-  return ;
-}
-
-/**
- *  Process a kpi event and write it to the db.
- *
- *  @param[in] e The event.
- */
-void stream::_process_kpi_event(misc::shared_ptr<io::data> const& e) {
-  bam::kpi_event const& ke(*static_cast<bam::kpi_event const*>(e.data()));
-  if ((ke.end_time != 0) && (ke.end_time != (time_t)-1)) {
-    _kpi_event_update->bindValue(":kpi_id", ke.kpi_id);
-    _kpi_event_update->bindValue(
-      ":start_time",
-      static_cast<qlonglong>(ke.start_time.get_time_t()));
-    _kpi_event_update->bindValue(
-      ":end_time",
-      static_cast<qlonglong>(ke.end_time.get_time_t()));
-    if (!_kpi_event_update->exec())
-      throw (exceptions::msg() << "BAM: could not close event of KPI "
-             << ke.kpi_id << " starting at " << ke.start_time
-             << " and ending at " << ke.end_time << ": "
-             << _kpi_event_update->lastError().text());
-
-    _kpi_event_link->bindValue(
-      ":start_time",
-      static_cast<qlonglong>(ke.start_time.get_time_t()));
-    _kpi_event_link->bindValue(":kpi_id", ke.kpi_id);
-    if (!_kpi_event_link->exec())
-      throw (exceptions::msg()
-             << "BAM: could not create link from event of KPI "
-             << ke.kpi_id << " starting at " << ke.start_time
-             << " to its associated BA event: "
-             << _kpi_event_link->lastError().text());
-  }
-  else {
-    _kpi_event_insert->bindValue(":kpi_id", ke.kpi_id);
-    _kpi_event_insert->bindValue(
-      ":start_time",
-      static_cast<qlonglong>(ke.start_time.get_time_t()));
-    _kpi_event_insert->bindValue(":status", ke.status);
-    _kpi_event_insert->bindValue(":in_downtime", ke.in_downtime);
-    _kpi_event_insert->bindValue(":impact_level", ke.impact_level);
-    _kpi_event_insert->bindValue(":output", ke.output.c_str());
-    _kpi_event_insert->bindValue(":perfdata", ke.perfdata.c_str());
-    if (!_kpi_event_insert->exec())
-      throw (exceptions::msg() << "BAM: could not insert event of KPI "
-             << ke.kpi_id << " starting at " << ke.start_time << ": "
-             << _kpi_event_insert->lastError().text());
-  }
   return ;
 }
 
@@ -671,6 +506,6 @@ void stream::_process_kpi_event(misc::shared_ptr<io::data> const& e) {
  *
  *  @param[in] status New status.
  */
-void stream::_update_status(std::string const& status) {
+void monitoring_stream::_update_status(std::string const& status) {
 
 }

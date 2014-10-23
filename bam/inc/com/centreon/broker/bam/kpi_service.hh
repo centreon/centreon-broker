@@ -43,7 +43,7 @@ namespace        bam {
     kpi_service& operator=(kpi_service const& right);
     bool         child_has_update(
                    computable* child,
-                   stream* visitor = NULL);
+                   monitoring_stream* visitor = NULL);
     unsigned int get_host_id() const;
     double       get_impact_critical() const;
     double       get_impact_unknown() const;
@@ -58,7 +58,7 @@ namespace        bam {
     bool         is_acknowledged() const;
     void         service_update(
                    misc::shared_ptr<neb::service_status> const& status,
-                   stream* visitor = NULL);
+                   monitoring_stream* visitor = NULL);
     void         set_acknowledged(bool acknowledged);
     void         set_downtimed(bool downtimed);
     void         set_host_id(unsigned int host_id);
@@ -69,13 +69,13 @@ namespace        bam {
     void         set_state_hard(short state);
     void         set_state_soft(short state);
     void         set_state_type(short type);
-    void         visit(stream* visitor);
+    void         visit(monitoring_stream* visitor);
 
   private:
     void         _fill_impact(impact_values& impact, short state);
     void         _internal_copy(kpi_service const& right);
     void         _open_new_event(
-                   stream* visitor,
+                   monitoring_stream* visitor,
                    impact_values const& impacts);
 
     bool         _acknowledged;

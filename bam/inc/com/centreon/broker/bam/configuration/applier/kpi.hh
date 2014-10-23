@@ -54,7 +54,7 @@ namespace     bam {
                 configuration::state::kpis const& my_kpis,
                 ba& my_bas,
                 service_book& book);
-        void  visit(stream* visitor);
+        void  visit(monitoring_stream* visitor);
 
       private:
         struct applied {

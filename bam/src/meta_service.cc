@@ -20,7 +20,7 @@
 #include <cmath>
 #include "com/centreon/broker/bam/meta_service.hh"
 #include "com/centreon/broker/bam/meta_service_status.hh"
-#include "com/centreon/broker/bam/stream.hh"
+#include "com/centreon/broker/bam/monitoring_stream.hh"
 #include "com/centreon/broker/storage/metric.hh"
 
 using namespace com::centreon::broker;
@@ -89,7 +89,7 @@ void meta_service::add_metric(unsigned int metric_id) {
  */
 bool meta_service::child_has_update(
                      computable* child,
-                     stream* visitor) {
+                     monitoring_stream* visitor) {
   (void)child;
   (void)visitor;
   return true;
@@ -112,7 +112,7 @@ unsigned int meta_service::get_id() const {
  */
 void meta_service::metric_update(
                      misc::shared_ptr<storage::metric> const& m,
-                     stream* visitor) {
+                     monitoring_stream* visitor) {
   if (!m.isNull()) {
     umap<unsigned int, double>::iterator
       it(_metrics.find(m->metric_id));
@@ -242,7 +242,7 @@ void meta_service::set_level_warning(double level) {
  *
  *  @param[out] visitor  Visitor that will receive meta-service status.
  */
-void meta_service::visit(stream* visitor) {
+void meta_service::visit(monitoring_stream* visitor) {
   if (visitor) {
     // Recompute out-of-date value.
     if (_recompute_count >= _recompute_limit)

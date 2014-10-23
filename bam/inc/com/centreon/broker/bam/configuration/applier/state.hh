@@ -33,7 +33,7 @@ CCB_BEGIN()
 
 namespace               bam {
   // Forward declaration.
-  class                 stream;
+  class                 monitoring_stream;
 
   namespace             configuration {
     // Forward declaration.
@@ -55,7 +55,7 @@ namespace               bam {
         void            apply(configuration::state const& my_state);
         metric_book&    book_metric();
         service_book&   book_service();
-        void            visit(stream* visitor);
+        void            visit(monitoring_stream* visitor);
 
       private:
         void            _internal_copy(state const& other);

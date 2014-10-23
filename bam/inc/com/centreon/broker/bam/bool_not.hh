@@ -45,7 +45,7 @@ namespace     bam {
     bool_not& operator=(bool_not const& right);
     bool      child_has_update(
                 computable* child,
-                stream* visitor = NULL);
+                monitoring_stream* visitor = NULL);
     void      set_value(misc::shared_ptr<bool_value>& value);
     bool      value_hard();
     bool      value_soft();

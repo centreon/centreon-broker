@@ -34,7 +34,7 @@ namespace         storage {
 namespace         bam {
   // Forward declarations.
   class           metric_listener;
-  class           stream;
+  class           monitoring_stream;
 
   /**
    *  @class metric_book metric_book.hh "com/centreon/broker/bam/metric_book.hh"
@@ -56,7 +56,7 @@ namespace         bam {
                     metric_listener* listnr);
     void          update(
                     misc::shared_ptr<storage::metric> const& m,
-                    stream* visitor = NULL);
+                    monitoring_stream* visitor = NULL);
 
   private:
     typedef std::multimap<unsigned int, metric_listener*> multimap;

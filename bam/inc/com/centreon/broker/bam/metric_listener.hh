@@ -32,7 +32,7 @@ namespace             storage {
 
 namespace             bam {
   // Forward declaration.
-  class               stream;
+  class               monitoring_stream;
 
   /**
    *  @class metric_listener metric_listener.hh "com/centreon/broker/bam/metric_listener.hh"
@@ -55,7 +55,7 @@ namespace             bam {
      */
     virtual void      metric_update(
                         misc::shared_ptr<storage::metric> const& m,
-                        stream* visitor = NULL) = 0;
+                        monitoring_stream* visitor = NULL) = 0;
   };
 }
 

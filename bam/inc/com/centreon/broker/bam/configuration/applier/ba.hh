@@ -51,7 +51,7 @@ namespace     bam {
                     timeperiod& tp);
         misc::shared_ptr<bam::ba>
               find_ba(unsigned int id);
-        void  visit(stream* visitor);
+        void  visit(monitoring_stream* visitor);
 
       private:
         struct applied {

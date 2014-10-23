@@ -110,14 +110,16 @@ bool factory::has_endpoint(
   (void)is_input;
   bool is_bam(!cfg.type.compare("bam", Qt::CaseInsensitive)
               && is_output);
-  if (is_bam) {
+  bool is_bam_bi(!cfg.type.compare("bam_bi", Qt::CaseInsensitive)
+                 && is_output);
+  if (is_bam || is_bam_bi) {
     // Transaction timeout.
     if (cfg.params.find("read_timeout") == cfg.params.end()) {
       cfg.params["read_timeout"] = "2";
       cfg.read_timeout = 2;
     }
   }
-  return (is_bam);
+  return (is_bam || is_bam_bi);
 }
 
 /**
@@ -166,9 +168,16 @@ io::endpoint* factory::new_endpoint(
       check_replication = config::parser::parse_boolean(*it);
   }
 
+  // Is it a BAM or BAM-BI output ?
+  bool is_bam_bi(!cfg.type.compare("bam_bi", Qt::CaseInsensitive)
+                 && is_output);
+
   // Connector.
   std::auto_ptr<bam::connector> c(new bam::connector);
   c->connect_to(
+       is_bam_bi
+       ? bam::connector::bam_bi_type
+       : bam::connector::bam_type,
        type,
        host,
        port,

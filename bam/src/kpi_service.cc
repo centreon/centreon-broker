@@ -21,7 +21,7 @@
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi_service.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
-#include "com/centreon/broker/bam/stream.hh"
+#include "com/centreon/broker/bam/monitoring_stream.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/service_status.hh"
@@ -84,7 +84,9 @@ kpi_service& kpi_service::operator=(kpi_service const& right) {
  *
  *  @return              True.
  */
-bool kpi_service::child_has_update(computable* child, stream* visitor) {
+bool kpi_service::child_has_update(
+                    computable* child,
+                    monitoring_stream* visitor) {
   (void)child;
   (void)visitor;
   return true;
@@ -208,7 +210,7 @@ bool kpi_service::is_acknowledged() const {
  */
 void kpi_service::service_update(
                     misc::shared_ptr<neb::service_status> const& status,
-                    stream* visitor) {
+                    monitoring_stream* visitor) {
   if (!status.isNull()
       && (status->host_id == _host_id)
       && (status->service_id == _service_id)) {
@@ -340,7 +342,7 @@ void kpi_service::set_state_type(short type) {
  *
  *  @param[out] visitor  Object that will receive status.
  */
-void kpi_service::visit(stream* visitor) {
+void kpi_service::visit(monitoring_stream* visitor) {
   if (visitor) {
     // Get information.
     impact_values hard_values;
@@ -430,7 +432,7 @@ void kpi_service::_internal_copy(kpi_service const& right) {
  *  @param[in]  impacts  Impact values.
  */
 void kpi_service::_open_new_event(
-                    stream* visitor,
+                    monitoring_stream* visitor,
                     impact_values const& impacts) {
   _event = new kpi_event;
   _event->kpi_id = _id;

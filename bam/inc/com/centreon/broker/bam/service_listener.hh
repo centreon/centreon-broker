@@ -32,7 +32,7 @@ namespace             neb {
 
 namespace             bam {
   // Forward declaration.
-  class               stream;
+  class               monitoring_stream;
 
   /**
    *  @class service_listener service_listener.hh "com/centreon/broker/bam/service_listener.hh"
@@ -55,7 +55,7 @@ namespace             bam {
      */
     virtual void      service_update(
                         misc::shared_ptr<neb::service_status> const& status,
-                        stream* visitor = NULL) = 0;
+                        monitoring_stream* visitor = NULL) = 0;
   };
 }
 

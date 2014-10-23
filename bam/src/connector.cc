@@ -18,7 +18,8 @@
 */
 
 #include "com/centreon/broker/bam/connector.hh"
-#include "com/centreon/broker/bam/stream.hh"
+#include "com/centreon/broker/bam/monitoring_stream.hh"
+#include "com/centreon/broker/bam/reporting_stream.hh"
 #include "com/centreon/broker/bam/sql_mapping.hh"
 
 using namespace com::centreon::broker;
@@ -33,7 +34,7 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-connector::connector() : io::endpoint(false) {}
+connector::connector() : io::endpoint(false), _type(bam_type) {}
 
 /**
  *  Copy constructor.
@@ -84,6 +85,7 @@ void connector::close() {
 /**
  *  Set connection parameters.
  *
+ *  @param[in] type                    BAM stream type.
  *  @param[in] db_type                 BAM DB type.
  *  @param[in] db_host                 BAM DB host.
  *  @param[in] db_port                 BAM DB port.
@@ -95,6 +97,7 @@ void connector::close() {
  *                                     not.
  */
 void connector::connect_to(
+                  stream_type type,
                   QString const& db_type,
                   QString const& db_host,
                   unsigned short db_port,
@@ -103,6 +106,7 @@ void connector::connect_to(
                   QString const& db_name,
                   unsigned int queries_per_transaction,
                   bool check_replication) {
+  _type = type;
   _db_type = plain_db_to_qt(db_type);
   _db_host = db_host;
   _db_port = db_port;
@@ -120,18 +124,33 @@ void connector::connect_to(
  *  @return BAM connection object.
  */
 misc::shared_ptr<io::stream> connector::open() {
-  misc::shared_ptr<stream>
-    s(new stream(
-            _db_type,
-            _db_host,
-            _db_port,
-            _db_user,
-            _db_password,
-            _db_name,
-            _queries_per_transaction,
-            _check_replication));
-  s->initialize();
-  return (s.staticCast<io::stream>());
+  if (_type == bam_bi_type) {
+    misc::shared_ptr<reporting_stream>
+      s(new reporting_stream(
+              _db_type,
+              _db_host,
+              _db_port,
+              _db_user,
+              _db_password,
+              _db_name,
+              _queries_per_transaction,
+              _check_replication));
+    return (s.staticCast<io::stream>());
+  }
+  else {
+    misc::shared_ptr<monitoring_stream>
+      s(new monitoring_stream(
+              _db_type,
+              _db_host,
+              _db_port,
+              _db_user,
+              _db_password,
+              _db_name,
+              _queries_per_transaction,
+              _check_replication));
+    s->initialize();
+    return (s.staticCast<io::stream>());
+  }
 }
 
 /**
@@ -166,5 +185,6 @@ void connector::_internal_copy(connector const& c) {
   _db_user = c._db_user;
   _db_type = c._db_type;
   _queries_per_transaction = c._queries_per_transaction;
+  _type = c._type;
   return ;
 }

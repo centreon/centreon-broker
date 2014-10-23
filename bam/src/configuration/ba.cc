@@ -126,6 +126,15 @@ unsigned int ba::get_id() const {
 }
 
 /**
+ *  Get the host ID.
+ *
+ *  @return BA host ID.
+ */
+unsigned int ba::get_host_id() const {
+  return (_host_id);
+}
+
+/**
  *  Get the id of the service associated to this ba.
  *
  *  @return  An integer representing the value of this id.

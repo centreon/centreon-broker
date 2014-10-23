@@ -102,7 +102,7 @@ void service_book::unlisten(
  */
 void service_book::update(
                      misc::shared_ptr<neb::service_status> const& ss,
-                     stream* visitor) {
+                     monitoring_stream* visitor) {
   std::pair<multimap::iterator, multimap::iterator>
     range(_book.equal_range(std::make_pair(
                                    ss->host_id,
