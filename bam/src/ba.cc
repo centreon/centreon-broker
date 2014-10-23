@@ -376,17 +376,13 @@ void ba::set_initial_event(ba_event const& event) {
  *  @param[in] is_default  True if this timeperiod is the default timeperiod.
  */
 void ba::add_timeperiod(time::timeperiod::ptr tp, bool is_default) {
-  if (is_default)
-    _default_tp = tp;
-  else
-    _tps.push_back(tp);
+  _tps.push_back(std::make_pair(tp, is_default));
 }
 
 /**
  *  Clear the timeperiods associated with this ba.
  */
 void ba::clear_timeperiods() {
-  _default_tp.clear();
   _tps.clear();
 }
 
@@ -513,7 +509,6 @@ void ba::_internal_copy(ba const& right) {
   _level_warning = right._level_warning;
   _output = right._output;
   _perfdata = right._perfdata;
-  _default_tp = right._default_tp;
   _tps = right._tps;
   return ;
 }
@@ -596,14 +591,15 @@ void ba::_compute_event_durations(misc::shared_ptr<ba_event> ev,
   if (ev.isNull() || !visitor)
     return ;
 
-  for (std::vector<time::timeperiod::ptr>::iterator it(_tps.begin()),
-                                                    end(_tps.end());
+  for (std::vector<std::pair<time::timeperiod::ptr, bool> >::iterator
+         it(_tps.begin()),
+         end(_tps.end());
        it != end;
        ++it) {
     misc::shared_ptr<ba_duration_event> dur_ev(new ba_duration_event);
     dur_ev->ba_id = _id;
-    dur_ev->timeperiod_id = (*it)->get_id();
-    dur_ev->timeperiod_is_default = false;
+    dur_ev->timeperiod_id = it->first->get_id();
+    dur_ev->timeperiod_is_default = it->second;
     visitor->write(dur_ev);
   }
 }

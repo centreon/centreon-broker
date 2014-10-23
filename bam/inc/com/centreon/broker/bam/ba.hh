@@ -124,7 +124,7 @@ namespace        bam {
     unsigned int _service_id;
     time::timeperiod::ptr
                  _default_tp;
-    std::vector<time::timeperiod::ptr>
+    std::vector<std::pair<time::timeperiod::ptr, bool> >
                  _tps;
   };
 }

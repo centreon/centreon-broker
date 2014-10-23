@@ -236,7 +236,7 @@ misc::shared_ptr<bam::ba> applier::ba::_new_ba(
  *
  *  @param[out] obj        The object to be applied.
  *  @param[in] default_tp  The default timeperiod id.
- *  @param[in] tps         The timeperiods id.
+ *  @param[in] tps         The other timeperiods id.
  *  @param[in] tp          The timeperiod applier.
  */
 void applier::ba::_apply_timeperiods(misc::shared_ptr<bam::ba> obj,
@@ -250,8 +250,8 @@ void applier::ba::_apply_timeperiods(misc::shared_ptr<bam::ba> obj,
     time::timeperiod::ptr resolved_tp = tp.get_timeperiod_by_id(default_tp);
     if (resolved_tp.isNull())
       throw (exceptions::msg()
-        << "BAM: Could not find the timeperiod " << default_tp << " for the ba "
-        << obj->get_id());
+        << "BAM: Could not find the timeperiod " << default_tp
+        << " for the ba: " << obj->get_id());
     obj->add_timeperiod(resolved_tp, true);
   }
 
@@ -263,8 +263,8 @@ void applier::ba::_apply_timeperiods(misc::shared_ptr<bam::ba> obj,
     time::timeperiod::ptr resolved_tp = tp.get_timeperiod_by_id(*it);
     if (resolved_tp.isNull())
       throw (exceptions::msg()
-        << "BAM: Could not find the timeperiod " << *it << " for the ba "
-        << obj->get_id());
+        << "BAM: Could not find the timeperiod " << *it
+        << " for the ba: " << obj->get_id());
      obj->add_timeperiod(resolved_tp, false);
   }
 }
