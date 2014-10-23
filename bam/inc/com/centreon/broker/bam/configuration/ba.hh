@@ -57,6 +57,7 @@ namespace                bam {
       double             get_critical_level() const;
       bam::ba_event const&
                          get_opened_event() const;
+      unsigned int       get_default_timeperiod() const;
       std::vector<unsigned int> const&
                          get_timeperiods() const;
 
@@ -67,6 +68,7 @@ namespace                bam {
       void               set_warning_level(double warning_level);
       void               set_critical_level(double critical_level);
       void               set_opened_event(bam::ba_event const& e);
+      void               set_default_timeperiod(unsigned int tp_id);
       void               add_timeperiod(unsigned int tp_id);
 
     private:
@@ -77,6 +79,7 @@ namespace                bam {
       double             _warning_level;
       double             _critical_level;
       bam::ba_event      _event;
+      unsigned int       _default_timeperiod;
       std::vector<unsigned int>
                          _timeperiods;
     };

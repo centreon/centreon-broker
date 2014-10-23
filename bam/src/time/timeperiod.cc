@@ -32,8 +32,8 @@ static time_t _get_next_valid_time_per_timeperiod(
 /**
  *  Default constructor.
  */
-timeperiod::timeperiod()
-{
+timeperiod::timeperiod() :
+  _id(0) {
   _timeranges.resize(7);
   _exceptions.resize(daterange::daterange_types);
 }
@@ -71,6 +71,7 @@ timeperiod::timeperiod(
       std::string const& thursday,
       std::string const& friday,
       std::string const& saturday) :
+  _id(id),
   _timeperiod_name(name),
   _alias(alias) {
   _timeranges.resize(7);
@@ -101,6 +102,7 @@ timeperiod::timeperiod(
 
 timeperiod timeperiod::operator=(timeperiod const& obj) {
   if (this != &obj) {
+    _id = obj._id;
     _alias = obj._alias;
     _exceptions = obj._exceptions;
     _include = obj._include;
@@ -110,6 +112,24 @@ timeperiod timeperiod::operator=(timeperiod const& obj) {
     _timezone = obj._timezone;
   }
   return (*this);
+}
+
+/**
+ *  Get the id of the timeperiod.
+ *
+ *  @return  The id of the timeperiod.
+ */
+unsigned int timeperiod::get_id() const throw() {
+  return (_id);
+}
+
+/**
+ *  Set the id of the timeperiod.
+ *
+ *  @param[in] id  The id of the timeperiod.
+ */
+void timeperiod::set_id(unsigned int id) throw() {
+  _id = id;
 }
 
 /**

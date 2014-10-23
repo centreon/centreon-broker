@@ -69,6 +69,7 @@ namespace     bam {
               _applied;
 
         void _apply_timeperiods(misc::shared_ptr<bam::ba> obj,
+                                unsigned int default_tp,
                                 std::vector<unsigned int> const& tps,
                                 timeperiod& tp);
       };

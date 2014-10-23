@@ -56,6 +56,9 @@ namespace               bam {
                           timeperiod(timeperiod const& obj);
                           timeperiod operator=(timeperiod const& obj);
 
+      unsigned int        get_id() const throw();
+      void                set_id(unsigned int id) throw();
+
       std::string const&  get_alias() const throw();
       void                set_alias(std::string const& value);
 
@@ -94,6 +97,7 @@ namespace               bam {
                                              time_t& out_duration) const;
 
     private:
+      unsigned int        _id;
       std::string         _alias;
       std::vector<std::list<daterange> >
                           _exceptions;

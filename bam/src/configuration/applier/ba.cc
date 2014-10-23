@@ -223,7 +223,10 @@ misc::shared_ptr<bam::ba> applier::ba::_new_ba(
   obj->set_level_critical(cfg.get_critical_level());
   if (cfg.get_opened_event().ba_id)
     obj->set_initial_event(cfg.get_opened_event());
-  _apply_timeperiods(obj, cfg.get_timeperiods(), tp);
+  if (!cfg.get_default_timeperiod())
+    throw (exceptions::msg()
+           << "BAM: Could not find the default timeperiod for the ba: " << obj->get_id());
+  _apply_timeperiods(obj, cfg.get_default_timeperiod(), cfg.get_timeperiods(), tp);
   book.listen(cfg.get_host_id(), cfg.get_service_id(), obj.data());
   return (obj);
 }
@@ -231,14 +234,28 @@ misc::shared_ptr<bam::ba> applier::ba::_new_ba(
 /**
  *  Apply the timeperiods to a BA object.
  *
- *  @param[out] obj  The object to be applied.
- *  @param[in] tps   The timeperiods id.
- *  @param[in] tp    The timeperiod applier.
+ *  @param[out] obj        The object to be applied.
+ *  @param[in] default_tp  The default timeperiod id.
+ *  @param[in] tps         The other timeperiods id.
+ *  @param[in] tp          The timeperiod applier.
  */
 void applier::ba::_apply_timeperiods(misc::shared_ptr<bam::ba> obj,
+                                     unsigned int default_tp,
                                      std::vector<unsigned int> const& tps,
                                      timeperiod& tp) {
   obj->clear_timeperiods();
+
+  // Set the default timeperiod.
+  {
+    time::timeperiod::ptr resolved_tp = tp.get_timeperiod_by_id(default_tp);
+    if (resolved_tp.isNull())
+      throw (exceptions::msg()
+        << "BAM: Could not find the timeperiod " << default_tp
+        << " for the ba: " << obj->get_id());
+    obj->add_timeperiod(resolved_tp, true);
+  }
+
+  // Set the other timeperiods.
   for (std::vector<unsigned int>::const_iterator it(tps.begin()),
                                                  end(tps.end());
        it != end;
@@ -246,8 +263,8 @@ void applier::ba::_apply_timeperiods(misc::shared_ptr<bam::ba> obj,
     time::timeperiod::ptr resolved_tp = tp.get_timeperiod_by_id(*it);
     if (resolved_tp.isNull())
       throw (exceptions::msg()
-        << "BAM: Could not find the timeperiod " << *it << " for the ba "
-        << obj->get_id());
-     obj->add_timeperiod(resolved_tp);
+        << "BAM: Could not find the timeperiod " << *it
+        << " for the ba: " << obj->get_id());
+     obj->add_timeperiod(resolved_tp, false);
   }
 }
