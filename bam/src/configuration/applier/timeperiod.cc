@@ -100,8 +100,16 @@ bam::time::timeperiod::ptr
   return (_timeperiods[id]);
 }
 
+/**
+ *  Create the timeperiod from a timeperiod configuration object.
+ *
+ *  @param[in] tp_cfg  The timeperiod configuration to create.
+ *
+ *  @return  A pointer to the timeperiod created.
+ */
 bam::time::timeperiod::ptr applier::timeperiod::_create_timeperiod(
       configuration::timeperiod const& tp_cfg) {
+  // Load timeperiod.
   time::timeperiod::ptr tp(new time::timeperiod(tp_cfg.get_id(),
                                                 tp_cfg.get_name(),
                                                 tp_cfg.get_alias(),
@@ -113,6 +121,7 @@ bam::time::timeperiod::ptr applier::timeperiod::_create_timeperiod(
                                                 tp_cfg.get_friday(),
                                                 tp_cfg.get_saturday()));
 
+  // Load exceptions.
   for (std::vector<std::pair<std::string, std::string> >::const_iterator
           it(tp_cfg.get_exceptions().begin()),
           end(tp_cfg.get_exceptions().end());
