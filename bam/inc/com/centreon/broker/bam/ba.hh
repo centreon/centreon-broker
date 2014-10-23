@@ -21,10 +21,12 @@
 #  define CCB_BAM_BA_HH
 
 #  include <string>
+#  include <vector>
 #  include "com/centreon/broker/bam/ba_event.hh"
 #  include "com/centreon/broker/bam/computable.hh"
 #  include "com/centreon/broker/bam/impact_values.hh"
 #  include "com/centreon/broker/bam/service_listener.hh"
+#  include "com/centreon/broker/bam/time/timeperiod.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -75,6 +77,8 @@ namespace        bam {
     void         set_level_critical(double level);
     void         set_level_warning(double level);
     void         set_initial_event(ba_event const& event);
+    void         add_timeperiod(time::timeperiod::ptr tp);
+    void         clear_timeperiods();
     void         visit(stream* visitor);
     void         service_update(
                    misc::shared_ptr<neb::service_status> const& status,
@@ -115,6 +119,8 @@ namespace        bam {
     std::string  _perfdata;
     int          _recompute_count;
     unsigned int _service_id;
+    std::vector<time::timeperiod::ptr>
+                 _tps;
   };
 }
 

@@ -370,6 +370,22 @@ void ba::set_initial_event(ba_event const& event) {
 }
 
 /**
+ *  Add a timeperiod associated with this ba.
+ *
+ *  @param[in] tp  The timeperiod to add.
+ */
+void ba::add_timeperiod(time::timeperiod::ptr tp) {
+  _tps.push_back(tp);
+}
+
+/**
+ *  Clear the timeperiods associated with this ba.
+ */
+void ba::clear_timeperiods() {
+  _tps.clear();
+}
+
+/**
  *  Visit BA.
  *
  *  @param[in]  kpi_obj  Kpi that was updated.
@@ -492,6 +508,7 @@ void ba::_internal_copy(ba const& right) {
   _level_warning = right._level_warning;
   _output = right._output;
   _perfdata = right._perfdata;
+  _tps = right._tps;
   return ;
 }
 

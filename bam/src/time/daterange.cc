@@ -1065,6 +1065,14 @@ static bool _get_day_id(
   return (false);
 }
 
+/**
+ *  Build a calendar date.
+ *
+ *  @param[in] line   The string to parse.
+ *  @param[out] list  A vector of dateranges to be filled.
+ *
+ *  @return           True if the line was correctly parsed.
+ */
 bool daterange::build_calendar_date(std::string const& line,
                                     std::vector<std::list<daterange> >& list) {
   int ret(0);
@@ -1146,6 +1154,14 @@ bool daterange::build_calendar_date(std::string const& line,
   return (false);
 }
 
+/**
+ *  Build a non-calendar date.
+ *
+ *  @param[in] line   The string to parse.
+ *  @param[out] list  A vector of dateranges to be filled.
+ *
+ *  @return           True if the line was correctly parsed.
+ */
 bool daterange::build_other_date(std::string const& line,
                                  std::vector<std::list<daterange> >& list) {
   int pos(0);
@@ -1378,6 +1394,15 @@ bool daterange::build_other_date(std::string const& line,
   return (false);
 }
 
+/**
+ *  Build a daterange from a string.
+ *
+ *  @param[in] value  A string containing a daterange.
+ *
+ *  @param[out] list  A vector of dateranges to be filled.
+ *
+ *  @return           True if the string was correctly parsed.
+ */
 bool daterange::build_dateranges_from_string(std::string const& value,
                              std::vector<std::list<daterange> >& list) {
   return (build_calendar_date(value, list) || build_other_date(value, list));
