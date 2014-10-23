@@ -509,6 +509,160 @@ void stream::_prepare() {
              << _meta_service_update->lastError().text());
   }
 
+  // BA event insertion.
+  {
+    QString query;
+    query = "INSERT INTO ba_events (ba_id, start_time, status, in_downtime)"
+            "  VALUES (:ba_id, :start_time, :status, :in_downtime)";
+    _ba_event_insert.reset(new QSqlQuery(*_db));
+    if (!_ba_event_insert->prepare(query))
+      throw (exceptions::msg()
+             << "BAM: could not prepare BA event insertion query: "
+             << _ba_event_insert->lastError().text());
+  }
+
+  // BA event update.
+  {
+    QString query;
+    query = "UPDATE ba_events"
+            "  SET end_time=:end_time"
+            "  WHERE ba_id=:ba_id AND start_time=:start_time";
+    _ba_event_update.reset(new QSqlQuery(*_db));
+    if (!_ba_event_update->prepare(query))
+      throw (exceptions::msg()
+             << "BAM: could not prepare BA event update query: "
+             << _ba_event_update->lastError().text());
+  }
+
+  // KPI event insertion.
+  {
+    QString query;
+    query = "INSERT INTO kpi_events (kpi_id, start_time, status, "
+            "            in_downtime, impact_level, first_output, "
+            "            first_perfdata)"
+            "  VALUES (:kpi_id, :start_time, :status, :in_downtime, "
+            "         :impact_level, :output, :perfdata)";
+    _kpi_event_insert.reset(new QSqlQuery(*_db));
+    if (!_kpi_event_insert->prepare(query))
+      throw (exceptions::msg()
+             << "BAM: could not prepare KPI event insertion query: "
+             << _kpi_event_insert->lastError().text());
+  }
+
+  // KPI event update.
+  {
+    QString query;
+    query = "UPDATE kpi_events"
+            "  SET end_time=:end_time"
+            "  WHERE kpi_id=:kpi_id AND start_time=:start_time";
+    _kpi_event_update.reset(new QSqlQuery(*_db));
+    if (!_kpi_event_update->prepare(query))
+      throw (exceptions::msg()
+             << "BAM: could not prepare KPI event update query: "
+             << _kpi_event_update->lastError().text());
+  }
+
+  // KPI event link to BA event.
+  {
+    QString query;
+    query = "INSERT INTO relations_ba_kpi_events (ba_event_id, kpi_event_id)"
+            "  SELECT be.ba_event_id, ke.kpi_event_id"
+            "    FROM kpi_events AS ke"
+            "    INNER JOIN ba_events AS be"
+            "    ON ((ke.start_time >= be.start_time)"
+            "       AND (be.end_time IS NULL OR ke.start_time < be.end_time))"
+            "    WHERE ke.kpi_id=:kpi_id AND ke.start_time=:start_time";
+    _kpi_event_link.reset(new QSqlQuery(*_db));
+    if (!_kpi_event_link->prepare(query))
+      throw (exceptions::msg()
+             << "BAM: could not prepare link query of BA and KPI events: "
+             << _kpi_event_link->lastError().text());
+  }
+
+  return ;
+}
+
+/**
+ *  Process a ba event and write it to the db.
+ *
+ *  @param[in] e The event.
+ */
+void stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
+  bam::ba_event const& be(*static_cast<bam::ba_event const*>(e.data()));
+  if ((be.end_time != 0) && (be.end_time != (time_t)-1)) {
+    _ba_event_update->bindValue(":ba_id", be.ba_id);
+    _ba_event_update->bindValue(
+      ":start_time",
+      static_cast<qlonglong>(be.start_time.get_time_t()));
+    _ba_event_update->bindValue(
+      ":end_time",
+      static_cast<qlonglong>(be.end_time.get_time_t()));
+    if (!_ba_event_update->exec())
+      throw (exceptions::msg() << "BAM: could not close event of BA "
+             << be.ba_id << " starting at " << be.start_time
+             << " and ending at " << be.end_time);
+  }
+  else {
+    _ba_event_insert->bindValue(":ba_id", be.ba_id);
+    _ba_event_insert->bindValue(
+      ":start_time",
+      static_cast<qlonglong>(be.start_time.get_time_t()));
+    _ba_event_insert->bindValue(":status", be.status);
+    _ba_event_insert->bindValue(":in_downtime", be.in_downtime);
+    if (!_ba_event_insert->exec())
+      throw (exceptions::msg() << "BAM: could not insert event of BA "
+             << be.ba_id << " starting at " << be.start_time);
+  }
+  return ;
+}
+
+/**
+ *  Process a kpi event and write it to the db.
+ *
+ *  @param[in] e The event.
+ */
+void stream::_process_kpi_event(misc::shared_ptr<io::data> const& e) {
+  bam::kpi_event const& ke(*static_cast<bam::kpi_event const*>(e.data()));
+  if ((ke.end_time != 0) && (ke.end_time != (time_t)-1)) {
+    _kpi_event_update->bindValue(":kpi_id", ke.kpi_id);
+    _kpi_event_update->bindValue(
+      ":start_time",
+      static_cast<qlonglong>(ke.start_time.get_time_t()));
+    _kpi_event_update->bindValue(
+      ":end_time",
+      static_cast<qlonglong>(ke.end_time.get_time_t()));
+    if (!_kpi_event_update->exec())
+      throw (exceptions::msg() << "BAM: could not close event of KPI "
+             << ke.kpi_id << " starting at " << ke.start_time
+             << " and ending at " << ke.end_time << ": "
+             << _kpi_event_update->lastError().text());
+
+    _kpi_event_link->bindValue(
+      ":start_time",
+      static_cast<qlonglong>(ke.start_time.get_time_t()));
+    _kpi_event_link->bindValue(":kpi_id", ke.kpi_id);
+    if (!_kpi_event_link->exec())
+      throw (exceptions::msg()
+             << "BAM: could not create link from event of KPI "
+             << ke.kpi_id << " starting at " << ke.start_time
+             << " to its associated BA event: "
+             << _kpi_event_link->lastError().text());
+  }
+  else {
+    _kpi_event_insert->bindValue(":kpi_id", ke.kpi_id);
+    _kpi_event_insert->bindValue(
+      ":start_time",
+      static_cast<qlonglong>(ke.start_time.get_time_t()));
+    _kpi_event_insert->bindValue(":status", ke.status);
+    _kpi_event_insert->bindValue(":in_downtime", ke.in_downtime);
+    _kpi_event_insert->bindValue(":impact_level", ke.impact_level);
+    _kpi_event_insert->bindValue(":output", ke.output.c_str());
+    _kpi_event_insert->bindValue(":perfdata", ke.perfdata.c_str());
+    if (!_kpi_event_insert->exec())
+      throw (exceptions::msg() << "BAM: could not insert event of KPI "
+             << ke.kpi_id << " starting at " << ke.start_time << ": "
+             << _kpi_event_insert->lastError().text());
+  }
   return ;
 }
 
@@ -519,116 +673,4 @@ void stream::_prepare() {
  */
 void stream::_update_status(std::string const& status) {
 
-}
-
-/**
- *  Process a kpi event and write it to the db.
- *
- *  @param[in] e The event.
- */
-void stream::_process_kpi_event(misc::shared_ptr<io::data> const& e) {
-  // bam::kpi_event const& ke(*static_cast<bam::kpi_event const*>(e.data()));
-
-  // QSqlQuery query(*_db);
-  // std::stringstream ss;
-
-  // ss << "INSERT INTO kpi_events"
-  //       "  (kpi_id, status, in_downtime, start_time, end_time, duration, "
-  //       "    impact_level, first_output, first_perfdata, timeperiod_id, "
-  //       "    timeperiod_is_default) VALUES ("
-  //    << ke.kpi_id << ", "
-  //    << ke.status << ","
-  //    << ke.in_downtime << ","
-  //    << ke.start_time << ","
-  //    << ke.start_time + ke.duration << ", "
-  //    << ke.duration << ", "
-  //    << ke.impact_level << ", "
-  //    << ke.first_output.c_str() << ", "
-  //    << ke.first_perfdata.c_str() << ", "
-  //    << ke.timeperiod_id << ", "
-  //    << ke.timeperiod_is_default << ")";
-
-  // if (!query.exec(ss.str().c_str()))
-  //   throw (exceptions::msg()
-  //          << "BAM: could not insert a kpi event: "
-  //          << query.lastError().text());
-}
-
-/**
- *  Process a ba event and write it to the db.
- *
- *  @param[in] e The event.
- */
-void stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
-  // bam::ba_event const& be(*static_cast<bam::ba_event const*>(e.data()));
-
-  // QSqlQuery query(*_db);
-  // std::stringstream ss;
-
-  // ss << "INSERT INTO ba_events"
-  //       "  (ba_id, status, in_downtime, start_time, end_time, duration, "
-  //       "    sla_duration, timeperiod_id, timeperiod_is_default) VALUES ("
-  //    << be.ba_id << ", "
-  //    << be.status << ", "
-  //    << be.in_downtime << ", "
-  //    << be.start_time << ", "
-  //    << be.start_time + be.duration << ", "
-  //    << be.duration << ", "
-  //    << be.sla_duration << ", "
-  //    << be.timeperiod_id << ", "
-  //    << be.timeperiod_is_default << ")";
-
-  // if (!query.exec(ss.str().c_str()))
-  //   throw (exceptions::msg()
-  //          << "BAM: could not insert a ba event: "
-  //          << query.lastError().text());
-}
-
-/**
- *  Process a event parent event and write it to the db.
- *
- *  @param[in] e The event.
- */
-void stream::_process_event_parent(misc::shared_ptr<io::data> const& e) {
-  // bam::event_parent const&
-  //   ep(*static_cast<bam::event_parent const*>(e.data()));
-
-  // QSqlQuery query(*_db);
-  // query.setForwardOnly(true);
-  // std::stringstream ss;
-
-  // // Get the linked kpi event id.
-  // ss << "SELECT kpi_event_id FROM kpi_events WHERE "
-  //    << "kpi_id = " << ep.kpi_id
-  //    << " AND start_time = " << ep.kpi_start_time;
-
-  // if (!query.exec(ss.str().c_str()) || !query.next())
-  //   throw (exceptions::msg()
-  //          << "BAM: could not get the kpi event id of an event parent event: "
-  //          << query.lastError().text());
-
-  // unsigned int kpi_event_id = query.value(0).toUInt();
-  // ss.str("");
-
-  // // Get the linked ba event id.
-  // ss << "SELECT ba_event_id FROM ba_events WHERE "
-  //    << " ba_id = " << ep.ba_id
-  //    << " AND start_time = " << ep.ba_start_time;
-
-  // if (!query.exec(ss.str().c_str()) || !query.next())
-  //   throw (exceptions::msg()
-  //          << "BAM: could not get the ba event id of an event parent event: "
-  //          << query.lastError().text());
-
-  // unsigned int ba_event_id = query.value(0).toUInt();
-  // ss.str("");
-
-  // // Insert the kpi and the ba event ids.
-  // ss << "INSERT INTO relations_ba_kpi_events (kpi_event_id, ba_event_id)"
-  //       " VALUES (" << kpi_event_id << ", " << ba_event_id << ")";
-
-  // if (!query.exec(ss.str().c_str()))
-  //   throw (exceptions::msg()
-  //          << "BAM: could not insert an event parent event: "
-  //          << query.lastError().text());
 }
