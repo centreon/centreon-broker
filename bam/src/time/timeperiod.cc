@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <sstream>
 #include <ctime>
 #include "com/centreon/broker/bam/time/timezone_locker.hh"
 #include "com/centreon/broker/bam/time/timeperiod.hh"
@@ -60,6 +61,7 @@ timeperiod::timeperiod(timeperiod const& obj) {
  *  @param[in] saturday    A string describing the saturday timerange.
  */
 timeperiod::timeperiod(
+      unsigned int id,
       std::string const& name,
       std::string const& alias,
       std::string const& sunday,
@@ -76,25 +78,25 @@ timeperiod::timeperiod(
   std::vector<bool> success;
   if (!set_timerange(sunday, 0))
     throw (exceptions::msg()
-      << "BAM: Could not parse sunday for timeperiod");
+      << "BAM: Could not parse sunday for timeperiod id: " << id);
   if (!set_timerange(monday, 1))
     throw (exceptions::msg()
-      << "BAM: Could not parse monday for timeperiod");
+      << "BAM: Could not parse monday for timeperiod id: " << id);
   if (!set_timerange(tuesday, 2))
     throw (exceptions::msg()
-      << "BAM: Could not parse tuesday for timeperiod");
+      << "BAM: Could not parse tuesday for timeperiod id: " << id);
   if (!set_timerange(wednesday, 3))
     throw (exceptions::msg()
-      << "BAM: Could not parse wednesday for timeperiod");
+      << "BAM: Could not parse wednesday for timeperiod id: " << id);
   if (!set_timerange(thursday, 4))
     throw (exceptions::msg()
-      << "BAM: Could not parse thursday for timeperiod");
+      << "BAM: Could not parse thursday for timeperiod id: " << id);
   if (!set_timerange(friday, 5))
     throw (exceptions::msg()
-      << "BAM: Could not parse friday for timeperiod");
+      << "BAM: Could not parse friday for timeperiod id: " << id);
   if (!set_timerange(saturday, 6))
     throw (exceptions::msg()
-      << "BAM: Could not parse saturday for timeperiod");
+      << "BAM: Could not parse saturday for timeperiod id: " << id);
 }
 
 timeperiod timeperiod::operator=(timeperiod const& obj) {
@@ -152,10 +154,17 @@ void timeperiod::add_exceptions(std::list<daterange> const& val) {
  *
  *  @param[in] days    The days to parse.
  *  @param[in] string  The range of the exception.
+ *
+ *  @return            True if the exception was correctly parsed.
  */
-void timeperiod::add_exception(std::string const& days,
+bool timeperiod::add_exception(std::string const& days,
                                std::string const& range) {
+  // Concatenate days and range.
+  std::stringstream ss;
+  ss << days << " " << range;
 
+  // Parse everything.
+  return (daterange::build_dateranges_from_string(ss.str(), _exceptions));
 }
 
 /**

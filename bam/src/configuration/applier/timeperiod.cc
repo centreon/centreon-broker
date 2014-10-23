@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/bam/configuration/applier/timeperiod.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
@@ -101,7 +102,8 @@ bam::time::timeperiod::ptr
 
 bam::time::timeperiod::ptr applier::timeperiod::_create_timeperiod(
       configuration::timeperiod const& tp_cfg) {
-  time::timeperiod::ptr tp(new time::timeperiod(tp_cfg.get_name(),
+  time::timeperiod::ptr tp(new time::timeperiod(tp_cfg.get_id(),
+                                                tp_cfg.get_name(),
                                                 tp_cfg.get_alias(),
                                                 tp_cfg.get_sunday(),
                                                 tp_cfg.get_monday(),
@@ -111,7 +113,14 @@ bam::time::timeperiod::ptr applier::timeperiod::_create_timeperiod(
                                                 tp_cfg.get_friday(),
                                                 tp_cfg.get_saturday()));
 
-  // TODO: Set exceptions
-  //tp->set_timerange();
+  for (std::vector<std::pair<std::string, std::string> >::const_iterator
+          it(tp_cfg.get_exceptions().begin()),
+          end(tp_cfg.get_exceptions().end());
+       it != end;
+       ++it)
+    if (!tp->add_exception(it->first, it->second))
+      throw (exceptions::msg()
+        << "BAM: Could not parse exception " << it->first << " " << it->second
+        << " for timeperiod id: " << tp_cfg.get_id());
   return (tp);
 }

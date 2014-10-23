@@ -43,7 +43,7 @@ namespace               bam {
                           DECLARE_SHARED_PTR(timeperiod);
 
                           timeperiod();
-                          timeperiod(
+                          timeperiod(unsigned int id,
                                 std::string const& name,
                                 std::string const& alias,
                                 std::string const& sunday,
@@ -62,7 +62,7 @@ namespace               bam {
       std::vector<std::list<daterange> > const&
                           get_exceptions() const throw();
       void                add_exceptions(std::list<daterange> const& val);
-      void                add_exception(std::string const& days,
+      bool                add_exception(std::string const& days,
                                         std::string const& range);
 
       std::vector<ptr> const&
