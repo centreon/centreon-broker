@@ -173,7 +173,7 @@ int main() {
             << "       triggered_by, type"
             << "  FROM downtimes"
             << "  ORDER BY internal_id ASC";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot get downtimes from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -273,7 +273,7 @@ int main() {
       query << "SELECT COUNT(*)"
             << "  FROM hosts"
             << "  WHERE scheduled_downtime_depth=0";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()
                << "cannot get host status from DB: "
@@ -292,7 +292,7 @@ int main() {
       query << "SELECT COUNT(*)"
             << "  FROM services"
             << "  WHERE scheduled_downtime_depth=0";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()
                << "cannot get service status from DB: "
@@ -324,7 +324,7 @@ int main() {
       query << "SELECT internal_id, actual_end_time, cancelled, deletion_time"
             << "  FROM downtimes"
             << "  ORDER BY internal_id";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()
                << "cannot get deletion_time of downtimes: "

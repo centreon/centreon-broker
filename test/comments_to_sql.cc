@@ -129,7 +129,7 @@ int main() {
       query << "SELECT internal_id, host_id, service_id, author, data, persistent, entry_time, deletion_time"
             << "  FROM comments"
             << "  ORDER BY internal_id";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot get comments from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -206,7 +206,7 @@ int main() {
       query << "SELECT internal_id, deletion_time"
             << "  FROM comments"
             << "  ORDER BY internal_id";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()
                << "cannot get deletion time of comments from DB: "

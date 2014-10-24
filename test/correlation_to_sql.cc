@@ -387,7 +387,7 @@ int main() {
       };
 
       // Get host state events.
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec("SELECT host_id, start_time, end_time, state,"
                   "       ack_time, in_downtime"
                   " FROM hoststateevents"
@@ -568,7 +568,7 @@ int main() {
       };
 
       // Get service state events.
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec("SELECT host_id, service_id, start_time, end_time,"
                   "       state, ack_time, in_downtime"
                   " FROM servicestateevents"

@@ -140,7 +140,7 @@ int main() {
 
     // Lock tables.
     {
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       std::string query("LOCK TABLES logs WRITE, instances WRITE");
       if (!q.exec(query.c_str()))
         throw (exceptions::msg() << "cannot lock tables: "
@@ -204,7 +204,7 @@ int main() {
 
     // Unlock tables.
     {
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec("UNLOCK TABLES"))
         throw (exceptions::msg() << "cannot unlock tables: "
                << q.lastError().text());
@@ -229,7 +229,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT COUNT(host_id)"
             << "  FROM hosts";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read host count from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -244,7 +244,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT COUNT(service_id)"
             << "  FROM services";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()
                << "cannot read service count from DB: "

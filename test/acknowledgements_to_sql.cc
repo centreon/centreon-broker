@@ -159,7 +159,7 @@ int main() {
             << "       persistent_comment, sticky, type"
             << "  FROM acknowledgements"
             << "  ORDER BY service_id ASC, host_id ASC";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()
                << "cannot get acknowledgements from DB: "
@@ -258,7 +258,7 @@ int main() {
       query << "SELECT host_id, acknowledged"
             << "  FROM hosts"
             << "  ORDER BY host_id";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot get host list from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -279,7 +279,7 @@ int main() {
       query << "SELECT host_id, service_id, acknowledged"
             << "  FROM services"
             << "  ORDER BY host_id ASC, service_id ASC";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot get service list from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -302,7 +302,7 @@ int main() {
       query << "SELECT host_id, service_id, deletion_time"
             << "  FROM acknowledgements"
             << "  ORDER BY service_id ASC, host_id ASC";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()
                << "cannot get acknowledgement list from DB: "
