@@ -480,7 +480,7 @@ void reporting_stream::_process_ba_duration_event(misc::shared_ptr<io::data> con
     bde.timeperiod_is_default);
   if (_ba_duration_event_insert->exec())
     throw (exceptions::msg() << "BAM: could not insert duration event of BA "
-           << bde.ba_id << " startint at " << bde.start_time);
+           << bde.ba_id << " starting at " << bde.start_time);
   return ;
 }
 

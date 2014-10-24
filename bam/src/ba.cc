@@ -582,7 +582,7 @@ void ba::_unapply_impact(ba::impact_info& impact) {
 /**
  *  @brief Compute and write the duration events associated with a ba event.
  *
- *  The event durations are computed from the associated timeperiod of this BA.
+ *  The event durations are computed from the associated timeperiods of this BA.
  *
  *  @param[in] ev       The ba_event generating the durations.
  *  @param[in] visitor  A visitor stream.
@@ -600,6 +600,12 @@ void ba::_compute_event_durations(
        ++it) {
     misc::shared_ptr<ba_duration_event> dur_ev(new ba_duration_event);
     dur_ev->ba_id = _id;
+    dur_ev->real_start_time = ev->start_time;
+    dur_ev->start_time = it->first->get_next_valid(ev->start_time);
+    dur_ev->end_time = ev->end_time;
+    dur_ev->duration = dur_ev->end_time - dur_ev->start_time;
+    dur_ev->sla_duration = it->first->duration_intersect(dur_ev->start_time,
+                                                         dur_ev->end_time);
     dur_ev->timeperiod_id = it->first->get_id();
     dur_ev->timeperiod_is_default = it->second;
     visitor->write(dur_ev);

@@ -325,18 +325,19 @@ time_t timeperiod::get_next_valid(time_t preferred_time) const {
           *this));
 }
 
-void timeperiod::duration_intersect(time_t start_time,
-                                    time_t end_time,
-                                    time_t& out_start_time,
-                                    time_t& out_end_time) const {
-  time_t next_valid_time = get_next_valid(start_time);
-  if (next_valid_time >= end_time) {
-    out_start_time = end_time;
-    out_end_time = end_time;
-    return;
-  }
-  out_start_time = next_valid_time;
-  // STUB
+/**
+ *  @brief Get the intersection of a timeperiod and a range.
+ *
+ *  @param[in] start_time     The start of the range.
+ *  @param[in] end_time       The end of the range.
+ *
+ *  @return                   The duration intersected from the tp and the range.
+ */
+unsigned int timeperiod::duration_intersect(time_t start_time,
+                                            time_t end_time) const {
+  unsigned int duration = 0;
+
+  return (duration);
 }
 
 /**
