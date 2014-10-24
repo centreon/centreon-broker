@@ -123,8 +123,6 @@ namespace        bam {
     std::string  _perfdata;
     int          _recompute_count;
     unsigned int _service_id;
-    time::timeperiod::ptr
-                 _default_tp;
     std::vector<std::pair<time::timeperiod::ptr, bool> >
                  _tps;
   };

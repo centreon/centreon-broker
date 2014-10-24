@@ -144,6 +144,7 @@ add_library("${BAM}" SHARED
   "${INC_DIR}/time/timerange.hh"
   "${INC_DIR}/time/timezone_locker.hh"
   "${INC_DIR}/time/timezone_manager.hh"
+  "${INC_DIR}/time/time_info.hh"
 )
 target_link_libraries("${BAM}" ${QT_LIBRARIES})
 set_target_properties("${BAM}" PROPERTIES PREFIX "")

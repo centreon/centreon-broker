@@ -92,6 +92,7 @@ namespace               bam {
 
       bool                is_valid(time_t preferred_time) const;
       time_t              get_next_valid(time_t preferred_time) const;
+      time_t              get_next_invalid(time_t preferred_time) const;
 
       unsigned int        duration_intersect(time_t start_time,
                                              time_t end_time) const;
