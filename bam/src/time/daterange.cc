@@ -392,17 +392,6 @@ unsigned int daterange::year_start() const throw () {
 // UTILITIES
 
 /**
- *  Internal struct time information.
- */
-struct daterange::time_info {
-  time_t current_time;
-  tm     curtime;
-  time_t midnight;
-  time_t preferred_time;
-  tm     preftime;
-};
-
-/**
  *  Add a round number of days (expressed in seconds) to a date.
  *
  *  @param[in] middnight  Midnight of base day.

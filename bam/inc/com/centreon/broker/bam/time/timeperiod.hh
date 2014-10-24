@@ -64,6 +64,8 @@ namespace               bam {
 
       std::vector<std::list<daterange> > const&
                           get_exceptions() const throw();
+      std::list<daterange> const&
+                          get_exceptions_from_type(int type) const;
       void                add_exceptions(std::list<daterange> const& val);
       bool                add_exception(std::string const& days,
                                         std::string const& range);
