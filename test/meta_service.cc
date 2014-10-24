@@ -146,7 +146,7 @@ int main() {
              end(queries.end());
            it != end;
            ++it) {
-        QSqlQuery q(*db.centreon_db());
+        QSqlQuery q(*db.storage_db());
         if (!q.exec(it->c_str()))
           throw (exceptions::msg() << "could not execute a query: "
                  << q.lastError().text() << " (" << *it << ")");
@@ -168,7 +168,7 @@ int main() {
         42.0 + SERVICES_BY_HOST - 1.0,
         ((SERVICES_BY_HOST - 1) / 2.0 + 42.0) * SERVICES_BY_HOST
       };
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(
                "SELECT value, meta_name"
                "  FROM meta_service"

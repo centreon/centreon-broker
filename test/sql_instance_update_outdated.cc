@@ -101,7 +101,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(instance_id) from instances where outdated = TRUE";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check outdated instances from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -116,7 +116,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT COUNT(service_id)"
             << "  FROM services where last_hard_state = " << STATE_UNKNOWN;
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check outdated services from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -132,7 +132,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT COUNT(host_id)"
             << "  FROM hosts where last_hard_state = " << HOST_UNREACHABLE;
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check outdated hosts from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -152,7 +152,7 @@ int main() {
       std::ostringstream query;
       query
           << "SELECT COUNT(instance_id) from instances where outdated = FALSE";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check living instances from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -167,7 +167,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT COUNT(service_id)"
             << "  FROM services where last_hard_state != " << STATE_UNKNOWN;
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check living services from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -183,7 +183,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT COUNT(host_id)"
             << "  FROM hosts where last_hard_state != " << HOST_UNREACHABLE;
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check living hosts from DB: "
                << q.lastError().text().toStdString().c_str());

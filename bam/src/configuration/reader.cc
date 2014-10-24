@@ -199,12 +199,15 @@ void reader::_load(state::bas& bas) {
 
   // Load the associated ba_id from the table services.
   // All the associated services have for description 'ba_[id]'.
-  query = _db->exec("SELECT service_description, host_id, service_id"
-                    "  FROM services"
-                    "  WHERE service_description LIKE 'ba_%'");
+  query = _db->exec(
+                 "SELECT s.service_description, hsr.host_host_id, hsr.service_service_id"
+                 "  FROM service AS s"
+                 "  INNER JOIN host_service_relation AS hsr"
+                 "  ON s.service_id=hsr.service_service_id"
+                 "  WHERE service_description LIKE 'ba_%'");
   if (_db->lastError().isValid())
     throw (reader_exception()
-           << "BAM: could not retrieve BA service ids from DB: "
+           << "BAM: could not retrieve BA service IDs from DB: "
            << _db->lastError().text());
 
   while (query.next()) {
@@ -243,7 +246,7 @@ void reader::_load(state::bas& bas) {
        ++it)
     if (it->second.get_service_id() == 0)
       throw (reader_exception()
-               << "BAM: found a ba without an associated service, id: "
+               << "BAM: found a BA without an associated service, ID: "
                << it->second.get_id());
 
   // Load the opened but not-closed events for all the BAs.

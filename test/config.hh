@@ -34,10 +34,12 @@ public:
                 ~test_db();
   QSqlDatabase* bi_db();
   QSqlDatabase* centreon_db();
+  QSqlDatabase* storage_db();
   void          close();
   void          open(
-                  char const* centreon_db_name,
-                  char const* bi_db_name = NULL);
+                  char const* storage_db_name,
+                  char const* bi_db_name = NULL,
+                  char const* centreon_db_name = NULL);
 
 private:
                 test_db(test_db const& other);
@@ -47,9 +49,11 @@ private:
   void          _run_script(QSqlDatabase& db, char const* script_name);
 
   std::auto_ptr<QSqlDatabase>
+                _bi;
+  std::auto_ptr<QSqlDatabase>
                 _centreon;
   std::auto_ptr<QSqlDatabase>
-                _bi;
+                _storage;
 };
 
 void            config_remove(char const* path);

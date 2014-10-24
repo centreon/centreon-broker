@@ -210,7 +210,7 @@ int main() {
       query << "SELECT hostgroup_id, name, instance_id, action_url, alias, notes, notes_url"
             << "  FROM hostgroups"
             << "  ORDER BY name";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read hostgroups from DB: "
                << qPrintable(q.lastError().text()));
@@ -258,7 +258,7 @@ int main() {
       query << "SELECT servicegroup_id, name, instance_id, action_url, alias, notes, notes_url"
             << "  FROM servicegroups"
             << "  ORDER BY name";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read servicegroups from DB: "
                << qPrintable(q.lastError().text()));
@@ -312,7 +312,7 @@ int main() {
             << " FROM hosts_hostgroups"
             << " WHERE hostgroup_id=" << *it
             << " ORDER BY host_id ASC";
-        QSqlQuery q(*db.centreon_db());
+        QSqlQuery q(*db.storage_db());
         if (!q.exec(oss.str().c_str()))
           throw (exceptions::msg()
                  << "cannot get hosts/hostgroups links: "
@@ -350,7 +350,7 @@ int main() {
             << " FROM services_servicegroups"
             << " WHERE servicegroup_id=" << *it
             << " ORDER BY service_id ASC";
-        QSqlQuery q(*db.centreon_db());
+        QSqlQuery q(*db.storage_db());
         if (!q.exec(oss.str().c_str()))
           throw (exceptions::msg()
                  << "cannot get services/servicegroups links: "
@@ -383,7 +383,7 @@ int main() {
 
     // Check that host groups were deleted from DB.
     {
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec("SELECT COUNT(*) FROM hostgroups WHERE enabled=1")
           || !q.next())
         throw (exceptions::msg()
@@ -396,7 +396,7 @@ int main() {
 
     // Check that service groups were deleted from DB.
     {
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec("SELECT COUNT(*) FROM servicegroups WHERE enabled=1")
           || !q.next())
         throw (exceptions::msg()

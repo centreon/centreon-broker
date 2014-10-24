@@ -289,7 +289,7 @@ int main(int argc, char* argv[]) {
 
     // Insert entries in index_data.
     {
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       for (unsigned int i(1); i <= 33; ++i) {
         std::ostringstream query;
         query << "INSERT INTO index_data (host_id, service_id)"
@@ -303,7 +303,7 @@ int main(int argc, char* argv[]) {
     // Get index list.
     std::list<unsigned int> indexes;
     {
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec("SELECT id FROM index_data ORDER BY service_id ASC"))
         throw (exceptions::msg() << "cannot get index list: "
                << qPrintable(q.lastError().text()));
@@ -329,7 +329,7 @@ int main(int argc, char* argv[]) {
       std::ostringstream query;
       query << "SELECT metric_id"
             << "  FROM metrics";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot get metric list: "
                << qPrintable(q.lastError().text()));
@@ -351,7 +351,7 @@ int main(int argc, char* argv[]) {
         query << "SELECT COUNT(*)"
               << "  FROM data_bin"
               << "  WHERE id_metric=" << *it;
-        QSqlQuery q(*db.centreon_db());
+        QSqlQuery q(*db.storage_db());
         if (!q.exec(query.str().c_str())
             || !q.next()
             || !q.value(0).toUInt())

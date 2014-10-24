@@ -279,7 +279,7 @@ int main() {
 
   try {
     // Prepare database.
-    db.open(CENTREON_DB_NAME, BI_DB_NAME);
+    db.open(NULL, BI_DB_NAME, CENTREON_DB_NAME);
 
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, HOST_COUNT);
@@ -310,25 +310,14 @@ int main() {
       &hosts,
       &services);
 
-    // Create instance entry.
-    {
-      QString query(
-                "INSERT INTO instances (instance_id, name)"
-                "  VALUES (42, 'MyBroker')");
-      QSqlQuery q(*db.centreon_db());
-      if (!q.exec(query))
-        throw (exceptions::msg() << "could not create instance: "
-               << q.lastError().text());
-    }
-
     // Create host/service entries.
     {
 
       for (int i(1); i <= HOST_COUNT; ++i) {
         {
           std::ostringstream oss;
-          oss << "INSERT INTO hosts (host_id, name, instance_id)"
-              << "  VALUES (" << i << ", '" << i << "', 42)";
+          oss << "INSERT INTO host (host_id, host_name)"
+              << "  VALUES (" << i << ", '" << i << "')";
           QSqlQuery q(*db.centreon_db());
           if (!q.exec(oss.str().c_str()))
             throw (exceptions::msg() << "could not create host "
@@ -337,13 +326,26 @@ int main() {
         for (int j((i - 1) * SERVICES_BY_HOST + 1), limit(i * SERVICES_BY_HOST);
              j < limit;
              ++j) {
-          std::ostringstream oss;
-          oss << "INSERT INTO services (host_id, description, service_id)"
-              << "  VALUES (" << i << ", '" << j << "', " << j << ")";
-          QSqlQuery q(*db.centreon_db());
-          if (!q.exec(oss.str().c_str()))
-            throw (exceptions::msg() << "could not create service ("
-                   << i << ", " << j << "): " << q.lastError().text());
+          {
+            std::ostringstream oss;
+            oss << "INSERT INTO service (service_id, service_description)"
+                << "  VALUES (" << j << ", 'ba_" << j << "')";
+            QSqlQuery q(*db.centreon_db());
+            if (!q.exec(oss.str().c_str()))
+              throw (exceptions::msg() << "could not create service ("
+                     << i << ", " << j << "): "
+                     << q.lastError().text());
+          }
+          {
+            std::ostringstream oss;
+            oss << "INSERT INTO host_service_relation (host_host_id, service_service_id)"
+                << "  VALUES (" << i << ", " << j << ")";
+            QSqlQuery q(*db.centreon_db());
+            if (!q.exec(oss.str().c_str()))
+              throw (exceptions::msg() << "could not link service "
+                     << j << " to host " << i << ": "
+                     << q.lastError().text());
+          }
         }
       }
     }

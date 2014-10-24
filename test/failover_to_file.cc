@@ -155,7 +155,7 @@ int main() {
     {
       std::ostringstream oss;
       oss << "SELECT last_check FROM services";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(oss.str().c_str()))
         throw (exceptions::msg()
                << "cannot get services' last check time from DB: "
@@ -201,7 +201,7 @@ int main() {
     {
       std::ostringstream oss;
       oss << "SELECT last_check FROM services";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(oss.str().c_str()))
         throw (exceptions::msg()
                << "cannot get services' last check time from DB: "

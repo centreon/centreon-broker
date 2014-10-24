@@ -163,7 +163,7 @@ int main() {
       query << "SELECT dependent_host_id, host_id"
             << "  FROM hosts_hosts_dependencies"
             << "  ORDER BY dependent_host_id, host_id";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()
                << "cannot read host dependencies from DB: "
@@ -204,7 +204,7 @@ int main() {
             << "  FROM services_services_dependencies"
             << "  ORDER BY dependent_host_id, dependent_service_id,"
             << "           host_id, service_id";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()
                << "cannot read service dependencies from DB: "
@@ -250,7 +250,7 @@ int main() {
       };
       std::ostringstream query;
       query << "SELECT child_id, parent_id FROM hosts_hosts_parents";
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read host parents from DB: "
                << qPrintable(q.lastError().text()));
@@ -280,7 +280,7 @@ int main() {
 
     // Check that host dependencies were deleted.
     {
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec("SELECT COUNT(*) FROM hosts_hosts_dependencies")
           || !q.next()
           || q.value(0).toUInt())
@@ -291,7 +291,7 @@ int main() {
 
     // Check that service dependencies were deleted.
     {
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec("SELECT COUNT(*) FROM services_services_dependencies")
           || !q.next()
           || q.value(0).toUInt())
@@ -302,7 +302,7 @@ int main() {
 
     // Check that host parents were deleted.
     {
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.storage_db());
       if (!q.exec("SELECT COUNT(*) FROM hosts_hosts_parents")
           || !q.next()
           || q.value(0).toUInt())
