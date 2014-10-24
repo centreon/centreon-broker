@@ -145,6 +145,9 @@ void cached::connect_remote(
     throw (e);
   }
 
+  // Set the SO_KEEPALIVE option.
+  ts->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+
   return ;
 }
 
