@@ -47,6 +47,7 @@ connector::connector(connector const& c)
     _host(c._host),
     _password(c._password),
     _port(c._port),
+    _instance_timeout(c._instance_timeout),
     _queries_per_transaction(0),
     _type(c._type),
     _user(c._user),
@@ -72,6 +73,7 @@ connector& connector::operator=(connector const& c) {
     _db = c._db;
     _host = c._host;
     _password = c._password;
+    _instance_timeout = c._instance_timeout;
     _port = c._port;
     _queries_per_transaction = c._queries_per_transaction;
     _type = c._type;
@@ -121,9 +123,11 @@ void connector::connect_to(
                   QString const& db,
                   unsigned int queries_per_transaction,
                   unsigned int cleanup_check_interval,
+                  unsigned int instance_timeout,
                   bool check_replication,
                   bool with_state_events) {
   _cleanup_check_interval = cleanup_check_interval;
+  _instance_timeout = instance_timeout;
   _check_replication = check_replication;
   _db = db;
   _host = host;
@@ -151,6 +155,7 @@ misc::shared_ptr<io::stream> connector::open() {
                                              _db,
                                              _queries_per_transaction,
                                              _cleanup_check_interval,
+                                             _instance_timeout,
                                              _check_replication,
                                              _with_state_events)));
 }

@@ -2104,13 +2104,14 @@ stream::stream(
           QString const& db,
           unsigned int qpt,
           unsigned int cleanup_check_interval,
+          unsigned int instance_timeout,
           bool check_replication,
           bool wse)
   : _process_out(true),
     _queries_per_transaction((qpt >= 2) ? qpt : 1),
     _transaction_queries(0),
     _with_state_events(wse),
-    _instance_timeout(30),
+    _instance_timeout(instance_timeout),
     _oldest_timestamp(std::numeric_limits<time_t>::max()) {
   // Get the driver ID.
   QString t;

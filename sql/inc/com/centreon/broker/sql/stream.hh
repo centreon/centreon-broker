@@ -45,8 +45,7 @@ namespace        sql {
    */
   class          stream : public io::stream {
   public:
-                 stream(
-                   QString const& type,
+                 stream(QString const& type,
                    QString const& host,
                    unsigned short port,
                    QString const& user,
@@ -54,6 +53,7 @@ namespace        sql {
                    QString const& db,
                    unsigned int queries_per_transaction,
                    unsigned int cleanup_check_interval,
+                   unsigned int instance_timeout,
                    bool check_replication,
                    bool with_state_events);
                  stream(stream const& s);
