@@ -580,26 +580,27 @@ static time_t _get_next_valid_time_per_timeperiod(
       }
     }
 
-    /*// Check exclusions.
+    // Check exclusions.
     if (earliest_time != (time_t)-1) {
-      timeperiodexclusion* first_exclusion(tperiod->exclusions);
-      tperiod->exclusions = NULL;
+      /*timeperiodexclusion* first_exclusion(tperiod->exclusions);
+      tperiod->exclusions = NULL;*/
       time_t max_invalid((time_t)-1);
-      for (timeperiodexclusion* exclusion(first_exclusion);
-           exclusion;
-           exclusion = exclusion->next) {
+      for (std::vector<timeperiod::ptr>::const_iterator
+             exclusion(tperiod.get_excluded().begin()),
+             end(tperiod.get_excluded().end());
+           exclusion != end;
+           ++exclusion) {
         time_t invalid((time_t)-1);
-        _get_min_invalid_time_per_timeperiod(
+        invalid = _get_min_invalid_time_per_timeperiod(
           earliest_time,
-          &invalid,
           current_time,
-          exclusion->timeperiod_ptr);
+          **exclusion);
         if ((invalid != (time_t)-1)
             && (((time_t)-1 == max_invalid)
                 || (invalid > max_invalid)))
           max_invalid = invalid;
       }
-      tperiod->exclusions = first_exclusion;
+      //tperiod->exclusions = first_exclusion;
       if ((max_invalid != (time_t)-1)
           && (max_invalid != earliest_time)) {
         earliest_time = (time_t)-1;
@@ -610,7 +611,7 @@ static time_t _get_next_valid_time_per_timeperiod(
     else
       preferred_time = _add_round_days_to_midnight(
                          midnight,
-                         24 * 60 * 60);*/
+                         24 * 60 * 60);
   }
 
   // If we couldn't find a time period there must be none defined.
