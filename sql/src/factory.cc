@@ -178,7 +178,7 @@ io::endpoint* factory::new_endpoint(
 
   // Instance timeout
   // By default, 5 minutes.
-  unsigned int instance_timeout(15 * 60);
+  unsigned int instance_timeout(5 * 60);
   {
     QMap<QString, QString>::const_iterator
       it(cfg.params.find("instance_timeout"));
