@@ -2004,6 +2004,10 @@ void stream::_get_all_outdated_instances_from_db() {
  *  Update all the hosts and services of unresponsive instances.
  */
 void stream::_update_hosts_and_services_of_unresponsive_instances() {
+  // Don't do anything if timeout is deactivated.
+  if (_instance_timeout == 0)
+    return ;
+
   if (_stored_timestamps.size() == 0 ||
       std::difftime(std::time(NULL), _oldest_timestamp) <= _instance_timeout)
     return ;

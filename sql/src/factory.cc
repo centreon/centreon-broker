@@ -176,7 +176,9 @@ io::endpoint* factory::new_endpoint(
       cleanup_check_interval = it.value().toUInt();
   }
 
-  unsigned int instance_timeout(15);
+  // Instance timeout
+  // By default, 5 minutes.
+  unsigned int instance_timeout(15 * 60);
   {
     QMap<QString, QString>::const_iterator
       it(cfg.params.find("instance_timeout"));
