@@ -28,11 +28,9 @@ using namespace com::centreon::broker::bam::time;
 
 static time_t _get_next_valid_time_per_timeperiod(
               time_t preferred_time,
-              time_t current_time,
               timeperiod const& tperiod);
 static time_t _get_min_invalid_time_per_timeperiod(
               time_t preferred_time,
-              time_t current_time,
               timeperiod const& tperiod);
 /**
  *  Default constructor.
@@ -332,16 +330,11 @@ bool timeperiod::is_valid(time_t preferred_time) const {
  *  @return The next valid time.
  */
 time_t timeperiod::get_next_valid(time_t preferred_time) const {
-  // Preferred time must be now or in the future.
-  time_t current_time(::time(NULL));
-  preferred_time = std::max(preferred_time, current_time);
-
   // First check for possible timeperiod exclusions
   // before getting a valid_time.
   timezone_locker tzlock(_timezone.c_str());
   return (_get_next_valid_time_per_timeperiod(
           preferred_time,
-          current_time,
           *this));
 }
 
@@ -356,7 +349,6 @@ time_t timeperiod::get_next_invalid(time_t preferred_time) const {
   timezone_locker tzlock(_timezone.c_str());
 
   return (_get_min_invalid_time_per_timeperiod(preferred_time,
-                                               ::time(NULL),
                                                *this));
 }
 
@@ -470,12 +462,10 @@ static time_t _earliest_midnight_in_daterange(
  *
  *  @param[in]  preferred_time  The preferred time to check.
  *  @param[out] valid_time      Variable to fill.
- *  @param[in]  current_time    The current time.
  *  @param[in]  tperiod         The time period to use.
  */
 static time_t _get_next_valid_time_per_timeperiod(
               time_t preferred_time,
-              time_t current_time,
               timeperiod const& tperiod) {
 
   // If no time can be found, the original preferred time will be returned
@@ -552,11 +542,8 @@ static time_t _get_next_valid_time_per_timeperiod(
     ** ahead) because time ranges are recurring the same way every week.
     */
     bool got_earliest_time(false);
-    time_t now(time(NULL));
-    struct tm curtime;
     struct tm preftime;
     time_t midnight;
-    localtime_r(&now, &curtime);
     localtime_r(&preferred_time, &preftime);
     preftime.tm_sec = 0;
     preftime.tm_min = 0;
@@ -623,7 +610,6 @@ static time_t _get_next_valid_time_per_timeperiod(
         time_t invalid((time_t)-1);
         invalid = _get_min_invalid_time_per_timeperiod(
           earliest_time,
-          current_time,
           **exclusion);
         if ((invalid != (time_t)-1)
             && (((time_t)-1 == max_invalid)
@@ -655,19 +641,15 @@ static time_t _get_next_valid_time_per_timeperiod(
  *  This function is for timeperiod exclusions,
  *
  *  @param[in]  preferred_time  The preferred time to check.
- *  @param[in]  current_time    The current time.
  *  @param[in]  tperiod         The time period to use.
  *
  *  @return                     The min invalid time.
  */
 static time_t _get_min_invalid_time_per_timeperiod(
                 time_t preferred_time,
-                time_t current_time,
                 timeperiod const& tperiod) {
   time_info ti;
   ti.preferred_time = preferred_time;
-  ti.current_time = current_time;
-  localtime_r(&current_time, &ti.curtime);
 
   // calculate the start of the day (midnight, 00:00 hours)
   // of preferred time
