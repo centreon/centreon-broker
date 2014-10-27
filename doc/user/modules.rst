@@ -218,6 +218,9 @@ check_replication       Useful when using DB replication. Enable or
 cleanup_check_interval  How often the cleanup thread should run. This
                         thread cleans multiple tables of the database
                         containing outdated data.
+instance_timeout        In seconds, how long the broker will wait for
+                        a poller before signaling the poller as
+                        unresponsive. 0 to disable this feature.
 with_state_events       Generate host/service state events. This is an
                         *experimental* feature used to compute
                         real-time BI information.
