@@ -64,6 +64,10 @@ namespace          bam {
     void           _process_ba_duration_event(
                      misc::shared_ptr<io::data> const& e);
     void           _process_kpi_event(misc::shared_ptr<io::data> const& e);
+    void           _process_dimension_ba(misc::shared_ptr<io::data> const& e);
+    void           _process_dimension_bv(misc::shared_ptr<io::data> const& e);
+    void           _process_dimension_ba_bv_relation(misc::shared_ptr<io::data> const& e);
+    void           _process_dimension_kpi(misc::shared_ptr<io::data> const& e);
     void           _update_status(std::string const& status);
 
     bool           _process_out;
@@ -83,6 +87,14 @@ namespace          bam {
                    _kpi_event_update;
     std::auto_ptr<QSqlQuery>
                    _kpi_event_link;
+    std::auto_ptr<QSqlQuery>
+                  _dimension_ba_insert;
+    std::auto_ptr<QSqlQuery>
+                  _dimension_bv_insert;
+    std::auto_ptr<QSqlQuery>
+                  _dimension_ba_bv_relation_insert;
+    std::auto_ptr<QSqlQuery>
+                  _dimension_kpi_insert;
     std::auto_ptr<QSqlDatabase>
                    _db;
   };

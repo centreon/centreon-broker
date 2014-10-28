@@ -31,6 +31,10 @@
 #include "com/centreon/broker/bam/bool_status.hh"
 #include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/state.hh"
+#include "com/centreon/broker/bam/dimension_ba_bv_relation_event.hh"
+#include "com/centreon/broker/bam/dimension_ba_event.hh"
+#include "com/centreon/broker/bam/dimension_bv_event.hh"
+#include "com/centreon/broker/bam/dimension_kpi_event.hh"
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/bam/kpi_event.hh"
@@ -229,6 +233,30 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
         << "BAM: processing BA event";
       _process_ba_event(data);
     }
+    else if (data->type()
+             == io::events::data_type<io::events::bam, bam::de_dimension_ba_event>::value) {
+      logging::debug(logging::low)
+        << "BAM: processing BA dimension";
+      _process_dimension_ba(data);
+    }
+    else if (data->type()
+             == io::events::data_type<io::events::bam, bam::de_dimension_bv_event>::value) {
+      logging::debug(logging::low)
+        << "BAM: processing BV dimension";
+      _process_dimension_bv(data);
+    }
+    else if (data->type()
+             == io::events::data_type<io::events::bam, bam::de_dimension_ba_bv_relation_event>::value) {
+      logging::debug(logging::low)
+        << "BAM: processing BA-BV relation dimension";
+      _process_dimension_ba_bv_relation(data);
+    }
+    else if (data->type()
+             == io::events::data_type<io::events::bam, bam::de_dimension_kpi_event>::value) {
+      logging::debug(logging::low)
+        << "BAM: processing KPI dimension";
+      _process_dimension_kpi(data);
+    }
   }
 }
 
@@ -321,6 +349,10 @@ void reporting_stream::_clear_qsql() {
   _kpi_event_insert.reset();
   _kpi_event_update.reset();
   _kpi_event_link.reset();
+  _dimension_ba_bv_relation_insert.reset();
+  _dimension_ba_insert.reset();
+  _dimension_bv_insert.reset();
+  _dimension_kpi_insert.reset();
   _db.reset();
   return ;
 }
@@ -417,6 +449,67 @@ void reporting_stream::_prepare() {
              << _kpi_event_link->lastError().text());
   }
 
+  // Dimension BA insertion.
+  {
+    QString query;
+    query = "INSERT into ba (ba_id, ba_name, ba_description,"
+            "                sla_month_percent_1, sla_month_percent_2,"
+            "                sla_month_duration_1, sla_month_duration_2)"
+            " VALUES (:ba_id, :ba_name, :ba_description, :sla_month_percent_1,"
+            "         :sla_month_percent_2, :sla_month_duration_1,"
+            "         :sla_month_duration_2)";
+    _dimension_ba_insert.reset(new QSqlQuery(*_db));
+    if (_dimension_ba_insert->prepare(query))
+      throw (exceptions::msg()
+             << "BAM: could not prepare the insertion of BA dimensions: "
+             << _dimension_ba_insert->lastError().text());
+  }
+
+  // Dimension BV insertion.
+  {
+    QString query;
+    query = "INSERT into bv (bv_id, bv_name, bv_description)"
+            "  VALUES (:bv_id, :bv_name, :bv_description)";
+    _dimension_bv_insert.reset(new QSqlQuery(*_db));
+    if (_dimension_bv_insert->prepare(query))
+      throw (exceptions::msg()
+             << "BAM: could not prepare the insertion of BV dimensions: "
+             << _dimension_bv_insert->lastError().text());
+  }
+
+  // Dimension BA BV relations insertion.
+  {
+    QString query;
+    query = "INSERT into relations_ba_bv (ba_id, bv_id)"
+            "  VALUES (:ba_id, :bv_id)";
+    _dimension_ba_bv_relation_insert.reset(new QSqlQuery(*_db));
+    if (_dimension_ba_bv_relation_insert->prepare(query))
+      throw (exceptions::msg()
+             << "BAM: could not prepare the insertion of BA BV"
+                "relation dimension: "
+             << _dimension_ba_bv_relation_insert->lastError().text());
+  }
+
+  // Dimension KPI insertion
+  {
+    QString query;
+    query = "INSERT kpi (kpi_id, kpi_name, ba_id, ba_name, host_id, host_name,"
+            "            service_id, service_description, kpi_ba_id,"
+            "            kpi_ba_name, meta_service_id, meta_service_name,"
+            "            impact_warning, impact_critical, impact_unknown,"
+            "            boolean_id, boolean_name)"
+            "  VALUES (:kpi_id, :kpi_name, :ba_id, :ba_name, :host_id,"
+            "          :host_name, :service_id, :service_description,"
+            "          :kpi_ba_id, :kpi_ba_name, :meta_service_id,"
+            "          :meta_service_name, :impact_warning, :impact_critical,"
+            "          :impact_unknown, :boolean_id, :boolean_name)";
+    _dimension_kpi_insert.reset(new QSqlQuery(*_db));
+    if (_dimension_kpi_insert->prepare(query))
+      throw (exceptions::msg()
+             << "BAM: could not prepare the insertion of KPI dimensions: "
+             << _dimension_kpi_insert->lastError().text());
+  }
+
   return ;
 }
 
@@ -459,7 +552,8 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
  *
  *  @param[in] e  The event.
  */
-void reporting_stream::_process_ba_duration_event(misc::shared_ptr<io::data> const& e) {
+void reporting_stream::_process_ba_duration_event(
+    misc::shared_ptr<io::data> const& e) {
   bam::ba_duration_event const&
     bde(*static_cast<bam::ba_duration_event const*>(e.data()));
   _ba_duration_event_insert->bindValue(":ba_id", bde.ba_id);
@@ -472,9 +566,12 @@ void reporting_stream::_process_ba_duration_event(misc::shared_ptr<io::data> con
   _ba_duration_event_insert->bindValue(
     ":start_time",
     static_cast<qlonglong>(bde.start_time.get_time_t()));
-  _ba_duration_event_insert->bindValue(":duration", bde.duration);
-  _ba_duration_event_insert->bindValue(":sla_duration", bde.sla_duration);
-  _ba_duration_event_insert->bindValue(":timeperiod_id", bde.timeperiod_id);
+  _ba_duration_event_insert->bindValue(":duration",
+                                       bde.duration);
+  _ba_duration_event_insert->bindValue(":sla_duration",
+                                       bde.sla_duration);
+  _ba_duration_event_insert->bindValue(":timeperiod_id",
+                                       bde.timeperiod_id);
   _ba_duration_event_insert->bindValue(
     ":timeperiod_is_default",
     bde.timeperiod_is_default);
@@ -489,7 +586,8 @@ void reporting_stream::_process_ba_duration_event(misc::shared_ptr<io::data> con
  *
  *  @param[in] e The event.
  */
-void reporting_stream::_process_kpi_event(misc::shared_ptr<io::data> const& e) {
+void reporting_stream::_process_kpi_event(
+    misc::shared_ptr<io::data> const& e) {
   bam::kpi_event const& ke(*static_cast<bam::kpi_event const*>(e.data()));
   if ((ke.end_time != 0) && (ke.end_time != (time_t)-1)) {
     _kpi_event_update->bindValue(":kpi_id", ke.kpi_id);
@@ -532,6 +630,84 @@ void reporting_stream::_process_kpi_event(misc::shared_ptr<io::data> const& e) {
              << _kpi_event_insert->lastError().text());
   }
   return ;
+}
+
+void reporting_stream::_process_dimension_ba(
+    misc::shared_ptr<io::data> const& e) {
+  bam::dimension_ba_event const&
+      dba(*static_cast<bam::dimension_ba_event const*>(e.data()));
+  _dimension_ba_insert->bindValue(":ba_id", dba.ba_id);
+  _dimension_ba_insert->bindValue(":ba_name", dba.ba_name.c_str());
+  _dimension_ba_insert->bindValue(":ba_description",
+                                  dba.ba_description.c_str());
+  _dimension_ba_insert->bindValue(":sla_month_percent_1",
+                                  dba.sla_month_percent_1);
+  _dimension_ba_insert->bindValue(":sla_month_percent_2",
+                                  dba.sla_month_percent_2);
+  _dimension_ba_insert->bindValue(":sla_month_duration_1",
+                                  dba.sla_duration_1);
+  _dimension_ba_insert->bindValue(":sla_month_duration_2"
+                                  , dba.sla_duration_2);
+  if (!_dimension_ba_insert->exec())
+    throw (exceptions::msg() << "BAM: could not insert dimension of BA "
+           << dba.ba_id << " :"
+           << _dimension_ba_insert->lastError().text());
+}
+
+void reporting_stream::_process_dimension_bv(
+    misc::shared_ptr<io::data> const& e) {
+  bam::dimension_bv_event const&
+      dbv(*static_cast<bam::dimension_bv_event const*>(e.data()));
+  _dimension_bv_insert->bindValue(":bv_id", dbv.bv_id);
+  _dimension_bv_insert->bindValue(":bv_name", dbv.bv_name.c_str());
+  _dimension_bv_insert->bindValue(":bv_description",
+                                  dbv.bv_description.c_str());
+  if (!_dimension_bv_insert->exec())
+    throw (exceptions::msg() << "BAM: could not insert dimension of BV "
+           << dbv.bv_id << " :"
+           << _dimension_bv_insert->lastError().text());
+}
+
+void reporting_stream::_process_dimension_ba_bv_relation(
+    misc::shared_ptr<io::data> const& e) {
+  bam::dimension_ba_bv_relation_event const&
+    dbabv(*static_cast<bam::dimension_ba_bv_relation_event const*>(e.data()));
+  _dimension_ba_bv_relation_insert->bindValue(":ba_id", dbabv.ba_id);
+  _dimension_ba_bv_relation_insert->bindValue(":bv_id", dbabv.bv_id);
+  if (!_dimension_ba_bv_relation_insert->exec())
+    throw (exceptions::msg() << "BAM: could not insert dimension of "
+                                "BA-BV relation "
+           << dbabv.ba_id << "- "<< dbabv.bv_id << " :"
+           << _dimension_ba_bv_relation_insert->lastError().text());
+}
+
+void reporting_stream::_process_dimension_kpi(
+    misc::shared_ptr<io::data> const& e) {
+  bam::dimension_kpi_event const&
+      dk(*static_cast<bam::dimension_kpi_event const*>(e.data()));
+  _dimension_kpi_insert->bindValue(":kpi_id", dk.kpi_id);
+  _dimension_kpi_insert->bindValue(":kpi_name", dk.kpi_name.c_str());
+  _dimension_kpi_insert->bindValue(":ba_id", dk.ba_id);
+  _dimension_kpi_insert->bindValue(":ba_name", dk.ba_name.c_str());
+  _dimension_kpi_insert->bindValue(":host_id", dk.host_id);
+  _dimension_kpi_insert->bindValue(":host_name", dk.host_name.c_str());
+  _dimension_kpi_insert->bindValue(":service_id", dk.service_id);
+  _dimension_kpi_insert->bindValue(":service_description",
+                                   dk.service_description.c_str());
+  _dimension_kpi_insert->bindValue(":kpi_ba_id", dk.kpi_ba_id);
+  _dimension_kpi_insert->bindValue(":kpi_ba_name", dk.kpi_ba_name.c_str());
+  _dimension_kpi_insert->bindValue(":meta_service_id", dk.meta_service_id);
+  _dimension_kpi_insert->bindValue(":meta_service_name",
+                                   dk.meta_service_name.c_str());
+  _dimension_kpi_insert->bindValue(":impact_warning", dk.impact_warning);
+  _dimension_kpi_insert->bindValue(":impact_critical", dk.impact_critical);
+  _dimension_kpi_insert->bindValue(":impact_unknown", dk.impact_unknown);
+  _dimension_kpi_insert->bindValue(":boolean_id", dk.boolean_id);
+  _dimension_kpi_insert->bindValue(":boolean_name", dk.boolean_name.c_str());
+  if (!_dimension_kpi_insert->exec())
+    throw (exceptions::msg() << "BAM: could not insert dimension of KPI "
+           << dk.kpi_id << " :"
+           << _dimension_kpi_insert->lastError().text());
 }
 
 /**
