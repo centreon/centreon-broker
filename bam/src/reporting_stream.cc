@@ -519,7 +519,7 @@ void reporting_stream::_prepare() {
  *  @param[in] e The event.
  */
 void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
-  bam::ba_event const& be = e.refAs<bam::ba_event const>();
+  bam::ba_event const& be = e.ref_as<bam::ba_event const>();
   if ((be.end_time != 0) && (be.end_time != (time_t)-1)) {
     _ba_event_update->bindValue(":ba_id", be.ba_id);
     _ba_event_update->bindValue(
@@ -554,7 +554,7 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
  */
 void reporting_stream::_process_ba_duration_event(
     misc::shared_ptr<io::data> const& e) {
-  bam::ba_duration_event const& bde = e.refAs<bam::ba_duration_event const>();
+  bam::ba_duration_event const& bde = e.ref_as<bam::ba_duration_event const>();
   _ba_duration_event_insert->bindValue(":ba_id", bde.ba_id);
   _ba_duration_event_insert->bindValue(
     ":real_start_time",
@@ -587,7 +587,7 @@ void reporting_stream::_process_ba_duration_event(
  */
 void reporting_stream::_process_kpi_event(
     misc::shared_ptr<io::data> const& e) {
-  bam::kpi_event const& ke = e.refAs<bam::kpi_event const>();
+  bam::kpi_event const& ke = e.ref_as<bam::kpi_event const>();
   if ((ke.end_time != 0) && (ke.end_time != (time_t)-1)) {
     _kpi_event_update->bindValue(":kpi_id", ke.kpi_id);
     _kpi_event_update->bindValue(
@@ -633,7 +633,7 @@ void reporting_stream::_process_kpi_event(
 
 void reporting_stream::_process_dimension_ba(
     misc::shared_ptr<io::data> const& e) {
-  bam::dimension_ba_event const& dba = e.refAs<bam::dimension_ba_event const>();
+  bam::dimension_ba_event const& dba = e.ref_as<bam::dimension_ba_event const>();
   _dimension_ba_insert->bindValue(":ba_id", dba.ba_id);
   _dimension_ba_insert->bindValue(":ba_name", dba.ba_name.c_str());
   _dimension_ba_insert->bindValue(":ba_description",
@@ -655,7 +655,7 @@ void reporting_stream::_process_dimension_ba(
 void reporting_stream::_process_dimension_bv(
     misc::shared_ptr<io::data> const& e) {
   bam::dimension_bv_event const& dbv =
-      e.refAs<bam::dimension_bv_event const>();
+      e.ref_as<bam::dimension_bv_event const>();
   _dimension_bv_insert->bindValue(":bv_id", dbv.bv_id);
   _dimension_bv_insert->bindValue(":bv_name", dbv.bv_name.c_str());
   _dimension_bv_insert->bindValue(":bv_description",
@@ -669,7 +669,7 @@ void reporting_stream::_process_dimension_bv(
 void reporting_stream::_process_dimension_ba_bv_relation(
     misc::shared_ptr<io::data> const& e) {
   bam::dimension_ba_bv_relation_event const& dbabv =
-      e.refAs<bam::dimension_ba_bv_relation_event const>();
+      e.ref_as<bam::dimension_ba_bv_relation_event const>();
   _dimension_ba_bv_relation_insert->bindValue(":ba_id", dbabv.ba_id);
   _dimension_ba_bv_relation_insert->bindValue(":bv_id", dbabv.bv_id);
   if (!_dimension_ba_bv_relation_insert->exec())
@@ -682,7 +682,7 @@ void reporting_stream::_process_dimension_ba_bv_relation(
 void reporting_stream::_process_dimension_kpi(
     misc::shared_ptr<io::data> const& e) {
   bam::dimension_kpi_event const& dk =
-      e.refAs<bam::dimension_kpi_event const>();
+      e.ref_as<bam::dimension_kpi_event const>();
   _dimension_kpi_insert->bindValue(":kpi_id", dk.kpi_id);
   _dimension_kpi_insert->bindValue(":kpi_name", dk.kpi_name.c_str());
   _dimension_kpi_insert->bindValue(":ba_id", dk.ba_id);

@@ -219,7 +219,7 @@ namespace             misc {
      *  @return  Reference casted as.
      */
     template <typename U>
-    U&                refAs() const {
+    U&                ref_as() const {
       return (static_cast<U&>(*_ptr));
     }
 
