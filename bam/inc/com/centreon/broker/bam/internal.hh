@@ -33,7 +33,11 @@ namespace bam {
     de_meta_service_status,
     de_ba_event,
     de_kpi_event,
-    de_ba_duration_event
+    de_ba_duration_event,
+    de_dimension_ba_event,
+    de_dimension_kpi_event,
+    de_dimension_ba_bv_relation_event,
+    de_dimension_bv_event
   };
 }
 
