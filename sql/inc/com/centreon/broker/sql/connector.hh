@@ -59,9 +59,9 @@ namespace                        sql {
   private:
     bool                         _check_replication;
     unsigned int                 _cleanup_check_interval;
-    unsigned int                 _instance_timeout;
     QString                      _db;
     QString                      _host;
+    unsigned int                 _instance_timeout;
     QString                      _password;
     unsigned short               _port;
     unsigned int                 _queries_per_transaction;

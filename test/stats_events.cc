@@ -386,7 +386,6 @@ int main(int argc, char* argv[]) {
     // Check data from dumper.
     {
       std::string path(metrics_path + "/" INSTANCE_ID ".stats");
-      char buffer;
       std::ifstream ifs(path.c_str());
       if (ifs.fail() || ifs.eof())
         throw (exceptions::msg() << "cannot open statistics file '"

@@ -45,9 +45,9 @@ connector::connector(connector const& c)
     _cleanup_check_interval(c._cleanup_check_interval),
     _db(c._db),
     _host(c._host),
+    _instance_timeout(c._instance_timeout),
     _password(c._password),
     _port(c._port),
-    _instance_timeout(c._instance_timeout),
     _queries_per_transaction(0),
     _type(c._type),
     _user(c._user),
@@ -72,8 +72,8 @@ connector& connector::operator=(connector const& c) {
     _cleanup_check_interval = c._cleanup_check_interval;
     _db = c._db;
     _host = c._host;
-    _password = c._password;
     _instance_timeout = c._instance_timeout;
+    _password = c._password;
     _port = c._port;
     _queries_per_transaction = c._queries_per_transaction;
     _type = c._type;
