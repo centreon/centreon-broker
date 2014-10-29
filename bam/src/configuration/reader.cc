@@ -24,10 +24,18 @@
 #include <QSqlQuery>
 #include <QVariant>
 #include <sstream>
+#include <memory>
 #include "com/centreon/broker/bam/configuration/state.hh"
 #include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/reader_exception.hh"
 #include "com/centreon/broker/bam/sql_mapping.hh"
+#include "com/centreon/broker/bam/dimension_ba_event.hh"
+#include "com/centreon/broker/bam/dimension_bv_event.hh"
+#include "com/centreon/broker/bam/dimension_ba_bv_relation_event.hh"
+#include "com/centreon/broker/bam/dimension_kpi_event.hh"
+#include "com/centreon/broker/bam/dimension_truncate_table_signal.hh"
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -60,6 +68,7 @@ void reader::read(state& st) {
     _load(st.get_meta_services());
     _load(st.get_mapping());
     _load(st.get_timeperiods());
+    _load_dimensions();
     _db->rollback();
   }
   catch (std::exception const& e) {
@@ -613,4 +622,88 @@ void reader::_load(state::timeperiods& tps) {
     }
   }
   return ;
+}
+
+/**
+ *  Load the dimensions from the database.
+ */
+void reader::_load_dimensions() {
+  std::auto_ptr<io::stream> out(new multiplexing::publisher);
+  // As this operation is destructive (it truncates the database),
+  // we cache the data until we are sure we have all the data
+  // needed from the database.
+  std::vector<misc::shared_ptr<io::data> > datas;
+  datas.push_back(misc::shared_ptr<io::data>(
+                    new dimension_truncate_table_signal));
+
+  // Get the data from the db.
+  QSqlQuery q(*_db);
+  q.setForwardOnly(true);
+
+  // Load the BAs.
+  {
+    q.exec("SELECT ba_id, name, description, level_w, level_c, sla_warning, sla_critical");
+    if (_db->lastError().isValid())
+      throw (reader_exception()
+             << "BAM: could not retrieve ba dimensions: "
+             << _db->lastError().text());
+    while (q.next()) {
+     misc::shared_ptr<dimension_ba_event>  ba(new dimension_ba_event);
+     ba->ba_id = q.value(0).toInt();
+     ba->ba_name = q.value(1).toString().toStdString();
+     ba->ba_description = q.value(2).toString().toStdString();
+     ba->sla_month_percent_1 = q.value(3).toDouble();
+     ba->sla_month_percent_2 = q.value(4).toDouble();
+     ba->sla_duration_1 = q.value(5).toDouble();
+     ba->sla_duration_2 = q.value(6).toDouble();
+     datas.push_back(ba.staticCast<io::data>());
+    }
+  }
+
+  // Load the BA BV relations.
+  {
+    q.exec("SELECT id_ba, id_bv"
+           "  FROM mod_bam_bagroup_ba_relation");
+    if (_db->lastError().isValid())
+      throw (reader_exception()
+             << "BAM: could not retrieve ba-bv dimension relations: "
+             << _db->lastError().text());
+    while (q.next()) {
+      misc::shared_ptr<dimension_ba_bv_relation_event>
+          babv(new dimension_ba_bv_relation_event);
+      babv->ba_id = q.value(0).toInt();
+      babv->bv_id = q.value(1).toInt();
+      datas.push_back(babv.staticCast<io::data>());
+    }
+  }
+
+  // Load the BVs.
+  {
+    q.exec("SELECT id_ba_group, ba_group_name, ba_group_description"
+           "  FROM centreon.mod_bam_ba_group");
+    if (_db->lastError().isValid())
+      throw (reader_exception()
+             << "BAM: could not retrieve bv dimensions: "
+             << _db->lastError().text());
+    while (q.next()) {
+      misc::shared_ptr<dimension_bv_event>
+          bv(new dimension_bv_event);
+      bv->bv_id = q.value(0).toInt();
+      bv->bv_name = q.value(1).toString().toStdString();
+      bv->bv_description = q.value(2).toString().toStdString();
+      datas.push_back(bv.staticCast<io::data>());
+    }
+  }
+
+  // Load the KPIs
+  {
+    //q.exec("SELECT kpi_id, ")
+  }
+
+  // Write all the cached data to the publisher.
+  for (std::vector<misc::shared_ptr<io::data> >::iterator it(datas.begin()),
+                                                       end(datas.end());
+       it != end;
+       ++it)
+    out->write(*it);
 }
