@@ -246,19 +246,22 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
       _process_dimension_bv(data);
     }
     else if (data->type()
-             == io::events::data_type<io::events::bam, bam::de_dimension_ba_bv_relation_event>::value) {
+             == io::events::data_type<io::events::bam,
+                                      bam::de_dimension_ba_bv_relation_event>::value) {
       logging::debug(logging::low)
         << "BAM: processing BA-BV relation dimension";
       _process_dimension_ba_bv_relation(data);
     }
     else if (data->type()
-             == io::events::data_type<io::events::bam, bam::de_dimension_kpi_event>::value) {
+             == io::events::data_type<io::events::bam,
+                                      bam::de_dimension_kpi_event>::value) {
       logging::debug(logging::low)
         << "BAM: processing KPI dimension";
       _process_dimension_kpi(data);
     }
     else if (data->type()
-             == io::events::data_type<io::events::bam, bam::de_dimension_truncate_table_signal>::value) {
+             == io::events::data_type<io::events::bam,
+                                      bam::de_dimension_truncate_table_signal>::value) {
       logging::debug(logging::low)
         << "BAM: processing truncate dimension table signal";
       _process_dimension_truncate_signal(data);
@@ -668,6 +671,11 @@ void reporting_stream::_process_kpi_event(
   return ;
 }
 
+/**
+ *  Process a dimension ba and write it to the db.
+ *
+ *  @param[in] e The event.
+ */
 void reporting_stream::_process_dimension_ba(
     misc::shared_ptr<io::data> const& e) {
   bam::dimension_ba_event const& dba = e.ref_as<bam::dimension_ba_event const>();
@@ -689,6 +697,11 @@ void reporting_stream::_process_dimension_ba(
            << _dimension_ba_insert->lastError().text());
 }
 
+/**
+ *  Process a dimension bv and write it to the db.
+ *
+ *  @param[in] e The event.
+ */
 void reporting_stream::_process_dimension_bv(
     misc::shared_ptr<io::data> const& e) {
   bam::dimension_bv_event const& dbv =
@@ -703,6 +716,11 @@ void reporting_stream::_process_dimension_bv(
            << _dimension_bv_insert->lastError().text());
 }
 
+/**
+ *  Process a dimension ba bv relation and write it to the db.
+ *
+ *  @param[in] e The event.
+ */
 void reporting_stream::_process_dimension_ba_bv_relation(
     misc::shared_ptr<io::data> const& e) {
   bam::dimension_ba_bv_relation_event const& dbabv =
@@ -716,6 +734,11 @@ void reporting_stream::_process_dimension_ba_bv_relation(
            << _dimension_ba_bv_relation_insert->lastError().text());
 }
 
+/**
+ *  Process a dimension truncate signal and write it to the db.
+ *
+ *  @param[in] e The event.
+ */
 void reporting_stream::_process_dimension_truncate_signal(
     misc::shared_ptr<io::data> const& e) {
   for (std::vector<misc::shared_ptr<QSqlQuery> >::iterator
@@ -728,6 +751,11 @@ void reporting_stream::_process_dimension_truncate_signal(
                                << (*it)->lastError().text());
 }
 
+/**
+ *  Process a dimension KPI and write it to the db.
+ *
+ *  @param[in] e The event.
+ */
 void reporting_stream::_process_dimension_kpi(
     misc::shared_ptr<io::data> const& e) {
   bam::dimension_kpi_event const& dk =
