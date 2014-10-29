@@ -73,7 +73,7 @@ void computable::add_parent(
  *
  *  @param[out] visitor  Object that will receive events.
  */
-void computable::propagate_update(monitoring_stream* visitor) {
+void computable::propagate_update(io::stream* visitor) {
   std::vector<bool> filter;
   filter.resize(_parents.size());
   unsigned int i = 0;

@@ -21,7 +21,6 @@
 #include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi.hh"
-#include "com/centreon/broker/bam/monitoring_stream.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
@@ -120,7 +119,7 @@ void ba::add_impact(misc::shared_ptr<kpi> const& impact) {
  */
 bool ba::child_has_update(
            computable* child,
-           monitoring_stream* visitor) {
+           io::stream* visitor) {
   umap<kpi*, impact_info>::iterator
     it(_impacts.find(static_cast<kpi*>(child)));
   if (it != _impacts.end()) {
@@ -393,7 +392,7 @@ void ba::clear_timeperiods() {
  *
  *  @param[out] visitor  Visitor that will receive BA status and events.
  */
-void ba::visit(monitoring_stream* visitor) {
+void ba::visit(io::stream* visitor) {
   if (visitor) {
     // Generate status event.
     {
@@ -433,7 +432,7 @@ void ba::visit(monitoring_stream* visitor) {
  */
 void ba::service_update(
           misc::shared_ptr<neb::service_status> const& status,
-          monitoring_stream* visitor) {
+          io::stream* visitor) {
   (void) visitor;
   logging::debug(logging::low)
     << "BAM: BA " << _id << " is getting notified of service update";
@@ -519,7 +518,7 @@ void ba::_internal_copy(ba const& right) {
  *
  *  @param[out] visitor  Visitor that will receive events.
  */
-void ba::_open_new_event(monitoring_stream* visitor) {
+void ba::_open_new_event(io::stream* visitor) {
   _event = new ba_event;
   _event->ba_id = _id;
   _event->in_downtime = _in_downtime;
@@ -589,7 +588,7 @@ void ba::_unapply_impact(ba::impact_info& impact) {
  */
 void ba::_compute_event_durations(
            misc::shared_ptr<ba_event> ev,
-           monitoring_stream* visitor) {
+           io::stream* visitor) {
   if (ev.isNull() || !visitor)
     return ;
 

@@ -99,7 +99,7 @@ bam::service_book& applier::state::book_service() {
  *
  *  @param[out] visitor  Visitor.
  */
-void applier::state::visit(monitoring_stream* visitor) {
+void applier::state::visit(io::stream* visitor) {
   _ba_applier.visit(visitor);
   _kpi_applier.visit(visitor);
   return ;

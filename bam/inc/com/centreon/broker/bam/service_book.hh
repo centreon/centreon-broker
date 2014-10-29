@@ -21,6 +21,7 @@
 #  define CCB_BAM_SERVICE_BOOK_HH
 
 #  include <map>
+#  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -33,7 +34,6 @@ namespace         neb {
 
 namespace         bam {
   // Forward declarations.
-  class           monitoring_stream;
   class           service_listener;
 
   /**
@@ -58,7 +58,7 @@ namespace         bam {
                     service_listener* listnr);
     void          update(
                     misc::shared_ptr<neb::service_status> const& ss,
-                    monitoring_stream* visitor = NULL);
+                    io::stream* visitor = NULL);
 
   private:
     typedef std::multimap<std::pair<unsigned int, unsigned int>, service_listener*> multimap;

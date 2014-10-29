@@ -23,6 +23,7 @@
 #  include "com/centreon/broker/bam/kpi.hh"
 #  include "com/centreon/broker/bam/kpi_event.hh"
 #  include "com/centreon/broker/bam/service_listener.hh"
+#  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
 
@@ -43,7 +44,7 @@ namespace        bam {
     kpi_service& operator=(kpi_service const& right);
     bool         child_has_update(
                    computable* child,
-                   monitoring_stream* visitor = NULL);
+                   io::stream* visitor = NULL);
     unsigned int get_host_id() const;
     double       get_impact_critical() const;
     double       get_impact_unknown() const;
@@ -58,7 +59,7 @@ namespace        bam {
     bool         is_acknowledged() const;
     void         service_update(
                    misc::shared_ptr<neb::service_status> const& status,
-                   monitoring_stream* visitor = NULL);
+                   io::stream* visitor = NULL);
     void         set_acknowledged(bool acknowledged);
     void         set_downtimed(bool downtimed);
     void         set_host_id(unsigned int host_id);
@@ -69,13 +70,13 @@ namespace        bam {
     void         set_state_hard(short state);
     void         set_state_soft(short state);
     void         set_state_type(short type);
-    void         visit(monitoring_stream* visitor);
+    void         visit(io::stream* visitor);
 
   private:
     void         _fill_impact(impact_values& impact, short state);
     void         _internal_copy(kpi_service const& right);
     void         _open_new_event(
-                   monitoring_stream* visitor,
+                   io::stream* visitor,
                    impact_values const& impacts);
 
     bool         _acknowledged;

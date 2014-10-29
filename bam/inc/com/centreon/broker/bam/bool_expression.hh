@@ -23,6 +23,7 @@
 #  include <list>
 #  include "com/centreon/broker/bam/kpi.hh"
 #  include "com/centreon/broker/bam/kpi_event.hh"
+#  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
 
@@ -48,7 +49,7 @@ namespace            bam {
     void             add_kpi_id(unsigned int id);
     bool             child_has_update(
                        computable* child,
-                       monitoring_stream* visitor = NULL);
+                       io::stream* visitor = NULL);
     short            get_state_hard() const;
     short            get_state_soft() const;
     void             impact_hard(impact_values& hard_impact);
@@ -60,12 +61,12 @@ namespace            bam {
     void             set_impact_if(bool impact_if);
     void             set_impact_soft(double impact);
     void             set_kpi_id(unsigned int id);
-    void             visit(monitoring_stream* visitor);
+    void             visit(io::stream* visitor);
 
   private:
     void             _internal_copy(bool_expression const& right);
     void             _open_new_event(
-                       monitoring_stream* visitor,
+                       io::stream* visitor,
                        timestamp start_time);
 
     misc::shared_ptr<bool_value>

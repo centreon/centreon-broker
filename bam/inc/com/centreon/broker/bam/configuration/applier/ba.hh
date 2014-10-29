@@ -26,6 +26,7 @@
 #  include "com/centreon/broker/bam/configuration/state.hh"
 #  include "com/centreon/broker/bam/configuration/applier/timeperiod.hh"
 #  include "com/centreon/broker/bam/service_book.hh"
+#  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -51,7 +52,7 @@ namespace     bam {
                     timeperiod& tp);
         misc::shared_ptr<bam::ba>
               find_ba(unsigned int id);
-        void  visit(monitoring_stream* visitor);
+        void  visit(io::stream* visitor);
 
       private:
         struct applied {

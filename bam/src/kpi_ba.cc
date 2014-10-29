@@ -20,7 +20,6 @@
 #include "com/centreon/broker/bam/ba.hh"
 #include "com/centreon/broker/bam/kpi_ba.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
-#include "com/centreon/broker/bam/monitoring_stream.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -70,7 +69,7 @@ kpi_ba& kpi_ba::operator=(kpi_ba const& right) {
  */
 bool kpi_ba::child_has_update(
                computable* child,
-               monitoring_stream* visitor) {
+               io::stream* visitor) {
   // It is useless to maintain a cache of BA values in this class, as
   // the ba class already cache most of them.
   if (child == _ba.data()) {
@@ -173,7 +172,7 @@ void kpi_ba::unlink_ba() {
  *
  *  @param[out] visitor  Object that will receive status and events.
  */
-void kpi_ba::visit(monitoring_stream* visitor) {
+void kpi_ba::visit(io::stream* visitor) {
   if (visitor) {
     // Get information.
     impact_values hard_values;
@@ -274,7 +273,7 @@ void kpi_ba::_internal_copy(kpi_ba const& right) {
  *  @param[out] visitor  Visitor that will receive events.
  *  @param[in]  impact   Current impact of this KPI.
  */
-void kpi_ba::_open_new_event(monitoring_stream* visitor, int impact) {
+void kpi_ba::_open_new_event(io::stream* visitor, int impact) {
   _event = new kpi_event;
   _event->kpi_id = _id;
   _event->impact_level = impact;

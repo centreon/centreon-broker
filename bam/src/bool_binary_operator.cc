@@ -72,7 +72,7 @@ bool_binary_operator& bool_binary_operator::operator=(
  */
 bool bool_binary_operator::child_has_update(
                              computable* child,
-                             monitoring_stream* visitor) {
+                             io::stream* visitor) {
   (void)visitor;
   if (child) {
     if (child == _left.data()) {

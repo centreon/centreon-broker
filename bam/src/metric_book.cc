@@ -96,7 +96,7 @@ void metric_book::unlisten(
  */
 void metric_book::update(
                     misc::shared_ptr<storage::metric> const& m,
-                    monitoring_stream* visitor) {
+                    io::stream* visitor) {
   std::pair<multimap::iterator, multimap::iterator>
     range(_book.equal_range(m->metric_id));
   while (range.first != range.second) {

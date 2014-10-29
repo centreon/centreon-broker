@@ -184,7 +184,7 @@ misc::shared_ptr<bam::ba> applier::ba::find_ba(unsigned int id) {
  *
  *  @param[out] visitor  Visitor that will receive status.
  */
-void applier::ba::visit(monitoring_stream* visitor) {
+void applier::ba::visit(io::stream* visitor) {
   for (std::map<unsigned int, applied>::iterator
          it(_applied.begin()),
          end(_applied.end());
