@@ -697,7 +697,38 @@ void reader::_load_dimensions() {
 
   // Load the KPIs
   {
-    //q.exec("SELECT kpi_id, ")
+    std::map<unsigned int, misc::shared_ptr<dimension_kpi_event> > kpis;
+    q.exec("SELECT k.kpi_id, k.kpi_type, k.host_id, k.service_id, k.id_ba,"
+           "       k.id_indicator_ba, k.meta_id, k.boolean_id,"
+           "        COALESCE(k.drop_warning, ww.impact),"
+           "        COALESCE(k.drop_critical, cc.impact),"
+           "        COALESCE(k.drop_unknown, uu.impact)"
+           "  FROM  mod_bam_kpi AS k"
+           "  LEFT JOIN mod_bam_impacts AS ww"
+           "    ON k.drop_warning_impact_id = ww.id_impact"
+           "  LEFT JOIN mod_bam_impacts AS cc"
+           "    ON k.drop_critical_impact_id = cc.id_impact"
+           "  LEFT JOIN mod_bam_impacts AS uu"
+           "    ON k.drop_unknown_impact_id = uu.id_impact");
+    if (_db->lastError().isValid())
+      throw (reader_exception()
+             << "BAM: could not retrieve kpi dimensions: "
+             << _db->lastError().text());
+    while (q.next()) {
+      misc::shared_ptr<dimension_kpi_event> k(new dimension_kpi_event);
+      k->kpi_id = q.value(0).toInt();
+      k->host_id = q.value(2).toInt();
+      k->service_id = q.value(3).toInt();
+      k->ba_id = q.value(4).toInt();
+      k->kpi_ba_id = q.value(5).toInt();
+      k->meta_service_id = q.value(6).toInt();
+      k->boolean_id = q.value(7).toInt();
+      k->impact_warning = q.value(8).toDouble();
+      k->impact_critical = q.value(9).toDouble();
+      k->impact_unknown = q.value(10).toDouble();
+      kpis[k->kpi_id] = k;
+      datas.push_back(k.staticCast<io::data>());
+    }
   }
 
   // Write all the cached data to the publisher.
