@@ -257,6 +257,12 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
         << "BAM: processing KPI dimension";
       _process_dimension_kpi(data);
     }
+    else if (data->type()
+             == io::events::data_type<io::events::bam, bam::de_dimension_truncate_table_signal>::value) {
+      logging::debug(logging::low)
+        << "BAM: processing truncate dimension table signal";
+      _process_dimension_truncate_signal(data);
+    }
   }
 }
 
@@ -352,6 +358,7 @@ void reporting_stream::_clear_qsql() {
   _dimension_ba_bv_relation_insert.reset();
   _dimension_ba_insert.reset();
   _dimension_bv_insert.reset();
+  _dimension_truncate_tables.clear();
   _dimension_kpi_insert.reset();
   _db.reset();
   return ;
@@ -488,6 +495,36 @@ void reporting_stream::_prepare() {
              << "BAM: could not prepare the insertion of BA BV"
                 "relation dimension: "
              << _dimension_ba_bv_relation_insert->lastError().text());
+  }
+
+  // Dimension truncate tables.
+  {
+    _dimension_truncate_tables.clear();
+    QString query;
+    query = "TRUNCATE TABLE ba";
+    _dimension_truncate_tables.push_back(
+          misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
+    if (!_dimension_truncate_tables.back()->prepare(query))
+      throw (exceptions::msg()
+            << "BAM: could not prepare the truncate of table ba");
+    query = "TRUNCATE TABLE bv";
+    _dimension_truncate_tables.push_back(
+          misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
+    if (!_dimension_truncate_tables.back()->prepare(query))
+      throw (exceptions::msg()
+            << "BAM: could not prepare the truncate of table bv");
+    query = "TRUNCATE TABLE relations_ba_bv";
+    _dimension_truncate_tables.push_back(
+          misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
+    if (!_dimension_truncate_tables.back()->prepare(query))
+      throw (exceptions::msg()
+            << "BAM: could not prepare the truncate of table relations_ba_bv");
+    query = "TRUNCATE TABLE kpi";
+    _dimension_truncate_tables.push_back(
+          misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
+    if (!_dimension_truncate_tables.back()->prepare(query))
+      throw (exceptions::msg()
+            << "BAM: could not prepare the truncate of table kpi");
   }
 
   // Dimension KPI insertion
@@ -677,6 +714,18 @@ void reporting_stream::_process_dimension_ba_bv_relation(
                                 "BA-BV relation "
            << dbabv.ba_id << "- "<< dbabv.bv_id << " :"
            << _dimension_ba_bv_relation_insert->lastError().text());
+}
+
+void reporting_stream::_process_dimension_truncate_signal(
+    misc::shared_ptr<io::data> const& e) {
+  for (std::vector<misc::shared_ptr<QSqlQuery> >::iterator
+         it(_dimension_truncate_tables.begin()),
+         end(_dimension_truncate_tables.end());
+       it != end;
+       ++it)
+    if (!(*it)->exec())
+      throw (exceptions::msg() << "BAM: could not truncate dimension tables: "
+                               << (*it)->lastError().text());
 }
 
 void reporting_stream::_process_dimension_kpi(

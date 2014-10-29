@@ -21,6 +21,7 @@
 #  define CCB_BAM_REPORTING_STREAM_HH
 
 #  include <memory>
+#  include <vector>
 #  include <QSqlDatabase>
 #  include <QSqlQuery>
 #  include "com/centreon/broker/io/stream.hh"
@@ -67,6 +68,7 @@ namespace          bam {
     void           _process_dimension_ba(misc::shared_ptr<io::data> const& e);
     void           _process_dimension_bv(misc::shared_ptr<io::data> const& e);
     void           _process_dimension_ba_bv_relation(misc::shared_ptr<io::data> const& e);
+    void           _process_dimension_truncate_signal(misc::shared_ptr<io::data> const& e);
     void           _process_dimension_kpi(misc::shared_ptr<io::data> const& e);
     void           _update_status(std::string const& status);
 
@@ -93,6 +95,8 @@ namespace          bam {
                   _dimension_bv_insert;
     std::auto_ptr<QSqlQuery>
                   _dimension_ba_bv_relation_insert;
+    std::vector<misc::shared_ptr<QSqlQuery> >
+                  _dimension_truncate_tables;
     std::auto_ptr<QSqlQuery>
                   _dimension_kpi_insert;
     std::auto_ptr<QSqlDatabase>
