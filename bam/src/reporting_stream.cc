@@ -222,25 +222,29 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
 
   if (!data.isNull()) {
     if (data->type()
-             == io::events::data_type<io::events::bam, bam::de_kpi_event>::value) {
+             == io::events::data_type<io::events::bam,
+                                      bam::de_kpi_event>::value) {
       logging::debug(logging::low)
         << "BAM: processing KPI event";
       _process_kpi_event(data);
     }
     else if (data->type()
-             == io::events::data_type<io::events::bam, bam::de_ba_event>::value) {
+             == io::events::data_type<io::events::bam,
+                                      bam::de_ba_event>::value) {
       logging::debug(logging::low)
         << "BAM: processing BA event";
       _process_ba_event(data);
     }
     else if (data->type()
-             == io::events::data_type<io::events::bam, bam::de_dimension_ba_event>::value) {
+             == io::events::data_type<io::events::bam,
+                                      bam::de_dimension_ba_event>::value) {
       logging::debug(logging::low)
         << "BAM: processing BA dimension";
       _process_dimension_ba(data);
     }
     else if (data->type()
-             == io::events::data_type<io::events::bam, bam::de_dimension_bv_event>::value) {
+             == io::events::data_type<io::events::bam,
+                                      bam::de_dimension_bv_event>::value) {
       logging::debug(logging::low)
         << "BAM: processing BV dimension";
       _process_dimension_bv(data);

@@ -641,6 +641,7 @@ void reader::_load_dimensions() {
   q.setForwardOnly(true);
 
   // Load the BAs.
+  std::map<unsigned int, misc::shared_ptr<dimension_ba_event> > bas;
   {
     q.exec("SELECT ba_id, name, description, level_w, level_c, sla_warning, sla_critical");
     if (_db->lastError().isValid())
@@ -657,6 +658,7 @@ void reader::_load_dimensions() {
      ba->sla_duration_1 = q.value(5).toDouble();
      ba->sla_duration_2 = q.value(6).toDouble();
      datas.push_back(ba.staticCast<io::data>());
+     bas[ba->ba_id] = ba;
     }
   }
 
@@ -696,20 +698,34 @@ void reader::_load_dimensions() {
   }
 
   // Load the KPIs
+  // Unfortunately, we need to get the names of the service/host/meta_service
+  // /ba/boolean expression associated with this KPI.
+  // This explains the numerous joins.
   {
-    std::map<unsigned int, misc::shared_ptr<dimension_kpi_event> > kpis;
     q.exec("SELECT k.kpi_id, k.kpi_type, k.host_id, k.service_id, k.id_ba,"
            "       k.id_indicator_ba, k.meta_id, k.boolean_id,"
            "        COALESCE(k.drop_warning, ww.impact),"
            "        COALESCE(k.drop_critical, cc.impact),"
-           "        COALESCE(k.drop_unknown, uu.impact)"
+           "        COALESCE(k.drop_unknown, uu.impact),"
+           "       h.host_name, s.service_description, b.name,"
+           "       meta.meta_name, boo.name"
            "  FROM  mod_bam_kpi AS k"
            "  LEFT JOIN mod_bam_impacts AS ww"
            "    ON k.drop_warning_impact_id = ww.id_impact"
            "  LEFT JOIN mod_bam_impacts AS cc"
            "    ON k.drop_critical_impact_id = cc.id_impact"
            "  LEFT JOIN mod_bam_impacts AS uu"
-           "    ON k.drop_unknown_impact_id = uu.id_impact");
+           "    ON k.drop_unknown_impact_id = uu.id_impact"
+           "  LEFT JOIN host AS h"
+           "    ON h.host_id = k.host_id"
+           "  LEFT JOIN service AS s"
+           "    ON s.service_id = k.service_id"
+           "  INNER JOIN mod_bam AS b"
+           "    ON b.ba_id = k.id_ba"
+           "  LEFT JOIN meta_service AS meta"
+           "    ON meta.meta_id = k.meta_id"
+           "  LEFT JOIN mod_bam_boolean as boo"
+           "    ON boo.boolean_id = k.boolean_id");
     if (_db->lastError().isValid())
       throw (reader_exception()
              << "BAM: could not retrieve kpi dimensions: "
@@ -726,7 +742,23 @@ void reader::_load_dimensions() {
       k->impact_warning = q.value(8).toDouble();
       k->impact_critical = q.value(9).toDouble();
       k->impact_unknown = q.value(10).toDouble();
-      kpis[k->kpi_id] = k;
+      k->host_name = q.value(11).toString().toStdString();
+      k->service_description = q.value(12).toString().toStdString();
+      k->ba_name = q.value(13).toString().toStdString();
+      k->meta_service_name = q.value(14).toString().toStdString();
+      k->boolean_name = q.value(15).toString().toStdString();
+
+      // Resolve the id_indicator_ba
+      if (k->kpi_ba_id) {
+        std::map<unsigned int,
+                 misc::shared_ptr<dimension_ba_event> >::const_iterator
+            found = bas.find(k->kpi_ba_id);
+        if (found == bas.end())
+          throw (reader_exception()
+                 << "BAM: could not retrieve the ba-kpi: "
+                 << k->kpi_ba_id << _db->lastError().text());
+        k->kpi_ba_name = found->second->ba_name;
+      }
       datas.push_back(k.staticCast<io::data>());
     }
   }
