@@ -73,6 +73,7 @@ typedef struct {
   unsigned int kpi_id;
   time_t start_time_low;
   time_t start_time_high;
+  bool end_time_null;
   time_t end_time_low;
   time_t end_time_high;
   short status;
@@ -228,7 +229,7 @@ static void check_ba_events(
         || (q.value(1).toLongLong() > ba_events[i].start_time_high)
         || (q.value(2).isNull() && !ba_events[i].end_time_null)
         || (!q.value(2).isNull()
-            && ((ba_events[i].end_time_null)
+            && (ba_events[i].end_time_null
                 || (q.value(2).toLongLong() < ba_events[i].end_time_low)
                 || (q.value(2).toLongLong() > ba_events[i].end_time_high)))
         || (q.value(3).toInt() != ba_events[i].status)
@@ -239,7 +240,7 @@ static void check_ba_events(
              << q.value(1).toLongLong() << ", end time "
              << q.value(2).toLongLong() << ", status "
              << q.value(3).toInt() << ", in downtime "
-             << q.value(4).toInt() << "), expected ("
+             << q.value(4).toBool() << "), expected ("
              << ba_events[i].ba_id << ", "
              << ba_events[i].start_time_low << "-"
              << ba_events[i].start_time_high << ", "
@@ -262,6 +263,55 @@ static void check_kpi_events(
               QSqlDatabase& db,
               kpi_event const* kpi_events,
               size_t count) {
+  QString query(
+            "SELECT kpi_id, start_time, end_time, status, in_downtime,"
+            "       impact, first_output, first_perfdata"
+            "  FROM mod_bam_reporting_kpi_events"
+            "  ORDER BY kpi_id, start_time");
+  QSqlQuery q(db);
+  if (!q.exec(query))
+    throw (exceptions::msg() << "could not fetch KPI events: "
+           << q.lastError().text());
+  for (size_t i(0); i < count; ++i) {
+    if (!q.next())
+      throw (exceptions::msg() << "not enough KPI events: got " << i
+             << ", expected " << count);
+    if ((q.value(0).toUInt() != kpi_events[i].kpi_id)
+        || (q.value(1).toLongLong() < kpi_events[i].start_time_low)
+        || (q.value(1).toLongLong() > kpi_events[i].start_time_high)
+        || (q.value(2).isNull() && !kpi_events[i].end_time_null)
+        || (!q.value(2).isNull()
+            && (kpi_events[i].end_time_null
+                || (q.value(2).toLongLong() < kpi_events[i].end_time_low)
+                || (q.value(2).toLongLong() > kpi_events[i].end_time_high)))
+        || (q.value(3).toInt() != kpi_events[i].status)
+        || (q.value(4).toBool() != kpi_events[i].in_downtime)
+        || (q.value(5).toInt() != kpi_events[i].impact)
+        || (q.value(6).toString().toStdString() != kpi_events[i].output)
+        || (q.value(7).toString().toStdString() != kpi_events[i].perfdata))
+      throw (exceptions::msg() << "invalid KPI event: got (KPI ID "
+             << q.value(0).toUInt() << ", start time "
+             << q.value(1).toLongLong() << ", end time "
+             << q.value(2).toLongLong() << ", status "
+             << q.value(3).toInt() << ", in downtime "
+             << q.value(4).toBool() << ", impact " << q.value(5).toInt()
+             << ", output '" << q.value(6).toString().toStdString()
+             << "', perfdata '" << q.value(7).toString().toStdString()
+             << "'), expected (" << kpi_events[i].kpi_id << ", "
+             << kpi_events[i].start_time_low << "-"
+             << kpi_events[i].start_time_high << ", "
+             << kpi_events[i].end_time_low << "-"
+             << kpi_events[i].end_time_high << ", "
+             << kpi_events[i].status << ", "
+             << kpi_events[i].in_downtime << ", "
+             << kpi_events[i].impact << ", '"
+             << kpi_events[i].output << "', '"
+             << kpi_events[i].perfdata << "')");
+  }
+  if (q.next())
+    throw (exceptions::msg() << "too much KPI events: expected "
+           << count);
+  return ;
 }
 
 /**
@@ -633,7 +683,35 @@ int main() {
     }
     {
       kpi_event const kpievents[] = {
-        { 1, 0, 0, 0, 0, 0, false, 0, "", ""}
+        { 1, t0, t1, false, t1, t2, 0, false, 0, "", "" },
+        { 1, t1, t2, true, 0, 0, 2, false, 0, "", "" },
+        { 2, t0, t1, false, t1, t2, 0, false, 0, "", "" },
+        { 2, t1, t2, true, 0, 0, 2, false, 0, "", "" },
+        { 3, t0, t1, false, t2, t3, 0, false, 0, "", "" },
+        { 3, t2, t3, true, 0, 0, 1, false, 0, "", "" },
+        { 4, t0, t1, false, t1, t2, 0, false, 0, "", "" },
+        { 4, t1, t2, true, 0, 0, 2, false, 0, "", "" },
+        { 5, t0, t1, false, t2, t3, 0, false, 0, "", "" },
+        { 5, t2, t3, true, 0, 0, 1, false, 0, "", "" },
+        { 6, t0, t1, true, 0, 0, 0, false, 0, "", "" },
+        { 7, t0, t1, false, t1, t2, 0, false, 0, "", "" },
+        { 7, t1, t2, true, 0, 0, 2, false, 0, "", "" },
+        { 8, t0, t1, false, t2, t3, 0, false, 0, "", "" },
+        { 8, t2, t3, true, 0, 0, 1, false, 0, "", "" },
+        { 9, t0, t1, true, 0, 0, 0, false, 0, "", "" },
+        { 10, t0, t1, true, 0, 0, 0, false, 0, "", "" },
+        { 11, t0, t1, false, t1, t2, 0, false, 0, "", "" },
+        { 11, t1, t2, true, 0, 0, 1, false, 0, "", "" },
+        { 12, t0, t1, false, t2, t3, 0, false, 0, "", "" },
+        { 12, t2, t3, true, 0, 0, 2, false, 0, "", "" },
+        { 13, t0, t1, false, t2, t3, 0, false, 0, "", "" },
+        { 13, t2, t3, true, 0, 0, 2, false, 0, "", "" },
+        { 14, t0, t1, false, t2, t3, 0, false, 0, "", "" },
+        { 14, t2, t3, true, 0, 0, 1, false, 0, "", "" },
+        { 15, t0, t1, false, t1, t2, 0, false, 0, "", "" },
+        { 15, t1, t2, true, 0, 0, 1, false, 0, "", "" },
+        { 16, t0, t1, false, t2, t3, 0, false, 0, "", "" },
+        { 16, t2, t3, true, 0, 0, 2, false, 0, "", "" }
       };
       check_kpi_events(
         *db.bi_db(),
