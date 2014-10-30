@@ -62,6 +62,7 @@ typedef struct {
   unsigned int ba_id;
   time_t start_time_low;
   time_t start_time_high;
+  bool end_time_null;
   time_t end_time_low;
   time_t end_time_high;
   short status;
@@ -225,8 +226,11 @@ static void check_ba_events(
     if ((q.value(0).toUInt() != ba_events[i].ba_id)
         || (q.value(1).toLongLong() < ba_events[i].start_time_low)
         || (q.value(1).toLongLong() > ba_events[i].start_time_high)
-        || (q.value(2).toLongLong() > ba_events[i].end_time_low)
-        || (q.value(2).toLongLong() < ba_events[i].end_time_high)
+        || (q.value(2).isNull() && !ba_events[i].end_time_null)
+        || (!q.value(2).isNull()
+            && ((ba_events[i].end_time_null)
+                || (q.value(2).toLongLong() < ba_events[i].end_time_low)
+                || (q.value(2).toLongLong() > ba_events[i].end_time_high)))
         || (q.value(3).toInt() != ba_events[i].status)
         || (static_cast<bool>(q.value(4).toInt())
             != ba_events[i].in_downtime))
@@ -424,6 +428,7 @@ int main() {
     }
 
     // Start monitoring engine.
+    time_t t0(time(NULL));
     std::string engine_config_file(engine_config_path);
     engine_config_file.append("/nagios.cfg");
     monitoring.set_config_file(engine_config_file);
@@ -433,6 +438,7 @@ int main() {
     sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // #0
+    time_t t1(time(NULL));
     {
       ba_state const bas[] = {
         { 100.0, 0.0, 0.0 },
@@ -490,6 +496,7 @@ int main() {
     sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // #1
+    time_t t2(time(NULL));
     {
       ba_state const bas[] = {
         // Impacted by services.
@@ -548,6 +555,7 @@ int main() {
     sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // #2
+    time_t t3(time(NULL));
     {
       ba_state const bas[] = {
         // Impacted by services.
@@ -598,7 +606,25 @@ int main() {
     }
     {
       ba_event const baevents[] = {
-        { 1, 0, 0, 0, 0, 0, false }
+        { 1, t0, t1, true, 0, 0, 0, false },
+        { 2, t0, t1, false, t1, t2, 0, false },
+        { 2, t1, t2, true, 0, 0, 1, false },
+        { 3, t0, t1, false, t1, t2, 0, false },
+        { 3, t1, t2, true, 0, 0, 2, false },
+        { 4, t0, t1, false, t2, t3, 0, false },
+        { 4, t2, t3, true, 0, 0, 2, false },
+        { 5, t0, t1, false, t2, t3, 0, false },
+        { 5, t2, t3, true, 0, 0, 1, false },
+        { 6, t0, t1, false, t1, t2, 0, false },
+        { 6, t1, t2, true, 0, 0, 1, false },
+        { 7, t0, t1, false, t2, t3, 0, false },
+        { 7, t2, t3, true, 0, 0, 2, false },
+        { 8, t0, t1, false, t1, t2, 0, false },
+        { 8, t1, t2, false, t2, t3, 1, false },
+        { 8, t2, t3, true, 0, 0, 2, false },
+        { 9, t0, t1, false, t1, t2, 0, false },
+        { 9, t1, t2, false, t2, t3, 1, false },
+        { 9, t2, t3, true, 0, 0, 2, false }
       };
       check_ba_events(
         *db.bi_db(),
