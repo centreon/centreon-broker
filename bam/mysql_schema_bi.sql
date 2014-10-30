@@ -6,21 +6,21 @@
 --    Business Activity Reporting    --
 -- ------------------------------------
 
--- ba
--- ba_availabilities
--- ba_events
--- ba_events_durations
--- bv
--- kpi
--- kpi_events
--- relations_ba_bv
--- relations_ba_kpi_events
+-- mod_bam_reporting_ba
+-- mod_bam_reporting_ba_availabilities
+-- mod_bam_reporting_ba_events
+-- mod_bam_reporting_ba_events_durations
+-- mod_bam_reporting_bv
+-- mod_bam_reporting_kpi
+-- mod_bam_reporting_kpi_events
+-- mod_bam_reporting_relations_ba_bv
+-- mod_bam_reporting_relations_ba_kpi_events
 
 
 --
 -- Business Views.
 --
-CREATE TABLE bv (
+CREATE TABLE mod_bam_reporting_bv (
   bv_id int NOT NULL auto_increment,
   bv_name varchar(45) default NULL,
 
@@ -33,7 +33,7 @@ CREATE TABLE bv (
 --
 -- Business Activities.
 --
-CREATE TABLE ba (
+CREATE TABLE mod_bam_reporting_ba (
   ba_id int NOT NULL auto_increment,
   ba_name varchar(45) default NULL,
 
@@ -50,7 +50,7 @@ CREATE TABLE ba (
 --
 -- Key Performance Indicators.
 --
-CREATE TABLE kpi (
+CREATE TABLE mod_bam_reporting_kpi (
   kpi_id int NOT NULL auto_increment,
   kpi_name varchar(45) default NULL,
 
@@ -81,7 +81,7 @@ CREATE TABLE kpi (
 --
 -- Relations between BA and BV.
 --
-CREATE TABLE relations_ba_bv (
+CREATE TABLE mod_bam_reporting_relations_ba_bv (
   ba_bv_id int NOT NULL auto_increment,
   bv_id int NOT NULL,
   ba_id int NOT NULL,
@@ -96,7 +96,7 @@ CREATE TABLE relations_ba_bv (
 --
 -- BA events.
 --
-CREATE TABLE ba_events (
+CREATE TABLE mod_bam_reporting_ba_events (
   ba_event_id int NOT NULL auto_increment,
   ba_id int NOT NULL,
   start_time int NOT NULL,
@@ -113,7 +113,7 @@ CREATE TABLE ba_events (
 --
 -- KPI events.
 --
-CREATE TABLE kpi_events (
+CREATE TABLE mod_bam_reporting_kpi_events (
   kpi_event_id int NOT NULL auto_increment,
   kpi_id int NOT NULL,
   start_time int NOT NULL,
@@ -133,7 +133,7 @@ CREATE TABLE kpi_events (
 --
 -- Relations between BA events and KPI events.
 --
-CREATE TABLE relations_ba_kpi_events (
+CREATE TABLE mod_bam_reporting_relations_ba_kpi_events (
   ba_kpi_event_id int NOT NULL auto_increment,
   ba_event_id int NOT NULL,
   kpi_event_id int NOT NULL,
@@ -148,7 +148,7 @@ CREATE TABLE relations_ba_kpi_events (
 --
 -- BA events durations.
 --
-CREATE TABLE ba_events_durations (
+CREATE TABLE mod_bam_reporting_ba_events_durations (
   ba_event_id int NOT NULL auto_increment,
   timeperiod_id int NOT NULL,
 
@@ -166,7 +166,7 @@ CREATE TABLE ba_events_durations (
 --
 -- BA availabilities.
 --
-CREATE TABLE ba_availabilities (
+CREATE TABLE mod_bam_reporting_ba_availabilities (
   ba_id int NOT NULL,
   time_id int NOT NULL,
   timeperiod_id int NOT NULL,

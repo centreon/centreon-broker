@@ -378,7 +378,8 @@ void reporting_stream::_prepare() {
   // BA event insertion.
   {
     QString query;
-    query = "INSERT INTO ba_events (ba_id, start_time, status, in_downtime)"
+    query = "INSERT INTO mod_bam_reporting_ba_events (ba_id, "
+            "            start_time, status, in_downtime)"
             "  VALUES (:ba_id, :start_time, :status, :in_downtime)";
     _ba_event_insert.reset(new QSqlQuery(*_db));
     if (!_ba_event_insert->prepare(query))
@@ -390,7 +391,7 @@ void reporting_stream::_prepare() {
   // BA event update.
   {
     QString query;
-    query = "UPDATE ba_events"
+    query = "UPDATE mod_bam_reporting_ba_events"
             "  SET end_time=:end_time"
             "  WHERE ba_id=:ba_id AND start_time=:start_time";
     _ba_event_update.reset(new QSqlQuery(*_db));
@@ -403,7 +404,7 @@ void reporting_stream::_prepare() {
   // BA duration event insert.
   {
     QString query;
-    query = "INSERT INTO ba_events_durations ("
+    query = "INSERT INTO mod_bam_reporting_ba_events_durations ("
              "                ba_event_id, start_time, "
              "                end_time, duration, sla_duration, timeperiod_id, "
              "                timeperiod_is_default)"
@@ -421,9 +422,9 @@ void reporting_stream::_prepare() {
   // KPI event insertion.
   {
     QString query;
-    query = "INSERT INTO kpi_events (kpi_id, start_time, status, "
-            "            in_downtime, impact_level, first_output, "
-            "            first_perfdata)"
+    query = "INSERT INTO mod_bam_reporting_kpi_events (kpi_id,"
+            "            start_time, status, in_downtime, impact_level,"
+            "            first_output, first_perfdata)"
             "  VALUES (:kpi_id, :start_time, :status, :in_downtime, "
             "         :impact_level, :output, :perfdata)";
     _kpi_event_insert.reset(new QSqlQuery(*_db));
@@ -436,7 +437,7 @@ void reporting_stream::_prepare() {
   // KPI event update.
   {
     QString query;
-    query = "UPDATE kpi_events"
+    query = "UPDATE mod_bam_reporting_kpi_events"
             "  SET end_time=:end_time"
             "  WHERE kpi_id=:kpi_id AND start_time=:start_time";
     _kpi_event_update.reset(new QSqlQuery(*_db));
@@ -449,10 +450,11 @@ void reporting_stream::_prepare() {
   // KPI event link to BA event.
   {
     QString query;
-    query = "INSERT INTO relations_ba_kpi_events (ba_event_id, kpi_event_id)"
+    query = "INSERT INTO mod_bam_reporting_relations_ba_kpi_events"
+            "           (ba_event_id, kpi_event_id)"
             "  SELECT be.ba_event_id, ke.kpi_event_id"
-            "    FROM kpi_events AS ke"
-            "    INNER JOIN ba_events AS be"
+            "    FROM mod_bam_reporting_kpi_events AS ke"
+            "    INNER JOIN mod_bam_reporting_ba_events AS be"
             "    ON ((ke.start_time >= be.start_time)"
             "       AND (be.end_time IS NULL OR ke.start_time < be.end_time))"
             "    WHERE ke.kpi_id=:kpi_id AND ke.start_time=:start_time";
@@ -466,7 +468,7 @@ void reporting_stream::_prepare() {
   // Dimension BA insertion.
   {
     QString query;
-    query = "INSERT into ba (ba_id, ba_name, ba_description,"
+    query = "INSERT INTO mod_bam_reporting_ba (ba_id, ba_name, ba_description,"
             "                sla_month_percent_1, sla_month_percent_2,"
             "                sla_month_duration_1, sla_month_duration_2)"
             " VALUES (:ba_id, :ba_name, :ba_description, :sla_month_percent_1,"
@@ -482,7 +484,7 @@ void reporting_stream::_prepare() {
   // Dimension BV insertion.
   {
     QString query;
-    query = "INSERT into bv (bv_id, bv_name, bv_description)"
+    query = "INSERT INTO mod_bam_reporting_bv (bv_id, bv_name, bv_description)"
             "  VALUES (:bv_id, :bv_name, :bv_description)";
     _dimension_bv_insert.reset(new QSqlQuery(*_db));
     if (_dimension_bv_insert->prepare(query))
@@ -494,7 +496,7 @@ void reporting_stream::_prepare() {
   // Dimension BA BV relations insertion.
   {
     QString query;
-    query = "INSERT into relations_ba_bv (ba_id, bv_id)"
+    query = "INSERT INTO mod_bam_reporting_relations_ba_bv (ba_id, bv_id)"
             "  VALUES (:ba_id, :bv_id)";
     _dimension_ba_bv_relation_insert.reset(new QSqlQuery(*_db));
     if (_dimension_ba_bv_relation_insert->prepare(query))
@@ -508,25 +510,25 @@ void reporting_stream::_prepare() {
   {
     _dimension_truncate_tables.clear();
     QString query;
-    query = "TRUNCATE TABLE ba";
+    query = "TRUNCATE TABLE mod_bam_reporting_ba";
     _dimension_truncate_tables.push_back(
           misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
     if (!_dimension_truncate_tables.back()->prepare(query))
       throw (exceptions::msg()
             << "BAM: could not prepare the truncate of table ba");
-    query = "TRUNCATE TABLE bv";
+    query = "TRUNCATE TABLE mod_bam_reporting_bv";
     _dimension_truncate_tables.push_back(
           misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
     if (!_dimension_truncate_tables.back()->prepare(query))
       throw (exceptions::msg()
             << "BAM: could not prepare the truncate of table bv");
-    query = "TRUNCATE TABLE relations_ba_bv";
+    query = "TRUNCATE TABLE mod_bam_reporting_relations_ba_bv";
     _dimension_truncate_tables.push_back(
           misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
     if (!_dimension_truncate_tables.back()->prepare(query))
       throw (exceptions::msg()
             << "BAM: could not prepare the truncate of table relations_ba_bv");
-    query = "TRUNCATE TABLE kpi";
+    query = "TRUNCATE TABLE mod_bam_reporting_kpi";
     _dimension_truncate_tables.push_back(
           misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
     if (!_dimension_truncate_tables.back()->prepare(query))
@@ -537,7 +539,8 @@ void reporting_stream::_prepare() {
   // Dimension KPI insertion
   {
     QString query;
-    query = "INSERT kpi (kpi_id, kpi_name, ba_id, ba_name, host_id, host_name,"
+    query = "INSERT INTO mod_bam_reporting_kpi (kpi_id, kpi_name,"
+            "            ba_id, ba_name, host_id, host_name,"
             "            service_id, service_description, kpi_ba_id,"
             "            kpi_ba_name, meta_service_id, meta_service_name,"
             "            impact_warning, impact_critical, impact_unknown,"
