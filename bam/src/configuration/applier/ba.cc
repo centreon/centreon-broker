@@ -223,10 +223,12 @@ misc::shared_ptr<bam::ba> applier::ba::_new_ba(
   obj->set_level_critical(cfg.get_critical_level());
   if (cfg.get_opened_event().ba_id)
     obj->set_initial_event(cfg.get_opened_event());
-  if (!cfg.get_default_timeperiod())
-    throw (exceptions::msg()
-           << "BAM: Could not find the default timeperiod for the ba: " << obj->get_id());
-  _apply_timeperiods(obj, cfg.get_default_timeperiod(), cfg.get_timeperiods(), tp);
+  if (cfg.get_default_timeperiod())
+    _apply_timeperiods(
+      obj,
+      cfg.get_default_timeperiod(),
+      cfg.get_timeperiods(),
+      tp);
   book.listen(cfg.get_host_id(), cfg.get_service_id(), obj.data());
   return (obj);
 }

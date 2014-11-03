@@ -406,21 +406,59 @@ int main() {
 
     // Create BAs.
     {
-      QString query(
-                "INSERT INTO mod_bam (ba_id, name, level_w, level_c)"
-                "  VALUES (1, 'BA1', 90, 80),"
-                "         (2, 'BA2', 80, 70),"
-                "         (3, 'BA3', 70, 60),"
-                "         (4, 'BA4', 60, 50),"
-                "         (5, 'BA5', 50, 40),"
-                "         (6, 'BA6', 40, 30),"
-                "         (7, 'BA7', 30, 20),"
-                "         (8, 'BA8', 20, 10),"
-                "         (9, 'BA9', 10, 0)");
-      QSqlQuery q(*db.centreon_db());
-      if (!q.exec(query))
-        throw (exceptions::msg() << "could not create BAs: "
-               << q.lastError().text());
+      {
+        QString query(
+                  "INSERT INTO mod_bam (ba_id, name, level_w, level_c, activate)"
+                  "  VALUES (1, 'BA1', 90, 80, '1'),"
+                  "         (2, 'BA2', 80, 70, '1'),"
+                  "         (3, 'BA3', 70, 60, '1'),"
+                  "         (4, 'BA4', 60, 50, '1'),"
+                  "         (5, 'BA5', 50, 40, '1'),"
+                  "         (6, 'BA6', 40, 30, '1'),"
+                  "         (7, 'BA7', 30, 20, '1'),"
+                  "         (8, 'BA8', 20, 10, '1'),"
+                  "         (9, 'BA9', 10, 0, '1')");
+        QSqlQuery q(*db.centreon_db());
+        if (!q.exec(query))
+          throw (exceptions::msg() << "could not create BAs: "
+                 << q.lastError().text());
+      }
+
+      // Create associated services.
+      {
+        QString query(
+                  "INSERT INTO host (host_id, host_name)"
+                  "  VALUES (101, 'Virtual BA host')");
+        QSqlQuery q(*db.centreon_db());
+        if (!q.exec(query))
+          throw (exceptions::msg()
+                 << "could not create virtual BA host: "
+                 << q.lastError().text());
+      }
+      for (int i(1); i <= 10; ++i) {
+        {
+          std::ostringstream oss;
+          oss << "INSERT INTO service (service_id, service_description)"
+              << "  VALUES (" << 100 + i << ", 'ba_" << i << "')";
+          QSqlQuery q(*db.centreon_db());
+          if (!q.exec(oss.str().c_str()))
+            throw (exceptions::msg()
+                   << "could not create virtual service of BA "
+                   << i << ": " << q.lastError().text());
+        }
+        {
+          std::ostringstream oss;
+          oss << "INSERT INTO host_service_relation (host_host_id, "
+              << "            service_service_id)"
+              << "  VALUES (101, " << 100 + i << ")";
+          QSqlQuery q(*db.centreon_db());
+          if (!q.exec(oss.str().c_str()))
+            throw (exceptions::msg()
+                   << "could not create link between virtual host "
+                   << "and virtual service of BA " << i << ": "
+                   << q.lastError().text());
+        }
+      }
     }
 
     // Create KPIs.
@@ -432,23 +470,23 @@ int main() {
                 "            drop_warning_impact_id, drop_critical,"
                 "            drop_critical_impact_id, drop_unknown,"
                 "            drop_unknown_impact_id, ignore_downtime,"
-                "            ignore_acknowledged)"
-                "  VALUES (1, '0', 1, 1, NULL, 2, NULL, '0', 15, NULL, 25, NULL, 99, NULL, '0', '0'),"
-                "         (2, '0', 1, 2, NULL, 3, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0'),"
-                "         (3, '0', 1, 3, NULL, 3, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0'),"
-                "         (4, '0', 1, 4, NULL, 4, NULL, '0', 15, NULL, 25, NULL, 99, NULL, '0', '0'),"
-                "         (5, '0', 1, 5, NULL, 4, NULL, '0', 26, NULL, 35, NULL, 99, NULL, '0', '0'),"
-                "         (6, '0', 1, 6, NULL, 4, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0'),"
-                "         (7, '0', 1, 7, NULL, 5, NULL, '0', 15, NULL, 25, NULL, 99, NULL, '0', '0'),"
-                "         (8, '0', 1, 8, NULL, 5, NULL, '0', 26, NULL, 35, NULL, 99, NULL, '0', '0'),"
-                "         (9, '0', 1, 9, NULL, 5, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0'),"
-                "         (10, '0', 1, 10, NULL, 5, NULL, '0', 45, NULL, 55, NULL, 99, NULL, '0', '0'),"
-                "         (11, '1', NULL, NULL, 2, 6, NULL, '0', 65, NULL, 75, NULL, 99, NULL, '0', '0'),"
-                "         (12, '1', NULL, NULL, 3, 7, NULL, '0', 25, NULL, 35, NULL, 99, NULL, '0', '0'),"
-                "         (13, '1', NULL, NULL, 4, 7, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0'),"
-                "         (14, '1', NULL, NULL, 5, 7, NULL, '0', 45, NULL, 55, NULL, 99, NULL, '0', '0'),"
-                "         (15, '1', NULL, NULL, 6, 8, NULL, '0', 85, NULL, 95, NULL, 99, NULL, '0', '0'),"
-                "         (16, '1', NULL, NULL, 7, 8, NULL, '0', 95, NULL, 105, NULL, 99, NULL, '0', '0')");
+                "            ignore_acknowledged, activate)"
+                "  VALUES (1, '0', 1, 1, NULL, 2, NULL, '0', 15, NULL, 25, NULL, 99, NULL, '0', '0', '1'),"
+                "         (2, '0', 1, 2, NULL, 3, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0', '1'),"
+                "         (3, '0', 1, 3, NULL, 3, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0', '1'),"
+                "         (4, '0', 1, 4, NULL, 4, NULL, '0', 15, NULL, 25, NULL, 99, NULL, '0', '0', '1'),"
+                "         (5, '0', 1, 5, NULL, 4, NULL, '0', 26, NULL, 35, NULL, 99, NULL, '0', '0', '1'),"
+                "         (6, '0', 1, 6, NULL, 4, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0', '1'),"
+                "         (7, '0', 1, 7, NULL, 5, NULL, '0', 15, NULL, 25, NULL, 99, NULL, '0', '0', '1'),"
+                "         (8, '0', 1, 8, NULL, 5, NULL, '0', 26, NULL, 35, NULL, 99, NULL, '0', '0', '1'),"
+                "         (9, '0', 1, 9, NULL, 5, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0', '1'),"
+                "         (10, '0', 1, 10, NULL, 5, NULL, '0', 45, NULL, 55, NULL, 99, NULL, '0', '0', '1'),"
+                "         (11, '1', NULL, NULL, 2, 6, NULL, '0', 65, NULL, 75, NULL, 99, NULL, '0', '0', '1'),"
+                "         (12, '1', NULL, NULL, 3, 7, NULL, '0', 25, NULL, 35, NULL, 99, NULL, '0', '0', '1'),"
+                "         (13, '1', NULL, NULL, 4, 7, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0', '1'),"
+                "         (14, '1', NULL, NULL, 5, 7, NULL, '0', 45, NULL, 55, NULL, 99, NULL, '0', '0', '1'),"
+                "         (15, '1', NULL, NULL, 6, 8, NULL, '0', 85, NULL, 95, NULL, 99, NULL, '0', '0', '1'),"
+                "         (16, '1', NULL, NULL, 7, 8, NULL, '0', 95, NULL, 105, NULL, 99, NULL, '0', '0', '1')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create KPIs: "
@@ -460,10 +498,10 @@ int main() {
       QString query(
                 "INSERT INTO mod_bam_boolean (boolean_id, name,"
                 "            config_type, impact, impact_id,"
-                "            expression, bool_state)"
-                "  VALUES (1, 'BoolExp1', 0, 75, NULL, '{1 1} {is} {OK}', 0),"
-                "         (2, 'BoolExp2', 0, 25, NULL, '{1 2} {not} {CRITICAL} {OR} {1 3} {not} {OK}', 1),"
-                "         (3, 'BoolExp3', 0, 6, NULL, '({1 5} {not} {WARNING} {AND} {1 6} {is} {WARNING}) {OR} {1 7} {is} {CRITICAL}', 1)");
+                "            expression, bool_state, activate)"
+                "  VALUES (1, 'BoolExp1', 0, 75, NULL, '{1 1} {is} {OK}', 0, 1),"
+                "         (2, 'BoolExp2', 0, 25, NULL, '{1 2} {not} {CRITICAL} {OR} {1 3} {not} {OK}', 1, 1),"
+                "         (3, 'BoolExp3', 0, 6, NULL, '({1 5} {not} {WARNING} {AND} {1 6} {is} {WARNING}) {OR} {1 7} {is} {CRITICAL}', 1, 1)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create boolexps: "

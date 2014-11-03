@@ -253,9 +253,8 @@ void reader::_load(state::bas& bas) {
        it != end;
        ++it)
     if (it->second.get_service_id() == 0)
-      throw (reader_exception()
-               << "BAM: found a BA without an associated service, ID: "
-               << it->second.get_id());
+      throw (reader_exception() << "BAM: BA " << it->second.get_id()
+             << " has no associated service");
 
   // Load the timeperiods associated with the BAs.
   query = _db->exec("SELECT ba_id, timeperiod_id, is_default FROM mod_bam_ba_tp_rel");
