@@ -55,7 +55,7 @@ namespace               bam {
         void            apply(configuration::state const& my_state);
         metric_book&    book_metric();
         service_book&   book_service();
-        void            visit(monitoring_stream* visitor);
+        void            visit(io::stream* visitor);
 
       private:
         void            _internal_copy(state const& other);

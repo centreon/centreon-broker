@@ -20,6 +20,7 @@
 #ifndef CCB_BAM_METRIC_LISTENER_HH
 #  define CCB_BAM_METRIC_LISTENER_HH
 
+#  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -31,9 +32,6 @@ namespace             storage {
 }
 
 namespace             bam {
-  // Forward declaration.
-  class               monitoring_stream;
-
   /**
    *  @class metric_listener metric_listener.hh "com/centreon/broker/bam/metric_listener.hh"
    *  @brief Listen to metric state change.
@@ -55,7 +53,7 @@ namespace             bam {
      */
     virtual void      metric_update(
                         misc::shared_ptr<storage::metric> const& m,
-                        monitoring_stream* visitor = NULL) = 0;
+                        io::stream* visitor = NULL) = 0;
   };
 }
 

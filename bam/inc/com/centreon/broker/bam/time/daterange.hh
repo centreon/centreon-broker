@@ -27,6 +27,7 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/bam/time/timerange.hh"
 #  include "com/centreon/broker/bam/time/ptr_typedef.hh"
+#  include "com/centreon/broker/bam/time/time_info.hh"
 
 CCB_BEGIN()
 
@@ -117,8 +118,6 @@ namespace             bam {
       int               _week_day_start_offset;
       unsigned int      _year_end;
       unsigned int      _year_start;
-
-      struct            time_info;
 
       bool              _calendar_date_to_time_t(time_t& start,
                                                  time_t& end) const;

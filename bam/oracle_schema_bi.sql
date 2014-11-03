@@ -6,21 +6,21 @@
 --    Business Activity Reporting    --
 -- ------------------------------------
 
--- ba
--- ba_availabilities
--- ba_events
--- ba_events_durations
--- bv
--- kpi
--- kpi_events
--- relations_ba_bv
--- relations_ba_kpi_events
+-- mod_bam_reporting_ba
+-- mod_bam_reporting_ba_availabilities
+-- mod_bam_reporting_ba_events
+-- mod_bam_reporting_ba_events_durations
+-- mod_bam_reporting_bv
+-- mod_bam_reporting_kpi
+-- mod_bam_reporting_kpi_events
+-- mod_bam_reporting_relations_ba_bv
+-- mod_bam_reporting_relations_ba_kpi_events
 
 
 --
 -- Business Views.
 --
-CREATE TABLE bv (
+CREATE TABLE mod_bam_reporting_bv (
   bv_id int NOT NULL,
   bv_name varchar(45) default NULL,
 
@@ -29,21 +29,21 @@ CREATE TABLE bv (
   PRIMARY KEY (bv_id),
   UNIQUE (bv_name)
 );
-CREATE SEQUENCE bv_seq
+CREATE SEQUENCE mod_bam_reporting_bv_seq
 START WITH 1
 INCREMENT BY 1;
-CREATE TRIGGER bv_trigger
-BEFORE INSERT ON bv
+CREATE TRIGGER mod_bam_reporting_bv_trigger
+BEFORE INSERT ON mod_bam_reporting_bv
 FOR EACH ROW
 BEGIN
-  SELECT bv_seq.nextval INTO :NEW.bv_id FROM dual;
+  SELECT mod_bam_reporting_bv_seq.nextval INTO :NEW.bv_id FROM dual;
 END;
 /
 
 --
 -- Business Activities.
 --
-CREATE TABLE ba (
+CREATE TABLE mod_bam_reporting_ba (
   ba_id int NOT NULL,
   ba_name varchar(45) default NULL,
 
@@ -56,21 +56,21 @@ CREATE TABLE ba (
   PRIMARY KEY (ba_id),
   UNIQUE (ba_name)
 );
-CREATE SEQUENCE ba_seq
+CREATE SEQUENCE mod_bam_reporting_ba_seq
 START WITH 1
 INCREMENT BY 1;
-CREATE TRIGGER ba_trigger
-BEFORE INSERT ON ba
+CREATE TRIGGER mod_bam_reporting_ba_trigger
+BEFORE INSERT ON mod_bam_reporting_ba
 FOR EACH ROW
 BEGIN
-  SELECT ba_seq.nextval INTO :NEW.ba_id FROM dual;
+  SELECT mod_bam_reporting_ba_seq.nextval INTO :NEW.ba_id FROM dual;
 END;
 /
 
 --
 -- Key Performance Indicators.
 --
-CREATE TABLE kpi (
+CREATE TABLE mod_bam_reporting_kpi (
   kpi_id int NOT NULL,
   kpi_name varchar(45) default NULL,
 
@@ -97,21 +97,21 @@ CREATE TABLE kpi (
   FOREIGN KEY (kpi_ba_id) REFERENCES ba (ba_id)
     ON DELETE CASCADE
 );
-CREATE SEQUENCE kpi_seq
+CREATE SEQUENCE mod_bam_reporting_kpi_seq
 START WITH 1
 INCREMENT BY 1;
-CREATE TRIGGER kpi_trigger
-BEFORE INSERT ON kpi
+CREATE TRIGGER mod_bam_reporting_kpi_trigger
+BEFORE INSERT ON mod_bam_reporting_kpi
 FOR EACH ROW
 BEGIN
-  SELECT kpi_seq.nextval INTO :NEW.kpi_id FROM dual;
+  SELECT mod_bam_reporting_kpi_seq.nextval INTO :NEW.kpi_id FROM dual;
 END;
 /
 
 --
 -- Relations between BA and BV.
 --
-CREATE TABLE relations_ba_bv (
+CREATE TABLE mod_bam_reporting_relations_ba_bv (
   ba_bv_id int NOT NULL,
   bv_id int NOT NULL,
   ba_id int NOT NULL,
@@ -122,21 +122,21 @@ CREATE TABLE relations_ba_bv (
   FOREIGN KEY (ba_id) REFERENCES ba (ba_id)
     ON DELETE CASCADE
 );
-CREATE SEQUENCE relations_ba_bv_seq
+CREATE SEQUENCE mod_bam_reporting_relations_ba_bv_seq
 START WITH 1
 INCREMENT BY 1;
-CREATE TRIGGER relations_ba_bv_trigger
-BEFORE INSERT ON relations_ba_bv
+CREATE TRIGGER mod_bam_reporting_relations_ba_bv_trigger
+BEFORE INSERT ON mod_bam_reporting_relations_ba_bv
 FOR EACH ROW
 BEGIN
-  SELECT relations_ba_bv_seq.nextval INTO :NEW.ba_bv_id FROM dual;
+  SELECT mod_bam_reporting_relations_ba_bv_seq.nextval INTO :NEW.ba_bv_id FROM dual;
 END;
 /
 
 --
 -- BA events.
 --
-CREATE TABLE ba_events (
+CREATE TABLE mod_bam_reporting_ba_events (
   ba_event_id int NOT NULL,
   ba_id int NOT NULL,
   start_time int NOT NULL,
@@ -149,21 +149,21 @@ CREATE TABLE ba_events (
   FOREIGN KEY (ba_id) REFERENCES ba (ba_id)
     ON DELETE CASCADE
 );
-CREATE SEQUENCE ba_events_seq
+CREATE SEQUENCE mod_bam_reporting_ba_events_seq
 START WITH 1
 INCREMENT BY 1;
-CREATE TRIGGER ba_events_trigger
-BEFORE INSERT ON ba_events
+CREATE TRIGGER mod_bam_reporting_ba_events_trigger
+BEFORE INSERT ON mod_bam_reporting_ba_events
 FOR EACH ROW
 BEGIN
-  SELECT ba_events_seq.nextval INTO :NEW.ba_events_id FROM dual;
+  SELECT mod_bam_reporting_ba_events_seq.nextval INTO :NEW.ba_events_id FROM dual;
 END;
 /
 
 --
 -- KPI events.
 --
-CREATE TABLE kpi_events (
+CREATE TABLE mod_bam_reporting_kpi_events (
   kpi_event_id int NOT NULL,
   kpi_id int NOT NULL,
   start_time int NOT NULL,
@@ -179,21 +179,21 @@ CREATE TABLE kpi_events (
   FOREIGN KEY (kpi_id) REFERENCES kpi (kpi_id)
     ON DELETE CASCADE
 );
-CREATE SEQUENCE kpi_events_seq
+CREATE SEQUENCE mod_bam_reporting_kpi_events_seq
 START WITH 1
 INCREMENT BY 1;
-CREATE TRIGGER kpi_events_trigger
-BEFORE INSERT ON kpi_events
+CREATE TRIGGER mod_bam_reporting_kpi_events_trigger
+BEFORE INSERT ON mod_bam_reporting_kpi_events
 FOR EACH ROW
 BEGIN
-  SELECT kpi_events_seq.nextval INTO :NEW.kpi_event_id FROM dual;
+  SELECT mod_bam_reporting_kpi_events_seq.nextval INTO :NEW.kpi_event_id FROM dual;
 END;
 /
 
 --
 -- Relations between BA events and KPI events.
 --
-CREATE TABLE relations_ba_kpi_events (
+CREATE TABLE mod_bam_reporting_relations_ba_kpi_events (
   ba_kpi_event_id int NOT NULL,
   ba_event_id int NOT NULL,
   kpi_event_id int NOT NULL,
@@ -204,21 +204,21 @@ CREATE TABLE relations_ba_kpi_events (
   FOREIGN KEY (kpi_event_id) REFERENCES kpi_events (kpi_event_id)
     ON DELETE CASCADE
 );
-CREATE SEQUENCE relations_ba_kpi_events_seq
+CREATE SEQUENCE mod_bam_reporting_relations_ba_kpi_events_seq
 START WITH 1
 INCREMENT BY 1;
-CREATE TRIGGER relations_ba_kpi_events_trigger
-BEFORE INSERT ON relations_ba_kpi_events
+CREATE TRIGGER mod_bam_reporting_relations_ba_kpi_events_trigger
+BEFORE INSERT ON mod_bam_reporting_relations_ba_kpi_events
 FOR EACH ROW
 BEGIN
-  SELECT relations_ba_kpi_events_seq.nextval INTO :NEW.ba_kpi_event_id FROM dual;
+  SELECT mod_bam_reporting_relations_ba_kpi_events_seq.nextval INTO :NEW.ba_kpi_event_id FROM dual;
 END;
 /
 
 --
 -- BA events durations.
 --
-CREATE TABLE ba_events_durations (
+CREATE TABLE mod_bam_reporting_ba_events_durations (
   ba_event_id int NOT NULL,
   timeperiod_id int NOT NULL,
 
@@ -236,7 +236,7 @@ CREATE TABLE ba_events_durations (
 --
 -- BA availabilities.
 --
-CREATE TABLE ba_availabilities (
+CREATE TABLE mod_bam_reporting_ba_availabilities (
   ba_id int NOT NULL,
   time_id int NOT NULL,
   timeperiod_id int NOT NULL,

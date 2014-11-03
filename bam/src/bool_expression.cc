@@ -23,7 +23,6 @@
 #include "com/centreon/broker/bam/bool_status.hh"
 #include "com/centreon/broker/bam/bool_value.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
-#include "com/centreon/broker/bam/monitoring_stream.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker::bam;
@@ -90,7 +89,7 @@ void bool_expression::add_kpi_id(unsigned int id) {
  */
 bool bool_expression::child_has_update(
                         computable* child,
-                        monitoring_stream* visitor) {
+                        io::stream* visitor) {
   // It is useless to maintain a cache of expression values in this
   // class, as the bool_* classes already cache most of them.
   if (child == _expression.data()) {
@@ -218,7 +217,7 @@ void bool_expression::set_kpi_id(unsigned int id) {
  *
  *  @param[out] visitor  Object that will receive status.
  */
-void bool_expression::visit(monitoring_stream* visitor) {
+void bool_expression::visit(io::stream* visitor) {
   if (visitor) {
     // Generate status event.
     {
@@ -282,7 +281,7 @@ void bool_expression::_internal_copy(bool_expression const& right) {
  *  @param[in]  start_time  Event start time.
  */
 void bool_expression::_open_new_event(
-                        monitoring_stream* visitor,
+                        io::stream* visitor,
                         timestamp start_time) {
   impact_values impacts;
   impact_hard(impacts);

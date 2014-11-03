@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/bam/ba_duration_event.hh"
+#include "com/centreon/broker/bam/dimension_truncate_table_signal.hh"
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/io/events.hh"
 
@@ -27,19 +27,16 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-ba_duration_event::ba_duration_event()
-  : ba_id(0),
-    duration(0),
-    sla_duration(0),
-    timeperiod_id(0),
-    timeperiod_is_default(false) {}
+dimension_truncate_table_signal::dimension_truncate_table_signal()
+  {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-ba_duration_event::ba_duration_event(ba_duration_event const& other)
+dimension_truncate_table_signal::dimension_truncate_table_signal(
+    dimension_truncate_table_signal const& other)
   : io::data(other) {
   _internal_copy(other);
 }
@@ -47,7 +44,7 @@ ba_duration_event::ba_duration_event(ba_duration_event const& other)
 /**
  *  Destructor.
  */
-ba_duration_event::~ba_duration_event() {}
+dimension_truncate_table_signal::~dimension_truncate_table_signal() {}
 
 /**
  *  Assignment operator.
@@ -56,8 +53,8 @@ ba_duration_event::~ba_duration_event() {}
  *
  *  @return This object.
  */
-ba_duration_event& ba_duration_event::operator=(
-    ba_duration_event const& other) {
+dimension_truncate_table_signal& dimension_truncate_table_signal::operator=(
+    dimension_truncate_table_signal const& other) {
   if (this != &other) {
     io::data::operator=(other);
     _internal_copy(other);
@@ -72,15 +69,9 @@ ba_duration_event& ba_duration_event::operator=(
  *
  *  @return  True if the two objects are equal.
  */
-bool ba_duration_event::operator==(ba_duration_event const& other) const {
-  return ((ba_id == other.ba_id)
-          && (real_start_time == other.real_start_time)
-          && (end_time == other.end_time)
-          && (start_time == other.start_time)
-          && (duration == other.duration)
-          && (sla_duration == other.sla_duration)
-          && (timeperiod_id == other.timeperiod_id)
-          && (timeperiod_is_default == other.timeperiod_is_default));
+bool dimension_truncate_table_signal::operator==(
+    dimension_truncate_table_signal const& other) const {
+  return (true);
 }
 
 
@@ -89,9 +80,9 @@ bool ba_duration_event::operator==(ba_duration_event const& other) const {
  *
  *  @return Event type.
  */
-unsigned int ba_duration_event::type() const {
+unsigned int dimension_truncate_table_signal::type() const {
   return (io::events::data_type<io::events::bam,
-                                bam::de_ba_duration_event>::value);
+                                bam::de_dimension_truncate_table_signal>::value);
 }
 
 /**
@@ -99,14 +90,7 @@ unsigned int ba_duration_event::type() const {
  *
  *  @param[in] other Object to copy.
  */
-void ba_duration_event::_internal_copy(ba_duration_event const& other) {
-  ba_id = other.ba_id;
-  real_start_time = other.real_start_time;
-  end_time = other.end_time;
-  start_time = other.start_time;
-  duration = other.duration;
-  sla_duration = other.sla_duration;
-  timeperiod_id = other.timeperiod_id;
-  timeperiod_is_default = other.timeperiod_is_default;
+void dimension_truncate_table_signal::_internal_copy(
+    dimension_truncate_table_signal const& other) {
   return ;
 }

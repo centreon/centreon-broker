@@ -23,6 +23,7 @@
 #  include "com/centreon/broker/bam/bool_value.hh"
 #  include "com/centreon/broker/bam/service_listener.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -46,7 +47,7 @@ namespace         bam {
     bool_service& operator=(bool_service const& right);
     bool          child_has_update(
                     computable* child,
-                    monitoring_stream* visitor = NULL);
+                    io::stream* visitor = NULL);
     unsigned int  get_host_id() const;
     unsigned int  get_service_id() const;
     void          set_expected_state(short expected);
@@ -55,7 +56,7 @@ namespace         bam {
     void          set_value_if_state_match(bool value);
     void          service_update(
                     misc::shared_ptr<neb::service_status> const& status,
-                    monitoring_stream* visitor = NULL);
+                    io::stream* visitor = NULL);
     bool          value_hard();
     bool          value_soft();
 

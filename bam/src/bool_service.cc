@@ -78,7 +78,7 @@ bool_service& bool_service::operator=(bool_service const& right) {
  */
 bool bool_service::child_has_update(
                      computable* child,
-                     monitoring_stream* visitor) {
+                     io::stream* visitor) {
   (void)child;
   (void)visitor;
   return true;
@@ -151,7 +151,7 @@ void bool_service::set_value_if_state_match(bool value) {
  */
 void bool_service::service_update(
                      misc::shared_ptr<neb::service_status> const& status,
-                     monitoring_stream* visitor) {
+                     io::stream* visitor) {
   if (!status.isNull()
       && (status->host_id == _host_id)
       && (status->service_id == _service_id)) {

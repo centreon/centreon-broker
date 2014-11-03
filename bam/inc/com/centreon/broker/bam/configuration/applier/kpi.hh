@@ -24,6 +24,7 @@
 #  include "com/centreon/broker/bam/kpi.hh"
 #  include "com/centreon/broker/bam/configuration/kpi.hh"
 #  include "com/centreon/broker/bam/configuration/state.hh"
+#  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -54,7 +55,7 @@ namespace     bam {
                 configuration::state::kpis const& my_kpis,
                 ba& my_bas,
                 service_book& book);
-        void  visit(monitoring_stream* visitor);
+        void  visit(io::stream* visitor);
 
       private:
         struct applied {

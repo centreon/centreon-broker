@@ -63,6 +63,11 @@ add_library("${BAM}" SHARED
   "${SRC_DIR}/configuration/state.cc"
   "${SRC_DIR}/configuration/timeperiod.cc"
   "${SRC_DIR}/connector.cc"
+  "${SRC_DIR}/dimension_ba_event.cc"
+  "${SRC_DIR}/dimension_kpi_event.cc"
+  "${SRC_DIR}/dimension_ba_bv_relation_event.cc"
+  "${SRC_DIR}/dimension_bv_event.cc"
+  "${SRC_DIR}/dimension_truncate_table_signal.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/hst_svc_mapping.cc"
   "${SRC_DIR}/impact_values.cc"
@@ -120,6 +125,11 @@ add_library("${BAM}" SHARED
   "${INC_DIR}/configuration/state.hh"
   "${INC_DIR}/configuration/timeperiod.hh"
   "${INC_DIR}/connector.hh"
+  "${INC_DIR}/dimension_ba_event.hh"
+  "${INC_DIR}/dimension_kpi_event.hh"
+  "${INC_DIR}/dimension_ba_bv_relation_event.hh"
+  "${INC_DIR}/dimension_bv_event.hh"
+  "${INC_DIR}/dimension_truncate_table_signal.hh"
   "${INC_DIR}/factory.hh"
   "${INC_DIR}/hst_svc_mapping.hh"
   "${INC_DIR}/impact_values.hh"
@@ -144,6 +154,7 @@ add_library("${BAM}" SHARED
   "${INC_DIR}/time/timerange.hh"
   "${INC_DIR}/time/timezone_locker.hh"
   "${INC_DIR}/time/timezone_manager.hh"
+  "${INC_DIR}/time/time_info.hh"
 )
 target_link_libraries("${BAM}" ${QT_LIBRARIES})
 set_target_properties("${BAM}" PROPERTIES PREFIX "")

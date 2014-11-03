@@ -54,6 +54,7 @@ namespace               bam {
       void              _load(state::meta_services& meta_services);
       void              _load(bam::hst_svc_mapping& mapping);
       void              _load(state::timeperiods& tps);
+      void              _load_dimensions();
 
       QSqlDatabase*     _db;
     };

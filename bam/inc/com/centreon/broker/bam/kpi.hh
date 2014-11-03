@@ -22,6 +22,7 @@
 
 #  include "com/centreon/broker/bam/computable.hh"
 #  include "com/centreon/broker/bam/kpi_event.hh"
+#  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -31,7 +32,6 @@ namespace        bam {
   // Forward declarations.
   class          ba;
   class          impact_values;
-  class          monitoring_stream;
 
   /**
    *  @class kpi kpi.hh "com/centreon/broker/bam/kpi.hh"
@@ -51,7 +51,7 @@ namespace        bam {
     virtual void impact_soft(impact_values& soft_impact) = 0;
     void         set_id(unsigned int id);
     void         set_initial_event(kpi_event const& e);
-    virtual void visit(monitoring_stream* visitor) = 0;
+    virtual void visit(io::stream* visitor) = 0;
 
   protected:
     unsigned int _id;

@@ -22,6 +22,7 @@
 
 #  include "com/centreon/broker/bam/bool_value.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -44,7 +45,7 @@ namespace                 bam {
     bool_binary_operator& operator=(bool_binary_operator const& right);
     bool                  child_has_update(
                             computable* child,
-                            monitoring_stream* visitor = NULL);
+                            io::stream* visitor = NULL);
     void                  set_left(misc::shared_ptr<bool_value>& left);
     void                  set_right(misc::shared_ptr<bool_value>& right);
 

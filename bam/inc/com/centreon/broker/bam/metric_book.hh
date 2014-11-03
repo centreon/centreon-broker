@@ -22,6 +22,7 @@
 
 #  include <map>
 #  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -34,7 +35,6 @@ namespace         storage {
 namespace         bam {
   // Forward declarations.
   class           metric_listener;
-  class           monitoring_stream;
 
   /**
    *  @class metric_book metric_book.hh "com/centreon/broker/bam/metric_book.hh"
@@ -56,7 +56,7 @@ namespace         bam {
                     metric_listener* listnr);
     void          update(
                     misc::shared_ptr<storage::metric> const& m,
-                    monitoring_stream* visitor = NULL);
+                    io::stream* visitor = NULL);
 
   private:
     typedef std::multimap<unsigned int, metric_listener*> multimap;

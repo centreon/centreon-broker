@@ -28,6 +28,7 @@
 #  include "com/centreon/broker/bam/impact_values.hh"
 #  include "com/centreon/broker/bam/service_listener.hh"
 #  include "com/centreon/broker/bam/time/timeperiod.hh"
+#  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -54,7 +55,7 @@ namespace        bam {
     void         add_impact(misc::shared_ptr<kpi> const& impact);
     bool         child_has_update(
                    computable* child,
-                   monitoring_stream* visitor = NULL);
+                   io::stream* visitor = NULL);
     double       get_ack_impact_hard();
     double       get_ack_impact_soft();
     ba_event*    get_ba_event();
@@ -80,10 +81,10 @@ namespace        bam {
     void         set_initial_event(ba_event const& event);
     void         add_timeperiod(time::timeperiod::ptr tp, bool is_default);
     void         clear_timeperiods();
-    void         visit(monitoring_stream* visitor);
+    void         visit(io::stream* visitor);
     void         service_update(
                    misc::shared_ptr<neb::service_status> const& status,
-                   monitoring_stream* visitor);
+                   io::stream* visitor);
 
   private:
     static int const        _recompute_limit = 100;
@@ -96,12 +97,12 @@ namespace        bam {
 
     void         _apply_impact(impact_info& impact);
     void         _internal_copy(ba const& right);
-    void         _open_new_event(monitoring_stream* visitor);
+    void         _open_new_event(io::stream* visitor);
     void         _recompute();
     void         _unapply_impact(impact_info& impact);
     void         _compute_event_durations(
                    misc::shared_ptr<ba_event> ev,
-                   monitoring_stream* visitor);
+                   io::stream* visitor);
 
     double       _acknowledgement_hard;
     double       _acknowledgement_soft;
@@ -123,8 +124,6 @@ namespace        bam {
     std::string  _perfdata;
     int          _recompute_count;
     unsigned int _service_id;
-    time::timeperiod::ptr
-                 _default_tp;
     std::vector<std::pair<time::timeperiod::ptr, bool> >
                  _tps;
   };

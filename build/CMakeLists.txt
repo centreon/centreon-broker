@@ -782,6 +782,14 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/bam.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # BAM dimension copy.
+  set(TEST_NAME "bam_dimension_copy")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/bam_dimension.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
   # Meta-services.
   set(TEST_NAME "running_meta_service")
   add_executable("${TEST_NAME}"

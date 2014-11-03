@@ -22,14 +22,12 @@
 
 #  include <list>
 #  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace        bam {
-  // Forward declaration.
-  class          monitoring_stream;
-
   /**
    *  @class computable computable.hh "com/centreon/broker/bam/computable.hh"
    *  @brief Object that get computed by the BAM engine.
@@ -44,7 +42,7 @@ namespace        bam {
     virtual      ~computable();
     computable&  operator=(computable const& right);
     void         add_parent(misc::shared_ptr<computable> const& parent);
-    void         propagate_update(monitoring_stream* visitor = NULL);
+    void         propagate_update(io::stream* visitor = NULL);
     void         remove_parent(misc::shared_ptr<computable> const& parent);
 
     /**
@@ -61,7 +59,7 @@ namespace        bam {
      */
     virtual bool child_has_update(
                    computable* child,
-                   monitoring_stream* visitor = NULL) = 0;
+                   io::stream* visitor = NULL) = 0;
 
   private:
     void         _internal_copy(computable const& right);

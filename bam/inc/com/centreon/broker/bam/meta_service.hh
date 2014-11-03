@@ -23,6 +23,7 @@
 #  include <string>
 #  include "com/centreon/broker/bam/computable.hh"
 #  include "com/centreon/broker/bam/metric_listener.hh"
+#  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -59,18 +60,18 @@ namespace            bam {
     void             add_metric(unsigned int metric_id);
     bool             child_has_update(
                        computable* child,
-                       monitoring_stream* visitor = NULL);
+                       io::stream* visitor = NULL);
     unsigned int     get_id() const;
     void             metric_update(
                        misc::shared_ptr<storage::metric> const& m,
-                       monitoring_stream* visitor = NULL);
+                       io::stream* visitor = NULL);
     void             remove_metric(unsigned int metric_id);
     void             recompute();
     void             set_computation(computation_type type);
     void             set_id(unsigned int id);
     void             set_level_critical(double level);
     void             set_level_warning(double level);
-    void             visit(monitoring_stream* visitor);
+    void             visit(io::stream* visitor);
 
   private:
     static int const _recompute_limit = 100;

@@ -20,6 +20,7 @@
 #ifndef CCB_BAM_SERVICE_LISTENER_HH
 #  define CCB_BAM_SERVICE_LISTENER_HH
 
+#  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -31,9 +32,6 @@ namespace             neb {
 }
 
 namespace             bam {
-  // Forward declaration.
-  class               monitoring_stream;
-
   /**
    *  @class service_listener service_listener.hh "com/centreon/broker/bam/service_listener.hh"
    *  @brief Listen to service state change.
@@ -55,7 +53,7 @@ namespace             bam {
      */
     virtual void      service_update(
                         misc::shared_ptr<neb::service_status> const& status,
-                        monitoring_stream* visitor = NULL) = 0;
+                        io::stream* visitor = NULL) = 0;
   };
 }
 

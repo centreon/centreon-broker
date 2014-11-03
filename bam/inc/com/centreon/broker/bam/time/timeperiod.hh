@@ -64,6 +64,8 @@ namespace               bam {
 
       std::vector<std::list<daterange> > const&
                           get_exceptions() const throw();
+      std::list<daterange> const&
+                          get_exceptions_from_type(int type) const;
       void                add_exceptions(std::list<daterange> const& val);
       bool                add_exception(std::string const& days,
                                         std::string const& range);
@@ -90,11 +92,10 @@ namespace               bam {
 
       bool                is_valid(time_t preferred_time) const;
       time_t              get_next_valid(time_t preferred_time) const;
+      time_t              get_next_invalid(time_t preferred_time) const;
 
-      void                duration_intersect(time_t start_time,
-                                             time_t end_time,
-                                             time_t& out_start_time,
-                                             time_t& out_duration) const;
+      unsigned int        duration_intersect(time_t start_time,
+                                             time_t end_time) const;
 
     private:
       unsigned int        _id;

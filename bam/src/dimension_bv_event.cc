@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/bam/ba_duration_event.hh"
+#include "com/centreon/broker/bam/dimension_bv_event.hh"
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/io/events.hh"
 
@@ -27,19 +27,15 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-ba_duration_event::ba_duration_event()
-  : ba_id(0),
-    duration(0),
-    sla_duration(0),
-    timeperiod_id(0),
-    timeperiod_is_default(false) {}
+dimension_bv_event::dimension_bv_event()
+  : bv_id(0) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-ba_duration_event::ba_duration_event(ba_duration_event const& other)
+dimension_bv_event::dimension_bv_event(dimension_bv_event const& other)
   : io::data(other) {
   _internal_copy(other);
 }
@@ -47,7 +43,7 @@ ba_duration_event::ba_duration_event(ba_duration_event const& other)
 /**
  *  Destructor.
  */
-ba_duration_event::~ba_duration_event() {}
+dimension_bv_event::~dimension_bv_event() {}
 
 /**
  *  Assignment operator.
@@ -56,8 +52,8 @@ ba_duration_event::~ba_duration_event() {}
  *
  *  @return This object.
  */
-ba_duration_event& ba_duration_event::operator=(
-    ba_duration_event const& other) {
+dimension_bv_event& dimension_bv_event::operator=(
+    dimension_bv_event const& other) {
   if (this != &other) {
     io::data::operator=(other);
     _internal_copy(other);
@@ -72,15 +68,11 @@ ba_duration_event& ba_duration_event::operator=(
  *
  *  @return  True if the two objects are equal.
  */
-bool ba_duration_event::operator==(ba_duration_event const& other) const {
-  return ((ba_id == other.ba_id)
-          && (real_start_time == other.real_start_time)
-          && (end_time == other.end_time)
-          && (start_time == other.start_time)
-          && (duration == other.duration)
-          && (sla_duration == other.sla_duration)
-          && (timeperiod_id == other.timeperiod_id)
-          && (timeperiod_is_default == other.timeperiod_is_default));
+bool dimension_bv_event::operator==(
+    dimension_bv_event const& other) const {
+  return ((bv_id == other.bv_id)
+          && (bv_name == other.bv_name)
+          && (bv_description == other.bv_description));
 }
 
 
@@ -89,9 +81,8 @@ bool ba_duration_event::operator==(ba_duration_event const& other) const {
  *
  *  @return Event type.
  */
-unsigned int ba_duration_event::type() const {
-  return (io::events::data_type<io::events::bam,
-                                bam::de_ba_duration_event>::value);
+unsigned int dimension_bv_event::type() const {
+  return (io::events::data_type<io::events::bam, bam::de_dimension_bv_event>::value);
 }
 
 /**
@@ -99,14 +90,9 @@ unsigned int ba_duration_event::type() const {
  *
  *  @param[in] other Object to copy.
  */
-void ba_duration_event::_internal_copy(ba_duration_event const& other) {
-  ba_id = other.ba_id;
-  real_start_time = other.real_start_time;
-  end_time = other.end_time;
-  start_time = other.start_time;
-  duration = other.duration;
-  sla_duration = other.sla_duration;
-  timeperiod_id = other.timeperiod_id;
-  timeperiod_is_default = other.timeperiod_is_default;
+void dimension_bv_event::_internal_copy(dimension_bv_event const& other) {
+  bv_id = other.bv_id;
+  bv_name = other.bv_name;
+  bv_description = other.bv_description;
   return ;
 }

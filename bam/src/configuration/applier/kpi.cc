@@ -151,7 +151,7 @@ void applier::kpi::apply(
  *
  *  @param[out] visitor  Object that will receive status.
  */
-void applier::kpi::visit(monitoring_stream* visitor) {
+void applier::kpi::visit(io::stream* visitor) {
   for (std::map<unsigned int, applied>::iterator
          it(_applied.begin()),
          end(_applied.end());
