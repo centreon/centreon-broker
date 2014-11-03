@@ -428,7 +428,7 @@ int main() {
 
     // Start Broker daemon.
     broker.set_config_file(
-      PROJECT_SOURCE_DIR "/test/cfg/sql_instance_update_outdated_2.xml");
+      PROJECT_SOURCE_DIR "/test/cfg/bam.xml");
     broker.start();
     sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
     broker.update();
