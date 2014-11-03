@@ -721,6 +721,8 @@ int main() {
         sizeof(kpievents) / sizeof(*kpievents));
     }
 
+    sleep_for(600);
+
     // Success.
     error = false;
   }

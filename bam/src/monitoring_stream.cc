@@ -342,6 +342,8 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
                << _meta_service_update->lastError().text());
     }
   }
+  // XXX : handle transactions
+  return (1);
 }
 
 /**************************************

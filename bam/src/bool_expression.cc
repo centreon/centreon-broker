@@ -285,6 +285,7 @@ void bool_expression::_open_new_event(
                         timestamp start_time) {
   impact_values impacts;
   impact_hard(impacts);
+  _event = new kpi_event;
   _event->impact_level = impacts.get_nominal();
   _event->in_downtime = false;
   _event->output = "BAM boolean expression computed by Centreon Broker";

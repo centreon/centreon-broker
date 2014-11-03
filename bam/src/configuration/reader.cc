@@ -609,7 +609,8 @@ void reader::_load_dimensions() {
     q.exec(
         "SELECT ba_id, name, description,"
         "       sla_month_percent_warn, sla_month_percent_crit,"
-        "       sla_month_duration_warn, sla_month_duration_crit");
+        "       sla_month_duration_warn, sla_month_duration_crit"
+        "  FROM mod_bam");
     if (q.lastError().isValid())
       throw (reader_exception() << "BAM: could not retrieve BA list: "
              << q.lastError().text());
