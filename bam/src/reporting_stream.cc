@@ -475,7 +475,7 @@ void reporting_stream::_prepare() {
             "         :sla_month_percent_2, :sla_month_duration_1,"
             "         :sla_month_duration_2)";
     _dimension_ba_insert.reset(new QSqlQuery(*_db));
-    if (_dimension_ba_insert->prepare(query))
+    if (!_dimension_ba_insert->prepare(query))
       throw (exceptions::msg()
              << "BAM: could not prepare the insertion of BA dimensions: "
              << _dimension_ba_insert->lastError().text());
@@ -487,7 +487,7 @@ void reporting_stream::_prepare() {
     query = "INSERT INTO mod_bam_reporting_bv (bv_id, bv_name, bv_description)"
             "  VALUES (:bv_id, :bv_name, :bv_description)";
     _dimension_bv_insert.reset(new QSqlQuery(*_db));
-    if (_dimension_bv_insert->prepare(query))
+    if (!_dimension_bv_insert->prepare(query))
       throw (exceptions::msg()
              << "BAM: could not prepare the insertion of BV dimensions: "
              << _dimension_bv_insert->lastError().text());
@@ -499,7 +499,7 @@ void reporting_stream::_prepare() {
     query = "INSERT INTO mod_bam_reporting_relations_ba_bv (ba_id, bv_id)"
             "  VALUES (:ba_id, :bv_id)";
     _dimension_ba_bv_relation_insert.reset(new QSqlQuery(*_db));
-    if (_dimension_ba_bv_relation_insert->prepare(query))
+    if (!_dimension_ba_bv_relation_insert->prepare(query))
       throw (exceptions::msg()
              << "BAM: could not prepare the insertion of BA BV"
                 "relation dimension: "
@@ -551,7 +551,7 @@ void reporting_stream::_prepare() {
             "          :meta_service_name, :impact_warning, :impact_critical,"
             "          :impact_unknown, :boolean_id, :boolean_name)";
     _dimension_kpi_insert.reset(new QSqlQuery(*_db));
-    if (_dimension_kpi_insert->prepare(query))
+    if (!_dimension_kpi_insert->prepare(query))
       throw (exceptions::msg()
              << "BAM: could not prepare the insertion of KPI dimensions: "
              << _dimension_kpi_insert->lastError().text());
