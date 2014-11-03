@@ -607,9 +607,9 @@ void reader::_load_dimensions() {
   std::map<unsigned int, misc::shared_ptr<dimension_ba_event> > bas;
   {
     q.exec(
-        "SELECT ba_id, name, description, level_w, level_c,"
-        "       sla_warning, sla_critical"
-        "  FROM mod_bam");
+        "SELECT ba_id, name, description,"
+        "       sla_month_percent_warn, sla_month_percent_crit,"
+        "       sla_month_duration_warn, sla_month_duration_crit");
     if (q.lastError().isValid())
       throw (reader_exception() << "BAM: could not retrieve BA list: "
              << q.lastError().text());
@@ -620,8 +620,8 @@ void reader::_load_dimensions() {
       ba->ba_description = q.value(2).toString().toStdString();
       ba->sla_month_percent_1 = q.value(3).toDouble();
       ba->sla_month_percent_2 = q.value(4).toDouble();
-      ba->sla_duration_1 = q.value(5).toDouble();
-      ba->sla_duration_2 = q.value(6).toDouble();
+      ba->sla_duration_1 = q.value(5).toInt();
+      ba->sla_duration_2 = q.value(6).toInt();
       datas.push_back(ba.staticCast<io::data>());
       bas[ba->ba_id] = ba;
       logging::debug(logging::medium) << "BAM: loading BA "

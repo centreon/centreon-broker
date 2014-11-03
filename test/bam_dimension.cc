@@ -26,9 +26,9 @@
 #include <QVariant>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "test/external_command.hh"
 #include "test/config.hh"
-#include "test/engine.hh"
+#include "test/cbd.hh"
+#include "test/vars.hh"
 #include "test/generate.hh"
 #include "test/misc.hh"
 #include "test/vars.hh"
@@ -270,7 +270,7 @@ static void check_kpis(QSqlDatabase& db,
 }
 
 /**
- *  Check that the BAM engine correctly copy the dimension tables to the BI DB.
+ *  Check that the BAM broker correctly copy the dimension tables to the BI DB.
  *
  *  @return EXIT_SUCCESS on success.
  */
@@ -281,9 +281,7 @@ int main() {
   // Variables that need cleaning.
   std::list<host> hosts;
   std::list<service> services;
-  std::string engine_config_path(tmpnam(NULL));
-  external_command commander;
-  engine monitoring;
+  cbd broker;
   test_db db;
 
   try {
@@ -293,31 +291,6 @@ int main() {
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, HOST_COUNT);
     generate_services(services, hosts, SERVICES_BY_HOST);
-    for (std::list<service>::iterator
-           it(services.begin()),
-           end(services.end());
-         it != end;
-         ++it) {
-      it->accept_passive_service_checks = 1;
-      it->checks_enabled = 0;
-      it->max_attempts = 1;
-    }
-    commander.set_file(tmpnam(NULL));
-    std::string additional_config;
-    {
-      std::ostringstream oss;
-      oss << commander.get_engine_config()
-          << "broker_module=" << CBMOD_PATH << " "
-          << PROJECT_SOURCE_DIR << "/test/cfg/bam.xml\n";
-      additional_config = oss.str();
-    }
-
-    // Generate monitoring engine configuration files.
-    config_write(
-      engine_config_path.c_str(),
-      additional_config.c_str(),
-      &hosts,
-      &services);
 
     // Create instance entry.
     {
@@ -361,8 +334,8 @@ int main() {
     {
       QString query(
                 "INSERT INTO mod_bam (ba_id, name, description,"
-                "                     level_w, level_c,"
-                "                     sla_warning, sla_critical)"
+                "                     sla_month_percent_w, sla_month_percent_c,"
+                "                     sla_month_duration_w, sla_month_duration_c)"
                 "  VALUES (1, 'BA1', 'DESC1', 90, 80, 70, 60),"
                 "         (2, 'BA2', 'DESC2', 80, 70, 60, 50)");
       QSqlQuery q(*db.centreon_db());
@@ -408,15 +381,6 @@ int main() {
         throw (exceptions::msg() << "could not create boolexps: "
                << q.lastError().text());
     }
-    {
-      QString query(
-                "INSERT INTO mod_bam_bool_rel (ba_id, boolean_id)"
-                "  VALUES (7, 1), (8, 2)");
-      QSqlQuery q(*db.centreon_db());
-      if (!q.exec(query))
-        throw (exceptions::msg() << "could not link boolexps: "
-               << q.lastError().text());
-    }
     // Create meta_services
     {
       QString query(
@@ -431,36 +395,36 @@ int main() {
     // Create bvs
     {
       QString query(
-                "INSERT INTO mod_bam_ba_groups (id_ba_group, ba_group_name,"
-                "                               ba_group_description)"
-                "  VALUES (1, 'BaGroup1', 'BaDescription1'),"
-                "         (2, 'BaGroup2', 'BaDescription2')");
+                "INSERT INTO mod_bam_bv (bv_id, bv_name,"
+                "                               bv_description)"
+                "  VALUES (1, 'BaGroup1', 'BaGroupDescription1'),"
+                "         (2, 'BaGroup2', 'BaGroupDescription2')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not create the bvs services: "
+        throw (exceptions::msg() << "could not create the bvs: "
                                  << q.lastError().text());
     }
     // Create the ba bv links
     {
       QString query(
-                "INSERT INTO mod_bam_bagroup_ba_relation (id_bgr, id_ba, "
-                "                                         id_ba_group)"
-                "  VALUES (1, 7, 1),"
-                "         (2, 8, 2)");
+                "INSERT INTO mod_bam_ba_bv_relation (ba_bv_id, ba_id, "
+                "                                              bv_id)"
+                "  VALUES (1, 2, 1),"
+                "         (2, 1, 2)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create the ba bv links: "
                                  << q.lastError().text());
     }
 
-    // Start monitoring engine.
-    time_t t0(time(NULL));
-    std::string engine_config_file(engine_config_path);
-    engine_config_file.append("/nagios.cfg");
-    monitoring.set_config_file(engine_config_file);
-    monitoring.start();
+    // Start Broker daemon.
+    broker.set_config_file(
+      PROJECT_SOURCE_DIR "/test/cfg/bam.xml");
+    broker.start();
+    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    broker.update();
 
-    // Let the daemon initialize.
+    // Let the broker do its thing.
     sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Check that the dimensions were correctly copied.
@@ -473,12 +437,103 @@ int main() {
 
     // Check bvs
     bv_dimension bvs[] =
-    {{1, "BaGroup1", "BaDescription1"},
-     {2, "BaGroup2", "BaDescription2"}};
+    {{1, "BaGroup1", "BaGroupDescription1"},
+     {2, "BaGroup2", "BaGroupDescription2"}};
     check_bvs(*db.bi_db(), bvs, sizeof(bvs) / sizeof(*bvs));
 
     // Check ba-bv links.
+    ba_bv_dimension babvs[] =
+    {{1, 2},
+     {2, 1}};
+    check_ba_bv_links(*db.bi_db(), babvs, sizeof(babvs) / sizeof(*babvs));
 
+    // Check kpis.
+    kpi_dimension kpis[] =
+    {
+      // Host/Service kpis.
+      {1, NULL, 1, "BA1", 1, "1", 1, "1", 0, NULL, 0, NULL, 15, 35, 99, 0, NULL},
+      {2, NULL, 2, "BA2", 1, "1", 2, "2", 0, NULL, 0, NULL, 35, 45, 99, 0, NULL},
+      // Ba kpis.
+      {3, NULL, 2, "BA2", 0, NULL, 0, NULL, 1, "BA1", 0, NULL, 65, 75, 99, 0, NULL},
+      {4, NULL, 1, "BA1", 0, NULL, 0, NULL, 2, "BA2", 0, NULL, 25, 35, 99, 0, NULL},
+      // Meta service kpis.
+      {5, NULL, 1, "BA1", 0, NULL, 0, NULL, 0, NULL, 1, "META1", 35, 45, 99, 0, NULL},
+      {6, NULL, 2, "BA2", 0, NULL, 0, NULL, 0, NULL, 2, "META2", 85, 95, 99, 0, NULL},
+      // Boolean kpis.
+      {7, NULL, 1, "BA1", 0, NULL, 0, NULL, 0, NULL, 0, NULL, 85, 95, 99, 1, "BoolExp1"},
+      {8, NULL, 2, "BA2", 0, NULL, 0, NULL, 0, NULL, 0, NULL, 95, 105, 99, 2, "BoolExp2"},
+    };
+    check_kpis(*db.bi_db(), kpis, sizeof(kpis) / sizeof(*kpis));
+
+    // Erase everything.
+    {
+      QString query("TRUNCATE TABLE mod_bam");
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not truncate the table mod_bam: "
+                                 << q.lastError().text());
+      query = "TRUNCATE TABLE mod_bam_kpi";
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not truncate the table mod_bam_kpi: "
+                                 << q.lastError().text());
+      query = "TRUNCATE TABLE mod_bam_bv";
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not truncate the table mod_bam_bv: "
+                                 << q.lastError().text());
+      query = "TRUNCATE TABLE mod_bam_ba_bv_relation";
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not truncate the table mod_bam_ba_bv_relation: "
+                                 << q.lastError().text());
+    }
+
+    // Update the broker.
+    broker.update();
+    // Let the broker do its thing.
+    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+
+    // Check that everything was deleted.
+    {
+      QString query("SELECT * from mod_bam_reporting_ba");
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg()
+               << "could not select the table mod_bam_reporting_ba: "
+               << q.lastError().text());
+      if (q.size() != 0)
+        throw (exceptions::msg()
+               << "the table mod_bam_reporting_ba wasn't updated: "
+               << q.lastError().text());
+
+      query = "SELECT * from mod_bam_reporting_bv";
+      if (!q.exec(query))
+        throw (exceptions::msg()
+               << "could not select the table mod_bam_reporting_bv: "
+               << q.lastError().text());
+      if (q.size() != 0)
+        throw (exceptions::msg()
+               << "the table mod_bam_reporting_bv wasn't updated: "
+               << q.lastError().text());
+
+      query = "SELECT * from mod_bam_reporting_relations_ba_bv";
+      if (!q.exec(query))
+        throw (exceptions::msg()
+               << "could not select the table mod_bam_reporting_relations_ba_bv: "
+               << q.lastError().text());
+      if (q.size() != 0)
+        throw  (exceptions::msg()
+                << "the table mod_bam_reporting_relations_ba_bv wasn't updated: "
+                << q.lastError().text());
+
+      query = "SELECT * from mod_bam_reporting_kpi";
+      if (!q.exec(query))
+        throw (exceptions::msg()
+               << "could not select the table mod_bam_reporting_kpi: "
+               << q.lastError().text());
+      if (q.size() != 0)
+        throw (exceptions::msg()
+               << "the table mod_bam_reporting_kpi wasn't updated: "
+               << q.lastError().text());
+    }
 
     // Success.
     error = false;
@@ -491,8 +546,7 @@ int main() {
   }
 
   // Cleanup.
-  monitoring.stop();
-  config_remove(engine_config_path.c_str());
+  broker.stop();
   free_hosts(hosts);
   free_services(services);
 
