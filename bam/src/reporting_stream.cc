@@ -510,30 +510,30 @@ void reporting_stream::_prepare() {
   {
     _dimension_truncate_tables.clear();
     QString query;
-    query = "TRUNCATE TABLE mod_bam_reporting_ba";
-    _dimension_truncate_tables.push_back(
-          misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
-    if (!_dimension_truncate_tables.back()->prepare(query))
-      throw (exceptions::msg()
-            << "BAM: could not prepare the truncate of table ba");
-    query = "TRUNCATE TABLE mod_bam_reporting_bv";
-    _dimension_truncate_tables.push_back(
-          misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
-    if (!_dimension_truncate_tables.back()->prepare(query))
-      throw (exceptions::msg()
-            << "BAM: could not prepare the truncate of table bv");
-    query = "TRUNCATE TABLE mod_bam_reporting_relations_ba_bv";
-    _dimension_truncate_tables.push_back(
-          misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
-    if (!_dimension_truncate_tables.back()->prepare(query))
-      throw (exceptions::msg()
-            << "BAM: could not prepare the truncate of table relations_ba_bv");
-    query = "TRUNCATE TABLE mod_bam_reporting_kpi";
+    query = "DELETE FROM mod_bam_reporting_kpi";
     _dimension_truncate_tables.push_back(
           misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
     if (!_dimension_truncate_tables.back()->prepare(query))
       throw (exceptions::msg()
             << "BAM: could not prepare the truncate of table kpi");
+    query = "DELETE FROM mod_bam_reporting_relations_ba_bv";
+    _dimension_truncate_tables.push_back(
+          misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
+    if (!_dimension_truncate_tables.back()->prepare(query))
+      throw (exceptions::msg()
+            << "BAM: could not prepare the truncate of table relations_ba_bv");
+    query = "DELETE FROM mod_bam_reporting_ba";
+    _dimension_truncate_tables.push_back(
+          misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
+    if (!_dimension_truncate_tables.back()->prepare(query))
+      throw (exceptions::msg()
+            << "BAM: could not prepare the truncate of table ba");
+    query = "DELETE FROM mod_bam_reporting_bv";
+    _dimension_truncate_tables.push_back(
+          misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
+    if (!_dimension_truncate_tables.back()->prepare(query))
+      throw (exceptions::msg()
+            << "BAM: could not prepare the truncate of table bv");
   }
 
   // Dimension KPI insertion

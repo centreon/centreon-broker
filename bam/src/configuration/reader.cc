@@ -630,23 +630,6 @@ void reader::_load_dimensions() {
     }
   }
 
-  // Load the BA BV relations.
-  {
-    q.exec("SELECT id_ba, id_ba_group"
-           "  FROM mod_bam_bagroup_ba_relation");
-    if (q.lastError().isValid())
-      throw (reader_exception()
-             << "BAM: could not retrieve BV memberships of BAs: "
-             << q.lastError().text());
-    while (q.next()) {
-      misc::shared_ptr<dimension_ba_bv_relation_event>
-          babv(new dimension_ba_bv_relation_event);
-      babv->ba_id = q.value(0).toInt();
-      babv->bv_id = q.value(1).toInt();
-      datas.push_back(babv.staticCast<io::data>());
-    }
-  }
-
   // Load the BVs.
   {
     q.exec("SELECT id_ba_group, ba_group_name, ba_group_description"
@@ -661,6 +644,23 @@ void reader::_load_dimensions() {
       bv->bv_name = q.value(1).toString().toStdString();
       bv->bv_description = q.value(2).toString().toStdString();
       datas.push_back(bv.staticCast<io::data>());
+    }
+  }
+
+  // Load the BA BV relations.
+  {
+    q.exec("SELECT id_ba, id_ba_group"
+           "  FROM mod_bam_bagroup_ba_relation");
+    if (q.lastError().isValid())
+      throw (reader_exception()
+             << "BAM: could not retrieve BV memberships of BAs: "
+             << q.lastError().text());
+    while (q.next()) {
+      misc::shared_ptr<dimension_ba_bv_relation_event>
+          babv(new dimension_ba_bv_relation_event);
+      babv->ba_id = q.value(0).toInt();
+      babv->bv_id = q.value(1).toInt();
+      datas.push_back(babv.staticCast<io::data>());
     }
   }
 
