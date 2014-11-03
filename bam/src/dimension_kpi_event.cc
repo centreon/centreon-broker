@@ -80,7 +80,6 @@ dimension_kpi_event& dimension_kpi_event::operator=(
 bool dimension_kpi_event::operator==(
     dimension_kpi_event const& other) const {
   return ((kpi_id == other.kpi_id)
-          && (kpi_name == other.kpi_name)
           && (ba_id == other.ba_id)
           && (ba_name == other.ba_name)
           && (host_id == other.host_id)
@@ -115,7 +114,6 @@ unsigned int dimension_kpi_event::type() const {
  */
 void dimension_kpi_event::_internal_copy(dimension_kpi_event const& other) {
   kpi_id = other.kpi_id;
-  kpi_name = other.kpi_name;
   ba_id = other.ba_id;
   ba_name = other.ba_name;
   host_id = other.host_id;

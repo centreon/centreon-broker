@@ -43,7 +43,6 @@ namespace                bam {
     unsigned int         type() const;
 
     unsigned             kpi_id;
-    std::string          kpi_name;
     unsigned int         ba_id;
     std::string          ba_name;
     unsigned int         host_id;

@@ -154,7 +154,7 @@ static void check_ba_bv_links(QSqlDatabase& db,
   QString query(
             "SELECT ba_id, bv_id"
             "  FROM mod_bam_reporting_relations_ba_bv"
-            "  ORDER BY bv_id");
+            "  ORDER BY ba_id");
   QSqlQuery q(db);
   if (!q.exec(query))
     throw (exceptions::msg() << "could not fetch BA-BV links at iteration "
@@ -286,22 +286,11 @@ int main() {
 
   try {
     // Prepare database.
-    db.open(CENTREON_DB_NAME, BI_DB_NAME);
+    db.open(NULL, BI_DB_NAME, CENTREON_DB_NAME);
 
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, HOST_COUNT);
     generate_services(services, hosts, SERVICES_BY_HOST);
-
-    // Create instance entry.
-    {
-      QString query(
-                "INSERT INTO instances (instance_id, name)"
-                "  VALUES (42, 'MyBroker')");
-      QSqlQuery q(*db.centreon_db());
-      if (!q.exec(query))
-        throw (exceptions::msg() << "could not create instance: "
-               << q.lastError().text());
-    }
 
     // Create host/service entries.
     {
@@ -309,8 +298,8 @@ int main() {
       for (int i(1); i <= HOST_COUNT; ++i) {
         {
           std::ostringstream oss;
-          oss << "INSERT INTO hosts (host_id, name, instance_id)"
-              << "  VALUES (" << i << ", '" << i << "', 42)";
+          oss << "INSERT INTO host (host_id, host_name)"
+              << "  VALUES (" << i << ", '" << i << "')";
           QSqlQuery q(*db.centreon_db());
           if (!q.exec(oss.str().c_str()))
             throw (exceptions::msg() << "could not create host "
@@ -319,13 +308,26 @@ int main() {
         for (int j((i - 1) * SERVICES_BY_HOST + 1), limit(i * SERVICES_BY_HOST);
              j < limit;
              ++j) {
-          std::ostringstream oss;
-          oss << "INSERT INTO services (host_id, description, service_id)"
-              << "  VALUES (" << i << ", '" << j << "', " << j << ")";
-          QSqlQuery q(*db.centreon_db());
-          if (!q.exec(oss.str().c_str()))
-            throw (exceptions::msg() << "could not create service ("
-                   << i << ", " << j << "): " << q.lastError().text());
+          {
+            std::ostringstream oss;
+            oss << "INSERT INTO service (service_id, service_description)"
+                << "  VALUES (" << j << ", '" << j << "')";
+            QSqlQuery q(*db.centreon_db());
+            if (!q.exec(oss.str().c_str()))
+              throw (exceptions::msg() << "could not create service ("
+                     << i << ", " << j << "): "
+                     << q.lastError().text());
+          }
+          {
+            std::ostringstream oss;
+            oss << "INSERT INTO host_service_relation (host_host_id, service_service_id)"
+                << "  VALUES (" << i << ", " << j << ")";
+            QSqlQuery q(*db.centreon_db());
+            if (!q.exec(oss.str().c_str()))
+              throw (exceptions::msg() << "could not link service "
+                     << j << " to host " << i << ": "
+                     << q.lastError().text());
+          }
         }
       }
     }
@@ -334,8 +336,8 @@ int main() {
     {
       QString query(
                 "INSERT INTO mod_bam (ba_id, name, description,"
-                "                     sla_month_percent_w, sla_month_percent_c,"
-                "                     sla_month_duration_w, sla_month_duration_c)"
+                "                     sla_month_percent_warn, sla_month_percent_crit,"
+                "                     sla_month_duration_warn, sla_month_duration_crit)"
                 "  VALUES (1, 'BA1', 'DESC1', 90, 80, 70, 60),"
                 "         (2, 'BA2', 'DESC2', 80, 70, 60, 50)");
       QSqlQuery q(*db.centreon_db());
@@ -395,8 +397,8 @@ int main() {
     // Create bvs
     {
       QString query(
-                "INSERT INTO mod_bam_bv (bv_id, bv_name,"
-                "                               bv_description)"
+                "INSERT INTO mod_bam_ba_groups (id_ba_group, ba_group_name,"
+                "                               ba_group_description)"
                 "  VALUES (1, 'BaGroup1', 'BaGroupDescription1'),"
                 "         (2, 'BaGroup2', 'BaGroupDescription2')");
       QSqlQuery q(*db.centreon_db());
@@ -404,16 +406,16 @@ int main() {
         throw (exceptions::msg() << "could not create the bvs: "
                                  << q.lastError().text());
     }
-    // Create the ba bv links
+    // Create the ba bv relations
     {
       QString query(
-                "INSERT INTO mod_bam_ba_bv_relation (ba_bv_id, ba_id, "
-                "                                              bv_id)"
+                "INSERT INTO mod_bam_bagroup_ba_relation (id_bgr, id_ba, "
+                "                                         id_ba_group)"
                 "  VALUES (1, 2, 1),"
                 "         (2, 1, 2)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not create the ba bv links: "
+        throw (exceptions::msg() << "could not create the ba bv relations: "
                                  << q.lastError().text());
     }
 
@@ -451,38 +453,38 @@ int main() {
     kpi_dimension kpis[] =
     {
       // Host/Service kpis.
-      {1, NULL, 1, "BA1", 1, "1", 1, "1", 0, NULL, 0, NULL, 15, 35, 99, 0, NULL},
-      {2, NULL, 2, "BA2", 1, "1", 2, "2", 0, NULL, 0, NULL, 35, 45, 99, 0, NULL},
+      {1, "1", 1, "BA1", 1, "1", 1, "1", 0, NULL, 0, NULL, 15, 25, 99, 0, NULL},
+      {2, "2", 2, "BA2", 1, "1", 2, "2", 0, NULL, 0, NULL, 35, 45, 99, 0, NULL},
       // Ba kpis.
-      {3, NULL, 2, "BA2", 0, NULL, 0, NULL, 1, "BA1", 0, NULL, 65, 75, 99, 0, NULL},
-      {4, NULL, 1, "BA1", 0, NULL, 0, NULL, 2, "BA2", 0, NULL, 25, 35, 99, 0, NULL},
+      {3, "BA1", 2, "BA2", 0, NULL, 0, NULL, 1, "BA1", 0, NULL, 65, 75, 99, 0, NULL},
+      {4, "BA2", 1, "BA1", 0, NULL, 0, NULL, 2, "BA2", 0, NULL, 25, 35, 99, 0, NULL},
       // Meta service kpis.
-      {5, NULL, 1, "BA1", 0, NULL, 0, NULL, 0, NULL, 1, "META1", 35, 45, 99, 0, NULL},
-      {6, NULL, 2, "BA2", 0, NULL, 0, NULL, 0, NULL, 2, "META2", 85, 95, 99, 0, NULL},
+      {5, "Meta1", 1, "BA1", 0, NULL, 0, NULL, 0, NULL, 1, "Meta1", 35, 45, 99, 0, NULL},
+      {6, "Meta2", 2, "BA2", 0, NULL, 0, NULL, 0, NULL, 2, "Meta2", 45, 55, 99, 0, NULL},
       // Boolean kpis.
-      {7, NULL, 1, "BA1", 0, NULL, 0, NULL, 0, NULL, 0, NULL, 85, 95, 99, 1, "BoolExp1"},
-      {8, NULL, 2, "BA2", 0, NULL, 0, NULL, 0, NULL, 0, NULL, 95, 105, 99, 2, "BoolExp2"},
+      {7, "BoolExp1", 1, "BA1", 0, NULL, 0, NULL, 0, NULL, 0, NULL, 85, 95, 99, 1, "BoolExp1"},
+      {8, "BoolExp2", 2, "BA2", 0, NULL, 0, NULL, 0, NULL, 0, NULL, 95, 105, 99, 2, "BoolExp2"},
     };
     check_kpis(*db.bi_db(), kpis, sizeof(kpis) / sizeof(*kpis));
 
     // Erase everything.
     {
-      QString query("TRUNCATE TABLE mod_bam");
+      QString query("DELETE FROM mod_bam");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not truncate the table mod_bam: "
                                  << q.lastError().text());
-      query = "TRUNCATE TABLE mod_bam_kpi";
+      query = "DELETE FROM mod_bam_kpi";
       if (!q.exec(query))
         throw (exceptions::msg() << "could not truncate the table mod_bam_kpi: "
                                  << q.lastError().text());
-      query = "TRUNCATE TABLE mod_bam_bv";
+      query = "DELETE FROM mod_bam_ba_groups";
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not truncate the table mod_bam_bv: "
+        throw (exceptions::msg() << "could not truncate the table mod_bam_ba_groups: "
                                  << q.lastError().text());
-      query = "TRUNCATE TABLE mod_bam_ba_bv_relation";
+      query = "DELETE FROM mod_bam_bagroup_ba_relation";
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not truncate the table mod_bam_ba_bv_relation: "
+        throw (exceptions::msg() << "could not truncate the table mod_bam_bagroup_ba_relation: "
                                  << q.lastError().text());
     }
 
@@ -494,7 +496,7 @@ int main() {
     // Check that everything was deleted.
     {
       QString query("SELECT * from mod_bam_reporting_ba");
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.bi_db());
       if (!q.exec(query))
         throw (exceptions::msg()
                << "could not select the table mod_bam_reporting_ba: "

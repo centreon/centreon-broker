@@ -475,7 +475,7 @@ void reporting_stream::_prepare() {
             "         :sla_month_percent_2, :sla_month_duration_1,"
             "         :sla_month_duration_2)";
     _dimension_ba_insert.reset(new QSqlQuery(*_db));
-    if (_dimension_ba_insert->prepare(query))
+    if (!_dimension_ba_insert->prepare(query))
       throw (exceptions::msg()
              << "BAM: could not prepare the insertion of BA dimensions: "
              << _dimension_ba_insert->lastError().text());
@@ -487,7 +487,7 @@ void reporting_stream::_prepare() {
     query = "INSERT INTO mod_bam_reporting_bv (bv_id, bv_name, bv_description)"
             "  VALUES (:bv_id, :bv_name, :bv_description)";
     _dimension_bv_insert.reset(new QSqlQuery(*_db));
-    if (_dimension_bv_insert->prepare(query))
+    if (!_dimension_bv_insert->prepare(query))
       throw (exceptions::msg()
              << "BAM: could not prepare the insertion of BV dimensions: "
              << _dimension_bv_insert->lastError().text());
@@ -499,7 +499,7 @@ void reporting_stream::_prepare() {
     query = "INSERT INTO mod_bam_reporting_relations_ba_bv (ba_id, bv_id)"
             "  VALUES (:ba_id, :bv_id)";
     _dimension_ba_bv_relation_insert.reset(new QSqlQuery(*_db));
-    if (_dimension_ba_bv_relation_insert->prepare(query))
+    if (!_dimension_ba_bv_relation_insert->prepare(query))
       throw (exceptions::msg()
              << "BAM: could not prepare the insertion of BA BV"
                 "relation dimension: "
@@ -510,30 +510,30 @@ void reporting_stream::_prepare() {
   {
     _dimension_truncate_tables.clear();
     QString query;
-    query = "TRUNCATE TABLE mod_bam_reporting_ba";
-    _dimension_truncate_tables.push_back(
-          misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
-    if (!_dimension_truncate_tables.back()->prepare(query))
-      throw (exceptions::msg()
-            << "BAM: could not prepare the truncate of table ba");
-    query = "TRUNCATE TABLE mod_bam_reporting_bv";
-    _dimension_truncate_tables.push_back(
-          misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
-    if (!_dimension_truncate_tables.back()->prepare(query))
-      throw (exceptions::msg()
-            << "BAM: could not prepare the truncate of table bv");
-    query = "TRUNCATE TABLE mod_bam_reporting_relations_ba_bv";
-    _dimension_truncate_tables.push_back(
-          misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
-    if (!_dimension_truncate_tables.back()->prepare(query))
-      throw (exceptions::msg()
-            << "BAM: could not prepare the truncate of table relations_ba_bv");
-    query = "TRUNCATE TABLE mod_bam_reporting_kpi";
+    query = "DELETE FROM mod_bam_reporting_kpi";
     _dimension_truncate_tables.push_back(
           misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
     if (!_dimension_truncate_tables.back()->prepare(query))
       throw (exceptions::msg()
             << "BAM: could not prepare the truncate of table kpi");
+    query = "DELETE FROM mod_bam_reporting_relations_ba_bv";
+    _dimension_truncate_tables.push_back(
+          misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
+    if (!_dimension_truncate_tables.back()->prepare(query))
+      throw (exceptions::msg()
+            << "BAM: could not prepare the truncate of table relations_ba_bv");
+    query = "DELETE FROM mod_bam_reporting_ba";
+    _dimension_truncate_tables.push_back(
+          misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
+    if (!_dimension_truncate_tables.back()->prepare(query))
+      throw (exceptions::msg()
+            << "BAM: could not prepare the truncate of table ba");
+    query = "DELETE FROM mod_bam_reporting_bv";
+    _dimension_truncate_tables.push_back(
+          misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
+    if (!_dimension_truncate_tables.back()->prepare(query))
+      throw (exceptions::msg()
+            << "BAM: could not prepare the truncate of table bv");
   }
 
   // Dimension KPI insertion
@@ -551,7 +551,7 @@ void reporting_stream::_prepare() {
             "          :meta_service_name, :impact_warning, :impact_critical,"
             "          :impact_unknown, :boolean_id, :boolean_name)";
     _dimension_kpi_insert.reset(new QSqlQuery(*_db));
-    if (_dimension_kpi_insert->prepare(query))
+    if (!_dimension_kpi_insert->prepare(query))
       throw (exceptions::msg()
              << "BAM: could not prepare the insertion of KPI dimensions: "
              << _dimension_kpi_insert->lastError().text());
@@ -767,8 +767,17 @@ void reporting_stream::_process_dimension_kpi(
     misc::shared_ptr<io::data> const& e) {
   bam::dimension_kpi_event const& dk =
       e.ref_as<bam::dimension_kpi_event const>();
+  std::string kpi_name;
+  if (!dk.service_description.empty())
+    kpi_name = dk.service_description;
+  else if (!dk.kpi_ba_name.empty())
+    kpi_name = dk.kpi_ba_name;
+  else if (!dk.boolean_name.empty())
+    kpi_name = dk.boolean_name;
+  else if (!dk.meta_service_name.empty())
+    kpi_name = dk.meta_service_name;
   _dimension_kpi_insert->bindValue(":kpi_id", dk.kpi_id);
-  _dimension_kpi_insert->bindValue(":kpi_name", dk.kpi_name.c_str());
+  _dimension_kpi_insert->bindValue(":kpi_name", kpi_name.c_str());
   _dimension_kpi_insert->bindValue(":ba_id", dk.ba_id);
   _dimension_kpi_insert->bindValue(":ba_name", dk.ba_name.c_str());
   _dimension_kpi_insert->bindValue(":host_id", dk.host_id);
@@ -776,7 +785,9 @@ void reporting_stream::_process_dimension_kpi(
   _dimension_kpi_insert->bindValue(":service_id", dk.service_id);
   _dimension_kpi_insert->bindValue(":service_description",
                                    dk.service_description.c_str());
-  _dimension_kpi_insert->bindValue(":kpi_ba_id", dk.kpi_ba_id);
+  _dimension_kpi_insert->bindValue(":kpi_ba_id", dk.kpi_ba_id != 0 ?
+                                                    dk.kpi_ba_id :
+                                                    QVariant(QVariant::UInt));
   _dimension_kpi_insert->bindValue(":kpi_ba_name", dk.kpi_ba_name.c_str());
   _dimension_kpi_insert->bindValue(":meta_service_id", dk.meta_service_id);
   _dimension_kpi_insert->bindValue(":meta_service_name",
