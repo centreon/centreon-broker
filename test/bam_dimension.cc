@@ -286,22 +286,11 @@ int main() {
 
   try {
     // Prepare database.
-    db.open(CENTREON_DB_NAME, BI_DB_NAME);
+    db.open(NULL, BI_DB_NAME, CENTREON_DB_NAME);
 
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, HOST_COUNT);
     generate_services(services, hosts, SERVICES_BY_HOST);
-
-    // Create instance entry.
-    {
-      QString query(
-                "INSERT INTO instances (instance_id, name)"
-                "  VALUES (42, 'MyBroker')");
-      QSqlQuery q(*db.centreon_db());
-      if (!q.exec(query))
-        throw (exceptions::msg() << "could not create instance: "
-               << q.lastError().text());
-    }
 
     // Create host/service entries.
     {
@@ -309,8 +298,8 @@ int main() {
       for (int i(1); i <= HOST_COUNT; ++i) {
         {
           std::ostringstream oss;
-          oss << "INSERT INTO hosts (host_id, name, instance_id)"
-              << "  VALUES (" << i << ", '" << i << "', 42)";
+          oss << "INSERT INTO host (host_id, host_name)"
+              << "  VALUES (" << i << ", '" << i << "')";
           QSqlQuery q(*db.centreon_db());
           if (!q.exec(oss.str().c_str()))
             throw (exceptions::msg() << "could not create host "
@@ -319,13 +308,26 @@ int main() {
         for (int j((i - 1) * SERVICES_BY_HOST + 1), limit(i * SERVICES_BY_HOST);
              j < limit;
              ++j) {
-          std::ostringstream oss;
-          oss << "INSERT INTO services (host_id, description, service_id)"
-              << "  VALUES (" << i << ", '" << j << "', " << j << ")";
-          QSqlQuery q(*db.centreon_db());
-          if (!q.exec(oss.str().c_str()))
-            throw (exceptions::msg() << "could not create service ("
-                   << i << ", " << j << "): " << q.lastError().text());
+          {
+            std::ostringstream oss;
+            oss << "INSERT INTO service (service_id, service_description)"
+                << "  VALUES (" << j << ", '" << j << "')";
+            QSqlQuery q(*db.centreon_db());
+            if (!q.exec(oss.str().c_str()))
+              throw (exceptions::msg() << "could not create service ("
+                     << i << ", " << j << "): "
+                     << q.lastError().text());
+          }
+          {
+            std::ostringstream oss;
+            oss << "INSERT INTO host_service_relation (host_host_id, service_service_id)"
+                << "  VALUES (" << i << ", " << j << ")";
+            QSqlQuery q(*db.centreon_db());
+            if (!q.exec(oss.str().c_str()))
+              throw (exceptions::msg() << "could not link service "
+                     << j << " to host " << i << ": "
+                     << q.lastError().text());
+          }
         }
       }
     }
@@ -334,8 +336,8 @@ int main() {
     {
       QString query(
                 "INSERT INTO mod_bam (ba_id, name, description,"
-                "                     sla_month_percent_w, sla_month_percent_c,"
-                "                     sla_month_duration_w, sla_month_duration_c)"
+                "                     sla_month_percent_warn, sla_month_percent_crit,"
+                "                     sla_month_duration_warn, sla_month_duration_crit)"
                 "  VALUES (1, 'BA1', 'DESC1', 90, 80, 70, 60),"
                 "         (2, 'BA2', 'DESC2', 80, 70, 60, 50)");
       QSqlQuery q(*db.centreon_db());
@@ -395,8 +397,8 @@ int main() {
     // Create bvs
     {
       QString query(
-                "INSERT INTO mod_bam_bv (bv_id, bv_name,"
-                "                               bv_description)"
+                "INSERT INTO mod_bam_ba_groups (id_ba_group, ba_group_name,"
+                "                               ba_group_description)"
                 "  VALUES (1, 'BaGroup1', 'BaGroupDescription1'),"
                 "         (2, 'BaGroup2', 'BaGroupDescription2')");
       QSqlQuery q(*db.centreon_db());
@@ -404,16 +406,16 @@ int main() {
         throw (exceptions::msg() << "could not create the bvs: "
                                  << q.lastError().text());
     }
-    // Create the ba bv links
+    // Create the ba bv relations
     {
       QString query(
-                "INSERT INTO mod_bam_ba_bv_relation (ba_bv_id, ba_id, "
-                "                                              bv_id)"
+                "INSERT INTO mod_bam_bagroup_ba_relation (id_bgr, id_ba, "
+                "                                         id_ba_group)"
                 "  VALUES (1, 2, 1),"
                 "         (2, 1, 2)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not create the ba bv links: "
+        throw (exceptions::msg() << "could not create the ba bv relations: "
                                  << q.lastError().text());
     }
 
