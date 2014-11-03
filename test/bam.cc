@@ -435,7 +435,7 @@ int main() {
                  << "could not create virtual BA host: "
                  << q.lastError().text());
       }
-      for (int i(1); i <= 10; ++i) {
+      for (int i(1); i <= 9; ++i) {
         {
           std::ostringstream oss;
           oss << "INSERT INTO service (service_id, service_description)"

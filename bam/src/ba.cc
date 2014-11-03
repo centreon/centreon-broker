@@ -136,7 +136,7 @@ bool ba::child_has_update(
     // If the new impact is the same as the old, don't update.
     if (it->second.hard_impact == new_hard_impact &&
         it->second.soft_impact == new_soft_impact)
-      return false;
+      return (false);
 
     // Discard old data.
     _unapply_impact(it->second);
@@ -149,7 +149,7 @@ bool ba::child_has_update(
     // Generate status event.
     visit(visitor);
   }
-  return true;
+  return (true);
 }
 
 
@@ -478,8 +478,9 @@ void ba::_apply_impact(ba::impact_info& impact) {
   _level_soft -= impact.soft_impact.get_nominal();
 
   // Prevent derive of values.
-  _recompute_count = _recompute_count >= 0 ? _recompute_count + 1 :
-                                           _recompute_count;
+  _recompute_count = _recompute_count >= 0
+                     ? _recompute_count + 1
+                     : _recompute_count;
   if (_recompute_count >= _recompute_limit)
     _recompute();
 
