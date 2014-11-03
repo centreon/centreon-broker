@@ -453,17 +453,17 @@ int main() {
     kpi_dimension kpis[] =
     {
       // Host/Service kpis.
-      {1, NULL, 1, "BA1", 1, "1", 1, "1", 0, NULL, 0, NULL, 15, 25, 99, 0, NULL},
-      {2, NULL, 2, "BA2", 1, "1", 2, "2", 0, NULL, 0, NULL, 35, 45, 99, 0, NULL},
+      {1, "1", 1, "BA1", 1, "1", 1, "1", 0, NULL, 0, NULL, 15, 25, 99, 0, NULL},
+      {2, "2", 2, "BA2", 1, "1", 2, "2", 0, NULL, 0, NULL, 35, 45, 99, 0, NULL},
       // Ba kpis.
-      {3, NULL, 2, "BA2", 0, NULL, 0, NULL, 1, "BA1", 0, NULL, 65, 75, 99, 0, NULL},
-      {4, NULL, 1, "BA1", 0, NULL, 0, NULL, 2, "BA2", 0, NULL, 25, 35, 99, 0, NULL},
+      {3, "BA1", 2, "BA2", 0, NULL, 0, NULL, 1, "BA1", 0, NULL, 65, 75, 99, 0, NULL},
+      {4, "BA2", 1, "BA1", 0, NULL, 0, NULL, 2, "BA2", 0, NULL, 25, 35, 99, 0, NULL},
       // Meta service kpis.
-      {5, NULL, 1, "BA1", 0, NULL, 0, NULL, 0, NULL, 1, "Meta1", 35, 45, 99, 0, NULL},
-      {6, NULL, 2, "BA2", 0, NULL, 0, NULL, 0, NULL, 2, "Meta2", 45, 55, 99, 0, NULL},
+      {5, "Meta1", 1, "BA1", 0, NULL, 0, NULL, 0, NULL, 1, "Meta1", 35, 45, 99, 0, NULL},
+      {6, "Meta2", 2, "BA2", 0, NULL, 0, NULL, 0, NULL, 2, "Meta2", 45, 55, 99, 0, NULL},
       // Boolean kpis.
-      {7, NULL, 1, "BA1", 0, NULL, 0, NULL, 0, NULL, 0, NULL, 85, 95, 99, 1, "BoolExp1"},
-      {8, NULL, 2, "BA2", 0, NULL, 0, NULL, 0, NULL, 0, NULL, 95, 105, 99, 2, "BoolExp2"},
+      {7, "BoolExp1", 1, "BA1", 0, NULL, 0, NULL, 0, NULL, 0, NULL, 85, 95, 99, 1, "BoolExp1"},
+      {8, "BoolExp2", 2, "BA2", 0, NULL, 0, NULL, 0, NULL, 0, NULL, 95, 105, 99, 2, "BoolExp2"},
     };
     check_kpis(*db.bi_db(), kpis, sizeof(kpis) / sizeof(*kpis));
 

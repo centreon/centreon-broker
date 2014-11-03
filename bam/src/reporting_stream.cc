@@ -767,8 +767,17 @@ void reporting_stream::_process_dimension_kpi(
     misc::shared_ptr<io::data> const& e) {
   bam::dimension_kpi_event const& dk =
       e.ref_as<bam::dimension_kpi_event const>();
+  std::string kpi_name;
+  if (!dk.service_description.empty())
+    kpi_name = dk.service_description;
+  else if (!dk.kpi_ba_name.empty())
+    kpi_name = dk.kpi_ba_name;
+  else if (!dk.boolean_name.empty())
+    kpi_name = dk.boolean_name;
+  else if (!dk.meta_service_name.empty())
+    kpi_name = dk.meta_service_name;
   _dimension_kpi_insert->bindValue(":kpi_id", dk.kpi_id);
-  _dimension_kpi_insert->bindValue(":kpi_name", dk.kpi_name.c_str());
+  _dimension_kpi_insert->bindValue(":kpi_name", kpi_name.c_str());
   _dimension_kpi_insert->bindValue(":ba_id", dk.ba_id);
   _dimension_kpi_insert->bindValue(":ba_name", dk.ba_name.c_str());
   _dimension_kpi_insert->bindValue(":host_id", dk.host_id);
