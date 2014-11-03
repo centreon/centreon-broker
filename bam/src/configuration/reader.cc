@@ -643,7 +643,9 @@ void reader::_load_dimensions() {
   // Load the BAs.
   std::map<unsigned int, misc::shared_ptr<dimension_ba_event> > bas;
   {
-    q.exec("SELECT ba_id, name, description, level_w, level_c, sla_warning, sla_critical");
+    q.exec("SELECT ba_id, name, description,"
+           "       sla_month_percent_w, sla_month_percent_c,"
+           "       sla_month_duration_w, sla_month_duration_c");
     if (_db->lastError().isValid())
       throw (reader_exception()
              << "BAM: could not retrieve ba dimensions: "
@@ -655,8 +657,8 @@ void reader::_load_dimensions() {
      ba->ba_description = q.value(2).toString().toStdString();
      ba->sla_month_percent_1 = q.value(3).toDouble();
      ba->sla_month_percent_2 = q.value(4).toDouble();
-     ba->sla_duration_1 = q.value(5).toDouble();
-     ba->sla_duration_2 = q.value(6).toDouble();
+     ba->sla_duration_1 = q.value(5).toInt();
+     ba->sla_duration_2 = q.value(6).toInt();
      datas.push_back(ba.staticCast<io::data>());
      bas[ba->ba_id] = ba;
     }
@@ -664,8 +666,8 @@ void reader::_load_dimensions() {
 
   // Load the BA BV relations.
   {
-    q.exec("SELECT id_ba, id_bv"
-           "  FROM mod_bam_bagroup_ba_relation");
+    q.exec("SELECT ba_id, bv_id"
+           "  FROM mod_bam_ba_bv_relation");
     if (_db->lastError().isValid())
       throw (reader_exception()
              << "BAM: could not retrieve ba-bv dimension relations: "
@@ -681,8 +683,8 @@ void reader::_load_dimensions() {
 
   // Load the BVs.
   {
-    q.exec("SELECT id_ba_group, ba_group_name, ba_group_description"
-           "  FROM centreon.mod_bam_ba_group");
+    q.exec("SELECT bv_id, bv_name, bv_description"
+           "  FROM mod_bam_bv");
     if (_db->lastError().isValid())
       throw (reader_exception()
              << "BAM: could not retrieve bv dimensions: "

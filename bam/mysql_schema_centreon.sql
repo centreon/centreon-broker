@@ -13,6 +13,8 @@
 -- mod_bam_boolean
 -- mod_bam_bool_rel
 -- mod_bam_kpi
+-- mod_bam_bv
+-- mod_bam_ba_bv_relation
 
 
 --
@@ -25,6 +27,10 @@ CREATE TABLE mod_bam (
   description varchar(254) default NULL,
   level_w float default NULL,
   level_c float default NULL,
+  sla_month_percent_w float default NULL,
+  sla_month_percent_c float default NULL,
+  sla_month_duration_w int default NULL,
+  sla_month_duration_c int default NULL,
   current_level float default NULL,
   downtime float default NULL,
   acknowledged float default NULL,
@@ -164,4 +170,30 @@ CREATE TABLE meta_service_relation (
 
   PRIMARY KEY (msr_id),
   FOREIGN KEY (meta_id) REFERENCES meta_service (meta_id) ON DELETE CASCADE
+) ENGINE=InnoDB CHARACTER SET utf8;
+
+--
+-- Business View
+--
+CREATE TABLE mod_bam_bv (
+  bv_id int NOT NULL auto_increment,
+
+  bv_name varchar(254) default NULL,
+  bv_description varchar(254) default NULL,
+
+  PRIMARY KEY (bv_id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+
+--
+-- BA-BV relationships.
+--
+CREATE TABLE mod_bam_ba_bv_relation (
+  ba_bv_id int NOT NULL auto_increment,
+
+  ba_id int default NULL,
+  bv_id int default NULL,
+
+  PRIMARY KEY (ba_bv_id),
+  FOREIGN KEY (ba_id) REFERENCES mod_bam (ba_id) ON DELETE CASCADE,
+  FOREIGN KEY (bv_id) REFERENCES mod_bam_bv (bv_id) ON DELETE CASCADE
 ) ENGINE=InnoDB CHARACTER SET utf8;

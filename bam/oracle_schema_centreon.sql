@@ -13,6 +13,8 @@
 -- mod_bam_boolean
 -- mod_bam_bool_rel
 -- mod_bam_kpi
+-- mod_bam_bv
+-- mod_bam_ba_bv_relation
 
 
 --
@@ -25,6 +27,10 @@ CREATE TABLE mod_bam (
   description varchar(254) default NULL,
   level_w float default NULL,
   level_c float default NULL,
+  sla_month_percent_w float default NULL,
+  sla_month_percent_c float default NULL,
+  sla_month_duration_w int default NULL,
+  sla_month_duration_c int default NULL,
   current_level float default NULL,
   downtime float default NULL,
   acknowledged float default NULL,
@@ -223,5 +229,51 @@ BEFORE INSERT ON meta_service_relation
 FOR EACH ROW
 BEGIN
   SELECT meta_service_relation_seq.nextval INTO :NEW.msr_id FROM dual;
+END;
+/
+
+--
+-- Business View
+--
+CREATE TABLE mod_bam_bv (
+  bv_id int NOT NULL,
+
+  bv_name varchar(254) default NULL,
+  bv_description varchar(254) default NULL,
+
+  PRIMARY KEY (bv_id)
+);
+CREATE SEQUENCE mod_bam_bv_seq
+START WITH 1
+INCREMENT BY 1;
+CREATE TRIGGER mod_bam_bv_trigger
+BEFORE INSERT ON mod_bam_bv
+FOR EACH ROW
+BEGIN
+  SELECT mod_bam_bv_seq.nextval INTO :NEW.bv_id FROM dual;
+END;
+/
+
+--
+-- BA-BV relationships.
+--
+CREATE TABLE mod_bam_ba_bv_relation (
+  ba_bv_id int NOT NULL,
+
+  ba_id int default NULL,
+  bv_id int default NULL,
+
+  PRIMARY KEY (ba_bv_id),
+  FOREIGN KEY (ba_id) REFERENCES mod_bam (ba_id) ON DELETE CASCADE,
+  FOREIGN KEY (bv_id) REFERENCES mod_bam_bv (bv_id) ON DELETE CASCADE
+);
+CREATE SEQUENCE mod_bam_ba_bv_relation_seq
+START WITH 1
+INCREMENT BY 1;
+CREATE TRIGGER mod_bam_ba_bv_relation_trigger
+BEFORE INSERT ON mod_bam_ba_bv_relation
+FOR EACH ROW
+BEGIN
+  SELECT mod_bam_ba_bv_relation_seq.nextval INTO :NEW.ba_bv_id FROM dual;
 END;
 /

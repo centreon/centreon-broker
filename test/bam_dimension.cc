@@ -334,8 +334,8 @@ int main() {
     {
       QString query(
                 "INSERT INTO mod_bam (ba_id, name, description,"
-                "                     level_w, level_c,"
-                "                     sla_warning, sla_critical)"
+                "                     sla_month_percent_w, sla_month_percent_c,"
+                "                     sla_month_duration_w, sla_month_duration_c)"
                 "  VALUES (1, 'BA1', 'DESC1', 90, 80, 70, 60),"
                 "         (2, 'BA2', 'DESC2', 80, 70, 60, 50)");
       QSqlQuery q(*db.centreon_db());
@@ -381,15 +381,6 @@ int main() {
         throw (exceptions::msg() << "could not create boolexps: "
                << q.lastError().text());
     }
-    {
-      QString query(
-                "INSERT INTO mod_bam_bool_rel (ba_id, boolean_id)"
-                "  VALUES (7, 1), (8, 2)");
-      QSqlQuery q(*db.centreon_db());
-      if (!q.exec(query))
-        throw (exceptions::msg() << "could not link boolexps: "
-               << q.lastError().text());
-    }
     // Create meta_services
     {
       QString query(
@@ -404,22 +395,22 @@ int main() {
     // Create bvs
     {
       QString query(
-                "INSERT INTO mod_bam_ba_groups (id_ba_group, ba_group_name,"
-                "                               ba_group_description)"
+                "INSERT INTO mod_bam_bv (bv_id, bv_name,"
+                "                               bv_description)"
                 "  VALUES (1, 'BaGroup1', 'BaGroupDescription1'),"
                 "         (2, 'BaGroup2', 'BaGroupDescription2')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not create the bvs services: "
+        throw (exceptions::msg() << "could not create the bvs: "
                                  << q.lastError().text());
     }
     // Create the ba bv links
     {
       QString query(
-                "INSERT INTO mod_bam_bagroup_ba_relation (id_bgr, id_ba, "
-                "                                         id_ba_group)"
-                "  VALUES (1, 7, 1),"
-                "         (2, 8, 2)");
+                "INSERT INTO mod_bam_ba_bv_relation (ba_bv_id, ba_id, "
+                "                                              bv_id)"
+                "  VALUES (1, 2, 1),"
+                "         (2, 1, 2)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create the ba bv links: "
@@ -452,8 +443,8 @@ int main() {
 
     // Check ba-bv links.
     ba_bv_dimension babvs[] =
-    {{7, 1},
-     {8, 2}};
+    {{1, 2},
+     {2, 1}};
     check_ba_bv_links(*db.bi_db(), babvs, sizeof(babvs) / sizeof(*babvs));
 
     // Check kpis.
@@ -485,13 +476,13 @@ int main() {
       if (!q.exec(query))
         throw (exceptions::msg() << "could not truncate the table mod_bam_kpi: "
                                  << q.lastError().text());
-      query = "TRUNCATE TABLE mod_bam_ba_groups";
+      query = "TRUNCATE TABLE mod_bam_bv";
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not truncate the table mod_bam_ba_groups: "
+        throw (exceptions::msg() << "could not truncate the table mod_bam_bv: "
                                  << q.lastError().text());
-      query = "TRUNCATE TABLE mod_bam_bagroup_ba_relation";
+      query = "TRUNCATE TABLE mod_bam_ba_bv_relation";
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not truncate the table mod_bam_bagroup_ba_relation: "
+        throw (exceptions::msg() << "could not truncate the table mod_bam_ba_bv_relation: "
                                  << q.lastError().text());
     }
 
