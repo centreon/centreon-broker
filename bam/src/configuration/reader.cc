@@ -109,28 +109,32 @@ void reader::_load(state::kpis& kpis) {
     "        k.ignore_acknowledged,"
     "        COALESCE(k.drop_warning, ww.impact),"
     "        COALESCE(k.drop_critical, cc.impact),"
-    "        COALESCE(k.drop_unknown, uu.impact)"
+    "        COALESCE(k.drop_unknown, uu.impact),"
+    "        k.last_state_change, k.in_downtime"
     "  FROM  mod_bam_kpi AS k"
     "  LEFT JOIN mod_bam_impacts AS ww"
     "    ON k.drop_warning_impact_id = ww.id_impact"
     "  LEFT JOIN mod_bam_impacts AS cc"
     "    ON k.drop_critical_impact_id = cc.id_impact"
     "  LEFT JOIN mod_bam_impacts AS uu"
-    "    ON k.drop_unknown_impact_id = uu.id_impact"));
+    "    ON k.drop_unknown_impact_id = uu.id_impact"
+    "  WHERE k.activate='1' AND k.boolean_id IS NULL"));
   if (_db->lastError().isValid())
     throw (reader_exception()
            << "BAM: could not retrieve KPI configuration from DB: "
            << _db->lastError().text());
 
   while (query.next()) {
-    kpis[query.value(0).toInt()] =
+    // KPI object.
+    unsigned int kpi_id(query.value(0).toUInt());
+    kpis[kpi_id] =
       kpi(
-        query.value(0).toInt(), // ID.
+        kpi_id, // ID.
         query.value(1).toInt(), // State type.
-        query.value(2).toInt(), // Host ID.
-        query.value(3).toInt(), // Service ID.
-        query.value(4).toInt(), // BA ID.
-        query.value(5).toInt(), // BA indicator ID.
+        query.value(2).toUInt(), // Host ID.
+        query.value(3).toUInt(), // Service ID.
+        query.value(4).toUInt(), // BA ID.
+        query.value(5).toUInt(), // BA indicator ID.
         query.value(6).toInt(), // Status.
         query.value(7).toInt(), // Hard state.
         query.value(8).toFloat(), // Downtimed.
@@ -140,35 +144,16 @@ void reader::_load(state::kpis& kpis) {
         query.value(12).toDouble(), // Warning.
         query.value(13).toDouble(), // Critical.
         query.value(14).toDouble()); // Unknown.
-  }
 
-  // Load opened kpi events associated with KPIs.
-  query = _db->exec(
-      "SELECT kpi_event_id, kpi_id, status, start_time, end_time, impact_level,"
-       " first_output, first_perfdata, in_downtime"
-       "   FROM kpi_events WHERE end_time = 0");
-
-    if (_db->lastError().isValid())
-      throw (reader_exception()
-             << "BAM: could not retrieve KPI events from DB: "
-             << _db->lastError().text());
-
-  while (query.next()) {
-    state::kpis::iterator found = kpis.find(query.value(1).toInt());
-    if (found == kpis.end())
-      continue;
-
-    kpi_event e;
-    e.kpi_id = query.value(1).toInt();
-    e.status = query.value(2).toInt();
-    e.status = query.value(3).toInt();
-    e.start_time = query.value(4).toInt();
-    e.end_time = query.value(5).toInt();
-    e.impact_level = query.value(6).toInt();
-    e.output = query.value(7).toString().toStdString();
-    e.perfdata = query.value(8).toString().toStdString();
-    e.in_downtime = query.value(9).toBool();
-    found->second.set_opened_event(e);
+    // KPI state.
+    if (!query.value(15).isNull()) {
+      kpi_event e;
+      e.kpi_id = kpi_id;
+      e.status = query.value(6).toInt();
+      e.start_time = query.value(15).toLongLong();
+      e.in_downtime = query.value(16).toBool();
+      kpis[kpi_id].set_opened_event(e);
+    }
   }
 
   return ;
@@ -181,20 +166,34 @@ void reader::_load(state::kpis& kpis) {
  */
 void reader::_load(state::bas& bas) {
   QSqlQuery query(_db->exec(
-    "SELECT ba_id, name, level_w, level_c"
-    "  FROM mod_bam"));
+    "SELECT ba_id, name, level_w, level_c, last_state_change, "
+    "       current_status, in_downtime"
+    "  FROM mod_bam"
+    "  WHERE activate='1'"));
   if (_db->lastError().isValid())
     throw (reader_exception()
            << "BAM: could not retrieve BA configuration from DB: "
            << _db->lastError().text());
 
   while (query.next()) {
-    bas[query.value(0).toUInt()] =
+    // BA object.
+    unsigned int ba_id(query.value(0).toUInt());
+    bas[ba_id] =
       ba(
-        query.value(0).toUInt(), // ID.
+        ba_id, // ID.
         query.value(1).toString().toStdString(), // Name.
         query.value(2).toFloat(), // Warning level.
         query.value(3).toFloat()); // Critical level.
+
+    // BA state.
+    if (!query.value(4).isNull()) {
+      ba_event e;
+      e.ba_id = ba_id;
+      e.start_time = query.value(4).toLongLong();
+      e.status = query.value(5).toInt();
+      e.in_downtime = query.value(6).toBool();
+      bas[ba_id].set_opened_event(e);
+    }
   }
 
   // Load the associated ba_id from the table services.
@@ -223,15 +222,15 @@ void reader::_load(state::bas& bas) {
         logging::error(logging::medium)
           << "BAM: BA host:" << host_id
           << "service: " << service_id
-          << "unknown when attempting to retrieve services.";
+          << "unknown when attempting to retrieve services";
         continue;
       }
       state::bas::iterator found = bas.find(ba_id);
       if (found == bas.end()) {
         logging::error(logging::medium)
-          << "BAM: BA service: "
+          << "BAM: BA service '"
           << query.value(0).toString()
-          << "not found when attempting to retrieve services.";
+          << "' not found when attempting to retrieve services";
         continue;
       }
       found->second.set_host_id(host_id.toUInt());
@@ -248,32 +247,6 @@ void reader::_load(state::bas& bas) {
       throw (reader_exception()
                << "BAM: found a BA without an associated service, ID: "
                << it->second.get_id());
-
-  // Load the opened but not-closed events for all the BAs.
-  query = _db->exec("SELECT ba_event_id, ba_id, start_time, end_time, status, "
-                    "in_downtime FROM ba_events"
-                    "  WHERE end_time = 0");
-  if (_db->lastError().isValid())
-    throw (reader_exception()
-           << "BAM: could not retrieve the BA events associated to the BAs: "
-           << _db->lastError().text());
-
-  while (query.next()) {
-   ba_event e;
-   e.ba_id = query.value(1).toInt();
-   e.start_time = query.value(2).toInt();
-   e.end_time = query.value(3).toInt();
-   e.status = query.value(4).toInt();
-   e.in_downtime = query.value(5).toInt();
-   state::bas::iterator found = bas.find(e.ba_id);
-   if (found == bas.end()) {
-     logging::error(logging::medium)
-       << "BAM: ba id: "
-       << query.value(1).toString()
-       << "not found when reading BA events from db.";
-   }
-   found->second.set_opened_event(e);
-  }
 
   // Load the timeperiods associated with the BAs.
   query = _db->exec("SELECT ba_id, timeperiod_id, is_default FROM mod_bam_ba_tp_rel");
@@ -359,54 +332,36 @@ void reader::_load(state::bool_exps& bool_exps) {
   // Load kpi_id associated with boolean BAs.
   {
     QSqlQuery q(_db->exec(
-      "SELECT boolean_id, kpi_id FROM mod_bam_kpi WHERE kpi_id != 0"));
+      "SELECT boolean_id, kpi_id, last_state_change,"
+      "       current_status, in_downtime"
+      "  FROM mod_bam_kpi"
+      "  WHERE activate='1' AND boolean_id IS NOT NULL"));
     if (_db->lastError().isValid())
       throw (reader_exception()
-             << "BAM: could not retrieve the kpi_ids of the boolean "
+             << "BAM: could not retrieve the KPI IDs of the boolean "
                 "expressions: " << _db->lastError().text());
     while (q.next()) {
-      unsigned int boolean_id = q.value(0).toInt();
-      unsigned int kpi_id = q.value(1).toInt();
+      // Boolean KPI ID.
+      unsigned int boolean_id = q.value(0).toUInt();
+      unsigned int kpi_id = q.value(1).toUInt();
       state::bool_exps::iterator found = bool_exps.find(boolean_id);
       if (found == bool_exps.end())
-        throw (reader_exception())
-                << "BAM: Found a kpi pointing to an inexisting boolean "
-                   "(boolean_id = " << boolean_id;
-      found->second.set_kpi_id(kpi_id);
-    }
-  }
-
-  // Load opened kpi events associated with boolean expressions.
-  {
-    QSqlQuery query = _db->exec(
-        "SELECT kpi_event_id, kpi_id, status, start_time, end_time, impact_level,"
-         " first_output, first_perfdata, in_downtime"
-         "   FROM kpi_events WHERE end_time = 0");
-
-      if (_db->lastError().isValid())
         throw (reader_exception()
-               << "BAM: could not retrieve KPI events from DB: "
-               << _db->lastError().text());
-
-    while (query.next()) {
-      state::bool_exps::iterator found
-            = bool_exps.find(query.value(1).toInt());
-      if (found == bool_exps.end())
-        continue;
-
-      kpi_event e;
-      e.kpi_id = query.value(1).toInt();
-      e.status = query.value(2).toInt();
-      e.status = query.value(3).toInt();
-      e.start_time = query.value(4).toInt();
-      e.end_time = query.value(5).toInt();
-      e.impact_level = query.value(6).toInt();
-      e.output = query.value(7).toString().toStdString();
-      e.perfdata = query.value(8).toString().toStdString();
-      e.in_downtime = query.value(9).toBool();
-      found->second.set_opened_event(e);
+               << "BAM: found a KPI pointing to an inexisting boolean of ID "
+               << boolean_id);
+      found->second.set_kpi_id(kpi_id);
+      if (!q.value(2).isNull()
+          && (q.value(2).toLongLong()
+              > found->second.get_opened_event().start_time)) {
+        kpi_event e;
+        e.start_time = q.value(2).toLongLong();
+        e.status = q.value(3).toInt();
+        e.in_downtime = q.value(4).toBool();
+        found->second.set_opened_event(e);
+      }
     }
   }
+
   return ;
 }
 
@@ -460,13 +415,14 @@ void reader::_load(state::meta_services& meta_services) {
             << "    ON i.host_id=s.host_id AND i.service_id=s.service_id"
             << "  WHERE s.description LIKE '" << it->get_service_filter() << "'"
             << "    AND m.metric_name='" << it->get_metric_name() << "'";
-      QSqlQuery q(_db->exec(query.str().c_str()));
-      if (_db->lastError().isValid())
-        throw (reader_exception()
-               << "BAM: could not retrieve members of meta-service '"
-               << it->get_name() << "': " << _db->lastError().text());
-      while (q.next())
-        it->add_metric(q.value(0).toUInt());
+      // XXX : we do not have access to the centreon_storage DB
+      // QSqlQuery q(_db->exec(query.str().c_str()));
+      // if (_db->lastError().isValid())
+      //   throw (reader_exception()
+      //          << "BAM: could not retrieve members of meta-service '"
+      //          << it->get_name() << "': " << _db->lastError().text());
+      // while (q.next())
+      //   it->add_metric(q.value(0).toUInt());
     }
     // Service list mode.
     else {
@@ -493,10 +449,14 @@ void reader::_load(state::meta_services& meta_services) {
  *  @param[out] mapping  Host/service mapping.
  */
 void reader::_load(bam::hst_svc_mapping& mapping) {
+  // XXX : expand hostgroups and servicegroups
   QSqlQuery q(_db->exec(
-    "SELECT h.host_id, s.service_id, h.name, s.description"
-    "  FROM services AS s LEFT JOIN hosts AS h"
-    "  ON s.host_id = h.host_id"));
+    "SELECT h.host_id, s.service_id, h.host_name, s.service_description"
+    "  FROM service AS s"
+    "  LEFT JOIN host_service_relation AS hsr"
+    "    ON s.service_id=hsr.service_service_id"
+    "  LEFT JOIN host AS h"
+    "    ON hsr.host_host_id=h.host_id"));
   if (_db->lastError().isValid())
     throw (reader_exception()
            << "BAM: could not retrieve host/service IDs: "

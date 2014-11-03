@@ -329,7 +329,7 @@ int main() {
           {
             std::ostringstream oss;
             oss << "INSERT INTO service (service_id, service_description)"
-                << "  VALUES (" << j << ", 'ba_" << j << "')";
+                << "  VALUES (" << j << ", '" << j << "')";
             QSqlQuery q(*db.centreon_db());
             if (!q.exec(oss.str().c_str()))
               throw (exceptions::msg() << "could not create service ("

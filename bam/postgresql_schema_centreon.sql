@@ -13,6 +13,7 @@
 -- mod_bam_boolean
 -- mod_bam_bool_rel
 -- mod_bam_kpi
+-- mod_bam_ba_tp_rel
 
 
 --
@@ -29,6 +30,9 @@ CREATE TABLE mod_bam (
   downtime float default NULL,
   acknowledged float default NULL,
   activate enum('1','0') NOT NULL default '0',
+  last_state_change int default NULL,
+  current_status smallint default NULL,
+  in_downtime boolean default NULL,
 
   PRIMARY KEY (ba_id),
   UNIQUE (name)
@@ -84,12 +88,13 @@ CREATE TABLE mod_bam_kpi (
   kpi_id serial,
 
   state_type enum('0','1') default NULL,
-  kpi_type enum('0','1','2') NOT NULL default '0',
+  kpi_type enum('0','1','2','3') NOT NULL default '0',
   host_id int default NULL,
   service_id int default NULL,
   id_indicator_ba int default NULL,
   id_ba int default NULL,
   meta_id int default NULL,
+  boolean_id int default NULL,
   current_status smallint default NULL,
   last_level float default NULL,
   downtime float default NULL,
@@ -104,6 +109,8 @@ CREATE TABLE mod_bam_kpi (
   activate enum('0','1') default '0',
   ignore_downtime enum('0','1') default '0',
   ignore_acknowledged enum('0','1') default '0',
+  last_state_change int default NULL,
+  in_downtime boolean default NULL,
 
   PRIMARY KEY (kpi_id),
   FOREIGN KEY (id_indicator_ba) REFERENCES mod_bam (ba_id)
@@ -116,6 +123,18 @@ CREATE TABLE mod_bam_kpi (
     ON DELETE RESTRICT,
   FOREIGN KEY (drop_unknown_impact_id) REFERENCES mod_bam_impacts (id_impact)
     ON DELETE RESTRICT
+);
+
+--
+-- BA / Timeperiod relations.
+--
+CREATE TABLE mod_bam_ba_tp_rel (
+  ba_id int NOT NULL,
+  timeperiod_id int NOT NULL,
+  is_default boolean NOT NULL default 0,
+
+  FOREIGN KEY (ba_id) REFERENCES mod_bam (ba_id)
+    ON DELETE CASCADE
 );
 
 --
