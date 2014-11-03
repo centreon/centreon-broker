@@ -154,7 +154,7 @@ static void check_ba_bv_links(QSqlDatabase& db,
   QString query(
             "SELECT ba_id, bv_id"
             "  FROM mod_bam_reporting_relations_ba_bv"
-            "  ORDER BY bv_id");
+            "  ORDER BY ba_id");
   QSqlQuery q(db);
   if (!q.exec(query))
     throw (exceptions::msg() << "could not fetch BA-BV links at iteration "
@@ -453,14 +453,14 @@ int main() {
     kpi_dimension kpis[] =
     {
       // Host/Service kpis.
-      {1, NULL, 1, "BA1", 1, "1", 1, "1", 0, NULL, 0, NULL, 15, 35, 99, 0, NULL},
+      {1, NULL, 1, "BA1", 1, "1", 1, "1", 0, NULL, 0, NULL, 15, 25, 99, 0, NULL},
       {2, NULL, 2, "BA2", 1, "1", 2, "2", 0, NULL, 0, NULL, 35, 45, 99, 0, NULL},
       // Ba kpis.
       {3, NULL, 2, "BA2", 0, NULL, 0, NULL, 1, "BA1", 0, NULL, 65, 75, 99, 0, NULL},
       {4, NULL, 1, "BA1", 0, NULL, 0, NULL, 2, "BA2", 0, NULL, 25, 35, 99, 0, NULL},
       // Meta service kpis.
-      {5, NULL, 1, "BA1", 0, NULL, 0, NULL, 0, NULL, 1, "META1", 35, 45, 99, 0, NULL},
-      {6, NULL, 2, "BA2", 0, NULL, 0, NULL, 0, NULL, 2, "META2", 85, 95, 99, 0, NULL},
+      {5, NULL, 1, "BA1", 0, NULL, 0, NULL, 0, NULL, 1, "Meta1", 35, 45, 99, 0, NULL},
+      {6, NULL, 2, "BA2", 0, NULL, 0, NULL, 0, NULL, 2, "Meta2", 45, 55, 99, 0, NULL},
       // Boolean kpis.
       {7, NULL, 1, "BA1", 0, NULL, 0, NULL, 0, NULL, 0, NULL, 85, 95, 99, 1, "BoolExp1"},
       {8, NULL, 2, "BA2", 0, NULL, 0, NULL, 0, NULL, 0, NULL, 95, 105, 99, 2, "BoolExp2"},
@@ -469,22 +469,22 @@ int main() {
 
     // Erase everything.
     {
-      QString query("TRUNCATE TABLE mod_bam");
+      QString query("DELETE FROM mod_bam");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not truncate the table mod_bam: "
                                  << q.lastError().text());
-      query = "TRUNCATE TABLE mod_bam_kpi";
+      query = "DELETE FROM mod_bam_kpi";
       if (!q.exec(query))
         throw (exceptions::msg() << "could not truncate the table mod_bam_kpi: "
                                  << q.lastError().text());
-      query = "TRUNCATE TABLE mod_bam_bv";
+      query = "DELETE FROM mod_bam_ba_groups";
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not truncate the table mod_bam_bv: "
+        throw (exceptions::msg() << "could not truncate the table mod_bam_ba_groups: "
                                  << q.lastError().text());
-      query = "TRUNCATE TABLE mod_bam_ba_bv_relation";
+      query = "DELETE FROM mod_bam_bagroup_ba_relation";
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not truncate the table mod_bam_ba_bv_relation: "
+        throw (exceptions::msg() << "could not truncate the table mod_bam_bagroup_ba_relation: "
                                  << q.lastError().text());
     }
 
@@ -496,7 +496,7 @@ int main() {
     // Check that everything was deleted.
     {
       QString query("SELECT * from mod_bam_reporting_ba");
-      QSqlQuery q(*db.centreon_db());
+      QSqlQuery q(*db.bi_db());
       if (!q.exec(query))
         throw (exceptions::msg()
                << "could not select the table mod_bam_reporting_ba: "

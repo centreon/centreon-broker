@@ -91,7 +91,6 @@ CREATE TABLE mod_bam_reporting_kpi (
   impact_unknown float default NULL,
 
   PRIMARY KEY (kpi_id),
-  UNIQUE (kpi_name),
   FOREIGN KEY (ba_id) REFERENCES mod_bam_reporting_ba (ba_id)
     ON DELETE CASCADE,
   FOREIGN KEY (kpi_ba_id) REFERENCES mod_bam_reporting_ba (ba_id)
