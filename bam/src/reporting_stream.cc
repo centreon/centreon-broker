@@ -776,7 +776,9 @@ void reporting_stream::_process_dimension_kpi(
   _dimension_kpi_insert->bindValue(":service_id", dk.service_id);
   _dimension_kpi_insert->bindValue(":service_description",
                                    dk.service_description.c_str());
-  _dimension_kpi_insert->bindValue(":kpi_ba_id", dk.kpi_ba_id);
+  _dimension_kpi_insert->bindValue(":kpi_ba_id", dk.kpi_ba_id != 0 ?
+                                                    dk.kpi_ba_id :
+                                                    QVariant(QVariant::UInt));
   _dimension_kpi_insert->bindValue(":kpi_ba_name", dk.kpi_ba_name.c_str());
   _dimension_kpi_insert->bindValue(":meta_service_id", dk.meta_service_id);
   _dimension_kpi_insert->bindValue(":meta_service_name",
