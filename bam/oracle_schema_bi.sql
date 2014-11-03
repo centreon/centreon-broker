@@ -92,9 +92,9 @@ CREATE TABLE mod_bam_reporting_kpi (
 
   PRIMARY KEY (kpi_id),
   UNIQUE (kpi_name),
-  FOREIGN KEY (ba_id) REFERENCES ba (ba_id)
+  FOREIGN KEY (ba_id) REFERENCES mod_bam_reporting_ba (ba_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (kpi_ba_id) REFERENCES ba (ba_id)
+  FOREIGN KEY (kpi_ba_id) REFERENCES mod_bam_reporting_ba (ba_id)
     ON DELETE CASCADE
 );
 CREATE SEQUENCE mod_bam_reporting_kpi_seq
@@ -117,9 +117,9 @@ CREATE TABLE mod_bam_reporting_relations_ba_bv (
   ba_id int NOT NULL,
 
   PRIMARY KEY (ba_bv_id),
-  FOREIGN KEY (bv_id) REFERENCES bv (bv_id)
+  FOREIGN KEY (bv_id) REFERENCES mod_bam_reporting_bv (bv_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (ba_id) REFERENCES ba (ba_id)
+  FOREIGN KEY (ba_id) REFERENCES mod_bam_reporting_ba (ba_id)
     ON DELETE CASCADE
 );
 CREATE SEQUENCE mod_bam_reporting_relations_ba_bv_seq
@@ -146,7 +146,7 @@ CREATE TABLE mod_bam_reporting_ba_events (
   in_downtime boolean default NULL,
 
   PRIMARY KEY (ba_event_id),
-  FOREIGN KEY (ba_id) REFERENCES ba (ba_id)
+  FOREIGN KEY (ba_id) REFERENCES mod_bam_reporting_ba (ba_id)
     ON DELETE CASCADE
 );
 CREATE SEQUENCE mod_bam_reporting_ba_events_seq
@@ -176,7 +176,7 @@ CREATE TABLE mod_bam_reporting_kpi_events (
   first_perfdata varchar(45) default NULL,
 
   PRIMARY KEY (kpi_event_id),
-  FOREIGN KEY (kpi_id) REFERENCES kpi (kpi_id)
+  FOREIGN KEY (kpi_id) REFERENCES mod_bam_reporting_kpi (kpi_id)
     ON DELETE CASCADE
 );
 CREATE SEQUENCE mod_bam_reporting_kpi_events_seq
@@ -199,9 +199,9 @@ CREATE TABLE mod_bam_reporting_relations_ba_kpi_events (
   kpi_event_id int NOT NULL,
 
   PRIMARY KEY (ba_kpi_event_id),
-  FOREIGN KEY (ba_event_id) REFERENCES ba_events (ba_event_id)
+  FOREIGN KEY (ba_event_id) REFERENCES mod_bam_reporting_ba_events (ba_event_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (kpi_event_id) REFERENCES kpi_events (kpi_event_id)
+  FOREIGN KEY (kpi_event_id) REFERENCES mod_bam_reporting_kpi_events (kpi_event_id)
     ON DELETE CASCADE
 );
 CREATE SEQUENCE mod_bam_reporting_relations_ba_kpi_events_seq
@@ -229,7 +229,7 @@ CREATE TABLE mod_bam_reporting_ba_events_durations (
   timeperiod_is_default boolean default NULL,
 
   UNIQUE (ba_event_id, timeperiod_id),
-  FOREIGN KEY (ba_event_id) REFERENCES ba_events (ba_event_id)
+  FOREIGN KEY (ba_event_id) REFERENCES mod_bam_reporting_ba_events (ba_event_id)
     ON DELETE CASCADE
 );
 
@@ -253,6 +253,6 @@ CREATE TABLE mod_bam_reporting_ba_availabilities (
   timeperiod_is_default boolean default NULL,
 
   UNIQUE (ba_id, time_id, timeperiod_id),
-  FOREIGN KEY (ba_id) REFERENCES ba (ba_id)
+  FOREIGN KEY (ba_id) REFERENCES mod_bam_reporting_ba (ba_id)
     ON DELETE CASCADE
 );
