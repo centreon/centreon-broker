@@ -128,10 +128,10 @@ void reader::_load(state::kpis& kpis) {
     "  LEFT JOIN mod_bam_impacts AS uu"
     "    ON k.drop_unknown_impact_id = uu.id_impact"
     "  WHERE k.activate='1' AND k.boolean_id IS NULL"));
-  if (_db->lastError().isValid())
+  if (query.lastError().isValid())
     throw (reader_exception()
            << "BAM: could not retrieve KPI configuration from DB: "
-           << _db->lastError().text());
+           << query.lastError().text());
 
   while (query.next()) {
     // KPI object.
@@ -179,10 +179,10 @@ void reader::_load(state::bas& bas) {
     "       current_status, in_downtime"
     "  FROM mod_bam"
     "  WHERE activate='1'"));
-  if (_db->lastError().isValid())
+  if (query.lastError().isValid())
     throw (reader_exception()
            << "BAM: could not retrieve BA configuration from DB: "
-           << _db->lastError().text());
+           << query.lastError().text());
 
   while (query.next()) {
     // BA object.
@@ -213,10 +213,10 @@ void reader::_load(state::bas& bas) {
                  "  INNER JOIN host_service_relation AS hsr"
                  "  ON s.service_id=hsr.service_service_id"
                  "  WHERE service_description LIKE 'ba_%'");
-  if (_db->lastError().isValid())
+  if (query.lastError().isValid())
     throw (reader_exception()
            << "BAM: could not retrieve BA service IDs from DB: "
-           << _db->lastError().text());
+           << query.lastError().text());
 
   while (query.next()) {
     std::string service_description = query.value(0).toString().toStdString();
@@ -259,10 +259,10 @@ void reader::_load(state::bas& bas) {
 
   // Load the timeperiods associated with the BAs.
   query = _db->exec("SELECT ba_id, timeperiod_id, is_default FROM mod_bam_ba_tp_rel");
-  if (_db->lastError().isValid())
+  if (query.lastError().isValid())
     throw (reader_exception()
            << "BAM: could not retrieve the timeperiods associated with the BAs: "
-           << _db->lastError().text());
+           << query.lastError().text());
   while (query.next()) {
     unsigned int ba_id = query.value(0).toInt();
     state::bas::iterator found = bas.find(ba_id);
@@ -296,10 +296,10 @@ void reader::_load(state::bool_exps& bool_exps) {
       "  FROM  mod_bam_boolean as be"
       "  LEFT JOIN mod_bam_impacts as imp"
       "    ON be.impact_id = imp.id_impact"));
-    if (_db->lastError().isValid())
+    if (query.lastError().isValid())
       throw (reader_exception()
              << "BAM: could not retrieve boolean expression "
-             << "configuration from DB: " << _db->lastError().text());
+             << "configuration from DB: " << query.lastError().text());
 
     while (query.next()) {
       bool_exps[query.value(0).toInt()] =
@@ -317,10 +317,10 @@ void reader::_load(state::bool_exps& bool_exps) {
     {
       QSqlQuery q(_db->exec(
         "SELECT boolean_id, ba_id FROM mod_bam_bool_rel"));
-      if (_db->lastError().isValid())
+      if (q.lastError().isValid())
         throw (reader_exception()
                << "BAM: could not retrieve BAs impacted by boolean "
-               << "expressions: " << _db->lastError().text());
+               << "expressions: " << q.lastError().text());
 
       while (q.next())
         impacted_bas[q.value(0).toUInt()].push_back(q.value(1).toUInt());
@@ -345,10 +345,10 @@ void reader::_load(state::bool_exps& bool_exps) {
       "       current_status, in_downtime"
       "  FROM mod_bam_kpi"
       "  WHERE activate='1' AND boolean_id IS NOT NULL"));
-    if (_db->lastError().isValid())
+    if (q.lastError().isValid())
       throw (reader_exception()
              << "BAM: could not retrieve the KPI IDs of the boolean "
-                "expressions: " << _db->lastError().text());
+                "expressions: " << q.lastError().text());
     while (q.next()) {
       // Boolean KPI ID.
       unsigned int boolean_id = q.value(0).toUInt();
@@ -387,10 +387,10 @@ void reader::_load(state::meta_services& meta_services) {
       "       meta_select_mode, regexp_str, metric"
       "  FROM meta_service"
       "  WHERE meta_activate='1'"));
-    if (_db->lastError().isValid())
+    if (q.lastError().isValid())
       throw (reader_exception()
              << "BAM: could not retrieve meta-services: "
-             << _db->lastError().text());
+             << q.lastError().text());
     while (q.next())
       meta_services.push_back(meta_service(
                                 q.value(0).toUInt(),
@@ -426,10 +426,10 @@ void reader::_load(state::meta_services& meta_services) {
             << "    AND m.metric_name='" << it->get_metric_name() << "'";
       // XXX : we do not have access to the centreon_storage DB
       // QSqlQuery q(_db->exec(query.str().c_str()));
-      // if (_db->lastError().isValid())
+      // if (q.lastError().isValid())
       //   throw (reader_exception()
       //          << "BAM: could not retrieve members of meta-service '"
-      //          << it->get_name() << "': " << _db->lastError().text());
+      //          << it->get_name() << "': " << q.lastError().text());
       // while (q.next())
       //   it->add_metric(q.value(0).toUInt());
     }
@@ -441,10 +441,10 @@ void reader::_load(state::meta_services& meta_services) {
             << "  WHERE meta_id=" << it->get_id()
             << "    AND activate='1'";
       QSqlQuery q(_db->exec(query.str().c_str()));
-      if (_db->lastError().isValid())
+      if (q.lastError().isValid())
         throw (reader_exception()
                << "BAM: could not retrieve members of meta-service '"
-               << it->get_name() << "': " << _db->lastError().text());
+               << it->get_name() << "': " << q.lastError().text());
       while (q.next())
         it->add_metric(q.value(0).toUInt());
     }
@@ -466,10 +466,10 @@ void reader::_load(bam::hst_svc_mapping& mapping) {
     "    ON s.service_id=hsr.service_service_id"
     "  LEFT JOIN host AS h"
     "    ON hsr.host_host_id=h.host_id"));
-  if (_db->lastError().isValid())
+  if (q.lastError().isValid())
     throw (reader_exception()
            << "BAM: could not retrieve host/service IDs: "
-           << _db->lastError().text());
+           << q.lastError().text());
   while (q.next())
     mapping.set_service(
               q.value(2).toString().toStdString(),
@@ -492,10 +492,10 @@ void reader::_load(state::timeperiods& tps) {
   q.exec("SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday, tp_tuesday, "
          "tp_wednesday, tp_thursday, tp_friday, tp_saturday"
          "  FROM timeperiod");
-  if (_db->lastError().isValid())
+  if (q.lastError().isValid())
     throw (reader_exception()
            << "BAM: could not retrieve timeperiods: "
-           << _db->lastError().text());
+           << q.lastError().text());
   while (q.next())
     tps[q.value(0).toInt()] =
       timeperiod(
@@ -515,10 +515,10 @@ void reader::_load(state::timeperiods& tps) {
   {
     q.exec("SELECT timeperiod_id, days, timerange"
            "  FROM timeperiod_exceptions");
-    if (_db->lastError().isValid())
+    if (q.lastError().isValid())
       throw (reader_exception()
              << "BAM: could not retrieve timeperiod exceptions: "
-             << _db->lastError().text());
+             << q.lastError().text());
     while (q.next()) {
       unsigned int timeperiod_id = q.value(0).toInt();
       state::timeperiods::iterator found = tps.find(timeperiod_id);
@@ -536,10 +536,10 @@ void reader::_load(state::timeperiods& tps) {
   {
     q.exec("SELECT timeperiod_id, timeperiod_include_id"
            "  FROM timeperiod_include_relations");
-    if (_db->lastError().isValid())
+    if (q.lastError().isValid())
       throw (reader_exception()
              << "BAM: could not retrieve timeperiod include relations: "
-             << _db->lastError().text());
+             << q.lastError().text());
     while (q.next()) {
       unsigned int timeperiod_id = q.value(0).toInt();
       unsigned int timeperiod_include_id = q.value(1).toInt();
@@ -562,10 +562,10 @@ void reader::_load(state::timeperiods& tps) {
   {
     q.exec("SELECT timeperiod_id, timeperiod_exclude_id"
            "  FROM timeperiod_exclude_relations");
-    if (_db->lastError().isValid())
+    if (q.lastError().isValid())
       throw (reader_exception()
              << "BAM: could not retrieve timeperiod exclude relations: "
-             << _db->lastError().text());
+             << q.lastError().text());
     while (q.next()) {
       unsigned int timeperiod_id = q.value(0).toInt();
       unsigned int timeperiod_exclude_id = q.value(1).toInt();
@@ -606,33 +606,37 @@ void reader::_load_dimensions() {
   // Load the BAs.
   std::map<unsigned int, misc::shared_ptr<dimension_ba_event> > bas;
   {
-    q.exec("SELECT ba_id, name, description, level_w, level_c, sla_warning, sla_critical");
-    if (_db->lastError().isValid())
-      throw (reader_exception()
-             << "BAM: could not retrieve ba dimensions: "
-             << _db->lastError().text());
+    q.exec(
+        "SELECT ba_id, name, description, level_w, level_c,"
+        "       sla_warning, sla_critical"
+        "  FROM mod_bam");
+    if (q.lastError().isValid())
+      throw (reader_exception() << "BAM: could not retrieve BA list: "
+             << q.lastError().text());
     while (q.next()) {
-     misc::shared_ptr<dimension_ba_event>  ba(new dimension_ba_event);
-     ba->ba_id = q.value(0).toInt();
-     ba->ba_name = q.value(1).toString().toStdString();
-     ba->ba_description = q.value(2).toString().toStdString();
-     ba->sla_month_percent_1 = q.value(3).toDouble();
-     ba->sla_month_percent_2 = q.value(4).toDouble();
-     ba->sla_duration_1 = q.value(5).toDouble();
-     ba->sla_duration_2 = q.value(6).toDouble();
-     datas.push_back(ba.staticCast<io::data>());
-     bas[ba->ba_id] = ba;
+      misc::shared_ptr<dimension_ba_event> ba(new dimension_ba_event);
+      ba->ba_id = q.value(0).toUInt();
+      ba->ba_name = q.value(1).toString().toStdString();
+      ba->ba_description = q.value(2).toString().toStdString();
+      ba->sla_month_percent_1 = q.value(3).toDouble();
+      ba->sla_month_percent_2 = q.value(4).toDouble();
+      ba->sla_duration_1 = q.value(5).toDouble();
+      ba->sla_duration_2 = q.value(6).toDouble();
+      datas.push_back(ba.staticCast<io::data>());
+      bas[ba->ba_id] = ba;
+      logging::debug(logging::medium) << "BAM: loading BA "
+        << ba->ba_id << "('" << ba->ba_name << "')";
     }
   }
 
   // Load the BA BV relations.
   {
-    q.exec("SELECT id_ba, id_bv"
+    q.exec("SELECT id_ba, id_ba_group"
            "  FROM mod_bam_bagroup_ba_relation");
-    if (_db->lastError().isValid())
+    if (q.lastError().isValid())
       throw (reader_exception()
-             << "BAM: could not retrieve ba-bv dimension relations: "
-             << _db->lastError().text());
+             << "BAM: could not retrieve BV memberships of BAs: "
+             << q.lastError().text());
     while (q.next()) {
       misc::shared_ptr<dimension_ba_bv_relation_event>
           babv(new dimension_ba_bv_relation_event);
@@ -645,11 +649,10 @@ void reader::_load_dimensions() {
   // Load the BVs.
   {
     q.exec("SELECT id_ba_group, ba_group_name, ba_group_description"
-           "  FROM centreon.mod_bam_ba_group");
-    if (_db->lastError().isValid())
-      throw (reader_exception()
-             << "BAM: could not retrieve bv dimensions: "
-             << _db->lastError().text());
+           "  FROM mod_bam_ba_groups");
+    if (q.lastError().isValid())
+      throw (reader_exception() << "BAM: could not retrieve BV list: "
+             << q.lastError().text());
     while (q.next()) {
       misc::shared_ptr<dimension_bv_event>
           bv(new dimension_bv_event);
@@ -689,10 +692,10 @@ void reader::_load_dimensions() {
            "    ON meta.meta_id = k.meta_id"
            "  LEFT JOIN mod_bam_boolean as boo"
            "    ON boo.boolean_id = k.boolean_id");
-    if (_db->lastError().isValid())
+    if (q.lastError().isValid())
       throw (reader_exception()
              << "BAM: could not retrieve kpi dimensions: "
-             << _db->lastError().text());
+             << q.lastError().text());
     while (q.next()) {
       misc::shared_ptr<dimension_kpi_event> k(new dimension_kpi_event);
       k->kpi_id = q.value(0).toInt();
@@ -718,8 +721,8 @@ void reader::_load_dimensions() {
             found = bas.find(k->kpi_ba_id);
         if (found == bas.end())
           throw (reader_exception()
-                 << "BAM: could not retrieve the ba-kpi: "
-                 << k->kpi_ba_id << _db->lastError().text());
+                 << "BAM: could not retrieve BA " << k->kpi_ba_id
+                 << " used as KPI " << k->kpi_id);
         k->kpi_ba_name = found->second->ba_name;
       }
       datas.push_back(k.staticCast<io::data>());

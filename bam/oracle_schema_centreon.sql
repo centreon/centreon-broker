@@ -9,6 +9,8 @@
 -- meta_service
 -- meta_service_relation
 -- mod_bam
+-- mod_bam_ba_groups
+-- mod_bam_bagroup_ba_relation
 -- mod_bam_impacts
 -- mod_bam_boolean
 -- mod_bam_bool_rel
@@ -26,6 +28,8 @@ CREATE TABLE mod_bam (
   description varchar(254) default NULL,
   level_w float default NULL,
   level_c float default NULL,
+  sla_warning float default NULL,
+  sla_critical float default NULL,
   current_level float default NULL,
   downtime float default NULL,
   acknowledged float default NULL,
@@ -176,6 +180,54 @@ CREATE TABLE mod_bam_ba_tp_rel (
   FOREIGN KEY (ba_id) REFERENCES mod_bam (ba_id)
     ON DELETE CASCADE
 );
+
+--
+-- BA Groups (aka BV).
+--
+CREATE TABLE mod_bam_ba_groups (
+  id_ba_group int NOT NULL,
+
+  ba_group_name varchar(255) default NULL,
+  ba_group_description varchar(255) default NULL,
+  visible enum('0', '1') NOT NULL default '1',
+
+  PRIMARY KEY (id_ba_group)
+);
+CREATE SEQUENCE mod_bam_ba_groups_seq
+START WITH 1
+INCREMENT BY 1;
+CREATE TRIGGER mod_bam_ba_groups_trigger
+BEFORE INSERT ON mod_bam_ba_groups
+FOR EACH ROW
+BEGIN
+  SELECT mod_bam_ba_groups_seq.nextval INTO :NEW.id_ba_group FROM dual;
+END;
+/
+
+--
+-- BA / Group relations.
+--
+CREATE TABLE mod_bam_bagroup_ba_relation (
+  id_bgr int NOT NULL,
+  id_ba int NOT NULL,
+  id_ba_group int NOT NULL,
+
+  PRIMARY KEY (id_bgr),
+  FOREIGN KEY (id_ba) REFERENCES mod_bam (ba_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (id_ba_group) REFERENCES mod_bam_ba_groups (id_ba_group)
+    ON DELETE CASCADE
+);
+CREATE SEQUENCE mod_bam_bagroup_ba_relation_seq
+START WITH 1
+INCREMENT BY 1;
+CREATE TRIGGER mod_bam_bagroup_ba_relation_trigger
+BEFORE INSERT ON mod_bam_bagroup_ba_relation
+FOR EACH ROW
+BEGIN
+  SELECT mod_bam_bagroup_ba_relation_seq.nextval INTO :NEW.id_bgr FROM dual;
+END;
+/
 
 --
 -- Meta Services.

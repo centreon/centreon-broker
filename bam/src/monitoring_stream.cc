@@ -505,5 +505,7 @@ void monitoring_stream::_prepare() {
  *  @param[in] status New status.
  */
 void monitoring_stream::_update_status(std::string const& status) {
-
+  QMutexLocker lock(&_statusm);
+  _status = status;
+  return ;
 }
