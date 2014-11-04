@@ -100,9 +100,6 @@ namespace        bam {
     void         _open_new_event(io::stream* visitor);
     void         _recompute();
     void         _unapply_impact(impact_info& impact);
-    void         _compute_event_durations(
-                   misc::shared_ptr<ba_event> ev,
-                   io::stream* visitor);
 
     double       _acknowledgement_hard;
     double       _acknowledgement_soft;
@@ -124,8 +121,6 @@ namespace        bam {
     std::string  _perfdata;
     int          _recompute_count;
     unsigned int _service_id;
-    std::vector<std::pair<time::timeperiod::ptr, bool> >
-                 _tps;
   };
 }
 

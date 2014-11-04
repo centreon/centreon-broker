@@ -24,7 +24,6 @@
 #  include "com/centreon/broker/bam/ba.hh"
 #  include "com/centreon/broker/bam/configuration/ba.hh"
 #  include "com/centreon/broker/bam/configuration/state.hh"
-#  include "com/centreon/broker/bam/configuration/applier/timeperiod.hh"
 #  include "com/centreon/broker/bam/service_book.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
@@ -48,8 +47,7 @@ namespace     bam {
               ~ba();
         ba&   operator=(ba const& right);
         void  apply(configuration::state::bas const& my_bas,
-                    service_book& book,
-                    timeperiod& tp);
+                    service_book& book);
         misc::shared_ptr<bam::ba>
               find_ba(unsigned int id);
         void  visit(io::stream* visitor);
@@ -63,16 +61,10 @@ namespace     bam {
         void  _internal_copy(ba const& right);
         misc::shared_ptr<bam::ba>
               _new_ba(configuration::ba const& cfg,
-                      service_book& book,
-                      timeperiod& tp);
+                      service_book& book);
 
         std::map<unsigned int, applied>
               _applied;
-
-        void _apply_timeperiods(misc::shared_ptr<bam::ba> obj,
-                                unsigned int default_tp,
-                                std::vector<unsigned int> const& tps,
-                                timeperiod& tp);
       };
     }
   }

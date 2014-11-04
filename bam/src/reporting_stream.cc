@@ -31,6 +31,8 @@
 #include "com/centreon/broker/bam/dimension_ba_event.hh"
 #include "com/centreon/broker/bam/dimension_bv_event.hh"
 #include "com/centreon/broker/bam/dimension_kpi_event.hh"
+#include "com/centreon/broker/bam/dimension_timeperiod.hh"
+#include "com/centreon/broker/bam/dimension_ba_timeperiod_relation.hh"
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/bam/kpi_event.hh"
 #include "com/centreon/broker/bam/reporting_stream.hh"
@@ -259,6 +261,20 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
       logging::debug(logging::low)
         << "BAM-BI: processing truncate dimension table signal";
       _process_dimension_truncate_signal(data);
+    }
+    else if (data->type()
+             == io::events::data_type<io::events::bam,
+                                      bam::de_dimension_timeperiod>::value) {
+      logging::debug(logging::low)
+        << "BAM-BI: processing timeperiod dimension";
+      _process_dimension_timeperiod(data);
+    }
+    else if (data->type()
+             == io::events::data_type<io::events::bam,
+                                      bam::de_dimension_ba_timeperiod_relation>::value) {
+      logging::debug(logging::low)
+        << "BAM-BI: processing ba-timeperiod relation dimension";
+      _process_dimension_ba_timeperiod_relation(data);
     }
   }
 }
@@ -746,6 +762,8 @@ void reporting_stream::_process_dimension_truncate_signal(
     if (!(*it)->exec())
       throw (exceptions::msg() << "BAM-BI: could not truncate dimension tables: "
                                << (*it)->lastError().text());
+  _timeperiods.clear();
+  _timeperiod_relations.clear();
 }
 
 /**
@@ -792,6 +810,75 @@ void reporting_stream::_process_dimension_kpi(
            << dk.kpi_id << " :"
            << _dimension_kpi_insert->lastError().text());
 }
+
+/**
+ *  Process a dimension timeperiod and store it in the timeperiod caches.
+ *
+ *  @param[in] e  The event.
+ */
+void reporting_stream::_process_dimension_timeperiod(misc::shared_ptr<io::data> const& e) {
+  bam::dimension_timeperiod const& tp =
+      e.ref_as<bam::dimension_timeperiod const>();
+  _timeperiods[tp.timeperiod->get_id()] = tp.timeperiod;
+}
+
+/**
+ *  Process a dimension ba timeperiod relation and store it in a relation cache.
+ *
+ *  @param[in] e  The event.
+ */
+void reporting_stream::_process_dimension_ba_timeperiod_relation(misc::shared_ptr<io::data> const& e) {
+  bam::dimension_ba_timeperiod_relation const& r =
+     e.ref_as<bam::dimension_ba_timeperiod_relation const>();
+  _timeperiod_relations.insert(std::make_pair(r.ba_id,
+                                              std::make_pair(r.timeperiod_id,
+                                                             r.is_default)));
+}
+
+/**
+ *  @brief Compute and write the duration events associated with a ba event.
+ *
+ *  The event durations are computed from the associated timeperiods of this BA.
+ *
+ *  @param[in] ev       The ba_event generating the durations.
+ *  @param[in] visitor  A visitor stream.
+ */
+void reporting_stream::_compute_event_duration(
+                        misc::shared_ptr<ba_event> ev,
+                        io::stream* visitor) {
+  if (ev.isNull() || !visitor)
+    return ;
+
+  // Find the timeperiods associated with this ba.
+  std::pair<timeperiod_relation_map::const_iterator,
+            timeperiod_relation_map::const_iterator> found = _timeperiod_relations.equal_range(ev->ba_id);
+
+  if (found.first == found.second)
+    return ;
+
+  for (; found.first != found.second; ++found.first) {
+    unsigned int tp_id = found.first->second.first;
+    timeperiod_map::const_iterator tp_found = _timeperiods.find(tp_id);
+    if (tp_found == _timeperiods.end())
+      throw exceptions::msg() << "BAM-BI: could not find the timeperiod "
+                              << tp_id << " in cache";
+    time::timeperiod::ptr tp = tp_found->second;
+    bool is_default = found.first->second.second;
+
+    misc::shared_ptr<ba_duration_event> dur_ev(new ba_duration_event);
+    dur_ev->ba_id = ev->ba_id;
+    dur_ev->real_start_time = ev->start_time;
+    dur_ev->start_time = tp->get_next_valid(ev->start_time);
+    dur_ev->end_time = ev->end_time;
+    dur_ev->duration = dur_ev->end_time - dur_ev->start_time;
+    dur_ev->sla_duration = tp->duration_intersect(dur_ev->start_time,
+                                                  dur_ev->end_time);
+    dur_ev->timeperiod_id = tp->get_id();
+    dur_ev->timeperiod_is_default = is_default;
+    visitor->write(dur_ev);
+  }
+}
+
 
 /**
  *  Update status of endpoint.

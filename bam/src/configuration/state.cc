@@ -37,8 +37,7 @@ state::state(state const& other)
     _kpis(other._kpis),
     _bool_expressions(other._bool_expressions),
     _mapping(other._mapping),
-    _meta_services(other._meta_services),
-    _timeperiods(other._timeperiods) {}
+    _meta_services(other._meta_services) {}
 
 /**
  *  Destructor
@@ -59,7 +58,6 @@ state& state::operator=(state const& other) {
     _bool_expressions = other._bool_expressions;
     _mapping = other._mapping;
     _meta_services = other._meta_services;
-    _timeperiods = other._timeperiods;
   }
   return (*this);
 }
@@ -72,7 +70,6 @@ void state::clear() {
   _kpis.clear();
   _bool_expressions.clear();
   _meta_services.clear();
-  _timeperiods.clear();
   return ;
 }
 
@@ -122,15 +119,6 @@ bam::hst_svc_mapping const& state::get_mapping() const {
 }
 
 /**
- *  Get timeperiods.
- *
- *  @return  Timeperiods.
- */
-state::timeperiods const& state::get_timeperiods() const {
-  return (_timeperiods);
-}
-
-/**
  *  Get all the business activities
  *
  *  @return  The list of all the business activities.
@@ -173,13 +161,4 @@ state::meta_services& state::get_meta_services() {
  */
 bam::hst_svc_mapping& state::get_mapping() {
   return (_mapping);
-}
-
-/**
- *  Get timeperiods.
- *
- *  @return  Timeperiods.
- */
-state::timeperiods& state::get_timeperiods() {
-  return (_timeperiods);
 }

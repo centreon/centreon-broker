@@ -24,7 +24,6 @@
 #  include "com/centreon/broker/bam/configuration/applier/bool_expression.hh"
 #  include "com/centreon/broker/bam/configuration/applier/kpi.hh"
 #  include "com/centreon/broker/bam/configuration/applier/meta_service.hh"
-#  include "com/centreon/broker/bam/configuration/applier/timeperiod.hh"
 #  include "com/centreon/broker/bam/metric_book.hh"
 #  include "com/centreon/broker/bam/service_book.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -60,7 +59,6 @@ namespace               bam {
       private:
         void            _internal_copy(state const& other);
 
-        timeperiod      _timeperiod_applier;
         ba              _ba_applier;
         metric_book     _book_metric;
         service_book    _book_service;

@@ -60,8 +60,7 @@ applier::state& applier::state::operator=(applier::state const& other) {
  *  @param[in] my_state  Configuration state.
  */
 void applier::state::apply(bam::configuration::state const& my_state) {
-  _timeperiod_applier.apply(my_state.get_timeperiods());
-  _ba_applier.apply(my_state.get_bas(), _book_service, _timeperiod_applier);
+  _ba_applier.apply(my_state.get_bas(), _book_service);
   _kpi_applier.apply(my_state.get_kpis(), _ba_applier, _book_service);
   _bool_exp_applier.apply(
                       my_state.get_bool_exps(),
@@ -111,7 +110,6 @@ void applier::state::visit(io::stream* visitor) {
  *  @param[in] other  Object to copy.
  */
 void applier::state::_internal_copy(applier::state const& other) {
-  _timeperiod_applier = other._timeperiod_applier;
   _ba_applier = other._ba_applier;
   _book_metric = other._book_metric;
   _book_service = other._book_service;

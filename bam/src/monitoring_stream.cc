@@ -31,6 +31,7 @@
 #include "com/centreon/broker/bam/configuration/state.hh"
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
+#include "com/centreon/broker/bam/rebuild.hh"
 #include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/bam/monitoring_stream.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -501,6 +502,44 @@ void monitoring_stream::_prepare() {
   }
 
   return ;
+}
+
+/**
+ *  Rebuilds BA durations/availibities from BA events.
+ */
+void monitoring_stream::_rebuild() {
+  // Get the list of the BAs that should be rebuild.
+  std::vector<unsigned int> bas_to_rebuild;
+  {
+    QString query = "SELECT ba_id"
+                    "  FROM mod_bam"
+                    "  WHERE should_be_rebuild = 0";
+    QSqlQuery q = _db->exec(query);
+    if (q.lastError().isValid())
+      throw (exceptions::msg()
+             << "BAM: could not select the list of BAs to rebuild: "
+             << q.lastError().text());
+    while (q.next())
+      bas_to_rebuild.push_back(q.value(0).toInt());
+  }
+
+  // Cache all the events until everything is done.
+  std::vector<misc::shared_ptr<io::data> > cache;
+
+  // Create the rebuild asked event.
+  {
+    misc::shared_ptr<rebuild> r(new rebuild);
+    r->bas_to_rebuild = bas_to_rebuild;
+    cache.push_back(r);
+  }
+
+  // Write all the cached events.
+  std::auto_ptr<io::stream> out(new multiplexing::publisher);
+  for (std::vector<misc::shared_ptr<io::data> >::iterator it(cache.begin()),
+                                                          end(cache.end());
+       it != end;
+       ++it)
+  out->write(*it);
 }
 
 /**

@@ -64,8 +64,7 @@ applier::ba& applier::ba::operator=(applier::ba const& right) {
  *  @param[in] tp     The timeperiod applier.
  */
 void applier::ba::apply(bam::configuration::state::bas const& my_bas,
-                        service_book& book,
-                        timeperiod& tp) {
+                        service_book& book) {
   //
   // DIFF
   //
@@ -132,7 +131,7 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas,
        ++it) {
     logging::config(logging::medium) << "BAM: creating BA "
       << it->first << " ('" << it->second.get_name() << "')";
-    misc::shared_ptr<bam::ba> new_ba(_new_ba(it->second, book, tp));
+    misc::shared_ptr<bam::ba> new_ba(_new_ba(it->second, book));
     applied& content(_applied[it->first]);
     content.cfg = it->second;
     content.obj = new_ba;
@@ -213,8 +212,7 @@ void applier::ba::_internal_copy(applier::ba const& right) {
  */
 misc::shared_ptr<bam::ba> applier::ba::_new_ba(
                                          configuration::ba const& cfg,
-                                         service_book& book,
-                                         timeperiod& tp) {
+                                         service_book& book) {
   misc::shared_ptr<bam::ba> obj(new bam::ba);
   obj->set_id(cfg.get_id());
   obj->set_host_id(cfg.get_host_id());
@@ -223,50 +221,6 @@ misc::shared_ptr<bam::ba> applier::ba::_new_ba(
   obj->set_level_critical(cfg.get_critical_level());
   if (cfg.get_opened_event().ba_id)
     obj->set_initial_event(cfg.get_opened_event());
-  if (cfg.get_default_timeperiod())
-    _apply_timeperiods(
-      obj,
-      cfg.get_default_timeperiod(),
-      cfg.get_timeperiods(),
-      tp);
   book.listen(cfg.get_host_id(), cfg.get_service_id(), obj.data());
   return (obj);
-}
-
-/**
- *  Apply the timeperiods to a BA object.
- *
- *  @param[out] obj        The object to be applied.
- *  @param[in] default_tp  The default timeperiod id.
- *  @param[in] tps         The other timeperiods id.
- *  @param[in] tp          The timeperiod applier.
- */
-void applier::ba::_apply_timeperiods(misc::shared_ptr<bam::ba> obj,
-                                     unsigned int default_tp,
-                                     std::vector<unsigned int> const& tps,
-                                     timeperiod& tp) {
-  obj->clear_timeperiods();
-
-  // Set the default timeperiod.
-  {
-    time::timeperiod::ptr resolved_tp = tp.get_timeperiod_by_id(default_tp);
-    if (resolved_tp.isNull())
-      throw (exceptions::msg()
-        << "BAM: Could not find the timeperiod " << default_tp
-        << " for the ba: " << obj->get_id());
-    obj->add_timeperiod(resolved_tp, true);
-  }
-
-  // Set the other timeperiods.
-  for (std::vector<unsigned int>::const_iterator it(tps.begin()),
-                                                 end(tps.end());
-       it != end;
-       ++it) {
-    time::timeperiod::ptr resolved_tp = tp.get_timeperiod_by_id(*it);
-    if (resolved_tp.isNull())
-      throw (exceptions::msg()
-        << "BAM: Could not find the timeperiod " << *it
-        << " for the ba: " << obj->get_id());
-     obj->add_timeperiod(resolved_tp, false);
-  }
 }

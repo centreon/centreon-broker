@@ -26,7 +26,6 @@
 #  include "com/centreon/broker/bam/configuration/bool_expression.hh"
 #  include "com/centreon/broker/bam/configuration/ba.hh"
 #  include "com/centreon/broker/bam/configuration/meta_service.hh"
-#  include "com/centreon/broker/bam/configuration/timeperiod.hh"
 #  include "com/centreon/broker/bam/hst_svc_mapping.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -47,7 +46,6 @@ namespace                    bam {
       typedef std::map<int, kpi>             kpis;
       typedef std::map<int, bool_expression> bool_exps;
       typedef std::deque<meta_service>    meta_services;
-      typedef std::map<int, timeperiod> timeperiods;
 
                              state();
                              state(state const& other);
@@ -60,14 +58,12 @@ namespace                    bam {
       bool_exps const&       get_bool_exps() const;
       meta_services const&   get_meta_services() const;
       hst_svc_mapping const& get_mapping() const;
-      timeperiods const&     get_timeperiods() const;
 
       bas&                   get_bas();
       kpis&                  get_kpis();
       bool_exps&             get_bool_exps();
       meta_services&         get_meta_services();
       hst_svc_mapping&       get_mapping();
-      timeperiods&           get_timeperiods();
 
     private:
       bas                    _bas;
@@ -75,7 +71,6 @@ namespace                    bam {
       bool_exps              _bool_expressions;
       hst_svc_mapping        _mapping;
       meta_services          _meta_services;
-      timeperiods            _timeperiods;
     };
   }
 }

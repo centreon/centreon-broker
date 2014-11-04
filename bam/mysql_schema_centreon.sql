@@ -39,6 +39,7 @@ CREATE TABLE mod_bam (
   last_state_change int default NULL,
   current_status tinyint default NULL,
   in_downtime boolean default NULL,
+  must_be_rebuild enum('0', '1') NOT NULL default '0',
 
   PRIMARY KEY (ba_id),
   UNIQUE (name)

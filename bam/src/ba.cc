@@ -371,23 +371,6 @@ void ba::set_initial_event(ba_event const& event) {
 }
 
 /**
- *  Add a timeperiod associated with this ba.
- *
- *  @param[in] tp          The timeperiod to add.
- *  @param[in] is_default  True if this timeperiod is the default timeperiod.
- */
-void ba::add_timeperiod(time::timeperiod::ptr tp, bool is_default) {
-  _tps.push_back(std::make_pair(tp, is_default));
-}
-
-/**
- *  Clear the timeperiods associated with this ba.
- */
-void ba::clear_timeperiods() {
-  _tps.clear();
-}
-
-/**
  *  Visit BA.
  *
  *  @param[out] visitor  Visitor that will receive BA status and events.
@@ -510,7 +493,6 @@ void ba::_internal_copy(ba const& right) {
   _level_warning = right._level_warning;
   _output = right._output;
   _perfdata = right._perfdata;
-  _tps = right._tps;
   return ;
 }
 
@@ -579,35 +561,3 @@ void ba::_unapply_impact(ba::impact_info& impact) {
   return ;
 }
 
-/**
- *  @brief Compute and write the duration events associated with a ba event.
- *
- *  The event durations are computed from the associated timeperiods of this BA.
- *
- *  @param[in] ev       The ba_event generating the durations.
- *  @param[in] visitor  A visitor stream.
- */
-void ba::_compute_event_durations(
-           misc::shared_ptr<ba_event> ev,
-           io::stream* visitor) {
-  if (ev.isNull() || !visitor)
-    return ;
-
-  for (std::vector<std::pair<time::timeperiod::ptr, bool> >::iterator
-         it(_tps.begin()),
-         end(_tps.end());
-       it != end;
-       ++it) {
-    misc::shared_ptr<ba_duration_event> dur_ev(new ba_duration_event);
-    dur_ev->ba_id = _id;
-    dur_ev->real_start_time = ev->start_time;
-    dur_ev->start_time = it->first->get_next_valid(ev->start_time);
-    dur_ev->end_time = ev->end_time;
-    dur_ev->duration = dur_ev->end_time - dur_ev->start_time;
-    dur_ev->sla_duration = it->first->duration_intersect(dur_ev->start_time,
-                                                         dur_ev->end_time);
-    dur_ev->timeperiod_id = it->first->get_id();
-    dur_ev->timeperiod_is_default = it->second;
-    visitor->write(dur_ev);
-  }
-}

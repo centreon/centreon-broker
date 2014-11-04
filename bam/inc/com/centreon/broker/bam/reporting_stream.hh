@@ -20,12 +20,16 @@
 #ifndef CCB_BAM_REPORTING_STREAM_HH
 #  define CCB_BAM_REPORTING_STREAM_HH
 
+#  include <map>
 #  include <memory>
 #  include <vector>
 #  include <QSqlDatabase>
 #  include <QSqlQuery>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/bam/time/timeperiod.hh"
 
 CCB_BEGIN()
 
@@ -70,7 +74,11 @@ namespace          bam {
     void           _process_dimension_ba_bv_relation(misc::shared_ptr<io::data> const& e);
     void           _process_dimension_truncate_signal(misc::shared_ptr<io::data> const& e);
     void           _process_dimension_kpi(misc::shared_ptr<io::data> const& e);
+    void           _process_dimension_timeperiod(misc::shared_ptr<io::data> const& e);
+    void           _process_dimension_ba_timeperiod_relation(misc::shared_ptr<io::data> const& e);
     void           _update_status(std::string const& status);
+    void           _compute_event_duration(::com::centreon::broker::misc::shared_ptr<ba_event> ev,
+                                           ::com::centreon::broker::io::stream* visitor);
 
     bool           _process_out;
     unsigned int   _queries_per_transaction;
@@ -101,6 +109,14 @@ namespace          bam {
                   _dimension_kpi_insert;
     std::auto_ptr<QSqlDatabase>
                    _db;
+
+    typedef std::map<unsigned int, time::timeperiod::ptr> timeperiod_map;
+    // Timeperiods by BAs, with an option is default timeperiod.
+    typedef std::multimap<unsigned int,
+                          std::pair<unsigned int, bool> > timeperiod_relation_map;
+    timeperiod_map _timeperiods;
+    timeperiod_relation_map
+                  _timeperiod_relations;
   };
 }
 

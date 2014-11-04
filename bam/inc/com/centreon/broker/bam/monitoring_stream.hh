@@ -63,6 +63,7 @@ namespace          bam {
     void           _check_replication();
     void           _clear_qsql();
     void           _prepare();
+    void           _rebuild();
     void           _update_status(std::string const& status);
 
     configuration::applier::state
