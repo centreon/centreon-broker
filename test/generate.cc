@@ -89,6 +89,8 @@ void free_hosts(std::list<host>& hosts) {
        it != end;
        ++it) {
     delete [] it->name;
+    delete [] it->display_name;
+    delete [] it->alias;
     delete [] it->host_check_command;
     for (hostsmember* child(it->child_hosts); child; ) {
       hostsmember* to_delete(child);
@@ -172,6 +174,7 @@ void free_services(std::list<service>& services) {
        it != end;
        ++it) {
     delete [] it->description;
+    delete [] it->display_name;
     delete [] it->host_name;
     delete [] it->service_check_command;
     for (customvariablesmember* cvar(it->custom_variables); cvar; ) {

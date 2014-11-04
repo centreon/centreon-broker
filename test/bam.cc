@@ -37,6 +37,7 @@ using namespace com::centreon::broker;
 
 #define CENTREON_DB_NAME "broker_bam_centreon"
 #define BI_DB_NAME "broker_bam_bi"
+#define BA_COUNT 9
 #define HOST_COUNT 1
 #define SERVICES_BY_HOST 10
 
@@ -337,6 +338,18 @@ int main() {
 
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, HOST_COUNT);
+    {
+      host h;
+      memset(&h, 0, sizeof(h));
+      char const* str("virtual_ba_host");
+      h.name = new char[strlen(str) + 1];
+      strcpy(h.name, str);
+      str = "1001";
+      h.display_name = new char[strlen(str) + 1];
+      h.accept_passive_host_checks = 0;
+      h.checks_enabled = 0;
+      hosts.push_back(h);
+    }
     generate_services(services, hosts, SERVICES_BY_HOST);
     for (std::list<service>::iterator
            it(services.begin()),
@@ -347,6 +360,34 @@ int main() {
       it->checks_enabled = 0;
       it->max_attempts = 1;
     }
+    for (int i(1); i <= BA_COUNT; ++i) {
+      service s;
+      memset(&s, 0, sizeof(s));
+      {
+        char const* host_name("virtual_ba_host");
+        s.host_name = new char[strlen(host_name) + 1];
+        strcpy(s.host_name, host_name);
+      }
+      {
+        std::ostringstream oss;
+        oss << "ba_" << i;
+        std::string str(oss.str());
+        s.description = new char[str.size() + 1];
+        strcpy(s.description, str.c_str());
+      }
+      {
+        std::ostringstream oss;
+        oss << i + 1000;
+        std::string str(oss.str());
+        s.display_name = new char[str.size() + 1];
+        strcpy(s.display_name, str.c_str());
+      }
+      s.accept_passive_service_checks = 1;
+      s.checks_enabled = 1;
+      s.max_attempts = 1;
+      services.push_back(s);
+    }
+
     commander.set_file(tmpnam(NULL));
     std::string additional_config;
     {
@@ -428,7 +469,7 @@ int main() {
       {
         QString query(
                   "INSERT INTO host (host_id, host_name)"
-                  "  VALUES (101, 'Virtual BA host')");
+                  "  VALUES (1001, 'virtual_ba_host')");
         QSqlQuery q(*db.centreon_db());
         if (!q.exec(query))
           throw (exceptions::msg()
@@ -439,7 +480,7 @@ int main() {
         {
           std::ostringstream oss;
           oss << "INSERT INTO service (service_id, service_description)"
-              << "  VALUES (" << 100 + i << ", 'ba_" << i << "')";
+              << "  VALUES (" << 1000 + i << ", 'ba_" << i << "')";
           QSqlQuery q(*db.centreon_db());
           if (!q.exec(oss.str().c_str()))
             throw (exceptions::msg()
@@ -450,7 +491,7 @@ int main() {
           std::ostringstream oss;
           oss << "INSERT INTO host_service_relation (host_host_id, "
               << "            service_service_id)"
-              << "  VALUES (101, " << 100 + i << ")";
+              << "  VALUES (1001, " << 1000 + i << ")";
           QSqlQuery q(*db.centreon_db());
           if (!q.exec(oss.str().c_str()))
             throw (exceptions::msg()
