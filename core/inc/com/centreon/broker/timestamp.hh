@@ -38,7 +38,7 @@ public:
    *
    *  Time is not defined.
    */
-              timestamp() {}
+              timestamp() : _sec((time_t)-1) {}
 
   /**
    *  Build from a time_t.
