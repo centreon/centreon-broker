@@ -819,18 +819,21 @@ void reporting_stream::_process_dimension_kpi(
  *
  *  @param[in] e  The event.
  */
-void reporting_stream::_process_dimension_timeperiod(misc::shared_ptr<io::data> const& e) {
+void reporting_stream::_process_dimension_timeperiod(
+        misc::shared_ptr<io::data> const& e) {
   bam::dimension_timeperiod const& tp =
       e.ref_as<bam::dimension_timeperiod const>();
   _timeperiods[tp.timeperiod->get_id()] = tp.timeperiod;
 }
 
 /**
- *  Process a dimension ba timeperiod relation and store it in a relation cache.
+ *  Process a dimension ba timeperiod relation and store it in
+ *  a relation cache.
  *
  *  @param[in] e  The event.
  */
-void reporting_stream::_process_dimension_ba_timeperiod_relation(misc::shared_ptr<io::data> const& e) {
+void reporting_stream::_process_dimension_ba_timeperiod_relation(
+        misc::shared_ptr<io::data> const& e) {
   bam::dimension_ba_timeperiod_relation const& r =
      e.ref_as<bam::dimension_ba_timeperiod_relation const>();
   _timeperiod_relations.insert(std::make_pair(r.ba_id,
@@ -854,7 +857,8 @@ void reporting_stream::_compute_event_duration(
 
   // Find the timeperiods associated with this ba.
   std::pair<timeperiod_relation_map::const_iterator,
-            timeperiod_relation_map::const_iterator> found = _timeperiod_relations.equal_range(ev->ba_id);
+            timeperiod_relation_map::const_iterator> found
+      = _timeperiod_relations.equal_range(ev->ba_id);
 
   if (found.first == found.second)
     return ;

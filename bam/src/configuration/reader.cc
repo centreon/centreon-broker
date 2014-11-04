@@ -712,7 +712,8 @@ void reader::_load_dimensions() {
     q.exec("SELECT ba_id, timeperiod_id, is_default FROM mod_bam_ba_tp_rel");
     if (q.lastError().isValid())
       throw (reader_exception()
-             << "BAM: could not retrieve the timeperiods associated with the BAs: "
+             << "BAM: could not retrieve the timeperiods associated "
+                "with the BAs: "
              << q.lastError().text());
     while (q.next()) {
       misc::shared_ptr<dimension_ba_timeperiod_relation>
