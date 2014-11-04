@@ -38,6 +38,7 @@
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/storage/internal.hh"
@@ -175,7 +176,8 @@ monitoring_stream::~monitoring_stream() {
  *  Generate default state.
  */
 void monitoring_stream::initialize() {
-  _applier.visit(this);
+  multiplexing::publisher pblshr;
+  _applier.visit(&pblshr);
   return ;
 }
 

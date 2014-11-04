@@ -625,7 +625,7 @@ void reader::_load_dimensions() {
       datas.push_back(ba.staticCast<io::data>());
       bas[ba->ba_id] = ba;
       logging::debug(logging::medium) << "BAM: loading BA "
-        << ba->ba_id << "('" << ba->ba_name << "')";
+        << ba->ba_id << " ('" << ba->ba_name << "') from DB";
     }
   }
 

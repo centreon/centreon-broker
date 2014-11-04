@@ -25,30 +25,20 @@
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QVariant>
-#include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/ba_event.hh"
 #include "com/centreon/broker/bam/ba_duration_event.hh"
-#include "com/centreon/broker/bam/bool_status.hh"
-#include "com/centreon/broker/bam/configuration/reader.hh"
-#include "com/centreon/broker/bam/configuration/state.hh"
 #include "com/centreon/broker/bam/dimension_ba_bv_relation_event.hh"
 #include "com/centreon/broker/bam/dimension_ba_event.hh"
 #include "com/centreon/broker/bam/dimension_bv_event.hh"
 #include "com/centreon/broker/bam/dimension_kpi_event.hh"
 #include "com/centreon/broker/bam/internal.hh"
-#include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/bam/kpi_event.hh"
-#include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/bam/reporting_stream.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
-#include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/service_status.hh"
-#include "com/centreon/broker/storage/internal.hh"
-#include "com/centreon/broker/storage/metric.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -114,7 +104,7 @@ reporting_stream::reporting_stream(
         QString error(_db->lastError().text());
         _clear_qsql();
         throw (broker::exceptions::msg()
-               << "BAM: could not connect to reporting database '"
+               << "BAM-BI: could not connect to reporting database '"
                << db_name << "' on host '" << db_host
                << ":" << db_port << "': " << error);
       }
@@ -125,7 +115,7 @@ reporting_stream::reporting_stream(
       _check_replication();
     else
       logging::debug(logging::medium)
-        << "BAM: NOT checking replication status of reporting database '"
+        << "BAM-BI: NOT checking replication status of reporting database '"
         << _db->databaseName() << "' on host '" << _db->hostName()
         << ":" << _db->port() << "'";
 
@@ -189,7 +179,7 @@ void reporting_stream::process(bool in, bool out) {
 void reporting_stream::read(misc::shared_ptr<io::data>& d) {
   d.clear();
   throw (exceptions::msg()
-         << "BAM: attempt to read from a BAM reporting stream (not supported)");
+         << "BAM-BI: attempt to read from a BAM reporting stream (not supported)");
   return ;
 }
 /**
@@ -225,49 +215,49 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
              == io::events::data_type<io::events::bam,
                                       bam::de_kpi_event>::value) {
       logging::debug(logging::low)
-        << "BAM: processing KPI event";
+        << "BAM-BI: processing KPI event";
       _process_kpi_event(data);
     }
     else if (data->type()
              == io::events::data_type<io::events::bam,
                                       bam::de_ba_event>::value) {
       logging::debug(logging::low)
-        << "BAM: processing BA event";
+        << "BAM-BI: processing BA event";
       _process_ba_event(data);
     }
     else if (data->type()
              == io::events::data_type<io::events::bam,
                                       bam::de_dimension_ba_event>::value) {
       logging::debug(logging::low)
-        << "BAM: processing BA dimension";
+        << "BAM-BI: processing BA dimension";
       _process_dimension_ba(data);
     }
     else if (data->type()
              == io::events::data_type<io::events::bam,
                                       bam::de_dimension_bv_event>::value) {
       logging::debug(logging::low)
-        << "BAM: processing BV dimension";
+        << "BAM-BI: processing BV dimension";
       _process_dimension_bv(data);
     }
     else if (data->type()
              == io::events::data_type<io::events::bam,
                                       bam::de_dimension_ba_bv_relation_event>::value) {
       logging::debug(logging::low)
-        << "BAM: processing BA-BV relation dimension";
+        << "BAM-BI: processing BA-BV relation dimension";
       _process_dimension_ba_bv_relation(data);
     }
     else if (data->type()
              == io::events::data_type<io::events::bam,
                                       bam::de_dimension_kpi_event>::value) {
       logging::debug(logging::low)
-        << "BAM: processing KPI dimension";
+        << "BAM-BI: processing KPI dimension";
       _process_dimension_kpi(data);
     }
     else if (data->type()
              == io::events::data_type<io::events::bam,
                                       bam::de_dimension_truncate_table_signal>::value) {
       logging::debug(logging::low)
-        << "BAM: processing truncate dimension table signal";
+        << "BAM-BI: processing truncate dimension table signal";
       _process_dimension_truncate_signal(data);
     }
   }
@@ -310,19 +300,19 @@ reporting_stream& reporting_stream::operator=(reporting_stream const& other) {
 void reporting_stream::_check_replication() {
   // Check that replication is OK.
   logging::debug(logging::medium)
-    << "BAM: checking replication status of reporting database '"
+    << "BAM-BI: checking replication status of reporting database '"
     << _db->databaseName() << "' on host '" << _db->hostName()
     << ":" << _db->port() << "'";
   QSqlQuery q(*_db);
   if (!q.exec("SHOW SLAVE STATUS"))
     logging::info(logging::medium)
-      << "BAM: could not check replication status of reporting database '"
+      << "BAM-BI: could not check replication status of reporting database '"
       << _db->databaseName() << "' on host '" << _db->hostName()
       << ":" << _db->port() << "': " << q.lastError().text();
   else {
     if (!q.next())
       logging::info(logging::medium)
-        << "BAM: reorting database '" << _db->databaseName()
+        << "BAM-BI: reorting database '" << _db->databaseName()
         << "' on host '" << _db->hostName() << ":" << _db->port()
         << "' is not under replication";
     else {
@@ -338,7 +328,7 @@ void reporting_stream::_check_replication() {
             || ((field == "Seconds_Behind_Master")
                 && (q.value(i).toInt() != 0)))
           throw (broker::exceptions::msg()
-                 << "BAM: replication of reporting database '"
+                 << "BAM-BI: replication of reporting database '"
                  << _db->databaseName() << "' on host '"
                  << _db->hostName() << ":" << _db->port()
                  << "' is not complete: " << field
@@ -384,7 +374,7 @@ void reporting_stream::_prepare() {
     _ba_event_insert.reset(new QSqlQuery(*_db));
     if (!_ba_event_insert->prepare(query))
       throw (exceptions::msg()
-             << "BAM: could not prepare BA event insertion query: "
+             << "BAM-BI: could not prepare BA event insertion query: "
              << _ba_event_insert->lastError().text());
   }
 
@@ -397,7 +387,7 @@ void reporting_stream::_prepare() {
     _ba_event_update.reset(new QSqlQuery(*_db));
     if (!_ba_event_update->prepare(query))
       throw (exceptions::msg()
-             << "BAM: could not prepare BA event update query: "
+             << "BAM-BI: could not prepare BA event update query: "
              << _ba_event_update->lastError().text());
   }
 
@@ -415,7 +405,7 @@ void reporting_stream::_prepare() {
     _ba_duration_event_insert.reset(new QSqlQuery(*_db));
     if (_ba_duration_event_insert->prepare(query))
       throw (exceptions::msg()
-             << "BAM: could not prepare BA duration event insert query: "
+             << "BAM-BI: could not prepare BA duration event insert query: "
              << _ba_duration_event_insert->lastError().text());
   }
 
@@ -430,7 +420,7 @@ void reporting_stream::_prepare() {
     _kpi_event_insert.reset(new QSqlQuery(*_db));
     if (!_kpi_event_insert->prepare(query))
       throw (exceptions::msg()
-             << "BAM: could not prepare KPI event insertion query: "
+             << "BAM-BI: could not prepare KPI event insertion query: "
              << _kpi_event_insert->lastError().text());
   }
 
@@ -443,7 +433,7 @@ void reporting_stream::_prepare() {
     _kpi_event_update.reset(new QSqlQuery(*_db));
     if (!_kpi_event_update->prepare(query))
       throw (exceptions::msg()
-             << "BAM: could not prepare KPI event update query: "
+             << "BAM-BI: could not prepare KPI event update query: "
              << _kpi_event_update->lastError().text());
   }
 
@@ -461,7 +451,7 @@ void reporting_stream::_prepare() {
     _kpi_event_link.reset(new QSqlQuery(*_db));
     if (!_kpi_event_link->prepare(query))
       throw (exceptions::msg()
-             << "BAM: could not prepare link query of BA and KPI events: "
+             << "BAM-BI: could not prepare link query of BA and KPI events: "
              << _kpi_event_link->lastError().text());
   }
 
@@ -477,7 +467,7 @@ void reporting_stream::_prepare() {
     _dimension_ba_insert.reset(new QSqlQuery(*_db));
     if (!_dimension_ba_insert->prepare(query))
       throw (exceptions::msg()
-             << "BAM: could not prepare the insertion of BA dimensions: "
+             << "BAM-BI: could not prepare the insertion of BA dimensions: "
              << _dimension_ba_insert->lastError().text());
   }
 
@@ -489,7 +479,7 @@ void reporting_stream::_prepare() {
     _dimension_bv_insert.reset(new QSqlQuery(*_db));
     if (!_dimension_bv_insert->prepare(query))
       throw (exceptions::msg()
-             << "BAM: could not prepare the insertion of BV dimensions: "
+             << "BAM-BI: could not prepare the insertion of BV dimensions: "
              << _dimension_bv_insert->lastError().text());
   }
 
@@ -501,7 +491,7 @@ void reporting_stream::_prepare() {
     _dimension_ba_bv_relation_insert.reset(new QSqlQuery(*_db));
     if (!_dimension_ba_bv_relation_insert->prepare(query))
       throw (exceptions::msg()
-             << "BAM: could not prepare the insertion of BA BV"
+             << "BAM-BI: could not prepare the insertion of BA BV"
                 "relation dimension: "
              << _dimension_ba_bv_relation_insert->lastError().text());
   }
@@ -515,25 +505,25 @@ void reporting_stream::_prepare() {
           misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
     if (!_dimension_truncate_tables.back()->prepare(query))
       throw (exceptions::msg()
-            << "BAM: could not prepare the truncate of table kpi");
+            << "BAM-BI: could not prepare the truncate of table kpi");
     query = "DELETE FROM mod_bam_reporting_relations_ba_bv";
     _dimension_truncate_tables.push_back(
           misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
     if (!_dimension_truncate_tables.back()->prepare(query))
       throw (exceptions::msg()
-            << "BAM: could not prepare the truncate of table relations_ba_bv");
+            << "BAM-BI: could not prepare the truncate of table relations_ba_bv");
     query = "DELETE FROM mod_bam_reporting_ba";
     _dimension_truncate_tables.push_back(
           misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
     if (!_dimension_truncate_tables.back()->prepare(query))
       throw (exceptions::msg()
-            << "BAM: could not prepare the truncate of table ba");
+            << "BAM-BI: could not prepare the truncate of table ba");
     query = "DELETE FROM mod_bam_reporting_bv";
     _dimension_truncate_tables.push_back(
           misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
     if (!_dimension_truncate_tables.back()->prepare(query))
       throw (exceptions::msg()
-            << "BAM: could not prepare the truncate of table bv");
+            << "BAM-BI: could not prepare the truncate of table bv");
   }
 
   // Dimension KPI insertion
@@ -553,7 +543,7 @@ void reporting_stream::_prepare() {
     _dimension_kpi_insert.reset(new QSqlQuery(*_db));
     if (!_dimension_kpi_insert->prepare(query))
       throw (exceptions::msg()
-             << "BAM: could not prepare the insertion of KPI dimensions: "
+             << "BAM-BI: could not prepare the insertion of KPI dimensions: "
              << _dimension_kpi_insert->lastError().text());
   }
 
@@ -576,7 +566,7 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
       ":end_time",
       static_cast<qlonglong>(be.end_time.get_time_t()));
     if (!_ba_event_update->exec())
-      throw (exceptions::msg() << "BAM: could not close event of BA "
+      throw (exceptions::msg() << "BAM-BI: could not close event of BA "
              << be.ba_id << " starting at " << be.start_time
              << " and ending at " << be.end_time);
   }
@@ -588,7 +578,7 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
     _ba_event_insert->bindValue(":status", be.status);
     _ba_event_insert->bindValue(":in_downtime", be.in_downtime);
     if (!_ba_event_insert->exec())
-      throw (exceptions::msg() << "BAM: could not insert event of BA "
+      throw (exceptions::msg() << "BAM-BI: could not insert event of BA "
              << be.ba_id << " starting at " << be.start_time);
   }
   return ;
@@ -622,7 +612,7 @@ void reporting_stream::_process_ba_duration_event(
     ":timeperiod_is_default",
     bde.timeperiod_is_default);
   if (_ba_duration_event_insert->exec())
-    throw (exceptions::msg() << "BAM: could not insert duration event of BA "
+    throw (exceptions::msg() << "BAM-BI: could not insert duration event of BA "
            << bde.ba_id << " starting at " << bde.start_time);
   return ;
 }
@@ -644,7 +634,7 @@ void reporting_stream::_process_kpi_event(
       ":end_time",
       static_cast<qlonglong>(ke.end_time.get_time_t()));
     if (!_kpi_event_update->exec())
-      throw (exceptions::msg() << "BAM: could not close event of KPI "
+      throw (exceptions::msg() << "BAM-BI: could not close event of KPI "
              << ke.kpi_id << " starting at " << ke.start_time
              << " and ending at " << ke.end_time << ": "
              << _kpi_event_update->lastError().text());
@@ -655,7 +645,7 @@ void reporting_stream::_process_kpi_event(
     _kpi_event_link->bindValue(":kpi_id", ke.kpi_id);
     if (!_kpi_event_link->exec())
       throw (exceptions::msg()
-             << "BAM: could not create link from event of KPI "
+             << "BAM-BI: could not create link from event of KPI "
              << ke.kpi_id << " starting at " << ke.start_time
              << " to its associated BA event: "
              << _kpi_event_link->lastError().text());
@@ -671,7 +661,7 @@ void reporting_stream::_process_kpi_event(
     _kpi_event_insert->bindValue(":output", ke.output.c_str());
     _kpi_event_insert->bindValue(":perfdata", ke.perfdata.c_str());
     if (!_kpi_event_insert->exec())
-      throw (exceptions::msg() << "BAM: could not insert event of KPI "
+      throw (exceptions::msg() << "BAM-BI: could not insert event of KPI "
              << ke.kpi_id << " starting at " << ke.start_time << ": "
              << _kpi_event_insert->lastError().text());
   }
@@ -699,7 +689,7 @@ void reporting_stream::_process_dimension_ba(
   _dimension_ba_insert->bindValue(":sla_month_duration_2"
                                   , dba.sla_duration_2);
   if (!_dimension_ba_insert->exec())
-    throw (exceptions::msg() << "BAM: could not insert dimension of BA "
+    throw (exceptions::msg() << "BAM-BI: could not insert dimension of BA "
            << dba.ba_id << " :"
            << _dimension_ba_insert->lastError().text());
 }
@@ -718,7 +708,7 @@ void reporting_stream::_process_dimension_bv(
   _dimension_bv_insert->bindValue(":bv_description",
                                   dbv.bv_description.c_str());
   if (!_dimension_bv_insert->exec())
-    throw (exceptions::msg() << "BAM: could not insert dimension of BV "
+    throw (exceptions::msg() << "BAM-BI: could not insert dimension of BV "
            << dbv.bv_id << " :"
            << _dimension_bv_insert->lastError().text());
 }
@@ -735,7 +725,7 @@ void reporting_stream::_process_dimension_ba_bv_relation(
   _dimension_ba_bv_relation_insert->bindValue(":ba_id", dbabv.ba_id);
   _dimension_ba_bv_relation_insert->bindValue(":bv_id", dbabv.bv_id);
   if (!_dimension_ba_bv_relation_insert->exec())
-    throw (exceptions::msg() << "BAM: could not insert dimension of "
+    throw (exceptions::msg() << "BAM-BI: could not insert dimension of "
                                 "BA-BV relation "
            << dbabv.ba_id << "- "<< dbabv.bv_id << " :"
            << _dimension_ba_bv_relation_insert->lastError().text());
@@ -754,7 +744,7 @@ void reporting_stream::_process_dimension_truncate_signal(
        it != end;
        ++it)
     if (!(*it)->exec())
-      throw (exceptions::msg() << "BAM: could not truncate dimension tables: "
+      throw (exceptions::msg() << "BAM-BI: could not truncate dimension tables: "
                                << (*it)->lastError().text());
 }
 
@@ -798,7 +788,7 @@ void reporting_stream::_process_dimension_kpi(
   _dimension_kpi_insert->bindValue(":boolean_id", dk.boolean_id);
   _dimension_kpi_insert->bindValue(":boolean_name", dk.boolean_name.c_str());
   if (!_dimension_kpi_insert->exec())
-    throw (exceptions::msg() << "BAM: could not insert dimension of KPI "
+    throw (exceptions::msg() << "BAM-BI: could not insert dimension of KPI "
            << dk.kpi_id << " :"
            << _dimension_kpi_insert->lastError().text());
 }

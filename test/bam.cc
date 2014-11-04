@@ -214,7 +214,7 @@ static void check_ba_events(
               size_t count) {
   QString query(
             "SELECT ba_id, start_time, end_time, status, in_downtime"
-            "  FROM ba_events"
+            "  FROM mod_bam_reporting_ba_events"
             "  ORDER BY ba_id, start_time");
   QSqlQuery q(db);
   if (!q.exec(query))

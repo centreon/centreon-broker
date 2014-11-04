@@ -130,8 +130,8 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas,
          end(to_create.end());
        it != end;
        ++it) {
-    logging::config(logging::medium)
-      << "BAM: creating BA " << it->first;
+    logging::config(logging::medium) << "BAM: creating BA "
+      << it->first << " ('" << it->second.get_name() << "')";
     misc::shared_ptr<bam::ba> new_ba(_new_ba(it->second, book, tp));
     applied& content(_applied[it->first]);
     content.cfg = it->second;

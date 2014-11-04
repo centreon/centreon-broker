@@ -197,8 +197,10 @@ void applier::bool_expression::apply(
           << *it2 << " for boolean expression " << it->first
           << ", BA won't be impacted by this boolean expression";
       else {
-        logging::config(logging::low)
-          << "BAM: boolexp " << it->first << " impacts BA " << *it2;
+        logging::config(logging::low) << "BAM: boolexp "
+          << it->first << " impacts BA " << *it2 << " of "
+          << it->second.get_impact() << " when "
+          << it->second.get_impact_if();
         target->add_impact(new_bool_exp.staticCast<bam::kpi>());
         new_bool_exp->add_parent(target.staticCast<bam::computable>());
       }
