@@ -214,52 +214,32 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
 
   if (!data.isNull()) {
     if (data->type()
-             == io::events::data_type<io::events::bam,
-                                      bam::de_kpi_event>::value) {
-      logging::debug(logging::low)
-        << "BAM-BI: processing KPI event";
+        == io::events::data_type<io::events::bam,
+                                 bam::de_kpi_event>::value)
       _process_kpi_event(data);
-    }
     else if (data->type()
              == io::events::data_type<io::events::bam,
-                                      bam::de_ba_event>::value) {
-      logging::debug(logging::low)
-        << "BAM-BI: processing BA event";
+                                      bam::de_ba_event>::value)
       _process_ba_event(data);
-    }
     else if (data->type()
              == io::events::data_type<io::events::bam,
-                                      bam::de_dimension_ba_event>::value) {
-      logging::debug(logging::low)
-        << "BAM-BI: processing BA dimension";
+                                      bam::de_dimension_ba_event>::value)
       _process_dimension_ba(data);
-    }
     else if (data->type()
              == io::events::data_type<io::events::bam,
-                                      bam::de_dimension_bv_event>::value) {
-      logging::debug(logging::low)
-        << "BAM-BI: processing BV dimension";
+                                      bam::de_dimension_bv_event>::value)
       _process_dimension_bv(data);
-    }
     else if (data->type()
              == io::events::data_type<io::events::bam,
-                                      bam::de_dimension_ba_bv_relation_event>::value) {
-      logging::debug(logging::low)
-        << "BAM-BI: processing BA-BV relation dimension";
+                                      bam::de_dimension_ba_bv_relation_event>::value)
       _process_dimension_ba_bv_relation(data);
-    }
     else if (data->type()
              == io::events::data_type<io::events::bam,
-                                      bam::de_dimension_kpi_event>::value) {
-      logging::debug(logging::low)
-        << "BAM-BI: processing KPI dimension";
+                                      bam::de_dimension_kpi_event>::value)
       _process_dimension_kpi(data);
-    }
     else if (data->type()
              == io::events::data_type<io::events::bam,
-                                      bam::de_dimension_truncate_table_signal>::value) {
-      logging::debug(logging::low)
-        << "BAM-BI: processing truncate dimension table signal";
+                                      bam::de_dimension_truncate_table_signal>::value)
       _process_dimension_truncate_signal(data);
     }
     else if (data->type()
@@ -276,7 +256,8 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
         << "BAM-BI: processing ba-timeperiod relation dimension";
       _process_dimension_ba_timeperiod_relation(data);
     }
-  }
+  // XXX : handle transaction
+  return (1);
 }
 
 /**************************************
@@ -573,6 +554,9 @@ void reporting_stream::_prepare() {
  */
 void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
   bam::ba_event const& be = e.ref_as<bam::ba_event const>();
+  logging::debug(logging::low) << "BAM-BI: processing event of BA "
+    << be.ba_id << " (start time " << be.start_time << ", end time "
+    << be.end_time << ")";
   if ((be.end_time != 0) && (be.end_time != (time_t)-1)) {
     _ba_event_update->bindValue(":ba_id", be.ba_id);
     _ba_event_update->bindValue(
@@ -641,6 +625,9 @@ void reporting_stream::_process_ba_duration_event(
 void reporting_stream::_process_kpi_event(
     misc::shared_ptr<io::data> const& e) {
   bam::kpi_event const& ke = e.ref_as<bam::kpi_event const>();
+  logging::debug(logging::low) << "BAM-BI: processing event of KPI "
+    << ke.kpi_id << " (start time " << ke.start_time << ", end time "
+    << ke.end_time << ")";
   if ((ke.end_time != 0) && (ke.end_time != (time_t)-1)) {
     _kpi_event_update->bindValue(":kpi_id", ke.kpi_id);
     _kpi_event_update->bindValue(
@@ -692,6 +679,9 @@ void reporting_stream::_process_kpi_event(
 void reporting_stream::_process_dimension_ba(
     misc::shared_ptr<io::data> const& e) {
   bam::dimension_ba_event const& dba = e.ref_as<bam::dimension_ba_event const>();
+  logging::debug(logging::low)
+    << "BAM-BI: processing declaration of BA "
+    << dba.ba_id << " ('" << dba.ba_description << "')";
   _dimension_ba_insert->bindValue(":ba_id", dba.ba_id);
   _dimension_ba_insert->bindValue(":ba_name", dba.ba_name.c_str());
   _dimension_ba_insert->bindValue(":ba_description",
@@ -705,7 +695,7 @@ void reporting_stream::_process_dimension_ba(
   _dimension_ba_insert->bindValue(":sla_month_duration_2"
                                   , dba.sla_duration_2);
   if (!_dimension_ba_insert->exec())
-    throw (exceptions::msg() << "BAM-BI: could not insert dimension of BA "
+    throw (exceptions::msg() << "BAM-BI: could not insert BA "
            << dba.ba_id << " :"
            << _dimension_ba_insert->lastError().text());
 }
@@ -719,12 +709,15 @@ void reporting_stream::_process_dimension_bv(
     misc::shared_ptr<io::data> const& e) {
   bam::dimension_bv_event const& dbv =
       e.ref_as<bam::dimension_bv_event const>();
+  logging::debug(logging::low)
+    << "BAM-BI: processing declaration of BV "
+    << dbv.bv_id << " ('" << dbv.bv_name << "')";
   _dimension_bv_insert->bindValue(":bv_id", dbv.bv_id);
   _dimension_bv_insert->bindValue(":bv_name", dbv.bv_name.c_str());
   _dimension_bv_insert->bindValue(":bv_description",
                                   dbv.bv_description.c_str());
   if (!_dimension_bv_insert->exec())
-    throw (exceptions::msg() << "BAM-BI: could not insert dimension of BV "
+    throw (exceptions::msg() << "BAM-BI: could not insert BV "
            << dbv.bv_id << " :"
            << _dimension_bv_insert->lastError().text());
 }
@@ -737,7 +730,10 @@ void reporting_stream::_process_dimension_bv(
 void reporting_stream::_process_dimension_ba_bv_relation(
     misc::shared_ptr<io::data> const& e) {
   bam::dimension_ba_bv_relation_event const& dbabv =
-      e.ref_as<bam::dimension_ba_bv_relation_event const>();
+    e.ref_as<bam::dimension_ba_bv_relation_event const>();
+  logging::debug(logging::low)
+    << "BAM-BI: processing relation between BA "
+    << dbabv.ba_id << " and BV " << dbabv.bv_id;
   _dimension_ba_bv_relation_insert->bindValue(":ba_id", dbabv.ba_id);
   _dimension_ba_bv_relation_insert->bindValue(":bv_id", dbabv.bv_id);
   if (!_dimension_ba_bv_relation_insert->exec())
@@ -754,14 +750,18 @@ void reporting_stream::_process_dimension_ba_bv_relation(
  */
 void reporting_stream::_process_dimension_truncate_signal(
     misc::shared_ptr<io::data> const& e) {
+  (void)e;
+  logging::debug(logging::low)
+    << "BAM-BI: processing table truncation signal";
   for (std::vector<misc::shared_ptr<QSqlQuery> >::iterator
          it(_dimension_truncate_tables.begin()),
          end(_dimension_truncate_tables.end());
        it != end;
        ++it)
     if (!(*it)->exec())
-      throw (exceptions::msg() << "BAM-BI: could not truncate dimension tables: "
-                               << (*it)->lastError().text());
+      throw (exceptions::msg()
+             << "BAM-BI: could not truncate dimension tables: "
+             << (*it)->lastError().text());
   _timeperiods.clear();
   _timeperiod_relations.clear();
 }
@@ -784,6 +784,9 @@ void reporting_stream::_process_dimension_kpi(
     kpi_name = dk.boolean_name;
   else if (!dk.meta_service_name.empty())
     kpi_name = dk.meta_service_name;
+  logging::debug(logging::low)
+    << "BAM-BI: processing declaration of KPI "
+    << dk.kpi_id << " ('" << kpi_name << "')";
   _dimension_kpi_insert->bindValue(":kpi_id", dk.kpi_id);
   _dimension_kpi_insert->bindValue(":kpi_name", kpi_name.c_str());
   _dimension_kpi_insert->bindValue(":ba_id", dk.ba_id);
@@ -886,5 +889,7 @@ void reporting_stream::_compute_event_duration(
  *  @param[in] status New status.
  */
 void reporting_stream::_update_status(std::string const& status) {
-
+  QMutexLocker lock(&_statusm);
+  _status = status;
+  return ;
 }

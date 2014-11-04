@@ -261,7 +261,8 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
         << ss->host_id << ", service " << ss->service_id
         << ", hard state " << ss->last_hard_state << ", current state "
         << ss->current_state << ")";
-      _applier.book_service().update(ss, this);
+      multiplexing::publisher pblshr;
+      _applier.book_service().update(ss, &pblshr);
     }
     else if (data->type()
              == io::events::data_type<io::events::storage, storage::de_metric>::value) {
@@ -270,7 +271,8 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
       logging::debug(logging::low)
         << "BAM: processing metric (id " << m->metric_id << ", time "
         << m->ctime << ", value " << m->value << ")";
-      _applier.book_metric().update(m, this);
+      multiplexing::publisher pblshr;
+      _applier.book_metric().update(m, &pblshr);
     }
     else if (data->type()
              == io::events::data_type<io::events::bam, bam::de_ba_status>::value) {

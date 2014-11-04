@@ -389,9 +389,12 @@ void ba::visit(io::stream* visitor) {
 
     // Generate BI events.
     {
-      // If no event was cached, create one.
-      if (_event.isNull())
-        _open_new_event(visitor);
+      // If no event was cached, create one if we already had a service
+      // update (of our own service).
+      if (_event.isNull()) {
+        if (_last_service_update != (time_t)-1)
+          _open_new_event(visitor);
+      }
       // If state changed, close event and open a new one.
       else if ((_in_downtime != _event->in_downtime)
                || (get_state_hard() != _event->status)) {
