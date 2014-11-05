@@ -241,21 +241,15 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
              == io::events::data_type<io::events::bam,
                                       bam::de_dimension_truncate_table_signal>::value)
       _process_dimension_truncate_signal(data);
-    }
     else if (data->type()
              == io::events::data_type<io::events::bam,
-                                      bam::de_dimension_timeperiod>::value) {
-      logging::debug(logging::low)
-        << "BAM-BI: processing timeperiod dimension";
+                                      bam::de_dimension_timeperiod>::value)
       _process_dimension_timeperiod(data);
-    }
     else if (data->type()
              == io::events::data_type<io::events::bam,
-                                      bam::de_dimension_ba_timeperiod_relation>::value) {
-      logging::debug(logging::low)
-        << "BAM-BI: processing ba-timeperiod relation dimension";
+                                      bam::de_dimension_ba_timeperiod_relation>::value)
       _process_dimension_ba_timeperiod_relation(data);
-    }
+  }
   // XXX : handle transaction
   return (1);
 }
@@ -556,7 +550,8 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
   bam::ba_event const& be = e.ref_as<bam::ba_event const>();
   logging::debug(logging::low) << "BAM-BI: processing event of BA "
     << be.ba_id << " (start time " << be.start_time << ", end time "
-    << be.end_time << ")";
+    << be.end_time << ", status " << be.status << ", in downtime "
+    << be.in_downtime << ")";
   if ((be.end_time != 0) && (be.end_time != (time_t)-1)) {
     _ba_event_update->bindValue(":ba_id", be.ba_id);
     _ba_event_update->bindValue(
@@ -823,6 +818,9 @@ void reporting_stream::_process_dimension_timeperiod(
         misc::shared_ptr<io::data> const& e) {
   bam::dimension_timeperiod const& tp =
       e.ref_as<bam::dimension_timeperiod const>();
+  logging::debug(logging::low)
+    << "BAM-BI: processing declaration of timeperiod "
+    << tp.timeperiod->get_id();
   _timeperiods[tp.timeperiod->get_id()] = tp.timeperiod;
 }
 
@@ -836,6 +834,9 @@ void reporting_stream::_process_dimension_ba_timeperiod_relation(
         misc::shared_ptr<io::data> const& e) {
   bam::dimension_ba_timeperiod_relation const& r =
      e.ref_as<bam::dimension_ba_timeperiod_relation const>();
+  logging::debug(logging::low)
+    << "BAM-BI: processing relation of BA " << r.ba_id
+    << " to timeperiod " << r.timeperiod_id;
   _timeperiod_relations.insert(std::make_pair(r.ba_id,
                                               std::make_pair(r.timeperiod_id,
                                                              r.is_default)));

@@ -518,14 +518,6 @@ string(REPLACE ";" ", " MODULE_LIST "${MODULE_LIST}")
 
 # Functional tests.
 if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
-  # My plugin.
-  set(MY_PLUGIN "my_plugin")
-  add_executable("${MY_PLUGIN}"
-    "${PROJECT_SOURCE_DIR}/test/my_plugin.cc")
-  get_property(MY_PLUGIN_PATH
-    TARGET "${MY_PLUGIN}"
-    PROPERTY LOCATION)
-
   # Configure files.
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml")
@@ -614,6 +606,22 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/rrd_file.hh"
     )
   target_link_libraries("${TEST_LIB}" "roker")
+
+  # My plugin.
+  set(MY_PLUGIN "my_plugin")
+  add_executable("${MY_PLUGIN}"
+    "${PROJECT_SOURCE_DIR}/test/my_plugin.cc")
+  get_property(MY_PLUGIN_PATH
+    TARGET "${MY_PLUGIN}"
+    PROPERTY LOCATION)
+  # My BAM plugin.
+  set(MY_PLUGIN_BAM "my_plugin_bam")
+  add_executable("${MY_PLUGIN_BAM}"
+    "${PROJECT_SOURCE_DIR}/test/my_plugin_bam.cc")
+  target_link_libraries("${MY_PLUGIN_BAM}" "${TEST_LIB}")
+  get_property(MY_PLUGIN_BAM_PATH
+    TARGET "${MY_PLUGIN_BAM}"
+    PROPERTY LOCATION)
 
   # Monitoring to SQL.
   set(TEST_NAME "running_monitoring_to_sql")

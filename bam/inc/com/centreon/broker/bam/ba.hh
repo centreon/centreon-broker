@@ -97,7 +97,9 @@ namespace        bam {
 
     void         _apply_impact(impact_info& impact);
     void         _internal_copy(ba const& right);
-    void         _open_new_event(io::stream* visitor);
+    void         _open_new_event(
+                   io::stream* visitor,
+                   short service_hard_state);
     void         _recompute();
     void         _unapply_impact(impact_info& impact);
 

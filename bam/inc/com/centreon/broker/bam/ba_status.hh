@@ -22,6 +22,7 @@
 
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -41,9 +42,12 @@ namespace        bam {
     unsigned int type() const;
 
     unsigned int ba_id;
+    bool         in_downtime;
+    timestamp    last_state_change;
     double       level_acknowledgement;
     double       level_downtime;
     double       level_nominal;
+    short        state;
 
   private:
     void         _internal_copy(ba_status const& other);
