@@ -23,6 +23,7 @@
 #  include <memory>
 #  include <QSqlDatabase>
 #  include <QSqlQuery>
+#  include "com/centreon/broker/bam/ba_svc_mapping.hh"
 #  include "com/centreon/broker/bam/configuration/applier/state.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -46,6 +47,7 @@ namespace          bam {
                      QString const& db_user,
                      QString const& db_password,
                      QString const& db_name,
+                     QString const& ext_cmd_file,
                      unsigned int queries_per_transaction,
                      bool check_replication = true);
                    ~monitoring_stream();
@@ -65,9 +67,12 @@ namespace          bam {
     void           _prepare();
     void           _rebuild();
     void           _update_status(std::string const& status);
+    void           _write_external_command(std::string const& cmd);
 
     configuration::applier::state
                    _applier;
+    ba_svc_mapping _ba_mapping;
+    QString        _ext_cmd_file;
     bool           _process_out;
     unsigned int   _queries_per_transaction;
     std::string    _status;

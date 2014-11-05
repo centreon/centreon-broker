@@ -392,9 +392,7 @@ int main() {
         strcpy(s.service_check_command, str.c_str());
       }
       s.accept_passive_service_checks = 1;
-      s.checks_enabled = 1;
-      s.check_interval = 1;
-      s.retry_interval = 1;
+      s.checks_enabled = 0;
       s.max_attempts = 1;
       services.push_back(s);
     }

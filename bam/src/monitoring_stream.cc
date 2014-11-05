@@ -19,6 +19,7 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <ctime>
 #include <sstream>
 #include <QMutexLocker>
 #include <QSqlError>
@@ -63,6 +64,7 @@ using namespace com::centreon::broker::bam;
  *  @param[in] db_user                 BAM DB user.
  *  @param[in] db_password             BAM DB password.
  *  @param[in] db_name                 BAM DB name.
+ *  @param[in] ext_cmd_file            External command file.
  *  @param[in] queries_per_transaction Queries per transaction.
  *  @param[in] check_replication       true to check replication status.
  */
@@ -73,10 +75,14 @@ monitoring_stream::monitoring_stream(
           QString const& db_user,
           QString const& db_password,
           QString const& db_name,
+          QString const& ext_cmd_file,
           unsigned int queries_per_transaction,
           bool check_replication) {
   // Process events.
   _process_out = true;
+
+  // External command file.
+  _ext_cmd_file = ext_cmd_file;
 
   // Queries per transaction.
   _queries_per_transaction = ((queries_per_transaction >= 2)
@@ -140,6 +146,7 @@ monitoring_stream::monitoring_stream(
 
     // Apply configuration.
     _applier.apply(s);
+    _ba_mapping = s.get_ba_svc_mapping();
   }
   catch (...) {
     {
@@ -232,6 +239,7 @@ void monitoring_stream::update() {
   //   r.read(s);
   // }
   // _applier.apply(s);
+  // _ba_mapping = s.get_ba_svc_mapping();
   return ;
 }
 
@@ -299,6 +307,24 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
         throw (exceptions::msg() << "BAM: could not update BA "
                << status->ba_id << ": "
                << _ba_update->lastError().text());
+
+      std::pair<std::string, std::string>
+        ba_svc_name(_ba_mapping.get_service(status->ba_id));
+      if (ba_svc_name.first.empty() || ba_svc_name.second.empty()) {
+        logging::error(logging::high)
+          << "BAM: could not trigger check of virtual service of BA "
+          << status->ba_id
+          << ": host name and service description were not found";
+      }
+      else {
+        std::ostringstream oss;
+        oss << "[" << std::time(NULL) << "] PROCESS_SERVICE_CHECK_RESULT;"
+            << ba_svc_name.first << ";" << ba_svc_name.second << ";"
+            << status->state << ";BA " << status->ba_id << " has state "
+            << status->state << " and level " << status->level_nominal
+            << "|value=" << status->level_nominal;
+        _write_external_command(oss.str());
+      }
     }
     else if (data->type()
              == io::events::data_type<io::events::bam, bam::de_bool_status>::value) {
@@ -562,4 +588,14 @@ void monitoring_stream::_update_status(std::string const& status) {
   QMutexLocker lock(&_statusm);
   _status = status;
   return ;
+}
+
+/**
+ *  Write an external command to Engine.
+ *
+ *  @param[in] cmd  Command to write to the external command pipe.
+ */
+void monitoring_stream::_write_external_command(
+                          std::string const& cmd) {
+  // XXX
 }

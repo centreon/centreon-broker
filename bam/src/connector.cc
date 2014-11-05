@@ -92,6 +92,7 @@ void connector::close() {
  *  @param[in] db_user                 BAM DB user.
  *  @param[in] db_password             BAM DB password.
  *  @param[in] db_name                 BAM DB name.
+ *  @param[in] ext_cmd_file            External command file.
  *  @param[in] queries_per_transaction Queries per transaction.
  *  @param[in] check_replication       Check for replication status or
  *                                     not.
@@ -104,6 +105,7 @@ void connector::connect_to(
                   QString const& db_user,
                   QString const& db_password,
                   QString const& db_name,
+                  QString const& ext_cmd_file,
                   unsigned int queries_per_transaction,
                   bool check_replication) {
   _type = type;
@@ -113,6 +115,7 @@ void connector::connect_to(
   _db_user = db_user;
   _db_password = db_password;
   _db_name = db_name;
+  _ext_cmd_file = ext_cmd_file;
   _queries_per_transaction = queries_per_transaction;
   _check_replication = check_replication;
   return ;
@@ -146,6 +149,7 @@ misc::shared_ptr<io::stream> connector::open() {
               _db_user,
               _db_password,
               _db_name,
+              _ext_cmd_file,
               _queries_per_transaction,
               _check_replication));
     s->initialize();
@@ -184,6 +188,7 @@ void connector::_internal_copy(connector const& c) {
   _db_port = c._db_port;
   _db_user = c._db_user;
   _db_type = c._db_type;
+  _ext_cmd_file = c._ext_cmd_file;
   _queries_per_transaction = c._queries_per_transaction;
   _type = c._type;
   return ;

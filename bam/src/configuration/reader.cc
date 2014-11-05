@@ -25,6 +25,7 @@
 #include <QVariant>
 #include <sstream>
 #include <memory>
+#include "com/centreon/broker/bam/ba_svc_mapping.hh"
 #include "com/centreon/broker/bam/configuration/state.hh"
 #include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/reader_exception.hh"
@@ -66,11 +67,11 @@ void reader::read(state& st) {
   try {
     _db->transaction(); // A single explicit transaction is more efficient.
     _load_dimensions();
-    _load(st.get_bas());
+    _load(st.get_bas(), st.get_ba_svc_mapping());
     _load(st.get_kpis());
     _load(st.get_bool_exps());
     _load(st.get_meta_services());
-    _load(st.get_mapping());
+    _load(st.get_hst_svc_mapping());
     _db->rollback();
   }
   catch (std::exception const& e) {
@@ -173,9 +174,10 @@ void reader::_load(state::kpis& kpis) {
 /**
  *  Load BAs from the DB.
  *
- *  @param[out] bas The list of BAs in database.
+ *  @param[out] bas      The list of BAs in database.
+ *  @param[out] mapping  The mapping of BA ID to host/service IDs.
  */
-void reader::_load(state::bas& bas) {
+void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
   QSqlQuery query(_db->exec(
     "SELECT ba_id, name, level_w, level_c, last_state_change, "
     "       current_status, in_downtime"
@@ -210,46 +212,53 @@ void reader::_load(state::bas& bas) {
   // Load the associated ba_id from the table services.
   // All the associated services have for description 'ba_[id]'.
   query = _db->exec(
-                 "SELECT s.service_description, hsr.host_host_id, hsr.service_service_id"
+                 "SELECT h.host_name, s.service_description,"
+                 "       hsr.host_host_id, hsr.service_service_id"
                  "  FROM service AS s"
                  "  INNER JOIN host_service_relation AS hsr"
-                 "  ON s.service_id=hsr.service_service_id"
-                 "  WHERE service_description LIKE 'ba_%'");
+                 "    ON s.service_id=hsr.service_service_id"
+                 "  INNER JOIN host AS h"
+                 "    ON hsr.host_host_id=h.host_id"
+                 "  WHERE s.service_description LIKE 'ba_%'");
   if (query.lastError().isValid())
     throw (reader_exception()
            << "BAM: could not retrieve BA service IDs from DB: "
            << query.lastError().text());
 
   while (query.next()) {
-    std::string service_description = query.value(0).toString().toStdString();
-    QString host_id = query.value(1).toString();
-    QString service_id = query.value(2).toString();
+    unsigned int host_id = query.value(2).toUInt();
+    unsigned int service_id = query.value(3).toUInt();
+    std::string service_description = query.value(1).toString().toStdString();
     service_description.erase(0, strlen("ba_"));
 
     if (!service_description.empty()) {
       bool ok = false;
       unsigned int ba_id = QString(service_description.c_str()).toUInt(&ok);
       if (!ok) {
-        logging::error(logging::medium)
-          << "BAM: BA host:" << host_id
-          << "service: " << service_id
-          << "unknown when attempting to retrieve services";
+        logging::info(logging::medium)
+          << "BAM: service '" << query.value(1).toString() << "' of host '"
+          << query.value(0).toString()
+          << "' is not a valid virtual BA service";
         continue;
       }
       state::bas::iterator found = bas.find(ba_id);
       if (found == bas.end()) {
-        logging::error(logging::medium)
-          << "BAM: BA service '"
-          << query.value(0).toString()
-          << "' not found when attempting to retrieve services";
+        logging::info(logging::medium) << "BAM: virtual BA service '"
+          << query.value(1).toString() << "' of host '"
+          << query.value(0).toString() << "' references an unknown BA ("
+          << ba_id << ")";
         continue;
       }
-      found->second.set_host_id(host_id.toUInt());
-      found->second.set_service_id(service_id.toUInt());
+      found->second.set_host_id(host_id);
+      found->second.set_service_id(service_id);
+      mapping.set(
+                ba_id,
+                query.value(0).toString().toStdString(),
+                query.value(1).toString().toStdString());
     }
   }
 
-  // Test for ba without service id.
+  // Test for BA without service ID.
   for (state::bas::const_iterator it(bas.begin()),
                                   end(bas.end());
        it != end;
