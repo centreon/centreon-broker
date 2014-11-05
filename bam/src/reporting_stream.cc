@@ -365,8 +365,9 @@ void reporting_stream::_prepare() {
   {
     QString query;
     query = "INSERT INTO mod_bam_reporting_ba_events (ba_id, "
-            "            start_time, status, in_downtime)"
-            "  VALUES (:ba_id, :start_time, :status, :in_downtime)";
+            "            first_level, start_time, status, in_downtime)"
+            "  VALUES (:ba_id, :first_level,"
+            "          :start_time, :status, :in_downtime)";
     _ba_event_insert.reset(new QSqlQuery(*_db));
     if (!_ba_event_insert->prepare(query))
       throw (exceptions::msg()
@@ -574,6 +575,7 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
   }
   else {
     _ba_event_insert->bindValue(":ba_id", be.ba_id);
+    _ba_event_insert->bindValue(":first_level", be.first_level);
     _ba_event_insert->bindValue(
       ":start_time",
       static_cast<qlonglong>(be.start_time.get_time_t()));
@@ -967,6 +969,7 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
          ++it)
       _compute_event_durations(*it, this);
   }
+
 }
 
 /**

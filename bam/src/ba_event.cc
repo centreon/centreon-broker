@@ -29,6 +29,7 @@ using namespace com::centreon::broker::bam;
  */
 ba_event::ba_event()
   : ba_id(0),
+    first_level(0),
     in_downtime(false),
     status(3) {}
 
@@ -70,6 +71,7 @@ ba_event& ba_event::operator=(ba_event const& other) {
  */
 bool ba_event::operator==(ba_event const& other) const {
   return ((ba_id == other.ba_id)
+          && (first_level == other.first_level)
           && (end_time == other.end_time)
           && (in_downtime == other.in_downtime)
           && (start_time == other.start_time)
@@ -93,6 +95,7 @@ unsigned int ba_event::type() const {
  */
 void ba_event::_internal_copy(ba_event const& other) {
   ba_id = other.ba_id;
+  first_level = other.first_level;
   end_time = other.end_time;
   in_downtime = other.in_downtime;
   start_time = other.start_time;
