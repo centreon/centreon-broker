@@ -76,9 +76,10 @@ namespace          bam {
     void           _process_dimension_kpi(misc::shared_ptr<io::data> const& e);
     void           _process_dimension_timeperiod(misc::shared_ptr<io::data> const& e);
     void           _process_dimension_ba_timeperiod_relation(misc::shared_ptr<io::data> const& e);
+    void           _process_rebuild(misc::shared_ptr<io::data> const& e);
     void           _update_status(std::string const& status);
-    void           _compute_event_duration(::com::centreon::broker::misc::shared_ptr<ba_event> ev,
-                                           ::com::centreon::broker::io::stream* visitor);
+    void           _compute_event_durations(misc::shared_ptr<ba_event> const& ev,
+                                            io::stream* visitor);
 
     bool           _process_out;
     unsigned int   _queries_per_transaction;
