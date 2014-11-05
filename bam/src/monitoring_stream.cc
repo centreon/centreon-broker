@@ -140,6 +140,9 @@ monitoring_stream::monitoring_stream(
 
     // Apply configuration.
     _applier.apply(s);
+
+    // Check if we need to rebuild something.
+    _rebuild();
   }
   catch (...) {
     {
@@ -232,6 +235,8 @@ void monitoring_stream::update() {
   //   r.read(s);
   // }
   // _applier.apply(s);
+  // Check if we need to rebuild something.
+  // _rebuild();
   return ;
 }
 
@@ -535,6 +540,10 @@ void monitoring_stream::_rebuild() {
     while (q.next())
       bas_to_rebuild.push_back(q.value(0).toInt());
   }
+
+  // Nothing to rebuild.
+  if (bas_to_rebuild.empty())
+    return ;
 
   misc::shared_ptr<rebuild> r(new rebuild);
   r->bas_to_rebuild = bas_to_rebuild;
