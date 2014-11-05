@@ -44,6 +44,62 @@ static bool double_equals(double d1, double d2) {
   return (fabs(d1 - d2) < 0.0001);
 }
 
+struct ba_event_duration {
+  unsigned int ba_event_id;
+  unsigned int timeperiod_id;
+  unsigned int start_time;
+  unsigned int end_time;
+  unsigned int duration;
+  unsigned int sla_duration;
+  bool timeperiod_is_default;
+};
+
+static void check_ba_event_durations(
+              QSqlDatabase& db,
+              ba_event_duration const* baed,
+              size_t count) {
+  static int iteration(-1);
+  ++iteration;
+  QString query(
+            "SELECT ba_event_id, timeperiod_id, start_time, end_time,"
+             "      duration, sla_duration, timeperiod_is_default"
+             "  FROM mod_bam_reporting_ba_events_durations"
+             "  ORDER BY ba_event_id");
+  QSqlQuery q(db);
+  if (!q.exec(query))
+    throw (exceptions::msg()
+           << "could not fetch BA event durations at iteration "
+           << iteration << ": " << q.lastError().text());
+  for (size_t i(0); i < count; ++i) {
+    if (!q.next())
+      throw (exceptions::msg() << "not enough BA event durations at iteration "
+             << iteration << ": got " << i << ", expected " << count);
+    if (q.value(0).toInt() != baed[i].ba_event_id
+        || q.value(1).toInt() != baed[i].timeperiod_id
+        || q.value(2).toInt() != baed[i].start_time
+        || q.value(3).toInt() != baed[i].end_time
+        || q.value(4).toInt() != baed[i].duration
+        || q.value(5).toInt() != baed[i].sla_duration
+        || q.value(6).toInt() != baed[i].timeperiod_is_default)
+      throw (exceptions::msg() << "invalid BA event durations " << q.value(0).toUInt()
+             << " at iteration " << iteration << ": got (ba event id "
+             << q.value(0).toInt() << ", timeperiod id "
+             << q.value(1).toInt() << ", start time "
+             << q.value(2).toInt() << ", end time "
+             << q.value(3).toInt() << ", duration "
+             << q.value(4).toInt() << ", sla duration "
+             << q.value(5).toInt() << ", timeperiod is default "
+             << q.value(6).toInt() << ") expected ("
+             << baed[i].ba_event_id << ", " << baed[i].timeperiod_id
+             << baed[i].start_time << ", " << baed[i].end_time
+             << baed[i].duration << ", " << baed[i].sla_duration
+             << baed[i].timeperiod_is_default << ")");
+  }
+  if (q.next())
+    throw (exceptions::msg() << "too much BA event durations at iteration "
+           << iteration << ": expected " << count);
+  return ;
+}
 /**
  *  Check that the BAM broker correctly rebuild the data.
  *
@@ -79,11 +135,11 @@ int main() {
     // Create BA events.
     {
       QString query(
-                "INSERT INTO mod_bam_reporting_ba_events (ba_id, start_time, end_time)"
-                "  VALUES (1, 0, 30),"
-                "         (2, 0, 50),"
-                "         (1, 30, 120),"
-                "         (2, 50, 160)");
+                "INSERT INTO mod_bam_reporting_ba_events (ba_event_id, ba_id, start_time, end_time)"
+                "  VALUES (1, 1, 0, 30),"
+                "         (2, 2, 0, 50),"
+                "         (3, 1, 30, 120),"
+                "         (4, 2, 50, 160)");
       QSqlQuery q(*db.bi_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create BA events: "
@@ -126,17 +182,23 @@ int main() {
     // Let the broker do its things.
     sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
+    ba_event_duration baed[] =
+    {{1, 1, 0, 30, 30, 30, true},
+     {2, 1, 0, 50, 50, 50, false},
+     {3, 1, 30, 120, 90, 90, true},
+     {4, 1, 50, 160, 110, 110, false}};
+
     // See if the ba events durations were created.
     {
-      QString query(
-                "SELECT * FROM mod_bam_reporting_ba_events_durations WHERE must_be_rebuild = 1");
-      QSqlQuery q(*db.bi_db());
-      if (!q.exec(query))
-        throw (exceptions::msg() << "could not get the number of BA: "
-               << q.lastError().text());
-      if (q.size() != 0)
-        throw (exceptions::msg() << "the BAs must_be_rebuild field were "
-                                    "not updated.");
+      ba_event_duration baed[] =
+      {{1, 1, 0, 30, 30, 30, true},
+       {2, 1, 0, 50, 50, 50, false},
+       {3, 1, 30, 120, 90, 90, true},
+       {4, 1, 50, 160, 110, 110, false}};
+
+      check_ba_event_durations(*db.bi_db(),
+                               baed,
+                               sizeof(baed) / sizeof(*baed));
     }
 
     // See if the ba were marked as rebuilt.
