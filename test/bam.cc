@@ -327,6 +327,7 @@ int main() {
   // Variables that need cleaning.
   std::list<host> hosts;
   std::list<service> services;
+  std::list<command> commands;
   std::string engine_config_path(tmpnam(NULL));
   external_command commander;
   engine monitoring;
@@ -346,6 +347,7 @@ int main() {
       strcpy(h.name, str);
       str = "1001";
       h.display_name = new char[strlen(str) + 1];
+      strcpy(h.display_name, str);
       h.accept_passive_host_checks = 0;
       h.checks_enabled = 0;
       hosts.push_back(h);
@@ -382,10 +384,27 @@ int main() {
         s.display_name = new char[str.size() + 1];
         strcpy(s.display_name, str.c_str());
       }
+      {
+        std::ostringstream oss;
+        oss << "1!" << i;
+        std::string str(oss.str());
+        s.service_check_command = new char[str.size() + 1];
+        strcpy(s.service_check_command, str.c_str());
+      }
       s.accept_passive_service_checks = 1;
       s.checks_enabled = 1;
+      s.check_interval = 1;
+      s.retry_interval = 1;
       s.max_attempts = 1;
       services.push_back(s);
+    }
+    generate_commands(commands, 1);
+    {
+      char const* cmdline;
+      cmdline = MY_PLUGIN_BAM_PATH " " CENTREON_DB_NAME " $ARG1$";
+      command& cmd(commands.front());
+      cmd.command_line = new char[strlen(cmdline) + 1];
+      strcpy(cmd.command_line, cmdline);
     }
 
     commander.set_file(tmpnam(NULL));
@@ -403,7 +422,8 @@ int main() {
       engine_config_path.c_str(),
       additional_config.c_str(),
       &hosts,
-      &services);
+      &services,
+      &commands);
 
     // Create host/service entries.
     {
@@ -560,6 +580,7 @@ int main() {
 
     // Start monitoring engine.
     time_t t0(time(NULL));
+    std::cout << "T0: " << t0 << "\n";
     std::string engine_config_file(engine_config_path);
     engine_config_file.append("/nagios.cfg");
     monitoring.set_config_file(engine_config_file);
@@ -570,6 +591,7 @@ int main() {
 
     // #0
     time_t t1(time(NULL));
+    std::cout << "T1: " << t1 << "\n";
     {
       ba_state const bas[] = {
         { 100.0, 0.0, 0.0 },
@@ -628,6 +650,7 @@ int main() {
 
     // #1
     time_t t2(time(NULL));
+    std::cout << "T2: " << t2 << "\n";
     {
       ba_state const bas[] = {
         // Impacted by services.
@@ -640,7 +663,7 @@ int main() {
         { 35.0, 0.0, 0.0 },  // BA2 W  = 65 => W
         { 65.0, 0.0, 0.0 },  // BA3 C  = 35 => O
         { 15.0, 0.0, 0.0 },  // BA6 W  = 85 => W
-        { 19.0, 0.0, 0.0 }   // BE1 F  = 75, BE3 T = 6 => W
+        { 19.0, 0.0, 0.0 }   // BE1 F  = 75, BE3 T = 6 => O
       };
       check_bas(*db.centreon_db(), bas, sizeof(bas) / sizeof(*bas));
     }
@@ -687,6 +710,7 @@ int main() {
 
     // #2
     time_t t3(time(NULL));
+    std::cout << "T3: " << t3 << "\n";
     {
       ba_state const bas[] = {
         // Impacted by services.
@@ -753,8 +777,7 @@ int main() {
         { 8, t0, t1, false, t1, t2, 0, false },
         { 8, t1, t2, false, t2, t3, 1, false },
         { 8, t2, t3, true, 0, 0, 2, false },
-        { 9, t0, t1, false, t1, t2, 0, false },
-        { 9, t1, t2, false, t2, t3, 1, false },
+        { 9, t0, t1, false, t2, t3, 0, false },
         { 9, t2, t3, true, 0, 0, 2, false }
       };
       check_ba_events(
@@ -817,6 +840,7 @@ int main() {
   config_remove(engine_config_path.c_str());
   free_hosts(hosts);
   free_services(services);
+  free_commands(commands);
 
   return (error ? EXIT_FAILURE : EXIT_SUCCESS);
 }

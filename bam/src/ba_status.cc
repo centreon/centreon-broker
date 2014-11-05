@@ -29,9 +29,11 @@ using namespace com::centreon::broker::bam;
  */
 ba_status::ba_status()
   : ba_id(0),
+    in_downtime(false),
     level_acknowledgement(0.0),
     level_downtime(0.0),
-    level_nominal(100.0) {}
+    level_nominal(100.0),
+    state(0) {}
 
 /**
  *  Copy constructor.
@@ -78,8 +80,11 @@ unsigned int ba_status::type() const {
  */
 void ba_status::_internal_copy(ba_status const& other) {
   ba_id = other.ba_id;
+  in_downtime = other.in_downtime;
+  last_state_change = other.last_state_change;
   level_acknowledgement = other.level_acknowledgement;
   level_downtime = other.level_downtime;
   level_nominal = other.level_nominal;
+  state = other.state;
   return ;
 }

@@ -518,8 +518,6 @@ void reader::_load_dimensions() {
       ba->sla_duration_2 = q.value(6).toInt();
       datas.push_back(ba.staticCast<io::data>());
       bas[ba->ba_id] = ba;
-      logging::debug(logging::medium) << "BAM: loading BA "
-        << ba->ba_id << " ('" << ba->ba_name << "') from DB";
     }
   }
 

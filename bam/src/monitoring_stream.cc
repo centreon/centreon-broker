@@ -287,6 +287,14 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
                     status->level_acknowledgement);
       _ba_update->bindValue(":level_downtime", status->level_downtime);
       _ba_update->bindValue(":ba_id", status->ba_id);
+      _ba_update->bindValue(
+        ":last_state_change",
+        (((status->last_state_change == (time_t)-1)
+          || (status->last_state_change == 0))
+         ? QVariant(QVariant::LongLong)
+         : QVariant(static_cast<qlonglong>(status->last_state_change.get_time_t()))));
+      _ba_update->bindValue(":state", status->state);
+      _ba_update->bindValue(":in_downtime", status->in_downtime);
       if (!_ba_update->exec())
         throw (exceptions::msg() << "BAM: could not update BA "
                << status->ba_id << ": "
@@ -452,7 +460,10 @@ void monitoring_stream::_prepare() {
     query = "UPDATE mod_bam"
             "  SET current_level=:level_nominal,"
             "      acknowledged=:level_acknowledgement,"
-            "      downtime=:level_downtime"
+            "      downtime=:level_downtime,"
+            "      last_state_change=:last_state_change,"
+            "      in_downtime=:in_downtime,"
+            "      current_status=:state"
             "  WHERE ba_id=:ba_id";
     _ba_update.reset(new QSqlQuery(*_db));
     if (!_ba_update->prepare(query))

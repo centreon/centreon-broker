@@ -134,8 +134,8 @@ bool ba::child_has_update(
     it->second.kpi_ptr->impact_soft(new_soft_impact);
 
     // If the new impact is the same as the old, don't update.
-    if (it->second.hard_impact == new_hard_impact &&
-        it->second.soft_impact == new_soft_impact)
+    if (it->second.hard_impact == new_hard_impact
+        && it->second.soft_impact == new_soft_impact)
       return (false);
 
     // Discard old data.
@@ -378,32 +378,18 @@ void ba::set_initial_event(ba_event const& event) {
 void ba::visit(io::stream* visitor) {
   if (visitor) {
     // Generate status event.
-    {
-      misc::shared_ptr<ba_status> status(new ba_status);
-      status->ba_id = _id;
-      status->level_acknowledgement = normalize(_acknowledgement_hard);
-      status->level_downtime = normalize(_downtime_hard);
-      status->level_nominal = normalize(_level_hard);
-      visitor->write(status.staticCast<io::data>());
-    }
-
-    // Generate BI events.
-    {
-      // If no event was cached, create one if we already had a service
-      // update (of our own service).
-      if (_event.isNull()) {
-        if (_last_service_update != (time_t)-1)
-          _open_new_event(visitor);
-      }
-      // If state changed, close event and open a new one.
-      else if ((_in_downtime != _event->in_downtime)
-               || (get_state_hard() != _event->status)) {
-        _event->end_time = _last_service_update;
-        visitor->write(_event.staticCast<io::data>());
-        _event.clear();
-        _open_new_event(visitor);
-      }
-    }
+    misc::shared_ptr<ba_status> status(new ba_status);
+    status->ba_id = _id;
+    status->in_downtime = _in_downtime;
+    // XXX : last state change is not valid right now
+    //       it will become so when virtual service result
+    //       comes back through service_update()
+    status->last_state_change = _last_service_update;
+    status->level_acknowledgement = normalize(_acknowledgement_hard);
+    status->level_downtime = normalize(_downtime_hard);
+    status->level_nominal = normalize(_level_hard);
+    status->state = get_state_hard();
+    visitor->write(status.staticCast<io::data>());
   }
   return ;
 }
@@ -425,14 +411,30 @@ void ba::service_update(
 
   if (status->host_id == _host_id
       && status->service_id == _service_id) {
-    // Set downtime.
-    _in_downtime = (status->scheduled_downtime_depth > 0);
-    // Set last service update.
-    _last_service_update = status->last_update;
     // Set output.
     _output = status->output.toStdString();
     // Set perfdata.
     _perfdata = status->perf_data.toStdString();
+    // Set downtime.
+    _in_downtime = (status->scheduled_downtime_depth > 0);
+
+    // If no event was cached, create one if we already had a service
+    // update (of our own service).
+    if (_event.isNull()) {
+      _last_service_update = status->last_update;
+      _open_new_event(visitor, status->last_hard_state);
+    }
+    // If state changed, close event and open a new one.
+    else if ((_in_downtime != _event->in_downtime)
+             || (status->last_hard_state != _event->status)) {
+      _last_service_update = status->last_update;
+      _event->end_time = _last_service_update;
+      if (visitor) {
+        visitor->write(_event.staticCast<io::data>());
+        _event.clear();
+        _open_new_event(visitor, status->last_hard_state);
+      }
+    }
 
     // Generate status event.
     visit(visitor);
@@ -502,14 +504,17 @@ void ba::_internal_copy(ba const& right) {
 /**
  *  Open a new event for this BA.
  *
- *  @param[out] visitor  Visitor that will receive events.
+ *  @param[out] visitor             Visitor that will receive events.
+ *  @param[in]  service_hard_state  Hard state of virtual BA service.
  */
-void ba::_open_new_event(io::stream* visitor) {
+void ba::_open_new_event(
+           io::stream* visitor,
+           short service_hard_state) {
   _event = new ba_event;
   _event->ba_id = _id;
   _event->first_level = _level_hard;
   _event->in_downtime = _in_downtime;
-  _event->status = get_state_hard();
+  _event->status = service_hard_state;
   _event->start_time = _last_service_update;
   if (visitor) {
     misc::shared_ptr<io::data> be(new ba_event(*_event));
@@ -564,4 +569,3 @@ void ba::_unapply_impact(ba::impact_info& impact) {
 
   return ;
 }
-
