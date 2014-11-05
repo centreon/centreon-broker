@@ -790,6 +790,13 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
+  # BAM rebuild
+  set(TEST_NAME "running_bam_rebuild")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/bam_rebuild.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
   # Meta-services.
   set(TEST_NAME "running_meta_service")
   add_executable("${TEST_NAME}"
