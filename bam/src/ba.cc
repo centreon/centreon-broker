@@ -507,6 +507,7 @@ void ba::_internal_copy(ba const& right) {
 void ba::_open_new_event(io::stream* visitor) {
   _event = new ba_event;
   _event->ba_id = _id;
+  _event->first_level = _level_hard;
   _event->in_downtime = _in_downtime;
   _event->status = get_state_hard();
   _event->start_time = _last_service_update;

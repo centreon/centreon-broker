@@ -42,6 +42,7 @@ namespace        bam {
     unsigned int type() const;
 
     unsigned int ba_id;
+    double       first_level;
     timestamp    end_time;
     bool         in_downtime;
     timestamp    start_time;
