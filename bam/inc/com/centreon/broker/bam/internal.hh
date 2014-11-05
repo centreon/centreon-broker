@@ -40,6 +40,7 @@ namespace bam {
     de_dimension_bv_event,
     de_dimension_truncate_table_signal,
     de_rebuild,
+    de_rebuild_finished,
     de_dimension_timeperiod,
     de_dimension_ba_timeperiod_relation
   };

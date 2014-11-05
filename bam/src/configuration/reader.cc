@@ -65,12 +65,12 @@ reader::~reader() {}
 void reader::read(state& st) {
   try {
     _db->transaction(); // A single explicit transaction is more efficient.
+    _load_dimensions();
     _load(st.get_bas());
     _load(st.get_kpis());
     _load(st.get_bool_exps());
     _load(st.get_meta_services());
     _load(st.get_mapping());
-    _load_dimensions();
     _db->rollback();
   }
   catch (std::exception const& e) {

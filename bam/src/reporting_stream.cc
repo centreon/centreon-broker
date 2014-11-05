@@ -35,6 +35,7 @@
 #include "com/centreon/broker/bam/dimension_ba_timeperiod_relation.hh"
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/bam/kpi_event.hh"
+#include "com/centreon/broker/bam/rebuild.hh"
 #include "com/centreon/broker/bam/reporting_stream.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -249,6 +250,10 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
              == io::events::data_type<io::events::bam,
                                       bam::de_dimension_ba_timeperiod_relation>::value)
       _process_dimension_ba_timeperiod_relation(data);
+    else if (data->type()
+             == io::events::data_type<io::events::bam,
+                                      bam::de_rebuild>::value)
+    _process_rebuild(data);
   }
   // XXX : handle transaction
   return (1);
@@ -564,6 +569,8 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
       throw (exceptions::msg() << "BAM-BI: could not close event of BA "
              << be.ba_id << " starting at " << be.start_time
              << " and ending at " << be.end_time);
+    // Compute the associated event durations.
+    _compute_event_durations(e.staticCast<bam::ba_event>(), this);
   }
   else {
     _ba_event_insert->bindValue(":ba_id", be.ba_id);
@@ -845,13 +852,13 @@ void reporting_stream::_process_dimension_ba_timeperiod_relation(
 /**
  *  @brief Compute and write the duration events associated with a ba event.
  *
- *  The event durations are computed from the associated timeperiods of this BA.
+ *  The event durations are computed from the associated timeperiods of the BA.
  *
  *  @param[in] ev       The ba_event generating the durations.
  *  @param[in] visitor  A visitor stream.
  */
-void reporting_stream::_compute_event_duration(
-                        misc::shared_ptr<ba_event> ev,
+void reporting_stream::_compute_event_durations(
+                        misc::shared_ptr<ba_event> const& ev,
                         io::stream* visitor) {
   if (ev.isNull() || !visitor)
     return ;
@@ -887,6 +894,80 @@ void reporting_stream::_compute_event_duration(
   }
 }
 
+/**
+ *  Process a rebuild signal: Delete the obsolete data in the db and rebuild
+ *  ba duration events.
+ *
+ *  @param[in] e  The event.
+ */
+void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
+  rebuild const& r = e.ref_as<rebuild const>();
+  if (r.bas_to_rebuild.empty())
+    return;
+  logging::debug(logging::low)
+    << "BAM-BI: processing rebuild signal";
+  std::stringstream ss;
+
+  // Create the list of ba_id to update.
+  ss << "(";
+  for (std::vector<unsigned int>::const_iterator it(r.bas_to_rebuild.begin()),
+                                                 end(r.bas_to_rebuild.end());
+       it != end;
+       ++it)
+    ss << *it << ", ";
+  std::string ba_list = ss.str();
+  size_t last_of = ba_list.find_last_of(',');
+  if (last_of != std::string::npos)
+    ba_list.erase(ba_list.begin() + last_of, ba_list.end());
+  ba_list.append(")");
+
+  // Delete obsolete ba events durations.
+  {
+    QString query;
+    query.append("DELETE FROM mod_bam_reporting_ba_events_durations"
+                 "  WHERE ba_id IN").append(ba_list.c_str());
+    QSqlQuery q(*_db);
+    if (!q.exec(query))
+      throw (exceptions::msg() << "BAM-BI: could not delete BA durations "
+             << ba_list << " :"
+             << q.lastError().text());
+  }
+
+  // Get the ba events.
+  std::vector<misc::shared_ptr<ba_event> > ba_events;
+  {
+    QString query = "SELECT ba_id, start_time, end_time, "
+                    "status, in_downtime boolean"
+                    "  FROM mod_bam_reporting_ba_events"
+                    "  WHERE end_time != 0"
+                    "    AND ba_id IN ";
+    query.append(ba_list.c_str());
+    QSqlQuery q(*_db);
+    if (!q.exec(query))
+      throw (exceptions::msg() << "BAM-BI: could not get BA events of "
+                               << ba_list << " :"
+                               << q.lastError().text());
+    while (q.next()) {
+      misc::shared_ptr<ba_event> baev(new ba_event);
+      baev->ba_id = q.value(0).toInt();
+      baev->start_time = q.value(1).toInt();
+      baev->end_time = q.value(2).toInt();
+      baev->status = q.value(3).toInt();
+      baev->in_downtime = q.value(4).toBool();
+      ba_events.push_back(baev);
+    }
+  }
+
+  // Generate new ba events durations for each ba events.
+  {
+    for (std::vector<misc::shared_ptr<ba_event> >::const_iterator
+           it(ba_events.begin()),
+           end(ba_events.end());
+         it != end;
+         ++it)
+      _compute_event_durations(*it, this);
+  }
+}
 
 /**
  *  Update status of endpoint.
