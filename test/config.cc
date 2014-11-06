@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdio>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -254,6 +255,172 @@ void test_db::_run_script(QSqlDatabase& db, char const* script_name) {
     throw (exceptions::msg()
            << query.lastError().text().toStdString().c_str());
 
+  return ;
+}
+
+/**
+ *  Default constructor.
+ */
+test_file::test_file() {
+  _variables["PROJECT_SOURCE_DIR"] = PROJECT_SOURCE_DIR;
+  _variables["CBD_PATH"] = CBD_PATH;
+  _variables["CBMOD_PATH"] = CBMOD_PATH;
+  _variables["MY_PLUGIN_PATH"] = MY_PLUGIN_PATH;
+  _variables["MY_PLUGIN_BAM_PATH"] = MY_PLUGIN_BAM_PATH;
+  _variables["BENCH_GENERATE_RRD_MOD_PATH"] = BENCH_GENERATE_RRD_MOD_PATH;
+  _variables["MONITORING_ENGINE"] = MONITORING_ENGINE;
+  _variables["MONITORING_ENGINE_ADDITIONAL"] = MONITORING_ENGINE_ADDITIONAL;
+  _variables["MONITORING_ENGINE_INTERVAL_LENGTH"] = MONITORING_ENGINE_INTERVAL_LENGTH_STR;
+  _variables["MONITORING_ENGINE_INTERVAL_LENGTH_STR"] = MONITORING_ENGINE_INTERVAL_LENGTH_STR;
+  _variables["DB_TYPE"] = DB_TYPE;
+  _variables["DB_HOST"] = DB_HOST;
+  _variables["DB_PORT"] = DB_PORT;
+  _variables["DB_USER"] = DB_USER;
+  _variables["DB_PASSWORD"] = DB_PASSWORD;
+}
+
+/**
+ *  Copy constructor.
+ *
+ *  @param[in] other  Object to copy.
+ */
+test_file::test_file(test_file const& other) {
+  _internal_copy(other);
+}
+
+/**
+ *  Destructor.
+ */
+test_file::~test_file() {
+  close();
+}
+
+/**
+ *  Assignment operator.
+ *
+ *  @param[in] other  Object to copy.
+ *
+ *  @return This object.
+ */
+test_file& test_file::operator=(test_file const& other) {
+  if (this != &other) {
+    close();
+    _internal_copy(other);
+  }
+  return (*this);
+}
+
+/**
+ *  Close a generated file. This effectively removes the generated file.
+ */
+void test_file::close() {
+  if (!_target_file.empty()) {
+    ::remove(_target_file.c_str());
+    _target_file.clear();
+  }
+  return ;
+}
+
+/**
+ *  Generate a test file from a template.
+ *
+ *  @return The path to the generated file.
+ */
+std::string const& test_file::generate() {
+  // Close old file.
+  close();
+
+  // Read base file.
+  std::string content;
+  {
+    std::ifstream ifs;
+    ifs.open(_base_file.c_str());
+    if (!ifs.good())
+      throw (exceptions::msg() << "could not open base file '"
+             << _base_file << "'");
+    char buffer[4096];
+    while (ifs.good()) {
+      ifs.read(buffer, sizeof(buffer));
+      content.append(buffer, ifs.gcount());
+    }
+    ifs.close();
+  }
+
+  // Replace variables.
+  size_t start(content.find_first_of('@', 0));
+  while (start != std::string::npos) {
+    size_t end(content.find_first_of('@', start + 1));
+    if (std::string::npos == end)
+      throw (exceptions::msg()
+             << "non-terminated variable (\"@VAR@\") in base file '"
+             << _base_file << "' at offset " << start << " " << content.substr(start));
+    std::string var(content.substr(start + 1, end - start - 1));
+    std::map<std::string, std::string>::const_iterator
+      it(_variables.find(var));
+    if (it != _variables.end()) {
+      content.replace(start, end - start + 1, it->second);
+      start += it->second.size();
+    }
+    else {
+      content.erase(start, end - start + 1);
+    }
+    start = content.find_first_of('@', start);
+  }
+
+  // Write target file.
+  _target_file = tmpnam(NULL);
+  std::ofstream ofs;
+  ofs.open(
+        _target_file.c_str(),
+        std::ios_base::out | std::ios_base::trunc);
+  if (!ofs.good()) {
+    ofs.close();
+    close();
+    throw (exceptions::msg() << "could not open target file");
+  }
+  ofs.write(content.c_str(), content.size());
+  if (!ofs.good()) {
+    ofs.close();
+    close();
+    throw (exceptions::msg()
+           << "could not write content to target file");
+  }
+  ofs.close();
+  return (_target_file);
+}
+
+/**
+ *  Set a variable.
+ *
+ *  @param[in] variable  Variable name.
+ *  @param[in] value     Value.
+ */
+void test_file::set(
+                  std::string const& variable,
+                  std::string const& value) {
+  _variables[variable] = value;
+  return ;
+}
+
+/**
+ *  Set the template file.
+ *
+ *  @param[in] base_file  Base file from which we will generate the test
+ *                        file.
+ */
+void test_file::set_template(std::string const& base_file) {
+  _base_file = base_file;
+  return ;
+}
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] other  Object to copy.
+ */
+void test_file::_internal_copy(test_file const& other) {
+  _base_file = other._base_file;
+  _variables = other._variables;
   return ;
 }
 
