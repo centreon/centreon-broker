@@ -175,7 +175,7 @@ io::endpoint* factory::new_endpoint(
   // External command file.
   QString ext_cmd_file;
   if (!is_bam_bi)
-    ext_cmd_file = find_param(cfg, "external_command_file");
+    ext_cmd_file = find_param(cfg, "command_file");
 
   // Connector.
   std::auto_ptr<bam::connector> c(new bam::connector);

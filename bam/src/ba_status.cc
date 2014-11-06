@@ -33,7 +33,8 @@ ba_status::ba_status()
     level_acknowledgement(0.0),
     level_downtime(0.0),
     level_nominal(100.0),
-    state(0) {}
+    state(0),
+    state_changed(false) {}
 
 /**
  *  Copy constructor.
@@ -86,5 +87,6 @@ void ba_status::_internal_copy(ba_status const& other) {
   level_downtime = other.level_downtime;
   level_nominal = other.level_nominal;
   state = other.state;
+  state_changed = other.state_changed;
   return ;
 }

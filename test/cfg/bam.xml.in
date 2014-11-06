@@ -7,6 +7,7 @@
   <stats>
     <fifo>/tmp/cbmod.fifo</fifo>
   </stats>
+  <log_timestamp>1</log_timestamp>
   <logger>
     <type>file</type>
     <name>cbmod.log</name>
@@ -27,6 +28,7 @@
     <db_password>@DB_PASSWORD@</db_password>
     <db_name>broker_bam_centreon</db_name>
     <queries_per_transaction>0</queries_per_transaction>
+    <command_file>@COMMAND_FILE@</command_file>
   </output>
   <output>
     <name>BAMBIUnitTest</name>

@@ -54,6 +54,7 @@ ba::ba()
     _host_id(0),
     _id(0),
     _in_downtime(false),
+    _last_state(-1),
     _level_critical(0.0),
     _level_hard(100.0),
     _level_soft(100.0),
@@ -388,7 +389,10 @@ void ba::visit(io::stream* visitor) {
     status->level_acknowledgement = normalize(_acknowledgement_hard);
     status->level_downtime = normalize(_downtime_hard);
     status->level_nominal = normalize(_level_hard);
-    status->state = get_state_hard();
+    short new_state(get_state_hard());
+    status->state = new_state;
+    status->state_changed = (_last_state != new_state);
+    _last_state = new_state;
     visitor->write(status.staticCast<io::data>());
   }
   return ;
@@ -491,6 +495,7 @@ void ba::_internal_copy(ba const& right) {
   _host_id = right._host_id;
   _impacts = right._impacts;
   _in_downtime = right._in_downtime;
+  _last_state = right._last_state;
   _last_service_update = right._last_service_update;
   _level_critical = right._level_critical;
   _level_hard = right._level_hard;

@@ -48,6 +48,7 @@ namespace        bam {
     double       level_downtime;
     double       level_nominal;
     short        state;
+    bool         state_changed;
 
   private:
     void         _internal_copy(ba_status const& other);

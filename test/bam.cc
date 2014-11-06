@@ -408,6 +408,7 @@ int main() {
 
     commander.set_file(tmpnam(NULL));
     cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/bam.xml.in");
+    cfg.set("COMMAND_FILE", commander.get_file());
     std::string additional_config;
     {
       std::ostringstream oss;
@@ -822,8 +823,6 @@ int main() {
         kpievents,
         sizeof(kpievents) / sizeof(*kpievents));
     }
-
-    sleep_for(600);
 
     // Success.
     error = false;

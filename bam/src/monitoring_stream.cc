@@ -20,6 +20,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <ctime>
+#include <fstream>
 #include <sstream>
 #include <QMutexLocker>
 #include <QSqlError>
@@ -313,22 +314,24 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
                << status->ba_id << ": "
                << _ba_update->lastError().text());
 
-      std::pair<std::string, std::string>
-        ba_svc_name(_ba_mapping.get_service(status->ba_id));
-      if (ba_svc_name.first.empty() || ba_svc_name.second.empty()) {
-        logging::error(logging::high)
-          << "BAM: could not trigger check of virtual service of BA "
-          << status->ba_id
-          << ": host name and service description were not found";
-      }
-      else {
-        std::ostringstream oss;
-        oss << "[" << std::time(NULL) << "] PROCESS_SERVICE_CHECK_RESULT;"
-            << ba_svc_name.first << ";" << ba_svc_name.second << ";"
-            << status->state << ";BA " << status->ba_id << " has state "
-            << status->state << " and level " << status->level_nominal
-            << "|value=" << status->level_nominal;
-        _write_external_command(oss.str());
+      if (status->state_changed) {
+        std::pair<std::string, std::string>
+          ba_svc_name(_ba_mapping.get_service(status->ba_id));
+        if (ba_svc_name.first.empty() || ba_svc_name.second.empty()) {
+          logging::error(logging::high)
+            << "BAM: could not trigger check of virtual service of BA "
+            << status->ba_id
+            << ": host name and service description were not found";
+        }
+        else {
+          std::ostringstream oss;
+          oss << "[" << std::time(NULL) << "] PROCESS_SERVICE_CHECK_RESULT;"
+              << ba_svc_name.first << ";" << ba_svc_name.second << ";"
+              << status->state << ";BA " << status->ba_id << " has state "
+              << status->state << " and level " << status->level_nominal
+              << "|value=" << status->level_nominal;
+          _write_external_command(oss.str());
+        }
       }
     }
     else if (data->type()
@@ -557,14 +560,14 @@ void monitoring_stream::_rebuild() {
   {
     QString query = "SELECT ba_id"
                     "  FROM mod_bam"
-                    "  WHERE should_be_rebuild = 1";
+                    "  WHERE must_be_rebuild='1'";
     QSqlQuery q = _db->exec(query);
     if (q.lastError().isValid())
       throw (exceptions::msg()
              << "BAM: could not select the list of BAs to rebuild: "
              << q.lastError().text());
     while (q.next())
-      bas_to_rebuild.push_back(q.value(0).toInt());
+      bas_to_rebuild.push_back(q.value(0).toUInt());
   }
 
   // Nothing to rebuild.
@@ -579,7 +582,7 @@ void monitoring_stream::_rebuild() {
   // Set all the BAs to should not be rebuild.
   {
     QString query = "UPDATE mod_bam"
-                    "  SET should_be_rebuild = 0";
+                    "  SET must_be_rebuild='0'";
     QSqlQuery q = _db->exec(query);
     if (q.lastError().isValid())
       throw (exceptions::msg()
@@ -606,5 +609,23 @@ void monitoring_stream::_update_status(std::string const& status) {
  */
 void monitoring_stream::_write_external_command(
                           std::string const& cmd) {
-  // XXX
+  std::ofstream ofs;
+  ofs.open(_ext_cmd_file.toStdString().c_str());
+  if (!ofs.good()) {
+    logging::error(logging::medium)
+      << "BAM: could not write BA check result to command file '"
+      << _ext_cmd_file << "'";
+  }
+  else {
+    ofs.write(cmd.c_str(), cmd.size());
+    if (!ofs.good())
+      logging::error(logging::medium)
+        << "BAM: could not write BA check result to command file '"
+        << _ext_cmd_file << "'";
+    else
+      logging::debug(logging::medium)
+        << "BAM: sent external command '" << cmd << "'";
+    ofs.close();
+  }
+  return ;
 }
