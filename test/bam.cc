@@ -332,6 +332,7 @@ int main() {
   external_command commander;
   engine monitoring;
   test_db db;
+  test_file cfg;
 
   try {
     // Prepare database.
@@ -406,12 +407,13 @@ int main() {
     }
 
     commander.set_file(tmpnam(NULL));
+    cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/bam.xml.in");
     std::string additional_config;
     {
       std::ostringstream oss;
       oss << commander.get_engine_config()
           << "broker_module=" << CBMOD_PATH << " "
-          << PROJECT_SOURCE_DIR << "/test/cfg/bam.xml\n";
+          << cfg.generate() << "\n";
       additional_config = oss.str();
     }
 

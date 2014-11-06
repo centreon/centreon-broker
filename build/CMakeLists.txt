@@ -571,8 +571,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/temporary.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/temporary.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bam.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/bam.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/meta_service.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/meta_service.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_instance_update_outdated_1.xml.in"
