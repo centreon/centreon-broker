@@ -111,6 +111,7 @@ namespace        bam {
     umap<kpi*, impact_info>
                  _impacts;
     bool         _in_downtime;
+    short        _last_state;
     timestamp    _last_service_update;
     double       _level_critical;
     double       _level_hard;

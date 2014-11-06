@@ -54,6 +54,7 @@ namespace          bam {
                      QString const& db_user,
                      QString const& db_password,
                      QString const& db_name,
+                     QString const& ext_cmd_file,
                      unsigned int queries_per_transaction,
                      bool check_replication);
     misc::shared_ptr<io::stream>
@@ -71,6 +72,7 @@ namespace          bam {
     unsigned short _db_port;
     QString        _db_user;
     QString        _db_type;
+    QString        _ext_cmd_file;
     unsigned int   _queries_per_transaction;
     stream_type    _type;
   };

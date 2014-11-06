@@ -21,8 +21,10 @@
 #  define TEST_CONFIG_HH
 
 #  include <list>
+#  include <map>
 #  include <memory>
 #  include <QSqlDatabase>
+#  include <string>
 #  include "com/centreon/engine/objects.hh"
 
 /**
@@ -54,6 +56,31 @@ private:
                 _centreon;
   std::auto_ptr<QSqlDatabase>
                 _storage;
+};
+
+/**
+ *  Test file.
+ */
+class                test_file {
+public:
+                     test_file();
+                     test_file(test_file const& other);
+                     ~test_file();
+  test_file&         operator=(test_file const& other);
+  void               close();
+  std::string const& generate();
+  void               set(
+                       std::string const& variable,
+                       std::string const& value);
+  void               set_template(std::string const& base_file);
+
+private:
+  void               _internal_copy(test_file const& other);
+
+  std::string        _base_file;
+  std::string        _target_file;
+  std::map<std::string, std::string>
+                     _variables;
 };
 
 void            config_remove(char const* path);

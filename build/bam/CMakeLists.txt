@@ -33,6 +33,7 @@ add_library("${BAM}" SHARED
   # Sources.
   "${SRC_DIR}/ba.cc"
   "${SRC_DIR}/ba_status.cc"
+  "${SRC_DIR}/ba_svc_mapping.cc"
   "${SRC_DIR}/ba_event.cc"
   "${SRC_DIR}/ba_duration_event.cc"
   "${SRC_DIR}/bool_and.cc"
@@ -96,6 +97,7 @@ add_library("${BAM}" SHARED
   # Headers.
   "${INC_DIR}/ba.hh"
   "${INC_DIR}/ba_status.hh"
+  "${INC_DIR}/ba_svc_mapping.hh"
   "${INC_DIR}/ba_event.hh"
   "${INC_DIR}/ba_duration_event.hh"
   "${INC_DIR}/bool_and.hh"

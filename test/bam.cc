@@ -332,6 +332,7 @@ int main() {
   external_command commander;
   engine monitoring;
   test_db db;
+  test_file cfg;
 
   try {
     // Prepare database.
@@ -392,9 +393,7 @@ int main() {
         strcpy(s.service_check_command, str.c_str());
       }
       s.accept_passive_service_checks = 1;
-      s.checks_enabled = 1;
-      s.check_interval = 1;
-      s.retry_interval = 1;
+      s.checks_enabled = 0;
       s.max_attempts = 1;
       services.push_back(s);
     }
@@ -408,12 +407,14 @@ int main() {
     }
 
     commander.set_file(tmpnam(NULL));
+    cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/bam.xml.in");
+    cfg.set("COMMAND_FILE", commander.get_file());
     std::string additional_config;
     {
       std::ostringstream oss;
       oss << commander.get_engine_config()
           << "broker_module=" << CBMOD_PATH << " "
-          << PROJECT_SOURCE_DIR << "/test/cfg/bam.xml\n";
+          << cfg.generate() << "\n";
       additional_config = oss.str();
     }
 
@@ -822,8 +823,6 @@ int main() {
         kpievents,
         sizeof(kpievents) / sizeof(*kpievents));
     }
-
-    sleep_for(600);
 
     // Success.
     error = false;

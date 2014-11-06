@@ -33,10 +33,11 @@ state::state() {}
  *  @param[in] other  Object to copy.
  */
 state::state(state const& other)
-  : _bas(other._bas),
+  : _ba_svc_mapping(other._ba_svc_mapping),
+    _bas(other._bas),
     _kpis(other._kpis),
     _bool_expressions(other._bool_expressions),
-    _mapping(other._mapping),
+    _hst_svc_mapping(other._hst_svc_mapping),
     _meta_services(other._meta_services) {}
 
 /**
@@ -53,10 +54,11 @@ state::~state() {}
  */
 state& state::operator=(state const& other) {
   if (this != &other) {
+    _ba_svc_mapping = other._ba_svc_mapping;
     _bas = other._bas;
     _kpis= other._kpis;
     _bool_expressions = other._bool_expressions;
-    _mapping = other._mapping;
+    _hst_svc_mapping = other._hst_svc_mapping;
     _meta_services = other._meta_services;
   }
   return (*this);
@@ -110,12 +112,21 @@ state::meta_services const& state::get_meta_services() const {
 }
 
 /**
- *  Get mapping.
+ *  Get host/service mapping.
  *
  *  @return Mapping.
  */
-bam::hst_svc_mapping const& state::get_mapping() const {
-  return (_mapping);
+bam::hst_svc_mapping const& state::get_hst_svc_mapping() const {
+  return (_hst_svc_mapping);
+}
+
+/**
+ *  Get BA/service mapping.
+ *
+ *  @return Mapping.
+ */
+bam::ba_svc_mapping const& state::get_ba_svc_mapping() const {
+  return (_ba_svc_mapping);
 }
 
 /**
@@ -155,10 +166,19 @@ state::meta_services& state::get_meta_services() {
 }
 
 /**
- *  Get mapping.
+ *  Get host/service mapping.
  *
  *  @return Mapping.
  */
-bam::hst_svc_mapping& state::get_mapping() {
-  return (_mapping);
+bam::hst_svc_mapping& state::get_hst_svc_mapping() {
+  return (_hst_svc_mapping);
+}
+
+/**
+ *  Get BA/service mapping.
+ *
+ *  @return Mapping.
+ */
+bam::ba_svc_mapping& state::get_ba_svc_mapping() {
+  return (_ba_svc_mapping);
 }

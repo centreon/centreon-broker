@@ -46,8 +46,9 @@ namespace     bam {
               ba(ba const& right);
               ~ba();
         ba&   operator=(ba const& right);
-        void  apply(configuration::state::bas const& my_bas,
-                    service_book& book);
+        void  apply(
+                configuration::state::bas const& my_bas,
+                service_book& book);
         misc::shared_ptr<bam::ba>
               find_ba(unsigned int id);
         void  visit(io::stream* visitor);

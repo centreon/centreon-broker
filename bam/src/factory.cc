@@ -172,6 +172,11 @@ io::endpoint* factory::new_endpoint(
   bool is_bam_bi(!cfg.type.compare("bam_bi", Qt::CaseInsensitive)
                  && is_output);
 
+  // External command file.
+  QString ext_cmd_file;
+  if (!is_bam_bi)
+    ext_cmd_file = find_param(cfg, "command_file");
+
   // Connector.
   std::auto_ptr<bam::connector> c(new bam::connector);
   c->connect_to(
@@ -184,6 +189,7 @@ io::endpoint* factory::new_endpoint(
        user,
        password,
        name,
+       ext_cmd_file,
        queries_per_transaction,
        check_replication);
   is_acceptor = false;

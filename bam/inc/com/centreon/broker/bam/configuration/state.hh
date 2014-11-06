@@ -22,6 +22,7 @@
 
 #  include <deque>
 #  include <map>
+#  include "com/centreon/broker/bam/ba_svc_mapping.hh"
 #  include "com/centreon/broker/bam/configuration/kpi.hh"
 #  include "com/centreon/broker/bam/configuration/bool_expression.hh"
 #  include "com/centreon/broker/bam/configuration/ba.hh"
@@ -42,10 +43,10 @@ namespace                    bam {
     class                    state {
     public:
       /* Typedefs */
-      typedef std::map<int, ba>  bas;
+      typedef std::map<int, ba>              bas;
       typedef std::map<int, kpi>             kpis;
       typedef std::map<int, bool_expression> bool_exps;
-      typedef std::deque<meta_service>    meta_services;
+      typedef std::deque<meta_service>       meta_services;
 
                              state();
                              state(state const& other);
@@ -57,19 +58,22 @@ namespace                    bam {
       kpis const&            get_kpis() const;
       bool_exps const&       get_bool_exps() const;
       meta_services const&   get_meta_services() const;
-      hst_svc_mapping const& get_mapping() const;
+      hst_svc_mapping const& get_hst_svc_mapping() const;
+      ba_svc_mapping const&  get_ba_svc_mapping() const;
 
       bas&                   get_bas();
       kpis&                  get_kpis();
       bool_exps&             get_bool_exps();
       meta_services&         get_meta_services();
-      hst_svc_mapping&       get_mapping();
+      hst_svc_mapping&       get_hst_svc_mapping();
+      ba_svc_mapping&        get_ba_svc_mapping();
 
     private:
+      ba_svc_mapping         _ba_svc_mapping;
       bas                    _bas;
       kpis                   _kpis;
       bool_exps              _bool_expressions;
-      hst_svc_mapping        _mapping;
+      hst_svc_mapping        _hst_svc_mapping;
       meta_services          _meta_services;
     };
   }
