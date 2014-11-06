@@ -355,6 +355,7 @@ void reporting_stream::_check_replication() {
 void reporting_stream::_clear_qsql() {
   _ba_event_insert.reset();
   _ba_event_update.reset();
+  _ba_event_delete.reset();
   _ba_duration_event_insert.reset();
   _kpi_event_insert.reset();
   _kpi_event_update.reset();
@@ -397,6 +398,18 @@ void reporting_stream::_prepare() {
       throw (exceptions::msg()
              << "BAM-BI: could not prepare BA event update query: "
              << _ba_event_update->lastError().text());
+  }
+
+  // BA event deletion.
+  {
+    QString query;
+    query = "DELETE FROM mod_bam_reporting_ba_events"
+            "  WHERE ba_id=:ba_id AND start_time=:start_time";
+    _ba_event_delete.reset(new QSqlQuery(*_db));
+    if (!_ba_event_delete->prepare(query))
+      throw (exceptions::msg()
+             << "BAM-BI: could not prepare BA event deletion query: "
+             << _ba_event_delete->lastError().text());
   }
 
   // BA duration event insert.
@@ -569,32 +582,91 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
     << be.ba_id << " (start time " << be.start_time << ", end time "
     << be.end_time << ", status " << be.status << ", in downtime "
     << be.in_downtime << ")";
-  if ((be.end_time != 0) && (be.end_time != (time_t)-1)) {
+  // Ephemeral event.
+  if (be.start_time == be.end_time) {
+    _ba_event_delete->bindValue(":ba_id", be.ba_id);
+    _ba_event_delete->bindValue(
+      ":start_time",
+      static_cast<qlonglong>(be.start_time.get_time_t()));
+    if (!_ba_event_delete->exec())
+      throw (exceptions::msg()
+             << "BAM-BI: could not delete ephemeral event of BA "
+             << be.ba_id << " at second " << be.start_time);
+    std::map<unsigned int, std::list<ba_event> >::iterator
+      it(_ba_event_cache.find(be.ba_id));
+    if ((it != _ba_event_cache.end())
+        && !it->second.empty()
+        && (be.start_time == it->second.front().start_time)) {
+      it->second.pop_front();
+      if (it->second.empty())
+        _ba_event_cache.erase(it);
+    }
+  }
+  // End of event.
+  else if ((be.end_time != 0) && (be.end_time != (time_t)-1)) {
+    std::map<unsigned int, std::list<ba_event> >::iterator
+      it(_ba_event_cache.find(be.ba_id));
+    if (it == _ba_event_cache.end())
+      it->second.push_front(be);
+    else
+      it->second.front().end_time = be.end_time;
     _ba_event_update->bindValue(":ba_id", be.ba_id);
     _ba_event_update->bindValue(
       ":start_time",
-      static_cast<qlonglong>(be.start_time.get_time_t()));
+      static_cast<qlonglong>(it->second.front().start_time.get_time_t()));
     _ba_event_update->bindValue(
       ":end_time",
-      static_cast<qlonglong>(be.end_time.get_time_t()));
+      static_cast<qlonglong>(it->second.front().end_time.get_time_t()));
     if (!_ba_event_update->exec())
       throw (exceptions::msg() << "BAM-BI: could not close event of BA "
              << be.ba_id << " starting at " << be.start_time
              << " and ending at " << be.end_time);
+
     // Compute the associated event durations.
     _compute_event_durations(e.staticCast<bam::ba_event>(), this);
   }
+  // Start of event.
   else {
-    _ba_event_insert->bindValue(":ba_id", be.ba_id);
-    _ba_event_insert->bindValue(":first_level", be.first_level);
-    _ba_event_insert->bindValue(
-      ":start_time",
-      static_cast<qlonglong>(be.start_time.get_time_t()));
-    _ba_event_insert->bindValue(":status", be.status);
-    _ba_event_insert->bindValue(":in_downtime", be.in_downtime);
-    if (!_ba_event_insert->exec())
-      throw (exceptions::msg() << "BAM-BI: could not insert event of BA "
-             << be.ba_id << " starting at " << be.start_time);
+    std::map<unsigned int, std::list<ba_event> >::iterator
+      it(_ba_event_cache.find(be.ba_id));
+    // Reopen event.
+    if ((it != _ba_event_cache.end())
+        && !it->second.empty()
+        && (it->second.front().end_time == be.start_time)
+        && (it->second.front().in_downtime == be.in_downtime)
+        && (it->second.front().status == be.status)) {
+      _ba_event_update->bindValue(":ba_id", be.ba_id);
+      _ba_event_update->bindValue(
+        ":start_time",
+        static_cast<qlonglong>(it->second.front().start_time.get_time_t()));
+      _ba_event_update->bindValue(
+        ":end_time",
+        QVariant(QVariant::LongLong));
+      if (!_ba_event_update->exec())
+        throw (exceptions::msg()
+               << "BAM-BI: could not reopen event of BA "
+               << be.ba_id << " starting at " << be.start_time << ": "
+               << _ba_event_update->lastError().text());
+      it->second.front().end_time = (time_t)-1;
+    }
+    // Open new event.
+    else {
+      _ba_event_insert->bindValue(":ba_id", be.ba_id);
+      _ba_event_insert->bindValue(":first_level", be.first_level);
+      _ba_event_insert->bindValue(
+        ":start_time",
+        static_cast<qlonglong>(be.start_time.get_time_t()));
+      _ba_event_insert->bindValue(":status", be.status);
+      _ba_event_insert->bindValue(":in_downtime", be.in_downtime);
+      if (!_ba_event_insert->exec())
+        throw (exceptions::msg()
+               << "BAM-BI: could not insert event of BA "
+               << be.ba_id << " starting at " << be.start_time);
+      std::list<ba_event>& event_list(_ba_event_cache[be.ba_id]);
+      event_list.push_front(be);
+      if (event_list.size() > 2)
+        event_list.pop_back();
+    }
   }
   return ;
 }

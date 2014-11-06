@@ -64,6 +64,7 @@ namespace          bam {
                    operator=(reporting_stream const& other);
     void           _check_replication();
     void           _clear_qsql();
+    //void           _load_last_events();// XXX
     void           _prepare();
     void           _process_ba_event(misc::shared_ptr<io::data> const& e);
     void           _process_ba_duration_event(
@@ -81,6 +82,10 @@ namespace          bam {
     void           _compute_event_durations(misc::shared_ptr<ba_event> const& ev,
                                             io::stream* visitor);
 
+    std::map<unsigned int, std::list<ba_event> >
+                   _ba_event_cache;
+    std::map<unsigned int, std::list<kpi_event> >
+                   _kpi_event_cache;
     bool           _process_out;
     unsigned int   _queries_per_transaction;
     std::string    _status;
@@ -91,11 +96,15 @@ namespace          bam {
     std::auto_ptr<QSqlQuery>
                    _ba_event_update;
     std::auto_ptr<QSqlQuery>
+                   _ba_event_delete;
+    std::auto_ptr<QSqlQuery>
                    _ba_duration_event_insert;
     std::auto_ptr<QSqlQuery>
                    _kpi_event_insert;
     std::auto_ptr<QSqlQuery>
                    _kpi_event_update;
+    std::auto_ptr<QSqlQuery>
+                   _kpi_event_delete; // XXX
     std::auto_ptr<QSqlQuery>
                    _kpi_event_link;
     std::auto_ptr<QSqlQuery>
