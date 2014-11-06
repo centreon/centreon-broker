@@ -229,14 +229,15 @@ void monitoring_stream::statistics(io::properties& tree) const {
  */
 void monitoring_stream::update() {
   // XXX : beware of exceptions ?
-  // configuration::state s;
-  // {
-  //   configuration::reader r(_db.get());
-  //   r.read(s);
-  // }
-  // _applier.apply(s);
+   configuration::state s;
+   {
+     configuration::reader r(_db.get());
+     r.read(s);
+   }
+   //_applier.apply(s);
+
   // Check if we need to rebuild something.
-  // _rebuild();
+   _rebuild();
   return ;
 }
 
@@ -531,7 +532,7 @@ void monitoring_stream::_rebuild() {
   {
     QString query = "SELECT ba_id"
                     "  FROM mod_bam"
-                    "  WHERE should_be_rebuild = 1";
+                    "  WHERE must_be_rebuild = 1";
     QSqlQuery q = _db->exec(query);
     if (q.lastError().isValid())
       throw (exceptions::msg()
@@ -553,7 +554,7 @@ void monitoring_stream::_rebuild() {
   // Set all the BAs to should not be rebuild.
   {
     QString query = "UPDATE mod_bam"
-                    "  SET should_be_rebuild = 0";
+                    "  SET must_be_rebuild = 0";
     QSqlQuery q = _db->exec(query);
     if (q.lastError().isValid())
       throw (exceptions::msg()

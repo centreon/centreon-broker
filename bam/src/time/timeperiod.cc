@@ -330,12 +330,13 @@ bool timeperiod::is_valid(time_t preferred_time) const {
  *  @return The next valid time.
  */
 time_t timeperiod::get_next_valid(time_t preferred_time) const {
+  return (preferred_time);
   // First check for possible timeperiod exclusions
   // before getting a valid_time.
-  timezone_locker tzlock(_timezone.c_str());
+  /*timezone_locker tzlock(_timezone.c_str());
   return (_get_next_valid_time_per_timeperiod(
           preferred_time,
-          *this));
+          *this));*/
 }
 
 /**
@@ -346,10 +347,11 @@ time_t timeperiod::get_next_valid(time_t preferred_time) const {
  *  @return                    The next invalid time.
  */
 time_t timeperiod::get_next_invalid(time_t preferred_time) const {
-  timezone_locker tzlock(_timezone.c_str());
+  return (preferred_time);
+  /*timezone_locker tzlock(_timezone.c_str());
 
   return (_get_min_invalid_time_per_timeperiod(preferred_time,
-                                               *this));
+                                               *this));*/
 }
 
 /**
@@ -362,7 +364,8 @@ time_t timeperiod::get_next_invalid(time_t preferred_time) const {
  */
 unsigned int timeperiod::duration_intersect(time_t start_time,
                                             time_t end_time) const {
-  unsigned int duration = 0;
+  return (end_time - start_time);
+  /*unsigned int duration = 0;
   time_t current_start_time = start_time;
   time_t current_end_time = current_start_time;
 
@@ -379,7 +382,7 @@ unsigned int timeperiod::duration_intersect(time_t start_time,
     else
       duration += std::difftime(end_time, current_start_time);
   }
-  return (duration);
+  return (duration);*/
 }
 
 /**

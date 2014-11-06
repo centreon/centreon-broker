@@ -27,7 +27,6 @@
 #  include "com/centreon/broker/bam/computable.hh"
 #  include "com/centreon/broker/bam/impact_values.hh"
 #  include "com/centreon/broker/bam/service_listener.hh"
-#  include "com/centreon/broker/bam/time/timeperiod.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
@@ -79,8 +78,6 @@ namespace        bam {
     void         set_level_critical(double level);
     void         set_level_warning(double level);
     void         set_initial_event(ba_event const& event);
-    void         add_timeperiod(time::timeperiod::ptr tp, bool is_default);
-    void         clear_timeperiods();
     void         visit(io::stream* visitor);
     void         service_update(
                    misc::shared_ptr<neb::service_status> const& status,

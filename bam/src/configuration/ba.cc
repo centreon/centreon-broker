@@ -40,8 +40,7 @@ ba::ba(
   _service_id(0),
   _name(name),
   _warning_level(warning_level),
-  _critical_level(critical_level),
-  _default_timeperiod(0) {}
+  _critical_level(critical_level) {}
 
 /**
  *  Copy constructor.
@@ -55,9 +54,7 @@ ba::ba(ba const& other)
     _name(other._name),
     _warning_level(other._warning_level),
     _critical_level(other._critical_level),
-    _event(other._event),
-    _default_timeperiod(other._default_timeperiod),
-    _timeperiods(other._timeperiods) {}
+    _event(other._event) {}
 
 /**
  *  Destructor.
@@ -80,8 +77,6 @@ ba& ba::operator=(ba const& other) {
     _warning_level = other._warning_level;
     _critical_level = other._critical_level;
     _event = other._event;
-    _default_timeperiod = other._default_timeperiod;
-    _timeperiods = other._timeperiods;
   }
   return (*this);
 }
@@ -100,9 +95,7 @@ bool ba::operator==(ba const& right) const {
           && (_name == right._name)
           && (_warning_level == right._warning_level)
           && (_critical_level == right._critical_level)
-          && (_event == right._event)
-          && (_default_timeperiod == right._default_timeperiod)
-          && (_timeperiods == right._timeperiods));
+          && (_event == right._event));
 }
 
 /**
@@ -180,24 +173,6 @@ com::centreon::broker::bam::ba_event const& ba::get_opened_event() const {
 }
 
 /**
- *  Get the default timeperiod of this ba, or 0 if none.
- *
- *  @return  The default timeperiod, or 0 if none.
- */
-unsigned int ba::get_default_timeperiod() const {
-  return (_default_timeperiod);
-}
-
-/**
- *  Get the timeperiods associated with this ba.
- *
- *  @return  The timeperiods.
- */
-std::vector<unsigned int> const& ba::get_timeperiods() const {
-  return (_timeperiods);
-}
-
-/**
  *  Set id.
  *
  *  @param[in] id Set business activity id key.
@@ -260,23 +235,3 @@ void ba::set_opened_event(bam::ba_event const& e) {
   _event = e;
 }
 
-/**
- *  Set the default timeperiod of this BA.
- *
- *  @param[in] tp_id  The default timeperiod of this BA.
- */
-void ba::set_default_timeperiod(unsigned int tp_id) {
-  if (_default_timeperiod)
-    throw (reader_exception()
-           << "BAM: There is already a default timeperiod for BA: " << _id);
-  _default_timeperiod = tp_id;
-}
-
-/**
- *  Add a timeperiod.
- *
- *  @param[in] tp_id  The id of the timeperiod.
- */
-void ba::add_timeperiod(unsigned int tp_id) {
-  _timeperiods.push_back(tp_id);
-}

@@ -105,9 +105,7 @@ CREATE TABLE mod_bam_reporting_ba_events (
   status smallint default NULL,
   in_downtime boolean default NULL,
 
-  PRIMARY KEY (ba_event_id),
-  FOREIGN KEY (ba_id) REFERENCES mod_bam_reporting_ba (ba_id)
-    ON DELETE CASCADE
+  PRIMARY KEY (ba_event_id)
 );
 
 --
@@ -125,9 +123,7 @@ CREATE TABLE mod_bam_reporting_kpi_events (
   first_output text default NULL,
   first_perfdata varchar(45) default NULL,
 
-  PRIMARY KEY (kpi_event_id),
-  FOREIGN KEY (kpi_id) REFERENCES mod_bam_reporting_kpi (kpi_id)
-    ON DELETE CASCADE
+  PRIMARY KEY (kpi_event_id)
 );
 
 --
