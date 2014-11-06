@@ -37,6 +37,7 @@
 #include "com/centreon/broker/bam/kpi_event.hh"
 #include "com/centreon/broker/bam/rebuild.hh"
 #include "com/centreon/broker/bam/reporting_stream.hh"
+#include "com/centreon/broker/bam/time/timezone_manager.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -125,6 +126,9 @@ reporting_stream::reporting_stream(
     // Prepare queries.
     _prepare();
 
+    // Initialize timezone manager.
+    time::timezone_manager::load();
+
     // Initial transaction.
     if (_queries_per_transaction > 1)
       _db->transaction();
@@ -156,6 +160,9 @@ reporting_stream::~reporting_stream() {
     // Reset statements.
     _clear_qsql();
   }
+
+  // Deinitialize timezone manager.
+  time::timezone_manager::unload();
 
   // Remove this connection.
   QSqlDatabase::removeDatabase(bam_id);
