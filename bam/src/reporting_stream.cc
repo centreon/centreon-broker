@@ -224,6 +224,10 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
       _process_ba_event(data);
     else if (data->type()
              == io::events::data_type<io::events::bam,
+                                      bam::de_ba_duration_event>::value)
+      _process_ba_duration_event(data);
+    else if (data->type()
+             == io::events::data_type<io::events::bam,
                                       bam::de_dimension_ba_event>::value)
       _process_dimension_ba(data);
     else if (data->type()
@@ -397,10 +401,10 @@ void reporting_stream::_prepare() {
              "                timeperiod_is_default)"
              "  SELECT b.ba_event_id, :start_time, :end_time, :duration, "
              "         :sla_duration, :timeperiod_id, :timeperiod_is_default"
-             "  FROM ba_events as b"
+             "  FROM mod_bam_reporting_ba_events AS b"
              "  WHERE b.ba_id=:ba_id AND b.start_time=:real_start_time";
     _ba_duration_event_insert.reset(new QSqlQuery(*_db));
-    if (_ba_duration_event_insert->prepare(query))
+    if (!_ba_duration_event_insert->prepare(query))
       throw (exceptions::msg()
              << "BAM-BI: could not prepare BA duration event insert query: "
              << _ba_duration_event_insert->lastError().text());
@@ -596,6 +600,10 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
 void reporting_stream::_process_ba_duration_event(
     misc::shared_ptr<io::data> const& e) {
   bam::ba_duration_event const& bde = e.ref_as<bam::ba_duration_event const>();
+  logging::debug(logging::low) << "BAM-BI: processing BA duration event of BA "
+    << bde.ba_id << " (start time " << bde.start_time << ", end time "
+    << bde.end_time << ", duration " << bde.duration << ", sla duration "
+    << bde.sla_duration << ")";
   _ba_duration_event_insert->bindValue(":ba_id", bde.ba_id);
   _ba_duration_event_insert->bindValue(
     ":real_start_time",
@@ -615,9 +623,9 @@ void reporting_stream::_process_ba_duration_event(
   _ba_duration_event_insert->bindValue(
     ":timeperiod_is_default",
     bde.timeperiod_is_default);
-  if (_ba_duration_event_insert->exec())
+  if (!_ba_duration_event_insert->exec())
     throw (exceptions::msg() << "BAM-BI: could not insert duration event of BA "
-           << bde.ba_id << " starting at " << bde.start_time);
+           << bde.ba_id << " starting at " << bde.start_time << ": " << _ba_duration_event_insert->lastError().text());
   return ;
 }
 
@@ -865,6 +873,9 @@ void reporting_stream::_compute_event_durations(
   if (ev.isNull() || !visitor)
     return ;
 
+  logging::debug(logging::low)
+    << "BAM-BI: computing event durations for " << ev->ba_id;
+
   // Find the timeperiods associated with this ba.
   std::pair<timeperiod_relation_map::const_iterator,
             timeperiod_relation_map::const_iterator> found
@@ -876,9 +887,10 @@ void reporting_stream::_compute_event_durations(
   for (; found.first != found.second; ++found.first) {
     unsigned int tp_id = found.first->second.first;
     timeperiod_map::const_iterator tp_found = _timeperiods.find(tp_id);
-    if (tp_found == _timeperiods.end())
+    if (tp_found == _timeperiods.end()) {
       throw exceptions::msg() << "BAM-BI: could not find the timeperiod "
                               << tp_id << " in cache";
+    }
     time::timeperiod::ptr tp = tp_found->second;
     bool is_default = found.first->second.second;
 
@@ -892,7 +904,7 @@ void reporting_stream::_compute_event_durations(
                                                   dur_ev->end_time);
     dur_ev->timeperiod_id = tp->get_id();
     dur_ev->timeperiod_is_default = is_default;
-    visitor->write(dur_ev);
+    visitor->write(dur_ev.staticCast<io::data>());
   }
 }
 
@@ -926,8 +938,10 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
   // Delete obsolete ba events durations.
   {
     QString query;
-    query.append("DELETE FROM mod_bam_reporting_ba_events_durations"
-                 "  WHERE ba_id IN").append(ba_list.c_str());
+    query.append("DELETE mod_bam_reporting_ba_events_durations"
+                 "  FROM mod_bam_reporting_ba_events_durations"
+                 "    INNER JOIN mod_bam_reporting_ba_events as b"
+                 "  WHERE b.ba_id IN").append(ba_list.c_str());
     QSqlQuery q(*_db);
     if (!q.exec(query))
       throw (exceptions::msg() << "BAM-BI: could not delete BA durations "
@@ -957,6 +971,8 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
       baev->status = q.value(3).toInt();
       baev->in_downtime = q.value(4).toBool();
       ba_events.push_back(baev);
+      logging::debug(logging::low)
+        << "BAM-BI: got ba events of " << baev->ba_id;
     }
   }
 

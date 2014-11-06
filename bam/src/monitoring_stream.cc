@@ -237,15 +237,17 @@ void monitoring_stream::statistics(io::properties& tree) const {
  */
 void monitoring_stream::update() {
   // XXX : beware of exceptions ?
-  // configuration::state s;
-  // {
-  //   configuration::reader r(_db.get());
-  //   r.read(s);
-  // }
-  // _applier.apply(s);
-  // _ba_mapping = s.get_ba_svc_mapping();
+   configuration::state s;
+   {
+     configuration::reader r(_db.get());
+     r.read(s);
+   }
+   //_applier.apply(s);
+   _ba_mapping = s.get_ba_svc_mapping();
+
   // Check if we need to rebuild something.
-  // _rebuild();
+   _rebuild();
+
   return ;
 }
 

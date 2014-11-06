@@ -132,6 +132,20 @@ int main() {
                << q.lastError().text());
     }
 
+    // Create BAs dimension.
+    {
+      QString query(
+                "INSERT INTO mod_bam_reporting_ba (ba_id, ba_name, ba_description,"
+                "                     sla_month_percent_1, sla_month_percent_2,"
+                "                     sla_month_duration_1, sla_month_duration_2)"
+                "  VALUES (1, 'BA1', 'DESC1', 90, 80, 70, 60),"
+                "         (2, 'BA2', 'DESC2', 80, 70, 60, 50)");
+      QSqlQuery q(*db.bi_db());
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not create BA dimensions: "
+               << q.lastError().text());
+    }
+
     // Create BA events.
     {
       QString query(
@@ -151,7 +165,7 @@ int main() {
       QString query(
                 "INSERT INTO timeperiod (tp_id, tp_name, tp_sunday, tp_monday,"
                 "                        tp_tuesday, tp_wednesday, tp_thursday,"
-                "                        tp_friday, tp_saturday"
+                "                        tp_friday, tp_saturday)"
                 "  VALUES (1, '24x7', '00:00-24:00', '00:00-24:00', '00:00-24:00',"
                 "          '00:00-24:00', '00:00-24:00', '00:00-24:00', '00:00-24:00')");
       QSqlQuery q(*db.centreon_db());
@@ -181,12 +195,6 @@ int main() {
 
     // Let the broker do its things.
     sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
-
-    ba_event_duration baed[] =
-    {{1, 1, 0, 30, 30, 30, true},
-     {2, 1, 0, 50, 50, 50, false},
-     {3, 1, 30, 120, 90, 90, true},
-     {4, 1, 50, 160, 110, 110, false}};
 
     // See if the ba events durations were created.
     {

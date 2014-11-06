@@ -267,28 +267,6 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
       throw (reader_exception() << "BAM: BA " << it->second.get_id()
              << " has no associated service");
 
-  // Load the timeperiods associated with the BAs.
-  query = _db->exec("SELECT ba_id, timeperiod_id, is_default FROM mod_bam_ba_tp_rel");
-  if (query.lastError().isValid())
-    throw (reader_exception()
-           << "BAM: could not retrieve the timeperiods associated with the BAs: "
-           << query.lastError().text());
-  while (query.next()) {
-    unsigned int ba_id = query.value(0).toInt();
-    state::bas::iterator found = bas.find(ba_id);
-    if (found == bas.end()) {
-      logging::error(logging::medium)
-        << "BAM: ba id: "
-        << ba_id
-        << "not found when reading timeperiod relations from db.";
-    }
-    // This is a default timeperiod.
-    if (query.value(2).toBool())
-      found->second.set_default_timeperiod(query.value(1).toInt());
-    // This is not a default timeperiod.
-    else
-      found->second.add_timeperiod(query.value(1).toInt());
-  }
   return ;
 }
 
