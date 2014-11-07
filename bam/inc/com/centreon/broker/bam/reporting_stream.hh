@@ -104,7 +104,7 @@ namespace          bam {
     std::auto_ptr<QSqlQuery>
                    _kpi_event_update;
     std::auto_ptr<QSqlQuery>
-                   _kpi_event_delete; // XXX
+                   _kpi_event_delete;
     std::auto_ptr<QSqlQuery>
                    _kpi_event_link;
     std::auto_ptr<QSqlQuery>

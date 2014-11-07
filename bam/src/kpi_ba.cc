@@ -197,17 +197,24 @@ void kpi_ba::visit(io::stream* visitor) {
 
     // Generate BI events.
     {
+      // BA event state.
+      ba_event* bae(_ba->get_ba_event());
+      short ba_state(bae ? bae->status : 0);
+
       // If no event was cached, create one.
       if (_event.isNull()) {
-        _open_new_event(visitor, hard_values.get_nominal());
+        timestamp last_ba_update(_ba->get_last_service_update());
+        if ((last_ba_update.get_time_t() != (time_t)-1)
+            && (last_ba_update.get_time_t() != (time_t)0))
+          _open_new_event(visitor, hard_values.get_nominal(), ba_state);
       }
       // If state changed, close event and open a new one.
       else if ((_ba->get_in_downtime() != _event->in_downtime)
-               || (_ba->get_state_hard() != _event->status)) {
+               || (ba_state != _event->status)) {
         _event->end_time = _ba->get_last_service_update();
         visitor->write(_event.staticCast<io::data>());
         _event.clear();
-        _open_new_event(visitor, hard_values.get_nominal());
+        _open_new_event(visitor, hard_values.get_nominal(), ba_state);
       }
     }
   }
@@ -270,10 +277,14 @@ void kpi_ba::_internal_copy(kpi_ba const& right) {
 /**
  *  Open a new event for this KPI.
  *
- *  @param[out] visitor  Visitor that will receive events.
- *  @param[in]  impact   Current impact of this KPI.
+ *  @param[out] visitor   Visitor that will receive events.
+ *  @param[in]  impact    Current impact of this KPI.
+ *  @param[in]  ba_state  BA state.
  */
-void kpi_ba::_open_new_event(io::stream* visitor, int impact) {
+void kpi_ba::_open_new_event(
+               io::stream* visitor,
+               int impact,
+               short ba_state) {
   _event = new kpi_event;
   _event->kpi_id = _id;
   _event->impact_level = impact;
@@ -281,7 +292,7 @@ void kpi_ba::_open_new_event(io::stream* visitor, int impact) {
   _event->output = _ba->get_output();
   _event->perfdata = _ba->get_perfdata();
   _event->start_time = _ba->get_last_service_update();
-  _event->status = _ba->get_state_hard();
+  _event->status = ba_state;
   if (visitor) {
     misc::shared_ptr<io::data> ke(new kpi_event(*_event));
     visitor->write(ke);

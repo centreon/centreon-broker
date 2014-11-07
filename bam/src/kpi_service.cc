@@ -213,14 +213,22 @@ void kpi_service::service_update(
   if (!status.isNull()
       && (status->host_id == _host_id)
       && (status->service_id == _service_id)) {
-    // Log.
-    logging::debug(logging::low) << "BAM: updating KPI of service ("
-      << status->host_id << ", " << status->service_id << ")";
+    // Log message.
+    logging::debug(logging::low) << "BAM: KPI " << _id
+      << " is getting notified of service (" << _host_id << ", "
+      << _service_id << ") update";
 
     // Update information.
     _acknowledged = status->problem_has_been_acknowledged;
     _downtimed = status->scheduled_downtime_depth;
-    _last_check = status->last_check;
+    if ((status->last_check == (time_t)-1)
+        || (status->last_check == (time_t)0)) {
+      if ((_last_check == (time_t)-1)
+          || (_last_check == (time_t)0))
+        _last_check = status->last_update;
+    }
+    else
+      _last_check = status->last_check;
     _output = status->output.toStdString();
     _perfdata = status->perf_data.toStdString();
     _state_hard = status->last_hard_state;
@@ -368,6 +376,8 @@ void kpi_service::visit(io::stream* visitor) {
     {
       // If no event was cached, create one.
       if (_event.isNull()) {
+        if ((_last_check.get_time_t() != (time_t)-1)
+            && (_last_check.get_time_t() != (time_t)0))
         _open_new_event(visitor, hard_values);
       }
       // If state changed, close event and open a new one.

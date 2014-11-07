@@ -66,7 +66,10 @@ namespace   bam {
               double acknowledgement,
               double downtime);
     void    _internal_copy(kpi_ba const& right);
-    void    _open_new_event(io::stream* visitor, int impact);
+    void    _open_new_event(
+              io::stream* visitor,
+              int impact,
+              short ba_state);
 
     misc::shared_ptr<ba>
             _ba;

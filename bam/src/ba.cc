@@ -271,9 +271,9 @@ std::string const& ba::get_perfdata() const {
  */
 short ba::get_state_hard() {
   short state;
-  if (_level_hard < _level_critical)
+  if (_level_hard <= _level_critical)
     state = 2;
-  else if (_level_hard < _level_warning)
+  else if (_level_hard <= _level_warning)
     state = 1;
   else
     state = 0;
@@ -287,9 +287,9 @@ short ba::get_state_hard() {
  */
 short ba::get_state_soft() {
   short state;
-  if (_level_soft < _level_critical)
+  if (_level_soft <= _level_critical)
     state = 2;
-  else if (_level_soft < _level_warning)
+  else if (_level_soft <= _level_warning)
     state = 1;
   else
     state = 0;
@@ -410,16 +410,16 @@ void ba::service_update(
           misc::shared_ptr<neb::service_status> const& status,
           io::stream* visitor) {
   (void) visitor;
-  logging::debug(logging::low)
-    << "BAM: BA " << _id << " is getting notified of service update";
-
   if (status->host_id == _host_id
       && status->service_id == _service_id) {
-    // Set output.
+    // Log message.
+    logging::debug(logging::low)
+      << "BAM: BA " << _id << " is getting notified of service ("
+      << _host_id << ", " << _service_id << ") update";
+
+    // Set variables.
     _output = status->output.toStdString();
-    // Set perfdata.
     _perfdata = status->perf_data.toStdString();
-    // Set downtime.
     _in_downtime = (status->scheduled_downtime_depth > 0);
 
     // If no event was cached, create one if we already had a service

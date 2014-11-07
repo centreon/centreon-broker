@@ -359,6 +359,7 @@ void reporting_stream::_clear_qsql() {
   _ba_duration_event_insert.reset();
   _kpi_event_insert.reset();
   _kpi_event_update.reset();
+  _kpi_event_delete.reset();
   _kpi_event_link.reset();
   _dimension_ba_bv_relation_insert.reset();
   _dimension_ba_insert.reset();
@@ -456,6 +457,18 @@ void reporting_stream::_prepare() {
       throw (exceptions::msg()
              << "BAM-BI: could not prepare KPI event update query: "
              << _kpi_event_update->lastError().text());
+  }
+
+  // KPI event deletion.
+  {
+    QString query;
+    query = "DELETE FROM mod_bam_reporting_kpi_events"
+            "  WHERE kpi_id=:kpi_id AND start_time=:start_time";
+    _kpi_event_delete.reset(new QSqlQuery(*_db));
+    if (!_kpi_event_delete->prepare(query))
+      throw (exceptions::msg()
+             << "BAM-BI: could not prepare KPI event deletion query: "
+             << _kpi_event_delete->lastError().text());
   }
 
   // KPI event link to BA event.
@@ -607,6 +620,8 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
     std::map<unsigned int, std::list<ba_event> >::iterator
       it(_ba_event_cache.find(be.ba_id));
     if (it == _ba_event_cache.end())
+      _ba_event_cache[be.ba_id].push_front(be);
+    else if (it->second.empty())
       it->second.push_front(be);
     else
       it->second.front().end_time = be.end_time;
@@ -718,8 +733,38 @@ void reporting_stream::_process_kpi_event(
   bam::kpi_event const& ke = e.ref_as<bam::kpi_event const>();
   logging::debug(logging::low) << "BAM-BI: processing event of KPI "
     << ke.kpi_id << " (start time " << ke.start_time << ", end time "
-    << ke.end_time << ")";
+    << ke.end_time << ", state " << ke.status << ", in downtime "
+    << ke.in_downtime << ")";
+  // Ephemeral event.
+  if (ke.start_time == ke.end_time) {
+    _kpi_event_delete->bindValue(":kpi_id", ke.kpi_id);
+    _kpi_event_delete->bindValue(
+      ":start_time",
+      static_cast<qlonglong>(ke.start_time.get_time_t()));
+    if (!_kpi_event_delete->exec())
+      throw (exceptions::msg()
+             << "BAM-BI: could not delete ephemeral event of KPI "
+             << ke.kpi_id << " at second " << ke.start_time);
+    std::map<unsigned int, std::list<kpi_event> >::iterator
+      it(_kpi_event_cache.find(ke.kpi_id));
+    if ((it != _kpi_event_cache.end())
+        && !it->second.empty()
+        && (ke.start_time == it->second.front().start_time)) {
+      it->second.pop_front();
+      if (it->second.empty())
+        _kpi_event_cache.erase(it);
+    }
+  }
+  // End of event.
   if ((ke.end_time != 0) && (ke.end_time != (time_t)-1)) {
+    std::map<unsigned int, std::list<kpi_event> >::iterator
+      it(_kpi_event_cache.find(ke.kpi_id));
+    if (it == _kpi_event_cache.end())
+      _kpi_event_cache[ke.kpi_id].push_front(ke);
+    else if (it->second.empty())
+      it->second.push_front(ke);
+    else
+      it->second.front().end_time = ke.end_time;
     _kpi_event_update->bindValue(":kpi_id", ke.kpi_id);
     _kpi_event_update->bindValue(
       ":start_time",
@@ -744,20 +789,51 @@ void reporting_stream::_process_kpi_event(
              << " to its associated BA event: "
              << _kpi_event_link->lastError().text());
   }
+  // Start of event.
   else {
-    _kpi_event_insert->bindValue(":kpi_id", ke.kpi_id);
-    _kpi_event_insert->bindValue(
-      ":start_time",
-      static_cast<qlonglong>(ke.start_time.get_time_t()));
-    _kpi_event_insert->bindValue(":status", ke.status);
-    _kpi_event_insert->bindValue(":in_downtime", ke.in_downtime);
-    _kpi_event_insert->bindValue(":impact_level", ke.impact_level);
-    _kpi_event_insert->bindValue(":output", ke.output.c_str());
-    _kpi_event_insert->bindValue(":perfdata", ke.perfdata.c_str());
-    if (!_kpi_event_insert->exec())
-      throw (exceptions::msg() << "BAM-BI: could not insert event of KPI "
-             << ke.kpi_id << " starting at " << ke.start_time << ": "
-             << _kpi_event_insert->lastError().text());
+    std::map<unsigned int, std::list<kpi_event> >::iterator
+      it(_kpi_event_cache.find(ke.kpi_id));
+    // Reopen event.
+    if ((it != _kpi_event_cache.end())
+        && !it->second.empty()
+        && (it->second.front().end_time == ke.start_time)
+        && (it->second.front().in_downtime == ke.in_downtime)
+        && (it->second.front().status == ke.status)) {
+      _kpi_event_update->bindValue(":kpi_id", ke.kpi_id);
+      _kpi_event_update->bindValue(
+        ":start_time",
+        static_cast<qlonglong>(it->second.front().start_time.get_time_t()));
+      _kpi_event_update->bindValue(
+        ":end_time",
+        QVariant(QVariant::LongLong));
+      if (!_kpi_event_update->exec())
+        throw (exceptions::msg()
+               << "BAM-BI: could not reopen event of KPI "
+               << ke.kpi_id << " starting at " << ke.start_time << ": "
+               << _kpi_event_update->lastError().text());
+      it->second.front().end_time = (time_t)-1;
+    }
+    // Open new event.
+    else {
+      _kpi_event_insert->bindValue(":kpi_id", ke.kpi_id);
+      _kpi_event_insert->bindValue(
+        ":start_time",
+        static_cast<qlonglong>(ke.start_time.get_time_t()));
+      _kpi_event_insert->bindValue(":status", ke.status);
+      _kpi_event_insert->bindValue(":in_downtime", ke.in_downtime);
+      _kpi_event_insert->bindValue(":impact_level", ke.impact_level);
+      _kpi_event_insert->bindValue(":output", ke.output.c_str());
+      _kpi_event_insert->bindValue(":perfdata", ke.perfdata.c_str());
+      if (!_kpi_event_insert->exec())
+        throw (exceptions::msg()
+               << "BAM-BI: could not insert event of KPI "
+               << ke.kpi_id << " starting at " << ke.start_time << ": "
+               << _kpi_event_insert->lastError().text());
+      std::list<kpi_event>& event_list(_kpi_event_cache[ke.kpi_id]);
+      event_list.push_front(ke);
+      if (event_list.size() > 2)
+        event_list.pop_back();
+    }
   }
   return ;
 }

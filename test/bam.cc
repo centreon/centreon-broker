@@ -266,7 +266,7 @@ static void check_kpi_events(
               size_t count) {
   QString query(
             "SELECT kpi_id, start_time, end_time, status, in_downtime,"
-            "       impact, first_output, first_perfdata"
+            "       impact_level, first_output, first_perfdata"
             "  FROM mod_bam_reporting_kpi_events"
             "  ORDER BY kpi_id, start_time");
   QSqlQuery q(db);
@@ -477,7 +477,7 @@ int main() {
                   "         (4, 'BA4', 60, 50, '1'),"
                   "         (5, 'BA5', 50, 40, '1'),"
                   "         (6, 'BA6', 40, 30, '1'),"
-                  "         (7, 'BA7', 30, 20, '1'),"
+                  "         (7, 'BA7', 30, 21, '1'),"
                   "         (8, 'BA8', 20, 10, '1'),"
                   "         (9, 'BA9', 10, 0, '1')");
         QSqlQuery q(*db.centreon_db());
@@ -641,8 +641,8 @@ int main() {
     }
 
     // Modify service states.
-    commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;1;2;output1 for (1, 1)");
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;2;2;output1 for (1, 2)");
+    commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;1;2;output1 for (1, 1)");
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;4;2;output1 for (1, 4)");
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;7;2;output1 for (1, 7)");
 
@@ -789,34 +789,34 @@ int main() {
     {
       kpi_event const kpievents[] = {
         { 1, t0, t1, false, t1, t2, 0, false, 0, "", "" },
-        { 1, t1, t2, true, 0, 0, 2, false, 0, "", "" },
+        { 1, t1, t2, true, 0, 0, 2, false, 25, "output1 for (1, 1)\n", "" },
         { 2, t0, t1, false, t1, t2, 0, false, 0, "", "" },
-        { 2, t1, t2, true, 0, 0, 2, false, 0, "", "" },
+        { 2, t1, t2, true, 0, 0, 2, false, 45, "output1 for (1, 2)\n", "" },
         { 3, t0, t1, false, t2, t3, 0, false, 0, "", "" },
-        { 3, t2, t3, true, 0, 0, 1, false, 0, "", "" },
+        { 3, t2, t3, true, 0, 0, 1, false, 35, "output2 for (1, 3)\n", "" },
         { 4, t0, t1, false, t1, t2, 0, false, 0, "", "" },
-        { 4, t1, t2, true, 0, 0, 2, false, 0, "", "" },
+        { 4, t1, t2, true, 0, 0, 2, false, 25, "output1 for (1, 4)\n", "" },
         { 5, t0, t1, false, t2, t3, 0, false, 0, "", "" },
-        { 5, t2, t3, true, 0, 0, 1, false, 0, "", "" },
+        { 5, t2, t3, true, 0, 0, 1, false, 26, "output2 for (1, 5)\n", "" },
         { 6, t0, t1, true, 0, 0, 0, false, 0, "", "" },
         { 7, t0, t1, false, t1, t2, 0, false, 0, "", "" },
-        { 7, t1, t2, true, 0, 0, 2, false, 0, "", "" },
+        { 7, t1, t2, true, 0, 0, 2, false, 25, "output1 for (1, 7)\n", "" },
         { 8, t0, t1, false, t2, t3, 0, false, 0, "", "" },
-        { 8, t2, t3, true, 0, 0, 1, false, 0, "", "" },
+        { 8, t2, t3, true, 0, 0, 1, false, 26, "output2 for (1, 8)\n", "" },
         { 9, t0, t1, true, 0, 0, 0, false, 0, "", "" },
         { 10, t0, t1, true, 0, 0, 0, false, 0, "", "" },
         { 11, t0, t1, false, t1, t2, 0, false, 0, "", "" },
-        { 11, t1, t2, true, 0, 0, 1, false, 0, "", "" },
-        { 12, t0, t1, false, t2, t3, 0, false, 0, "", "" },
-        { 12, t2, t3, true, 0, 0, 2, false, 0, "", "" },
+        { 11, t1, t2, true, 0, 0, 1, false, 65, "BA 2 has state 1 and level 75\n", "value=75" },
+        { 12, t0, t1, false, t1, t2, 0, false, 0, "", "" },
+        { 12, t1, t2, true, 0, 0, 2, false, 35, "BA 3 has state 2 and level 55\n", "value=55" },
         { 13, t0, t1, false, t2, t3, 0, false, 0, "", "" },
-        { 13, t2, t3, true, 0, 0, 2, false, 0, "", "" },
+        { 13, t2, t3, true, 0, 0, 2, false, 45, "BA 4 has state 2 and level 49\n", "value=49" },
         { 14, t0, t1, false, t2, t3, 0, false, 0, "", "" },
-        { 14, t2, t3, true, 0, 0, 1, false, 0, "", "" },
+        { 14, t2, t3, true, 0, 0, 1, false, 45, "BA 5 has state 1 and level 49\n", "value=49" },
         { 15, t0, t1, false, t1, t2, 0, false, 0, "", "" },
-        { 15, t1, t2, true, 0, 0, 1, false, 0, "", "" },
+        { 15, t1, t2, true, 0, 0, 1, false, 85, "BA 6 has state 1 and level 35\n", "value=35" },
         { 16, t0, t1, false, t2, t3, 0, false, 0, "", "" },
-        { 16, t2, t3, true, 0, 0, 2, false, 0, "", "" }
+        { 16, t2, t3, true, 0, 0, 2, false, 105, "BA 7 has state 2 and level 20\n", "value=20" }
       };
       check_kpi_events(
         *db.bi_db(),
