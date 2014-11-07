@@ -84,6 +84,19 @@ typedef struct {
   std::string perfdata;
 } kpi_event;
 
+typedef struct {
+  unsigned int ba_id;
+  time_t start_time_low;
+  time_t start_time_high;
+  time_t end_time_low;
+  time_t end_time_high;
+  long duration_low;
+  long duration_high;
+  long sla_duration_low;
+  long sla_duration_high;
+  bool timeperiod_is_default;
+} ba_event_duration;
+
 /**
  *  Compare two double values.
  */
@@ -311,6 +324,65 @@ static void check_kpi_events(
   }
   if (q.next())
     throw (exceptions::msg() << "too much KPI events: expected "
+           << count);
+  // XXX : check relations
+  return ;
+}
+
+/**
+ *  Check the content of the mod_bam_reporting_ba_events_durations
+ *  table.
+ */
+static void check_ba_events_durations(
+              QSqlDatabase& db,
+              ba_event_duration const* ba_durations,
+              size_t count) {
+  QString query(
+            "SELECT e.ba_id, d.start_time, d.end_time, d.duration,"
+            "       d.sla_duration, d.timeperiod_is_default"
+            "  FROM mod_bam_reporting_ba_events_durations AS d"
+            "  LEFT JOIN mod_bam_reporting_ba_events AS e"
+            "    ON d.ba_event_id=e.ba_event_id"
+            "  ORDER BY e.ba_id ASC");
+  QSqlQuery q(db);
+  if (!q.exec(query))
+    throw (exceptions::msg() << "could not fetch BA events durations: "
+           << q.lastError().text());
+  for (size_t i(0); i < count; ++i) {
+    if (!q.next())
+      throw (exceptions::msg() << "not enough BA events durations: got "
+             << i << ", expected " << count);
+    if ((q.value(0).toUInt() != ba_durations[i].ba_id)
+        || (q.value(1).toLongLong() < ba_durations[i].start_time_low)
+        || (q.value(1).toLongLong() > ba_durations[i].start_time_high)
+        || (q.value(2).toLongLong() < ba_durations[i].end_time_low)
+        || (q.value(2).toLongLong() > ba_durations[i].end_time_high)
+        || (q.value(3).toLongLong() < ba_durations[i].duration_low)
+        || (q.value(3).toLongLong() > ba_durations[i].duration_high)
+        || (q.value(4).toLongLong() < ba_durations[i].sla_duration_low)
+        || (q.value(4).toLongLong() > ba_durations[i].sla_duration_high)
+        || (q.value(5).toBool() != ba_durations[i].timeperiod_is_default))
+      throw (exceptions::msg()
+             << "invalid BA event duration: got (BA ID "
+             << q.value(0).toUInt() << ", start time "
+             << q.value(1).toLongLong() << ", end time "
+             << q.value(2).toLongLong() << ", duration "
+             << q.value(3).toLongLong() << ", SLA duration "
+             << q.value(4).toLongLong() << ", timeperiod is default "
+             << q.value(5).toBool() << "), expected ("
+             << ba_durations[i].ba_id << ", "
+             << ba_durations[i].start_time_low << "-"
+             << ba_durations[i].start_time_high << ", "
+             << ba_durations[i].end_time_low << "-"
+             << ba_durations[i].end_time_high << ", "
+             << ba_durations[i].duration_low << "-"
+             << ba_durations[i].duration_high << ", "
+             << ba_durations[i].sla_duration_low << "-"
+             << ba_durations[i].sla_duration_high << ", "
+             << ba_durations[i].timeperiod_is_default << ")");
+  }
+  if (q.next())
+    throw (exceptions::msg() << "too much BA events duration: expected "
            << count);
   return ;
 }
@@ -822,6 +894,15 @@ int main() {
         *db.bi_db(),
         kpievents,
         sizeof(kpievents) / sizeof(*kpievents));
+    }
+    {
+      ba_event_duration const badurations[] = {
+        { 1, t0, t1, t1, t2, 0, t2 - t0, 0, t2 - t0, true }
+      };
+      check_ba_events_durations(
+        *db.bi_db(),
+        badurations,
+        sizeof(badurations) / sizeof(*badurations));
     }
 
     // Success.
