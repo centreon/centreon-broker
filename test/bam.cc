@@ -343,7 +343,7 @@ static void check_ba_events_durations(
             "  FROM mod_bam_reporting_ba_events_durations AS d"
             "  LEFT JOIN mod_bam_reporting_ba_events AS e"
             "    ON d.ba_event_id=e.ba_event_id"
-            "  ORDER BY e.ba_id ASC");
+            "  ORDER BY e.ba_id ASC, d.start_time ASC");
   QSqlQuery q(db);
   if (!q.exec(query))
     throw (exceptions::msg() << "could not fetch BA events durations: "
@@ -498,6 +498,22 @@ int main() {
       &services,
       &commands);
 
+    // Create timeperiods.
+    {
+      QString query;
+      query = "INSERT INTO timeperiod (tp_id, tp_name, tp_alias, "
+              "            tp_sunday, tp_monday, tp_tuesday,"
+              "            tp_wednesday, tp_thursday, tp_friday, "
+              "            tp_saturday)"
+              "  VALUES (1, '24x7', '24x7', '00:00-24:00',"
+              "          '00:00-24:00', '00:00-24:00', '00:00-24:00',"
+              "          '00:00-24:00', '00:00-24:00', '00:00-24:00')";
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not create timeperiods: "
+               << q.lastError().text());
+    }
+
     // Create host/service entries.
     {
 
@@ -555,6 +571,25 @@ int main() {
         QSqlQuery q(*db.centreon_db());
         if (!q.exec(query))
           throw (exceptions::msg() << "could not create BAs: "
+                 << q.lastError().text());
+      }
+      {
+        QString query(
+                  "INSERT INTO mod_bam_ba_tp_rel (ba_id, timeperiod_id,"
+                  "            is_default)"
+                  "  VALUES (1, 1, 1),"
+                  "         (2, 1, 1),"
+                  "         (3, 1, 1),"
+                  "         (4, 1, 1),"
+                  "         (5, 1, 1),"
+                  "         (6, 1, 1),"
+                  "         (7, 1, 1),"
+                  "         (8, 1, 1),"
+                  "         (9, 1, 1)");
+        QSqlQuery q(*db.centreon_db());
+        if (!q.exec(query))
+          throw (exceptions::msg()
+                 << "could not link BAs to timeperiods: "
                  << q.lastError().text());
       }
 
@@ -897,7 +932,15 @@ int main() {
     }
     {
       ba_event_duration const badurations[] = {
-        { 1, t0, t1, t1, t2, 0, t2 - t0, 0, t2 - t0, true }
+        { 2, t0, t1, t1, t2, 0, t2 - t0, 0, t2 - t0, true },
+        { 3, t0, t1, t1, t2, 0, t2 - t0, 0, t2 - t0, true },
+        { 4, t0, t1, t2, t3, t2 - t1, t3 - t0, t2 - t1, t3 - t0, true },
+        { 5, t0, t1, t2, t3, t2 - t1, t3 - t0, t2 - t1, t3 - t0, true },
+        { 6, t0, t1, t1, t2, 0, t2 - t0, 0, t2 - t0, true },
+        { 7, t0, t1, t2, t3, t2 - t1, t3 - t0, t2 - t1, t3 - t0, true },
+        { 8, t0, t1, t1, t2, 0, t2 - t0, 0, t2 - t0, true },
+        { 8, t1, t2, t2, t3, 0, t3 - t1, 0, t3 - t1, true },
+        { 9, t0, t1, t2, t3, t2 - t1, t3 - t0, t2 - t1, t3 - t0, true }
       };
       check_ba_events_durations(
         *db.bi_db(),
