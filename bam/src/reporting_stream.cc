@@ -129,6 +129,17 @@ reporting_stream::reporting_stream(
     // Initialize timezone manager.
     time::timezone_manager::load();
 
+    // Initialize the availabilities thread.
+    _availabilities.reset(new availability_thread(
+                            db_type,
+                            db_host,
+                            db_port,
+                            db_user,
+                            db_password,
+                            db_name));
+    // Start the availabilities thread.
+    _availabilities->start();
+
     // Initial transaction.
     if (_queries_per_transaction > 1)
       _db->transaction();
@@ -160,6 +171,10 @@ reporting_stream::~reporting_stream() {
     // Reset statements.
     _clear_qsql();
   }
+
+  // Terminate the availabilities thread.
+  _availabilities->terminate();
+  _availabilities->wait();
 
   // Deinitialize timezone manager.
   time::timezone_manager::unload();
@@ -1141,6 +1156,8 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
       _compute_event_durations(*it, this);
   }
 
+  // Ask for the availabilities thread to recompute the availabilities.
+  _availabilities->rebuild_availabilities();
 }
 
 /**

@@ -34,7 +34,7 @@ CREATE TABLE mod_bam_reporting_bv (
 -- Business Activities.
 --
 CREATE TABLE mod_bam_reporting_ba (
-  ba_id int NOT NULL auto_increment,
+  ba_id int NOT NULL,
   ba_name varchar(45) default NULL,
 
   ba_description text default NULL,
@@ -51,7 +51,7 @@ CREATE TABLE mod_bam_reporting_ba (
 -- Key Performance Indicators.
 --
 CREATE TABLE mod_bam_reporting_kpi (
-  kpi_id int NOT NULL auto_increment,
+  kpi_id int NOT NULL,
   kpi_name varchar(45) default NULL,
 
   ba_id int default NULL,
