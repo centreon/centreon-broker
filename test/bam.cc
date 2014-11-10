@@ -481,6 +481,8 @@ int main() {
     commander.set_file(tmpnam(NULL));
     cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/bam.xml.in");
     cfg.set("COMMAND_FILE", commander.get_file());
+    cfg.set("DB_NAME_CENTREON", CENTREON_DB_NAME);
+    cfg.set("DB_NAME_BI", BI_DB_NAME);
     std::string additional_config;
     {
       std::ostringstream oss;

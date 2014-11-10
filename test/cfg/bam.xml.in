@@ -26,7 +26,7 @@
     <db_port>@DB_PORT@</db_port>
     <db_user>@DB_USER@</db_user>
     <db_password>@DB_PASSWORD@</db_password>
-    <db_name>broker_bam_centreon</db_name>
+    <db_name>@DB_NAME_CENTREON@</db_name>
     <queries_per_transaction>0</queries_per_transaction>
     <command_file>@COMMAND_FILE@</command_file>
   </output>
@@ -38,7 +38,7 @@
     <db_port>@DB_PORT@</db_port>
     <db_user>@DB_USER@</db_user>
     <db_password>@DB_PASSWORD@</db_password>
-    <db_name>broker_bam_bi</db_name>
+    <db_name>@DB_NAME_BI@</db_name>
     <queries_per_transaction>0</queries_per_transaction>
   </output>
 </centreonbroker>
