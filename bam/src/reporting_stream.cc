@@ -1023,13 +1023,13 @@ void reporting_stream::_process_dimension_ba_timeperiod_relation(
  *  @param[in] visitor  A visitor stream.
  */
 void reporting_stream::_compute_event_durations(
-                        misc::shared_ptr<ba_event> const& ev,
-                        io::stream* visitor) {
+                         misc::shared_ptr<ba_event> const& ev,
+                         io::stream* visitor) {
   if (ev.isNull() || !visitor)
     return ;
 
   logging::debug(logging::low)
-    << "BAM-BI: computing event durations for " << ev->ba_id;
+    << "BAM-BI: computing event durations for BA " << ev->ba_id;
 
   // Find the timeperiods associated with this ba.
   std::pair<timeperiod_relation_map::const_iterator,
