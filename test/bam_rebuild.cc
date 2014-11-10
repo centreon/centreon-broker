@@ -134,8 +134,8 @@ int main() {
                 "                     sla_month_percent_warn, sla_month_percent_crit,"
                 "                     sla_month_duration_warn, sla_month_duration_crit,"
                 "                     must_be_rebuild)"
-                "  VALUES (1, 'BA1', 'DESC1', 90, 80, 70, 60, 1),"
-                "         (2, 'BA2', 'DESC2', 80, 70, 60, 50, 1)");
+                "  VALUES (1, 'BA1', 'DESC1', 90, 80, 70, 60, '1'),"
+                "         (2, 'BA2', 'DESC2', 80, 70, 60, 50, '1')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create BAs: "
@@ -221,7 +221,7 @@ int main() {
     // See if the ba were marked as rebuilt.
     {
       QString query(
-                "SELECT * FROM mod_bam WHERE must_be_rebuild = 1");
+                "SELECT * FROM mod_bam WHERE must_be_rebuild = '1'");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not get the number of BA: "

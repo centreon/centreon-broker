@@ -576,6 +576,9 @@ void monitoring_stream::_rebuild() {
   if (bas_to_rebuild.empty())
     return ;
 
+  logging::debug(logging::medium)
+    << "BAM: rebuild asked: sending the rebuild signal.";
+
   misc::shared_ptr<rebuild> r(new rebuild);
   r->bas_to_rebuild = bas_to_rebuild;
   std::auto_ptr<io::stream> out(new multiplexing::publisher);
