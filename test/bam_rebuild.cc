@@ -35,8 +35,9 @@
 
 using namespace com::centreon::broker;
 
-#define CENTREON_DB_NAME "broker_bam_centreon"
-#define BI_DB_NAME "broker_bam_bi"
+#define CENTREON_DB_NAME "broker_bam_centreon_rebuild"
+#define BI_DB_NAME "broker_bam_bi_rebuild"
+#define COMMAND_FILE "command_file_rebuild"
 #define HOST_COUNT 1
 #define SERVICES_BY_HOST 10
 
@@ -90,9 +91,9 @@ static void check_ba_event_durations(
              << q.value(4).toInt() << ", sla duration "
              << q.value(5).toInt() << ", timeperiod is default "
              << q.value(6).toInt() << ") expected ("
-             << baed[i].ba_event_id << ", " << baed[i].timeperiod_id
-             << baed[i].start_time << ", " << baed[i].end_time
-             << baed[i].duration << ", " << baed[i].sla_duration
+             << baed[i].ba_event_id << ", " << baed[i].timeperiod_id << ", "
+             << baed[i].start_time << ", " << baed[i].end_time << ", "
+             << baed[i].duration << ", " << baed[i].sla_duration << ", "
              << baed[i].timeperiod_is_default << ")");
   }
   if (q.next())
@@ -116,6 +117,15 @@ int main() {
   try {
     // Prepare database.
     db.open(NULL, BI_DB_NAME, CENTREON_DB_NAME);
+
+    // Create the config bam xml file.
+    test_file file;
+    file.set_template(
+      PROJECT_SOURCE_DIR "/test/cfg/bam.xml.in");
+    file.set("DB_NAME_CENTREON", CENTREON_DB_NAME);
+    file.set("DB_NAME_BI", BI_DB_NAME);
+    file.set("COMMAND_FILE", COMMAND_FILE);
+    std::string config_file = file.generate();
 
     // Create BAs.
     {
@@ -187,8 +197,7 @@ int main() {
     }
 
     // Start Broker daemon.
-    broker.set_config_file(
-      PROJECT_SOURCE_DIR "/test/cfg/bam.xml");
+    broker.set_config_file(config_file);
     broker.start();
     sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
     broker.update();
@@ -218,7 +227,7 @@ int main() {
         throw (exceptions::msg() << "could not get the number of BA: "
                << q.lastError().text());
       if (q.size() != 0)
-        throw (exceptions::msg() << "the bas must_be_rebuild field were "
+        throw (exceptions::msg() << "the bas must_be_rebuild field was "
                                     "not updated.");
     }
 

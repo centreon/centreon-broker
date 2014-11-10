@@ -35,8 +35,9 @@
 
 using namespace com::centreon::broker;
 
-#define CENTREON_DB_NAME "broker_bam_centreon"
-#define BI_DB_NAME "broker_bam_bi"
+#define CENTREON_DB_NAME "broker_bam_centreon_dimension"
+#define BI_DB_NAME "broker_bam_bi_dimension"
+#define COMMAND_FILE "command_file_dimension"
 #define HOST_COUNT 1
 #define SERVICES_BY_HOST 10
 
@@ -288,6 +289,15 @@ int main() {
     // Prepare database.
     db.open(NULL, BI_DB_NAME, CENTREON_DB_NAME);
 
+    // Create the config bam xml file.
+    test_file file;
+    file.set_template(
+      PROJECT_SOURCE_DIR "/test/cfg/bam.xml.in");
+    file.set("DB_NAME_CENTREON", CENTREON_DB_NAME);
+    file.set("DB_NAME_BI", BI_DB_NAME);
+    file.set("COMMAND_FILE", COMMAND_FILE);
+    std::string config_file = file.generate();
+
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, HOST_COUNT);
     generate_services(services, hosts, SERVICES_BY_HOST);
@@ -420,8 +430,7 @@ int main() {
     }
 
     // Start Broker daemon.
-    broker.set_config_file(
-      PROJECT_SOURCE_DIR "/test/cfg/bam.xml");
+    broker.set_config_file(config_file);
     broker.start();
     sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
     broker.update();
