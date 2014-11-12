@@ -81,27 +81,29 @@ void availability_thread::run() {
   }
 
   while (true) {
-    // Calculate the duration until next midnight.
-    time_t midnight;
-    if (!_compute_next_midnight(midnight))
-      break ;
-    unsigned long wait_for = std::difftime(midnight, ::time(NULL));
-    _wait.wait(&_mutex, wait_for * 1000);
+    try {
+      // Calculate the duration until next midnight.
+      time_t midnight;
+      _compute_next_midnight(midnight);
+      unsigned long wait_for = std::difftime(midnight, ::time(NULL));
+      _wait.wait(&_mutex, wait_for * 1000);
 
-    // Termination asked.
-    if (_should_exit)
-      break ;
+      // Termination asked.
+      if (_should_exit)
+        break ;
 
-    // Open the database.
-    if (!_open_database())
-      continue ;
+      // Open the database.
+      _open_database();
 
-    bool success = _build_availabilities(midnight, _should_rebuild_all);
-    if (success)
+      _build_availabilities(midnight, _should_rebuild_all);
       _should_rebuild_all = false;
 
-    // Close the database.
-    _close_database();
+      // Close the database.
+      _close_database();
+      } catch (std::exception const& e) {
+      logging::error(logging::medium) << e.what();
+      _close_database();
+    }
   }
 
   // Unlock the mutex.
@@ -146,19 +148,15 @@ void availability_thread::rebuild_availabilities() {
 
 /**
  *  Delete all the availabilities.
- *
- *  @return  True if the availabilities were deleted.
  */
-bool availability_thread::_delete_all_availabilities() {
+void availability_thread::_delete_all_availabilities() {
   QSqlQuery q(*_db);
   q.setForwardOnly(true);
-  if (!q.exec("DELETE * FROM mod_bam_reporting_ba_availabilities")) {
-    logging::error(logging::medium)
-      << "BAM-BI: Availability thread could not delete the BA availabilities"
-          "from the reporting database: " << q.lastError().text();
-    return (false);
-  }
-  return (true);
+  if (!q.exec("DELETE * FROM mod_bam_reporting_ba_availabilities"))
+    throw (exceptions::msg()
+           << "BAM-BI: Availability thread could not delete the "
+              "BA availabilities from the reporting database: "
+           << q.lastError().text());
 }
 
 /**
@@ -168,10 +166,8 @@ bool availability_thread::_delete_all_availabilities() {
  *
  *  @param[in] mignight   Midnight of today.
  *  @param[in] build_all  True if we should rebuild everything.
- *
- *  @return  True if successful.
  */
-bool availability_thread::_build_availabilities(time_t midnight,
+void availability_thread::_build_availabilities(time_t midnight,
                                                 bool build_all) {
   time_t first_day = 0;
   QSqlQuery q(*_db);
@@ -184,28 +180,25 @@ bool availability_thread::_build_availabilities(time_t midnight,
   if (build_all) {
     query << "SELECT min(start_time)"
              "  FROM mod_bam_reporting_ba_events_durations";
-    if (!q.exec(query.str().c_str()) || !q.next()) {
-      logging::error(logging::medium)
-        << "BAM-BI: Availability thread could not select the BA durations "
-            "from the reporting database: " << q.lastError().text();
-      return (false);
-    }
+    if (!q.exec(query.str().c_str()) || !q.next())
+      throw (exceptions::msg()
+             << "BAM-BI: Availability thread could not select the BA durations "
+                "from the reporting database: " << q.lastError().text());
+
     first_day = q.value(0).toInt();
-    if (!_compute_start_of_day(first_day, first_day))
-      return (false);
+    _compute_start_of_day(first_day, first_day);
     q.next();
-    if (!_delete_all_availabilities())
-      return (false);
+    _delete_all_availabilities();
   }
   else {
     query << "SELECT max(time_id)"
              "  FROM mod_bam_reporting_ba_availabilities";
-    if (!q.exec(query.str().c_str()) || !q.next()) {
-      logging::error(logging::medium)
-        << "BAM-BI: Availability thread could not select the BA availabilities "
-            "from the reporting database: " << q.lastError().text();
-      return (false);
-    }
+    if (!q.exec(query.str().c_str()) || !q.next())
+      throw (exceptions::msg()
+             << "BAM-BI: Availability thread "
+                "could not select the BA availabilities "
+                "from the reporting database: " << q.lastError().text());
+
     first_day = q.value(0).toInt();
     first_day += (3600 * 24);
     q.next();
@@ -213,9 +206,7 @@ bool availability_thread::_build_availabilities(time_t midnight,
 
   // Write the availabilities day after day.
   for (; first_day < midnight; first_day += (3600*24))
-    if (!_build_daily_availabilities(first_day, first_day + (3600 * 24)))
-      return (false);
-  return (true);
+    _build_daily_availabilities(q, first_day, first_day + (3600 * 24));
 }
 
 /**
@@ -223,12 +214,12 @@ bool availability_thread::_build_availabilities(time_t midnight,
  *
  *  This is called from the context of the availability thread.
  *
+ *  @param[in] q         A SQL query object.
  *  @param[in] day_start The start of the day.
  *  @param[in] day_end   The end of the day.
- *
- *  @return     True if the build was successful.
  */
-bool availability_thread::_build_daily_availabilities(
+void availability_thread::_build_daily_availabilities(
+                            QSqlQuery& q,
                             time_t day_start,
                             time_t day_end) {
   std::stringstream query;
@@ -240,14 +231,11 @@ bool availability_thread::_build_daily_availabilities(
         << "  WHERE a.start_time >= " << day_start
         << "    OR (a.end_time >= " << day_start << "a.end_time < " << day_end
         << "       )";
-  QSqlQuery q(*_db);
-  q.setForwardOnly(true);
-  if (!q.exec(query.str().c_str())) {
-    logging::error(logging::medium)
-      << "BAM-BI: the availability thread could not build the data: "
-      << q.lastError().text();
-    return (false);
-  }
+  if (!q.exec(query.str().c_str()))
+    throw (exceptions::msg()
+           << "BAM-BI: the availability thread could not build the data: "
+            << q.lastError().text());
+
   // Create a builder for each ba_id and associated timeperiod_id.
   std::map<std::pair<unsigned int, unsigned int>,
             availability_builder> builders;
@@ -289,8 +277,6 @@ bool availability_thread::_build_daily_availabilities(
        it != end;
        ++it)
     _write_availability(q, it->second, it->first.first, day_start, it->first.second);
-
-  return (true);
 }
 
 /**
@@ -329,13 +315,10 @@ void availability_thread::_write_availability(QSqlQuery& q,
  *  Compute the next midnight.
  *
  *  @param[out] res  The next midnight.
- *
- *  @return  True if the next midnight was found, false otherwise.
  */
-bool availability_thread::_compute_next_midnight(time_t& res) {
-  bool succ = _compute_start_of_day(::time(NULL), res);
+void availability_thread::_compute_next_midnight(time_t& res) {
+  _compute_start_of_day(::time(NULL), res);
   res += (24 * 3600);
-  return (succ);
 }
 
 /**
@@ -343,30 +326,23 @@ bool availability_thread::_compute_next_midnight(time_t& res) {
  *
  *  @param[in] when  The timestamp.
  *  @param[out] res  The result.
- *
- *  @return          True if the start of day was computed succesfully.
  */
-bool availability_thread::_compute_start_of_day(
+void availability_thread::_compute_start_of_day(
                             time_t when,
                             time_t& res) {
   struct tm tmv;
   if (!localtime_r(&when, &tmv))
-    return (false);
+    throw (exceptions::msg()
+           << "BAM-BI: Availability thread could not compute start of day.");
   tmv.tm_sec = 1;
   tmv.tm_min = tmv.tm_hour = 0;
-  time_t current_midnight = mktime(&tmv);
-  if (current_midnight == (time_t)-1)
-    return (false);
-  res = current_midnight;
-  return (true);
+  res = mktime(&tmv);
 }
 
 /**
  *  Open the database.
- *
- *  @return  True if the database was successfully opened.
  */
-bool availability_thread::_open_database() {
+void availability_thread::_open_database() {
   // Availability thread connection ID.
   QString bam_id;
   bam_id.setNum((qulonglong)this, 16);
@@ -384,16 +360,12 @@ bool availability_thread::_open_database() {
   _db->setDatabaseName(_db_name);
 
   // Open database.
-  if (!_db->open()) {
-    QString error(_db->lastError().text());
-    logging::error(logging::medium)
-      << "BAM-BI: Availability thread could not connect to "
-          "reporting database '"
-      << _db_name << "' on host '" << _db_host
-      << ":" << _db_port << "': " << error;
-    return (false);
-  }
-  return (true);
+  if (!_db->open())
+    throw (exceptions::msg()
+           << "BAM-BI: Availability thread could not connect to "
+              "reporting database '"
+           << _db_name << "' on host '" << _db_host
+           << ":" << _db_port << "': " << _db->lastError().text());
 }
 
 /**

@@ -59,12 +59,14 @@ namespace        bam {
 
   private:
                  availability_thread(availability_thread const& other);
-    bool         operator==(availability_thread const& other) const;
+    availability_thread&
+                  operator=(availability_thread const& other) const;
 
-    bool         _delete_all_availabilities();
-    bool         _build_availabilities(time_t midnight,
+    void         _delete_all_availabilities();
+    void         _build_availabilities(time_t midnight,
                                        bool build_all);
-    bool         _build_daily_availabilities(time_t day_start,
+    void         _build_daily_availabilities(QSqlQuery &q,
+                                             time_t day_start,
                                              time_t day_end);
     static void  _write_availability(QSqlQuery& q,
                                      availability_builder const& builder,
@@ -72,11 +74,11 @@ namespace        bam {
                                      time_t day_start,
                                      unsigned int timeperiod_id);
 
-    bool         _compute_next_midnight(time_t& res);
-    bool         _compute_start_of_day(time_t when,
+    void         _compute_next_midnight(time_t& res);
+    void         _compute_start_of_day(time_t when,
                                        time_t& res);
 
-    bool        _open_database();
+    void        _open_database();
     void        _close_database();
 
     QString     _db_type;
