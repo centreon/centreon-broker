@@ -500,6 +500,20 @@ unsigned int output::write(misc::shared_ptr<io::data> const& e) {
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }
+  else if (e->type() == io::events::data_type<io::events::bam, bam::de_dimension_timeperiod_exception>::value) {
+    buffer << NDO_API_BAMDIMENSIONTIMEPERIODEXCEPTION << ":\n";
+    handle_event<bam::dimension_timeperiod_exception>(
+      *static_cast<bam::dimension_timeperiod_exception*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == io::events::data_type<io::events::bam, bam::de_dimension_timeperiod_exclusion>::value) {
+    buffer << NDO_API_BAMDIMENSIONTIMEPERIODEXCLUSION << ":\n";
+    handle_event<bam::dimension_timeperiod_exclusion>(
+      *static_cast<bam::dimension_timeperiod_exclusion*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
   buffer << "\n";
 
   // Send data.

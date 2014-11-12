@@ -53,7 +53,7 @@ dimension_timeperiod::~dimension_timeperiod() {}
  *  @return This object.
  */
 dimension_timeperiod& dimension_timeperiod::operator=(
-    dimension_timeperiod const& other) {
+                                              dimension_timeperiod const& other) {
   if (this != &other) {
     io::data::operator=(other);
     _internal_copy(other);
@@ -69,8 +69,16 @@ dimension_timeperiod& dimension_timeperiod::operator=(
  *  @return  True if the two objects are equal.
  */
 bool dimension_timeperiod::operator==(
-    dimension_timeperiod const& other) const {
-  return (timeperiod == other.timeperiod);
+                             dimension_timeperiod const& other) const {
+  return ((id == other.id)
+          && (name == other.name)
+          && (monday == other.monday)
+          && (tuesday == other.tuesday)
+          && (wednesday == other.wednesday)
+          && (thursday == other.thursday)
+          && (friday == other.friday)
+          && (saturday == other.saturday)
+          && (sunday == other.sunday));
 }
 
 
@@ -90,7 +98,15 @@ unsigned int dimension_timeperiod::type() const {
  *  @param[in] other Object to copy.
  */
 void dimension_timeperiod::_internal_copy(
-    dimension_timeperiod const& other) {
-  timeperiod = other.timeperiod;
+                             dimension_timeperiod const& other) {
+  id = other.id;
+  name = other.name;
+  monday = other.monday;
+  tuesday = other.tuesday;
+  wednesday = other.wednesday;
+  thursday = other.thursday;
+  friday = other.friday;
+  saturday = other.saturday;
+  sunday = other.sunday;
   return ;
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -507,6 +507,12 @@ namespace bbdo {
   template <> std::vector<getter_setter<bam::dimension_ba_timeperiod_relation> >
     bbdo_mapped_type<bam::dimension_ba_timeperiod_relation>::table =
       std::vector<getter_setter<bam::dimension_ba_timeperiod_relation> >();
+  template <> std::vector<getter_setter<bam::dimension_timeperiod_exception> >
+    bbdo_mapped_type<bam::dimension_timeperiod_exception>::table =
+      std::vector<getter_setter<bam::dimension_timeperiod_exception> >();
+  template <> std::vector<getter_setter<bam::dimension_timeperiod_exclusion> >
+    bbdo_mapped_type<bam::dimension_timeperiod_exclusion>::table =
+      std::vector<getter_setter<bam::dimension_timeperiod_exclusion> >();
   template <> std::vector<getter_setter<version_response> >
     bbdo_mapped_type<version_response>::table =
       std::vector<getter_setter<version_response> >();
@@ -569,6 +575,8 @@ void bbdo::initialize() {
   static_init<bam::rebuild>();
   static_init<bam::dimension_timeperiod>();
   static_init<bam::dimension_ba_timeperiod_relation>();
+  static_init<bam::dimension_timeperiod_exception>();
+  static_init<bam::dimension_timeperiod_exclusion>();
   static_init<version_response>();
   return ;
 }

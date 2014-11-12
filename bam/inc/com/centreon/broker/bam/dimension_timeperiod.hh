@@ -20,14 +20,9 @@
 #ifndef CCB_BAM_DIMENSION_TIMEPERIOD_HH
 #  define CCB_BAM_DIMENSION_TIMEPERIOD_HH
 
-#  include <memory>
-#  include <vector>
-#  include <QSqlDatabase>
-#  include <QSqlQuery>
-#  include <QThread>
+#  include <QString>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/bam/time/timeperiod.hh"
 
 CCB_BEGIN()
 
@@ -47,8 +42,16 @@ namespace          bam {
     bool           operator==(dimension_timeperiod const& other) const;
     unsigned int   type() const;
 
-    time::timeperiod::ptr
-                  timeperiod;
+    unsigned int   id;
+    QString        name;
+    QString        monday;
+    QString        tuesday;
+    QString        wednesday;
+    QString        thursday;
+    QString        friday;
+    QString        saturday;
+    QString        sunday;
+
   private:
     void           _internal_copy(dimension_timeperiod const& other);
   };

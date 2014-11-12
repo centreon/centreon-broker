@@ -1013,10 +1013,11 @@ void reporting_stream::_process_dimension_timeperiod(
         misc::shared_ptr<io::data> const& e) {
   bam::dimension_timeperiod const& tp =
       e.ref_as<bam::dimension_timeperiod const>();
-  logging::debug(logging::low)
-    << "BAM-BI: processing declaration of timeperiod "
-    << tp.timeperiod->get_id();
-  _timeperiods[tp.timeperiod->get_id()] = tp.timeperiod;
+  // XXX
+  // logging::debug(logging::low)
+//     << "BAM-BI: processing declaration of timeperiod "
+//     << tp.timeperiod->get_id();
+//   _timeperiods[tp.timeperiod->get_id()] = tp.timeperiod;
 }
 
 /**

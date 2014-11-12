@@ -35,5 +35,7 @@
 #  include "com/centreon/broker/bam/rebuild.hh"
 #  include "com/centreon/broker/bam/dimension_timeperiod.hh"
 #  include "com/centreon/broker/bam/dimension_ba_timeperiod_relation.hh"
+#  include "com/centreon/broker/bam/dimension_timeperiod_exception.hh"
+#  include "com/centreon/broker/bam/dimension_timeperiod_exclusion.hh"
 
 #endif // !CCB_BAM_EVENTS_HH

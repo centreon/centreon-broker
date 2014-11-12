@@ -41,7 +41,9 @@ namespace bam {
     de_dimension_truncate_table_signal,
     de_rebuild,
     de_dimension_timeperiod,
-    de_dimension_ba_timeperiod_relation
+    de_dimension_ba_timeperiod_relation,
+    de_dimension_timeperiod_exception,
+    de_dimension_timeperiod_exclusion
   };
 }
 

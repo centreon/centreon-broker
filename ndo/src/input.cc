@@ -343,6 +343,12 @@ void input::read(misc::shared_ptr<io::data>& d) {
      case NDO_API_BAMDIMENSIONBATIMEPERIODRELATION:
       e.reset(_handle_event<bam::dimension_ba_timeperiod_relation>());
       break ;
+     case NDO_API_BAMDIMENSIONTIMEPERIODEXCEPTION:
+      e.reset(_handle_event<bam::dimension_timeperiod_exception>());
+      break ;
+     case NDO_API_BAMDIMENSIONTIMEPERIODEXCLUSION:
+      e.reset(_handle_event<bam::dimension_timeperiod_exclusion>());
+      break ;
      default:
       // Skip this event.
       while (id != NDO_API_ENDDATA) {

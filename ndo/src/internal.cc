@@ -418,6 +418,12 @@ namespace       com {
         template <> umap<int, getter_setter<bam::dimension_ba_timeperiod_relation> >
           ndo_mapped_type<bam::dimension_ba_timeperiod_relation>::map =
             umap<int, getter_setter<bam::dimension_ba_timeperiod_relation> >();
+        template <> umap<int, getter_setter<bam::dimension_timeperiod_exception> >
+          ndo_mapped_type<bam::dimension_timeperiod_exception>::map =
+            umap<int, getter_setter<bam::dimension_timeperiod_exception> >();
+        template <> umap<int, getter_setter<bam::dimension_timeperiod_exclusion> >
+          ndo_mapped_type<bam::dimension_timeperiod_exclusion>::map =
+            umap<int, getter_setter<bam::dimension_timeperiod_exclusion> >();
       }
     }
   }
@@ -484,5 +490,7 @@ void ndo::initialize() {
   static_init<bam::rebuild>();
   static_init<bam::dimension_timeperiod>();
   static_init<bam::dimension_ba_timeperiod_relation>();
+  static_init<bam::dimension_timeperiod_exception>();
+  static_init<bam::dimension_timeperiod_exclusion>();
   return ;
 }

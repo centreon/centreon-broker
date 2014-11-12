@@ -397,7 +397,43 @@ static mapped_data<bam::rebuild> const rebuild_mapping[] = {
 
 // dimension_timeperiod members mapping.
 static mapped_data<bam::dimension_timeperiod> const dimension_timeperiod_mapping[] = {
-  // XXX
+  mapped_data<bam::dimension_timeperiod>(
+    &bam::dimension_timeperiod::id,
+    1,
+    "tp_id",
+    NULL_ON_ZERO),
+  mapped_data<bam::dimension_timeperiod>(
+    &bam::dimension_timeperiod::name,
+    2,
+    "name"),
+  mapped_data<bam::dimension_timeperiod>(
+    &bam::dimension_timeperiod::monday,
+    3,
+    "monday"),
+  mapped_data<bam::dimension_timeperiod>(
+    &bam::dimension_timeperiod::tuesday,
+    4,
+    "tuesday"),
+  mapped_data<bam::dimension_timeperiod>(
+    &bam::dimension_timeperiod::wednesday,
+    5,
+    "wednesday"),
+  mapped_data<bam::dimension_timeperiod>(
+    &bam::dimension_timeperiod::thursday,
+    6,
+    "thursday"),
+  mapped_data<bam::dimension_timeperiod>(
+    &bam::dimension_timeperiod::friday,
+    7,
+    "friday"),
+  mapped_data<bam::dimension_timeperiod>(
+    &bam::dimension_timeperiod::saturday,
+    8,
+    "saturday"),
+  mapped_data<bam::dimension_timeperiod>(
+    &bam::dimension_timeperiod::sunday,
+    9,
+    "sunday"),
   mapped_data<bam::dimension_timeperiod>()
 };
 
@@ -418,6 +454,39 @@ static mapped_data<bam::dimension_ba_timeperiod_relation> const dimension_ba_tim
     3,
     "is_default"),
   mapped_data<bam::dimension_ba_timeperiod_relation>()
+};
+
+// dimension_timeperiod_exception members mapping.
+static mapped_data<bam::dimension_timeperiod_exception> const dimension_timeperiod_exception_mapping[] = {
+  mapped_data<bam::dimension_timeperiod_exception>(
+    &bam::dimension_timeperiod_exception::timeperiod_id,
+    1,
+    "timeperiod_id",
+    NULL_ON_ZERO),
+  mapped_data<bam::dimension_timeperiod_exception>(
+    &bam::dimension_timeperiod_exception::days,
+    2,
+    "days"),
+  mapped_data<bam::dimension_timeperiod_exception>(
+    &bam::dimension_timeperiod_exception::range,
+    3,
+    "range"),
+  mapped_data<bam::dimension_timeperiod_exception>()
+};
+
+// dimension_timeperiod_exclusion members mapping.
+static mapped_data<bam::dimension_timeperiod_exclusion> const dimension_timeperiod_exclusion_mapping[] = {
+  mapped_data<bam::dimension_timeperiod_exclusion>(
+    &bam::dimension_timeperiod_exclusion::timeperiod_id,
+    1,
+    "timeperiod_id",
+    NULL_ON_ZERO),
+  mapped_data<bam::dimension_timeperiod_exclusion>(
+    &bam::dimension_timeperiod_exclusion::excluded_timeperiod_id,
+    2,
+    "excluded_timeperiod_id",
+    NULL_ON_ZERO),
+  mapped_data<bam::dimension_timeperiod_exclusion>()
 };
 
 CCB_BEGIN()
@@ -481,4 +550,12 @@ template <> const mapped_data<bam::dimension_ba_timeperiod_relation>*
   mapped_type<bam::dimension_ba_timeperiod_relation>::members(dimension_ba_timeperiod_relation_mapping);
 template <> char const*
   mapped_type<bam::dimension_ba_timeperiod_relation>::table("mod_bam_reporting_relations_ba_tp");
+template <> const mapped_data<bam::dimension_timeperiod_exception>*
+  mapped_type<bam::dimension_timeperiod_exception>::members(dimension_timeperiod_exception_mapping);
+template <> char const*
+  mapped_type<bam::dimension_timeperiod_exception>::table("mod_bam_reporting_timeperiods_exceptions");
+template <> const mapped_data<bam::dimension_timeperiod_exclusion>*
+  mapped_type<bam::dimension_timeperiod_exclusion>::members(dimension_timeperiod_exclusion_mapping);
+template <> char const*
+  mapped_type<bam::dimension_timeperiod_exclusion>::table("mod_bam_reporting_timeperiods_exclusions");
 CCB_END()
