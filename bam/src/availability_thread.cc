@@ -97,6 +97,7 @@ void availability_thread::run() {
 
       _build_availabilities(midnight, _should_rebuild_all);
       _should_rebuild_all = false;
+      _bas_to_rebuild.clear();
 
       // Close the database.
       _close_database();
@@ -140,9 +141,11 @@ void availability_thread::register_timeperiod(time::timeperiod::ptr tp) {
 /**
  *  Ask the thread to rebuild the availabilities.
  */
-void availability_thread::rebuild_availabilities() {
+void availability_thread::rebuild_availabilities(
+    std::vector<unsigned int> const& bas_to_rebuild) {
   QMutexLocker lock(&_mutex);
   _should_rebuild_all = true;
+  _bas_to_rebuild.insert(bas_to_rebuild.begin(), bas_to_rebuild.end());
   _wait.wakeOne();
 }
 
@@ -150,9 +153,24 @@ void availability_thread::rebuild_availabilities() {
  *  Delete all the availabilities.
  */
 void availability_thread::_delete_all_availabilities() {
+  if (_bas_to_rebuild.empty())
+    return ;
+
+  // Prepare the query.
+  std::stringstream str;
+  str << "DELETE * FROM mod_bam_reporting_ba_availabilities WHERE ba_id IN (";
+  for (std::set<unsigned int>::const_iterator it(_bas_to_rebuild.begin()),
+                                              end(_bas_to_rebuild.end());
+       it != end;
+       ++it)
+    str << *it << ", ";
+  std::string query = str.str();
+  query.erase(query.begin() + query.find_last_of(','), query.end());
+  query.append(")");
+
   QSqlQuery q(*_db);
   q.setForwardOnly(true);
-  if (!q.exec("DELETE * FROM mod_bam_reporting_ba_availabilities"))
+  if (!q.exec(query.c_str()))
     throw (exceptions::msg()
            << "BAM-BI: Availability thread could not delete the "
               "BA availabilities from the reporting database: "

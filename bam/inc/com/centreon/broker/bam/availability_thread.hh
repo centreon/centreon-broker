@@ -23,6 +23,7 @@
 #  include <string>
 #  include <memory>
 #  include <map>
+#  include <set>
 #  include <QThread>
 #  include <QMutex>
 #  include <QSqlDatabase>
@@ -55,7 +56,7 @@ namespace        bam {
 
     void         clear_timeperiods();
     void         register_timeperiod(time::timeperiod::ptr);
-    void         rebuild_availabilities();
+    void         rebuild_availabilities(std::vector<unsigned int> const& bas_to_rebuild);
 
   private:
                  availability_thread(availability_thread const& other);
@@ -97,6 +98,8 @@ namespace        bam {
     QMutex      _mutex;
     bool        _should_exit;
     bool        _should_rebuild_all;
+    std::set<unsigned int>
+                _bas_to_rebuild;
     QWaitCondition
                 _wait;
   };
