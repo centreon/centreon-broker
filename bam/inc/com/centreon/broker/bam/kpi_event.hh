@@ -20,7 +20,7 @@
 #ifndef CCB_BAM_KPI_EVENT_HH
 #  define CCB_BAM_KPI_EVENT_HH
 
-#  include <string>
+#  include <QString>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
@@ -47,8 +47,8 @@ namespace        bam {
     unsigned int kpi_id;
     int          impact_level;
     bool         in_downtime;
-    std::string  output;
-    std::string  perfdata;
+    QString      output;
+    QString      perfdata;
     timestamp    start_time;
     short        status;
 

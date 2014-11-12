@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <sstream>
+#include "com/centreon/broker/bam/events.hh"
 #include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/ndo/internal.hh"
 #include "com/centreon/broker/neb/events.hh"
@@ -372,6 +373,51 @@ namespace       com {
         template <> umap<int, getter_setter<storage::status> >
           ndo_mapped_type<storage::status>::map =
             umap<int, getter_setter<storage::status> >();
+        template <> umap<int, getter_setter<bam::ba_status> >
+          ndo_mapped_type<bam::ba_status>::map =
+            umap<int, getter_setter<bam::ba_status> >();
+        template <> umap<int, getter_setter<bam::bool_status> >
+          ndo_mapped_type<bam::bool_status>::map =
+            umap<int, getter_setter<bam::bool_status> >();
+        template <> umap<int, getter_setter<bam::kpi_status> >
+          ndo_mapped_type<bam::kpi_status>::map =
+            umap<int, getter_setter<bam::kpi_status> >();
+        template <> umap<int, getter_setter<bam::meta_service_status> >
+          ndo_mapped_type<bam::meta_service_status>::map =
+            umap<int, getter_setter<bam::meta_service_status> >();
+        template <> umap<int, getter_setter<bam::ba_event> >
+          ndo_mapped_type<bam::ba_event>::map =
+            umap<int, getter_setter<bam::ba_event> >();
+        template <> umap<int, getter_setter<bam::kpi_event> >
+          ndo_mapped_type<bam::kpi_event>::map =
+            umap<int, getter_setter<bam::kpi_event> >();
+        template <> umap<int, getter_setter<bam::ba_duration_event> >
+          ndo_mapped_type<bam::ba_duration_event>::map =
+            umap<int, getter_setter<bam::ba_duration_event> >();
+        template <> umap<int, getter_setter<bam::dimension_ba_event> >
+          ndo_mapped_type<bam::dimension_ba_event>::map =
+            umap<int, getter_setter<bam::dimension_ba_event> >();
+        template <> umap<int, getter_setter<bam::dimension_kpi_event> >
+          ndo_mapped_type<bam::dimension_kpi_event>::map =
+            umap<int, getter_setter<bam::dimension_kpi_event> >();
+        template <> umap<int, getter_setter<bam::dimension_ba_bv_relation_event> >
+          ndo_mapped_type<bam::dimension_ba_bv_relation_event>::map =
+            umap<int, getter_setter<bam::dimension_ba_bv_relation_event> >();
+        template <> umap<int, getter_setter<bam::dimension_bv_event> >
+          ndo_mapped_type<bam::dimension_bv_event>::map =
+            umap<int, getter_setter<bam::dimension_bv_event> >();
+        template <> umap<int, getter_setter<bam::dimension_truncate_table_signal> >
+          ndo_mapped_type<bam::dimension_truncate_table_signal>::map =
+            umap<int, getter_setter<bam::dimension_truncate_table_signal> >();
+        template <> umap<int, getter_setter<bam::rebuild> >
+          ndo_mapped_type<bam::rebuild>::map =
+            umap<int, getter_setter<bam::rebuild> >();
+        template <> umap<int, getter_setter<bam::dimension_timeperiod> >
+          ndo_mapped_type<bam::dimension_timeperiod>::map =
+            umap<int, getter_setter<bam::dimension_timeperiod> >();
+        template <> umap<int, getter_setter<bam::dimension_ba_timeperiod_relation> >
+          ndo_mapped_type<bam::dimension_ba_timeperiod_relation>::map =
+            umap<int, getter_setter<bam::dimension_ba_timeperiod_relation> >();
       }
     }
   }
@@ -423,5 +469,20 @@ void ndo::initialize() {
   static_init<correlation::issue>();
   static_init<correlation::issue_parent>();
   static_init<correlation::service_state>();
+  static_init<bam::ba_status>();
+  static_init<bam::bool_status>();
+  static_init<bam::kpi_status>();
+  static_init<bam::meta_service_status>();
+  static_init<bam::ba_event>();
+  static_init<bam::kpi_event>();
+  static_init<bam::ba_duration_event>();
+  static_init<bam::dimension_ba_event>();
+  static_init<bam::dimension_kpi_event>();
+  static_init<bam::dimension_ba_bv_relation_event>();
+  static_init<bam::dimension_bv_event>();
+  static_init<bam::dimension_truncate_table_signal>();
+  static_init<bam::rebuild>();
+  static_init<bam::dimension_timeperiod>();
+  static_init<bam::dimension_ba_timeperiod_relation>();
   return ;
 }

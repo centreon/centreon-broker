@@ -1,5 +1,5 @@
 ##
-## Copyright 2011 Merethis
+## Copyright 2011,2014 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -22,6 +22,7 @@ set(INC_DIR "${PROJECT_SOURCE_DIR}/ndo/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/ndo/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/ndo/test")
 include_directories("${INC_DIR}")
+include_directories("${PROJECT_SOURCE_DIR}/bam/inc")
 include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
 include_directories("${PROJECT_SOURCE_DIR}/dumper/inc")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
@@ -68,7 +69,7 @@ set(NDO_MODULE_PATH "${NDO_MODULE_PATH}" PARENT_SCOPE)
 if (WITH_TESTING)
   include_directories("${PROJECT_SOURCE_DIR}/file/inc")
   include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
-  set(TEST_LIBRARIES "${NDO}" "${STORAGE}" "${NEB}" "${CORRELATION}" "roker")
+  set(TEST_LIBRARIES "${NDO}" "${BAM}" "${STORAGE}" "${NEB}" "${CORRELATION}" "roker")
 
   # stream tests.
   #   Parse erased input.

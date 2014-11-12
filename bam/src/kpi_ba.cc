@@ -289,8 +289,8 @@ void kpi_ba::_open_new_event(
   _event->kpi_id = _id;
   _event->impact_level = impact;
   _event->in_downtime = _ba->get_in_downtime();
-  _event->output = _ba->get_output();
-  _event->perfdata = _ba->get_perfdata();
+  _event->output = _ba->get_output().c_str();
+  _event->perfdata = _ba->get_perfdata().c_str();
   _event->start_time = _ba->get_last_service_update();
   _event->status = ba_state;
   if (visitor) {

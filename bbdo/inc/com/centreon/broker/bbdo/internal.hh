@@ -33,6 +33,7 @@
 #  define BBDO_NEB_TYPE 1u
 #  define BBDO_STORAGE_TYPE 2u
 #  define BBDO_CORRELATION_TYPE 3u
+#  define BBDO_BAM_TYPE 4u
 #  define BBDO_INTERNAL_TYPE 65535u
 #  define BBDO_ID(type, id) ((type << 16) | id)
 

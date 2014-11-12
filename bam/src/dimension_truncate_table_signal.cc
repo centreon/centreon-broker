@@ -27,8 +27,7 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-dimension_truncate_table_signal::dimension_truncate_table_signal()
-  {}
+dimension_truncate_table_signal::dimension_truncate_table_signal() {}
 
 /**
  *  Copy constructor.
@@ -54,7 +53,7 @@ dimension_truncate_table_signal::~dimension_truncate_table_signal() {}
  *  @return This object.
  */
 dimension_truncate_table_signal& dimension_truncate_table_signal::operator=(
-    dimension_truncate_table_signal const& other) {
+                                                                    dimension_truncate_table_signal const& other) {
   if (this != &other) {
     io::data::operator=(other);
     _internal_copy(other);
@@ -70,7 +69,8 @@ dimension_truncate_table_signal& dimension_truncate_table_signal::operator=(
  *  @return  True if the two objects are equal.
  */
 bool dimension_truncate_table_signal::operator==(
-    dimension_truncate_table_signal const& other) const {
+                                        dimension_truncate_table_signal const& other) const {
+  (void)other;
   return (true);
 }
 
@@ -92,5 +92,6 @@ unsigned int dimension_truncate_table_signal::type() const {
  */
 void dimension_truncate_table_signal::_internal_copy(
     dimension_truncate_table_signal const& other) {
+  (void)other;
   return ;
 }

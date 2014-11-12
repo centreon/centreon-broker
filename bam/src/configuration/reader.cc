@@ -290,9 +290,9 @@ void reader::_load(state::bool_exps& bool_exps) {
              << "configuration from DB: " << query.lastError().text());
 
     while (query.next()) {
-      bool_exps[query.value(0).toInt()] =
+      bool_exps[query.value(0).toUInt()] =
                   bool_expression(
-                    query.value(0).toInt(), // ID.
+                    query.value(0).toUInt(), // ID.
                     query.value(1).toFloat(),// Impact.
                     query.value(2).toString().toStdString(), // Expression.
                     query.value(3).toBool()); // Impact if.
@@ -497,8 +497,8 @@ void reader::_load_dimensions() {
     while (q.next()) {
       misc::shared_ptr<dimension_ba_event> ba(new dimension_ba_event);
       ba->ba_id = q.value(0).toUInt();
-      ba->ba_name = q.value(1).toString().toStdString();
-      ba->ba_description = q.value(2).toString().toStdString();
+      ba->ba_name = q.value(1).toString();
+      ba->ba_description = q.value(2).toString();
       ba->sla_month_percent_1 = q.value(3).toDouble();
       ba->sla_month_percent_2 = q.value(4).toDouble();
       ba->sla_duration_1 = q.value(5).toInt();
@@ -518,9 +518,9 @@ void reader::_load_dimensions() {
     while (q.next()) {
       misc::shared_ptr<dimension_bv_event>
           bv(new dimension_bv_event);
-      bv->bv_id = q.value(0).toInt();
-      bv->bv_name = q.value(1).toString().toStdString();
-      bv->bv_description = q.value(2).toString().toStdString();
+      bv->bv_id = q.value(0).toUInt();
+      bv->bv_name = q.value(1).toString();
+      bv->bv_description = q.value(2).toString();
       datas.push_back(bv.staticCast<io::data>());
     }
   }
@@ -536,8 +536,8 @@ void reader::_load_dimensions() {
     while (q.next()) {
       misc::shared_ptr<dimension_ba_bv_relation_event>
           babv(new dimension_ba_bv_relation_event);
-      babv->ba_id = q.value(0).toInt();
-      babv->bv_id = q.value(1).toInt();
+      babv->ba_id = q.value(0).toUInt();
+      babv->bv_id = q.value(1).toUInt();
       datas.push_back(babv.staticCast<io::data>());
     }
   }
@@ -577,21 +577,21 @@ void reader::_load_dimensions() {
              << q.lastError().text());
     while (q.next()) {
       misc::shared_ptr<dimension_kpi_event> k(new dimension_kpi_event);
-      k->kpi_id = q.value(0).toInt();
-      k->host_id = q.value(2).toInt();
-      k->service_id = q.value(3).toInt();
-      k->ba_id = q.value(4).toInt();
-      k->kpi_ba_id = q.value(5).toInt();
-      k->meta_service_id = q.value(6).toInt();
-      k->boolean_id = q.value(7).toInt();
+      k->kpi_id = q.value(0).toUInt();
+      k->host_id = q.value(2).toUInt();
+      k->service_id = q.value(3).toUInt();
+      k->ba_id = q.value(4).toUInt();
+      k->kpi_ba_id = q.value(5).toUInt();
+      k->meta_service_id = q.value(6).toUInt();
+      k->boolean_id = q.value(7).toUInt();
       k->impact_warning = q.value(8).toDouble();
       k->impact_critical = q.value(9).toDouble();
       k->impact_unknown = q.value(10).toDouble();
-      k->host_name = q.value(11).toString().toStdString();
-      k->service_description = q.value(12).toString().toStdString();
-      k->ba_name = q.value(13).toString().toStdString();
-      k->meta_service_name = q.value(14).toString().toStdString();
-      k->boolean_name = q.value(15).toString().toStdString();
+      k->host_name = q.value(11).toString();
+      k->service_description = q.value(12).toString();
+      k->ba_name = q.value(13).toString();
+      k->meta_service_name = q.value(14).toString();
+      k->boolean_name = q.value(15).toString();
 
       // Resolve the id_indicator_ba
       if (k->kpi_ba_id) {
@@ -620,9 +620,9 @@ void reader::_load_dimensions() {
              << "BAM: could not retrieve timeperiods: "
              << q.lastError().text());
     while (q.next())
-      timeperiods[q.value(0).toInt()] = time::timeperiod::ptr(
+      timeperiods[q.value(0).toUInt()] = time::timeperiod::ptr(
         new time::timeperiod(
-              q.value(0).toInt(), // Id
+              q.value(0).toUInt(), // Id
               q.value(1).toString().toStdString(), // name
               q.value(2).toString().toStdString(), // alias
               q.value(3).toString().toStdString(), // sunday
@@ -642,7 +642,7 @@ void reader::_load_dimensions() {
              << "BAM: could not retrieve timeperiod exceptions: "
              << q.lastError().text());
     while (q.next()) {
-      unsigned int timeperiod_id = q.value(0).toInt();
+      unsigned int timeperiod_id = q.value(0).toUInt();
       std::map<unsigned int, time::timeperiod::ptr>::iterator found
           = timeperiods.find(timeperiod_id);
       if (found == timeperiods.end())
@@ -662,8 +662,8 @@ void reader::_load_dimensions() {
              << "BAM: could not retrieve timeperiod exclude relations: "
              << q.lastError().text());
     while (q.next()) {
-      unsigned int timeperiod_id = q.value(0).toInt();
-      unsigned int timeperiod_exclude_id = q.value(1).toInt();
+      unsigned int timeperiod_id = q.value(0).toUInt();
+      unsigned int timeperiod_exclude_id = q.value(1).toUInt();
       std::map<unsigned int, time::timeperiod::ptr>::iterator found
           = timeperiods.find(timeperiod_id);
       if (found == timeperiods.end())
@@ -703,8 +703,8 @@ void reader::_load_dimensions() {
     while (q.next()) {
       misc::shared_ptr<dimension_ba_timeperiod_relation>
         dbtr(new dimension_ba_timeperiod_relation);
-      dbtr->ba_id = q.value(0).toInt();
-      dbtr->timeperiod_id = q.value(1).toInt();
+      dbtr->ba_id = q.value(0).toUInt();
+      dbtr->timeperiod_id = q.value(1).toUInt();
       dbtr->is_default = q.value(2).toBool();
       datas.push_back(dbtr);
     }
