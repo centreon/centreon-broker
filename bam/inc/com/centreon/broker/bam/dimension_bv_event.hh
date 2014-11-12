@@ -20,7 +20,7 @@
 #ifndef CCB_BAM_DIMENSION_BV_EVENT_HH
 #  define CCB_BAM_DIMENSION_BV_EVENT_HH
 
-#  include <string>
+#  include <QString>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
@@ -43,8 +43,8 @@ namespace                bam {
     unsigned int         type() const;
 
     unsigned int         bv_id;
-    std::string          bv_name;
-    std::string          bv_description;
+    QString              bv_name;
+    QString              bv_description;
 
   private:
     void         _internal_copy(dimension_bv_event const& other);

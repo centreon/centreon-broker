@@ -20,11 +20,7 @@
 #ifndef CCB_BAM_REBUILD_HH
 #  define CCB_BAM_REBUILD_HH
 
-#  include <memory>
-#  include <vector>
-#  include <QSqlDatabase>
-#  include <QSqlQuery>
-#  include <QThread>
+#  include <QString>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -46,8 +42,7 @@ namespace          bam {
     bool           operator==(rebuild const& other) const;
     unsigned int   type() const;
 
-    std::vector<unsigned int>
-                   bas_to_rebuild;
+    QString        bas_to_rebuild;
 
   private:
     void           _internal_copy(rebuild const& other);

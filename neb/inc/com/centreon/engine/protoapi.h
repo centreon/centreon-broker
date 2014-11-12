@@ -115,6 +115,21 @@
 #define NDO_API_CORRELATIONENGINESTATE               506
 #define NDO_API_STORAGEREBUILD                       507
 #define NDO_API_STORAGEREMOVEGRAPH                   508
+#define NDO_API_BAMBASTATUS                          509
+#define NDO_API_BAMBOOLSTATUS                        510
+#define NDO_API_BAMKPISTATUS                         511
+#define NDO_API_BAMMETASERVICESTATUS                 512
+#define NDO_API_BAMBAEVENT                           513
+#define NDO_API_BAMKPIEVENT                          514
+#define NDO_API_BAMBADURATIONEVENT                   515
+#define NDO_API_BAMDIMENSIONBAEVENT                  516
+#define NDO_API_BAMDIMENSIONKPIEVENT                 517
+#define NDO_API_BAMDIMENSIONBABVRELATIONEVENT        518
+#define NDO_API_BAMDIMENSIONBVEVENT                  519
+#define NDO_API_BAMDIMENSIONTRUNCATETABLESIGNAL      520
+#define NDO_API_BAMREBUILD                           521
+#define NDO_API_BAMDIMENSIONTIMEPERIOD               522
+#define NDO_API_BAMDIMENSIONBATIMEPERIODRELATION     523
 
 
 /************** COMMON DATA ATTRIBUTES **************/

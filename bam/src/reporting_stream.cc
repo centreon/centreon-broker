@@ -837,8 +837,8 @@ void reporting_stream::_process_kpi_event(
       _kpi_event_insert->bindValue(":status", ke.status);
       _kpi_event_insert->bindValue(":in_downtime", ke.in_downtime);
       _kpi_event_insert->bindValue(":impact_level", ke.impact_level);
-      _kpi_event_insert->bindValue(":output", ke.output.c_str());
-      _kpi_event_insert->bindValue(":perfdata", ke.perfdata.c_str());
+      _kpi_event_insert->bindValue(":output", ke.output);
+      _kpi_event_insert->bindValue(":perfdata", ke.perfdata);
       if (!_kpi_event_insert->exec())
         throw (exceptions::msg()
                << "BAM-BI: could not insert event of KPI "
@@ -865,17 +865,22 @@ void reporting_stream::_process_dimension_ba(
     << "BAM-BI: processing declaration of BA "
     << dba.ba_id << " ('" << dba.ba_description << "')";
   _dimension_ba_insert->bindValue(":ba_id", dba.ba_id);
-  _dimension_ba_insert->bindValue(":ba_name", dba.ba_name.c_str());
-  _dimension_ba_insert->bindValue(":ba_description",
-                                  dba.ba_description.c_str());
-  _dimension_ba_insert->bindValue(":sla_month_percent_1",
-                                  dba.sla_month_percent_1);
-  _dimension_ba_insert->bindValue(":sla_month_percent_2",
-                                  dba.sla_month_percent_2);
-  _dimension_ba_insert->bindValue(":sla_month_duration_1",
-                                  dba.sla_duration_1);
-  _dimension_ba_insert->bindValue(":sla_month_duration_2"
-                                  , dba.sla_duration_2);
+  _dimension_ba_insert->bindValue(":ba_name", dba.ba_name);
+  _dimension_ba_insert->bindValue(
+                          ":ba_description",
+                          dba.ba_description);
+  _dimension_ba_insert->bindValue(
+                          ":sla_month_percent_1",
+                          dba.sla_month_percent_1);
+  _dimension_ba_insert->bindValue(
+                          ":sla_month_percent_2",
+                          dba.sla_month_percent_2);
+  _dimension_ba_insert->bindValue(
+                          ":sla_month_duration_1",
+                          dba.sla_duration_1);
+  _dimension_ba_insert->bindValue(
+                          ":sla_month_duration_2"
+                          , dba.sla_duration_2);
   if (!_dimension_ba_insert->exec())
     throw (exceptions::msg() << "BAM-BI: could not insert BA "
            << dba.ba_id << " :"
@@ -895,9 +900,10 @@ void reporting_stream::_process_dimension_bv(
     << "BAM-BI: processing declaration of BV "
     << dbv.bv_id << " ('" << dbv.bv_name << "')";
   _dimension_bv_insert->bindValue(":bv_id", dbv.bv_id);
-  _dimension_bv_insert->bindValue(":bv_name", dbv.bv_name.c_str());
-  _dimension_bv_insert->bindValue(":bv_description",
-                                  dbv.bv_description.c_str());
+  _dimension_bv_insert->bindValue(":bv_name", dbv.bv_name);
+  _dimension_bv_insert->bindValue(
+                          ":bv_description",
+                          dbv.bv_description);
   if (!_dimension_bv_insert->exec())
     throw (exceptions::msg() << "BAM-BI: could not insert BV "
            << dbv.bv_id << " :"
@@ -958,39 +964,41 @@ void reporting_stream::_process_dimension_kpi(
     misc::shared_ptr<io::data> const& e) {
   bam::dimension_kpi_event const& dk =
       e.ref_as<bam::dimension_kpi_event const>();
-  std::string kpi_name;
-  if (!dk.service_description.empty())
+  QString kpi_name;
+  if (!dk.service_description.isEmpty())
     kpi_name = dk.service_description;
-  else if (!dk.kpi_ba_name.empty())
+  else if (!dk.kpi_ba_name.isEmpty())
     kpi_name = dk.kpi_ba_name;
-  else if (!dk.boolean_name.empty())
+  else if (!dk.boolean_name.isEmpty())
     kpi_name = dk.boolean_name;
-  else if (!dk.meta_service_name.empty())
+  else if (!dk.meta_service_name.isEmpty())
     kpi_name = dk.meta_service_name;
   logging::debug(logging::low)
     << "BAM-BI: processing declaration of KPI "
     << dk.kpi_id << " ('" << kpi_name << "')";
   _dimension_kpi_insert->bindValue(":kpi_id", dk.kpi_id);
-  _dimension_kpi_insert->bindValue(":kpi_name", kpi_name.c_str());
+  _dimension_kpi_insert->bindValue(":kpi_name", kpi_name);
   _dimension_kpi_insert->bindValue(":ba_id", dk.ba_id);
-  _dimension_kpi_insert->bindValue(":ba_name", dk.ba_name.c_str());
+  _dimension_kpi_insert->bindValue(":ba_name", dk.ba_name);
   _dimension_kpi_insert->bindValue(":host_id", dk.host_id);
-  _dimension_kpi_insert->bindValue(":host_name", dk.host_name.c_str());
+  _dimension_kpi_insert->bindValue(":host_name", dk.host_name);
   _dimension_kpi_insert->bindValue(":service_id", dk.service_id);
-  _dimension_kpi_insert->bindValue(":service_description",
-                                   dk.service_description.c_str());
+  _dimension_kpi_insert->bindValue(
+                           ":service_description",
+                           dk.service_description);
   _dimension_kpi_insert->bindValue(":kpi_ba_id", dk.kpi_ba_id != 0 ?
                                                     dk.kpi_ba_id :
                                                     QVariant(QVariant::UInt));
-  _dimension_kpi_insert->bindValue(":kpi_ba_name", dk.kpi_ba_name.c_str());
+  _dimension_kpi_insert->bindValue(":kpi_ba_name", dk.kpi_ba_name);
   _dimension_kpi_insert->bindValue(":meta_service_id", dk.meta_service_id);
-  _dimension_kpi_insert->bindValue(":meta_service_name",
-                                   dk.meta_service_name.c_str());
+  _dimension_kpi_insert->bindValue(
+                           ":meta_service_name",
+                           dk.meta_service_name);
   _dimension_kpi_insert->bindValue(":impact_warning", dk.impact_warning);
   _dimension_kpi_insert->bindValue(":impact_critical", dk.impact_critical);
   _dimension_kpi_insert->bindValue(":impact_unknown", dk.impact_unknown);
   _dimension_kpi_insert->bindValue(":boolean_id", dk.boolean_id);
-  _dimension_kpi_insert->bindValue(":boolean_name", dk.boolean_name.c_str());
+  _dimension_kpi_insert->bindValue(":boolean_name", dk.boolean_name);
   if (!_dimension_kpi_insert->exec())
     throw (exceptions::msg() << "BAM-BI: could not insert dimension of KPI "
            << dk.kpi_id << " :"
@@ -1088,24 +1096,10 @@ void reporting_stream::_compute_event_durations(
  */
 void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
   rebuild const& r = e.ref_as<rebuild const>();
-  if (r.bas_to_rebuild.empty())
-    return;
+  if (r.bas_to_rebuild.isEmpty())
+    return ;
   logging::debug(logging::low)
     << "BAM-BI: processing rebuild signal";
-  std::stringstream ss;
-
-  // Create the list of ba_id to update.
-  ss << "(";
-  for (std::vector<unsigned int>::const_iterator it(r.bas_to_rebuild.begin()),
-                                                 end(r.bas_to_rebuild.end());
-       it != end;
-       ++it)
-    ss << *it << ", ";
-  std::string ba_list = ss.str();
-  size_t last_of = ba_list.find_last_of(',');
-  if (last_of != std::string::npos)
-    ba_list.erase(ba_list.begin() + last_of, ba_list.end());
-  ba_list.append(")");
 
   // Delete obsolete ba events durations.
   {
@@ -1113,12 +1107,14 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
     query.append("DELETE mod_bam_reporting_ba_events_durations"
                  "  FROM mod_bam_reporting_ba_events_durations"
                  "    INNER JOIN mod_bam_reporting_ba_events as b"
-                 "  WHERE b.ba_id IN").append(ba_list.c_str());
+                 "  WHERE b.ba_id IN (");
+    query.append(r.bas_to_rebuild);
+    query.append(")");
     QSqlQuery q(*_db);
     if (!q.exec(query))
-      throw (exceptions::msg() << "BAM-BI: could not delete BA durations "
-             << ba_list << " :"
-             << q.lastError().text());
+      throw (exceptions::msg()
+             << "BAM-BI: could not delete BA durations "
+             << r.bas_to_rebuild << " :" << q.lastError().text());
   }
 
   // Get the ba events.
@@ -1128,13 +1124,14 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
                     "status, in_downtime boolean"
                     "  FROM mod_bam_reporting_ba_events"
                     "  WHERE end_time != 0"
-                    "    AND ba_id IN ";
-    query.append(ba_list.c_str());
+                    "    AND ba_id IN (";
+    query.append(r.bas_to_rebuild);
+    query.append(")");
     QSqlQuery q(*_db);
     if (!q.exec(query))
-      throw (exceptions::msg() << "BAM-BI: could not get BA events of "
-                               << ba_list << " :"
-                               << q.lastError().text());
+      throw (exceptions::msg()
+             << "BAM-BI: could not get BA events of "
+             << r.bas_to_rebuild << " :" << q.lastError().text());
     while (q.next()) {
       misc::shared_ptr<ba_event> baev(new ba_event);
       baev->ba_id = q.value(0).toInt();

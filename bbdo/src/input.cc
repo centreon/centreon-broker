@@ -20,6 +20,7 @@
 #include <arpa/inet.h>
 #include <memory>
 #include <stdint.h>
+#include "com/centreon/broker/bam/events.hh"
 #include "com/centreon/broker/bbdo/input.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
@@ -248,6 +249,36 @@ unsigned int input::read_any(
       &unserialize<correlation::issue_parent> },
     { BBDO_ID(BBDO_CORRELATION_TYPE, 5),
       &unserialize<correlation::service_state> },
+    { BBDO_ID(BBDO_BAM_TYPE, 1),
+      &unserialize<bam::ba_status> },
+    { BBDO_ID(BBDO_BAM_TYPE, 2),
+      &unserialize<bam::bool_status> },
+    { BBDO_ID(BBDO_BAM_TYPE, 3),
+      &unserialize<bam::kpi_status> },
+    { BBDO_ID(BBDO_BAM_TYPE, 4),
+      &unserialize<bam::meta_service_status> },
+    { BBDO_ID(BBDO_BAM_TYPE, 5),
+      &unserialize<bam::ba_event> },
+    { BBDO_ID(BBDO_BAM_TYPE, 6),
+      &unserialize<bam::kpi_event> },
+    { BBDO_ID(BBDO_BAM_TYPE, 7),
+      &unserialize<bam::ba_duration_event> },
+    { BBDO_ID(BBDO_BAM_TYPE, 8),
+      &unserialize<bam::dimension_ba_event> },
+    { BBDO_ID(BBDO_BAM_TYPE, 9),
+      &unserialize<bam::dimension_kpi_event> },
+    { BBDO_ID(BBDO_BAM_TYPE, 10),
+      &unserialize<bam::dimension_ba_bv_relation_event> },
+    { BBDO_ID(BBDO_BAM_TYPE, 11),
+      &unserialize<bam::dimension_bv_event> },
+    { BBDO_ID(BBDO_BAM_TYPE, 12),
+      &unserialize<bam::dimension_truncate_table_signal> },
+    { BBDO_ID(BBDO_BAM_TYPE, 13),
+      &unserialize<bam::rebuild> },
+    { BBDO_ID(BBDO_BAM_TYPE, 14),
+      &unserialize<bam::dimension_timeperiod> },
+    { BBDO_ID(BBDO_BAM_TYPE, 15),
+      &unserialize<bam::dimension_ba_timeperiod_relation> },
     { BBDO_ID(BBDO_INTERNAL_TYPE, 1),
       &unserialize<version_response> }
   };

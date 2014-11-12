@@ -48,8 +48,8 @@ namespace                bam {
     unsigned int         type() const;
 
   private:
-    void           _internal_copy(dimension_truncate_table_signal const&
-                                    other);
+    void                 _internal_copy(
+                           dimension_truncate_table_signal const& other);
   };
 }
 
