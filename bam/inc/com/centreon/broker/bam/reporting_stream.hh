@@ -29,6 +29,7 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/bam/availability_thread.hh"
 #  include "com/centreon/broker/bam/time/timeperiod.hh"
 
 CCB_BEGIN()
@@ -119,6 +120,8 @@ namespace          bam {
                   _dimension_kpi_insert;
     std::auto_ptr<QSqlDatabase>
                    _db;
+    std::auto_ptr<availability_thread>
+                   _availabilities;
 
     typedef std::map<unsigned int, time::timeperiod::ptr> timeperiod_map;
     // Timeperiods by BAs, with an option is default timeperiod.

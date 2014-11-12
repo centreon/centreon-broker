@@ -31,6 +31,7 @@ set(BAM "20-bam")
 set(BAM "${BAM}" PARENT_SCOPE)
 add_library("${BAM}" SHARED
   # Sources.
+  "${SRC_DIR}/availability_thread.cc"
   "${SRC_DIR}/ba.cc"
   "${SRC_DIR}/ba_status.cc"
   "${SRC_DIR}/ba_svc_mapping.cc"
@@ -96,6 +97,7 @@ add_library("${BAM}" SHARED
   "${SRC_DIR}/time/timezone_locker.cc"
   "${SRC_DIR}/time/timezone_manager.cc"
   # Headers.
+  "${INC_DIR}/availability_thread.hh"
   "${INC_DIR}/ba.hh"
   "${INC_DIR}/ba_status.hh"
   "${INC_DIR}/ba_svc_mapping.hh"
