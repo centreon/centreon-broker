@@ -96,10 +96,7 @@ void availability_thread::run() {
     if (!_open_database())
       continue ;
 
-    bool success = true;
-    /*bool success = _build_availabilities(
-                      _should_rebuild_all ? (time_t)-1
-                                          : midnight - 3600 * 24);*/
+    bool success = _build_availabilities(midnight, _should_rebuild_all);
     if (success)
       _should_rebuild_all = false;
 
@@ -148,7 +145,81 @@ void availability_thread::rebuild_availabilities() {
 }
 
 /**
- *  @brief  Build all the availabilities since a certain time.
+ *  Delete all the availabilities.
+ *
+ *  @return  True if the availabilities were deleted.
+ */
+bool availability_thread::_delete_all_availabilities() {
+  QSqlQuery q(*_db);
+  q.setForwardOnly(true);
+  if (!q.exec("DELETE * FROM mod_bam_reporting_ba_availabilities")) {
+    logging::error(logging::medium)
+      << "BAM-BI: Availability thread could not delete the BA availabilities"
+          "from the reporting database: " << q.lastError().text();
+    return (false);
+  }
+  return (true);
+}
+
+/**
+ *  @brief  Build all the availabilities.
+ *
+ *  This is called from the context of the availability thread.
+ *
+ *  @param[in] mignight   Midnight of today.
+ *  @param[in] build_all  True if we should rebuild everything.
+ *
+ *  @return  True if successful.
+ */
+bool availability_thread::_build_availabilities(time_t midnight,
+                                                bool build_all) {
+  time_t first_day = 0;
+  QSqlQuery q(*_db);
+  q.setForwardOnly(true);
+  std::stringstream query;
+
+  // Get the first day of rebuilding. If a complete rebuilding was asked,
+  // it's the day of the chronogically first event.
+  // If not, it's the day following the chronogically last availability.
+  if (build_all) {
+    query << "SELECT min(start_time)"
+             "  FROM mod_bam_reporting_ba_events_durations";
+    if (!q.exec(query.str().c_str()) || !q.next()) {
+      logging::error(logging::medium)
+        << "BAM-BI: Availability thread could not select the BA durations "
+            "from the reporting database: " << q.lastError().text();
+      return (false);
+    }
+    first_day = q.value(0).toInt();
+    if (!_compute_start_of_day(first_day, first_day))
+      return (false);
+    q.next();
+    if (!_delete_all_availabilities())
+      return (false);
+  }
+  else {
+    query << "SELECT max(time_id)"
+             "  FROM mod_bam_reporting_ba_availabilities";
+    if (!q.exec(query.str().c_str()) || !q.next()) {
+      logging::error(logging::medium)
+        << "BAM-BI: Availability thread could not select the BA availabilities "
+            "from the reporting database: " << q.lastError().text();
+      return (false);
+    }
+    first_day = q.value(0).toInt();
+    first_day += (3600 * 24);
+    q.next();
+  }
+
+  // Write the availabilities day after day.
+  for (; first_day < midnight; first_day += (3600*24))
+    if (!_build_daily_availabilities(first_day, first_day + (3600 * 24)))
+      return (false);
+  return (true);
+}
+
+/**
+ *  @brief  Build all the availabilities of a day.
  *
  *  This is called from the context of the availability thread.
  *
@@ -157,8 +228,9 @@ void availability_thread::rebuild_availabilities() {
  *
  *  @return     True if the build was successful.
  */
-bool availability_thread::_build_availabilities(time_t day_start,
-                                                time_t day_end) {
+bool availability_thread::_build_daily_availabilities(
+                            time_t day_start,
+                            time_t day_end) {
   std::stringstream query;
   query << "SELECT a.ba_event_id, b.ba_id, a.start_time, a.end_time,"
            "       a.duration, a.sla_duration, a.timeperiod_id,"
@@ -222,27 +294,6 @@ bool availability_thread::_build_availabilities(time_t day_start,
 }
 
 /**
- *  Compute the next midnight.
- *
- *  @param[out] res  The next midnight.
- *
- *  @return  True if the next midnight was found, false otherwise.
- */
-bool availability_thread::_compute_next_midnight(time_t& res) {
-  time_t now = std::time(NULL);
-  struct tm tmv;
-  if (!localtime_r(&now, &tmv))
-    return (false);
-  tmv.tm_sec = 1;
-  tmv.tm_min = tmv.tm_hour = 0;
-  time_t current_midnight = mktime(&tmv);
-  if (current_midnight == (time_t)-1)
-    return (false);
-  res = current_midnight + 24 * 3600;
-  return (true);
-}
-
-/**
  *  Write an availability to the database.
  *
  *  @param[in] q                      A QSqlQuery connected to this database.
@@ -272,6 +323,42 @@ void availability_thread::_write_availability(QSqlQuery& q,
         << ", " << builder.get_downtime_opened() << ")";
   if (!q.exec(query.str().c_str()))
     return ;
+}
+
+/**
+ *  Compute the next midnight.
+ *
+ *  @param[out] res  The next midnight.
+ *
+ *  @return  True if the next midnight was found, false otherwise.
+ */
+bool availability_thread::_compute_next_midnight(time_t& res) {
+  bool succ = _compute_start_of_day(::time(NULL), res);
+  res += (24 * 3600);
+  return (succ);
+}
+
+/**
+ *  Get the start of the day of the timestamp when.
+ *
+ *  @param[in] when  The timestamp.
+ *  @param[out] res  The result.
+ *
+ *  @return          True if the start of day was computed succesfully.
+ */
+bool availability_thread::_compute_start_of_day(
+                            time_t when,
+                            time_t& res) {
+  struct tm tmv;
+  if (!localtime_r(&when, &tmv))
+    return (false);
+  tmv.tm_sec = 1;
+  tmv.tm_min = tmv.tm_hour = 0;
+  time_t current_midnight = mktime(&tmv);
+  if (current_midnight == (time_t)-1)
+    return (false);
+  res = current_midnight;
+  return (true);
 }
 
 /**
