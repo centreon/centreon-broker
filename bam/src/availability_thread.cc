@@ -21,6 +21,8 @@
 #include <QMutexLocker>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QVariant>
+#include <sstream>
 #include "com/centreon/broker/bam/availability_thread.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -70,7 +72,7 @@ availability_thread::availability_thread(
   if (!_db->open()) {
     QString error(_db->lastError().text());
       throw (broker::exceptions::msg()
-        << "BAM-BI: Availibity could not connect to "
+        << "BAM-BI: Availability thread could not connect to "
             "reporting database '"
         << db_name << "' on host '" << db_host
         << ":" << db_port << "': " << error);
@@ -104,7 +106,7 @@ void availability_thread::run() {
     time_t midnight;
     if (!_compute_next_midnight(midnight))
       break ;
-    unsigned long wait_for = std::difftime(midnight, time(NULL));
+    unsigned long wait_for = std::difftime(midnight, ::time(NULL));
     _wait.wait(&_mutex, wait_for * 1000);
 
     // Termination asked.
@@ -112,9 +114,10 @@ void availability_thread::run() {
       break ;
 
 
-    bool success = _build_availabilities(
+    bool success = true;
+    /*bool success = _build_availabilities(
                       _should_rebuild_all ? (time_t)-1
-                                          : midnight - 3600 * 24);
+                                          : midnight - 3600 * 24);*/
 
     if (success)
       _should_rebuild_all = false;
@@ -134,6 +137,24 @@ void availability_thread::terminate() {
 }
 
 /**
+ *  Clear the timeperiods registered in the availability thread.
+ */
+void availability_thread::clear_timeperiods() {
+  QMutexLocker lock(&_mutex);
+  _timeperiods.clear();
+}
+
+/**
+ *  Register a timeperiod in the availability thread.
+ *
+ *  @param[in] tp  The timeperiod.
+ */
+void availability_thread::register_timeperiod(time::timeperiod::ptr tp) {
+  QMutexLocker lock(&_mutex);
+  _timeperiods[tp->get_id()] = tp;
+}
+
+/**
  *  Ask the thread to rebuild the availabilities.
  */
 void availability_thread::rebuild_availabilities() {
@@ -145,31 +166,74 @@ void availability_thread::rebuild_availabilities() {
 /**
  *  @brief  Build all the availabilities since a certain time.
  *
- *  This is called from the context of the availablity thread.
+ *  This is called from the context of the availability thread.
  *
- *  @param[in]  since The time.
+ *  @param[in] day_start The start of the day.
+ *  @param[in] day_end   The end of the day.
  *
  *  @return     True if the build was successful.
  */
-bool availability_thread::_build_availabilities(time_t since) {
-  QString query = "SELECT a.ba_event_id, b.ba_id, a.start_time, a.end_time,"
-                  "       a.duration, a.sla_duration, a.timeperiod_id,"
-                  "       a.timeperiod_is_default, b.status, b.in_downtime"
-                  "  FROM mod_bam_reporting_ba_events_durations AS a"
-                  "    INNER JOIN mod_bam_reporting_ba_events AS b";
-  if (since != time_t(-1))
-    query.append("  WHERE a.start_time >= ").append(QString::number(since));
+bool availability_thread::_build_availabilities(time_t day_start,
+                                                time_t day_end) {
+  std::stringstream query;
+  query << "SELECT a.ba_event_id, b.ba_id, a.start_time, a.end_time,"
+           "       a.duration, a.sla_duration, a.timeperiod_id,"
+           "       a.timeperiod_is_default, b.status, b.in_downtime"
+           "  FROM mod_bam_reporting_ba_events_durations AS a"
+           "    INNER JOIN mod_bam_reporting_ba_events AS b"
+        << "  WHERE a.start_time >= " << day_start
+        << "    OR (a.end_time >= " << day_start << "a.end_time < " << day_end
+        << "       )";
   QSqlQuery q(*_db);
   q.setForwardOnly(true);
-  if (!q.exec(query)) {
+  if (!q.exec(query.str().c_str())) {
     logging::error(logging::medium)
       << "BAM-BI: the availability thread could not build the data: "
       << q.lastError().text();
     return (false);
   }
+  time_t now = ::time(NULL);
+  // Create a builder for each ba_id and associated timeperiod_id.
+  std::map<std::pair<unsigned int, unsigned int>,
+            availability_builder> builders;
   while (q.next()) {
-
+    unsigned int ba_id = q.value(1).toInt();
+    unsigned int timeperiod_id = q.value(6).toInt();
+    // Find the timeperiod.
+    std::map<unsigned int,
+              time::timeperiod::ptr>::const_iterator tp
+        = _timeperiods.find(timeperiod_id);
+    // No timeperiod found, skip.
+    if (tp == _timeperiods.end())
+      continue ;
+    // Find the builder.
+    std::map<std::pair<unsigned int, unsigned int>,
+              availability_builder>::iterator found
+        = builders.find(std::make_pair(ba_id, timeperiod_id));
+    // No builders found, create one.
+    if (found == builders.end())
+      found = builders.insert(std::make_pair(
+                                std::make_pair(ba_id, timeperiod_id),
+                                availability_builder(day_end, day_start))).first;
+    // Add the event to the builder.
+    found->second.add_event(
+      q.value(8).toInt(), // Status
+      q.value(2).toInt(), // Start time
+      q.value(3).toInt(), // End time
+      q.value(9).toBool(), // Was in downtime
+      tp->second);
+    // Add the timeperiod is default flag.
+    found->second.set_timeperiod_is_default(q.value(7).toBool());
   }
+
+  // For each builder, write the availabilities.
+  for (std::map<std::pair<unsigned int, unsigned int>,
+                availability_builder>::const_iterator
+         it = builders.begin(),
+         end = builders.end();
+       it != end;
+       ++it)
+    _write_availability(q, it->second, it->first.first, day_start, it->first.second);
 
   return (true);
 }
@@ -193,4 +257,36 @@ bool availability_thread::_compute_next_midnight(time_t& res) {
     return (false);
   res = current_midnight + 24 * 3600;
   return (true);
+}
+
+/**
+ *  Write an availability to the database.
+ *
+ *  @param[in] q                      A QSqlQuery connected to this database.
+ *  @param[in] builder                The builder of an availability.
+ *  @param[in] ba_id                  The id of the ba.
+ *  @param[in] day_start              The start of the day.
+ *  @param[in] timeperiod_id          The id of the timeperiod.
+ */
+void availability_thread::_write_availability(QSqlQuery& q,
+                                              availability_builder const& builder,
+                                              unsigned int ba_id,
+                                              time_t day_start,
+                                              unsigned int timeperiod_id) {
+  std::stringstream query;
+  query << "INSERT INTO mod_bam_reporting_ba_availabilities "
+        << "  (ba_id, time_id, timeperiod_id, timeperiod_is_default,"
+           "   available, unavailable, degraded,"
+           "   unknown, downtime, alert_unavailable_opened,"
+           "   alert_degraded_opened, alert_unknown_opened,"
+           "   alert_downtime_opened)"
+           "  VALUES (" << ba_id << ", " << day_start << ", "
+        << timeperiod_id << ", " << builder.get_timeperiod_is_default() << ", "
+        << builder.get_available() << ", " << builder.get_unavailable()
+        << ", " << builder.get_degraded() << ", " << builder.get_unknown()
+        << ", " << builder.get_unavailable_opened() << ", "
+        << builder.get_degraded_opened() << ", " << builder.get_unknown_opened()
+        << ", " << builder.get_downtime_opened() << ")";
+  if (!q.exec(query.str().c_str()))
+    return ;
 }

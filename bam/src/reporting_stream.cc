@@ -946,6 +946,7 @@ void reporting_stream::_process_dimension_truncate_signal(
              << (*it)->lastError().text());
   _timeperiods.clear();
   _timeperiod_relations.clear();
+  _availabilities->clear_timeperiods();
 }
 
 /**
@@ -1009,6 +1010,7 @@ void reporting_stream::_process_dimension_timeperiod(
     << "BAM-BI: processing declaration of timeperiod "
     << tp.timeperiod->get_id();
   _timeperiods[tp.timeperiod->get_id()] = tp.timeperiod;
+  _availabilities->register_timeperiod(tp.timeperiod);
 }
 
 /**

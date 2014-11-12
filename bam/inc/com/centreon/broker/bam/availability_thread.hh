@@ -22,6 +22,7 @@
 
 #  include <string>
 #  include <memory>
+#  include <map>
 #  include <QThread>
 #  include <QMutex>
 #  include <QSqlDatabase>
@@ -29,6 +30,8 @@
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
+#  include "com/centreon/broker/bam/time/timeperiod.hh"
+#  include "com/centreon/broker/bam/availability_builder.hh"
 
 CCB_BEGIN()
 
@@ -48,19 +51,29 @@ namespace        bam {
                                      QString const& db_name);
                  ~availability_thread();
     virtual void run();
-
     void         terminate();
+
+    void         clear_timeperiods();
+    void         register_timeperiod(time::timeperiod::ptr);
     void         rebuild_availabilities();
 
   private:
                  availability_thread(availability_thread const& other);
     bool         operator==(availability_thread const& other) const;
 
-    bool         _build_availabilities(time_t since);
+    bool         _build_availabilities(time_t day_start, time_t day_end);
     bool         _compute_next_midnight(time_t& res);
+    static void  _write_availability(QSqlQuery& q,
+                                     availability_builder const& builder,
+                                     unsigned int ba_id,
+                                     time_t day_start,
+                                     unsigned int timeperiod_id);
 
     std::auto_ptr<QSqlDatabase>
                  _db;
+    std::map<unsigned int,
+              time::timeperiod::ptr>
+                _timeperiods;
 
     QMutex      _mutex;
     bool        _should_exit;
