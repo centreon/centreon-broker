@@ -68,7 +68,16 @@ namespace        bam {
                                      unsigned int ba_id,
                                      time_t day_start,
                                      unsigned int timeperiod_id);
+    bool        _open_database();
+    void        _close_database();
 
+    QString     _db_type;
+    QString     _db_host;
+    unsigned short
+                _db_port;
+    QString     _db_user;
+    QString     _db_password;
+    QString     _db_name;
     std::auto_ptr<QSqlDatabase>
                  _db;
     std::map<unsigned int,

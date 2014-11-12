@@ -48,50 +48,29 @@ availability_thread::availability_thread(
                        QString const& db_user,
                        QString const& db_password,
                        QString const& db_name)
-  : _mutex(QMutex::Recursive),
+  : _db_type(db_type),
+    _db_host(db_host),
+    _db_port(db_port),
+    _db_user(db_user),
+    _db_password(db_password),
+    _db_name(db_name),
+    _mutex(QMutex::Recursive),
     _should_exit(false),
-    _should_rebuild_all(false) {
-  // Availability thread connection ID.
-  QString bam_id;
-  bam_id.setNum((qulonglong)this, 16);
-
-  // Add database connection.
-  _db.reset(
-        new QSqlDatabase(QSqlDatabase::addDatabase(
-                                         db_type,
-                                         bam_id)));
-
-  // Set DB parameters.
-  _db->setHostName(db_host);
-  _db->setPort(db_port);
-  _db->setUserName(db_user);
-  _db->setPassword(db_password);
-  _db->setDatabaseName(db_name);
-
-  // Open database.
-  if (!_db->open()) {
-    QString error(_db->lastError().text());
-      throw (broker::exceptions::msg()
-        << "BAM-BI: Availability thread could not connect to "
-            "reporting database '"
-        << db_name << "' on host '" << db_host
-        << ":" << db_port << "': " << error);
-  }
-}
+    _should_rebuild_all(false) {}
 
 /**
  *  Destructor.
  */
 availability_thread::~availability_thread() {
-  QString bam_id;
-  bam_id.setNum((qulonglong)this, 16);
-  QSqlDatabase::removeDatabase(bam_id);
+  _close_database();
 }
 
 /**
  *  The main loop of thread.
  */
 void availability_thread::run() {
+  // Open the DB
+
   // Lock the mutex.
   _mutex.lock();
 
@@ -113,14 +92,19 @@ void availability_thread::run() {
     if (_should_exit)
       break ;
 
+    // Open the database.
+    if (!_open_database())
+      continue ;
 
     bool success = true;
     /*bool success = _build_availabilities(
                       _should_rebuild_all ? (time_t)-1
                                           : midnight - 3600 * 24);*/
-
     if (success)
       _should_rebuild_all = false;
+
+    // Close the database.
+    _close_database();
   }
 
   // Unlock the mutex.
@@ -192,7 +176,6 @@ bool availability_thread::_build_availabilities(time_t day_start,
       << q.lastError().text();
     return (false);
   }
-  time_t now = ::time(NULL);
   // Create a builder for each ba_id and associated timeperiod_id.
   std::map<std::pair<unsigned int, unsigned int>,
             availability_builder> builders;
@@ -289,4 +272,49 @@ void availability_thread::_write_availability(QSqlQuery& q,
         << ", " << builder.get_downtime_opened() << ")";
   if (!q.exec(query.str().c_str()))
     return ;
+}
+
+/**
+ *  Open the database.
+ *
+ *  @return  True if the database was successfully opened.
+ */
+bool availability_thread::_open_database() {
+  // Availability thread connection ID.
+  QString bam_id;
+  bam_id.setNum((qulonglong)this, 16);
+
+  // Add database connection.
+  _db.reset(
+        new QSqlDatabase(QSqlDatabase::addDatabase(
+                                         _db_type,
+                                         bam_id)));
+  // Set DB parameters.
+  _db->setHostName(_db_host);
+  _db->setPort(_db_port);
+  _db->setUserName(_db_user);
+  _db->setPassword(_db_password);
+  _db->setDatabaseName(_db_name);
+
+  // Open database.
+  if (!_db->open()) {
+    QString error(_db->lastError().text());
+    logging::error(logging::medium)
+      << "BAM-BI: Availability thread could not connect to "
+          "reporting database '"
+      << _db_name << "' on host '" << _db_host
+      << ":" << _db_port << "': " << error;
+    return (false);
+  }
+  return (true);
+}
+
+/**
+ *  Close the database.
+ */
+void availability_thread::_close_database() {
+  QString bam_id;
+  bam_id.setNum((qulonglong)this, 16);
+  QSqlDatabase::removeDatabase(bam_id);
+  _db.reset();
 }
