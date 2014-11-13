@@ -1156,7 +1156,7 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
   }
 
   // Ask for the availabilities thread to recompute the availabilities.
-  //_availabilities->rebuild_availabilities(r.bas_to_rebuild);
+  _availabilities->rebuild_availabilities(r.bas_to_rebuild);
 }
 
 /**

@@ -56,7 +56,7 @@ namespace        bam {
 
     void         clear_timeperiods();
     void         register_timeperiod(time::timeperiod::ptr);
-    void         rebuild_availabilities(std::vector<unsigned int> const& bas_to_rebuild);
+    void         rebuild_availabilities(QString const& bas_to_rebuild);
 
   private:
                  availability_thread(availability_thread const& other);
@@ -64,8 +64,7 @@ namespace        bam {
                   operator=(availability_thread const& other) const;
 
     void         _delete_all_availabilities();
-    void         _build_availabilities(time_t midnight,
-                                       bool build_all);
+    void         _build_availabilities(time_t midnight);
     void         _build_daily_availabilities(QSqlQuery &q,
                                              time_t day_start,
                                              time_t day_end);
@@ -98,8 +97,7 @@ namespace        bam {
     QMutex      _mutex;
     bool        _should_exit;
     bool        _should_rebuild_all;
-    std::set<unsigned int>
-                _bas_to_rebuild;
+    QString     _bas_to_rebuild;
     QWaitCondition
                 _wait;
   };

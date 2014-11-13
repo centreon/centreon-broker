@@ -95,13 +95,15 @@ void availability_thread::run() {
       // Open the database.
       _open_database();
 
-      _build_availabilities(midnight, _should_rebuild_all);
+      _build_availabilities(midnight);
       _should_rebuild_all = false;
       _bas_to_rebuild.clear();
 
       // Close the database.
       _close_database();
-      } catch (std::exception const& e) {
+      }
+    catch (std::exception const& e) {
+      // Something bad happened. Wait for the next loop.
       logging::error(logging::medium) << e.what();
       _close_database();
     }
@@ -140,12 +142,16 @@ void availability_thread::register_timeperiod(time::timeperiod::ptr tp) {
 
 /**
  *  Ask the thread to rebuild the availabilities.
+ *
+ *  @param[in] bas_to_rebuild  A string containing the bas to rebuild.
  */
 void availability_thread::rebuild_availabilities(
-    std::vector<unsigned int> const& bas_to_rebuild) {
+    QString const& bas_to_rebuild) {
   QMutexLocker lock(&_mutex);
+  if (bas_to_rebuild.isEmpty())
+    return ;
   _should_rebuild_all = true;
-  _bas_to_rebuild.insert(bas_to_rebuild.begin(), bas_to_rebuild.end());
+  _bas_to_rebuild = bas_to_rebuild;
   _wait.wakeOne();
 }
 
@@ -153,24 +159,14 @@ void availability_thread::rebuild_availabilities(
  *  Delete all the availabilities.
  */
 void availability_thread::_delete_all_availabilities() {
-  if (_bas_to_rebuild.empty())
-    return ;
-
   // Prepare the query.
-  std::stringstream str;
-  str << "DELETE * FROM mod_bam_reporting_ba_availabilities WHERE ba_id IN (";
-  for (std::set<unsigned int>::const_iterator it(_bas_to_rebuild.begin()),
-                                              end(_bas_to_rebuild.end());
-       it != end;
-       ++it)
-    str << *it << ", ";
-  std::string query = str.str();
-  query.erase(query.begin() + query.find_last_of(','), query.end());
-  query.append(")");
+  std::stringstream query;
+  query << "DELETE * FROM mod_bam_reporting_ba_availabilities WHERE ba_id IN "
+        << _bas_to_rebuild.toStdString();
 
   QSqlQuery q(*_db);
   q.setForwardOnly(true);
-  if (!q.exec(query.c_str()))
+  if (!q.exec(query.str().c_str()))
     throw (exceptions::msg()
            << "BAM-BI: Availability thread could not delete the "
               "BA availabilities from the reporting database: "
@@ -183,21 +179,20 @@ void availability_thread::_delete_all_availabilities() {
  *  This is called from the context of the availability thread.
  *
  *  @param[in] mignight   Midnight of today.
- *  @param[in] build_all  True if we should rebuild everything.
  */
-void availability_thread::_build_availabilities(time_t midnight,
-                                                bool build_all) {
+void availability_thread::_build_availabilities(time_t midnight) {
   time_t first_day = 0;
   QSqlQuery q(*_db);
   q.setForwardOnly(true);
   std::stringstream query;
 
   // Get the first day of rebuilding. If a complete rebuilding was asked,
-  // it's the day of the chronogically first event.
+  // it's the day of the chronogically first event to rebuild.
   // If not, it's the day following the chronogically last availability.
-  if (build_all) {
+  if (_should_rebuild_all) {
     query << "SELECT min(start_time)"
-             "  FROM mod_bam_reporting_ba_events_durations";
+             "  FROM mod_bam_reporting_ba_events"
+             "  WHERE ba_id IN " << _bas_to_rebuild.toStdString();
     if (!q.exec(query.str().c_str()) || !q.next())
       throw (exceptions::msg()
              << "BAM-BI: Availability thread could not select the BA durations "
@@ -246,9 +241,12 @@ void availability_thread::_build_daily_availabilities(
            "       a.timeperiod_is_default, b.status, b.in_downtime"
            "  FROM mod_bam_reporting_ba_events_durations AS a"
            "    INNER JOIN mod_bam_reporting_ba_events AS b"
-        << "  WHERE a.start_time >= " << day_start
-        << "    OR (a.end_time >= " << day_start << "a.end_time < " << day_end
-        << "       )";
+           "  WHERE ";
+  if (_should_rebuild_all)
+    query << "b.ba_id IN " << _bas_to_rebuild.toStdString() << " AND ";
+  query << "(a.start_time >= " << day_start <<
+           "    OR (a.end_time >= " << day_start << "a.end_time < " << day_end
+        << "       ))";
   if (!q.exec(query.str().c_str()))
     throw (exceptions::msg()
            << "BAM-BI: the availability thread could not build the data: "
@@ -390,8 +388,9 @@ void availability_thread::_open_database() {
  *  Close the database.
  */
 void availability_thread::_close_database() {
+  _db->close();
+  _db.reset();
   QString bam_id;
   bam_id.setNum((qulonglong)this, 16);
   QSqlDatabase::removeDatabase(bam_id);
-  _db.reset();
 }
