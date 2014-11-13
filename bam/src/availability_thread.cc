@@ -40,6 +40,7 @@ using namespace com::centreon::broker::bam;
  *  @param[in] db_user      BAM DB user.
  *  @param[in] db_password  BAM DB password.
  *  @param[in] db_name      BAM DB name.
+ *  @param[in] shared_map   A timeperiod map shared with the reporting.
  */
 availability_thread::availability_thread(
                        QString const& db_type,
@@ -47,13 +48,15 @@ availability_thread::availability_thread(
                        unsigned short db_port,
                        QString const& db_user,
                        QString const& db_password,
-                       QString const& db_name)
+                       QString const& db_name,
+                       timeperiod_map& shared_map)
   : _db_type(db_type),
     _db_host(db_host),
     _db_port(db_port),
     _db_user(db_user),
     _db_password(db_password),
     _db_name(db_name),
+    _shared_tps(shared_map),
     _mutex(QMutex::Recursive),
     _should_exit(false),
     _should_rebuild_all(false) {}
@@ -120,24 +123,6 @@ void availability_thread::terminate() {
   QMutexLocker lock(&_mutex);
   _should_exit = true;
   _wait.wakeOne();
-}
-
-/**
- *  Clear the timeperiods registered in the availability thread.
- */
-void availability_thread::clear_timeperiods() {
-  QMutexLocker lock(&_mutex);
-  _timeperiods.clear();
-}
-
-/**
- *  Register a timeperiod in the availability thread.
- *
- *  @param[in] tp  The timeperiod.
- */
-void availability_thread::register_timeperiod(time::timeperiod::ptr tp) {
-  QMutexLocker lock(&_mutex);
-  _timeperiods[tp->get_id()] = tp;
 }
 
 /**
@@ -252,6 +237,9 @@ void availability_thread::_build_daily_availabilities(
            << "BAM-BI: the availability thread could not build the data: "
             << q.lastError().text());
 
+  // Lock the timeperiods.
+  std::auto_ptr<QMutexLocker> lock(_shared_tps.lock());
+
   // Create a builder for each ba_id and associated timeperiod_id.
   std::map<std::pair<unsigned int, unsigned int>,
             availability_builder> builders;
@@ -259,11 +247,9 @@ void availability_thread::_build_daily_availabilities(
     unsigned int ba_id = q.value(1).toInt();
     unsigned int timeperiod_id = q.value(6).toInt();
     // Find the timeperiod.
-    std::map<unsigned int,
-              time::timeperiod::ptr>::const_iterator tp
-        = _timeperiods.find(timeperiod_id);
+    time::timeperiod::ptr tp = _shared_tps.get_timeperiod(timeperiod_id);
     // No timeperiod found, skip.
-    if (tp == _timeperiods.end())
+    if (!tp)
       continue ;
     // Find the builder.
     std::map<std::pair<unsigned int, unsigned int>,
@@ -271,16 +257,17 @@ void availability_thread::_build_daily_availabilities(
         = builders.find(std::make_pair(ba_id, timeperiod_id));
     // No builders found, create one.
     if (found == builders.end())
-      found = builders.insert(std::make_pair(
-                                std::make_pair(ba_id, timeperiod_id),
-                                availability_builder(day_end, day_start))).first;
+      found = builders.insert(
+                std::make_pair(
+                  std::make_pair(ba_id, timeperiod_id),
+                  availability_builder(day_end, day_start))).first;
     // Add the event to the builder.
     found->second.add_event(
       q.value(8).toInt(), // Status
       q.value(2).toInt(), // Start time
       q.value(3).toInt(), // End time
       q.value(9).toBool(), // Was in downtime
-      tp->second);
+      tp);
     // Add the timeperiod is default flag.
     found->second.set_timeperiod_is_default(q.value(7).toBool());
   }

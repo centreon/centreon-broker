@@ -30,6 +30,7 @@
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/bam/availability_thread.hh"
+#  include "com/centreon/broker/bam/timeperiod_map.hh"
 #  include "com/centreon/broker/bam/time/timeperiod.hh"
 
 CCB_BEGIN()
@@ -62,7 +63,7 @@ namespace          bam {
     void           process(bool in = false, bool out = true);
     void           read(misc::shared_ptr<io::data>& d);
     void           statistics(io::properties& tree) const;
-    unsigned int   write(misc::shared_ptr<io::data> const& d);
+    unsigned int   write(misc::shared_ptr<io::data> const& d);                   
 
   private:
                    reporting_stream(reporting_stream const& other);
@@ -140,7 +141,7 @@ namespace          bam {
     std::auto_ptr<availability_thread>
                    _availabilities;
 
-    typedef std::map<unsigned int, time::timeperiod::ptr> timeperiod_map;
+    //typedef std::map<unsigned int, time::timeperiod::ptr> timeperiod_map;
     // Timeperiods by BAs, with an option is default timeperiod.
     typedef std::multimap<unsigned int,
                           std::pair<unsigned int, bool> > timeperiod_relation_map;

@@ -31,6 +31,7 @@
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
+#  include "com/centreon/broker/bam/timeperiod_map.hh"
 #  include "com/centreon/broker/bam/time/timeperiod.hh"
 #  include "com/centreon/broker/bam/availability_builder.hh"
 
@@ -49,13 +50,12 @@ namespace        bam {
                                      unsigned short db_port,
                                      QString const& db_user,
                                      QString const& db_password,
-                                     QString const& db_name);
+                                     QString const& db_name,
+                                     timeperiod_map& shared_map);
                  ~availability_thread();
     virtual void run();
     void         terminate();
 
-    void         clear_timeperiods();
-    void         register_timeperiod(time::timeperiod::ptr);
     void         rebuild_availabilities(QString const& bas_to_rebuild);
 
   private:
@@ -90,9 +90,8 @@ namespace        bam {
     QString     _db_name;
     std::auto_ptr<QSqlDatabase>
                  _db;
-    std::map<unsigned int,
-              time::timeperiod::ptr>
-                _timeperiods;
+    timeperiod_map&
+                _shared_tps;
 
     QMutex      _mutex;
     bool        _should_exit;

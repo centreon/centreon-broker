@@ -138,7 +138,8 @@ reporting_stream::reporting_stream(
                             db_port,
                             db_user,
                             db_password,
-                            db_name));
+                            db_name,
+                            _timeperiods));
     // Start the availabilities thread.
     _availabilities->start();
 
@@ -332,7 +333,8 @@ reporting_stream& reporting_stream::operator=(reporting_stream const& other) {
  *  @param[in] tp  Timeperiod declaration.
  */
 void reporting_stream::_apply(dimension_timeperiod const& tp) {
-  _timeperiods[tp.id] = time::timeperiod::ptr(
+  std::auto_ptr<QMutexLocker> lock(_timeperiods.lock());
+  _timeperiods.add_timeperiod(tp.id, time::timeperiod::ptr(
     new time::timeperiod(
                 tp.id,
                 tp.name.toStdString(),
@@ -343,8 +345,8 @@ void reporting_stream::_apply(dimension_timeperiod const& tp) {
                 tp.wednesday.toStdString(),
                 tp.thursday.toStdString(),
                 tp.friday.toStdString(),
-                tp.saturday.toStdString()));
-  _availabilities->register_timeperiod(_timeperiods[tp.id]);
+                tp.saturday.toStdString())));
+  //_availabilities->register_timeperiod(_timeperiods[tp.id]);
   return ;
 }
 
@@ -355,9 +357,11 @@ void reporting_stream::_apply(dimension_timeperiod const& tp) {
  */
 void reporting_stream::_apply(
                          dimension_timeperiod_exception const& tpe) {
-  timeperiod_map::iterator it(_timeperiods.find(tpe.timeperiod_id));
-  if (it != _timeperiods.end())
-    it->second->add_exception(
+  std::auto_ptr<QMutexLocker> lock(_timeperiods.lock());
+  time::timeperiod::ptr timeperiod =
+      _timeperiods.get_timeperiod(tpe.timeperiod_id);
+  if (timeperiod)
+    timeperiod->add_exception(
                   tpe.days.toStdString(),
                   tpe.range.toStdString());
   else
@@ -374,12 +378,13 @@ void reporting_stream::_apply(
  */
 void reporting_stream::_apply(
                          dimension_timeperiod_exclusion const& tpe) {
-  timeperiod_map::iterator it(_timeperiods.find(tpe.timeperiod_id));
-  timeperiod_map::iterator
-    excluded_it(_timeperiods.find(tpe.excluded_timeperiod_id));
-  if ((it != _timeperiods.end())
-      && (excluded_it != _timeperiods.end()))
-    it->second->add_excluded(excluded_it->second);
+  std::auto_ptr<QMutexLocker> lock(_timeperiods.lock());
+  time::timeperiod::ptr timeperiod =
+      _timeperiods.get_timeperiod(tpe.timeperiod_id);
+  time::timeperiod::ptr excluded_tp =
+      _timeperiods.get_timeperiod(tpe.excluded_timeperiod_id);
+  if (timeperiod && excluded_tp)
+    timeperiod->add_excluded(excluded_tp);
   else
     logging::error(logging::medium)
       << "BAM-BI: could not apply exclusion of timeperiod "
@@ -472,6 +477,8 @@ void reporting_stream::_load_last_events() {
  *  Load timeperiods from DB.
  */
 void reporting_stream::_load_timeperiods() {
+  // Get a lock.
+  std::auto_ptr<QMutexLocker> lock(_timeperiods.lock());
   // Clear old timeperiods.
   _timeperiods.clear();
 
@@ -487,7 +494,8 @@ void reporting_stream::_load_timeperiods() {
              << "BAM-BI: could not load timeperiods from DB: "
              << q.lastError().text());
     while (q.next()) {
-      _timeperiods[q.value(0).toUInt()] = time::timeperiod::ptr(
+      _timeperiods.add_timeperiod(q.value(0).toUInt(),
+                                  time::timeperiod::ptr(
                                             new time::timeperiod(
         q.value(0).toUInt(),
         q.value(1).toString().toStdString(),
@@ -498,7 +506,7 @@ void reporting_stream::_load_timeperiods() {
         q.value(5).toString().toStdString(),
         q.value(6).toString().toStdString(),
         q.value(7).toString().toStdString(),
-        q.value(8).toString().toStdString()));
+        q.value(8).toString().toStdString())));
     }
   }
 
@@ -513,14 +521,13 @@ void reporting_stream::_load_timeperiods() {
              << "BAM-BI: could not load timeperiods exceptions from DB: "
              << q.lastError().text());
     while (q.next()) {
-      timeperiod_map::iterator
-        it(_timeperiods.find(q.value(0).toUInt()));
-      if (it == _timeperiods.end())
+      time::timeperiod::ptr tp = _timeperiods.get_timeperiod(q.value(0).toUInt());
+      if (!tp)
         logging::error(logging::high)
           << "BAM-BI: could not apply exception to non-existing timeperiod "
           << q.value(0).toUInt();
       else
-        it->second->add_exception(
+        tp->add_exception(
                       q.value(1).toString().toStdString(),
                       q.value(2).toString().toStdString());
     }
@@ -537,19 +544,18 @@ void reporting_stream::_load_timeperiods() {
              << "BAM-BI: could not load exclusions from DB: "
              << q.lastError().text());
     while (q.next()) {
-      timeperiod_map::iterator
-        it(_timeperiods.find(q.value(0).toUInt()));
-      timeperiod_map::iterator
-        excluded_it(_timeperiods.find(q.value(1).toUInt()));
-      timeperiod_map::iterator end(_timeperiods.end());
-      if ((it == end) || (excluded_it == end))
+      time::timeperiod::ptr tp =
+          _timeperiods.get_timeperiod(q.value(0).toUInt());
+      time::timeperiod::ptr excluded_tp =
+          _timeperiods.get_timeperiod(q.value(1).toUInt());
+      if (!tp || !excluded_tp)
         logging::error(logging::high)
           << "BAM-BI: could not apply exclusion of timeperiod "
           << q.value(1).toUInt() << " by timeperiod "
           << q.value(0).toUInt()
           << ": at least one timeperiod does not exist";
       else
-        it->second->add_excluded(excluded_it->second);
+        tp->add_excluded(excluded_tp);
     }
   }
 
@@ -1136,9 +1142,12 @@ void reporting_stream::_process_dimension_truncate_signal(
       throw (exceptions::msg()
              << "BAM-BI: could not truncate dimension tables: "
              << (*it)->lastError().text());
-  _timeperiods.clear();
+  {
+    std::auto_ptr<QMutexLocker> lock(_timeperiods.lock());
+    _timeperiods.clear();
+  }
   _timeperiod_relations.clear();
-  _availabilities->clear_timeperiods();
+  //_availabilities->clear_timeperiods();
 }
 
 /**
@@ -1288,14 +1297,15 @@ void reporting_stream::_compute_event_durations(
   if (found.first == found.second)
     return ;
 
+  std::auto_ptr<QMutexLocker> lock(_timeperiods.lock());
+
   for (; found.first != found.second; ++found.first) {
     unsigned int tp_id = found.first->second.first;
-    timeperiod_map::const_iterator tp_found = _timeperiods.find(tp_id);
-    if (tp_found == _timeperiods.end()) {
+    time::timeperiod::ptr tp = _timeperiods.get_timeperiod(tp_id);
+    if (!tp) {
       throw exceptions::msg() << "BAM-BI: could not find the timeperiod "
                               << tp_id << " in cache";
     }
-    time::timeperiod::ptr tp = tp_found->second;
     bool is_default = found.first->second.second;
 
     misc::shared_ptr<ba_duration_event> dur_ev(new ba_duration_event);
