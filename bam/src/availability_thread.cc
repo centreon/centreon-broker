@@ -75,13 +75,11 @@ void availability_thread::run() {
   // Open the DB
 
   // Lock the mutex.
-  _mutex.lock();
+  QMutexLocker lock(&_mutex);
 
   // Check for termination asked.
-  if (_should_exit) {
-    _mutex.unlock();
+  if (_should_exit)
     return ;
-  }
 
   while (true) {
     try {
@@ -89,7 +87,7 @@ void availability_thread::run() {
       time_t midnight;
       _compute_next_midnight(midnight);
       unsigned long wait_for = std::difftime(midnight, ::time(NULL));
-      _wait.wait(&_mutex, wait_for * 1000);
+      _wait.wait(lock.mutex(), wait_for * 1000);
 
       // Termination asked.
       if (_should_exit)
@@ -111,9 +109,6 @@ void availability_thread::run() {
       _close_database();
     }
   }
-
-  // Unlock the mutex.
-  _mutex.unlock();
 }
 
 /**
