@@ -75,21 +75,18 @@ void availability_thread::run() {
   // Open the DB
 
   // Lock the mutex.
-  _mutex.lock();
+  QMutexLocker lock(&_mutex);
 
   // Check for termination asked.
-  if (_should_exit) {
-    _mutex.unlock();
+  if (_should_exit)
     return ;
-  }
 
   while (true) {
     try {
       // Calculate the duration until next midnight.
-      time_t midnight;
-      _compute_next_midnight(midnight);
+      time_t midnight = _compute_next_midnight();
       unsigned long wait_for = std::difftime(midnight, ::time(NULL));
-      _wait.wait(&_mutex, wait_for * 1000);
+      _wait.wait(lock.mutex(), wait_for * 1000);
 
       // Termination asked.
       if (_should_exit)
@@ -111,9 +108,6 @@ void availability_thread::run() {
       _close_database();
     }
   }
-
-  // Unlock the mutex.
-  _mutex.unlock();
 }
 
 /**
@@ -184,7 +178,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
                 "from the reporting database: " << q.lastError().text());
 
     first_day = q.value(0).toInt();
-    _compute_start_of_day(first_day, first_day);
+    first_day = _compute_start_of_day(first_day);
     q.next();
     _delete_all_availabilities();
   }
@@ -317,29 +311,28 @@ void availability_thread::_write_availability(QSqlQuery& q,
 /**
  *  Compute the next midnight.
  *
- *  @param[out] res  The next midnight.
+ *  @return  The next midnight.
  */
-void availability_thread::_compute_next_midnight(time_t& res) {
-  _compute_start_of_day(::time(NULL), res);
-  res += (24 * 3600);
+time_t availability_thread::_compute_next_midnight() {
+  return (_compute_start_of_day(::time(NULL)) + (24 * 3600));
 }
 
 /**
  *  Get the start of the day of the timestamp when.
  *
  *  @param[in] when  The timestamp.
- *  @param[out] res  The result.
+ *
+ *  @return  The result.
  */
-void availability_thread::_compute_start_of_day(
-                            time_t when,
-                            time_t& res) {
+time_t availability_thread::_compute_start_of_day(
+                            time_t when) {
   struct tm tmv;
   if (!localtime_r(&when, &tmv))
     throw (exceptions::msg()
            << "BAM-BI: Availability thread could not compute start of day.");
   tmv.tm_sec = 1;
   tmv.tm_min = tmv.tm_hour = 0;
-  res = mktime(&tmv);
+  return (mktime(&tmv));
 }
 
 /**

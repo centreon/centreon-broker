@@ -74,9 +74,8 @@ namespace        bam {
                                      time_t day_start,
                                      unsigned int timeperiod_id);
 
-    void         _compute_next_midnight(time_t& res);
-    void         _compute_start_of_day(time_t when,
-                                       time_t& res);
+    time_t       _compute_next_midnight();
+    time_t       _compute_start_of_day(time_t when);
 
     void        _open_database();
     void        _close_database();
