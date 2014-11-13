@@ -15,6 +15,9 @@
 -- mod_bam_reporting_kpi_events
 -- mod_bam_reporting_relations_ba_bv
 -- mod_bam_reporting_relations_ba_kpi_events
+-- mod_bam_reporting_timeperiods
+-- mod_bam_reporting_timeperiods_exceptions
+-- mod_bam_reporting_timeperiods_exclusions
 
 
 --
@@ -210,6 +213,48 @@ BEGIN
   SELECT mod_bam_reporting_relations_ba_kpi_events_seq.nextval INTO :NEW.ba_kpi_event_id FROM dual;
 END;
 /
+
+--
+-- Timeperiods.
+--
+CREATE TABLE mod_bam_reporting_timeperiods (
+  timeperiod_id int NOT NULL,
+  name varchar(200) default NULL,
+  sunday varchar(200) default NULL,
+  monday varchar(200) default NULL,
+  tuesday varchar(200) default NULL,
+  wednesday varchar(200) default NULL,
+  thursday varchar(200) default NULL,
+  friday varchar(200) default NULL,
+  saturday varchar(200) default NULL,
+
+  PRIMARY KEY (timeperiod_id)
+);
+
+--
+-- Timeperiods exceptions.
+--
+CREATE TABLE mod_bam_reporting_timeperiods_exceptions (
+  timeperiod_id int NOT NULL,
+  days varchar(255) NOT NULL,
+  range varchar(255) NOT NULL,
+
+  FOREIGN KEY (timeperiod_id) REFERENCES mod_bam_reporting_timeperiods (timeperiod_id)
+    ON DELETE CASCADE
+);
+
+--
+-- Timeperiods exclusions.
+--
+CREATE TABLE mod_bam_reporting_timeperiods_exclusions (
+  timeperiod_id int NOT NULL,
+  excluded_timeperiod_id int NOT NULL,
+
+  FOREIGN KEY (timeperiod_id) REFERENCES mod_bam_reporting_timeperiods (timeperiod_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (excluded_timeperiod_id) REFERENCES mod_bam_reporting_timeperiods (timeperiod_id)
+    ON DELETE CASCADE
+);
 
 --
 -- BA events durations.

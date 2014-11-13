@@ -35,6 +35,11 @@
 CCB_BEGIN()
 
 namespace          bam {
+  // Forward declarations.
+  class            dimension_timeperiod;
+  class            dimension_timeperiod_exception;
+  class            dimension_timeperiod_exclusion;
+
   /**
    *  @class reporting_stream reporting_stream.hh "com/centreon/broker/bam/reporting_stream.hh"
    *  @brief bam reporting_stream.
@@ -63,9 +68,13 @@ namespace          bam {
                    reporting_stream(reporting_stream const& other);
     reporting_stream&
                    operator=(reporting_stream const& other);
+    void           _apply(dimension_timeperiod const& tp);
+    void           _apply(dimension_timeperiod_exception const& tpe);
+    void           _apply(dimension_timeperiod_exclusion const& tpe);
     void           _check_replication();
     void           _clear_qsql();
-    //void           _load_last_events();// XXX
+    void           _load_last_events();// XXX
+    void           _load_timeperiods();//XXX
     void           _prepare();
     void           _process_ba_event(misc::shared_ptr<io::data> const& e);
     void           _process_ba_duration_event(
@@ -77,6 +86,8 @@ namespace          bam {
     void           _process_dimension_truncate_signal(misc::shared_ptr<io::data> const& e);
     void           _process_dimension_kpi(misc::shared_ptr<io::data> const& e);
     void           _process_dimension_timeperiod(misc::shared_ptr<io::data> const& e);
+    void           _process_dimension_timeperiod_exception(misc::shared_ptr<io::data> const& e);
+    void           _process_dimension_timeperiod_exclusion(misc::shared_ptr<io::data> const& e);
     void           _process_dimension_ba_timeperiod_relation(misc::shared_ptr<io::data> const& e);
     void           _process_rebuild(misc::shared_ptr<io::data> const& e);
     void           _update_status(std::string const& status);
@@ -114,6 +125,12 @@ namespace          bam {
                   _dimension_bv_insert;
     std::auto_ptr<QSqlQuery>
                   _dimension_ba_bv_relation_insert;
+    std::auto_ptr<QSqlQuery>
+                  _dimension_timeperiod_insert;
+    std::auto_ptr<QSqlQuery>
+                  _dimension_timeperiod_exception_insert;
+    std::auto_ptr<QSqlQuery>
+                  _dimension_timeperiod_exclusion_insert;
     std::vector<misc::shared_ptr<QSqlQuery> >
                   _dimension_truncate_tables;
     std::auto_ptr<QSqlQuery>

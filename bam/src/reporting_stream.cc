@@ -32,6 +32,8 @@
 #include "com/centreon/broker/bam/dimension_bv_event.hh"
 #include "com/centreon/broker/bam/dimension_kpi_event.hh"
 #include "com/centreon/broker/bam/dimension_timeperiod.hh"
+#include "com/centreon/broker/bam/dimension_timeperiod_exception.hh"
+#include "com/centreon/broker/bam/dimension_timeperiod_exclusion.hh"
 #include "com/centreon/broker/bam/dimension_ba_timeperiod_relation.hh"
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/bam/kpi_event.hh"
@@ -274,6 +276,14 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
       _process_dimension_timeperiod(data);
     else if (data->type()
              == io::events::data_type<io::events::bam,
+                                      bam::de_dimension_timeperiod_exception>::value)
+      _process_dimension_timeperiod_exception(data);
+    else if (data->type()
+             == io::events::data_type<io::events::bam,
+                                      bam::de_dimension_timeperiod_exclusion>::value)
+      _process_dimension_timeperiod_exclusion(data);
+    else if (data->type()
+             == io::events::data_type<io::events::bam,
                                       bam::de_dimension_ba_timeperiod_relation>::value)
       _process_dimension_ba_timeperiod_relation(data);
     else if (data->type()
@@ -314,6 +324,68 @@ reporting_stream& reporting_stream::operator=(reporting_stream const& other) {
   assert(!"BAM reporting stream is not copyable");
   abort();
   return (*this);
+}
+
+/**
+ *  Apply a timeperiod declaration.
+ *
+ *  @param[in] tp  Timeperiod declaration.
+ */
+void reporting_stream::_apply(dimension_timeperiod const& tp) {
+  _timeperiods[tp.id] = time::timeperiod::ptr(
+    new time::timeperiod(
+                tp.id,
+                tp.name.toStdString(),
+                "",
+                tp.sunday.toStdString(),
+                tp.monday.toStdString(),
+                tp.tuesday.toStdString(),
+                tp.wednesday.toStdString(),
+                tp.thursday.toStdString(),
+                tp.friday.toStdString(),
+                tp.saturday.toStdString()));
+  return ;
+}
+
+/**
+ *  Apply a timeperiod exception declaration.
+ *
+ *  @param[in] tpe  Timeperiod exclusion declaration.
+ */
+void reporting_stream::_apply(
+                         dimension_timeperiod_exception const& tpe) {
+  timeperiod_map::iterator it(_timeperiods.find(tpe.timeperiod_id));
+  if (it != _timeperiods.end())
+    it->second->add_exception(
+                  tpe.days.toStdString(),
+                  tpe.range.toStdString());
+  else
+    logging::error(logging::medium)
+      << "BAM-BI: could not apply exception on timeperiod "
+      << tpe.timeperiod_id << ": timeperiod does not exist";
+  return ;
+}
+
+/**
+ *  Apply a timeperiod exclusion declaration.
+ *
+ *  @param[in] tpe  Timeperiod exclusion declaration.
+ */
+void reporting_stream::_apply(
+                         dimension_timeperiod_exclusion const& tpe) {
+  timeperiod_map::iterator it(_timeperiods.find(tpe.timeperiod_id));
+  timeperiod_map::iterator
+    excluded_it(_timeperiods.find(tpe.excluded_timeperiod_id));
+  if ((it != _timeperiods.end())
+      && (excluded_it != _timeperiods.end()))
+    it->second->add_excluded(excluded_it->second);
+  else
+    logging::error(logging::medium)
+      << "BAM-BI: could not apply exclusion of timeperiod "
+      << tpe.excluded_timeperiod_id << " by timeperiod "
+      << tpe.timeperiod_id
+      << ": at least one of the timeperiod does not exist";
+  return ;
 }
 
 /**
@@ -379,9 +451,107 @@ void reporting_stream::_clear_qsql() {
   _dimension_ba_bv_relation_insert.reset();
   _dimension_ba_insert.reset();
   _dimension_bv_insert.reset();
+  _dimension_timeperiod_insert.reset();
+  _dimension_timeperiod_exception_insert.reset();
+  _dimension_timeperiod_exclusion_insert.reset();
   _dimension_truncate_tables.clear();
   _dimension_kpi_insert.reset();
   _db.reset();
+  return ;
+}
+
+/**
+ *  Load last BA/KPI events from DB.
+ */
+void reporting_stream::_load_last_events() {
+  // XXX
+}
+
+/**
+ *  Load timeperiods from DB.
+ */
+void reporting_stream::_load_timeperiods() {
+  // Clear old timeperiods.
+  _timeperiods.clear();
+
+  // Load timeperiods.
+  {
+    QString query(
+              "SELECT timeperiod_id, name, sunday, monday, tuesday,"
+              "       wednesday, thursday, friday, saturday"
+              "  FROM mod_bam_reporting_timeperiods");
+    QSqlQuery q(*_db);
+    if (!q.exec(query))
+      throw (exceptions::msg()
+             << "BAM-BI: could not load timeperiods from DB: "
+             << q.lastError().text());
+    while (q.next()) {
+      _timeperiods[q.value(0).toUInt()] = time::timeperiod::ptr(
+                                            new time::timeperiod(
+        q.value(0).toUInt(),
+        q.value(1).toString().toStdString(),
+        "",
+        q.value(2).toString().toStdString(),
+        q.value(3).toString().toStdString(),
+        q.value(4).toString().toStdString(),
+        q.value(5).toString().toStdString(),
+        q.value(6).toString().toStdString(),
+        q.value(7).toString().toStdString(),
+        q.value(8).toString().toStdString()));
+    }
+  }
+
+  // Load exceptions.
+  {
+    QString query(
+              "SELECT timeperiod_id, days, range"
+              "  FROM mod_bam_reporting_timeperiods_exceptions");
+    QSqlQuery q(*_db);
+    if (!q.exec(query))
+      throw (exceptions::msg()
+             << "BAM-BI: could not load timeperiods exceptions from DB: "
+             << q.lastError().text());
+    while (q.next()) {
+      timeperiod_map::iterator
+        it(_timeperiods.find(q.value(0).toUInt()));
+      if (it == _timeperiods.end())
+        logging::error(logging::high)
+          << "BAM-BI: could not apply exception to non-existing timeperiod "
+          << q.value(0).toUInt();
+      else
+        it->second->add_exception(
+                      q.value(1).toString().toStdString(),
+                      q.value(2).toString().toStdString());
+    }
+  }
+
+  // Load exclusions.
+  {
+    QString query(
+              "SELECT timeperiod_id, excluded_timeperiod_id"
+              "  FROM mod_bam_reporting_timeperiods_exclusions");
+    QSqlQuery q(*_db);
+    if (!q.exec(query))
+      throw (exceptions::msg()
+             << "BAM-BI: could not load exclusions from DB: "
+             << q.lastError().text());
+    while (q.next()) {
+      timeperiod_map::iterator
+        it(_timeperiods.find(q.value(0).toUInt()));
+      timeperiod_map::iterator
+        excluded_it(_timeperiods.find(q.value(1).toUInt()));
+      timeperiod_map::iterator end(_timeperiods.end());
+      if ((it == end) || (excluded_it == end))
+        logging::error(logging::high)
+          << "BAM-BI: could not apply exclusion of timeperiod "
+          << q.value(1).toUInt() << " by timeperiod "
+          << q.value(0).toUInt()
+          << ": at least one timeperiod does not exist";
+      else
+        it->second->add_excluded(excluded_it->second);
+    }
+  }
+
   return ;
 }
 
@@ -543,6 +713,21 @@ void reporting_stream::_prepare() {
              << "BAM-BI: could not prepare the insertion of BA BV"
                 "relation dimension: "
              << _dimension_ba_bv_relation_insert->lastError().text());
+  }
+
+  // Dimension timeperiod insertion.
+  {
+    // XXX
+  }
+
+  // Dimension timeperiod exception insertion.
+  {
+    // XXX
+  }
+
+  // Dimension timeperiod exclusion insertion.
+  {
+    // XXX
   }
 
   // Dimension truncate tables.
@@ -1005,19 +1190,57 @@ void reporting_stream::_process_dimension_kpi(
 }
 
 /**
- *  Process a dimension timeperiod and store it in the timeperiod caches.
+ *  Process a dimension timeperiod and store it in the DB and in the
+ *  timeperiod cache.
  *
  *  @param[in] e  The event.
  */
 void reporting_stream::_process_dimension_timeperiod(
-        misc::shared_ptr<io::data> const& e) {
+                         misc::shared_ptr<io::data> const& e) {
   bam::dimension_timeperiod const& tp =
       e.ref_as<bam::dimension_timeperiod const>();
-  // XXX
-  // logging::debug(logging::low)
-//     << "BAM-BI: processing declaration of timeperiod "
-//     << tp.timeperiod->get_id();
-//   _timeperiods[tp.timeperiod->get_id()] = tp.timeperiod;
+  logging::debug(logging::low)
+    << "BAM-BI: processing declaration of timeperiod "
+    << tp.id << " ('" << tp.name << "')";
+  // XXX : insert timeperiod
+  _apply(tp);
+  return ;
+}
+
+/**
+ *  Process a timeperiod exception and store it in the DB and in the
+ *  timeperiod cache.
+ *
+ *  @param[in] e  The event.
+ */
+void reporting_stream::_process_dimension_timeperiod_exception(
+                         misc::shared_ptr<io::data> const& e) {
+  bam::dimension_timeperiod_exception const& tpe =
+    e.ref_as<bam::dimension_timeperiod_exception const>();
+  logging::debug(logging::low)
+    << "BAM-BI: processing exception of timeperiod " << tpe.timeperiod_id;
+  // XXX : insert exception
+  _apply(tpe);
+  return ;
+}
+
+/**
+ *  Process a timeperiod exclusion and store it in the DB and in the
+ *  timeperiod cache.
+ *
+ *  @param[in] e  The event.
+ */
+void reporting_stream::_process_dimension_timeperiod_exclusion(
+                         misc::shared_ptr<io::data> const& e) {
+  bam::dimension_timeperiod_exclusion const& tpe =
+    e.ref_as<bam::dimension_timeperiod_exclusion const>();
+  logging::debug(logging::low)
+    << "BAM-BI: processing exclusion of timeperiod "
+    << tpe.excluded_timeperiod_id << " by timeperiod "
+    << tpe.timeperiod_id;
+  // XXX : insert exclusion
+  _apply(tpe);
+  return ;
 }
 
 /**
