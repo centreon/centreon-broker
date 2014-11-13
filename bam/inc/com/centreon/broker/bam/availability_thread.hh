@@ -22,6 +22,8 @@
 
 #  include <string>
 #  include <memory>
+#  include <map>
+#  include <set>
 #  include <QThread>
 #  include <QMutex>
 #  include <QSqlDatabase>
@@ -29,6 +31,8 @@
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
+#  include "com/centreon/broker/bam/time/timeperiod.hh"
+#  include "com/centreon/broker/bam/availability_builder.hh"
 
 CCB_BEGIN()
 
@@ -48,23 +52,52 @@ namespace        bam {
                                      QString const& db_name);
                  ~availability_thread();
     virtual void run();
-
     void         terminate();
-    void         rebuild_availabilities();
+
+    void         clear_timeperiods();
+    void         register_timeperiod(time::timeperiod::ptr);
+    void         rebuild_availabilities(QString const& bas_to_rebuild);
 
   private:
                  availability_thread(availability_thread const& other);
-    bool         operator==(availability_thread const& other) const;
+    availability_thread&
+                  operator=(availability_thread const& other) const;
 
-    bool         _build_availabilities(time_t since);
-    bool         _compute_next_midnight(time_t& res);
+    void         _delete_all_availabilities();
+    void         _build_availabilities(time_t midnight);
+    void         _build_daily_availabilities(QSqlQuery &q,
+                                             time_t day_start,
+                                             time_t day_end);
+    static void  _write_availability(QSqlQuery& q,
+                                     availability_builder const& builder,
+                                     unsigned int ba_id,
+                                     time_t day_start,
+                                     unsigned int timeperiod_id);
 
+    void         _compute_next_midnight(time_t& res);
+    void         _compute_start_of_day(time_t when,
+                                       time_t& res);
+
+    void        _open_database();
+    void        _close_database();
+
+    QString     _db_type;
+    QString     _db_host;
+    unsigned short
+                _db_port;
+    QString     _db_user;
+    QString     _db_password;
+    QString     _db_name;
     std::auto_ptr<QSqlDatabase>
                  _db;
+    std::map<unsigned int,
+              time::timeperiod::ptr>
+                _timeperiods;
 
     QMutex      _mutex;
     bool        _should_exit;
     bool        _should_rebuild_all;
+    QString     _bas_to_rebuild;
     QWaitCondition
                 _wait;
   };
