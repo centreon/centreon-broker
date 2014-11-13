@@ -63,7 +63,7 @@ namespace          bam {
     void           process(bool in = false, bool out = true);
     void           read(misc::shared_ptr<io::data>& d);
     void           statistics(io::properties& tree) const;
-    unsigned int   write(misc::shared_ptr<io::data> const& d);                   
+    unsigned int   write(misc::shared_ptr<io::data> const& d);
 
   private:
                    reporting_stream(reporting_stream const& other);
@@ -74,8 +74,8 @@ namespace          bam {
     void           _apply(dimension_timeperiod_exclusion const& tpe);
     void           _check_replication();
     void           _clear_qsql();
-    void           _load_last_events();// XXX
-    void           _load_timeperiods();//XXX
+    void           _load_last_events();
+    void           _load_timeperiods();
     void           _prepare();
     void           _process_ba_event(misc::shared_ptr<io::data> const& e);
     void           _process_ba_duration_event(

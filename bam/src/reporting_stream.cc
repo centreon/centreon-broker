@@ -128,8 +128,12 @@ reporting_stream::reporting_stream(
     // Prepare queries.
     _prepare();
 
-    // Initialize timezone manager.
+    // Load timeperiods.
     time::timezone_manager::load();
+    _load_timeperiods();
+
+    // Load last events stored in DB.
+    _load_last_events();
 
     // Initialize the availabilities thread.
     _availabilities.reset(new availability_thread(
@@ -469,7 +473,99 @@ void reporting_stream::_clear_qsql() {
  *  Load last BA/KPI events from DB.
  */
 void reporting_stream::_load_last_events() {
-  // XXX
+  // Get the BA list.
+  std::list<unsigned int> ids;
+  {
+    QString query("SELECT ba_id FROM mod_bam_reporting_ba");
+    QSqlQuery q(*_db);
+    if (!q.exec(query))
+      throw (exceptions::msg()
+             << "BAM-BI: could not fetch the list of existing BAs: "
+             << q.lastError().text());
+    while (q.next())
+      ids.push_back(q.value(0).toUInt());
+  }
+
+  // Load the last two events for each BA.
+  for (std::list<unsigned int>::const_iterator
+         it(ids.begin()),
+         end(ids.end());
+       it != end;
+       ++it) {
+    std::ostringstream oss;
+    oss << "SELECT start_time, end_time, first_level,"
+        << "       status, in_downtime"
+        << "  FROM mod_bam_reporting_ba_events"
+        << "  WHERE ba_id=" << *it
+        << "  ORDER BY start_time DESC"
+        << "  LIMIT 2";
+    QSqlQuery q(*_db);
+    if (!q.exec(oss.str().c_str()))
+      throw (exceptions::msg()
+             << "BAM-BI: could not fetch last events of BA "
+             << *it << ": " << q.lastError().text());
+    while (q.next()) {
+      ba_event bae;
+      bae.ba_id = *it;
+      bae.start_time = q.value(0).toLongLong();
+      bae.end_time = (q.value(1).isNull()
+                      ? (time_t)-1
+                      : (time_t)q.value(1).toLongLong());
+      bae.first_level = q.value(2).toDouble();
+      bae.status = q.value(3).toInt();
+      bae.in_downtime = q.value(4).toBool();
+      _ba_event_cache[*it].push_back(bae);
+    }
+  }
+
+  // Get the KPI list.
+  ids.clear();
+  {
+    QString query("SELECT kpi_id FROM mod_bam_reporting_kpi");
+    QSqlQuery q(*_db);
+    if (!q.exec(query))
+      throw (exceptions::msg()
+             << "BAM-BI: could not fetch the list of existing KPI: "
+             << q.lastError().text());
+    while (q.next())
+      ids.push_back(q.value(0).toUInt());
+  }
+
+  // Load the last two events for each KPI.
+  for (std::list<unsigned int>::const_iterator
+         it(ids.begin()),
+         end(ids.end());
+       it != end;
+       ++it) {
+    std::ostringstream oss;
+    oss << "SELECT start_time, end_time, status, in_downtime,"
+        << "       impact_level, first_output, first_perfdata"
+        << "  FROM mod_bam_reporting_kpi_events"
+        << "  WHERE kpi_id=" << *it
+        << "  ORDER BY start_time DESC"
+        << "  LIMIT 2";
+    QSqlQuery q(*_db);
+    if (!q.exec(oss.str().c_str()))
+      throw (exceptions::msg()
+             << "BAM-BI: could not fetch last events of KPI "
+             << *it << ": " << q.lastError().text());
+    while (q.next()) {
+      kpi_event kpie;
+      kpie.kpi_id = *it;
+      kpie.start_time = q.value(0).toLongLong();
+      kpie.end_time = (q.value(1).isNull()
+                       ? (time_t)-1
+                       : (time_t)q.value(1).toLongLong());
+      kpie.status = q.value(2).toInt();
+      kpie.in_downtime = q.value(3).toBool();
+      kpie.impact_level = q.value(4).toInt();
+      kpie.output = q.value(5).toString();
+      kpie.perfdata = q.value(5).toString();
+      _kpi_event_cache[*it].push_back(kpie);
+    }
+  }
+
+  return ;
 }
 
 /**
