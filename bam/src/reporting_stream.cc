@@ -141,7 +141,7 @@ reporting_stream::reporting_stream(
                             db_name,
                             _timeperiods));
     // Start the availabilities thread.
-    _availabilities->start();
+    // XXX : _availabilities->start();
 
     // Initial transaction.
     if (_queries_per_transaction > 1)
@@ -411,7 +411,7 @@ void reporting_stream::_check_replication() {
   else {
     if (!q.next())
       logging::info(logging::medium)
-        << "BAM-BI: reorting database '" << _db->databaseName()
+        << "BAM-BI: reporting database '" << _db->databaseName()
         << "' on host '" << _db->hostName() << ":" << _db->port()
         << "' is not under replication";
     else {
@@ -770,28 +770,34 @@ void reporting_stream::_prepare() {
     QString query;
     query = "DELETE FROM mod_bam_reporting_kpi";
     _dimension_truncate_tables.push_back(
-          misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
+      misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
     if (!_dimension_truncate_tables.back()->prepare(query))
       throw (exceptions::msg()
-            << "BAM-BI: could not prepare the truncate of table kpi");
+             << "BAM-BI: could not deletion of table mod_bam_reporting_kpi");
     query = "DELETE FROM mod_bam_reporting_relations_ba_bv";
     _dimension_truncate_tables.push_back(
-          misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
+      misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
     if (!_dimension_truncate_tables.back()->prepare(query))
       throw (exceptions::msg()
-            << "BAM-BI: could not prepare the truncate of table relations_ba_bv");
+             << "BAM-BI: could not prepare deletion of table mod_bam_reporting_relations_ba_bv");
     query = "DELETE FROM mod_bam_reporting_ba";
     _dimension_truncate_tables.push_back(
-          misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
+      misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
     if (!_dimension_truncate_tables.back()->prepare(query))
       throw (exceptions::msg()
-            << "BAM-BI: could not prepare the truncate of table ba");
+             << "BAM-BI: could not prepare deletion of table mod_bam_reporting_ba");
     query = "DELETE FROM mod_bam_reporting_bv";
     _dimension_truncate_tables.push_back(
-          misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
+      misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
     if (!_dimension_truncate_tables.back()->prepare(query))
       throw (exceptions::msg()
-            << "BAM-BI: could not prepare the truncate of table bv");
+             << "BAM-BI: could not prepare deletion of table mod_bam_reporting_bv");
+    query = "DELETE FROM mod_bam_reporting_timeperiods";
+    _dimension_truncate_tables.push_back(
+      misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
+    if (!_dimension_truncate_tables.back()->prepare(query))
+      throw (exceptions::msg()
+             << "BAM-BI: could not prepare deletion of table mod_bam_reporting_timeperiods");
   }
 
   // Dimension KPI insertion
