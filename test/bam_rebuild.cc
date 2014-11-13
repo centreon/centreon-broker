@@ -101,6 +101,88 @@ static void check_ba_event_durations(
            << iteration << ": expected " << count);
   return ;
 }
+
+struct ba_availability {
+  unsigned int ba_id;
+  unsigned int time_id;
+  unsigned int timeperiod_id;
+  unsigned int available;
+  unsigned int unavailable;
+  unsigned int degraded;
+  unsigned int unknown;
+  unsigned int downtime;
+  unsigned int alert_unavailable_opened;
+  unsigned int alert_degraded_opened;
+  unsigned int alert_unknown_opened;
+  unsigned int alert_downtime_opened;
+  bool timeperiod_is_default;
+};
+
+static void check_ba_availability(
+              QSqlDatabase& db,
+              ba_availability const* baav,
+              size_t count) {
+  static int iteration(-1);
+  ++iteration;
+  QString query(
+            "SELECT ba_id, time_id, timeperiod_id, available,"
+             "      unavailable, degraded, unknown, downtime,"
+             "      alert_unavailable_opened, alert_degraded_opened,"
+             "      alert_unknown_opened, alert_downtime_opened,"
+             "      timeperiod_is_default"
+             "  FROM mod_bam_reporting_ba_availabilities"
+             "  ORDER BY ba_id");
+  QSqlQuery q(db);
+  if (!q.exec(query))
+    throw (exceptions::msg()
+           << "could not fetch BA event availabilities at iteration "
+           << iteration << ": " << q.lastError().text());
+  for (size_t i(0); i < count; ++i) {
+    if (!q.next())
+      throw (exceptions::msg() << "not enough BA availabilities at iteration "
+             << iteration << ": got " << i << ", expected " << count);
+    if (q.value(0).toInt() != baav[i].ba_id
+        || q.value(1).toInt() != baav[i].time_id
+        || q.value(2).toInt() != baav[i].timeperiod_id
+        || q.value(3).toInt() != baav[i].available
+        || q.value(4).toInt() != baav[i].unavailable
+        || q.value(5).toInt() != baav[i].degraded
+        || q.value(6).toInt() != baav[i].unknown
+        || q.value(7).toInt() != baav[i].downtime
+        || q.value(8).toInt() != baav[i].alert_unavailable_opened
+        || q.value(9).toInt() != baav[i].alert_degraded_opened
+        || q.value(10).toInt() != baav[i].alert_unknown_opened
+        || q.value(11).toInt() != baav[i].alert_downtime_opened
+        || q.value(12).toInt() != baav[i].timeperiod_is_default)
+      throw (exceptions::msg() << "invalid BA availability "
+             << " at iteration " << iteration << ": got (ba id "
+             << q.value(0).toInt() << ", time id "
+             << q.value(1).toInt() << ", timeperiod id "
+             << q.value(2).toInt() << ", available "
+             << q.value(3).toInt() << ", unavailable "
+             << q.value(4).toInt() << ", degraded "
+             << q.value(5).toInt() << ", unknown "
+             << q.value(6).toInt() << ", downtime "
+             << q.value(7).toInt() << ", alert_unavailable_opened "
+             << q.value(8).toInt() << ", alert_degraded_opened "
+             << q.value(9).toInt() << ", alert_unknown_opened "
+             << q.value(10).toInt() << ", alert_downtime_opened "
+             << q.value(11).toInt() << ", timeperiod_is_default"
+             << q.value(12).toBool() << ") expected ("
+             << baav[i].ba_id << ", " << baav[i].time_id << ", "
+             << baav[i].timeperiod_id << ", " << baav[i].unavailable << ", "
+             << baav[i].degraded << ", " << baav[i].unknown << ", "
+             << baav[i].downtime << ", " << baav[i].alert_unavailable_opened << ", "
+             << baav[i].alert_degraded_opened << ", " << baav[i].alert_unknown_opened << ", "
+             << baav[i].alert_unknown_opened << "," << baav[i].alert_downtime_opened << ", "
+             << baav[i].timeperiod_is_default << ")");
+  }
+  if (q.next())
+    throw (exceptions::msg() << "too much BA availabilities at iteration "
+           << iteration << ": expected " << count);
+  return ;
+}
+
 /**
  *  Check that the BAM broker correctly rebuild the data.
  *
@@ -159,11 +241,11 @@ int main() {
     // Create BA events.
     {
       QString query(
-                "INSERT INTO mod_bam_reporting_ba_events (ba_event_id, ba_id, start_time, end_time)"
-                "  VALUES (1, 1, 0, 30),"
-                "         (2, 2, 0, 50),"
-                "         (3, 1, 30, 120),"
-                "         (4, 2, 50, 160)");
+                "INSERT INTO mod_bam_reporting_ba_events (ba_event_id, ba_id, start_time, end_time, status, in_downtime)"
+                "  VALUES (1, 1, 0, 30, 0, false),"
+                "         (2, 2, 0, 50, 0, false),"
+                "         (3, 1, 30, 120, 1, false),"
+                "         (4, 2, 50, 160, 2, true)");
       QSqlQuery q(*db.bi_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create BA events: "
@@ -216,6 +298,16 @@ int main() {
       check_ba_event_durations(*db.bi_db(),
                                baed,
                                sizeof(baed) / sizeof(*baed));
+    }
+
+    // See if the ba availabilities were created.
+    {
+      ba_availability baav[] =
+      {{1, 0, 1, 30, 90, 0, 0, 0, 1, 0, 0, 0, true},
+       {2, 0, 1, 50, 0, 110, 0, 110, 0, 1, 0, 1, false}};
+      check_ba_availability(*db.bi_db(),
+                            baav,
+                            sizeof(baav) / sizeof(*baav));
     }
 
     // See if the ba were marked as rebuilt.

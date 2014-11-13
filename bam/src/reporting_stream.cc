@@ -145,7 +145,7 @@ reporting_stream::reporting_stream(
                             db_name,
                             _timeperiods));
     // Start the availabilities thread.
-    // XXX : _availabilities->start();
+    _availabilities->start();
 
     // Initial transaction.
     if (_queries_per_transaction > 1)
