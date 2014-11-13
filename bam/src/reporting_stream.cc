@@ -346,7 +346,6 @@ void reporting_stream::_apply(dimension_timeperiod const& tp) {
                 tp.thursday.toStdString(),
                 tp.friday.toStdString(),
                 tp.saturday.toStdString())));
-  //_availabilities->register_timeperiod(_timeperiods[tp.id]);
   return ;
 }
 
@@ -1147,7 +1146,6 @@ void reporting_stream::_process_dimension_truncate_signal(
     _timeperiods.clear();
   }
   _timeperiod_relations.clear();
-  //_availabilities->clear_timeperiods();
 }
 
 /**

@@ -141,7 +141,6 @@ namespace          bam {
     std::auto_ptr<availability_thread>
                    _availabilities;
 
-    //typedef std::map<unsigned int, time::timeperiod::ptr> timeperiod_map;
     // Timeperiods by BAs, with an option is default timeperiod.
     typedef std::multimap<unsigned int,
                           std::pair<unsigned int, bool> > timeperiod_relation_map;
