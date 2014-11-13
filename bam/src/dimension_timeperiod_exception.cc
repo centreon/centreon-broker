@@ -78,8 +78,8 @@ unsigned int dimension_timeperiod_exception::type() const {
  */
 void dimension_timeperiod_exception::_internal_copy(
                                        dimension_timeperiod_exception const& other) {
-  days = other.days;
-  range = other.range;
+  daterange = other.daterange;
+  timerange = other.timerange;
   timeperiod_id = other.timeperiod_id;
   return ;
 }

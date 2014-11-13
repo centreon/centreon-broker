@@ -43,8 +43,8 @@ namespace        bam {
                  operator=(dimension_timeperiod_exception const& other);
     unsigned int type() const;
 
-    QString      days;
-    QString      range;
+    QString      daterange;
+    QString      timerange;
     unsigned int timeperiod_id;
 
   private:

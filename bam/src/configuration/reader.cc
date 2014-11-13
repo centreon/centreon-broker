@@ -668,8 +668,8 @@ void reader::_load_dimensions() {
       misc::shared_ptr<dimension_timeperiod_exception>
         exception(new dimension_timeperiod_exception);
       exception->timeperiod_id = timeperiod_id;
-      exception->days = q.value(1).toString();
-      exception->range = q.value(2).toString();
+      exception->daterange = q.value(1).toString();
+      exception->timerange = q.value(2).toString();
       datas.push_back(exception.staticCast<io::data>());
     }
 

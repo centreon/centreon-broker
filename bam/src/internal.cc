@@ -464,13 +464,13 @@ static mapped_data<bam::dimension_timeperiod_exception> const dimension_timeperi
     "timeperiod_id",
     NULL_ON_ZERO),
   mapped_data<bam::dimension_timeperiod_exception>(
-    &bam::dimension_timeperiod_exception::days,
+    &bam::dimension_timeperiod_exception::daterange,
     2,
-    "days"),
+    "daterange"),
   mapped_data<bam::dimension_timeperiod_exception>(
-    &bam::dimension_timeperiod_exception::range,
+    &bam::dimension_timeperiod_exception::timerange,
     3,
-    "range"),
+    "timerange"),
   mapped_data<bam::dimension_timeperiod_exception>()
 };
 

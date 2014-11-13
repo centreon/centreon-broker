@@ -358,8 +358,8 @@ void reporting_stream::_apply(
   timeperiod_map::iterator it(_timeperiods.find(tpe.timeperiod_id));
   if (it != _timeperiods.end())
     it->second->add_exception(
-                  tpe.days.toStdString(),
-                  tpe.range.toStdString());
+                  tpe.daterange.toStdString(),
+                  tpe.timerange.toStdString());
   else
     logging::error(logging::medium)
       << "BAM-BI: could not apply exception on timeperiod "
@@ -505,7 +505,7 @@ void reporting_stream::_load_timeperiods() {
   // Load exceptions.
   {
     QString query(
-              "SELECT timeperiod_id, days, range"
+              "SELECT timeperiod_id, daterange, timerange"
               "  FROM mod_bam_reporting_timeperiods_exceptions");
     QSqlQuery q(*_db);
     if (!q.exec(query))
@@ -718,17 +718,45 @@ void reporting_stream::_prepare() {
 
   // Dimension timeperiod insertion.
   {
-    // XXX
+    QString query(
+              "INSERT INTO mod_bam_reporting_timeperiods"
+              "            (timeperiod_id, name, sunday, monday,"
+              "             tuesday, wednesday, thursday, friday,"
+              "             saturday)"
+              "  VALUES (:timeperiod_id, :name, :sunday, :monday,"
+              "          :tuesday, :wednesday, :thursday, :friday,"
+              "          :saturday)");
+    _dimension_timeperiod_insert.reset(new QSqlQuery(*_db));
+    if (!_dimension_timeperiod_insert->prepare(query))
+      throw (exceptions::msg()
+             << "BAM-BI: could not prepare timeperiod insertion query: "
+             << _dimension_timeperiod_insert->lastError().text());
   }
 
   // Dimension timeperiod exception insertion.
   {
-    // XXX
+    QString query(
+              "INSERT INTO mod_bam_reporting_timeperiods_exceptions"
+              "            (timeperiod_id, daterange, timerange)"
+              "  VALUES (:timeperiod_id, :daterange, :timerange)");
+    _dimension_timeperiod_exception_insert.reset(new QSqlQuery(*_db));
+    if (!_dimension_timeperiod_exception_insert->prepare(query))
+      throw (exceptions::msg()
+             << "BAM-BI: could not prepare timeperiod exception insertion query: "
+             << _dimension_timeperiod_exception_insert->lastError().text());
   }
 
   // Dimension timeperiod exclusion insertion.
   {
-    // XXX
+    QString query(
+              "INSERT INTO mod_bam_reporting_timeperiods_exclusions"
+              "            (timeperiod_id, excluded_timeperiod_id)"
+              "  VALUES (:timeperiod_id, :excluded_timeperiod_id)");
+    _dimension_timeperiod_exclusion_insert.reset(new QSqlQuery(*_db));
+    if (!_dimension_timeperiod_exclusion_insert->prepare(query))
+      throw (exceptions::msg()
+             << "BAM-BI: could not prepare timeperiod exclusion insertion query: "
+             << _dimension_timeperiod_exclusion_insert->lastError().text());
   }
 
   // Dimension truncate tables.
@@ -1204,7 +1232,20 @@ void reporting_stream::_process_dimension_timeperiod(
   logging::debug(logging::low)
     << "BAM-BI: processing declaration of timeperiod "
     << tp.id << " ('" << tp.name << "')";
-  // XXX : insert timeperiod
+  QSqlQuery& q(*_dimension_timeperiod_insert);
+  q.bindValue(":timeperiod_id", tp.id);
+  q.bindValue(":name", tp.name);
+  q.bindValue(":sunday", tp.sunday);
+  q.bindValue(":monday", tp.monday);
+  q.bindValue(":tuesday", tp.tuesday);
+  q.bindValue(":wednesday", tp.wednesday);
+  q.bindValue(":thursday", tp.thursday);
+  q.bindValue(":friday", tp.friday);
+  q.bindValue(":saturday", tp.saturday);
+  if (!q.exec())
+    throw (exceptions::msg() << "BAM-BI: could not insert timeperiod "
+           << tp.id << " ('" << tp.name << "'): "
+           << q.lastError().text());
   _apply(tp);
   return ;
 }
@@ -1221,7 +1262,14 @@ void reporting_stream::_process_dimension_timeperiod_exception(
     e.ref_as<bam::dimension_timeperiod_exception const>();
   logging::debug(logging::low)
     << "BAM-BI: processing exception of timeperiod " << tpe.timeperiod_id;
-  // XXX : insert exception
+  QSqlQuery& q(*_dimension_timeperiod_exception_insert);
+  q.bindValue(":timeperiod_id", tpe.timeperiod_id);
+  q.bindValue(":daterange", tpe.daterange);
+  q.bindValue(":timerange", tpe.timerange);
+  if (!q.exec())
+    throw (exceptions::msg()
+           << "BAM-BI: could not insert exception of timeperiod "
+           << tpe.timeperiod_id << ": " << q.lastError().text());
   _apply(tpe);
   return ;
 }
@@ -1240,7 +1288,14 @@ void reporting_stream::_process_dimension_timeperiod_exclusion(
     << "BAM-BI: processing exclusion of timeperiod "
     << tpe.excluded_timeperiod_id << " by timeperiod "
     << tpe.timeperiod_id;
-  // XXX : insert exclusion
+  QSqlQuery& q(*_dimension_timeperiod_exclusion_insert);
+  q.bindValue(":timeperiod_id", tpe.timeperiod_id);
+  q.bindValue(":excluded_timeperiod_id", tpe.excluded_timeperiod_id);
+  if (!q.exec())
+    throw (exceptions::msg()
+           << "BAM-BI: could not insert exclusion of timeperiod "
+           << tpe.excluded_timeperiod_id << " by timeperiod "
+           << tpe.timeperiod_id << ": " << q.lastError().text());
   _apply(tpe);
   return ;
 }
