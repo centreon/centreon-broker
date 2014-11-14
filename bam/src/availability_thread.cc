@@ -249,8 +249,8 @@ void availability_thread::_build_daily_availabilities(
            "  WHERE ";
   if (_should_rebuild_all)
     query << "(b.ba_id IN (" << _bas_to_rebuild.toStdString() << ")) AND ";
-  query << "(a.start_time >= " << day_start <<
-           "    OR (a.end_time >= " << day_start << " AND a.end_time < " << day_end
+  query << "((a.start_time < " << day_end << " AND a.end_time = 0 "
+        << "  ) OR (a.end_time >= " << day_start << " AND a.end_time < " << day_end
         << "       ))";
   if (!q.exec(query.str().c_str()))
     throw (exceptions::msg()
