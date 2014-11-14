@@ -478,8 +478,10 @@ void reader::_load_dimensions() {
   // we cache the data until we are sure we have all the data
   // needed from the database.
   std::vector<misc::shared_ptr<io::data> > datas;
-  datas.push_back(misc::shared_ptr<io::data>(
-                    new dimension_truncate_table_signal));
+  misc::shared_ptr<dimension_truncate_table_signal> dtts(
+                      new dimension_truncate_table_signal);
+  dtts->update_started = true;
+  datas.push_back(dtts);
 
   // Get the data from the db.
   QSqlQuery q(*_db);
@@ -722,6 +724,12 @@ void reader::_load_dimensions() {
       datas.push_back(dbtr);
     }
   }
+
+  // End the update.
+  dtts = misc::shared_ptr<dimension_truncate_table_signal>(
+        new dimension_truncate_table_signal);
+  dtts->update_started = false;
+  datas.push_back(dtts);
 
   // Write all the cached data to the publisher.
   for (std::vector<misc::shared_ptr<io::data> >::iterator it(datas.begin()),

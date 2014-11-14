@@ -125,6 +125,15 @@ void availability_thread::terminate() {
 }
 
 /**
+ *  Lock the main mutex of the availability thread.
+ *
+ *  @return  A QMutexLocker locking the main mutex.
+ */
+std::auto_ptr<QMutexLocker> availability_thread::lock() {
+  return (std::auto_ptr<QMutexLocker>(new QMutexLocker(&_mutex)));
+}
+
+/**
  *  Ask the thread to rebuild the availabilities.
  *
  *  @param[in] bas_to_rebuild  A string containing the bas to rebuild.
@@ -143,6 +152,9 @@ void availability_thread::rebuild_availabilities(
  *  Delete all the availabilities.
  */
 void availability_thread::_delete_all_availabilities() {
+  logging::debug(logging::low)
+      << "BAM-BI: Availability thread deleting availabilities";
+
   // Prepare the query.
   std::stringstream query;
   query << "DELETE FROM mod_bam_reporting_ba_availabilities WHERE ba_id IN ("
@@ -239,9 +251,6 @@ void availability_thread::_build_daily_availabilities(
     throw (exceptions::msg()
            << "BAM-BI: the availability thread could not build the data: "
             << q.lastError().text());
-
-  // Lock the timeperiods.
-  std::auto_ptr<QMutexLocker> lock(_shared_tps.lock());
 
   // Create a builder for each ba_id and associated timeperiod_id.
   std::map<std::pair<unsigned int, unsigned int>,

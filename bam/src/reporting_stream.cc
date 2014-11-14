@@ -31,6 +31,7 @@
 #include "com/centreon/broker/bam/dimension_ba_event.hh"
 #include "com/centreon/broker/bam/dimension_bv_event.hh"
 #include "com/centreon/broker/bam/dimension_kpi_event.hh"
+#include "com/centreon/broker/bam/dimension_truncate_table_signal.hh"
 #include "com/centreon/broker/bam/dimension_timeperiod.hh"
 #include "com/centreon/broker/bam/dimension_timeperiod_exception.hh"
 #include "com/centreon/broker/bam/dimension_timeperiod_exclusion.hh"
@@ -178,6 +179,9 @@ reporting_stream::~reporting_stream() {
     // Reset statements.
     _clear_qsql();
   }
+
+  // Release any lock.
+  _availabilities_lock.reset();
 
   // Terminate the availabilities thread.
   _availabilities->terminate();
@@ -337,7 +341,6 @@ reporting_stream& reporting_stream::operator=(reporting_stream const& other) {
  *  @param[in] tp  Timeperiod declaration.
  */
 void reporting_stream::_apply(dimension_timeperiod const& tp) {
-  std::auto_ptr<QMutexLocker> lock(_timeperiods.lock());
   _timeperiods.add_timeperiod(tp.id, time::timeperiod::ptr(
     new time::timeperiod(
                 tp.id,
@@ -360,7 +363,6 @@ void reporting_stream::_apply(dimension_timeperiod const& tp) {
  */
 void reporting_stream::_apply(
                          dimension_timeperiod_exception const& tpe) {
-  std::auto_ptr<QMutexLocker> lock(_timeperiods.lock());
   time::timeperiod::ptr timeperiod =
       _timeperiods.get_timeperiod(tpe.timeperiod_id);
   if (timeperiod)
@@ -381,7 +383,6 @@ void reporting_stream::_apply(
  */
 void reporting_stream::_apply(
                          dimension_timeperiod_exclusion const& tpe) {
-  std::auto_ptr<QMutexLocker> lock(_timeperiods.lock());
   time::timeperiod::ptr timeperiod =
       _timeperiods.get_timeperiod(tpe.timeperiod_id);
   time::timeperiod::ptr excluded_tp =
@@ -572,8 +573,6 @@ void reporting_stream::_load_last_events() {
  *  Load timeperiods from DB.
  */
 void reporting_stream::_load_timeperiods() {
-  // Get a lock.
-  std::auto_ptr<QMutexLocker> lock(_timeperiods.lock());
   // Clear old timeperiods.
   _timeperiods.clear();
 
@@ -1259,23 +1258,37 @@ void reporting_stream::_process_dimension_ba_bv_relation(
  */
 void reporting_stream::_process_dimension_truncate_signal(
     misc::shared_ptr<io::data> const& e) {
-  (void)e;
-  logging::debug(logging::low)
-    << "BAM-BI: processing table truncation signal";
-  for (std::vector<misc::shared_ptr<QSqlQuery> >::iterator
-         it(_dimension_truncate_tables.begin()),
-         end(_dimension_truncate_tables.end());
-       it != end;
-       ++it)
-    if (!(*it)->exec())
-      throw (exceptions::msg()
-             << "BAM-BI: could not truncate dimension tables: "
-             << (*it)->lastError().text());
-  {
-    std::auto_ptr<QMutexLocker> lock(_timeperiods.lock());
+  dimension_truncate_table_signal const& dtts
+      = e.ref_as<dimension_truncate_table_signal const>();
+
+  if (dtts.update_started) {
+    logging::debug(logging::low)
+      << "BAM-BI: processing table truncation signal";
+
+    _update_status("Waiting for the availability thread.");
+    // We lock the availabilities thread during all the update procedure
+    // to prevent it waking up on truncated dimensions.
+    std::auto_ptr<QMutexLocker> lock(_availabilities->lock());
+    _update_status("");
+
+    for (std::vector<misc::shared_ptr<QSqlQuery> >::iterator
+           it(_dimension_truncate_tables.begin()),
+           end(_dimension_truncate_tables.end());
+        it != end;
+        ++it)
+      if (!(*it)->exec())
+        throw (exceptions::msg()
+               << "BAM-BI: could not truncate dimension tables: "
+               << (*it)->lastError().text());
+
     _timeperiods.clear();
+    _timeperiod_relations.clear();
+    _availabilities_lock = lock;
   }
-  _timeperiod_relations.clear();
+  else {
+    // Unlock the availabilities thread.
+    _availabilities_lock.reset();
+  }
 }
 
 /**
@@ -1451,8 +1464,6 @@ void reporting_stream::_compute_event_durations(
 
   if (found.first == found.second)
     return ;
-
-  std::auto_ptr<QMutexLocker> lock(_timeperiods.lock());
 
   for (; found.first != found.second; ++found.first) {
     unsigned int tp_id = found.first->second.first;

@@ -26,6 +26,7 @@
 #  include <set>
 #  include <QThread>
 #  include <QMutex>
+#  include <QMutexLocker>
 #  include <QSqlDatabase>
 #  include <QWaitCondition>
 #  include "com/centreon/broker/io/data.hh"
@@ -55,6 +56,9 @@ namespace        bam {
                  ~availability_thread();
     virtual void run();
     void         terminate();
+
+    std::auto_ptr<QMutexLocker>
+                 lock();
 
     void         rebuild_availabilities(QString const& bas_to_rebuild);
 
