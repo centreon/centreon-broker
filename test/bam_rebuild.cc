@@ -104,7 +104,7 @@ static void check_ba_event_durations(
 
 struct ba_availability {
   unsigned int ba_id;
-  unsigned int time_id;
+  int time_id;
   unsigned int timeperiod_id;
   unsigned int available;
   unsigned int unavailable;
@@ -170,7 +170,8 @@ static void check_ba_availability(
              << q.value(11).toInt() << ", timeperiod_is_default"
              << q.value(12).toBool() << ") expected ("
              << baav[i].ba_id << ", " << baav[i].time_id << ", "
-             << baav[i].timeperiod_id << ", " << baav[i].unavailable << ", "
+             << baav[i].timeperiod_id << ", " << baav[i].available
+             << ", " << baav[i].unavailable << ", "
              << baav[i].degraded << ", " << baav[i].unknown << ", "
              << baav[i].downtime << ", " << baav[i].alert_unavailable_opened << ", "
              << baav[i].alert_degraded_opened << ", " << baav[i].alert_unknown_opened << ", "
@@ -303,8 +304,8 @@ int main() {
     // See if the ba availabilities were created.
     {
       ba_availability baav[] =
-      {{1, 0, 1, 30, 90, 0, 0, 0, 1, 0, 0, 0, true},
-       {2, 0, 1, 50, 0, 110, 0, 110, 0, 1, 0, 1, false}};
+      {{1, -3599, 1, 30, 0, 90, 0, 0, 0, 1, 0, 0, true},
+       {2, -3599, 1, 50, 110, 0, 0, 110, 1, 0, 0, 1, false}};
       check_ba_availability(*db.bi_db(),
                             baav,
                             sizeof(baav) / sizeof(*baav));
