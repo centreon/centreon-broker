@@ -178,6 +178,7 @@ void availability_thread::_delete_all_availabilities() {
  */
 void availability_thread::_build_availabilities(time_t midnight) {
   time_t first_day = 0;
+  time_t last_day = midnight;
   QSqlQuery q(*_db);
   q.setForwardOnly(true);
   std::stringstream query;
@@ -186,7 +187,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
   // it's the day of the chronogically first event to rebuild.
   // If not, it's the day following the chronogically last availability.
   if (_should_rebuild_all) {
-    query << "SELECT MIN(start_time)"
+    query << "SELECT MIN(start_time), MIN(end_time), MAX(end_time)"
              "  FROM mod_bam_reporting_ba_events"
              "  WHERE ba_id IN (" << _bas_to_rebuild.toStdString() << ")";
     if (!q.exec(query.str().c_str()) || !q.next())
@@ -196,6 +197,10 @@ void availability_thread::_build_availabilities(time_t midnight) {
 
     first_day = q.value(0).toInt();
     first_day = _compute_start_of_day(first_day);
+    // If there is opened events, rebuild until today.
+    // If not, rebuild until the last closed events.
+    if (q.value(1).toInt() != 0)
+      last_day = _compute_start_of_day(q.value(2).toInt() + (3600 * 24));
     q.next();
     _delete_all_availabilities();
   }
@@ -214,7 +219,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
   }
 
   // Write the availabilities day after day.
-  for (; first_day < midnight; first_day += (3600*24))
+  for (; first_day < last_day; first_day += (3600*24))
     _build_daily_availabilities(q, first_day, first_day + (3600 * 24));
 }
 
