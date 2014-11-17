@@ -57,6 +57,7 @@ namespace                bam {
                            hst_svc_mapping const& mapping,
                            ba& my_bas,
                            service_book& book);
+        void             visit(io::stream* visitor);
 
       private:
         struct applied {

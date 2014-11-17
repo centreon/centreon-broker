@@ -281,11 +281,14 @@ void reader::_load(state::bool_exps& bool_exps) {
   // Load boolean expressions themselves.
   {
     QSqlQuery query(_db->exec(
-      "SELECT  be.boolean_id, COALESCE(be.impact, imp.impact),"
+      "SELECT  be.boolean_id, COALESCE(kpi.drop_critical, imp.impact),"
       "        be.expression, be.bool_state"
       "  FROM  mod_bam_boolean as be"
+      "  LEFT JOIN mod_bam_kpi AS kpi"
+      "    ON be.boolean_id=kpi.boolean_id"
       "  LEFT JOIN mod_bam_impacts as imp"
-      "    ON be.impact_id = imp.id_impact"));
+      "    ON kpi.drop_critical_impact_id=imp.id_impact"
+      "  GROUP BY be.boolean_id"));
     if (query.lastError().isValid())
       throw (reader_exception()
              << "BAM: could not retrieve boolean expression "
@@ -306,7 +309,10 @@ void reader::_load(state::bool_exps& bool_exps) {
     std::map<unsigned int, bool_expression::ids_of_bas> impacted_bas;
     {
       QSqlQuery q(_db->exec(
-        "SELECT boolean_id, ba_id FROM mod_bam_bool_rel"));
+        "SELECT b.boolean_id, k.id_ba"
+        "  FROM mod_bam_boolean AS b"
+        "  LEFT JOIN mod_bam_kpi AS k"
+        "    ON b.boolean_id=k.boolean_id"));
       if (q.lastError().isValid())
         throw (reader_exception()
                << "BAM: could not retrieve BAs impacted by boolean "
@@ -328,7 +334,7 @@ void reader::_load(state::bool_exps& bool_exps) {
     }
   }
 
-  // Load kpi_id associated with boolean BAs.
+  // Load kpi_id associated with boolean KPIs.
   {
     QSqlQuery q(_db->exec(
       "SELECT boolean_id, kpi_id, last_state_change,"
@@ -348,7 +354,7 @@ void reader::_load(state::bool_exps& bool_exps) {
         throw (reader_exception()
                << "BAM: found a KPI pointing to an inexisting boolean of ID "
                << boolean_id);
-      found->second.set_kpi_id(kpi_id);
+      found->second.add_kpi_id(kpi_id);
       if (!q.value(2).isNull()
           && (q.value(2).toLongLong()
               > found->second.get_opened_event().start_time)) {

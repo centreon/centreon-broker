@@ -13,7 +13,6 @@
 -- mod_bam_bagroup_ba_relation
 -- mod_bam_impacts
 -- mod_bam_boolean
--- mod_bam_bool_rel
 -- mod_bam_kpi
 -- mod_bam_ba_tp_rel
 
@@ -62,30 +61,11 @@ CREATE TABLE mod_bam_boolean (
   boolean_id int NOT NULL auto_increment,
   name varchar(255) NOT NULL,
 
-  config_type tinyint NOT NULL,
-  impact float default NULL,
-  impact_id int default NULL,
   expression text NOT NULL,
   bool_state boolean NOT NULL default 1,
-  current_state boolean default NULL,
   activate boolean NOT NULL default 0,
 
-  PRIMARY KEY (boolean_id),
-  FOREIGN KEY (impact_id) REFERENCES mod_bam_impacts (id_impact)
-    ON DELETE RESTRICT
-) ENGINE=InnoDB CHARACTER SET utf8;
-
---
--- Relations between BA and boolean expressions.
---
-CREATE TABLE mod_bam_bool_rel (
-  ba_id int NOT NULL,
-  boolean_id int NOT NULL,
-
-  FOREIGN KEY (ba_id) REFERENCES mod_bam (ba_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (boolean_id) REFERENCES mod_bam_boolean (boolean_id)
-    ON DELETE CASCADE
+  PRIMARY KEY (boolean_id)
 ) ENGINE=InnoDB CHARACTER SET utf8;
 
 --

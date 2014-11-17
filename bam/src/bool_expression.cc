@@ -23,6 +23,7 @@
 #include "com/centreon/broker/bam/bool_status.hh"
 #include "com/centreon/broker/bam/bool_value.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
+#include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker::bam;
@@ -219,12 +220,45 @@ void bool_expression::set_kpi_id(unsigned int id) {
  */
 void bool_expression::visit(io::stream* visitor) {
   if (visitor) {
-    // Generate status event.
+    // Generate status events.
+    bool hard_value(_expression->value_hard());
+    bool soft_value(_expression->value_soft());
     {
       misc::shared_ptr<bool_status> b(new bool_status);
       b->bool_id = _id;
-      b->state = _expression->value_hard();
+      b->state = hard_value;
+      logging::debug(logging::low)
+        << "BAM: generating status of boolexp " << b->bool_id
+        << " (state " << b->state << ")";
       visitor->write(b.staticCast<io::data>());
+    }
+    {
+      kpi_status k;
+      if (hard_value == _impact_if) {
+        k.level_nominal_hard = _impact_hard;
+        k.state_hard = 2;
+      }
+      else {
+        k.level_nominal_hard = 0.0;
+        k.state_hard = 0;
+      }
+      if (soft_value == _impact_if) {
+        k.level_nominal_soft = _impact_soft;
+        k.state_soft = 2;
+      }
+      else {
+        k.level_nominal_soft = 0.0;
+        k.state_soft = 0;
+      }
+      for (std::list<unsigned int>::const_iterator
+             it(_kpis.begin()),
+             end(_kpis.end());
+           it != end;
+           ++it) {
+        misc::shared_ptr<kpi_status> e(new kpi_status(k));
+        e->kpi_id = *it;
+        visitor->write(e.staticCast<io::data>());
+      }
     }
 
     // Generate BI events.

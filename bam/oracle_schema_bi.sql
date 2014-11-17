@@ -59,16 +59,6 @@ CREATE TABLE mod_bam_reporting_ba (
   PRIMARY KEY (ba_id),
   UNIQUE (ba_name)
 );
-CREATE SEQUENCE mod_bam_reporting_ba_seq
-START WITH 1
-INCREMENT BY 1;
-CREATE TRIGGER mod_bam_reporting_ba_trigger
-BEFORE INSERT ON mod_bam_reporting_ba
-FOR EACH ROW
-BEGIN
-  SELECT mod_bam_reporting_ba_seq.nextval INTO :NEW.ba_id FROM dual;
-END;
-/
 
 --
 -- Key Performance Indicators.
@@ -99,16 +89,6 @@ CREATE TABLE mod_bam_reporting_kpi (
   FOREIGN KEY (kpi_ba_id) REFERENCES mod_bam_reporting_ba (ba_id)
     ON DELETE CASCADE
 );
-CREATE SEQUENCE mod_bam_reporting_kpi_seq
-START WITH 1
-INCREMENT BY 1;
-CREATE TRIGGER mod_bam_reporting_kpi_trigger
-BEFORE INSERT ON mod_bam_reporting_kpi
-FOR EACH ROW
-BEGIN
-  SELECT mod_bam_reporting_kpi_seq.nextval INTO :NEW.kpi_id FROM dual;
-END;
-/
 
 --
 -- Relations between BA and BV.
@@ -193,26 +173,14 @@ END;
 -- Relations between BA events and KPI events.
 --
 CREATE TABLE mod_bam_reporting_relations_ba_kpi_events (
-  ba_kpi_event_id int NOT NULL,
   ba_event_id int NOT NULL,
   kpi_event_id int NOT NULL,
 
-  PRIMARY KEY (ba_kpi_event_id),
   FOREIGN KEY (ba_event_id) REFERENCES mod_bam_reporting_ba_events (ba_event_id)
     ON DELETE CASCADE,
   FOREIGN KEY (kpi_event_id) REFERENCES mod_bam_reporting_kpi_events (kpi_event_id)
     ON DELETE CASCADE
 );
-CREATE SEQUENCE mod_bam_reporting_relations_ba_kpi_events_seq
-START WITH 1
-INCREMENT BY 1;
-CREATE TRIGGER mod_bam_reporting_relations_ba_kpi_events_trigger
-BEFORE INSERT ON mod_bam_reporting_relations_ba_kpi_events
-FOR EACH ROW
-BEGIN
-  SELECT mod_bam_reporting_relations_ba_kpi_events_seq.nextval INTO :NEW.ba_kpi_event_id FROM dual;
-END;
-/
 
 --
 -- Timeperiods.

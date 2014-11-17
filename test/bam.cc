@@ -56,10 +56,6 @@ typedef struct {
 } kpi_state;
 
 typedef struct {
-  bool state;
-} boolexp_state;
-
-typedef struct {
   unsigned int ba_id;
   time_t start_time_low;
   time_t start_time_high;
@@ -71,6 +67,7 @@ typedef struct {
 } ba_event;
 
 typedef struct {
+  bool optional;
   unsigned int kpi_id;
   time_t start_time_low;
   time_t start_time_high;
@@ -187,39 +184,6 @@ static void check_kpis(
 }
 
 /**
- *  Check content of the mod_bam_boolean table.
- */
-static void check_boolexps(
-              QSqlDatabase& db,
-              boolexp_state const* boolexps,
-              size_t count) {
-  static int iteration(-1);
-  ++iteration;
-  QString query(
-            "SELECT boolean_id, current_state"
-            "  FROM mod_bam_boolean"
-            "  ORDER BY boolean_id ASC");
-  QSqlQuery q(db);
-  if (!q.exec(query))
-    throw (exceptions::msg() << "could not fetch boolexps at iteration "
-           << iteration << ": " << q.lastError().text());
-  for (size_t i(0); i < count; ++i) {
-    if (!q.next())
-      throw (exceptions::msg() << "not enough boolexps at iteration "
-             << iteration << ": got " << i << ", expected " << count);
-    if (static_cast<bool>(q.value(1).toInt()) != boolexps[i].state)
-      throw (exceptions::msg() << "invalid boolexp "
-             << q.value(0).toUInt() << " at iteration " << iteration
-             << ": got (state " << static_cast<bool>(q.value(1).toInt())
-             << "), expected (" << boolexps[i].state << ")");
-  }
-  if (q.next())
-    throw (exceptions::msg() << "too much boolexps at iteration "
-           << iteration << ": expected " << count);
-  return ;
-}
-
-/**
  *  Check the content of the ba_events table.
  */
 static void check_ba_events(
@@ -290,37 +254,41 @@ static void check_kpi_events(
     if (!q.next())
       throw (exceptions::msg() << "not enough KPI events: got " << i
              << ", expected " << count);
-    if ((q.value(0).toUInt() != kpi_events[i].kpi_id)
-        || (q.value(1).toLongLong() < kpi_events[i].start_time_low)
-        || (q.value(1).toLongLong() > kpi_events[i].start_time_high)
-        || (q.value(2).isNull() && !kpi_events[i].end_time_null)
-        || (!q.value(2).isNull()
-            && (kpi_events[i].end_time_null
-                || (q.value(2).toLongLong() < kpi_events[i].end_time_low)
-                || (q.value(2).toLongLong() > kpi_events[i].end_time_high)))
-        || (q.value(3).toInt() != kpi_events[i].status)
-        || (q.value(4).toBool() != kpi_events[i].in_downtime)
-        || (q.value(5).toInt() != kpi_events[i].impact)
-        || (q.value(6).toString().toStdString() != kpi_events[i].output)
-        || (q.value(7).toString().toStdString() != kpi_events[i].perfdata))
-      throw (exceptions::msg() << "invalid KPI event: got (KPI ID "
-             << q.value(0).toUInt() << ", start time "
-             << q.value(1).toLongLong() << ", end time "
-             << q.value(2).toLongLong() << ", status "
-             << q.value(3).toInt() << ", in downtime "
-             << q.value(4).toBool() << ", impact " << q.value(5).toInt()
-             << ", output '" << q.value(6).toString().toStdString()
-             << "', perfdata '" << q.value(7).toString().toStdString()
-             << "'), expected (" << kpi_events[i].kpi_id << ", "
-             << kpi_events[i].start_time_low << "-"
-             << kpi_events[i].start_time_high << ", "
-             << kpi_events[i].end_time_low << "-"
-             << kpi_events[i].end_time_high << ", "
-             << kpi_events[i].status << ", "
-             << kpi_events[i].in_downtime << ", "
-             << kpi_events[i].impact << ", '"
-             << kpi_events[i].output << "', '"
-             << kpi_events[i].perfdata << "')");
+    while ((q.value(0).toUInt() != kpi_events[i].kpi_id)
+           || (q.value(1).toLongLong() < kpi_events[i].start_time_low)
+           || (q.value(1).toLongLong() > kpi_events[i].start_time_high)
+           || (q.value(2).isNull() && !kpi_events[i].end_time_null)
+           || (!q.value(2).isNull()
+               && (kpi_events[i].end_time_null
+                   || (q.value(2).toLongLong() < kpi_events[i].end_time_low)
+                   || (q.value(2).toLongLong() > kpi_events[i].end_time_high)))
+           || (q.value(3).toInt() != kpi_events[i].status)
+           || (q.value(4).toBool() != kpi_events[i].in_downtime)
+           || (q.value(5).toInt() != kpi_events[i].impact)
+           || (q.value(6).toString().toStdString() != kpi_events[i].output)
+           || (q.value(7).toString().toStdString() != kpi_events[i].perfdata)) {
+      if (kpi_events[i].optional)
+        ++i;
+      else
+        throw (exceptions::msg() << "invalid KPI event: got (KPI ID "
+               << q.value(0).toUInt() << ", start time "
+               << q.value(1).toLongLong() << ", end time "
+               << q.value(2).toLongLong() << ", status "
+               << q.value(3).toInt() << ", in downtime "
+               << q.value(4).toBool() << ", impact " << q.value(5).toInt()
+               << ", output '" << q.value(6).toString().toStdString()
+               << "', perfdata '" << q.value(7).toString().toStdString()
+               << "'), expected (" << kpi_events[i].kpi_id << ", "
+               << kpi_events[i].start_time_low << "-"
+               << kpi_events[i].start_time_high << ", "
+               << kpi_events[i].end_time_low << "-"
+               << kpi_events[i].end_time_high << ", "
+               << kpi_events[i].status << ", "
+               << kpi_events[i].in_downtime << ", "
+               << kpi_events[i].impact << ", '"
+               << kpi_events[i].output << "', '"
+               << kpi_events[i].perfdata << "')");
+    }
   }
   if (q.next())
     throw (exceptions::msg() << "too much KPI events: expected "
@@ -632,59 +600,53 @@ int main() {
       }
     }
 
-    // Create KPIs.
-    {
-      QString query(
-                "INSERT INTO mod_bam_kpi (kpi_id, kpi_type, host_id,"
-                "            service_id, id_indicator_ba, id_ba,"
-                "            meta_id, config_type, drop_warning,"
-                "            drop_warning_impact_id, drop_critical,"
-                "            drop_critical_impact_id, drop_unknown,"
-                "            drop_unknown_impact_id, ignore_downtime,"
-                "            ignore_acknowledged, activate)"
-                "  VALUES (1, '0', 1, 1, NULL, 2, NULL, '0', 15, NULL, 25, NULL, 99, NULL, '0', '0', '1'),"
-                "         (2, '0', 1, 2, NULL, 3, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0', '1'),"
-                "         (3, '0', 1, 3, NULL, 3, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0', '1'),"
-                "         (4, '0', 1, 4, NULL, 4, NULL, '0', 15, NULL, 25, NULL, 99, NULL, '0', '0', '1'),"
-                "         (5, '0', 1, 5, NULL, 4, NULL, '0', 26, NULL, 35, NULL, 99, NULL, '0', '0', '1'),"
-                "         (6, '0', 1, 6, NULL, 4, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0', '1'),"
-                "         (7, '0', 1, 7, NULL, 5, NULL, '0', 15, NULL, 25, NULL, 99, NULL, '0', '0', '1'),"
-                "         (8, '0', 1, 8, NULL, 5, NULL, '0', 26, NULL, 35, NULL, 99, NULL, '0', '0', '1'),"
-                "         (9, '0', 1, 9, NULL, 5, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0', '1'),"
-                "         (10, '0', 1, 10, NULL, 5, NULL, '0', 45, NULL, 55, NULL, 99, NULL, '0', '0', '1'),"
-                "         (11, '1', NULL, NULL, 2, 6, NULL, '0', 65, NULL, 75, NULL, 99, NULL, '0', '0', '1'),"
-                "         (12, '1', NULL, NULL, 3, 7, NULL, '0', 25, NULL, 35, NULL, 99, NULL, '0', '0', '1'),"
-                "         (13, '1', NULL, NULL, 4, 7, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0', '1'),"
-                "         (14, '1', NULL, NULL, 5, 7, NULL, '0', 45, NULL, 55, NULL, 99, NULL, '0', '0', '1'),"
-                "         (15, '1', NULL, NULL, 6, 8, NULL, '0', 85, NULL, 95, NULL, 99, NULL, '0', '0', '1'),"
-                "         (16, '1', NULL, NULL, 7, 8, NULL, '0', 95, NULL, 105, NULL, 99, NULL, '0', '0', '1')");
-      QSqlQuery q(*db.centreon_db());
-      if (!q.exec(query))
-        throw (exceptions::msg() << "could not create KPIs: "
-               << q.lastError().text());
-    }
-
     // Create boolean expressions.
     {
       QString query(
                 "INSERT INTO mod_bam_boolean (boolean_id, name,"
-                "            config_type, impact, impact_id,"
                 "            expression, bool_state, activate)"
-                "  VALUES (1, 'BoolExp1', 0, 75, NULL, '{1 1} {is} {OK}', 0, 1),"
-                "         (2, 'BoolExp2', 0, 25, NULL, '{1 2} {not} {CRITICAL} {OR} {1 3} {not} {OK}', 1, 1),"
-                "         (3, 'BoolExp3', 0, 6, NULL, '({1 5} {not} {WARNING} {AND} {1 6} {is} {WARNING}) {OR} {1 7} {is} {CRITICAL}', 1, 1)");
+                "  VALUES (1, 'BoolExp1', '{1 1} {is} {OK}', 0, 1),"
+                "         (2, 'BoolExp2', '{1 2} {not} {CRITICAL} {OR} {1 3} {not} {OK}', 1, 1),"
+                "         (3, 'BoolExp3', '({1 5} {not} {WARNING} {AND} {1 6} {is} {WARNING}) {OR} {1 7} {is} {CRITICAL}', 1, 1)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create boolexps: "
                << q.lastError().text());
     }
+
+    // Create KPIs.
     {
       QString query(
-                "INSERT INTO mod_bam_bool_rel (ba_id, boolean_id)"
-                "  VALUES (9, 1), (9, 2), (9, 3)");
+                "INSERT INTO mod_bam_kpi (kpi_id, kpi_type, host_id,"
+                "            service_id, id_indicator_ba, id_ba,"
+                "            meta_id, boolean_id, config_type,"
+                "            drop_warning, drop_warning_impact_id,"
+                "            drop_critical, drop_critical_impact_id,"
+                "            drop_unknown, drop_unknown_impact_id,"
+                "            ignore_downtime, ignore_acknowledged,"
+                "            state_type, activate)"
+                "  VALUES (1, '0', 1, 1, NULL, 2, NULL, NULL, '0', 15, NULL, 25, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (2, '0', 1, 2, NULL, 3, NULL, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (3, '0', 1, 3, NULL, 3, NULL, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (4, '0', 1, 4, NULL, 4, NULL, NULL, '0', 15, NULL, 25, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (5, '0', 1, 5, NULL, 4, NULL, NULL, '0', 26, NULL, 35, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (6, '0', 1, 6, NULL, 4, NULL, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (7, '0', 1, 7, NULL, 5, NULL, NULL, '0', 15, NULL, 25, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (8, '0', 1, 8, NULL, 5, NULL, NULL, '0', 26, NULL, 35, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (9, '0', 1, 9, NULL, 5, NULL, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (10, '0', 1, 10, NULL, 5, NULL, NULL, '0', 45, NULL, 55, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (11, '1', NULL, NULL, 2, 6, NULL, NULL, '0', 65, NULL, 75, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (12, '1', NULL, NULL, 3, 7, NULL, NULL, '0', 25, NULL, 35, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (13, '1', NULL, NULL, 4, 7, NULL, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (14, '1', NULL, NULL, 5, 7, NULL, NULL, '0', 45, NULL, 55, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (15, '1', NULL, NULL, 6, 8, NULL, NULL, '0', 85, NULL, 95, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (16, '1', NULL, NULL, 7, 8, NULL, NULL, '0', 95, NULL, 105, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (17, '3', NULL, NULL, NULL, 9, NULL, 1, '0', 10, NULL, 75, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (18, '3', NULL, NULL, NULL, 9, NULL, 2, '0', 10, NULL, 25, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (19, '3', NULL, NULL, NULL, 9, NULL, 3, '0', 10, NULL, 6, NULL, 99, NULL, '0', '0', '1', '1')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not link boolexps: "
+        throw (exceptions::msg() << "could not create KPIs: "
                << q.lastError().text());
     }
 
@@ -733,20 +695,12 @@ int main() {
         { 1, 0, 0.0, 0.0, 0.0 },
         { 1, 0, 0.0, 0.0, 0.0 },
         { 1, 0, 0.0, 0.0, 0.0 },
+        { 1, 0, 0.0, 0.0, 0.0 },
+        { 1, 0, 0.0, 0.0, 0.0 },
+        { 1, 2, 25.0, 0.0, 0.0 },
         { 1, 0, 0.0, 0.0, 0.0 }
       };
       check_kpis(*db.centreon_db(), kpis, sizeof(kpis) / sizeof(*kpis));
-    }
-    {
-      boolexp_state const boolexps[] = {
-        { true },
-        { true },
-        { false }
-      };
-      check_boolexps(
-        *db.centreon_db(),
-        boolexps,
-        sizeof(boolexps) / sizeof(*boolexps));
     }
 
     // Modify service states.
@@ -794,20 +748,12 @@ int main() {
         { 1, 0, 0.0, 0.0, 0.0 },
         { 1, 0, 0.0, 0.0, 0.0 },
         { 1, 1, 85.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 }
+        { 1, 0, 0.0, 0.0, 0.0 },
+        { 1, 2, 75.0, 0.0, 0.0 },
+        { 1, 0, 0.0, 0.0, 0.0 },
+        { 1, 2, 6.0, 0.0, 0.0 }
       };
       check_kpis(*db.centreon_db(), kpis, sizeof(kpis) / sizeof(*kpis));
-    }
-    {
-      boolexp_state const boolexps[] = {
-        { false },
-        { false },
-        { true }
-      };
-      check_boolexps(
-        *db.centreon_db(),
-        boolexps,
-        sizeof(boolexps) / sizeof(*boolexps));
     }
 
     // Modify service states.
@@ -854,20 +800,12 @@ int main() {
         { 1, 2, 45.0, 0.0, 0.0 },
         { 1, 1, 45.0, 0.0, 0.0 },
         { 1, 1, 85.0, 0.0, 0.0 },
-        { 1, 2, 105.0, 0.0, 0.0 }
+        { 1, 2, 105.0, 0.0, 0.0 },
+        { 1, 2, 75.0, 0.0, 0.0 },
+        { 1, 2, 25.0, 0.0, 0.0 },
+        { 1, 2, 6.0, 0.0, 0.0 }
       };
       check_kpis(*db.centreon_db(), kpis, sizeof(kpis) / sizeof(*kpis));
-    }
-    {
-      boolexp_state const boolexps[] = {
-        { false },
-        { true },
-        { true }
-      };
-      check_boolexps(
-        *db.centreon_db(),
-        boolexps,
-        sizeof(boolexps) / sizeof(*boolexps));
     }
     {
       ba_event const baevents[] = {
@@ -897,35 +835,43 @@ int main() {
     }
     {
       kpi_event const kpievents[] = {
-        { 1, t0, t1, false, t1, t2, 0, false, 0, "", "" },
-        { 1, t1, t2, true, 0, 0, 2, false, 25, "output1 for (1, 1)\n", "" },
-        { 2, t0, t1, false, t1, t2, 0, false, 0, "", "" },
-        { 2, t1, t2, true, 0, 0, 2, false, 45, "output1 for (1, 2)\n", "" },
-        { 3, t0, t1, false, t2, t3, 0, false, 0, "", "" },
-        { 3, t2, t3, true, 0, 0, 1, false, 35, "output2 for (1, 3)\n", "" },
-        { 4, t0, t1, false, t1, t2, 0, false, 0, "", "" },
-        { 4, t1, t2, true, 0, 0, 2, false, 25, "output1 for (1, 4)\n", "" },
-        { 5, t0, t1, false, t2, t3, 0, false, 0, "", "" },
-        { 5, t2, t3, true, 0, 0, 1, false, 26, "output2 for (1, 5)\n", "" },
-        { 6, t0, t1, true, 0, 0, 0, false, 0, "", "" },
-        { 7, t0, t1, false, t1, t2, 0, false, 0, "", "" },
-        { 7, t1, t2, true, 0, 0, 2, false, 25, "output1 for (1, 7)\n", "" },
-        { 8, t0, t1, false, t2, t3, 0, false, 0, "", "" },
-        { 8, t2, t3, true, 0, 0, 1, false, 26, "output2 for (1, 8)\n", "" },
-        { 9, t0, t1, true, 0, 0, 0, false, 0, "", "" },
-        { 10, t0, t1, true, 0, 0, 0, false, 0, "", "" },
-        { 11, t0, t1, false, t1, t2, 0, false, 0, "", "" },
-        { 11, t1, t2, true, 0, 0, 1, false, 65, "BA 2 has state 1 and level 75\n", "value=75" },
-        { 12, t0, t1, false, t1, t2, 0, false, 0, "", "" },
-        { 12, t1, t2, true, 0, 0, 2, false, 35, "BA 3 has state 2 and level 55\n", "value=55" },
-        { 13, t0, t1, false, t2, t3, 0, false, 0, "", "" },
-        { 13, t2, t3, true, 0, 0, 2, false, 45, "BA 4 has state 2 and level 49\n", "value=49" },
-        { 14, t0, t1, false, t2, t3, 0, false, 0, "", "" },
-        { 14, t2, t3, true, 0, 0, 1, false, 45, "BA 5 has state 1 and level 49\n", "value=49" },
-        { 15, t0, t1, false, t1, t2, 0, false, 0, "", "" },
-        { 15, t1, t2, true, 0, 0, 1, false, 85, "BA 6 has state 1 and level 35\n", "value=35" },
-        { 16, t0, t1, false, t2, t3, 0, false, 0, "", "" },
-        { 16, t2, t3, true, 0, 0, 2, false, 105, "BA 7 has state 2 and level 20\n", "value=20" }
+        { false, 1, t0, t1, false, t1, t2, 0, false, 0, "", "" },
+        { false, 1, t1, t2, true, 0, 0, 2, false, 25, "output1 for (1, 1)\n", "" },
+        { false, 2, t0, t1, false, t1, t2, 0, false, 0, "", "" },
+        { false, 2, t1, t2, true, 0, 0, 2, false, 45, "output1 for (1, 2)\n", "" },
+        { false, 3, t0, t1, false, t2, t3, 0, false, 0, "", "" },
+        { false, 3, t2, t3, true, 0, 0, 1, false, 35, "output2 for (1, 3)\n", "" },
+        { false, 4, t0, t1, false, t1, t2, 0, false, 0, "", "" },
+        { false, 4, t1, t2, true, 0, 0, 2, false, 25, "output1 for (1, 4)\n", "" },
+        { false, 5, t0, t1, false, t2, t3, 0, false, 0, "", "" },
+        { false, 5, t2, t3, true, 0, 0, 1, false, 26, "output2 for (1, 5)\n", "" },
+        { false, 6, t0, t1, true, 0, 0, 0, false, 0, "", "" },
+        { false, 7, t0, t1, false, t1, t2, 0, false, 0, "", "" },
+        { false, 7, t1, t2, true, 0, 0, 2, false, 25, "output1 for (1, 7)\n", "" },
+        { false, 8, t0, t1, false, t2, t3, 0, false, 0, "", "" },
+        { false, 8, t2, t3, true, 0, 0, 1, false, 26, "output2 for (1, 8)\n", "" },
+        { false, 9, t0, t1, true, 0, 0, 0, false, 0, "", "" },
+        { false, 10, t0, t1, true, 0, 0, 0, false, 0, "", "" },
+        { false, 11, t0, t1, false, t1, t2, 0, false, 0, "", "" },
+        { false, 11, t1, t2, true, 0, 0, 1, false, 65, "BA 2 has state 1 and level 75\n", "value=75" },
+        { false, 12, t0, t1, false, t1, t2, 0, false, 0, "", "" },
+        { false, 12, t1, t2, true, 0, 0, 2, false, 35, "BA 3 has state 2 and level 55\n", "value=55" },
+        { false, 13, t0, t1, false, t2, t3, 0, false, 0, "", "" },
+        { false, 13, t2, t3, true, 0, 0, 2, false, 45, "BA 4 has state 2 and level 49\n", "value=49" },
+        { false, 14, t0, t1, false, t2, t3, 0, false, 0, "", "" },
+        { false, 14, t2, t3, true, 0, 0, 1, false, 45, "BA 5 has state 1 and level 49\n", "value=49" },
+        { false, 15, t0, t1, false, t1, t2, 0, false, 0, "", "" },
+        { false, 15, t1, t2, true, 0, 0, 1, false, 85, "BA 6 has state 1 and level 35\n", "value=35" },
+        { false, 16, t0, t1, false, t2, t3, 0, false, 0, "", "" },
+        { false, 16, t2, t3, true, 0, 0, 2, false, 105, "BA 7 has state 2 and level 20\n", "value=20" },
+        { false, 17, t0, t1, false, t1, t2, 0, false, 0, "BAM boolean expression computed by Centreon Broker", "" },
+        { false, 17, t1, t2, true, 0, 0, 2, false, 75, "BAM boolean expression computed by Centreon Broker", "" },
+        { true, 18, t0, t1, false, t0, t1, 0, false, 0, "BAM boolean expression computed by Centreon Broker", "" },
+        { false, 18, t0, t1, false, t1, t2, 2, false, 25, "BAM boolean expression computed by Centreon Broker", "" },
+        { false, 18, t1, t2, false, t2, t3, 0, false, 0, "BAM boolean expression computed by Centreon Broker", "" },
+        { false, 18, t2, t3, true, 0, 0, 2, false, 25, "BAM boolean expression computed by Centreon Broker", "" },
+        { false, 19, t0, t1, false, t1, t2, 0, false, 0, "BAM boolean expression computed by Centreon Broker", "" },
+        { false, 19, t1, t2, true, 0, 0, 2, false, 6, "BAM boolean expression computed by Centreon Broker", "" }
       };
       check_kpi_events(
         *db.bi_db(),
