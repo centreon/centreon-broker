@@ -59,16 +59,6 @@ CREATE TABLE mod_bam_reporting_ba (
   PRIMARY KEY (ba_id),
   UNIQUE (ba_name)
 );
-CREATE SEQUENCE mod_bam_reporting_ba_seq
-START WITH 1
-INCREMENT BY 1;
-CREATE TRIGGER mod_bam_reporting_ba_trigger
-BEFORE INSERT ON mod_bam_reporting_ba
-FOR EACH ROW
-BEGIN
-  SELECT mod_bam_reporting_ba_seq.nextval INTO :NEW.ba_id FROM dual;
-END;
-/
 
 --
 -- Key Performance Indicators.
@@ -99,16 +89,6 @@ CREATE TABLE mod_bam_reporting_kpi (
   FOREIGN KEY (kpi_ba_id) REFERENCES mod_bam_reporting_ba (ba_id)
     ON DELETE CASCADE
 );
-CREATE SEQUENCE mod_bam_reporting_kpi_seq
-START WITH 1
-INCREMENT BY 1;
-CREATE TRIGGER mod_bam_reporting_kpi_trigger
-BEFORE INSERT ON mod_bam_reporting_kpi
-FOR EACH ROW
-BEGIN
-  SELECT mod_bam_reporting_kpi_seq.nextval INTO :NEW.kpi_id FROM dual;
-END;
-/
 
 --
 -- Relations between BA and BV.
