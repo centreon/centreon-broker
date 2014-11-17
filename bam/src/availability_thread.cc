@@ -324,7 +324,7 @@ void availability_thread::_write_availability(QSqlQuery& q,
            "   available, unavailable, degraded,"
            "   unknown, downtime, alert_unavailable_opened,"
            "   alert_degraded_opened, alert_unknown_opened,"
-           "   alert_downtime_opened)"
+           "   nb_downtime)"
            "  VALUES (" << ba_id << ", " << day_start << ", "
         << timeperiod_id << ", " << builder.get_timeperiod_is_default() << ", "
         << builder.get_available() << ", " << builder.get_unavailable()

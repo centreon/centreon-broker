@@ -75,7 +75,7 @@ namespace        bam {
     int         _alert_unavailable_opened;
     int         _alert_degraded_opened;
     int         _alert_unknown_opened;
-    int         _alert_downtime_opened;
+    int         _nb_downtime;
 
     bool        _timeperiods_is_default;
   };

@@ -46,7 +46,7 @@ availability_builder::availability_builder(time_t ending_point,
     _alert_unavailable_opened(0),
     _alert_degraded_opened(0),
     _alert_unknown_opened(0),
-    _alert_downtime_opened(0),
+    _nb_downtime(0),
     _timeperiods_is_default(false) {
 
 }
@@ -84,7 +84,7 @@ availability_builder& availability_builder::operator=(availability_builder const
     _alert_unavailable_opened = other._alert_unavailable_opened;
     _alert_degraded_opened = other._alert_degraded_opened;
     _alert_unknown_opened = other._alert_unknown_opened;
-    _alert_downtime_opened = other._alert_downtime_opened;
+    _nb_downtime = other._nb_downtime;
     _timeperiods_is_default = other._timeperiods_is_default;
   }
   return (*this);
@@ -141,7 +141,7 @@ void availability_builder::add_event(
 
   if (was_in_downtime) {
     _downtime += sla_duration;
-    ++_alert_downtime_opened;
+    ++_nb_downtime;
   }
 }
 
@@ -223,7 +223,7 @@ int availability_builder::get_unknown_opened() const {
  *  @return  The number of downtime event opened.
  */
 int availability_builder::get_downtime_opened() const {
-  return (_alert_downtime_opened);
+  return (_nb_downtime);
 }
 
 /**

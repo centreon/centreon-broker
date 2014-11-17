@@ -220,7 +220,7 @@ CREATE TABLE mod_bam_reporting_ba_availabilities (
   alert_unavailable_opened int default NULL,
   alert_degraded_opened int default NULL,
   alert_unknown_opened int default NULL,
-  alert_downtime_opened int default NULL,
+  nb_downtime int default NULL,
   timeperiod_is_default boolean default NULL,
 
   UNIQUE (ba_id, time_id, timeperiod_id)

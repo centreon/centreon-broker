@@ -114,7 +114,7 @@ struct ba_availability {
   unsigned int alert_unavailable_opened;
   unsigned int alert_degraded_opened;
   unsigned int alert_unknown_opened;
-  unsigned int alert_downtime_opened;
+  unsigned int nb_downtime;
   bool timeperiod_is_default;
 };
 
@@ -128,7 +128,7 @@ static void check_ba_availability(
             "SELECT ba_id, time_id, timeperiod_id, available,"
              "      unavailable, degraded, unknown, downtime,"
              "      alert_unavailable_opened, alert_degraded_opened,"
-             "      alert_unknown_opened, alert_downtime_opened,"
+             "      alert_unknown_opened, nb_downtime,"
              "      timeperiod_is_default"
              "  FROM mod_bam_reporting_ba_availabilities"
              "  ORDER BY ba_id");
@@ -152,7 +152,7 @@ static void check_ba_availability(
         || q.value(8).toInt() != baav[i].alert_unavailable_opened
         || q.value(9).toInt() != baav[i].alert_degraded_opened
         || q.value(10).toInt() != baav[i].alert_unknown_opened
-        || q.value(11).toInt() != baav[i].alert_downtime_opened
+        || q.value(11).toInt() != baav[i].nb_downtime
         || q.value(12).toInt() != baav[i].timeperiod_is_default)
       throw (exceptions::msg() << "invalid BA availability "
              << " at iteration " << iteration << ": got (ba id "
@@ -166,7 +166,7 @@ static void check_ba_availability(
              << q.value(7).toInt() << ", alert_unavailable_opened "
              << q.value(8).toInt() << ", alert_degraded_opened "
              << q.value(9).toInt() << ", alert_unknown_opened "
-             << q.value(10).toInt() << ", alert_downtime_opened "
+             << q.value(10).toInt() << ", nb_downtime "
              << q.value(11).toInt() << ", timeperiod_is_default"
              << q.value(12).toBool() << ") expected ("
              << baav[i].ba_id << ", " << baav[i].time_id << ", "
@@ -175,7 +175,7 @@ static void check_ba_availability(
              << baav[i].degraded << ", " << baav[i].unknown << ", "
              << baav[i].downtime << ", " << baav[i].alert_unavailable_opened << ", "
              << baav[i].alert_degraded_opened << ", " << baav[i].alert_unknown_opened << ", "
-             << baav[i].alert_unknown_opened << "," << baav[i].alert_downtime_opened << ", "
+             << baav[i].alert_unknown_opened << "," << baav[i].nb_downtime << ", "
              << baav[i].timeperiod_is_default << ")");
   }
   if (q.next())
