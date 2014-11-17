@@ -39,6 +39,7 @@ namespace                   bam {
     class                   bool_expression {
     public:
       typedef std::list<unsigned int> ids_of_bas;
+      typedef std::list<unsigned int> kpi_ids;
 
                             bool_expression(
                               unsigned int id = 0,
@@ -56,14 +57,14 @@ namespace                   bam {
       ids_of_bas const&     get_impacted_bas() const;
       std::string const&    get_expression() const;
       bool                  get_impact_if() const;
-      unsigned int          get_kpi_id() const;
+      kpi_ids const&        get_kpi_ids() const;
       bam::kpi_event const& get_opened_event() const;
 
+      void                  add_kpi_id(unsigned int id);
       ids_of_bas&           impacted_bas();
       void                  set_impact(double d);
       void                  set_expression(std::string const& s);
       void                  set_impact_if(bool b);
-      void                  set_kpi_id(unsigned int id);
       void                  set_opened_event(bam::kpi_event const& e);
 
     private:
@@ -72,7 +73,7 @@ namespace                   bam {
       ids_of_bas            _impacted;
       std::string           _expression;
       bool                  _impact_if;
-      unsigned int          _kpi_id;
+      kpi_ids               _kpi_ids;
       bam::kpi_event        _event;
     };
   }

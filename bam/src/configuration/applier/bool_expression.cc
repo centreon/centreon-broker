@@ -181,7 +181,12 @@ void applier::bool_expression::apply(
     new_bool_exp->set_impact_hard(it->second.get_impact());
     new_bool_exp->set_impact_if(it->second.get_impact_if());
     new_bool_exp->set_impact_soft(it->second.get_impact());
-    new_bool_exp->set_kpi_id(it->second.get_kpi_id());
+    for (bam::configuration::bool_expression::kpi_ids::const_iterator
+           it2(it->second.get_kpi_ids().begin()),
+           end2(it->second.get_kpi_ids().end());
+         it2 != end2;
+         ++it2)
+      new_bool_exp->add_kpi_id(*it2);
     if (it->second.get_opened_event().kpi_id != 0)
       new_bool_exp->set_initial_event(it->second.get_opened_event());
     logging::config(logging::medium)
@@ -207,6 +212,21 @@ void applier::bool_expression::apply(
     }
   }
 
+  return ;
+}
+
+/**
+ *  Visit each applied boolean expression.
+ *
+ *  @param[out] visitor  Visitor that will receive status.
+ */
+void applier::bool_expression::visit(io::stream* visitor) {
+  for (std::map<unsigned int, applied>::iterator
+         it(_applied.begin()),
+         end(_applied.end());
+       it != end;
+       ++it)
+    it->second.obj->visit(visitor);
   return ;
 }
 

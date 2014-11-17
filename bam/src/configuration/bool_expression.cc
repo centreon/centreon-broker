@@ -38,9 +38,7 @@ bool_expression::bool_expression(
   : _id(id),
     _impact(impact),
     _expression(expression),
-    _impact_if(impact_if),
-    _kpi_id(0) {}
-
+    _impact_if(impact_if) {}
 /**
  *  Copy constructor.
  *
@@ -52,7 +50,7 @@ bool_expression::bool_expression(bool_expression const& other)
     _impacted(other._impacted),
     _expression(other._expression),
     _impact_if(other._impact_if),
-    _kpi_id(other._kpi_id),
+    _kpi_ids(other._kpi_ids),
     _event(other._event) {}
 
 /**
@@ -74,7 +72,7 @@ bool_expression& bool_expression::operator=(bool_expression const& other) {
     _impacted = other._impacted;
     _expression = other._expression;
     _impact_if = other._impact_if;
-    _kpi_id = other._kpi_id;
+    _kpi_ids = other._kpi_ids;
     _event = other._event;
   }
   return (*this);
@@ -93,7 +91,7 @@ bool bool_expression::operator==(bool_expression const& other) const {
           && (_impacted == other._impacted)
           && (_expression == other._expression)
           && (_impact_if == other._impact_if)
-          && (_kpi_id == other._kpi_id)
+          && (_kpi_ids == other._kpi_ids)
           && (_event == other._event));
 }
 
@@ -159,6 +157,15 @@ bool bool_expression::get_impact_if() const {
 }
 
 /**
+ *  Get the KPI IDs of this boolean expression.
+ *
+ *  @return KPI IDs of this boolean expression.
+ */
+bool_expression::kpi_ids const& bool_expression::get_kpi_ids() const {
+  return (_kpi_ids);
+}
+
+/**
  *  Get the opened event associated with this boolean expression.
  *
  *  @return  The event.
@@ -166,6 +173,16 @@ bool bool_expression::get_impact_if() const {
 com::centreon::broker::bam::kpi_event const&
       bool_expression::get_opened_event() const {
   return (_event);
+}
+
+/**
+ *  Add a KPI ID.
+ *
+ *  @param[in] id  New KPI ID.
+ */
+void bool_expression::add_kpi_id(unsigned int id) {
+  _kpi_ids.push_back(id);
+  return ;
 }
 
 /**
@@ -203,19 +220,6 @@ void bool_expression::set_expression(std::string const& exp) {
  */
 void bool_expression::set_impact_if(bool bif) {
   _impact_if = bif;
-}
-
-unsigned int bool_expression::get_kpi_id() const {
-  return (_kpi_id);
-}
-
-/**
- *  Set the kpi id of this boolean expression.
- *
- *  @param[in] id  The id to set.
- */
-void bool_expression::set_kpi_id(unsigned int id) {
-  _kpi_id = id;
 }
 
 /**

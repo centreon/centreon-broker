@@ -511,9 +511,13 @@ void monitoring_stream::_prepare() {
   // Boolean expression status.
   {
     QString query;
-    query = "UPDATE mod_bam_boolean"
-            "  SET current_state=:state"
-            "  WHERE boolean_id=:bool_id";
+    query = "UPDATE mod_bam_boolean AS b"
+            "  LEFT JOIN mod_bam_kpi AS k"
+            "    ON b.boolean_id=k.boolean_id"
+            "  SET k.current_status = "
+            "      CASE WHEN :state=b.bool_state THEN 2 ELSE 0 END,"
+            "      k.state_type='1'"
+            "  WHERE b.boolean_id=:bool_id";
     _bool_exp_update.reset(new QSqlQuery(*_db));
     if (!_bool_exp_update->prepare(query))
       throw (exceptions::msg()

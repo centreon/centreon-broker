@@ -393,6 +393,10 @@ void ba::visit(io::stream* visitor) {
     status->state = new_state;
     status->state_changed = (_last_state != new_state);
     _last_state = new_state;
+    logging::debug(logging::low)
+      << "BAM: generating status of BA " << status->ba_id << " (state "
+      << status->state << ", in downtime " << status->in_downtime
+      << ", level " << status->level_nominal << ")";
     visitor->write(status.staticCast<io::data>());
   }
   return ;
