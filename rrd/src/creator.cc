@@ -117,6 +117,10 @@ void creator::create(
                 unsigned int step,
                 short value_type) {
   // Fill template informations.
+  if (!step)
+    step = 5 * 60 * 60; // Default to every 5 minutes.
+  if (!length)
+    length = 31 * 24 * 60 * 60 / step; // Default to one month long.
   tmpl_info info;
   info.length = length;
   info.step = step;
@@ -240,8 +244,6 @@ void creator::_open(
   */
 
   // Set parameters.
-  if (!step)
-    step = 5 * 60 * 60;
   std::ostringstream ds_oss;
   std::ostringstream rra1_oss;
   std::ostringstream rra2_oss;
