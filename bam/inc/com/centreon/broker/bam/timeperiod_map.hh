@@ -22,8 +22,6 @@
 
 #  include <map>
 #  include <memory>
-#  include <QMutex>
-#  include <QMutexLocker>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/bam/time/timeperiod.hh"
 
@@ -43,8 +41,6 @@ namespace          bam {
                    operator=(timeperiod_map const&);
     bool           operator==(timeperiod_map const& other) const;
 
-    std::auto_ptr<QMutexLocker>
-                   lock();
     time::timeperiod::ptr
                    get_timeperiod(unsigned int id);
     void           add_timeperiod(unsigned int id,
@@ -52,7 +48,6 @@ namespace          bam {
     void           clear();
 
   private:
-    QMutex        _mutex;
     std::map<unsigned int, time::timeperiod::ptr>
                   _map;
   };

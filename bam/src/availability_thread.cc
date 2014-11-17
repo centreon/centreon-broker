@@ -125,6 +125,15 @@ void availability_thread::terminate() {
 }
 
 /**
+ *  Lock the main mutex of the availability thread.
+ *
+ *  @return  A QMutexLocker locking the main mutex.
+ */
+std::auto_ptr<QMutexLocker> availability_thread::lock() {
+  return (std::auto_ptr<QMutexLocker>(new QMutexLocker(&_mutex)));
+}
+
+/**
  *  Ask the thread to rebuild the availabilities.
  *
  *  @param[in] bas_to_rebuild  A string containing the bas to rebuild.
@@ -143,6 +152,9 @@ void availability_thread::rebuild_availabilities(
  *  Delete all the availabilities.
  */
 void availability_thread::_delete_all_availabilities() {
+  logging::debug(logging::low)
+      << "BAM-BI: Availability thread deleting availabilities";
+
   // Prepare the query.
   std::stringstream query;
   query << "DELETE FROM mod_bam_reporting_ba_availabilities WHERE ba_id IN ("
@@ -166,6 +178,7 @@ void availability_thread::_delete_all_availabilities() {
  */
 void availability_thread::_build_availabilities(time_t midnight) {
   time_t first_day = 0;
+  time_t last_day = midnight;
   QSqlQuery q(*_db);
   q.setForwardOnly(true);
   std::stringstream query;
@@ -174,7 +187,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
   // it's the day of the chronogically first event to rebuild.
   // If not, it's the day following the chronogically last availability.
   if (_should_rebuild_all) {
-    query << "SELECT MIN(start_time)"
+    query << "SELECT MIN(start_time), MIN(end_time), MAX(end_time)"
              "  FROM mod_bam_reporting_ba_events"
              "  WHERE ba_id IN (" << _bas_to_rebuild.toStdString() << ")";
     if (!q.exec(query.str().c_str()) || !q.next())
@@ -184,6 +197,10 @@ void availability_thread::_build_availabilities(time_t midnight) {
 
     first_day = q.value(0).toInt();
     first_day = _compute_start_of_day(first_day);
+    // If there is opened events, rebuild until today.
+    // If not, rebuild until the last closed events.
+    if (q.value(1).toInt() != 0)
+      last_day = _compute_start_of_day(q.value(2).toInt() + (3600 * 24));
     q.next();
     _delete_all_availabilities();
   }
@@ -202,7 +219,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
   }
 
   // Write the availabilities day after day.
-  for (; first_day < midnight; first_day += (3600*24))
+  for (; first_day < last_day; first_day += (3600*24))
     _build_daily_availabilities(q, first_day, first_day + (3600 * 24));
 }
 
@@ -232,16 +249,13 @@ void availability_thread::_build_daily_availabilities(
            "  WHERE ";
   if (_should_rebuild_all)
     query << "(b.ba_id IN (" << _bas_to_rebuild.toStdString() << ")) AND ";
-  query << "(a.start_time >= " << day_start <<
-           "    OR (a.end_time >= " << day_start << " AND a.end_time < " << day_end
+  query << "((a.start_time < " << day_end << " AND a.end_time = 0 "
+        << "  ) OR (a.end_time >= " << day_start << " AND a.end_time < " << day_end
         << "       ))";
   if (!q.exec(query.str().c_str()))
     throw (exceptions::msg()
            << "BAM-BI: the availability thread could not build the data: "
             << q.lastError().text());
-
-  // Lock the timeperiods.
-  std::auto_ptr<QMutexLocker> lock(_shared_tps.lock());
 
   // Create a builder for each ba_id and associated timeperiod_id.
   std::map<std::pair<unsigned int, unsigned int>,

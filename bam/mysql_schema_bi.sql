@@ -223,7 +223,5 @@ CREATE TABLE mod_bam_reporting_ba_availabilities (
   alert_downtime_opened int default NULL,
   timeperiod_is_default boolean default NULL,
 
-  UNIQUE (ba_id, time_id, timeperiod_id),
-  FOREIGN KEY (ba_id) REFERENCES mod_bam_reporting_ba (ba_id)
-    ON DELETE CASCADE
+  UNIQUE (ba_id, time_id, timeperiod_id)
 ) ENGINE=InnoDB CHARACTER SET utf8;

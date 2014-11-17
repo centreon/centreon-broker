@@ -25,6 +25,7 @@
 #  include <vector>
 #  include <QSqlDatabase>
 #  include <QSqlQuery>
+#  include <QMutexLocker>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
@@ -138,6 +139,8 @@ namespace          bam {
                   _dimension_kpi_insert;
     std::auto_ptr<QSqlDatabase>
                    _db;
+    std::auto_ptr<QMutexLocker>
+                  _availabilities_lock;
     std::auto_ptr<availability_thread>
                    _availabilities;
 

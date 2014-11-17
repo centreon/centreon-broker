@@ -47,6 +47,8 @@ namespace                bam {
                            dimension_truncate_table_signal const& other) const;
     unsigned int         type() const;
 
+    bool                 update_started;
+
   private:
     void                 _internal_copy(
                            dimension_truncate_table_signal const& other);

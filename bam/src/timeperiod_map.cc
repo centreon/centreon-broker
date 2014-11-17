@@ -25,10 +25,7 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-timeperiod_map::timeperiod_map()
-  : _mutex(QMutex::Recursive) {
-
-}
+timeperiod_map::timeperiod_map() {}
 
 /**
  *  Destructor.
@@ -67,15 +64,6 @@ timeperiod_map& timeperiod_map::operator=(timeperiod_map const& other) {
  */
 bool timeperiod_map::operator==(timeperiod_map const& other) const {
   return (_map == other._map);
-}
-
-/**
- *  Lock the timeperiod_map and return a mutex locker.
- *
- *  @return  A mutex locker.
- */
-std::auto_ptr<QMutexLocker> timeperiod_map::lock() {
-  return (std::auto_ptr<QMutexLocker>(new QMutexLocker(&_mutex)));
 }
 
 /**
