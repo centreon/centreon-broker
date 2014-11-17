@@ -223,7 +223,7 @@ void creator::_duplicate(std::string const& filename, fd_info const& in_fd) {
  *  @param[in] filename   Path to the RRD file.
  *  @param[in] length     Number of recording in the RRD file.
  *  @param[in] from       Timestamp of the first record.
- *  @param[in] interval   Time interval between each record.
+ *  @param[in] step       Time interval between each record.
  *  @param[in] value_type Type of the metric.
  */
 void creator::_open(
@@ -244,6 +244,8 @@ void creator::_open(
   */
 
   // Set parameters.
+  if (!step)
+    step = 5 * 60 * 60;
   std::ostringstream ds_oss;
   std::ostringstream rra1_oss;
   std::ostringstream rra2_oss;
