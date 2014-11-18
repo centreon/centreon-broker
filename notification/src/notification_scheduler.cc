@@ -21,6 +21,7 @@
 #include <QMutexLocker>
 #include "com/centreon/broker/notification/notification_scheduler.hh"
 #include "com/centreon/broker/notification/state.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
@@ -50,7 +51,14 @@ void notification_scheduler::run() {
                                    (first_time - now) * 1000
                                    : 0;
 
+    logging::debug(logging::medium)
+        << "Notification: Notification scheduler sleeping for "
+        << wait_for << "milliseconds.";
+
     _general_condition.wait(&_general_mutex, wait_for);
+
+    logging::debug(logging::medium)
+        << "Notification: Notification scheduler waking up.";
 
     // The should exit flag was set - exit.
     if (_should_exit)
