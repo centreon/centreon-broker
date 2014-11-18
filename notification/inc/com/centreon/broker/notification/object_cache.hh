@@ -31,7 +31,7 @@ namespace             notification {
   /**
    *  @class object_cache object_cache.hh "com/centreon/broker/notification/object_cache.hh"
    *  @tparam T  The type of the object cached.
-   *  @brief Contain a cache of a particular neb object by id.
+   *  @brief Contain a fixed size cache of a particular object by its id.
    */
   template <typename T>
   class               object_cache {

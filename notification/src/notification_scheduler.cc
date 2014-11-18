@@ -30,7 +30,7 @@ using namespace com::centreon::broker::notification::objects;
  */
 notification_scheduler::notification_scheduler(state& st)
   : _should_exit(false),
-    _general_mutex(QMutex::Recursive),
+    _general_mutex(QMutex::NonRecursive),
     _state(st) {}
 
 /**
@@ -77,7 +77,7 @@ void notification_scheduler::exit() throw () {
 /**
  *  @brief Add an action to the internal queue.
  *
- *  This is perfectly thread safe in and out of the notification thread.
+ *  Called outside the notif thread context.
  *
  *  @param at  The time of the action.
  *  @param a   The action.
@@ -101,7 +101,7 @@ void notification_scheduler::add_action_to_queue(time_t at, action a) {
 /**
  *  @brief Remove all the actions associated to a node.
  *
- *  This is perfectly thread safe in and out of the notification thread.
+ *  Called outside the notif thread context.
  *
  *  @param[in] id   The id of the node.
  */
@@ -131,7 +131,7 @@ void notification_scheduler::remove_actions_of_node(objects::node_id id) {
  *  mutex locking.
  */
 void notification_scheduler::_process_actions() {
-  // Move the global queue to a local queue and release the global mutex.
+  // Move the global queue to a local queue and release the mutex.
   // That way, we can add new actions in an external thread while this thread
   // is processing those actions.
   run_queue local_queue;
