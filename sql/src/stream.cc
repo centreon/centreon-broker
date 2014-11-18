@@ -943,9 +943,8 @@ void stream::_process_host_check(
   if (hc.check_type                // - passive result
       || !hc.active_checks_enabled // - active checks are disabled,
                                    //   status might not be updated
-      || (hc.next_check >= now)    // - some future status as already
-                                   //   been generated but not yet
-                                   //   processed
+                                   // - normal case
+      || (hc.next_check >= now - 5 * 60)
       || !hc.next_check) {         // - initial state
     // Apply to DB.
     logging::info(logging::medium)
@@ -1511,9 +1510,8 @@ void stream::_process_service_check(
   if (sc.check_type                // - passive result
       || !sc.active_checks_enabled // - active checks are disabled,
                                    //   status might not be updated
-      || (sc.next_check >= now)    // - some future status as already
-                                   //   been generated but not yet
-                                   //   processed
+                                   // - normal case
+      || (sc.next_check >= now - 5 * 60)
       || !sc.next_check) {         // - initial state
     // Apply to DB.
     logging::info(logging::medium)
