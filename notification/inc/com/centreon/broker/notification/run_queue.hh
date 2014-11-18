@@ -67,7 +67,7 @@ namespace           notification {
                       _action_by_node;
     std::set<action>  _action_set;
 
-    void              rebuild_set();
+    void              _rebuild_set();
   };
 }
 

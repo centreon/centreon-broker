@@ -57,9 +57,9 @@ namespace         notification {
                   write(const misc::shared_ptr<io::data> &d);
 
   private:
-    object_cache<neb::service_status>
+    object_cache<misc::shared_ptr<neb::service_status> >
                   _service_statuses;
-    object_cache<neb::host_status>
+    object_cache<misc::shared_ptr<neb::host_status> >
                   _host_statuses;
   };
 }

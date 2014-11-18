@@ -46,12 +46,15 @@ run_queue::run_queue(run_queue const& obj) {
 run_queue& run_queue::operator=(run_queue const& obj) {
   if (this != &obj) {
     _action_set = obj._action_set;
-    rebuild_set();
+    _rebuild_set();
   }
   return (*this);
 }
 
-void run_queue::rebuild_set() {
+/**
+ *  Rebuild the run_queue caches from the set of action.
+ */
+void run_queue::_rebuild_set() {
   for (std::set<action>::iterator it(_action_set.begin()),
                                   end(_action_set.end());
        it != end;

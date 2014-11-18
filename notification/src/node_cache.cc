@@ -22,15 +22,31 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/notification/node_cache.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker::notification;
 
+/**
+ *  Default constructor.
+ */
 node_cache::node_cache() {}
 
+/**
+ *  Copy constructor.
+ *
+ *  @param[in] obj  The object to copy.
+ */
 node_cache::node_cache(node_cache const& obj) {
   node_cache::operator=(obj);
 }
 
+/**
+ *  Assignment operator.
+ *
+ *  @param[in] obj  The object to copy.
+ *
+ *  @return         A reference tot his object.
+ */
 node_cache& node_cache::operator=(node_cache const& obj) {
   if (this != &obj) {
     _service_statuses = obj._service_statuses;
@@ -39,6 +55,13 @@ node_cache& node_cache::operator=(node_cache const& obj) {
   return (*this);
 }
 
+/**
+ *  Load the node cache from a file.
+ *
+ *  @param[in] cache_file  The cache file.
+ *
+ *  @return  True if the node cache was sucessfully loaded.
+ */
 bool node_cache::load(std::string const& cache_file) {
   logging::debug(logging::low)
     << "Notification: loading the node cache " << cache_file <<".";
@@ -78,6 +101,13 @@ bool node_cache::load(std::string const& cache_file) {
   return (true);
 }
 
+/**
+ *  Save the node_cache to a file.
+ *
+ *  @param[in] cache_file  The cache file to save.
+ *
+ *  @return  True if the node cache was succesfully saved.
+ */
 bool node_cache::unload(std::string const& cache_file) {
   // Create the streams.
   misc::shared_ptr<file::stream> file(new file::stream(cache_file));
@@ -120,21 +150,57 @@ void node_cache::process(bool in, bool out) {
   (void)out;
 }
 
+/**
+ *  Read events from the node cache.
+ *
+ *  @param[out] d  An output data event.
+ */
 void node_cache::read(misc::shared_ptr<io::data> &d) {
-  //if (!_process_out)
+  if (_host_statuses.empty() && _service_statuses.empty())
     throw (io::exceptions::shutdown(true, true)
            << "Node cache is empty");
 
+  // Get host status.
+  if (!_host_statuses.empty()) {
+    misc::shared_ptr<neb::host_status> hst = _host_statuses.pop();
+    d = hst;
+    return ;
+  }
+
+  // Get service status.
+  if (!_service_statuses.empty()) {
+    misc::shared_ptr<neb::service_status> sst = _service_statuses.pop();
+    d = sst;
+    return ;
+  }
 }
 
-unsigned int node_cache::write(const misc::shared_ptr<io::data> &data) {
+/**
+ *  Write event to the node cache.
+ *
+ *  @param[in] data  The data event.
+ *
+ *  @return          Number of event acknowledged.
+ */
+unsigned int node_cache::write(misc::shared_ptr<io::data> const& data) {
   // Check that data exists.
   unsigned int retval(1);
 
   if (data.isNull())
     return 1;
 
-  unsigned int type(data->type());
-  unsigned short cat(io::events::category_of_type(type));
-  unsigned short elem(io::events::element_of_type(type));
+  unsigned int type = data->type();
+
+  if (type == io::events::data_type<io::events::neb,
+                                    neb::de_host_status>::value) {
+    misc::shared_ptr<neb::host_status>
+        hst = data.staticCast<neb::host_status>();
+    _host_statuses.insert(hst->host_id, hst);
+  }
+  else if (type == io::events::data_type<io::events::neb,
+                                         neb::de_service_status>::value) {
+    misc::shared_ptr<neb::service_status>
+        sst = data.staticCast<neb::service_status>();
+    _service_statuses.insert(sst->service_id, sst);
+  }
 }
