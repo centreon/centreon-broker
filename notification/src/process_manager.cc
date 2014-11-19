@@ -66,8 +66,9 @@ void process_manager::run() {
  *  @param[in] command  The command to be executed.
  *  @param[in] timeout  The timeout of the command.
  */
-void process_manager::create_process(std::string const& command,
-                                     unsigned int timeout) {
+void process_manager::create_process(
+                        std::string const& command,
+                        unsigned int timeout) {
   process* pr = new process(timeout);
 
   {
@@ -82,7 +83,9 @@ void process_manager::create_process(std::string const& command,
  *  Default constructor.
  */
 process_manager::process_manager()
-  : _process_list_mutex(QMutex::Recursive) {moveToThread(this);}
+  : _process_list_mutex(QMutex::Recursive) {
+  moveToThread(this);
+}
 
 /**
  *  @brief A process was finished: reap the finished processes.

@@ -42,8 +42,9 @@ namespace             notification {
     bool              is_running() const;
     void              kill();
 
-    bool              exec(std::string const& program,
-                           process_manager* manager = NULL);
+    bool              exec(
+                        std::string const& program,
+                        process_manager* manager = NULL);
 
     bool              is_timeout() const throw();
 

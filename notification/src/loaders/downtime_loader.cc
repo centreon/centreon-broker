@@ -50,10 +50,10 @@ void downtime_loader::load(QSqlDatabase* db, downtime_builder* output) {
 
   // Load the downtimes.
   if (!query.exec("SELECT downtime_id, entry_time, host_id, service_id, author,"
-                  "cancelled, deletion_time, duration, end_time, fixed,"
-                  "start_time, actual_start_time, actual_end_time, started,"
-                  "triggered_by, type"
-                  " FROM cfg_downtimes"))
+                  "       cancelled, deletion_time, duration, end_time, fixed,"
+                  "       start_time, actual_start_time, actual_end_time,"
+                  "       started, triggered_by, type"
+                  "  FROM cfg_downtimes"))
     throw (exceptions::msg()
       << "Notification: cannot select cfg_downtimes in loader: "
       << query.lastError().text());
@@ -88,8 +88,9 @@ void downtime_loader::load(QSqlDatabase* db, downtime_builder* output) {
  *  @param[in] new_downtime  The downtime event.
  * @param[out] output        The downtime builder used to register the downtime.
  */
-void downtime_loader::new_downtime(neb::downtime& new_downtime,
-                                   downtime_builder& output) {
+void downtime_loader::new_downtime(
+                        neb::downtime& new_downtime,
+                        downtime_builder& output) {
   downtime::ptr down(new downtime);
   node_id id(new_downtime.host_id, new_downtime.service_id);
   down->set_actual_end_time(new_downtime.actual_end_time);

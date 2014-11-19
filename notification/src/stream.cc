@@ -305,15 +305,16 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
  *  @param[in] id                 An unique id identifying the connection.
  *  @param[in] check_replication  True if we need to check the replication.
  */
-void stream::_open_db(std::auto_ptr<QSqlDatabase>& db,
-                      QString const& t,
-                      QString const& host,
-                      unsigned short port,
-                      QString const& user,
-                      QString const& password,
-                      QString const& db_name,
-                      QString const& id,
-                      bool check_replication) {
+void stream::_open_db(
+               std::auto_ptr<QSqlDatabase>& db,
+               QString const& t,
+               QString const& host,
+               unsigned short port,
+               QString const& user,
+               QString const& password,
+               QString const& db_name,
+               QString const& id,
+               bool check_replication) {
    // Add database connection.
   db.reset(new QSqlDatabase(QSqlDatabase::addDatabase(t, id)));
   try {
@@ -393,9 +394,10 @@ void stream::_open_db(std::auto_ptr<QSqlDatabase>& db,
  *  @param[in] db_to_clone  A pointer to the db connection to clone.
  *  @param[in] id           An unique id identifiying the new connection.
  */
-void stream::_clone_db(std::auto_ptr<QSqlDatabase>& db,
-                       std::auto_ptr<QSqlDatabase> const& db_to_clone,
-                       QString const& id) {
+void stream::_clone_db(
+               std::auto_ptr<QSqlDatabase>& db,
+               std::auto_ptr<QSqlDatabase> const& db_to_clone,
+               QString const& id) {
   // Clone database.
   db.reset(new QSqlDatabase(QSqlDatabase::cloneDatabase(*db_to_clone, id)));
 
@@ -531,7 +533,7 @@ void stream::_process_host_status_event(neb::host_status const& event) {
  *  @param event  The event to process.
  */
 void stream::_process_issue_parent_event(
-                correlation::issue_parent const& event) {
+               correlation::issue_parent const& event) {
   node_id id(event.child_host_id, event.child_service_id);
 
   // Get the node corresponding to this id.

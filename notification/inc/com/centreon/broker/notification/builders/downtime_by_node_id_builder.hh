@@ -38,13 +38,16 @@ namespace         notification {
   class           downtime_by_node_id_builder : public downtime_builder {
   public:
                   downtime_by_node_id_builder(
-                        QMultiHash<objects::node_id,
-                                   objects::downtime::ptr>& table);
+                    QMultiHash<
+                      objects::node_id,
+                      objects::downtime::ptr>& table);
 
-    virtual void  add_downtime(unsigned int downtime_id,
-                               objects::downtime::ptr downtime);
-    virtual void connect_downtime_to_node(unsigned int downtime_id,
-                                          objects::node_id id);
+    virtual void  add_downtime(
+                    unsigned int downtime_id,
+                    objects::downtime::ptr downtime);
+    virtual void  connect_downtime_to_node(
+                    unsigned int downtime_id,
+                    objects::node_id id);
 
   private:
     QMultiHash<objects::node_id, objects::downtime::ptr>

@@ -27,8 +27,8 @@
 
 CCB_BEGIN()
 
-namespace             notification {
-  namespace           objects {
+namespace                 notification {
+  namespace               objects {
     /**
      *  @class downtime downtime.hh "com/centreon/broker/notification/objects/downtime.hh"
      *  @brief Downtime object.

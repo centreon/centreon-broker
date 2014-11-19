@@ -33,7 +33,7 @@ namespace              notification {
   namespace            objects {
     class                group {
     public:
-      DECLARE_SHARED_PTR(group);
+                         DECLARE_SHARED_PTR(group);
 
                          group(bool inherit = false);
                          group(group const& right);

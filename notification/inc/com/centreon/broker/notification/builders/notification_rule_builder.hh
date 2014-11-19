@@ -34,8 +34,9 @@ namespace           notification {
   public:
     virtual         ~notification_rule_builder() {}
 
-    virtual void    add_rule(unsigned int rule_id,
-                             objects::notification_rule::ptr rule) {}
+    virtual void    add_rule(
+                      unsigned int rule_id,
+                      objects::notification_rule::ptr rule) {}
   };
 
 }

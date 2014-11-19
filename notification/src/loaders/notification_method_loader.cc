@@ -30,7 +30,9 @@ using namespace com::centreon::broker::notification::objects;
 
 notification_method_loader::notification_method_loader() {}
 
-void notification_method_loader::load(QSqlDatabase *db, notification_method_builder *output) {
+void notification_method_loader::load(
+                                   QSqlDatabase *db,
+                                   notification_method_builder *output) {
   // If we don't have any db or output, don't do anything.
   if (!db || !output)
     return;
@@ -41,7 +43,8 @@ void notification_method_loader::load(QSqlDatabase *db, notification_method_buil
   query.setForwardOnly(true);
 
   if (!query.exec("SELECT method_id, name, command_id, interval, status, "
-                  "types, start, end FROM cfg_configuration_method"))
+                  "       types, start, end "
+                  "  FROM cfg_configuration_method"))
     throw (exceptions::msg()
       << "Notification: cannot select cfg_configuration_method in loader: "
       << query.lastError().text());

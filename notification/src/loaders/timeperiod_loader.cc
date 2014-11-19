@@ -49,8 +49,8 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
 
   // Load the timeperiods.
   if (!query.exec("SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday,"
-                  "tp_tuesday, tp_wednesday, tp_thursday, tp_friday,"
-                  "tp_saturday sunday"
+                  "       tp_tuesday, tp_wednesday, tp_thursday, tp_friday,"
+                  "       tp_saturday sunday"
                   " FROM rt_timeperiod"))
     throw (exceptions::msg()
       << "Notification: cannot select rt_timeperiod in loader: "
@@ -69,8 +69,9 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
     tperiod->set_timerange(query.value(8).toString().toStdString(), 5);
     tperiod->set_timerange(query.value(9).toString().toStdString(), 6);
 
-    output->add_timeperiod(timeperiod_id,
-                           tperiod);
+    output->add_timeperiod(
+              timeperiod_id,
+              tperiod);
   }
 
   // Load the timeperiod exceptions.
@@ -93,8 +94,9 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
       << "Notification: cannot select rt_timeperiod_exclude_relations in loader: "
       << query.lastError().text());
   while (query.next())
-    output->add_timeperiod_exclude_relation(query.value(1).toUInt(),
-                                            query.value(0).toUInt());
+    output->add_timeperiod_exclude_relation(
+              query.value(1).toUInt(),
+              query.value(0).toUInt());
 
   // Load the timeperiod include relations.
   if (!query.exec("SELECT include_id, timeperiod_id, timeperiod_include_id"
@@ -103,6 +105,7 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
       << "Notification: cannot select rt_timeperiod_include_relations in loader: "
       << query.lastError().text());
   while (query.next())
-    output->add_timeperiod_include_relation(query.value(1).toUInt(),
-                                            query.value(0).toUInt());
+    output->add_timeperiod_include_relation(
+              query.value(1).toUInt(),
+              query.value(0).toUInt());
 }

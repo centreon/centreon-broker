@@ -25,7 +25,7 @@
 
 CCB_BEGIN()
 
-namespace       notification {
+namespace         notification {
   /**
    *  @class command_builder command_builder.hh "com/centreon/broker/notification/builders/command_builder.hh"
    *  @brief Command builder interface.
@@ -45,8 +45,9 @@ namespace       notification {
      *  @param[in] id The id of the command.
      *  @param[in] com The command.
      */
-    virtual void  add_command(unsigned int id,
-                              objects::command::ptr com) {}
+    virtual void  add_command(
+                    unsigned int id,
+                    objects::command::ptr com) {}
   };
 
 }

@@ -28,21 +28,24 @@
 
 CCB_BEGIN()
 
-namespace       notification {
+namespace         notification {
   /**
    *  @class composed_downtime_builder composed_downtime_builder.hh "com/centreon/broker/notification/builders/composed_downtime_builder.hh"
    *  @brief Composed downtime builder.
    *
    *  This class forward its method call to several other builders.
    */
-  class           composed_downtime_builder : public composed_builder<downtime_builder> {
+  class           composed_downtime_builder
+                    : public composed_builder<downtime_builder> {
   public:
                   composed_downtime_builder();
 
-    virtual void  add_downtime(unsigned int downtime_id,
-                               objects::downtime::ptr downtime);
-    virtual void connect_downtime_to_node(unsigned int downtime_id,
-                                          objects::node_id id);
+    virtual void  add_downtime(
+                    unsigned int downtime_id,
+                    objects::downtime::ptr downtime);
+    virtual void  connect_downtime_to_node(
+                    unsigned int downtime_id,
+                    objects::node_id id);
   };
 
 }

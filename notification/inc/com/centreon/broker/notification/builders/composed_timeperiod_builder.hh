@@ -28,27 +28,32 @@
 
 CCB_BEGIN()
 
-namespace       notification {
+namespace         notification {
   /**
    *  @class composed_timeperiod_builder composed_timeperiod_builder.hh "com/centreon/broker/notification/builders/composed_timeperiod_builder.hh"
    *  @brief Composed timeperiod builder.
    *
    *  This class forward its method call to several other builders.
    */
-  class           composed_timeperiod_builder : public composed_builder<timeperiod_builder> {
+  class           composed_timeperiod_builder
+                    : public composed_builder<timeperiod_builder> {
   public:
                   composed_timeperiod_builder();
     virtual       ~composed_timeperiod_builder() {}
 
-    virtual void  add_timeperiod(unsigned int id,
-                                 objects::timeperiod::ptr tperiod);
-    virtual void  add_timeperiod_exception(unsigned int timeperiod_id,
-                                           std::string const& days,
-                                           std::string const& timerange);
-    virtual void  add_timeperiod_exclude_relation(unsigned int timeperiod_id,
-                                                  unsigned int exclude_id);
-    virtual void  add_timeperiod_include_relation(unsigned int timeperiod_id,
-                                                  unsigned int include_id);
+    virtual void  add_timeperiod(
+                    unsigned int id,
+                    objects::timeperiod::ptr tperiod);
+    virtual void  add_timeperiod_exception(
+                    unsigned int timeperiod_id,
+                    std::string const& days,
+                    std::string const& timerange);
+    virtual void  add_timeperiod_exclude_relation(
+                    unsigned int timeperiod_id,
+                    unsigned int exclude_id);
+    virtual void  add_timeperiod_include_relation(
+                    unsigned int timeperiod_id,
+                    unsigned int include_id);
   };
 
 }

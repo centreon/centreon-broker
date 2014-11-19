@@ -79,8 +79,9 @@ void process::kill() {
  *
  *  @return                 True of the process was started.
  */
-bool process::exec(std::string const& program,
-                   process_manager* manager /* = NULL */) {
+bool process::exec(
+                std::string const& program,
+                process_manager* manager /* = NULL */) {
   if (is_running())
     return (false);
 

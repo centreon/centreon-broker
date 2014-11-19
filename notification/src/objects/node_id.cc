@@ -60,8 +60,9 @@ node_id& node_id::operator=(node_id const& obj) {
  *  @param[in] host_id    The host id of this node. 0 if none.
  *  @param[in] service_id  The service id of this node. 0 if none.
  */
-node_id::node_id(unsigned int host_id,
-                 unsigned int service_id) :
+node_id::node_id(
+           unsigned int host_id,
+           unsigned int service_id) :
   _host_id(host_id),
   _service_id(service_id) {}
 

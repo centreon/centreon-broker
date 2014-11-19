@@ -70,8 +70,9 @@ void run_queue::_rebuild_set() {
  *  @param[out] obj  The object where to move the content of this queue.
  *  @param[in] until The max time of all moved object.
  */
-void run_queue::move_to_queue(run_queue& obj,
-                              time_t until) {
+void run_queue::move_to_queue(
+                  run_queue& obj,
+                  time_t until) {
   for (iterator it(begin()),
                 it_end(end());
        it != it_end && it->first <= until;) {

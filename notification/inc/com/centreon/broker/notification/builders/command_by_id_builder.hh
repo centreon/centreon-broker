@@ -30,7 +30,7 @@
 
 CCB_BEGIN()
 
-namespace       notification {
+namespace         notification {
   /**
    *  @class command_by_id_builder command_by_id_builder.hh "com/centreon/broker/notification/builders/command_by_id_builder.hh"
    *  @brief Command builder by id.
@@ -41,10 +41,11 @@ namespace       notification {
                     : public composed_builder<command_builder> {
   public:
                   command_by_id_builder(
-                        QHash<unsigned int, objects::command::ptr>& table);
+                    QHash<unsigned int, objects::command::ptr>& table);
 
-    virtual void  add_command(unsigned int id,
-                              objects::command::ptr com);
+    virtual void  add_command(
+                    unsigned int id,
+                    objects::command::ptr com);
 
   private:
     QHash<unsigned int, objects::command::ptr>&

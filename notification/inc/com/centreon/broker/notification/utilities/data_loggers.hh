@@ -47,31 +47,42 @@ namespace logging {
   // Constant ref needed because the temp_logger returned by logging
   // is a rvalue, and can only be accessed by a const reference.
   // Am I pushing the boundary of the language too far?
-  temp_logger& operator<<(temp_logger const& left,
-                          notification::objects::node_id const&) throw();
-  temp_logger& operator<<(temp_logger const& left,
-                          notification::objects::command const&) throw();
-  temp_logger& operator<<(temp_logger const& left,
-                          notification::objects::downtime const&) throw();
-  temp_logger& operator<<(temp_logger const& left,
-                          notification::objects::dependency const&) throw();
-  temp_logger& operator<<(temp_logger const& left,
-                          notification::objects::contact const&) throw();
-  temp_logger& operator<<(temp_logger const& left,
-                          notification::objects::timeperiod const&) throw();
-  temp_logger& operator<<(temp_logger const& left,
-                          notification::objects::node const&) throw();
-  temp_logger& operator<<(temp_logger const& left,
-                          notification::objects::acknowledgement const&) throw();
-  temp_logger& operator<<(temp_logger const& left,
-                          notification::objects::notification_method const&) throw();
-  temp_logger& operator<<(temp_logger const& left,
-                          notification::objects::notification_rule const&) throw();
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 notification::objects::node_id const&) throw();
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 notification::objects::command const&) throw();
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 notification::objects::downtime const&) throw();
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 notification::objects::dependency const&) throw();
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 notification::objects::contact const&) throw();
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 notification::objects::timeperiod const&) throw();
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 notification::objects::node const&) throw();
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 notification::objects::acknowledgement const&) throw();
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 notification::objects::notification_method const&) throw();
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 notification::objects::notification_rule const&) throw();
 
 
   template <typename T>
-  temp_logger& operator<<(temp_logger const& left,
-                          std::vector<T> const& obj) throw() {
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 std::vector<T> const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename std::vector<T>::const_iterator it(obj.begin()),
          end(obj.end());
@@ -85,8 +96,9 @@ namespace logging {
   }
 
   template <typename T>
-  temp_logger& operator<<(temp_logger const& left,
-                          std::vector<misc::shared_ptr<T> > const& obj) throw() {
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 std::vector<misc::shared_ptr<T> > const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename std::vector<T>::const_iterator it(obj.begin()),
          end(obj.end());
@@ -100,8 +112,9 @@ namespace logging {
   }
 
   template <typename T>
-  temp_logger& operator<<(temp_logger const& left,
-                          std::list<T> const& obj) throw() {
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 std::list<T> const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename std::list<T>::const_iterator it(obj.begin()), end(obj.end());
          it != end; ++it) {
@@ -113,8 +126,9 @@ namespace logging {
   }
 
   template <typename T>
-  temp_logger& operator<<(temp_logger const& left,
-                          std::list<misc::shared_ptr<T> > const& obj) throw() {
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 std::list<misc::shared_ptr<T> > const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename std::list<T>::const_iterator it(obj.begin()), end(obj.end());
          it != end; ++it) {
@@ -126,8 +140,9 @@ namespace logging {
   }
 
   template <typename T>
-  temp_logger& operator<<(temp_logger const& left,
-                          std::set<T> const& obj) throw() {
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 std::set<T> const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename std::set<T>::const_iterator it(obj.begin()), end(obj.end());
          it != end; ++it) {
@@ -139,8 +154,9 @@ namespace logging {
   }
 
   template <typename T>
-  temp_logger& operator<<(temp_logger const& left,
-                          std::set<misc::shared_ptr<T> > const& obj) throw() {
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 std::set<misc::shared_ptr<T> > const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename std::set<T>::const_iterator it(obj.begin()), end(obj.end());
          it != end; ++it) {
@@ -152,8 +168,9 @@ namespace logging {
   }
 
   template <typename T>
-  temp_logger& operator<<(temp_logger const& left,
-                          std::deque<T> const& obj) throw() {
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 std::deque<T> const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename std::deque<T>::const_iterator it(obj.begin()),
          end(obj.end());
@@ -167,8 +184,9 @@ namespace logging {
   }
 
   template <typename T>
-  temp_logger& operator<<(temp_logger const& left,
-                          std::deque<misc::shared_ptr<T> > const& obj) throw() {
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 std::deque<misc::shared_ptr<T> > const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename std::deque<T>::const_iterator it(obj.begin()),
          end(obj.end());
@@ -182,8 +200,9 @@ namespace logging {
   }
 
   template <typename T, typename U>
-  temp_logger& operator<<(temp_logger const& left,
-                          std::map<T, U> const& obj) throw() {
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 std::map<T, U> const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename std::map<T, U>::const_iterator it(obj.begin()),
          end(obj.end());
@@ -197,8 +216,9 @@ namespace logging {
   }
 
   template <typename T, typename U>
-  temp_logger& operator<<(temp_logger const& left,
-                          std::map<T, misc::shared_ptr<U> > const& obj) throw() {
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 std::map<T, misc::shared_ptr<U> > const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename std::map<T, U>::const_iterator it(obj.begin()),
          end(obj.end());
@@ -213,8 +233,9 @@ namespace logging {
 
 
   template <typename T, typename U>
-  temp_logger& operator<<(temp_logger const& left,
-                          QHash<T, U> const& obj) throw() {
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 QHash<T, U> const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename QHash<T, U>::const_iterator it(obj.begin()), end(obj.end());
          it != end; ++it) {
@@ -226,8 +247,9 @@ namespace logging {
   }
 
   template <typename T, typename U>
-  temp_logger& operator<<(temp_logger const& left,
-                          QHash<T, misc::shared_ptr<U> > const& obj) throw() {
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 QHash<T, misc::shared_ptr<U> > const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename QHash<T, U>::const_iterator it(obj.begin()), end(obj.end());
          it != end; ++it) {
@@ -239,8 +261,9 @@ namespace logging {
   }
 
   template <typename T>
-  temp_logger& operator<<(temp_logger const& left,
-                          QSet<T> const& obj) throw() {
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 QSet<T> const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename QSet<T>::const_iterator it(obj.begin()), end(obj.end());
          it != end; ++it) {
@@ -252,8 +275,9 @@ namespace logging {
   }
 
   template <typename T>
-  temp_logger& operator<<(temp_logger const& left,
-                          QSet<misc::shared_ptr<T> > const& obj) throw() {
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 QSet<misc::shared_ptr<T> > const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename QSet<T>::const_iterator it(obj.begin()), end(obj.end());
          it != end; ++it) {
@@ -265,8 +289,9 @@ namespace logging {
   }
 
   template <typename T, typename U>
-  temp_logger& operator<<(temp_logger const& left,
-                          QMultiHash<T, misc::shared_ptr<U> > const& obj) throw() {
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 QMultiHash<T, misc::shared_ptr<U> > const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     for (typename QMultiHash<T, U>::const_iterator it(obj.begin()),
          end(obj.end());
@@ -280,8 +305,9 @@ namespace logging {
   }
 
   template <typename T>
-  temp_logger& operator<<(temp_logger const& left,
-                          ::com::centreon::broker::misc::shared_ptr<T> const& obj) throw() {
+  temp_logger& operator<<(
+                 temp_logger const& left,
+                 misc::shared_ptr<T> const& obj) throw() {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
     tmp << *obj;
     return (tmp);
@@ -292,8 +318,9 @@ namespace notification {
   class data_logger {
   public:
     template <typename T>
-    static void log_container(std::string const& container_name,
-                              T const& container) {
+    static void log_container(
+                  std::string const& container_name,
+                  T const& container) {
       logging::debug(logging::low)
           << "Notification: Logging container called "
           << container_name;

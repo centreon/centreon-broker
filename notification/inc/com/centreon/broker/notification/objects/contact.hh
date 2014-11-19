@@ -75,8 +75,9 @@ namespace   notification {
       void                     set_name(std::string const& value);
       std::map<std::string, std::string> const&
                                get_customvariables() const throw();
-      void                     add_customvariables(std::string const& name,
-                                                   std::string const& value);
+      void                     add_customvariables(
+                                 std::string const& name,
+                                 std::string const& value);
       std::string const&       get_email() const throw();
       void                     set_email(std::string const& value);
       bool                     get_host_notifications_enabled() const throw();
@@ -111,7 +112,9 @@ namespace   notification {
       bool                     get_service_notifications_enabled() const throw();
       void                     set_service_notifications_enabled(
                                   bool value) throw();
-      bool                     can_be_notified(node_state state, bool isHost) const throw();
+      bool                     can_be_notified(
+                                 node_state state,
+                                 bool isHost) const throw();
 
     private:
       std::vector<std::string> _address;

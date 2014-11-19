@@ -27,8 +27,7 @@ using namespace com::centreon::broker::notification::objects;
  *
  *  @param[in,out] set  The set to fill.
  */
-node_set_builder::node_set_builder(QSet<node_id>& set) :
-  _set(set) {}
+node_set_builder::node_set_builder(QSet<node_id>& set) : _set(set) {}
 
 void node_set_builder::add_node(node::ptr node) {
   _set.insert(node->get_node_id());

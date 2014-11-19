@@ -31,8 +31,8 @@
 
 CCB_BEGIN()
 
-namespace               notification {
-  namespace             objects {
+namespace                 notification {
+  namespace               objects {
     /**
      *  @class timeperiod timeperiod.hh "com/centreon/broker/notification/objects/timeperiod.hh"
      *  @brief Timeperiod object.
@@ -63,10 +63,12 @@ namespace               notification {
       std::vector<std::list<timerange> > const&
                           get_timeranges() const throw();
       void                add_timerange(std::list<timerange> const& val);
-      void                set_timerange(std::list<timerange> const& val,
-                                        int day);
-      void                set_timerange(std::string const& timerange_text,
-                                        int day);
+      void                set_timerange(
+                            std::list<timerange> const& val,
+                            int day);
+      void                set_timerange(
+                            std::string const& timerange_text,
+                            int day);
       std::list<timerange> const&
                           get_timeranges_by_day(int day) const throw();
 

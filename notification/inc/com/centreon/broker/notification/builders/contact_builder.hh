@@ -26,19 +26,19 @@
 
 CCB_BEGIN()
 
-namespace       notification {
+namespace         notification {
   /**
    *  @class contact_builder contact_builder.hh "com/centreon/broker/notification/builders/contact_builder.hh"
    *  @brief Contact builder interface.
    *
    *  This interface define what methods contact builders need to implement.
    */
-  class         contact_builder {
+  class           contact_builder {
   public:
     /**
      *  Virtual destructor.
      */
-    virtual ~contact_builder() {}
+    virtual       ~contact_builder() {}
 
     /**
      *  Add a contact to the builder.
@@ -46,11 +46,13 @@ namespace       notification {
      *  @param[in] id The id of the contact.
      *  @param[in] con The contact.
      */
-    virtual void add_contact(unsigned int id,
-                             objects::contact::ptr con) {}
-    virtual void add_contact_param(unsigned int contact_id,
-                                   std::string const& key,
-                                   std::string const& value) {}
+    virtual void  add_contact(
+                    unsigned int id,
+                    objects::contact::ptr con) {}
+    virtual void  add_contact_param(
+                    unsigned int contact_id,
+                    std::string const& key,
+                    std::string const& value) {}
   };
 
 }

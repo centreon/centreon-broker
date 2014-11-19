@@ -40,8 +40,9 @@ namespace       notification {
                 acknowledgement_loader();
 
     void        load(QSqlDatabase* db, acknowledgement_builder* output);
-    void        new_ack(neb::acknowledgement& ack,
-                        acknowledgement_builder& output);
+    void        new_ack(
+                  neb::acknowledgement& ack,
+                  acknowledgement_builder& output);
   };
 
 }

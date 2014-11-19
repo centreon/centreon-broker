@@ -32,10 +32,12 @@ using namespace com::centreon::broker::notification::objects;
 
 contact_loader::contact_loader() {}
 
-static void _parse_host_notification_options(std::string const& line,
-                                             contact& cont);
-static void _parse_service_notification_options(std::string const& line,
-                                                contact& cont);
+static void _parse_host_notification_options(
+              std::string const& line,
+              contact& cont);
+static void _parse_service_notification_options(
+              std::string const& line,
+              contact& cont);
 
 /**
  *  Load the contacts from the database.
@@ -52,13 +54,13 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
 
   // Load the contacts.
   if (!query.exec("SELECT contact_id, timeperiod_tp_id, timeperiod_tp_id2,"
-                  "contact_name, contact_alias,"
-                  "contact_host_notification_options,"
-                  "contact_service_notification_options, contact_email,"
-                  "contact_pager, contact_address1, contact_address2,"
-                  "contact_address3, contact_address4, contact_address5,"
-                  "contact_address6, contact_enable_notifications"
-                  " FROM rt_contact"))
+                  "       contact_name, contact_alias,"
+                  "       contact_host_notification_options,"
+                  "       contact_service_notification_options, contact_email,"
+                  "       contact_pager, contact_address1, contact_address2,"
+                  "       contact_address3, contact_address4, contact_address5,"
+                  "       contact_address6, contact_enable_notifications"
+                  "  FROM rt_contact"))
     throw (exceptions::msg()
       << "Notification: cannot select rt_contact in loader: "
       << query.lastError().text());
@@ -67,16 +69,17 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
     contact::ptr cont(new contact);
     unsigned int id = query.value(0).toUInt();
     cont->set_host_notification_period(
-          query.value(1).toString().toStdString());
+      query.value(1).toString().toStdString());
     cont->set_service_notification_period(
-          query.value(2).toString().toStdString());
+      query.value(2).toString().toStdString());
     cont->set_name(query.value(3).toString().toStdString());
     cont->set_alias(query.value(4).toString().toStdString());
-    _parse_host_notification_options(query.value(5).toString().toStdString(),
-                                     *cont);
+    _parse_host_notification_options(
+      query.value(5).toString().toStdString(),
+      *cont);
     _parse_service_notification_options(
-          query.value(6).toString().toStdString(),
-          *cont);
+      query.value(6).toString().toStdString(),
+      *cont);
     cont->set_email(query.value(7).toString().toStdString());
     cont->set_pager(query.value(8).toString().toStdString());
     cont->add_address(query.value(9).toString().toStdString());
@@ -93,20 +96,23 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
   }
 
   // Load the custom variables of the contact.
-  if (!query.exec("SELECT cp_key, cp_value, cp_contact_id FROM rt_contact_param"))
+  if (!query.exec("SELECT cp_key, cp_value, cp_contact_id "
+                  "  FROM rt_contact_param"))
     throw (exceptions::msg()
       << "Notification: cannot select rt_contact_param in loader: "
       << query.lastError().text());
 
   while (query.next()) {
-    output->add_contact_param(query.value(2).toUInt(),
-                              query.value(0).toString().toStdString(),
-                              query.value(1).toString().toStdString());
+    output->add_contact_param(
+              query.value(2).toUInt(),
+              query.value(0).toString().toStdString(),
+              query.value(1).toString().toStdString());
   }
 }
 
-static void _parse_host_notification_options(std::string const& line,
-                                             contact& cont) {
+static void _parse_host_notification_options(
+              std::string const& line,
+              contact& cont) {
   if (line == "n")
     cont.set_host_notification_options(contact::host_none);
   else {
@@ -135,8 +141,9 @@ static void _parse_host_notification_options(std::string const& line,
  *  @param[in] line   The line to parse
  *  @param[out] cont  The object to fill.
  */
-static void _parse_service_notification_options(std::string const& line,
-                                                contact& cont) {
+static void _parse_service_notification_options(
+              std::string const& line,
+              contact& cont) {
   if (line == "n")
     cont.set_service_notification_options(contact::service_none);
   else {

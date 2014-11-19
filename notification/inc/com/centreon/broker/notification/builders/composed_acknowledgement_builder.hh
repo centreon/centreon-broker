@@ -29,7 +29,7 @@
 
 CCB_BEGIN()
 
-namespace       notification {
+namespace         notification {
   /**
    *  @class composed_acknowledgement_builder composed_acknowledgement_builder.hh "com/centreon/broker/notification/builders/composed_acknowledgement_builder.hh"
    *  @brief Composed acknowledgement builder.
@@ -41,8 +41,9 @@ namespace       notification {
   public:
                   composed_acknowledgement_builder();
 
-    virtual void  add_ack(objects::node_id,
-                          objects::acknowledgement::ptr ack);
+    virtual void  add_ack(
+                    objects::node_id,
+                    objects::acknowledgement::ptr ack);
   };
 
 }

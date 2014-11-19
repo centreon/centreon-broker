@@ -45,15 +45,19 @@ namespace         notification {
      *  @param[in] id The id of the timeperiod.
      *  @param[in] tperiod The timeperiod.
      */
-    virtual void  add_timeperiod(unsigned int id,
-                                 objects::timeperiod::ptr tperiod) {}
-    virtual void  add_timeperiod_exception(unsigned int timeperiod_id,
-                                           std::string const& days,
-                                            std::string const& timerange) {}
-    virtual void  add_timeperiod_exclude_relation(unsigned int timeperiod_id,
-                                                  unsigned int exclude_id) {}
-    virtual void  add_timeperiod_include_relation(unsigned int timeperiod_id,
-                                                  unsigned int include_id) {}
+    virtual void  add_timeperiod(
+                    unsigned int id,
+                    objects::timeperiod::ptr tperiod) {}
+    virtual void  add_timeperiod_exception(
+                    unsigned int timeperiod_id,
+                    std::string const& days,
+                    std::string const& timerange) {}
+    virtual void  add_timeperiod_exclude_relation(
+                    unsigned int timeperiod_id,
+                    unsigned int exclude_id) {}
+    virtual void  add_timeperiod_include_relation(
+                    unsigned int timeperiod_id,
+                    unsigned int include_id) {}
   };
 
 }

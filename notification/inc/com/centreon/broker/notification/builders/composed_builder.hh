@@ -25,7 +25,7 @@
 
 CCB_BEGIN()
 
-namespace       notification {
+namespace         notification {
   /**
    *  @class composed_builder composed_builder.hh "com/centreon/broker/notification/builders/composed_builder.hh"
    *  @tparam T The builder type for the underlying builders.

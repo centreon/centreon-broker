@@ -29,7 +29,9 @@ using namespace com::centreon::broker::notification::objects;
 
 notification_rule_loader::notification_rule_loader() {}
 
-void notification_rule_loader::load(QSqlDatabase *db, notification_rule_builder *output) {
+void notification_rule_loader::load(
+                                 QSqlDatabase *db,
+                                 notification_rule_builder *output) {
   // If we don't have any db or output, don't do anything.
   if (!db || !output)
     return;
@@ -40,7 +42,7 @@ void notification_rule_loader::load(QSqlDatabase *db, notification_rule_builder 
   query.setForwardOnly(true);
 
   if (!query.exec("SELECT rule_id, method_id, timeperiod_id, contact_id, "
-                  "host_id, service_id FROM rt_notification_rules"))
+                  "       host_id, service_id FROM rt_notification_rules"))
     throw (exceptions::msg()
       << "Notification: cannot select rt_notification_rules in loader: "
       << query.lastError().text());

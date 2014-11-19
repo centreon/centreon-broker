@@ -27,8 +27,8 @@
 
 CCB_BEGIN()
 
-namespace         notification {
-  namespace       objects {
+namespace           notification {
+  namespace         objects {
     /**
      *  @class timerange timerange.hh "com/centreon/broker/notification/objects/timerange.hh"
      *  @brief Timerange object.
@@ -55,9 +55,10 @@ namespace         notification {
       unsigned long end_hour() const throw();
       unsigned long end_minute() const throw();
 
-      bool          to_time_t(struct tm const& midnight,
-                              time_t& range_start,
-                              time_t& range_end) const;
+      bool          to_time_t(
+                      struct tm const& midnight,
+                      time_t& range_start,
+                      time_t& range_end) const;
 
       static bool   build_timeranges_from_string(
                       std::string const& line,

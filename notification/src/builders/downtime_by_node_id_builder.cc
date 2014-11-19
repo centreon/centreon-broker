@@ -28,16 +28,18 @@ using namespace com::centreon::broker::notification::objects;
  *  @param[in,out] table  The table to fill.
  */
 downtime_by_node_id_builder::downtime_by_node_id_builder(
-    QMultiHash<node_id, downtime::ptr>& table) :
-  _table(table) {}
+                               QMultiHash<node_id, downtime::ptr>& table)
+  : _table(table) {}
 
-void downtime_by_node_id_builder::add_downtime(unsigned int downtime_id,
-                                               downtime::ptr downtime) {
+void downtime_by_node_id_builder::add_downtime(
+                                    unsigned int downtime_id,
+                                    downtime::ptr downtime) {
   _cache[downtime_id] = downtime;
 }
 
-void downtime_by_node_id_builder::connect_downtime_to_node(unsigned int downtime_id,
-                                                           node_id id) {
+void downtime_by_node_id_builder::connect_downtime_to_node(
+                                    unsigned int downtime_id,
+                                    node_id id) {
   if (_cache.contains(downtime_id))
     _table.insert(id, _cache.value(downtime_id));
 }

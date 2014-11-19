@@ -37,7 +37,7 @@ namespace       notification {
    */
   class         node_loader {
   public:
-    node_loader();
+                node_loader();
 
     void        load(QSqlDatabase* db, node_builder* output);
   };

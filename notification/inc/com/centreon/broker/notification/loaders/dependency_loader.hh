@@ -27,25 +27,27 @@
 
 CCB_BEGIN()
 
-namespace       notification {
+namespace  notification {
   /**
    *  @class dependency_loader dependency_loader.hh "com/centreon/broker/notification/loaders/dependency_loader.hh"
    *  @brief Loader for dependency objects.
    *
    *  This loader loads the dependencies from the database.
    */
-  class   dependency_loader {
+  class    dependency_loader {
   public:
-          dependency_loader();
+           dependency_loader();
 
-    void  load(QSqlDatabase* db, dependency_builder* output);
+    void   load(QSqlDatabase* db, dependency_builder* output);
 
   private:
-    void  _load_relations(QSqlQuery& query, dependency_builder& output);
-    void  _load_relation(QSqlQuery& query, dependency_builder& output,
-                         std::string const& relation_id_name,
-                         std::string const& table,
-                         void (dependency_builder::*register_method)(unsigned int, unsigned int));
+    void   _load_relations(QSqlQuery& query, dependency_builder& output);
+    void   _load_relation(
+             QSqlQuery& query, dependency_builder& output,
+             std::string const& relation_id_name,
+             std::string const& table,
+             void (dependency_builder::*register_method)
+                    (unsigned int, unsigned int));
   };
 
 }
