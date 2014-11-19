@@ -70,15 +70,15 @@ using namespace com::centreon::broker::bam;
  *  @param[in] check_replication       true to check replication status.
  */
 monitoring_stream::monitoring_stream(
-          QString const& db_type,
-          QString const& db_host,
-          unsigned short db_port,
-          QString const& db_user,
-          QString const& db_password,
-          QString const& db_name,
-          QString const& ext_cmd_file,
-          unsigned int queries_per_transaction,
-          bool check_replication) {
+                     QString const& db_type,
+                     QString const& db_host,
+                     unsigned short db_port,
+                     QString const& db_user,
+                     QString const& db_password,
+                     QString const& db_name,
+                     QString const& ext_cmd_file,
+                     unsigned int queries_per_transaction,
+                     bool check_replication) {
   // Process events.
   _process_out = true;
 
@@ -236,18 +236,21 @@ void monitoring_stream::statistics(io::properties& tree) const {
  *  Rebuild index and metrics cache.
  */
 void monitoring_stream::update() {
-  // XXX : beware of exceptions ?
-   configuration::state s;
-   {
-     configuration::reader r(_db.get());
-     r.read(s);
-   }
-   //_applier.apply(s);
-   _ba_mapping = s.get_ba_svc_mapping();
-
-  // Check if we need to rebuild something.
-   _rebuild();
-
+  try {
+    configuration::state s;
+    {
+      configuration::reader r(_db.get());
+      r.read(s);
+    }
+    _applier.apply(s);
+    _ba_mapping = s.get_ba_svc_mapping();
+    _rebuild();
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::high)
+      << "BAM: could not process configuration update: "
+      << e.what();
+  }
   return ;
 }
 
@@ -581,7 +584,7 @@ void monitoring_stream::_rebuild() {
     return ;
 
   logging::debug(logging::medium)
-    << "BAM: rebuild asked: sending the rebuild signal.";
+    << "BAM: rebuild asked, sending the rebuild signal";
 
   misc::shared_ptr<rebuild> r(new rebuild);
   {

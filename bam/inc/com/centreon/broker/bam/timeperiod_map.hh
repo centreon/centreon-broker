@@ -43,13 +43,14 @@ namespace          bam {
 
     time::timeperiod::ptr
                    get_timeperiod(unsigned int id);
-    void           add_timeperiod(unsigned int id,
-                                  time::timeperiod::ptr ptr);
+    void           add_timeperiod(
+                     unsigned int id,
+                     time::timeperiod::ptr ptr);
     void           clear();
 
   private:
     std::map<unsigned int, time::timeperiod::ptr>
-                  _map;
+                   _map;
   };
 }
 

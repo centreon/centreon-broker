@@ -46,13 +46,14 @@ namespace        bam {
    */
   class          availability_thread : public QThread {
   public:
-                 availability_thread(QString const& db_type,
-                                     QString const& db_host,
-                                     unsigned short db_port,
-                                     QString const& db_user,
-                                     QString const& db_password,
-                                     QString const& db_name,
-                                     timeperiod_map& shared_map);
+                 availability_thread(
+                   QString const& db_type,
+                   QString const& db_host,
+                   unsigned short db_port,
+                   QString const& db_user,
+                   QString const& db_password,
+                   QString const& db_name,
+                   timeperiod_map& shared_map);
                  ~availability_thread();
     virtual void run();
     void         terminate();
@@ -69,39 +70,41 @@ namespace        bam {
 
     void         _delete_all_availabilities();
     void         _build_availabilities(time_t midnight);
-    void         _build_daily_availabilities(QSqlQuery &q,
-                                             time_t day_start,
-                                             time_t day_end);
-    static void  _write_availability(QSqlQuery& q,
-                                     availability_builder const& builder,
-                                     unsigned int ba_id,
-                                     time_t day_start,
-                                     unsigned int timeperiod_id);
+    void         _build_daily_availabilities(
+                   QSqlQuery &q,
+                   time_t day_start,
+                   time_t day_end);
+    static void  _write_availability(
+                   QSqlQuery& q,
+                   availability_builder const& builder,
+                   unsigned int ba_id,
+                   time_t day_start,
+                   unsigned int timeperiod_id);
 
     time_t       _compute_next_midnight();
     time_t       _compute_start_of_day(time_t when);
 
-    void        _open_database();
-    void        _close_database();
+    void         _open_database();
+    void         _close_database();
 
-    QString     _db_type;
-    QString     _db_host;
+    QString      _db_type;
+    QString      _db_host;
     unsigned short
-                _db_port;
-    QString     _db_user;
-    QString     _db_password;
-    QString     _db_name;
+                 _db_port;
+    QString      _db_user;
+    QString      _db_password;
+    QString      _db_name;
     std::auto_ptr<QSqlDatabase>
                  _db;
     timeperiod_map&
-                _shared_tps;
+                 _shared_tps;
 
-    QMutex      _mutex;
-    bool        _should_exit;
-    bool        _should_rebuild_all;
-    QString     _bas_to_rebuild;
+    QMutex       _mutex;
+    bool         _should_exit;
+    bool         _should_rebuild_all;
+    QString      _bas_to_rebuild;
     QWaitCondition
-                _wait;
+                 _wait;
   };
 }
 

@@ -30,26 +30,29 @@
 
 CCB_BEGIN()
 
-namespace        bam {
+namespace       bam {
   /**
    *  @class availability_builder availability_builder.hh "com/centreon/broker/bam/availability_builder.hh"
-   *  @brief Availability builder
+   *  @brief Availability builder.
    *
+   *  Build availabilities based on events.
    */
-  class          availability_builder {
+  class         availability_builder {
   public:
-                 availability_builder(
-                       time_t ending_point,
-                       time_t starting_point = 0);
-                 ~availability_builder();
-                 availability_builder(availability_builder const& other);
+                availability_builder(
+                  time_t ending_point,
+                  time_t starting_point = 0);
+                availability_builder(availability_builder const& other);
+                ~availability_builder();
     availability_builder&
                 operator=(availability_builder const& other);
 
-    void        add_event(short status,
-                          time_t start, time_t end,
-                          bool was_in_downtime,
-                          time::timeperiod::ptr const &tp);
+    void        add_event(
+                  short status,
+                  time_t start,
+                  time_t end,
+                  bool was_in_downtime,
+                  time::timeperiod::ptr const &tp);
 
     int         get_available() const;
     int         get_unavailable() const;

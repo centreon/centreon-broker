@@ -34,8 +34,9 @@ using namespace com::centreon::broker::bam;
  *  @param[in] ending_point    The point from when the builder should stop to build the availability.
  *  @param[in] starting_point  The point from when the builder should build the availability.
  */
-availability_builder::availability_builder(time_t ending_point,
-                                           time_t starting_point /* = 0 */)
+availability_builder::availability_builder(
+                        time_t ending_point,
+                        time_t starting_point /* = 0 */)
   : _start(starting_point),
     _end(ending_point),
     _available(0),
@@ -100,10 +101,10 @@ availability_builder& availability_builder::operator=(availability_builder const
  *  @param[in] tp               The timeperiod of the event.
  */
 void availability_builder::add_event(
-       short status,
-       time_t start, time_t end,
-       bool was_in_downtime,
-       time::timeperiod::ptr const& tp) {
+                             short status,
+                             time_t start, time_t end,
+                             bool was_in_downtime,
+                             time::timeperiod::ptr const& tp) {
   // Check that the event was closed.
   if (end == 0)
     end = _end;

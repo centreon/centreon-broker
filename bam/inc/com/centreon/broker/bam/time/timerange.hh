@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -27,8 +27,8 @@
 
 CCB_BEGIN()
 
-namespace         bam {
-  namespace       time {
+namespace           bam {
+  namespace         time {
     /**
      *  @class timerange timerange.hh "com/centreon/broker/bam/time/timerange.hh"
      *  @brief Timerange object.
@@ -55,9 +55,10 @@ namespace         bam {
       unsigned long end_hour() const throw();
       unsigned long end_minute() const throw();
 
-      bool          to_time_t(struct tm const& midnight,
-                              time_t& range_start,
-                              time_t& range_end) const;
+      bool          to_time_t(
+                      struct tm const& midnight,
+                      time_t& range_start,
+                      time_t& range_end) const;
 
       static bool   build_timeranges_from_string(
                       std::string const& line,

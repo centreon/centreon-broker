@@ -36,10 +36,12 @@ namespace                bam {
   class                  dimension_ba_event : public io::data {
   public:
                          dimension_ba_event();
-                         dimension_ba_event(dimension_ba_event const& other);
+                         dimension_ba_event(
+                           dimension_ba_event const& other);
                          ~dimension_ba_event();
     dimension_ba_event&  operator=(dimension_ba_event const& other);
-    bool                 operator==(dimension_ba_event const& other) const;
+    bool                 operator==(
+                           dimension_ba_event const& other) const;
     unsigned int         type() const;
 
     unsigned int         ba_id;
@@ -51,7 +53,8 @@ namespace                bam {
     unsigned int         sla_duration_2;
 
   private:
-    void                 _internal_copy(dimension_ba_event const& other);
+    void                 _internal_copy(
+                           dimension_ba_event const& other);
   };
 }
 

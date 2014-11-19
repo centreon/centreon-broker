@@ -68,7 +68,7 @@ namespace   bam  {
       static timezone_manager* _instance;
       std::stack<tz_info>      _tz;
     };
-}
+  }
 }
 
 CCB_END()

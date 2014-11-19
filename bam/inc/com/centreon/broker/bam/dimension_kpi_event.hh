@@ -36,10 +36,12 @@ namespace                bam {
   class                  dimension_kpi_event : public io::data {
   public:
                          dimension_kpi_event();
-                         dimension_kpi_event(dimension_kpi_event const& other);
+                         dimension_kpi_event(
+                           dimension_kpi_event const& other);
                          ~dimension_kpi_event();
     dimension_kpi_event& operator=(dimension_kpi_event const& other);
-    bool                 operator==(dimension_kpi_event const& other) const;
+    bool                 operator==(
+                           dimension_kpi_event const& other) const;
     unsigned int         type() const;
 
     unsigned             kpi_id;
@@ -60,7 +62,8 @@ namespace                bam {
     double               impact_unknown;
 
   private:
-    void         _internal_copy(dimension_kpi_event const& other);
+    void                 _internal_copy(
+                           dimension_kpi_event const& other);
   };
 }
 

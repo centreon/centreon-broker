@@ -87,11 +87,11 @@ void availability_thread::run() {
       time_t midnight = _compute_next_midnight();
       unsigned long wait_for = std::difftime(midnight, ::time(NULL));
       logging::debug(logging::medium)
-          << "BAM-BI: Availability thread sleeping for "
+          << "BAM-BI: availability thread sleeping for "
           << wait_for << " seconds.";
       _wait.wait(lock.mutex(), wait_for * 1000);
       logging::debug(logging::medium)
-          << "BAM-BI: Availability thread waking up ";
+          << "BAM-BI: availability thread waking up ";
 
       // Termination asked.
       if (_should_exit)
@@ -153,7 +153,7 @@ void availability_thread::rebuild_availabilities(
  */
 void availability_thread::_delete_all_availabilities() {
   logging::debug(logging::low)
-      << "BAM-BI: Availability thread deleting availabilities";
+    << "BAM-BI: availability thread deleting availabilities";
 
   // Prepare the query.
   std::stringstream query;
@@ -164,7 +164,7 @@ void availability_thread::_delete_all_availabilities() {
   q.setForwardOnly(true);
   if (!q.exec(query.str().c_str()))
     throw (exceptions::msg()
-           << "BAM-BI: Availability thread could not delete the "
+           << "BAM-BI: availability thread could not delete the "
               "BA availabilities from the reporting database: "
            << q.lastError().text());
 }
@@ -192,7 +192,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
              "  WHERE ba_id IN (" << _bas_to_rebuild.toStdString() << ")";
     if (!q.exec(query.str().c_str()) || !q.next())
       throw (exceptions::msg()
-             << "BAM-BI: Availability thread could not select the BA durations "
+             << "BAM-BI: availability thread could not select the BA durations "
                 "from the reporting database: " << q.lastError().text());
 
     first_day = q.value(0).toInt();
@@ -209,7 +209,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
              "  FROM mod_bam_reporting_ba_availabilities";
     if (!q.exec(query.str().c_str()) || !q.next())
       throw (exceptions::msg()
-             << "BAM-BI: Availability thread "
+             << "BAM-BI: availability thread "
                 "could not select the BA availabilities "
                 "from the reporting database: " << q.lastError().text());
 
@@ -237,7 +237,7 @@ void availability_thread::_build_daily_availabilities(
                             time_t day_start,
                             time_t day_end) {
   logging::debug(logging::medium)
-      << "BAM-BI: Availability thread writing daily availability for "
+      << "BAM-BI: availability thread writing daily availability for "
          "day : " << day_start << "-" << day_end;
   std::stringstream query;
   query << "SELECT a.ba_event_id, b.ba_id, a.start_time, a.end_time,"
@@ -254,7 +254,7 @@ void availability_thread::_build_daily_availabilities(
         << "       ))";
   if (!q.exec(query.str().c_str()))
     throw (exceptions::msg()
-           << "BAM-BI: the availability thread could not build the data: "
+           << "BAM-BI: availability thread could not build the data: "
             << q.lastError().text());
 
   // Create a builder for each ba_id and associated timeperiod_id.
@@ -308,16 +308,16 @@ void availability_thread::_build_daily_availabilities(
  *  @param[in] day_start              The start of the day.
  *  @param[in] timeperiod_id          The id of the timeperiod.
  */
-void availability_thread::_write_availability(QSqlQuery& q,
-                                              availability_builder const& builder,
-                                              unsigned int ba_id,
-                                              time_t day_start,
-                                              unsigned int timeperiod_id) {
+void availability_thread::_write_availability(
+                            QSqlQuery& q,
+                            availability_builder const& builder,
+                            unsigned int ba_id,
+                            time_t day_start,
+                            unsigned int timeperiod_id) {
   logging::debug(logging::low)
-      << "BAM-BI: Availability thread writing availability for "
-         "ba id = " << ba_id
-      << ", day = " << day_start
-      << ", timeperiod id = " << timeperiod_id;
+      << "BAM-BI: availability thread writing availability for "
+         "BA " << ba_id << " at day " << day_start
+      << " (timeperiod " << timeperiod_id << ")";
   std::stringstream query;
   query << "INSERT INTO mod_bam_reporting_ba_availabilities "
         << "  (ba_id, time_id, timeperiod_id, timeperiod_is_default,"
@@ -335,7 +335,7 @@ void availability_thread::_write_availability(QSqlQuery& q,
         << ", " << builder.get_downtime_opened() << ")";
   if (!q.exec(query.str().c_str()))
     throw (exceptions::msg()
-           << "BAM-BI: Availability thread could not insert an availability: "
+           << "BAM-BI: availability thread could not insert an availability: "
            << q.lastError().text());
 }
 
@@ -360,7 +360,7 @@ time_t availability_thread::_compute_start_of_day(
   struct tm tmv;
   if (!localtime_r(&when, &tmv))
     throw (exceptions::msg()
-           << "BAM-BI: Availability thread could not compute start of day.");
+           << "BAM-BI: availability thread could not compute start of day");
   tmv.tm_sec = 1;
   tmv.tm_min = tmv.tm_hour = 0;
   return (mktime(&tmv));
@@ -389,7 +389,7 @@ void availability_thread::_open_database() {
   // Open database.
   if (!_db->open())
     throw (exceptions::msg()
-           << "BAM-BI: Availability thread could not connect to "
+           << "BAM-BI: availability thread could not connect to "
               "reporting database '"
            << _db_name << "' on host '" << _db_host
            << ":" << _db_port << "': " << _db->lastError().text());

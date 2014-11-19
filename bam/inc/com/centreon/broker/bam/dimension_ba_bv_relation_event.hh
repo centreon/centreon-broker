@@ -49,7 +49,8 @@ namespace                bam {
     unsigned int         bv_id;
 
   private:
-    void           _internal_copy(dimension_ba_bv_relation_event const& other);
+    void                 _internal_copy(
+                           dimension_ba_bv_relation_event const& other);
   };
 }
 

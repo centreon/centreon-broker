@@ -33,7 +33,7 @@ namespace                 bam {
      *
      *  Hold the database information.
      */
-    class                 db{
+    class                 db {
     public:
                           db(
                             std::string const& type,

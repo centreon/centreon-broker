@@ -47,7 +47,7 @@ namespace                bam {
     QString              bv_description;
 
   private:
-    void         _internal_copy(dimension_bv_event const& other);
+    void                 _internal_copy(dimension_bv_event const& other);
   };
 }
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,7 +22,7 @@
 
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 
-#define DECLARE_SHARED_PTR(klass)\
+#  define DECLARE_SHARED_PTR(klass)\
   typedef ::com::centreon::broker::misc::shared_ptr<klass> ptr
 
-#endif //!CCB_BAM_TIME_PTR_TYPEDEF_HH
+#endif // !CCB_BAM_TIME_PTR_TYPEDEF_HH

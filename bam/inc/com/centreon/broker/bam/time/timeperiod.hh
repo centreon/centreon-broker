@@ -43,16 +43,17 @@ namespace               bam {
                           DECLARE_SHARED_PTR(timeperiod);
 
                           timeperiod();
-                          timeperiod(unsigned int id,
-                                std::string const& name,
-                                std::string const& alias,
-                                std::string const& sunday,
-                                std::string const& monday,
-                                std::string const& tuesday,
-                                std::string const& wednesday,
-                                std::string const& thursday,
-                                std::string const& friday,
-                                std::string const& saturday);
+                          timeperiod(
+                            unsigned int id,
+                            std::string const& name,
+                            std::string const& alias,
+                            std::string const& sunday,
+                            std::string const& monday,
+                            std::string const& tuesday,
+                            std::string const& wednesday,
+                            std::string const& thursday,
+                            std::string const& friday,
+                            std::string const& saturday);
                           timeperiod(timeperiod const& obj);
                           timeperiod operator=(timeperiod const& obj);
 
@@ -67,8 +68,9 @@ namespace               bam {
       std::list<daterange> const&
                           get_exceptions_from_type(int type) const;
       void                add_exceptions(std::list<daterange> const& val);
-      bool                add_exception(std::string const& days,
-                                        std::string const& range);
+      bool                add_exception(
+                            std::string const& days,
+                            std::string const& range);
 
       std::vector<ptr> const&
                           get_included() const throw();
@@ -82,8 +84,9 @@ namespace               bam {
 
       std::vector<std::list<timerange> > const&
                           get_timeranges() const throw();
-      bool                set_timerange(std::string const& timerange_text,
-                                        int day);
+      bool                set_timerange(
+                            std::string const& timerange_text,
+                            int day);
       std::list<timerange> const&
                           get_timeranges_by_day(int day) const throw();
 
@@ -94,8 +97,9 @@ namespace               bam {
       time_t              get_next_valid(time_t preferred_time) const;
       time_t              get_next_invalid(time_t preferred_time) const;
 
-      unsigned int        duration_intersect(time_t start_time,
-                                             time_t end_time) const;
+      unsigned int        duration_intersect(
+                            time_t start_time,
+                            time_t end_time) const;
 
     private:
       unsigned int        _id;

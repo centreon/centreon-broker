@@ -89,9 +89,10 @@ namespace             bam {
       void              year_start(unsigned int value);
       unsigned int      year_start() const throw ();
 
-      bool              to_time_t(time_t const preferred_time,
-                                  time_t& start,
-                                  time_t& end) const;
+      bool              to_time_t(
+                          time_t const preferred_time,
+                          time_t& start,
+                          time_t& end) const;
 
       static bool       build_calendar_date(
                           std::string const& line,
@@ -104,6 +105,26 @@ namespace             bam {
                           std::vector<std::list<daterange> >& list);
 
     private:
+      bool              _calendar_date_to_time_t(
+                          time_t& start,
+                          time_t& end) const;
+      bool              _month_date_to_time_t(
+                          time_info const& ti,
+                          time_t& start,
+                          time_t& end) const;
+      bool              _month_day_to_time_t(
+                          time_info const& ti,
+                          time_t& start,
+                          time_t& end) const;
+      bool              _month_week_day_to_time_t(
+                          time_info const& ti,
+                          time_t& start,
+                          time_t& end) const;
+      bool              _week_day_to_time_t(
+                          time_info const& ti,
+                          time_t& start,
+                          time_t& end) const;
+
       unsigned int      _month_end;
       unsigned int      _month_start;
       int               _month_day_end;
@@ -118,21 +139,6 @@ namespace             bam {
       int               _week_day_start_offset;
       unsigned int      _year_end;
       unsigned int      _year_start;
-
-      bool              _calendar_date_to_time_t(time_t& start,
-                                                 time_t& end) const;
-      bool              _month_date_to_time_t(time_info const& ti,
-                                              time_t& start,
-                                              time_t& end) const;
-      bool              _month_day_to_time_t(time_info const& ti,
-                                             time_t& start,
-                                             time_t& end) const;
-      bool              _month_week_day_to_time_t(time_info const& ti,
-                                                 time_t& start,
-                                                 time_t& end) const;
-      bool              _week_day_to_time_t(time_info const& ti,
-                                           time_t& start,
-                                           time_t& end) const;
     };
   }
 }
