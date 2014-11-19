@@ -1058,7 +1058,7 @@ void stream::_insert_perfdatas() {
       metric_value& mv(_perfdata_queue.front());
       query.precision(10);
       query << std::scientific
-            << "INSERT INTO rt_data_bin (id_metric, ctime, status, value)"
+            << "INSERT INTO log_data_bin (id_metric, ctime, status, value)"
                " VALUES (" << mv.metric_id << ", " << mv.c_time << ", "
             << mv.status << ", '";
       if (isinf(mv.value))

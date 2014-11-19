@@ -387,7 +387,7 @@ void rebuilder::_rebuild_metric(
     // Get data.
     std::ostringstream oss;
     oss << "SELECT ctime, value"
-        << " FROM rt_data_bin"
+        << " FROM log_data_bin"
         << " WHERE id_metric=" << metric_id
         << " ORDER BY ctime ASC";
     QSqlQuery data_bin_query(_db);
@@ -449,7 +449,7 @@ void rebuilder::_rebuild_status(
     std::ostringstream oss;
     oss << "SELECT d.ctime, d.status"
         << " FROM rt_metrics AS m"
-        << " JOIN rt_data_bin AS d"
+        << " JOIN log_data_bin AS d"
         << " ON m.metric_id=d.id_metric"
         << " WHERE m.index_id=" << index_id
         << " ORDER BY d.ctime ASC";
