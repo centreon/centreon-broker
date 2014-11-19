@@ -73,11 +73,11 @@ bool timeperiod_map::operator==(timeperiod_map const& other) const {
  *
  *  @return  A timeperiod ptr toward the timeperiod, or a null ptr.
  */
-time::timeperiod::ptr timeperiod_map::get_timeperiod(unsigned int id) {
-  std::map<unsigned int, time::timeperiod::ptr>::iterator
+bam::time::timeperiod::ptr timeperiod_map::get_timeperiod(unsigned int id) {
+  std::map<unsigned int, bam::time::timeperiod::ptr>::iterator
       found = _map.find(id);
   if (found == _map.end())
-    return (time::timeperiod::ptr());
+    return (bam::time::timeperiod::ptr());
   else
     return (found->second);
 }
@@ -88,8 +88,9 @@ time::timeperiod::ptr timeperiod_map::get_timeperiod(unsigned int id) {
  *  @param[in] id   The id of the timeperiod.
  *  @param[in] ptr  A ptr to the timeperiod to add.
  */
-void timeperiod_map::add_timeperiod(unsigned int id,
-                                    time::timeperiod::ptr ptr) {
+void timeperiod_map::add_timeperiod(
+                       unsigned int id,
+                       bam::time::timeperiod::ptr ptr) {
   _map[id] = ptr;
 }
 
