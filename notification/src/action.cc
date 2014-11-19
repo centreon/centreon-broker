@@ -227,7 +227,7 @@ void action::_spawn_notification_attempts(
  *  @return        True if the checks were successful.
  */
 bool action::_check_action_viability(
-              ::com::centreon::broker::notification::state& st) const {
+               ::com::centreon::broker::notification::state& st) const {
   logging::debug(logging::low)
       << "Notification: Checking action viability for node (host id = "
       << _id.get_host_id() << ", service_id = " << _id.get_service_id()
@@ -239,7 +239,9 @@ bool action::_check_action_viability(
     return (false);
 
   // Check the existence of correlated parent.
-  if (n->has_parent())
+  if (n->has_parent()
+      && !(n->get_notification_options()
+           & objects::node_notification_opt::not_correlated))
     return (false);
 
   return (true);
