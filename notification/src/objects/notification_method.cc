@@ -46,7 +46,8 @@ notification_method::notification_method(notification_method const& obj) {
  *
  *  @return         A reference to this object.
  */
-notification_method& notification_method::operator=(notification_method const& obj) {
+notification_method& notification_method::operator=(
+                                            notification_method const& obj) {
   if (this != &obj) {
     _name = obj._name;
     _command_id = obj._command_id;

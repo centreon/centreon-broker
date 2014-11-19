@@ -158,8 +158,9 @@ std::map<std::string, std::string> const&
  * @param[in] name  The name of the new custom variable.
  * @param[in] value The value of the new custom variable.
  */
-void contact::add_customvariables(std::string const& name,
-                                  std::string const& value) {
+void contact::add_customvariables(
+                std::string const& name,
+                std::string const& value) {
   _customvariables[name] = value;
 }
 
@@ -208,7 +209,8 @@ void contact::set_host_notification_options(host_action_on value) throw() {
 }
 
 void contact::set_host_notification_option(host_action_on value) throw() {
-  _host_notification_options = (host_action_on)(_host_notification_options | value);
+  _host_notification_options
+    = (host_action_on)(_host_notification_options | value);
 }
 
 bool contact::can_be_notified_for_host(host_action_on value) const throw() {
@@ -265,11 +267,14 @@ void contact::set_service_notification_options(service_action_on value) throw() 
   _service_notification_options = value;
 }
 
-void contact::set_service_notification_option(service_action_on value) throw() {
-  _service_notification_options = (service_action_on)(_service_notification_options | value);
+void contact::set_service_notification_option(
+                service_action_on value) throw() {
+  _service_notification_options =
+    (service_action_on)(_service_notification_options | value);
 }
 
-bool contact::can_be_notified_for_service(service_action_on value) const throw() {
+bool contact::can_be_notified_for_service(
+                service_action_on value) const throw() {
   return (_service_notification_options & value);
 }
 
@@ -291,21 +296,28 @@ void contact::set_service_notifications_enabled(bool value) throw() {
 
 bool contact::can_be_notified(node_state state, bool isHost) const throw() {
   if (isHost) {
-    if (state == node_state::ok && can_be_notified_for_host(host_up))
+    if (state == node_state::ok
+        && can_be_notified_for_host(host_up))
       return (true);
-    else if (state == node_state::host_down && can_be_notified_for_host(host_down))
+    else if (state == node_state::host_down
+             && can_be_notified_for_host(host_down))
       return (true);
-    else if (state == node_state::host_unreachable && can_be_notified_for_host(host_unreachable))
+    else if (state == node_state::host_unreachable
+             && can_be_notified_for_host(host_unreachable))
       return (true);
   }
   else {
-    if (state == node_state::ok && can_be_notified_for_service(service_ok))
+    if (state == node_state::ok
+        && can_be_notified_for_service(service_ok))
       return (true);
-    else if (state == node_state::service_warning && can_be_notified_for_service(service_warning))
+    else if (state == node_state::service_warning
+             && can_be_notified_for_service(service_warning))
       return (true);
-    else if (state == node_state::service_critical && can_be_notified_for_service(service_critical))
+    else if (state == node_state::service_critical
+             && can_be_notified_for_service(service_critical))
       return (true);
-    else if (state == node_state::service_unknown && can_be_notified_for_service(service_unknown))
+    else if (state == node_state::service_unknown
+             && can_be_notified_for_service(service_unknown))
       return (true);
   }
   return (false);

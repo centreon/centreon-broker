@@ -70,37 +70,40 @@ namespace        notification {
 
   private:
     stream&      operator=(stream const& s);
-    std::auto_ptr<QSqlDatabase>           _centreon_db;
-    std::auto_ptr<notification_scheduler> _notif_scheduler;
-    bool                                  _process_out;
-    unsigned int                          _queries_per_transaction;
-    unsigned int                          _transaction_queries;
-    bool                                  _with_state_events;
-    unsigned int                          _instance_timeout;
+    std::auto_ptr<QSqlDatabase>
+                 _centreon_db;
+    std::auto_ptr<notification_scheduler>
+                 _notif_scheduler;
+    bool         _process_out;
+    unsigned int _queries_per_transaction;
+    unsigned int _transaction_queries;
+    bool         _with_state_events;
+    unsigned int _instance_timeout;
 
-    state                                 _state;
-    node_cache&                           _node_cache;
+    state        _state;
+    node_cache&  _node_cache;
 
-    void                    _open_db(std::auto_ptr<QSqlDatabase>& db,
-                                     QString const& t,
-                                     QString const& host,
-                                     unsigned short port,
-                                     QString const& user,
-                                     QString const& password,
-                                     QString const& db_name,
-                                     QString const& id,
-                                     bool check_replication);
-    void                    _clone_db(
-                              std::auto_ptr<QSqlDatabase>& db,
-                              std::auto_ptr<QSqlDatabase> const& db_to_clone,
-                              QString const& id);
-    void                    _update_objects_from_db();
-    void                    _process_service_status_event(
-                              neb::service_status const& event);
-    void                    _process_host_status_event(
-                              neb::host_status const& event);
-    void                    _process_issue_parent_event(
-                              correlation::issue_parent const& event);
+    void         _open_db(
+                   std::auto_ptr<QSqlDatabase>& db,
+                   QString const& t,
+                   QString const& host,
+                   unsigned short port,
+                   QString const& user,
+                   QString const& password,
+                   QString const& db_name,
+                   QString const& id,
+                   bool check_replication);
+    void         _clone_db(
+                   std::auto_ptr<QSqlDatabase>& db,
+                   std::auto_ptr<QSqlDatabase> const& db_to_clone,
+                   QString const& id);
+    void         _update_objects_from_db();
+    void         _process_service_status_event(
+                   neb::service_status const& event);
+    void         _process_host_status_event(
+                   neb::host_status const& event);
+    void         _process_issue_parent_event(
+                   correlation::issue_parent const& event);
   };
 }
 

@@ -46,12 +46,15 @@ namespace         notification {
      *  @param[in] id The id of the dependency.
      *  @param[in] d The dependency.
      */
-    virtual void  add_dependency(unsigned int id,
-                                 objects::dependency::ptr d) {}
-    virtual void  dependency_node_id_parent_relation(unsigned int dep_id,
-                                                     objects::node_id id) {}
-    virtual void  dependency_node_id_child_relation(unsigned int dep_id,
-                                                    objects::node_id id) {}
+    virtual void  add_dependency(
+                    unsigned int id,
+                    objects::dependency::ptr d) {}
+    virtual void  dependency_node_id_parent_relation(
+                    unsigned int dep_id,
+                    objects::node_id id) {}
+    virtual void  dependency_node_id_child_relation(
+                    unsigned int dep_id,
+                    objects::node_id id) {}
     virtual void  dependency_hostgroup_parent_relation(
                     unsigned int dep_id,
                     unsigned int hostgroup_id) {}
@@ -65,10 +68,12 @@ namespace         notification {
                     unsigned int dep_id,
                     unsigned int servicegroup_id) {}
 
-    virtual void  set_notification_failure_options(unsigned int dep_id,
-                                                   std::string const& line) {}
-    virtual void  set_execution_failure_options(unsigned int dep_id,
-                                                std::string const& line) {}
+    virtual void  set_notification_failure_options(
+                    unsigned int dep_id,
+                    std::string const& line) {}
+    virtual void  set_execution_failure_options(
+                    unsigned int dep_id,
+                    std::string const& line) {}
   };
 
 }

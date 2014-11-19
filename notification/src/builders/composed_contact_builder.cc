@@ -28,21 +28,21 @@ using namespace com::centreon::broker::notification::objects;
 composed_contact_builder::composed_contact_builder() {}
 
 void composed_contact_builder::add_contact(
-                                unsigned int id,
-                                contact::ptr con) {
+                                 unsigned int id,
+                                 contact::ptr con) {
   for (composed_builder<contact_builder>::iterator it(begin()),
-       end_it(end());
+                                                   end_it(end());
        it != end_it;
        ++it)
     (*it)->add_contact(id, con);
 }
 
 void composed_contact_builder::add_contact_param(
-                                unsigned int contact_id,
-                                std::string const& key,
-                                std::string const& value) {
+                                 unsigned int contact_id,
+                                 std::string const& key,
+                                 std::string const& value) {
   for (composed_builder<contact_builder>::iterator it(begin()),
-       end_it(end());
+                                                   end_it(end());
        it != end_it;
        ++it)
     (*it)->add_contact_param(contact_id, key, value);

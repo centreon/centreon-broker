@@ -46,8 +46,9 @@ namespace         notification {
      *  @param[in] id The id of the downtime.
      *  @param[in] downtime The downtime.
      */
-    virtual void  add_downtime(unsigned int downtime_id,
-                               objects::downtime::ptr downtime) {}
+    virtual void  add_downtime(
+                    unsigned int downtime_id,
+                    objects::downtime::ptr downtime) {}
 
     /**
      *  Connect a downtime to a node_id.
@@ -55,8 +56,9 @@ namespace         notification {
      *  @param[in] downtime  The id of the downtime.
      *  @param[in] node_id   The node id associated with this downtime.
      */
-    virtual void  connect_downtime_to_node(unsigned int downtime_id,
-                                           objects::node_id node_id) {};
+    virtual void  connect_downtime_to_node(
+                    unsigned int downtime_id,
+                    objects::node_id node_id) {}
   };
 
 }

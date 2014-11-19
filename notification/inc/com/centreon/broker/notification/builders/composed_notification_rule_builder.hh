@@ -27,20 +27,21 @@
 
 CCB_BEGIN()
 
-namespace       notification {
+namespace         notification {
   /**
    *  @class composed_notification_rule_builder composed_notification_rule_builder.hh "com/centreon/broker/notification/builders/composed_notification_rule_builder.hh"
    *  @brief Composed notification rule builder.
    *
    *  This class forward its method call to several other builders.
    */
-  class           composed_notification_rule_builder :
-                    public composed_builder<notification_rule_builder> {
+  class           composed_notification_rule_builder
+                    : public composed_builder<notification_rule_builder> {
   public:
                   composed_notification_rule_builder();
 
-    virtual void  add_rule(unsigned int rule_id,
-                           objects::notification_rule::ptr rule);
+    virtual void  add_rule(
+                    unsigned int rule_id,
+                    objects::notification_rule::ptr rule);
   };
 
 }

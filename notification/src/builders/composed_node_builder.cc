@@ -29,6 +29,8 @@ composed_node_builder::composed_node_builder() {}
 
 void composed_node_builder::add_node(node::ptr node) {
   for (composed_builder<node_builder>::iterator it(begin()),
-       it_end(end()); it != it_end; ++it)
+                                                it_end(end());
+       it != it_end;
+       ++it)
     (*it)->add_node(node);
 }

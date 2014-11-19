@@ -46,8 +46,9 @@ namespace       notification {
      *  @param[in] id The id of the node being acknowledged.
      *  @param[in] ack The acknowledgement.
      */
-    virtual void add_ack(objects::node_id id,
-                         objects::acknowledgement::ptr ack) {}
+    virtual void add_ack(
+                   objects::node_id id,
+                   objects::acknowledgement::ptr ack) {}
   };
 
 }

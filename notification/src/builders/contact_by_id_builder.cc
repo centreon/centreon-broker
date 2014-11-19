@@ -28,7 +28,7 @@ using namespace com::centreon::broker::notification::objects;
  *  @param[in] table  The table to fill.
  */
 contact_by_id_builder::contact_by_id_builder(
-    QHash<unsigned int, objects::contact::ptr>& table)
+                         QHash<unsigned int, objects::contact::ptr>& table)
   : _table(table) {}
 
 /**
@@ -37,7 +37,8 @@ contact_by_id_builder::contact_by_id_builder(
  *  @param[in] id   The id of the contact.
  *  @param[in] con  The contact to add.
  */
-void contact_by_id_builder::add_contact(unsigned int id,
-                                        objects::contact::ptr con) {
+void contact_by_id_builder::add_contact(
+                              unsigned int id,
+                              objects::contact::ptr con) {
   _table[id] = con;
 }

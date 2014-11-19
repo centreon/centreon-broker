@@ -35,8 +35,8 @@ using namespace com::centreon::broker;
  *  @return The logging stream.
  */
 logging::temp_logger& logging::operator<<(
-    logging::temp_logger const& left,
-    notification::objects::node_id const& obj) throw()
+                        logging::temp_logger const& left,
+                        notification::objects::node_id const& obj) throw()
 {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
   tmp LOG_MEMBER(node_id, get_host_id)
@@ -52,8 +52,8 @@ logging::temp_logger& logging::operator<<(
  *  @return The logging stream.
  */
 logging::temp_logger& logging::operator<<(
-    logging::temp_logger const& left,
-    notification::objects::command const& obj) throw() {
+                        logging::temp_logger const& left,
+                        notification::objects::command const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
   tmp LOG_MEMBER(command, get_name);
   return (tmp);
@@ -67,8 +67,8 @@ logging::temp_logger& logging::operator<<(
  *  @return The logging stream.
  */
 logging::temp_logger& logging::operator<<(
-    logging::temp_logger const& left,
-    notification::objects::downtime const& obj) throw() {
+                        logging::temp_logger const& left,
+                        notification::objects::downtime const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
   tmp LOG_MEMBER(downtime, get_entry_time)
       LOG_MEMBER(downtime, get_author)
@@ -94,8 +94,8 @@ logging::temp_logger& logging::operator<<(
  *  @return The logging stream.
  */
 logging::temp_logger& logging::operator<<(
-    logging::temp_logger const& left,
-    notification::objects::dependency const& obj) throw() {
+                        logging::temp_logger const& left,
+                        notification::objects::dependency const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
   tmp LOG_MEMBER(dependency, is_host_dependency)
       LOG_MEMBER(dependency, is_service_dependency)
@@ -115,8 +115,8 @@ logging::temp_logger& logging::operator<<(
  *  @return The logging stream.
  */
 logging::temp_logger& logging::operator<<(
-    logging::temp_logger const& left,
-    notification::objects::contact const& obj) throw() {
+                        logging::temp_logger const& left,
+                        notification::objects::contact const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
   tmp LOG_MEMBER(contact, get_alias)
       LOG_MEMBER(contact, get_address)
@@ -144,8 +144,8 @@ logging::temp_logger& logging::operator<<(
  *  @return The logging stream.
  */
 logging::temp_logger& logging::operator<<(
-    logging::temp_logger const& left,
-    notification::objects::timeperiod const& obj) throw() {
+                        logging::temp_logger const& left,
+                        notification::objects::timeperiod const& obj) throw() {
   // TODO: Exceptions, timeranges.
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
   tmp LOG_MEMBER(timeperiod, get_alias)
@@ -162,8 +162,8 @@ logging::temp_logger& logging::operator<<(
  *  @return The logging stream.
  */
 logging::temp_logger& logging::operator<<(
-    logging::temp_logger const& left,
-    notification::objects::node const& obj) throw() {
+                        logging::temp_logger const& left,
+                        notification::objects::node const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
   tmp LOG_MEMBER(node, get_notification_number)
       LOG_MEMBER(node, get_last_notification_time)
@@ -174,8 +174,8 @@ logging::temp_logger& logging::operator<<(
 }
 
 logging::temp_logger& logging::operator<<(
-    temp_logger const& left,
-    notification::objects::notification_method const& obj) throw() {
+           temp_logger const& left,
+           notification::objects::notification_method const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
   tmp LOG_MEMBER(notification_method, get_name)
       LOG_MEMBER(notification_method, get_command_id)
@@ -188,8 +188,8 @@ logging::temp_logger& logging::operator<<(
 }
 
 logging::temp_logger& logging::operator<<(
-    temp_logger const& left,
-    notification::objects::notification_rule const& obj) throw() {
+           temp_logger const& left,
+           notification::objects::notification_rule const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
   tmp LOG_MEMBER(notification_rule, get_method_id)
       LOG_MEMBER(notification_rule, get_timeperiod_id)
@@ -206,8 +206,8 @@ logging::temp_logger& logging::operator<<(
  *  @return The logging stream.
  */
 logging::temp_logger& logging::operator<<(
-    logging::temp_logger const& left,
-    notification::objects::acknowledgement const& obj) throw() {
+           logging::temp_logger const& left,
+           notification::objects::acknowledgement const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
   tmp LOG_MEMBER(acknowledgement, get_type)
       LOG_MEMBER(acknowledgement, get_acknowledgement_type)

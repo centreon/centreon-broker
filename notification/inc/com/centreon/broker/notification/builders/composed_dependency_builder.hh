@@ -28,39 +28,45 @@
 
 CCB_BEGIN()
 
-namespace       notification {
+namespace         notification {
   /**
    *  @class composed_dependency_builder composed_dependency_builder.hh "com/centreon/broker/notification/builders/composed_dependency_builder.hh"
    *  @brief Composed dependency builder.
    *
    *  This class forward its method call to several other builders.
    */
-  class           composed_dependency_builder : public composed_builder<dependency_builder> {
+  class           composed_dependency_builder
+                    : public composed_builder<dependency_builder> {
   public:
                   composed_dependency_builder();
 
-    virtual void  add_dependency(unsigned int id,
-                                 objects::dependency::ptr d);
-    virtual void  dependency_node_id_parent_relation(unsigned int dep_id,
-                                                     objects::node_id id);
-    virtual void  dependency_node_id_child_relation(unsigned int dep_id,
-                                                    objects::node_id id);
+    virtual void  add_dependency(
+                    unsigned int id,
+                    objects::dependency::ptr d);
+    virtual void  dependency_node_id_parent_relation(
+                    unsigned int dep_id,
+                    objects::node_id id);
+    virtual void  dependency_node_id_child_relation(
+                    unsigned int dep_id,
+                    objects::node_id id);
     virtual void  dependency_hostgroup_parent_relation(
-         unsigned int dep_id,
-         unsigned int hostgroup_id);
+                    unsigned int dep_id,
+                    unsigned int hostgroup_id);
     virtual void  dependency_hostgroup_child_relation(
-         unsigned int dep_id,
-         unsigned int hostgroup_id);
+                    unsigned int dep_id,
+                    unsigned int hostgroup_id);
     virtual void  dependency_servicegroup_child_relation(
-         unsigned int dep_id,
-         unsigned int servicegroup_id);
+                    unsigned int dep_id,
+                    unsigned int servicegroup_id);
     virtual void  dependency_servicegroup_parent_relation(
-         unsigned int dep_id,
-         unsigned int servicegroup_id);
-    virtual void  set_notification_failure_options(unsigned int dep_id,
-         std::string const& line);
-    virtual void  set_execution_failure_options(unsigned int dep_id,
-         std::string const& line);
+                    unsigned int dep_id,
+                    unsigned int servicegroup_id);
+    virtual void  set_notification_failure_options(
+                    unsigned int dep_id,
+                    std::string const& line);
+    virtual void  set_execution_failure_options(
+                    unsigned int dep_id,
+                    std::string const& line);
   };
 
 }

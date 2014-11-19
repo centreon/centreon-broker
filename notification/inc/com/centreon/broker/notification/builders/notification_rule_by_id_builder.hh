@@ -37,10 +37,11 @@ namespace       notification {
                   : public composed_builder<notification_rule_builder> {
   public:
     notification_rule_by_id_builder(
-          QHash<unsigned int, objects::notification_rule::ptr>& table);
+      QHash<unsigned int, objects::notification_rule::ptr>& table);
 
-    void        add_rule(unsigned int id,
-                         objects::notification_rule::ptr con);
+    void        add_rule(
+                  unsigned int id,
+                  objects::notification_rule::ptr con);
 
   private:
     QHash<unsigned int, objects::notification_rule::ptr>&

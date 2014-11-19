@@ -170,7 +170,7 @@ void notification_scheduler::_process_actions() {
  *  @param[in] actions  The actions to schedule.
  */
 void notification_scheduler::_schedule_actions(
-          std::vector<std::pair<time_t, action> > const& actions) {
+       std::vector<std::pair<time_t, action> > const& actions) {
   for (std::vector<std::pair<time_t, action> >::const_iterator
           it(actions.begin()),
           end(actions.end());

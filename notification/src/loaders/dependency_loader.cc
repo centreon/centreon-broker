@@ -53,8 +53,9 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
 
   // Load the dependencies.
   if (!query.exec("SELECT dep_id, dep_name, dep_description, inherits_parent,"
-                  "execution_failure_criteria, notification_failure_criteria"
-                  " FROM rt_dependency"))
+                  "       execution_failure_criteria,"
+                  "       notification_failure_criteria"
+                  "  FROM rt_dependency"))
     throw (exceptions::msg()
       << "Notification: cannot select rt_dependency in loader: "
       << query.lastError().text());
@@ -64,9 +65,9 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
     unsigned int id = query.value(0).toUInt();
     dep->set_inherits_parent(query.value(3).toBool());
     dep_execution_failure_options.push_back(
-          std::make_pair(id, query.value(4).toString().toStdString()));
+      std::make_pair(id, query.value(4).toString().toStdString()));
     dep_notification_failure_options.push_back(
-          std::make_pair(id, query.value(5).toString().toStdString()));
+      std::make_pair(id, query.value(5).toString().toStdString()));
 
     output->add_dependency(id, dep);
   }
@@ -93,46 +94,51 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
  *  @param[in] query    A query object linked to the db.
  *  @param[out] output  An output dependency builder to load the relations.
  */
-void dependency_loader::_load_relations(QSqlQuery& query,
-                                        dependency_builder& output) {
+void dependency_loader::_load_relations(
+                          QSqlQuery& query,
+                          dependency_builder& output) {
 
   if (!query.exec("SELECT dependency_dep_id, host_host_id"
-                  " FROM rt_dependency_hostChild_relation"))
+                  "  FROM rt_dependency_hostChild_relation"))
     throw (exceptions::msg()
       << "Notification: cannot select rt_dependency_hostChild_relation in loader: "
       << query.lastError().text());
   while (query.next())
-    output.dependency_node_id_child_relation(query.value(0).toUInt(),
-                                             node_id(query.value(1).toUInt()));
+    output.dependency_node_id_child_relation(
+             query.value(0).toUInt(),
+             node_id(query.value(1).toUInt()));
 
   if (!query.exec("SELECT dependency_dep_id, host_host_id"
-                  " FROM rt_dependency_hostParent_relation"))
+                  "  FROM rt_dependency_hostParent_relation"))
     throw (exceptions::msg()
       << "Notification: cannot select rt_dependency_hostParent_relation in loader: "
       << query.lastError().text());
   while (query.next())
-    output.dependency_node_id_parent_relation(query.value(0).toUInt(),
-                                              node_id(query.value(1).toUInt()));
+    output.dependency_node_id_parent_relation(
+             query.value(0).toUInt(),
+             node_id(query.value(1).toUInt()));
 
   if (!query.exec("SELECT dependency_dep_id, service_service_id, host_host_id"
-                  " FROM rt_dependency_serviceChild_relation"))
+                  "  FROM rt_dependency_serviceChild_relation"))
     throw (exceptions::msg()
       << "Notification: cannot select rt_dependency_serviceChild_relation in loader: "
       << query.lastError().text());
   while (query.next())
-    output.dependency_node_id_child_relation(query.value(0).toUInt(),
-                                             node_id(query.value(2).toUInt(),
-                                                     query.value(1).toUInt()));
+    output.dependency_node_id_child_relation(
+             query.value(0).toUInt(),
+             node_id(query.value(2).toUInt(),
+             query.value(1).toUInt()));
 
   if (!query.exec("SELECT dependency_dep_id, service_service_id, host_host_id"
-                  " FROM rt_dependency_serviceParent_relation"))
+                  "  FROM rt_dependency_serviceParent_relation"))
     throw (exceptions::msg()
       << "Notification: cannot select rt_dependency_serviceParent_relation in loader: "
       << query.lastError().text());
   while (query.next())
-    output.dependency_node_id_parent_relation(query.value(0).toUInt(),
-                                              node_id(query.value(2).toUInt(),
-                                                      query.value(1).toUInt()));
+    output.dependency_node_id_parent_relation(
+             query.value(0).toUInt(),
+             node_id(query.value(2).toUInt(),
+             query.value(1).toUInt()));
   _load_relation(query, output,
                  "servicegroup_sg_id",
                  "rt_dependency_servicegroupParent_relation",

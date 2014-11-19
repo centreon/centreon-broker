@@ -27,9 +27,12 @@ using namespace com::centreon::broker::notification::objects;
  */
 composed_acknowledgement_builder::composed_acknowledgement_builder() {}
 
-void composed_acknowledgement_builder::add_ack(node_id id,
-                                               acknowledgement::ptr ack) {
+void composed_acknowledgement_builder::add_ack(
+                                         node_id id,
+                                         acknowledgement::ptr ack) {
   for (composed_builder<acknowledgement_builder>::iterator it(begin()),
-       it_end(end()); it != it_end; ++it)
+                                                           it_end(end());
+       it != it_end;
+       ++it)
     (*it)->add_ack(id, ack);
 }

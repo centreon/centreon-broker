@@ -161,8 +161,8 @@ void action::set_at(time_t at) throw() {
  *
  */
 void action::process_action(
-      state& st,
-      std::vector<std::pair<time_t, action> >& spawned_actions) const {
+       state& st,
+       std::vector<std::pair<time_t, action> >& spawned_actions) const {
   if (_act == unknown || _id == node_id())
     return;
 
@@ -227,7 +227,7 @@ void action::_spawn_notification_attempts(
  *  @return        True if the checks were successful.
  */
 bool action::_check_action_viability(
-              ::com::centreon::broker::notification::state& st) const {
+               ::com::centreon::broker::notification::state& st) const {
   logging::debug(logging::low)
       << "Notification: Checking action viability for node (host id = "
       << _id.get_host_id() << ", service_id = " << _id.get_service_id()
@@ -252,8 +252,8 @@ bool action::_check_action_viability(
  *  @param[out] spawned_actions   The action to add to the queue after the processing.
  */
 void action::_process_notification(
-      state& st,
-      std::vector<std::pair<time_t, action> >& spawned_actions) const {
+       state& st,
+       std::vector<std::pair<time_t, action> >& spawned_actions) const {
 
   logging::debug(logging::low)
       << "Notification: Processing notification action for notification_rule ("

@@ -61,10 +61,12 @@ namespace             notification {
                _general_condition;
 
     void       _process_actions();
-    void       _schedule_actions(std::vector<std::pair<time_t, action> > const& actions);
+    void       _schedule_actions(
+                 std::vector<std::pair<time_t, action> > const& actions);
 
-    notification_scheduler(notification_scheduler const& obj);
-    notification_scheduler& operator=(notification_scheduler const& obj);
+                notification_scheduler(notification_scheduler const& obj);
+    notification_scheduler&
+                operator=(notification_scheduler const& obj);
 
     ::com::centreon::broker::notification::state&
                 _state;

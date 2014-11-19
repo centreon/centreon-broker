@@ -28,8 +28,8 @@
 
 CCB_BEGIN()
 
-namespace                 notification {
-  namespace               objects {
+namespace                   notification {
+  namespace                 objects {
     /**
      *  @class dependency dependency.hh "com/centreon/broker/notification/objects/dependency.hh"
      *  @brief Dependency object.
@@ -79,8 +79,10 @@ namespace                 notification {
       dependency_kind       get_kind() const throw();
       void                  set_kind(dependency_kind val) throw();
       action_on             get_execution_failure_options() const throw();
-      void                  set_execution_failure_options(action_on val) throw();
-      void                  set_execution_failure_option(action_on val) throw();
+      void                  set_execution_failure_options(
+                              action_on val) throw();
+      void                  set_execution_failure_option(
+                              action_on val) throw();
       bool                  is_execution_failure_option_set(
                               action_on val) throw();
       bool                  get_inherits_parent() const throw();
@@ -107,8 +109,8 @@ namespace                 notification {
       action_on             _notification_failure_options;
 
       struct                name_to_action {
-        const char* name;
-        action_on action;
+        const char*         name;
+        action_on           action;
       };
 
       static const name_to_action

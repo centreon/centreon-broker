@@ -36,11 +36,12 @@ namespace       notification {
   class         contact_by_id_builder
                   : public composed_builder<contact_builder> {
   public:
-    contact_by_id_builder(
-          QHash<unsigned int, objects::contact::ptr>& table);
+                contact_by_id_builder(
+                  QHash<unsigned int, objects::contact::ptr>& table);
 
-    void        add_contact(unsigned int id,
-                            objects::contact::ptr con);
+    void        add_contact(
+                  unsigned int id,
+                  objects::contact::ptr con);
 
   private:
     QHash<unsigned int, objects::contact::ptr>&

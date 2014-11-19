@@ -28,15 +28,15 @@
 
 CCB_BEGIN()
 
-namespace       notification {
+namespace         notification {
   /**
    *  @class composed_notification_method_builder composed_notification_method_builder.hh "com/centreon/broker/notification/builders/composed_notification_method_builder.hh"
    *  @brief Composed notification method builder.
    *
    *  This class forward its method call to several other builders.
    */
-  class           composed_notification_method_builder :
-                    public composed_builder<notification_method_builder> {
+  class           composed_notification_method_builder
+                    : public composed_builder<notification_method_builder> {
   public:
                   composed_notification_method_builder();
 

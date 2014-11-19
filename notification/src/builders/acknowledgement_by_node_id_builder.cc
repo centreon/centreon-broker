@@ -28,11 +28,11 @@ using namespace com::centreon::broker::notification::objects;
  *  @param[in,out] table  The table to fill.
  */
 acknowledgement_by_node_id_builder::acknowledgement_by_node_id_builder(
-    QMultiHash<node_id, acknowledgement::ptr>& table) :
-  _table(table) {}
+    QMultiHash<node_id, acknowledgement::ptr>& table)
+  : _table(table) {}
 
 void acknowledgement_by_node_id_builder::add_ack(
-    node_id id,
-    acknowledgement::ptr ack) {
+                                           node_id id,
+                                           acknowledgement::ptr ack) {
   _table.insert(id, ack);
 }

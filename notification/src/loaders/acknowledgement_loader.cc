@@ -37,8 +37,9 @@ acknowledgement_loader::acknowledgement_loader() {}
  *  @param[in] db       An open connection to the database.
  * @param[out] output   An acknowledgement builder object to register the acknowledgements.
  */
-void acknowledgement_loader::load(QSqlDatabase* db,
-                                  acknowledgement_builder* output) {
+void acknowledgement_loader::load(
+                               QSqlDatabase* db,
+                               acknowledgement_builder* output) {
   // If we don't have any db or output, don't do anything.
   if (!db || !output)
     return;
@@ -50,7 +51,7 @@ void acknowledgement_loader::load(QSqlDatabase* db,
 
   // Load the acknowledgements for the hosts.
   if (!query.exec("SELECT host_id, acknowledgement_type"
-                  " FROM cfg_hosts WHERE acknowledged = true"))
+                  "  FROM cfg_hosts WHERE acknowledged = true"))
     throw (exceptions::msg()
       << "Notification: cannot select cfg_hosts in loader: "
       << query.lastError().text());
@@ -67,7 +68,7 @@ void acknowledgement_loader::load(QSqlDatabase* db,
 
   // Loads the acknowledgements for the services.
   if (!query.exec("SELECT host_id, service_id, acknowledgement_type"
-                  " FROM cfg_services WHERE acknowledged = true"))
+                  "  FROM cfg_services WHERE acknowledged = true"))
     throw (exceptions::msg()
       << "Notification: cannot select cfg_services in loader: "
       << query.lastError().text());
@@ -91,8 +92,9 @@ void acknowledgement_loader::load(QSqlDatabase* db,
  *  @param[in] new_ack       The acknowledgement event.
  * @param[out] output        The acknowledgement builder used to register the downtime.
  */
-void acknowledgement_loader::new_ack(neb::acknowledgement& new_ack,
-                                     acknowledgement_builder& output) {
+void acknowledgement_loader::new_ack(
+                               neb::acknowledgement& new_ack,
+                               acknowledgement_builder& output) {
   acknowledgement::ptr ack;
   ack->set_acknowledgement_type(new_ack.acknowledgement_type);
   ack->set_host_id(new_ack.host_id);

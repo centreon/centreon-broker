@@ -73,9 +73,12 @@ namespace               notification {
                         node_notification_opt(notification_type type);
                         node_notification_opt(int);
                         node_notification_opt(node_notification_opt const&);
-      node_notification_opt& operator=(node_notification_opt const&);
-      bool              operator==(node_notification_opt const& opt) const throw();
-      bool              operator==(node_notification_opt::notification_type type) const throw();
+      node_notification_opt&
+                        operator=(node_notification_opt const&);
+      bool              operator==(
+                          node_notification_opt const& opt) const throw();
+      bool              operator==(
+                          node_notification_opt::notification_type type) const throw();
 
 
       operator          int() const throw();

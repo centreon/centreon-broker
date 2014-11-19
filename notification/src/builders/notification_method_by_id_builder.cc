@@ -23,11 +23,11 @@ using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
 notification_method_by_id_builder::notification_method_by_id_builder(
-    QHash<unsigned int,objects::notification_method::ptr>& map)
+  QHash<unsigned int,objects::notification_method::ptr>& map)
   : _map(map) {}
 
 void notification_method_by_id_builder::add_notification_method(
-        unsigned int method_id,
-        notification_method::ptr method) {
+                                          unsigned int method_id,
+                                          notification_method::ptr method) {
   _map[method_id] = method;
 }

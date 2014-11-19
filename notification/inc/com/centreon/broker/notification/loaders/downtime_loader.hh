@@ -28,20 +28,21 @@
 
 CCB_BEGIN()
 
-namespace       notification {
+namespace  notification {
   /**
    *  @class downtime_loader downtime_loader.hh "com/centreon/broker/notification/loaders/downtime_loader.hh"
    *  @brief Loader for downtime objects.
    *
    *  This loader loads the downtimes from the database.
    */
-  class   downtime_loader {
+  class    downtime_loader {
   public:
-          downtime_loader();
+           downtime_loader();
 
-    void  load(QSqlDatabase* db, downtime_builder* output);
-    void  new_downtime(neb::downtime& new_downtime,
-                       downtime_builder& output);
+    void   load(QSqlDatabase* db, downtime_builder* output);
+    void   new_downtime(
+             neb::downtime& new_downtime,
+             downtime_builder& output);
   };
 
 }

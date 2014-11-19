@@ -36,7 +36,7 @@ namespace       notification {
    */
   class         timeperiod_loader {
   public:
-    timeperiod_loader();
+                timeperiod_loader();
 
     void        load(QSqlDatabase* db, timeperiod_builder* output);
 

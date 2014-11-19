@@ -37,10 +37,11 @@ namespace       notification {
                   : public composed_builder<timeperiod_builder> {
   public:
     timeperiod_by_id_builder(
-          QHash<unsigned int, objects::timeperiod::ptr>& table);
+      QHash<unsigned int, objects::timeperiod::ptr>& table);
 
-    void        add_timeperiod(unsigned int id,
-                                objects::timeperiod::ptr con);
+    void        add_timeperiod(
+                  unsigned int id,
+                  objects::timeperiod::ptr con);
 
   private:
     QHash<unsigned int, objects::timeperiod::ptr>&

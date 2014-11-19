@@ -173,8 +173,9 @@ std::list<timerange> const&
  *  @param[in] val The new timeranges to set.
  *  @param[in] day The day (from 0 to 6).
  */
-void timeperiod::set_timerange(std::list<timerange> const& val,
-                               int day) {
+void timeperiod::set_timerange(
+                   std::list<timerange> const& val,
+                   int day) {
   if (day < 0 || day > 6)
     return;
   _timeranges[day] = val;
@@ -186,8 +187,9 @@ void timeperiod::set_timerange(std::list<timerange> const& val,
  *  @param[in] timerange_text  The timerange in a textual format.
  *  @param[in] day             The day of the timerange.
  */
-void timeperiod::set_timerange(std::string const& timerange_text,
-                               int day) {
+void timeperiod::set_timerange(
+                   std::string const& timerange_text,
+                   int day) {
   if (day < 0 || day > 6)
     return;
   timerange::build_timeranges_from_string(timerange_text, _timeranges[day]);

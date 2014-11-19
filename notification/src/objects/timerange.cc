@@ -183,9 +183,10 @@ unsigned long timerange::end_minute() const throw() {
  *
  *  @return True upon successful conversion.
  */
-bool timerange::to_time_t(struct tm const& midnight,
-                          time_t& range_start,
-                          time_t& range_end) const {
+bool timerange::to_time_t(
+                  struct tm const& midnight,
+                  time_t& range_start,
+                  time_t& range_end) const {
   struct tm my_tm;
   memcpy(&my_tm, &midnight, sizeof(my_tm));
   my_tm.tm_hour = start_hour();
@@ -197,8 +198,9 @@ bool timerange::to_time_t(struct tm const& midnight,
   return (true);
 }
 
-static bool _build_time_t(std::string const& time_str,
-                          unsigned long& ret) {
+static bool _build_time_t(
+              std::string const& time_str,
+              unsigned long& ret) {
   std::size_t pos(time_str.find(':'));
   if (pos == std::string::npos)
     return (false);
@@ -220,8 +222,9 @@ static bool _build_time_t(std::string const& time_str,
  *
  *  @return  True if the string was successfully parsed.
  */
-bool timerange::build_timeranges_from_string(std::string const& line,
-                                             std::list<timerange>& timeranges) {
+bool timerange::build_timeranges_from_string(
+                  std::string const& line,
+                  std::list<timerange>& timeranges) {
   std::list<std::string> timeranges_str;
   string::split(line, timeranges_str, ',');
   for (std::list<std::string>::const_iterator

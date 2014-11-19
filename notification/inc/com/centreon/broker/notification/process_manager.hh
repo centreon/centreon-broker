@@ -44,8 +44,9 @@ namespace                     notification {
     static void               release();
 
     virtual void              run();
-    void                      create_process(std::string const& command,
-                                             unsigned int timeout = 0);
+    void                      create_process(
+                                std::string const& command,
+                                unsigned int timeout = 0);
 
     void                      add_timeout(unsigned int timeout);
 

@@ -28,12 +28,11 @@ using namespace com::centreon::broker::notification::objects;
 composed_notification_rule_builder::composed_notification_rule_builder() {}
 
 void composed_notification_rule_builder::add_rule(
-        unsigned int rule_id,
-        objects::notification_rule::ptr rule) {
+       unsigned int rule_id,
+       objects::notification_rule::ptr rule) {
   for (composed_builder<notification_rule_builder>::iterator it(begin()),
                                                              it_end(end());
        it != it_end;
        ++it)
-    (*it)->add_rule(rule_id,
-                    rule);
+    (*it)->add_rule(rule_id, rule);
 }

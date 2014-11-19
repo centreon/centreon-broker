@@ -34,11 +34,13 @@ namespace           notification {
                       : public notification_rule_builder {
   public:
                     notification_rule_by_node_builder(
-                      QMultiHash<objects::node_id,
-                                 objects::notification_rule::ptr>& map);
+                      QMultiHash<
+                        objects::node_id,
+                        objects::notification_rule::ptr>& map);
 
-    virtual void    add_rule(unsigned int rule_id,
-                             objects::notification_rule::ptr rule);
+    virtual void    add_rule(
+                      unsigned int rule_id,
+                      objects::notification_rule::ptr rule);
   private:
                     notification_rule_by_node_builder();
 

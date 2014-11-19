@@ -156,7 +156,8 @@ void dependency::set_kind(dependency::dependency_kind val) throw() {
  *
  *  @return  The notification failure options.
  */
-dependency::action_on dependency::get_notification_failure_options() const throw() {
+dependency::action_on
+              dependency::get_notification_failure_options() const throw() {
   return (_notification_failure_options);
 }
 
@@ -185,7 +186,8 @@ void dependency::set_notification_failure_option(action_on val) throw() {
  *
  *  @return     True if the notification failure option is set.
  */
-bool dependency::is_notification_failure_option_set(action_on val) const throw() {
+bool dependency::is_notification_failure_option_set(
+                   action_on val) const throw() {
   return (_notification_failure_options & val);
 }
 
@@ -207,7 +209,8 @@ void dependency::set_inherits_parent(bool val) throw() {
   _inherits_parent = val;
 }
 
-dependency::action_on dependency::get_execution_failure_options() const throw() {
+dependency::action_on
+  dependency::get_execution_failure_options() const throw() {
   return (_execution_failure_options);
 }
 
@@ -224,17 +227,20 @@ bool dependency::is_execution_failure_option_set(action_on val) throw() {
 }
 
 void dependency::parse_notification_failure_options(std::string const& line) {
-  _parse_failure_options(line,
-                         &dependency::set_notification_failure_option);
+  _parse_failure_options(
+    line,
+    &dependency::set_notification_failure_option);
 }
 
 void dependency::parse_execution_failure_options(std::string const& line) {
-  _parse_failure_options(line,
-                         &dependency::set_execution_failure_option);
+  _parse_failure_options(
+    line,
+    &dependency::set_execution_failure_option);
 }
 
-void dependency::_parse_failure_options(std::string const& line,
-                                         void (dependency::*func_to_call)(action_on)) {
+void dependency::_parse_failure_options(
+       std::string const& line,
+       void (dependency::*func_to_call)(action_on)) {
   // The options are type dependent. If we don't know our own type, then
   // we shouldn't try to parse anything to begin with.
   if (_type == unknown)
@@ -250,7 +256,9 @@ void dependency::_parse_failure_options(std::string const& line,
     static int service_actions_size = sizeof(_service_actions) / sizeof(_service_actions[0]);
     if (_type == host) {
       for (std::vector<std::string>::const_iterator it(tokens.begin()),
-           end(tokens.end()); it != end; ++it) {
+                                                    end(tokens.end());
+           it != end;
+           ++it) {
         for (int i = 0; i < host_actions_size; ++i) {
           if (*it == _host_actions[i].name)
             (this->*func_to_call)(_host_actions[i].action);
@@ -259,7 +267,9 @@ void dependency::_parse_failure_options(std::string const& line,
     }
     else {
       for (std::vector<std::string>::const_iterator it(tokens.begin()),
-           end(tokens.end()); it != end; ++it) {
+                                                    end(tokens.end());
+           it != end;
+           ++it) {
         for (int i = 0; i < service_actions_size; ++i) {
           if (*it == _service_actions[i].name)
             (this->*func_to_call)(_service_actions[i].action);

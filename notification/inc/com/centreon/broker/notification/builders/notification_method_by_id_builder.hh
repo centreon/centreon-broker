@@ -34,8 +34,9 @@ namespace           notification {
                       : public notification_method_builder {
   public:
                     notification_method_by_id_builder(
-                      QHash<unsigned int,
-                            objects::notification_method::ptr>& map);
+                      QHash<
+                        unsigned int,
+                        objects::notification_method::ptr>& map);
 
     virtual void    add_notification_method(
                       unsigned int method_id,

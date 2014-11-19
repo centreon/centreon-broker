@@ -222,7 +222,8 @@ node::ptr state::get_node_by_id(node_id id) {
  *
  *  @return        A list of notification_rule::ptr associated to this node.
  */
-QList<notification_rule::ptr> state::get_notification_rules_by_node(node_id id) {
+QList<notification_rule::ptr> state::get_notification_rules_by_node(
+                                       node_id id) {
   return (_notification_rules_by_node.values(id));
 }
 
@@ -245,7 +246,8 @@ notification_rule::ptr state::get_notification_rule_by_id(unsigned int id) {
  *
  *  @return        A notification_method::ptr the notification method, or a null notification_method::ptr.
  */
-notification_method::ptr state::get_notification_method_by_id(unsigned int id) {
+notification_method::ptr state::get_notification_method_by_id(
+                                  unsigned int id) {
   return (_notification_methods.value(id));
 }
 
