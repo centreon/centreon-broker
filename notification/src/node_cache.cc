@@ -18,18 +18,21 @@
 */
 
 #include <exception>
+#include <QMutexLocker>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/notification/node_cache.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::notification;
 
 /**
  *  Default constructor.
  */
-node_cache::node_cache() {}
+node_cache::node_cache()
+  : _mutex(QMutex::NonRecursive) {}
 
 /**
  *  Copy constructor.
@@ -156,6 +159,9 @@ void node_cache::process(bool in, bool out) {
  *  @param[out] d  An output data event.
  */
 void node_cache::read(misc::shared_ptr<io::data> &d) {
+
+  QMutexLocker lock(&_mutex);
+
   if (_host_statuses.empty() && _service_statuses.empty())
     throw (io::exceptions::shutdown(true, true)
            << "Node cache is empty");
@@ -187,9 +193,11 @@ unsigned int node_cache::write(misc::shared_ptr<io::data> const& data) {
   unsigned int retval(1);
 
   if (data.isNull())
-    return 1;
+    return (1);
 
   unsigned int type = data->type();
+
+  QMutexLocker lock(&_mutex);
 
   if (type == io::events::data_type<io::events::neb,
                                     neb::de_host_status>::value) {
@@ -203,4 +211,19 @@ unsigned int node_cache::write(misc::shared_ptr<io::data> const& data) {
         sst = data.staticCast<neb::service_status>();
     _service_statuses.insert(sst->service_id, sst);
   }
+
+  return (1);
+}
+
+
+std::vector<misc::shared_ptr<neb::service_status> >
+  node_cache::get_service_status(unsigned int id) {
+  QMutexLocker lock(&_mutex);
+  _service_statuses.get(id);
+}
+
+std::vector<misc::shared_ptr<neb::host_status> >
+  node_cache::get_host_status(unsigned int id) {
+  QMutexLocker lock(&_mutex);
+  _host_statuses.get(id);
 }

@@ -72,23 +72,22 @@ void command::set_name(std::string const& name) {
   _name = name;
 }
 
-/**
- *  Resolve this command.
- *
- *  @return  A string containing the resolved command.
- */
-std::string command::resolve(neb::host_status) {
+/*std::string command::resolve(neb::host_status) {
   std::string ret(_base_command);
 
   //string::replace_all(ret, "$HOSTADDRESS$", );
   return (ret);
-}
+}*/
 
 /**
  *  Resolve this command.
  *
+ *  @param[in] id     The id of the node being resolved.
+ *  @param[in] cache  A cache of data for the macros.
+ *
  *  @return  A string containing the resolved command.
  */
-std::string command::resolve(neb::service_status) {
-  return (_base_command); // STUB
+std::string command::resolve(node_id id, node_cache& cache) {
+  // STUB
+  return (std::string());
 }

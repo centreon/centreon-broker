@@ -22,13 +22,13 @@
 
 #  include <string>
 #  include <vector>
+#  include <QMutex>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/bbdo/stream.hh"
 #  include "com/centreon/broker/compression/stream.hh"
 #  include "com/centreon/broker/file/stream.hh"
 #  include "com/centreon/broker/notification/object_cache.hh"
-
 #  include "com/centreon/broker/neb/service_status.hh"
 #  include "com/centreon/broker/neb/host_status.hh"
 
@@ -56,11 +56,18 @@ namespace         notification {
     virtual unsigned int
                   write(const misc::shared_ptr<io::data> &d);
 
+    std::vector<misc::shared_ptr<neb::service_status> >
+                  get_service_status(unsigned int id);
+    std::vector< misc::shared_ptr<neb::host_status> >
+                  get_host_status(unsigned int id);
+
   private:
     object_cache<misc::shared_ptr<neb::service_status> >
                   _service_statuses;
     object_cache<misc::shared_ptr<neb::host_status> >
                   _host_statuses;
+
+    QMutex        _mutex;
   };
 }
 

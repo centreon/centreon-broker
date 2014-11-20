@@ -113,6 +113,7 @@ add_library("${NOTIFICATION}" SHARED
   "${INC_DIR}/com/centreon/broker/notification/objects/string.hh"
   "${INC_DIR}/com/centreon/broker/notification/objects/timerange.hh"
   "${INC_DIR}/com/centreon/broker/notification/objects/daterange.hh"
+  "${INC_DIR}/com/centreon/broker/notification/objects/time_info.hh"
   "${INC_DIR}/com/centreon/broker/notification/objects/timezone_manager.hh"
   "${INC_DIR}/com/centreon/broker/notification/objects/timezone_locker.hh"
   "${INC_DIR}/com/centreon/broker/notification/objects/node_id.hh"

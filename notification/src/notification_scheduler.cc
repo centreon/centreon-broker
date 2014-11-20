@@ -21,6 +21,7 @@
 #include <QMutexLocker>
 #include "com/centreon/broker/notification/notification_scheduler.hh"
 #include "com/centreon/broker/notification/state.hh"
+#include "com/centreon/broker/notification/node_cache.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker::notification;
@@ -28,11 +29,15 @@ using namespace com::centreon::broker::notification::objects;
 
 /**
  *  Default constructor.
+ *
+ *  @param[in] st     The state object.
+ *  @param[in] cache  The data cache object.
  */
-notification_scheduler::notification_scheduler(state& st)
+notification_scheduler::notification_scheduler(state& st, node_cache& cache)
   : _should_exit(false),
     _general_mutex(QMutex::NonRecursive),
-    _state(st) {}
+    _state(st),
+    _cache (cache) {}
 
 /**
  *  Called by the notification thread when it starts.
@@ -157,7 +162,7 @@ void notification_scheduler::_process_actions() {
       // Lock the state mutex.
       std::auto_ptr<QReadLocker> lock(_state.read_lock());
       // Process the action.
-      it->second->process_action(_state, spawned_actions);
+      it->second->process_action(_state, _cache, spawned_actions);
     }
     // Add the spawned action to the queue.
     _schedule_actions(spawned_actions);

@@ -21,7 +21,7 @@
 #  define CCB_NOTIFICATION_OBJECT_CACHE_HH
 
 #  include <string>
-#  include <queue>
+#  include <vector>
 #  include <map>
 #  include "com/centreon/broker/namespace.hh"
 
@@ -70,25 +70,25 @@ namespace             notification {
      */
     void              insert(unsigned int id,
                              T const& object) {
-      typename std::map<unsigned int, std::queue<T> >::iterator
+      typename std::map<unsigned int, std::vector<T> >::iterator
           found(_cache.find(id));
       if (found == _cache.end())
         _cache.insert(
-            std::make_pair(id, std::queue<T>())).first->second.push(object);
+            std::make_pair(id, std::vector<T>())).first->second.push_back(object);
       else {
-        found->second.push(object);
+        found->second.push_back(object);
         if (found->second.size() > cache_size)
-          found->second.pop();
+          found->second.erase(found->second.begin());
       }
     }
 
-    T                 get(unsigned int id) {
-      typename std::map<unsigned int, std::queue<T> >::iterator
+    std::vector<T>    get(unsigned int id) {
+      typename std::map<unsigned int, std::vector<T> >::iterator
           found(_cache.find(id));
       if (found == _cache.end())
-        return (T());
+        return (std::vector<T>());
       else
-        return (found->second.back());
+        return (found->second);
     }
 
     /**
@@ -109,10 +109,10 @@ namespace             notification {
       if (_cache.empty())
         return (T());
       else {
-        typename std::map<unsigned int, std::queue<T> >::iterator
+        typename std::map<unsigned int, std::vector<T> >::iterator
             begin = _cache.begin();
-        T ret = begin->second.back();
-        begin->second.pop();
+        T ret = *begin->second.begin();
+        begin->second.erase(begin->second.begin());
         if (begin->second.empty())
           _cache.erase(begin);
         return (ret);
@@ -122,7 +122,7 @@ namespace             notification {
     static const int cache_size = 2;
 
   private:
-    std::map<unsigned int, std::queue<T> >
+    std::map<unsigned int, std::vector<T> >
                      _cache;
   };
 }

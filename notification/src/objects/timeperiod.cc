@@ -747,7 +747,7 @@ static time_t _get_min_invalid_time_per_timeperiod(
     // calculate start of this future weekday
     time_t day_start((time_t)(ti.midnight + (days_into_the_future * 3600 * 24)));
 
-    // we already found a time from a higher-precendence
+    // we already found a time from a higher-precedence
     // date range exception
     if (day_start == earliest_day)
       continue;

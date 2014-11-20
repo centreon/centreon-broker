@@ -25,12 +25,14 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
 #  include "com/centreon/broker/notification/objects/contact.hh"
+#  include "com/centreon/broker/notification/node_cache.hh"
 
 CCB_BEGIN()
 
 namespace           notification {
   // Forward declaration.
   class state;
+
   /**
    *  @class action action.hh "com/centreon/broker/notification/action.hh"
    *  @brief Action object.
@@ -70,6 +72,7 @@ namespace           notification {
 
     void              process_action(
                         state& st,
+                        node_cache& cache,
                         std::vector<std::pair<time_t, action> >&
                           spawned_actions) const;
   private:
@@ -87,6 +90,7 @@ namespace           notification {
                         ::com::centreon::broker::notification::state& st) const;
     void              _process_notification(
                        ::com::centreon::broker::notification::state& st,
+                       node_cache& cache,
                         std::vector<std::pair<time_t, action> >&
                           spawned_actions) const;
   };

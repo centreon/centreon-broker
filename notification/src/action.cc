@@ -157,11 +157,13 @@ void action::set_at(time_t at) throw() {
  *  What is done changes based on the type of this notification.
  *
  *  @param[in] state            The notification state of the engine.
+ *  @param[in] cache            The data cache of the module.
  *  @param[out] spawned_actions The actions to add to the queue after the processing.
  *
  */
 void action::process_action(
        state& st,
+       node_cache& cache,
        std::vector<std::pair<time_t, action> >& spawned_actions) const {
   if (_act == unknown || _id == node_id())
     return;
@@ -169,7 +171,7 @@ void action::process_action(
   if (_act == notification_processing)
     _spawn_notification_attempts(st, spawned_actions);
   else if (_act == notification_attempt)
-    _process_notification(st, spawned_actions);
+    _process_notification(st, cache, spawned_actions);
 }
 
 /**
@@ -182,7 +184,7 @@ void action::process_action(
  *  @param[out] spawned_actions The actions to add to the queue after the processing.
  */
 void action::_spawn_notification_attempts(
-               ::com::centreon::broker::notification::state& st,
+               state& st,
                std::vector<std::pair<time_t, action> >& spawned_actions) const{
   logging::debug(logging::low)
       << "Notification: Spawning notification attempts for node (host id = "
@@ -251,10 +253,12 @@ bool action::_check_action_viability(
  *  Process a notification attempt.
  *
  *  @param[in] st                 The notification state of the engine.
+ *  @param[in] cache              The data cache of the module.
  *  @param[out] spawned_actions   The action to add to the queue after the processing.
  */
 void action::_process_notification(
        state& st,
+       node_cache& cache,
        std::vector<std::pair<time_t, action> >& spawned_actions) const {
 
   logging::debug(logging::low)
@@ -335,7 +339,7 @@ void action::_process_notification(
 
   // Send the notification.
   if (should_send_the_notification) {
-    std::string resolved_command /*= cmd.resolve()*/;
+    std::string resolved_command = cmd->resolve(_id, cache);
     process_manager& manager = process_manager::instance();
     manager.create_process(resolved_command);
   }

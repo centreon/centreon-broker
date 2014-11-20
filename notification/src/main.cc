@@ -33,8 +33,8 @@ extern "C" {
   void broker_module_deinit() {
     // Decrement instance number.
     if (!--instances) {
-      // Deregister NOTIFICATION layer.
-      io::protocols::instance().unreg("NOTIFICATION");
+      // Deregister notification layer.
+      io::protocols::instance().unreg("notification");
     }
     return ;
   }
@@ -51,11 +51,11 @@ extern "C" {
     if (!instances++) {
       // Notification module.
       logging::info(logging::high)
-        << "NOTIFICATION: module for Centreon Broker "
+        << "notification: module for Centreon Broker "
         << CENTREON_BROKER_VERSION;
 
       // Register Notification layer.
-      io::protocols::instance().reg("NOTIFICATION",
+      io::protocols::instance().reg("notification",
         notification::factory(),
         1,
         7);
