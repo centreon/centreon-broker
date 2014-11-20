@@ -56,6 +56,11 @@ namespace         notification {
     virtual unsigned int
                   write(const misc::shared_ptr<io::data> &d);
 
+    std::vector<misc::shared_ptr<neb::service_status> >
+                  get_service_status(unsigned int id);
+    std::vector< misc::shared_ptr<neb::host_status> >
+                  get_host_status(unsigned int id);
+
   private:
     object_cache<misc::shared_ptr<neb::service_status> >
                   _service_statuses;

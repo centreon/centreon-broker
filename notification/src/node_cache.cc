@@ -25,6 +25,7 @@
 #include "com/centreon/broker/notification/node_cache.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::notification;
 
 /**
@@ -212,4 +213,17 @@ unsigned int node_cache::write(misc::shared_ptr<io::data> const& data) {
   }
 
   return (1);
+}
+
+
+std::vector<misc::shared_ptr<neb::service_status> >
+  node_cache::get_service_status(unsigned int id) {
+  QMutexLocker lock(&_mutex);
+  _service_statuses.get(id);
+}
+
+std::vector<misc::shared_ptr<neb::host_status> >
+  node_cache::get_host_status(unsigned int id) {
+  QMutexLocker lock(&_mutex);
+  _host_statuses.get(id);
 }
