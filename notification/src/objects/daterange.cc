@@ -392,17 +392,6 @@ unsigned int daterange::year_start() const throw () {
 // UTILITIES
 
 /**
- *  Internal struct time information.
- */
-struct daterange::time_info {
-  time_t current_time;
-  tm     curtime;
-  time_t midnight;
-  time_t preferred_time;
-  tm     preftime;
-};
-
-/**
  *  Add a round number of days (expressed in seconds) to a date.
  *
  *  @param[in] middnight  Midnight of base day.
@@ -597,9 +586,8 @@ static time_t calculate_time_from_weekday_of_month(
  *
  *  @return True on success, otherwise false.
  */
-bool daterange::_calendar_date_to_time_t(
-                  time_t& start,
-                  time_t& end) const {
+bool daterange::_calendar_date_to_time_t(time_t& start,
+                                         time_t& end) const {
   tm t;
   t.tm_sec = 0;
   t.tm_min = 0;
@@ -645,18 +633,18 @@ bool daterange::_calendar_date_to_time_t(
  *
  *  @return True on success, otherwise false.
  */
-bool daterange::_month_date_to_time_t(
-                  time_info const& ti,
-                  time_t& start,
-                  time_t& end) const {
+bool daterange::_month_date_to_time_t(time_info const& ti,
+                                      time_t& start,
+                                      time_t& end) const {
   // what year should we use?
-  int year(std::max(ti.preftime.tm_year, ti.curtime.tm_year));
+  int year = ti.preftime.tm_year;
+  //int year(std::max(ti.preftime.tm_year, ti.curtime.tm_year));
   // advance an additional year if we already passed
   // the end month date
-  if (_month_end < ti.curtime.tm_mon
+  /*if (_month_end < ti.curtime.tm_mon
       || (_month_end == ti.curtime.tm_mon
           && _month_day_end < ti.curtime.tm_mday))
-    ++year;
+    ++year;*/
   start = calculate_time_from_day_of_month(year, _month_start, _month_day_start);
 
   // start date was bad.
@@ -690,39 +678,22 @@ bool daterange::_month_date_to_time_t(
  *
  *  @return True on success, otherwise false.
  */
-bool daterange::_month_day_to_time_t(
-                  time_info const& ti,
-                  time_t& start,
-                  time_t& end) const {
+bool daterange::_month_day_to_time_t(time_info const& ti,
+                                     time_t& start,
+                                     time_t& end) const {
   // What year/month should we use ?
   int year;
   int month;
-  if (ti.preferred_time > ti.current_time) {
-    year = ti.preftime.tm_year;
-    month = ti.preftime.tm_mon;
-    // Advance an additional month (and possibly the year) if
-    // we already passed the end day of month.
-    if (ti.preftime.tm_mday > _month_day_end) {
-      if (month != 11)
-        ++month;
-      else {
-        month = 0;
-        ++year;
-      }
-    }
-  }
-  else {
-    year = ti.curtime.tm_year;
-    month = ti.curtime.tm_mon;
-    // Advance an additional month (and possibly the year) if
-    // we already passed the end day of month.
-    if (ti.curtime.tm_mday > _month_day_end) {
-      if (month != 11)
-        ++month;
-      else {
-        month = 0;
-        ++year;
-      }
+  year = ti.preftime.tm_year;
+  month = ti.preftime.tm_mon;
+  // Advance an additional month (and possibly the year) if
+  // we already passed the end day of month.
+  if (ti.preftime.tm_mday > _month_day_end) {
+    if (month != 11)
+      ++month;
+    else {
+      month = 0;
+      ++year;
     }
   }
 
@@ -762,12 +733,11 @@ bool daterange::_month_day_to_time_t(
  *
  *  @return True on success, otherwise false.
  */
-bool daterange::_month_week_day_to_time_t(
-                  time_info const& ti,
-                  time_t& start,
-                  time_t& end) const {
+bool daterange::_month_week_day_to_time_t(time_info const& ti,
+                                         time_t& start,
+                                         time_t& end) const {
   // What year should we use?
-  int year(std::max(ti.preftime.tm_year, ti.curtime.tm_year));
+  int year  = ti.preftime.tm_year;
 
   while (true) {
     // Calculate time of specified weekday of specific month.
@@ -844,21 +814,14 @@ bool daterange::_month_week_day_to_time_t(
  *
  *  @return True on success, otherwise false.
  */
-bool daterange::_week_day_to_time_t(
-                  time_info const& ti,
-                  time_t& start,
-                  time_t& end) const {
+bool daterange::_week_day_to_time_t(time_info const& ti,
+                                    time_t& start,
+                                    time_t& end) const {
   // What year/month should we use ?
   int year;
   int month;
-  if (ti.preferred_time > ti.current_time) {
-    year = ti.preftime.tm_year;
-    month = ti.preftime.tm_mon;
-  }
-  else {
-    year = ti.curtime.tm_year;
-    month = ti.curtime.tm_mon;
-  }
+  year = ti.preftime.tm_year;
+  month = ti.preftime.tm_mon;
 
   while (true) {
     // Calculate time of specified weekday of month.
@@ -931,17 +894,14 @@ bool daterange::_week_day_to_time_t(
  *
  *  @return True on success, otherwise false.
  */
-bool daterange::to_time_t(
-                  time_t const preferred_time,
-                  time_t& start,
-                  time_t& end) const {
+bool daterange::to_time_t(time_t const preferred_time,
+                          time_t& start,
+                          time_t& end) const {
   bool ret = false;
 
   // Compute time information.
   time_info ti;
   ti.preferred_time = preferred_time;
-  ti.current_time = time(NULL);
-  localtime_r(&ti.current_time, &ti.curtime);
   localtime_r(&preferred_time, &ti.preftime);
   ti.preftime.tm_sec = 0;
   ti.preftime.tm_min = 0;
@@ -1071,9 +1031,16 @@ static bool _get_day_id(
   return (false);
 }
 
-bool daterange::build_calendar_date(
-                  std::string const& line,
-                  std::vector<std::list<daterange> >& list) {
+/**
+ *  Build a calendar date.
+ *
+ *  @param[in] line   The string to parse.
+ *  @param[out] list  A vector of dateranges to be filled.
+ *
+ *  @return           True if the line was correctly parsed.
+ */
+bool daterange::build_calendar_date(std::string const& line,
+                                    std::vector<std::list<daterange> >& list) {
   int ret(0);
   int pos(0);
   unsigned int month_start(0);
@@ -1153,9 +1120,16 @@ bool daterange::build_calendar_date(
   return (false);
 }
 
-bool daterange::build_other_date(
-                  std::string const& line,
-                  std::vector<std::list<daterange> >& list) {
+/**
+ *  Build a non-calendar date.
+ *
+ *  @param[in] line   The string to parse.
+ *  @param[out] list  A vector of dateranges to be filled.
+ *
+ *  @return           True if the line was correctly parsed.
+ */
+bool daterange::build_other_date(std::string const& line,
+                                 std::vector<std::list<daterange> >& list) {
   int pos(0);
   daterange::type_range type(daterange::none);
   unsigned int month_start(0);
@@ -1387,14 +1361,15 @@ bool daterange::build_other_date(
 }
 
 /**
- *  Build several dateranges from a string describing them.
+ *  Build a daterange from a string.
  *
- *  @param[in] value  The string to be parsed.
- *  @param[out] list  A vector of a list of dateranges to be filled.
- *  @return  True if the string was correctly parsed.
+ *  @param[in] value  A string containing a daterange.
+ *
+ *  @param[out] list  A vector of dateranges to be filled.
+ *
+ *  @return           True if the string was correctly parsed.
  */
-bool daterange::build_dateranges_from_string(
-                  std::string const& value,
-                  std::vector<std::list<daterange> >& list) {
+bool daterange::build_dateranges_from_string(std::string const& value,
+                             std::vector<std::list<daterange> >& list) {
   return (build_calendar_date(value, list) || build_other_date(value, list));
 }

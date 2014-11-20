@@ -24,14 +24,15 @@
 #  include <string>
 #  include <ctime>
 #  include <vector>
-#  include "com/centreon/broker/notification/objects/timerange.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/objects/timerange.hh"
 #  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
+#  include "com/centreon/broker/notification/objects/time_info.hh"
 
 CCB_BEGIN()
 
-namespace               notification {
-  namespace             objects {
+namespace             notification {
+  namespace           objects {
     /**
      *  @class daterange daterange.hh "com/centreon/broker/notification/objects/daterange.hh"
      *  @brief Daterange object.
@@ -104,23 +105,6 @@ namespace               notification {
                           std::vector<std::list<daterange> >& list);
 
     private:
-      unsigned int      _month_end;
-      unsigned int      _month_start;
-      int               _month_day_end;
-      int               _month_day_start;
-      unsigned int      _skip_interval;
-      std::list<timerange>
-                        _timeranges;
-      type_range        _type;
-      unsigned int      _week_day_end;
-      unsigned int      _week_day_start;
-      int               _week_day_end_offset;
-      int               _week_day_start_offset;
-      unsigned int      _year_end;
-      unsigned int      _year_start;
-
-      struct            time_info;
-
       bool              _calendar_date_to_time_t(
                           time_t& start,
                           time_t& end) const;
@@ -140,6 +124,21 @@ namespace               notification {
                           time_info const& ti,
                           time_t& start,
                           time_t& end) const;
+
+      unsigned int      _month_end;
+      unsigned int      _month_start;
+      int               _month_day_end;
+      int               _month_day_start;
+      unsigned int      _skip_interval;
+      std::list<timerange>
+                        _timeranges;
+      type_range        _type;
+      unsigned int      _week_day_end;
+      unsigned int      _week_day_start;
+      int               _week_day_end_offset;
+      int               _week_day_start_offset;
+      unsigned int      _year_end;
+      unsigned int      _year_start;
     };
   }
 }

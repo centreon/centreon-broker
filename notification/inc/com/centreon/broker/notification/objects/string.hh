@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NOTIFICATION_OBJECTS_STRING_HH
-#  define CCB_NOTIFICATION_OBJECTS_STRING_HH
+#ifndef CCB_BAM_TIME_STRING_HH
+#  define CCB_BAM_TIME_STRING_HH
 
 #  include <cerrno>
 #  include <cstdlib>
@@ -213,4 +213,4 @@ namespace                 string {
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_OBJECTS_STRING_HH
+#endif // !CCB_BAM_TIME_STRING_HH
