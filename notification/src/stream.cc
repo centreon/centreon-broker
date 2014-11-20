@@ -235,7 +235,7 @@ void stream::process(bool in, bool out) {
 void stream::read(misc::shared_ptr<io::data>& d) {
   d.clear();
   throw (exceptions::msg()
-         << "NOTIFICATION: attempt to read from a notification stream");
+         << "notification: attempt to read from a notification stream");
   return ;
 }
 
@@ -265,26 +265,39 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   if (data.isNull())
     return 1;
 
+  // Write the data to the data cache.
+  _node_cache.write(data);
+
   unsigned int type(data->type());
   unsigned short cat(io::events::category_of_type(type));
   unsigned short elem(io::events::element_of_type(type));
 
   if (cat == io::events::neb)  {
     if (elem == neb::de_downtime) {
+      logging::debug(logging::medium)
+        << "notification: processing downtime event";
       // Load downtime
     }
     else if (elem == neb::de_acknowledgement) {
+      logging::debug(logging::medium)
+        << "notification: processing acknowledgment event";
       // Load acknowledgement
     }
     else if (elem == neb::de_host_status) {
+      logging::debug(logging::medium)
+        << "notification: processing host status event";
       _process_host_status_event(*data.staticCast<neb::host_status>());
     }
     else if (elem == neb::de_service_status) {
+      logging::debug(logging::medium)
+        << "notification: processing service status event";
       _process_service_status_event(*data.staticCast<neb::service_status>());
     }
   }
   else if(cat == io::events::correlation) {
     if (elem == correlation::de_issue_parent) {
+      logging::debug(logging::medium)
+        << "notification: processing correlation issue parent event";
       _process_issue_parent_event(*data.staticCast<correlation::issue_parent>());
     }
   }
@@ -332,22 +345,22 @@ void stream::_open_db(
       QMutexLocker lock(&global_lock);
       if (!db->open())
         throw (exceptions::msg()
-          << "NOTIFICATION: could not open SQL database: "
+          << "notification: could not open SQL database: "
           << db->lastError().text());
     }
 
     // Check that replication is OK.
     if (check_replication) {
       logging::debug(logging::medium)
-        << "NOTIFICATION: checking replication status";
+        << "notification: checking replication status";
       QSqlQuery q(*db);
       if (!q.exec("SHOW SLAVE STATUS"))
         logging::info(logging::medium)
-          << "NOTIFICATION: could not check replication status";
+          << "notification: could not check replication status";
       else {
         if (!q.next())
           logging::info(logging::medium)
-            << "NOTIFICATION: database is not under replication";
+            << "notification: database is not under replication";
         else {
           QSqlRecord record(q.record());
           unsigned int i(0);
@@ -360,18 +373,18 @@ void stream::_open_db(
                     && (q.value(i).toString() != "Yes"))
                 || ((field == "Seconds_Behind_Master")
                     && (q.value(i).toInt() != 0)))
-              throw (exceptions::msg() << "NOTIFICATION: replication is not "
+              throw (exceptions::msg() << "notification: replication is not "
                           "complete: " << field << "="
                        << q.value(i).toString());
           logging::info(logging::medium)
-            << "NOTIFICATION: database replication is complete, "
+            << "notification: database replication is complete, "
                "connection granted";
         }
       }
     }
     else
       logging::debug(logging::medium)
-        << "NOTIFICATION: NOT checking replication status";  }
+        << "notification: NOT checking replication status";  }
   catch (...) {
     {
       QMutexLocker lock(&global_lock);
@@ -407,7 +420,7 @@ void stream::_clone_db(
       // Open database.
       if (!db->open())
         throw (exceptions::msg()
-          << "NOTIFICATION: could not open SQL database: "
+          << "notification: could not open SQL database: "
           << db->lastError().text());
     }
 
@@ -459,7 +472,7 @@ void stream::_process_service_status_event(neb::service_status const& event) {
     node::ptr n = _state.get_node_by_id(id);
     if (!n)
       throw (exceptions::msg()
-        << "NOTIFICATION: got an unknown service id: "
+        << "notification: got an unknown service id: "
         << id.get_service_id() << ", host_id: " << id.get_host_id());
 
     // Save the old state and copy the current state.
@@ -503,7 +516,7 @@ void stream::_process_host_status_event(neb::host_status const& event) {
     node::ptr n = _state.get_node_by_id(id);
     if (!n)
       throw (exceptions::msg()
-        << "NOTIFICATION: got an unknown host id: "
+        << "notification: got an unknown host id: "
         << id.get_host_id());
 
     // Save the old state and copy the current state.
@@ -544,7 +557,7 @@ void stream::_process_issue_parent_event(
   node::ptr n = _state.get_node_by_id(id);
   if (!n)
     throw (exceptions::msg()
-      << "NOTIFICATION: got an unknown issue parent (child host id: "
+      << "notification: got an unknown issue parent (child host id: "
       << id.get_host_id() << ", child service id: " << id.get_service_id())
       << ")";
 
