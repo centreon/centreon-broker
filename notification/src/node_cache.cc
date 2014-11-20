@@ -192,7 +192,7 @@ unsigned int node_cache::write(misc::shared_ptr<io::data> const& data) {
   unsigned int retval(1);
 
   if (data.isNull())
-    return 1;
+    return (1);
 
   unsigned int type = data->type();
 
@@ -210,4 +210,6 @@ unsigned int node_cache::write(misc::shared_ptr<io::data> const& data) {
         sst = data.staticCast<neb::service_status>();
     _service_statuses.insert(sst->service_id, sst);
   }
+
+  return (1);
 }

@@ -25,6 +25,8 @@
 #  include "com/centreon/broker/neb/service_status.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
+#  include "com/centreon/broker/notification/node_cache.hh"
+#  include "com/centreon/broker/notification/objects/node_id.hh"
 
 
 CCB_BEGIN()
@@ -48,8 +50,7 @@ namespace               notification {
       std::string const&  get_name() const throw();
       void                set_name(std::string const& name);
 
-      std::string         resolve(neb::host_status);
-      std::string         resolve(neb::service_status);
+      std::string         resolve(node_id id, node_cache& cache);
 
     private:
       command();
