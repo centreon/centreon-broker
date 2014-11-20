@@ -22,13 +22,13 @@
 
 #  include <string>
 #  include <vector>
+#  include <QMutex>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/bbdo/stream.hh"
 #  include "com/centreon/broker/compression/stream.hh"
 #  include "com/centreon/broker/file/stream.hh"
 #  include "com/centreon/broker/notification/object_cache.hh"
-
 #  include "com/centreon/broker/neb/service_status.hh"
 #  include "com/centreon/broker/neb/host_status.hh"
 
@@ -61,6 +61,8 @@ namespace         notification {
                   _service_statuses;
     object_cache<misc::shared_ptr<neb::host_status> >
                   _host_statuses;
+
+    QMutex        _mutex;
   };
 }
 

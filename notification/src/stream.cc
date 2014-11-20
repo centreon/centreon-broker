@@ -141,7 +141,7 @@ stream::stream(
   process_manager::instance();
 
   // Create notification scheduler
-  _notif_scheduler.reset(new notification_scheduler(_state));
+  _notif_scheduler.reset(new notification_scheduler(_state, _node_cache));
   _notif_scheduler->start();
 }
 

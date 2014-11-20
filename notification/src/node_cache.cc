@@ -18,6 +18,7 @@
 */
 
 #include <exception>
+#include <QMutexLocker>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -29,7 +30,8 @@ using namespace com::centreon::broker::notification;
 /**
  *  Default constructor.
  */
-node_cache::node_cache() {}
+node_cache::node_cache()
+  : _mutex(QMutex::NonRecursive) {}
 
 /**
  *  Copy constructor.
@@ -156,6 +158,9 @@ void node_cache::process(bool in, bool out) {
  *  @param[out] d  An output data event.
  */
 void node_cache::read(misc::shared_ptr<io::data> &d) {
+
+  QMutexLocker lock(&_mutex);
+
   if (_host_statuses.empty() && _service_statuses.empty())
     throw (io::exceptions::shutdown(true, true)
            << "Node cache is empty");
@@ -190,6 +195,8 @@ unsigned int node_cache::write(misc::shared_ptr<io::data> const& data) {
     return 1;
 
   unsigned int type = data->type();
+
+  QMutexLocker lock(&_mutex);
 
   if (type == io::events::data_type<io::events::neb,
                                     neb::de_host_status>::value) {
