@@ -28,7 +28,7 @@ include_directories("${PROJECT_SOURCE_DIR}/file/inc")
 include_directories("${PROJECT_SOURCE_DIR}/bbdo/inc")
 include_directories("${PROJECT_SOURCE_DIR}/compression/inc")
 
-# NOTIFICATION module.
+# Notification module.
 set(NOTIFICATION "80-notification")
 set(NOTIFICATION "${NOTIFICATION}" PARENT_SCOPE)
 add_library("${NOTIFICATION}" SHARED

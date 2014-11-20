@@ -53,6 +53,19 @@ QSqlDatabase* test_db::bi_db() {
 }
 
 /**
+ *  Run a query on the BI database.
+ *
+ *  @param[in] query      Query to run.
+ *  @param[in] error_msg  Error message.
+ */
+void test_db::bi_run(
+                QString const& query,
+                QString const& error_msg) {
+  _run_query(_bi.get(), query, error_msg);
+  return ;
+}
+
+/**
  *  Get the Centreon database.
  *
  *  @return Centreon database object.
@@ -62,12 +75,38 @@ QSqlDatabase* test_db::centreon_db() {
 }
 
 /**
+ *  Run a query on the Centreon database.
+ *
+ *  @param[in] query      Query to run.
+ *  @param[in] error_msg  Error message.
+ */
+void test_db::centreon_run(
+                QString const& query,
+                QString const& error_msg) {
+  _run_query(_centreon.get(), query, error_msg);
+  return ;
+}
+
+/**
  *  Get the Storage database.
  *
  *  @return Centreon Storage database object.
  */
 QSqlDatabase* test_db::storage_db() {
   return (_storage.get());
+}
+
+/**
+ *  Run a query on the Storage database.
+ *
+ *  @param[in] query      Query to run.
+ *  @param[in] error_msg  Error message.
+ */
+void test_db::storage_run(
+                QString const& query,
+                QString const& error_msg) {
+  _run_query(_storage.get(), query, error_msg);
+  return ;
 }
 
 /**
@@ -132,8 +171,7 @@ void test_db::open(
                                                      db_type,
                                                      centreon_connection)));
     _open(*_centreon, centreon_db_name);
-    _run_script(*_centreon, PROJECT_SOURCE_DIR "/bam/mysql_schema_centreon.sql");
-    _run_script(*_centreon, PROJECT_SOURCE_DIR "/bam/centreon.sql");
+    _run_script(*_centreon, PROJECT_SOURCE_DIR "/test/centreon.sql");
   }
 
   // Open Storage DB.
@@ -218,6 +256,27 @@ void test_db::_open(
            << db_name << "': "
            << db.lastError().text().toStdString().c_str());
 
+  return ;
+}
+
+/**
+ *  Run a query on a database.
+ *
+ *  @param[in,out] db         Database object.
+ *  @param[in]     query      Query to run.
+ *  @param[in]     error_msg  Error message.
+ */
+void test_db::_run_query(
+                QSqlDatabase* db,
+                QString const& query,
+                QString const& error_msg) {
+  if (!db)
+    throw (exceptions::msg()
+           << error_msg << ": database not initialized");
+  QSqlQuery q(*db);
+  if (!q.exec(query))
+    throw (exceptions::msg()
+           << error_msg << ": " << q.lastError().text());
   return ;
 }
 
