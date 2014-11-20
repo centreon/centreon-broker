@@ -273,17 +273,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   unsigned short elem(io::events::element_of_type(type));
 
   if (cat == io::events::neb)  {
-    if (elem == neb::de_downtime) {
-      logging::debug(logging::medium)
-        << "notification: processing downtime event";
-      // Load downtime
-    }
-    else if (elem == neb::de_acknowledgement) {
-      logging::debug(logging::medium)
-        << "notification: processing acknowledgment event";
-      // Load acknowledgement
-    }
-    else if (elem == neb::de_host_status) {
+    if (elem == neb::de_host_status) {
       logging::debug(logging::medium)
         << "notification: processing host status event";
       _process_host_status_event(*data.staticCast<neb::host_status>());
