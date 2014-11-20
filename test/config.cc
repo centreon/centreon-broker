@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdio>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -31,45 +32,193 @@
 using namespace com::centreon::broker;
 
 /**
- *  Remove DB created previously.
- *
- *  @param[in] db_name DB name.
+ *  Default constructor.
  */
-void config_db_close(char const* db_name) {
-  QString connection_name;
-  {
-    QSqlDatabase db(QSqlDatabase::database());
-    connection_name = db.connectionName();
-    if (db.open()) {
-      std::ostringstream query;
-      query << "DROP DATABASE " << db_name;
-      QSqlQuery q(db);
-      if (!q.exec(query.str().c_str()))
-        std::cerr << q.lastError().text().toStdString() << std::endl;
-      db.close();
-    }
-    else
-      std::cerr << db.lastError().text().toStdString() << std::endl;
-  }
-  QSqlDatabase::removeDatabase(connection_name);
+test_db::test_db() {}
+
+/**
+ *  Destructor.
+ */
+test_db::~test_db() {
+  close();
+}
+
+/**
+ *  Get the BI database.
+ *
+ *  @return BI database object.
+ */
+QSqlDatabase* test_db::bi_db() {
+  return (_bi.get());
+}
+
+/**
+ *  Run a query on the BI database.
+ *
+ *  @param[in] query      Query to run.
+ *  @param[in] error_msg  Error message.
+ */
+void test_db::bi_run(
+                QString const& query,
+                QString const& error_msg) {
+  _run_query(_bi.get(), query, error_msg);
+  return ;
+}
+
+/**
+ *  Get the Centreon database.
+ *
+ *  @return Centreon database object.
+ */
+QSqlDatabase* test_db::centreon_db() {
+  return (_centreon.get());
+}
+
+/**
+ *  Run a query on the Centreon database.
+ *
+ *  @param[in] query      Query to run.
+ *  @param[in] error_msg  Error message.
+ */
+void test_db::centreon_run(
+                QString const& query,
+                QString const& error_msg) {
+  _run_query(_centreon.get(), query, error_msg);
+  return ;
+}
+
+/**
+ *  Get the Storage database.
+ *
+ *  @return Centreon Storage database object.
+ */
+QSqlDatabase* test_db::storage_db() {
+  return (_storage.get());
+}
+
+/**
+ *  Run a query on the Storage database.
+ *
+ *  @param[in] query      Query to run.
+ *  @param[in] error_msg  Error message.
+ */
+void test_db::storage_run(
+                QString const& query,
+                QString const& error_msg) {
+  _run_query(_storage.get(), query, error_msg);
+  return ;
+}
+
+/**
+ *  Close databases.
+ */
+void test_db::close() {
+  if (_bi.get())
+    _close(_bi);
+  if (_centreon.get())
+    _close(_centreon);
+  if (_storage.get())
+    _close(_storage);
   return ;
 }
 
 /**
  *  Connect and install a new database to the DB server.
  *
- *  @param[in] db_name DB name.
- *
- *  @return Initialized and open DB connection.
+ *  @param[in] storage_db_name   Centreon storage DB name.
+ *  @param[in] bi_db_name        Centreon BI DB name.
+ *  @param[in] centreon_db_name  Centreon Storage DB name.
  */
-QSqlDatabase config_db_open(char const* db_name) {
+void test_db::open(
+                char const* storage_db_name,
+                char const* bi_db_name,
+                char const* centreon_db_name) {
+  // Close previous connection.
+  close();
+
   // Find DB type.
-  std::string db_type;
+  QString db_type;
   if (!strcmp(DB_TYPE, "mysql"))
     db_type = "QMYSQL";
 
+  // Set connection names.
+  QString bi_connection;
+  QString centreon_connection;
+  QString storage_connection;
+  {
+    std::ostringstream oss;
+    oss << this;
+    bi_connection = oss.str().c_str();
+    centreon_connection = bi_connection;
+    storage_connection = bi_connection;
+    bi_connection.append("_bi");
+    centreon_connection.append("_centreon");
+    storage_connection.append("_storage");
+  }
+
+  // Open Centreon BI DB.
+  if (bi_db_name) {
+    _bi.reset(new QSqlDatabase(QSqlDatabase::addDatabase(
+                                               db_type,
+                                               bi_connection)));
+    _open(*_bi, bi_db_name);
+    _run_script(*_bi, PROJECT_SOURCE_DIR "/bam/mysql_schema_bi.sql");
+  }
+
+  // Open Centreon DB.
+  if (centreon_db_name) {
+    _centreon.reset(new QSqlDatabase(QSqlDatabase::addDatabase(
+                                                     db_type,
+                                                     centreon_connection)));
+    _open(*_centreon, centreon_db_name);
+    _run_script(*_centreon, PROJECT_SOURCE_DIR "/test/centreon.sql");
+  }
+
+  // Open Storage DB.
+  if (storage_db_name) {
+    _storage.reset(new QSqlDatabase(QSqlDatabase::addDatabase(
+                                                    db_type,
+                                                    storage_connection)));
+    _open(*_storage, storage_db_name);
+    _run_script(*_storage, PROJECT_SOURCE_DIR "/sql/mysql_schema.sql");
+  }
+
+  return ;
+}
+
+/**
+ *  Close a single database.
+ *
+ *  @param[in] db  Database.
+ */
+void test_db::_close(std::auto_ptr<QSqlDatabase>& db) {
+  QString connection_name(db->connectionName());
+
+  {
+    std::ostringstream query;
+    query << "DROP DATABASE " << db->databaseName().toStdString();
+    QSqlQuery q(*db);
+    if (!q.exec(query.str().c_str()))
+      std::cerr << q.lastError().text().toStdString() << std::endl;
+  }
+
+  db->close();
+  db.reset();
+  QSqlDatabase::removeDatabase(connection_name);
+
+  return ;
+}
+
+/**
+ *  Create and open some database.
+ *
+ *  @param[out] db       Database object.
+ *  @param[in]  db_name  Database name.
+ */
+void test_db::_open(
+                QSqlDatabase& db,
+                char const* db_name) {
   // Connect to the DB.
-  QSqlDatabase db(QSqlDatabase::addDatabase(db_type.c_str()));
   db.setHostName(DB_HOST);
   db.setPassword(DB_PASSWORD);
   db.setPort(strtoul(DB_PORT, NULL, 0));
@@ -92,7 +241,7 @@ QSqlDatabase config_db_open(char const* db_name) {
   {
     std::ostringstream query;
     query << "CREATE DATABASE " << db_name;
-    if ("QMYSQL" == db_type)
+    if ("QMYSQL" == db.driverName())
       query << " DEFAULT CHARACTER SET utf8";
     QSqlQuery q(db);
     if (!q.exec(query.str().c_str()))
@@ -107,14 +256,46 @@ QSqlDatabase config_db_open(char const* db_name) {
            << db_name << "': "
            << db.lastError().text().toStdString().c_str());
 
+  return ;
+}
+
+/**
+ *  Run a query on a database.
+ *
+ *  @param[in,out] db         Database object.
+ *  @param[in]     query      Query to run.
+ *  @param[in]     error_msg  Error message.
+ */
+void test_db::_run_query(
+                QSqlDatabase* db,
+                QString const& query,
+                QString const& error_msg) {
+  if (!db)
+    throw (exceptions::msg()
+           << error_msg << ": database not initialized");
+  QSqlQuery q(*db);
+  if (!q.exec(query))
+    throw (exceptions::msg()
+           << error_msg << ": " << q.lastError().text());
+  return ;
+}
+
+/**
+ *  Run a script on a database.
+ *
+ *  @param[in,out] db           Database object.
+ *  @param[in]     script_name  Path to the script.
+ */
+void test_db::_run_script(QSqlDatabase& db, char const* script_name) {
   // Read table creation script.
   QByteArray table_creation_script;
   {
     std::ifstream ifs;
-    ifs.open(PROJECT_SOURCE_DIR "/sql/mysql_schema.sql");
+    ifs.open(script_name);
     if (ifs.fail())
       throw (exceptions::msg()
-             << "cannot open SQL table creation script");
+             << "cannot open SQL table creation script '"
+             << script_name << "'");
     char buffer[1024];
     std::streamsize rb;
     ifs.read(buffer, sizeof(buffer));
@@ -133,7 +314,172 @@ QSqlDatabase config_db_open(char const* db_name) {
     throw (exceptions::msg()
            << query.lastError().text().toStdString().c_str());
 
-  return (db);
+  return ;
+}
+
+/**
+ *  Default constructor.
+ */
+test_file::test_file() {
+  _variables["PROJECT_SOURCE_DIR"] = PROJECT_SOURCE_DIR;
+  _variables["CBD_PATH"] = CBD_PATH;
+  _variables["CBMOD_PATH"] = CBMOD_PATH;
+  _variables["MY_PLUGIN_PATH"] = MY_PLUGIN_PATH;
+  _variables["BENCH_GENERATE_RRD_MOD_PATH"] = BENCH_GENERATE_RRD_MOD_PATH;
+  _variables["MONITORING_ENGINE"] = MONITORING_ENGINE;
+  _variables["MONITORING_ENGINE_ADDITIONAL"] = MONITORING_ENGINE_ADDITIONAL;
+  _variables["MONITORING_ENGINE_INTERVAL_LENGTH"] = MONITORING_ENGINE_INTERVAL_LENGTH_STR;
+  _variables["MONITORING_ENGINE_INTERVAL_LENGTH_STR"] = MONITORING_ENGINE_INTERVAL_LENGTH_STR;
+  _variables["DB_TYPE"] = DB_TYPE;
+  _variables["DB_HOST"] = DB_HOST;
+  _variables["DB_PORT"] = DB_PORT;
+  _variables["DB_USER"] = DB_USER;
+  _variables["DB_PASSWORD"] = DB_PASSWORD;
+}
+
+/**
+ *  Copy constructor.
+ *
+ *  @param[in] other  Object to copy.
+ */
+test_file::test_file(test_file const& other) {
+  _internal_copy(other);
+}
+
+/**
+ *  Destructor.
+ */
+test_file::~test_file() {
+  close();
+}
+
+/**
+ *  Assignment operator.
+ *
+ *  @param[in] other  Object to copy.
+ *
+ *  @return This object.
+ */
+test_file& test_file::operator=(test_file const& other) {
+  if (this != &other) {
+    close();
+    _internal_copy(other);
+  }
+  return (*this);
+}
+
+/**
+ *  Close a generated file. This effectively removes the generated file.
+ */
+void test_file::close() {
+  if (!_target_file.empty()) {
+    ::remove(_target_file.c_str());
+    _target_file.clear();
+  }
+  return ;
+}
+
+/**
+ *  Generate a test file from a template.
+ *
+ *  @return The path to the generated file.
+ */
+std::string const& test_file::generate() {
+  // Close old file.
+  close();
+
+  // Read base file.
+  std::string content;
+  {
+    std::ifstream ifs;
+    ifs.open(_base_file.c_str());
+    if (!ifs.good())
+      throw (exceptions::msg() << "could not open base file '"
+             << _base_file << "'");
+    char buffer[4096];
+    while (ifs.good()) {
+      ifs.read(buffer, sizeof(buffer));
+      content.append(buffer, ifs.gcount());
+    }
+    ifs.close();
+  }
+
+  // Replace variables.
+  size_t start(content.find_first_of('@', 0));
+  while (start != std::string::npos) {
+    size_t end(content.find_first_of('@', start + 1));
+    if (std::string::npos == end)
+      throw (exceptions::msg()
+             << "non-terminated variable (\"@VAR@\") in base file '"
+             << _base_file << "' at offset " << start << " " << content.substr(start));
+    std::string var(content.substr(start + 1, end - start - 1));
+    std::map<std::string, std::string>::const_iterator
+      it(_variables.find(var));
+    if (it != _variables.end()) {
+      content.replace(start, end - start + 1, it->second);
+      start += it->second.size();
+    }
+    else {
+      content.erase(start, end - start + 1);
+    }
+    start = content.find_first_of('@', start);
+  }
+
+  // Write target file.
+  _target_file = tmpnam(NULL);
+  std::ofstream ofs;
+  ofs.open(
+        _target_file.c_str(),
+        std::ios_base::out | std::ios_base::trunc);
+  if (!ofs.good()) {
+    ofs.close();
+    close();
+    throw (exceptions::msg() << "could not open target file");
+  }
+  ofs.write(content.c_str(), content.size());
+  if (!ofs.good()) {
+    ofs.close();
+    close();
+    throw (exceptions::msg()
+           << "could not write content to target file");
+  }
+  ofs.close();
+  return (_target_file);
+}
+
+/**
+ *  Set a variable.
+ *
+ *  @param[in] variable  Variable name.
+ *  @param[in] value     Value.
+ */
+void test_file::set(
+                  std::string const& variable,
+                  std::string const& value) {
+  _variables[variable] = value;
+  return ;
+}
+
+/**
+ *  Set the template file.
+ *
+ *  @param[in] base_file  Base file from which we will generate the test
+ *                        file.
+ */
+void test_file::set_template(std::string const& base_file) {
+  _base_file = base_file;
+  return ;
+}
+
+/**
+ *  Copy internal data members.
+ *
+ *  @param[in] other  Object to copy.
+ */
+void test_file::_internal_copy(test_file const& other) {
+  _base_file = other._base_file;
+  _variables = other._variables;
+  return ;
 }
 
 /**

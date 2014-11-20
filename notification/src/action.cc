@@ -241,7 +241,9 @@ bool action::_check_action_viability(
     return (false);
 
   // Check the existence of correlated parent.
-  if (n->has_parent())
+  if (n->has_parent()
+      && !(n->get_notification_options()
+           & objects::node_notification_opt::not_correlated))
     return (false);
 
   return (true);

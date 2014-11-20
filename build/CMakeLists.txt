@@ -506,7 +506,7 @@ if (WITH_MODULE_NDO)
   list(APPEND MODULE_LIST "ndo")
 endif()
 
-# NOTIFICATION module.
+# Notification module.
 option(WITH_MODULE_NOTIFICATION "Build NOTIFICATION module." ON)
 if (WITH_MODULE_NOTIFICATION)
   add_subdirectory("notification")
@@ -677,6 +677,12 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/filtering_to_sql.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Instance update when outdated.
+  set(TEST_NAME "running_sql_instance_update_outdated")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/sql_instance_update_outdated.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 
   # Protocols.
   set(TEST_NAME "running_compression_to_sql")
@@ -772,11 +778,11 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Instance update when outdated.
-  set(TEST_NAME "running_sql_instance_update_outdated")
+  # Non-correlated notification.
+  set(TEST_NAME "running_notification_non_correlated")
   add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/sql_instance_update_outdated.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
+    "${PROJECT_SOURCE_DIR}/test/notification_non_correlated.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
   # RRD benchmark.

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -66,7 +66,8 @@ namespace               notification {
         service_recovery = (1 << 5),
         host_down = (1 << 6),
         host_unreachable = (1 << 7),
-        host_recovery = (1 << 8)
+        host_recovery = (1 << 8),
+        not_correlated = (1 << 9)
       };
 
                         node_notification_opt();

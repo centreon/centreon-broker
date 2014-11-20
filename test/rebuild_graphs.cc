@@ -70,6 +70,7 @@ int main() {
   std::string metrics_path(tmpnam(NULL));
   std::string status_path(tmpnam(NULL));
   engine daemon;
+  test_db db;
 
   // Log.
   std::clog << "status directory: " << status_path << "\n"
@@ -77,7 +78,7 @@ int main() {
 
   try {
     // Prepare database.
-    QSqlDatabase db(config_db_open(DB_NAME));
+    db.open(DB_NAME);
 
     // Create RRD paths.
     mkdir(metrics_path.c_str(), S_IRWXU);
@@ -173,7 +174,7 @@ int main() {
 
     // Insert entries in index_data.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       for (unsigned int i(1); i <= HOST_COUNT * SERVICES_BY_HOST; ++i) {
         std::ostringstream query;
         query << "INSERT INTO index_data (host_id, service_id)"
@@ -203,7 +204,7 @@ int main() {
     // Get index list.
     std::map<unsigned int, time_t> indexes;
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec("SELECT id FROM index_data"))
         throw (exceptions::msg() << "cannot get index list: "
                << qPrintable(q.lastError().text()));
@@ -240,7 +241,7 @@ int main() {
             << "  FROM metrics AS m LEFT JOIN index_data AS i"
             << "  ON m.index_id = i.id"
             << "  ORDER BY i.host_id, i.service_id";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot get metric list: "
                << qPrintable(q.lastError().text()));
@@ -276,7 +277,7 @@ int main() {
 
     // Launch rebuild.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec("UPDATE index_data SET must_be_rebuild='1'"))
         throw (exceptions::msg() << "cannot launch rebuild from DB: "
                << qPrintable(q.lastError().text()));
@@ -285,7 +286,7 @@ int main() {
 
     // Check that rebuild successfully executed.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec("SELECT COUNT(*)"
                   " FROM index_data"
                   " WHERE must_be_rebuild!='0'")
@@ -394,7 +395,6 @@ int main() {
   daemon.stop();
   config_remove(engine_config_path.c_str());
   ::remove(cbmod_config_path.c_str());
-  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
   recursive_remove(metrics_path);
