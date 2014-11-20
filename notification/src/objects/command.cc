@@ -19,6 +19,7 @@
 
 #include "com/centreon/broker/notification/objects/string.hh"
 #include "com/centreon/broker/notification/objects/command.hh"
+#include "com/centreon/broker/notification/state.hh"
 
 using namespace com::centreon::broker::notification::objects;
 
@@ -87,7 +88,7 @@ void command::set_name(std::string const& name) {
  *
  *  @return  A string containing the resolved command.
  */
-std::string command::resolve(node_id id, node_cache& cache) {
+std::string command::resolve(node_id id, state& st, node_cache& cache) {
   // STUB
   return (std::string());
 }

@@ -197,18 +197,18 @@ unsigned int node_cache::write(misc::shared_ptr<io::data> const& data) {
 
   unsigned int type = data->type();
 
-  QMutexLocker lock(&_mutex);
-
   if (type == io::events::data_type<io::events::neb,
                                     neb::de_host_status>::value) {
     misc::shared_ptr<neb::host_status>
         hst = data.staticCast<neb::host_status>();
+    QMutexLocker lock(&_mutex);
     _host_statuses.insert(hst->host_id, hst);
   }
   else if (type == io::events::data_type<io::events::neb,
                                          neb::de_service_status>::value) {
     misc::shared_ptr<neb::service_status>
         sst = data.staticCast<neb::service_status>();
+    QMutexLocker lock(&_mutex);
     _service_statuses.insert(sst->service_id, sst);
   }
 

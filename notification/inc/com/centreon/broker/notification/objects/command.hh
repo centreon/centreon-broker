@@ -32,6 +32,8 @@
 CCB_BEGIN()
 
 namespace               notification {
+  // Forward declaration
+  class state;
   namespace             objects {
     /**
      *  @class command command.hh "com/centreon/broker/notification/objects/command.hh"
@@ -50,7 +52,7 @@ namespace               notification {
       std::string const&  get_name() const throw();
       void                set_name(std::string const& name);
 
-      std::string         resolve(node_id id, node_cache& cache);
+      std::string         resolve(node_id id, state& state, node_cache& cache);
 
     private:
       command();
