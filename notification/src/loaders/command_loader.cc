@@ -20,6 +20,7 @@
 #include <QVariant>
 #include <QSqlError>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/objects/command.hh"
 #include "com/centreon/broker/notification/loaders/command_loader.hh"
 
@@ -38,6 +39,9 @@ void command_loader::load(QSqlDatabase* db, command_builder* output) {
   // If we don't have any db or output, don't do anything.
   if (!db || !output)
     return;
+
+  logging::debug(logging::medium)
+    << "notification: loading commands from the database";
 
   QSqlQuery query(*db);
 

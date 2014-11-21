@@ -23,6 +23,7 @@
 #include <QVariant>
 #include <QSqlError>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/objects/downtime.hh"
 #include "com/centreon/broker/notification/objects/node_id.hh"
 #include "com/centreon/broker/notification/loaders/downtime_loader.hh"
@@ -42,6 +43,9 @@ void downtime_loader::load(QSqlDatabase* db, downtime_builder* output) {
   // If we don't have any db or output, don't do anything.
   if (!db || !output)
     return;
+
+  logging::debug(logging::medium)
+    << "notification: loading downtimes from the database";
 
   QSqlQuery query(*db);
 

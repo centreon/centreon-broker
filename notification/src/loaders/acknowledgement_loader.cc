@@ -23,6 +23,7 @@
 #include <QVariant>
 #include <QSqlError>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/objects/acknowledgement.hh"
 #include "com/centreon/broker/notification/loaders/acknowledgement_loader.hh"
 
@@ -43,6 +44,9 @@ void acknowledgement_loader::load(
   // If we don't have any db or output, don't do anything.
   if (!db || !output)
     return;
+
+  logging::debug(logging::medium)
+    << "notification: loading acknowledgments from the database";
 
   QSqlQuery query(*db);
 

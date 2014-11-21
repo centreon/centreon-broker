@@ -20,6 +20,7 @@
 #include <QVariant>
 #include <QSqlError>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/objects/timeperiod.hh"
 #include "com/centreon/broker/notification/builders/timeperiod_builder.hh"
 #include "com/centreon/broker/notification/loaders/timeperiod_loader.hh"
@@ -41,6 +42,9 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
   // If we don't have any db or output, don't do anything.
   if (!db || !output)
     return;
+
+  logging::debug(logging::medium)
+    << "notification: loading timeperiods from the database";
 
   QSqlQuery query(*db);
 

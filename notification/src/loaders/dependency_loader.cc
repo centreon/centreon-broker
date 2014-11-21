@@ -23,6 +23,7 @@
 #include <QVariant>
 #include <QSqlError>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/objects/dependency.hh"
 #include "com/centreon/broker/notification/loaders/dependency_loader.hh"
 
@@ -41,6 +42,9 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
   // If we don't have any db or output, don't do anything.
   if (!db || !output)
     return;
+
+  logging::debug(logging::medium)
+    << "notification: loading dependencies from the database";
 
   // We do not know the type of a dependency until far latter.
   // Cache the options until we know enough to correctly parse them.

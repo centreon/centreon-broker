@@ -23,6 +23,7 @@
 #include <QVariant>
 #include <QSqlError>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/loaders/macro_loader.hh"
 
 using namespace com::centreon::broker::notification;
@@ -42,6 +43,9 @@ void macro_loader::load(QSqlDatabase *db, macro_builder *output) {
   // If we don't have any db or output, don't do anything.
   if (!db || !output)
     return;
+
+  logging::debug(logging::medium)
+    << "notification: loading macros from the database";
 
   QSqlQuery query(*db);
 
