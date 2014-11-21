@@ -53,7 +53,7 @@ void acknowledgement_loader::load(
   if (!query.exec("SELECT host_id, acknowledgement_type"
                   "  FROM cfg_hosts WHERE acknowledged = true"))
     throw (exceptions::msg()
-      << "Notification: cannot select cfg_hosts in loader: "
+      << "notification: cannot select cfg_hosts in loader: "
       << query.lastError().text());
 
   while (query.next()) {
@@ -70,7 +70,7 @@ void acknowledgement_loader::load(
   if (!query.exec("SELECT host_id, service_id, acknowledgement_type"
                   "  FROM cfg_services WHERE acknowledged = true"))
     throw (exceptions::msg()
-      << "Notification: cannot select cfg_services in loader: "
+      << "notification: cannot select cfg_services in loader: "
       << query.lastError().text());
 
   while (query.next()) {

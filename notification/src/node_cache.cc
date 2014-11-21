@@ -67,7 +67,7 @@ node_cache& node_cache::operator=(node_cache const& obj) {
  */
 bool node_cache::load(std::string const& cache_file) {
   logging::debug(logging::low)
-    << "Notification: loading the node cache " << cache_file <<".";
+    << "notification: loading the node cache " << cache_file <<".";
 
   // Create the streams.
   misc::shared_ptr<file::stream> file(new file::stream(cache_file));
@@ -90,13 +90,13 @@ bool node_cache::load(std::string const& cache_file) {
   catch (io::exceptions::shutdown) {
     // Normal termination of the stream (ie nothing to read anymore)
     logging::debug(logging::low)
-      << "Notification: finished loading the node cache "
+      << "notification: finished loading the node cache "
       << cache_file << " succesfully.";
   }
   catch (std::exception e) {
     // Abnormal termination of the stream.
     logging::error(logging::high)
-      << "Notification: could not load the node cache "
+      << "notification: could not load the node cache "
       << cache_file << ": " << e.what();
     return (false);
   }
@@ -134,13 +134,13 @@ bool node_cache::unload(std::string const& cache_file) {
   catch (io::exceptions::shutdown) {
     // Normal termination of the stream (ie nothing to write anymore)
     logging::debug(logging::low)
-      << "Notification: finished writing the node cache "
+      << "notification: finished writing the node cache "
       << cache_file << " succesfully.";
   }
   catch (std::exception e) {
     // Abnormal termination of the stream.
     logging::error(logging::high)
-      << "Notification: could not write the node cache "
+      << "notification: could not write the node cache "
       << cache_file << ": " << e.what();
     return (false);
   }

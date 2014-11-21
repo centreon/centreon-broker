@@ -55,7 +55,7 @@ void downtime_loader::load(QSqlDatabase* db, downtime_builder* output) {
                   "       started, triggered_by, type"
                   "  FROM cfg_downtimes"))
     throw (exceptions::msg()
-      << "Notification: cannot select cfg_downtimes in loader: "
+      << "notification: cannot select cfg_downtimes in loader: "
       << query.lastError().text());
 
   while (query.next()) {

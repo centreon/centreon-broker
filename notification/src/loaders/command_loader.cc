@@ -50,7 +50,7 @@ void command_loader::load(QSqlDatabase* db, command_builder* output) {
                   "       command_comment, graph_id, cmd_cat_id"
                   "  FROM rt_command"))
     throw (exceptions::msg()
-      << "Notification: cannot select rt_command in loader: "
+      << "notification: cannot select rt_command in loader: "
       << query.lastError().text());
 
   while (query.next()) {

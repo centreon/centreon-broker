@@ -57,13 +57,13 @@ void notification_scheduler::run() {
                                    : 0;
 
     logging::debug(logging::medium)
-        << "Notification: Notification scheduler sleeping for "
+        << "notification: notification scheduler sleeping for "
         << wait_for << "milliseconds.";
 
     _general_condition.wait(&_general_mutex, wait_for);
 
     logging::debug(logging::medium)
-        << "Notification: Notification scheduler waking up.";
+        << "notification: notification scheduler waking up.";
 
     // The should exit flag was set - exit.
     if (_should_exit)

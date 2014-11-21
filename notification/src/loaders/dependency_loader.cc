@@ -57,7 +57,7 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
                   "       notification_failure_criteria"
                   "  FROM rt_dependency"))
     throw (exceptions::msg()
-      << "Notification: cannot select rt_dependency in loader: "
+      << "notification: cannot select rt_dependency in loader: "
       << query.lastError().text());
 
   while (query.next()) {
@@ -101,7 +101,7 @@ void dependency_loader::_load_relations(
   if (!query.exec("SELECT dependency_dep_id, host_host_id"
                   "  FROM rt_dependency_hostChild_relation"))
     throw (exceptions::msg()
-      << "Notification: cannot select rt_dependency_hostChild_relation in loader: "
+      << "notification: cannot select rt_dependency_hostChild_relation in loader: "
       << query.lastError().text());
   while (query.next())
     output.dependency_node_id_child_relation(
@@ -111,7 +111,7 @@ void dependency_loader::_load_relations(
   if (!query.exec("SELECT dependency_dep_id, host_host_id"
                   "  FROM rt_dependency_hostParent_relation"))
     throw (exceptions::msg()
-      << "Notification: cannot select rt_dependency_hostParent_relation in loader: "
+      << "notification: cannot select rt_dependency_hostParent_relation in loader: "
       << query.lastError().text());
   while (query.next())
     output.dependency_node_id_parent_relation(
@@ -121,7 +121,7 @@ void dependency_loader::_load_relations(
   if (!query.exec("SELECT dependency_dep_id, service_service_id, host_host_id"
                   "  FROM rt_dependency_serviceChild_relation"))
     throw (exceptions::msg()
-      << "Notification: cannot select rt_dependency_serviceChild_relation in loader: "
+      << "notification: cannot select rt_dependency_serviceChild_relation in loader: "
       << query.lastError().text());
   while (query.next())
     output.dependency_node_id_child_relation(
@@ -132,7 +132,7 @@ void dependency_loader::_load_relations(
   if (!query.exec("SELECT dependency_dep_id, service_service_id, host_host_id"
                   "  FROM rt_dependency_serviceParent_relation"))
     throw (exceptions::msg()
-      << "Notification: cannot select rt_dependency_serviceParent_relation in loader: "
+      << "notification: cannot select rt_dependency_serviceParent_relation in loader: "
       << query.lastError().text());
   while (query.next())
     output.dependency_node_id_parent_relation(
@@ -176,7 +176,7 @@ void dependency_loader::_load_relation(
   ss << "SELECT dependency_dep_id, " << relation_id_name << " FROM " << table;
   if (!query.exec(ss.str().c_str()))
     throw (exceptions::msg()
-      << "Notification: cannot select " <<  table << " in loader: "
+      << "notification: cannot select " <<  table << " in loader: "
       << query.lastError().text());
 
   while (query.next()) {

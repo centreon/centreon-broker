@@ -187,7 +187,7 @@ void action::_spawn_notification_attempts(
                state& st,
                std::vector<std::pair<time_t, action> >& spawned_actions) const{
   logging::debug(logging::low)
-      << "Notification: Spawning notification attempts for node (host id = "
+      << "notification: spawning notification attempts for node (host id = "
       << _id.get_host_id() << ", service_id = " << _id.get_service_id()
       << ").";
 
@@ -231,7 +231,7 @@ void action::_spawn_notification_attempts(
 bool action::_check_action_viability(
                ::com::centreon::broker::notification::state& st) const {
   logging::debug(logging::low)
-      << "Notification: Checking action viability for node (host id = "
+      << "notification: checking action viability for node (host id = "
       << _id.get_host_id() << ", service_id = " << _id.get_service_id()
       << ").";
 
@@ -262,7 +262,7 @@ void action::_process_notification(
        std::vector<std::pair<time_t, action> >& spawned_actions) const {
 
   logging::debug(logging::low)
-      << "Notification: Processing notification action for notification_rule ("
+      << "notification: processing notification action for notification_rule ("
       << "host id = " << _id.get_host_id() << ", "
       << "service_id = " << _id.get_service_id() << ", "
       << "notification_rule_id = " << _notification_rule_id << ").";
@@ -305,7 +305,7 @@ void action::_process_notification(
   time_t now = time(NULL);
   if (!tp->is_valid(now)) {
     logging::debug(logging::low)
-      << "Notification: The timeperiod is not valid: "
+      << "notification: the timeperiod is not valid: "
          "reschedule it for the next valid time.";
     spawned_actions.push_back(std::make_pair(tp->get_next_valid(now), *this));
     return;
@@ -317,7 +317,7 @@ void action::_process_notification(
   // See if the node is in downtime.
   if (st.is_node_in_downtime(_id) == true) {
     logging::debug(logging::low)
-      << "Notification: This node is in downtime: don't send anything.";
+      << "notification: this node is in downtime: don't send anything.";
     should_send_the_notification = false;
     return;
   }
@@ -325,7 +325,7 @@ void action::_process_notification(
   // See if the node has been acknowledged.
   if (st.has_node_been_acknowledged(_id) == true) {
     logging::debug(logging::low)
-      << "Notification: This node has been acknowledged: don't send anything.";
+      << "notification: this node has been acknowledged: don't send anything.";
     should_send_the_notification = false;
     return;
   }

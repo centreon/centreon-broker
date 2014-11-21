@@ -322,7 +322,7 @@ namespace notification {
                   std::string const& container_name,
                   T const& container) {
       logging::debug(logging::low)
-          << "Notification: Logging container called "
+          << "notification: logging container called "
           << container_name;
       logging::debug(logging::low) << container;
     }

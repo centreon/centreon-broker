@@ -52,7 +52,7 @@ void node_loader::load(QSqlDatabase* db, node_builder* output) {
 
   if (!query.exec("SELECT host_id FROM rt_host"))
     throw (exceptions::msg()
-      << "Notification: cannot select rt_host in loader: "
+      << "notification: cannot select rt_host in loader: "
       << query.lastError().text());
 
   while (query.next()) {
@@ -67,7 +67,7 @@ void node_loader::load(QSqlDatabase* db, node_builder* output) {
   if (!query.exec("SELECT host_host_id, service_service_id"
                   "  FROM rt_host_service_relation"))
     throw (exceptions::msg()
-      << "Notification: cannot select rt_host_service_relation in loader: "
+      << "notification: cannot select rt_host_service_relation in loader: "
       << query.lastError().text());
 
   while (query.next()) {
@@ -81,7 +81,7 @@ void node_loader::load(QSqlDatabase* db, node_builder* output) {
 
   if (!query.exec("SELECT service_id FROM rt_service"))
     throw (exceptions::msg()
-      << "Notification: cannot select rt_service in loader: "
+      << "notification: cannot select rt_service in loader: "
       << query.lastError().text());
 
   while (query.next()) {

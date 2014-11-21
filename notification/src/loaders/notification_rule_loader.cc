@@ -44,7 +44,7 @@ void notification_rule_loader::load(
   if (!query.exec("SELECT rule_id, method_id, timeperiod_id, contact_id, "
                   "       host_id, service_id FROM rt_notification_rules"))
     throw (exceptions::msg()
-      << "Notification: cannot select rt_notification_rules in loader: "
+      << "notification: cannot select rt_notification_rules in loader: "
       << query.lastError().text());
 
   while (query.next()) {

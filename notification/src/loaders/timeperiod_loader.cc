@@ -53,7 +53,7 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
                   "       tp_saturday sunday"
                   " FROM rt_timeperiod"))
     throw (exceptions::msg()
-      << "Notification: cannot select rt_timeperiod in loader: "
+      << "notification: cannot select rt_timeperiod in loader: "
       << query.lastError().text());
 
   while(query.next()) {
@@ -78,7 +78,7 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
   if (!query.exec("SELECT exception_id, timeperiod_id, days, timerange"
                   " FROM rt_timeperiod_exceptions"))
     throw (exceptions::msg()
-      << "Notification: cannot select rt_timeperiod_exceptions in loader: "
+      << "notification: cannot select rt_timeperiod_exceptions in loader: "
       << query.lastError().text());
   while (query.next()) {
     unsigned int timeperiod_id = query.value(1).toUInt();
@@ -91,7 +91,7 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
   if (!query.exec("SELECT exclude_id, timeperiod_id, timeperiod_exclude_id"
                   " FROM rt_timeperiod_exclude_relations"))
     throw (exceptions::msg()
-      << "Notification: cannot select rt_timeperiod_exclude_relations in loader: "
+      << "notification: cannot select rt_timeperiod_exclude_relations in loader: "
       << query.lastError().text());
   while (query.next())
     output->add_timeperiod_exclude_relation(
@@ -102,7 +102,7 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
   if (!query.exec("SELECT include_id, timeperiod_id, timeperiod_include_id"
                   " FROM rt_timeperiod_include_relations"))
     throw (exceptions::msg()
-      << "Notification: cannot select rt_timeperiod_include_relations in loader: "
+      << "notification: cannot select rt_timeperiod_include_relations in loader: "
       << query.lastError().text());
   while (query.next())
     output->add_timeperiod_include_relation(

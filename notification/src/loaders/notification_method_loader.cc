@@ -46,7 +46,7 @@ void notification_method_loader::load(
                   "       types, start, end "
                   "  FROM cfg_configuration_method"))
     throw (exceptions::msg()
-      << "Notification: cannot select cfg_configuration_method in loader: "
+      << "notification: cannot select cfg_configuration_method in loader: "
       << query.lastError().text());
 
   while (query.next()) {

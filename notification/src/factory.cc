@@ -45,7 +45,7 @@ static QString const& find_param(
                         QString const& key) {
   QMap<QString, QString>::const_iterator it(cfg.params.find(key));
   if (cfg.params.end() == it)
-    throw (exceptions::msg() << "Notification: no '" << key
+    throw (exceptions::msg() << "notification: no '" << key
            << "' defined for endpoint '" << cfg.name << "'");
   return (it.value());
 }
