@@ -57,26 +57,42 @@ void macro_loader::load(QSqlDatabase *db, macro_builder *output) {
     throw (exceptions::msg()
       << "notification: cannot select cfg_nagios in loader: "
       << query.lastError().text());
-  output->add_macro("ADMINEMAIL", query.value(0).toString().toStdString());
-  output->add_macro("ADMINPAGER", query.value(1).toString().toStdString());
-  output->add_macro("MAINCONFIGFILE", query.value(2).toString().toStdString());
-  output->add_macro("STATUSDATAFILE", query.value(3).toString().toStdString());
-  output->add_macro(
+  output->add_global_macro(
+            "ADMINEMAIL",
+            query.value(0).toString().toStdString());
+  output->add_global_macro(
+            "ADMINPAGER",
+            query.value(1).toString().toStdString());
+  output->add_global_macro(
+            "MAINCONFIGFILE",
+            query.value(2).toString().toStdString());
+  output->add_global_macro(
+            "STATUSDATAFILE",
+            query.value(3).toString().toStdString());
+  output->add_global_macro(
             "RETENTIONDATAFILE",
             query.value(4).toString().toStdString());
-  output->add_macro(
+  output->add_global_macro(
             "OBJECTCACHEFILE",
             query.value(5).toString().toStdString());
-  output->add_macro("TEMPFILE", query.value(6).toString().toStdString());
-  output->add_macro("LOGFILE", query.value(7).toString().toStdString());
-  output->add_macro("RESOURCEFILE", "resource.cfg");
-  output->add_macro("COMMANDFILE", query.value(8).toString().toStdString());
-  output->add_macro(
+  output->add_global_macro(
+            "TEMPFILE",
+            query.value(6).toString().toStdString());
+  output->add_global_macro(
+            "LOGFILE",
+            query.value(7).toString().toStdString());
+  output->add_global_macro("RESOURCEFILE", "resource.cfg");
+  output->add_global_macro(
+            "COMMANDFILE",
+            query.value(8).toString().toStdString());
+  output->add_global_macro(
             "HOSTPERFDATAFILE",
             query.value(9).toString().toStdString());
-  output->add_macro(
+  output->add_global_macro(
             "SERVICEPERFDATAFILE",
             query.value(10).toString().toStdString());
-  output->add_macro("TEMPPATH", query.value(11).toString().toStdString());
+  output->add_global_macro(
+            "TEMPPATH",
+            query.value(11).toString().toStdString());
   query.next();
 }

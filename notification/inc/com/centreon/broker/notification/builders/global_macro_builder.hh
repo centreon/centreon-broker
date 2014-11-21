@@ -17,41 +17,37 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NOTIFICATION_BUILDERS_MACRO_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_MACRO_BUILDER_HH
+#ifndef CCB_NOTIFICATION_BUILDERS_GLOBAL_MACRO_BUILDER_HH
+#  define CCB_NOTIFICATION_BUILDERS_GLOBAL_MACRO_BUILDER_HH
 
 #  include <string>
+#  include <QHash>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/builders/macro_builder.hh"
 
 CCB_BEGIN()
 
 namespace        notification {
   /**
-   *  @class macro_builder macro_builder.hh "com/centreon/broker/notification/builders/macro_builder.hh"
-   *  @brief Macro builder interface.
-   *
-   *  This interface define what methods macro builders need to implement.
+   *  @class global_macro_builder global_macro_builder.hh "com/centreon/broker/notification/builders/global_macro_builder.hh"
+   *  @brief Global macro builder.
    */
-  class          macro_builder {
+  class          global_macro_builder : public macro_builder {
   public:
-    /**
-     *  Virtual destructor.
-     */
-    virtual      ~macro_builder() {}
+                 global_macro_builder(
+                   QHash<std::string, std::string>& global_macros);
 
-    /**
-     *  Add a macro to the builder.
-     *
-     *  @param[in] macro_name   The macro name.
-     *  @param[in] macro_value  The macro value.
-     */
     virtual void add_global_macro(
                    std::string const& macro_name,
-                   std::string const& macro_value) {}
+                   std::string const& macro_value);
+
+  private:
+    QHash<std::string, std::string>&
+                  _global_macros;
   };
 
 }
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_NODE_BUILDER_HH
+#endif // !CCB_NOTIFICATION_BUILDERS_GLOBAL_MACRO_BUILDER_HH

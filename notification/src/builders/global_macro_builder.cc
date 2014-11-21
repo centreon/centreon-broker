@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,16 +17,23 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <QHash>
-#include <QString>
 #include "com/centreon/broker/notification/utilities/qhash_func.hh"
+#include "com/centreon/broker/notification/builders/global_macro_builder.hh"
+
+using namespace com::centreon::broker::notification;
+
+global_macro_builder::global_macro_builder(
+                        QHash<std::string, std::string>& global_macros)
+  : _global_macros(global_macros) {}
 
 /**
- *  QHash function for std::string.
- *
- *  @param str The std::string to hash.
- *  @return The hashed value for str.
- */
-uint qHash(std::string const& str) {
-  return (qHash(str.c_str()));
+*  Add a macro to the builder.
+*
+*  @param[in] macro_name   The macro name.
+*  @param[in] macro_value  The macro value.
+*/
+void global_macro_builder::add_global_macro(
+                             std::string const& macro_name,
+                             std::string const& macro_value) {
+  _global_macros.insert(macro_name, macro_value);
 }

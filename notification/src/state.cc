@@ -42,6 +42,7 @@
 #include "com/centreon/broker/notification/builders/notification_method_by_id_builder.hh"
 #include "com/centreon/broker/notification/builders/notification_rule_by_node_builder.hh"
 #include "com/centreon/broker/notification/builders/notification_rule_by_id_builder.hh"
+#include "com/centreon/broker/notification/builders/global_macro_builder.hh"
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
@@ -189,6 +190,9 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
   }
   {
     // Get global constant macros.
+    macro_loader ml;
+    global_macro_builder builder(_global_constant_macros);
+    ml.load(&centreon_db, &builder);
   }
 
   // Debug logging for all the data loaded.
@@ -204,6 +208,7 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
                                _dependency_by_parent_id);
     data_logger::log_container("_downtimes", _downtimes);
     data_logger::log_container("_timeperiod_by_id", _timeperiod_by_id);
+    data_logger::log_container("_global_constant_macro", _global_constant_macros);
     data_logger::log_container("_notification_methods", _notification_methods);
     data_logger::log_container("_notification_rules_by_node", _notification_rules_by_node);
 #endif //!NDEBUG

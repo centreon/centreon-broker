@@ -37,6 +37,7 @@
 #  include "com/centreon/broker/notification/loaders/timeperiod_loader.hh"
 #  include "com/centreon/broker/notification/loaders/acknowledgement_loader.hh"
 #  include "com/centreon/broker/notification/loaders/downtime_loader.hh"
+#  include "com/centreon/broker/notification/loaders/macro_loader.hh"
 #  include "com/centreon/broker/notification/loaders/notification_method_loader.hh"
 #  include "com/centreon/broker/notification/loaders/notification_rule_loader.hh"
 #  include "com/centreon/broker/notification/builders/node_set_builder.hh"
