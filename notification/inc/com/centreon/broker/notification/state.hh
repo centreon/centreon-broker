@@ -106,6 +106,9 @@ namespace             notification {
     QHash<unsigned int, objects::notification_rule::ptr>
                       _notification_rule_by_id;
 
+    QHash<std::string, std::string>
+                      _global_constant_macros;
+
     QReadWriteLock    _state_mutex;
   };
 }

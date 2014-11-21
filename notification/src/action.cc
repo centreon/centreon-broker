@@ -339,7 +339,7 @@ void action::_process_notification(
 
   // Send the notification.
   if (should_send_the_notification) {
-    std::string resolved_command = cmd->resolve(_id, st, cache);
+    std::string resolved_command = cmd->resolve(rule, tp, method, cnt, n, cache);
     process_manager& manager = process_manager::instance();
     manager.create_process(resolved_command);
   }

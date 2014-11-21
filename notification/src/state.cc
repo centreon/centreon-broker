@@ -82,6 +82,7 @@ state& state::operator=(state const& obj) {
     _notification_methods = obj._notification_methods;
     _notification_rules_by_node = obj._notification_rules_by_node;
     _notification_rule_by_id = obj._notification_rule_by_id;
+    _global_constant_macros = obj._global_constant_macros;
   }
   return (*this);
 }
@@ -106,6 +107,7 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
   _notification_methods.clear();
   _notification_rules_by_node.clear();
   _notification_rule_by_id.clear();
+  _global_constant_macros.clear();
 
   // Get new objects
   {
@@ -184,6 +186,9 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
     composed.push_back(by_node_builder);
     composed.push_back(by_id_builder);
     nrl.load(&centreon_db, &composed);
+  }
+  {
+    // Get global constant macros.
   }
 
   // Debug logging for all the data loaded.

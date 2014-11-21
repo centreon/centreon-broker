@@ -27,13 +27,15 @@
 #  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
 #  include "com/centreon/broker/notification/node_cache.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
-
+#  include "com/centreon/broker/notification/objects/notification_rule.hh"
+#  include "com/centreon/broker/notification/objects/timeperiod.hh"
+#  include "com/centreon/broker/notification/objects/notification_method.hh"
+#  include "com/centreon/broker/notification/objects/contact.hh"
+#  include "com/centreon/broker/notification/objects/node.hh"
 
 CCB_BEGIN()
 
 namespace               notification {
-  // Forward declaration
-  class state;
   namespace             objects {
     /**
      *  @class command command.hh "com/centreon/broker/notification/objects/command.hh"
@@ -52,13 +54,21 @@ namespace               notification {
       std::string const&  get_name() const throw();
       void                set_name(std::string const& name);
 
-      std::string         resolve(node_id id, state& state, node_cache& cache);
+      std::string         resolve(
+                            notification_rule::ptr const& rule,
+                            timeperiod::ptr const& tp,
+                            notification_method::ptr const& method,
+                            contact::ptr const& contact,
+                            node::ptr const& n,
+                            node_cache const& cache);
 
     private:
       command();
 
       std::string         _name;
       std::string         _base_command;
+
+      //static              _macro_init();
     };
   }
 }

@@ -83,12 +83,30 @@ void command::set_name(std::string const& name) {
 /**
  *  Resolve this command.
  *
- *  @param[in] id     The id of the node being resolved.
- *  @param[in] cache  A cache of data for the macros.
- *
  *  @return  A string containing the resolved command.
  */
-std::string command::resolve(node_id id, state& st, node_cache& cache) {
-  // STUB
+std::string command::resolve(
+                       notification_rule::ptr const& rule,
+                       timeperiod::ptr const& tp,
+                       notification_method::ptr const& method,
+                       contact::ptr const& contact,
+                       node::ptr const& n,
+                       node_cache const& cache) {
   return (std::string());
 }
+
+
+/**
+ *  Replace a macro by its value.
+ *
+ *  @param[in] macro  The macro to replace.
+ *  @param[in] state  The id of the node being resolved.
+ *  @param[in] cache  A cache of data for the macros.
+ *
+ *  @return  The value of the macro.
+ */
+/*std::string command::_macro_replace(
+                       std::string const& macro,
+                       node_cache& cache) {
+
+}*/
