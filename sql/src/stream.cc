@@ -949,7 +949,8 @@ void stream::_process_host_check(
     // Apply to DB.
     logging::info(logging::medium)
       << "SQL: processing host check event (host: " << hc.host_id
-      << ", command: " << hc.command_line << ")";
+      << ", command: " << hc.command_line
+      << ", from instance: " << hc.instance_id << ")";
 
     // Processing.
     *_host_check_update << hc;
@@ -1517,7 +1518,7 @@ void stream::_process_service_check(
     logging::info(logging::medium)
       << "SQL: processing service check event (host: " << sc.host_id
       << ", service: " << sc.service_id << ", command: "
-      << sc.command_line << ")";
+      << sc.command_line << ", from instance: " << sc.instance_id << ")";
 
     // Processing.
     *_service_check_update << sc;
