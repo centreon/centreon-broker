@@ -35,6 +35,7 @@ add_library("${NOTIFICATION}" SHARED
   # Sources.
   "${SRC_DIR}/action.cc"
   "${SRC_DIR}/factory.cc"
+  "${SRC_DIR}/macro_generator.cc"
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/node_cache.cc"
   "${SRC_DIR}/notification_scheduler.cc"
@@ -98,6 +99,7 @@ add_library("${NOTIFICATION}" SHARED
   # Headers.
   "${INC_DIR}/com/centreon/broker/notification/action.hh"
   "${INC_DIR}/com/centreon/broker/notification/factory.hh"
+  "${INC_DIR}/com/centreon/broker/notification/macro_generator.hh"
   "${INC_DIR}/com/centreon/broker/notification/node_cache.hh"
   "${INC_DIR}/com/centreon/broker/notification/notification_scheduler.hh"
   "${INC_DIR}/com/centreon/broker/notification/process.hh"
