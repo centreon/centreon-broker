@@ -64,7 +64,7 @@ namespace             notification {
                       write_lock();
 
     objects::node::ptr
-                      get_node_by_id(objects::node_id);
+                      get_node_by_id(objects::node_id) const;
     objects::timeperiod::ptr
                       get_timeperiod_by_id(unsigned int id);
     QList<objects::notification_rule::ptr>
@@ -77,6 +77,10 @@ namespace             notification {
                       get_contact_by_id(unsigned int id);
     objects::command::ptr
                       get_command_by_id(unsigned int id);
+    QHash<std::string, std::string> const&
+                      get_global_macros() const;
+
+    int               get_date_format() const;
 
     bool              is_node_in_downtime(objects::node_id id);
     bool              has_node_been_acknowledged(objects::node_id id);
@@ -107,6 +111,7 @@ namespace             notification {
     QHash<unsigned int, objects::notification_rule::ptr>
                       _notification_rule_by_id;
 
+    int               _date_format;
     QHash<std::string, std::string>
                       _global_constant_macros;
 

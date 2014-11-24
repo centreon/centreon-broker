@@ -25,6 +25,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/loaders/macro_loader.hh"
+#include "com/centreon/broker/notification/utilities/get_datetime_string.hh"
 
 using namespace com::centreon::broker::notification;
 
@@ -53,11 +54,12 @@ void macro_loader::load(QSqlDatabase *db, macro_builder *output) {
   query.setForwardOnly(true);
 
   // Load global, constant macro.
-  if (!query.exec("SELECT admin_email, admin_pager, cfg_file, status_file,"
-                  "       state_retention_file, object_cache_file, temp_file,"
-                  "       log_file, command_file, host_perfdata_file, "
-                  "       service_perfdata_file, temp_path"
-                  " FROM cfg_engine"))
+  if (!query.exec(
+               "SELECT admin_email, admin_pager, cfg_file, status_file,"
+               "       state_retention_file, object_cache_file, temp_file,"
+               "       log_file, command_file, host_perfdata_file, "
+               "       service_perfdata_file, temp_path, date_format"
+               " FROM cfg_engine"))
     throw (exceptions::msg()
            << "notification: cannot load global monitoring options from database: "
            << query.lastError().text());
@@ -104,6 +106,15 @@ void macro_loader::load(QSqlDatabase *db, macro_builder *output) {
     output->add_global_macro(
               "TEMPPATH",
               query.value(11).toString().toStdString());
+    QString date_format = query.value(12).toString();
+    if (date_format == "euro")
+      output->add_date_format(utilities::date_format_euro);
+    else if (date_format == "iso8601")
+      output->add_date_format(utilities::date_format_iso8601);
+    else if (date_format == "strict-iso8601")
+      output->add_date_format(utilities::date_format_strict_iso8601);
+    else
+      output->add_date_format(utilities::date_format_us);
   }
   return ;
 }

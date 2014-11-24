@@ -39,12 +39,29 @@ namespace        notification {
     typedef QHash<std::string, std::string>
                  macro_container;
 
-    static void  generate(
-                   macro_container& container,
+    static void  generate(macro_container& container,
                    objects::node_id id,
-                   objects::contact::ptr cnt,
+                   objects::contact const& cnt,
                    state const& st,
                    node_cache const& cache);
+
+  private:
+    static bool  _get_global_macros(
+                   std::string const& macro_name,
+                   state const& st,
+                   std::string& result);
+    static bool  _get_time_macros(
+                    std::string const& macro_name,
+                   int date_format,
+                   std::string& result);
+    static bool  _get_host_macros(
+                   std::string const& macro_name,
+                   objects::node const& host,
+                   node_cache::host_node_state const& host_state,
+                   std::string& result);
+
+    static std::string
+                  _compute_duration(time_t last_state_change);
   };
 }
 

@@ -48,6 +48,13 @@ namespace        notification {
     virtual void add_global_macro(
                    std::string const& macro_name,
                    std::string const& macro_value) {}
+
+    /**
+     *  Add a date format to the builder.
+     *
+     *  @param[in] format  The date format.
+     */
+    virtual void add_date_format(int format) {}
   };
 
 }

@@ -64,7 +64,7 @@ namespace             notification {
         _node = obj._node;
         _current_status = obj._current_status;
         _prev_status = obj._prev_status;
-        _group = obj._group;
+        _groups = obj._groups;
       }
       return (*this);
     }
@@ -80,7 +80,12 @@ namespace             notification {
                       new StatusType(_prev_status)));
       out.push_back(misc::shared_ptr<io::data>(
                       new StatusType(_current_status)));
-      out.push_back(misc::shared_ptr<io::data>(new GroupType(_group)));
+      for (typename std::map<std::string, GroupType>::const_iterator
+             it(_groups.begin()),
+             end(_groups.end());
+           it != end;
+           ++it)
+        out.push_back(misc::shared_ptr<io::data>(new GroupType(it->second)));
     }
 
     /**
@@ -108,7 +113,43 @@ namespace             notification {
      *  @param[in] group  The data to update.
      */
     void update(GroupType const& group) {
-      _group = group;
+      _groups[group.group.toStdString()] = group;
+    }
+
+    /**
+     *  Get the node object.
+     *
+     *  @return  The node object.
+     */
+    FullType const& get_node() const {
+      return (_node);
+    }
+
+    /**
+     *  Get the status object.
+     *
+     *  @return  The status object.
+     */
+    StatusType const& get_status() const {
+      return (_current_status);
+    }
+
+    /**
+     *  Get the prev status.
+     *
+     *  @return  The prev status.
+     */
+    StatusType const& get_prev_status() const {
+      return (_prev_status);
+    }
+
+    /**
+     *  Get the groups this node belongs to.
+     *
+     *  @return  The groups.
+     */
+    std::map<std::string, GroupType> const& get_groups() const {
+      return (_groups);
     }
 
   private:
@@ -116,7 +157,8 @@ namespace             notification {
     StatusType  _current_status;
     StatusType  _prev_status;
 
-    GroupType   _group;
+    std::map<std::string, GroupType>
+                _groups;
   };
 }
 
