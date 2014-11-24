@@ -57,46 +57,53 @@ void macro_loader::load(QSqlDatabase *db, macro_builder *output) {
                   "       state_retention_file, object_cache_file, temp_file,"
                   "       log_file, command_file, host_perfdata_file, "
                   "       service_perfdata_file, temp_path"
-                  " FROM cfg_nagios") || !query.next())
+                  " FROM cfg_engine"))
     throw (exceptions::msg()
            << "notification: cannot load global monitoring options from database: "
            << query.lastError().text());
-  output->add_global_macro(
-            "ADMINEMAIL",
-            query.value(0).toString().toStdString());
-  output->add_global_macro(
-            "ADMINPAGER",
-            query.value(1).toString().toStdString());
-  output->add_global_macro(
-            "MAINCONFIGFILE",
-            query.value(2).toString().toStdString());
-  output->add_global_macro(
-            "STATUSDATAFILE",
-            query.value(3).toString().toStdString());
-  output->add_global_macro(
-            "RETENTIONDATAFILE",
-            query.value(4).toString().toStdString());
-  output->add_global_macro(
-            "OBJECTCACHEFILE",
-            query.value(5).toString().toStdString());
-  output->add_global_macro(
-            "TEMPFILE",
-            query.value(6).toString().toStdString());
-  output->add_global_macro(
-            "LOGFILE",
-            query.value(7).toString().toStdString());
-  output->add_global_macro("RESOURCEFILE", "resource.cfg");
-  output->add_global_macro(
-            "COMMANDFILE",
-            query.value(8).toString().toStdString());
-  output->add_global_macro(
-            "HOSTPERFDATAFILE",
-            query.value(9).toString().toStdString());
-  output->add_global_macro(
-            "SERVICEPERFDATAFILE",
-            query.value(10).toString().toStdString());
-  output->add_global_macro(
-            "TEMPPATH",
-            query.value(11).toString().toStdString());
-  query.next();
+  if (!query.next()) {
+    logging::config(logging::medium)
+      << "notification: could not find default monitoring options, "
+      << "some global macros will be empty";
+  }
+  else {
+    output->add_global_macro(
+              "ADMINEMAIL",
+              query.value(0).toString().toStdString());
+    output->add_global_macro(
+              "ADMINPAGER",
+              query.value(1).toString().toStdString());
+    output->add_global_macro(
+              "MAINCONFIGFILE",
+              query.value(2).toString().toStdString());
+    output->add_global_macro(
+              "STATUSDATAFILE",
+              query.value(3).toString().toStdString());
+    output->add_global_macro(
+              "RETENTIONDATAFILE",
+              query.value(4).toString().toStdString());
+    output->add_global_macro(
+              "OBJECTCACHEFILE",
+              query.value(5).toString().toStdString());
+    output->add_global_macro(
+              "TEMPFILE",
+              query.value(6).toString().toStdString());
+    output->add_global_macro(
+              "LOGFILE",
+              query.value(7).toString().toStdString());
+    output->add_global_macro("RESOURCEFILE", "resource.cfg");
+    output->add_global_macro(
+              "COMMANDFILE",
+              query.value(8).toString().toStdString());
+    output->add_global_macro(
+              "HOSTPERFDATAFILE",
+              query.value(9).toString().toStdString());
+    output->add_global_macro(
+              "SERVICEPERFDATAFILE",
+              query.value(10).toString().toStdString());
+    output->add_global_macro(
+              "TEMPPATH",
+              query.value(11).toString().toStdString());
+  }
+  return ;
 }
