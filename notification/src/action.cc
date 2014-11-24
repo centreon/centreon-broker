@@ -134,6 +134,44 @@ void action::set_node_id(objects::node_id id) throw() {
 }
 
 /**
+ *  Get the notification rule ID.
+ *
+ *  @return Notification rule ID.
+ */
+unsigned int action::get_notification_rule_id() const throw () {
+  return (_notification_rule_id);
+}
+
+/**
+ *  Set the notification rule ID.
+ *
+ *  @param[in] id  Notification rule ID.
+ */
+void action::set_notification_rule_id(unsigned int id) throw () {
+  _notification_rule_id = id;
+  return ;
+}
+
+/**
+ *  Get the notification number.
+ *
+ *  @return Current notification number.
+ */
+unsigned int action::get_notification_number() const throw () {
+  return (_notification_number);
+}
+
+/**
+ *  Set the notification number.
+ *
+ *  @param[in] num  Notification number.
+ */
+void action::set_notification_number(unsigned int num) throw () {
+  _notification_number = num;
+  return ;
+}
+
+/**
  *  Get the scheduled time of this action.
  *
  *  @return  The scheduled time of this action.
