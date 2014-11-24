@@ -22,7 +22,6 @@
 #include <iostream>
 #include <QFile>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "test/cbd.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
 #include "test/external_command.hh"
@@ -49,9 +48,9 @@ int main() {
   std::list<service> services;
   std::string engine_config_path(tmpnam(NULL));
   std::string flag_file(tmpnam(NULL));
+  std::cout << "flag file: " << flag_file << "\n";
   external_command commander;
   engine monitoring;
-  cbd broker;
   test_file broker_cfg;
   test_db db;
 
@@ -62,7 +61,19 @@ int main() {
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, 1);
     generate_services(services, hosts, 2);
-    // XXX : add FLAGFILE custom macro
+    for (std::list<service>::iterator
+           it(services.begin()),
+           end(services.end());
+         it != end;
+         ++it) {
+      it->checks_enabled = 0;
+      it->accept_passive_service_checks = 1;
+      it->max_attempts = 1;
+    }
+    set_custom_variable(
+      services.front(),
+      "FLAGFILE",
+      flag_file.c_str());
 
     // Populate database.
     db.centreon_run(
@@ -100,30 +111,57 @@ int main() {
 
     // Create notification rules in DB.
     db.centreon_run(
-         "INSERT INTO cfg_notification_method (method_id, name,"
-         "            command_id, `interval`)"
+         "INSERT INTO cfg_notification_methods (method_id,"
+         "            name, command_id, `interval`)"
          "  VALUES (1, 'NotificationMethod', 1, 300)",
          "could not create notification method");
     db.centreon_run(
-         "INSERT INTO rt_notification_rules (method_id,"
+         "INSERT INTO cfg_notification_rules (rule_id, method_id, "
+         "            timeperiod_id, owner_id, contact_id, host_id,"
+         "            service_id, enabled)"
+         "  VALUES (1, 1, NULL, 1, 1, 1, 2, 1)",
+         "could not create notification rule (cfg)");
+    db.centreon_run(
+         "INSERT INTO rt_notification_rules (rule_id, method_id,"
          "            timeperiod_id, contact_id, host_id,"
          "            service_id)"
-         "  VALUES (1, NULL, 1, 1, 2)",
-         "could not create notification rule");
+         "  VALUES (1, 1, NULL, 1, 1, 2)",
+         "could not create notification rule (rt)");
 
-    // Start monitoring.
+    // Generate configuration.
     broker_cfg.set_template(
       PROJECT_SOURCE_DIR "/test/cfg/notification_non_correlated.xml.in");
-    broker.set_config_file(broker_cfg.generate());
-    broker.start();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    commander.set_file(tmpnam(NULL));
+    std::string additional_config;
+    {
+      std::ostringstream oss;
+      oss << commander.get_engine_config()
+          << "broker_module=" << CBMOD_PATH << " "
+          << broker_cfg.generate() << "\n";
+      additional_config = oss.str();
+    }
+    config_write(
+      engine_config_path.c_str(),
+      additional_config.c_str(),
+      &hosts,
+      &services);
+
+    // Start monitoring.
     std::string engine_config_file(engine_config_path);
     engine_config_file.append("/nagios.cfg");
     monitoring.set_config_file(engine_config_file);
     monitoring.start();
+    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    commander.execute(
+      "PROCESS_SERVICE_CHECK_RESULT;1;1;0;Submitted by unit test");
+    commander.execute(
+      "PROCESS_SERVICE_CHECK_RESULT;1;2;0;Submitted by unit test");
     sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
-// external cmd CRITICAL svc1 + svc2
+    // Make service 2 CRITICAL.
+    commander.execute(
+      "PROCESS_SERVICE_CHECK_RESULT;1;2;2;Submitted by unit test");
+    sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Check file creation.
     error = !QFile::exists(flag_file.c_str());
@@ -137,7 +175,6 @@ int main() {
 
   // Cleanup.
   monitoring.stop();
-  broker.stop();
   ::remove(flag_file.c_str());
   config_remove(engine_config_path.c_str());
   free_hosts(hosts);
