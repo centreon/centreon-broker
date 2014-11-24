@@ -21,9 +21,11 @@
 #  define CCB_NOTIFICATION_OBJECT_CACHE_HH
 
 #  include <string>
-#  include <vector>
+#  include <deque>
 #  include <map>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/io/data.hh"
 
 CCB_BEGIN()
 
@@ -31,9 +33,9 @@ namespace             notification {
   /**
    *  @class object_cache object_cache.hh "com/centreon/broker/notification/object_cache.hh"
    *  @tparam T  The type of the object cached.
-   *  @brief Contain a fixed size cache of a particular object by its id.
+   *  @brief Contain a fixed size cache of a particular object.
    */
-  template <typename T>
+  template <typename FullType, typename StatusType, typename GroupType>
   class               object_cache {
   public:
     /**
@@ -44,8 +46,9 @@ namespace             notification {
      *  Copy constructor
      * @param[in] obj  The object to copy.
      */
-                      object_cache(object_cache<T> const& obj) {
-      object_cache<T>::operator=(obj);
+                      object_cache(
+                        object_cache<FullType, StatusType, GroupType> const& obj) {
+      object_cache<FullType, StatusType, GroupType>::operator=(obj);
     }
 
     /**
@@ -55,75 +58,65 @@ namespace             notification {
      *
      *  @return  A reference this object.
      */
-    object_cache<T>&  operator=(object_cache<T> const& obj) {
+    object_cache<FullType, StatusType, GroupType>  operator=(
+      object_cache<FullType, StatusType, GroupType> const& obj) {
       if (this != &obj) {
-        _cache = obj._cache;
+        _node = obj._node;
+        _current_status = obj._current_status;
+        _prev_status = obj._prev_status;
+        _group = obj._group;
       }
       return (*this);
     }
 
     /**
-     *  Insert an object.
+     *  Serialize the data of the object cache into a vector.
      *
-     *  @param[in] id      The id of the object.
-     *  @param[in] object  The object to insert.
+     *  @param[in] out  The vector to fill.
      */
-    void              insert(unsigned int id,
-                             T const& object) {
-      typename std::map<unsigned int, std::vector<T> >::iterator
-          found(_cache.find(id));
-      if (found == _cache.end())
-        _cache.insert(
-            std::make_pair(id, std::vector<T>())).first->second.push_back(object);
-      else {
-        found->second.push_back(object);
-        if (found->second.size() > cache_size)
-          found->second.erase(found->second.begin());
-      }
-    }
-
-    std::vector<T>    get(unsigned int id) {
-      typename std::map<unsigned int, std::vector<T> >::iterator
-          found(_cache.find(id));
-      if (found == _cache.end())
-        return (std::vector<T>());
-      else
-        return (found->second);
+    void serialize(std::deque<misc::shared_ptr<io::data> >& out) const {
+      out.push_back(misc::shared_ptr<io::data>(new FullType(_node)));
+      out.push_back(misc::shared_ptr<io::data>(
+                      new StatusType(_prev_status)));
+      out.push_back(misc::shared_ptr<io::data>(
+                      new StatusType(_current_status)));
+      out.push_back(misc::shared_ptr<io::data>(new GroupType(_group)));
     }
 
     /**
-     *  Is the cache empty?
+     *  Update the object cache.
      *
-     *  @return  True if the cache is empty.
+     *  @param[in] n  The data to update.
      */
-    bool              empty() const {
-      return (_cache.empty());
+    void update(FullType const& n) {
+      _node = n;
     }
 
     /**
-     *  Pop an object from the cache.
+     *  Update the object cache.
      *
-     *  @return  An object from the cache.
+     *  @param[in] status  The data to update.
      */
-    T                pop() {
-      if (_cache.empty())
-        return (T());
-      else {
-        typename std::map<unsigned int, std::vector<T> >::iterator
-            begin = _cache.begin();
-        T ret = *begin->second.begin();
-        begin->second.erase(begin->second.begin());
-        if (begin->second.empty())
-          _cache.erase(begin);
-        return (ret);
-      }
+    void update(StatusType const& status) {
+      _prev_status = _current_status;
+      _current_status = status;
     }
 
-    static const int cache_size = 2;
+    /**
+     *  Update the object cache.
+     *
+     *  @param[in] group  The data to update.
+     */
+    void update(GroupType const& group) {
+      _group = group;
+    }
 
   private:
-    std::map<unsigned int, std::vector<T> >
-                     _cache;
+    FullType    _node;
+    StatusType  _current_status;
+    StatusType  _prev_status;
+
+    GroupType   _group;
   };
 }
 
