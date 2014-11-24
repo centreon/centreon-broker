@@ -21,7 +21,8 @@
 #  define CCB_NOTIFICATION_NODE_CACHE_HH
 
 #  include <string>
-#  include <vector>
+#  include <map>
+#  include <deque>
 #  include <QMutex>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/io/stream.hh"
@@ -29,8 +30,12 @@
 #  include "com/centreon/broker/compression/stream.hh"
 #  include "com/centreon/broker/file/stream.hh"
 #  include "com/centreon/broker/notification/object_cache.hh"
+#  include "com/centreon/broker/neb/service.hh"
 #  include "com/centreon/broker/neb/service_status.hh"
+#  include "com/centreon/broker/neb/host.hh"
 #  include "com/centreon/broker/neb/host_status.hh"
+#  include "com/centreon/broker/neb/host_group_member.hh"
+#  include "com/centreon/broker/neb/service_group_member.hh"
 
 CCB_BEGIN()
 
@@ -44,6 +49,11 @@ namespace         notification {
    */
   class           node_cache : public io::stream {
   public:
+    typedef object_cache<neb::host, neb::host_status, neb::host_group_member>
+                  host_node_state;
+    typedef object_cache<neb::service, neb::service_status, neb::service_group_member>
+                  service_node_state;
+
                   node_cache();
                   node_cache(node_cache const& f);
     node_cache&   operator=(node_cache const& f);
@@ -56,18 +66,31 @@ namespace         notification {
     virtual unsigned int
                   write(const misc::shared_ptr<io::data> &d);
 
-    std::vector<misc::shared_ptr<neb::service_status> >
-                  get_service_status(unsigned int id);
-    std::vector< misc::shared_ptr<neb::host_status> >
-                  get_host_status(unsigned int id);
+    void          update(neb::host const&);
+    void          update(neb::host_status const&);
+    void          update(neb::host_group_member const&);
+    void          update(neb::service const&);
+    void          update(neb::service_status const&);
+    void          update(neb::service_group_member const&);
+
+
+    host_node_state const&
+                  get_host(unsigned int id) const;
+    service_node_state const&
+                  get_service(unsigned int id) const;
 
   private:
-    object_cache<misc::shared_ptr<neb::service_status> >
-                  _service_statuses;
-    object_cache<misc::shared_ptr<neb::host_status> >
-                  _host_statuses;
+    std::map<unsigned int, host_node_state>
+                  _host_node_states;
+    std::map<unsigned int, service_node_state>
+                  _service_node_states;
 
     QMutex        _mutex;
+
+    std::deque<misc::shared_ptr<io::data> >
+                  _serialized_data;
+
+    void          _prepare_serialization();
   };
 }
 

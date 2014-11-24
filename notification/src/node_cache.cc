@@ -22,6 +22,7 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/notification/node_cache.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -52,8 +53,8 @@ node_cache::node_cache(node_cache const& obj) {
  */
 node_cache& node_cache::operator=(node_cache const& obj) {
   if (this != &obj) {
-    _service_statuses = obj._service_statuses;
-    _host_statuses = obj._host_statuses;
+    _host_node_states = obj._host_node_states;
+    _service_node_states = obj._service_node_states;
   }
   return (*this);
 }
@@ -123,6 +124,12 @@ bool node_cache::unload(std::string const& cache_file) {
   compression->write_to(file);
   bbdo->write_to(compression);
 
+  // Lock the mutex;
+  QMutexLocker lock(&_mutex);
+
+  // Prepare serialization.
+    _prepare_serialization();
+
   misc::shared_ptr<io::data> data;
 
   try {
@@ -160,25 +167,14 @@ void node_cache::process(bool in, bool out) {
  */
 void node_cache::read(misc::shared_ptr<io::data> &d) {
 
-  QMutexLocker lock(&_mutex);
-
-  if (_host_statuses.empty() && _service_statuses.empty())
+  if (_serialized_data.empty())
     throw (io::exceptions::shutdown(true, true)
            << "Node cache is empty");
-
-  // Get host status.
-  if (!_host_statuses.empty()) {
-    misc::shared_ptr<neb::host_status> hst = _host_statuses.pop();
-    d = hst;
-    return ;
+  else {
+    d = _serialized_data.front();
+    _serialized_data.pop_front();
   }
 
-  // Get service status.
-  if (!_service_statuses.empty()) {
-    misc::shared_ptr<neb::service_status> sst = _service_statuses.pop();
-    d = sst;
-    return ;
-  }
 }
 
 /**
@@ -202,28 +198,140 @@ unsigned int node_cache::write(misc::shared_ptr<io::data> const& data) {
     misc::shared_ptr<neb::host_status>
         hst = data.staticCast<neb::host_status>();
     QMutexLocker lock(&_mutex);
-    _host_statuses.insert(hst->host_id, hst);
+    //_host_statuses.insert(hst->host_id, hst);
   }
   else if (type == io::events::data_type<io::events::neb,
                                          neb::de_service_status>::value) {
     misc::shared_ptr<neb::service_status>
         sst = data.staticCast<neb::service_status>();
     QMutexLocker lock(&_mutex);
-    _service_statuses.insert(sst->service_id, sst);
+    //_service_statuses.insert(sst->service_id, sst);
   }
 
   return (1);
 }
 
+/**
+ *  Update the node cache.
+ *
+ *  @param[in] hst  The data to update.
+ */
+void node_cache::update(neb::host const& hst) {
+  if (hst.host_id == 0)
+    return ;
 
-std::vector<misc::shared_ptr<neb::service_status> >
-  node_cache::get_service_status(unsigned int id) {
-  QMutexLocker lock(&_mutex);
-  _service_statuses.get(id);
+  _host_node_states[hst.host_id].update(hst);
 }
 
-std::vector<misc::shared_ptr<neb::host_status> >
-  node_cache::get_host_status(unsigned int id) {
-  QMutexLocker lock(&_mutex);
-  _host_statuses.get(id);
+/**
+ *  Update the node cache.
+ *
+ *  @param[in] hst  The data to update.
+ */
+void node_cache::update(neb::host_status const& hst) {
+  if (hst.host_id == 0)
+    return ;
+
+  _host_node_states[hst.host_id].update(hst);
+}
+
+/**
+ *  Update the node cache.
+ *
+ *  @param[in] hgm  The data to update.
+ */
+void node_cache::update(neb::host_group_member const& hgm) {
+  if (hgm.host_id == 0)
+    return ;
+
+  _host_node_states[hgm.host_id].update(hgm);
+}
+
+/**
+ *  Update the node cache.
+ *
+ *  @param[in] s  The data to update.
+ */
+void node_cache::update(neb::service const& s) {
+  if (s.service_id == 0)
+    return ;
+
+  _service_node_states[s.service_id].update(s);
+}
+
+/**
+ *  Update the node cache.
+ *
+ *  @param[in] sst  The data to update.
+ */
+void node_cache::update(neb::service_status const& sst) {
+  if (sst.service_id == 0)
+    return ;
+
+  _service_node_states[sst.service_id].update(sst);
+}
+
+/**
+ *  Update the node cache.
+ *
+ *  @param[in] sgm  The data to update.
+ */
+void node_cache::update(neb::service_group_member const& sgm) {
+  if (sgm.service_id == 0)
+    return ;
+
+  _service_node_states[sgm.service_id].update(sgm);
+}
+
+/**
+ *  Get a host from the node cache.
+ *
+ *  @param[in] id  The id of the host.
+ *
+ *  @return        The host from the node cache.
+ */
+node_cache::host_node_state const& node_cache::get_host(
+                                                 unsigned int id) const {
+  std::map<unsigned int, host_node_state>::const_iterator found =
+    _host_node_states.find(id);
+  if (found == _host_node_states.end())
+    throw (exceptions::msg()
+             << "notification: node_cache: host " << id << "not found.");
+  return (found->second);
+}
+
+/**
+ *  Get a service from the service cache.
+ *
+ *  @param[in] id  The id of the service.
+ *
+ *  @return        The service from the node cache.
+ */
+node_cache::service_node_state const& node_cache::get_service(
+                                                    unsigned int id) const {
+  std::map<unsigned int, service_node_state>::const_iterator found =
+    _service_node_states.find(id);
+  if (found == _service_node_states.end())
+    throw (exceptions::msg()
+             << "notification: node_cache: service " << id << "not found.");
+  return (found->second);
+}
+
+/**
+ *  Prepare the serialization of the host and service states.
+ */
+void node_cache::_prepare_serialization() {
+  _serialized_data.clear();
+  for (std::map<unsigned int, host_node_state>::const_iterator
+         it = _host_node_states.begin(),
+         end = _host_node_states.end();
+       it != end;
+       ++it)
+    it->second.serialize(_serialized_data);
+  for (std::map<unsigned int, service_node_state>::const_iterator
+         it = _service_node_states.begin(),
+         end = _service_node_states.end();
+       it != end;
+       ++it)
+    it->second.serialize(_serialized_data);
 }
