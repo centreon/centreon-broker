@@ -95,6 +95,7 @@ add_library("${NOTIFICATION}" SHARED
   "${SRC_DIR}/builders/notification_rule_by_id_builder.cc"
   "${SRC_DIR}/utilities/data_loggers.cc"
   "${SRC_DIR}/utilities/qhash_func.cc"
+  "${SRC_DIR}/utilities/get_datetime_string.cc"
   "${PROJECT_SOURCE_DIR}/core/src/mapping.cc"
   # Headers.
   "${INC_DIR}/com/centreon/broker/notification/action.hh"
@@ -171,6 +172,7 @@ add_library("${NOTIFICATION}" SHARED
   "${INC_DIR}/com/centreon/broker/notification/utilities/ptr_typedef.hh"
   "${INC_DIR}/com/centreon/broker/notification/utilities/data_loggers.hh"
   "${INC_DIR}/com/centreon/broker/notification/utilities/qhash_func.hh"
+  "${INC_DIR}/com/centreon/broker/notification/utilities/get_datetime_string.hh"
 )
 target_link_libraries("${NOTIFICATION}" ${QT_LIBRARIES})
 set_target_properties("${NOTIFICATION}" PROPERTIES PREFIX "")

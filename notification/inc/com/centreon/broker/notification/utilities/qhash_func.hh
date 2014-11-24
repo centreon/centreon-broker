@@ -22,7 +22,6 @@
 
 #  include <string>
 #  include <QtGlobal>
-#  include "com/centreon/broker/namespace.hh"
 
 // QHash function for std::string
 uint qHash(std::string const& str);

@@ -67,3 +67,17 @@ bool macro_generator::_get_global_macros(
   result = *found;
   return (true);
 }
+
+/**
+ *  Get this macro if it's a time macro.
+ *
+ *  @param[in] macro_name  The name of the macro.
+ *  @param[out] result     The result, filled if the macro is a time macro.
+ *
+ *  @return                True if the macro is a time macro.
+ */
+bool macro_generator::_get_time_macros(
+                        std::string const& macro_name,
+                        std::string& result) {
+
+}
