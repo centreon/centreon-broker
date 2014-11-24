@@ -172,6 +172,7 @@ void test_db::open(
                                                      centreon_connection)));
     _open(*_centreon, centreon_db_name);
     _run_script(*_centreon, PROJECT_SOURCE_DIR "/test/centreon.sql");
+    _run_script(*_centreon, PROJECT_SOURCE_DIR "/notification/mysql_schema.sql");
   }
 
   // Open Storage DB.
