@@ -64,7 +64,7 @@ namespace             notification {
                       write_lock();
 
     objects::node::ptr
-                      get_node_by_id(objects::node_id);
+                      get_node_by_id(objects::node_id) const;
     objects::timeperiod::ptr
                       get_timeperiod_by_id(unsigned int id);
     QList<objects::notification_rule::ptr>

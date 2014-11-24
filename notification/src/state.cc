@@ -222,7 +222,7 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
  *
  *  @return        A node::ptr to the node, or a null node::ptr.
  */
-node::ptr state::get_node_by_id(node_id id) {
+node::ptr state::get_node_by_id(node_id id) const {
   return (_node_by_id.value(id));
 }
 
