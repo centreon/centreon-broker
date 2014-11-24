@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2014 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -57,13 +57,13 @@ void notification_scheduler::run() {
                                    : 0;
 
     logging::debug(logging::medium)
-        << "notification: notification scheduler sleeping for "
-        << wait_for << "milliseconds.";
+      << "notification: scheduler sleeping for "
+      << wait_for / 1000.0 << " seconds";
 
     _general_condition.wait(&_general_mutex, wait_for);
 
     logging::debug(logging::medium)
-        << "notification: notification scheduler waking up.";
+        << "notification: notification scheduler waking up";
 
     // The should exit flag was set - exit.
     if (_should_exit)

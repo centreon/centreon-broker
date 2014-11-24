@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -59,10 +59,10 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
   if (!query.exec("SELECT dep_id, dep_name, dep_description, inherits_parent,"
                   "       execution_failure_criteria,"
                   "       notification_failure_criteria"
-                  "  FROM rt_dependency"))
+                  "  FROM cfg_dependencies"))
     throw (exceptions::msg()
-      << "notification: cannot select rt_dependency in loader: "
-      << query.lastError().text());
+           << "notification: cannot load dependencies from database: "
+           << query.lastError().text());
 
   while (query.next()) {
     dependency::ptr dep(new dependency);
@@ -103,30 +103,30 @@ void dependency_loader::_load_relations(
                           dependency_builder& output) {
 
   if (!query.exec("SELECT dependency_dep_id, host_host_id"
-                  "  FROM rt_dependency_hostChild_relation"))
+                  "  FROM cfg_dependencies_hostchildren_relations"))
     throw (exceptions::msg()
-      << "notification: cannot select rt_dependency_hostChild_relation in loader: "
-      << query.lastError().text());
+           << "notification: cannot load host/child dependencies from database: "
+           << query.lastError().text());
   while (query.next())
     output.dependency_node_id_child_relation(
              query.value(0).toUInt(),
              node_id(query.value(1).toUInt()));
 
   if (!query.exec("SELECT dependency_dep_id, host_host_id"
-                  "  FROM rt_dependency_hostParent_relation"))
+                  "  FROM cfg_dependencies_hostparents_relations"))
     throw (exceptions::msg()
-      << "notification: cannot select rt_dependency_hostParent_relation in loader: "
-      << query.lastError().text());
+           << "notification: cannot load host/parent dependencies from database: "
+           << query.lastError().text());
   while (query.next())
     output.dependency_node_id_parent_relation(
              query.value(0).toUInt(),
              node_id(query.value(1).toUInt()));
 
   if (!query.exec("SELECT dependency_dep_id, service_service_id, host_host_id"
-                  "  FROM rt_dependency_serviceChild_relation"))
+                  "  FROM cfg_dependencies_servicechildren_relations"))
     throw (exceptions::msg()
-      << "notification: cannot select rt_dependency_serviceChild_relation in loader: "
-      << query.lastError().text());
+           << "notification: cannot load service/child dependencies from database: "
+           << query.lastError().text());
   while (query.next())
     output.dependency_node_id_child_relation(
              query.value(0).toUInt(),
@@ -134,31 +134,39 @@ void dependency_loader::_load_relations(
              query.value(1).toUInt()));
 
   if (!query.exec("SELECT dependency_dep_id, service_service_id, host_host_id"
-                  "  FROM rt_dependency_serviceParent_relation"))
+                  "  FROM cfg_dependencies_serviceparents_relations"))
     throw (exceptions::msg()
-      << "notification: cannot select rt_dependency_serviceParent_relation in loader: "
-      << query.lastError().text());
+           << "notification: cannot load service/parent dependencies from database: "
+           << query.lastError().text());
   while (query.next())
     output.dependency_node_id_parent_relation(
              query.value(0).toUInt(),
              node_id(query.value(2).toUInt(),
              query.value(1).toUInt()));
-  _load_relation(query, output,
-                 "servicegroup_sg_id",
-                 "rt_dependency_servicegroupParent_relation",
-                  &dependency_builder::dependency_servicegroup_parent_relation);
-  _load_relation(query, output,
-                 "servicegroup_sg_id",
-                 "rt_dependency_servicegroupChild_relation",
-                  &dependency_builder::dependency_servicegroup_child_relation);
-  _load_relation(query, output,
-                 "hostgroup_hg_id",
-                 "rt_dependency_hostgroupParent_relation",
-                  &dependency_builder::dependency_hostgroup_parent_relation);
-  _load_relation(query, output,
-                 "hostgroup_hg_id",
-                 "rt_dependency_hostgroupChild_relation",
-                  &dependency_builder::dependency_hostgroup_child_relation);
+  _load_relation(
+    query,
+    output,
+    "servicegroup_sg_id",
+    "cfg_dependencies_servicegroupparents_relations",
+    &dependency_builder::dependency_servicegroup_parent_relation);
+  _load_relation(
+    query,
+    output,
+    "servicegroup_sg_id",
+    "cfg_dependencies_servicegroupchildren_relations",
+    &dependency_builder::dependency_servicegroup_child_relation);
+  _load_relation(
+    query,
+    output,
+    "hostgroup_hg_id",
+    "cfg_dependencies_hostgroupparents_relations",
+    &dependency_builder::dependency_hostgroup_parent_relation);
+  _load_relation(
+    query,
+    output,
+    "hostgroup_hg_id",
+    "cfg_dependencies_hostgroupchildren_relations",
+    &dependency_builder::dependency_hostgroup_child_relation);
 }
 
 /**

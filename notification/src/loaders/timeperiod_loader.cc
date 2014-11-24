@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -55,10 +55,10 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
   if (!query.exec("SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday,"
                   "       tp_tuesday, tp_wednesday, tp_thursday, tp_friday,"
                   "       tp_saturday sunday"
-                  " FROM rt_timeperiod"))
+                  " FROM cfg_timeperiods"))
     throw (exceptions::msg()
-      << "notification: cannot select rt_timeperiod in loader: "
-      << query.lastError().text());
+           << "notification: cannot load timeperiods from database: "
+           << query.lastError().text());
 
   while(query.next()) {
     timeperiod::ptr tperiod(new timeperiod);
@@ -80,10 +80,10 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
 
   // Load the timeperiod exceptions.
   if (!query.exec("SELECT exception_id, timeperiod_id, days, timerange"
-                  " FROM rt_timeperiod_exceptions"))
+                  " FROM cfg_timeperiods_exceptions"))
     throw (exceptions::msg()
-      << "notification: cannot select rt_timeperiod_exceptions in loader: "
-      << query.lastError().text());
+           << "notification: cannot load timeperiods exceptions from database: "
+           << query.lastError().text());
   while (query.next()) {
     unsigned int timeperiod_id = query.value(1).toUInt();
     std::string days = query.value(2).toString().toStdString();
@@ -93,10 +93,10 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
 
   // Load the timeperiod exclude relations.
   if (!query.exec("SELECT exclude_id, timeperiod_id, timeperiod_exclude_id"
-                  " FROM rt_timeperiod_exclude_relations"))
+                  " FROM cfg_timeperiods_exclude_relations"))
     throw (exceptions::msg()
-      << "notification: cannot select rt_timeperiod_exclude_relations in loader: "
-      << query.lastError().text());
+           << "notification: cannot load timeperiods exclusions from database: "
+           << query.lastError().text());
   while (query.next())
     output->add_timeperiod_exclude_relation(
               query.value(1).toUInt(),
@@ -104,10 +104,10 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
 
   // Load the timeperiod include relations.
   if (!query.exec("SELECT include_id, timeperiod_id, timeperiod_include_id"
-                  " FROM rt_timeperiod_include_relations"))
+                  " FROM cfg_timeperiods_include_relations"))
     throw (exceptions::msg()
-      << "notification: cannot select rt_timeperiod_include_relations in loader: "
-      << query.lastError().text());
+           << "notification: cannot load timeperiods inclusions from database: "
+           << query.lastError().text());
   while (query.next())
     output->add_timeperiod_include_relation(
               query.value(1).toUInt(),

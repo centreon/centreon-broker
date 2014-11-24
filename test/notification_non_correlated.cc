@@ -48,13 +48,17 @@ int main() {
   std::list<service> services;
   std::string engine_config_path(tmpnam(NULL));
   std::string flag_file(tmpnam(NULL));
-  std::cout << "flag file: " << flag_file << "\n";
+  std::string node_cache_file(tmpnam(NULL));
   external_command commander;
   engine monitoring;
   test_file broker_cfg;
   test_db db;
 
   try {
+    // Log some info.
+    std::cout << "flag file: " << flag_file << "\n";
+    std::cout << "node cache: " << node_cache_file << "\n";
+
     // Prepare database.
     db.open(NULL, NULL, DB_NAME);
 
@@ -131,6 +135,7 @@ int main() {
     // Generate configuration.
     broker_cfg.set_template(
       PROJECT_SOURCE_DIR "/test/cfg/notification_non_correlated.xml.in");
+    broker_cfg.set("NODE_CACHE_FILE", node_cache_file);
     commander.set_file(tmpnam(NULL));
     std::string additional_config;
     {
@@ -175,7 +180,9 @@ int main() {
 
   // Cleanup.
   monitoring.stop();
+  sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
   ::remove(flag_file.c_str());
+  ::remove(node_cache_file.c_str());
   config_remove(engine_config_path.c_str());
   free_hosts(hosts);
   free_services(services);

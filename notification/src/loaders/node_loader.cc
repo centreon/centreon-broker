@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -28,9 +28,7 @@
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
-node_loader::node_loader() {
-
-}
+node_loader::node_loader() {}
 
 /**
  *  Load the nodes from the database.
@@ -54,9 +52,9 @@ void node_loader::load(QSqlDatabase* db, node_builder* output) {
   // Instead of doing crosses select from host_id and service_id,
   // we only do three selects and internally do the connexions. It's faster.
 
-  if (!query.exec("SELECT host_id FROM rt_host"))
+  if (!query.exec("SELECT host_id FROM cfg_hosts"))
     throw (exceptions::msg()
-      << "notification: cannot select rt_host in loader: "
+           << "notification: cannot load hosts from database: "
       << query.lastError().text());
 
   while (query.next()) {
@@ -69,10 +67,11 @@ void node_loader::load(QSqlDatabase* db, node_builder* output) {
   QSet<unsigned int> service_cache;
 
   if (!query.exec("SELECT host_host_id, service_service_id"
-                  "  FROM rt_host_service_relation"))
+                  "  FROM cfg_hosts_services_relations"))
     throw (exceptions::msg()
-      << "notification: cannot select rt_host_service_relation in loader: "
-      << query.lastError().text());
+           << "notification: cannot load host/services relations "
+           << "from database: "
+           << query.lastError().text());
 
   while (query.next()) {
     unsigned int service_id = query.value(1).toUInt();
@@ -83,10 +82,10 @@ void node_loader::load(QSqlDatabase* db, node_builder* output) {
     output->add_node(n);
   }
 
-  if (!query.exec("SELECT service_id FROM rt_service"))
+  if (!query.exec("SELECT service_id FROM cfg_services"))
     throw (exceptions::msg()
-      << "notification: cannot select rt_service in loader: "
-      << query.lastError().text());
+           << "notification: cannot load services from database: "
+           << query.lastError().text());
 
   while (query.next()) {
     unsigned int id = query.value(0).toUInt();

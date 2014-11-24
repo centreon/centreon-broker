@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -57,10 +57,10 @@ void macro_loader::load(QSqlDatabase *db, macro_builder *output) {
                   "       state_retention_file, object_cache_file, temp_file,"
                   "       log_file, command_file, host_perfdata_file, "
                   "       service_perfdata_file, temp_path"
-                  " FROM cfg_nagios)") || !query.next())
+                  " FROM cfg_nagios") || !query.next())
     throw (exceptions::msg()
-      << "notification: cannot select cfg_nagios in loader: "
-      << query.lastError().text());
+           << "notification: cannot load global monitoring options from database: "
+           << query.lastError().text());
   output->add_global_macro(
             "ADMINEMAIL",
             query.value(0).toString().toStdString());
