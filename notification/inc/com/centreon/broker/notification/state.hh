@@ -77,6 +77,9 @@ namespace             notification {
                       get_contact_by_id(unsigned int id);
     objects::command::ptr
                       get_command_by_id(unsigned int id);
+    QHash<std::string, std::string> const&
+                      get_global_macros() const;
+
 
     bool              is_node_in_downtime(objects::node_id id);
     bool              has_node_been_acknowledged(objects::node_id id);

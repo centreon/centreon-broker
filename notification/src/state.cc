@@ -358,3 +358,12 @@ bool state::has_node_been_acknowledged(objects::node_id id) {
   }
   return (false);
 }
+
+/**
+ *  Get the global macros from the state.
+ *
+ *  @return  The global macros.
+ */
+QHash<std::string, std::string> const& state::get_global_macros() const {
+  return (_global_constant_macros);
+}
