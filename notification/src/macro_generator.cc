@@ -17,8 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <sstream>
 #include "com/centreon/broker/notification/utilities/qhash_func.hh"
 #include "com/centreon/broker/notification/macro_generator.hh"
+#include "com/centreon/broker/notification/utilities/get_datetime_string.hh"
 
 using namespace com::centreon::broker::notification;
 
@@ -42,6 +44,8 @@ void macro_generator::generate(
        it != end;
        ++it) {
     if (_get_global_macros(it.key(), st, *it))
+      continue ;
+    else if (_get_time_macros(it.key(), st.get_date_format(), *it))
       continue ;
   }
 }
@@ -71,13 +75,48 @@ bool macro_generator::_get_global_macros(
 /**
  *  Get this macro if it's a time macro.
  *
- *  @param[in] macro_name  The name of the macro.
- *  @param[out] result     The result, filled if the macro is a time macro.
+ *  @param[in] macro_name   The name of the macro.
+ *  @param[in] date_format  The format of the date (ie US, Euro, Iso...)
+ *  @param[out] result      The result, filled if the macro is a time macro.
  *
- *  @return                True if the macro is a time macro.
+ *  @return                 True if the macro is a time macro.
  */
 bool macro_generator::_get_time_macros(
                         std::string const& macro_name,
+                        int date_format,
                         std::string& result) {
+  time_t now = ::time(NULL);
+  static const int max_string_length = 48;
+  if (macro_name == "LONGDATETIME")
+    result = utilities::get_datetime_string(
+                          now,
+                          max_string_length,
+                          utilities::long_date_time,
+                          date_format);
+  else if (macro_name == "SHORTDATETIME")
+    result = utilities::get_datetime_string(
+                          now,
+                          max_string_length,
+                          utilities::short_date_time,
+                          date_format);
+  else if (macro_name == "DATE")
+    result = utilities::get_datetime_string(
+                          now,
+                          max_string_length,
+                          utilities::short_date,
+                          date_format);
+  else if (macro_name == "TIME")
+    result = utilities::get_datetime_string(
+                          now,
+                          max_string_length,
+                          utilities::short_time,
+                          date_format);
+  else if (macro_name == "TIMET") {
+    std::stringstream ss;
+    ss << now;
+    result = ss.str();
+  }
+  else return (false);
 
+  return (true);
 }

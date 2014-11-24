@@ -35,15 +35,18 @@ namespace        notification {
   class          global_macro_builder : public macro_builder {
   public:
                  global_macro_builder(
-                   QHash<std::string, std::string>& global_macros);
+                   QHash<std::string, std::string>& global_macros,
+                   int& date_format);
 
     virtual void add_global_macro(
                    std::string const& macro_name,
                    std::string const& macro_value);
+    virtual void add_date_format(int format);
 
   private:
     QHash<std::string, std::string>&
                   _global_macros;
+    int&          _date_format;
   };
 
 }

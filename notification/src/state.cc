@@ -83,6 +83,7 @@ state& state::operator=(state const& obj) {
     _notification_methods = obj._notification_methods;
     _notification_rules_by_node = obj._notification_rules_by_node;
     _notification_rule_by_id = obj._notification_rule_by_id;
+    _date_format = obj._date_format;
     _global_constant_macros = obj._global_constant_macros;
   }
   return (*this);
@@ -191,7 +192,7 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
   {
     // Get global constant macros.
     macro_loader ml;
-    global_macro_builder builder(_global_constant_macros);
+    global_macro_builder builder(_global_constant_macros, _date_format);
     ml.load(&centreon_db, &builder);
   }
 
@@ -366,4 +367,13 @@ bool state::has_node_been_acknowledged(objects::node_id id) {
  */
 QHash<std::string, std::string> const& state::get_global_macros() const {
   return (_global_constant_macros);
+}
+
+/**
+ *  Get the format of the date (ie US, Euro, Iso...)
+ *
+ *  @return  The format of the date.
+ */
+int state::get_date_format() const {
+  return (_date_format);
 }

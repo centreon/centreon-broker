@@ -23,8 +23,10 @@
 using namespace com::centreon::broker::notification;
 
 global_macro_builder::global_macro_builder(
-                        QHash<std::string, std::string>& global_macros)
-  : _global_macros(global_macros) {}
+                        QHash<std::string, std::string>& global_macros,
+                        int& date_format)
+  : _global_macros(global_macros),
+    _date_format(date_format) {}
 
 /**
 *  Add a macro to the builder.
@@ -36,4 +38,13 @@ void global_macro_builder::add_global_macro(
                              std::string const& macro_name,
                              std::string const& macro_value) {
   _global_macros.insert(macro_name, macro_value);
+}
+
+/**
+ *  Add a date format to the builder.
+ *
+ *  @param[in] format  The date format to add.
+ */
+void global_macro_builder::add_date_format(int format) {
+  _date_format = format;
 }
