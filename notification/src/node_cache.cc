@@ -292,12 +292,12 @@ void node_cache::update(neb::service_group_member const& sgm) {
  */
 node_cache::host_node_state const& node_cache::get_host(
                                                  unsigned int id) const {
-  std::map<unsigned int, host_node_state>::const_iterator found =
+  QHash<unsigned int, host_node_state>::const_iterator found =
     _host_node_states.find(id);
   if (found == _host_node_states.end())
     throw (exceptions::msg()
              << "notification: node_cache: host " << id << "not found.");
-  return (found->second);
+  return (*found);
 }
 
 /**
@@ -309,12 +309,12 @@ node_cache::host_node_state const& node_cache::get_host(
  */
 node_cache::service_node_state const& node_cache::get_service(
                                                     unsigned int id) const {
-  std::map<unsigned int, service_node_state>::const_iterator found =
+  QHash<unsigned int, service_node_state>::const_iterator found =
     _service_node_states.find(id);
   if (found == _service_node_states.end())
     throw (exceptions::msg()
              << "notification: node_cache: service " << id << "not found.");
-  return (found->second);
+  return (*found);
 }
 
 /**
@@ -322,16 +322,16 @@ node_cache::service_node_state const& node_cache::get_service(
  */
 void node_cache::_prepare_serialization() {
   _serialized_data.clear();
-  for (std::map<unsigned int, host_node_state>::const_iterator
+  for (QHash<unsigned int, host_node_state>::const_iterator
          it = _host_node_states.begin(),
          end = _host_node_states.end();
        it != end;
        ++it)
-    it->second.serialize(_serialized_data);
-  for (std::map<unsigned int, service_node_state>::const_iterator
+    it->serialize(_serialized_data);
+  for (QHash<unsigned int, service_node_state>::const_iterator
          it = _service_node_states.begin(),
          end = _service_node_states.end();
        it != end;
        ++it)
-    it->second.serialize(_serialized_data);
+    it->serialize(_serialized_data);
 }

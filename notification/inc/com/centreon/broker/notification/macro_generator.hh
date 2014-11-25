@@ -21,6 +21,7 @@
 #  define CCB_NOTIFICATION_MACRO_GENERATOR_HH
 
 #  include <QHash>
+#  include <string>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
 #  include "com/centreon/broker/notification/state.hh"
@@ -38,30 +39,31 @@ namespace        notification {
   public:
     typedef QHash<std::string, std::string>
                  macro_container;
+                 macro_generator();
 
-    static void  generate(macro_container& container,
+    void         generate(macro_container& container,
                    objects::node_id id,
                    objects::contact const& cnt,
                    state const& st,
-                   node_cache const& cache);
+                   node_cache const& cache) const;
 
   private:
     static bool  _get_global_macros(
                    std::string const& macro_name,
                    state const& st,
                    std::string& result);
-    static bool  _get_time_macros(
-                    std::string const& macro_name,
-                   int date_format,
-                   std::string& result);
-    static bool  _get_host_macros(
+    bool         _get_x_macros(
                    std::string const& macro_name,
-                   objects::node const& host,
-                   node_cache::host_node_state const& host_state,
-                   std::string& result);
+                   objects::node_id id,
+                   state const& st,
+                   node_cache const& cache,
+                   std::string& result) const;
 
-    static std::string
-                  _compute_duration(time_t last_state_change);
+    typedef QHash<std::string, std::string (*)(objects::node_id, state const&, node_cache const&)>
+                  x_macro_map;
+    static x_macro_map
+                  _map;
+    static void   _fill_x_macro_map(x_macro_map& map);
   };
 }
 

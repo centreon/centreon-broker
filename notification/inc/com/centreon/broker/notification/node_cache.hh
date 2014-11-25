@@ -21,9 +21,9 @@
 #  define CCB_NOTIFICATION_NODE_CACHE_HH
 
 #  include <string>
-#  include <map>
 #  include <deque>
 #  include <QMutex>
+#  include <QHash>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/bbdo/stream.hh"
@@ -80,9 +80,9 @@ namespace         notification {
                   get_service(unsigned int id) const;
 
   private:
-    std::map<unsigned int, host_node_state>
+    QHash<unsigned int, host_node_state>
                   _host_node_states;
-    std::map<unsigned int, service_node_state>
+    QHash<unsigned int, service_node_state>
                   _service_node_states;
 
     QMutex        _mutex;
