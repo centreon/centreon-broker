@@ -34,11 +34,11 @@ using namespace com::centreon::broker::notification::utilities;
  *
  *  @return                A string containing the date/time;
  */
-std::string get_datetime_string(
-              time_t raw_time,
-              int max_length,
-              int type,
-              int format) {
+std::string utilities::get_datetime_string(
+                         time_t raw_time,
+                         int max_length,
+                         int type,
+                         int format) {
   static char const* weekdays[7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
   static char const* months[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec" };
 

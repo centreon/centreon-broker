@@ -129,14 +129,14 @@ bool node_cache::unload(std::string const& cache_file) {
   QMutexLocker lock(&_mutex);
 
   // Prepare serialization.
-    _prepare_serialization();
+  _prepare_serialization();
 
   misc::shared_ptr<io::data> data;
 
   try {
     while (true) {
-      bbdo->read(data);
-      write(data);
+      read(data);
+      bbdo->write(data);
     }
   }
   catch (io::exceptions::shutdown const& s) {
@@ -144,7 +144,7 @@ bool node_cache::unload(std::string const& cache_file) {
     (void)s;
     logging::debug(logging::low)
       << "notification: finished writing the node cache "
-      << cache_file << " succesfully.";
+      << cache_file << " succesfully";
   }
   catch (std::exception const& e) {
     // Abnormal termination of the stream.
@@ -167,8 +167,7 @@ void node_cache::process(bool in, bool out) {
  *
  *  @param[out] d  An output data event.
  */
-void node_cache::read(misc::shared_ptr<io::data> &d) {
-
+void node_cache::read(misc::shared_ptr<io::data>& d) {
   if (_serialized_data.empty())
     throw (io::exceptions::shutdown(true, true)
            << "Node cache is empty");
@@ -176,7 +175,6 @@ void node_cache::read(misc::shared_ptr<io::data> &d) {
     d = _serialized_data.front();
     _serialized_data.pop_front();
   }
-
 }
 
 /**

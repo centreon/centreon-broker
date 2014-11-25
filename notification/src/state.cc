@@ -199,20 +199,21 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
 
   // Debug logging for all the data loaded.
 #ifndef NDEBUG
-    data_logger::log_container("_nodes", _nodes);
-    data_logger::log_container("_node_by_id", _node_by_id);
-    data_logger::log_container("_acks", _acks);
-    data_logger::log_container("_commands", _commands);
-    data_logger::log_container("_contacts", _contacts);
-    data_logger::log_container("_dependency_by_child_id",
-                               _dependency_by_child_id);
-    data_logger::log_container("_dependency_by_parent_id",
-                               _dependency_by_parent_id);
-    data_logger::log_container("_downtimes", _downtimes);
-    data_logger::log_container("_timeperiod_by_id", _timeperiod_by_id);
-    data_logger::log_container("_global_constant_macro", _global_constant_macros);
-    data_logger::log_container("_notification_methods", _notification_methods);
-    data_logger::log_container("_notification_rules_by_node", _notification_rules_by_node);
+    // data_logger::log_container("_nodes", _nodes);
+    // data_logger::log_container("_node_by_id", _node_by_id);
+    // data_logger::log_container("_acks", _acks);
+    // data_logger::log_container("_commands", _commands);
+    // data_logger::log_container("_contacts", _contacts);
+    // data_logger::log_container("_dependency_by_child_id",
+    //                            _dependency_by_child_id);
+    // data_logger::log_container("_dependency_by_parent_id",
+    //                            _dependency_by_parent_id);
+    // data_logger::log_container("_downtimes", _downtimes);
+    // data_logger::log_container("_timeperiod_by_id", _timeperiod_by_id);
+    // data_logger::log_container("_global_constant_macro", _global_constant_macros);
+    // data_logger::log_container("_notification_methods", _notification_methods);
+    // data_logger::log_container("_notification_rules_by_node", _notification_rules_by_node
+  // );
 #endif //!NDEBUG
 }
 

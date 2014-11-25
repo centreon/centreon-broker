@@ -63,11 +63,11 @@ void notification_scheduler::run() {
     _general_condition.wait(&_general_mutex, wait_for);
 
     logging::debug(logging::medium)
-        << "notification: notification scheduler waking up";
+        << "notification: scheduler waking up";
 
     // The should exit flag was set - exit.
     if (_should_exit)
-      break;
+      break ;
 
     // Process the actions and release the mutex.
     _process_actions();
@@ -102,7 +102,8 @@ void notification_scheduler::add_action_to_queue(time_t at, action a) {
     QMutexLocker lock(&_general_mutex);
     // If we just replaced the first event, we need to wake the scheduling
     // thread.
-    if (_queue.get_first_time() > at)
+    time_t first_time(_queue.get_first_time());
+    if ((first_time > at) || ((time_t)-1 == first_time))
       need_to_wake = true;
     _queue.run(at, a);
     // Wake the notification scheduling thread if needed.

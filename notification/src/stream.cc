@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2014 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -48,13 +48,6 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
 
 /**************************************
 *                                     *
@@ -258,7 +251,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   // Check that data can be processed.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)
-           << "Notification stream is shutdown");
+           << "notification stream is shutdown");
 
   // Check that data exists.
   unsigned int retval(1);
@@ -273,27 +266,24 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   unsigned short elem(io::events::element_of_type(type));
 
   if (cat == io::events::neb)  {
-    if (elem == neb::de_host_status) {
-      logging::debug(logging::medium)
-        << "notification: processing host status event";
+    if (elem == neb::de_host_status)
       _process_host_status_event(*data.staticCast<neb::host_status>());
-    }
-    else if (elem == neb::de_service_status) {
-      logging::debug(logging::medium)
-        << "notification: processing service status event";
+    else if (elem == neb::de_service_status)
       _process_service_status_event(*data.staticCast<neb::service_status>());
-    }
   }
   else if(cat == io::events::correlation) {
-    if (elem == correlation::de_issue_parent) {
-      logging::debug(logging::medium)
-        << "notification: processing correlation issue parent event";
+    if (elem == correlation::de_issue_parent)
       _process_issue_parent_event(*data.staticCast<correlation::issue_parent>());
-    }
   }
 
   return (retval);
 }
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
 
 /**
  *  Open a database connexion.
@@ -448,6 +438,11 @@ void stream::_update_objects_from_db() {
  *  @param event  The event to process.
  */
 void stream::_process_service_status_event(neb::service_status const& event) {
+  logging::debug(logging::medium)
+    << "notification: processing status of service " << event.service_id
+    << " of host " << event.host_id << " (state "
+    << event.last_hard_state << ")";
+
   node_id id(event.host_id, event.service_id);
   short old_hard_state;
   short old_soft_state;
@@ -473,10 +468,14 @@ void stream::_process_service_status_event(neb::service_status const& event) {
   }
 
   // From OK to NOT-OK
-  if (old_hard_state != event.last_hard_state &&
-      old_hard_state == node_state::ok) {
+  if (old_hard_state != event.last_hard_state
+      && old_hard_state == node_state::ok) {
+    logging::debug(logging::medium)
+      << "notification: state of service " << event.service_id
+      << " of host " << event.host_id << " changed from 0 to "
+      << event.last_hard_state << ", scheduling notification attempt";
     action a;
-    a.set_type(action::notification_attempt);
+    a.set_type(action::notification_processing);
     a.set_node_id(id);
     _notif_scheduler->add_action_to_queue(time(NULL) + 1, a);
   }
@@ -492,6 +491,10 @@ void stream::_process_service_status_event(neb::service_status const& event) {
  *  @param event  The event to process.
  */
 void stream::_process_host_status_event(neb::host_status const& event) {
+  logging::debug(logging::medium)
+    << "notification: processing status of host " << event.host_id
+    << " (state " << event.last_hard_state << ")";
+
   node_id id(event.host_id);
   short old_hard_state;
   short old_soft_state;
@@ -537,20 +540,39 @@ void stream::_process_host_status_event(neb::host_status const& event) {
  */
 void stream::_process_issue_parent_event(
                correlation::issue_parent const& event) {
-  node_id id(event.child_host_id, event.child_service_id);
+  // Node IDs.
+  node_id child_id(event.child_host_id, event.child_service_id);
+  node_id parent_id(event.parent_host_id, event.parent_service_id);
 
-  // Get the node corresponding to this id.
   // Get the state lock.
   // TODO: The write lock here kills the perf. Use a read lock instead.
   //       and lock on an individual node level.
   std::auto_ptr<QWriteLocker> lock(_state.write_lock());
-  node::ptr n = _state.get_node_by_id(id);
+  node::ptr n = _state.get_node_by_id(child_id);
   if (!n)
     throw (exceptions::msg()
-      << "notification: got an unknown issue parent (child host id: "
-      << id.get_host_id() << ", child service id: " << id.get_service_id())
-      << ")";
+           << "notification: got an unknown issue parent on node ("
+           << child_id.get_host_id() << ", "
+           << child_id.get_service_id() << ") by node ("
+           << parent_id.get_host_id() << ", "
+           << parent_id.get_service_id() << ")");
+
+  // Log message.
+  bool terminated_event((event.end_time != (time_t)-1)
+                        && (event.end_time != (time_t)0));
+  logging::debug(logging::medium)
+    << "notification: node (" << child_id.get_host_id() << ", "
+    << child_id.get_service_id() << ") "
+    << (terminated_event ? "had" : "has") << " parent issue from node ("
+    << parent_id.get_host_id() << ", " << parent_id.get_service_id()
+    << ")";
 
   // Add a parent relationship between correlated node.
-  n->add_parent(node_id(event.parent_host_id, event.parent_service_id));
+  if (!terminated_event)
+    n->add_parent(parent_id);
+  // Remove a parent relationship between correlated node.
+  else
+    n->remove_parent(parent_id);
+
+  return ;
 }
