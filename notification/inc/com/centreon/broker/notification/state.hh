@@ -79,6 +79,8 @@ namespace             notification {
                       get_command_by_id(unsigned int id);
     QHash<std::string, std::string> const&
                       get_global_macros() const;
+    QList<objects::node::ptr>
+                      get_all_services_of_host(objects::node_id id) const;
 
     int               get_date_format() const;
 

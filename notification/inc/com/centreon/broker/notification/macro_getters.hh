@@ -22,6 +22,7 @@
 
 #  include <QString>
 #  include <QHash>
+#  include <QList>
 #  include <string>
 #  include <sstream>
 #  include <iomanip>
@@ -230,6 +231,17 @@ namespace        notification {
                             state const& st,
                             node_cache const& cache);
 
+  /**
+   *  Get the date or time string.
+   *
+   *  @tparam date_type        The type of the date.
+   *
+   *  @param[in] id            The id of the host.
+   *  @param[in] st            The state of the conf.
+   *  @param[in] cache         A node cache.
+   *
+   *  @return  The value of the macro.
+   */
   template <int date_type>
   std::string get_datetime_string(
                 objects::node_id id,
@@ -241,6 +253,36 @@ namespace        notification {
                  48,
                  date_type,
                  st.get_date_format());
+  }
+
+  /**
+   *  Get the total number of services associated with the host.
+   *
+   *  @tparam service_state    The state of the services we want to count: -1 for all.
+   *
+   *  @param[in] id            The id of the host.
+   *  @param[in] st            The state of the conf.
+   *  @param[in] cache         A node cache.
+   *
+   *  @return  The value of the macro.
+   */
+  template <int service_state>
+  std::string get_total_host_services(
+                objects::node_id id,
+                state const& st,
+                node_cache const& cache) {
+    QList<objects::node::ptr> services = st.get_all_services_of_host(id);
+    if (service_state != -1) {
+      size_t count = 0;
+      for (QList<objects::node::ptr>::iterator it(services.begin()),
+                                               end(services.end());
+           it != end;++it)
+        if ((*it)->get_hard_state() == objects::node_state(service_state))
+          ++count;
+      return (to_string<size_t, 0>(count));
+    }
+    else
+      return (to_string<int, 0>(services.count()));
   }
 
   // Static, non template getters.

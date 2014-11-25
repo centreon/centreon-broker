@@ -291,4 +291,19 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
   map.insert("HOSTACKAUTHORNAME", &null_getter);
   map.insert("HOSTACKAUTHORALIAS", &null_getter);
   map.insert("HOSTACKCOMMENT", &null_getter);
+  map.insert(
+    "TOTALHOSTSERVICES",
+    &get_total_host_services<-1>);
+  map.insert(
+    "TOTALHOSTSERVICESOK",
+    &get_total_host_services<objects::node_state::service_ok>);
+  map.insert(
+    "TOTALHOSTSERVICESWARNING",
+    &get_total_host_services<objects::node_state::service_warning>);
+  map.insert(
+    "TOTALHOSTSERVICESUNKNOWN",
+    &get_total_host_services<objects::node_state::service_unknown>);
+  map.insert(
+    "TOTALHOSTSERVICESCRITICAL",
+    &get_total_host_services<objects::node_state::service_critical>);
 }

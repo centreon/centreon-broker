@@ -378,3 +378,25 @@ QHash<std::string, std::string> const& state::get_global_macros() const {
 int state::get_date_format() const {
   return (_date_format);
 }
+
+/**
+ *  Get all the services of an host.
+ *
+ *  @param[in] id  The id of the host.
+ *
+ *  @return        All the services of the host.
+ */
+QList<objects::node::ptr> state::get_all_services_of_host(
+                                   objects::node_id id) const {
+  if (!id.is_host())
+    return (QList<objects::node::ptr>());
+  QList<objects::node::ptr> list;
+  for (QHash<objects::node_id, objects::node::ptr>::const_iterator
+         it(_node_by_id.begin()),
+         end(_node_by_id.end());
+       it != end; ++it)
+    if (it.key().get_host_id() == id.get_host_id() &&
+        it.key().is_service())
+      list.push_back(*it);
+  return (list);
+}
