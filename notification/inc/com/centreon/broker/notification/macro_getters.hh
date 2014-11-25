@@ -30,6 +30,7 @@
 #  include "com/centreon/broker/notification/state.hh"
 #  include "com/centreon/broker/notification/objects/contact.hh"
 #  include "com/centreon/broker/notification/node_cache.hh"
+#  include "com/centreon/broker/notification/utilities/get_datetime_string.hh"
 
 CCB_BEGIN()
 
@@ -229,6 +230,19 @@ namespace        notification {
                             state const& st,
                             node_cache const& cache);
 
+  template <int date_type>
+  std::string get_datetime_string(
+                objects::node_id id,
+                state const& st,
+                node_cache const& cache) {
+    (void)id; (void)cache;
+    utilities::get_datetime_string(
+                 ::time(NULL),
+                 48,
+                 date_type,
+                 st.get_date_format());
+  }
+
   // Static, non template getters.
   std::string   get_host_state(
                   objects::node_id id,
@@ -258,6 +272,11 @@ namespace        notification {
                   objects::node_id id,
                   state const& st,
                   node_cache const& cache);
+
+  std::string  get_timet_string(
+                 objects::node_id id,
+                 state const& st,
+                 node_cache const& cache);
 }
 
 CCB_END()

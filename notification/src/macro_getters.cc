@@ -250,3 +250,19 @@ std::string get_host_duration_sec(
     now - cache.get_host(id.get_host_id()).get_status().last_state_change);
   return (to_string<unsigned long, 0>(duration));
 }
+
+/**
+ *  Get the actual time in seconds.
+ *
+ *  @param[in] id            The id of the host.
+ *  @param[in] st            The state of the conf.
+ *  @param[in] cache         A node cache.
+ *
+ *  @return  The value of the macro.
+ */
+std::string get_timet_string(
+              objects::node_id id,
+              state const& st,
+              node_cache const& cache) {
+  return (to_string<time_t, 0>(::time(NULL)));
+}

@@ -52,10 +52,6 @@ namespace        notification {
                    std::string const& macro_name,
                    state const& st,
                    std::string& result);
-    static bool  _get_time_macros(
-                    std::string const& macro_name,
-                   int date_format,
-                   std::string& result);
     bool         _get_x_macros(
                    std::string const& macro_name,
                    objects::node_id id,

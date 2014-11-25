@@ -70,8 +70,6 @@ void macro_generator::generate(
        ++it) {
     if (_get_global_macros(it.key(), st, *it))
       continue ;
-    else if (_get_time_macros(it.key(), st.get_date_format(), *it))
-      continue ;
     else if (_get_x_macros(it.key(), id, st, cache, *it))
       continue ;
   }
@@ -99,55 +97,6 @@ bool macro_generator::_get_global_macros(
   return (true);
 }
 
-/**
- *  Get this macro if it's a time macro.
- *
- *  @param[in] macro_name   The name of the macro.
- *  @param[in] date_format  The format of the date (ie US, Euro, Iso...)
- *  @param[out] result      The result, filled if the macro is a time macro.
- *
- *  @return                 True if the macro is a time macro.
- */
-bool macro_generator::_get_time_macros(
-                        std::string const& macro_name,
-                        int date_format,
-                        std::string& result) {
-  time_t now = ::time(NULL);
-  static const int max_string_length = 48;
-  if (macro_name == "LONGDATETIME")
-    result = utilities::get_datetime_string(
-                          now,
-                          max_string_length,
-                          utilities::long_date_time,
-                          date_format);
-  else if (macro_name == "SHORTDATETIME")
-    result = utilities::get_datetime_string(
-                          now,
-                          max_string_length,
-                          utilities::short_date_time,
-                          date_format);
-  else if (macro_name == "DATE")
-    result = utilities::get_datetime_string(
-                          now,
-                          max_string_length,
-                          utilities::short_date,
-                          date_format);
-  else if (macro_name == "TIME")
-    result = utilities::get_datetime_string(
-                          now,
-                          max_string_length,
-                          utilities::short_time,
-                          date_format);
-  else if (macro_name == "TIMET") {
-    std::stringstream ss;
-    ss << now;
-    result = ss.str();
-  }
-  else return (false);
-
-  return (true);
-}
-
 bool macro_generator::_get_x_macros(
                         std::string const& macro_name,
                         objects::node_id id,
@@ -169,6 +118,24 @@ bool macro_generator::_get_x_macros(
  *  @param[in] map  The map to fill.
  */
 void macro_generator::_fill_x_macro_map(x_macro_map& map) {
+  // Time macros.
+  map.insert(
+    "LONGDATETIME",
+    &get_datetime_string<utilities::long_date_time>);
+  map.insert(
+    "SHORTDATETIME",
+    &get_datetime_string<utilities::short_date_time>);
+  map.insert(
+    "DATE",
+    &get_datetime_string<utilities::short_date>);
+  map.insert(
+    "TIME",
+    &get_datetime_string<utilities::short_time>);
+  map.insert(
+    "TIMET",
+    &get_timet_string);
+
+  // Host specific macros.
   map.insert(
     "HOSTDISPLAYNAME",
     &get_host_member_as_string<
