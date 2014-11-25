@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -54,59 +54,67 @@ void macro_loader::load(QSqlDatabase *db, macro_builder *output) {
   query.setForwardOnly(true);
 
   // Load global, constant macro.
-  if (!query.exec("SELECT admin_email, admin_pager, cfg_file, status_file,"
-                  "       state_retention_file, object_cache_file, temp_file,"
-                  "       log_file, command_file, host_perfdata_file, "
-                  "       service_perfdata_file, temp_path, date_format"
-                  " FROM cfg_nagios)") || !query.next())
+  if (!query.exec(
+               "SELECT admin_email, admin_pager, cfg_file, status_file,"
+               "       state_retention_file, object_cache_file, temp_file,"
+               "       log_file, command_file, host_perfdata_file, "
+               "       service_perfdata_file, temp_path, date_format"
+               " FROM cfg_engine"))
     throw (exceptions::msg()
-      << "notification: cannot select cfg_nagios in loader: "
-      << query.lastError().text());
-  output->add_global_macro(
-            "ADMINEMAIL",
-            query.value(0).toString().toStdString());
-  output->add_global_macro(
-            "ADMINPAGER",
-            query.value(1).toString().toStdString());
-  output->add_global_macro(
-            "MAINCONFIGFILE",
-            query.value(2).toString().toStdString());
-  output->add_global_macro(
-            "STATUSDATAFILE",
-            query.value(3).toString().toStdString());
-  output->add_global_macro(
-            "RETENTIONDATAFILE",
-            query.value(4).toString().toStdString());
-  output->add_global_macro(
-            "OBJECTCACHEFILE",
-            query.value(5).toString().toStdString());
-  output->add_global_macro(
-            "TEMPFILE",
-            query.value(6).toString().toStdString());
-  output->add_global_macro(
-            "LOGFILE",
-            query.value(7).toString().toStdString());
-  output->add_global_macro("RESOURCEFILE", "resource.cfg");
-  output->add_global_macro(
-            "COMMANDFILE",
-            query.value(8).toString().toStdString());
-  output->add_global_macro(
-            "HOSTPERFDATAFILE",
-            query.value(9).toString().toStdString());
-  output->add_global_macro(
-            "SERVICEPERFDATAFILE",
-            query.value(10).toString().toStdString());
-  output->add_global_macro(
-            "TEMPPATH",
-            query.value(11).toString().toStdString());
-  QString date_format = query.value(12).toString();
-  if (date_format == "euro")
-    output->add_date_format(utilities::date_format_euro);
-  else if (date_format == "iso8601")
-    output->add_date_format(utilities::date_format_iso8601);
-  else if (date_format == "strict-iso8601")
-    output->add_date_format(utilities::date_format_strict_iso8601);
-  else
-    output->add_date_format(utilities::date_format_us);
-  query.next();
+           << "notification: cannot load global monitoring options from database: "
+           << query.lastError().text());
+  if (!query.next()) {
+    logging::config(logging::medium)
+      << "notification: could not find default monitoring options, "
+      << "some global macros will be empty";
+  }
+  else {
+    output->add_global_macro(
+              "ADMINEMAIL",
+              query.value(0).toString().toStdString());
+    output->add_global_macro(
+              "ADMINPAGER",
+              query.value(1).toString().toStdString());
+    output->add_global_macro(
+              "MAINCONFIGFILE",
+              query.value(2).toString().toStdString());
+    output->add_global_macro(
+              "STATUSDATAFILE",
+              query.value(3).toString().toStdString());
+    output->add_global_macro(
+              "RETENTIONDATAFILE",
+              query.value(4).toString().toStdString());
+    output->add_global_macro(
+              "OBJECTCACHEFILE",
+              query.value(5).toString().toStdString());
+    output->add_global_macro(
+              "TEMPFILE",
+              query.value(6).toString().toStdString());
+    output->add_global_macro(
+              "LOGFILE",
+              query.value(7).toString().toStdString());
+    output->add_global_macro("RESOURCEFILE", "resource.cfg");
+    output->add_global_macro(
+              "COMMANDFILE",
+              query.value(8).toString().toStdString());
+    output->add_global_macro(
+              "HOSTPERFDATAFILE",
+              query.value(9).toString().toStdString());
+    output->add_global_macro(
+              "SERVICEPERFDATAFILE",
+              query.value(10).toString().toStdString());
+    output->add_global_macro(
+              "TEMPPATH",
+              query.value(11).toString().toStdString());
+    QString date_format = query.value(12).toString();
+    if (date_format == "euro")
+      output->add_date_format(utilities::date_format_euro);
+    else if (date_format == "iso8601")
+      output->add_date_format(utilities::date_format_iso8601);
+    else if (date_format == "strict-iso8601")
+      output->add_date_format(utilities::date_format_strict_iso8601);
+    else
+      output->add_date_format(utilities::date_format_us);
+  }
+  return ;
 }

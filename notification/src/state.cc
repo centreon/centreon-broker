@@ -155,22 +155,23 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
     composed.push_back(by_id_builder);
     timeperiod.load(&centreon_db, &composed);
   }
-  {
-    // Get downtimes.
-    downtime_loader downtime;
-    composed_downtime_builder composed;
-    downtime_by_node_id_builder by_node_builder(_downtimes);
-    composed.push_back(by_node_builder);
-    downtime.load(&centreon_db, &composed);
-  }
-  {
-    // Get acknowledgements.
-    acknowledgement_loader ack;
-    composed_acknowledgement_builder composed;
-    acknowledgement_by_node_id_builder by_node_builder(_acks);
-    composed.push_back(by_node_builder);
-    ack.load(&centreon_db, &composed);
-  }
+  // XXX
+  // {
+  //   // Get downtimes.
+  //   downtime_loader downtime;
+  //   composed_downtime_builder composed;
+  //   downtime_by_node_id_builder by_node_builder(_downtimes);
+  //   composed.push_back(by_node_builder);
+  //   downtime.load(&centreon_db, &composed);
+  // }
+  // {
+  //   // Get acknowledgements.
+  //   acknowledgement_loader ack;
+  //   composed_acknowledgement_builder composed;
+  //   acknowledgement_by_node_id_builder by_node_builder(_acks);
+  //   composed.push_back(by_node_builder);
+  //   ack.load(&centreon_db, &composed);
+  // }
   {
     // Get notification methods.
     notification_method_loader nml;

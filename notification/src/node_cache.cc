@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -68,7 +68,7 @@ node_cache& node_cache::operator=(node_cache const& obj) {
  */
 bool node_cache::load(std::string const& cache_file) {
   logging::debug(logging::low)
-    << "notification: loading the node cache " << cache_file <<".";
+    << "notification: loading the node cache " << cache_file;
 
   // Create the streams.
   misc::shared_ptr<file::stream> file(new file::stream(cache_file));
@@ -88,13 +88,14 @@ bool node_cache::load(std::string const& cache_file) {
       write(data);
     }
   }
-  catch (io::exceptions::shutdown) {
+  catch (io::exceptions::shutdown const& s) {
     // Normal termination of the stream (ie nothing to read anymore)
+    (void)s;
     logging::debug(logging::low)
       << "notification: finished loading the node cache "
-      << cache_file << " succesfully.";
+      << cache_file << " succesfully";
   }
-  catch (std::exception e) {
+  catch (std::exception const& e) {
     // Abnormal termination of the stream.
     logging::error(logging::high)
       << "notification: could not load the node cache "
@@ -138,13 +139,14 @@ bool node_cache::unload(std::string const& cache_file) {
       write(data);
     }
   }
-  catch (io::exceptions::shutdown) {
-    // Normal termination of the stream (ie nothing to write anymore)
+  catch (io::exceptions::shutdown const& s) {
+    // Normal termination of the stream (ie nothing to write anymore).
+    (void)s;
     logging::debug(logging::low)
       << "notification: finished writing the node cache "
       << cache_file << " succesfully.";
   }
-  catch (std::exception e) {
+  catch (std::exception const& e) {
     // Abnormal termination of the stream.
     logging::error(logging::high)
       << "notification: could not write the node cache "

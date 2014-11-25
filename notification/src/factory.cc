@@ -153,8 +153,8 @@ io::endpoint* factory::new_endpoint(
   // Find DB password.
   QString password(find_param(cfg, "db_password"));
 
-  // Find centreon DB name.
-  QString centreon_db_name(find_param(cfg, "centreon_db_name"));
+  // Find DB name.
+  QString db_name(find_param(cfg, "db_name"));
 
   // Find node cache file.
   QString node_cache_file(find_param(cfg, "node_cache_file"));
@@ -205,7 +205,7 @@ io::endpoint* factory::new_endpoint(
        port,
        user,
        password,
-       centreon_db_name,
+       db_name,
        node_cache_file,
        queries_per_transaction,
        cleanup_check_interval,

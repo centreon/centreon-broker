@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -52,10 +52,10 @@ void command_loader::load(QSqlDatabase* db, command_builder* output) {
   if (!query.exec("SELECT command_id, connector_id, command_name, command_line,"
                   "       command_example, command_type, enable_shell,"
                   "       command_comment, graph_id, cmd_cat_id"
-                  "  FROM rt_command"))
+                  "  FROM cfg_commands"))
     throw (exceptions::msg()
-      << "notification: cannot select rt_command in loader: "
-      << query.lastError().text());
+           << "notification: cannot load commands from database: "
+           << query.lastError().text());
 
   while (query.next()) {
     unsigned int id = query.value(0).toUInt();

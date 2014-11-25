@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -53,11 +53,13 @@ void downtime_loader::load(QSqlDatabase* db, downtime_builder* output) {
   query.setForwardOnly(true);
 
   // Load the downtimes.
+  // XXX : downtimes are not supposed to be
+  // fetched from any rt_* table .
   if (!query.exec("SELECT downtime_id, entry_time, host_id, service_id, author,"
                   "       cancelled, deletion_time, duration, end_time, fixed,"
                   "       start_time, actual_start_time, actual_end_time,"
                   "       started, triggered_by, type"
-                  "  FROM cfg_downtimes"))
+                  "  FROM rt_downtimes"))
     throw (exceptions::msg()
       << "notification: cannot select cfg_downtimes in loader: "
       << query.lastError().text());

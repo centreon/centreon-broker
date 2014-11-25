@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -46,10 +46,11 @@ void notification_rule_loader::load(
   query.setForwardOnly(true);
 
   if (!query.exec("SELECT rule_id, method_id, timeperiod_id, contact_id, "
-                  "       host_id, service_id FROM rt_notification_rules"))
+                  "       host_id, service_id"
+                  "  FROM rt_notification_rules"))
     throw (exceptions::msg()
-      << "notification: cannot select rt_notification_rules in loader: "
-      << query.lastError().text());
+           << "notification: cannot load notification rules from database: "
+           << query.lastError().text());
 
   while (query.next()) {
     notification_rule::ptr rule(new notification_rule);

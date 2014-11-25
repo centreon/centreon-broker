@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -64,10 +64,10 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
                   "       contact_pager, contact_address1, contact_address2,"
                   "       contact_address3, contact_address4, contact_address5,"
                   "       contact_address6, contact_enable_notifications"
-                  "  FROM rt_contact"))
+                  "  FROM cfg_contacts"))
     throw (exceptions::msg()
-      << "notification: cannot select rt_contact in loader: "
-      << query.lastError().text());
+           << "notification: cannot load contacts from database: "
+           << query.lastError().text());
 
   while (query.next()) {
     contact::ptr cont(new contact);
@@ -101,10 +101,10 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
 
   // Load the custom variables of the contact.
   if (!query.exec("SELECT cp_key, cp_value, cp_contact_id "
-                  "  FROM rt_contact_param"))
+                  "  FROM cfg_contacts_params"))
     throw (exceptions::msg()
-      << "notification: cannot select rt_contact_param in loader: "
-      << query.lastError().text());
+           << "notification: cannot load contacts parameters from database: "
+           << query.lastError().text());
 
   while (query.next()) {
     output->add_contact_param(

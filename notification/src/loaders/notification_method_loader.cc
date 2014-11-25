@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -46,12 +46,12 @@ void notification_method_loader::load(
   // Performance improvement, as we never go back.
   query.setForwardOnly(true);
 
-  if (!query.exec("SELECT method_id, name, command_id, interval, status, "
+  if (!query.exec("SELECT method_id, name, command_id, `interval`, status, "
                   "       types, start, end "
-                  "  FROM cfg_configuration_method"))
+                  "  FROM cfg_notification_methods"))
     throw (exceptions::msg()
-      << "notification: cannot select cfg_configuration_method in loader: "
-      << query.lastError().text());
+           << "notification: cannot load notification methods from database: "
+           << query.lastError().text());
 
   while (query.next()) {
     notification_method::ptr nm(new notification_method);
