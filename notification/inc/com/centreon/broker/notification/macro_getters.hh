@@ -132,6 +132,29 @@ namespace        notification {
   }
 
   /**
+   *  Get the member of a service as a string.
+   *
+   *  @tparam T         The type of the service object.
+   *  @tparam U         The type of the member.
+   *  @tparam Member    The member.
+   *  @tparam precision The precision of the string, 0 for none.
+   *
+   *  @param[in] id     The id of the service.
+   *  @param[in] st     The state of the conf.
+   *  @param[in] cache  A node cache.
+   *
+   *  @return  The value of the macro.
+   */
+  template <typename T, typename U, U (T::* member), int precision>
+    std::string get_service_member_as_string(
+                  objects::node_id id,
+                  state const& st,
+                  node_cache const& cache) {
+    return (to_string<U, precision>(
+              cache.get_service(id.get_service_id()).get_node().*member));
+  }
+
+  /**
    *  Get the member of a host status as a string.
    *
    *  @tparam T         The type of the host status object.
@@ -155,6 +178,29 @@ namespace        notification {
   }
 
   /**
+   *  Get the member of a service status as a string.
+   *
+   *  @tparam T         The type of the service status object.
+   *  @tparam U         The type of the member.
+   *  @tparam Member    The member.
+   *  @tparam precision The precision of the string, 0 for none.
+   *
+   *  @param[in] id     The id of the host.
+   *  @param[in] st     The state of the conf.
+   *  @param[in] cache  A node cache.
+   *
+   *  @return  The value of the macro.
+   */
+  template <typename T, typename U, U (T::* member), int precision>
+    std::string get_service_status_member_as_string(
+                  objects::node_id id,
+                  state const& st,
+                  node_cache const& cache) {
+      return (to_string<U, precision>(
+                cache.get_service(id.get_service_id()).get_status().*member));
+  }
+
+  /**
    *  Get the member of a previous host status as a string.
    *
    *  @tparam T         The type of the previous host status object.
@@ -175,6 +221,29 @@ namespace        notification {
                   node_cache const& cache) {
       return (to_string<U, precision>(
                 cache.get_host(id.get_host_id()).get_prev_status().*member));
+  }
+
+  /**
+   *  Get the member of a previous service status as a string.
+   *
+   *  @tparam T         The type of the previous service status object.
+   *  @tparam U         The type of the member.
+   *  @tparam Member    The member.
+   *  @tparam precision The precision of the string, 0 for none.
+   *
+   *  @param[in] id     The id of the service.
+   *  @param[in] st     The state of the conf.
+   *  @param[in] cache  A node cache.
+   *
+   *  @return  The value of the macro.
+   */
+  template <typename T, typename U, U (T::* member), int precision>
+    std::string get_service_prevstatus_member_as_string(
+                  objects::node_id id,
+                  state const& st,
+                  node_cache const& cache) {
+      return (to_string<U, precision>(
+                cache.get_service(id.get_service_id()).get_prev_status().*member));
   }
 
   /**
@@ -205,6 +274,33 @@ namespace        notification {
                             node_cache const& cache);
 
   /**
+   *  Get the groups of a service.
+   *
+   *  @tparam get_all  True if we want all the groups, false if only one.
+   *
+   *  @param[in] id     The id of the service.
+   *  @param[in] st     The state of the conf.
+   *  @param[in] cache  A node cache.
+   *
+   *  @return  The value of the macro.
+   */
+  template <bool get_all>
+  std::string get_service_groups(
+                 objects::node_id id,
+                 state const& st,
+                 node_cache const& cache) {}
+
+  template <> std::string get_service_groups<true>(
+                            objects::node_id id,
+                            state const& st,
+                            node_cache const& cache);
+
+  template <> std::string get_service_groups<false>(
+                            objects::node_id id,
+                            state const& st,
+                            node_cache const& cache);
+
+  /**
    *  Get the output of a host.
    *
    *  @tparam get_long_output  True if we want the long output, false if we want the short one.
@@ -227,6 +323,33 @@ namespace        notification {
                             node_cache const& cache);
 
   template <> std::string get_host_output<true>(
+                            objects::node_id id,
+                            state const& st,
+                            node_cache const& cache);
+
+  /**
+   *  Get the output of a service.
+   *
+   *  @tparam get_long_output  True if we want the long output, false if we want the short one.
+   *
+   *  @param[in] id            The id of the service.
+   *  @param[in] st            The state of the conf.
+   *  @param[in] cache         A node cache.
+   *
+   *  @return  The value of the macro.
+   */
+  template <bool get_long_output>
+  std::string get_service_output(
+                objects::node_id id,
+                state const& st,
+                node_cache const& cache) {}
+
+  template <> std::string get_service_output<false>(
+                            objects::node_id id,
+                            state const& st,
+                            node_cache const& cache);
+
+  template <> std::string get_service_output<true>(
                             objects::node_id id,
                             state const& st,
                             node_cache const& cache);
@@ -291,7 +414,17 @@ namespace        notification {
                   state const& st,
                   node_cache const& cache);
 
+  std::string  get_service_state(
+                 objects::node_id id,
+                 state const& st,
+                 node_cache const& cache);
+
   std::string   get_last_host_state(
+                  objects::node_id id,
+                  state const& st,
+                  node_cache const& cache);
+
+  std::string   get_last_service_state(
                   objects::node_id id,
                   state const& st,
                   node_cache const& cache);
@@ -300,6 +433,11 @@ namespace        notification {
                   objects::node_id id,
                   state const& st,
                   node_cache const& cache);
+
+  std::string  get_service_state_type(
+                 objects::node_id id,
+                 state const& st,
+                 node_cache const& cache);
 
   std::string   null_getter(objects::node_id id,
                             state const& st,
@@ -310,10 +448,20 @@ namespace        notification {
                   state const& st,
                   node_cache const& cache);
 
+  std::string  get_service_duration(
+                 objects::node_id id,
+                 state const& st,
+                 node_cache const& cache);
+
   std::string   get_host_duration_sec(
                   objects::node_id id,
                   state const& st,
                   node_cache const& cache);
+
+  std::string  get_service_duration_sec(
+                 objects::node_id id,
+                 state const& st,
+                 node_cache const& cache);
 
   std::string  get_timet_string(
                  objects::node_id id,

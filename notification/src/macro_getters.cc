@@ -73,6 +73,57 @@ template <> std::string get_host_groups<false>(
 }
 
 /**
+ *  @brief Get the groups of a service.
+ *
+ *  Specialization for all the groups were required.
+ *
+ *  @param[in] id     The id of the service.
+ *  @param[in] st     The state of the conf.
+ *  @param[in] cache  A node cache.
+ *
+ *  @return  The value of the macro.
+ */
+template <> std::string get_service_groups<true>(
+                          objects::node_id id,
+                          state const& st,
+                          node_cache const& cache) {
+  std::map<std::string, neb::service_group_member> const& group_map =
+    cache.get_service(id.get_service_id()).get_groups();
+  std::string result;
+  for (std::map<std::string, neb::service_group_member>::const_iterator
+         it(group_map.begin()),
+         end(group_map.end());
+       it != end;
+       ++it) {
+    if (!result.empty())
+      result.append(", ");
+    result.append(it->first);
+  }
+  return (result);
+}
+
+/**
+ *  @brief Get the groups of a service.
+ *
+ *  Specialization for only one group was required.
+ *
+ *  @param[in] id     The id of the service.
+ *  @param[in] st     The state of the conf.
+ *  @param[in] cache  A node cache.
+ *
+ *  @return  The value of the macro.
+ */
+template <> std::string get_service_groups<false>(
+                          objects::node_id id,
+                          state const& st,
+                          node_cache const& cache) {
+  std::map<std::string, neb::service_group_member> const& group_map =
+    cache.get_service(id.get_service_id()).get_groups();
+  if (!group_map.empty())
+    return (group_map.begin()->first);
+}
+
+/**
  *  @brief Get the output of a host.
  *
  *  Specialization for short output.
@@ -116,6 +167,49 @@ template <> std::string get_host_output<true>(
 }
 
 /**
+ *  @brief Get the output of a service.
+ *
+ *  Specialization for short output.
+ *
+ *  @param[in] id            The id of the service.
+ *  @param[in] st            The state of the conf.
+ *  @param[in] cache         A node cache.
+ *
+ *  @return  The value of the macro.
+ */
+template <> std::string get_service_output<false>(
+                          objects::node_id id,
+                          state const& st,
+                          node_cache const& cache) {
+  std::string output = cache.get_host(
+                         id.get_host_id()).get_status().output.toStdString();
+  return (output.substr(0, output.find_first_of('\n')));
+}
+
+/**
+ *  @brief Get the output of a service.
+ *
+ *  Specialization for long output.
+ *
+ *  @param[in] id            The id of the service.
+ *  @param[in] st            The state of the conf.
+ *  @param[in] cache         A node cache.
+ *
+ *  @return  The value of the macro.
+ */
+template <> std::string get_service_output<true>(
+                          objects::node_id id,
+                          state const& st,
+                          node_cache const& cache) {
+  std::string output = cache.get_host(
+                         id.get_host_id()).get_status().output.toStdString();
+  size_t found = output.find_first_of('\n');
+  if (found != std::string::npos)
+    return (output.substr(found == std::string::npos));
+  return ("");
+}
+
+/**
  *  Get the state of a host.
  *
  *  @param[in] id            The id of the host.
@@ -128,15 +222,39 @@ std::string get_host_state(
               objects::node_id id,
               state const& st,
               node_cache const& cache) {
-  node_cache::host_node_state const& node_state =
-                                       cache.get_host(id.get_host_id());
-  if (node_state.get_status().current_state == 0)
+  short state = cache.get_host(id.get_host_id()).get_status().current_state;
+  if (state == objects::node_state::host_up)
     return ("UP");
-  else if (node_state.get_status().current_state == 1)
+  else if (state == objects::node_state::host_down)
     return ("DOWN");
   else
     return ("UNREACHABLE");
 }
+
+/**
+ *  Get the state of a service.
+ *
+ *  @param[in] id            The id of the host.
+ *  @param[in] st            The state of the conf.
+ *  @param[in] cache         A node cache.
+ *
+ *  @return  The value of the macro.
+ */
+std::string get_service_state(
+              objects::node_id id,
+              state const& st,
+              node_cache const& cache) {
+  short state = cache.get_service(id.get_service_id()).get_status().current_state;
+  if (state == objects::node_state::service_ok)
+    return ("OK");
+  else if (state == objects::node_state::service_warning)
+    return ("WARNING");
+  else if (state == objects::node_state::service_critical)
+    return ("CRITICAL");
+  else
+    return ("UNKNOWN");
+}
+
 
 /**
  *  Get the last state of a host.
@@ -151,14 +269,38 @@ std::string get_last_host_state(
               objects::node_id id,
               state const& st,
               node_cache const& cache) {
-  node_cache::host_node_state const& node_state =
-                                       cache.get_host(id.get_host_id());
-  if (node_state.get_prev_status().current_state == 0)
+  short state = cache.get_host(id.get_host_id()).get_status().current_state;
+  if (state == objects::node_state::host_up)
     return ("UP");
-  else if (node_state.get_prev_status().current_state == 1)
+  else if (state == objects::node_state::host_down)
     return ("DOWN");
   else
     return ("UNREACHABLE");
+}
+
+/**
+ *  Get the last state of a service.
+ *
+ *  @param[in] id            The id of the service.
+ *  @param[in] st            The state of the conf.
+ *  @param[in] cache         A node cache.
+ *
+ *  @return  The value of the macro.
+ */
+std::string get_last_service_state(
+              objects::node_id id,
+              state const& st,
+              node_cache const& cache) {
+  short state =
+          cache.get_service(id.get_service_id()).get_prev_status().current_state;
+  if (state == objects::node_state::service_ok)
+    return ("OK");
+  else if (state == objects::node_state::service_warning)
+    return ("WARNING");
+  else if (state == objects::node_state::service_critical)
+    return ("CRITICAL");
+  else
+    return ("UNKNOWN");
 }
 
 /**
@@ -175,6 +317,25 @@ std::string get_host_state_type(
               state const& st,
               node_cache const& cache) {
   if (cache.get_host(id.get_host_id()).get_status().state_type == 1)
+    return ("HARD");
+  else
+    return ("SOFT");
+}
+
+/**
+ *  Ge the state type of service.
+ *
+ *  @param[in] id            The id of the service.
+ *  @param[in] st            The state of the conf.
+ *  @param[in] cache         A node cache.
+ *
+ *  @return  The value of the macro.
+ */
+std::string get_service_state_type(
+              objects::node_id id,
+              state const& st,
+              node_cache const& cache) {
+  if (cache.get_service(id.get_service_id()).get_status().state_type == 1)
     return ("HARD");
   else
     return ("SOFT");
@@ -204,6 +365,8 @@ std::string null_getter(objects::node_id id,
  *  @param[in] id            The id of the host.
  *  @param[in] st            The state of the conf.
  *  @param[in] cache         A node cache.
+ *
+ *  @return  The value of the macro.
  */
 std::string get_host_duration(
               objects::node_id id,
@@ -211,6 +374,42 @@ std::string get_host_duration(
               node_cache const& cache) {
   time_t last_state_change =
             cache.get_host(id.get_host_id()).get_status().last_state_change;
+  // Get duration.
+  time_t now(time(NULL));
+  unsigned long duration(now - last_state_change);
+
+  // Break down duration.
+  unsigned int days(duration / (24 * 60 * 60));
+  duration %= (24 * 60 * 60);
+  unsigned int hours(duration / (60 * 60));
+  duration %= (60 * 60);
+  unsigned int minutes(duration / 60);
+  duration %= 60;
+
+  // Stringify duration.
+  std::ostringstream oss;
+  oss << days << "d "
+      << hours << "h "
+      << minutes << "m "
+      << duration << "s";
+  return (oss.str());
+}
+
+/**
+ *  Get the duration of a service state change.
+ *
+ *  @param[in] id            The id of the service.
+ *  @param[in] st            The state of the conf.
+ *  @param[in] cache         A node cache.
+ *
+ *  @return  The value of the macro.
+ */
+std::string get_service_duration(
+              objects::node_id id,
+              state const& st,
+              node_cache const& cache) {
+  time_t last_state_change =
+            cache.get_service(id.get_service_id()).get_status().last_state_change;
   // Get duration.
   time_t now(time(NULL));
   unsigned long duration(now - last_state_change);
@@ -248,6 +447,25 @@ std::string get_host_duration_sec(
   time_t now(time(NULL));
   unsigned long duration(
     now - cache.get_host(id.get_host_id()).get_status().last_state_change);
+  return (to_string<unsigned long, 0>(duration));
+}
+
+/**
+ *  Get the duration of a service state change in seconds.
+ *
+ *  @param[in] id            The id of the service.
+ *  @param[in] st            The state of the conf.
+ *  @param[in] cache         A node cache.
+ *
+ *  @return  The value of the macro.
+ */
+std::string get_service_duration_sec(
+             objects::node_id id,
+             state const& st,
+             node_cache const& cache) {
+  time_t now(time(NULL));
+  unsigned long duration(
+    now - cache.get_service(id.get_service_id()).get_status().last_state_change);
   return (to_string<unsigned long, 0>(duration));
 }
 
