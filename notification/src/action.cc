@@ -225,38 +225,32 @@ void action::_spawn_notification_attempts(
                state& st,
                std::vector<std::pair<time_t, action> >& spawned_actions) const{
   logging::debug(logging::low)
-      << "notification: spawning notification attempts for node (host id = "
-      << _id.get_host_id() << ", service_id = " << _id.get_service_id()
-      << ").";
+    << "notification: spawning notification attempts for node ("
+    << _id.get_host_id() << ", " << _id.get_service_id() << ")";
 
-  // If the action shouldn't be executed, do nothing.
-  if (!_check_action_viability(st))
-    return;
-
-  node::ptr n = st.get_node_by_id(_id);
-  // Spawn an action for each compatible rules.
+  // Spawn an action for each rules.
   QList<notification_rule::ptr> rules = st.get_notification_rules_by_node(_id);
-  for (QList<notification_rule::ptr>::iterator it(rules.begin()),
-                                               end(rules.end());
+  for (QList<notification_rule::ptr>::iterator
+         it(rules.begin()),
+         end(rules.end());
        it != end;
        ++it) {
-
-    if (!(*it)->should_be_notified_for(n->get_hard_state()))
-      continue;
-
+    // Build action (viability checks will be made later.
     action a;
-    time_t at = time(NULL);
-
     a.set_node_id(_id);
     a.set_type(action::notification_attempt);
     a.set_notification_rule_id((*it)->get_id());
+
+    // Choose running time.
+    time_t at;
     timeperiod::ptr tp = st.get_timeperiod_by_id((*it)->get_timeperiod_id());
-    // If no timeperiod, don't spawn the action.
-    if (!tp)
-      continue;
-    tp->get_next_valid(at);
-    spawned_actions.push_back(std::make_pair(at, action()));
+    if (tp)
+      tp->get_next_valid(at);
+    else
+      at = time(NULL);
+    spawned_actions.push_back(std::make_pair(at, a));
   }
+  return ;
 }
 
 /**
@@ -269,21 +263,35 @@ void action::_spawn_notification_attempts(
 bool action::_check_action_viability(
                ::com::centreon::broker::notification::state& st) const {
   logging::debug(logging::low)
-      << "notification: checking action viability for node (host id = "
-      << _id.get_host_id() << ", service_id = " << _id.get_service_id()
-      << ").";
+      << "notification: checking action viability for node ("
+      << _id.get_host_id() << ", " << _id.get_service_id() << ")";
 
-  node::ptr n;
   // Check the node's existence.
-  if (!(n = st.get_node_by_id(_id)))
+  node::ptr n(st.get_node_by_id(_id));
+  if (!n) {
+    logging::debug(logging::low)
+      << "notification: node (" << _id.get_host_id () << ", "
+      << _id.get_service_id()
+      << ") was not declared, notification attempt is not viable";
     return (false);
+  }
 
   // Check the existence of correlated parent.
   if (n->has_parent()
       && !(n->get_notification_options()
-           & objects::node_notification_opt::not_correlated))
+           & objects::node_notification_opt::not_correlated)) {
+    logging::debug(logging::low)
+      << "notification: node (" << _id.get_host_id() << ", "
+      << _id.get_service_id()
+      << ") has parent issue, notification attempt is not viable";
     return (false);
+  }
 
+  // Notification is viable.
+  logging::debug(logging::low)
+    << "notification: notification attempt on node ("
+    << _id.get_host_id() << ", " << _id.get_service_id()
+    << ") is viable";
   return (true);
 }
 
@@ -300,53 +308,83 @@ void action::_process_notification(
        std::vector<std::pair<time_t, action> >& spawned_actions) const {
 
   logging::debug(logging::low)
-      << "notification: processing notification action for notification_rule ("
-      << "host id = " << _id.get_host_id() << ", "
-      << "service_id = " << _id.get_service_id() << ", "
-      << "notification_rule_id = " << _notification_rule_id << ").";
+    << "notification: processing action for rule "
+    << _notification_rule_id << " of node ("
+    << _id.get_host_id() << ", " << _id.get_service_id() << ")";
 
   // Check action viability.
   if (!_check_action_viability(st))
-    return;
+    return ;
 
   // Get all the necessary data.
   notification_rule::ptr rule =
-      st.get_notification_rule_by_id(_notification_rule_id);
-  if (!rule)
-    return;
+    st.get_notification_rule_by_id(_notification_rule_id);
+  if (!rule) {
+    logging::error(logging::medium)
+      << "notification: aborting notification attempt on node ("
+      << _id.get_host_id() << ", " << _id.get_service_id()
+      << "): rule " << _notification_rule_id << " does not exist";
+    return ;
+  }
 
   timeperiod::ptr tp = st.get_timeperiod_by_id(rule->get_timeperiod_id());
   if (!tp)
-    return;
+    logging::error(logging::low)
+      << "notification: could not find timeperiod "
+      << rule->get_timeperiod_id()
+      << " during notification attempt on node (" << _id.get_host_id()
+      << ", " << _id.get_service_id() << "), so any time will be valid";
 
   notification_method::ptr method =
       st.get_notification_method_by_id(rule->get_method_id());
-  if (!method)
-    return;
+  if (!method) {
+    logging::error(logging::medium)
+      << "notification: aborting notification attempt on node ("
+      << _id.get_host_id() << ", " << _id.get_service_id()
+      << "): method " << rule->get_method_id() << " does not exist";
+    return ;
+  }
 
   contact::ptr cnt = st.get_contact_by_id(rule->get_contact_id());
-  if (!cnt)
-    return;
+  if (!cnt) {
+    logging::error(logging::medium)
+      << "notification: aborting notification attempt on node ("
+      << _id.get_host_id() << ", " << _id.get_service_id()
+      << "): contact " << rule->get_contact_id() << " does not exist";
+    return ;
+  }
 
   command::ptr cmd = st.get_command_by_id(method->get_command_id());
-  if (!cmd)
-    return;
+  if (!cmd) {
+    logging::error(logging::medium)
+      << "notification: aborting notification attempt on node ("
+      << _id.get_host_id() << ", " << _id.get_service_id()
+      << "): command " << method->get_command_id() << " does not exist";
+    return ;
+  }
 
   node::ptr n = st.get_node_by_id(_id);
 
-  // Check if the notification should be sent.
-  // See if the state is valid.
-  if(!rule->should_be_notified_for(n->get_hard_state()))
-    return;
-
-  // See if the timeperiod is valid
-  time_t now = time(NULL);
-  if (!tp->is_valid(now)) {
+  // Check if the state is valid.
+  if (!rule->should_be_notified_for(n->get_hard_state())) {
     logging::debug(logging::low)
-      << "notification: the timeperiod is not valid: "
-         "reschedule it for the next valid time.";
+      << "notification: node (" << _id.get_host_id() << ", "
+      << _id.get_service_id() << ") should not be notified for state "
+      << static_cast<int>(n->get_hard_state()) << " according to rule "
+      << _notification_rule_id;
+    return ;
+  }
+
+  // See if the timeperiod is valid.
+  time_t now = time(NULL);
+  if (tp && !tp->is_valid(now)) {
+    logging::debug(logging::low)
+      << "notification: notification attempt on node ("
+      << _id.get_host_id() << ", " << _id.get_service_id()
+      << ") is not in a valid timeperiod, "
+         "rescheduling it at the next valid time";
     spawned_actions.push_back(std::make_pair(tp->get_next_valid(now), *this));
-    return;
+    return ;
   }
 
   bool should_send_the_notification = true;
@@ -355,7 +393,9 @@ void action::_process_notification(
   // See if the node is in downtime.
   if (st.is_node_in_downtime(_id) == true) {
     logging::debug(logging::low)
-      << "notification: this node is in downtime: don't send anything.";
+      << "notification: node (" << _id.get_host_id() << ", "
+      << _id.get_service_id()
+      << ") is in downtime, notification won't be sent";
     should_send_the_notification = false;
     return;
   }
@@ -363,14 +403,23 @@ void action::_process_notification(
   // See if the node has been acknowledged.
   if (st.has_node_been_acknowledged(_id) == true) {
     logging::debug(logging::low)
-      << "notification: this node has been acknowledged: don't send anything.";
+      << "notification: node (" << _id.get_host_id() << ", "
+      << _id.get_service_id()
+      << ") is acknowledged, notification won't be sent";
     should_send_the_notification = false;
-    return;
+    return ;
   }
 
   // See if this notification is between the start and end.
   if (_notification_number < method->get_start()
-      || _notification_number >= method->get_end()) {
+      || (_notification_number >= method->get_end()
+          && method->get_end())) {
+    logging::debug(logging::medium)
+      << "notification: notification number of node ("
+      << _id.get_host_id() << ", " << _id.get_service_id()
+      << ") is " << _notification_number
+      << " and not in the method's valid range (["
+      << method->get_start() << "-" << method->get_end() << "])";
     should_send_the_notification = false;
     next.set_notification_number(_notification_number + 1);
   }
@@ -378,6 +427,10 @@ void action::_process_notification(
   // Send the notification.
   if (should_send_the_notification) {
     std::string resolved_command = cmd->resolve(rule, tp, method, cnt, n, cache);
+    logging::debug(logging::low)
+      << "notification: launching notification command on node ("
+      << _id.get_host_id() << ", " << _id.get_service_id() << "): "
+      << resolved_command;
     process_manager& manager = process_manager::instance();
     manager.create_process(resolved_command);
   }

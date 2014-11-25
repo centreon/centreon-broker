@@ -249,10 +249,13 @@ namespace logging {
   template <typename T, typename U>
   temp_logger& operator<<(
                  temp_logger const& left,
-                 QHash<T, misc::shared_ptr<U> > const& obj) throw() {
+                 QHash<T, misc::shared_ptr<U> > const& obj) throw () {
     logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
-    for (typename QHash<T, U>::const_iterator it(obj.begin()), end(obj.end());
-         it != end; ++it) {
+    for (typename QHash<T, misc::shared_ptr<U> >::const_iterator
+           it(obj.begin()),
+           end(obj.end());
+         it != end;
+         ++it) {
       tmp << "{"
           << *it
           << "}\n";

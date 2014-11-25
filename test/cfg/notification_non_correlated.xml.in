@@ -6,6 +6,7 @@
   <stats>
     <fifo>/tmp/cbmod.fifo</fifo>
   </stats>
+  <log_timestamp>1</log_timestamp>
   <logger>
     <type>file</type>
     <name>cbmod.log</name>

@@ -62,7 +62,9 @@ void notification_method_loader::load(
     nm->set_types(query.value(5).toString().toStdString());
     nm->set_start(query.value(6).toUInt());
     nm->set_end(query.value(7).toUInt());
+    logging::debug(logging::low)
+      << "notification: new method " << query.value(0).toUInt()
+      << " ('" << nm->get_name() << "')";
     output->add_notification_method(query.value(0).toUInt(), nm);
   }
-
 }

@@ -60,6 +60,11 @@ void notification_rule_loader::load(
     rule->set_contact_id(query.value(3).toUInt());
     rule->set_node_id(node_id(query.value(4).toUInt(),
                               query.value(5).toUInt()));
+    logging::debug(logging::low)
+      << "notification: new rule " << rule->get_id()
+      << " affecting node (" << rule->get_node_id().get_host_id()
+      << ", " << rule->get_node_id().get_service_id()
+      << ") using method " << rule->get_method_id();
     output->add_rule(query.value(0).toUInt(), rule);
   }
 }
