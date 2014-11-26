@@ -527,4 +527,7 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
   map.insert(
     "TOTALSERVICEPROBLEMSUNHANDLED",
     &get_total_services_unhandled<-1>);
+
+  // Host group macros.
+
 }
