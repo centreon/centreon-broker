@@ -22,6 +22,7 @@
 
 #  include <string>
 #  include <deque>
+#  include <vector>
 #  include <QMutex>
 #  include <QHash>
 #  include "com/centreon/broker/namespace.hh"
@@ -78,6 +79,10 @@ namespace         notification {
                   get_host(unsigned int id) const;
     service_node_state const&
                   get_service(unsigned int id) const;
+
+    std::vector<std::string>
+                  get_all_node_contained_in(std::string const& group_name,
+                                            bool is_host_group) const;
 
   private:
     QHash<unsigned int, host_node_state>

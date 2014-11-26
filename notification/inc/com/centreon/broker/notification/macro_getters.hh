@@ -32,6 +32,7 @@
 #  include "com/centreon/broker/notification/objects/contact.hh"
 #  include "com/centreon/broker/notification/node_cache.hh"
 #  include "com/centreon/broker/notification/utilities/get_datetime_string.hh"
+#  include "com/centreon/broker/exceptions/msg.hh"
 
 CCB_BEGIN()
 
@@ -515,19 +516,82 @@ namespace        notification {
    *
    *  @return  The value of the macro.
    */
-  /*template <bool is_host>
+  template <bool is_host>
   std::string get_group_alias(
                 objects::node_id id,
                 state const& st,
                 node_cache const& cache) {
-    /*objects::node
+    objects::nodegroup::ptr ngr;
     if (is_host) {
-
+      std::map<std::string, neb::host_group_member> map =
+        cache.get_host(id.get_host_id()).get_groups();
+      if (map.empty())
+        throw (exceptions::msg()
+               << "notification: macro: could not get the group alias "
+                  "of host " << id.get_host_id());
+      ngr = st.get_nodegroup_by_name(map.begin()->first);
     }
     else {
-
+      std::map<std::string, neb::service_group_member> map =
+        cache.get_service(id.get_service_id()).get_groups();
+      if (map.empty())
+        throw (exceptions::msg()
+               << "notification: macro: could not get the group alias "
+                  "of service " << id.get_service_id());
+      ngr = st.get_nodegroup_by_name(map.begin()->first);
     }
-  }*/
+
+    if (!ngr)
+      throw (exceptions::msg()
+             << "notification: macro: could not get a group");
+    return (ngr->get_alias());
+  }
+
+  /**
+   *  Get the group members of a node.
+   *
+   *  @tparam is_host          Is the node an host ?
+   *
+   *  @param[in] id            The id of the node.
+   *  @param[in] st            The state of the conf.
+   *  @param[in] cache         A node cache.
+   *
+   *  @return  The value of the macro.
+   */
+  template <bool is_host>
+  std::string get_group_members(
+                objects::node_id id,
+                state const& st,
+                node_cache const& cache) {
+    std::vector<std::string> members;
+    if (is_host) {
+      std::map<std::string, neb::host_group_member> map =
+        cache.get_host(id.get_host_id()).get_groups();
+      if (map.empty())
+        throw (exceptions::msg()
+               << "notification: macro: could not get the group members "
+                  "of host " << id.get_host_id());
+      members = cache.get_all_node_contained_in(map.begin()->first, true);
+    }
+    else {
+      std::map<std::string, neb::service_group_member> map =
+        cache.get_service(id.get_service_id()).get_groups();
+      if (map.empty())
+        throw (exceptions::msg()
+               << "notification: macro: could not get the group members "
+                  "of service " << id.get_service_id());
+      members = cache.get_all_node_contained_in(map.begin()->first, false);
+    }
+    std::string res;
+    for (std::vector<std::string>::const_iterator it(members.begin()),
+                                                  end(members.end());
+         it != end;
+         ++it) {
+      if (!res.empty())
+        res.append(", ");
+      res.append(*it);
+    }
+  }
 
   // Static, non template getters.
   std::string   get_host_state(

@@ -528,17 +528,17 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
     "TOTALSERVICEPROBLEMSUNHANDLED",
     &get_total_services_unhandled<-1>);
 
-  // Host group macros.
-  /*map.insert(
+  // Groups macros.
+  map.insert(
     "HOSTGROUPALIAS",
     &get_group_alias<true>);
   map.insert(
     "HOSTGROUPMEMBERS",
     &get_group_members<true>);
   map.insert(
-    "SERVICEGROUPALIAS"
+    "SERVICEGROUPALIAS",
     &get_group_alias<false>);
-  map.inset(
+  map.insert(
     "SERVICEGROUPMEMBERS",
-    &get_grouo_members<false>);*/
+    &get_group_members<false>);
 }

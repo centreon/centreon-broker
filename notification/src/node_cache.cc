@@ -335,3 +335,29 @@ void node_cache::_prepare_serialization() {
        ++it)
     it->serialize(_serialized_data);
 }
+
+std::vector<std::string> node_cache::get_all_node_contained_in(
+                                       std::string const& group_name,
+                                       bool is_host_group) const {
+  std::vector<std::string> res;
+
+  if (is_host_group)
+    for (QHash<unsigned int, host_node_state>::const_iterator
+           it(_host_node_states.begin()),
+           end(_host_node_states.end());
+        it != end;
+        ++it)
+      if (it->get_groups().count(group_name) != 0)
+        res.push_back(it->get_node().host_name.toStdString());
+  else
+    for (QHash<unsigned int, service_node_state>::const_iterator
+           it(_service_node_states.begin()),
+           end(_service_node_states.end());
+        it != end;
+        ++it)
+      if (it->get_groups().count(group_name) != 0)
+        res.push_back(it->get_node().host_name.toStdString());
+
+  return (res);
+}
+
