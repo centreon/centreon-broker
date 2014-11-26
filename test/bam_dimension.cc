@@ -75,7 +75,7 @@ static void check_bas(
     if (!q.next())
       throw (exceptions::msg() << "not enough BAs at iteration "
              << iteration << ": got " << i << ", expected " << count);
-    if (q.value(0).toInt() != bas[i].id
+    if (q.value(0).toUInt() != bas[i].id
         || q.value(1).toString() != bas[i].name
         || q.value(2).toString() != bas[i].description
         || !double_equals(q.value(3).toDouble(), bas[i].month_p1)
@@ -84,7 +84,7 @@ static void check_bas(
         || !double_equals(q.value(6).toDouble(), bas[i].month_d2))
       throw (exceptions::msg() << "invalid BA " << q.value(0).toUInt()
              << " at iteration " << iteration << ": got (id "
-             << q.value(0).toInt() << ", name "
+             << q.value(0).toUInt() << ", name "
              << q.value(1).toString() << ", description "
              << q.value(2).toString() << ", sla_month_percent1 "
              << q.value(3).toDouble() << ", sla_month_percent2 "
@@ -125,12 +125,12 @@ static void check_bvs(QSqlDatabase& db,
     if (!q.next())
       throw (exceptions::msg() << "not enough BVs at iteration "
              << iteration << ": got " << i << ", expected " << count);
-    if (q.value(0).toInt() != bvs[i].id
+    if (q.value(0).toUInt() != bvs[i].id
         || q.value(1).toString() != bvs[i].name
         || q.value(2).toString() != bvs[i].description)
       throw (exceptions::msg() << "invalid BVs " << q.value(0).toUInt()
              << " at iteration " << iteration << ": got (id "
-             << q.value(0).toInt() << ", name "
+             << q.value(0).toUInt() << ", name "
              << q.value(1).toString() << ", description "
              << q.value(2).toString() << ") expected ("
              << bvs[i].id << ", " << bvs[i].name << ", "
@@ -164,12 +164,12 @@ static void check_ba_bv_links(QSqlDatabase& db,
     if (!q.next())
       throw (exceptions::msg() << "not enough BA-BV links at iteration "
              << iteration << ": got " << i << ", expected " << count);
-    if (q.value(0).toInt() != babvs[i].ba_id
-        || q.value(1).toInt() != babvs[i].bv_id)
+    if (q.value(0).toUInt() != babvs[i].ba_id
+        || q.value(1).toUInt() != babvs[i].bv_id)
       throw (exceptions::msg() << "invalid BA-BV links " << q.value(0).toUInt()
              << " at iteration " << iteration << ": got (ba id "
-             << q.value(0).toInt() << ", bv id "
-             << q.value(1).toInt() << ") expected ("
+             << q.value(0).toUInt() << ", bv id "
+             << q.value(1).toUInt() << ") expected ("
              << babvs[i].ba_id << ", " << babvs[i].bv_id << ")");
   }
   if (q.next())
@@ -220,40 +220,40 @@ static void check_kpis(QSqlDatabase& db,
     if (!q.next())
       throw (exceptions::msg() << "not enough KPIs at iteration "
              << iteration << ": got " << i << ", expected " << count);
-    if (q.value(0).toInt() != kpis[i].kpi_id
+    if (q.value(0).toUInt() != kpis[i].kpi_id
         || q.value(1).toString() != kpis[i].kpi_name
-        || q.value(2).toInt() != kpis[i].ba_id
+        || q.value(2).toUInt() != kpis[i].ba_id
         || q.value(3).toString() != kpis[i].ba_name
-        || q.value(4).toInt() != kpis[i].host_id
+        || q.value(4).toUInt() != kpis[i].host_id
         || q.value(5).toString() != kpis[i].host_name
-        || q.value(6).toInt() != kpis[i].service_id
+        || q.value(6).toUInt() != kpis[i].service_id
         || q.value(7).toString() != kpis[i].service_description
-        || q.value(8).toInt() != kpis[i].kpi_ba_id
+        || q.value(8).toUInt() != kpis[i].kpi_ba_id
         || q.value(9).toString() != kpis[i].kpi_ba_name
-        || q.value(10).toInt() != kpis[i].meta_service_id
+        || q.value(10).toUInt() != kpis[i].meta_service_id
         || q.value(11).toString() != kpis[i].meta_service_name
         || !double_equals(q.value(12).toDouble(), kpis[i].impact_warning)
         || !double_equals(q.value(13).toDouble(), kpis[i].impact_critical)
         || !double_equals(q.value(14).toDouble(), kpis[i].impact_unknown)
-        || q.value(15).toInt() != kpis[i].boolean_id
+        || q.value(15).toUInt() != kpis[i].boolean_id
         || q.value(16).toString() != kpis[i].boolean_name)
       throw (exceptions::msg() << "invalid KPIs " << q.value(0).toUInt()
              << " at iteration " << iteration << ": got (kpi name "
              << q.value(1).toString() << ", ba id "
-             << q.value(2).toInt() << ", ba_name "
+             << q.value(2).toUInt() << ", ba_name "
              << q.value(3).toString() << ", host_id "
-             << q.value(4).toInt() << ", host_name "
+             << q.value(4).toUInt() << ", host_name "
              << q.value(5).toString() << ", service_id "
-             << q.value(6).toInt() << ", service_description "
+             << q.value(6).toUInt() << ", service_description "
              << q.value(7).toString() << ", kpi_ba_id "
-             << q.value(8).toInt() << ", kpi_ba_name "
+             << q.value(8).toUInt() << ", kpi_ba_name "
              << q.value(9).toString() << ", meta_service_id "
-             << q.value(10).toInt() << ", meta_service_name "
+             << q.value(10).toUInt() << ", meta_service_name "
              << q.value(11).toString() << ", impact_warning "
              << q.value(12).toDouble() << ", impact_critical "
              << q.value(13).toDouble() << ", impact_unknown "
              << q.value(14).toDouble() << ", boolean_id "
-             << q.value(15).toInt() << ", boolean_name "
+             << q.value(15).toUInt() << ", boolean_name "
              << q.value(16).toString() << ") expected ("
              << kpis[i].kpi_name << ", " << kpis[i].ba_id << ", "
              << kpis[i].ba_name << ", " << kpis[i].host_id << ", "
@@ -347,13 +347,32 @@ int main() {
       QString query(
                 "INSERT INTO mod_bam (ba_id, name, description,"
                 "                     sla_month_percent_warn, sla_month_percent_crit,"
-                "                     sla_month_duration_warn, sla_month_duration_crit)"
-                "  VALUES (1, 'BA1', 'DESC1', 90, 80, 70, 60),"
-                "         (2, 'BA2', 'DESC2', 80, 70, 60, 50)");
+                "                     sla_month_duration_warn, sla_month_duration_crit,"
+                "                     activate)"
+                "  VALUES (1, 'BA1', 'DESC1', 90, 80, 70, 60, '1'),"
+                "         (2, 'BA2', 'DESC2', 80, 70, 60, 50, '1')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create BAs: "
                << q.lastError().text());
+    }
+    {
+      QString queries[] = {
+        "INSERT INTO host (host_id, host_name)"
+        "  VALUES (1001, 'Virtual BA host')",
+        "INSERT INTO service (service_id, service_description)"
+        "  VALUES (1001, 'ba_1'), (1002, 'ba_2')",
+        "INSERT INTO host_service_relation (host_host_id, service_service_id)"
+        "  VALUES (1001, 1001), (1001, 1002)"
+      };
+      for (size_t i(0); i < sizeof(queries) / sizeof(*queries); ++i) {
+        QSqlQuery q(*db.centreon_db());
+        if (!q.exec(queries[i]))
+          throw (exceptions::msg()
+                 << "could not create virtual BA services: "
+                 << "query " << i << " failed: "
+                 << q.lastError().text());
+      }
     }
 
     // Create KPIs.
@@ -365,15 +384,15 @@ int main() {
                 "            drop_warning_impact_id, drop_critical,"
                 "            drop_critical_impact_id, drop_unknown,"
                 "            drop_unknown_impact_id, ignore_downtime,"
-                "            ignore_acknowledged)"
-                "  VALUES (1, '0', 1, 1, NULL, 1, NULL, NULL, '0', 15, NULL, 25, NULL, 99, NULL, '0', '0'),"
-                "         (2, '0', 1, 2, NULL, 2, NULL, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0'),"
-                "         (3, '1', NULL, NULL, 1, 2, NULL, NULL, '0', 65, NULL, 75, NULL, 99, NULL, '0', '0'),"
-                "         (4, '1', NULL, NULL, 2, 1, NULL, NULL, '0', 25, NULL, 35, NULL, 99, NULL, '0', '0'),"
-                "         (5, '2', NULL, NULL, NULL, 1, 1, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0'),"
-                "         (6, '2', NULL, NULL, NULL, 2, 2, NULL, '0', 45, NULL, 55, NULL, 99, NULL, '0', '0'),"
-                "         (7, '3', NULL, NULL, NULL, 1, NULL, 1, '0', 85, NULL, 95, NULL, 99, NULL, '0', '0'),"
-                "         (8, '3', NULL, NULL, NULL, 2, NULL, 2, '0', 95, NULL, 105, NULL, 99, NULL, '0', '0')");
+                "            ignore_acknowledged, activate)"
+                "  VALUES (1, '0', 1, 1, NULL, 1, NULL, NULL, '0', 15, NULL, 25, NULL, 99, NULL, '0', '0', '1'),"
+                "         (2, '0', 1, 2, NULL, 2, NULL, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0', '1'),"
+                "         (3, '1', NULL, NULL, 1, 2, NULL, NULL, '0', 65, NULL, 75, NULL, 99, NULL, '0', '0', '1'),"
+                "         (4, '1', NULL, NULL, 2, 1, NULL, NULL, '0', 25, NULL, 35, NULL, 99, NULL, '0', '0', '1'),"
+                "         (5, '2', NULL, NULL, NULL, 1, 1, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0', '1'),"
+                "         (6, '2', NULL, NULL, NULL, 2, 2, NULL, '0', 45, NULL, 55, NULL, 99, NULL, '0', '0', '1'),"
+                "         (7, '3', NULL, NULL, NULL, 1, NULL, 1, '0', 85, NULL, 95, NULL, 99, NULL, '0', '0', '1'),"
+                "         (8, '3', NULL, NULL, NULL, 2, NULL, 2, '0', 95, NULL, 105, NULL, 99, NULL, '0', '0', '1')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create KPIs: "
@@ -384,10 +403,9 @@ int main() {
     {
       QString query(
                 "INSERT INTO mod_bam_boolean (boolean_id, name,"
-                "            config_type, impact, impact_id,"
-                "            expression, bool_state)"
-                "  VALUES (1, 'BoolExp1', 0, 75, NULL, '{1 1} {is} {OK}', 0),"
-                "         (2, 'BoolExp2', 0, 25, NULL, '{1 2} {not} {CRITICAL} {OR} {1 3} {not} {OK}', 1)");
+                "            expression, bool_state, activate)"
+                "  VALUES (1, 'BoolExp1', '{1 1} {is} {OK}', 0, 1),"
+                "         (2, 'BoolExp2', '{1 2} {not} {CRITICAL} {OR} {1 3} {not} {OK}', 1, 1)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create boolexps: "
@@ -504,7 +522,7 @@ int main() {
 
     // Check that everything was deleted.
     {
-      QString query("SELECT * from mod_bam_reporting_ba");
+      QString query("SELECT * FROM mod_bam_reporting_ba");
       QSqlQuery q(*db.bi_db());
       if (!q.exec(query))
         throw (exceptions::msg()

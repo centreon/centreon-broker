@@ -288,6 +288,7 @@ void reader::_load(state::bool_exps& bool_exps) {
       "    ON be.boolean_id=kpi.boolean_id"
       "  LEFT JOIN mod_bam_impacts as imp"
       "    ON kpi.drop_critical_impact_id=imp.id_impact"
+      "  WHERE be.activate=1"
       "  GROUP BY be.boolean_id"));
     if (query.lastError().isValid())
       throw (reader_exception()
@@ -312,7 +313,8 @@ void reader::_load(state::bool_exps& bool_exps) {
         "SELECT b.boolean_id, k.id_ba"
         "  FROM mod_bam_boolean AS b"
         "  LEFT JOIN mod_bam_kpi AS k"
-        "    ON b.boolean_id=k.boolean_id"));
+        "    ON b.boolean_id=k.boolean_id"
+        "  WHERE b.activate=1"));
       if (q.lastError().isValid())
         throw (reader_exception()
                << "BAM: could not retrieve BAs impacted by boolean "
@@ -499,8 +501,10 @@ void reader::_load_dimensions() {
     q.exec(
         "SELECT ba_id, name, description,"
         "       sla_month_percent_warn, sla_month_percent_crit,"
-        "       sla_month_duration_warn, sla_month_duration_crit"
-        "  FROM mod_bam");
+        "       sla_month_duration_warn, sla_month_duration_crit,"
+        "       id_reporting_period"
+        "  FROM mod_bam"
+        "  WHERE activate='1'");
     if (q.lastError().isValid())
       throw (reader_exception() << "BAM: could not retrieve BA list: "
              << q.lastError().text());
@@ -515,6 +519,14 @@ void reader::_load_dimensions() {
       ba->sla_duration_2 = q.value(6).toInt();
       datas.push_back(ba.staticCast<io::data>());
       bas[ba->ba_id] = ba;
+      if (!q.value(7).isNull()) {
+        misc::shared_ptr<dimension_ba_timeperiod_relation>
+          dbtr(new dimension_ba_timeperiod_relation);
+        dbtr->ba_id = q.value(0).toUInt();
+        dbtr->timeperiod_id = q.value(7).toUInt();
+        dbtr->is_default = true;
+        datas.push_back(dbtr);
+      }
     }
   }
 
@@ -564,7 +576,7 @@ void reader::_load_dimensions() {
            "        COALESCE(k.drop_unknown, uu.impact),"
            "       h.host_name, s.service_description, b.name,"
            "       meta.meta_name, boo.name"
-           "  FROM  mod_bam_kpi AS k"
+           "  FROM mod_bam_kpi AS k"
            "  LEFT JOIN mod_bam_impacts AS ww"
            "    ON k.drop_warning_impact_id = ww.id_impact"
            "  LEFT JOIN mod_bam_impacts AS cc"
@@ -580,7 +592,8 @@ void reader::_load_dimensions() {
            "  LEFT JOIN meta_service AS meta"
            "    ON meta.meta_id = k.meta_id"
            "  LEFT JOIN mod_bam_boolean as boo"
-           "    ON boo.boolean_id = k.boolean_id");
+           "    ON boo.boolean_id = k.boolean_id"
+           "  WHERE k.activate='1'");
     if (q.lastError().isValid())
       throw (reader_exception()
              << "BAM: could not retrieve kpi dimensions: "
@@ -715,7 +728,7 @@ void reader::_load_dimensions() {
 
   // Load the ba-timeperiods relations.
   {
-    q.exec("SELECT ba_id, timeperiod_id, is_default FROM mod_bam_ba_tp_rel");
+    q.exec("SELECT ba_id, tp_id FROM mod_bam_relations_ba_timeperiods");
     if (q.lastError().isValid())
       throw (reader_exception()
              << "BAM: could not retrieve the timeperiods associated "
@@ -726,7 +739,7 @@ void reader::_load_dimensions() {
         dbtr(new dimension_ba_timeperiod_relation);
       dbtr->ba_id = q.value(0).toUInt();
       dbtr->timeperiod_id = q.value(1).toUInt();
-      dbtr->is_default = q.value(2).toBool();
+      dbtr->is_default = false;
       datas.push_back(dbtr);
     }
   }

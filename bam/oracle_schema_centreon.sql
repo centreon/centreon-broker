@@ -14,7 +14,7 @@
 -- mod_bam_impacts
 -- mod_bam_boolean
 -- mod_bam_kpi
--- mod_bam_ba_tp_rel
+-- mod_bam_relations_ba_timeperiods
 
 
 --
@@ -39,9 +39,12 @@ CREATE TABLE mod_bam (
   current_status char(1) default NULL,
   in_downtime boolean default NULL,
   must_be_rebuild enum('0', '1', '2') NOT NULL default '0',
+  id_reporting_period int default NULL,
 
   PRIMARY KEY (ba_id),
-  UNIQUE (name)
+  UNIQUE (name),
+  FOREIGN KEY (id_reporting_period) REFERENCES timeperiod (tp_id)
+    ON DELETE SET NULL
 );
 CREATE SEQUENCE mod_bam_seq
 START WITH 1
@@ -155,12 +158,13 @@ END;
 --
 -- BA / Timeperiod relations.
 --
-CREATE TABLE mod_bam_ba_tp_rel (
+CREATE TABLE mod_bam_relations_ba_timeperiods (
   ba_id int NOT NULL,
-  timeperiod_id int NOT NULL,
-  is_default boolean NOT NULL default 0,
+  tp_id int NOT NULL,
 
   FOREIGN KEY (ba_id) REFERENCES mod_bam (ba_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (tp_id) REFERENCES timeperiod (tp_id)
     ON DELETE CASCADE
 );
 

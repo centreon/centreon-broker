@@ -528,40 +528,41 @@ int main() {
     {
       {
         QString query(
-                  "INSERT INTO mod_bam (ba_id, name, level_w, level_c, activate)"
-                  "  VALUES (1, 'BA1', 90, 80, '1'),"
-                  "         (2, 'BA2', 80, 70, '1'),"
-                  "         (3, 'BA3', 70, 60, '1'),"
-                  "         (4, 'BA4', 60, 50, '1'),"
-                  "         (5, 'BA5', 50, 40, '1'),"
-                  "         (6, 'BA6', 40, 30, '1'),"
-                  "         (7, 'BA7', 30, 21, '1'),"
-                  "         (8, 'BA8', 20, 10, '1'),"
-                  "         (9, 'BA9', 10, 0, '1')");
+                  "INSERT INTO mod_bam (ba_id, name, level_w, level_c,"
+                  "            activate, id_reporting_period)"
+                  "  VALUES (1, 'BA1', 90, 80, '1', 1),"
+                  "         (2, 'BA2', 80, 70, '1', 1),"
+                  "         (3, 'BA3', 70, 60, '1', 1),"
+                  "         (4, 'BA4', 60, 50, '1', 1),"
+                  "         (5, 'BA5', 50, 40, '1', 1),"
+                  "         (6, 'BA6', 40, 30, '1', 1),"
+                  "         (7, 'BA7', 30, 21, '1', 1),"
+                  "         (8, 'BA8', 20, 10, '1', 1),"
+                  "         (9, 'BA9', 10, 0, '1', 1)");
         QSqlQuery q(*db.centreon_db());
         if (!q.exec(query))
           throw (exceptions::msg() << "could not create BAs: "
                  << q.lastError().text());
       }
-      {
-        QString query(
-                  "INSERT INTO mod_bam_ba_tp_rel (ba_id, timeperiod_id,"
-                  "            is_default)"
-                  "  VALUES (1, 1, 1),"
-                  "         (2, 1, 1),"
-                  "         (3, 1, 1),"
-                  "         (4, 1, 1),"
-                  "         (5, 1, 1),"
-                  "         (6, 1, 1),"
-                  "         (7, 1, 1),"
-                  "         (8, 1, 1),"
-                  "         (9, 1, 1)");
-        QSqlQuery q(*db.centreon_db());
-        if (!q.exec(query))
-          throw (exceptions::msg()
-                 << "could not link BAs to timeperiods: "
-                 << q.lastError().text());
-      }
+      // {
+      //   QString query(
+      //             "INSERT INTO mod_bam_ba_tp_rel (ba_id, timeperiod_id,"
+      //             "            is_default)"
+      //             "  VALUES (1, 1, 1),"
+      //             "         (2, 1, 1),"
+      //             "         (3, 1, 1),"
+      //             "         (4, 1, 1),"
+      //             "         (5, 1, 1),"
+      //             "         (6, 1, 1),"
+      //             "         (7, 1, 1),"
+      //             "         (8, 1, 1),"
+      //             "         (9, 1, 1)");
+      //   QSqlQuery q(*db.centreon_db());
+      //   if (!q.exec(query))
+      //     throw (exceptions::msg()
+      //            << "could not link BAs to timeperiods: "
+      //            << q.lastError().text());
+      // }
 
       // Create associated services.
       {

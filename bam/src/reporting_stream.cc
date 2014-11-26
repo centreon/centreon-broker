@@ -1245,9 +1245,9 @@ void reporting_stream::_process_dimension_ba_bv_relation(
   _dimension_ba_bv_relation_insert->bindValue(":ba_id", dbabv.ba_id);
   _dimension_ba_bv_relation_insert->bindValue(":bv_id", dbabv.bv_id);
   if (!_dimension_ba_bv_relation_insert->exec())
-    throw (exceptions::msg() << "BAM-BI: could not insert dimension of "
-                                "BA-BV relation "
-           << dbabv.ba_id << "- "<< dbabv.bv_id << " :"
+    throw (exceptions::msg()
+           << "BAM-BI: could not insert dimension of BA-BV relation "
+           << dbabv.ba_id << "-"<< dbabv.bv_id << ": "
            << _dimension_ba_bv_relation_insert->lastError().text());
 }
 
