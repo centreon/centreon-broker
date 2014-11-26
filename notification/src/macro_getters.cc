@@ -29,13 +29,15 @@ using namespace com::centreon::broker::notification;
  *  @param[in] id     The id of the host.
  *  @param[in] st     The state of the conf.
  *  @param[in] cache  A node cache.
+ *  @param[in] cnt    The contact being notified.
  *
  *  @return  The value of the macro.
  */
 template <> std::string get_host_groups<true>(
                           objects::node_id id,
                           state const& st,
-                          node_cache const& cache) {
+                          node_cache const& cache,
+                          objects::contact const& cnt) {
   std::map<std::string, neb::host_group_member> const& group_map =
     cache.get_host(id.get_host_id()).get_groups();
   std::string result;
@@ -59,13 +61,15 @@ template <> std::string get_host_groups<true>(
  *  @param[in] id     The id of the host.
  *  @param[in] st     The state of the conf.
  *  @param[in] cache  A node cache.
+ *  @param[in] cnt    The contact being notified.
  *
  *  @return  The value of the macro.
  */
 template <> std::string get_host_groups<false>(
                           objects::node_id id,
                           state const& st,
-                          node_cache const& cache) {
+                          node_cache const& cache,
+                          objects::contact const& cnt) {
   std::map<std::string, neb::host_group_member> const& group_map =
     cache.get_host(id.get_host_id()).get_groups();
   if (!group_map.empty())
@@ -80,13 +84,15 @@ template <> std::string get_host_groups<false>(
  *  @param[in] id     The id of the service.
  *  @param[in] st     The state of the conf.
  *  @param[in] cache  A node cache.
+ *  @param[in] cnt    The contact being notified.
  *
  *  @return  The value of the macro.
  */
 template <> std::string get_service_groups<true>(
                           objects::node_id id,
                           state const& st,
-                          node_cache const& cache) {
+                          node_cache const& cache,
+                          objects::contact const& cnt) {
   std::map<std::string, neb::service_group_member> const& group_map =
     cache.get_service(id.get_service_id()).get_groups();
   std::string result;
@@ -110,13 +116,15 @@ template <> std::string get_service_groups<true>(
  *  @param[in] id     The id of the service.
  *  @param[in] st     The state of the conf.
  *  @param[in] cache  A node cache.
+ *  @param[in] cnt    The contact being notified.
  *
  *  @return  The value of the macro.
  */
 template <> std::string get_service_groups<false>(
                           objects::node_id id,
                           state const& st,
-                          node_cache const& cache) {
+                          node_cache const& cache,
+                          objects::contact const& cnt) {
   std::map<std::string, neb::service_group_member> const& group_map =
     cache.get_service(id.get_service_id()).get_groups();
   if (!group_map.empty())
@@ -131,13 +139,15 @@ template <> std::string get_service_groups<false>(
  *  @param[in] id            The id of the host.
  *  @param[in] st            The state of the conf.
  *  @param[in] cache         A node cache.
+ *  @param[in] cnt           The contact being notified.
  *
  *  @return  The value of the macro.
  */
 template <> std::string get_host_output<false>(
                           objects::node_id id,
                           state const& st,
-                          node_cache const& cache) {
+                          node_cache const& cache,
+                          objects::contact const& cnt) {
   std::string output = cache.get_host(
                          id.get_host_id()).get_status().output.toStdString();
   return (output.substr(0, output.find_first_of('\n')));
@@ -151,13 +161,15 @@ template <> std::string get_host_output<false>(
  *  @param[in] id            The id of the host.
  *  @param[in] st            The state of the conf.
  *  @param[in] cache         A node cache.
+ *  @param[in] cnt           The contact being notified.
  *
  *  @return  The value of the macro.
  */
 template <> std::string get_host_output<true>(
                           objects::node_id id,
                           state const& st,
-                          node_cache const& cache) {
+                          node_cache const& cache,
+                          objects::contact const& cnt) {
   std::string output = cache.get_host(
                          id.get_host_id()).get_status().output.toStdString();
   size_t found = output.find_first_of('\n');
@@ -174,13 +186,15 @@ template <> std::string get_host_output<true>(
  *  @param[in] id            The id of the service.
  *  @param[in] st            The state of the conf.
  *  @param[in] cache         A node cache.
+ *  @param[in] cnt           The contact being notified.
  *
  *  @return  The value of the macro.
  */
 template <> std::string get_service_output<false>(
                           objects::node_id id,
                           state const& st,
-                          node_cache const& cache) {
+                          node_cache const& cache,
+                          objects::contact const& cnt) {
   std::string output = cache.get_host(
                          id.get_host_id()).get_status().output.toStdString();
   return (output.substr(0, output.find_first_of('\n')));
@@ -194,13 +208,15 @@ template <> std::string get_service_output<false>(
  *  @param[in] id            The id of the service.
  *  @param[in] st            The state of the conf.
  *  @param[in] cache         A node cache.
+ *  @param[in] cnt           The contact being notified.
  *
  *  @return  The value of the macro.
  */
 template <> std::string get_service_output<true>(
                           objects::node_id id,
                           state const& st,
-                          node_cache const& cache) {
+                          node_cache const& cache,
+                          objects::contact const& cnt) {
   std::string output = cache.get_host(
                          id.get_host_id()).get_status().output.toStdString();
   size_t found = output.find_first_of('\n');
@@ -215,13 +231,15 @@ template <> std::string get_service_output<true>(
  *  @param[in] id            The id of the host.
  *  @param[in] st            The state of the conf.
  *  @param[in] cache         A node cache.
+ *  @param[in] cnt           The contact being notified.
  *
  *  @return  The value of the macro.
  */
 std::string get_host_state(
               objects::node_id id,
               state const& st,
-              node_cache const& cache) {
+              node_cache const& cache,
+              objects::contact const& cnt) {
   short state = cache.get_host(id.get_host_id()).get_status().current_state;
   if (state == objects::node_state::host_up)
     return ("UP");
@@ -237,13 +255,15 @@ std::string get_host_state(
  *  @param[in] id            The id of the host.
  *  @param[in] st            The state of the conf.
  *  @param[in] cache         A node cache.
+ *  @param[in] cnt           The contact being notified.
  *
  *  @return  The value of the macro.
  */
 std::string get_service_state(
               objects::node_id id,
               state const& st,
-              node_cache const& cache) {
+              node_cache const& cache,
+              objects::contact const& cnt) {
   short state = cache.get_service(id.get_service_id()).get_status().current_state;
   if (state == objects::node_state::service_ok)
     return ("OK");
@@ -262,13 +282,15 @@ std::string get_service_state(
  *  @param[in] id            The id of the host.
  *  @param[in] st            The state of the conf.
  *  @param[in] cache         A node cache.
+ *  @param[in] cnt           The contact being notified.
  *
  *  @return  The value of the macro.
  */
 std::string get_last_host_state(
               objects::node_id id,
               state const& st,
-              node_cache const& cache) {
+              node_cache const& cache,
+              objects::contact const& cnt) {
   short state = cache.get_host(id.get_host_id()).get_status().current_state;
   if (state == objects::node_state::host_up)
     return ("UP");
@@ -284,13 +306,15 @@ std::string get_last_host_state(
  *  @param[in] id            The id of the service.
  *  @param[in] st            The state of the conf.
  *  @param[in] cache         A node cache.
+ *  @param[in] cnt           The contact being notified.
  *
  *  @return  The value of the macro.
  */
 std::string get_last_service_state(
               objects::node_id id,
               state const& st,
-              node_cache const& cache) {
+              node_cache const& cache,
+              objects::contact const& cnt) {
   short state =
           cache.get_service(id.get_service_id()).get_prev_status().current_state;
   if (state == objects::node_state::service_ok)
@@ -309,13 +333,15 @@ std::string get_last_service_state(
  *  @param[in] id            The id of the host.
  *  @param[in] st            The state of the conf.
  *  @param[in] cache         A node cache.
+ *  @param[in] cnt           The contact being notified.
  *
  *  @return  The value of the macro.
  */
 std::string get_host_state_type(
               objects::node_id id,
               state const& st,
-              node_cache const& cache) {
+              node_cache const& cache,
+              objects::contact const& cnt) {
   if (cache.get_host(id.get_host_id()).get_status().state_type == 1)
     return ("HARD");
   else
@@ -328,13 +354,15 @@ std::string get_host_state_type(
  *  @param[in] id            The id of the service.
  *  @param[in] st            The state of the conf.
  *  @param[in] cache         A node cache.
+ *  @param[in] cnt           The contact being notified.
  *
  *  @return  The value of the macro.
  */
 std::string get_service_state_type(
               objects::node_id id,
               state const& st,
-              node_cache const& cache) {
+              node_cache const& cache,
+              objects::contact const& cnt) {
   if (cache.get_service(id.get_service_id()).get_status().state_type == 1)
     return ("HARD");
   else
@@ -347,12 +375,15 @@ std::string get_service_state_type(
  *  @param[in] id            The id of the host.
  *  @param[in] st            The state of the conf.
  *  @param[in] cache         A node cache.
+ *  @param[in] cnt           The contact being notified.
  *
  *  @return  The value of the macro.
  */
-std::string null_getter(objects::node_id id,
-                        state const& st,
-                        node_cache const& cache) {
+std::string null_getter(
+              objects::node_id id,
+              state const& st,
+              node_cache const& cache,
+              objects::contact const& cnt) {
   (void)id;
   (void)st;
   (void)cache;
@@ -365,13 +396,15 @@ std::string null_getter(objects::node_id id,
  *  @param[in] id            The id of the host.
  *  @param[in] st            The state of the conf.
  *  @param[in] cache         A node cache.
+ *  @param[in] cnt           The contact being notified.
  *
  *  @return  The value of the macro.
  */
 std::string get_host_duration(
               objects::node_id id,
               state const& st,
-              node_cache const& cache) {
+              node_cache const& cache,
+              objects::contact const& cnt) {
   time_t last_state_change =
             cache.get_host(id.get_host_id()).get_status().last_state_change;
   // Get duration.
@@ -401,13 +434,15 @@ std::string get_host_duration(
  *  @param[in] id            The id of the service.
  *  @param[in] st            The state of the conf.
  *  @param[in] cache         A node cache.
+ *  @param[in] cnt           The contact being notified.
  *
  *  @return  The value of the macro.
  */
 std::string get_service_duration(
               objects::node_id id,
               state const& st,
-              node_cache const& cache) {
+              node_cache const& cache,
+              objects::contact const& cnt) {
   time_t last_state_change =
             cache.get_service(id.get_service_id()).get_status().last_state_change;
   // Get duration.
@@ -437,13 +472,15 @@ std::string get_service_duration(
  *  @param[in] id            The id of the host.
  *  @param[in] st            The state of the conf.
  *  @param[in] cache         A node cache.
+ *  @param[in] cnt           The contact being notified.
  *
  *  @return  The value of the macro.
  */
 std::string get_host_duration_sec(
              objects::node_id id,
              state const& st,
-             node_cache const& cache) {
+             node_cache const& cache,
+             objects::contact const& cnt) {
   time_t now(time(NULL));
   unsigned long duration(
     now - cache.get_host(id.get_host_id()).get_status().last_state_change);
@@ -456,13 +493,15 @@ std::string get_host_duration_sec(
  *  @param[in] id            The id of the service.
  *  @param[in] st            The state of the conf.
  *  @param[in] cache         A node cache.
+ *  @param[in] cnt            The contact being notified.
  *
  *  @return  The value of the macro.
  */
 std::string get_service_duration_sec(
              objects::node_id id,
              state const& st,
-             node_cache const& cache) {
+             node_cache const& cache,
+             objects::contact const& cnt) {
   time_t now(time(NULL));
   unsigned long duration(
     now - cache.get_service(id.get_service_id()).get_status().last_state_change);
@@ -475,12 +514,14 @@ std::string get_service_duration_sec(
  *  @param[in] id            The id of the host.
  *  @param[in] st            The state of the conf.
  *  @param[in] cache         A node cache.
+ *  @param[in] cnt           The contact being notified.
  *
  *  @return  The value of the macro.
  */
 std::string get_timet_string(
               objects::node_id id,
               state const& st,
-              node_cache const& cache) {
+              node_cache const& cache,
+              objects::contact const& cnt) {
   return (to_string<time_t, 0>(::time(NULL)));
 }

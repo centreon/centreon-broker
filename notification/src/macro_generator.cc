@@ -70,7 +70,7 @@ void macro_generator::generate(
        ++it) {
     if (_get_global_macros(it.key(), st, *it))
       continue ;
-    else if (_get_x_macros(it.key(), id, st, cache, *it))
+    else if (_get_x_macros(it.key(), id, st, cache, cnt, *it))
       continue ;
   }
 }
@@ -102,14 +102,16 @@ bool macro_generator::_get_x_macros(
                         objects::node_id id,
                         state const& st,
                         node_cache const& cache,
+                        objects::contact const& cnt,
                         std::string& result) const {
   x_macro_map::const_iterator found = _map.find(macro_name);
   if (found == _map.end())
     return (false);
   else {
-    result = (*found)(id, st, cache);
+    result = (*found)(id, st, cache, cnt);
     return (true);
   }
+  get_contact_member<std::string const&, &objects::contact::get_name, 0>(id, st, cache, cnt);
 }
 
 /**
@@ -541,4 +543,36 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
   map.insert(
     "SERVICEGROUPMEMBERS",
     &get_group_members<false>);
+
+  // Contact macros.
+  map.insert(
+    "CONTACTNAME",
+    &get_contact_member<std::string const&, &objects::contact::get_name, 0>);
+  map.insert(
+    "CONTACTALIAS",
+    &get_contact_member<std::string const&, &objects::contact::get_alias, 0>);
+  map.insert(
+    "CONTACTEMAIL",
+    &get_contact_member<std::string const&, &objects::contact::get_email, 0>);
+  map.insert(
+    "CONTACTPAGER",
+    &get_contact_member<std::string const&, &objects::contact::get_pager, 0>);
+  map.insert(
+    "CONTACTADDRESS1",
+    &get_address_of_contact<1>);
+  map.insert(
+    "CONTACTADDRESS2",
+     &get_address_of_contact<2>);
+  map.insert(
+    "CONTACTADDRESS3",
+     &get_address_of_contact<3>);
+  map.insert(
+    "CONTACTADDRESS4",
+     &get_address_of_contact<4>);
+  map.insert(
+    "CONTACTADDRESS5",
+     &get_address_of_contact<5>);
+  map.insert(
+    "CONTACTADDRESS6",
+     &get_address_of_contact<6>);
 }
