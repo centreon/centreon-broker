@@ -408,6 +408,102 @@ namespace        notification {
       return (to_string<int, 0>(services.count()));
   }
 
+  /**
+   *  Get the total number of hosts with a given state.
+   *
+   *  @tparam host_state       The state of the hosts we want to count. -1 for all that are not up.
+   *
+   *  @param[in] id            The id of the host.
+   *  @param[in] st            The state of the conf.
+   *  @param[in] cache         A node cache.
+   *
+   *  @return  The value of the macro.
+   */
+  template <int host_state>
+  std::string get_total_hosts(
+                objects::node_id id,
+                state const& st,
+                node_cache const& cache) {
+    return (to_string<int, 0>(st.get_all_hosts_in_state(host_state).size()));
+  }
+
+  /**
+   *  Get the total number of services with a given state.
+   *
+   *  @tparam service_state       The state of the services we want to count. -1 for all that are not ok.
+   *
+   *  @param[in] id            The id of the service.
+   *  @param[in] st            The state of the conf.
+   *  @param[in] cache         A node cache.
+   *
+   *  @return  The value of the macro.
+   */
+  template <int service_state>
+  std::string get_total_services(
+                objects::node_id id,
+                state const& st,
+                node_cache const& cache) {
+    return (to_string<int, 0>(st.get_all_services_in_state(service_state).size()));
+  }
+
+  /**
+   *  Get the total number of hosts unhandled with a given state.
+   *
+   *  @tparam host_state       The state of the hosts we want to count. -1 for all that are not up.
+   *
+   *  @param[in] id            The id of the host.
+   *  @param[in] st            The state of the conf.
+   *  @param[in] cache         A node cache.
+   *
+   *  @return  The value of the macro.
+   */
+  template <int host_state>
+  std::string get_total_hosts_unhandled(
+                objects::node_id id,
+                state const& st,
+                node_cache const& cache) {
+    size_t count = 0;
+    QList<objects::node::ptr> list = st.get_all_hosts_in_state(host_state);
+    for (QList<objects::node::ptr>::const_iterator it = list.begin(),
+                                                   end = list.end();
+         it != end;
+         ++it) {
+      if (!st.has_node_been_acknowledged((*it)->get_node_id()) &&
+            !st.is_node_in_downtime((*it)->get_node_id()))
+        ++count;
+    }
+    return (to_string<size_t, 0>(count));
+  }
+
+  /**
+   *  Get the total number of services unhandled with a given state.
+   *
+   *  @tparam service_state       The state of the services we want to count. -1 for all that are not ok.
+   *
+   *  @param[in] id            The id of the service.
+   *  @param[in] st            The state of the conf.
+   *  @param[in] cache         A node cache.
+   *
+   *  @return  The value of the macro.
+   */
+  template <int service_state>
+  std::string get_total_services_unhandled(
+                objects::node_id id,
+                state const& st,
+                node_cache const& cache) {
+    size_t count = 0;
+    QList<objects::node::ptr> list = st.get_all_services_in_state(service_state);
+    for (QList<objects::node::ptr>::const_iterator it = list.begin(),
+                                                   end = list.end();
+         it != end;
+         ++it) {
+      if (!st.has_node_been_acknowledged((*it)->get_node_id()) &&
+            !st.is_node_in_downtime((*it)->get_node_id()))
+        ++count;
+    }
+    return (to_string<size_t, 0>(count));
+  }
+
   // Static, non template getters.
   std::string   get_host_state(
                   objects::node_id id,

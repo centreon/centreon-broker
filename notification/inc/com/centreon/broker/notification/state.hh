@@ -81,11 +81,15 @@ namespace             notification {
                       get_global_macros() const;
     QList<objects::node::ptr>
                       get_all_services_of_host(objects::node_id id) const;
+    QList<objects::node::ptr>
+                      get_all_hosts_in_state(short state) const;
+    QList<objects::node::ptr>
+                      get_all_services_in_state(short state) const;
 
     int               get_date_format() const;
 
-    bool              is_node_in_downtime(objects::node_id id);
-    bool              has_node_been_acknowledged(objects::node_id id);
+    bool              is_node_in_downtime(objects::node_id id) const;
+    bool              has_node_been_acknowledged(objects::node_id id) const;
 
   private:
     QSet<objects::node_id>

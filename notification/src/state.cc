@@ -324,7 +324,7 @@ std::auto_ptr<QWriteLocker> state::write_lock() {
  *
  *  @return        True of the node is in downtime.
  */
-bool state::is_node_in_downtime(objects::node_id id) {
+bool state::is_node_in_downtime(objects::node_id id) const {
   time_t current_time = time(NULL);
   QList<downtime::ptr> downtimes = _downtimes.values(id);
 
@@ -349,7 +349,7 @@ bool state::is_node_in_downtime(objects::node_id id) {
  *
  *  @return        True of the node has been acknowledged.
  */
-bool state::has_node_been_acknowledged(objects::node_id id) {
+bool state::has_node_been_acknowledged(objects::node_id id) const {
   time_t current_time = time(NULL);
   QList<acknowledgement::ptr> acknowledgements = _acks.values(id);
 
@@ -398,6 +398,50 @@ QList<objects::node::ptr> state::get_all_services_of_host(
        it != end; ++it)
     if (it.key().get_host_id() == id.get_host_id() &&
         it.key().is_service())
+      list.push_back(*it);
+  return (list);
+}
+
+/**
+ *  Get all the hosts in a given state.
+ *
+ *  @param[in] state  The state. -1 for all that are not up.
+ *
+ *  @return  The hosts in the given state.
+ */
+QList<objects::node::ptr> state::get_all_hosts_in_state(short state) const {
+  QList<objects::node::ptr> list;
+  for (QHash<objects::node_id, objects::node::ptr>::const_iterator
+         it(_node_by_id.begin()),
+         end(_node_by_id.end());
+       it != end; ++it)
+    if (state == -1 && it.key().is_host() &&
+          (*it)->get_hard_state() != objects::node_state::host_up)
+      list.push_back(*it);
+    else if (it.key().is_host() &&
+              (*it)->get_hard_state() == objects::node_state(state))
+      list.push_back(*it);
+  return (list);
+}
+
+/**
+ *  Get all the services in a given state.
+ *
+ *  @param[in] state  The state. -1 for all that are not ok.
+ *
+ *  @return  The services in the given state.
+ */
+QList<objects::node::ptr> state::get_all_services_in_state(short state) const {
+  QList<objects::node::ptr> list;
+  for (QHash<objects::node_id, objects::node::ptr>::const_iterator
+         it(_node_by_id.begin()),
+         end(_node_by_id.end());
+       it != end; ++it)
+    if (state == -1 && it.key().is_service() &&
+          (*it)->get_hard_state() != objects::node_state::service_ok)
+      list.push_back(*it);
+    else if (it.key().is_service() &&
+              (*it)->get_hard_state() == objects::node_state(state))
       list.push_back(*it);
   return (list);
 }
