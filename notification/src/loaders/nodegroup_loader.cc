@@ -50,7 +50,7 @@ void nodegroup_loader::load(QSqlDatabase* db, nodegroup_builder* output) {
   query.setForwardOnly(true);
 
   // Get hostgroups.
-  if (!query.exec("SELECT hg_id, hg_alias FROM cfg_hostgroup"))
+  if (!query.exec("SELECT hg_id, hg_name, hg_alias FROM cfg_hostgroup"))
     throw (exceptions::msg()
            << "notification: cannot load cfg_hostgroup from database: "
       << query.lastError().text());
@@ -58,12 +58,13 @@ void nodegroup_loader::load(QSqlDatabase* db, nodegroup_builder* output) {
   while (query.next()) {
     objects::node_id id(query.value(0).toUInt());
     objects::nodegroup::ptr ndg(new objects::nodegroup);
-    ndg->set_alias(query.value(1).toString().toStdString());
+    ndg->set_name(query.value(1).toString().toStdString());
+    ndg->set_alias(query.value(2).toString().toStdString());
     output->add_nodegroup(id, ndg);
   }
 
   // Get servicegroups
-  if (!query.exec("SELECT sg_id, sg_alias FROM cfg_servicegroup"))
+  if (!query.exec("SELECT sg_id, sg_name, sg_alias FROM cfg_servicegroup"))
     throw (exceptions::msg()
            << "notification: cannot load cfg_servicegroup from database: "
       << query.lastError().text());
@@ -71,7 +72,8 @@ void nodegroup_loader::load(QSqlDatabase* db, nodegroup_builder* output) {
   while (query.next()) {
     objects::node_id id(0, query.value(0).toUInt());
     objects::nodegroup::ptr ndg(new objects::nodegroup);
-    ndg->set_alias(query.value(1).toString().toStdString());
+    ndg->set_name(query.value(1).toString().toStdString());
+    ndg->set_alias(query.value(2).toString().toStdString());
     output->add_nodegroup(id, ndg);
   }
 }

@@ -50,6 +50,24 @@ nodegroup& nodegroup::operator=(nodegroup const& obj) {
 }
 
 /**
+ *  Get the name of this nodegroup.
+ *
+ *  @return  The name of this nodegroup.
+ */
+std::string const& nodegroup::get_name() const {
+  return (_name);
+}
+
+/**
+ *  Set the name of this nodegroup.
+ *
+ *  @param[in] name  The name of this nodegroup.
+ */
+void nodegroup::set_name(std::string const& name) {
+  _name = name;
+}
+
+/**
  *  Get the alias of this nodegroup.
  *
  *  @return  The alias of this nodegroup.

@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NOTIFICATION_NODE_HH
-#  define CCB_NOTIFICATION_NODE_HH
+#ifndef CCB_NOTIFICATION_NODEGROUP_HH
+#  define CCB_NOTIFICATION_NODEGROUP_HH
 
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
@@ -45,10 +45,16 @@ namespace        notification {
               nodegroup& operator=(nodegroup const& obj);
 
       std::string const&
+              get_name() const;
+      void    set_name(std::string const& name);
+
+      std::string const&
               get_alias() const;
       void    set_alias(std::string const& alias);
 
     private:
+      std::string
+              _name;
       std::string
               _alias;
     };
@@ -57,4 +63,4 @@ namespace        notification {
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_NODE_HH
+#endif // !CCB_NOTIFICATION_NODEGROUP_HH

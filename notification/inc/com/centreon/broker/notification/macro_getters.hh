@@ -504,6 +504,31 @@ namespace        notification {
     return (to_string<size_t, 0>(count));
   }
 
+  /**
+   *  Get the group alias of a node.
+   *
+   *  @tparam is_host          Is the node an host ?
+   *
+   *  @param[in] id            The id of the node.
+   *  @param[in] st            The state of the conf.
+   *  @param[in] cache         A node cache.
+   *
+   *  @return  The value of the macro.
+   */
+  /*template <bool is_host>
+  std::string get_group_alias(
+                objects::node_id id,
+                state const& st,
+                node_cache const& cache) {
+    /*objects::node
+    if (is_host) {
+
+    }
+    else {
+
+    }
+  }*/
+
   // Static, non template getters.
   std::string   get_host_state(
                   objects::node_id id,

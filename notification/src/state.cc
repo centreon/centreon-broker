@@ -42,6 +42,7 @@
 #include "com/centreon/broker/notification/builders/notification_method_by_id_builder.hh"
 #include "com/centreon/broker/notification/builders/notification_rule_by_node_builder.hh"
 #include "com/centreon/broker/notification/builders/notification_rule_by_id_builder.hh"
+#include "com/centreon/broker/notification/builders/nodegroup_by_name_builder.hh"
 #include "com/centreon/broker/notification/builders/global_macro_builder.hh"
 
 using namespace com::centreon::broker::notification;
@@ -85,6 +86,7 @@ state& state::operator=(state const& obj) {
     _notification_rule_by_id = obj._notification_rule_by_id;
     _date_format = obj._date_format;
     _global_constant_macros = obj._global_constant_macros;
+    _nodegroups_by_name = obj._nodegroups_by_name;
   }
   return (*this);
 }
@@ -110,6 +112,7 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
   _notification_rules_by_node.clear();
   _notification_rule_by_id.clear();
   _global_constant_macros.clear();
+  _nodegroups_by_name.clear();
 
   // Get new objects
   {
@@ -195,6 +198,12 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
     macro_loader ml;
     global_macro_builder builder(_global_constant_macros, _date_format);
     ml.load(&centreon_db, &builder);
+  }
+  {
+    // Get nodegroups.
+    nodegroup_loader nl;
+    nodegroup_by_name_builder builder(_nodegroups_by_name);
+    nl.load(&centreon_db, &builder);
   }
 
   // Debug logging for all the data loaded.
@@ -378,6 +387,16 @@ QHash<std::string, std::string> const& state::get_global_macros() const {
  */
 int state::get_date_format() const {
   return (_date_format);
+}
+
+objects::nodegroup::ptr state::get_nodegroup_by_name(
+                                 std::string const& name) const {
+  QHash<std::string, objects::nodegroup::ptr>::const_iterator found =
+    _nodegroups_by_name.find(name);
+  if (found == _nodegroups_by_name.end())
+    return (objects::nodegroup::ptr());
+  else
+    return (*found);
 }
 
 /**
