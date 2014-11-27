@@ -160,6 +160,22 @@ void applier::meta_service::apply(
 }
 
 /**
+ *  Find a meta-service by its ID.
+ *
+ *  @param[in] id  Meta-service ID.
+ *
+ *  @return Shared pointer to the applied meta-service object.
+ */
+misc::shared_ptr<bam::meta_service> applier::meta_service::find_meta(
+                                                             unsigned int id) {
+  std::map<unsigned int, applied>::iterator
+    it(_applied.find(id));
+  return ((it != _applied.end())
+          ? it->second.obj
+          : misc::shared_ptr<bam::meta_service>());
+}
+
+/**
  *  Copy internal data members.
  *
  *  @param[in] other  Object to copy.

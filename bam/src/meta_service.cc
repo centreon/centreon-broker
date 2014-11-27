@@ -104,6 +104,27 @@ unsigned int meta_service::get_id() const {
 }
 
 /**
+ *  Get meta-service state.
+ *
+ *  @return Current meta-service state.
+ */
+short meta_service::get_state() const {
+  short state;
+  bool less_than(_level_warning < _level_critical);
+  if ((less_than && (_value >= _level_critical))
+      || (!less_than && (_value <= _level_critical)))
+    state = 2;
+  else if ((less_than && (_value >= _level_warning))
+           || (!less_than && (_value <= _level_warning)))
+    state = 1;
+  else if (isnan(_value))
+    state = 3;
+  else
+    state = 0;
+  return (state);
+}
+
+/**
  *  Some child of the meta-service has a status update.
  *
  *  @param[in]  m        Metric update.

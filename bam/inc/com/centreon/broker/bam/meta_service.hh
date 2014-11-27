@@ -62,6 +62,7 @@ namespace            bam {
                        computable* child,
                        io::stream* visitor = NULL);
     unsigned int     get_id() const;
+    short            get_state() const;
     void             metric_update(
                        misc::shared_ptr<storage::metric> const& m,
                        io::stream* visitor = NULL);

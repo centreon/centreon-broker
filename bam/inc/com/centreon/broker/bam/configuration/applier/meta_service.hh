@@ -50,6 +50,8 @@ namespace             bam {
         void          apply(
                         configuration::state::meta_services const& my_meta,
                         metric_book& book);
+        misc::shared_ptr<bam::meta_service>
+                      find_meta(unsigned int id);
 
       private:
         struct applied {

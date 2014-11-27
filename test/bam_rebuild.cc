@@ -41,15 +41,11 @@ using namespace com::centreon::broker;
 #define HOST_COUNT 1
 #define SERVICES_BY_HOST 10
 
-static bool double_equals(double d1, double d2) {
-  return (fabs(d1 - d2) < 0.0001);
-}
-
 struct ba_event_duration {
   unsigned int ba_event_id;
   unsigned int timeperiod_id;
-  unsigned int start_time;
-  unsigned int end_time;
+  time_t start_time;
+  time_t end_time;
   unsigned int duration;
   unsigned int sla_duration;
   bool timeperiod_is_default;
@@ -75,21 +71,23 @@ static void check_ba_event_durations(
     if (!q.next())
       throw (exceptions::msg() << "not enough BA event durations at iteration "
              << iteration << ": got " << i << ", expected " << count);
-    if (q.value(0).toInt() != baed[i].ba_event_id
-        || q.value(1).toInt() != baed[i].timeperiod_id
-        || q.value(2).toInt() != baed[i].start_time
-        || q.value(3).toInt() != baed[i].end_time
-        || q.value(4).toInt() != baed[i].duration
-        || q.value(5).toInt() != baed[i].sla_duration
-        || q.value(6).toInt() != baed[i].timeperiod_is_default)
+    if (q.value(0).toUInt() != baed[i].ba_event_id
+        || q.value(1).toUInt() != baed[i].timeperiod_id
+        || static_cast<time_t>(q.value(2).toLongLong())
+           != baed[i].start_time
+        || static_cast<time_t>(q.value(3).toLongLong())
+           != baed[i].end_time
+        || q.value(4).toUInt() != baed[i].duration
+        || q.value(5).toUInt() != baed[i].sla_duration
+        || q.value(6).toBool() != baed[i].timeperiod_is_default)
       throw (exceptions::msg() << "invalid BA event durations " << q.value(0).toUInt()
              << " at iteration " << iteration << ": got (ba event id "
-             << q.value(0).toInt() << ", timeperiod id "
-             << q.value(1).toInt() << ", start time "
+             << q.value(0).toUInt() << ", timeperiod id "
+             << q.value(1).toUInt() << ", start time "
              << q.value(2).toInt() << ", end time "
              << q.value(3).toInt() << ", duration "
              << q.value(4).toInt() << ", sla duration "
-             << q.value(5).toInt() << ", timeperiod is default "
+             << q.value(5).toBool() << ", timeperiod is default "
              << q.value(6).toInt() << ") expected ("
              << baed[i].ba_event_id << ", " << baed[i].timeperiod_id << ", "
              << baed[i].start_time << ", " << baed[i].end_time << ", "
@@ -104,7 +102,7 @@ static void check_ba_event_durations(
 
 struct ba_availability {
   unsigned int ba_id;
-  int time_id;
+  time_t time_id;
   unsigned int timeperiod_id;
   unsigned int available;
   unsigned int unavailable;
@@ -141,33 +139,34 @@ static void check_ba_availability(
     if (!q.next())
       throw (exceptions::msg() << "not enough BA availabilities at iteration "
              << iteration << ": got " << i << ", expected " << count);
-    if (q.value(0).toInt() != baav[i].ba_id
-        || q.value(1).toInt() != baav[i].time_id
-        || q.value(2).toInt() != baav[i].timeperiod_id
-        || q.value(3).toInt() != baav[i].available
-        || q.value(4).toInt() != baav[i].unavailable
-        || q.value(5).toInt() != baav[i].degraded
-        || q.value(6).toInt() != baav[i].unknown
-        || q.value(7).toInt() != baav[i].downtime
-        || q.value(8).toInt() != baav[i].alert_unavailable_opened
-        || q.value(9).toInt() != baav[i].alert_degraded_opened
-        || q.value(10).toInt() != baav[i].alert_unknown_opened
-        || q.value(11).toInt() != baav[i].nb_downtime
-        || q.value(12).toInt() != baav[i].timeperiod_is_default)
+    if (q.value(0).toUInt() != baav[i].ba_id
+        || static_cast<time_t>(q.value(1).toLongLong())
+           != baav[i].time_id
+        || q.value(2).toUInt() != baav[i].timeperiod_id
+        || q.value(3).toUInt() != baav[i].available
+        || q.value(4).toUInt() != baav[i].unavailable
+        || q.value(5).toUInt() != baav[i].degraded
+        || q.value(6).toUInt() != baav[i].unknown
+        || q.value(7).toUInt() != baav[i].downtime
+        || q.value(8).toUInt() != baav[i].alert_unavailable_opened
+        || q.value(9).toUInt() != baav[i].alert_degraded_opened
+        || q.value(10).toUInt() != baav[i].alert_unknown_opened
+        || q.value(11).toUInt() != baav[i].nb_downtime
+        || q.value(12).toBool() != baav[i].timeperiod_is_default)
       throw (exceptions::msg() << "invalid BA availability "
              << " at iteration " << iteration << ": got (ba id "
-             << q.value(0).toInt() << ", time id "
-             << q.value(1).toInt() << ", timeperiod id "
-             << q.value(2).toInt() << ", available "
-             << q.value(3).toInt() << ", unavailable "
-             << q.value(4).toInt() << ", degraded "
-             << q.value(5).toInt() << ", unknown "
-             << q.value(6).toInt() << ", downtime "
-             << q.value(7).toInt() << ", alert_unavailable_opened "
-             << q.value(8).toInt() << ", alert_degraded_opened "
-             << q.value(9).toInt() << ", alert_unknown_opened "
-             << q.value(10).toInt() << ", nb_downtime "
-             << q.value(11).toInt() << ", timeperiod_is_default"
+             << q.value(0).toUInt() << ", time id "
+             << q.value(1).toLongLong() << ", timeperiod id "
+             << q.value(2).toUInt() << ", available "
+             << q.value(3).toUInt() << ", unavailable "
+             << q.value(4).toUInt() << ", degraded "
+             << q.value(5).toUInt() << ", unknown "
+             << q.value(6).toUInt() << ", downtime "
+             << q.value(7).toUInt() << ", alert_unavailable_opened "
+             << q.value(8).toUInt() << ", alert_degraded_opened "
+             << q.value(9).toUInt() << ", alert_unknown_opened "
+             << q.value(10).toUInt() << ", nb_downtime "
+             << q.value(11).toUInt() << ", timeperiod_is_default"
              << q.value(12).toBool() << ") expected ("
              << baav[i].ba_id << ", " << baav[i].time_id << ", "
              << baav[i].timeperiod_id << ", " << baav[i].available
@@ -210,18 +209,63 @@ int main() {
     file.set("COMMAND_FILE", COMMAND_FILE);
     std::string config_file = file.generate();
 
+    // Create timeperiods
+    {
+      QString query(
+                "INSERT INTO timeperiod (tp_id, tp_name, tp_sunday, tp_monday,"
+                "                        tp_tuesday, tp_wednesday, tp_thursday,"
+                "                        tp_friday, tp_saturday)"
+                "  VALUES (1, '24x7', '00:00-24:00', '00:00-24:00', '00:00-24:00',"
+                "          '00:00-24:00', '00:00-24:00', '00:00-24:00', '00:00-24:00')");
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not create timeperiods: "
+               << q.lastError().text());
+    }
+
     // Create BAs.
     {
       QString query(
                 "INSERT INTO mod_bam (ba_id, name, description,"
                 "                     sla_month_percent_warn, sla_month_percent_crit,"
                 "                     sla_month_duration_warn, sla_month_duration_crit,"
-                "                     must_be_rebuild)"
-                "  VALUES (1, 'BA1', 'DESC1', 90, 80, 70, 60, '1'),"
-                "         (2, 'BA2', 'DESC2', 80, 70, 60, 50, '1')");
+                "                     must_be_rebuild, id_reporting_period, activate)"
+                "  VALUES (1, 'BA1', 'DESC1', 90, 80, 70, 60, '1', 1, '1'),"
+                "         (2, 'BA2', 'DESC2', 80, 70, 60, 50, '1', NULL, '1')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create BAs: "
+               << q.lastError().text());
+    }
+    {
+      QString query(
+                "INSERT INTO host (host_id, host_name)"
+                "  VALUES (1001, 'Virtual BA host')");
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not create virtual BA host: "
+               << q.lastError().text());
+    }
+    {
+      QString query(
+                "INSERT INTO service (service_id, service_description)"
+                "  VALUES (1001, 'ba_1'),"
+                "         (1002, 'ba_2')");
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg()
+               << "could not create virtual BA services: "
+               << q.lastError().text());
+    }
+    {
+      QString query(
+                "INSERT INTO host_service_relation"
+                "            (host_host_id, service_service_id)"
+                "  VALUES (1001, 1001), (1001, 1002)");
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg()
+               << "could not create virtual BA host/service links: "
                << q.lastError().text());
     }
 
@@ -253,29 +297,15 @@ int main() {
                << q.lastError().text());
     }
 
-    // Create timeperiods
-    {
-      QString query(
-                "INSERT INTO timeperiod (tp_id, tp_name, tp_sunday, tp_monday,"
-                "                        tp_tuesday, tp_wednesday, tp_thursday,"
-                "                        tp_friday, tp_saturday)"
-                "  VALUES (1, '24x7', '00:00-24:00', '00:00-24:00', '00:00-24:00',"
-                "          '00:00-24:00', '00:00-24:00', '00:00-24:00', '00:00-24:00')");
-      QSqlQuery q(*db.centreon_db());
-      if (!q.exec(query))
-        throw (exceptions::msg() << "could not create timeperiods: "
-               << q.lastError().text());
-    }
-
     // Create BA-Timeperiods relations
     {
       QString query(
-                "INSERT INTO mod_bam_ba_tp_rel (ba_id, timeperiod_id, is_default)"
-                "  VALUES (1, 1, true),"
-                "         (2, 1, false)");
+                "INSERT INTO mod_bam_relations_ba_timeperiods (ba_id, tp_id)"
+                "  VALUES (2, 1)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not BAs timeperiods relations: "
+        throw (exceptions::msg()
+               << "could not create BAs-timeperiods relations: "
                << q.lastError().text());
     }
 

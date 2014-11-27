@@ -19,8 +19,11 @@
 
 #include "com/centreon/broker/bam/configuration/applier/ba.hh"
 #include "com/centreon/broker/bam/configuration/applier/kpi.hh"
+#include "com/centreon/broker/bam/configuration/applier/meta_service.hh"
 #include "com/centreon/broker/bam/kpi_ba.hh"
+#include "com/centreon/broker/bam/kpi_meta.hh"
 #include "com/centreon/broker/bam/kpi_service.hh"
+#include "com/centreon/broker/bam/meta_service.hh"
 #include "com/centreon/broker/bam/service_book.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -63,15 +66,17 @@ applier::kpi& applier::kpi::operator=(applier::kpi const& right) {
 /**
  *  Apply configuration.
  *
- *  @param[in]     my_kpis Object to copy.
- *  @param[in,out] my_bas  Already applied BAs.
- *  @param[out]    book    Service book.
+ *  @param[in]     my_kpis   Object to copy.
+ *  @param[in,out] my_bas    Already applied BAs.
+ *  @param[in,out] my_metas  Already applied meta-services.
+ *  @param[out]    book      Service book.
  *
  *  @return This object.
  */
 void applier::kpi::apply(
                      bam::configuration::state::kpis const& my_kpis,
                      applier::ba& my_bas,
+                     applier::meta_service& my_metas,
                      bam::service_book& book) {
   //
   // DIFF
@@ -137,7 +142,11 @@ void applier::kpi::apply(
          end(to_create.end());
        it != end;
        ++it) {
-    misc::shared_ptr<bam::kpi> new_kpi(_new_kpi(it->second, my_bas, book));
+    misc::shared_ptr<bam::kpi> new_kpi(_new_kpi(
+                                          it->second,
+                                          my_bas,
+                                          my_metas,
+                                          book));
     applied& content(_applied[it->first]);
     content.cfg = it->second;
     content.obj = new_kpi;
@@ -184,6 +193,7 @@ void applier::kpi::_internal_copy(applier::kpi const& right) {
 misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
                                            configuration::kpi const& cfg,
                                            applier::ba& my_bas,
+                                           applier::meta_service& my_metas,
                                            service_book& book) {
   misc::shared_ptr<bam::kpi> my_kpi;
   if (cfg.is_service()) {
@@ -218,15 +228,33 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     if (target.isNull())
       throw (exceptions::msg()
              << "BAM: could not create KPI " << cfg.get_id()
-             << "): could not find BA " << cfg.get_indicator_ba_id());
+             << ": could not find BA " << cfg.get_indicator_ba_id());
     obj->link_ba(target);
+    target->add_parent(obj.staticCast<bam::computable>());
+    my_kpi = obj.staticCast<bam::kpi>();
+  }
+  else if (cfg.is_meta()) {
+    logging::config(logging::medium)
+      << "BAM: creating new KPI " << cfg.get_id() << " of meta-service "
+      << cfg.get_meta_id() << " impacting BA " << cfg.get_ba_id();
+    misc::shared_ptr<bam::kpi_meta> obj(new bam::kpi_meta);
+    obj->set_impact_critical(cfg.get_impact_critical());
+    obj->set_impact_warning(cfg.get_impact_warning());
+    misc::shared_ptr<bam::meta_service>
+      target(my_metas.find_meta(cfg.get_meta_id()));
+    if (target.isNull())
+      throw (exceptions::msg()
+             << "BAM: could not create KPI " << cfg.get_id()
+             << ": could not find meta-service " << cfg.get_meta_id());
+    obj->link_meta(target);
     target->add_parent(obj.staticCast<bam::computable>());
     my_kpi = obj.staticCast<bam::kpi>();
   }
   else
     throw (exceptions::msg()
            << "BAM: could not create KPI " << cfg.get_id()
-           << " which is neither related to a service nor a BA");
+           << " which is neither related to a service, nor a BA,"
+           << " nor a meta-service");
   misc::shared_ptr<bam::ba>
     my_ba(my_bas.find_ba(cfg.get_ba_id()));
   if (my_ba.isNull())

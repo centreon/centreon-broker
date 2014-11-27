@@ -29,8 +29,9 @@ kpi::kpi(
        short state_type,
        unsigned int host_id,
        unsigned int service_id,
-       unsigned int ba,
+       unsigned int ba_id,
        unsigned int indicator_ba,
+       unsigned int meta_id,
        short status,
        short last_hard_state,
        bool downtimed,
@@ -44,8 +45,9 @@ kpi::kpi(
     _state_type(state_type),
     _host_id(host_id),
     _service_id(service_id),
-    _ba_id(ba),
+    _ba_id(ba_id),
     _indicator_ba_id(indicator_ba),
+    _meta_id(meta_id),
     _status(status),
     _last_hard_state(last_hard_state),
     _downtimed(downtimed),
@@ -69,6 +71,7 @@ kpi::kpi(kpi const& other)
     _service_id(other._service_id),
     _ba_id(other._ba_id),
     _indicator_ba_id(other._indicator_ba_id),
+    _meta_id(other._meta_id),
     _status(other._status),
     _last_hard_state(other._last_hard_state),
     _downtimed(other._downtimed),
@@ -101,6 +104,7 @@ kpi& kpi::operator=(kpi const& other) {
     _service_id = other._service_id;
     _ba_id = other._ba_id;
     _indicator_ba_id = other._indicator_ba_id;
+    _meta_id = other._meta_id;
     _status = other._status;
     _last_hard_state = other._last_hard_state;
     _downtimed = other._downtimed;
@@ -129,6 +133,7 @@ bool kpi::operator==(kpi const& other) const {
           && (_service_id == other._service_id)
           && (_ba_id == other._ba_id)
           && (_indicator_ba_id == other._indicator_ba_id)
+          && (_meta_id == other._meta_id)
           && (_status == other._status)
           && (_last_hard_state == other._last_hard_state)
           && (_downtimed == other._downtimed)
@@ -207,6 +212,15 @@ bool kpi::is_ba() const {
 }
 
 /**
+ *  Check if this KPI is a meta-service.
+ *
+ *  @return True if this KPI is a meta-service.
+ */
+bool kpi::is_meta() const {
+  return (_meta_id != 0);
+}
+
+/**
  *  Get ba id.
  *
  *  @return The id of the business activity.
@@ -222,6 +236,15 @@ unsigned int kpi::get_ba_id() const {
  */
 unsigned int kpi::get_indicator_ba_id() const {
   return (_indicator_ba_id);
+}
+
+/**
+ *  Get the meta-service ID.
+ *
+ *  @return Meta-ID of this KPI.
+ */
+unsigned int kpi::get_meta_id() const {
+  return (_meta_id);
 }
 
 /**
@@ -357,6 +380,16 @@ void kpi::set_ba_id(unsigned int i) {
  */
 void kpi::set_indicator_ba_id(unsigned int ba_id) {
   _indicator_ba_id = ba_id;
+  return ;
+}
+
+/**
+ *  Set the meta-service ID that affects this KPI.
+ *
+ *  @param[in] meta_id  Meta-service ID.
+ */
+void kpi::set_meta_id(unsigned int meta_id) {
+  _meta_id = meta_id;
   return ;
 }
 

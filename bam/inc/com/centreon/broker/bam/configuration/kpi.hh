@@ -40,10 +40,11 @@ namespace           bam {
                     kpi(
                       unsigned int id = 0,
                       short state_type = 0,
-                      unsigned int hostid = 0,
-                      unsigned int serviceid = 0,
-                      unsigned int ba = 0,
+                      unsigned int host_id = 0,
+                      unsigned int service_id = 0,
+                      unsigned int ba_id = 0,
                       unsigned int indicator_ba = 0,
+                      unsigned int meta_id = 0,
                       short status = 0,
                       short lasthardstate = 0,
                       bool downtimed = false,
@@ -65,8 +66,10 @@ namespace           bam {
       unsigned int  get_service_id() const;
       bool          is_service() const;
       bool          is_ba() const;
+      bool          is_meta() const;
       unsigned int  get_ba_id() const;
       unsigned int  get_indicator_ba_id() const;
+      unsigned int  get_meta_id() const;
       short         get_status() const;
       short         get_last_hard_state() const;
       bool          is_downtimed() const;
@@ -85,6 +88,7 @@ namespace           bam {
       void          set_service_id(unsigned int service_id);
       void          set_ba_id(unsigned int ba_id);
       void          set_indicator_ba_id(unsigned int ba_id);
+      void          set_meta_id(unsigned int meta_id);
       void          set_status(short status);
       void          set_last_hard_state(short hard_state);
       void          set_downtimed(bool downtimed);
@@ -103,6 +107,7 @@ namespace           bam {
       unsigned int  _service_id;
       unsigned int  _ba_id;
       unsigned int  _indicator_ba_id;
+      unsigned int  _meta_id;
       short         _status;
       short         _last_hard_state;
       bool          _downtimed;
@@ -121,4 +126,3 @@ namespace           bam {
 CCB_END()
 
 #endif // CCB_BAM_CONFIGURATION_KPI_HH
-

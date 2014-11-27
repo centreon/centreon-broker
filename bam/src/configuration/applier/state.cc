@@ -61,15 +61,19 @@ applier::state& applier::state::operator=(applier::state const& other) {
  */
 void applier::state::apply(bam::configuration::state const& my_state) {
   _ba_applier.apply(my_state.get_bas(), _book_service);
-  _kpi_applier.apply(my_state.get_kpis(), _ba_applier, _book_service);
+  _meta_service_applier.apply(
+                          my_state.get_meta_services(),
+                          _book_metric);
+  _kpi_applier.apply(
+                 my_state.get_kpis(),
+                 _ba_applier,
+                 _meta_service_applier,
+                 _book_service);
   _bool_exp_applier.apply(
                       my_state.get_bool_exps(),
                       my_state.get_hst_svc_mapping(),
                       _ba_applier,
                       _book_service);
-  _meta_service_applier.apply(
-                          my_state.get_meta_services(),
-                          _book_metric);
   return ;
 }
 

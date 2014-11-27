@@ -118,9 +118,9 @@ reader& reader::operator=(reader const& other) {
 void reader::_load(state::kpis& kpis) {
   QSqlQuery query(_db->exec(
     "SELECT  k.kpi_id, k.state_type, k.host_id, k.service_id, k.id_ba,"
-    "        k.id_indicator_ba, k.current_status, k.last_level,"
-    "        k.downtime, k.acknowledged, k.ignore_downtime,"
-    "        k.ignore_acknowledged,"
+    "        k.id_indicator_ba, k.meta_id, k.current_status,"
+    "        k.last_level, k.downtime, k.acknowledged,"
+    "        k.ignore_downtime, k.ignore_acknowledged,"
     "        COALESCE(k.drop_warning, ww.impact),"
     "        COALESCE(k.drop_critical, cc.impact),"
     "        COALESCE(k.drop_unknown, uu.impact),"
@@ -149,23 +149,24 @@ void reader::_load(state::kpis& kpis) {
         query.value(3).toUInt(), // Service ID.
         query.value(4).toUInt(), // BA ID.
         query.value(5).toUInt(), // BA indicator ID.
-        query.value(6).toInt(), // Status.
-        query.value(7).toInt(), // Hard state.
-        query.value(8).toFloat(), // Downtimed.
-        query.value(9).toFloat(), // Acknowledged.
-        query.value(10).toBool(), // Ignore downtime.
-        query.value(11).toBool(), // Ignore acknowledgement.
-        query.value(12).toDouble(), // Warning.
-        query.value(13).toDouble(), // Critical.
-        query.value(14).toDouble()); // Unknown.
+        query.value(6).toUInt(), // Meta-service ID.
+        query.value(7).toInt(), // Status.
+        query.value(8).toInt(), // Hard state.
+        query.value(9).toFloat(), // Downtimed.
+        query.value(10).toFloat(), // Acknowledged.
+        query.value(11).toBool(), // Ignore downtime.
+        query.value(12).toBool(), // Ignore acknowledgement.
+        query.value(13).toDouble(), // Warning.
+        query.value(14).toDouble(), // Critical.
+        query.value(15).toDouble()); // Unknown.
 
     // KPI state.
-    if (!query.value(15).isNull()) {
+    if (!query.value(16).isNull()) {
       kpi_event e;
       e.kpi_id = kpi_id;
-      e.status = query.value(6).toInt();
-      e.start_time = query.value(15).toLongLong();
-      e.in_downtime = query.value(16).toBool();
+      e.status = query.value(7).toInt();
+      e.start_time = query.value(16).toLongLong();
+      e.in_downtime = query.value(17).toBool();
       kpis[kpi_id].set_opened_event(e);
     }
   }
@@ -495,6 +496,101 @@ void reader::_load_dimensions() {
   QSqlQuery q(*_db);
   q.setForwardOnly(true);
 
+  // Load the timeperiods.
+  std::map<unsigned int, time::timeperiod::ptr> timeperiods;
+  {
+    // Load the timeperiod data.
+    q.exec("SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday, tp_tuesday, "
+           "tp_wednesday, tp_thursday, tp_friday, tp_saturday"
+           "  FROM timeperiod");
+    if (q.lastError().isValid())
+      throw (reader_exception()
+             << "BAM: could not retrieve timeperiods: "
+             << q.lastError().text());
+    while (q.next()) {
+      timeperiods[q.value(0).toUInt()] = time::timeperiod::ptr(
+        new time::timeperiod(
+              q.value(0).toUInt(),                   // id
+              q.value(1).toString().toStdString(),   // name
+              q.value(2).toString().toStdString(),   // alias
+              q.value(3).toString().toStdString(),   // sunday
+              q.value(4).toString().toStdString(),   // monday
+              q.value(5).toString().toStdString(),   // tuesday
+              q.value(6).toString().toStdString(),   // wednesday
+              q.value(7).toString().toStdString(),   // thursday
+              q.value(8).toString().toStdString(),   // friday
+              q.value(9).toString().toStdString())); // saturday
+      misc::shared_ptr<dimension_timeperiod> tp(new dimension_timeperiod);
+      tp->id = q.value(0).toUInt();
+      tp->name = q.value(1).toString();
+      tp->sunday = q.value(3).toString();
+      tp->monday = q.value(4).toString();
+      tp->tuesday = q.value(5).toString();
+      tp->wednesday = q.value(6).toString();
+      tp->thursday = q.value(7).toString();
+      tp->friday = q.value(8).toString();
+      tp->saturday = q.value(9).toString();
+      datas.push_back(tp.staticCast<io::data>());
+    }
+
+    // Load the timeperiod exceptions.
+    q.exec("SELECT timeperiod_id, days, timerange"
+           "  FROM timeperiod_exceptions");
+    if (q.lastError().isValid())
+      throw (reader_exception()
+             << "BAM: could not retrieve timeperiod exceptions: "
+             << q.lastError().text());
+    while (q.next()) {
+      unsigned int timeperiod_id = q.value(0).toUInt();
+      std::map<unsigned int, time::timeperiod::ptr>::iterator found
+          = timeperiods.find(timeperiod_id);
+      if (found == timeperiods.end())
+        throw (reader_exception())
+                << "BAM: Found a timeperiod exception pointing to an "
+                   "inexisting timeperiod (timeperiod id = " << timeperiod_id;
+      found->second->add_exception(
+                       q.value(1).toString().toStdString(),
+                       q.value(2).toString().toStdString());
+      misc::shared_ptr<dimension_timeperiod_exception>
+        exception(new dimension_timeperiod_exception);
+      exception->timeperiod_id = timeperiod_id;
+      exception->daterange = q.value(1).toString();
+      exception->timerange = q.value(2).toString();
+      datas.push_back(exception.staticCast<io::data>());
+    }
+
+    // Load the excluded timeperiods.
+    q.exec("SELECT timeperiod_id, timeperiod_exclude_id"
+           "  FROM timeperiod_exclude_relations");
+    if (q.lastError().isValid())
+      throw (reader_exception()
+             << "BAM: could not retrieve timeperiod exclude relations: "
+             << q.lastError().text());
+    while (q.next()) {
+      unsigned int timeperiod_id = q.value(0).toUInt();
+      unsigned int timeperiod_exclude_id = q.value(1).toUInt();
+      std::map<unsigned int, time::timeperiod::ptr>::iterator found
+          = timeperiods.find(timeperiod_id);
+      if (found == timeperiods.end())
+        throw (reader_exception())
+                << "BAM: Found a timeperiod exclude pointing to an inexisting "
+                   "timeperiod (timeperiod id = " << timeperiod_id;
+      std::map<unsigned int, time::timeperiod::ptr>::iterator found_excluded =
+                          timeperiods.find(timeperiod_exclude_id);
+      if (found_excluded == timeperiods.end())
+        throw (reader_exception())
+                << "BAM: Found a timeperiod exclude pointing to an inexisting "
+                   "excluded timeperiod (excluded timeperiod id = "
+                << timeperiod_exclude_id;
+      found->second->add_excluded(found_excluded->second);
+      misc::shared_ptr<dimension_timeperiod_exclusion>
+        exclusion(new dimension_timeperiod_exclusion);
+      exclusion->timeperiod_id = timeperiod_id;
+      exclusion->excluded_timeperiod_id = timeperiod_exclude_id;
+      datas.push_back(exclusion.staticCast<io::data>());
+    }
+  }
+
   // Load the BAs.
   std::map<unsigned int, misc::shared_ptr<dimension_ba_event> > bas;
   {
@@ -628,101 +724,6 @@ void reader::_load_dimensions() {
         k->kpi_ba_name = found->second->ba_name;
       }
       datas.push_back(k.staticCast<io::data>());
-    }
-  }
-
-  // Load the timeperiods.
-  std::map<unsigned int, time::timeperiod::ptr> timeperiods;
-  {
-    // Load the timeperiod data.
-    q.exec("SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday, tp_tuesday, "
-           "tp_wednesday, tp_thursday, tp_friday, tp_saturday"
-           "  FROM timeperiod");
-    if (q.lastError().isValid())
-      throw (reader_exception()
-             << "BAM: could not retrieve timeperiods: "
-             << q.lastError().text());
-    while (q.next()) {
-      timeperiods[q.value(0).toUInt()] = time::timeperiod::ptr(
-        new time::timeperiod(
-              q.value(0).toUInt(),                   // id
-              q.value(1).toString().toStdString(),   // name
-              q.value(2).toString().toStdString(),   // alias
-              q.value(3).toString().toStdString(),   // sunday
-              q.value(4).toString().toStdString(),   // monday
-              q.value(5).toString().toStdString(),   // tuesday
-              q.value(6).toString().toStdString(),   // wednesday
-              q.value(7).toString().toStdString(),   // thursday
-              q.value(8).toString().toStdString(),   // friday
-              q.value(9).toString().toStdString())); // saturday
-      misc::shared_ptr<dimension_timeperiod> tp(new dimension_timeperiod);
-      tp->id = q.value(0).toUInt();
-      tp->name = q.value(1).toString();
-      tp->sunday = q.value(3).toString();
-      tp->monday = q.value(4).toString();
-      tp->tuesday = q.value(5).toString();
-      tp->wednesday = q.value(6).toString();
-      tp->thursday = q.value(7).toString();
-      tp->friday = q.value(8).toString();
-      tp->saturday = q.value(9).toString();
-      datas.push_back(tp.staticCast<io::data>());
-    }
-
-    // Load the timeperiod exceptions.
-    q.exec("SELECT timeperiod_id, days, timerange"
-           "  FROM timeperiod_exceptions");
-    if (q.lastError().isValid())
-      throw (reader_exception()
-             << "BAM: could not retrieve timeperiod exceptions: "
-             << q.lastError().text());
-    while (q.next()) {
-      unsigned int timeperiod_id = q.value(0).toUInt();
-      std::map<unsigned int, time::timeperiod::ptr>::iterator found
-          = timeperiods.find(timeperiod_id);
-      if (found == timeperiods.end())
-        throw (reader_exception())
-                << "BAM: Found a timeperiod exception pointing to an "
-                   "inexisting timeperiod (timeperiod id = " << timeperiod_id;
-      found->second->add_exception(
-                       q.value(1).toString().toStdString(),
-                       q.value(2).toString().toStdString());
-      misc::shared_ptr<dimension_timeperiod_exception>
-        exception(new dimension_timeperiod_exception);
-      exception->timeperiod_id = timeperiod_id;
-      exception->daterange = q.value(1).toString();
-      exception->timerange = q.value(2).toString();
-      datas.push_back(exception.staticCast<io::data>());
-    }
-
-    // Load the excluded timeperiods.
-    q.exec("SELECT timeperiod_id, timeperiod_exclude_id"
-           "  FROM timeperiod_exclude_relations");
-    if (q.lastError().isValid())
-      throw (reader_exception()
-             << "BAM: could not retrieve timeperiod exclude relations: "
-             << q.lastError().text());
-    while (q.next()) {
-      unsigned int timeperiod_id = q.value(0).toUInt();
-      unsigned int timeperiod_exclude_id = q.value(1).toUInt();
-      std::map<unsigned int, time::timeperiod::ptr>::iterator found
-          = timeperiods.find(timeperiod_id);
-      if (found == timeperiods.end())
-        throw (reader_exception())
-                << "BAM: Found a timeperiod exclude pointing to an inexisting "
-                   "timeperiod (timeperiod id = " << timeperiod_id;
-      std::map<unsigned int, time::timeperiod::ptr>::iterator found_excluded =
-                          timeperiods.find(timeperiod_exclude_id);
-      if (found_excluded == timeperiods.end())
-        throw (reader_exception())
-                << "BAM: Found a timeperiod exclude pointing to an inexisting "
-                   "excluded timeperiod (excluded timeperiod id = "
-                << timeperiod_exclude_id;
-      found->second->add_excluded(found_excluded->second);
-      misc::shared_ptr<dimension_timeperiod_exclusion>
-        exclusion(new dimension_timeperiod_exclusion);
-      exclusion->timeperiod_id = timeperiod_id;
-      exclusion->excluded_timeperiod_id = timeperiod_exclude_id;
-      datas.push_back(exclusion.staticCast<io::data>());
     }
   }
 

@@ -375,6 +375,57 @@ int main() {
       }
     }
 
+    // Create boolean expressions.
+    {
+      QString query(
+                "INSERT INTO mod_bam_boolean (boolean_id, name,"
+                "            expression, bool_state, activate)"
+                "  VALUES (1, 'BoolExp1', '{1 1} {is} {OK}', 0, 1),"
+                "         (2, 'BoolExp2', '{1 2} {not} {CRITICAL} {OR} {1 3} {not} {OK}', 1, 1)");
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not create boolexps: "
+               << q.lastError().text());
+    }
+
+    // Create meta-services.
+    {
+      QString query(
+                "INSERT INTO meta_service (meta_id, meta_name, meta_activate)"
+                "  VALUES (1, 'Meta1', '1'),"
+                "         (2, 'Meta2', '1')");
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not create the meta services: "
+                                 << q.lastError().text());
+    }
+
+    // Create BVs.
+    {
+      QString query(
+                "INSERT INTO mod_bam_ba_groups (id_ba_group, ba_group_name,"
+                "                               ba_group_description)"
+                "  VALUES (1, 'BaGroup1', 'BaGroupDescription1'),"
+                "         (2, 'BaGroup2', 'BaGroupDescription2')");
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not create the bvs: "
+                                 << q.lastError().text());
+    }
+
+    // Create the BA/BV relations.
+    {
+      QString query(
+                "INSERT INTO mod_bam_bagroup_ba_relation (id_bgr, id_ba, "
+                "                                         id_ba_group)"
+                "  VALUES (1, 2, 1),"
+                "         (2, 1, 2)");
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not create the ba bv relations: "
+                                 << q.lastError().text());
+    }
+
     // Create KPIs.
     {
       QString query(
@@ -397,54 +448,6 @@ int main() {
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create KPIs: "
                << q.lastError().text());
-    }
-
-    // Create boolean expressions.
-    {
-      QString query(
-                "INSERT INTO mod_bam_boolean (boolean_id, name,"
-                "            expression, bool_state, activate)"
-                "  VALUES (1, 'BoolExp1', '{1 1} {is} {OK}', 0, 1),"
-                "         (2, 'BoolExp2', '{1 2} {not} {CRITICAL} {OR} {1 3} {not} {OK}', 1, 1)");
-      QSqlQuery q(*db.centreon_db());
-      if (!q.exec(query))
-        throw (exceptions::msg() << "could not create boolexps: "
-               << q.lastError().text());
-    }
-    // Create meta_services
-    {
-      QString query(
-                "INSERT INTO meta_service (meta_id, meta_name)"
-                "  VALUES (1, 'Meta1'),"
-                "         (2, 'Meta2')");
-      QSqlQuery q(*db.centreon_db());
-      if (!q.exec(query))
-        throw (exceptions::msg() << "could not create the meta services: "
-                                 << q.lastError().text());
-    }
-    // Create bvs
-    {
-      QString query(
-                "INSERT INTO mod_bam_ba_groups (id_ba_group, ba_group_name,"
-                "                               ba_group_description)"
-                "  VALUES (1, 'BaGroup1', 'BaGroupDescription1'),"
-                "         (2, 'BaGroup2', 'BaGroupDescription2')");
-      QSqlQuery q(*db.centreon_db());
-      if (!q.exec(query))
-        throw (exceptions::msg() << "could not create the bvs: "
-                                 << q.lastError().text());
-    }
-    // Create the ba bv relations
-    {
-      QString query(
-                "INSERT INTO mod_bam_bagroup_ba_relation (id_bgr, id_ba, "
-                "                                         id_ba_group)"
-                "  VALUES (1, 2, 1),"
-                "         (2, 1, 2)");
-      QSqlQuery q(*db.centreon_db());
-      if (!q.exec(query))
-        throw (exceptions::msg() << "could not create the ba bv relations: "
-                                 << q.lastError().text());
     }
 
     // Start Broker daemon.

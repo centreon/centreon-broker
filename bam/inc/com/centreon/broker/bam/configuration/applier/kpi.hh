@@ -36,8 +36,9 @@ namespace     bam {
 
   namespace   configuration {
     namespace applier {
-      // Forward declaration.
+      // Forward declarations.
       class   ba;
+      class   meta_service;
 
       /**
        *  @class kpi kpi.hh "com/centreon/broker/bam/configuration/applier/kpi.hh"
@@ -54,6 +55,7 @@ namespace     bam {
         void  apply(
                 configuration::state::kpis const& my_kpis,
                 ba& my_bas,
+                meta_service& my_metas,
                 service_book& book);
         void  visit(io::stream* visitor);
 
@@ -68,6 +70,7 @@ namespace     bam {
               _new_kpi(
                 configuration::kpi const& cfg,
                 ba& my_bas,
+                meta_service& my_metas,
                 service_book& book);
 
         std::map<unsigned int, applied>
