@@ -64,6 +64,28 @@ static int status_id(char const* status) {
 }
 
 /**
+ *  Get the id of a notification log status.
+ */
+static int notification_status_id(char const* status) {
+  char const* right = strchr(status, '(');
+  if (!right)
+    return (0);
+
+  int id;
+  if (!strcmp(right, "(DOWN)") || !strcmp(right, "(WARNING)"))
+    id = 1;
+  else if (!strcmp(right, "(UNREACHABLE)") || !strcmp(right, "(CRITICAL)"))
+    id = 2;
+  else if (!strcmp(right, "(UNKNOWN)"))
+    id = 3;
+  else if (!strcmp(right, "(PENDING)"))
+    id = 4;
+  else
+    id = 0;
+  return (id);
+}
+
+/**
  *  Get the id of a log type.
  */
 static int type_id(char const* type) {
@@ -115,7 +137,7 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
       le.notification_contact = log_extract_first(lasts, &lasts);
       le.host_name = log_extract(&lasts);
       le.service_description = log_extract(&lasts);
-      le.status = status_id(log_extract(&lasts));
+      le.status = notification_status_id(log_extract(&lasts));
       le.notification_cmd = log_extract(&lasts);
       le.output = log_extract(&lasts);
     }
@@ -123,7 +145,7 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
       le.msg_type = 3;
       le.notification_contact = log_extract_first(lasts, &lasts);
       le.host_name = log_extract(&lasts);
-      le.status = status_id(log_extract(&lasts));
+      le.status = notification_status_id(log_extract(&lasts));
       le.notification_cmd = log_extract(&lasts);
       le.output = log_extract(&lasts);
     }
