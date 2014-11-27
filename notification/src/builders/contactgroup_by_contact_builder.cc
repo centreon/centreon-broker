@@ -18,14 +18,22 @@
 */
 
 #include "com/centreon/broker/notification/utilities/qhash_func.hh"
-#include "com/centreon/broker/notification/builders/contactgroup_by_name_builder.hh"
+#include "com/centreon/broker/notification/builders/contactgroup_by_contact_builder.hh"
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
-contactgroup_by_name_builder::contactgroup_by_name_builder(
-  QHash<std::string, objects::contactgroup::ptr>& map)
-  : _map(map) {}
+/**
+ *  Default constructor.
+ *
+ *  @param[in] group_by_contact  A map of group by contact.
+ *  @param[in] contact_by_group  A map of contact by groups.
+ */
+contactgroup_by_contact_builder::contactgroup_by_contact_builder(
+    QMultiHash<unsigned int,objects::contactgroup::ptr>& group_by_contact,
+    QMultiHash<objects::contactgroup::ptr, unsigned int>& contact_by_group)
+  : _group_by_contact(group_by_contact),
+    _contact_by_group(contact_by_group) {}
 
 /**
 *  Add a nodegroup to the builder.
@@ -33,8 +41,17 @@ contactgroup_by_name_builder::contactgroup_by_name_builder(
 *  @param[in] id   The nodegroup id.
 *  @param[in] ndg  The nodegroup.
 */
-void contactgroup_by_name_builder::add_contactgroup(
+void contactgroup_by_contact_builder::add_contactgroup(
                                   unsigned int id,
                                   objects::contactgroup::ptr ctg) {
-  _map.insert(ctg->get_name(), ctg);
+  _cache.insert(id, ctg);
+}
+
+void contactgroup_by_contact_builder::add_contactgroup_contact_relation(
+                                        unsigned int contact_id,
+                                        unsigned int contactgroup_id) {
+  if (_cache.contains(contactgroup_id)) {
+    _group_by_contact.insert(contact_id, _cache[contactgroup_id]);
+    _contact_by_group.insert(_cache[contactgroup_id], contact_id);
+  }
 }

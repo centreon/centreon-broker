@@ -68,17 +68,17 @@ namespace             notification {
     objects::node::ptr
                       get_node_by_id(objects::node_id) const;
     objects::timeperiod::ptr
-                      get_timeperiod_by_id(unsigned int id);
+                      get_timeperiod_by_id(unsigned int id) const;
     QList<objects::notification_rule::ptr>
-                      get_notification_rules_by_node(objects::node_id id);
+                      get_notification_rules_by_node(objects::node_id id) const;
     objects::notification_method::ptr
-                      get_notification_method_by_id(unsigned int id);
+                      get_notification_method_by_id(unsigned int id) const;
     objects::notification_rule::ptr
-                      get_notification_rule_by_id(unsigned int id);
+                      get_notification_rule_by_id(unsigned int id) const;
     objects::contact::ptr
-                      get_contact_by_id(unsigned int id);
+                      get_contact_by_id(unsigned int id) const;
     objects::command::ptr
-                      get_command_by_id(unsigned int id);
+                      get_command_by_id(unsigned int id) const;
     QHash<std::string, std::string> const&
                       get_global_macros() const;
     QList<objects::node::ptr>
@@ -89,6 +89,10 @@ namespace             notification {
                       get_all_services_in_state(short state) const;
     objects::nodegroup::ptr
                       get_nodegroup_by_name(std::string const& name) const;
+    objects::contactgroup::ptr
+                      get_contactgroup_by_contact_id(unsigned int contact_id) const;
+    QList<unsigned int>
+                      get_contacts_by_contactgroup(objects::contactgroup::ptr cnt) const;
 
     int               get_date_format() const;
 
@@ -122,8 +126,10 @@ namespace             notification {
                       _notification_rule_by_id;
     QHash<std::string, objects::nodegroup::ptr>
                       _nodegroups_by_name;
-    QHash<std::string, objects::contactgroup::ptr>
-                      _contactgroups_by_name;
+    QMultiHash<unsigned int, objects::contactgroup::ptr>
+                      _contactgroups_by_contact_id;
+    QMultiHash<objects::contactgroup::ptr, unsigned int>
+                      _contact_id_by_contactgroups;
 
     int               _date_format;
     QHash<std::string, std::string>

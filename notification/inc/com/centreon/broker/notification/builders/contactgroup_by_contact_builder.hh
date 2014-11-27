@@ -29,15 +29,20 @@ CCB_BEGIN()
 
 namespace        notification {
   /**
-   *  @class contactgroup_by_name_builder contactgroup_by_name_builder.hh "com/centreon/broker/notification/builders/contactgroup_by_name_builder.hh"
-   *  @brief Contactgroup builder by name.
+   *  @class contactgroup_by_contact_builder contactgroup_by_contact_builder.hh "com/centreon/broker/notification/builders/contactgroup_by_contact_builder.hh"
+   *  @brief Contactgroup builder by contact id.
    *
-   *  This class build a map of contactgroups by their name.
+   *  This class build a map of contactgroups by contact id and inversely.
    */
-  class          contactgroup_by_name_builder : public contactgroup_builder {
+  class          contactgroup_by_contact_builder : public contactgroup_builder {
   public:
-                 contactgroup_by_name_builder(
-                   QHash<std::string, objects::contactgroup::ptr>& map);
+                 contactgroup_by_contact_builder(
+                   QMultiHash<
+                     unsigned int,
+                     objects::contactgroup::ptr>& group_by_contact,
+                   QMultiHash<
+                     objects::contactgroup::ptr,
+                     unsigned int>& contact_by_group);
     /**
      *  Add a contactgroup to the builder.
      *
@@ -47,8 +52,15 @@ namespace        notification {
     virtual void add_contactgroup(
                    unsigned int id,
                    objects::contactgroup::ptr ctg);
+
+
+    virtual void add_contactgroup_contact_relation(
+                   unsigned int contact_id,
+                   unsigned int contactgroup_id);
   private:
-    QHash<std::string, objects::contactgroup::ptr>& _map;
+    QHash<unsigned int, objects::contactgroup::ptr> _cache;
+    QMultiHash<unsigned int, objects::contactgroup::ptr>& _group_by_contact;
+    QMultiHash<objects::contactgroup::ptr, unsigned int>& _contact_by_group;
   };
 
 }

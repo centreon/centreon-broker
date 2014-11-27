@@ -753,6 +753,18 @@ namespace        notification {
                  state const& st,
                  node_cache const& cache,
                  objects::contact const& cnt);
+
+  std::string  get_contactgroup_alias(
+                 objects::node_id id,
+                 state const& st,
+                 node_cache const& cache,
+                 objects::contact const& cnt);
+
+  std::string  get_contactgroup_members(
+                 objects::node_id id,
+                 state const& st,
+                 node_cache const& cache,
+                 objects::contact const& cnt);
 }
 
 CCB_END()

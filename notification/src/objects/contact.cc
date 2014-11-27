@@ -25,6 +25,7 @@ using namespace com::centreon::broker::notification::objects;
  *  Default constructor.
  */
 contact::contact() :
+  _id(0),
   _can_submit_commands(false),
   _host_notifications_enabled(false),
   _host_notification_options(host_none),
@@ -51,6 +52,7 @@ contact::contact(contact const& obj) {
  */
 contact& contact::operator=(contact const& obj) {
   if (this != &obj) {
+    _id = obj._id;
     _address =  obj._address;
     _alias = obj._alias;
     _can_submit_commands = obj._can_submit_commands;
@@ -68,6 +70,24 @@ contact& contact::operator=(contact const& obj) {
     _service_notifications_enabled = obj._service_notifications_enabled;
   }
   return *this;
+}
+
+/**
+ *  Get the id of the contact.
+ *
+ *  @return  The id of the contact.
+ */
+unsigned int contact::get_id() const throw() {
+  return (_id);
+}
+
+/**
+ *  Set the id of the contact.
+ *
+ *  @param[in] val  The id of the contact.
+ */
+void contact::set_id(unsigned int val) {
+  _id = val;
 }
 
 /**

@@ -43,7 +43,7 @@
 #include "com/centreon/broker/notification/builders/notification_rule_by_node_builder.hh"
 #include "com/centreon/broker/notification/builders/notification_rule_by_id_builder.hh"
 #include "com/centreon/broker/notification/builders/nodegroup_by_name_builder.hh"
-#include "com/centreon/broker/notification/builders/contactgroup_by_name_builder.hh"
+#include "com/centreon/broker/notification/builders/contactgroup_by_contact_builder.hh"
 #include "com/centreon/broker/notification/builders/global_macro_builder.hh"
 
 using namespace com::centreon::broker::notification;
@@ -88,7 +88,8 @@ state& state::operator=(state const& obj) {
     _date_format = obj._date_format;
     _global_constant_macros = obj._global_constant_macros;
     _nodegroups_by_name = obj._nodegroups_by_name;
-    _contactgroups_by_name = obj._contactgroups_by_name;
+    _contactgroups_by_contact_id = obj._contactgroups_by_contact_id;
+    _contact_id_by_contactgroups = obj._contact_id_by_contactgroups;
   }
   return (*this);
 }
@@ -115,7 +116,8 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
   _notification_rule_by_id.clear();
   _global_constant_macros.clear();
   _nodegroups_by_name.clear();
-  _contactgroups_by_name.clear();
+  _contactgroups_by_contact_id.clear();
+  _contact_id_by_contactgroups.clear();
 
   // Get new objects
   {
@@ -211,7 +213,9 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
   {
     // Get contactgroups.
     contactgroup_loader cl;
-    contactgroup_by_name_builder builder(_contactgroups_by_name);
+    contactgroup_by_contact_builder builder(
+                                      _contactgroups_by_contact_id,
+                                      _contact_id_by_contactgroups);
     cl.load(&centreon_db, &builder);
   }
   // Debug logging for all the data loaded.
@@ -253,7 +257,7 @@ node::ptr state::get_node_by_id(node_id id) const {
  *  @return        A list of notification_rule::ptr associated to this node.
  */
 QList<notification_rule::ptr> state::get_notification_rules_by_node(
-                                       node_id id) {
+                                       node_id id) const {
   return (_notification_rules_by_node.values(id));
 }
 
@@ -264,7 +268,7 @@ QList<notification_rule::ptr> state::get_notification_rules_by_node(
  *
  *  @return        A notification_rule::ptr to the notification rule, or a null ptr.
  */
-notification_rule::ptr state::get_notification_rule_by_id(unsigned int id) {
+notification_rule::ptr state::get_notification_rule_by_id(unsigned int id) const {
   return (_notification_rule_by_id.value(id));
 }
 
@@ -277,7 +281,7 @@ notification_rule::ptr state::get_notification_rule_by_id(unsigned int id) {
  *  @return        A notification_method::ptr the notification method, or a null notification_method::ptr.
  */
 notification_method::ptr state::get_notification_method_by_id(
-                                  unsigned int id) {
+                                  unsigned int id) const {
   return (_notification_methods.value(id));
 }
 
@@ -288,7 +292,7 @@ notification_method::ptr state::get_notification_method_by_id(
  *
  *  @return          A timeperiod::ptr to the timeperiod, or a null timeperiod::ptr.
  */
-timeperiod::ptr state::get_timeperiod_by_id(unsigned int id) {
+timeperiod::ptr state::get_timeperiod_by_id(unsigned int id) const {
   return (_timeperiod_by_id.value(id));
 }
 
@@ -299,7 +303,7 @@ timeperiod::ptr state::get_timeperiod_by_id(unsigned int id) {
  *
  *  @return         A contact::ptr to the contact, or a null contact::ptr.
  */
-objects::contact::ptr state::get_contact_by_id(unsigned int id) {
+objects::contact::ptr state::get_contact_by_id(unsigned int id) const {
   return (_contacts.value(id));
 }
 
@@ -310,7 +314,7 @@ objects::contact::ptr state::get_contact_by_id(unsigned int id) {
  *
  *  @return         A command::ptr to the command, or a null command::ptr.
  */
-objects::command::ptr state::get_command_by_id(unsigned int id) {
+objects::command::ptr state::get_command_by_id(unsigned int id) const {
   return (_commands.value(id));
 }
 
@@ -397,14 +401,40 @@ int state::get_date_format() const {
   return (_date_format);
 }
 
+/**
+ *  Get a nodegroup by its name.
+ *
+ *  @param[in] name  The name of the nodegroup.
+ *
+ *  @return  The nodegroup or a null ptr.
+ */
 objects::nodegroup::ptr state::get_nodegroup_by_name(
                                  std::string const& name) const {
-  QHash<std::string, objects::nodegroup::ptr>::const_iterator found =
-    _nodegroups_by_name.find(name);
-  if (found == _nodegroups_by_name.end())
-    return (objects::nodegroup::ptr());
-  else
-    return (*found);
+  return (_nodegroups_by_name.value(name));
+}
+
+/**
+ *  Get the first contactgroup of a contact.
+ *
+ *  @param[in] name  The id of the contact..
+ *
+ *  @return  The contactgroup or a null ptr.
+ */
+objects::contactgroup::ptr state::get_contactgroup_by_contact_id(
+                                    unsigned int contact_id) const {
+  return (_contactgroups_by_contact_id.value(contact_id));
+}
+
+/**
+ *  Get all the contacts in a contactgroup.
+ *
+ *  @param[in] cnt  The contactgroup.
+ *
+ *  @return  A list of the contacts.
+ */
+QList<unsigned int> state::get_contacts_by_contactgroup(
+                             objects::contactgroup::ptr cnt) const {
+  return (_contact_id_by_contactgroups.values(cnt));
 }
 
 /**

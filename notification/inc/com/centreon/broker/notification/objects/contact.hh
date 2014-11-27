@@ -65,6 +65,8 @@ namespace   notification {
                                contact(contact const& obj);
                                contact& operator=(contact const& obj);
 
+      unsigned int             get_id() const throw();
+      void                     set_id(unsigned int);
       std::vector<std::string> const& get_address() const throw();
       void                     add_address(std::string const& value);
       std::string const&       get_alias() const throw();
@@ -117,6 +119,7 @@ namespace   notification {
                                  bool isHost) const throw();
 
     private:
+      unsigned int             _id;
       std::vector<std::string> _address;
       std::string              _alias;
       bool                     _can_submit_commands;

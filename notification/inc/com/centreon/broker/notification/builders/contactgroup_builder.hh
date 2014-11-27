@@ -49,6 +49,17 @@ namespace        notification {
     virtual void add_contactgroup(
                    unsigned int id,
                    objects::contactgroup::ptr ctg) {}
+
+
+    /**
+     *  Add a contactgroup contact relation to the builder.
+     *
+     *  @param[in] contact_id       The id of the contact.
+     *  @param[in] contactgroup_id  The id of the contactgroup.
+     */
+    virtual void add_contactgroup_contact_relation(
+                   unsigned int contact_id,
+                   unsigned int contactgroup_id) {}
   };
 
 }

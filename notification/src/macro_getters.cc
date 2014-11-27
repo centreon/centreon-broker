@@ -525,3 +525,66 @@ std::string get_timet_string(
               objects::contact const& cnt) {
   return (to_string<time_t, 0>(::time(NULL)));
 }
+
+/**
+ *  Get the alias of the contactgroup.
+ *
+ *  @param[in] id            The id of the host.
+ *  @param[in] st            The state of the conf.
+ *  @param[in] cache         A node cache.
+ *  @param[in] cnt           The contact being notified.
+ *
+ *  @return  The value of the macro.
+ */
+std::string get_contactgroup_alias(
+              objects::node_id id,
+              state const& st,
+              node_cache const& cache,
+              objects::contact const& cnt) {
+  objects::contactgroup::ptr ctg =
+             st.get_contactgroup_by_contact_id(cnt.get_id());
+  if (!ctg)
+    throw (com::centreon::broker::exceptions::msg()
+           << "notification: macro: could not get the contactgroup alias "
+              "of contact " << cnt.get_name());
+  return (ctg->get_alias());
+}
+
+/**
+ *  Get the members of a contactgroup.
+ *
+ *  @param[in] id            The id of the host.
+ *  @param[in] st            The state of the conf.
+ *  @param[in] cache         A node cache.
+ *  @param[in] cnt           The contact being notified.
+ *
+ *  @return  The value of the macro.
+ */
+std::string get_contactgroup_members(
+              objects::node_id id,
+              state const& st,
+              node_cache const& cache,
+              objects::contact const& cnt) {
+  objects::contactgroup::ptr ctg =
+             st.get_contactgroup_by_contact_id(cnt.get_id());
+  if (!ctg)
+    throw (com::centreon::broker::exceptions::msg()
+           << "notification: macro: could not get the contactgroup members "
+              "of contact " << cnt.get_name());
+  std::string res;
+  QList<unsigned int> members = st.get_contacts_by_contactgroup(ctg);
+  for (QList<unsigned int>::const_iterator it(members.begin()),
+                                           end(members.end());
+       it != end;
+       ++it) {
+    if (!res.empty())
+      res.append(", ");
+    objects::contact::ptr cont = st.get_contact_by_id(*it);
+    if (!cont)
+      throw (com::centreon::broker::exceptions::msg()
+             << "notification: macro: could not get the contactgroup members "
+                "of contact " << cont->get_name());
+    res.append(cont->get_name());
+  }
+  return (res);
+}

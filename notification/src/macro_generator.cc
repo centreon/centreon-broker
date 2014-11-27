@@ -575,4 +575,10 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
   map.insert(
     "CONTACTADDRESS6",
     &get_address_of_contact<6>);
+  map.insert(
+    "CONTACTGROUPALIAS",
+    &get_contactgroup_alias);
+  map.insert(
+    "CONTACTGROUPMEMBERS",
+    &get_contactgroup_members);
 }

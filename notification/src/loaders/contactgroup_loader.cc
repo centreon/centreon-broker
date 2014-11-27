@@ -50,11 +50,11 @@ void contactgroup_loader::load(
   // Performance improvement, as we never go back.
   query.setForwardOnly(true);
 
-  // Get hostgroups.
+  // Get contactgroups.
   if (!query.exec("SELECT cg_id, cg_name, cg_alias FROM cfg_contactgroup"))
     throw (exceptions::msg()
            << "notification: cannot load cfg_contactgroup from database: "
-      << query.lastError().text());
+           << query.lastError().text());
 
   while (query.next()) {
     unsigned int id = query.value(0).toUInt();
@@ -62,5 +62,17 @@ void contactgroup_loader::load(
     ctg->set_name(query.value(1).toString().toStdString());
     ctg->set_alias(query.value(2).toString().toStdString());
     output->add_contactgroup(id, ctg);
+  }
+
+  // Get contactgroup contact relations.
+  if (!query.exec("SELECT contact_contact_id, contactgroup_cg_id"
+                  "  FROM cfg_contactgroup_contact_relation"))
+    throw (exceptions::msg()
+           << "notification: cannot load "
+              "cfg_contactgroup_contact_relation from database: "
+          << query.lastError().text());
+
+  while (query.next()) {
+
   }
 }
