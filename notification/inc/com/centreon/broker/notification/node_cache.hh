@@ -37,6 +37,7 @@
 #  include "com/centreon/broker/neb/host_status.hh"
 #  include "com/centreon/broker/neb/host_group_member.hh"
 #  include "com/centreon/broker/neb/service_group_member.hh"
+#  include "com/centreon/broker/neb/custom_variable.hh"
 
 CCB_BEGIN()
 
@@ -73,6 +74,7 @@ namespace         notification {
     void          update(neb::service const&);
     void          update(neb::service_status const&);
     void          update(neb::service_group_member const&);
+    void          update(neb::custom_variable const&);
 
 
     host_node_state const&
@@ -89,6 +91,8 @@ namespace         notification {
                   _host_node_states;
     QHash<unsigned int, service_node_state>
                   _service_node_states;
+    QHash<std::string, neb::custom_variable>
+                  _custom_variables;
 
     QMutex        _mutex;
 

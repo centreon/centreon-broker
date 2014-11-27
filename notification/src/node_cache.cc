@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/notification/utilities/qhash_func.hh"
 #include <exception>
 #include <QMutexLocker>
 #include "com/centreon/broker/io/events.hh"
@@ -55,6 +56,7 @@ node_cache& node_cache::operator=(node_cache const& obj) {
   if (this != &obj) {
     _host_node_states = obj._host_node_states;
     _service_node_states = obj._service_node_states;
+    _custom_variables = obj._custom_variables;
   }
   return (*this);
 }
@@ -284,6 +286,15 @@ void node_cache::update(neb::service_group_member const& sgm) {
 }
 
 /**
+ *  Update the node cache.
+ *
+ *  @param[in] cv  The data to update.
+ */
+void node_cache::update(neb::custom_variable const& cv) {
+  _custom_variables.insert(cv.name.toStdString(), cv);
+}
+
+/**
  *  Get a host from the node cache.
  *
  *  @param[in] id  The id of the host.
@@ -334,6 +345,13 @@ void node_cache::_prepare_serialization() {
        it != end;
        ++it)
     it->serialize(_serialized_data);
+  for (QHash<std::string, neb::custom_variable>::const_iterator
+         it = _custom_variables.begin(),
+         end = _custom_variables.end();
+       it != end;
+       ++it)
+    _serialized_data.push_back(misc::shared_ptr<neb::custom_variable>(
+                                       new neb::custom_variable(*it)));
 }
 
 std::vector<std::string> node_cache::get_all_node_contained_in(
