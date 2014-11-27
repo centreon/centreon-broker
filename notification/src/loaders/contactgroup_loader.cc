@@ -23,12 +23,12 @@
 #include <QSqlError>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/notification/loaders/nodegroup_loader.hh"
+#include "com/centreon/broker/notification/loaders/contactgroup_loader.hh"
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
-nodegroup_loader::nodegroup_loader() {}
+contactgroup_loader::contactgroup_loader() {}
 
 /**
  *  Load the nodegroups from the database.
@@ -36,13 +36,14 @@ nodegroup_loader::nodegroup_loader() {}
  *  @param[in] db       An open connection to the database.
  *  @param[out] output  A nodegroup builder object to register the nodegroups.
  */
-void nodegroup_loader::load(QSqlDatabase* db, nodegroup_builder* output) {
+void contactgroup_loader::load(
+                            QSqlDatabase* db, contactgroup_builder* output) {
   // If we don't have any db or output, don't do anything.
   if (!db || !output)
     return;
 
   logging::debug(logging::medium)
-    << "notification: loading nodegroups from the database";
+    << "notification: loading contactgroups from the database";
 
   QSqlQuery query(*db);
 
@@ -50,30 +51,16 @@ void nodegroup_loader::load(QSqlDatabase* db, nodegroup_builder* output) {
   query.setForwardOnly(true);
 
   // Get hostgroups.
-  if (!query.exec("SELECT hg_id, hg_name, hg_alias FROM cfg_hostgroup"))
+  if (!query.exec("SELECT cg_id, cg_name, cg_alias FROM cfg_contactgroup"))
     throw (exceptions::msg()
-           << "notification: cannot load cfg_hostgroup from database: "
+           << "notification: cannot load cfg_contactgroup from database: "
       << query.lastError().text());
 
   while (query.next()) {
-    objects::node_id id(query.value(0).toUInt());
-    objects::nodegroup::ptr ndg(new objects::nodegroup);
-    ndg->set_name(query.value(1).toString().toStdString());
-    ndg->set_alias(query.value(2).toString().toStdString());
-    output->add_nodegroup(id, ndg);
-  }
-
-  // Get servicegroups
-  if (!query.exec("SELECT sg_id, sg_name, sg_alias FROM cfg_servicegroup"))
-    throw (exceptions::msg()
-           << "notification: cannot load cfg_servicegroup from database: "
-      << query.lastError().text());
-
-  while (query.next()) {
-    objects::node_id id(0, query.value(0).toUInt());
-    objects::nodegroup::ptr ndg(new objects::nodegroup);
-    ndg->set_name(query.value(1).toString().toStdString());
-    ndg->set_alias(query.value(2).toString().toStdString());
-    output->add_nodegroup(id, ndg);
+    unsigned int id = query.value(0).toUInt();
+    objects::contactgroup::ptr ctg(new objects::contactgroup);
+    ctg->set_name(query.value(1).toString().toStdString());
+    ctg->set_alias(query.value(2).toString().toStdString());
+    output->add_contactgroup(id, ctg);
   }
 }

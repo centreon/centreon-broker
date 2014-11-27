@@ -32,6 +32,7 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/loaders/command_loader.hh"
 #  include "com/centreon/broker/notification/loaders/contact_loader.hh"
+#  include "com/centreon/broker/notification/loaders/contactgroup_loader.hh"
 #  include "com/centreon/broker/notification/loaders/dependency_loader.hh"
 #  include "com/centreon/broker/notification/loaders/node_loader.hh"
 #  include "com/centreon/broker/notification/loaders/timeperiod_loader.hh"
@@ -121,6 +122,8 @@ namespace             notification {
                       _notification_rule_by_id;
     QHash<std::string, objects::nodegroup::ptr>
                       _nodegroups_by_name;
+    QHash<std::string, objects::contactgroup::ptr>
+                      _contactgroups_by_name;
 
     int               _date_format;
     QHash<std::string, std::string>

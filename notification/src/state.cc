@@ -43,6 +43,7 @@
 #include "com/centreon/broker/notification/builders/notification_rule_by_node_builder.hh"
 #include "com/centreon/broker/notification/builders/notification_rule_by_id_builder.hh"
 #include "com/centreon/broker/notification/builders/nodegroup_by_name_builder.hh"
+#include "com/centreon/broker/notification/builders/contactgroup_by_name_builder.hh"
 #include "com/centreon/broker/notification/builders/global_macro_builder.hh"
 
 using namespace com::centreon::broker::notification;
@@ -87,6 +88,7 @@ state& state::operator=(state const& obj) {
     _date_format = obj._date_format;
     _global_constant_macros = obj._global_constant_macros;
     _nodegroups_by_name = obj._nodegroups_by_name;
+    _contactgroups_by_name = obj._contactgroups_by_name;
   }
   return (*this);
 }
@@ -113,6 +115,7 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
   _notification_rule_by_id.clear();
   _global_constant_macros.clear();
   _nodegroups_by_name.clear();
+  _contactgroups_by_name.clear();
 
   // Get new objects
   {
@@ -205,7 +208,12 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
     nodegroup_by_name_builder builder(_nodegroups_by_name);
     nl.load(&centreon_db, &builder);
   }
-
+  {
+    // Get contactgroups.
+    contactgroup_loader cl;
+    contactgroup_by_name_builder builder(_contactgroups_by_name);
+    cl.load(&centreon_db, &builder);
+  }
   // Debug logging for all the data loaded.
 #ifndef NDEBUG
     // data_logger::log_container("_nodes", _nodes);

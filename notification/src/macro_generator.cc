@@ -562,17 +562,17 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
     &get_address_of_contact<1>);
   map.insert(
     "CONTACTADDRESS2",
-     &get_address_of_contact<2>);
+    &get_address_of_contact<2>);
   map.insert(
     "CONTACTADDRESS3",
-     &get_address_of_contact<3>);
+    &get_address_of_contact<3>);
   map.insert(
     "CONTACTADDRESS4",
-     &get_address_of_contact<4>);
+    &get_address_of_contact<4>);
   map.insert(
     "CONTACTADDRESS5",
-     &get_address_of_contact<5>);
+    &get_address_of_contact<5>);
   map.insert(
     "CONTACTADDRESS6",
-     &get_address_of_contact<6>);
+    &get_address_of_contact<6>);
 }
