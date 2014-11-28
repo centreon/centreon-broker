@@ -15,6 +15,7 @@
 -- mod_bam_reporting_kpi_events
 -- mod_bam_reporting_relations_ba_bv
 -- mod_bam_reporting_relations_ba_kpi_events
+-- mod_bam_reporting_relations_ba_timeperiods
 -- mod_bam_reporting_timeperiods
 -- mod_bam_reporting_timeperiods_exceptions
 -- mod_bam_reporting_timeperiods_exclusions
@@ -181,6 +182,20 @@ CREATE TABLE mod_bam_reporting_timeperiods_exclusions (
   FOREIGN KEY (timeperiod_id) REFERENCES mod_bam_reporting_timeperiods (timeperiod_id)
     ON DELETE CASCADE,
   FOREIGN KEY (excluded_timeperiod_id) REFERENCES mod_bam_reporting_timeperiods (timeperiod_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB CHARACTER SET utf8;
+
+--
+-- BA/timeperiods relations.
+--
+CREATE TABLE mod_bam_reporting_relations_ba_timeperiods (
+  ba_id int default NULL,
+  timeperiod_id int default NULL,
+  is_default boolean default NULL,
+
+  FOREIGN KEY (ba_id) REFERENCES mod_bam_reporting_ba (ba_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (timeperiod_id) REFERENCES mod_bam_reporting_timeperiods (timeperiod_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB CHARACTER SET utf8;
 

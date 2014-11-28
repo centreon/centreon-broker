@@ -464,6 +464,7 @@ void reporting_stream::_clear_qsql() {
   _dimension_timeperiod_insert.reset();
   _dimension_timeperiod_exception_insert.reset();
   _dimension_timeperiod_exclusion_insert.reset();
+  _dimension_ba_timeperiod_insert.reset();
   _dimension_truncate_tables.clear();
   _dimension_kpi_insert.reset();
   _db.reset();
@@ -650,6 +651,25 @@ void reporting_stream::_load_timeperiods() {
           << ": at least one timeperiod does not exist";
       else
         tp->add_excluded(excluded_tp);
+    }
+  }
+
+  // Load BA/timeperiods relations.
+  {
+    QString query(
+              "SELECT ba_id, timeperiod_id, is_default"
+              "  FROM mod_bam_reporting_relations_ba_timeperiods");
+    QSqlQuery q(*_db);
+    if (!q.exec(query))
+      throw (exceptions::msg()
+             << "BAM-BI: could not load BA/timeperiods relations: "
+             << q.lastError().text());
+    while (q.next()) {
+      _timeperiod_relations.insert(std::make_pair(
+                                          q.value(0).toUInt(),
+                                          std::make_pair(
+                                                 q.value(1).toUInt(),
+                                                 q.value(2).toBool())));
     }
   }
 
@@ -857,6 +877,19 @@ void reporting_stream::_prepare() {
       throw (exceptions::msg()
              << "BAM-BI: could not prepare timeperiod exclusion insertion query: "
              << _dimension_timeperiod_exclusion_insert->lastError().text());
+  }
+
+  // Dimension BA/timeperiod insertion.
+  {
+    QString query(
+              "INSERT INTO mod_bam_reporting_relations_ba_timeperiods ("
+              "            ba_id, timeperiod_id, is_default)"
+              "  VALUES (:ba_id, :timeperiod_id, :is_default)");
+    _dimension_ba_timeperiod_insert.reset(new QSqlQuery(*_db));
+    if (!_dimension_ba_timeperiod_insert->prepare(query))
+      throw (exceptions::msg()
+             << "BAM-BI: could not prepare BA/timeperiod relation insertion query: "
+             << _dimension_ba_timeperiod_insert->lastError().text());
   }
 
   // Dimension truncate tables.
@@ -1435,9 +1468,20 @@ void reporting_stream::_process_dimension_ba_timeperiod_relation(
   logging::debug(logging::low)
     << "BAM-BI: processing relation of BA " << r.ba_id
     << " to timeperiod " << r.timeperiod_id;
-  _timeperiod_relations.insert(std::make_pair(r.ba_id,
-                                              std::make_pair(r.timeperiod_id,
-                                                             r.is_default)));
+  QSqlQuery& q(*_dimension_ba_timeperiod_insert);
+  q.bindValue(":ba_id", r.ba_id);
+  q.bindValue(":timeperiod_id", r.timeperiod_id);
+  q.bindValue(":is_default", r.is_default);
+  if (!q.exec())
+    throw (exceptions::msg()
+           << "BAM-BI: could not insert relation of BA "
+           << r.ba_id << " to timeperiod " << r.timeperiod_id << ": "
+           << q.lastError().text());
+  _timeperiod_relations.insert(std::make_pair(
+                                      r.ba_id,
+                                      std::make_pair(
+                                             r.timeperiod_id,
+                                             r.is_default)));
 }
 
 /**

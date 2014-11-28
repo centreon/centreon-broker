@@ -133,6 +133,8 @@ namespace          bam {
                   _dimension_timeperiod_exception_insert;
     std::auto_ptr<QSqlQuery>
                   _dimension_timeperiod_exclusion_insert;
+    std::auto_ptr<QSqlQuery>
+                  _dimension_ba_timeperiod_insert;
     std::vector<misc::shared_ptr<QSqlQuery> >
                   _dimension_truncate_tables;
     std::auto_ptr<QSqlQuery>
