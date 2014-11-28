@@ -98,15 +98,6 @@ bool node_state::operator==(node_state::state_type type) const throw() {
 /**
  *  Cast operator.
  *
- *  @return  The value casted to short.
- */
-node_state::operator short() const throw() {
-  return ((short)(value));
-}
-
-/**
- *  Cast operator.
- *
  *  @return  The value casted to int.
  */
 node_state::operator int() const throw() {

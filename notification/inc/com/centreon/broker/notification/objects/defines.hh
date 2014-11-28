@@ -49,7 +49,6 @@ namespace               notification {
       bool              operator==(node_state const& st) const throw();
       bool              operator==(node_state::state_type type) const throw();
 
-      operator          short() const throw();
       operator          int() const throw();
 
       state_type        value;

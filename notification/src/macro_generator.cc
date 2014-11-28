@@ -317,6 +317,7 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
   map.insert(
     "TOTALHOSTSERVICESCRITICAL",
     &get_total_host_services<objects::node_state::service_critical>);
+
   // Service macros
   map.insert(
     "SERVICEDESC",

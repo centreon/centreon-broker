@@ -30,6 +30,7 @@ using namespace com::centreon::broker::notification::objects;
  */
 action::action()
   : _act(action::unknown),
+    _forwarded_action(action::unknown),
     _id(),
     _notification_rule_id(0),
     _notification_number(0),
@@ -58,6 +59,7 @@ action& action::operator=(action const& obj) {
     _notification_rule_id = obj._notification_rule_id;
     _notification_number = obj._notification_number;
     _at = obj._at;
+    _forwarded_action = obj._forwarded_action;
   }
   return (*this);
 }
@@ -113,6 +115,24 @@ action::action_type action::get_type() const throw() {
  */
 void action::set_type(action_type type) throw() {
   _act = type;
+}
+
+/**
+ *  Get the forwarded type.
+ *
+ *  @return  The forwarded type.
+ */
+action::action_type action::get_forwarded_type() const throw() {
+  return (_forwarded_action);
+}
+
+/**
+ *  Set the forwarded type.
+ *
+ *  @param[in] type  The forwarded type.
+ */
+void action::set_forwarded_type(action_type type) throw() {
+  _forwarded_action = type;
 }
 
 /**

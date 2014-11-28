@@ -47,7 +47,8 @@ namespace           notification {
     enum              action_type {
       unknown = 0,
       notification_processing,
-      notification_attempt
+      notification_attempt,
+      notification_up
     };
                       action();
                       action(action const& obj);
@@ -57,6 +58,9 @@ namespace           notification {
 
     action_type       get_type() const throw();
     void              set_type(action_type type) throw();
+
+    action_type       get_forwarded_type() const throw();
+    void              set_forwarded_type(action_type type) throw();
 
     objects::node_id  get_node_id() const throw();
     void              set_node_id(objects::node_id id) throw();
@@ -77,6 +81,7 @@ namespace           notification {
                           spawned_actions) const;
   private:
     action_type       _act;
+    action_type       _forwarded_action;
     objects::node_id  _id;
     unsigned int      _notification_rule_id;
     unsigned int      _notification_number;
