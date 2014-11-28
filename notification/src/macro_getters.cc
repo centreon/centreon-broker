@@ -477,3 +477,19 @@ std::string get_contactgroup_members(
   }
   return (res);
 }
+
+/**
+ *  Get the type of a notification.
+ *
+ *  @param[in] context  The context from where the macro is being executed.
+ *
+ *  @return  The value of the macro.
+ */
+std::string get_notification_type(
+              macro_context const& context) {
+  action::action_type type = context.get_action().get_type();
+  if (type == action::notification_attempt)
+    return ("PROBLEM");
+  else
+    return ("UNKNOWN");
+}

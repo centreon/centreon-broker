@@ -534,6 +534,23 @@ namespace        notification {
   }
 
   /**
+   *  Get the member of an action as a string.
+   *
+   *  @tparam U          The type of the member.
+   *  @tparam Member     The member.
+   *  @tparam precision  The precision of the string, 0 for none.
+   *
+   *  @param[in] context The context from where the macro is being executed.
+   *
+   *  @return  The value of the macro.
+   */
+  template <typename U, U (action::* member)() const, int precision>
+  std::string get_action_member(
+                macro_context const& context) {
+    return (to_string<U, precision>((context.get_action().*member)()));
+  }
+
+  /**
    *  Get the address of the contact.
    *
    *  @tparam number           The address number (1 to 6).
@@ -589,6 +606,9 @@ namespace        notification {
                  macro_context const& context);
 
   std::string  get_contactgroup_members(
+                 macro_context const& context);
+
+  std::string  get_notification_type(
                  macro_context const& context);
 }
 

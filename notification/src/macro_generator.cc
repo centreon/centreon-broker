@@ -49,7 +49,8 @@ void macro_generator::generate(
                         objects::node_id id,
                         objects::contact const& cnt,
                         state const& st,
-                        node_cache const& cache) const {
+                        node_cache const& cache,
+                        action const& act) const {
   objects::node::ptr node = st.get_node_by_id(id);
   if (!node)
     throw (exceptions::msg()
@@ -70,7 +71,10 @@ void macro_generator::generate(
        ++it) {
     if (_get_global_macros(it.key(), st, *it))
       continue ;
-    else if (_get_x_macros(it.key(), id, st, cache, cnt, *it))
+    else if (_get_x_macros(
+               it.key(),
+               macro_context(id, cnt, st, cache, act),
+               *it))
       continue ;
   }
 }
@@ -97,18 +101,24 @@ bool macro_generator::_get_global_macros(
   return (true);
 }
 
+/**
+ *  Get standard nagios macros.
+ *
+ *  @param[in] macro_name  The macro name.
+ *  @param[in] contact     The macro context.
+ *  @param[out] result     The result, filled if the macro is standard.
+ *
+ *  @return  True if the macro was found in the standard macros.
+ */
 bool macro_generator::_get_x_macros(
                         std::string const& macro_name,
-                        objects::node_id id,
-                        state const& st,
-                        node_cache const& cache,
-                        objects::contact const& cnt,
+                        macro_context const& context,
                         std::string& result) const {
   x_macro_map::const_iterator found = _map.find(macro_name);
   if (found == _map.end())
     return (false);
   else {
-    result = (*found)(macro_context(id, cnt, st, cache));
+    result = (*found)(context);
     return (true);
   }
 }
@@ -580,4 +590,30 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
   map.insert(
     "CONTACTGROUPMEMBERS",
     &get_contactgroup_members);
+
+  // Notification macro.
+  map.insert(
+    "NOTIFICATIONTYPE",
+    &get_notification_type);
+  map.insert(
+    "NOTIFICATIONRECIPIENTS",
+    &get_contact_member<std::string const&, &objects::contact::get_name, 0>);
+  map.insert(
+    "HOSTNOTIFICATIONNUMBER",
+    &get_action_member<unsigned int, &action::get_notification_number, 0>);
+  map.insert(
+    "SERVICENOTIFICATIONNUMBER",
+    &get_action_member<unsigned int, &action::get_notification_number, 0>);
+  // We will manage notification escalation/downtime macros
+  // when we will manage escalations and downtimes.
+  map.insert("NOTIFICATIONISESCALATED", &null_getter);
+  map.insert("NOTIFICATIONCOMMENT", &null_getter);
+  // For now, notification author macros are ignored.
+  map.insert("NOTIFICATIONAUTHOR", &null_getter);
+  map.insert("NOTIFICATIONAUTHORNAME", &null_getter);
+  map.insert("NOTIFICATIONAUTHORALIAS", &null_getter);
+  // Notification id rightfully ignored.
+  map.insert("HOSTNOTIFICATIONID", &null_getter);
+  map.insert("SERVICENOTIFICATIONID", &null_getter);
+
 }

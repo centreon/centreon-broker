@@ -25,6 +25,7 @@
 #  include "com/centreon/broker/notification/state.hh"
 #  include "com/centreon/broker/notification/objects/contact.hh"
 #  include "com/centreon/broker/notification/node_cache.hh"
+#  include "com/centreon/broker/notification/action.hh"
 
 CCB_BEGIN()
 
@@ -41,19 +42,22 @@ namespace             notification {
                         objects::node_id id,
                         objects::contact const& cnt,
                         state const& st,
-                        node_cache const& cache);
+                        node_cache const& cache,
+                        action const& act);
 
     objects::node_id  get_id() const;
     objects::contact const&
                       get_contact() const;
     state const&      get_state() const;
     node_cache const& get_cache() const;
+    action const&     get_action() const;
 
   private:
     objects::node_id _id;
     objects::contact const& _cnt;
     state const& _st;
     node_cache const& _cache;
+    action const& _act;
   };
 }
 

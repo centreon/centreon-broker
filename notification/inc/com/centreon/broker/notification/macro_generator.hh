@@ -46,7 +46,8 @@ namespace        notification {
                    objects::node_id id,
                    objects::contact const& cnt,
                    state const& st,
-                   node_cache const& cache) const;
+                   node_cache const& cache,
+                   action const& act) const;
 
   private:
     static bool  _get_global_macros(
@@ -54,10 +55,7 @@ namespace        notification {
                    state const& st,
                    std::string& result);
     bool         _get_x_macros(std::string const& macro_name,
-                   objects::node_id id,
-                   state const& st,
-                   node_cache const& cache,
-                   objects::contact const& cnt,
+                   macro_context const& context,
                    std::string& result) const;
 
     typedef QHash<std::string, std::string (*)(macro_context const&)>
