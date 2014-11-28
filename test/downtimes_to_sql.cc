@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -53,10 +53,11 @@ int main() {
   std::string engine_config_path(tmpnam(NULL));
   external_command commander;
   engine daemon;
+  test_db db;
 
   try {
     // Prepare database.
-    QSqlDatabase db(config_db_open(DB_NAME));
+    db.open(DB_NAME);
 
     // Prepare monitoring engine configuration parameters.
     generate_commands(commands, 1);
@@ -172,7 +173,7 @@ int main() {
             << "       triggered_by, type"
             << "  FROM downtimes"
             << "  ORDER BY internal_id ASC";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot get downtimes from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -272,7 +273,7 @@ int main() {
       query << "SELECT COUNT(*)"
             << "  FROM hosts"
             << "  WHERE scheduled_downtime_depth=0";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()
                << "cannot get host status from DB: "
@@ -291,7 +292,7 @@ int main() {
       query << "SELECT COUNT(*)"
             << "  FROM services"
             << "  WHERE scheduled_downtime_depth=0";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()
                << "cannot get service status from DB: "
@@ -323,7 +324,7 @@ int main() {
       query << "SELECT internal_id, actual_end_time, cancelled, deletion_time"
             << "  FROM downtimes"
             << "  ORDER BY internal_id";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()
                << "cannot get deletion_time of downtimes: "
@@ -377,7 +378,6 @@ int main() {
   // Cleanup.
   daemon.stop();
   config_remove(engine_config_path.c_str());
-  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
 

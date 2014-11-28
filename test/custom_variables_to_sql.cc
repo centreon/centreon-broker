@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -205,10 +205,11 @@ int main() {
   std::string engine_config_path(tmpnam(NULL));
   external_command commander;
   engine daemon;
+  test_db db;
 
   try {
     // Prepare database.
-    QSqlDatabase db(config_db_open(DB_NAME));
+    db.open(DB_NAME);
 
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, HOST_COUNT);
@@ -308,7 +309,7 @@ int main() {
 
       // Check.
       check_host_custom_variables(
-        db,
+        *db.storage_db(),
         entries,
         sizeof(entries) / sizeof(*entries),
         t1,
@@ -366,7 +367,7 @@ int main() {
 
       // Check.
       check_service_custom_variables(
-        db,
+        *db.storage_db(),
         entries,
         sizeof(entries) / sizeof(*entries),
         t1,
@@ -433,7 +434,7 @@ int main() {
 
       // Check.
       check_host_custom_variables(
-        db,
+        *db.storage_db(),
         entries,
         sizeof(entries) / sizeof(*entries),
         t1,
@@ -491,7 +492,7 @@ int main() {
 
       // Check.
       check_service_custom_variables(
-        db,
+        *db.storage_db(),
         entries,
         sizeof(entries) / sizeof(*entries),
         t1,
@@ -512,7 +513,6 @@ int main() {
   // Cleanup.
   daemon.stop();
   config_remove(engine_config_path.c_str());
-  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
 

@@ -39,10 +39,10 @@ namespace               exceptions {
   class                 msg : private misc::stringifier,
 			      public std::exception {
    public:
-                        msg() throw ();
-                        msg(msg const& b) throw ();
-    virtual             ~msg() throw ();
-    msg&                operator=(msg const& b) throw ();
+                        msg() ;
+                        msg(msg const& b) ;
+    virtual             ~msg() throw() ;
+    msg&                operator=(msg const& b) ;
     virtual msg*        clone() const;
     virtual void        rethrow() const;
     virtual char const* what() const throw ();
@@ -53,7 +53,7 @@ namespace               exceptions {
      *  @param[in] t Data to insert.
      */
     template            <typename T>
-    msg&                operator<<(T t) throw () {
+    msg&                operator<<(T t) {      
       misc::stringifier::operator<<(t);
       return (*this);
     }

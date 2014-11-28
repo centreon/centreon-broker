@@ -314,6 +314,107 @@ Example
     <db_name>centreon_storage</db_name>
   </output>
 
+
+BAM
+===
+
+Monitoring endpoint
+-------------------
+
+Compute Business Activity and Key Performance Indicator levels as well
+as meta-services. This is the improved version (as a Centreon Broker
+module) of the Centreon BAM extension.
+
+===================== ===
+**Type**              bam
+**Layer(s)**          1-7
+**Work on input**     No
+**Work on output**    Yes
+**Work on temporary** No
+===================== ===
+
+Configuration of the monitoring endpoint
+----------------------------------------
+
+======================= ===============================================
+Tag                     Description
+======================= ===============================================
+db_type                 Type of the database (mysql, postgresql,
+                        oracle, ...).
+db_host                 Database host.
+db_port                 Database port.
+db_user                 Database user.
+db_password             Password associated with *db_user*.
+db_name                 Database name.
+queries_per_transaction Number of queries per transaction. Set to 1 or
+                        below to disable transactions. Default to 1.
+read_timeout            When using transactions, maximum time between
+                        commits. This prevent database from not being
+                        updated due to lack of queries to fill the
+                        transaction.
+check_replication       Useful when using DB replication. Enable or
+                        disable replication check when connecting.
+                        Default is enabled.
+command_file            Centreon Engine external command file. This is
+                        used to provide check results on BAs and launch
+                        notifications as a consequence.
+======================= ===============================================
+
+Reporting endpoint
+------------------
+
+Compute reporting information on BAs. This is only useful for use with
+Centreon BI to generate reports on Business Activities.
+
+===================== ======
+**Type**              bam_bi
+**Layer(s)**          1-7
+**Work on input**     No
+**Work on output**    Yes
+**Work on temporary** No
+===================== ======
+
+Configuration of the reporting endpoint
+---------------------------------------
+
+======================= ===============================================
+Tag                     Description
+======================= ===============================================
+db_type                 Type of the database (mysql, postgresql,
+                        oracle, ...).
+db_host                 Database host.
+db_port                 Database port.
+db_user                 Database user.
+db_password             Password associated with *db_user*.
+db_name                 Database name.
+queries_per_transaction Number of queries per transaction. Set to 1 or
+                        below to disable transactions. Default to 1.
+read_timeout            When using transactions, maximum time between
+                        commits. This prevent database from not being
+                        updated due to lack of queries to fill the
+                        transaction.
+check_replication       Useful when using DB replication. Enable or
+                        disable replication check when connecting.
+                        Default is enabled.
+======================= ===============================================
+
+
+Example
+-------
+
+::
+
+  <output>
+    <type>bam</type>
+    <db_type>mysql</db_type>
+    <db_host>localhost</db_host>
+    <db_port>3306</db_port>
+    <db_user>centreon</db_user>
+    <db_password>noertnec</db_password>
+    <db_name>centreon_storage</db_name>
+  </output>
+
+
 TCP
 ===
 

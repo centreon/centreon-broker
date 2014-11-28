@@ -17,6 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/bam/events.hh"
+#include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -390,6 +392,125 @@ unsigned int output::write(misc::shared_ptr<io::data> const& e) {
     buffer << NDO_API_CORRELATIONSERVICESTATE << ":\n";
     handle_event<correlation::service_state>(
       *static_cast<correlation::service_state*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == io::events::data_type<io::events::bam, bam::de_ba_status>::value) {
+    buffer << NDO_API_BAMBASTATUS << ":\n";
+    handle_event<bam::ba_status>(
+      *static_cast<bam::ba_status*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == io::events::data_type<io::events::bam, bam::de_bool_status>::value) {
+    buffer << NDO_API_BAMBOOLSTATUS << ":\n";
+    handle_event<bam::bool_status>(
+      *static_cast<bam::bool_status*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == io::events::data_type<io::events::bam, bam::de_kpi_status>::value) {
+    buffer << NDO_API_BAMKPISTATUS << ":\n";
+    handle_event<bam::kpi_status>(
+      *static_cast<bam::kpi_status*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == io::events::data_type<io::events::bam, bam::de_meta_service_status>::value) {
+    buffer << NDO_API_BAMMETASERVICESTATUS << ":\n";
+    handle_event<bam::meta_service_status>(
+      *static_cast<bam::meta_service_status*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == io::events::data_type<io::events::bam, bam::de_ba_event>::value) {
+    buffer << NDO_API_BAMBAEVENT << ":\n";
+    handle_event<bam::ba_event>(
+      *static_cast<bam::ba_event*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == io::events::data_type<io::events::bam, bam::de_kpi_event>::value) {
+    buffer << NDO_API_BAMKPIEVENT << ":\n";
+    handle_event<bam::kpi_event>(
+      *static_cast<bam::kpi_event*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == io::events::data_type<io::events::bam, bam::de_ba_duration_event>::value) {
+    buffer << NDO_API_BAMBADURATIONEVENT << ":\n";
+    handle_event<bam::ba_duration_event>(
+      *static_cast<bam::ba_duration_event*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == io::events::data_type<io::events::bam, bam::de_dimension_ba_event>::value) {
+    buffer << NDO_API_BAMDIMENSIONBAEVENT << ":\n";
+    handle_event<bam::dimension_ba_event>(
+      *static_cast<bam::dimension_ba_event*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == io::events::data_type<io::events::bam, bam::de_dimension_kpi_event>::value) {
+    buffer << NDO_API_BAMDIMENSIONKPIEVENT << ":\n";
+    handle_event<bam::dimension_kpi_event>(
+      *static_cast<bam::dimension_kpi_event*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == io::events::data_type<io::events::bam, bam::de_dimension_ba_bv_relation_event>::value) {
+    buffer << NDO_API_BAMDIMENSIONBABVRELATIONEVENT << ":\n";
+    handle_event<bam::dimension_ba_bv_relation_event>(
+      *static_cast<bam::dimension_ba_bv_relation_event*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == io::events::data_type<io::events::bam, bam::de_dimension_bv_event>::value) {
+    buffer << NDO_API_BAMDIMENSIONBVEVENT << ":\n";
+    handle_event<bam::dimension_bv_event>(
+      *static_cast<bam::dimension_bv_event*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == io::events::data_type<io::events::bam, bam::de_dimension_truncate_table_signal>::value) {
+    buffer << NDO_API_BAMDIMENSIONTRUNCATETABLESIGNAL << ":\n";
+    handle_event<bam::dimension_truncate_table_signal>(
+      *static_cast<bam::dimension_truncate_table_signal*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == io::events::data_type<io::events::bam, bam::de_rebuild>::value) {
+    buffer << NDO_API_BAMREBUILD << ":\n";
+    handle_event<bam::rebuild>(
+      *static_cast<bam::rebuild*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == io::events::data_type<io::events::bam, bam::de_dimension_timeperiod>::value) {
+    buffer << NDO_API_BAMDIMENSIONTIMEPERIOD << ":\n";
+    handle_event<bam::dimension_timeperiod>(
+      *static_cast<bam::dimension_timeperiod*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == io::events::data_type<io::events::bam, bam::de_dimension_ba_timeperiod_relation>::value) {
+    buffer << NDO_API_BAMDIMENSIONBATIMEPERIODRELATION << ":\n";
+    handle_event<bam::dimension_ba_timeperiod_relation>(
+      *static_cast<bam::dimension_ba_timeperiod_relation*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == io::events::data_type<io::events::bam, bam::de_dimension_timeperiod_exception>::value) {
+    buffer << NDO_API_BAMDIMENSIONTIMEPERIODEXCEPTION << ":\n";
+    handle_event<bam::dimension_timeperiod_exception>(
+      *static_cast<bam::dimension_timeperiod_exception*>(e.data()),
+      buffer);
+    buffer << NDO_API_ENDDATA << "\n";
+  }
+  else if (e->type() == io::events::data_type<io::events::bam, bam::de_dimension_timeperiod_exclusion>::value) {
+    buffer << NDO_API_BAMDIMENSIONTIMEPERIODEXCLUSION << ":\n";
+    handle_event<bam::dimension_timeperiod_exclusion>(
+      *static_cast<bam::dimension_timeperiod_exclusion*>(e.data()),
       buffer);
     buffer << NDO_API_ENDDATA << "\n";
   }

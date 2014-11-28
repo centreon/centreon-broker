@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -58,10 +58,11 @@ int main() {
   external_command commander;
   engine monitoring;
   cbd broker;
+  test_db db;
 
   try {
     // Prepare database.
-    QSqlDatabase db(config_db_open(DB_NAME));
+    db.open(DB_NAME);
 
     // Prepare monitoring engine configuration parameters.
     generate_commands(commands, 4);
@@ -258,7 +259,7 @@ int main() {
         "       output, return_code, state, state_type, timeout, type"
         "  FROM eventhandlers"
         "  ORDER BY host_id DESC, COALESCE(service_id, -1) ASC, start_time ASC");
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.c_str()))
         throw (exceptions::msg()
                << "cannot get host eventhandlers entries: "
@@ -340,7 +341,6 @@ int main() {
   monitoring.stop();
   broker.stop();
   config_remove(engine_config_path.c_str());
-  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
 

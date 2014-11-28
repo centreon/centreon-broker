@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<centreonbroker>
+  <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
+  <instance>42</instance>
+  <instance_name>MyBroker</instance_name>
+  <stats>
+    <fifo>/tmp/cbmod.fifo</fifo>
+  </stats>
+  <log_timestamp>1</log_timestamp>
+  <logger>
+    <type>file</type>
+    <name>cbmod.log</name>
+    <config>1</config>
+    <debug>1</debug>
+    <error>1</error>
+    <info>1</info>
+    <level>3</level>
+  </logger>
+  <output>
+    <name>BAMUnitTest</name>
+    <type>bam</type>
+    <db_type>@DB_TYPE@</db_type>
+    <db_host>@DB_HOST@</db_host>
+    <db_port>@DB_PORT@</db_port>
+    <db_user>@DB_USER@</db_user>
+    <db_password>@DB_PASSWORD@</db_password>
+    <db_name>@DB_NAME_CENTREON@</db_name>
+    <queries_per_transaction>0</queries_per_transaction>
+    <command_file>@COMMAND_FILE@</command_file>
+  </output>
+  <output>
+    <name>BAMBIUnitTest</name>
+    <type>bam_bi</type>
+    <db_type>@DB_TYPE@</db_type>
+    <db_host>@DB_HOST@</db_host>
+    <db_port>@DB_PORT@</db_port>
+    <db_user>@DB_USER@</db_user>
+    <db_password>@DB_PASSWORD@</db_password>
+    <db_name>@DB_NAME_BI@</db_name>
+    <queries_per_transaction>0</queries_per_transaction>
+  </output>
+</centreonbroker>

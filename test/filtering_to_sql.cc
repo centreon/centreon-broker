@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -52,10 +52,11 @@ int main() {
   std::string engine_config_path(tmpnam(NULL));
   external_command commander;
   engine daemon;
+  test_db db;
 
   try {
     // Prepare database.
-    QSqlDatabase db(config_db_open(DB_NAME));
+    db.open(DB_NAME);
 
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, 10);
@@ -88,7 +89,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT * FROM instances";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read instances from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -101,7 +102,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT * FROM logs";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read logs from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -123,7 +124,6 @@ int main() {
   // Cleanup.
   daemon.stop();
   config_remove(engine_config_path.c_str());
-  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
 

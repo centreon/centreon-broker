@@ -49,10 +49,11 @@ int main() {
   std::list<service> services;
   std::string engine_config_path(tmpnam(NULL));
   engine monitoring;
+  test_db db;
 
   try {
     // Prepare database.
-    QSqlDatabase db(config_db_open(DB_NAME));
+    db.open(DB_NAME);
 
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, 10);
@@ -77,7 +78,7 @@ int main() {
 
     // Flag instance as deleted.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec("UPDATE instances SET deleted=TRUE"))
         throw (exceptions::msg()
                << "could not flag instances as deleted: "
@@ -89,7 +90,7 @@ int main() {
 
     // Check hosts table.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec("SELECT COUNT(*) FROM hosts") || !q.next())
         throw (exceptions::msg() << "could not fetch host count: "
                << q.lastError().text());
@@ -99,7 +100,7 @@ int main() {
     }
     // Check services table.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec("SELECT COUNT(*) FROM services") || !q.next())
         throw (exceptions::msg() << "could not fetch service count: "
                << q.lastError().text());
@@ -109,7 +110,7 @@ int main() {
     }
     // Check modules table.
     {
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec("SELECT COUNT(*) FROM modules") || !q.next())
         throw (exceptions::msg() << "could not fetch modules count: "
                << q.lastError().text());
@@ -131,7 +132,6 @@ int main() {
   // Cleanup.
   monitoring.stop();
   config_remove(engine_config_path.c_str());
-  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
 

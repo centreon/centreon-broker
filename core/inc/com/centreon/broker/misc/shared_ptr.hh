@@ -205,6 +205,25 @@ namespace             misc {
     }
 
     /**
+     *  Get reference to pointer.
+     *
+     *  @return  Reference to pointer.
+     */
+    T&                ref() const {
+      return (*_ptr);
+    }
+
+    /**
+     *  Get reference as.
+     *
+     *  @return  Reference casted as.
+     */
+    template <typename U>
+    U&                ref_as() const {
+      return (static_cast<U&>(*_ptr));
+    }
+
+    /**
      *  Cast a shared pointer to another type of shared pointer, sharing
      *  the same reference count.
      *

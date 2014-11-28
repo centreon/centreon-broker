@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <memory>
+#include "com/centreon/broker/bam/events.hh"
 #include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -296,6 +297,57 @@ void input::read(misc::shared_ptr<io::data>& d) {
       break ;
      case NDO_API_CORRELATIONSERVICESTATE:
       e.reset(_handle_event<correlation::service_state>());
+      break ;
+     case NDO_API_BAMBASTATUS:
+      e.reset(_handle_event<bam::ba_status>());
+      break ;
+     case NDO_API_BAMBOOLSTATUS:
+      e.reset(_handle_event<bam::bool_status>());
+      break ;
+     case NDO_API_BAMKPISTATUS:
+      e.reset(_handle_event<bam::kpi_status>());
+      break ;
+     case NDO_API_BAMMETASERVICESTATUS:
+      e.reset(_handle_event<bam::meta_service_status>());
+      break ;
+     case NDO_API_BAMBAEVENT:
+      e.reset(_handle_event<bam::ba_event>());
+      break ;
+     case NDO_API_BAMKPIEVENT:
+      e.reset(_handle_event<bam::kpi_event>());
+      break ;
+     case NDO_API_BAMBADURATIONEVENT:
+      e.reset(_handle_event<bam::ba_duration_event>());
+      break ;
+     case NDO_API_BAMDIMENSIONBAEVENT:
+      e.reset(_handle_event<bam::dimension_ba_event>());
+      break ;
+     case NDO_API_BAMDIMENSIONKPIEVENT:
+      e.reset(_handle_event<bam::dimension_kpi_event>());
+      break ;
+     case NDO_API_BAMDIMENSIONBABVRELATIONEVENT:
+      e.reset(_handle_event<bam::dimension_ba_bv_relation_event>());
+      break ;
+     case NDO_API_BAMDIMENSIONBVEVENT:
+      e.reset(_handle_event<bam::dimension_bv_event>());
+      break ;
+     case NDO_API_BAMDIMENSIONTRUNCATETABLESIGNAL:
+      e.reset(_handle_event<bam::dimension_truncate_table_signal>());
+      break ;
+     case NDO_API_BAMREBUILD:
+      e.reset(_handle_event<bam::rebuild>());
+      break ;
+     case NDO_API_BAMDIMENSIONTIMEPERIOD:
+      e.reset(_handle_event<bam::dimension_timeperiod>());
+      break ;
+     case NDO_API_BAMDIMENSIONBATIMEPERIODRELATION:
+      e.reset(_handle_event<bam::dimension_ba_timeperiod_relation>());
+      break ;
+     case NDO_API_BAMDIMENSIONTIMEPERIODEXCEPTION:
+      e.reset(_handle_event<bam::dimension_timeperiod_exception>());
+      break ;
+     case NDO_API_BAMDIMENSIONTIMEPERIODEXCLUSION:
+      e.reset(_handle_event<bam::dimension_timeperiod_exclusion>());
       break ;
      default:
       // Skip this event.

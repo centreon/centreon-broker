@@ -33,7 +33,7 @@ set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")
 
 # Version.
 set(CENTREON_BROKER_MAJOR 2)
-set(CENTREON_BROKER_MINOR 7)
+set(CENTREON_BROKER_MINOR 8)
 set(CENTREON_BROKER_PATCH 0)
 set(CENTREON_BROKER_VERSION "${CENTREON_BROKER_MAJOR}.${CENTREON_BROKER_MINOR}.${CENTREON_BROKER_PATCH}")
 add_definitions(-DCENTREON_BROKER_VERSION=\"${CENTREON_BROKER_VERSION}\")
@@ -478,6 +478,13 @@ if (WITH_MODULE_STORAGE)
   list(APPEND MODULE_LIST "storage")
 endif()
 
+# BAM module.
+option(WITH_MODULE_BAM "Build BAM module." ON)
+if (WITH_MODULE_BAM)
+  add_subdirectory("bam")
+  list(APPEND MODULE_LIST "bam")
+endif()
+
 # TCP module.
 option(WITH_MODULE_TCP "Build TCP module." ON)
 if (WITH_MODULE_TCP)
@@ -511,14 +518,6 @@ string(REPLACE ";" ", " MODULE_LIST "${MODULE_LIST}")
 
 # Functional tests.
 if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
-  # My plugin.
-  set(MY_PLUGIN "my_plugin")
-  add_executable("${MY_PLUGIN}"
-    "${PROJECT_SOURCE_DIR}/test/my_plugin.cc")
-  get_property(MY_PLUGIN_PATH
-    TARGET "${MY_PLUGIN}"
-    PROPERTY LOCATION)
-
   # Configure files.
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml")
@@ -572,6 +571,8 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/temporary.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/temporary.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/meta_service.xml.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/meta_service.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_instance_update_outdated_1.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/sql_instance_update_outdated_1.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_instance_update_outdated_2.xml.in"
@@ -605,6 +606,22 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/rrd_file.hh"
     )
   target_link_libraries("${TEST_LIB}" "roker")
+
+  # My plugin.
+  set(MY_PLUGIN "my_plugin")
+  add_executable("${MY_PLUGIN}"
+    "${PROJECT_SOURCE_DIR}/test/my_plugin.cc")
+  get_property(MY_PLUGIN_PATH
+    TARGET "${MY_PLUGIN}"
+    PROPERTY LOCATION)
+  # My BAM plugin.
+  set(MY_PLUGIN_BAM "my_plugin_bam")
+  add_executable("${MY_PLUGIN_BAM}"
+    "${PROJECT_SOURCE_DIR}/test/my_plugin_bam.cc")
+  target_link_libraries("${MY_PLUGIN_BAM}" "${TEST_LIB}")
+  get_property(MY_PLUGIN_BAM_PATH
+    TARGET "${MY_PLUGIN_BAM}"
+    PROPERTY LOCATION)
 
   # Monitoring to SQL.
   set(TEST_NAME "running_monitoring_to_sql")
@@ -779,6 +796,34 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
+  # BAM engine.
+  set(TEST_NAME "running_bam")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/bam.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # BAM dimension.
+  set(TEST_NAME "running_bam_dimension")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/bam_dimension.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # BAM rebuild
+  set(TEST_NAME "running_bam_rebuild")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/bam_rebuild.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # Meta-services.
+  set(TEST_NAME "running_meta_service")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/meta_service.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
   # RRD benchmark.
   unset(QT_WRAPPED_SOURCES)
   qt4_wrap_cpp(QT_WRAPPED_SOURCES
@@ -801,7 +846,7 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/bench_bbdo.cc"
     "${PROJECT_SOURCE_DIR}/test/bench_stream.cc"
     "${PROJECT_SOURCE_DIR}/test/bench_stream.hh")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${BBDO} ${COMPRESSION} ${CORRELATION} ${NEB} ${NDO} ${STORAGE})
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${BBDO} ${COMPRESSION} ${BAM} ${CORRELATION} ${NEB} ${NDO} ${STORAGE})
 
   # Last file to configure, based on target paths.
   configure_file("${PROJECT_SOURCE_DIR}/test/vars.hh.in"

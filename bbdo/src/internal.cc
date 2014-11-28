@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -23,6 +23,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <stdint.h>
+#include "com/centreon/broker/bam/events.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/correlation/events.hh"
@@ -461,6 +462,57 @@ namespace bbdo {
   template <> std::vector<getter_setter<storage::status> >
     bbdo_mapped_type<storage::status>::table =
       std::vector<getter_setter<storage::status> >();
+  template <> std::vector<getter_setter<bam::ba_status> >
+    bbdo_mapped_type<bam::ba_status>::table =
+      std::vector<getter_setter<bam::ba_status> >();
+  template <> std::vector<getter_setter<bam::bool_status> >
+    bbdo_mapped_type<bam::bool_status>::table =
+      std::vector<getter_setter<bam::bool_status> >();
+  template <> std::vector<getter_setter<bam::kpi_status> >
+    bbdo_mapped_type<bam::kpi_status>::table =
+      std::vector<getter_setter<bam::kpi_status> >();
+  template <> std::vector<getter_setter<bam::meta_service_status> >
+    bbdo_mapped_type<bam::meta_service_status>::table =
+      std::vector<getter_setter<bam::meta_service_status> >();
+  template <> std::vector<getter_setter<bam::ba_event> >
+    bbdo_mapped_type<bam::ba_event>::table =
+      std::vector<getter_setter<bam::ba_event> >();
+  template <> std::vector<getter_setter<bam::kpi_event> >
+    bbdo_mapped_type<bam::kpi_event>::table =
+      std::vector<getter_setter<bam::kpi_event> >();
+  template <> std::vector<getter_setter<bam::ba_duration_event> >
+    bbdo_mapped_type<bam::ba_duration_event>::table =
+      std::vector<getter_setter<bam::ba_duration_event> >();
+  template <> std::vector<getter_setter<bam::dimension_ba_event> >
+    bbdo_mapped_type<bam::dimension_ba_event>::table =
+      std::vector<getter_setter<bam::dimension_ba_event> >();
+  template <> std::vector<getter_setter<bam::dimension_kpi_event> >
+    bbdo_mapped_type<bam::dimension_kpi_event>::table =
+      std::vector<getter_setter<bam::dimension_kpi_event> >();
+  template <> std::vector<getter_setter<bam::dimension_ba_bv_relation_event> >
+    bbdo_mapped_type<bam::dimension_ba_bv_relation_event>::table =
+      std::vector<getter_setter<bam::dimension_ba_bv_relation_event> >();
+  template <> std::vector<getter_setter<bam::dimension_bv_event> >
+    bbdo_mapped_type<bam::dimension_bv_event>::table =
+      std::vector<getter_setter<bam::dimension_bv_event> >();
+  template <> std::vector<getter_setter<bam::dimension_truncate_table_signal> >
+    bbdo_mapped_type<bam::dimension_truncate_table_signal>::table =
+      std::vector<getter_setter<bam::dimension_truncate_table_signal> >();
+  template <> std::vector<getter_setter<bam::rebuild> >
+    bbdo_mapped_type<bam::rebuild>::table =
+      std::vector<getter_setter<bam::rebuild> >();
+  template <> std::vector<getter_setter<bam::dimension_timeperiod> >
+    bbdo_mapped_type<bam::dimension_timeperiod>::table =
+      std::vector<getter_setter<bam::dimension_timeperiod> >();
+  template <> std::vector<getter_setter<bam::dimension_ba_timeperiod_relation> >
+    bbdo_mapped_type<bam::dimension_ba_timeperiod_relation>::table =
+      std::vector<getter_setter<bam::dimension_ba_timeperiod_relation> >();
+  template <> std::vector<getter_setter<bam::dimension_timeperiod_exception> >
+    bbdo_mapped_type<bam::dimension_timeperiod_exception>::table =
+      std::vector<getter_setter<bam::dimension_timeperiod_exception> >();
+  template <> std::vector<getter_setter<bam::dimension_timeperiod_exclusion> >
+    bbdo_mapped_type<bam::dimension_timeperiod_exclusion>::table =
+      std::vector<getter_setter<bam::dimension_timeperiod_exclusion> >();
   template <> std::vector<getter_setter<version_response> >
     bbdo_mapped_type<version_response>::table =
       std::vector<getter_setter<version_response> >();
@@ -508,6 +560,23 @@ void bbdo::initialize() {
   static_init<correlation::issue>();
   static_init<correlation::issue_parent>();
   static_init<correlation::service_state>();
+  static_init<bam::ba_status>();
+  static_init<bam::bool_status>();
+  static_init<bam::kpi_status>();
+  static_init<bam::meta_service_status>();
+  static_init<bam::ba_event>();
+  static_init<bam::kpi_event>();
+  static_init<bam::ba_duration_event>();
+  static_init<bam::dimension_ba_event>();
+  static_init<bam::dimension_kpi_event>();
+  static_init<bam::dimension_ba_bv_relation_event>();
+  static_init<bam::dimension_bv_event>();
+  static_init<bam::dimension_truncate_table_signal>();
+  static_init<bam::rebuild>();
+  static_init<bam::dimension_timeperiod>();
+  static_init<bam::dimension_ba_timeperiod_relation>();
+  static_init<bam::dimension_timeperiod_exception>();
+  static_init<bam::dimension_timeperiod_exclusion>();
   static_init<version_response>();
   return ;
 }

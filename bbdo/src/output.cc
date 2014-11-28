@@ -19,6 +19,8 @@
 
 #include <arpa/inet.h>
 #include <stdint.h>
+#include "com/centreon/broker/bam/events.hh"
+#include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/output.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
@@ -257,6 +259,36 @@ unsigned int output::write(misc::shared_ptr<io::data> const& e) {
       &serialize<correlation::issue_parent, BBDO_ID(BBDO_CORRELATION_TYPE, 4)> },
     { io::events::data_type<io::events::correlation, correlation::de_service_state>::value,
       &serialize<correlation::service_state, BBDO_ID(BBDO_CORRELATION_TYPE, 5)> },
+    { io::events::data_type<io::events::bam, bam::de_ba_status>::value,
+      &serialize<bam::ba_status, BBDO_ID(BBDO_BAM_TYPE, 1)> },
+    { io::events::data_type<io::events::bam, bam::de_bool_status>::value,
+      &serialize<bam::bool_status, BBDO_ID(BBDO_BAM_TYPE, 2)> },
+    { io::events::data_type<io::events::bam, bam::de_kpi_status>::value,
+      &serialize<bam::kpi_status, BBDO_ID(BBDO_BAM_TYPE, 3)> },
+    { io::events::data_type<io::events::bam, bam::de_meta_service_status>::value,
+      &serialize<bam::meta_service_status, BBDO_ID(BBDO_BAM_TYPE, 4)> },
+    { io::events::data_type<io::events::bam, bam::de_ba_event>::value,
+      &serialize<bam::ba_event, BBDO_ID(BBDO_BAM_TYPE, 5)> },
+    { io::events::data_type<io::events::bam, bam::de_kpi_event>::value,
+      &serialize<bam::kpi_event, BBDO_ID(BBDO_BAM_TYPE, 6)> },
+    { io::events::data_type<io::events::bam, bam::de_ba_duration_event>::value,
+      &serialize<bam::ba_duration_event, BBDO_ID(BBDO_BAM_TYPE, 7)> },
+    { io::events::data_type<io::events::bam, bam::de_dimension_ba_event>::value,
+      &serialize<bam::dimension_ba_event, BBDO_ID(BBDO_BAM_TYPE, 8)> },
+    { io::events::data_type<io::events::bam, bam::de_dimension_kpi_event>::value,
+      &serialize<bam::dimension_kpi_event, BBDO_ID(BBDO_BAM_TYPE, 9)> },
+    { io::events::data_type<io::events::bam, bam::de_dimension_ba_bv_relation_event>::value,
+      &serialize<bam::dimension_ba_bv_relation_event, BBDO_ID(BBDO_BAM_TYPE, 10)> },
+    { io::events::data_type<io::events::bam, bam::de_dimension_bv_event>::value,
+      &serialize<bam::dimension_bv_event, BBDO_ID(BBDO_BAM_TYPE, 11)> },
+    { io::events::data_type<io::events::bam, bam::de_dimension_truncate_table_signal>::value,
+      &serialize<bam::dimension_truncate_table_signal, BBDO_ID(BBDO_BAM_TYPE, 12)> },
+    { io::events::data_type<io::events::bam, bam::de_rebuild>::value,
+      &serialize<bam::rebuild, BBDO_ID(BBDO_BAM_TYPE, 13)> },
+    { io::events::data_type<io::events::bam, bam::de_dimension_timeperiod>::value,
+      &serialize<bam::dimension_timeperiod, BBDO_ID(BBDO_BAM_TYPE, 14)> },
+    { io::events::data_type<io::events::bam, bam::de_dimension_ba_timeperiod_relation>::value,
+      &serialize<bam::dimension_ba_timeperiod_relation, BBDO_ID(BBDO_BAM_TYPE, 15)> },
     { io::events::data_type<io::events::bbdo, bbdo::de_version_response>::value,
       &serialize<version_response, BBDO_ID(BBDO_INTERNAL_TYPE, 1)> }
   };
