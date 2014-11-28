@@ -26,20 +26,14 @@ using namespace com::centreon::broker::notification;
  *
  *  Specialization for all the groups were required.
  *
- *  @param[in] id     The id of the host.
- *  @param[in] st     The state of the conf.
- *  @param[in] cache  A node cache.
- *  @param[in] cnt    The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 template <> std::string get_host_groups<true>(
-                          objects::node_id id,
-                          state const& st,
-                          node_cache const& cache,
-                          objects::contact const& cnt) {
+                          macro_context const& context) {
   std::map<std::string, neb::host_group_member> const& group_map =
-    cache.get_host(id.get_host_id()).get_groups();
+    context.get_cache().get_host(context.get_id().get_host_id()).get_groups();
   std::string result;
   for (std::map<std::string, neb::host_group_member>::const_iterator
          it(group_map.begin()),
@@ -58,20 +52,14 @@ template <> std::string get_host_groups<true>(
  *
  *  Specialization for only one group was required.
  *
- *  @param[in] id     The id of the host.
- *  @param[in] st     The state of the conf.
- *  @param[in] cache  A node cache.
- *  @param[in] cnt    The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 template <> std::string get_host_groups<false>(
-                          objects::node_id id,
-                          state const& st,
-                          node_cache const& cache,
-                          objects::contact const& cnt) {
+                          macro_context const& context) {
   std::map<std::string, neb::host_group_member> const& group_map =
-    cache.get_host(id.get_host_id()).get_groups();
+    context.get_cache().get_host(context.get_id().get_host_id()).get_groups();
   if (!group_map.empty())
     return (group_map.begin()->first);
 }
@@ -81,20 +69,15 @@ template <> std::string get_host_groups<false>(
  *
  *  Specialization for all the groups were required.
  *
- *  @param[in] id     The id of the service.
- *  @param[in] st     The state of the conf.
- *  @param[in] cache  A node cache.
- *  @param[in] cnt    The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 template <> std::string get_service_groups<true>(
-                          objects::node_id id,
-                          state const& st,
-                          node_cache const& cache,
-                          objects::contact const& cnt) {
+                          macro_context const& context) {
   std::map<std::string, neb::service_group_member> const& group_map =
-    cache.get_service(id.get_service_id()).get_groups();
+    context.get_cache().get_service(context.get_id().get_service_id())
+                       .get_groups();
   std::string result;
   for (std::map<std::string, neb::service_group_member>::const_iterator
          it(group_map.begin()),
@@ -113,20 +96,15 @@ template <> std::string get_service_groups<true>(
  *
  *  Specialization for only one group was required.
  *
- *  @param[in] id     The id of the service.
- *  @param[in] st     The state of the conf.
- *  @param[in] cache  A node cache.
- *  @param[in] cnt    The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 template <> std::string get_service_groups<false>(
-                          objects::node_id id,
-                          state const& st,
-                          node_cache const& cache,
-                          objects::contact const& cnt) {
+                          macro_context const& context) {
   std::map<std::string, neb::service_group_member> const& group_map =
-    cache.get_service(id.get_service_id()).get_groups();
+    context.get_cache().get_service(context.get_id().get_service_id())
+                       .get_groups();
   if (!group_map.empty())
     return (group_map.begin()->first);
 }
@@ -136,20 +114,15 @@ template <> std::string get_service_groups<false>(
  *
  *  Specialization for short output.
  *
- *  @param[in] id            The id of the host.
- *  @param[in] st            The state of the conf.
- *  @param[in] cache         A node cache.
- *  @param[in] cnt           The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 template <> std::string get_host_output<false>(
-                          objects::node_id id,
-                          state const& st,
-                          node_cache const& cache,
-                          objects::contact const& cnt) {
-  std::string output = cache.get_host(
-                         id.get_host_id()).get_status().output.toStdString();
+                          macro_context const& context) {
+  std::string output =
+    context.get_cache().get_host(
+      context.get_id().get_host_id()).get_status().output.toStdString();
   return (output.substr(0, output.find_first_of('\n')));
 }
 
@@ -158,20 +131,15 @@ template <> std::string get_host_output<false>(
  *
  *  Specialization for long output.
  *
- *  @param[in] id            The id of the host.
- *  @param[in] st            The state of the conf.
- *  @param[in] cache         A node cache.
- *  @param[in] cnt           The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 template <> std::string get_host_output<true>(
-                          objects::node_id id,
-                          state const& st,
-                          node_cache const& cache,
-                          objects::contact const& cnt) {
-  std::string output = cache.get_host(
-                         id.get_host_id()).get_status().output.toStdString();
+                          macro_context const& context) {
+  std::string output =
+    context.get_cache().get_host(
+      context.get_id().get_host_id()).get_status().output.toStdString();
   size_t found = output.find_first_of('\n');
   if (found != std::string::npos)
     return (output.substr(found == std::string::npos));
@@ -183,20 +151,15 @@ template <> std::string get_host_output<true>(
  *
  *  Specialization for short output.
  *
- *  @param[in] id            The id of the service.
- *  @param[in] st            The state of the conf.
- *  @param[in] cache         A node cache.
- *  @param[in] cnt           The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 template <> std::string get_service_output<false>(
-                          objects::node_id id,
-                          state const& st,
-                          node_cache const& cache,
-                          objects::contact const& cnt) {
-  std::string output = cache.get_host(
-                         id.get_host_id()).get_status().output.toStdString();
+                          macro_context const& context) {
+  std::string output =
+    context.get_cache().get_host(
+      context.get_id().get_host_id()).get_status().output.toStdString();
   return (output.substr(0, output.find_first_of('\n')));
 }
 
@@ -205,20 +168,15 @@ template <> std::string get_service_output<false>(
  *
  *  Specialization for long output.
  *
- *  @param[in] id            The id of the service.
- *  @param[in] st            The state of the conf.
- *  @param[in] cache         A node cache.
- *  @param[in] cnt           The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 template <> std::string get_service_output<true>(
-                          objects::node_id id,
-                          state const& st,
-                          node_cache const& cache,
-                          objects::contact const& cnt) {
-  std::string output = cache.get_host(
-                         id.get_host_id()).get_status().output.toStdString();
+                          macro_context const& context) {
+  std::string output =
+    context.get_cache().get_host(
+      context.get_id().get_host_id()).get_status().output.toStdString();
   size_t found = output.find_first_of('\n');
   if (found != std::string::npos)
     return (output.substr(found == std::string::npos));
@@ -228,19 +186,15 @@ template <> std::string get_service_output<true>(
 /**
  *  Get the state of a host.
  *
- *  @param[in] id            The id of the host.
- *  @param[in] st            The state of the conf.
- *  @param[in] cache         A node cache.
- *  @param[in] cnt           The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 std::string get_host_state(
-              objects::node_id id,
-              state const& st,
-              node_cache const& cache,
-              objects::contact const& cnt) {
-  short state = cache.get_host(id.get_host_id()).get_status().current_state;
+              macro_context const& context) {
+  short state =
+    context.get_cache().get_host(
+      context.get_id().get_host_id()).get_status().current_state;
   if (state == objects::node_state::host_up)
     return ("UP");
   else if (state == objects::node_state::host_down)
@@ -252,19 +206,15 @@ std::string get_host_state(
 /**
  *  Get the state of a service.
  *
- *  @param[in] id            The id of the host.
- *  @param[in] st            The state of the conf.
- *  @param[in] cache         A node cache.
- *  @param[in] cnt           The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 std::string get_service_state(
-              objects::node_id id,
-              state const& st,
-              node_cache const& cache,
-              objects::contact const& cnt) {
-  short state = cache.get_service(id.get_service_id()).get_status().current_state;
+              macro_context const& context) {
+  short state =
+    context.get_cache().get_service(
+      context.get_id().get_service_id()).get_status().current_state;
   if (state == objects::node_state::service_ok)
     return ("OK");
   else if (state == objects::node_state::service_warning)
@@ -279,19 +229,15 @@ std::string get_service_state(
 /**
  *  Get the last state of a host.
  *
- *  @param[in] id            The id of the host.
- *  @param[in] st            The state of the conf.
- *  @param[in] cache         A node cache.
- *  @param[in] cnt           The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 std::string get_last_host_state(
-              objects::node_id id,
-              state const& st,
-              node_cache const& cache,
-              objects::contact const& cnt) {
-  short state = cache.get_host(id.get_host_id()).get_status().current_state;
+              macro_context const& context) {
+  short state =
+    context.get_cache().get_host(
+      context.get_id().get_host_id()).get_status().current_state;
   if (state == objects::node_state::host_up)
     return ("UP");
   else if (state == objects::node_state::host_down)
@@ -303,20 +249,15 @@ std::string get_last_host_state(
 /**
  *  Get the last state of a service.
  *
- *  @param[in] id            The id of the service.
- *  @param[in] st            The state of the conf.
- *  @param[in] cache         A node cache.
- *  @param[in] cnt           The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 std::string get_last_service_state(
-              objects::node_id id,
-              state const& st,
-              node_cache const& cache,
-              objects::contact const& cnt) {
+              macro_context const& context) {
   short state =
-          cache.get_service(id.get_service_id()).get_prev_status().current_state;
+    context.get_cache().get_service(
+      context.get_id().get_service_id()).get_prev_status().current_state;
   if (state == objects::node_state::service_ok)
     return ("OK");
   else if (state == objects::node_state::service_warning)
@@ -330,19 +271,14 @@ std::string get_last_service_state(
 /**
  *  Get the state type of a host.
  *
- *  @param[in] id            The id of the host.
- *  @param[in] st            The state of the conf.
- *  @param[in] cache         A node cache.
- *  @param[in] cnt           The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 std::string get_host_state_type(
-              objects::node_id id,
-              state const& st,
-              node_cache const& cache,
-              objects::contact const& cnt) {
-  if (cache.get_host(id.get_host_id()).get_status().state_type == 1)
+              macro_context const& context) {
+  if (context.get_cache().get_host(
+        context.get_id().get_host_id()).get_status().state_type == 1)
     return ("HARD");
   else
     return ("SOFT");
@@ -351,19 +287,14 @@ std::string get_host_state_type(
 /**
  *  Ge the state type of service.
  *
- *  @param[in] id            The id of the service.
- *  @param[in] st            The state of the conf.
- *  @param[in] cache         A node cache.
- *  @param[in] cnt           The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 std::string get_service_state_type(
-              objects::node_id id,
-              state const& st,
-              node_cache const& cache,
-              objects::contact const& cnt) {
-  if (cache.get_service(id.get_service_id()).get_status().state_type == 1)
+              macro_context const& context) {
+  if (context.get_cache().get_service(
+        context.get_id().get_service_id()).get_status().state_type == 1)
     return ("HARD");
   else
     return ("SOFT");
@@ -372,41 +303,28 @@ std::string get_service_state_type(
 /**
  *  Null getter, returns nothing.
  *
- *  @param[in] id            The id of the host.
- *  @param[in] st            The state of the conf.
- *  @param[in] cache         A node cache.
- *  @param[in] cnt           The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 std::string null_getter(
-              objects::node_id id,
-              state const& st,
-              node_cache const& cache,
-              objects::contact const& cnt) {
-  (void)id;
-  (void)st;
-  (void)cache;
+              macro_context const& context) {
+  (void)context;
   return ("");
 }
 
 /**
  *  Get the duration of a host state change.
  *
- *  @param[in] id            The id of the host.
- *  @param[in] st            The state of the conf.
- *  @param[in] cache         A node cache.
- *  @param[in] cnt           The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 std::string get_host_duration(
-              objects::node_id id,
-              state const& st,
-              node_cache const& cache,
-              objects::contact const& cnt) {
+              macro_context const& context) {
   time_t last_state_change =
-            cache.get_host(id.get_host_id()).get_status().last_state_change;
+    context.get_cache().get_host(
+      context.get_id().get_host_id()).get_status().last_state_change;
   // Get duration.
   time_t now(time(NULL));
   unsigned long duration(now - last_state_change);
@@ -431,20 +349,15 @@ std::string get_host_duration(
 /**
  *  Get the duration of a service state change.
  *
- *  @param[in] id            The id of the service.
- *  @param[in] st            The state of the conf.
- *  @param[in] cache         A node cache.
- *  @param[in] cnt           The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 std::string get_service_duration(
-              objects::node_id id,
-              state const& st,
-              node_cache const& cache,
-              objects::contact const& cnt) {
+              macro_context const& context) {
   time_t last_state_change =
-            cache.get_service(id.get_service_id()).get_status().last_state_change;
+    context.get_cache().get_service(
+      context.get_id().get_service_id()).get_status().last_state_change;
   // Get duration.
   time_t now(time(NULL));
   unsigned long duration(now - last_state_change);
@@ -469,108 +382,84 @@ std::string get_service_duration(
 /**
  *  Get the duration of a host state change in seconds.
  *
- *  @param[in] id            The id of the host.
- *  @param[in] st            The state of the conf.
- *  @param[in] cache         A node cache.
- *  @param[in] cnt           The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 std::string get_host_duration_sec(
-             objects::node_id id,
-             state const& st,
-             node_cache const& cache,
-             objects::contact const& cnt) {
+             macro_context const& context) {
   time_t now(time(NULL));
   unsigned long duration(
-    now - cache.get_host(id.get_host_id()).get_status().last_state_change);
+    now - context.get_cache().get_host(
+            context.get_id().get_host_id()).get_status().last_state_change);
   return (to_string<unsigned long, 0>(duration));
 }
 
 /**
  *  Get the duration of a service state change in seconds.
  *
- *  @param[in] id            The id of the service.
- *  @param[in] st            The state of the conf.
- *  @param[in] cache         A node cache.
- *  @param[in] cnt            The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 std::string get_service_duration_sec(
-             objects::node_id id,
-             state const& st,
-             node_cache const& cache,
-             objects::contact const& cnt) {
+             macro_context const& context) {
   time_t now(time(NULL));
   unsigned long duration(
-    now - cache.get_service(id.get_service_id()).get_status().last_state_change);
+    now - context.get_cache().get_service(
+            context.get_id().get_service_id()).get_status().last_state_change);
   return (to_string<unsigned long, 0>(duration));
 }
 
 /**
  *  Get the actual time in seconds.
  *
- *  @param[in] id            The id of the host.
- *  @param[in] st            The state of the conf.
- *  @param[in] cache         A node cache.
- *  @param[in] cnt           The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 std::string get_timet_string(
-              objects::node_id id,
-              state const& st,
-              node_cache const& cache,
-              objects::contact const& cnt) {
+              macro_context const& context) {
+  (void)context;
   return (to_string<time_t, 0>(::time(NULL)));
 }
 
 /**
  *  Get the alias of the contactgroup.
  *
- *  @param[in] id            The id of the host.
- *  @param[in] st            The state of the conf.
- *  @param[in] cache         A node cache.
- *  @param[in] cnt           The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 std::string get_contactgroup_alias(
-              objects::node_id id,
-              state const& st,
-              node_cache const& cache,
-              objects::contact const& cnt) {
+              macro_context const& context) {
   objects::contactgroup::ptr ctg =
-             st.get_contactgroup_by_contact_id(cnt.get_id());
+    context.get_state().get_contactgroup_by_contact_id(
+      context.get_contact().get_id());
   if (!ctg)
     throw (com::centreon::broker::exceptions::msg()
            << "notification: macro: could not get the contactgroup alias "
-              "of contact " << cnt.get_name());
+              "of contact " << context.get_contact().get_name());
   return (ctg->get_alias());
 }
 
 /**
  *  Get the members of a contactgroup.
  *
- *  @param[in] id            The id of the host.
- *  @param[in] st            The state of the conf.
- *  @param[in] cache         A node cache.
- *  @param[in] cnt           The contact being notified.
+ *  @param[in] context  The context from where the macro is being executed.
  *
  *  @return  The value of the macro.
  */
 std::string get_contactgroup_members(
-              objects::node_id id,
-              state const& st,
-              node_cache const& cache,
-              objects::contact const& cnt) {
+              macro_context const& context) {
+  state const& st = context.get_state();
   objects::contactgroup::ptr ctg =
-             st.get_contactgroup_by_contact_id(cnt.get_id());
+    st.get_contactgroup_by_contact_id(
+      context.get_contact().get_id());
   if (!ctg)
     throw (com::centreon::broker::exceptions::msg()
            << "notification: macro: could not get the contactgroup members "
-              "of contact " << cnt.get_name());
+              "of contact " << context.get_contact().get_name());
   std::string res;
   QList<unsigned int> members = st.get_contacts_by_contactgroup(ctg);
   for (QList<unsigned int>::const_iterator it(members.begin()),

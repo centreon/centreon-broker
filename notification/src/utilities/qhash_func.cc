@@ -19,6 +19,7 @@
 
 #include <QHash>
 #include <QString>
+#include <QByteArray>
 #include "com/centreon/broker/notification/utilities/qhash_func.hh"
 
 /**
@@ -28,5 +29,5 @@
  *  @return The hashed value for str.
  */
 uint qHash(std::string const& str) {
-  return (qHash(str.c_str()));
+  return (qHash(QByteArray::fromRawData(str.c_str(), str.size())));
 }

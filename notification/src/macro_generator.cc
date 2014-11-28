@@ -108,10 +108,9 @@ bool macro_generator::_get_x_macros(
   if (found == _map.end())
     return (false);
   else {
-    result = (*found)(id, st, cache, cnt);
+    result = (*found)(macro_context(id, cnt, st, cache));
     return (true);
   }
-  get_contact_member<std::string const&, &objects::contact::get_name, 0>(id, st, cache, cnt);
 }
 
 /**

@@ -41,6 +41,7 @@ add_library("${NOTIFICATION}" SHARED
   # Sources.
   "${SRC_DIR}/action.cc"
   "${SRC_DIR}/factory.cc"
+  "${SRC_DIR}/macro_context.cc"
   "${SRC_DIR}/macro_generator.cc"
   "${SRC_DIR}/macro_getters.cc"
   "${SRC_DIR}/main.cc"
@@ -113,6 +114,7 @@ add_library("${NOTIFICATION}" SHARED
   # Headers.
   "${INC_DIR}/action.hh"
   "${INC_DIR}/factory.hh"
+  "${INC_DIR}/macro_context.hh"
   "${INC_DIR}/macro_generator.hh"
   "${INC_DIR}/macro_getters.hh"
   "${INC_DIR}/node_cache.hh"

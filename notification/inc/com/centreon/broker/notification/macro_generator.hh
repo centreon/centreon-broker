@@ -27,6 +27,7 @@
 #  include "com/centreon/broker/notification/state.hh"
 #  include "com/centreon/broker/notification/objects/contact.hh"
 #  include "com/centreon/broker/notification/node_cache.hh"
+#  include "com/centreon/broker/notification/macro_context.hh"
 
 CCB_BEGIN()
 
@@ -59,10 +60,7 @@ namespace        notification {
                    objects::contact const& cnt,
                    std::string& result) const;
 
-    typedef QHash<std::string, std::string (*)(objects::node_id,
-                                               state const&,
-                                               node_cache const&,
-                                               objects::contact const&)>
+    typedef QHash<std::string, std::string (*)(macro_context const&)>
                   x_macro_map;
     static x_macro_map
                   _map;
