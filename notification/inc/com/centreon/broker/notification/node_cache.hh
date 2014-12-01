@@ -24,7 +24,6 @@
 #  include <deque>
 #  include <vector>
 #  include <QMutex>
-#  include <QHash>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/bbdo/stream.hh"
@@ -91,8 +90,6 @@ namespace         notification {
                   _host_node_states;
     QHash<unsigned int, service_node_state>
                   _service_node_states;
-    QHash<std::string, neb::custom_variable>
-                  _custom_variables;
 
     QMutex        _mutex;
 

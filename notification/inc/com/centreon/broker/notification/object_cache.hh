@@ -23,9 +23,11 @@
 #  include <string>
 #  include <deque>
 #  include <map>
+#  include <QHash>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/neb/custom_variable.hh"
 
 CCB_BEGIN()
 
@@ -65,6 +67,7 @@ namespace             notification {
         _current_status = obj._current_status;
         _prev_status = obj._prev_status;
         _groups = obj._groups;
+        _custom_variables = obj._custom_variables;
       }
       return (*this);
     }
@@ -86,6 +89,13 @@ namespace             notification {
            it != end;
            ++it)
         out.push_back(misc::shared_ptr<io::data>(new GroupType(it->second)));
+      for (QHash<std::string, neb::custom_variable>::const_iterator
+             it(_custom_variables.begin()),
+             end(_custom_variables.end());
+           it != end;
+           ++it)
+        out.push_back(
+              misc::shared_ptr<io::data>(new neb::custom_variable(*it)));
     }
 
     /**
@@ -115,6 +125,16 @@ namespace             notification {
     void update(GroupType const& group) {
       _groups[group.group.toStdString()] = group;
     }
+
+    /**
+     *  Update the object cache.
+     *
+     *  @param[in] var  The data to update.
+     */
+    void update(neb::custom_variable const& var) {
+      _custom_variables.insert(var.name.toStdString(), var);
+    }
+
 
     /**
      *  Get the node object.
@@ -152,6 +172,15 @@ namespace             notification {
       return (_groups);
     }
 
+    /**
+     *  Get the custom vars of this node.
+     *
+     *  @return  The custome vars of this node.
+     */
+    QHash<std::string, neb::custom_variable> const& get_custom_vars() const {
+      return (_custom_variables);
+    }
+
   private:
     FullType    _node;
     StatusType  _current_status;
@@ -159,6 +188,8 @@ namespace             notification {
 
     std::map<std::string, GroupType>
                 _groups;
+    QHash<std::string, neb::custom_variable>
+                _custom_variables;
   };
 }
 

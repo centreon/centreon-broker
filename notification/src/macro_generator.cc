@@ -124,6 +124,36 @@ bool macro_generator::_get_x_macros(
 }
 
 /**
+ *  Get custom macros.
+ *
+ *  @param[in] macro_name  The macro name.
+ *  @param[in] contact     The macro context.
+ *  @param[out] result     The result, filled if the macro is a custom macro.
+ *
+ *  @return  True if the macro was found in the custom macros.
+ */
+bool macro_generator::_get_custom_macros(
+                        std::string const& macro_name,
+                        objects::node_id id,
+                        node_cache const& cache,
+                        std::string& result) {
+  QHash<std::string, neb::custom_variable> const* custom_vars;
+  if (id.is_host())
+    custom_vars = &cache.get_host(id.get_host_id()).get_custom_vars();
+  else
+    custom_vars = &cache.get_service(id.get_service_id()).get_custom_vars();
+
+  QHash<std::string, neb::custom_variable>::const_iterator found =
+    custom_vars->find(macro_name);
+  if (found != custom_vars->end()) {
+    result = found->value.toStdString();
+    return (true);
+  }
+  else
+    return (false);
+}
+
+/**
  *  Fill the macro generator map with functions used to generate macros.
  *
  *  @param[in] map  The map to fill.

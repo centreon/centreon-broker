@@ -126,8 +126,12 @@ void macro_loader::load(QSqlDatabase *db, macro_builder *output) {
            << "notification: cannot load resource macros from database: "
            << query.lastError().text());
   while (query.next()) {
+    // Remove leading and trailing $$
+    QString macro_name = query.value(0).toString();
+    macro_name.remove(0, 1).remove(macro_name.size() - 1, 1);
     output->add_resource_macro(
-              query.value(0).toString().toStdString(),
+              // Remove leading and trailing $$
+              macro_name.toStdString(),
               query.value(1).toString().toStdString());
   }
   return ;

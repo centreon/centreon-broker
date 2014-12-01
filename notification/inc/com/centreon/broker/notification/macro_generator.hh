@@ -54,9 +54,15 @@ namespace        notification {
                    std::string const& macro_name,
                    state const& st,
                    std::string& result);
-    bool         _get_x_macros(std::string const& macro_name,
+    bool         _get_x_macros(
+                   std::string const& macro_name,
                    macro_context const& context,
                    std::string& result) const;
+    static bool _get_custom_macros(
+                  std::string const& macro_name,
+                  objects::node_id id,
+                  node_cache const& cache,
+                  std::string& result);
 
     typedef QHash<std::string, std::string (*)(macro_context const&)>
                   x_macro_map;
