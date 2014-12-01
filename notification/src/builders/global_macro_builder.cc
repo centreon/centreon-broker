@@ -48,3 +48,15 @@ void global_macro_builder::add_global_macro(
 void global_macro_builder::add_date_format(int format) {
   _date_format = format;
 }
+
+/**
+ *  Add a resource macro to the builder
+ *
+ *  @param[in] macro_name   The macro name.
+ *  @param[in] macro_value  The macro value.
+ */
+void global_macro_builder::add_resource_macro(
+                             std::string const& macro_name,
+                             std::string const& macro_value) {
+  _global_macros.insert(macro_name, macro_value);
+}

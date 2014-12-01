@@ -116,5 +116,19 @@ void macro_loader::load(QSqlDatabase *db, macro_builder *output) {
     else
       output->add_date_format(utilities::date_format_us);
   }
+
+  // Load global resource macros.
+  if (!query.exec(
+               "SELECT resource_name, resource_line"
+                "  FROM cfg_resource"
+                "  WHERE resource_activate = 1"));
+    throw (exceptions::msg()
+           << "notification: cannot load resource macros from database: "
+           << query.lastError().text());
+  while (query.next()) {
+    output->add_resource_macro(
+              query.value(0).toString().toStdString(),
+              query.value(1).toString().toStdString());
+  }
   return ;
 }

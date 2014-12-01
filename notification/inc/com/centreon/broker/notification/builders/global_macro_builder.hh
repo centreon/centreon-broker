@@ -42,6 +42,9 @@ namespace        notification {
                    std::string const& macro_name,
                    std::string const& macro_value);
     virtual void add_date_format(int format);
+    virtual void add_resource_macro(
+                   std::string const& macro_name,
+                   std::string const& macro_value);
 
   private:
     QHash<std::string, std::string>&
