@@ -48,7 +48,7 @@ unsigned int process::get_timeout() const throw() {
  *  @return  True if this process is running.
  */
 bool process::is_running() const {
-  return (_process->state() == QProcess::NotRunning);
+  return (_process->state() == QProcess::Running);
 }
 
 /**
@@ -64,7 +64,7 @@ bool process::is_timeout() const throw() {
  *  Kill this process.
  */
 void process::kill() {
-  if (!is_running())
+  if (is_running())
     _process->kill();
 }
 
