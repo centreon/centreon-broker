@@ -76,7 +76,8 @@ bool action::operator==(action const& obj) const {
           _id == obj._id &&
           _notification_rule_id == obj._notification_rule_id &&
           _notification_number == obj._notification_number &&
-          _at == obj._at);
+          _at == obj._at &&
+          _forwarded_action == obj._forwarded_action);
 }
 
 /**
@@ -93,10 +94,12 @@ bool action::operator<(action const& obj) const {
     return (_id < obj._id);
   else if (_notification_rule_id != obj._notification_rule_id)
     return (_notification_rule_id < obj._notification_rule_id);
-  else if (_notification_number == obj._notification_number)
+  else if (_notification_number != obj._notification_number)
     return (_notification_number < obj._notification_number);
-  else
+  else if (_at != obj._at)
     return (_at < obj._at);
+  else
+    return (_forwarded_action < obj._forwarded_action);
 }
 
 /**
@@ -446,7 +449,7 @@ void action::_process_notification(
 
   // Send the notification.
   if (should_send_the_notification) {
-    std::string resolved_command = cmd->resolve(rule, tp, method, cnt, n, cache);
+    std::string resolved_command = cmd->resolve(cnt, n, cache, st, *this);
     logging::debug(logging::low)
       << "notification: launching notification command on node ("
       << _id.get_host_id() << ", " << _id.get_service_id() << "): "

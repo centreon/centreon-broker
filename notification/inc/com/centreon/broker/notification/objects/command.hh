@@ -21,6 +21,7 @@
 #  define CCB_NOTIFICATION_COMMAND_HH
 
 #  include <string>
+#  include <QRegExp>
 #  include "com/centreon/broker/neb/host_status.hh"
 #  include "com/centreon/broker/neb/service_status.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -36,6 +37,10 @@
 CCB_BEGIN()
 
 namespace               notification {
+  // Forward declaration.
+  class action;
+  class state;
+
   namespace             objects {
     /**
      *  @class command command.hh "com/centreon/broker/notification/objects/command.hh"
@@ -55,18 +60,20 @@ namespace               notification {
       void                set_name(std::string const& name);
 
       std::string         resolve(
-                            notification_rule::ptr const& rule,
-                            timeperiod::ptr const& tp,
-                            notification_method::ptr const& method,
                             contact::ptr const& contact,
                             node::ptr const& n,
-                            node_cache const& cache);
+                            node_cache const& cache,
+                            state const& st,
+                            action const& act);
 
     private:
       command();
 
       std::string         _name;
       std::string         _base_command;
+
+      static const QRegExp
+                          _macro_regex;
 
       //static              _macro_init();
     };

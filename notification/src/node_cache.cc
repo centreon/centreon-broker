@@ -352,6 +352,14 @@ void node_cache::_prepare_serialization() {
     it->serialize(_serialized_data);
 }
 
+/**
+ *  Get all the node contained in a group.
+ *
+ *  @param[in] group_name     The name of the group.
+ *  @param[in] is_host_group  Is this a host group or a service group?
+ *
+ *  @return  A list of the name of the node contained in a group.
+ */
 std::vector<std::string> node_cache::get_all_node_contained_in(
                                        std::string const& group_name,
                                        bool is_host_group) const {
