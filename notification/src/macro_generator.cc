@@ -43,6 +43,7 @@ macro_generator::macro_generator() {
  *  @param[in] cnt            The contact.
  *  @param[in] st             The state.
  *  @param[in] cache          The node cache.
+ *  @param[in] act            The notification action.
  */
 void macro_generator::generate(
                         macro_container& container,
@@ -77,7 +78,10 @@ void macro_generator::generate(
                *it))
       continue ;
     else if (_get_custom_macros(
-               it.key(), id, cache, *it))
+               it.key(),
+               id,
+               cache,
+               *it))
       continue ;
 
     throw (exceptions::msg()
@@ -133,7 +137,8 @@ bool macro_generator::_get_x_macros(
  *  Get custom macros.
  *
  *  @param[in] macro_name  The macro name.
- *  @param[in] contact     The macro context.
+ *  @param[in] id          The id of the node being notified.
+ *  @param[in] cache       The node cache.
  *  @param[out] result     The result, filled if the macro is a custom macro.
  *
  *  @return  True if the macro was found in the custom macros.
