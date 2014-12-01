@@ -37,6 +37,7 @@ using namespace com::centreon::broker;
 
 #define DB_NAME "broker_sql_instance_update_outdated"
 #define INSTANCE_TIMEOUT 30
+#define INSTANCE_TIMEOUT_STR "30"
 
 /**
  *  Check that instance outdated status and
@@ -54,6 +55,8 @@ int main() {
   engine daemon;
   cbd broker;
   test_db db;
+  test_file cfg_cbmod;
+  test_file cfg_cbd;
 
   try {
     db.open(DB_NAME);
@@ -61,11 +64,13 @@ int main() {
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, 10);
     generate_services(services, hosts, 5);
+    cfg_cbmod.set_template(
+      PROJECT_SOURCE_DIR "/test/cfg/sql_instance_update_outdated_1.xml.in");
     std::string cbmod_loading;
     {
       std::ostringstream oss;
       oss << "broker_module=" << CBMOD_PATH << " "
-          << PROJECT_SOURCE_DIR << "/test/cfg/sql_instance_update_outdated_1.xml\n";
+          << cfg_cbmod.generate() << "\n";
       cbmod_loading = oss.str();
     }
 
@@ -77,8 +82,10 @@ int main() {
       &services);
 
     // Start Broker daemon.
-    broker.set_config_file(
-      PROJECT_SOURCE_DIR "/test/cfg/sql_instance_update_outdated_2.xml");
+    cfg_cbd.set_template(
+      PROJECT_SOURCE_DIR "/test/cfg/sql_instance_update_outdated_2.xml.in");
+    cfg_cbd.set("INSTANCE_TIMEOUT", INSTANCE_TIMEOUT_STR);
+    broker.set_config_file(cfg_cbd.generate());
     broker.start();
     sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
     broker.update();
