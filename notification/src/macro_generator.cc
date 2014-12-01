@@ -76,6 +76,12 @@ void macro_generator::generate(
                macro_context(id, cnt, st, cache, act),
                *it))
       continue ;
+    else if (_get_custom_macros(
+               it.key(), id, cache, *it))
+      continue ;
+
+    throw (exceptions::msg()
+           << "notification: macro_generator: macro not found");
   }
 }
 
