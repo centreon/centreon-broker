@@ -180,8 +180,9 @@ int main() {
     // Put a service in a critical state
     // to generate logs (checked below).
     {
-      commander.execute("ENABLE_PASSIVE_SVC_CHECKS;1;2");
       commander.execute("DISABLE_SVC_CHECK;1;2");
+      sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+      commander.execute("ENABLE_PASSIVE_SVC_CHECKS;1;2");
       commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;2;2;output1");
       commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;2;2;output2");
       commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;2;2;output3");
