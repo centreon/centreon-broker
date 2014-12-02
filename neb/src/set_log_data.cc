@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2011,2014 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -64,6 +65,24 @@ static int status_id(char const* status) {
 }
 
 /**
+ *  Get the notification status of a log.
+ */
+static int notification_status_id(char const* status) {
+  char const* ptr(strchr(status, '('));
+  int id;
+  if (ptr) {
+    std::string substatus(ptr + 1);
+    size_t it(substatus.find_first_of(')'));
+    if (it != std::string::npos)
+      substatus.erase(it);
+    id = status_id(substatus.c_str());
+  }
+  else
+    id = status_id(status);
+  return (id);
+}
+
+/**
  *  Get the id of a log type.
  */
 static int type_id(char const* type) {
@@ -115,7 +134,7 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
       le.notification_contact = log_extract_first(lasts, &lasts);
       le.host_name = log_extract(&lasts);
       le.service_description = log_extract(&lasts);
-      le.status = status_id(log_extract(&lasts));
+      le.status = notification_status_id(log_extract(&lasts));
       le.notification_cmd = log_extract(&lasts);
       le.output = log_extract(&lasts);
     }
@@ -123,7 +142,7 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
       le.msg_type = 3;
       le.notification_contact = log_extract_first(lasts, &lasts);
       le.host_name = log_extract(&lasts);
-      le.status = status_id(log_extract(&lasts));
+      le.status = notification_status_id(log_extract(&lasts));
       le.notification_cmd = log_extract(&lasts);
       le.output = log_extract(&lasts);
     }
