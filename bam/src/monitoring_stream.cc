@@ -383,15 +383,15 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
         << "BAM: processing meta-service status (id "
         << status->meta_service_id << ", value " << status->value
         << ")";
-      _meta_service_update->bindValue(
-                              ":meta_service_id",
-                              status->meta_service_id);
-      _meta_service_update->bindValue(":value", status->value);
-      if (!_meta_service_update->exec())
-        throw (exceptions::msg()
-               << "BAM: could not update meta-service "
-               << status->meta_service_id << ": "
-               << _meta_service_update->lastError().text());
+      // _meta_service_update->bindValue(
+      //                         ":meta_service_id",
+      //                         status->meta_service_id);
+      // _meta_service_update->bindValue(":value", status->value);
+      // if (!_meta_service_update->exec())
+      //   throw (exceptions::msg()
+      //          << "BAM: could not update meta-service "
+      //          << status->meta_service_id << ": "
+      //          << _meta_service_update->lastError().text());
     }
   }
   // XXX : handle transactions
@@ -545,17 +545,17 @@ void monitoring_stream::_prepare() {
   }
 
   // Meta-service status.
-  {
-    QString query;
-    query = "UPDATE meta_service"
-            "  SET value=:value"
-            "  WHERE meta_id=:meta_service_id";
-    _meta_service_update.reset(new QSqlQuery(*_db));
-    if (!_meta_service_update->prepare(query))
-      throw (exceptions::msg()
-             << "BAM: could not prepare meta-service update query: "
-             << _meta_service_update->lastError().text());
-  }
+  // {
+  //   QString query;
+  //   query = "UPDATE meta_service"
+  //           "  SET value=:value"
+  //           "  WHERE meta_id=:meta_service_id";
+  //   _meta_service_update.reset(new QSqlQuery(*_db));
+  //   if (!_meta_service_update->prepare(query))
+  //     throw (exceptions::msg()
+  //            << "BAM: could not prepare meta-service update query: "
+  //            << _meta_service_update->lastError().text());
+  // }
 
   return ;
 }
