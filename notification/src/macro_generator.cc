@@ -27,6 +27,8 @@
 
 using namespace com::centreon::broker::notification;
 
+macro_generator::x_macro_map macro_generator::_map;
+
 /**
  *  Default constructor.
  */

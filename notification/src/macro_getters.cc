@@ -190,7 +190,7 @@ template <> std::string get_service_output<true>(
  *
  *  @return  The value of the macro.
  */
-std::string get_host_state(
+std::string com::centreon::broker::notification::get_host_state(
               macro_context const& context) {
   short state =
     context.get_cache().get_host(
@@ -210,7 +210,7 @@ std::string get_host_state(
  *
  *  @return  The value of the macro.
  */
-std::string get_service_state(
+std::string com::centreon::broker::notification::get_service_state(
               macro_context const& context) {
   short state =
     context.get_cache().get_service(
@@ -233,7 +233,7 @@ std::string get_service_state(
  *
  *  @return  The value of the macro.
  */
-std::string get_last_host_state(
+std::string com::centreon::broker::notification::get_last_host_state(
               macro_context const& context) {
   short state =
     context.get_cache().get_host(
@@ -253,7 +253,7 @@ std::string get_last_host_state(
  *
  *  @return  The value of the macro.
  */
-std::string get_last_service_state(
+std::string com::centreon::broker::notification::get_last_service_state(
               macro_context const& context) {
   short state =
     context.get_cache().get_service(
@@ -275,7 +275,7 @@ std::string get_last_service_state(
  *
  *  @return  The value of the macro.
  */
-std::string get_host_state_type(
+std::string com::centreon::broker::notification::get_host_state_type(
               macro_context const& context) {
   if (context.get_cache().get_host(
         context.get_id().get_host_id()).get_status().state_type == 1)
@@ -291,7 +291,7 @@ std::string get_host_state_type(
  *
  *  @return  The value of the macro.
  */
-std::string get_service_state_type(
+std::string com::centreon::broker::notification::get_service_state_type(
               macro_context const& context) {
   if (context.get_cache().get_service(
         context.get_id().get_service_id()).get_status().state_type == 1)
@@ -307,7 +307,7 @@ std::string get_service_state_type(
  *
  *  @return  The value of the macro.
  */
-std::string null_getter(
+std::string com::centreon::broker::notification::null_getter(
               macro_context const& context) {
   (void)context;
   return ("");
@@ -320,7 +320,7 @@ std::string null_getter(
  *
  *  @return  The value of the macro.
  */
-std::string get_host_duration(
+std::string com::centreon::broker::notification::get_host_duration(
               macro_context const& context) {
   time_t last_state_change =
     context.get_cache().get_host(
@@ -353,7 +353,7 @@ std::string get_host_duration(
  *
  *  @return  The value of the macro.
  */
-std::string get_service_duration(
+std::string com::centreon::broker::notification::get_service_duration(
               macro_context const& context) {
   time_t last_state_change =
     context.get_cache().get_service(
@@ -386,7 +386,7 @@ std::string get_service_duration(
  *
  *  @return  The value of the macro.
  */
-std::string get_host_duration_sec(
+std::string com::centreon::broker::notification::get_host_duration_sec(
              macro_context const& context) {
   time_t now(time(NULL));
   unsigned long duration(
@@ -402,7 +402,7 @@ std::string get_host_duration_sec(
  *
  *  @return  The value of the macro.
  */
-std::string get_service_duration_sec(
+std::string com::centreon::broker::notification::get_service_duration_sec(
              macro_context const& context) {
   time_t now(time(NULL));
   unsigned long duration(
@@ -418,7 +418,7 @@ std::string get_service_duration_sec(
  *
  *  @return  The value of the macro.
  */
-std::string get_timet_string(
+std::string com::centreon::broker::notification::get_timet_string(
               macro_context const& context) {
   (void)context;
   return (to_string<time_t, 0>(::time(NULL)));
@@ -431,7 +431,7 @@ std::string get_timet_string(
  *
  *  @return  The value of the macro.
  */
-std::string get_contactgroup_alias(
+std::string com::centreon::broker::notification::get_contactgroup_alias(
               macro_context const& context) {
   objects::contactgroup::ptr ctg =
     context.get_state().get_contactgroup_by_contact_id(
@@ -450,7 +450,7 @@ std::string get_contactgroup_alias(
  *
  *  @return  The value of the macro.
  */
-std::string get_contactgroup_members(
+std::string com::centreon::broker::notification::get_contactgroup_members(
               macro_context const& context) {
   state const& st = context.get_state();
   objects::contactgroup::ptr ctg =
@@ -485,7 +485,7 @@ std::string get_contactgroup_members(
  *
  *  @return  The value of the macro.
  */
-std::string get_notification_type(
+std::string com::centreon::broker::notification::get_notification_type(
               macro_context const& context) {
   action::action_type type = context.get_action().get_type();
   if (type == action::notification_attempt)
