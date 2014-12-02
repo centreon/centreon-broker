@@ -121,7 +121,7 @@ void macro_loader::load(QSqlDatabase *db, macro_builder *output) {
   if (!query.exec(
                "SELECT resource_name, resource_line"
                 "  FROM cfg_resources"
-                "  WHERE resource_activate = 1"))
+                "  WHERE resource_activate = '1'"))
     throw (exceptions::msg()
            << "notification: cannot load resource macros from database: "
            << query.lastError().text());
