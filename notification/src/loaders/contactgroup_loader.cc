@@ -51,9 +51,9 @@ void contactgroup_loader::load(
   query.setForwardOnly(true);
 
   // Get contactgroups.
-  if (!query.exec("SELECT cg_id, cg_name, cg_alias FROM cfg_contactgroup"))
+  if (!query.exec("SELECT cg_id, cg_name, cg_alias FROM cfg_contactgroups"))
     throw (exceptions::msg()
-           << "notification: cannot load cfg_contactgroup from database: "
+           << "notification: cannot load contact groups from database: "
            << query.lastError().text());
 
   while (query.next()) {
@@ -66,11 +66,11 @@ void contactgroup_loader::load(
 
   // Get contactgroup contact relations.
   if (!query.exec("SELECT contact_contact_id, contactgroup_cg_id"
-                  "  FROM cfg_contactgroup_contact_relation"))
+                  "  FROM cfg_contactgroups_contacts_relations"))
     throw (exceptions::msg()
-           << "notification: cannot load "
-              "cfg_contactgroup_contact_relation from database: "
-          << query.lastError().text());
+           << "notification: cannot load memberships of contact groups "
+              "from database: "
+           << query.lastError().text());
 
   while (query.next()) {
 
