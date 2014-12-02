@@ -149,9 +149,9 @@ static void single_pass_replace(
                                                   end(macros.end());
        it != end;
        ++it) {
-    std::string key = it.key();
+    std::string key("$");
+    key.append(it.key());
     key.append("$");
-    key.insert(key.begin(), '$');
     macro_list.push_back(std::make_pair(key, *it));
   }
 
