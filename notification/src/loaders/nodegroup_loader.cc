@@ -50,10 +50,10 @@ void nodegroup_loader::load(QSqlDatabase* db, nodegroup_builder* output) {
   query.setForwardOnly(true);
 
   // Get hostgroups.
-  if (!query.exec("SELECT hg_id, hg_name, hg_alias FROM cfg_hostgroup"))
+  if (!query.exec("SELECT hg_id, hg_name, hg_alias FROM cfg_hostgroups"))
     throw (exceptions::msg()
-           << "notification: cannot load cfg_hostgroup from database: "
-      << query.lastError().text());
+           << "notification: cannot load host groups from database: "
+           << query.lastError().text());
 
   while (query.next()) {
     objects::node_id id(query.value(0).toUInt());
@@ -64,10 +64,10 @@ void nodegroup_loader::load(QSqlDatabase* db, nodegroup_builder* output) {
   }
 
   // Get servicegroups
-  if (!query.exec("SELECT sg_id, sg_name, sg_alias FROM cfg_servicegroup"))
+  if (!query.exec("SELECT sg_id, sg_name, sg_alias FROM cfg_servicegroups"))
     throw (exceptions::msg()
-           << "notification: cannot load cfg_servicegroup from database: "
-      << query.lastError().text());
+           << "notification: cannot load service groups from database: "
+           << query.lastError().text());
 
   while (query.next()) {
     objects::node_id id(0, query.value(0).toUInt());
