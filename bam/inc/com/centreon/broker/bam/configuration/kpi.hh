@@ -46,7 +46,7 @@ namespace           bam {
                       unsigned int indicator_ba = 0,
                       unsigned int meta_id = 0,
                       short status = 0,
-                      short lasthardstate = 0,
+                      short last_level = 0,
                       bool downtimed = false,
                       bool acknowledged = false,
                       bool ignoredowntime = false,
@@ -71,7 +71,7 @@ namespace           bam {
       unsigned int  get_indicator_ba_id() const;
       unsigned int  get_meta_id() const;
       short         get_status() const;
-      short         get_last_hard_state() const;
+      short         get_last_level() const;
       bool          is_downtimed() const;
       bool          is_acknowledged() const;
       bool          ignore_downtime() const;
@@ -90,7 +90,7 @@ namespace           bam {
       void          set_indicator_ba_id(unsigned int ba_id);
       void          set_meta_id(unsigned int meta_id);
       void          set_status(short status);
-      void          set_last_hard_state(short hard_state);
+      void          set_last_level(short last_level);
       void          set_downtimed(bool downtimed);
       void          set_acknowledged(bool acknowledged);
       void          ignore_downtime(bool ignore);
@@ -109,7 +109,7 @@ namespace           bam {
       unsigned int  _indicator_ba_id;
       unsigned int  _meta_id;
       short         _status;
-      short         _last_hard_state;
+      short         _last_level;
       bool          _downtimed;
       bool          _acknowledged;
       bool          _ignore_downtime;

@@ -33,7 +33,7 @@ kpi::kpi(
        unsigned int indicator_ba,
        unsigned int meta_id,
        short status,
-       short last_hard_state,
+       short last_level,
        bool downtimed,
        bool acknowledged,
        bool ignore_downtime,
@@ -49,7 +49,7 @@ kpi::kpi(
     _indicator_ba_id(indicator_ba),
     _meta_id(meta_id),
     _status(status),
-    _last_hard_state(last_hard_state),
+    _last_level(last_level),
     _downtimed(downtimed),
     _acknowledged(acknowledged),
     _ignore_downtime(ignore_downtime),
@@ -73,7 +73,7 @@ kpi::kpi(kpi const& other)
     _indicator_ba_id(other._indicator_ba_id),
     _meta_id(other._meta_id),
     _status(other._status),
-    _last_hard_state(other._last_hard_state),
+    _last_level(other._last_level),
     _downtimed(other._downtimed),
     _acknowledged(other._acknowledged),
     _ignore_downtime(other._ignore_downtime),
@@ -106,7 +106,7 @@ kpi& kpi::operator=(kpi const& other) {
     _indicator_ba_id = other._indicator_ba_id;
     _meta_id = other._meta_id;
     _status = other._status;
-    _last_hard_state = other._last_hard_state;
+    _last_level = other._last_level;
     _downtimed = other._downtimed;
     _acknowledged = other._acknowledged;
     _ignore_downtime = other._ignore_downtime;
@@ -135,7 +135,7 @@ bool kpi::operator==(kpi const& other) const {
           && (_indicator_ba_id == other._indicator_ba_id)
           && (_meta_id == other._meta_id)
           && (_status == other._status)
-          && (_last_hard_state == other._last_hard_state)
+          && (_last_level == other._last_level)
           && (_downtimed == other._downtimed)
           && (_acknowledged == other._acknowledged)
           && (_ignore_downtime == other._ignore_downtime)
@@ -257,12 +257,12 @@ short kpi::get_status() const {
 }
 
 /**
- *  Get the last hard state for this kpi.
+ *  Get the last level of this kpi.
  *
- *  @return The last business activity confirmed state (after N verifications).
+ *  @return The last level of this kpi.
  */
-short kpi::get_last_hard_state() const {
-  return (_last_hard_state);
+short kpi::get_last_level() const {
+  return (_last_level);
 }
 
 /**
@@ -403,12 +403,12 @@ void kpi::set_status(short s) {
 }
 
 /**
- *  Set last_hard state.
+ *  Set last_level.
  *
- *  @param[in] s Set the last confirmed state for the kpi.
+ *  @param[in] s Set the last level of the kpi.
  */
-void kpi::set_last_hard_state(short s) {
-  _last_hard_state = s;
+void kpi::set_last_level(short s) {
+  _last_level = s;
 }
 
 /**

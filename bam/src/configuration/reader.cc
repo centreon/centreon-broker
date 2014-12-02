@@ -151,7 +151,7 @@ void reader::_load(state::kpis& kpis) {
         query.value(5).toUInt(), // BA indicator ID.
         query.value(6).toUInt(), // Meta-service ID.
         query.value(7).toInt(), // Status.
-        query.value(8).toInt(), // Hard state.
+        query.value(8).toInt(), // Last level.
         query.value(9).toFloat(), // Downtimed.
         query.value(10).toFloat(), // Acknowledged.
         query.value(11).toBool(), // Ignore downtime.

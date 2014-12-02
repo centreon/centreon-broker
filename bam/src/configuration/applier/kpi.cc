@@ -209,8 +209,7 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     obj->set_impact_unknown(cfg.get_impact_unknown());
     obj->set_impact_warning(cfg.get_impact_warning());
     obj->set_service_id(cfg.get_service_id());
-    obj->set_state_hard(cfg.get_last_hard_state());
-    obj->set_state_soft(cfg.get_status());
+    obj->set_state_hard(cfg.get_status());
     obj->set_state_type(cfg.get_state_type());
     my_kpi = obj.staticCast<bam::kpi>();
     book.listen(cfg.get_host_id(), cfg.get_service_id(), obj.data());
