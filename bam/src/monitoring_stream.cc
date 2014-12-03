@@ -334,7 +334,7 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
               << ba_svc_name.first << ";" << ba_svc_name.second << ";"
               << status->state << ";BA " << status->ba_id << " has state "
               << status->state << " and level " << status->level_nominal
-              << "|BA_Level=" << status->level_nominal;
+              << "|BA_Level=" << status->level_nominal << "%";
           _write_external_command(oss.str());
         }
       }
