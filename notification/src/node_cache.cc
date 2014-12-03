@@ -309,8 +309,9 @@ void node_cache::update(neb::custom_variable_status const& cvs) {
  */
 node_cache::host_node_state const& node_cache::get_host(
                                                  objects::node_id id) const {
+  objects::node_id host_node_id(id.get_host_id());
   QHash<objects::node_id, host_node_state>::const_iterator found =
-    _host_node_states.find(id);
+    _host_node_states.find(host_node_id);
   if (found == _host_node_states.end())
     throw (exceptions::msg() << "notification: host "
            << id.get_host_id() << " was not found in cache");
