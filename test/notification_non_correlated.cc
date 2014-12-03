@@ -163,7 +163,9 @@ int main() {
       "PROCESS_SERVICE_CHECK_RESULT;1;2;0;Submitted by unit test");
     sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
-    // Make service 2 CRITICAL.
+    // Make services CRITICAL.
+    commander.execute(
+      "PROCESS_SERVICE_CHECK_RESULT;1;1;2;Submitted by unit test");
     commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;1;2;2;Submitted by unit test");
     sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
