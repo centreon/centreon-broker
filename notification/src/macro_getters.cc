@@ -33,7 +33,7 @@ using namespace com::centreon::broker::notification;
 template <> std::string get_host_groups<true>(
                           macro_context const& context) {
   std::map<std::string, neb::host_group_member> const& group_map =
-    context.get_cache().get_host(context.get_id().get_host_id()).get_groups();
+    context.get_cache().get_host(context.get_id()).get_groups();
   std::string result;
   for (std::map<std::string, neb::host_group_member>::const_iterator
          it(group_map.begin()),
@@ -59,7 +59,7 @@ template <> std::string get_host_groups<true>(
 template <> std::string get_host_groups<false>(
                           macro_context const& context) {
   std::map<std::string, neb::host_group_member> const& group_map =
-    context.get_cache().get_host(context.get_id().get_host_id()).get_groups();
+    context.get_cache().get_host(context.get_id()).get_groups();
   if (!group_map.empty())
     return (group_map.begin()->first);
 }
@@ -76,7 +76,7 @@ template <> std::string get_host_groups<false>(
 template <> std::string get_service_groups<true>(
                           macro_context const& context) {
   std::map<std::string, neb::service_group_member> const& group_map =
-    context.get_cache().get_service(context.get_id().get_service_id())
+    context.get_cache().get_service(context.get_id())
                        .get_groups();
   std::string result;
   for (std::map<std::string, neb::service_group_member>::const_iterator
@@ -103,7 +103,7 @@ template <> std::string get_service_groups<true>(
 template <> std::string get_service_groups<false>(
                           macro_context const& context) {
   std::map<std::string, neb::service_group_member> const& group_map =
-    context.get_cache().get_service(context.get_id().get_service_id())
+    context.get_cache().get_service(context.get_id())
                        .get_groups();
   if (!group_map.empty())
     return (group_map.begin()->first);
@@ -122,7 +122,7 @@ template <> std::string get_host_output<false>(
                           macro_context const& context) {
   std::string output =
     context.get_cache().get_host(
-      context.get_id().get_host_id()).get_status().output.toStdString();
+      context.get_id()).get_status().output.toStdString();
   return (output.substr(0, output.find_first_of('\n')));
 }
 
@@ -139,7 +139,7 @@ template <> std::string get_host_output<true>(
                           macro_context const& context) {
   std::string output =
     context.get_cache().get_host(
-      context.get_id().get_host_id()).get_status().output.toStdString();
+      context.get_id()).get_status().output.toStdString();
   size_t found = output.find_first_of('\n');
   if (found != std::string::npos)
     return (output.substr(found == std::string::npos));
@@ -159,7 +159,7 @@ template <> std::string get_service_output<false>(
                           macro_context const& context) {
   std::string output =
     context.get_cache().get_host(
-      context.get_id().get_host_id()).get_status().output.toStdString();
+      context.get_id()).get_status().output.toStdString();
   return (output.substr(0, output.find_first_of('\n')));
 }
 
@@ -176,7 +176,7 @@ template <> std::string get_service_output<true>(
                           macro_context const& context) {
   std::string output =
     context.get_cache().get_host(
-      context.get_id().get_host_id()).get_status().output.toStdString();
+      context.get_id()).get_status().output.toStdString();
   size_t found = output.find_first_of('\n');
   if (found != std::string::npos)
     return (output.substr(found == std::string::npos));
@@ -194,7 +194,7 @@ std::string com::centreon::broker::notification::get_host_state(
               macro_context const& context) {
   short state =
     context.get_cache().get_host(
-      context.get_id().get_host_id()).get_status().current_state;
+      context.get_id()).get_status().current_state;
   if (state == objects::node_state::host_up)
     return ("UP");
   else if (state == objects::node_state::host_down)
@@ -214,7 +214,7 @@ std::string com::centreon::broker::notification::get_service_state(
               macro_context const& context) {
   short state =
     context.get_cache().get_service(
-      context.get_id().get_service_id()).get_status().current_state;
+      context.get_id()).get_status().current_state;
   if (state == objects::node_state::service_ok)
     return ("OK");
   else if (state == objects::node_state::service_warning)
@@ -237,7 +237,7 @@ std::string com::centreon::broker::notification::get_last_host_state(
               macro_context const& context) {
   short state =
     context.get_cache().get_host(
-      context.get_id().get_host_id()).get_status().current_state;
+      context.get_id()).get_status().current_state;
   if (state == objects::node_state::host_up)
     return ("UP");
   else if (state == objects::node_state::host_down)
@@ -257,7 +257,7 @@ std::string com::centreon::broker::notification::get_last_service_state(
               macro_context const& context) {
   short state =
     context.get_cache().get_service(
-      context.get_id().get_service_id()).get_prev_status().current_state;
+      context.get_id()).get_prev_status().current_state;
   if (state == objects::node_state::service_ok)
     return ("OK");
   else if (state == objects::node_state::service_warning)
@@ -278,7 +278,7 @@ std::string com::centreon::broker::notification::get_last_service_state(
 std::string com::centreon::broker::notification::get_host_state_type(
               macro_context const& context) {
   if (context.get_cache().get_host(
-        context.get_id().get_host_id()).get_status().state_type == 1)
+        context.get_id()).get_status().state_type == 1)
     return ("HARD");
   else
     return ("SOFT");
@@ -294,7 +294,7 @@ std::string com::centreon::broker::notification::get_host_state_type(
 std::string com::centreon::broker::notification::get_service_state_type(
               macro_context const& context) {
   if (context.get_cache().get_service(
-        context.get_id().get_service_id()).get_status().state_type == 1)
+        context.get_id()).get_status().state_type == 1)
     return ("HARD");
   else
     return ("SOFT");
@@ -324,7 +324,7 @@ std::string com::centreon::broker::notification::get_host_duration(
               macro_context const& context) {
   time_t last_state_change =
     context.get_cache().get_host(
-      context.get_id().get_host_id()).get_status().last_state_change;
+      context.get_id()).get_status().last_state_change;
   // Get duration.
   time_t now(time(NULL));
   unsigned long duration(now - last_state_change);
@@ -357,7 +357,7 @@ std::string com::centreon::broker::notification::get_service_duration(
               macro_context const& context) {
   time_t last_state_change =
     context.get_cache().get_service(
-      context.get_id().get_service_id()).get_status().last_state_change;
+      context.get_id()).get_status().last_state_change;
   // Get duration.
   time_t now(time(NULL));
   unsigned long duration(now - last_state_change);
@@ -391,7 +391,7 @@ std::string com::centreon::broker::notification::get_host_duration_sec(
   time_t now(time(NULL));
   unsigned long duration(
     now - context.get_cache().get_host(
-            context.get_id().get_host_id()).get_status().last_state_change);
+            context.get_id()).get_status().last_state_change);
   return (to_string<unsigned long, 0>(duration));
 }
 
@@ -407,7 +407,7 @@ std::string com::centreon::broker::notification::get_service_duration_sec(
   time_t now(time(NULL));
   unsigned long duration(
     now - context.get_cache().get_service(
-            context.get_id().get_service_id()).get_status().last_state_change);
+            context.get_id()).get_status().last_state_change);
   return (to_string<unsigned long, 0>(duration));
 }
 

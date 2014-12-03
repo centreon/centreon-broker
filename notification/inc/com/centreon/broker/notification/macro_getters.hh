@@ -122,7 +122,7 @@ namespace        notification {
     std::string get_host_member_as_string(
                   macro_context const& context) {
     return (to_string<U, precision>(
-              context.get_cache().get_host(context.get_id().get_host_id())
+              context.get_cache().get_host(context.get_id())
                                  .get_node().*member));
   }
 
@@ -142,7 +142,7 @@ namespace        notification {
     std::string get_service_member_as_string(
                   macro_context const& context) {
     return (to_string<U, precision>(
-              context.get_cache().get_service(context.get_id().get_service_id())
+              context.get_cache().get_service(context.get_id())
                                  .get_node().*member));
   }
 
@@ -162,7 +162,7 @@ namespace        notification {
     std::string get_host_status_member_as_string(
                   macro_context const& context) {
       return (to_string<U, precision>(
-                context.get_cache().get_host(context.get_id().get_host_id())
+                context.get_cache().get_host(context.get_id())
                                    .get_status().*member));
   }
 
@@ -182,7 +182,7 @@ namespace        notification {
     std::string get_service_status_member_as_string(
                   macro_context const& context) {
       return (to_string<U, precision>(
-                context.get_cache().get_service(context.get_id().get_service_id())
+                context.get_cache().get_service(context.get_id())
                                    .get_status().*member));
   }
 
@@ -202,7 +202,7 @@ namespace        notification {
     std::string get_host_prevstatus_member_as_string(
                   macro_context const& context) {
       return (to_string<U, precision>(
-                context.get_cache().get_host(context.get_id().get_host_id())
+                context.get_cache().get_host(context.get_id())
                                    .get_prev_status().*member));
   }
 
@@ -222,7 +222,7 @@ namespace        notification {
     std::string get_service_prevstatus_member_as_string(
                   macro_context const& context) {
       return (to_string<U, precision>(
-                context.get_cache().get_service(context.get_id().get_service_id())
+                context.get_cache().get_service(context.get_id())
                                    .get_prev_status().*member));
   }
 
@@ -449,7 +449,7 @@ namespace        notification {
     node_cache const& cache = context.get_cache();
     if (is_host) {
       std::map<std::string, neb::host_group_member> map =
-        cache.get_host(context.get_id().get_host_id()).get_groups();
+        cache.get_host(context.get_id()).get_groups();
       if (map.empty())
         throw (exceptions::msg()
                << "notification: macro: could not get the group alias "
@@ -458,7 +458,7 @@ namespace        notification {
     }
     else {
       std::map<std::string, neb::service_group_member> map =
-        cache.get_service(context.get_id().get_service_id()).get_groups();
+        cache.get_service(context.get_id()).get_groups();
       if (map.empty())
         throw (exceptions::msg()
                << "notification: macro: could not get the group alias "
@@ -489,7 +489,7 @@ namespace        notification {
     node_cache const& cache = context.get_cache();
     if (is_host) {
       std::map<std::string, neb::host_group_member> map =
-        cache.get_host(context.get_id().get_host_id()).get_groups();
+        cache.get_host(context.get_id()).get_groups();
       if (map.empty())
         throw (exceptions::msg()
                << "notification: macro: could not get the group members "
@@ -498,7 +498,7 @@ namespace        notification {
     }
     else {
       std::map<std::string, neb::service_group_member> map =
-        cache.get_service(context.get_id().get_service_id()).get_groups();
+        cache.get_service(context.get_id()).get_groups();
       if (map.empty())
         throw (exceptions::msg()
                << "notification: macro: could not get the group members "

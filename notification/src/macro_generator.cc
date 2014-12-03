@@ -69,7 +69,7 @@ void macro_generator::generate(
     throw (exceptions::msg()
            << "notification: can't find the host "
            << id.get_host_id() << " while generating macros");
-  node_cache::host_node_state const& hns = cache.get_host(id.get_host_id());
+  node_cache::host_node_state const& hns = cache.get_host(id);
 
   for (macro_container::iterator it(container.begin()),
                                  end(container.end());
@@ -158,12 +158,9 @@ bool macro_generator::_get_custom_macros(
                         std::string& result) {
   QHash<std::string, neb::custom_variable_status> const* custom_vars;
   if (id.is_host())
-    custom_vars = &cache.get_host(id.get_host_id()).get_custom_vars();
+    custom_vars = &cache.get_host(id).get_custom_vars();
   else
-    custom_vars = &cache.get_service(
-                     objects::node_id(
-                                id.get_host_id(),
-                                id.get_service_id())).get_custom_vars();
+    custom_vars = &cache.get_service(id).get_custom_vars();
 
   QHash<std::string, neb::custom_variable_status>::const_iterator found =
     custom_vars->find(macro_name);

@@ -40,8 +40,8 @@ namespace         notification {
                     node_id();
                     node_id(node_id const& obj);
       node_id&      operator=(node_id const& obj);
-                    node_id(unsigned int host_id,
-                            unsigned int service_id = 0);
+                    explicit node_id(unsigned int host_id,
+                                     unsigned int service_id = 0);
       bool          operator<(node_id const& obj) const throw();
       bool          operator==(node_id const& obj) const throw();
       bool          operator!=(node_id const& obj) const throw();
