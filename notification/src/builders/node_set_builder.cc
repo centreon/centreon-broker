@@ -29,6 +29,11 @@ using namespace com::centreon::broker::notification::objects;
  */
 node_set_builder::node_set_builder(QSet<node_id>& set) : _set(set) {}
 
+/**
+ *  Add a node to the builder.
+ *
+ *  @param[in] node The node.
+ */
 void node_set_builder::add_node(node::ptr node) {
   _set.insert(node->get_node_id());
 }

@@ -34,7 +34,7 @@ namespace           notification {
    *
    *  This class build the set of all the node id of the db.
    */
-  class             node_set_builder : public node_builder{
+  class             node_set_builder : public node_builder {
   public:
                     node_set_builder(QSet<objects::node_id>& set);
     virtual         ~node_set_builder() {}

@@ -32,6 +32,12 @@ command_by_id_builder::command_by_id_builder(
                         QHash<unsigned int, command::ptr>& table)
   : _table(table) {}
 
+/**
+ *  Add a command to the builder.
+ *
+ *  @param[in] id The id of the command.
+ *  @param[in] com The command.
+ */
 void command_by_id_builder::add_command(
                               unsigned int id,
                               command::ptr com) {

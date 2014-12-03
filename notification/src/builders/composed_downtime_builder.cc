@@ -27,6 +27,12 @@ using namespace com::centreon::broker::notification::objects;
  */
 composed_downtime_builder::composed_downtime_builder() {}
 
+/**
+ *  Add a downtime to the builder.
+ *
+ *  @param[in] id The id of the downtime.
+ *  @param[in] downtime The downtime.
+ */
 void composed_downtime_builder::add_downtime(
                                   unsigned int downtime_id,
                                   downtime::ptr downtime) {
@@ -38,9 +44,15 @@ void composed_downtime_builder::add_downtime(
                         downtime);
 }
 
- void composed_downtime_builder::connect_downtime_to_node(
-                                   unsigned int downtime_id,
-                                   objects::node_id id) {
+/**
+ *  Connect a downtime to a node_id.
+ *
+ *  @param[in] downtime  The id of the downtime.
+ *  @param[in] node_id   The node id associated with this downtime.
+ */
+void composed_downtime_builder::connect_downtime_to_node(
+                                  unsigned int downtime_id,
+                                  objects::node_id id) {
  for (composed_builder<downtime_builder>::iterator it(begin()),
                                                    it_end(end());
       it != it_end;

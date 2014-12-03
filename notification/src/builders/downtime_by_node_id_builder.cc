@@ -31,12 +31,24 @@ downtime_by_node_id_builder::downtime_by_node_id_builder(
                                QMultiHash<node_id, downtime::ptr>& table)
   : _table(table) {}
 
+/**
+ *  Add a downtime to the builder.
+ *
+ *  @param[in] id The id of the downtime.
+ *  @param[in] downtime The downtime.
+ */
 void downtime_by_node_id_builder::add_downtime(
                                     unsigned int downtime_id,
                                     downtime::ptr downtime) {
   _cache[downtime_id] = downtime;
 }
 
+/**
+ *  Connect a downtime to a node_id.
+ *
+ *  @param[in] downtime  The id of the downtime.
+ *  @param[in] node_id   The node id associated with this downtime.
+ */
 void downtime_by_node_id_builder::connect_downtime_to_node(
                                     unsigned int downtime_id,
                                     node_id id) {

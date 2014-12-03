@@ -31,6 +31,12 @@ acknowledgement_by_node_id_builder::acknowledgement_by_node_id_builder(
     QMultiHash<node_id, acknowledgement::ptr>& table)
   : _table(table) {}
 
+/**
+ *  Add an acknowledgement to the builder.
+ *
+ *  @param[in] id The id of the node being acknowledged.
+ *  @param[in] ack The acknowledgement.
+ */
 void acknowledgement_by_node_id_builder::add_ack(
                                            node_id id,
                                            acknowledgement::ptr ack) {

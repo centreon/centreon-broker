@@ -22,10 +22,21 @@
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
+/**
+ *  Constructor.
+ *
+ *  @param[in] map  The map to fill.
+ */
 notification_rule_by_node_builder::notification_rule_by_node_builder(
   QMultiHash<objects::node_id,objects::notification_rule::ptr>& map)
   : _map(map) {}
 
+/**
+ *  Add a rule to the builder.
+ *
+ *  @param[in] id   The id of the rule.
+ *  @param[in] con  The rule to add.
+ */
 void notification_rule_by_node_builder::add_rule(
                                           unsigned int rule_id,
                                           objects::notification_rule::ptr rule) {

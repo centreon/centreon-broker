@@ -27,6 +27,12 @@ using namespace com::centreon::broker::notification::objects;
  */
 composed_notification_rule_builder::composed_notification_rule_builder() {}
 
+/**
+ *  Add a notification rule to the builder.
+ *
+ *  @param[in] rule_id  The id of the notification rule.
+ *  @param[in] rule     The rule.
+ */
 void composed_notification_rule_builder::add_rule(
        unsigned int rule_id,
        objects::notification_rule::ptr rule) {

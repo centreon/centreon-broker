@@ -50,7 +50,6 @@ namespace        notification {
                    unsigned int id,
                    objects::contactgroup::ptr ctg) {}
 
-
     /**
      *  Add a contactgroup contact relation to the builder.
      *

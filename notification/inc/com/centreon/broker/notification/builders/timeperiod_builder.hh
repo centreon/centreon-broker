@@ -48,13 +48,34 @@ namespace         notification {
     virtual void  add_timeperiod(
                     unsigned int id,
                     objects::timeperiod::ptr tperiod) {}
+    /**
+     *  Add a timeperiod exception to the builder.
+     *
+     *  @param[in] timeperiod_id  The id of the timeperiod.
+     *  @param[in] days           The days in the exception.
+     *  @param[in] timerange      The timerange of the exception.
+     */
     virtual void  add_timeperiod_exception(
                     unsigned int timeperiod_id,
                     std::string const& days,
                     std::string const& timerange) {}
+
+    /**
+     *  Add a timeperiod exclude relation to the builder.
+     *
+     *  @param[in] timeperiod_id  The id of the timeperiod.
+     *  @param[in] exclude_id     The id of the timeperiod excluded.
+     */
     virtual void  add_timeperiod_exclude_relation(
                     unsigned int timeperiod_id,
                     unsigned int exclude_id) {}
+
+    /**
+     *  Add a timeperiod include relation to the builder.
+     *
+     *  @param[in] timeperiod_id  The id of the timeperiod.
+     *  @param[in] include_id     The id of the timeperiod included.
+     */
     virtual void  add_timeperiod_include_relation(
                     unsigned int timeperiod_id,
                     unsigned int include_id) {}

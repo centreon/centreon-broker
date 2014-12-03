@@ -27,6 +27,12 @@ using namespace com::centreon::broker::notification::objects;
  */
 composed_acknowledgement_builder::composed_acknowledgement_builder() {}
 
+/**
+ *  Add an acknowledgement to the builder.
+ *
+ *  @param[in] id The id of the node being acknowledged.
+ *  @param[in] ack The acknowledgement.
+ */
 void composed_acknowledgement_builder::add_ack(
                                          node_id id,
                                          acknowledgement::ptr ack) {

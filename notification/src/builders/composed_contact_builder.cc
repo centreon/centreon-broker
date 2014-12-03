@@ -27,6 +27,12 @@ using namespace com::centreon::broker::notification::objects;
  */
 composed_contact_builder::composed_contact_builder() {}
 
+/**
+ *  Add a contact to the builder.
+ *
+ *  @param[in] id The id of the contact.
+ *  @param[in] con The contact.
+ */
 void composed_contact_builder::add_contact(
                                  unsigned int id,
                                  contact::ptr con) {
@@ -37,6 +43,13 @@ void composed_contact_builder::add_contact(
     (*it)->add_contact(id, con);
 }
 
+/**
+ *  Add a contact param to the builder.
+ *
+ *  @param[in] contact_id  The id of the contact.
+ *  @param[in] key         The key (name) of the contact param.
+ *  @param[in] value       The value of the contact param.
+ */
 void composed_contact_builder::add_contact_param(
                                  unsigned int contact_id,
                                  std::string const& key,

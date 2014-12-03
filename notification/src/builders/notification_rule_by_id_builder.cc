@@ -32,7 +32,7 @@ notification_rule_by_id_builder::notification_rule_by_id_builder(
   : _table(table) {}
 
 /**
- *  Add a rule into the builder.
+ *  Add a rule to the builder.
  *
  *  @param[in] id   The id of the rule.
  *  @param[in] con  The rule to add.

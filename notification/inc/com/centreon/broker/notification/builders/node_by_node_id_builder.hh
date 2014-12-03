@@ -34,7 +34,7 @@ namespace           notification {
    *
    *  This class build the set of all the node id of the db.
    */
-  class             node_by_node_id_builder : public node_builder{
+  class             node_by_node_id_builder : public node_builder {
   public:
                     node_by_node_id_builder(
                       QHash<objects::node_id, objects::node::ptr>& map);

@@ -31,6 +31,11 @@ node_by_node_id_builder::node_by_node_id_builder(
                            QHash<objects::node_id, objects::node::ptr>& map)
   : _map(map) {}
 
+/**
+ *  Add a node to the builder.
+ *
+ *  @param[in] node The node.
+ */
 void node_by_node_id_builder::add_node(node::ptr node) {
   _map.insert(node->get_node_id(), node);
 }

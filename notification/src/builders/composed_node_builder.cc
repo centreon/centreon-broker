@@ -27,6 +27,11 @@ using namespace com::centreon::broker::notification::objects;
  */
 composed_node_builder::composed_node_builder() {}
 
+/**
+ *  Add a node to the builder.
+ *
+ *  @param[in] node The node.
+ */
 void composed_node_builder::add_node(node::ptr node) {
   for (composed_builder<node_builder>::iterator it(begin()),
                                                 it_end(end());

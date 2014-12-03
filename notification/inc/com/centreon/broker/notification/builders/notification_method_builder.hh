@@ -33,6 +33,12 @@ namespace           notification {
   public:
     virtual         ~notification_method_builder() {}
 
+    /**
+     *  Add a notification method to the builder.
+     *
+     *  @param[in] method_id  The id of the notification method.
+     *  @param[in] method     The method.
+     */
     virtual void    add_notification_method(
                       unsigned int method_id,
                       objects::notification_method::ptr method) {}

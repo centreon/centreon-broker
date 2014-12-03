@@ -27,6 +27,12 @@ using namespace com::centreon::broker::notification::objects;
  */
 composed_timeperiod_builder::composed_timeperiod_builder() {}
 
+/**
+ *  Add a timeperiod to the builder.
+ *
+ *  @param[in] id The id of the timeperiod.
+ *  @param[in] tperiod The timeperiod.
+ */
 void composed_timeperiod_builder::add_timeperiod(
                                     unsigned int id,
                                     timeperiod::ptr tperiod) {
@@ -37,6 +43,13 @@ void composed_timeperiod_builder::add_timeperiod(
     (*it)->add_timeperiod(id, tperiod);
 }
 
+/**
+ *  Add a timeperiod exception to the builder.
+ *
+ *  @param[in] timeperiod_id  The id of the timeperiod.
+ *  @param[in] days           The days in the exception.
+ *  @param[in] timerange      The timerange of the exception.
+ */
 void composed_timeperiod_builder::add_timeperiod_exception(
                                     unsigned int timeperiod_id,
                                     std::string const& days,
@@ -48,6 +61,12 @@ void composed_timeperiod_builder::add_timeperiod_exception(
     (*it)->add_timeperiod_exception(timeperiod_id, days, timerange);
 }
 
+/**
+ *  Add a timeperiod exclude relation to the builder.
+ *
+ *  @param[in] timeperiod_id  The id of the timeperiod.
+ *  @param[in] exclude_id     The id of the timeperiod excluded.
+ */
 void composed_timeperiod_builder::add_timeperiod_exclude_relation(
                                     unsigned int timeperiod_id,
                                     unsigned int exclude_id) {
@@ -58,6 +77,12 @@ void composed_timeperiod_builder::add_timeperiod_exclude_relation(
     (*it)->add_timeperiod_exclude_relation(timeperiod_id, exclude_id);
 }
 
+/**
+ *  Add a timeperiod include relation to the builder.
+ *
+ *  @param[in] timeperiod_id  The id of the timeperiod.
+ *  @param[in] include_id     The id of the timeperiod included.
+ */
 void composed_timeperiod_builder::add_timeperiod_include_relation(
                                     unsigned int timeperiod_id,
                                     unsigned int include_id) {

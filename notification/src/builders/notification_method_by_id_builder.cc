@@ -22,10 +22,21 @@
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
+/**
+ *  Constructor.
+ *
+ *  @param[in] map  The map to fill.
+ */
 notification_method_by_id_builder::notification_method_by_id_builder(
   QHash<unsigned int,objects::notification_method::ptr>& map)
   : _map(map) {}
 
+/**
+ *  Add a notification method to the builder.
+ *
+ *  @param[in] method_id  The id of the notification method.
+ *  @param[in] method     The method.
+ */
 void notification_method_by_id_builder::add_notification_method(
                                           unsigned int method_id,
                                           notification_method::ptr method) {

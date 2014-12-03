@@ -27,6 +27,12 @@ using namespace com::centreon::broker::notification::objects;
  */
 composed_notification_method_builder::composed_notification_method_builder() {}
 
+/**
+ *  Add a notification method to the builder.
+ *
+ *  @param[in] method_id  The id of the notification method.
+ *  @param[in] method     The method.
+ */
 void composed_notification_method_builder::add_notification_method(
                                              unsigned int method_id,
                                              notification_method::ptr method) {

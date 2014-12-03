@@ -47,6 +47,12 @@ void contactgroup_by_contact_builder::add_contactgroup(
   _cache.insert(id, ctg);
 }
 
+/**
+ *  Add a contactgroup contact relation to the builder.
+ *
+ *  @param[in] contact_id       The id of the contact.
+ *  @param[in] contactgroup_id  The id of the contactgroup.
+ */
 void contactgroup_by_contact_builder::add_contactgroup_contact_relation(
                                         unsigned int contact_id,
                                         unsigned int contactgroup_id) {
