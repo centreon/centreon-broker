@@ -169,5 +169,9 @@ void process_manager::add_timeout(unsigned int timeout) {
   timer->setSingleShot(true);
   connect(timer, SIGNAL(timeout()), this, SLOT(process_timeouted()));
   _timer_list.push_back(misc::shared_ptr<QTimer>(timer));
-  QMetaObject::invokeMethod(timer, "start", Qt::QueuedConnection, Q_ARG(unsigned int, timeout * 1000));
+  QMetaObject::invokeMethod(
+                 timer,
+                 "start",
+                 Qt::QueuedConnection,
+                 Q_ARG(unsigned int, timeout * 1000));
 }

@@ -197,6 +197,14 @@ bool timerange::to_time_t(struct tm const& midnight,
   return (true);
 }
 
+/**
+ *  Build a time_t from a string containing a time.
+ *
+ *  @param[in] time_str  The string containing a time.
+ *  @param[out ret       The result.
+ *
+ *  @return              True if the string was correctly parsed.
+ */
 static bool _build_time_t(std::string const& time_str,
                           unsigned long& ret) {
   std::size_t pos(time_str.find(':'));
@@ -212,6 +220,14 @@ static bool _build_time_t(std::string const& time_str,
   return (true);
 }
 
+/**
+ *  Build timeranges from a string.
+ *
+ *  @param[in] line         The string containing the timerange.
+ *  @param[out] timeranges  The timerange.
+ *
+ *  @return                 True if the string was correctly parsed.
+ */
 bool timerange::build_timeranges_from_string(std::string const& line,
                                              std::list<timerange>& timeranges) {
   std::list<std::string> timeranges_str;
