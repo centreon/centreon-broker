@@ -20,11 +20,13 @@
 #include <sstream>
 #include <iomanip>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/utilities/qhash_func.hh"
 #include "com/centreon/broker/notification/macro_generator.hh"
 #include "com/centreon/broker/notification/utilities/get_datetime_string.hh"
 #include "com/centreon/broker/notification/macro_getters.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::notification;
 
 macro_generator::x_macro_map macro_generator::_map;
@@ -57,15 +59,16 @@ void macro_generator::generate(
   objects::node::ptr node = st.get_node_by_id(id);
   if (!node)
     throw (exceptions::msg()
-           << "notification: macro_generator: can't find the node: "
-           << id.get_host_id() << ", " << id.get_service_id());
+           << "notification: can't find the node (" << id.get_host_id()
+           << ", " << id.get_service_id()
+           << ") while generating its macros");
   objects::node::ptr host = node;
   if (id.is_service())
     host = st.get_node_by_id(objects::node_id(id.get_host_id()));
   if (!host)
     throw (exceptions::msg()
-           << "notification: macro_generator: can't find the host "
-           << id.get_host_id());
+           << "notification: can't find the host "
+           << id.get_host_id() << " while generating macros");
   node_cache::host_node_state const& hns = cache.get_host(id.get_host_id());
 
   for (macro_container::iterator it(container.begin()),
@@ -85,9 +88,12 @@ void macro_generator::generate(
                cache,
                *it))
       continue ;
-
-    throw (exceptions::msg()
-           << "notification: macro_generator: macro not found");
+    else {
+      logging::debug(logging::medium) << "notification: macro '"
+        << it.key() << "' was not found for node (" << id.get_host_id()
+        << ", " << id.get_service_id() << ")";
+      it->clear();
+    }
   }
 }
 
@@ -150,13 +156,16 @@ bool macro_generator::_get_custom_macros(
                         objects::node_id id,
                         node_cache const& cache,
                         std::string& result) {
-  QHash<std::string, neb::custom_variable> const* custom_vars;
+  QHash<std::string, neb::custom_variable_status> const* custom_vars;
   if (id.is_host())
     custom_vars = &cache.get_host(id.get_host_id()).get_custom_vars();
   else
-    custom_vars = &cache.get_service(id.get_service_id()).get_custom_vars();
+    custom_vars = &cache.get_service(
+                     objects::node_id(
+                                id.get_host_id(),
+                                id.get_service_id())).get_custom_vars();
 
-  QHash<std::string, neb::custom_variable>::const_iterator found =
+  QHash<std::string, neb::custom_variable_status>::const_iterator found =
     custom_vars->find(macro_name);
   if (found != custom_vars->end()) {
     result = found->value.toStdString();

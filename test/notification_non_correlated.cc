@@ -75,7 +75,7 @@ int main() {
       it->max_attempts = 1;
     }
     set_custom_variable(
-      services.front(),
+      services.back(),
       "FLAGFILE",
       flag_file.c_str());
 

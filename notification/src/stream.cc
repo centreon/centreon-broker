@@ -256,9 +256,9 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   // Check that data exists.
   unsigned int retval(1);
   if (data.isNull())
-    return 1;
+    return (1);
 
-  // Write the data to the data cache.
+  // Update node cache.
   _node_cache.write(data);
 
   unsigned int type(data->type());
@@ -266,10 +266,16 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   unsigned short elem(io::events::element_of_type(type));
 
   if (cat == io::events::neb)  {
-    if (elem == neb::de_host_status)
-      _process_host_status_event(*data.staticCast<neb::host_status>());
-    else if (elem == neb::de_service_status)
-      _process_service_status_event(*data.staticCast<neb::service_status>());
+    if (elem == neb::de_host_status) {
+      misc::shared_ptr<neb::host_status>
+        hs(data.staticCast<neb::host_status>());
+      _process_host_status_event(*hs);
+    }
+    else if (elem == neb::de_service_status) {
+      misc::shared_ptr<neb::service_status>
+        ss(data.staticCast<neb::service_status>());
+      _process_service_status_event(*ss);
+    }
   }
   else if(cat == io::events::correlation) {
     if (elem == correlation::de_issue_parent)

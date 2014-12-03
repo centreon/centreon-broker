@@ -43,7 +43,7 @@ void contactgroup_loader::load(
     return;
 
   logging::debug(logging::medium)
-    << "notification: loading contactgroups from the database";
+    << "notification: loading contact groups from the database";
 
   QSqlQuery query(*db);
 

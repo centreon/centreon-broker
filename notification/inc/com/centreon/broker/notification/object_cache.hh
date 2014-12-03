@@ -26,8 +26,9 @@
 #  include <QHash>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/logging/logging.hh"
 #  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/neb/custom_variable.hh"
+#  include "com/centreon/broker/neb/custom_variable_status.hh"
 
 CCB_BEGIN()
 
@@ -60,7 +61,7 @@ namespace             notification {
      *
      *  @return  A reference this object.
      */
-    object_cache<FullType, StatusType, GroupType>  operator=(
+    object_cache<FullType, StatusType, GroupType>&  operator=(
       object_cache<FullType, StatusType, GroupType> const& obj) {
       if (this != &obj) {
         _node = obj._node;
@@ -89,13 +90,13 @@ namespace             notification {
            it != end;
            ++it)
         out.push_back(misc::shared_ptr<io::data>(new GroupType(it->second)));
-      for (QHash<std::string, neb::custom_variable>::const_iterator
+      for (QHash<std::string, neb::custom_variable_status>::const_iterator
              it(_custom_variables.begin()),
              end(_custom_variables.end());
            it != end;
            ++it)
         out.push_back(
-              misc::shared_ptr<io::data>(new neb::custom_variable(*it)));
+              misc::shared_ptr<io::data>(new neb::custom_variable_status(*it)));
     }
 
     /**
@@ -131,8 +132,24 @@ namespace             notification {
      *
      *  @param[in] var  The data to update.
      */
-    void update(neb::custom_variable const& var) {
-      _custom_variables.insert(var.name.toStdString(), var);
+    void update(neb::custom_variable_status const& var) {
+      std::string var_name;
+      var_name = (var.service_id ? "_SERVICE" : "_HOST");
+      var_name.append(var.name.toStdString());
+      if (var.value.isEmpty()) {
+        logging::debug(logging::low)
+          << "notification: removing custom variable '"
+          << var_name << "' from node (" << var.host_id
+          << ", " << var.service_id << ")";
+        _custom_variables.remove(var_name);
+      }
+      else {
+        logging::debug(logging::low)
+          << "notification: adding custom variable '"
+          << var_name << "' to node (" << var.host_id
+          << ", " << var.service_id << ")";
+        _custom_variables.insert(var_name, var);
+      }
     }
 
 
@@ -177,7 +194,7 @@ namespace             notification {
      *
      *  @return  The custome vars of this node.
      */
-    QHash<std::string, neb::custom_variable> const& get_custom_vars() const {
+    QHash<std::string, neb::custom_variable_status> const& get_custom_vars() const {
       return (_custom_variables);
     }
 
@@ -188,7 +205,7 @@ namespace             notification {
 
     std::map<std::string, GroupType>
                 _groups;
-    QHash<std::string, neb::custom_variable>
+    QHash<std::string, neb::custom_variable_status>
                 _custom_variables;
   };
 }

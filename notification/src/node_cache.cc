@@ -158,11 +158,6 @@ bool node_cache::unload(std::string const& cache_file) {
   return (true);
 }
 
-void node_cache::process(bool in, bool out) {
-  (void)in;
-  (void)out;
-}
-
 /**
  *  Read events from the node cache.
  *
@@ -171,7 +166,7 @@ void node_cache::process(bool in, bool out) {
 void node_cache::read(misc::shared_ptr<io::data>& d) {
   if (_serialized_data.empty())
     throw (io::exceptions::shutdown(true, true)
-           << "Node cache is empty");
+           << "node cache is empty");
   else {
     d = _serialized_data.front();
     _serialized_data.pop_front();
@@ -187,27 +182,33 @@ void node_cache::read(misc::shared_ptr<io::data>& d) {
  */
 unsigned int node_cache::write(misc::shared_ptr<io::data> const& data) {
   // Check that data exists.
-  unsigned int retval(1);
-
   if (data.isNull())
     return (1);
 
   unsigned int type = data->type();
-
   if (type == io::events::data_type<io::events::neb,
-                                    neb::de_host_status>::value) {
-    misc::shared_ptr<neb::host_status>
-        hst = data.staticCast<neb::host_status>();
-    QMutexLocker lock(&_mutex);
-    //_host_statuses.insert(hst->host_id, hst);
-  }
+                                    neb::de_host>::value)
+    update(*data.staticCast<neb::host>());
   else if (type == io::events::data_type<io::events::neb,
-                                         neb::de_service_status>::value) {
-    misc::shared_ptr<neb::service_status>
-        sst = data.staticCast<neb::service_status>();
-    QMutexLocker lock(&_mutex);
-    //_service_statuses.insert(sst->service_id, sst);
-  }
+                                         neb::de_host_status>::value)
+    update(*data.staticCast<neb::host_status>());
+  else if (type == io::events::data_type<io::events::neb,
+                                         neb::de_host_group_member>::value)
+    update(*data.staticCast<neb::host_group_member>());
+  else if (type == io::events::data_type<io::events::neb,
+                                         neb::de_service>::value)
+    update(*data.staticCast<neb::service>());
+  else if (type == io::events::data_type<io::events::neb,
+                                         neb::de_service_status>::value)
+    update(*data.staticCast<neb::service_status>());
+  else if (type == io::events::data_type<io::events::neb,
+                                         neb::de_service_group_member>::value)
+    update(*data.staticCast<neb::service_group_member>());
+  else if (type == io::events::data_type<io::events::neb,
+                                         neb::de_custom_variable>::value
+           || type == io::events::data_type<io::events::neb,
+                                            neb::de_custom_variable_status>::value)
+    update(*data.staticCast<neb::custom_variable_status>());
 
   return (1);
 }
@@ -220,8 +221,8 @@ unsigned int node_cache::write(misc::shared_ptr<io::data> const& data) {
 void node_cache::update(neb::host const& hst) {
   if (hst.host_id == 0)
     return ;
-
-  _host_node_states[hst.host_id].update(hst);
+  QMutexLocker lock(&_mutex);
+  _host_node_states[objects::node_id(hst.host_id)].update(hst);
 }
 
 /**
@@ -232,8 +233,8 @@ void node_cache::update(neb::host const& hst) {
 void node_cache::update(neb::host_status const& hst) {
   if (hst.host_id == 0)
     return ;
-
-  _host_node_states[hst.host_id].update(hst);
+  QMutexLocker lock(&_mutex);
+  _host_node_states[objects::node_id(hst.host_id)].update(hst);
 }
 
 /**
@@ -244,8 +245,8 @@ void node_cache::update(neb::host_status const& hst) {
 void node_cache::update(neb::host_group_member const& hgm) {
   if (hgm.host_id == 0)
     return ;
-
-  _host_node_states[hgm.host_id].update(hgm);
+  QMutexLocker lock(&_mutex);
+  _host_node_states[objects::node_id(hgm.host_id)].update(hgm);
 }
 
 /**
@@ -256,8 +257,8 @@ void node_cache::update(neb::host_group_member const& hgm) {
 void node_cache::update(neb::service const& s) {
   if (s.service_id == 0)
     return ;
-
-  _service_node_states[s.service_id].update(s);
+  QMutexLocker lock(&_mutex);
+  _service_node_states[objects::node_id(s.host_id, s.service_id)].update(s);
 }
 
 /**
@@ -268,8 +269,8 @@ void node_cache::update(neb::service const& s) {
 void node_cache::update(neb::service_status const& sst) {
   if (sst.service_id == 0)
     return ;
-
-  _service_node_states[sst.service_id].update(sst);
+  QMutexLocker lock(&_mutex);
+  _service_node_states[objects::node_id(sst.host_id, sst.service_id)].update(sst);
 }
 
 /**
@@ -280,23 +281,23 @@ void node_cache::update(neb::service_status const& sst) {
 void node_cache::update(neb::service_group_member const& sgm) {
   if (sgm.service_id == 0)
     return ;
-
-  _service_node_states[sgm.service_id].update(sgm);
+  QMutexLocker lock(&_mutex);
+  _service_node_states[objects::node_id(sgm.host_id, sgm.service_id)].update(sgm);
 }
 
 /**
  *  Update the node cache.
  *
- *  @param[in] cv  The data to update.
+ *  @param[in] cvs  The data to update.
  */
-void node_cache::update(neb::custom_variable const& cv) {
-  if (cv.host_id == 0)
+void node_cache::update(neb::custom_variable_status const& cvs) {
+  if (cvs.host_id == 0)
     return ;
-
-  if (cv.service_id == 0)
-    _host_node_states[cv.host_id].update(cv);
+  QMutexLocker lock(&_mutex);
+  if (cvs.service_id == 0)
+    _host_node_states[objects::node_id(cvs.host_id)].update(cvs);
   else
-    _service_node_states[cv.service_id].update(cv);
+    _service_node_states[objects::node_id(cvs.host_id, cvs.service_id)].update(cvs);
 }
 
 /**
@@ -307,12 +308,12 @@ void node_cache::update(neb::custom_variable const& cv) {
  *  @return        The host from the node cache.
  */
 node_cache::host_node_state const& node_cache::get_host(
-                                                 unsigned int id) const {
-  QHash<unsigned int, host_node_state>::const_iterator found =
+                                                 objects::node_id id) const {
+  QHash<objects::node_id, host_node_state>::const_iterator found =
     _host_node_states.find(id);
   if (found == _host_node_states.end())
-    throw (exceptions::msg()
-             << "notification: node_cache: host " << id << "not found.");
+    throw (exceptions::msg() << "notification: host "
+           << id.get_host_id() << " was not found in cache");
   return (*found);
 }
 
@@ -324,32 +325,14 @@ node_cache::host_node_state const& node_cache::get_host(
  *  @return        The service from the node cache.
  */
 node_cache::service_node_state const& node_cache::get_service(
-                                                    unsigned int id) const {
-  QHash<unsigned int, service_node_state>::const_iterator found =
+                                                    objects::node_id id) const {
+  QHash<objects::node_id, service_node_state>::const_iterator found =
     _service_node_states.find(id);
   if (found == _service_node_states.end())
     throw (exceptions::msg()
-             << "notification: node_cache: service " << id << "not found.");
+           << "notification: service (" << id.get_host_id() << ", "
+           << id.get_service_id() << " was not found in cache");
   return (*found);
-}
-
-/**
- *  Prepare the serialization of the host and service states.
- */
-void node_cache::_prepare_serialization() {
-  _serialized_data.clear();
-  for (QHash<unsigned int, host_node_state>::const_iterator
-         it = _host_node_states.begin(),
-         end = _host_node_states.end();
-       it != end;
-       ++it)
-    it->serialize(_serialized_data);
-  for (QHash<unsigned int, service_node_state>::const_iterator
-         it = _service_node_states.begin(),
-         end = _service_node_states.end();
-       it != end;
-       ++it)
-    it->serialize(_serialized_data);
 }
 
 /**
@@ -366,7 +349,7 @@ std::vector<std::string> node_cache::get_all_node_contained_in(
   std::vector<std::string> res;
 
   if (is_host_group)
-    for (QHash<unsigned int, host_node_state>::const_iterator
+    for (QHash<objects::node_id, host_node_state>::const_iterator
            it(_host_node_states.begin()),
            end(_host_node_states.end());
         it != end;
@@ -374,7 +357,7 @@ std::vector<std::string> node_cache::get_all_node_contained_in(
       if (it->get_groups().count(group_name) != 0)
         res.push_back(it->get_node().host_name.toStdString());
   else
-    for (QHash<unsigned int, service_node_state>::const_iterator
+    for (QHash<objects::node_id, service_node_state>::const_iterator
            it(_service_node_states.begin()),
            end(_service_node_states.end());
         it != end;
@@ -385,3 +368,21 @@ std::vector<std::string> node_cache::get_all_node_contained_in(
   return (res);
 }
 
+/**
+ *  Prepare the serialization of the host and service states.
+ */
+void node_cache::_prepare_serialization() {
+  _serialized_data.clear();
+  for (QHash<objects::node_id, host_node_state>::const_iterator
+         it = _host_node_states.begin(),
+         end = _host_node_states.end();
+       it != end;
+       ++it)
+    it->serialize(_serialized_data);
+  for (QHash<objects::node_id, service_node_state>::const_iterator
+         it = _service_node_states.begin(),
+         end = _service_node_states.end();
+       it != end;
+       ++it)
+    it->serialize(_serialized_data);
+}

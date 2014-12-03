@@ -25,18 +25,18 @@
 #  include <vector>
 #  include <QMutex>
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/bbdo/stream.hh"
 #  include "com/centreon/broker/compression/stream.hh"
 #  include "com/centreon/broker/file/stream.hh"
 #  include "com/centreon/broker/notification/object_cache.hh"
+#  include "com/centreon/broker/notification/objects/node.hh"
 #  include "com/centreon/broker/neb/service.hh"
 #  include "com/centreon/broker/neb/service_status.hh"
 #  include "com/centreon/broker/neb/host.hh"
 #  include "com/centreon/broker/neb/host_status.hh"
 #  include "com/centreon/broker/neb/host_group_member.hh"
 #  include "com/centreon/broker/neb/service_group_member.hh"
-#  include "com/centreon/broker/neb/custom_variable.hh"
+#  include "com/centreon/broker/neb/custom_variable_status.hh"
 
 CCB_BEGIN()
 
@@ -48,7 +48,7 @@ namespace         notification {
    *  Used by and for the macro processing. Load from a file at startup,
    *  unload at shutdown.
    */
-  class           node_cache : public io::stream {
+  class           node_cache {
   public:
     typedef object_cache<neb::host, neb::host_status, neb::host_group_member>
                   host_node_state;
@@ -62,41 +62,40 @@ namespace         notification {
     bool          load(std::string const& cache_file);
     bool          unload(std::string const& cache_file);
 
-    virtual void  process(bool in, bool out);
-    virtual void  read(misc::shared_ptr<io::data> &d);
+    virtual void  read(misc::shared_ptr<io::data>& d);
     virtual unsigned int
-                  write(const misc::shared_ptr<io::data> &d);
+                  write(misc::shared_ptr<io::data> const& d);
 
-    void          update(neb::host const&);
-    void          update(neb::host_status const&);
-    void          update(neb::host_group_member const&);
-    void          update(neb::service const&);
-    void          update(neb::service_status const&);
-    void          update(neb::service_group_member const&);
-    void          update(neb::custom_variable const&);
+    void          update(neb::host const& hst);
+    void          update(neb::host_status const& hs);
+    void          update(neb::host_group_member const& hgm);
+    void          update(neb::service const& svc);
+    void          update(neb::service_status const& ss);
+    void          update(neb::service_group_member const& sgm);
+    void          update(neb::custom_variable_status const& cvs);
 
 
     host_node_state const&
-                  get_host(unsigned int id) const;
+                  get_host(objects::node_id id) const;
     service_node_state const&
-                  get_service(unsigned int id) const;
+                  get_service(objects::node_id id) const;
 
     std::vector<std::string>
-                  get_all_node_contained_in(std::string const& group_name,
-                                            bool is_host_group) const;
+                  get_all_node_contained_in(
+                    std::string const& group_name,
+                    bool is_host_group) const;
 
   private:
-    QHash<unsigned int, host_node_state>
-                  _host_node_states;
-    QHash<unsigned int, service_node_state>
-                  _service_node_states;
+    void          _prepare_serialization();
 
+    QHash<objects::node_id, host_node_state>
+                  _host_node_states;
+    QHash<objects::node_id, service_node_state>
+                  _service_node_states;
     QMutex        _mutex;
 
     std::deque<misc::shared_ptr<io::data> >
                   _serialized_data;
-
-    void          _prepare_serialization();
   };
 }
 

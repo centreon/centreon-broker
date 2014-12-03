@@ -120,9 +120,9 @@ std::string command::resolve(
   }
   catch (std::exception const& e) {
     logging::error(logging::medium)
-      << "notification: couldn't resolve the macro '" << _name
-      << "' (content: <<'" << _base_command << "'): " << e.what();
-  } catch(...) {}
+      << "notification: could not resolve some macro in command '"
+      << _name << "': " << e.what();
+  }
 
   // Replace the macros by their values.
   std::string resolved_command = _base_command;

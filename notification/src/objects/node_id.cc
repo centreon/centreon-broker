@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -126,7 +126,7 @@ unsigned int node_id::get_service_id() const throw() {
  *  @return  True if this node is a host.
  */
 bool node_id::is_host() const throw() {
-  return (_host_id != 0);
+  return (_service_id == 0);
 }
 
 /**
