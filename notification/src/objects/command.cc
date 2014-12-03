@@ -142,8 +142,6 @@ std::string command::resolve(
 static void single_pass_replace(
               std::string& str,
               macro_generator::macro_container const& macros) {
-  size_t pos = 0;
-
   std::vector<std::pair<std::string, std::string> > macro_list;
   for (macro_generator::macro_container::iterator it(macros.begin()),
                                                   end(macros.end());
@@ -155,27 +153,15 @@ static void single_pass_replace(
     macro_list.push_back(std::make_pair(key, *it));
   }
 
-  while (true) {
-    size_t newpos = std::string::npos;
-    std::vector<std::pair<std::string, std::string> >::const_iterator
-      first_resolved_macro = macro_list.end();
-    for (std::vector<std::pair<std::string, std::string> >::const_iterator
-           it(macro_list.begin()),
-           end(macro_list.end());
-         it != end;
-        ++it) {
-      size_t tmp = str.find(it->second, pos);
-      if (tmp < newpos) {
-        newpos = tmp;
-        first_resolved_macro = it;
-      }
+  for (std::vector<std::pair<std::string, std::string> >::const_iterator
+         it(macro_list.begin()),
+         end(macro_list.end());
+       it != end;
+       ++it) {
+    size_t tmp(0);
+    while ((tmp = str.find(it->first, tmp)) != std::string::npos) {
+      str.replace(tmp, it->first.size(), it->second);
+      tmp += it->second.size();
     }
-    if (newpos == std::string::npos)
-      return ;
-    str.replace(
-          pos,
-          first_resolved_macro->first.size(),
-          first_resolved_macro->second);
-    pos = newpos + first_resolved_macro->second.size();
   }
 }
