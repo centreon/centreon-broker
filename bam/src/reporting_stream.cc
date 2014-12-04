@@ -1498,8 +1498,9 @@ void reporting_stream::_compute_event_durations(
   if (ev.isNull() || !visitor)
     return ;
 
-  logging::debug(logging::low)
-    << "BAM-BI: computing event durations for BA " << ev->ba_id;
+  logging::info(logging::medium)
+    << "BAM-BI: computing event durations for BA " << ev->ba_id
+    << ", event started at:" << ev->start_time;
 
   // Find the timeperiods associated with this ba.
   std::pair<timeperiod_relation_map::const_iterator,
@@ -1548,9 +1549,10 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
   // Delete obsolete ba events durations.
   {
     QString query;
-    query.append("DELETE mod_bam_reporting_ba_events_durations"
-                 "  FROM mod_bam_reporting_ba_events_durations"
+    query.append("DELETE a"
+                 "  FROM mod_bam_reporting_ba_events_durations as a"
                  "    INNER JOIN mod_bam_reporting_ba_events as b"
+                 "      ON a.ba_event_id = b.ba_event_id"
                  "  WHERE b.ba_id IN (");
     query.append(r.bas_to_rebuild);
     query.append(")");

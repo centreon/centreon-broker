@@ -236,7 +236,7 @@ void availability_thread::_build_daily_availabilities(
                             QSqlQuery& q,
                             time_t day_start,
                             time_t day_end) {
-  logging::debug(logging::medium)
+  logging::info(logging::medium)
       << "BAM-BI: availability thread writing daily availability for "
          "day : " << day_start << "-" << day_end;
   std::stringstream query;
