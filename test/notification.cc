@@ -110,7 +110,7 @@ int main() {
     db.centreon_run(
          "INSERT INTO cfg_commands (command_id, command_name,"
          "            command_line)"
-         "  VALUES (1, 'NotificationCommand1', 'cmake -E touch $_SERVICEFLAGFILE$')",
+         "  VALUES (1, 'NotificationCommand1', 'sh -c \\'echo \"test\" > $_SERVICEFLAGFILE$\\'')",
          "could not create notification command");
 
     // Create notification rules in DB.
@@ -170,6 +170,11 @@ int main() {
 
     // Check file creation.
     error = !QFile::exists(flag_file.c_str());
+
+    if (!error)
+      std::cout
+        <<  "content of " << flag_file << ":"
+        << QFile(flag_file.c_str()).readAll().data() << std::endl;
   }
   catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
