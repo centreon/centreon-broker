@@ -72,8 +72,6 @@ availability_thread::~availability_thread() {
  *  The main loop of thread.
  */
 void availability_thread::run() {
-  // Open the DB
-
   // Lock the mutex.
   QMutexLocker lock(&_mutex);
 
@@ -399,9 +397,11 @@ void availability_thread::_open_database() {
  *  Close the database.
  */
 void availability_thread::_close_database() {
-  _db->close();
-  _db.reset();
-  QString bam_id;
-  bam_id.setNum((qulonglong)this, 16);
-  QSqlDatabase::removeDatabase(bam_id);
+  if (_db.get()) {
+    _db->close();
+    _db.reset();
+    QString bam_id;
+    bam_id.setNum((qulonglong)this, 16);
+    QSqlDatabase::removeDatabase(bam_id);
+  }
 }
