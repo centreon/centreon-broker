@@ -609,8 +609,8 @@ void reader::_load_dimensions() {
       ba->ba_id = q.value(0).toUInt();
       ba->ba_name = q.value(1).toString();
       ba->ba_description = q.value(2).toString();
-      ba->sla_month_percent_1 = q.value(3).toDouble();
-      ba->sla_month_percent_2 = q.value(4).toDouble();
+      ba->sla_month_percent_crit = q.value(3).toDouble();
+      ba->sla_month_percent_warn = q.value(4).toDouble();
       ba->sla_duration_1 = q.value(5).toInt();
       ba->sla_duration_2 = q.value(6).toInt();
       datas.push_back(ba.staticCast<io::data>());

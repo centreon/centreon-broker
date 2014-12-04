@@ -29,8 +29,8 @@ using namespace com::centreon::broker::bam;
  */
 dimension_ba_event::dimension_ba_event()
   : ba_id(0),
-    sla_month_percent_1(0),
-    sla_month_percent_2(0),
+    sla_month_percent_crit(0),
+    sla_month_percent_warn(0),
     sla_duration_1(0),
     sla_duration_2(0) {}
 
@@ -96,8 +96,8 @@ void dimension_ba_event::_internal_copy(dimension_ba_event const& other) {
   ba_id = other.ba_id;
   ba_name = other.ba_name;
   ba_description = other.ba_description;
-  sla_month_percent_1 = other.sla_month_percent_1;
-  sla_month_percent_2 = other.sla_month_percent_2;
+  sla_month_percent_crit = other.sla_month_percent_crit;
+  sla_month_percent_warn = other.sla_month_percent_warn;
   sla_duration_1 = other.sla_duration_1;
   sla_duration_2 = other.sla_duration_2;
   return ;

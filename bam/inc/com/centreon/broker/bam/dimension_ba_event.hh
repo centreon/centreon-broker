@@ -47,8 +47,8 @@ namespace                bam {
     unsigned int         ba_id;
     QString              ba_name;
     QString              ba_description;
-    double               sla_month_percent_1;
-    double               sla_month_percent_2;
+    double               sla_month_percent_crit;
+    double               sla_month_percent_warn;
     unsigned int         sla_duration_1;
     unsigned int         sla_duration_2;
 

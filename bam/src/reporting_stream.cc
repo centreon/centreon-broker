@@ -799,11 +799,11 @@ void reporting_stream::_prepare() {
   {
     QString query;
     query = "INSERT INTO mod_bam_reporting_ba (ba_id, ba_name, ba_description,"
-            "                sla_month_percent_1, sla_month_percent_2,"
-            "                sla_month_duration_1, sla_month_duration_2)"
-            " VALUES (:ba_id, :ba_name, :ba_description, :sla_month_percent_1,"
-            "         :sla_month_percent_2, :sla_month_duration_1,"
-            "         :sla_month_duration_2)";
+            "                sla_month_percent_crit, sla_month_percent_warn,"
+            "                sla_month_duration_crit, sla_month_duration_warn)"
+            " VALUES (:ba_id, :ba_name, :ba_description, :sla_month_percent_crit,"
+            "         :sla_month_percent_warn, :sla_month_duration_crit,"
+            "         :sla_month_duration_warn)";
     _dimension_ba_insert.reset(new QSqlQuery(*_db));
     if (!_dimension_ba_insert->prepare(query))
       throw (exceptions::msg()
@@ -1223,16 +1223,16 @@ void reporting_stream::_process_dimension_ba(
                           ":ba_description",
                           dba.ba_description);
   _dimension_ba_insert->bindValue(
-                          ":sla_month_percent_1",
-                          dba.sla_month_percent_1);
+                          ":sla_month_percent_crit",
+                          dba.sla_month_percent_crit);
   _dimension_ba_insert->bindValue(
-                          ":sla_month_percent_2",
-                          dba.sla_month_percent_2);
+                          ":sla_month_percent_warn",
+                          dba.sla_month_percent_warn);
   _dimension_ba_insert->bindValue(
-                          ":sla_month_duration_1",
+                          ":sla_month_duration_crit",
                           dba.sla_duration_1);
   _dimension_ba_insert->bindValue(
-                          ":sla_month_duration_2"
+                          ":sla_month_duration_warn"
                           , dba.sla_duration_2);
   if (!_dimension_ba_insert->exec())
     throw (exceptions::msg() << "BAM-BI: could not insert BA "

@@ -63,8 +63,8 @@ static void check_bas(
   ++iteration;
   QString query(
             "SELECT ba_id, ba_name, ba_description,"
-            "       sla_month_percent_1, sla_month_percent_2,"
-            "       sla_month_duration_1, sla_month_duration_2"
+            "       sla_month_percent_crit, sla_month_percent_warn,"
+            "       sla_month_duration_crit, sla_month_duration_warn"
             "  FROM mod_bam_reporting_ba"
             "  ORDER BY ba_id");
   QSqlQuery q(db);

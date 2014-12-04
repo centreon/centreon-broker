@@ -273,8 +273,8 @@ int main() {
     {
       QString query(
                 "INSERT INTO mod_bam_reporting_ba (ba_id, ba_name, ba_description,"
-                "                     sla_month_percent_1, sla_month_percent_2,"
-                "                     sla_month_duration_1, sla_month_duration_2)"
+                "                     sla_month_percent_crit, sla_month_percent_warn,"
+                "                     sla_month_duration_crit, sla_month_duration_warn)"
                 "  VALUES (1, 'BA1', 'DESC1', 90, 80, 70, 60),"
                 "         (2, 'BA2', 'DESC2', 80, 70, 60, 50)");
       QSqlQuery q(*db.bi_db());
