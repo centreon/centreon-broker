@@ -86,8 +86,9 @@ int main() {
          "could not create host");
     db.centreon_run(
          "INSERT INTO cfg_services (service_id,"
-         "            service_description)"
-         "  VALUES (1, 'Service1'), (2, 'Service2')",
+         "            service_description,"
+         "            service_notification_options)"
+         "  VALUES (1, 'Service1', 'ywcu'), (2, 'Service2', 'ywcu')",
          "could not create services");
     db.centreon_run(
          "INSERT INTO cfg_hosts_services_relations (host_host_id,"
