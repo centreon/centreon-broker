@@ -109,7 +109,8 @@ CREATE TABLE mod_bam_reporting_ba_events (
   status tinyint default NULL,
   in_downtime boolean default NULL,
 
-  PRIMARY KEY (ba_event_id)
+  PRIMARY KEY (ba_event_id),
+  KEY (ba_id)
 ) ENGINE=InnoDB CHARACTER SET utf8;
 
 --
@@ -203,7 +204,7 @@ CREATE TABLE mod_bam_reporting_relations_ba_timeperiods (
 -- BA events durations.
 --
 CREATE TABLE mod_bam_reporting_ba_events_durations (
-  ba_event_id int NOT NULL auto_increment,
+  ba_event_id int NOT NULL,
   timeperiod_id int NOT NULL,
 
   start_time int default NULL,

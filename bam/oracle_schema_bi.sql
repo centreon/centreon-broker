@@ -129,7 +129,8 @@ CREATE TABLE mod_bam_reporting_ba_events (
   status char(1) default NULL,
   in_downtime boolean default NULL,
 
-  PRIMARY KEY (ba_event_id)
+  PRIMARY KEY (ba_event_id),
+  KEY (ba_id)
 );
 CREATE SEQUENCE mod_bam_reporting_ba_events_seq
 START WITH 1
