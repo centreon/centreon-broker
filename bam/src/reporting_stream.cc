@@ -1450,39 +1450,48 @@ misc::shared_ptr<io::data> reporting_stream::_dimension_copy(
   if (data->type()
            == io::events::data_type<io::events::bam,
                                     bam::de_dimension_ba_event>::value)
-    return (new bam::dimension_ba_event(data.ref_as<bam::dimension_ba_event>()));
+    return (new bam::dimension_ba_event(
+                       data.ref_as<bam::dimension_ba_event>()));
   else if (data->type()
            == io::events::data_type<io::events::bam,
                                     bam::de_dimension_bv_event>::value)
-    return (new bam::dimension_bv_event(data.ref_as<bam::dimension_bv_event>()));
+    return (new bam::dimension_bv_event(
+                       data.ref_as<bam::dimension_bv_event>()));
   else if (data->type()
            == io::events::data_type<io::events::bam,
                                     bam::de_dimension_ba_bv_relation_event>::value)
-    return (new bam::dimension_ba_bv_relation_event(data.ref_as<bam::dimension_ba_bv_relation_event>()));
+    return (new bam::dimension_ba_bv_relation_event(
+                       data.ref_as<bam::dimension_ba_bv_relation_event>()));
   else if (data->type()
            == io::events::data_type<io::events::bam,
                                     bam::de_dimension_kpi_event>::value)
-    return (new bam::dimension_kpi_event(data.ref_as<bam::dimension_kpi_event>()));
+    return (new bam::dimension_kpi_event(
+                       data.ref_as<bam::dimension_kpi_event>()));
   else if (data->type()
            == io::events::data_type<io::events::bam,
                                     bam::de_dimension_truncate_table_signal>::value)
-    return (new bam::dimension_truncate_table_signal(data.ref_as<bam::dimension_truncate_table_signal>()));
+    return (new bam::dimension_truncate_table_signal(
+                       data.ref_as<bam::dimension_truncate_table_signal>()));
   else if (data->type()
            == io::events::data_type<io::events::bam,
                                     bam::de_dimension_timeperiod>::value)
-    return (new bam::dimension_timeperiod(data.ref_as<bam::dimension_timeperiod>()));
+    return (new bam::dimension_timeperiod(
+                       data.ref_as<bam::dimension_timeperiod>()));
   else if (data->type()
            == io::events::data_type<io::events::bam,
                                     bam::de_dimension_timeperiod_exception>::value)
-    return (new bam::dimension_timeperiod_exception(data.ref_as<bam::dimension_timeperiod_exception>()));
+    return (new bam::dimension_timeperiod_exception(
+                       data.ref_as<bam::dimension_timeperiod_exception>()));
   else if (data->type()
            == io::events::data_type<io::events::bam,
                                     bam::de_dimension_timeperiod_exclusion>::value)
-    return (new bam::dimension_timeperiod_exclusion(data.ref_as<bam::dimension_timeperiod_exclusion>()));
+    return (new bam::dimension_timeperiod_exclusion(
+                       data.ref_as<bam::dimension_timeperiod_exclusion>()));
   else if (data->type()
            == io::events::data_type<io::events::bam,
                                     bam::de_dimension_ba_timeperiod_relation>::value)
-    return (new bam::dimension_ba_timeperiod_relation(data.ref_as<bam::dimension_ba_timeperiod_relation>()));
+    return (new bam::dimension_ba_timeperiod_relation(
+                       data.ref_as<bam::dimension_ba_timeperiod_relation>()));
   return (misc::shared_ptr<io::data>());
 }
 
