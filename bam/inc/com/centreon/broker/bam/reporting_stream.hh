@@ -82,6 +82,10 @@ namespace          bam {
     void           _process_ba_duration_event(
                      misc::shared_ptr<io::data> const& e);
     void           _process_kpi_event(misc::shared_ptr<io::data> const& e);
+    void           _process_dimension(misc::shared_ptr<io::data> const& e);
+    void           _dimension_dispatch(misc::shared_ptr<io::data> const& e);
+    misc::shared_ptr<io::data>
+                   _dimension_copy(misc::shared_ptr<io::data> const& e);
     void           _process_dimension_ba(misc::shared_ptr<io::data> const& e);
     void           _process_dimension_bv(misc::shared_ptr<io::data> const& e);
     void           _process_dimension_ba_bv_relation(misc::shared_ptr<io::data> const& e);
@@ -145,8 +149,6 @@ namespace          bam {
                   _dimension_kpi_insert;
     std::auto_ptr<QSqlDatabase>
                    _db;
-    std::auto_ptr<QMutexLocker>
-                  _availabilities_lock;
     std::auto_ptr<availability_thread>
                    _availabilities;
 
@@ -156,6 +158,9 @@ namespace          bam {
     timeperiod_map _timeperiods;
     timeperiod_relation_map
                   _timeperiod_relations;
+
+    std::vector<misc::shared_ptr<io::data> >
+                  _dimension_data_cache;
   };
 }
 
