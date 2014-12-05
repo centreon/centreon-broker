@@ -121,7 +121,7 @@ void availability_builder::add_event(
 
   // Compute the sla_duration on the period.
   unsigned int sla_duration = tp->duration_intersect(start, end);
-  if (sla_duration == (time_t)-1)
+  if (sla_duration == (unsigned int)-1)
     return ;
 
   // Update the data.

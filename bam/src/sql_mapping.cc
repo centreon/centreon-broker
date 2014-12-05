@@ -54,7 +54,7 @@ QString bam::plain_db_to_qt(QString const& dbtype) {
   QString plain_db_type(dbtype.toLower());
 
   // Browse type mapping.
-  for (int i(0); i < sizeof(type_mapping) / sizeof(*type_mapping); ++i)
+  for (size_t i(0); i < sizeof(type_mapping) / sizeof(*type_mapping); ++i)
     if (type_mapping[i].plain == plain_db_type)
       return (type_mapping[i].qt);
   return (dbtype);

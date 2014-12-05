@@ -73,10 +73,10 @@ timeperiod::timeperiod(
       std::string const& wednesday,
       std::string const& thursday,
       std::string const& friday,
-      std::string const& saturday) :
-  _id(id),
-  _timeperiod_name(name),
-  _alias(alias) {
+      std::string const& saturday)
+  : _id(id),
+    _alias(alias),
+    _timeperiod_name(name) {
   _timeranges.resize(7);
   _exceptions.resize(daterange::daterange_types);
   std::vector<bool> success;
@@ -664,7 +664,7 @@ static time_t _get_min_invalid_time_per_timeperiod(
   time_t earliest_day(0);
 
   // check exceptions (in this timeperiod definition) first
-  for (unsigned int daterange_type(0);
+  for (int daterange_type(0);
        daterange_type < daterange::daterange_types;
        ++daterange_type) {
 
