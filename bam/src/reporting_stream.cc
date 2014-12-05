@@ -1127,8 +1127,6 @@ void reporting_stream::_process_ba_duration_event(
   if (!_ba_duration_event_insert->exec())
     throw (exceptions::msg() << "BAM-BI: could not insert duration event of BA "
            << bde.ba_id << " starting at " << bde.start_time << ": " << _ba_duration_event_insert->lastError().text());
-  logging::debug(logging::medium)
-    << "BAM-BI: ba_duration_event = " << _ba_duration_event_insert->lastQuery();
   return ;
 }
 
