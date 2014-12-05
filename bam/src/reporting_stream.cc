@@ -451,10 +451,12 @@ void reporting_stream::_check_replication() {
  */
 void reporting_stream::_clear_qsql() {
   _ba_event_insert.reset();
+  _ba_full_event_insert.reset();
   _ba_event_update.reset();
   _ba_event_delete.reset();
   _ba_duration_event_insert.reset();
   _kpi_event_insert.reset();
+  _kpi_full_event_insert.reset();
   _kpi_event_update.reset();
   _kpi_event_delete.reset();
   _kpi_event_link.reset();
@@ -694,6 +696,20 @@ void reporting_stream::_prepare() {
              << _ba_event_insert->lastError().text());
   }
 
+  // BA full event insertion.
+  {
+    QString query;
+    query = "INSERT INTO mod_bam_reporting_ba_events (ba_id, "
+            "            first_level, start_time, end_time, status, in_downtime)"
+            "  VALUES (:ba_id, :first_level,"
+            "          :start_time, :end_time, :status, :in_downtime)";
+    _ba_full_event_insert.reset(new QSqlQuery(*_db));
+    if (!_ba_full_event_insert->prepare(query))
+      throw (exceptions::msg()
+             << "BAM-BI: could not prepare BA full event insertion query: "
+             << _ba_full_event_insert->lastError().text());
+  }
+
   // BA event update.
   {
     QString query;
@@ -750,6 +766,21 @@ void reporting_stream::_prepare() {
       throw (exceptions::msg()
              << "BAM-BI: could not prepare KPI event insertion query: "
              << _kpi_event_insert->lastError().text());
+  }
+
+  // KPI full event insertion.
+  {
+    QString query;
+    query = "INSERT INTO mod_bam_reporting_kpi_events (kpi_id,"
+            "            start_time, end_time, status, in_downtime,"
+            "            impact_level, first_output, first_perfdata)"
+            "  VALUES (:kpi_id, :start_time, :end_time, :status,"
+            "          :in_downtime, :impact_level, :output, :perfdata)";
+    _kpi_full_event_insert.reset(new QSqlQuery(*_db));
+    if (!_kpi_full_event_insert->prepare(query))
+      throw (exceptions::msg()
+             << "BAM-BI: could not prepare KPI full event insertion query: "
+             << _kpi_full_event_insert->lastError().text());
   }
 
   // KPI event update.
@@ -1005,6 +1036,25 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
              << be.ba_id << " starting at " << be.start_time
              << " and ending at " << be.end_time);
 
+    // If nothing was updated (can happen when there is a gap between
+    // the events for some reasons, then insert a new event in the database.
+    if (_ba_event_update->numRowsAffected() == 0) {
+      _ba_full_event_insert->bindValue(":ba_id", be.ba_id);
+      _ba_full_event_insert->bindValue(":first_level", be.first_level);
+      _ba_full_event_insert->bindValue(
+        ":start_time",
+        static_cast<qlonglong>(be.start_time.get_time_t()));
+      _ba_full_event_insert->bindValue(
+        ":end_time",
+        static_cast<qlonglong>(be.end_time.get_time_t()));
+      _ba_full_event_insert->bindValue(":status", be.status);
+      _ba_full_event_insert->bindValue(":in_downtime", be.in_downtime);
+      if (!_ba_full_event_insert->exec())
+        throw (exceptions::msg()
+               << "BAM-BI: could not insert event of BA "
+               << be.ba_id << " starting at " << be.start_time);
+    }
+
     // Compute the associated event durations.
     _compute_event_durations(e.staticCast<bam::ba_event>(), this);
   }
@@ -1145,6 +1195,28 @@ void reporting_stream::_process_kpi_event(
              << ke.kpi_id << " starting at " << ke.start_time
              << " and ending at " << ke.end_time << ": "
              << _kpi_event_update->lastError().text());
+
+    // If nothing was updated (can happen when there is a gap between
+    // the events for some reasons, then insert a new event in the database.
+    if (_kpi_event_update->numRowsAffected() == 0) {
+      _kpi_full_event_insert->bindValue(":kpi_id", ke.kpi_id);
+      _kpi_full_event_insert->bindValue(
+        ":start_time",
+        static_cast<qlonglong>(ke.start_time.get_time_t()));
+      _kpi_full_event_insert->bindValue(
+        ":end_time",
+        static_cast<qlonglong>(ke.end_time.get_time_t()));
+      _kpi_full_event_insert->bindValue(":status", ke.status);
+      _kpi_full_event_insert->bindValue(":in_downtime", ke.in_downtime);
+      _kpi_full_event_insert->bindValue(":impact_level", ke.impact_level);
+      _kpi_full_event_insert->bindValue(":output", ke.output);
+      _kpi_full_event_insert->bindValue(":perfdata", ke.perfdata);
+      if (!_kpi_full_event_insert->exec())
+        throw (exceptions::msg()
+               << "BAM-BI: could not insert event of KPI "
+               << ke.kpi_id << " starting at " << ke.start_time << ": "
+               << _kpi_full_event_insert->lastError().text());
+    }
 
     _kpi_event_link->bindValue(
       ":start_time",

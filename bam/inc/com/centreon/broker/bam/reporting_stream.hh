@@ -108,6 +108,8 @@ namespace          bam {
     std::auto_ptr<QSqlQuery>
                    _ba_event_insert;
     std::auto_ptr<QSqlQuery>
+                   _ba_full_event_insert;
+    std::auto_ptr<QSqlQuery>
                    _ba_event_update;
     std::auto_ptr<QSqlQuery>
                    _ba_event_delete;
@@ -115,6 +117,8 @@ namespace          bam {
                    _ba_duration_event_insert;
     std::auto_ptr<QSqlQuery>
                    _kpi_event_insert;
+    std::auto_ptr<QSqlQuery>
+                   _kpi_full_event_insert;
     std::auto_ptr<QSqlQuery>
                    _kpi_event_update;
     std::auto_ptr<QSqlQuery>
