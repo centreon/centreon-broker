@@ -19,7 +19,9 @@
 
 #include <QSqlDatabase>
 #include "com/centreon/broker/bam/factory.hh"
+#include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -39,6 +41,8 @@ extern "C" {
     if (!--instances) {
       // Deregister storage layer.
       io::protocols::instance().unreg(bam_module);
+      // Deregister bam events.
+      io::events::instance().unreg(bam_module);
 
       // Remove the workaround connection.
       if (QSqlDatabase::contains())
@@ -72,6 +76,43 @@ extern "C" {
                                   bam::factory(),
                                   1,
                                   7);
+      // Register bam events.
+      std::set<unsigned int> elements;
+      elements.insert(
+                 io::events::data_type<io::events::bam, bam::de_ba_status>::value);
+      elements.insert(
+                 io::events::data_type<io::events::bam, bam::de_bool_status>::value);
+      elements.insert(
+                 io::events::data_type<io::events::bam, bam::de_kpi_status>::value);
+      elements.insert(
+                 io::events::data_type<io::events::bam, bam::de_meta_service_status>::value);
+      elements.insert(
+                 io::events::data_type<io::events::bam, bam::de_ba_event>::value);
+      elements.insert(
+                 io::events::data_type<io::events::bam, bam::de_kpi_event>::value);
+      elements.insert(
+                 io::events::data_type<io::events::bam, bam::de_ba_duration_event>::value);
+      elements.insert(
+                 io::events::data_type<io::events::bam, bam::de_dimension_ba_event>::value);
+      elements.insert(
+                 io::events::data_type<io::events::bam, bam::de_dimension_kpi_event>::value);
+      elements.insert(
+                 io::events::data_type<io::events::bam, bam::de_dimension_ba_bv_relation_event>::value);
+      elements.insert(
+                 io::events::data_type<io::events::bam, bam::de_dimension_bv_event>::value);
+      elements.insert(
+                 io::events::data_type<io::events::bam, bam::de_dimension_truncate_table_signal>::value);
+      elements.insert(
+                 io::events::data_type<io::events::bam, bam::de_rebuild>::value);
+      elements.insert(
+                 io::events::data_type<io::events::bam, bam::de_dimension_timeperiod>::value);
+      elements.insert(
+                 io::events::data_type<io::events::bam, bam::de_dimension_ba_timeperiod_relation>::value);
+      elements.insert(
+                 io::events::data_type<io::events::bam, bam::de_dimension_timeperiod_exception>::value);
+      elements.insert(
+                 io::events::data_type<io::events::bam, bam::de_dimension_timeperiod_exclusion>::value);
+      io::events::instance().reg(bam_module, elements);
     }
     return ;
   }
