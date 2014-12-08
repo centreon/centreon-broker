@@ -26,6 +26,9 @@
 
 CCB_BEGIN()
 
+// Forward declaration.
+class                 database;
+
 namespace               bam {
   // Forward declarations.
   class                 ba_svc_mapping;
@@ -42,7 +45,7 @@ namespace               bam {
      */
     class               reader {
     public:
-                        reader(QSqlDatabase* db);
+                        reader(database& db);
                         ~reader();
       void              read(state& state_obj);
 
@@ -58,7 +61,7 @@ namespace               bam {
       void              _load(bam::hst_svc_mapping& mapping);
       void              _load_dimensions();
 
-      QSqlDatabase*     _db;
+      database&         _db;
     };
   }
 }

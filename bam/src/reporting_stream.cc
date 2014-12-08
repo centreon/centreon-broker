@@ -69,117 +69,69 @@ using namespace com::centreon::broker::bam;
  *  @param[in] check_replication       true to check replication status.
  */
 reporting_stream::reporting_stream(
-          QString const& db_type,
-          QString const& db_host,
-          unsigned short db_port,
-          QString const& db_user,
-          QString const& db_password,
-          QString const& db_name,
-          unsigned int queries_per_transaction,
-          bool check_replication) {
+                    std::string const& db_type,
+                    std::string const& db_host,
+                    unsigned short db_port,
+                    std::string const& db_user,
+                    std::string const& db_password,
+                    std::string const& db_name,
+                    unsigned int queries_per_transaction,
+                    bool check_replication)
+  : _pending_events(0),
+    _db(
+      db_type,
+      db_host,
+      db_port,
+      db_user,
+      db_password,
+      db_name,
+      queries_per_transaction,
+      check_replication),
+    _ba_event_insert(_db),
+    _ba_event_update(_db),
+    _ba_event_delete(_db),
+    _ba_duration_event_insert(_db),
+    _kpi_event_insert(_db),
+    _kpi_event_update(_db),
+    _kpi_event_delete(_db),
+    _kpi_event_link(_db),
+    _dimension_ba_insert(_db),
+    _dimension_bv_insert(_db),
+    _dimension_ba_bv_relation_insert(_db),
+    _dimension_timeperiod_insert(_db),
+    _dimension_timeperiod_exception_insert(_db),
+    _dimension_timeperiod_exclusion_insert(_db),
+    _dimension_ba_timeperiod_insert(_db),
+    _dimension_kpi_insert(_db) {
   // Process events.
   _process_out = true;
 
-  // Queries per transaction.
-  _queries_per_transaction = ((queries_per_transaction >= 2)
-                              ? queries_per_transaction
-                              : 1);
-  _transaction_queries = 0;
+  // Prepare queries.
+  _prepare();
 
-  // BAM connection ID.
-  QString bam_id;
-  bam_id.setNum((qulonglong)this, 16);
+  // Load timeperiods.
+  time::timezone_manager::load();
+  _load_timeperiods();
 
-  // Add database connection.
-  _db.reset(
-        new QSqlDatabase(QSqlDatabase::addDatabase(
-                                         db_type,
-                                         bam_id)));
+  // Load last events stored in DB.
+  _load_last_events();
 
-  // Set DB parameters.
-  _db->setHostName(db_host);
-  _db->setPort(db_port);
-  _db->setUserName(db_user);
-  _db->setPassword(db_password);
-  _db->setDatabaseName(db_name);
-
-  try {
-    {
-      QMutexLocker lock(&misc::global_lock);
-      // Open database.
-      if (!_db->open()) {
-        QString error(_db->lastError().text());
-        _clear_qsql();
-        throw (broker::exceptions::msg()
-               << "BAM-BI: could not connect to reporting database '"
-               << db_name << "' on host '" << db_host
-               << ":" << db_port << "': " << error);
-      }
-    }
-
-    // Check that replication is OK.
-    if (check_replication)
-      _check_replication();
-    else
-      logging::debug(logging::medium)
-        << "BAM-BI: NOT checking replication status of reporting database '"
-        << _db->databaseName() << "' on host '" << _db->hostName()
-        << ":" << _db->port() << "'";
-
-    // Prepare queries.
-    _prepare();
-
-    // Load timeperiods.
-    time::timezone_manager::load();
-    _load_timeperiods();
-
-    // Load last events stored in DB.
-    _load_last_events();
-
-    // Initialize the availabilities thread.
-    _availabilities.reset(new availability_thread(
-                            db_type,
-                            db_host,
-                            db_port,
-                            db_user,
-                            db_password,
-                            db_name,
-                            _timeperiods));
-    // Start the availabilities thread.
-    _availabilities->start();
-
-    // Initial transaction.
-    if (_queries_per_transaction > 1)
-      _db->transaction();
-  }
-  catch (...) {
-    {
-      QMutexLocker lock(&misc::global_lock);
-      // Delete statements.
-      _clear_qsql();
-    }
-
-    // Remove this connection.
-    QSqlDatabase::removeDatabase(bam_id);
-
-    throw ;
-  }
+  // Initialize the availabilities thread.
+  _availabilities.reset(new availability_thread(
+                              db_type.c_str(),
+                              db_host.c_str(),
+                              db_port,
+                              db_user.c_str(),
+                              db_password.c_str(),
+                              db_name.c_str(),
+                              _timeperiods));
+  _availabilities->start();
 }
 
 /**
  *  Destructor.
  */
 reporting_stream::~reporting_stream() {
-  // Connection ID.
-  QString bam_id;
-  bam_id.setNum((qulonglong)this, 16);
-
-  {
-    QMutexLocker lock(&misc::global_lock);
-    // Reset statements.
-    _clear_qsql();
-  }
-
   // Release any lock.
   _availabilities_lock.reset();
 
@@ -189,9 +141,6 @@ reporting_stream::~reporting_stream() {
 
   // Deinitialize timezone manager.
   time::timezone_manager::unload();
-
-  // Remove this connection.
-  QSqlDatabase::removeDatabase(bam_id);
 }
 
 /**
@@ -206,7 +155,7 @@ void reporting_stream::process(bool in, bool out) {
 }
 
 /**
- *  Read from the datbase.
+ *  Read from the database.
  *  Get the next available bam event.
  *
  *  @param[out] d Cleared.
@@ -300,8 +249,16 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
                                       bam::de_rebuild>::value)
     _process_rebuild(data);
   }
-  // XXX : handle transaction
-  return (1);
+
+  // Event acknowledgement.
+  ++_pending_events;
+  if (!_db.pending_queries()) {
+    int retval(_pending_events);
+    _pending_events = 0;
+    return (retval);
+  }
+  else
+    return (0);
 }
 
 /**************************************
@@ -316,7 +273,24 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
  *  @param[in] other Unused.
  */
 reporting_stream::reporting_stream(reporting_stream const& other)
-  : io::stream(other) {
+  : io::stream(other),
+    _db("", "", 0, "", "", ""),
+    _ba_event_insert(_db),
+    _ba_event_update(_db),
+    _ba_event_delete(_db),
+    _ba_duration_event_insert(_db),
+    _kpi_event_insert(_db),
+    _kpi_event_update(_db),
+    _kpi_event_delete(_db),
+    _kpi_event_link(_db),
+    _dimension_ba_insert(_db),
+    _dimension_bv_insert(_db),
+    _dimension_ba_bv_relation_insert(_db),
+    _dimension_timeperiod_insert(_db),
+    _dimension_timeperiod_exception_insert(_db),
+    _dimension_timeperiod_exclusion_insert(_db),
+    _dimension_ba_timeperiod_insert(_db),
+    _dimension_kpi_insert(_db) {
   assert(!"BAM reporting stream is not copyable");
   abort();
 }
@@ -399,91 +373,17 @@ void reporting_stream::_apply(
 }
 
 /**
- *  Check that replication is OK.
- */
-void reporting_stream::_check_replication() {
-  // Check that replication is OK.
-  logging::debug(logging::medium)
-    << "BAM-BI: checking replication status of reporting database '"
-    << _db->databaseName() << "' on host '" << _db->hostName()
-    << ":" << _db->port() << "'";
-  QSqlQuery q(*_db);
-  if (!q.exec("SHOW SLAVE STATUS"))
-    logging::info(logging::medium)
-      << "BAM-BI: could not check replication status of reporting database '"
-      << _db->databaseName() << "' on host '" << _db->hostName()
-      << ":" << _db->port() << "': " << q.lastError().text();
-  else {
-    if (!q.next())
-      logging::info(logging::medium)
-        << "BAM-BI: reporting database '" << _db->databaseName()
-        << "' on host '" << _db->hostName() << ":" << _db->port()
-        << "' is not under replication";
-    else {
-      QSqlRecord record(q.record());
-      unsigned int i(0);
-      for (QString field(record.fieldName(i));
-           !field.isEmpty();
-           field = record.fieldName(++i))
-        if (((field == "Slave_IO_Running")
-             && (q.value(i).toString() != "Yes"))
-            || ((field == "Slave_SQL_Running")
-                && (q.value(i).toString() != "Yes"))
-            || ((field == "Seconds_Behind_Master")
-                && (q.value(i).toInt() != 0)))
-          throw (broker::exceptions::msg()
-                 << "BAM-BI: replication of reporting database '"
-                 << _db->databaseName() << "' on host '"
-                 << _db->hostName() << ":" << _db->port()
-                 << "' is not complete: " << field
-                 << "=" << q.value(i).toString());
-      logging::info(logging::medium)
-        << "storage: replication of reporting database '"
-        << _db->databaseName() << "' on host '" << _db->hostName()
-        << ":" << _db->port() << "' is complete, connection granted";
-    }
-  }
-  return ;
-}
-
-/**
- *  Clear QtSql objects.
- */
-void reporting_stream::_clear_qsql() {
-  _ba_event_insert.reset();
-  _ba_event_update.reset();
-  _ba_event_delete.reset();
-  _ba_duration_event_insert.reset();
-  _kpi_event_insert.reset();
-  _kpi_event_update.reset();
-  _kpi_event_delete.reset();
-  _kpi_event_link.reset();
-  _dimension_ba_bv_relation_insert.reset();
-  _dimension_ba_insert.reset();
-  _dimension_bv_insert.reset();
-  _dimension_timeperiod_insert.reset();
-  _dimension_timeperiod_exception_insert.reset();
-  _dimension_timeperiod_exclusion_insert.reset();
-  _dimension_ba_timeperiod_insert.reset();
-  _dimension_truncate_tables.clear();
-  _dimension_kpi_insert.reset();
-  _db.reset();
-  return ;
-}
-
-/**
  *  Load last BA/KPI events from DB.
  */
 void reporting_stream::_load_last_events() {
   // Get the BA list.
   std::list<unsigned int> ids;
   {
-    QString query("SELECT ba_id FROM mod_bam_reporting_ba");
-    QSqlQuery q(*_db);
-    if (!q.exec(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not fetch the list of existing BAs: "
-             << q.lastError().text());
+    std::string query("SELECT ba_id FROM mod_bam_reporting_ba");
+    database_query q(_db);
+    q.run_query(
+        query,
+        "BAM-BI: could not fetch the list of existing BAs");
     while (q.next())
       ids.push_back(q.value(0).toUInt());
   }
@@ -501,11 +401,13 @@ void reporting_stream::_load_last_events() {
         << "  WHERE ba_id=" << *it
         << "  ORDER BY start_time DESC"
         << "  LIMIT 2";
-    QSqlQuery q(*_db);
-    if (!q.exec(oss.str().c_str()))
+    database_query q(_db);
+    try { q.run_query(oss.str()); }
+    catch (std::exception const& e) {
       throw (exceptions::msg()
              << "BAM-BI: could not fetch last events of BA "
-             << *it << ": " << q.lastError().text());
+             << *it << ": " << e.what());
+    }
     while (q.next()) {
       ba_event bae;
       bae.ba_id = *it;
@@ -523,12 +425,11 @@ void reporting_stream::_load_last_events() {
   // Get the KPI list.
   ids.clear();
   {
-    QString query("SELECT kpi_id FROM mod_bam_reporting_kpi");
-    QSqlQuery q(*_db);
-    if (!q.exec(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not fetch the list of existing KPI: "
-             << q.lastError().text());
+    std::string query("SELECT kpi_id FROM mod_bam_reporting_kpi");
+    database_query q(_db);
+    q.run_query(
+        query,
+        "BAM-BI: could not fetch the list of existing KPI");
     while (q.next())
       ids.push_back(q.value(0).toUInt());
   }
@@ -546,11 +447,13 @@ void reporting_stream::_load_last_events() {
         << "  WHERE kpi_id=" << *it
         << "  ORDER BY start_time DESC"
         << "  LIMIT 2";
-    QSqlQuery q(*_db);
-    if (!q.exec(oss.str().c_str()))
+    database_query q(_db);
+    try { q.run_query(oss.str()); }
+    catch (std::exception const& e) {
       throw (exceptions::msg()
              << "BAM-BI: could not fetch last events of KPI "
-             << *it << ": " << q.lastError().text());
+             << *it << ": " << e.what());
+    }
     while (q.next()) {
       kpi_event kpie;
       kpie.kpi_id = *it;
@@ -579,15 +482,12 @@ void reporting_stream::_load_timeperiods() {
 
   // Load timeperiods.
   {
-    QString query(
-              "SELECT timeperiod_id, name, sunday, monday, tuesday,"
-              "       wednesday, thursday, friday, saturday"
-              "  FROM mod_bam_reporting_timeperiods");
-    QSqlQuery q(*_db);
-    if (!q.exec(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not load timeperiods from DB: "
-             << q.lastError().text());
+    std::string query(
+      "SELECT timeperiod_id, name, sunday, monday, tuesday,"
+      "       wednesday, thursday, friday, saturday"
+      "  FROM mod_bam_reporting_timeperiods");
+    database_query q(_db);
+    q.run_query(query, "BAM-BI: could not load timeperiods from DB");
     while (q.next()) {
       _timeperiods.add_timeperiod(q.value(0).toUInt(),
                                   time::timeperiod::ptr(
@@ -607,14 +507,13 @@ void reporting_stream::_load_timeperiods() {
 
   // Load exceptions.
   {
-    QString query(
-              "SELECT timeperiod_id, daterange, timerange"
-              "  FROM mod_bam_reporting_timeperiods_exceptions");
-    QSqlQuery q(*_db);
-    if (!q.exec(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not load timeperiods exceptions from DB: "
-             << q.lastError().text());
+    std::string query(
+      "SELECT timeperiod_id, daterange, timerange"
+      "  FROM mod_bam_reporting_timeperiods_exceptions");
+    database_query q(_db);
+    q.run_query(
+        query,
+        "BAM-BI: could not load timeperiods exceptions from DB");
     while (q.next()) {
       time::timeperiod::ptr tp = _timeperiods.get_timeperiod(q.value(0).toUInt());
       if (!tp)
@@ -630,14 +529,11 @@ void reporting_stream::_load_timeperiods() {
 
   // Load exclusions.
   {
-    QString query(
-              "SELECT timeperiod_id, excluded_timeperiod_id"
-              "  FROM mod_bam_reporting_timeperiods_exclusions");
-    QSqlQuery q(*_db);
-    if (!q.exec(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not load exclusions from DB: "
-             << q.lastError().text());
+    std::string query(
+      "SELECT timeperiod_id, excluded_timeperiod_id"
+      "  FROM mod_bam_reporting_timeperiods_exclusions");
+    database_query q(_db);
+    q.run_query(query, "BAM-BI: could not load exclusions from DB");
     while (q.next()) {
       time::timeperiod::ptr tp =
           _timeperiods.get_timeperiod(q.value(0).toUInt());
@@ -656,21 +552,19 @@ void reporting_stream::_load_timeperiods() {
 
   // Load BA/timeperiods relations.
   {
-    QString query(
-              "SELECT ba_id, timeperiod_id, is_default"
-              "  FROM mod_bam_reporting_relations_ba_timeperiods");
-    QSqlQuery q(*_db);
-    if (!q.exec(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not load BA/timeperiods relations: "
-             << q.lastError().text());
-    while (q.next()) {
+    std::string query(
+      "SELECT ba_id, timeperiod_id, is_default"
+      "  FROM mod_bam_reporting_relations_ba_timeperiods");
+    database_query q(_db);
+    q.run_query(
+        query,
+        "BAM-BI: could not load BA/timeperiods relations");
+    while (q.next())
       _timeperiod_relations.insert(std::make_pair(
                                           q.value(0).toUInt(),
                                           std::make_pair(
                                                  q.value(1).toUInt(),
                                                  q.value(2).toBool())));
-    }
   }
 
   return ;
@@ -682,46 +576,40 @@ void reporting_stream::_load_timeperiods() {
 void reporting_stream::_prepare() {
   // BA event insertion.
   {
-    QString query;
+    std::string query;
     query = "INSERT INTO mod_bam_reporting_ba_events (ba_id, "
             "            first_level, start_time, status, in_downtime)"
             "  VALUES (:ba_id, :first_level,"
             "          :start_time, :status, :in_downtime)";
-    _ba_event_insert.reset(new QSqlQuery(*_db));
-    if (!_ba_event_insert->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not prepare BA event insertion query: "
-             << _ba_event_insert->lastError().text());
+    _ba_event_insert.prepare(
+      query,
+      "BAM-BI: could not prepare BA event insertion query");
   }
 
   // BA event update.
   {
-    QString query;
+    std::string query;
     query = "UPDATE mod_bam_reporting_ba_events"
             "  SET end_time=:end_time"
             "  WHERE ba_id=:ba_id AND start_time=:start_time";
-    _ba_event_update.reset(new QSqlQuery(*_db));
-    if (!_ba_event_update->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not prepare BA event update query: "
-             << _ba_event_update->lastError().text());
+    _ba_event_update.prepare(
+      query,
+      "BAM-BI: could not prepare BA event update query");
   }
 
   // BA event deletion.
   {
-    QString query;
+    std::string query;
     query = "DELETE FROM mod_bam_reporting_ba_events"
             "  WHERE ba_id=:ba_id AND start_time=:start_time";
-    _ba_event_delete.reset(new QSqlQuery(*_db));
-    if (!_ba_event_delete->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not prepare BA event deletion query: "
-             << _ba_event_delete->lastError().text());
+    _ba_event_delete.prepare(
+      query,
+      "BAM-BI: could not prepare BA event deletion query");
   }
 
   // BA duration event insert.
   {
-    QString query;
+    std::string query;
     query = "INSERT INTO mod_bam_reporting_ba_events_durations ("
              "                ba_event_id, start_time, "
              "                end_time, duration, sla_duration, timeperiod_id, "
@@ -730,56 +618,48 @@ void reporting_stream::_prepare() {
              "         :sla_duration, :timeperiod_id, :timeperiod_is_default"
              "  FROM mod_bam_reporting_ba_events AS b"
              "  WHERE b.ba_id=:ba_id AND b.start_time=:real_start_time";
-    _ba_duration_event_insert.reset(new QSqlQuery(*_db));
-    if (!_ba_duration_event_insert->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not prepare BA duration event insert query: "
-             << _ba_duration_event_insert->lastError().text());
+    _ba_duration_event_insert.prepare(
+      query,
+      "BAM-BI: could not prepare BA duration event insert query");
   }
 
   // KPI event insertion.
   {
-    QString query;
+    std::string query;
     query = "INSERT INTO mod_bam_reporting_kpi_events (kpi_id,"
             "            start_time, status, in_downtime, impact_level,"
             "            first_output, first_perfdata)"
             "  VALUES (:kpi_id, :start_time, :status, :in_downtime, "
             "         :impact_level, :output, :perfdata)";
-    _kpi_event_insert.reset(new QSqlQuery(*_db));
-    if (!_kpi_event_insert->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not prepare KPI event insertion query: "
-             << _kpi_event_insert->lastError().text());
+    _kpi_event_insert.prepare(
+      query,
+      "BAM-BI: could not prepare KPI event insertion query");
   }
 
   // KPI event update.
   {
-    QString query;
+    std::string query;
     query = "UPDATE mod_bam_reporting_kpi_events"
             "  SET end_time=:end_time"
             "  WHERE kpi_id=:kpi_id AND start_time=:start_time";
-    _kpi_event_update.reset(new QSqlQuery(*_db));
-    if (!_kpi_event_update->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not prepare KPI event update query: "
-             << _kpi_event_update->lastError().text());
+    _kpi_event_update.prepare(
+      query,
+      "BAM-BI: could not prepare KPI event update query");
   }
 
   // KPI event deletion.
   {
-    QString query;
+    std::string query;
     query = "DELETE FROM mod_bam_reporting_kpi_events"
             "  WHERE kpi_id=:kpi_id AND start_time=:start_time";
-    _kpi_event_delete.reset(new QSqlQuery(*_db));
-    if (!_kpi_event_delete->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not prepare KPI event deletion query: "
-             << _kpi_event_delete->lastError().text());
+    _kpi_event_delete.prepare(
+      query,
+      "BAM-BI: could not prepare KPI event deletion query");
   }
 
   // KPI event link to BA event.
   {
-    QString query;
+    std::string query;
     query = "INSERT INTO mod_bam_reporting_relations_ba_kpi_events"
             "           (ba_event_id, kpi_event_id)"
             "  SELECT be.ba_event_id, ke.kpi_event_id"
@@ -788,149 +668,132 @@ void reporting_stream::_prepare() {
             "    ON ((ke.start_time >= be.start_time)"
             "       AND (be.end_time IS NULL OR ke.start_time < be.end_time))"
             "    WHERE ke.kpi_id=:kpi_id AND ke.start_time=:start_time";
-    _kpi_event_link.reset(new QSqlQuery(*_db));
-    if (!_kpi_event_link->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not prepare link query of BA and KPI events: "
-             << _kpi_event_link->lastError().text());
+    _kpi_event_link.prepare(
+      query,
+      "BAM-BI: could not prepare link query of BA and KPI events");
   }
 
   // Dimension BA insertion.
   {
-    QString query;
+    std::string query;
     query = "INSERT INTO mod_bam_reporting_ba (ba_id, ba_name, ba_description,"
             "                sla_month_percent_crit, sla_month_percent_warn,"
             "                sla_month_duration_crit, sla_month_duration_warn)"
             " VALUES (:ba_id, :ba_name, :ba_description, :sla_month_percent_crit,"
             "         :sla_month_percent_warn, :sla_month_duration_crit,"
             "         :sla_month_duration_warn)";
-    _dimension_ba_insert.reset(new QSqlQuery(*_db));
-    if (!_dimension_ba_insert->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not prepare the insertion of BA dimensions: "
-             << _dimension_ba_insert->lastError().text());
+    _dimension_ba_insert.prepare(
+      query,
+      "BAM-BI: could not prepare the insertion of BA dimensions");
   }
 
   // Dimension BV insertion.
   {
-    QString query;
+    std::string query;
     query = "INSERT INTO mod_bam_reporting_bv (bv_id, bv_name, bv_description)"
             "  VALUES (:bv_id, :bv_name, :bv_description)";
-    _dimension_bv_insert.reset(new QSqlQuery(*_db));
-    if (!_dimension_bv_insert->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not prepare the insertion of BV dimensions: "
-             << _dimension_bv_insert->lastError().text());
+    _dimension_bv_insert.prepare(
+      query,
+      "BAM-BI: could not prepare the insertion of BV dimensions");
   }
 
   // Dimension BA BV relations insertion.
   {
-    QString query;
+    std::string query;
     query = "INSERT INTO mod_bam_reporting_relations_ba_bv (ba_id, bv_id)"
             "  VALUES (:ba_id, :bv_id)";
-    _dimension_ba_bv_relation_insert.reset(new QSqlQuery(*_db));
-    if (!_dimension_ba_bv_relation_insert->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not prepare the insertion of BA BV"
-                "relation dimension: "
-             << _dimension_ba_bv_relation_insert->lastError().text());
+    _dimension_ba_bv_relation_insert.prepare(
+      query,
+      "BAM-BI: could not prepare the insertion of BA BV relation dimension");
   }
 
   // Dimension timeperiod insertion.
   {
-    QString query(
-              "INSERT INTO mod_bam_reporting_timeperiods"
-              "            (timeperiod_id, name, sunday, monday,"
-              "             tuesday, wednesday, thursday, friday,"
-              "             saturday)"
-              "  VALUES (:timeperiod_id, :name, :sunday, :monday,"
-              "          :tuesday, :wednesday, :thursday, :friday,"
-              "          :saturday)");
-    _dimension_timeperiod_insert.reset(new QSqlQuery(*_db));
-    if (!_dimension_timeperiod_insert->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not prepare timeperiod insertion query: "
-             << _dimension_timeperiod_insert->lastError().text());
+    std::string query;
+    query = "INSERT INTO mod_bam_reporting_timeperiods"
+            "            (timeperiod_id, name, sunday, monday,"
+            "             tuesday, wednesday, thursday, friday,"
+            "             saturday)"
+            "  VALUES (:timeperiod_id, :name, :sunday, :monday,"
+            "          :tuesday, :wednesday, :thursday, :friday,"
+            "          :saturday)";
+    _dimension_timeperiod_insert.prepare(
+      query,
+      "BAM-BI: could not prepare timeperiod insertion query");
   }
 
   // Dimension timeperiod exception insertion.
   {
-    QString query(
-              "INSERT INTO mod_bam_reporting_timeperiods_exceptions"
-              "            (timeperiod_id, daterange, timerange)"
-              "  VALUES (:timeperiod_id, :daterange, :timerange)");
-    _dimension_timeperiod_exception_insert.reset(new QSqlQuery(*_db));
-    if (!_dimension_timeperiod_exception_insert->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not prepare timeperiod exception insertion query: "
-             << _dimension_timeperiod_exception_insert->lastError().text());
+    std::string query;
+    query = "INSERT INTO mod_bam_reporting_timeperiods_exceptions"
+            "            (timeperiod_id, daterange, timerange)"
+            "  VALUES (:timeperiod_id, :daterange, :timerange)";
+    _dimension_timeperiod_exception_insert.prepare(
+      query,
+      "BAM-BI: could not prepare timeperiod exception insertion query");
   }
 
   // Dimension timeperiod exclusion insertion.
   {
-    QString query(
-              "INSERT INTO mod_bam_reporting_timeperiods_exclusions"
-              "            (timeperiod_id, excluded_timeperiod_id)"
-              "  VALUES (:timeperiod_id, :excluded_timeperiod_id)");
-    _dimension_timeperiod_exclusion_insert.reset(new QSqlQuery(*_db));
-    if (!_dimension_timeperiod_exclusion_insert->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not prepare timeperiod exclusion insertion query: "
-             << _dimension_timeperiod_exclusion_insert->lastError().text());
+    std::string query;
+    query = "INSERT INTO mod_bam_reporting_timeperiods_exclusions"
+            "            (timeperiod_id, excluded_timeperiod_id)"
+            "  VALUES (:timeperiod_id, :excluded_timeperiod_id)";
+    _dimension_timeperiod_exclusion_insert.prepare(
+      query,
+      "BAM-BI: could not prepare timeperiod exclusion insertion query");
   }
 
   // Dimension BA/timeperiod insertion.
   {
-    QString query(
-              "INSERT INTO mod_bam_reporting_relations_ba_timeperiods ("
-              "            ba_id, timeperiod_id, is_default)"
-              "  VALUES (:ba_id, :timeperiod_id, :is_default)");
-    _dimension_ba_timeperiod_insert.reset(new QSqlQuery(*_db));
-    if (!_dimension_ba_timeperiod_insert->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not prepare BA/timeperiod relation insertion query: "
-             << _dimension_ba_timeperiod_insert->lastError().text());
+    std::string query;
+    query = "INSERT INTO mod_bam_reporting_relations_ba_timeperiods ("
+            "            ba_id, timeperiod_id, is_default)"
+            "  VALUES (:ba_id, :timeperiod_id, :is_default)";
+    _dimension_ba_timeperiod_insert.prepare(
+      query,
+      "BAM-BI: could not prepare BA/timeperiod relation insertion query");
   }
 
   // Dimension truncate tables.
   {
     _dimension_truncate_tables.clear();
-    QString query;
+    std::string query;
     query = "DELETE FROM mod_bam_reporting_kpi";
     _dimension_truncate_tables.push_back(
-      misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
-    if (!_dimension_truncate_tables.back()->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not deletion of table mod_bam_reporting_kpi");
+      misc::shared_ptr<database_query>(new database_query(_db)));
+    _dimension_truncate_tables.back()->prepare(
+      query,
+      "BAM-BI: could not prepare KPI deletion query");
     query = "DELETE FROM mod_bam_reporting_relations_ba_bv";
     _dimension_truncate_tables.push_back(
-      misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
-    if (!_dimension_truncate_tables.back()->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not prepare deletion of table mod_bam_reporting_relations_ba_bv");
+      misc::shared_ptr<database_query>(new database_query(_db)));
+    _dimension_truncate_tables.back()->prepare(
+      query,
+      "BAM-BI: could not prepare BA/BV relations deletion query");
     query = "DELETE FROM mod_bam_reporting_ba";
     _dimension_truncate_tables.push_back(
-      misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
-    if (!_dimension_truncate_tables.back()->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not prepare deletion of table mod_bam_reporting_ba");
+      misc::shared_ptr<database_query>(new database_query(_db)));
+    _dimension_truncate_tables.back()->prepare(
+      query,
+      "BAM-BI: could not prepare BA deletion query");
     query = "DELETE FROM mod_bam_reporting_bv";
     _dimension_truncate_tables.push_back(
-      misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
-    if (!_dimension_truncate_tables.back()->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not prepare deletion of table mod_bam_reporting_bv");
+      misc::shared_ptr<database_query>(new database_query(_db)));
+    _dimension_truncate_tables.back()->prepare(
+      query,
+      "BAM-BI: could not prepare BV deletion query");
     query = "DELETE FROM mod_bam_reporting_timeperiods";
     _dimension_truncate_tables.push_back(
-      misc::shared_ptr<QSqlQuery>(new QSqlQuery(*_db)));
-    if (!_dimension_truncate_tables.back()->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not prepare deletion of table mod_bam_reporting_timeperiods");
+      misc::shared_ptr<database_query>(new database_query(_db)));
+    _dimension_truncate_tables.back()->prepare(
+      query,
+      "BAM-BI: could not prepare timeperiods deletion query");
   }
 
   // Dimension KPI insertion
   {
-    QString query;
+    std::string query;
     query = "INSERT INTO mod_bam_reporting_kpi (kpi_id, kpi_name,"
             "            ba_id, ba_name, host_id, host_name,"
             "            service_id, service_description, kpi_ba_id,"
@@ -942,11 +805,9 @@ void reporting_stream::_prepare() {
             "          :kpi_ba_id, :kpi_ba_name, :meta_service_id,"
             "          :meta_service_name, :impact_warning, :impact_critical,"
             "          :impact_unknown, :boolean_id, :boolean_name)";
-    _dimension_kpi_insert.reset(new QSqlQuery(*_db));
-    if (!_dimension_kpi_insert->prepare(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not prepare the insertion of KPI dimensions: "
-             << _dimension_kpi_insert->lastError().text());
+    _dimension_kpi_insert.prepare(
+      query,
+      "BAM-BI: could not prepare the insertion of KPIs");
   }
 
   return ;
@@ -965,14 +826,17 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
     << be.in_downtime << ")";
   // Ephemeral event.
   if (be.start_time == be.end_time) {
-    _ba_event_delete->bindValue(":ba_id", be.ba_id);
-    _ba_event_delete->bindValue(
+    _ba_event_delete.bind_value(":ba_id", be.ba_id);
+    _ba_event_delete.bind_value(
       ":start_time",
       static_cast<qlonglong>(be.start_time.get_time_t()));
-    if (!_ba_event_delete->exec())
+    try { _ba_event_delete.run_statement(); }
+    catch (std::exception const& e) {
       throw (exceptions::msg()
              << "BAM-BI: could not delete ephemeral event of BA "
-             << be.ba_id << " at second " << be.start_time);
+             << be.ba_id << " at second " << be.start_time
+             << ": " << e.what());
+    }
     std::map<unsigned int, std::list<ba_event> >::iterator
       it(_ba_event_cache.find(be.ba_id));
     if ((it != _ba_event_cache.end())
@@ -993,17 +857,19 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
       it->second.push_front(be);
     else
       it->second.front().end_time = be.end_time;
-    _ba_event_update->bindValue(":ba_id", be.ba_id);
-    _ba_event_update->bindValue(
+    _ba_event_update.bind_value(":ba_id", be.ba_id);
+    _ba_event_update.bind_value(
       ":start_time",
       static_cast<qlonglong>(it->second.front().start_time.get_time_t()));
-    _ba_event_update->bindValue(
+    _ba_event_update.bind_value(
       ":end_time",
       static_cast<qlonglong>(it->second.front().end_time.get_time_t()));
-    if (!_ba_event_update->exec())
+    try { _ba_event_update.run_statement(); }
+    catch (std::exception const& e) {
       throw (exceptions::msg() << "BAM-BI: could not close event of BA "
              << be.ba_id << " starting at " << be.start_time
-             << " and ending at " << be.end_time);
+             << " and ending at " << be.end_time << ": " << e.what());
+    }
 
     // Compute the associated event durations.
     _compute_event_durations(e.staticCast<bam::ba_event>(), this);
@@ -1018,33 +884,38 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
         && (it->second.front().end_time == be.start_time)
         && (it->second.front().in_downtime == be.in_downtime)
         && (it->second.front().status == be.status)) {
-      _ba_event_update->bindValue(":ba_id", be.ba_id);
-      _ba_event_update->bindValue(
+      _ba_event_update.bind_value(":ba_id", be.ba_id);
+      _ba_event_update.bind_value(
         ":start_time",
         static_cast<qlonglong>(it->second.front().start_time.get_time_t()));
-      _ba_event_update->bindValue(
+      _ba_event_update.bind_value(
         ":end_time",
         QVariant(QVariant::LongLong));
-      if (!_ba_event_update->exec())
+      try { _ba_event_update.run_statement(); }
+      catch (std::exception const& e) {
         throw (exceptions::msg()
                << "BAM-BI: could not reopen event of BA "
                << be.ba_id << " starting at " << be.start_time << ": "
-               << _ba_event_update->lastError().text());
+               << e.what());
+      }
       it->second.front().end_time = (time_t)-1;
     }
     // Open new event.
     else {
-      _ba_event_insert->bindValue(":ba_id", be.ba_id);
-      _ba_event_insert->bindValue(":first_level", be.first_level);
-      _ba_event_insert->bindValue(
+      _ba_event_insert.bind_value(":ba_id", be.ba_id);
+      _ba_event_insert.bind_value(":first_level", be.first_level);
+      _ba_event_insert.bind_value(
         ":start_time",
         static_cast<qlonglong>(be.start_time.get_time_t()));
-      _ba_event_insert->bindValue(":status", be.status);
-      _ba_event_insert->bindValue(":in_downtime", be.in_downtime);
-      if (!_ba_event_insert->exec())
+      _ba_event_insert.bind_value(":status", be.status);
+      _ba_event_insert.bind_value(":in_downtime", be.in_downtime);
+      try { _ba_event_insert.run_statement(); }
+      catch (std::exception const& e) {
         throw (exceptions::msg()
                << "BAM-BI: could not insert event of BA "
-               << be.ba_id << " starting at " << be.start_time);
+               << be.ba_id << " starting at " << be.start_time
+               << ": " << e.what());
+      }
       std::list<ba_event>& event_list(_ba_event_cache[be.ba_id]);
       event_list.push_front(be);
       if (event_list.size() > 2)
@@ -1066,28 +937,33 @@ void reporting_stream::_process_ba_duration_event(
     << bde.ba_id << " (start time " << bde.start_time << ", end time "
     << bde.end_time << ", duration " << bde.duration << ", sla duration "
     << bde.sla_duration << ")";
-  _ba_duration_event_insert->bindValue(":ba_id", bde.ba_id);
-  _ba_duration_event_insert->bindValue(
+  _ba_duration_event_insert.bind_value(":ba_id", bde.ba_id);
+  _ba_duration_event_insert.bind_value(
     ":real_start_time",
     static_cast<qlonglong>(bde.real_start_time.get_time_t()));
-  _ba_duration_event_insert->bindValue(
+  _ba_duration_event_insert.bind_value(
     ":end_time",
     static_cast<qlonglong>(bde.end_time.get_time_t()));
-  _ba_duration_event_insert->bindValue(
+  _ba_duration_event_insert.bind_value(
     ":start_time",
     static_cast<qlonglong>(bde.start_time.get_time_t()));
-  _ba_duration_event_insert->bindValue(":duration",
-                                       bde.duration);
-  _ba_duration_event_insert->bindValue(":sla_duration",
-                                       bde.sla_duration);
-  _ba_duration_event_insert->bindValue(":timeperiod_id",
-                                       bde.timeperiod_id);
-  _ba_duration_event_insert->bindValue(
+  _ba_duration_event_insert.bind_value(":duration", bde.duration);
+  _ba_duration_event_insert.bind_value(
+    ":sla_duration",
+    bde.sla_duration);
+  _ba_duration_event_insert.bind_value(
+    ":timeperiod_id",
+    bde.timeperiod_id);
+  _ba_duration_event_insert.bind_value(
     ":timeperiod_is_default",
     bde.timeperiod_is_default);
-  if (!_ba_duration_event_insert->exec())
-    throw (exceptions::msg() << "BAM-BI: could not insert duration event of BA "
-           << bde.ba_id << " starting at " << bde.start_time << ": " << _ba_duration_event_insert->lastError().text());
+  try { _ba_duration_event_insert.run_statement(); }
+  catch (std::exception const& e) {
+    throw (exceptions::msg()
+           << "BAM-BI: could not insert duration event of BA "
+           << bde.ba_id << " starting at " << bde.start_time << ": "
+           << e.what());
+  }
   return ;
 }
 
@@ -1105,14 +981,17 @@ void reporting_stream::_process_kpi_event(
     << ke.in_downtime << ")";
   // Ephemeral event.
   if (ke.start_time == ke.end_time) {
-    _kpi_event_delete->bindValue(":kpi_id", ke.kpi_id);
-    _kpi_event_delete->bindValue(
+    _kpi_event_delete.bind_value(":kpi_id", ke.kpi_id);
+    _kpi_event_delete.bind_value(
       ":start_time",
       static_cast<qlonglong>(ke.start_time.get_time_t()));
-    if (!_kpi_event_delete->exec())
+    try { _kpi_event_delete.run_statement(); }
+    catch (std::exception const& e) {
       throw (exceptions::msg()
              << "BAM-BI: could not delete ephemeral event of KPI "
-             << ke.kpi_id << " at second " << ke.start_time);
+             << ke.kpi_id << " at second " << ke.start_time
+             << ": " << e.what());
+    }
     std::map<unsigned int, std::list<kpi_event> >::iterator
       it(_kpi_event_cache.find(ke.kpi_id));
     if ((it != _kpi_event_cache.end())
@@ -1133,29 +1012,32 @@ void reporting_stream::_process_kpi_event(
       it->second.push_front(ke);
     else
       it->second.front().end_time = ke.end_time;
-    _kpi_event_update->bindValue(":kpi_id", ke.kpi_id);
-    _kpi_event_update->bindValue(
+    _kpi_event_update.bind_value(":kpi_id", ke.kpi_id);
+    _kpi_event_update.bind_value(
       ":start_time",
       static_cast<qlonglong>(ke.start_time.get_time_t()));
-    _kpi_event_update->bindValue(
+    _kpi_event_update.bind_value(
       ":end_time",
       static_cast<qlonglong>(ke.end_time.get_time_t()));
-    if (!_kpi_event_update->exec())
+    try { _kpi_event_update.run_statement(); }
+    catch (std::exception const& e) {
       throw (exceptions::msg() << "BAM-BI: could not close event of KPI "
              << ke.kpi_id << " starting at " << ke.start_time
              << " and ending at " << ke.end_time << ": "
-             << _kpi_event_update->lastError().text());
+             << e.what());
+    }
 
-    _kpi_event_link->bindValue(
+    _kpi_event_link.bind_value(
       ":start_time",
       static_cast<qlonglong>(ke.start_time.get_time_t()));
-    _kpi_event_link->bindValue(":kpi_id", ke.kpi_id);
-    if (!_kpi_event_link->exec())
+    _kpi_event_link.bind_value(":kpi_id", ke.kpi_id);
+    try { _kpi_event_link.run_statement(); }
+    catch (std::exception const& e) {
       throw (exceptions::msg()
              << "BAM-BI: could not create link from event of KPI "
              << ke.kpi_id << " starting at " << ke.start_time
-             << " to its associated BA event: "
-             << _kpi_event_link->lastError().text());
+             << " to its associated BA event: " << e.what());
+    }
   }
   // Start of event.
   else {
@@ -1167,36 +1049,40 @@ void reporting_stream::_process_kpi_event(
         && (it->second.front().end_time == ke.start_time)
         && (it->second.front().in_downtime == ke.in_downtime)
         && (it->second.front().status == ke.status)) {
-      _kpi_event_update->bindValue(":kpi_id", ke.kpi_id);
-      _kpi_event_update->bindValue(
+      _kpi_event_update.bind_value(":kpi_id", ke.kpi_id);
+      _kpi_event_update.bind_value(
         ":start_time",
         static_cast<qlonglong>(it->second.front().start_time.get_time_t()));
-      _kpi_event_update->bindValue(
+      _kpi_event_update.bind_value(
         ":end_time",
         QVariant(QVariant::LongLong));
-      if (!_kpi_event_update->exec())
+      try { _kpi_event_update.run_statement(); }
+      catch (std::exception const& e) {
         throw (exceptions::msg()
                << "BAM-BI: could not reopen event of KPI "
                << ke.kpi_id << " starting at " << ke.start_time << ": "
-               << _kpi_event_update->lastError().text());
+               << e.what());
+      }
       it->second.front().end_time = (time_t)-1;
     }
     // Open new event.
     else {
-      _kpi_event_insert->bindValue(":kpi_id", ke.kpi_id);
-      _kpi_event_insert->bindValue(
+      _kpi_event_insert.bind_value(":kpi_id", ke.kpi_id);
+      _kpi_event_insert.bind_value(
         ":start_time",
         static_cast<qlonglong>(ke.start_time.get_time_t()));
-      _kpi_event_insert->bindValue(":status", ke.status);
-      _kpi_event_insert->bindValue(":in_downtime", ke.in_downtime);
-      _kpi_event_insert->bindValue(":impact_level", ke.impact_level);
-      _kpi_event_insert->bindValue(":output", ke.output);
-      _kpi_event_insert->bindValue(":perfdata", ke.perfdata);
-      if (!_kpi_event_insert->exec())
+      _kpi_event_insert.bind_value(":status", ke.status);
+      _kpi_event_insert.bind_value(":in_downtime", ke.in_downtime);
+      _kpi_event_insert.bind_value(":impact_level", ke.impact_level);
+      _kpi_event_insert.bind_value(":output", ke.output);
+      _kpi_event_insert.bind_value(":perfdata", ke.perfdata);
+      try { _kpi_event_insert.run_statement(); }
+      catch (std::exception const& e) {
         throw (exceptions::msg()
                << "BAM-BI: could not insert event of KPI "
                << ke.kpi_id << " starting at " << ke.start_time << ": "
-               << _kpi_event_insert->lastError().text());
+               << e.what());
+      }
       std::list<kpi_event>& event_list(_kpi_event_cache[ke.kpi_id]);
       event_list.push_front(ke);
       if (event_list.size() > 2)
@@ -1217,27 +1103,28 @@ void reporting_stream::_process_dimension_ba(
   logging::debug(logging::low)
     << "BAM-BI: processing declaration of BA "
     << dba.ba_id << " ('" << dba.ba_description << "')";
-  _dimension_ba_insert->bindValue(":ba_id", dba.ba_id);
-  _dimension_ba_insert->bindValue(":ba_name", dba.ba_name);
-  _dimension_ba_insert->bindValue(
-                          ":ba_description",
-                          dba.ba_description);
-  _dimension_ba_insert->bindValue(
-                          ":sla_month_percent_crit",
-                          dba.sla_month_percent_crit);
-  _dimension_ba_insert->bindValue(
-                          ":sla_month_percent_warn",
-                          dba.sla_month_percent_warn);
-  _dimension_ba_insert->bindValue(
-                          ":sla_month_duration_crit",
-                          dba.sla_duration_1);
-  _dimension_ba_insert->bindValue(
-                          ":sla_month_duration_warn"
-                          , dba.sla_duration_2);
-  if (!_dimension_ba_insert->exec())
+  _dimension_ba_insert.bind_value(":ba_id", dba.ba_id);
+  _dimension_ba_insert.bind_value(":ba_name", dba.ba_name);
+  _dimension_ba_insert.bind_value(
+                         ":ba_description",
+                         dba.ba_description);
+  _dimension_ba_insert.bind_value(
+                         ":sla_month_percent_crit",
+                         dba.sla_month_percent_crit);
+  _dimension_ba_insert.bind_value(
+                         ":sla_month_percent_warn",
+                         dba.sla_month_percent_warn);
+  _dimension_ba_insert.bind_value(
+                         ":sla_month_duration_crit",
+                         dba.sla_duration_1);
+  _dimension_ba_insert.bind_value(
+                         ":sla_month_duration_warn"
+                         , dba.sla_duration_2);
+  try { _dimension_ba_insert.run_statement(); }
+  catch (std::exception const& e) {
     throw (exceptions::msg() << "BAM-BI: could not insert BA "
-           << dba.ba_id << " :"
-           << _dimension_ba_insert->lastError().text());
+           << dba.ba_id << ": " << e.what());
+  }
 }
 
 /**
@@ -1252,15 +1139,16 @@ void reporting_stream::_process_dimension_bv(
   logging::debug(logging::low)
     << "BAM-BI: processing declaration of BV "
     << dbv.bv_id << " ('" << dbv.bv_name << "')";
-  _dimension_bv_insert->bindValue(":bv_id", dbv.bv_id);
-  _dimension_bv_insert->bindValue(":bv_name", dbv.bv_name);
-  _dimension_bv_insert->bindValue(
-                          ":bv_description",
-                          dbv.bv_description);
-  if (!_dimension_bv_insert->exec())
+  _dimension_bv_insert.bind_value(":bv_id", dbv.bv_id);
+  _dimension_bv_insert.bind_value(":bv_name", dbv.bv_name);
+  _dimension_bv_insert.bind_value(
+                         ":bv_description",
+                         dbv.bv_description);
+  try { _dimension_bv_insert.run_statement(); }
+  catch (std::exception const& e) {
     throw (exceptions::msg() << "BAM-BI: could not insert BV "
-           << dbv.bv_id << " :"
-           << _dimension_bv_insert->lastError().text());
+           << dbv.bv_id << ": " << e.what());
+  }
 }
 
 /**
@@ -1275,13 +1163,14 @@ void reporting_stream::_process_dimension_ba_bv_relation(
   logging::debug(logging::low)
     << "BAM-BI: processing relation between BA "
     << dbabv.ba_id << " and BV " << dbabv.bv_id;
-  _dimension_ba_bv_relation_insert->bindValue(":ba_id", dbabv.ba_id);
-  _dimension_ba_bv_relation_insert->bindValue(":bv_id", dbabv.bv_id);
-  if (!_dimension_ba_bv_relation_insert->exec())
+  _dimension_ba_bv_relation_insert.bind_value(":ba_id", dbabv.ba_id);
+  _dimension_ba_bv_relation_insert.bind_value(":bv_id", dbabv.bv_id);
+  try { _dimension_ba_bv_relation_insert.run_statement(); }
+  catch (std::exception const& e) {
     throw (exceptions::msg()
            << "BAM-BI: could not insert dimension of BA-BV relation "
-           << dbabv.ba_id << "-"<< dbabv.bv_id << ": "
-           << _dimension_ba_bv_relation_insert->lastError().text());
+           << dbabv.ba_id << "-"<< dbabv.bv_id << ": " << e.what());
+  }
 }
 
 /**
@@ -1304,15 +1193,13 @@ void reporting_stream::_process_dimension_truncate_signal(
     std::auto_ptr<QMutexLocker> lock(_availabilities->lock());
     _update_status("");
 
-    for (std::vector<misc::shared_ptr<QSqlQuery> >::iterator
+    for (std::vector<misc::shared_ptr<database_query> >::iterator
            it(_dimension_truncate_tables.begin()),
            end(_dimension_truncate_tables.end());
-        it != end;
-        ++it)
-      if (!(*it)->exec())
-        throw (exceptions::msg()
-               << "BAM-BI: could not truncate dimension tables: "
-               << (*it)->lastError().text());
+         it != end;
+         ++it)
+      (*it)->run_statement(
+               "BAM-BI: could not truncate some dimension table");
 
     _timeperiods.clear();
     _timeperiod_relations.clear();
@@ -1345,33 +1232,44 @@ void reporting_stream::_process_dimension_kpi(
   logging::debug(logging::low)
     << "BAM-BI: processing declaration of KPI "
     << dk.kpi_id << " ('" << kpi_name << "')";
-  _dimension_kpi_insert->bindValue(":kpi_id", dk.kpi_id);
-  _dimension_kpi_insert->bindValue(":kpi_name", kpi_name);
-  _dimension_kpi_insert->bindValue(":ba_id", dk.ba_id);
-  _dimension_kpi_insert->bindValue(":ba_name", dk.ba_name);
-  _dimension_kpi_insert->bindValue(":host_id", dk.host_id);
-  _dimension_kpi_insert->bindValue(":host_name", dk.host_name);
-  _dimension_kpi_insert->bindValue(":service_id", dk.service_id);
-  _dimension_kpi_insert->bindValue(
-                           ":service_description",
-                           dk.service_description);
-  _dimension_kpi_insert->bindValue(":kpi_ba_id", dk.kpi_ba_id != 0 ?
-                                                    dk.kpi_ba_id :
-                                                    QVariant(QVariant::UInt));
-  _dimension_kpi_insert->bindValue(":kpi_ba_name", dk.kpi_ba_name);
-  _dimension_kpi_insert->bindValue(":meta_service_id", dk.meta_service_id);
-  _dimension_kpi_insert->bindValue(
-                           ":meta_service_name",
-                           dk.meta_service_name);
-  _dimension_kpi_insert->bindValue(":impact_warning", dk.impact_warning);
-  _dimension_kpi_insert->bindValue(":impact_critical", dk.impact_critical);
-  _dimension_kpi_insert->bindValue(":impact_unknown", dk.impact_unknown);
-  _dimension_kpi_insert->bindValue(":boolean_id", dk.boolean_id);
-  _dimension_kpi_insert->bindValue(":boolean_name", dk.boolean_name);
-  if (!_dimension_kpi_insert->exec())
+  _dimension_kpi_insert.bind_value(":kpi_id", dk.kpi_id);
+  _dimension_kpi_insert.bind_value(":kpi_name", kpi_name);
+  _dimension_kpi_insert.bind_value(":ba_id", dk.ba_id);
+  _dimension_kpi_insert.bind_value(":ba_name", dk.ba_name);
+  _dimension_kpi_insert.bind_value(":host_id", dk.host_id);
+  _dimension_kpi_insert.bind_value(":host_name", dk.host_name);
+  _dimension_kpi_insert.bind_value(":service_id", dk.service_id);
+  _dimension_kpi_insert.bind_value(
+                          ":service_description",
+                          dk.service_description);
+  _dimension_kpi_insert.bind_value(
+                          ":kpi_ba_id",
+                          (dk.kpi_ba_id != 0
+                           ? dk.kpi_ba_id
+                           : QVariant(QVariant::UInt)));
+  _dimension_kpi_insert.bind_value(":kpi_ba_name", dk.kpi_ba_name);
+  _dimension_kpi_insert.bind_value(
+                          ":meta_service_id",
+                          dk.meta_service_id);
+  _dimension_kpi_insert.bind_value(
+                          ":meta_service_name",
+                          dk.meta_service_name);
+  _dimension_kpi_insert.bind_value(
+                          ":impact_warning",
+                          dk.impact_warning);
+  _dimension_kpi_insert.bind_value(
+                          ":impact_critical",
+                          dk.impact_critical);
+  _dimension_kpi_insert.bind_value(
+                          ":impact_unknown",
+                          dk.impact_unknown);
+  _dimension_kpi_insert.bind_value(":boolean_id", dk.boolean_id);
+  _dimension_kpi_insert.bind_value(":boolean_name", dk.boolean_name);
+  try { _dimension_kpi_insert.run_statement(); }
+  catch (std::exception const& e) {
     throw (exceptions::msg() << "BAM-BI: could not insert dimension of KPI "
-           << dk.kpi_id << " :"
-           << _dimension_kpi_insert->lastError().text());
+           << dk.kpi_id << ": " << e.what());
+  }
 }
 
 /**
@@ -1387,20 +1285,21 @@ void reporting_stream::_process_dimension_timeperiod(
   logging::debug(logging::low)
     << "BAM-BI: processing declaration of timeperiod "
     << tp.id << " ('" << tp.name << "')";
-  QSqlQuery& q(*_dimension_timeperiod_insert);
-  q.bindValue(":timeperiod_id", tp.id);
-  q.bindValue(":name", tp.name);
-  q.bindValue(":sunday", tp.sunday);
-  q.bindValue(":monday", tp.monday);
-  q.bindValue(":tuesday", tp.tuesday);
-  q.bindValue(":wednesday", tp.wednesday);
-  q.bindValue(":thursday", tp.thursday);
-  q.bindValue(":friday", tp.friday);
-  q.bindValue(":saturday", tp.saturday);
-  if (!q.exec())
+  database_query& q(_dimension_timeperiod_insert);
+  q.bind_value(":timeperiod_id", tp.id);
+  q.bind_value(":name", tp.name);
+  q.bind_value(":sunday", tp.sunday);
+  q.bind_value(":monday", tp.monday);
+  q.bind_value(":tuesday", tp.tuesday);
+  q.bind_value(":wednesday", tp.wednesday);
+  q.bind_value(":thursday", tp.thursday);
+  q.bind_value(":friday", tp.friday);
+  q.bind_value(":saturday", tp.saturday);
+  try { q.run_statement(); }
+  catch (std::exception const& e) {
     throw (exceptions::msg() << "BAM-BI: could not insert timeperiod "
-           << tp.id << " ('" << tp.name << "'): "
-           << q.lastError().text());
+           << tp.id << " ('" << tp.name << "'): " << e.what());
+  }
   _apply(tp);
   return ;
 }
@@ -1417,14 +1316,16 @@ void reporting_stream::_process_dimension_timeperiod_exception(
     e.ref_as<bam::dimension_timeperiod_exception const>();
   logging::debug(logging::low)
     << "BAM-BI: processing exception of timeperiod " << tpe.timeperiod_id;
-  QSqlQuery& q(*_dimension_timeperiod_exception_insert);
-  q.bindValue(":timeperiod_id", tpe.timeperiod_id);
-  q.bindValue(":daterange", tpe.daterange);
-  q.bindValue(":timerange", tpe.timerange);
-  if (!q.exec())
+  database_query& q(_dimension_timeperiod_exception_insert);
+  q.bind_value(":timeperiod_id", tpe.timeperiod_id);
+  q.bind_value(":daterange", tpe.daterange);
+  q.bind_value(":timerange", tpe.timerange);
+  try { q.run_statement(); }
+  catch (std::exception const& e) {
     throw (exceptions::msg()
            << "BAM-BI: could not insert exception of timeperiod "
-           << tpe.timeperiod_id << ": " << q.lastError().text());
+           << tpe.timeperiod_id << ": " << e.what());
+  }
   _apply(tpe);
   return ;
 }
@@ -1443,14 +1344,16 @@ void reporting_stream::_process_dimension_timeperiod_exclusion(
     << "BAM-BI: processing exclusion of timeperiod "
     << tpe.excluded_timeperiod_id << " by timeperiod "
     << tpe.timeperiod_id;
-  QSqlQuery& q(*_dimension_timeperiod_exclusion_insert);
-  q.bindValue(":timeperiod_id", tpe.timeperiod_id);
-  q.bindValue(":excluded_timeperiod_id", tpe.excluded_timeperiod_id);
-  if (!q.exec())
+  database_query& q(_dimension_timeperiod_exclusion_insert);
+  q.bind_value(":timeperiod_id", tpe.timeperiod_id);
+  q.bind_value(":excluded_timeperiod_id", tpe.excluded_timeperiod_id);
+  try { q.run_statement(); }
+  catch (std::exception const& e) {
     throw (exceptions::msg()
            << "BAM-BI: could not insert exclusion of timeperiod "
            << tpe.excluded_timeperiod_id << " by timeperiod "
-           << tpe.timeperiod_id << ": " << q.lastError().text());
+           << tpe.timeperiod_id << ": " << e.what());
+  }
   _apply(tpe);
   return ;
 }
@@ -1468,15 +1371,17 @@ void reporting_stream::_process_dimension_ba_timeperiod_relation(
   logging::debug(logging::low)
     << "BAM-BI: processing relation of BA " << r.ba_id
     << " to timeperiod " << r.timeperiod_id;
-  QSqlQuery& q(*_dimension_ba_timeperiod_insert);
-  q.bindValue(":ba_id", r.ba_id);
-  q.bindValue(":timeperiod_id", r.timeperiod_id);
-  q.bindValue(":is_default", r.is_default);
-  if (!q.exec())
+  database_query& q(_dimension_ba_timeperiod_insert);
+  q.bind_value(":ba_id", r.ba_id);
+  q.bind_value(":timeperiod_id", r.timeperiod_id);
+  q.bind_value(":is_default", r.is_default);
+  try { q.run_statement(); }
+  catch (std::exception const& e) {
     throw (exceptions::msg()
            << "BAM-BI: could not insert relation of BA "
            << r.ba_id << " to timeperiod " << r.timeperiod_id << ": "
-           << q.lastError().text());
+           << e.what());
+  }
   _timeperiod_relations.insert(std::make_pair(
                                       r.ba_id,
                                       std::make_pair(
@@ -1499,8 +1404,8 @@ void reporting_stream::_compute_event_durations(
     return ;
 
   logging::info(logging::medium)
-    << "BAM-BI: computing event durations for BA " << ev->ba_id
-    << ", event started at:" << ev->start_time;
+    << "BAM-BI: computing durations of event started at "
+    << ev->start_time << " of BA " << ev->ba_id;
 
   // Find the timeperiods associated with this ba.
   std::pair<timeperiod_relation_map::const_iterator,
@@ -1548,36 +1453,40 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
 
   // Delete obsolete ba events durations.
   {
-    QString query;
+    std::string query;
     query.append("DELETE a"
                  "  FROM mod_bam_reporting_ba_events_durations as a"
                  "    INNER JOIN mod_bam_reporting_ba_events as b"
                  "      ON a.ba_event_id = b.ba_event_id"
                  "  WHERE b.ba_id IN (");
-    query.append(r.bas_to_rebuild);
+    query.append(r.bas_to_rebuild.toStdString());
     query.append(")");
-    QSqlQuery q(*_db);
-    if (!q.exec(query))
+    database_query q(_db);
+    try { q.run_query(query); }
+    catch (std::exception const& e) {
       throw (exceptions::msg()
              << "BAM-BI: could not delete BA durations "
-             << r.bas_to_rebuild << " :" << q.lastError().text());
+             << r.bas_to_rebuild << ": " << e.what());
+    }
   }
 
   // Get the ba events.
   std::vector<misc::shared_ptr<ba_event> > ba_events;
   {
-    QString query = "SELECT ba_id, start_time, end_time, "
-                    "status, in_downtime boolean"
-                    "  FROM mod_bam_reporting_ba_events"
-                    "  WHERE end_time != 0"
-                    "    AND ba_id IN (";
-    query.append(r.bas_to_rebuild);
+    std::string query = "SELECT ba_id, start_time, end_time, "
+                        "       status, in_downtime boolean"
+                        "  FROM mod_bam_reporting_ba_events"
+                        "  WHERE end_time != 0"
+                        "    AND ba_id IN (";
+    query.append(r.bas_to_rebuild.toStdString());
     query.append(")");
-    QSqlQuery q(*_db);
-    if (!q.exec(query))
+    database_query q(_db);
+    try { q.run_query(query); }
+    catch (std::exception const& e) {
       throw (exceptions::msg()
              << "BAM-BI: could not get BA events of "
-             << r.bas_to_rebuild << " :" << q.lastError().text());
+             << r.bas_to_rebuild << " :" << e.what());
+    }
     while (q.next()) {
       misc::shared_ptr<ba_event> baev(new ba_event);
       baev->ba_id = q.value(0).toInt();

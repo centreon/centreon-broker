@@ -48,13 +48,13 @@ namespace          bam {
     void           close();
     void           connect_to(
                      stream_type type,
-                     QString const& db_type,
-                     QString const& db_host,
+                     std::string const& db_type,
+                     std::string const& db_host,
                      unsigned short db_port,
-                     QString const& db_user,
-                     QString const& db_password,
-                     QString const& db_name,
-                     QString const& ext_cmd_file,
+                     std::string const& db_user,
+                     std::string const& db_password,
+                     std::string const& db_name,
+                     std::string const& ext_cmd_file,
                      unsigned int queries_per_transaction,
                      bool check_replication);
     misc::shared_ptr<io::stream>
@@ -66,13 +66,13 @@ namespace          bam {
     void           _internal_copy(connector const& c);
 
     bool           _check_replication;
-    QString        _db_host;
-    QString        _db_name;
-    QString        _db_password;
+    std::string    _db_host;
+    std::string    _db_name;
+    std::string    _db_password;
     unsigned short _db_port;
-    QString        _db_user;
-    QString        _db_type;
-    QString        _ext_cmd_file;
+    std::string    _db_user;
+    std::string    _db_type;
+    std::string    _ext_cmd_file;
     unsigned int   _queries_per_transaction;
     stream_type    _type;
   };

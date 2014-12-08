@@ -19,17 +19,12 @@
 
 #include <cassert>
 #include <cstdlib>
-#include <QSqlDatabase>
-#include <QSqlError>
-#include <QSqlQuery>
-#include <QVariant>
 #include <sstream>
 #include <memory>
 #include "com/centreon/broker/bam/ba_svc_mapping.hh"
 #include "com/centreon/broker/bam/configuration/state.hh"
 #include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/reader_exception.hh"
-#include "com/centreon/broker/bam/sql_mapping.hh"
 #include "com/centreon/broker/bam/dimension_ba_event.hh"
 #include "com/centreon/broker/bam/dimension_bv_event.hh"
 #include "com/centreon/broker/bam/dimension_ba_bv_relation_event.hh"
@@ -40,6 +35,8 @@
 #include "com/centreon/broker/bam/dimension_timeperiod_exclusion.hh"
 #include "com/centreon/broker/bam/dimension_ba_timeperiod_relation.hh"
 #include "com/centreon/broker/bam/time/timeperiod.hh"
+#include "com/centreon/broker/database.hh"
+#include "com/centreon/broker/database_query.hh"
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -52,7 +49,7 @@ using namespace com::centreon::broker::bam::configuration;
  *
  *  @param[in] db  Database connection.
  */
-reader::reader(QSqlDatabase* db) : _db(db) {}
+reader::reader(database& db) : _db(db) {}
 
 /**
  *  Destructor.
@@ -67,14 +64,12 @@ reader::~reader() {}
  */
 void reader::read(state& st) {
   try {
-    _db->transaction(); // A single explicit transaction is more efficient.
     _load_dimensions();
     _load(st.get_bas(), st.get_ba_svc_mapping());
     _load(st.get_kpis());
     _load(st.get_bool_exps());
     _load(st.get_meta_services());
     _load(st.get_hst_svc_mapping());
-    _db->rollback();
   }
   catch (std::exception const& e) {
     st.clear();
@@ -88,7 +83,7 @@ void reader::read(state& st) {
  *
  *  Hidden implementation, never called.
  */
-reader::reader(reader const& other) : _db(NULL) {
+reader::reader(reader const& other) : _db(other._db) {
   (void)other;
   assert(!"BAM configuration reader is not copyable");
   abort();
@@ -116,61 +111,67 @@ reader& reader::operator=(reader const& other) {
  *  @param[out] kpis The list of kpis in database.
  */
 void reader::_load(state::kpis& kpis) {
-  QSqlQuery query(_db->exec(
-    "SELECT  k.kpi_id, k.state_type, k.host_id, k.service_id, k.id_ba,"
-    "        k.id_indicator_ba, k.meta_id, k.current_status,"
-    "        k.last_level, k.downtime, k.acknowledged,"
-    "        k.ignore_downtime, k.ignore_acknowledged,"
-    "        COALESCE(k.drop_warning, ww.impact),"
-    "        COALESCE(k.drop_critical, cc.impact),"
-    "        COALESCE(k.drop_unknown, uu.impact),"
-    "        k.last_state_change, k.in_downtime"
-    "  FROM  mod_bam_kpi AS k"
-    "  LEFT JOIN mod_bam_impacts AS ww"
-    "    ON k.drop_warning_impact_id = ww.id_impact"
-    "  LEFT JOIN mod_bam_impacts AS cc"
-    "    ON k.drop_critical_impact_id = cc.id_impact"
-    "  LEFT JOIN mod_bam_impacts AS uu"
-    "    ON k.drop_unknown_impact_id = uu.id_impact"
-    "  WHERE k.activate='1' AND k.boolean_id IS NULL"));
-  if (query.lastError().isValid())
-    throw (reader_exception()
-           << "BAM: could not retrieve KPI configuration from DB: "
-           << query.lastError().text());
+  try {
+    database_query query(_db);
+    query.run_query(
+      "SELECT  k.kpi_id, k.state_type, k.host_id, k.service_id, k.id_ba,"
+      "        k.id_indicator_ba, k.meta_id, k.current_status,"
+      "        k.last_level, k.downtime, k.acknowledged,"
+      "        k.ignore_downtime, k.ignore_acknowledged,"
+      "        COALESCE(k.drop_warning, ww.impact),"
+      "        COALESCE(k.drop_critical, cc.impact),"
+      "        COALESCE(k.drop_unknown, uu.impact),"
+      "        k.last_state_change, k.in_downtime"
+      "  FROM  mod_bam_kpi AS k"
+      "  LEFT JOIN mod_bam_impacts AS ww"
+      "    ON k.drop_warning_impact_id = ww.id_impact"
+      "  LEFT JOIN mod_bam_impacts AS cc"
+      "    ON k.drop_critical_impact_id = cc.id_impact"
+      "  LEFT JOIN mod_bam_impacts AS uu"
+      "    ON k.drop_unknown_impact_id = uu.id_impact"
+      "  WHERE k.activate='1' AND k.boolean_id IS NULL");
+    while (query.next()) {
+      // KPI object.
+      unsigned int kpi_id(query.value(0).toUInt());
+      kpis[kpi_id] =
+        kpi(
+          kpi_id, // ID.
+          query.value(1).toInt(), // State type.
+          query.value(2).toUInt(), // Host ID.
+          query.value(3).toUInt(), // Service ID.
+          query.value(4).toUInt(), // BA ID.
+          query.value(5).toUInt(), // BA indicator ID.
+          query.value(6).toUInt(), // Meta-service ID.
+          query.value(7).toInt(), // Status.
+          query.value(8).toInt(), // Last level.
+          query.value(9).toFloat(), // Downtimed.
+          query.value(10).toFloat(), // Acknowledged.
+          query.value(11).toBool(), // Ignore downtime.
+          query.value(12).toBool(), // Ignore acknowledgement.
+          query.value(13).toDouble(), // Warning.
+          query.value(14).toDouble(), // Critical.
+          query.value(15).toDouble()); // Unknown.
 
-  while (query.next()) {
-    // KPI object.
-    unsigned int kpi_id(query.value(0).toUInt());
-    kpis[kpi_id] =
-      kpi(
-        kpi_id, // ID.
-        query.value(1).toInt(), // State type.
-        query.value(2).toUInt(), // Host ID.
-        query.value(3).toUInt(), // Service ID.
-        query.value(4).toUInt(), // BA ID.
-        query.value(5).toUInt(), // BA indicator ID.
-        query.value(6).toUInt(), // Meta-service ID.
-        query.value(7).toInt(), // Status.
-        query.value(8).toInt(), // Last level.
-        query.value(9).toFloat(), // Downtimed.
-        query.value(10).toFloat(), // Acknowledged.
-        query.value(11).toBool(), // Ignore downtime.
-        query.value(12).toBool(), // Ignore acknowledgement.
-        query.value(13).toDouble(), // Warning.
-        query.value(14).toDouble(), // Critical.
-        query.value(15).toDouble()); // Unknown.
-
-    // KPI state.
-    if (!query.value(16).isNull()) {
-      kpi_event e;
-      e.kpi_id = kpi_id;
-      e.status = query.value(7).toInt();
-      e.start_time = query.value(16).toLongLong();
-      e.in_downtime = query.value(17).toBool();
-      kpis[kpi_id].set_opened_event(e);
+      // KPI state.
+      if (!query.value(16).isNull()) {
+        kpi_event e;
+        e.kpi_id = kpi_id;
+        e.status = query.value(7).toInt();
+        e.start_time = query.value(16).toLongLong();
+        e.in_downtime = query.value(17).toBool();
+        kpis[kpi_id].set_opened_event(e);
+      }
     }
   }
-
+  catch (reader_exception const& e) {
+    (void)e;
+    throw ;
+  }
+  catch (std::exception const& e) {
+    throw (reader_exception()
+           << "BAM: could not retrieve KPI configuration from DB: "
+           << e.what());
+  }
   return ;
 }
 
@@ -181,84 +182,98 @@ void reader::_load(state::kpis& kpis) {
  *  @param[out] mapping  The mapping of BA ID to host/service IDs.
  */
 void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
-  QSqlQuery query(_db->exec(
-    "SELECT ba_id, name, level_w, level_c, last_state_change, "
-    "       current_status, in_downtime"
-    "  FROM mod_bam"
-    "  WHERE activate='1'"));
-  if (query.lastError().isValid())
+  try {
+    database_query query(_db);
+    query.run_query(
+      "SELECT ba_id, name, level_w, level_c, last_state_change, "
+      "       current_status, in_downtime"
+      "  FROM mod_bam"
+      "  WHERE activate='1'");
+    while (query.next()) {
+      // BA object.
+      unsigned int ba_id(query.value(0).toUInt());
+      bas[ba_id] =
+        ba(
+          ba_id, // ID.
+          query.value(1).toString().toStdString(), // Name.
+          query.value(2).toFloat(), // Warning level.
+          query.value(3).toFloat()); // Critical level.
+
+      // BA state.
+      if (!query.value(4).isNull()) {
+        ba_event e;
+        e.ba_id = ba_id;
+        e.start_time = query.value(4).toLongLong();
+        e.status = query.value(5).toInt();
+        e.in_downtime = query.value(6).toBool();
+        bas[ba_id].set_opened_event(e);
+      }
+    }
+  }
+  catch (reader_exception const& e) {
+    (void)e;
+    throw ;
+  }
+  catch (std::exception const& e) {
     throw (reader_exception()
            << "BAM: could not retrieve BA configuration from DB: "
-           << query.lastError().text());
-
-  while (query.next()) {
-    // BA object.
-    unsigned int ba_id(query.value(0).toUInt());
-    bas[ba_id] =
-      ba(
-        ba_id, // ID.
-        query.value(1).toString().toStdString(), // Name.
-        query.value(2).toFloat(), // Warning level.
-        query.value(3).toFloat()); // Critical level.
-
-    // BA state.
-    if (!query.value(4).isNull()) {
-      ba_event e;
-      e.ba_id = ba_id;
-      e.start_time = query.value(4).toLongLong();
-      e.status = query.value(5).toInt();
-      e.in_downtime = query.value(6).toBool();
-      bas[ba_id].set_opened_event(e);
-    }
+           << e.what());
   }
 
   // Load the associated ba_id from the table services.
   // All the associated services have for description 'ba_[id]'.
-  query = _db->exec(
-                 "SELECT h.host_name, s.service_description,"
-                 "       hsr.host_host_id, hsr.service_service_id"
-                 "  FROM service AS s"
-                 "  INNER JOIN host_service_relation AS hsr"
-                 "    ON s.service_id=hsr.service_service_id"
-                 "  INNER JOIN host AS h"
-                 "    ON hsr.host_host_id=h.host_id"
-                 "  WHERE s.service_description LIKE 'ba_%'");
-  if (query.lastError().isValid())
+  try {
+    database_query query(_db);
+    query.run_query(
+            "SELECT h.host_name, s.service_description,"
+            "       hsr.host_host_id, hsr.service_service_id"
+            "  FROM service AS s"
+            "  INNER JOIN host_service_relation AS hsr"
+            "    ON s.service_id=hsr.service_service_id"
+            "  INNER JOIN host AS h"
+            "    ON hsr.host_host_id=h.host_id"
+            "  WHERE s.service_description LIKE 'ba_%'");
+    while (query.next()) {
+      unsigned int host_id = query.value(2).toUInt();
+      unsigned int service_id = query.value(3).toUInt();
+      std::string service_description = query.value(1).toString().toStdString();
+      service_description.erase(0, strlen("ba_"));
+
+      if (!service_description.empty()) {
+        bool ok = false;
+        unsigned int ba_id = QString(service_description.c_str()).toUInt(&ok);
+        if (!ok) {
+          logging::info(logging::medium)
+            << "BAM: service '" << query.value(1).toString() << "' of host '"
+            << query.value(0).toString()
+            << "' is not a valid virtual BA service";
+          continue ;
+        }
+        state::bas::iterator found = bas.find(ba_id);
+        if (found == bas.end()) {
+          logging::info(logging::medium) << "BAM: virtual BA service '"
+            << query.value(1).toString() << "' of host '"
+            << query.value(0).toString() << "' references an unknown BA ("
+            << ba_id << ")";
+          continue;
+        }
+        found->second.set_host_id(host_id);
+        found->second.set_service_id(service_id);
+        mapping.set(
+                  ba_id,
+                  query.value(0).toString().toStdString(),
+                  query.value(1).toString().toStdString());
+      }
+    }
+  }
+  catch (reader_exception const& e) {
+    (void)e;
+    throw ;
+  }
+  catch (std::exception const& e) {
     throw (reader_exception()
            << "BAM: could not retrieve BA service IDs from DB: "
-           << query.lastError().text());
-
-  while (query.next()) {
-    unsigned int host_id = query.value(2).toUInt();
-    unsigned int service_id = query.value(3).toUInt();
-    std::string service_description = query.value(1).toString().toStdString();
-    service_description.erase(0, strlen("ba_"));
-
-    if (!service_description.empty()) {
-      bool ok = false;
-      unsigned int ba_id = QString(service_description.c_str()).toUInt(&ok);
-      if (!ok) {
-        logging::info(logging::medium)
-          << "BAM: service '" << query.value(1).toString() << "' of host '"
-          << query.value(0).toString()
-          << "' is not a valid virtual BA service";
-        continue;
-      }
-      state::bas::iterator found = bas.find(ba_id);
-      if (found == bas.end()) {
-        logging::info(logging::medium) << "BAM: virtual BA service '"
-          << query.value(1).toString() << "' of host '"
-          << query.value(0).toString() << "' references an unknown BA ("
-          << ba_id << ")";
-        continue;
-      }
-      found->second.set_host_id(host_id);
-      found->second.set_service_id(service_id);
-      mapping.set(
-                ba_id,
-                query.value(0).toString().toStdString(),
-                query.value(1).toString().toStdString());
-    }
+           << e.what());
   }
 
   // Test for BA without service ID.
@@ -280,8 +295,9 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
  */
 void reader::_load(state::bool_exps& bool_exps) {
   // Load boolean expressions themselves.
-  {
-    QSqlQuery query(_db->exec(
+  try {
+    database_query query(_db);
+    query.run_query(
       "SELECT  be.boolean_id, COALESCE(kpi.drop_critical, imp.impact),"
       "        be.expression, be.bool_state"
       "  FROM  mod_bam_boolean as be"
@@ -290,12 +306,7 @@ void reader::_load(state::bool_exps& bool_exps) {
       "  LEFT JOIN mod_bam_impacts as imp"
       "    ON kpi.drop_critical_impact_id=imp.id_impact"
       "  WHERE be.activate=1"
-      "  GROUP BY be.boolean_id"));
-    if (query.lastError().isValid())
-      throw (reader_exception()
-             << "BAM: could not retrieve boolean expression "
-             << "configuration from DB: " << query.lastError().text());
-
+      "  GROUP BY be.boolean_id");
     while (query.next()) {
       bool_exps[query.value(0).toUInt()] =
                   bool_expression(
@@ -305,25 +316,40 @@ void reader::_load(state::bool_exps& bool_exps) {
                     query.value(3).toBool()); // Impact if.
     }
   }
+  catch (reader_exception const& e) {
+    (void)e;
+    throw ;
+  }
+  catch (std::exception const& e) {
+    throw (reader_exception()
+           << "BAM: could not retrieve boolean expression "
+           << "configuration from DB: " << e.what());
+  }
 
   // Load relations of boolean expressions with BAs.
   {
     std::map<unsigned int, bool_expression::ids_of_bas> impacted_bas;
-    {
-      QSqlQuery q(_db->exec(
-        "SELECT b.boolean_id, k.id_ba"
-        "  FROM mod_bam_boolean AS b"
-        "  LEFT JOIN mod_bam_kpi AS k"
-        "    ON b.boolean_id=k.boolean_id"
-        "  WHERE b.activate=1"));
-      if (q.lastError().isValid())
-        throw (reader_exception()
-               << "BAM: could not retrieve BAs impacted by boolean "
-               << "expressions: " << q.lastError().text());
-
+    try {
+      database_query q(_db);
+      q.run_query(
+          "SELECT b.boolean_id, k.id_ba"
+          "  FROM mod_bam_boolean AS b"
+          "  LEFT JOIN mod_bam_kpi AS k"
+          "    ON b.boolean_id=k.boolean_id"
+          "  WHERE b.activate=1");
       while (q.next())
         impacted_bas[q.value(0).toUInt()].push_back(q.value(1).toUInt());
     }
+    catch (reader_exception const& e) {
+      (void)e;
+      throw ;
+    }
+    catch (std::exception const& e) {
+      throw (reader_exception()
+             << "BAM: could not retrieve BAs impacted by boolean "
+             << "expressions: " << e.what());
+    }
+
     for (state::bool_exps::iterator
            it(bool_exps.begin()), end(bool_exps.end());
          it != end;
@@ -338,16 +364,13 @@ void reader::_load(state::bool_exps& bool_exps) {
   }
 
   // Load kpi_id associated with boolean KPIs.
-  {
-    QSqlQuery q(_db->exec(
+  try {
+    database_query q(_db);
+    q.run_query(
       "SELECT boolean_id, kpi_id, last_state_change,"
       "       current_status, in_downtime"
       "  FROM mod_bam_kpi"
-      "  WHERE activate='1' AND boolean_id IS NOT NULL"));
-    if (q.lastError().isValid())
-      throw (reader_exception()
-             << "BAM: could not retrieve the KPI IDs of the boolean "
-                "expressions: " << q.lastError().text());
+      "  WHERE activate='1' AND boolean_id IS NOT NULL");
     while (q.next()) {
       // Boolean KPI ID.
       unsigned int boolean_id = q.value(0).toUInt();
@@ -369,6 +392,15 @@ void reader::_load(state::bool_exps& bool_exps) {
       }
     }
   }
+  catch (reader_exception const& e) {
+    (void)e;
+    throw ;
+  }
+  catch (std::exception const& e) {
+    throw (reader_exception()
+           << "BAM: could not retrieve the KPI IDs of the boolean "
+           "expressions: " << e.what());
+  }
 
   return ;
 }
@@ -380,16 +412,13 @@ void reader::_load(state::bool_exps& bool_exps) {
  */
 void reader::_load(state::meta_services& meta_services) {
   // Load meta-services.
-  {
-    QSqlQuery q(_db->exec(
+  try {
+    database_query q(_db);
+    q.run_query(
       "SELECT meta_id, meta_name, calcul_type, warning, critical,"
       "       meta_select_mode, regexp_str, metric"
       "  FROM meta_service"
-      "  WHERE meta_activate='1'"));
-    if (q.lastError().isValid())
-      throw (reader_exception()
-             << "BAM: could not retrieve meta-services: "
-             << q.lastError().text());
+      "  WHERE meta_activate='1'");
     while (q.next())
       meta_services.push_back(meta_service(
                                 q.value(0).toUInt(),
@@ -403,6 +432,15 @@ void reader::_load(state::meta_services& meta_services) {
                                 (q.value(5).toInt() == 2
                                  ? q.value(7).toString().toStdString()
                                  : "")));
+  }
+  catch (reader_exception const& e) {
+    (void)e;
+    throw ;
+  }
+  catch (std::exception const& e) {
+    throw (reader_exception()
+           << "BAM: could not retrieve meta-services: "
+           << e.what());
   }
 
   // Load metrics of meta-services.
@@ -434,18 +472,26 @@ void reader::_load(state::meta_services& meta_services) {
     }
     // Service list mode.
     else {
-      std::ostringstream query;
-      query << "SELECT metric_id"
-            << "  FROM meta_service_relation"
-            << "  WHERE meta_id=" << it->get_id()
-            << "    AND activate='1'";
-      QSqlQuery q(_db->exec(query.str().c_str()));
-      if (q.lastError().isValid())
+      try {
+        std::ostringstream query;
+        query << "SELECT metric_id"
+              << "  FROM meta_service_relation"
+              << "  WHERE meta_id=" << it->get_id()
+              << "    AND activate='1'";
+        database_query q(_db);
+        q.run_query(query.str());
+        while (q.next())
+          it->add_metric(q.value(0).toUInt());
+      }
+      catch (reader_exception const& e) {
+        (void)e;
+        throw ;
+      }
+      catch (std::exception const& e) {
         throw (reader_exception()
                << "BAM: could not retrieve members of meta-service '"
-               << it->get_name() << "': " << q.lastError().text());
-      while (q.next())
-        it->add_metric(q.value(0).toUInt());
+               << it->get_name() << "': " << e.what());
+      }
     }
   }
   return ;
@@ -457,24 +503,32 @@ void reader::_load(state::meta_services& meta_services) {
  *  @param[out] mapping  Host/service mapping.
  */
 void reader::_load(bam::hst_svc_mapping& mapping) {
-  // XXX : expand hostgroups and servicegroups
-  QSqlQuery q(_db->exec(
-    "SELECT h.host_id, s.service_id, h.host_name, s.service_description"
-    "  FROM service AS s"
-    "  LEFT JOIN host_service_relation AS hsr"
-    "    ON s.service_id=hsr.service_service_id"
-    "  LEFT JOIN host AS h"
-    "    ON hsr.host_host_id=h.host_id"));
-  if (q.lastError().isValid())
+  try {
+    // XXX : expand hostgroups and servicegroups
+    database_query q(_db);
+    q.run_query(
+      "SELECT h.host_id, s.service_id, h.host_name, s.service_description"
+      "  FROM service AS s"
+      "  LEFT JOIN host_service_relation AS hsr"
+      "    ON s.service_id=hsr.service_service_id"
+      "  LEFT JOIN host AS h"
+      "    ON hsr.host_host_id=h.host_id");
+    while (q.next())
+      mapping.set_service(
+                q.value(2).toString().toStdString(),
+                q.value(3).toString().toStdString(),
+                q.value(0).toUInt(),
+                q.value(1).toUInt());
+  }
+  catch (reader_exception const& e) {
+    (void)e;
+    throw ;
+  }
+  catch (std::exception const& e) {
     throw (reader_exception()
            << "BAM: could not retrieve host/service IDs: "
-           << q.lastError().text());
-  while (q.next())
-    mapping.set_service(
-              q.value(2).toString().toStdString(),
-              q.value(3).toString().toStdString(),
-              q.value(0).toUInt(),
-              q.value(1).toUInt());
+           << e.what());
+  }
   return ;
 }
 
@@ -492,21 +546,19 @@ void reader::_load_dimensions() {
   dtts->update_started = true;
   datas.push_back(dtts);
 
-  // Get the data from the db.
-  QSqlQuery q(*_db);
-  q.setForwardOnly(true);
+  // Get the data from the DB.
+  database_query q(_db);
 
-  // Load the timeperiods.
+  // Load the dimensions.
   std::map<unsigned int, time::timeperiod::ptr> timeperiods;
-  {
-    // Load the timeperiod data.
-    q.exec("SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday, tp_tuesday, "
-           "tp_wednesday, tp_thursday, tp_friday, tp_saturday"
-           "  FROM timeperiod");
-    if (q.lastError().isValid())
-      throw (reader_exception()
-             << "BAM: could not retrieve timeperiods: "
-             << q.lastError().text());
+  std::map<unsigned int, misc::shared_ptr<dimension_ba_event> > bas;
+  try {
+    // Load the timeperiods themselves.
+    q.run_query(
+      "SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday, tp_tuesday, "
+      "tp_wednesday, tp_thursday, tp_friday, tp_saturday"
+      "  FROM timeperiod",
+      "could not load timeperiods from the database");
     while (q.next()) {
       timeperiods[q.value(0).toUInt()] = time::timeperiod::ptr(
         new time::timeperiod(
@@ -534,20 +586,19 @@ void reader::_load_dimensions() {
     }
 
     // Load the timeperiod exceptions.
-    q.exec("SELECT timeperiod_id, days, timerange"
-           "  FROM timeperiod_exceptions");
-    if (q.lastError().isValid())
-      throw (reader_exception()
-             << "BAM: could not retrieve timeperiod exceptions: "
-             << q.lastError().text());
+    q.run_query(
+      "SELECT timeperiod_id, days, timerange"
+      "  FROM timeperiod_exceptions",
+      "could not retrieve timeperiod exceptions from the database");
     while (q.next()) {
       unsigned int timeperiod_id = q.value(0).toUInt();
       std::map<unsigned int, time::timeperiod::ptr>::iterator found
           = timeperiods.find(timeperiod_id);
       if (found == timeperiods.end())
-        throw (reader_exception())
-                << "BAM: Found a timeperiod exception pointing to an "
-                   "inexisting timeperiod (timeperiod id = " << timeperiod_id;
+        throw (reader_exception()
+               << "BAM: found a timeperiod exception pointing to an "
+               "inexisting timeperiod (timeperiod ID is " << timeperiod_id
+               << ")");
       found->second->add_exception(
                        q.value(1).toString().toStdString(),
                        q.value(2).toString().toStdString());
@@ -560,28 +611,26 @@ void reader::_load_dimensions() {
     }
 
     // Load the excluded timeperiods.
-    q.exec("SELECT timeperiod_id, timeperiod_exclude_id"
-           "  FROM timeperiod_exclude_relations");
-    if (q.lastError().isValid())
-      throw (reader_exception()
-             << "BAM: could not retrieve timeperiod exclude relations: "
-             << q.lastError().text());
+    q.run_query(
+      "SELECT timeperiod_id, timeperiod_exclude_id"
+      "  FROM timeperiod_exclude_relations",
+      "could not retrieve timeperiod exclusions from the database");
     while (q.next()) {
       unsigned int timeperiod_id = q.value(0).toUInt();
       unsigned int timeperiod_exclude_id = q.value(1).toUInt();
       std::map<unsigned int, time::timeperiod::ptr>::iterator found
           = timeperiods.find(timeperiod_id);
       if (found == timeperiods.end())
-        throw (reader_exception())
-                << "BAM: Found a timeperiod exclude pointing to an inexisting "
-                   "timeperiod (timeperiod id = " << timeperiod_id;
+        throw (reader_exception()
+               << "BAM: found a timeperiod exclude pointing to an inexisting "
+               "timeperiod (timeperiod has ID " << timeperiod_id << ")");
       std::map<unsigned int, time::timeperiod::ptr>::iterator found_excluded =
-                          timeperiods.find(timeperiod_exclude_id);
+        timeperiods.find(timeperiod_exclude_id);
       if (found_excluded == timeperiods.end())
-        throw (reader_exception())
-                << "BAM: Found a timeperiod exclude pointing to an inexisting "
-                   "excluded timeperiod (excluded timeperiod id = "
-                << timeperiod_exclude_id;
+        throw (reader_exception()
+               << "BAM: found a timeperiod exclude pointing to an inexisting "
+                  "excluded timeperiod (excluded timeperiod has ID "
+               << timeperiod_exclude_id << ")");
       found->second->add_excluded(found_excluded->second);
       misc::shared_ptr<dimension_timeperiod_exclusion>
         exclusion(new dimension_timeperiod_exclusion);
@@ -589,21 +638,16 @@ void reader::_load_dimensions() {
       exclusion->excluded_timeperiod_id = timeperiod_exclude_id;
       datas.push_back(exclusion.staticCast<io::data>());
     }
-  }
 
-  // Load the BAs.
-  std::map<unsigned int, misc::shared_ptr<dimension_ba_event> > bas;
-  {
-    q.exec(
-        "SELECT ba_id, name, description,"
-        "       sla_month_percent_warn, sla_month_percent_crit,"
-        "       sla_month_duration_warn, sla_month_duration_crit,"
-        "       id_reporting_period"
-        "  FROM mod_bam"
-        "  WHERE activate='1'");
-    if (q.lastError().isValid())
-      throw (reader_exception() << "BAM: could not retrieve BA list: "
-             << q.lastError().text());
+    // Load the BAs.
+    q.run_query(
+      "SELECT ba_id, name, description,"
+      "       sla_month_percent_warn, sla_month_percent_crit,"
+      "       sla_month_duration_warn, sla_month_duration_crit,"
+      "       id_reporting_period"
+      "  FROM mod_bam"
+      "  WHERE activate='1'",
+      "could not retrieve BAs from the database");
     while (q.next()) {
       misc::shared_ptr<dimension_ba_event> ba(new dimension_ba_event);
       ba->ba_id = q.value(0).toUInt();
@@ -624,15 +668,12 @@ void reader::_load_dimensions() {
         datas.push_back(dbtr);
       }
     }
-  }
 
-  // Load the BVs.
-  {
-    q.exec("SELECT id_ba_group, ba_group_name, ba_group_description"
-           "  FROM mod_bam_ba_groups");
-    if (q.lastError().isValid())
-      throw (reader_exception() << "BAM: could not retrieve BV list: "
-             << q.lastError().text());
+    // Load the BVs.
+    q.run_query(
+      "SELECT id_ba_group, ba_group_name, ba_group_description"
+      "  FROM mod_bam_ba_groups",
+      "could not retrieve BVs from the database");
     while (q.next()) {
       misc::shared_ptr<dimension_bv_event>
           bv(new dimension_bv_event);
@@ -641,16 +682,12 @@ void reader::_load_dimensions() {
       bv->bv_description = q.value(2).toString();
       datas.push_back(bv.staticCast<io::data>());
     }
-  }
 
-  // Load the BA BV relations.
-  {
-    q.exec("SELECT id_ba, id_ba_group"
-           "  FROM mod_bam_bagroup_ba_relation");
-    if (q.lastError().isValid())
-      throw (reader_exception()
-             << "BAM: could not retrieve BV memberships of BAs: "
-             << q.lastError().text());
+    // Load the BA BV relations.
+    q.run_query(
+      "SELECT id_ba, id_ba_group"
+      "  FROM mod_bam_bagroup_ba_relation",
+      "could not retrieve BV memberships of BAs");
     while (q.next()) {
       misc::shared_ptr<dimension_ba_bv_relation_event>
           babv(new dimension_ba_bv_relation_event);
@@ -658,42 +695,38 @@ void reader::_load_dimensions() {
       babv->bv_id = q.value(1).toUInt();
       datas.push_back(babv.staticCast<io::data>());
     }
-  }
 
-  // Load the KPIs
-  // Unfortunately, we need to get the names of the service/host/meta_service
-  // /ba/boolean expression associated with this KPI.
-  // This explains the numerous joins.
-  {
-    q.exec("SELECT k.kpi_id, k.kpi_type, k.host_id, k.service_id, k.id_ba,"
-           "       k.id_indicator_ba, k.meta_id, k.boolean_id,"
-           "        COALESCE(k.drop_warning, ww.impact),"
-           "        COALESCE(k.drop_critical, cc.impact),"
-           "        COALESCE(k.drop_unknown, uu.impact),"
-           "       h.host_name, s.service_description, b.name,"
-           "       meta.meta_name, boo.name"
-           "  FROM mod_bam_kpi AS k"
-           "  LEFT JOIN mod_bam_impacts AS ww"
-           "    ON k.drop_warning_impact_id = ww.id_impact"
-           "  LEFT JOIN mod_bam_impacts AS cc"
-           "    ON k.drop_critical_impact_id = cc.id_impact"
-           "  LEFT JOIN mod_bam_impacts AS uu"
-           "    ON k.drop_unknown_impact_id = uu.id_impact"
-           "  LEFT JOIN host AS h"
-           "    ON h.host_id = k.host_id"
-           "  LEFT JOIN service AS s"
-           "    ON s.service_id = k.service_id"
-           "  INNER JOIN mod_bam AS b"
-           "    ON b.ba_id = k.id_ba"
-           "  LEFT JOIN meta_service AS meta"
-           "    ON meta.meta_id = k.meta_id"
-           "  LEFT JOIN mod_bam_boolean as boo"
-           "    ON boo.boolean_id = k.boolean_id"
-           "  WHERE k.activate='1'");
-    if (q.lastError().isValid())
-      throw (reader_exception()
-             << "BAM: could not retrieve kpi dimensions: "
-             << q.lastError().text());
+    // Load the KPIs
+    // Unfortunately, we need to get the names of the
+    // service/host/meta_service/ba/boolean expression associated with
+    // this KPI. This explains the numerous joins.
+    q.run_query(
+      "SELECT k.kpi_id, k.kpi_type, k.host_id, k.service_id, k.id_ba,"
+        "       k.id_indicator_ba, k.meta_id, k.boolean_id,"
+        "        COALESCE(k.drop_warning, ww.impact),"
+      "        COALESCE(k.drop_critical, cc.impact),"
+      "        COALESCE(k.drop_unknown, uu.impact),"
+      "       h.host_name, s.service_description, b.name,"
+      "       meta.meta_name, boo.name"
+      "  FROM mod_bam_kpi AS k"
+      "  LEFT JOIN mod_bam_impacts AS ww"
+      "    ON k.drop_warning_impact_id = ww.id_impact"
+      "  LEFT JOIN mod_bam_impacts AS cc"
+      "    ON k.drop_critical_impact_id = cc.id_impact"
+      "  LEFT JOIN mod_bam_impacts AS uu"
+      "    ON k.drop_unknown_impact_id = uu.id_impact"
+      "  LEFT JOIN host AS h"
+      "    ON h.host_id = k.host_id"
+      "  LEFT JOIN service AS s"
+      "    ON s.service_id = k.service_id"
+      "  INNER JOIN mod_bam AS b"
+      "    ON b.ba_id = k.id_ba"
+      "  LEFT JOIN meta_service AS meta"
+      "    ON meta.meta_id = k.meta_id"
+      "  LEFT JOIN mod_bam_boolean as boo"
+      "    ON boo.boolean_id = k.boolean_id"
+      "  WHERE k.activate='1'",
+      "could not retrieve KPI dimensions");
     while (q.next()) {
       misc::shared_ptr<dimension_kpi_event> k(new dimension_kpi_event);
       k->kpi_id = q.value(0).toUInt();
@@ -712,7 +745,7 @@ void reader::_load_dimensions() {
       k->meta_service_name = q.value(14).toString();
       k->boolean_name = q.value(15).toString();
 
-      // Resolve the id_indicator_ba
+      // Resolve the id_indicator_ba.
       if (k->kpi_ba_id) {
         std::map<unsigned int,
                  misc::shared_ptr<dimension_ba_event> >::const_iterator
@@ -725,16 +758,11 @@ void reader::_load_dimensions() {
       }
       datas.push_back(k.staticCast<io::data>());
     }
-  }
 
-  // Load the ba-timeperiods relations.
-  {
-    q.exec("SELECT ba_id, tp_id FROM mod_bam_relations_ba_timeperiods");
-    if (q.lastError().isValid())
-      throw (reader_exception()
-             << "BAM: could not retrieve the timeperiods associated "
-                "with the BAs: "
-             << q.lastError().text());
+    // Load the ba-timeperiods relations.
+    q.run_query(
+      "SELECT ba_id, tp_id FROM mod_bam_relations_ba_timeperiods",
+      "could not retrieve the timeperiods associated with the BAs");
     while (q.next()) {
       misc::shared_ptr<dimension_ba_timeperiod_relation>
         dbtr(new dimension_ba_timeperiod_relation);
@@ -743,18 +771,29 @@ void reader::_load_dimensions() {
       dbtr->is_default = false;
       datas.push_back(dbtr);
     }
+
+    // End the update.
+    dtts = misc::shared_ptr<dimension_truncate_table_signal>(
+             new dimension_truncate_table_signal);
+    dtts->update_started = false;
+    datas.push_back(dtts);
+
+    // Write all the cached data to the publisher.
+    for (std::vector<misc::shared_ptr<io::data> >::iterator
+           it(datas.begin()),
+           end(datas.end());
+         it != end;
+         ++it)
+      out->write(*it);
+  }
+  catch (reader_exception const& e) {
+    (void)e;
+    throw ;
+  }
+  catch (std::exception const& e) {
+    throw (reader_exception()
+           << "BAM: could not load some dimension table: " << e.what());
   }
 
-  // End the update.
-  dtts = misc::shared_ptr<dimension_truncate_table_signal>(
-        new dimension_truncate_table_signal);
-  dtts->update_started = false;
-  datas.push_back(dtts);
-
-  // Write all the cached data to the publisher.
-  for (std::vector<misc::shared_ptr<io::data> >::iterator it(datas.begin()),
-                                                          end(datas.end());
-       it != end;
-       ++it)
-    out->write(*it);
+  return ;
 }

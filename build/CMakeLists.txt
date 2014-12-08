@@ -274,6 +274,8 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/config/logger.cc"
   "${SRC_DIR}/config/parser.cc"
   "${SRC_DIR}/config/state.cc"
+  "${SRC_DIR}/database.cc"
+  "${SRC_DIR}/database_query.cc"
   "${SRC_DIR}/exceptions/msg.cc"
   "${SRC_DIR}/exceptions/with_pointer.cc"
 # #	../src/interface/xml/destination.cc
@@ -323,6 +325,8 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/config/logger.hh"
   "${INC_DIR}/config/parser.hh"
   "${INC_DIR}/config/state.hh"
+  "${INC_DIR}/database.hh"
+  "${INC_DIR}/database_query.hh"
   "${INC_DIR}/exceptions/msg.hh"
   "${INC_DIR}/exceptions/with_pointer.hh"
   "${INC_DIR}/io/data.hh"

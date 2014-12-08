@@ -183,13 +183,13 @@ io::endpoint* factory::new_endpoint(
        is_bam_bi
        ? bam::connector::bam_bi_type
        : bam::connector::bam_type,
-       type,
-       host,
+       type.toStdString(),
+       host.toStdString(),
        port,
-       user,
-       password,
-       name,
-       ext_cmd_file,
+       user.toStdString(),
+       password.toStdString(),
+       name.toStdString(),
+       ext_cmd_file.toStdString(),
        queries_per_transaction,
        check_replication);
   is_acceptor = false;

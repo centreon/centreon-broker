@@ -23,9 +23,9 @@
 #  include <map>
 #  include <memory>
 #  include <vector>
-#  include <QSqlDatabase>
-#  include <QSqlQuery>
 #  include <QMutexLocker>
+#  include "com/centreon/broker/database.hh"
+#  include "com/centreon/broker/database_query.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
@@ -52,12 +52,12 @@ namespace          bam {
   class            reporting_stream : public io::stream {
   public:
                    reporting_stream(
-                     QString const& db_type,
-                     QString const& db_host,
+                     std::string const& db_type,
+                     std::string const& db_host,
                      unsigned short db_port,
-                     QString const& db_user,
-                     QString const& db_password,
-                     QString const& db_name,
+                     std::string const& db_user,
+                     std::string const& db_password,
+                     std::string const& db_name,
                      unsigned int queries_per_transaction,
                      bool check_replication = true);
                    ~reporting_stream();
@@ -73,8 +73,6 @@ namespace          bam {
     void           _apply(dimension_timeperiod const& tp);
     void           _apply(dimension_timeperiod_exception const& tpe);
     void           _apply(dimension_timeperiod_exclusion const& tpe);
-    void           _check_replication();
-    void           _clear_qsql();
     void           _load_last_events();
     void           _load_timeperiods();
     void           _prepare();
@@ -100,49 +98,33 @@ namespace          bam {
                    _ba_event_cache;
     std::map<unsigned int, std::list<kpi_event> >
                    _kpi_event_cache;
+    unsigned int   _pending_events;
     bool           _process_out;
     unsigned int   _queries_per_transaction;
     std::string    _status;
     mutable QMutex _statusm;
     unsigned int   _transaction_queries;
-    std::auto_ptr<QSqlQuery>
-                   _ba_event_insert;
-    std::auto_ptr<QSqlQuery>
-                   _ba_event_update;
-    std::auto_ptr<QSqlQuery>
-                   _ba_event_delete;
-    std::auto_ptr<QSqlQuery>
-                   _ba_duration_event_insert;
-    std::auto_ptr<QSqlQuery>
-                   _kpi_event_insert;
-    std::auto_ptr<QSqlQuery>
-                   _kpi_event_update;
-    std::auto_ptr<QSqlQuery>
-                   _kpi_event_delete;
-    std::auto_ptr<QSqlQuery>
-                   _kpi_event_link;
-    std::auto_ptr<QSqlQuery>
-                  _dimension_ba_insert;
-    std::auto_ptr<QSqlQuery>
-                  _dimension_bv_insert;
-    std::auto_ptr<QSqlQuery>
-                  _dimension_ba_bv_relation_insert;
-    std::auto_ptr<QSqlQuery>
-                  _dimension_timeperiod_insert;
-    std::auto_ptr<QSqlQuery>
-                  _dimension_timeperiod_exception_insert;
-    std::auto_ptr<QSqlQuery>
-                  _dimension_timeperiod_exclusion_insert;
-    std::auto_ptr<QSqlQuery>
-                  _dimension_ba_timeperiod_insert;
-    std::vector<misc::shared_ptr<QSqlQuery> >
-                  _dimension_truncate_tables;
-    std::auto_ptr<QSqlQuery>
-                  _dimension_kpi_insert;
-    std::auto_ptr<QSqlDatabase>
-                   _db;
+    database       _db;
+    database_query _ba_event_insert;
+    database_query _ba_event_update;
+    database_query _ba_event_delete;
+    database_query _ba_duration_event_insert;
+    database_query _kpi_event_insert;
+    database_query _kpi_event_update;
+    database_query _kpi_event_delete;
+    database_query _kpi_event_link;
+    database_query _dimension_ba_insert;
+    database_query _dimension_bv_insert;
+    database_query _dimension_ba_bv_relation_insert;
+    database_query _dimension_timeperiod_insert;
+    database_query _dimension_timeperiod_exception_insert;
+    database_query _dimension_timeperiod_exclusion_insert;
+    database_query _dimension_ba_timeperiod_insert;
+    database_query _dimension_kpi_insert;
+    std::vector<misc::shared_ptr<database_query> >
+                   _dimension_truncate_tables;
     std::auto_ptr<QMutexLocker>
-                  _availabilities_lock;
+                   _availabilities_lock;
     std::auto_ptr<availability_thread>
                    _availabilities;
 
@@ -151,7 +133,7 @@ namespace          bam {
                           std::pair<unsigned int, bool> > timeperiod_relation_map;
     timeperiod_map _timeperiods;
     timeperiod_relation_map
-                  _timeperiod_relations;
+                   _timeperiod_relations;
   };
 }
 

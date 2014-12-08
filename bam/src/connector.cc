@@ -20,7 +20,6 @@
 #include "com/centreon/broker/bam/connector.hh"
 #include "com/centreon/broker/bam/monitoring_stream.hh"
 #include "com/centreon/broker/bam/reporting_stream.hh"
-#include "com/centreon/broker/bam/sql_mapping.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -99,17 +98,17 @@ void connector::close() {
  */
 void connector::connect_to(
                   stream_type type,
-                  QString const& db_type,
-                  QString const& db_host,
+                  std::string const& db_type,
+                  std::string const& db_host,
                   unsigned short db_port,
-                  QString const& db_user,
-                  QString const& db_password,
-                  QString const& db_name,
-                  QString const& ext_cmd_file,
+                  std::string const& db_user,
+                  std::string const& db_password,
+                  std::string const& db_name,
+                  std::string const& ext_cmd_file,
                   unsigned int queries_per_transaction,
                   bool check_replication) {
   _type = type;
-  _db_type = plain_db_to_qt(db_type);
+  _db_type = db_type;
   _db_host = db_host;
   _db_port = db_port;
   _db_user = db_user;

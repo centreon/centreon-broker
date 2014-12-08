@@ -23,10 +23,6 @@
 #include <fstream>
 #include <sstream>
 #include <QMutexLocker>
-#include <QSqlError>
-#include <QSqlQuery>
-#include <QSqlRecord>
-#include <QVariant>
 #include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/bool_status.hh"
 #include "com/centreon/broker/bam/configuration/reader.hh"
@@ -70,119 +66,53 @@ using namespace com::centreon::broker::bam;
  *  @param[in] check_replication       true to check replication status.
  */
 monitoring_stream::monitoring_stream(
-                     QString const& db_type,
-                     QString const& db_host,
+                     std::string const& db_type,
+                     std::string const& db_host,
                      unsigned short db_port,
-                     QString const& db_user,
-                     QString const& db_password,
-                     QString const& db_name,
-                     QString const& ext_cmd_file,
+                     std::string const& db_user,
+                     std::string const& db_password,
+                     std::string const& db_name,
+                     std::string const& ext_cmd_file,
                      unsigned int queries_per_transaction,
-                     bool check_replication) {
-  // Process events.
-  _process_out = true;
+                     bool check_replication)
+  : _ext_cmd_file(ext_cmd_file),
+    _process_out(true),
+    _db(
+      db_type,
+      db_host,
+      db_port,
+      db_user,
+      db_password,
+      db_name,
+      queries_per_transaction,
+      check_replication),
+  _ba_update(_db),
+  _bool_exp_update(_db),
+  _kpi_update(_db),
+  _meta_service_update(_db),
+  _pending_events(0) {
+  // Prepare queries.
+  _prepare();
 
-  // External command file.
-  _ext_cmd_file = ext_cmd_file;
-
-  // Queries per transaction.
-  _queries_per_transaction = ((queries_per_transaction >= 2)
-                              ? queries_per_transaction
-                              : 1);
-  _transaction_queries = 0;
-
-  // BAM connection ID.
-  QString bam_id;
-  bam_id.setNum((qulonglong)this, 16);
-
-  // Add database connection.
-  _db.reset(
-        new QSqlDatabase(QSqlDatabase::addDatabase(
-                                         db_type,
-                                         bam_id)));
-
-  // Set DB parameters.
-  _db->setHostName(db_host);
-  _db->setPort(db_port);
-  _db->setUserName(db_user);
-  _db->setPassword(db_password);
-  _db->setDatabaseName(db_name);
-
-  try {
-    {
-      QMutexLocker lock(&misc::global_lock);
-      // Open database.
-      if (!_db->open()) {
-        QString error(_db->lastError().text());
-        _clear_qsql();
-        throw (broker::exceptions::msg()
-               << "BAM: could not connect to monitoring database '"
-               << db_name << "' on host '" << db_host
-               << ":" << db_port << "': " << error);
-      }
-    }
-
-    // Check that replication is OK.
-    if (check_replication)
-      _check_replication();
-    else
-      logging::debug(logging::medium)
-        << "BAM: NOT checking replication status of monitoring database '"
-        << _db->databaseName() << "' on host '" << _db->hostName()
-        << ":" << _db->port() << "'";
-
-    // Prepare queries.
-    _prepare();
-
-    // Initial transaction.
-    if (_queries_per_transaction > 1)
-      _db->transaction();
-
-    // Read configuration from DB.
-    configuration::state s;
-    {
-      configuration::reader r(_db.get());
-      r.read(s);
-    }
-
-    // Apply configuration.
-    _applier.apply(s);
-    _ba_mapping = s.get_ba_svc_mapping();
-
-    // Check if we need to rebuild something.
-    _rebuild();
+  // Read configuration from DB.
+  configuration::state s;
+  {
+    configuration::reader r(_db);
+    r.read(s);
   }
-  catch (...) {
-    {
-      QMutexLocker lock(&misc::global_lock);
-      // Delete statements.
-      _clear_qsql();
-    }
 
-    // Remove this connection.
-    QSqlDatabase::removeDatabase(bam_id);
+  // Apply configuration.
+  _applier.apply(s);
+  _ba_mapping = s.get_ba_svc_mapping();
 
-    throw ;
-  }
+  // Check if we need to rebuild something.
+  _rebuild();
 }
 
 /**
  *  Destructor.
  */
-monitoring_stream::~monitoring_stream() {
-  // Connection ID.
-  QString bam_id;
-  bam_id.setNum((qulonglong)this, 16);
-
-  {
-    QMutexLocker lock(&misc::global_lock);
-    // Reset statements.
-    _clear_qsql();
-  }
-
-  // Remove this connection.
-  QSqlDatabase::removeDatabase(bam_id);
-}
+monitoring_stream::~monitoring_stream() {}
 
 /**
  *  Generate default state.
@@ -239,7 +169,7 @@ void monitoring_stream::update() {
   try {
     configuration::state s;
     {
-      configuration::reader r(_db.get());
+      configuration::reader r(_db);
       r.read(s);
     }
     _applier.apply(s);
@@ -268,6 +198,8 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
            << "BAM monitoring stream is shutdown");
 
   if (!data.isNull()) {
+    ++_pending_events;
+
     // Process service status events.
     if ((data->type()
         == io::events::data_type<io::events::neb, neb::de_service_status>::value)
@@ -300,24 +232,25 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
         << status->ba_id << ", level " << status->level_nominal
         << ", acknowledgement " << status->level_acknowledgement
         << ", downtime " << status->level_downtime << ")";
-      _ba_update->bindValue(":level_nominal", status->level_nominal);
-      _ba_update->bindValue(
-                    ":level_acknowledgement",
-                    status->level_acknowledgement);
-      _ba_update->bindValue(":level_downtime", status->level_downtime);
-      _ba_update->bindValue(":ba_id", status->ba_id);
-      _ba_update->bindValue(
+      _ba_update.bind_value(":level_nominal", status->level_nominal);
+      _ba_update.bind_value(
+                   ":level_acknowledgement",
+                   status->level_acknowledgement);
+      _ba_update.bind_value(":level_downtime", status->level_downtime);
+      _ba_update.bind_value(":ba_id", status->ba_id);
+      _ba_update.bind_value(
         ":last_state_change",
         (((status->last_state_change == (time_t)-1)
           || (status->last_state_change == 0))
          ? QVariant(QVariant::LongLong)
          : QVariant(static_cast<qlonglong>(status->last_state_change.get_time_t()))));
-      _ba_update->bindValue(":state", status->state);
-      _ba_update->bindValue(":in_downtime", status->in_downtime);
-      if (!_ba_update->exec())
+      _ba_update.bind_value(":state", status->state);
+      _ba_update.bind_value(":in_downtime", status->in_downtime);
+      try { _ba_update.run_statement(); }
+      catch (std::exception const& e) {
         throw (exceptions::msg() << "BAM: could not update BA "
-               << status->ba_id << ": "
-               << _ba_update->lastError().text());
+               << status->ba_id << ": " << e.what());
+      }
 
       if (status->state_changed) {
         std::pair<std::string, std::string>
@@ -344,13 +277,14 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
       bool_status* status(static_cast<bool_status*>(data.data()));
       logging::debug(logging::low) << "BAM: processing boolexp status (id "
         << status->bool_id << ", state " << status->state << ")";
-      _bool_exp_update->bindValue(":state", status->state);
-      _bool_exp_update->bindValue(":bool_id", status->bool_id);
-      if (!_bool_exp_update->exec())
+      _bool_exp_update.bind_value(":state", status->state);
+      _bool_exp_update.bind_value(":bool_id", status->bool_id);
+      try { _bool_exp_update.run_statement(); }
+      catch (std::exception const& e) {
         throw (exceptions::msg()
                << "BAM: could not update boolean expression "
-               << status->bool_id << ": "
-               << _bool_exp_update->lastError().text());
+               << status->bool_id << ": " << e.what());
+      }
     }
     else if (data->type()
              == io::events::data_type<io::events::bam, bam::de_kpi_status>::value) {
@@ -359,22 +293,23 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
         << status->kpi_id << ", level " << status->level_nominal_hard
         << ", acknowledgement " << status->level_acknowledgement_hard
         << ", downtime " << status->level_downtime_hard << ")";
-      _kpi_update->bindValue(
-                     ":level_nominal",
-                     status->level_nominal_hard);
-      _kpi_update->bindValue(
-                     ":level_acknowledgement",
-                     status->level_acknowledgement_hard);
-      _kpi_update->bindValue(
-                     ":level_downtime",
-                     status->level_downtime_hard);
-      _kpi_update->bindValue(":state", status->state_hard);
-      _kpi_update->bindValue(":state_type", 1 + 1);
-      _kpi_update->bindValue(":kpi_id", status->kpi_id);
-      if (!_kpi_update->exec())
+      _kpi_update.bind_value(
+                    ":level_nominal",
+                    status->level_nominal_hard);
+      _kpi_update.bind_value(
+                    ":level_acknowledgement",
+                    status->level_acknowledgement_hard);
+      _kpi_update.bind_value(
+                    ":level_downtime",
+                    status->level_downtime_hard);
+      _kpi_update.bind_value(":state", status->state_hard);
+      _kpi_update.bind_value(":state_type", 1 + 1);
+      _kpi_update.bind_value(":kpi_id", status->kpi_id);
+      try { _kpi_update.run_statement(); }
+      catch (std::exception const& e) {
         throw (exceptions::msg() << "BAM: could not update KPI "
-               << status->kpi_id << ": "
-               << _kpi_update->lastError().text());
+               << status->kpi_id << ": " << e.what());
+      }
     }
     else if (data->type()
              == io::events::data_type<io::events::bam, bam::de_meta_service_status>::value) {
@@ -394,8 +329,21 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
       //          << _meta_service_update->lastError().text());
     }
   }
-  // XXX : handle transactions
-  return (1);
+
+  // Event acknowledgement.
+  if (data.isNull()) {
+    _db.commit();
+    int retval(_pending_events);
+    _pending_events = 0;
+    return (retval);
+  }
+  else if (!_db.pending_queries()) {
+    int retval(_pending_events);
+    _pending_events = 0;
+    return (retval);
+  }
+  else
+    return (0);
 }
 
 /**************************************
@@ -410,7 +358,12 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
  *  @param[in] other Unused.
  */
 monitoring_stream::monitoring_stream(monitoring_stream const& other)
-  : io::stream(other) {
+  : io::stream(other),
+    _db("", "", 0, "", "", ""),
+    _ba_update(_db),
+    _bool_exp_update(_db),
+    _kpi_update(_db),
+    _meta_service_update(_db) {
   assert(!"BAM monitoring stream is not copyable");
   abort();
 }
@@ -430,72 +383,12 @@ monitoring_stream& monitoring_stream::operator=(monitoring_stream const& other) 
 }
 
 /**
- *  Check that replication is OK.
- */
-void monitoring_stream::_check_replication() {
-  // Check that replication is OK.
-  logging::debug(logging::medium)
-    << "BAM: checking replication status of monitoring database '"
-    << _db->databaseName() << "' on host '" << _db->hostName()
-    << ":" << _db->port() << "'";
-  QSqlQuery q(*_db);
-  if (!q.exec("SHOW SLAVE STATUS"))
-    logging::info(logging::medium)
-      << "BAM: could not check replication status of monitoring database '"
-      << _db->databaseName() << "' on host '" << _db->hostName()
-      << ":" << _db->port() << "': " << q.lastError().text();
-  else {
-    if (!q.next())
-      logging::info(logging::medium)
-        << "BAM: monitoring database '" << _db->databaseName() << "' on host '"
-        << _db->hostName() << ":" << _db->port()
-        << "' is not under replication";
-    else {
-      QSqlRecord record(q.record());
-      unsigned int i(0);
-      for (QString field(record.fieldName(i));
-           !field.isEmpty();
-           field = record.fieldName(++i))
-        if (((field == "Slave_IO_Running")
-             && (q.value(i).toString() != "Yes"))
-            || ((field == "Slave_SQL_Running")
-                && (q.value(i).toString() != "Yes"))
-            || ((field == "Seconds_Behind_Master")
-                && (q.value(i).toInt() != 0)))
-          throw (broker::exceptions::msg()
-                 << "BAM: replication of monitoring database '"
-                 << _db->databaseName() << "' on host '"
-                 << _db->hostName() << ":" << _db->port()
-                 << "' is not complete: " << field
-                 << "=" << q.value(i).toString());
-      logging::info(logging::medium)
-        << "storage: replication of monitoring database '"
-        << _db->databaseName() << "' on host '" << _db->hostName()
-        << ":" << _db->port() << "' is complete, connection granted";
-    }
-  }
-  return ;
-}
-
-/**
- *  Clear QtSql objects.
- */
-void monitoring_stream::_clear_qsql() {
-  _ba_update.reset();
-  _bool_exp_update.reset();
-  _kpi_update.reset();
-  _meta_service_update.reset();
-  _db.reset();
-  return ;
-}
-
-/**
  *  Prepare queries.
  */
 void monitoring_stream::_prepare() {
   // BA status.
   {
-    QString query;
+    std::string query;
     query = "UPDATE mod_bam"
             "  SET current_level=:level_nominal,"
             "      acknowledged=:level_acknowledgement,"
@@ -504,16 +397,19 @@ void monitoring_stream::_prepare() {
             "      in_downtime=:in_downtime,"
             "      current_status=:state"
             "  WHERE ba_id=:ba_id";
-    _ba_update.reset(new QSqlQuery(*_db));
-    if (!_ba_update->prepare(query))
+    try {
+      _ba_update.prepare(query);
+    }
+    catch (std::exception const& e) {
       throw (exceptions::msg()
              << "BAM: could not prepare BA update query: "
-             << _ba_update->lastError().text());
+             << e.what());
+    }
   }
 
   // Boolean expression status.
   {
-    QString query;
+    std::string query;
     query = "UPDATE mod_bam_boolean AS b"
             "  LEFT JOIN mod_bam_kpi AS k"
             "    ON b.boolean_id=k.boolean_id"
@@ -521,40 +417,39 @@ void monitoring_stream::_prepare() {
             "      CASE WHEN :state=b.bool_state THEN 2 ELSE 0 END,"
             "      k.state_type='1'"
             "  WHERE b.boolean_id=:bool_id";
-    _bool_exp_update.reset(new QSqlQuery(*_db));
-    if (!_bool_exp_update->prepare(query))
-      throw (exceptions::msg()
-             << "BAM: could not prepare boolean expression update query: "
-             << _bool_exp_update->lastError().text());
+    _bool_exp_update.prepare(
+      query,
+      "BAM: could not prepare boolean expression update query");
   }
 
   // KPI status.
   {
-    QString query;
+    std::string query;
     query = "UPDATE mod_bam_kpi"
             "  SET acknowledged=:level_acknowledgement,"
             "      current_status=:state,"
             "      downtime=:level_downtime, last_level=:level_nominal,"
             "      state_type=:state_type"
             "  WHERE kpi_id=:kpi_id";
-    _kpi_update.reset(new QSqlQuery(*_db));
-    if (!_kpi_update->prepare(query))
-      throw (exceptions::msg()
-             << "BAM: could not prepare KPI update query: "
-             << _kpi_update->lastError().text());
+    _kpi_update.prepare(
+                  query,
+                  "BAM: could not prepare KPI update query");
   }
 
   // Meta-service status.
   // {
-  //   QString query;
+  //   std::string query;
   //   query = "UPDATE meta_service"
   //           "  SET value=:value"
   //           "  WHERE meta_id=:meta_service_id";
-  //   _meta_service_update.reset(new QSqlQuery(*_db));
-  //   if (!_meta_service_update->prepare(query))
+  //   try {
+  //    _meta_service_update->prepare(query);
+  //   }
+  //   catch (std::exception const& e) {
   //     throw (exceptions::msg()
   //            << "BAM: could not prepare meta-service update query: "
-  //            << _meta_service_update->lastError().text());
+  //            << e.what());
+  //   }
   // }
 
   return ;
@@ -567,14 +462,13 @@ void monitoring_stream::_rebuild() {
   // Get the list of the BAs that should be rebuild.
   std::vector<unsigned int> bas_to_rebuild;
   {
-    QString query = "SELECT ba_id"
-                    "  FROM mod_bam"
-                    "  WHERE must_be_rebuild='1'";
-    QSqlQuery q = _db->exec(query);
-    if (q.lastError().isValid())
-      throw (exceptions::msg()
-             << "BAM: could not select the list of BAs to rebuild: "
-             << q.lastError().text());
+    std::string query = "SELECT ba_id"
+                        "  FROM mod_bam"
+                        "  WHERE must_be_rebuild='1'";
+    database_query q(_db);
+    q.run_query(
+        query,
+        "BAM: could not select the list of BAs to rebuild");
     while (q.next())
       bas_to_rebuild.push_back(q.value(0).toUInt());
   }
@@ -603,13 +497,12 @@ void monitoring_stream::_rebuild() {
 
   // Set all the BAs to should not be rebuild.
   {
-    QString query = "UPDATE mod_bam"
-                    "  SET must_be_rebuild='0'";
-    QSqlQuery q = _db->exec(query);
-    if (q.lastError().isValid())
-      throw (exceptions::msg()
-             << "BAM: could not update the list of BAs to rebuild: "
-             << q.lastError().text());
+    std::string query = "UPDATE mod_bam"
+                        "  SET must_be_rebuild='0'";
+    database_query q(_db);
+    q.run_query(
+        query,
+        "BAM: could not update the list of BAs to rebuild");
   }
 }
 
@@ -632,7 +525,7 @@ void monitoring_stream::_update_status(std::string const& status) {
 void monitoring_stream::_write_external_command(
                           std::string const& cmd) {
   std::ofstream ofs;
-  ofs.open(_ext_cmd_file.toStdString().c_str());
+  ofs.open(_ext_cmd_file.c_str());
   if (!ofs.good()) {
     logging::error(logging::medium)
       << "BAM: could not write BA check result to command file '"

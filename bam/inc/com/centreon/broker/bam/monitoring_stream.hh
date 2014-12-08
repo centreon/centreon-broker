@@ -20,11 +20,11 @@
 #ifndef CCB_BAM_MONITORING_STREAM_HH
 #  define CCB_BAM_MONITORING_STREAM_HH
 
-#  include <memory>
-#  include <QSqlDatabase>
-#  include <QSqlQuery>
+#  include <string>
 #  include "com/centreon/broker/bam/ba_svc_mapping.hh"
 #  include "com/centreon/broker/bam/configuration/applier/state.hh"
+#  include "com/centreon/broker/database.hh"
+#  include "com/centreon/broker/database_query.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -41,13 +41,13 @@ namespace          bam {
   class            monitoring_stream : public io::stream {
   public:
                    monitoring_stream(
-                     QString const& db_type,
-                     QString const& db_host,
+                     std::string const& db_type,
+                     std::string const& db_host,
                      unsigned short db_port,
-                     QString const& db_user,
-                     QString const& db_password,
-                     QString const& db_name,
-                     QString const& ext_cmd_file,
+                     std::string const& db_user,
+                     std::string const& db_password,
+                     std::string const& db_name,
+                     std::string const& ext_cmd_file,
                      unsigned int queries_per_transaction,
                      bool check_replication = true);
                    ~monitoring_stream();
@@ -63,7 +63,6 @@ namespace          bam {
     monitoring_stream&
                    operator=(monitoring_stream const& other);
     void           _check_replication();
-    void           _clear_qsql();
     void           _prepare();
     void           _rebuild();
     void           _update_status(std::string const& status);
@@ -72,22 +71,16 @@ namespace          bam {
     configuration::applier::state
                    _applier;
     ba_svc_mapping _ba_mapping;
-    QString        _ext_cmd_file;
+    std::string    _ext_cmd_file;
     bool           _process_out;
-    unsigned int   _queries_per_transaction;
     std::string    _status;
     mutable QMutex _statusm;
-    unsigned int   _transaction_queries;
-    std::auto_ptr<QSqlQuery>
-                   _ba_update;
-    std::auto_ptr<QSqlQuery>
-                   _bool_exp_update;
-    std::auto_ptr<QSqlQuery>
-                   _kpi_update;
-    std::auto_ptr<QSqlQuery>
-                   _meta_service_update;
-    std::auto_ptr<QSqlDatabase>
-                   _db;
+    database       _db;
+    database_query _ba_update;
+    database_query _bool_exp_update;
+    database_query _kpi_update;
+    database_query _meta_service_update;
+    int            _pending_events;
   };
 }
 
