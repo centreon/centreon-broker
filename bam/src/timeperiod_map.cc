@@ -126,10 +126,13 @@ void timeperiod_map::add_relation(
  *
  *  @return                 A vector of timeperiods and optional boolean set to true if the timeperiod is default.
  */
-std::vector<std::pair<time::timeperiod::ptr, bool> >
-                              timeperiod_map::get_timeperiods_by_ba_id(
-                                                unsigned int ba_id) const {
-  std::vector<std::pair<time::timeperiod::ptr, bool> > res;
+std::vector<std::pair<
+                   com::centreon::broker::bam::time::timeperiod::ptr,
+                   bool> > timeperiod_map::get_timeperiods_by_ba_id(
+                                             unsigned int ba_id) const {
+  std::vector<std::pair<
+                     com::centreon::broker::bam::time::timeperiod::ptr,
+                     bool> > res;
   std::pair<timeperiod_relation_map::const_iterator,
             timeperiod_relation_map::const_iterator> found
       = _timeperiod_relations.equal_range(ba_id);
