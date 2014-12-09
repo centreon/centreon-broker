@@ -17,13 +17,15 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cassert>
 #include <cfloat>
 #include <cmath>
+#include <cstdlib>
 #include <ctime>
-#include <QSqlError>
-#include <QSqlQuery>
 #include <QVariant>
 #include <sstream>
+#include "com/centreon/broker/database.hh"
+#include "com/centreon/broker/database_query.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/shared_ptr.hh"
@@ -57,45 +59,44 @@ struct metric_info {
 **************************************/
 
 /**
- *  Default constructor.
- */
-rebuilder::rebuilder()
-  : _interval(600),
-    _interval_length(60),
-    _rrd_len(15552000),
-    _should_exit(false) {}
-
-/**
- *  Copy constructor.
+ *  Constructor.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] db_type                 DB type.
+ *  @param[in] db_host                 DB host.
+ *  @param[in] db_port                 DB port.
+ *  @param[in] db_user                 DB user.
+ *  @param[in] db_password             DB password.
+ *  @param[in] db_name                 DB name.
+ *  @param[in] rebuild_check_interval  How often the rebuild thread will
+ *                                     check for rebuild.
+ *  @param[in] interval_length         Base time unit.
+ *  @param[in] rrd_length              Length of RRD files.
  */
-rebuilder::rebuilder(rebuilder const& right) : QThread() {
-  _internal_copy(right);
-}
+rebuilder::rebuilder(
+             std::string const& db_type,
+             std::string const& db_host,
+             unsigned short db_port,
+             std::string const& db_user,
+             std::string const& db_password,
+             std::string const& db_name,
+             unsigned int rebuild_check_interval,
+             time_t interval_length,
+             unsigned int rrd_length)
+  : _db_type(db_type),
+    _db_host(db_host),
+    _db_port(db_port),
+    _db_user(db_user),
+    _db_password(db_password),
+    _db_name(db_name),
+    _interval(rebuild_check_interval),
+    _interval_length(interval_length),
+    _rrd_len(rrd_length),
+    _should_exit(false) {}
 
 /**
  *  Destructor.
  */
 rebuilder::~rebuilder() throw () {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-rebuilder& rebuilder::operator=(rebuilder const& right) {
-  if (this != &right) {
-    if (_db.isOpen())
-      _db.close();
-    if (!_db.connectionName().isEmpty())
-      QSqlDatabase::removeDatabase(_db.connectionName());
-    _internal_copy(right);
-  }
-  return (*this);
-}
 
 /**
  *  Set the exit flag.
@@ -139,134 +140,139 @@ void rebuilder::run() {
   while (!_should_exit && _interval) {
     try {
       // Open DB.
-      if (!_db.open())
-        throw (broker::exceptions::msg() << "storage: rebuilder: could "
-               "not connect to Centreon Storage database");
-
+      std::auto_ptr<database> db;
       try {
-        // Fetch index to rebuild.
-        std::list<index_info> index_to_rebuild;
-        {
-          QSqlQuery index_to_rebuild_query(_db);
-          if (!index_to_rebuild_query.exec(
-                 "SELECT id, host_id, service_id, rrd_retention"
-                 " FROM index_data"
-                 " WHERE must_be_rebuild='1'"))
-            throw (broker::exceptions::msg() << "storage: rebuilder: "
-                      "could not fetch index to rebuild: "
-                   << index_to_rebuild_query.lastError().text());
-          while (!_should_exit && index_to_rebuild_query.next()) {
-            index_info info;
-            info.index_id = index_to_rebuild_query.value(0).toUInt();
-            info.host_id = index_to_rebuild_query.value(1).toUInt();
-            info.service_id = index_to_rebuild_query.value(2).toUInt();
-            info.rrd_retention
-              = (index_to_rebuild_query.value(3).isNull()
-                 ? 0
-                 : index_to_rebuild_query.value(3).toUInt());
-            if (!info.rrd_retention)
-              info.rrd_retention = _rrd_len;
-            index_to_rebuild.push_back(info);
-          }
-        }
-
-        // Browse list of index to rebuild.
-        while (!_should_exit && !index_to_rebuild.empty()) {
-          // Get check interval of host/service.
-          unsigned int index_id;
-          unsigned int check_interval(0);
-          unsigned int rrd_len;
-          {
-            index_info info(index_to_rebuild.front());
-            index_id = info.index_id;
-            rrd_len = info.rrd_retention;
-            index_to_rebuild.pop_front();
-
-            std::ostringstream oss;
-            if (!info.service_id)
-              oss << "SELECT check_interval"
-                  << " FROM hosts"
-                  << " WHERE host_id=" << info.host_id;
-            else
-              oss << "SELECT check_interval"
-                  << " FROM services"
-                  << " WHERE host_id=" << info.host_id
-                  << "  AND service_id=" << info.service_id;
-            QSqlQuery query(_db);
-            if (query.exec(oss.str().c_str()) && query.next())
-              check_interval = query.value(0).toUInt();
-            if (!check_interval)
-              check_interval = 5;
-          }
-          logging::info(logging::medium) << "storage: rebuilder: index "
-            << index_id << " (interval " << check_interval
-            << ") will be rebuild";
-
-          // Set index as being rebuilt.
-          _set_index_rebuild(index_id, 2);
-
-          try {
-            // Fetch metrics to rebuild.
-            std::list<metric_info> metrics_to_rebuild;
-            {
-              std::ostringstream oss;
-              oss << "SELECT metric_id, metric_name, data_source_type"
-                  << " FROM metrics"
-                  << " WHERE index_id=" << index_id;
-              QSqlQuery metrics_to_rebuild_query(_db);
-              if (!metrics_to_rebuild_query.exec(oss.str().c_str()))
-                throw (broker::exceptions::msg()
-                       << "storage: rebuilder: could not fetch "
-                       << "metrics of index " << index_id);
-              while (!_should_exit && metrics_to_rebuild_query.next()) {
-                metric_info info;
-                info.metric_id
-                  = metrics_to_rebuild_query.value(0).toUInt();
-                info.metric_name
-                  = metrics_to_rebuild_query.value(1).toString();
-                info.metric_type
-                  = metrics_to_rebuild_query.value(2).toInt();
-                metrics_to_rebuild.push_back(info);
-              }
-            }
-
-            // Browse metrics to rebuild.
-            while (!_should_exit && !metrics_to_rebuild.empty()) {
-              metric_info info(metrics_to_rebuild.front());
-              metrics_to_rebuild.pop_front();
-              _rebuild_metric(
-                info.metric_id,
-                info.metric_name,
-                info.metric_type,
-                check_interval * _interval_length,
-                rrd_len);
-            }
-
-            // Rebuild status.
-            _rebuild_status(
-              index_id,
-              check_interval * _interval_length);
-          }
-          catch (...) {
-            // Set index as to-be-rebuilt.
-            _set_index_rebuild(index_id, 1);
-
-            // Rethrow exception.
-            throw ;
-          }
-
-          // Set index as rebuilt or to-be-rebuild
-          // if we were interrupted.
-          _set_index_rebuild(index_id, (_should_exit ? 1 : 0));
-        }
-
-        // Close DB.
-        _db.close();
+        db.reset(new database(
+                       _db_type,
+                       _db_host,
+                       _db_port,
+                       _db_user,
+                       _db_password,
+                       _db_name));
       }
-      catch (...) {
-        // Close DB and rethrow.
-        _db.close();
-        throw ;
+      catch (std::exception const& e) {
+        throw (broker::exceptions::msg() << "storage: rebuilder: could "
+               "not connect to Centreon Storage database: "
+               << e.what());
+      }
+
+      // Fetch index to rebuild.
+      std::list<index_info> index_to_rebuild;
+      {
+        database_query index_to_rebuild_query(*db);
+        index_to_rebuild_query.run_query(
+          "SELECT id, host_id, service_id, rrd_retention"
+          " FROM index_data"
+          " WHERE must_be_rebuild='1'",
+          "storage: rebuilder: could not fetch index to rebuild");
+        while (!_should_exit && index_to_rebuild_query.next()) {
+          index_info info;
+          info.index_id = index_to_rebuild_query.value(0).toUInt();
+          info.host_id = index_to_rebuild_query.value(1).toUInt();
+          info.service_id = index_to_rebuild_query.value(2).toUInt();
+          info.rrd_retention
+            = (index_to_rebuild_query.value(3).isNull()
+               ? 0
+               : index_to_rebuild_query.value(3).toUInt());
+          if (!info.rrd_retention)
+            info.rrd_retention = _rrd_len;
+          index_to_rebuild.push_back(info);
+        }
+      }
+
+      // Browse list of index to rebuild.
+      while (!_should_exit && !index_to_rebuild.empty()) {
+        // Get check interval of host/service.
+        unsigned int index_id;
+        unsigned int check_interval(0);
+        unsigned int rrd_len;
+        {
+          index_info info(index_to_rebuild.front());
+          index_id = info.index_id;
+          rrd_len = info.rrd_retention;
+          index_to_rebuild.pop_front();
+
+          std::ostringstream oss;
+          if (!info.service_id)
+            oss << "SELECT check_interval"
+                << " FROM hosts"
+                << " WHERE host_id=" << info.host_id;
+          else
+            oss << "SELECT check_interval"
+                << " FROM services"
+                << " WHERE host_id=" << info.host_id
+                << "  AND service_id=" << info.service_id;
+          database_query query(*db);
+          query.run_query(oss.str());
+          if (query.next())
+            check_interval = query.value(0).toUInt();
+          if (!check_interval)
+            check_interval = 5;
+        }
+        logging::info(logging::medium) << "storage: rebuilder: index "
+          << index_id << " (interval " << check_interval
+          << ") will be rebuild";
+
+        // Set index as being rebuilt.
+        _set_index_rebuild(*db, index_id, 2);
+
+        try {
+          // Fetch metrics to rebuild.
+          std::list<metric_info> metrics_to_rebuild;
+          {
+            std::ostringstream oss;
+            oss << "SELECT metric_id, metric_name, data_source_type"
+                << " FROM metrics"
+                << " WHERE index_id=" << index_id;
+            database_query metrics_to_rebuild_query(*db);
+            try { metrics_to_rebuild_query.run_query(oss.str()); }
+            catch (std::exception const& e) {
+              throw (exceptions::msg()
+                     << "storage: rebuilder: could not fetch "
+                     << "metrics of index " << index_id);
+            }
+            while (!_should_exit && metrics_to_rebuild_query.next()) {
+              metric_info info;
+              info.metric_id
+                = metrics_to_rebuild_query.value(0).toUInt();
+              info.metric_name
+                = metrics_to_rebuild_query.value(1).toString();
+              info.metric_type
+                = metrics_to_rebuild_query.value(2).toInt();
+              metrics_to_rebuild.push_back(info);
+            }
+          }
+
+          // Browse metrics to rebuild.
+          while (!_should_exit && !metrics_to_rebuild.empty()) {
+            metric_info info(metrics_to_rebuild.front());
+            metrics_to_rebuild.pop_front();
+            _rebuild_metric(
+              *db,
+              info.metric_id,
+              info.metric_name,
+              info.metric_type,
+              check_interval * _interval_length,
+              rrd_len);
+          }
+
+          // Rebuild status.
+          _rebuild_status(
+            *db,
+            index_id,
+            check_interval * _interval_length);
+        }
+        catch (...) {
+          // Set index as to-be-rebuilt.
+          _set_index_rebuild(*db, index_id, 1);
+
+          // Rethrow exception.
+          throw ;
+        }
+
+        // Set index as rebuilt or to-be-rebuild
+        // if we were interrupted.
+        _set_index_rebuild(*db, index_id, (_should_exit ? 1 : 0));
       }
     }
     catch (std::exception const& e) {
@@ -285,55 +291,6 @@ void rebuilder::run() {
   return ;
 }
 
-/**
- *  Set the database object.
- *
- *  @param[in] db DB object to copy.
- */
-void rebuilder::set_db(QSqlDatabase const& db) {
-  // Connection ID.
-  QString id;
-  id.setNum((qulonglong)this, 16);
-
-  // Remove old DB.
-  QSqlDatabase::removeDatabase(id);
-
-  // Clone database.
-  _db = QSqlDatabase::cloneDatabase(db, id);
-
-  return ;
-}
-
-/**
- *  Set the rebuild check interval.
- *
- *  @param[in] interval Rebuild check interval in seconds.
- */
-void rebuilder::set_interval(unsigned int interval) throw () {
-  _interval = interval;
-  return ;
-}
-
-/**
- *  Set the interval length.
- *
- *  @param[in] interval_length Interval length in seconds.
- */
-void rebuilder::set_interval_length(time_t interval_length) throw () {
-  _interval_length = interval_length;
-  return ;
-}
-
-/**
- *  Set the RRD length.
- *
- *  @param[in] rrd_length RRD length in seconds.
- */
-void rebuilder::set_rrd_length(unsigned int rrd_length) throw () {
-  _rrd_len = rrd_length;
-  return ;
-}
-
 /**************************************
 *                                     *
 *           Private Methods           *
@@ -341,34 +298,42 @@ void rebuilder::set_rrd_length(unsigned int rrd_length) throw () {
 **************************************/
 
 /**
- *  Copy internal data members.
+ *  Copy constructor.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void rebuilder::_internal_copy(rebuilder const& right) {
-  // Copy DB.
-  QString id;
-  id.setNum((qulonglong)this, 16);
-  _db = QSqlDatabase::cloneDatabase(right._db, id);
+rebuilder::rebuilder(rebuilder const& other) : QThread() {
+  (void)other;
+  assert(!"rebuild threads are not copyable");
+  abort();
+}
 
-  // Copy other data.
-  _interval = right._interval;
-  _interval_length = right._interval_length;
-  _rrd_len = right._rrd_len;
-
-  return ;
+/**
+ *  Assignment operator.
+ *
+ *  @param[in] other  Object to copy.
+ *
+ *  @return This object.
+ */
+rebuilder& rebuilder::operator=(rebuilder const& other) {
+  (void)other;
+  assert(!"rebuild threads are not copyable");
+  abort();
+  return (*this);
 }
 
 /**
  *  Rebuild a metric.
  *
- *  @param[in] metric_id   Metric ID.
- *  @param[in] metric_name Metric name.
- *  @param[in] type        Metric type.
- *  @param[in] interval    Host/service check interval.
- *  @param[in] length      Metric RRD length in seconds.
+ *  @param[in] db           Database object.
+ *  @param[in] metric_id    Metric ID.
+ *  @param[in] metric_name  Metric name.
+ *  @param[in] type         Metric type.
+ *  @param[in] interval     Host/service check interval.
+ *  @param[in] length       Metric RRD length in seconds.
  */
 void rebuilder::_rebuild_metric(
+                  database& db,
                   unsigned int metric_id,
                   QString const& metric_name,
                   short metric_type,
@@ -390,8 +355,16 @@ void rebuilder::_rebuild_metric(
         << " FROM data_bin"
         << " WHERE id_metric=" << metric_id
         << " ORDER BY ctime ASC";
-    QSqlQuery data_bin_query(_db);
-    if (data_bin_query.exec(oss.str().c_str()))
+    database_query data_bin_query(db);
+    bool caught(false);
+    try { data_bin_query.run_query(oss.str()); }
+    catch (std::exception const& e) {
+      caught = true;
+      logging::error(logging::medium) << "storage: rebuilder: "
+        << "cannot fetch data of metric " << metric_id << ": "
+        << e.what();
+    }
+    if (!caught)
       while (!_should_exit && data_bin_query.next()) {
         misc::shared_ptr<storage::metric> entry(new storage::metric);
         entry->ctime = data_bin_query.value(0).toUInt();
@@ -408,10 +381,6 @@ void rebuilder::_rebuild_metric(
           entry->value = -INFINITY;
         multiplexing::publisher().write(entry);
       }
-    else
-      logging::error(logging::medium) << "storage: rebuilder: "
-        << "cannot fetch data of metric " << metric_id << ": "
-        << data_bin_query.lastError().text();
   }
   catch (...) {
     // Send rebuild end event.
@@ -430,10 +399,12 @@ void rebuilder::_rebuild_metric(
 /**
  *  Rebuild a status.
  *
- *  @param[in] index_id Index ID.
- *  @param[in] interval Host/service check interval.
+ *  @param[in] db        Database object.
+ *  @param[in] index_id  Index ID.
+ *  @param[in] interval  Host/service check interval.
  */
 void rebuilder::_rebuild_status(
+                  database& db,
                   unsigned int index_id,
                   unsigned int interval) {
   // Log.
@@ -453,8 +424,16 @@ void rebuilder::_rebuild_status(
         << " ON m.metric_id=d.id_metric"
         << " WHERE m.index_id=" << index_id
         << " ORDER BY d.ctime ASC";
-    QSqlQuery data_bin_query(_db);
-    if (data_bin_query.exec(oss.str().c_str()))
+    database_query data_bin_query(db);
+    bool caught(false);
+    try { data_bin_query.run_query(oss.str()); }
+    catch (std::exception const& e) {
+      caught = true;
+      logging::error(logging::medium) << "storage: rebuilder: "
+        << "cannot fetch data of index " << index_id << ": "
+        << e.what();
+    }
+    if (!caught)
       while (!_should_exit && data_bin_query.next()) {
         misc::shared_ptr<storage::status> entry(new storage::status);
         entry->ctime = data_bin_query.value(0).toUInt();
@@ -465,10 +444,6 @@ void rebuilder::_rebuild_status(
         entry->state = data_bin_query.value(1).toInt();
         multiplexing::publisher().write(entry);
       }
-    else
-      logging::error(logging::medium) << "storage: rebuilder: "
-        << "cannot fetch data of index " << index_id << ": "
-        << data_bin_query.lastError().text();
   }
   catch (...) {
     // Send rebuild end event.
@@ -506,18 +481,24 @@ void rebuilder::_send_rebuild_event(
 /**
  *  Set index rebuild flag.
  *
- *  @param[in] index_id Index to update.
- *  @param[in] state    Rebuild state (0, 1 or 2).
+ *  @param[in] db        Database object.
+ *  @param[in] index_id  Index to update.
+ *  @param[in] state     Rebuild state (0, 1 or 2).
  */
-void rebuilder::_set_index_rebuild(unsigned int index_id, short state) {
+void rebuilder::_set_index_rebuild(
+                  database& db,
+                  unsigned int index_id,
+                  short state) {
   std::ostringstream oss;
   oss << "UPDATE index_data"
       << " SET must_be_rebuild=" << state + 1
       << " WHERE id=" << index_id;
-  QSqlQuery update_index_query(_db);
-  if (!update_index_query.exec(oss.str().c_str()))
+  database_query update_index_query(db);
+  try { update_index_query.run_query(oss.str()); }
+  catch (std::exception const& e) {
     logging::error(logging::low)
       << "storage: rebuilder: cannot update state of index "
-      << index_id << ": " << update_index_query.lastError().text();
+      << index_id << ": " << e.what();
+  }
   return ;
 }

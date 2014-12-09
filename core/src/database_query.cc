@@ -32,7 +32,9 @@ using namespace com::centreon::broker;
  *  @param[in] db  Database object.
  */
 database_query::database_query(database& db)
-  : _db(db), _q(db.get_qt_db()) {}
+  : _db(db), _q(db.get_qt_db()) {
+  _q.setForwardOnly(true);
+}
 
 /**
  *  Destructor.
@@ -50,6 +52,25 @@ void database_query::bind_value(
                        QVariant const& value) {
   _q.bindValue(placeholder, value);
   return ;
+}
+
+/**
+ *  Tells that this query won't require anymore data.
+ */
+void database_query::finish() {
+#if QT_VERSION >= 0x040302
+  _q.finish();
+#endif // Qt >= 4.3.2
+  return ;
+}
+
+/**
+ *  Get the last inserted ID.
+ *
+ *  @return Last inserted ID if feature is supported.
+ */
+QVariant database_query::last_insert_id() {
+  return (_q.lastInsertId());
 }
 
 /**

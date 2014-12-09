@@ -196,6 +196,7 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
            << "BAM reporting stream is shutdown");
 
   if (!data.isNull()) {
+    ++_pending_events;
     if (data->type()
         == io::events::data_type<io::events::bam,
                                  bam::de_kpi_event>::value)
@@ -249,9 +250,10 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
                                       bam::de_rebuild>::value)
     _process_rebuild(data);
   }
+  else
+    _db.commit();
 
   // Event acknowledgement.
-  ++_pending_events;
   if (!_db.pending_queries()) {
     int retval(_pending_events);
     _pending_events = 0;

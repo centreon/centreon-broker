@@ -37,29 +37,31 @@ class database;
  *
  *  Run a query on some Centreon Broker database.
  */
-class             database_query {
+class               database_query {
 public:
-                  database_query(database& db);
-                  ~database_query();
-  void            bind_value(
-                    QString const& placeholder,
-                    QVariant const& value);
-  void            run_query(
-                    std::string const& query,
-                    char const* error_msg = NULL);
-  void            run_statement(char const* error_msg = NULL);
-  bool            next();
-  void            prepare(
-                    std::string const& query,
-                    char const* error_msg = NULL);
-  QVariant        value(int index);
+                    database_query(database& db);
+                    ~database_query();
+  void              bind_value(
+                      QString const& placeholder,
+                      QVariant const& value);
+  void              finish();
+  QVariant          last_insert_id();
+  void              run_query(
+                      std::string const& query,
+                      char const* error_msg = NULL);
+  void              run_statement(char const* error_msg = NULL);
+  bool              next();
+  void              prepare(
+                      std::string const& query,
+                      char const* error_msg = NULL);
+  QVariant          value(int index);
 
 private:
-                  database_query(database_query const& other);
-  database_query& operator=(database_query const& other);
+                    database_query(database_query const& other);
+  database_query&   operator=(database_query const& other);
 
-  database&       _db;
-  QSqlQuery       _q;
+  database&         _db;
+  QSqlQuery         _q;
 };
 
 CCB_END()

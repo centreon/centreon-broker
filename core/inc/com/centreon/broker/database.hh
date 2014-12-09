@@ -34,41 +34,42 @@ CCB_BEGIN()
  *  Access all databases accessed by Centreon Broker, namely *centreon*
  *  and *centreon_storage*.
  */
-class            database {
+class               database {
 public:
-                 database(
-                   std::string const& type,
-                   std::string const& host,
-                   unsigned short port,
-                   std::string const& user,
-                   std::string const& password,
-                   std::string const& db_name,
-                   int queries_per_transaction = 1,
-                   bool check_replication = false);
-                 ~database();
-  void           commit();
-  QSqlDatabase&  get_qt_db();
-  int            pending_queries() const;
-  static QString qt_db_type(std::string const& broker_type);
-  void           query_executed();
+                    database(
+                      std::string const& type,
+                      std::string const& host,
+                      unsigned short port,
+                      std::string const& user,
+                      std::string const& password,
+                      std::string const& db_name,
+                      int queries_per_transaction = 1,
+                      bool check_replication = false);
+                    ~database();
+  void              commit();
+  QSqlDatabase&     get_qt_db();
+  QSqlDriver const* get_qt_driver() const;
+  int               pending_queries() const;
+  static QString    qt_db_type(std::string const& broker_type);
+  void              query_executed();
 
 private:
-                 database(database const& other);
-  database&      operator=(database const& other);
-  void           _commit();
-  void           _new_transaction();
+                    database(database const& other);
+  database&         operator=(database const& other);
+  void              _commit();
+  void              _new_transaction();
 
-  QString        _connection_id;
+  QString           _connection_id;
   std::auto_ptr<QSqlDatabase>
-                 _db;
-  std::string    _db_name;
-  std::string    _host;
-  std::string    _password;
-  int            _pending_queries;
-  unsigned short _port;
-  int            _queries_per_transaction;
-  std::string    _type;
-  std::string    _user;
+                    _db;
+  std::string       _db_name;
+  std::string       _host;
+  std::string       _password;
+  int               _pending_queries;
+  unsigned short    _port;
+  int               _queries_per_transaction;
+  std::string       _type;
+  std::string       _user;
 };
 
 CCB_END()

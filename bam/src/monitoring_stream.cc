@@ -329,15 +329,11 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
       //          << _meta_service_update->lastError().text());
     }
   }
+  else
+    _db.commit();
 
   // Event acknowledgement.
-  if (data.isNull()) {
-    _db.commit();
-    int retval(_pending_events);
-    _pending_events = 0;
-    return (retval);
-  }
-  else if (!_db.pending_queries()) {
+  if (!_db.pending_queries()) {
     int retval(_pending_events);
     _pending_events = 0;
     return (retval);

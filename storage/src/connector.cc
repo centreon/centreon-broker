@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,45 +22,6 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
-
-/**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
-
-/**
- *  Extract the DB type and set it to be Qt-compatible.
- *
- *  @param[in]  type Original type string.
- *  @param[out] out  Output.
- */
-static void to_qt_sql_type(QString const& type, QString& out) {
-  if (!type.compare("db2", Qt::CaseInsensitive))
-    out = "QDB2";
-  else if (!type.compare("ibase", Qt::CaseInsensitive)
-           || !type.compare("interbase", Qt::CaseInsensitive))
-    out = "QIBASE";
-  else if (!type.compare("mysql", Qt::CaseInsensitive))
-    out = "QMYSQL";
-  else if (!type.compare("oci", Qt::CaseInsensitive)
-           || !type.compare("oracle", Qt::CaseInsensitive))
-    out = "QOCI";
-  else if (!type.compare("odbc", Qt::CaseInsensitive))
-    out = "QODBC";
-  else if (!type.compare("psql", Qt::CaseInsensitive)
-           || !type.compare("postgres", Qt::CaseInsensitive)
-           || !type.compare("postgresql", Qt::CaseInsensitive))
-    out = "QPSQL";
-  else if (!type.compare("sqlite", Qt::CaseInsensitive))
-    out = "QSQLITE";
-  else if (!type.compare("tds", Qt::CaseInsensitive)
-           || !type.compare("sybase", Qt::CaseInsensitive))
-    out = "QTDS";
-  else
-    out = type;
-  return ;
-}
 
 /**************************************
 *                                     *
@@ -159,7 +120,7 @@ void connector::connect_to(
   _storage_password = storage_password;
   _storage_port = storage_port;
   _storage_user = storage_user;
-  to_qt_sql_type(storage_type, _storage_type);
+  _storage_type = storage_type;
   _rrd_len = rrd_len;
   _interval_length = interval_length;
   _rebuild_check_interval = rebuild_check_interval;
@@ -177,12 +138,12 @@ void connector::connect_to(
 misc::shared_ptr<io::stream> connector::open() {
   return (misc::shared_ptr<io::stream>(
             new stream(
-                  _storage_type,
-                  _storage_host,
+                  _storage_type.toStdString(),
+                  _storage_host.toStdString(),
                   _storage_port,
-                  _storage_user,
-                  _storage_password,
-                  _storage_db,
+                  _storage_user.toStdString(),
+                  _storage_password.toStdString(),
+                  _storage_db.toStdString(),
                   _queries_per_transaction,
                   _rrd_len,
                   _interval_length,

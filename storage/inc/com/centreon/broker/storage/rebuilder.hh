@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,59 +22,73 @@
 
 #  include <ctime>
 #  include <memory>
-#  include <QSqlDatabase>
 #  include <QThread>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace         storage {
+// Forward declaration.
+class              database;
+
+namespace          storage {
   /**
    *  @class rebuilder rebuilder.hh "com/centreon/broker/storage/rebuilder.hh"
    *  @brief Check for graphs to be rebuild.
    *
    *  Check for graphs to be rebuild at fixed interval.
    */
-  class           rebuilder : public QThread {
+  class            rebuilder : public QThread {
   public:
-                  rebuilder();
-                  rebuilder(rebuilder const& right);
-                  ~rebuilder() throw ();
-    rebuilder&    operator=(rebuilder const& right);
-    void          exit() throw ();
-    unsigned int  get_interval() const throw ();
-    time_t        get_interval_length() const throw ();
-    unsigned int  get_rrd_length() const throw ();
-    void          run();
-    void          set_db(QSqlDatabase const& db);
-    void          set_interval(unsigned int interval) throw ();
-    void          set_interval_length(time_t interval_length) throw ();
-    void          set_rrd_length(unsigned int rrd_length) throw ();
+                   rebuilder(
+                     std::string const& db_type,
+                     std::string const& db_host,
+                     unsigned short db_port,
+                     std::string const& db_user,
+                     std::string const& db_password,
+                     std::string const& db_name,
+                     unsigned int rebuild_check_interval = 600,
+                     time_t interval_length = 60,
+                     unsigned int rrd_length = 15552000);
+                   ~rebuilder() throw ();
+    void           exit() throw ();
+    unsigned int   get_interval() const throw ();
+    time_t         get_interval_length() const throw ();
+    unsigned int   get_rrd_length() const throw ();
+    void           run();
 
   private:
-    void          _internal_copy(rebuilder const& right);
-    void          _rebuild_metric(
-                    unsigned int metric_id,
-                    QString const& metric_name,
-                    short metric_type,
-                    unsigned int interval,
-                    unsigned length);
-    void          _rebuild_status(
+                   rebuilder(rebuilder const& other);
+    rebuilder&     operator=(rebuilder const& other);
+    void           _rebuild_metric(
+                     database& db,
+                     unsigned int metric_id,
+                     QString const& metric_name,
+                     short metric_type,
+                     unsigned int interval,
+                     unsigned length);
+    void           _rebuild_status(
+                      database& db,
+                      unsigned int index_id,
+                      unsigned int interval);
+    void           _send_rebuild_event(
+                     bool end,
+                     unsigned int id,
+                     bool is_index);
+    void           _set_index_rebuild(
+                     database& db,
                      unsigned int index_id,
-                     unsigned int interval);
-    void          _send_rebuild_event(
-                    bool end,
-                    unsigned int id,
-                    bool is_index);
-    void          _set_index_rebuild(
-                    unsigned int index_id,
-                    short state);
+                     short state);
 
-    QSqlDatabase  _db;
-    unsigned int  _interval;
-    time_t        _interval_length;
-    unsigned int  _rrd_len;
-    volatile bool _should_exit;
+    std::string    _db_type;
+    std::string    _db_host;
+    unsigned short _db_port;
+    std::string    _db_user;
+    std::string    _db_password;
+    std::string    _db_name;
+    unsigned int   _interval;
+    time_t         _interval_length;
+    unsigned int   _rrd_len;
+    volatile bool  _should_exit;
   };
 }
 

@@ -200,6 +200,15 @@ QSqlDatabase& database::get_qt_db() {
 }
 
 /**
+ *  Get the Qt driver object associated to this query.
+ *
+ *  @return Qt driver object.
+ */
+QSqlDriver const* database::get_qt_driver() const {
+  return (_db->driver());
+}
+
+/**
  *  Get the number of pending queries.
  *
  *  @return Number of pending queries.
