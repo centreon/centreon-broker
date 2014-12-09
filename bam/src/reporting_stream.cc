@@ -1700,7 +1700,8 @@ void reporting_stream::_compute_event_durations(
 
   logging::info(logging::medium)
     << "BAM-BI: computing event durations for BA " << ev->ba_id
-    << ", event started at:" << ev->start_time;
+    << ", event started at: " << ev->start_time
+    << ", ended at: " << ev->end_time;
 
   // Find the timeperiods associated with this ba.
   std::pair<timeperiod_relation_map::const_iterator,
@@ -1746,60 +1747,72 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
   logging::debug(logging::low)
     << "BAM-BI: processing rebuild signal";
 
-  // Delete obsolete ba events durations.
+  // We block the availability thread to prevent it waking up on truncated event durations.
   {
-    QString query;
-    query.append("DELETE a"
-                 "  FROM mod_bam_reporting_ba_events_durations as a"
-                 "    INNER JOIN mod_bam_reporting_ba_events as b"
-                 "      ON a.ba_event_id = b.ba_event_id"
-                 "  WHERE b.ba_id IN (");
-    query.append(r.bas_to_rebuild);
-    query.append(")");
-    QSqlQuery q(*_db);
-    if (!q.exec(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not delete BA durations "
-             << r.bas_to_rebuild << " :" << q.lastError().text());
-  }
+    std::auto_ptr<QMutexLocker> lock(_availabilities->lock());
 
-  // Get the ba events.
-  std::vector<misc::shared_ptr<ba_event> > ba_events;
-  {
-    QString query = "SELECT ba_id, start_time, end_time, "
-                    "status, in_downtime boolean"
-                    "  FROM mod_bam_reporting_ba_events"
-                    "  WHERE end_time != 0"
-                    "    AND ba_id IN (";
-    query.append(r.bas_to_rebuild);
-    query.append(")");
-    QSqlQuery q(*_db);
-    if (!q.exec(query))
-      throw (exceptions::msg()
-             << "BAM-BI: could not get BA events of "
-             << r.bas_to_rebuild << " :" << q.lastError().text());
-    while (q.next()) {
-      misc::shared_ptr<ba_event> baev(new ba_event);
-      baev->ba_id = q.value(0).toInt();
-      baev->start_time = q.value(1).toInt();
-      baev->end_time = q.value(2).toInt();
-      baev->status = q.value(3).toInt();
-      baev->in_downtime = q.value(4).toBool();
-      ba_events.push_back(baev);
-      logging::debug(logging::low)
-        << "BAM-BI: got ba events of " << baev->ba_id;
+    // Delete obsolete ba events durations.
+    {
+      QString query;
+      query.append("DELETE a"
+                   "  FROM mod_bam_reporting_ba_events_durations as a"
+                   "    INNER JOIN mod_bam_reporting_ba_events as b"
+                   "      ON a.ba_event_id = b.ba_event_id"
+                   "  WHERE b.ba_id IN (");
+      query.append(r.bas_to_rebuild);
+      query.append(")");
+      QSqlQuery q(*_db);
+      if (!q.exec(query))
+        throw (exceptions::msg()
+               << "BAM-BI: could not delete BA durations "
+               << r.bas_to_rebuild << " :" << q.lastError().text());
+    }
+
+    // Get the ba events.
+    std::vector<misc::shared_ptr<ba_event> > ba_events;
+    {
+      QString query = "SELECT ba_id, start_time, end_time, "
+                      "status, in_downtime boolean"
+                      "  FROM mod_bam_reporting_ba_events"
+                      "  WHERE end_time != 0"
+                      "    AND ba_id IN (";
+      query.append(r.bas_to_rebuild);
+      query.append(")");
+      QSqlQuery q(*_db);
+      if (!q.exec(query))
+        throw (exceptions::msg()
+               << "BAM-BI: could not get BA events of "
+               << r.bas_to_rebuild << " :" << q.lastError().text());
+      while (q.next()) {
+        misc::shared_ptr<ba_event> baev(new ba_event);
+        baev->ba_id = q.value(0).toInt();
+        baev->start_time = q.value(1).toInt();
+        baev->end_time = q.value(2).toInt();
+        baev->status = q.value(3).toInt();
+        baev->in_downtime = q.value(4).toBool();
+        ba_events.push_back(baev);
+        logging::debug(logging::low)
+          << "BAM-BI: got ba events of " << baev->ba_id;
+      }
+    }
+
+    logging::info(logging::medium)
+      << "BAM-BI: will now rebuild the event durations";
+
+    // Generate new ba events durations for each ba events.
+    {
+      for (std::vector<misc::shared_ptr<ba_event> >::const_iterator
+             it(ba_events.begin()),
+             end(ba_events.end());
+          it != end;
+          ++it)
+        _compute_event_durations(*it, this);
     }
   }
 
-  // Generate new ba events durations for each ba events.
-  {
-    for (std::vector<misc::shared_ptr<ba_event> >::const_iterator
-           it(ba_events.begin()),
-           end(ba_events.end());
-         it != end;
-         ++it)
-      _compute_event_durations(*it, this);
-  }
+  logging::info(logging::medium)
+    << "BAM-BI: event durations rebuild finished, "
+       " will rebuild availabilities now";
 
   // Ask for the availabilities thread to recompute the availabilities.
   _availabilities->rebuild_availabilities(r.bas_to_rebuild);

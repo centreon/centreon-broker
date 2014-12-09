@@ -185,7 +185,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
   // it's the day of the chronogically first event to rebuild.
   // If not, it's the day following the chronogically last availability.
   if (_should_rebuild_all) {
-    query << "SELECT MIN(start_time), MIN(end_time), MAX(end_time)"
+    query << "SELECT MIN(start_time), MAX(end_time), MIN(IFNULL(end_time, '0'))"
              "  FROM mod_bam_reporting_ba_events"
              "  WHERE ba_id IN (" << _bas_to_rebuild.toStdString() << ")";
     if (!q.exec(query.str().c_str()) || !q.next())
@@ -197,8 +197,8 @@ void availability_thread::_build_availabilities(time_t midnight) {
     first_day = _compute_start_of_day(first_day);
     // If there is opened events, rebuild until today.
     // If not, rebuild until the last closed events.
-    if (q.value(1).toInt() != 0)
-      last_day = _compute_start_of_day(q.value(2).toInt() + (3600 * 24));
+    if (q.value(2).toInt() != 0)
+      last_day = _compute_start_of_day(q.value(1).toInt() + (3600 * 24));
     q.next();
     _delete_all_availabilities();
   }
@@ -215,6 +215,10 @@ void availability_thread::_build_availabilities(time_t midnight) {
     first_day += (3600 * 24);
     q.next();
   }
+
+  logging::debug(logging::medium)
+    << "BAM-BI: availability thread writing availabilities from: "
+    << first_day << " to " << last_day;
 
   // Write the availabilities day after day.
   for (; first_day < last_day; first_day += (3600*24))
