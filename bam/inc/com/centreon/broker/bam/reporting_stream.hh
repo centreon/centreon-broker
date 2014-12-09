@@ -156,8 +156,6 @@ namespace          bam {
     typedef std::multimap<unsigned int,
                           std::pair<unsigned int, bool> > timeperiod_relation_map;
     timeperiod_map _timeperiods;
-    timeperiod_relation_map
-                  _timeperiod_relations;
 
     std::vector<misc::shared_ptr<io::data> >
                   _dimension_data_cache;

@@ -656,11 +656,10 @@ void reporting_stream::_load_timeperiods() {
              << "BAM-BI: could not load BA/timeperiods relations: "
              << q.lastError().text());
     while (q.next()) {
-      _timeperiod_relations.insert(std::make_pair(
-                                          q.value(0).toUInt(),
-                                          std::make_pair(
-                                                 q.value(1).toUInt(),
-                                                 q.value(2).toBool())));
+      _timeperiods.add_relation(
+        q.value(0).toUInt(),
+        q.value(1).toUInt(),
+        q.value(2).toBool());
     }
   }
 
@@ -1520,7 +1519,6 @@ void reporting_stream::_process_dimension_truncate_signal(
                << (*it)->lastError().text());
 
     _timeperiods.clear();
-    _timeperiod_relations.clear();
   }
 }
 
@@ -1677,11 +1675,10 @@ void reporting_stream::_process_dimension_ba_timeperiod_relation(
            << "BAM-BI: could not insert relation of BA "
            << r.ba_id << " to timeperiod " << r.timeperiod_id << ": "
            << q.lastError().text());
-  _timeperiod_relations.insert(std::make_pair(
-                                      r.ba_id,
-                                      std::make_pair(
-                                             r.timeperiod_id,
-                                             r.is_default)));
+  _timeperiods.add_relation(
+                 r.ba_id,
+                 r.timeperiod_id,
+                 r.is_default);
 }
 
 /**
@@ -1704,21 +1701,19 @@ void reporting_stream::_compute_event_durations(
     << ", ended at: " << ev->end_time;
 
   // Find the timeperiods associated with this ba.
-  std::pair<timeperiod_relation_map::const_iterator,
-            timeperiod_relation_map::const_iterator> found
-      = _timeperiod_relations.equal_range(ev->ba_id);
+  std::vector<std::pair<time::timeperiod::ptr, bool> >
+    timeperiods = _timeperiods.get_timeperiods_by_ba_id(ev->ba_id);
 
-  if (found.first == found.second)
+  if (timeperiods.empty())
     return ;
 
-  for (; found.first != found.second; ++found.first) {
-    unsigned int tp_id = found.first->second.first;
-    time::timeperiod::ptr tp = _timeperiods.get_timeperiod(tp_id);
-    if (!tp) {
-      throw exceptions::msg() << "BAM-BI: could not find the timeperiod "
-                              << tp_id << " in cache";
-    }
-    bool is_default = found.first->second.second;
+  for (std::vector<std::pair<time::timeperiod::ptr, bool> >::const_iterator
+         it(timeperiods.begin()),
+         end(timeperiods.end());
+       it != end;
+       ++it) {
+    time::timeperiod::ptr tp = it->first;
+    bool is_default = it->second;
 
     misc::shared_ptr<ba_duration_event> dur_ev(new ba_duration_event);
     dur_ev->ba_id = ev->ba_id;
@@ -1774,7 +1769,7 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
       QString query = "SELECT ba_id, start_time, end_time, "
                       "status, in_downtime boolean"
                       "  FROM mod_bam_reporting_ba_events"
-                      "  WHERE end_time != 0"
+                      "  WHERE end_time IS NOT NULL"
                       "    AND ba_id IN (";
       query.append(r.bas_to_rebuild);
       query.append(")");
