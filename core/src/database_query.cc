@@ -74,6 +74,16 @@ QVariant database_query::last_insert_id() {
 }
 
 /**
+ *  Get the number of rows affected by the last query.
+ *
+ *  @return Number of rows affected by the last query, a negative value
+ *          if it could not be determined.
+ */
+int database_query::num_rows_affected() {
+  return (_q.numRowsAffected());
+}
+
+/**
  *  Execute a query.
  *
  *  @param[in] query      Query to run on the database.

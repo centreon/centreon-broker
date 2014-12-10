@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -19,8 +19,8 @@
 
 #include <cassert>
 #include <cstdlib>
-#include <QSqlQuery>
 #include <QVariant>
+#include "com/centreon/broker/database_query.hh"
 #include "com/centreon/broker/sql/internal.hh"
 
 using namespace com::centreon::broker;
@@ -40,8 +40,8 @@ static void get_boolean(
               T const& t,
               QString const& field,
               data_member<T> const& member,
-              QSqlQuery& q) {
-  q.bindValue(field, QVariant(t.*(member.b)));
+              database_query& q) {
+  q.bind_value(field, QVariant(t.*(member.b)));
   return ;
 }
 
@@ -53,8 +53,8 @@ static void get_double(
               T const& t,
               QString const& field,
               data_member<T> const& member,
-              QSqlQuery& q) {
-  q.bindValue(field, QVariant(t.*(member.d)));
+              database_query& q) {
+  q.bind_value(field, QVariant(t.*(member.d)));
   return ;
 }
 
@@ -66,8 +66,8 @@ static void get_integer(
               T const& t,
               QString const& field,
               data_member<T> const& member,
-              QSqlQuery& q) {
-  q.bindValue(field, QVariant(t.*(member.i)));
+              database_query& q) {
+  q.bind_value(field, QVariant(t.*(member.i)));
   return ;
 }
 
@@ -79,14 +79,14 @@ static void get_integer_null_on_zero(
               T const& t,
               QString const& field,
               data_member<T> const& member,
-              QSqlQuery& q) {
+              database_query& q) {
   int val(t.*(member.i));
   // Not-NULL.
   if (val)
-    q.bindValue(field, QVariant(val));
+    q.bind_value(field, QVariant(val));
   // NULL.
   else
-    q.bindValue(field, QVariant(QVariant::Int));
+    q.bind_value(field, QVariant(QVariant::Int));
   return ;
 }
 
@@ -98,13 +98,13 @@ static void get_integer_null_on_minus_one(
               T const& t,
               QString const& field,
               data_member<T> const& member,
-              QSqlQuery& q) {
+              database_query& q) {
   int val(t.*(member.i));
   // Not-NULL.
   if (val != -1)
-    q.bindValue(field, QVariant(val));
+    q.bind_value(field, QVariant(val));
   else
-    q.bindValue(field, QVariant(QVariant::Int));
+    q.bind_value(field, QVariant(QVariant::Int));
   return ;
 }
 
@@ -116,8 +116,8 @@ static void get_short(
               T const& t,
               QString const& field,
               data_member<T> const& member,
-              QSqlQuery& q) {
-  q.bindValue(field, QVariant(t.*(member.s)));
+              database_query& q) {
+  q.bind_value(field, QVariant(t.*(member.s)));
   return ;
 }
 
@@ -129,8 +129,9 @@ static void get_string(
               T const& t,
               QString const& field,
               data_member<T> const& member,
-              QSqlQuery& q) {
-  q.bindValue(field, QVariant((t.*(member.S)).toStdString().c_str()));
+              database_query& q) {
+  // XXX : toStdString ?
+  q.bind_value(field, QVariant((t.*(member.S)).toStdString().c_str()));
   return ;
 }
 
@@ -142,13 +143,13 @@ static void get_string_null_on_empty(
               T const& t,
               QString const& field,
               data_member<T> const& member,
-              QSqlQuery& q) {
+              database_query& q) {
   // Not-NULL.
   if (!(t.*(member.S)).isEmpty())
-    q.bindValue(field, QVariant((t.*(member.S)).toStdString().c_str()));
+    q.bind_value(field, QVariant((t.*(member.S)).toStdString().c_str()));
   // NULL.
   else
-    q.bindValue(field, QVariant(QVariant::String));
+    q.bind_value(field, QVariant(QVariant::String));
   return ;
 }
 
@@ -160,8 +161,8 @@ static void get_timet(
               T const& t,
               QString const& field,
               data_member<T> const& member,
-              QSqlQuery& q) {
-  q.bindValue(
+              database_query& q) {
+  q.bind_value(
       field,
       QVariant(static_cast<qlonglong>((t.*(member.t)).get_time_t())));
   return ;
@@ -175,14 +176,14 @@ static void get_timet_null_on_zero(
               T const& t,
               QString const& field,
               data_member<T> const& member,
-              QSqlQuery& q) {
+              database_query& q) {
   qlonglong val((t.*(member.t)).get_time_t());
   // Not-NULL.
   if (val)
-    q.bindValue(field, QVariant(val));
+    q.bind_value(field, QVariant(val));
   // NULL.
   else
-    q.bindValue(field, QVariant(QVariant::LongLong));
+    q.bind_value(field, QVariant(QVariant::LongLong));
   return ;
 }
 
@@ -194,14 +195,14 @@ static void get_timet_null_on_minus_one(
               T const& t,
               QString const& field,
               data_member<T> const& member,
-              QSqlQuery& q) {
+              database_query& q) {
   qlonglong val((t.*(member.t)).get_time_t());
   // Not-NULL.
   if (val != -1)
-    q.bindValue(field, QVariant(val));
+    q.bind_value(field, QVariant(val));
   // NULL.
   else
-    q.bindValue(field, QVariant(QVariant::LongLong));
+    q.bind_value(field, QVariant(QVariant::LongLong));
   return ;
 }
 
@@ -213,8 +214,8 @@ static void get_uint(
               T const& t,
               QString const& field,
               data_member<T> const& member,
-              QSqlQuery& q) {
-  q.bindValue(field, QVariant(t.*member.u));
+              database_query& q) {
+  q.bind_value(field, QVariant(t.*member.u));
   return ;
 }
 
@@ -226,14 +227,14 @@ static void get_uint_null_on_zero(
               T const& t,
               QString const& field,
               data_member<T> const& member,
-              QSqlQuery& q) {
+              database_query& q) {
   unsigned int val(t.*(member.u));
   // Not-NULL.
   if (val)
-    q.bindValue(field, QVariant(val));
+    q.bind_value(field, QVariant(val));
   // NULL
   else
-    q.bindValue(field, QVariant(QVariant::Int));
+    q.bind_value(field, QVariant(QVariant::Int));
   return ;
 }
 
@@ -245,14 +246,14 @@ static void get_uint_null_on_minus_one(
               T const& t,
               QString const& field,
               data_member<T> const& member,
-              QSqlQuery& q) {
+              database_query& q) {
   unsigned int val(t.*(member.u));
   // Not-NULL.
   if (val != (unsigned int)-1)
-    q.bindValue(field, QVariant(val));
+    q.bind_value(field, QVariant(val));
   // NULL.
   else
-    q.bindValue(field, QVariant(QVariant::Int));
+    q.bind_value(field, QVariant(QVariant::Int));
   return ;
 }
 
@@ -327,7 +328,7 @@ static void static_init() {
  *  Extract data from object to DB row.
  */
 template <typename T>
-static void to_base(QSqlQuery& q, T const& t) {
+static void to_base(database_query& q, T const& t) {
   for (typename std::vector<db_mapped_entry<T> >::const_iterator
          it = db_mapped_type<T>::list.begin(),
          end = db_mapped_type<T>::list.end();
@@ -482,7 +483,7 @@ void sql::initialize() {
 /**
  *  ORM operator for acknowledgement.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::acknowledgement const& a) {
+database_query& operator<<(database_query& q, neb::acknowledgement const& a) {
   to_base(q, a);
   return (q);
 }
@@ -490,7 +491,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::acknowledgement const& a) {
 /**
  *  ORM operator for comment.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::comment const& c) {
+database_query& operator<<(database_query& q, neb::comment const& c) {
   to_base(q, c);
   return (q);
 }
@@ -498,7 +499,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::comment const& c) {
 /**
  *  ORM operator for custom_variable.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::custom_variable const& cv) {
+database_query& operator<<(database_query& q, neb::custom_variable const& cv) {
   to_base(q, cv);
   return (q);
 }
@@ -506,7 +507,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::custom_variable const& cv) {
 /**
  *  ORM operator for custom_variable_status.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::custom_variable_status const& cvs) {
+database_query& operator<<(database_query& q, neb::custom_variable_status const& cvs) {
   to_base(q, cvs);
   return (q);
 }
@@ -514,7 +515,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::custom_variable_status const& cvs) {
 /**
  *  ORM operator for downtime.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::downtime const& d) {
+database_query& operator<<(database_query& q, neb::downtime const& d) {
   to_base(q, d);
   return (q);
 }
@@ -522,7 +523,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::downtime const& d) {
 /**
  *  ORM operator for event_handler.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::event_handler const& eh) {
+database_query& operator<<(database_query& q, neb::event_handler const& eh) {
   to_base(q, eh);
   return (q);
 }
@@ -530,7 +531,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::event_handler const& eh) {
 /**
  *  ORM operator for flapping_status.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::flapping_status const& fs) {
+database_query& operator<<(database_query& q, neb::flapping_status const& fs) {
   to_base(q, fs);
   return (q);
 }
@@ -538,7 +539,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::flapping_status const& fs) {
 /**
  *  ORM operator for host.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::host const& h) {
+database_query& operator<<(database_query& q, neb::host const& h) {
   to_base(q, h);
   return (q);
 }
@@ -546,7 +547,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::host const& h) {
 /**
  *  ORM operator for host_check.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::host_check const& hc) {
+database_query& operator<<(database_query& q, neb::host_check const& hc) {
   to_base(q, hc);
   return (q);
 }
@@ -554,7 +555,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::host_check const& hc) {
 /**
  *  ORM operator for host_dependency.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::host_dependency const& hd) {
+database_query& operator<<(database_query& q, neb::host_dependency const& hd) {
   to_base(q, hd);
   return (q);
 }
@@ -562,7 +563,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::host_dependency const& hd) {
 /**
  *  ORM operator for host_group.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::host_group const& hg) {
+database_query& operator<<(database_query& q, neb::host_group const& hg) {
   to_base(q, hg);
   return (q);
 }
@@ -570,7 +571,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::host_group const& hg) {
 /**
  *  ORM operator for host_group_member.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::host_group_member const& hgm) {
+database_query& operator<<(database_query& q, neb::host_group_member const& hgm) {
   to_base(q, hgm);
   return (q);
 }
@@ -578,7 +579,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::host_group_member const& hgm) {
 /**
  *  ORM operator for host_parent.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::host_parent const& hp) {
+database_query& operator<<(database_query& q, neb::host_parent const& hp) {
   to_base(q, hp);
   return (q);
 }
@@ -586,7 +587,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::host_parent const& hp) {
 /**
  *  ORM operator for host_status.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::host_status const& hs) {
+database_query& operator<<(database_query& q, neb::host_status const& hs) {
   to_base(q, hs);
   return (q);
 }
@@ -594,7 +595,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::host_status const& hs) {
 /**
  *  ORM operator for instance.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::instance const& p) {
+database_query& operator<<(database_query& q, neb::instance const& p) {
   to_base(q, p);
   return (q);
 }
@@ -602,7 +603,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::instance const& p) {
 /**
  *  ORM operator for instance_status.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::instance_status const& ps) {
+database_query& operator<<(database_query& q, neb::instance_status const& ps) {
   to_base(q, ps);
   return (q);
 }
@@ -610,7 +611,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::instance_status const& ps) {
 /**
  *  ORM operator for log_entry.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::log_entry const& le) {
+database_query& operator<<(database_query& q, neb::log_entry const& le) {
   to_base(q, le);
   return (q);
 }
@@ -618,7 +619,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::log_entry const& le) {
 /**
  *  ORM operator for module.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::module const& m) {
+database_query& operator<<(database_query& q, neb::module const& m) {
   to_base(q, m);
   return (q);
 }
@@ -626,7 +627,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::module const& m) {
 /**
  *  ORM operator for notification.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::notification const& n) {
+database_query& operator<<(database_query& q, neb::notification const& n) {
   to_base(q, n);
   return (q);
 }
@@ -634,7 +635,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::notification const& n) {
 /**
  *  ORM operator for service.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::service const& s) {
+database_query& operator<<(database_query& q, neb::service const& s) {
   to_base(q, s);
   return (q);
 }
@@ -642,7 +643,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::service const& s) {
 /**
  *  ORM operator for service_check.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::service_check const& sc) {
+database_query& operator<<(database_query& q, neb::service_check const& sc) {
   to_base(q, sc);
   return (q);
 }
@@ -650,7 +651,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::service_check const& sc) {
 /**
  *  ORM operator for service_dependency.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::service_dependency const& sd) {
+database_query& operator<<(database_query& q, neb::service_dependency const& sd) {
   to_base(q, sd);
   return (q);
 }
@@ -658,7 +659,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::service_dependency const& sd) {
 /**
  *  ORM operator for service_group.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::service_group const& sg) {
+database_query& operator<<(database_query& q, neb::service_group const& sg) {
   to_base(q, sg);
   return (q);
 }
@@ -666,7 +667,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::service_group const& sg) {
 /**
  *  ORM operator for service_group_member.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::service_group_member const& sgm) {
+database_query& operator<<(database_query& q, neb::service_group_member const& sgm) {
   to_base(q, sgm);
   return (q);
 }
@@ -674,7 +675,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::service_group_member const& sgm) {
 /**
  *  ORM operator for service_status.
  */
-QSqlQuery& operator<<(QSqlQuery& q, neb::service_status const& ss) {
+database_query& operator<<(database_query& q, neb::service_status const& ss) {
   to_base(q, ss);
   return (q);
 }
@@ -682,7 +683,7 @@ QSqlQuery& operator<<(QSqlQuery& q, neb::service_status const& ss) {
 /**
  *  ORM operator for host_state.
  */
-QSqlQuery& operator<<(QSqlQuery& q, correlation::host_state const& hs) {
+database_query& operator<<(database_query& q, correlation::host_state const& hs) {
   to_base(q, hs);
   return (q);
 }
@@ -690,7 +691,7 @@ QSqlQuery& operator<<(QSqlQuery& q, correlation::host_state const& hs) {
 /**
  *  ORM operator for issue.
  */
-QSqlQuery& operator<<(QSqlQuery& q, correlation::issue const& i) {
+database_query& operator<<(database_query& q, correlation::issue const& i) {
   to_base(q, i);
   return (q);
 }
@@ -698,7 +699,7 @@ QSqlQuery& operator<<(QSqlQuery& q, correlation::issue const& i) {
 /**
  *  ORM operator for service_state.
  */
-QSqlQuery& operator<<(QSqlQuery& q, correlation::service_state const& ss) {
+database_query& operator<<(database_query& q, correlation::service_state const& ss) {
   to_base(q, ss);
   return (q);
 }

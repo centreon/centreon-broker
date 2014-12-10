@@ -46,6 +46,7 @@ public:
                       QVariant const& value);
   void              finish();
   QVariant          last_insert_id();
+  int               num_rows_affected();
   void              run_query(
                       std::string const& query,
                       char const* error_msg = NULL);
