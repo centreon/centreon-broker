@@ -413,8 +413,7 @@ time_t availability_thread::_compute_start_of_day(
   if (!localtime_r(&when, &tmv))
     throw (exceptions::msg()
            << "BAM-BI: availability thread could not compute start of day");
-  tmv.tm_sec = 1;
-  tmv.tm_min = tmv.tm_hour = 0;
+  tmv.tm_sec = tmv.tm_min = tmv.tm_hour = 0;
   return (mktime(&tmv));
 }
 

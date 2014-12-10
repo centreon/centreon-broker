@@ -334,8 +334,8 @@ int main() {
     // See if the ba availabilities were created.
     {
       ba_availability baav[] =
-      {{1, -3599, 1, 30, 0, 90, 0, 0, 0, 1, 0, 0, true},
-       {2, -3599, 1, 50, 110, 0, 0, 110, 1, 0, 0, 1, false}};
+      {{1, -3600, 1, 30, 0, 90, 0, 0, 0, 1, 0, 0, true},
+       {2, -3600, 1, 50, 110, 0, 0, 110, 1, 0, 0, 1, false}};
       check_ba_availability(*db.bi_db(),
                             baav,
                             sizeof(baav) / sizeof(*baav));
