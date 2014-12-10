@@ -155,6 +155,11 @@ void timezone_manager::_backup_timezone(
  *  @param[in] info  Timezone information.
  */
 void timezone_manager::_set_timezone(char const* tz) {
+  // Don't set new timezone if it's the same as the actual one.
+  if ((tz && _tz.top().tz_name == tz)
+      || (!tz && _tz.top().tz_name.empty()))
+    return ;
+
   if (tz)
     setenv("TZ", tz, 1);
   else
