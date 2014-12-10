@@ -28,6 +28,7 @@ using namespace com::centreon::broker::bam::time;
  *  @param[in] tz  Timezone to set during object lifetime.
  */
 timezone_locker::timezone_locker(char const* tz) {
+  timezone_manager::instance().lock();
   timezone_manager::instance().push_timezone(tz);
 }
 
@@ -36,4 +37,5 @@ timezone_locker::timezone_locker(char const* tz) {
  */
 timezone_locker::~timezone_locker() {
   timezone_manager::instance().pop_timezone();
+  timezone_manager::instance().unlock();
 }

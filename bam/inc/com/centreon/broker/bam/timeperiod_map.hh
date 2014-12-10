@@ -60,7 +60,8 @@ namespace          bam {
     std::map<unsigned int, time::timeperiod::ptr>
                    _map;
     typedef std::multimap<unsigned int,
-                          std::pair<unsigned int, bool> > timeperiod_relation_map;
+                          std::pair<unsigned int, bool> >
+                  timeperiod_relation_map;
     timeperiod_relation_map
                   _timeperiod_relations;
   };

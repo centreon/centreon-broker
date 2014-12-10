@@ -36,6 +36,13 @@ void timezone_manager::load() {
 }
 
 /**
+ *  Lock the timezone manager.
+ */
+void timezone_manager::lock() {
+  _timezone_manager_mutex.lock();
+}
+
+/**
  *  Restore timezone previously saved.
  */
 void timezone_manager::pop_timezone() {
@@ -75,6 +82,13 @@ void timezone_manager::push_timezone(char const* tz) {
 }
 
 /**
+ *  Unlock the timezone manager.
+ */
+void timezone_manager::unlock() {
+  _timezone_manager_mutex.unlock();
+}
+
+/**
  *  Unload singleton.
  */
 void timezone_manager::unload() {
@@ -86,7 +100,8 @@ void timezone_manager::unload() {
 /**
  *  Default constructor.
  */
-timezone_manager::timezone_manager() {
+timezone_manager::timezone_manager()
+  : _timezone_manager_mutex(QMutex::Recursive){
   _backup_timezone(&_base);
 }
 

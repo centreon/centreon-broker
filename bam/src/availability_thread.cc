@@ -198,7 +198,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
     // If there is opened events, rebuild until midnight of this day.
     // If not, rebuild until the last closed events.
     if (q.value(2).toInt() != 0)
-      last_day = _compute_start_of_day(q.value(1).toInt() + (3600 * 24));
+      last_day = _compute_start_of_day(q.value(1).toDouble() + (3600 * 24));
     else
       midnight-= (3600 * 24);
     q.next();

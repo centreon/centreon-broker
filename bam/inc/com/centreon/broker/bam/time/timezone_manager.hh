@@ -22,6 +22,7 @@
 
 #  include <stack>
 #  include <string>
+#  include <QMutex>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -38,8 +39,10 @@ namespace   bam  {
     class                      timezone_manager {
     public:
       static void              load();
+      void                     lock();
       void                     pop_timezone();
       void                     push_timezone(char const* tz);
+      void                     unlock();
       static void              unload();
 
     /**
@@ -67,6 +70,7 @@ namespace   bam  {
       tz_info                  _base;
       static timezone_manager* _instance;
       std::stack<tz_info>      _tz;
+      QMutex                   _timezone_manager_mutex;
     };
   }
 }
