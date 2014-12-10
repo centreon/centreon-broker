@@ -1742,8 +1742,10 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
   logging::debug(logging::low)
     << "BAM-BI: processing rebuild signal";
 
+  _update_status("rebuilding");
+
   // We block the availability thread to prevent it waking up on truncated event durations.
-  {
+  try {
     std::auto_ptr<QMutexLocker> lock(_availabilities->lock());
 
     // Delete obsolete ba events durations.
@@ -1803,6 +1805,9 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
           ++it)
         _compute_event_durations(*it, this);
     }
+  } catch(...) {
+    _update_status("");
+    throw ;
   }
 
   logging::info(logging::medium)
