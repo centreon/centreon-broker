@@ -473,13 +473,6 @@ void ba::_apply_impact(ba::impact_info& impact) {
   _level_hard -= impact.hard_impact.get_nominal();
   _level_soft -= impact.soft_impact.get_nominal();
 
-  // Prevent derive of values.
-  _recompute_count = _recompute_count >= 0
-                     ? _recompute_count + 1
-                     : _recompute_count;
-  if (_recompute_count >= _recompute_limit)
-    _recompute();
-
   return ;
 }
 
@@ -543,10 +536,8 @@ void ba::_recompute() {
   _acknowledgement_soft = 0.0;
   _downtime_hard = 0.0;
   _downtime_soft = 0.0;
-  _level_hard = 0.0;
-  _level_soft = 0.0;
-  // Set _recompute_count to an invalid, guard value.
-  _recompute_count = -1;
+  _level_hard = 100.0;
+  _level_soft = 100.0;
   for (umap<kpi*, impact_info>::iterator
          it(_impacts.begin()),
          end(_impacts.end());
@@ -563,6 +554,11 @@ void ba::_recompute() {
  *  @param[in] impact Impact information.
  */
 void ba::_unapply_impact(ba::impact_info& impact) {
+  // Prevent derive of values.
+  ++_recompute_count;
+  if (_recompute_count >= _recompute_limit)
+    _recompute();
+
   // Adjust values.
   _acknowledgement_hard -= impact.hard_impact.get_acknowledgement();
   _acknowledgement_soft -= impact.soft_impact.get_acknowledgement();
@@ -570,11 +566,6 @@ void ba::_unapply_impact(ba::impact_info& impact) {
   _downtime_soft -= impact.soft_impact.get_downtime();
   _level_hard += impact.hard_impact.get_nominal();
   _level_soft += impact.soft_impact.get_nominal();
-
-  // Prevent derive of values.
-  ++_recompute_count;
-  if (_recompute_count >= _recompute_limit)
-    _recompute();
 
   return ;
 }

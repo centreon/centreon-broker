@@ -180,6 +180,19 @@ get_property(BAM_MODULE_PATH
   PROPERTY LOCATION)
 set(BAM_MODULE_PATH "${BAM_MODULE_PATH}" PARENT_SCOPE)
 
+# Testing.
+if (WITH_TESTING)
+  set(TEST_LIBRARIES "${NEB}" "${BAM}" "roker")
+
+  # ba tests.
+  #   KPI change at recompute.
+  set(TEST_NAME "bam_ba_kpi_change_at_recompute")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/ba/kpi_change_at_recompute.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+endif ()
+
 # Install rule.
 install(TARGETS "${BAM}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
