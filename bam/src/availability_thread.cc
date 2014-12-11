@@ -185,7 +185,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
   // it's the day of the chronogically first event to rebuild.
   // If not, it's the day following the chronogically last availability.
   if (_should_rebuild_all) {
-    query << "SELECT MIN(start_time), MIN(end_time), MAX(end_time)"
+    query << "SELECT MIN(start_time), MAX(end_time), MIN(IFNULL(end_time, '0'))"
              "  FROM mod_bam_reporting_ba_events"
              "  WHERE ba_id IN (" << _bas_to_rebuild.toStdString() << ")";
     if (!q.exec(query.str().c_str()) || !q.next())
@@ -195,10 +195,12 @@ void availability_thread::_build_availabilities(time_t midnight) {
 
     first_day = q.value(0).toInt();
     first_day = _compute_start_of_day(first_day);
-    // If there is opened events, rebuild until today.
+    // If there is opened events, rebuild until midnight of this day.
     // If not, rebuild until the last closed events.
-    if (q.value(1).toInt() != 0)
-      last_day = _compute_start_of_day(q.value(2).toInt() + (3600 * 24));
+    if (q.value(2).toInt() != 0)
+      last_day = _compute_start_of_day(q.value(1).toDouble() + (3600 * 24));
+    else
+      midnight-= (3600 * 24);
     q.next();
     _delete_all_availabilities();
   }
@@ -215,6 +217,10 @@ void availability_thread::_build_availabilities(time_t midnight) {
     first_day += (3600 * 24);
     q.next();
   }
+
+  logging::debug(logging::medium)
+    << "BAM-BI: availability thread writing availabilities from: "
+    << first_day << " to " << last_day;
 
   // Write the availabilities day after day.
   for (; first_day < last_day; first_day += (3600*24))
@@ -237,6 +243,8 @@ void availability_thread::_build_daily_availabilities(
   logging::info(logging::medium)
       << "BAM-BI: availability thread writing daily availability for "
          "day : " << day_start << "-" << day_end;
+
+  // Build the availabilities tied to event durations (event finished)
   std::stringstream query;
   query << "SELECT a.ba_event_id, b.ba_id, a.start_time, a.end_time,"
            "       a.duration, a.sla_duration, a.timeperiod_id,"
@@ -247,9 +255,8 @@ void availability_thread::_build_daily_availabilities(
            "  WHERE ";
   if (_should_rebuild_all)
     query << "(b.ba_id IN (" << _bas_to_rebuild.toStdString() << ")) AND ";
-  query << "((a.start_time < " << day_end << " AND a.end_time = 0 "
-        << "  ) OR (a.end_time >= " << day_start << " AND a.end_time < " << day_end
-        << "       ))";
+  query << "(a.end_time >= " << day_start << " AND a.end_time < " << day_end
+        << ")";
   if (!q.exec(query.str().c_str()))
     throw (exceptions::msg()
            << "BAM-BI: availability thread could not build the data: "
@@ -285,6 +292,53 @@ void availability_thread::_build_daily_availabilities(
       tp);
     // Add the timeperiod is default flag.
     found->second.set_timeperiod_is_default(q.value(7).toBool());
+  }
+
+  // Build the availabilities tied to event not finished.
+  query.str("");
+  query << "SELECT ba_event_id, ba_id, start_time, end_time,"
+           "       status, in_downtime"
+           "  FROM mod_bam_reporting_ba_events"
+           "  WHERE ";
+  if (_should_rebuild_all)
+    query << "(ba_id IN (" << _bas_to_rebuild.toStdString() << ")) AND ";
+  query << "(start_time < " << day_end << " AND end_time IS NULL)";
+  if (!q.exec(query.str().c_str()))
+    throw (exceptions::msg()
+           << "BAM-BI: availability thread could not build the data: "
+            << q.lastError().text());
+
+  while (q.next()) {
+    unsigned int ba_id = q.value(1).toInt();
+    // Get all the timeperiods associated with the ba of this event.
+    std::vector<std::pair<time::timeperiod::ptr, bool> >
+      tps = _shared_tps.get_timeperiods_by_ba_id(ba_id);
+    for (std::vector<std::pair<time::timeperiod::ptr, bool> >::const_iterator
+           it(tps.begin()),
+           end(tps.end());
+         it != end;
+         ++it) {
+      unsigned int tp_id = it->first->get_id();
+      // Find the builder.
+      std::map<std::pair<unsigned int, unsigned int>,
+                availability_builder>::iterator found
+          = builders.find(std::make_pair(ba_id, tp_id));
+      // No builders found, create one.
+      if (found == builders.end())
+        found = builders.insert(
+                  std::make_pair(
+                    std::make_pair(ba_id, tp_id),
+                    availability_builder(day_end, day_start))).first;
+      // Add the event to the builder.
+      found->second.add_event(
+        q.value(4).toInt(), // Status
+        q.value(2).toInt(), // Start time
+        q.value(3).toInt(), // End time
+        q.value(5).toBool(), // Was in downtime
+        it->first);
+      // Add the timeperiod is default flag.
+      found->second.set_timeperiod_is_default(it->second);
+    }
   }
 
   // For each builder, write the availabilities.
@@ -359,8 +413,7 @@ time_t availability_thread::_compute_start_of_day(
   if (!localtime_r(&when, &tmv))
     throw (exceptions::msg()
            << "BAM-BI: availability thread could not compute start of day");
-  tmv.tm_sec = 1;
-  tmv.tm_min = tmv.tm_hour = 0;
+  tmv.tm_sec = tmv.tm_min = tmv.tm_hour = 0;
   return (mktime(&tmv));
 }
 

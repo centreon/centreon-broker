@@ -80,6 +80,10 @@ namespace          bam {
     void           _process_ba_duration_event(
                      misc::shared_ptr<io::data> const& e);
     void           _process_kpi_event(misc::shared_ptr<io::data> const& e);
+    void           _process_dimension(misc::shared_ptr<io::data> const& e);
+    void           _dimension_dispatch(misc::shared_ptr<io::data> const& e);
+    misc::shared_ptr<io::data>
+                   _dimension_copy(misc::shared_ptr<io::data> const& e);
     void           _process_dimension_ba(misc::shared_ptr<io::data> const& e);
     void           _process_dimension_bv(misc::shared_ptr<io::data> const& e);
     void           _process_dimension_ba_bv_relation(misc::shared_ptr<io::data> const& e);
@@ -106,10 +110,12 @@ namespace          bam {
     unsigned int   _transaction_queries;
     database       _db;
     database_query _ba_event_insert;
+    database_query _ba_full_event_insert;
     database_query _ba_event_update;
     database_query _ba_event_delete;
     database_query _ba_duration_event_insert;
     database_query _kpi_event_insert;
+    database_query _kpi_full_event_insert;
     database_query _kpi_event_update;
     database_query _kpi_event_delete;
     database_query _kpi_event_link;
@@ -123,17 +129,14 @@ namespace          bam {
     database_query _dimension_kpi_insert;
     std::vector<misc::shared_ptr<database_query> >
                    _dimension_truncate_tables;
-    std::auto_ptr<QMutexLocker>
-                   _availabilities_lock;
     std::auto_ptr<availability_thread>
                    _availabilities;
 
     // Timeperiods by BAs, with an option is default timeperiod.
-    typedef std::multimap<unsigned int,
-                          std::pair<unsigned int, bool> > timeperiod_relation_map;
     timeperiod_map _timeperiods;
-    timeperiod_relation_map
-                   _timeperiod_relations;
+
+    std::vector<misc::shared_ptr<io::data> >
+                   _dimension_data_cache;
   };
 }
 

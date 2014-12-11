@@ -366,6 +366,9 @@ unsigned int timeperiod::duration_intersect(time_t start_time,
   time_t current_start_time = start_time;
   time_t current_end_time = current_start_time;
 
+  if (end_time < start_time)
+    return (0);
+
   // We iterate on the range, going from next valid times to next invalid times.
   while (true) {
     current_start_time = get_next_valid(current_end_time);
@@ -513,7 +516,7 @@ static time_t _get_next_valid_time_per_timeperiod(
                                     range_end)) {
                 time_t potential_time((time_t)-1);
                 // Range is out of bound.
-                if (preferred_time <= range_end) {
+                if (preferred_time < range_end) {
                   // Preferred time occurs before range start, so use
                   // range start time as earliest potential time.
                   if (range_start >= preferred_time)
@@ -576,7 +579,7 @@ static time_t _get_next_valid_time_per_timeperiod(
                               range_end)) {
           time_t potential_time((time_t)-1);
           // Range is out of bound.
-          if (preferred_time <= range_end) {
+          if (preferred_time < range_end) {
             // Preferred time occurs before range start, so use
             // range start time as earliest potential time.
             if (range_start >= preferred_time)
@@ -679,7 +682,7 @@ static time_t _get_min_invalid_time_per_timeperiod(
         continue;
 
       // skip this date range its out of bounds with what we want
-      if (preferred_time > end_time)
+      if (preferred_time >= end_time)
         continue;
 
       // how many days at a time should we advance?
@@ -763,7 +766,7 @@ static time_t _get_min_invalid_time_per_timeperiod(
 
       if ((!have_latest_time
            || day_range_end < latest_time)
-          && day_range_end >= preferred_time) {
+          && day_range_end > preferred_time) {
         have_latest_time = true;
         latest_time = day_range_end;
         earliest_day = day_start;

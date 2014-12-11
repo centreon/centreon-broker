@@ -21,9 +21,6 @@
 #include <cstdlib>
 #include <sstream>
 #include <QMutexLocker>
-#include <QSqlError>
-#include <QSqlQuery>
-#include <QSqlRecord>
 #include <QVariant>
 #include "com/centreon/broker/bam/ba_event.hh"
 #include "com/centreon/broker/bam/ba_duration_event.hh"
@@ -88,10 +85,12 @@ reporting_stream::reporting_stream(
       queries_per_transaction,
       check_replication),
     _ba_event_insert(_db),
+    _ba_full_event_insert(_db),
     _ba_event_update(_db),
     _ba_event_delete(_db),
     _ba_duration_event_insert(_db),
     _kpi_event_insert(_db),
+    _kpi_full_event_insert(_db),
     _kpi_event_update(_db),
     _kpi_event_delete(_db),
     _kpi_event_link(_db),
@@ -132,9 +131,6 @@ reporting_stream::reporting_stream(
  *  Destructor.
  */
 reporting_stream::~reporting_stream() {
-  // Release any lock.
-  _availabilities_lock.reset();
-
   // Terminate the availabilities thread.
   _availabilities->terminate();
   _availabilities->wait();
@@ -211,40 +207,32 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
       _process_ba_duration_event(data);
     else if (data->type()
              == io::events::data_type<io::events::bam,
-                                      bam::de_dimension_ba_event>::value)
-      _process_dimension_ba(data);
-    else if (data->type()
+                                      bam::de_dimension_ba_event>::value ||
+             data->type()
              == io::events::data_type<io::events::bam,
-                                      bam::de_dimension_bv_event>::value)
-      _process_dimension_bv(data);
-    else if (data->type()
-             == io::events::data_type<io::events::bam,
-                                      bam::de_dimension_ba_bv_relation_event>::value)
-      _process_dimension_ba_bv_relation(data);
-    else if (data->type()
-             == io::events::data_type<io::events::bam,
-                                      bam::de_dimension_kpi_event>::value)
-      _process_dimension_kpi(data);
-    else if (data->type()
-             == io::events::data_type<io::events::bam,
-                                      bam::de_dimension_truncate_table_signal>::value)
-      _process_dimension_truncate_signal(data);
-    else if (data->type()
-             == io::events::data_type<io::events::bam,
-                                      bam::de_dimension_timeperiod>::value)
-      _process_dimension_timeperiod(data);
-    else if (data->type()
-             == io::events::data_type<io::events::bam,
-                                      bam::de_dimension_timeperiod_exception>::value)
-      _process_dimension_timeperiod_exception(data);
-    else if (data->type()
-             == io::events::data_type<io::events::bam,
-                                      bam::de_dimension_timeperiod_exclusion>::value)
-      _process_dimension_timeperiod_exclusion(data);
-    else if (data->type()
-             == io::events::data_type<io::events::bam,
-                                      bam::de_dimension_ba_timeperiod_relation>::value)
-      _process_dimension_ba_timeperiod_relation(data);
+                                      bam::de_dimension_bv_event>::value ||
+             data->type()
+                          == io::events::data_type<io::events::bam,
+                                                   bam::de_dimension_ba_bv_relation_event>::value ||
+             data->type()
+                          == io::events::data_type<io::events::bam,
+                                                   bam::de_dimension_kpi_event>::value ||
+             data->type()
+                          == io::events::data_type<io::events::bam,
+                                                   bam::de_dimension_truncate_table_signal>::value ||
+             data->type()
+                          == io::events::data_type<io::events::bam,
+                                                   bam::de_dimension_timeperiod>::value ||
+             data->type()
+                          == io::events::data_type<io::events::bam,
+                                                   bam::de_dimension_timeperiod_exception>::value ||
+             data->type()
+                          == io::events::data_type<io::events::bam,
+                                                   bam::de_dimension_timeperiod_exclusion>::value ||
+             data->type()
+                          == io::events::data_type<io::events::bam,
+                                                   bam::de_dimension_ba_timeperiod_relation>::value)
+      _process_dimension(data);
     else if (data->type()
              == io::events::data_type<io::events::bam,
                                       bam::de_rebuild>::value)
@@ -278,10 +266,12 @@ reporting_stream::reporting_stream(reporting_stream const& other)
   : io::stream(other),
     _db("", "", 0, "", "", ""),
     _ba_event_insert(_db),
+    _ba_full_event_insert(_db),
     _ba_event_update(_db),
     _ba_event_delete(_db),
     _ba_duration_event_insert(_db),
     _kpi_event_insert(_db),
+    _kpi_full_event_insert(_db),
     _kpi_event_update(_db),
     _kpi_event_delete(_db),
     _kpi_event_link(_db),
@@ -562,11 +552,10 @@ void reporting_stream::_load_timeperiods() {
         query,
         "BAM-BI: could not load BA/timeperiods relations");
     while (q.next())
-      _timeperiod_relations.insert(std::make_pair(
-                                          q.value(0).toUInt(),
-                                          std::make_pair(
-                                                 q.value(1).toUInt(),
-                                                 q.value(2).toBool())));
+      _timeperiods.add_relation(
+        q.value(0).toUInt(),
+        q.value(1).toUInt(),
+        q.value(2).toBool());
   }
 
   return ;
@@ -586,6 +575,18 @@ void reporting_stream::_prepare() {
     _ba_event_insert.prepare(
       query,
       "BAM-BI: could not prepare BA event insertion query");
+  }
+
+  // BA full event insertion.
+  {
+    std::string query;
+    query = "INSERT INTO mod_bam_reporting_ba_events (ba_id, "
+            "            first_level, start_time, end_time, status, in_downtime)"
+            "  VALUES (:ba_id, :first_level,"
+            "          :start_time, :end_time, :status, :in_downtime)";
+    _ba_full_event_insert.prepare(
+      query,
+      "BAM-BI: could not prepare BA full event insertion query");
   }
 
   // BA event update.
@@ -636,6 +637,19 @@ void reporting_stream::_prepare() {
     _kpi_event_insert.prepare(
       query,
       "BAM-BI: could not prepare KPI event insertion query");
+  }
+
+  // KPI full event insertion.
+  {
+    std::string query;
+    query = "INSERT INTO mod_bam_reporting_kpi_events (kpi_id,"
+            "            start_time, end_time, status, in_downtime,"
+            "            impact_level, first_output, first_perfdata)"
+            "  VALUES (:kpi_id, :start_time, :end_time, :status,"
+            "          :in_downtime, :impact_level, :output, :perfdata)";
+    _kpi_full_event_insert.prepare(
+      query,
+      "BAM-BI: could not prepare KPI full event insertion query");
   }
 
   // KPI event update.
@@ -873,6 +887,28 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
              << " and ending at " << be.end_time << ": " << e.what());
     }
 
+    // If nothing was updated (can happen when there is a gap between
+    // the events for some reasons, then insert a new event in the database.
+    if (_ba_event_update.num_rows_affected() == 0) {
+      _ba_full_event_insert.bind_value(":ba_id", be.ba_id);
+      _ba_full_event_insert.bind_value(":first_level", be.first_level);
+      _ba_full_event_insert.bind_value(
+        ":start_time",
+        static_cast<qlonglong>(be.start_time.get_time_t()));
+      _ba_full_event_insert.bind_value(
+        ":end_time",
+        static_cast<qlonglong>(be.end_time.get_time_t()));
+      _ba_full_event_insert.bind_value(":status", be.status);
+      _ba_full_event_insert.bind_value(":in_downtime", be.in_downtime);
+      try { _ba_full_event_insert.run_statement(); }
+      catch (std::exception const& e) {
+        throw (exceptions::msg()
+               << "BAM-BI: could not insert event of BA "
+               << be.ba_id << " starting at " << be.start_time
+               << ": " << e.what());
+      }
+    }
+
     // Compute the associated event durations.
     _compute_event_durations(e.staticCast<bam::ba_event>(), this);
   }
@@ -1029,6 +1065,30 @@ void reporting_stream::_process_kpi_event(
              << e.what());
     }
 
+    // If nothing was updated (can happen when there is a gap between
+    // the events for some reasons, then insert a new event in the database.
+    if (_kpi_event_update.num_rows_affected() == 0) {
+      _kpi_full_event_insert.bind_value(":kpi_id", ke.kpi_id);
+      _kpi_full_event_insert.bind_value(
+        ":start_time",
+        static_cast<qlonglong>(ke.start_time.get_time_t()));
+      _kpi_full_event_insert.bind_value(
+        ":end_time",
+        static_cast<qlonglong>(ke.end_time.get_time_t()));
+      _kpi_full_event_insert.bind_value(":status", ke.status);
+      _kpi_full_event_insert.bind_value(":in_downtime", ke.in_downtime);
+      _kpi_full_event_insert.bind_value(":impact_level", ke.impact_level);
+      _kpi_full_event_insert.bind_value(":output", ke.output);
+      _kpi_full_event_insert.bind_value(":perfdata", ke.perfdata);
+      try { _kpi_full_event_insert.run_statement(); }
+      catch (std::exception const& e) {
+        throw (exceptions::msg()
+               << "BAM-BI: could not insert event of KPI "
+               << ke.kpi_id << " starting at " << ke.start_time << ": "
+               << e.what());
+      }
+    }
+
     _kpi_event_link.bind_value(
       ":start_time",
       static_cast<qlonglong>(ke.start_time.get_time_t()));
@@ -1176,6 +1236,146 @@ void reporting_stream::_process_dimension_ba_bv_relation(
 }
 
 /**
+ *  Cache a dimension event, and commit it on the disk accordingly.
+ *
+ *  @param e  The event to process.
+ */
+void reporting_stream::_process_dimension(
+        misc::shared_ptr<io::data> const& e) {
+  // Cache the event until the end of the dimensions dump.
+  _dimension_data_cache.push_back(_dimension_copy(e));
+
+  // If this is a dimension truncate table signal, it's either the beginning
+  // or the end of the dimensions dump.
+  if (e->type()
+      == io::events::data_type<io::events::bam,
+                               bam::de_dimension_truncate_table_signal>::value) {
+    dimension_truncate_table_signal const& dtts
+        = e.ref_as<dimension_truncate_table_signal const>();
+
+    if (!dtts.update_started) {
+      // Lock the availability thread.
+      std::auto_ptr<QMutexLocker> lock(_availabilities->lock());
+
+      // XXX : dimension event acknowledgement might not work !!!
+      for (std::vector<misc::shared_ptr<io::data> >::const_iterator
+             it(_dimension_data_cache.begin()),
+             end(_dimension_data_cache.end());
+           it != end;
+           ++it)
+        _dimension_dispatch(*it);
+      _dimension_data_cache.clear();
+    }
+    else
+      _dimension_data_cache.erase(
+        _dimension_data_cache.begin(),
+        _dimension_data_cache.end() - 1);
+  }
+}
+
+/**
+ *  Dispatch a dimension event.
+ *
+ *  @param[in] data  The dimension event.
+ */
+void reporting_stream::_dimension_dispatch(
+       misc::shared_ptr<io::data> const& data) {
+  if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_dimension_ba_event>::value)
+    _process_dimension_ba(data);
+  else if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_dimension_bv_event>::value)
+    _process_dimension_bv(data);
+  else if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_dimension_ba_bv_relation_event>::value)
+    _process_dimension_ba_bv_relation(data);
+  else if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_dimension_kpi_event>::value)
+    _process_dimension_kpi(data);
+  else if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_dimension_truncate_table_signal>::value)
+    _process_dimension_truncate_signal(data);
+  else if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_dimension_timeperiod>::value)
+    _process_dimension_timeperiod(data);
+  else if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_dimension_timeperiod_exception>::value)
+    _process_dimension_timeperiod_exception(data);
+  else if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_dimension_timeperiod_exclusion>::value)
+    _process_dimension_timeperiod_exclusion(data);
+  else if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_dimension_ba_timeperiod_relation>::value)
+    _process_dimension_ba_timeperiod_relation(data);
+}
+
+/**
+ *  Copy a dimension event.
+ *
+ *  @param[in] data  The data to copy.
+ *
+ *  @return  The dimension event copied.
+ */
+misc::shared_ptr<io::data> reporting_stream::_dimension_copy(
+                             misc::shared_ptr<io::data> const& data) {
+  if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_dimension_ba_event>::value)
+    return (new bam::dimension_ba_event(
+                       data.ref_as<bam::dimension_ba_event>()));
+  else if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_dimension_bv_event>::value)
+    return (new bam::dimension_bv_event(
+                       data.ref_as<bam::dimension_bv_event>()));
+  else if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_dimension_ba_bv_relation_event>::value)
+    return (new bam::dimension_ba_bv_relation_event(
+                       data.ref_as<bam::dimension_ba_bv_relation_event>()));
+  else if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_dimension_kpi_event>::value)
+    return (new bam::dimension_kpi_event(
+                       data.ref_as<bam::dimension_kpi_event>()));
+  else if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_dimension_truncate_table_signal>::value)
+    return (new bam::dimension_truncate_table_signal(
+                       data.ref_as<bam::dimension_truncate_table_signal>()));
+  else if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_dimension_timeperiod>::value)
+    return (new bam::dimension_timeperiod(
+                       data.ref_as<bam::dimension_timeperiod>()));
+  else if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_dimension_timeperiod_exception>::value)
+    return (new bam::dimension_timeperiod_exception(
+                       data.ref_as<bam::dimension_timeperiod_exception>()));
+  else if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_dimension_timeperiod_exclusion>::value)
+    return (new bam::dimension_timeperiod_exclusion(
+                       data.ref_as<bam::dimension_timeperiod_exclusion>()));
+  else if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_dimension_ba_timeperiod_relation>::value)
+    return (new bam::dimension_ba_timeperiod_relation(
+                       data.ref_as<bam::dimension_ba_timeperiod_relation>()));
+  return (misc::shared_ptr<io::data>());
+}
+
+/**
  *  Process a dimension truncate signal and write it to the db.
  *
  *  @param[in] e The event.
@@ -1189,12 +1389,6 @@ void reporting_stream::_process_dimension_truncate_signal(
     logging::debug(logging::low)
       << "BAM-BI: processing table truncation signal";
 
-    _update_status("Waiting for the availability thread.");
-    // We lock the availabilities thread during all the update procedure
-    // to prevent it waking up on truncated dimensions.
-    std::auto_ptr<QMutexLocker> lock(_availabilities->lock());
-    _update_status("");
-
     for (std::vector<misc::shared_ptr<database_query> >::iterator
            it(_dimension_truncate_tables.begin()),
            end(_dimension_truncate_tables.end());
@@ -1204,12 +1398,6 @@ void reporting_stream::_process_dimension_truncate_signal(
                "BAM-BI: could not truncate some dimension table");
 
     _timeperiods.clear();
-    _timeperiod_relations.clear();
-    _availabilities_lock = lock;
-  }
-  else {
-    // Unlock the availabilities thread.
-    _availabilities_lock.reset();
   }
 }
 
@@ -1384,11 +1572,10 @@ void reporting_stream::_process_dimension_ba_timeperiod_relation(
            << r.ba_id << " to timeperiod " << r.timeperiod_id << ": "
            << e.what());
   }
-  _timeperiod_relations.insert(std::make_pair(
-                                      r.ba_id,
-                                      std::make_pair(
-                                             r.timeperiod_id,
-                                             r.is_default)));
+  _timeperiods.add_relation(
+                 r.ba_id,
+                 r.timeperiod_id,
+                 r.is_default);
 }
 
 /**
@@ -1407,24 +1594,23 @@ void reporting_stream::_compute_event_durations(
 
   logging::info(logging::medium)
     << "BAM-BI: computing durations of event started at "
-    << ev->start_time << " of BA " << ev->ba_id;
+    << ev->start_time << " and ended at " << ev->end_time
+    << " on BA " << ev->ba_id;
 
   // Find the timeperiods associated with this ba.
-  std::pair<timeperiod_relation_map::const_iterator,
-            timeperiod_relation_map::const_iterator> found
-      = _timeperiod_relations.equal_range(ev->ba_id);
+  std::vector<std::pair<time::timeperiod::ptr, bool> >
+    timeperiods = _timeperiods.get_timeperiods_by_ba_id(ev->ba_id);
 
-  if (found.first == found.second)
+  if (timeperiods.empty())
     return ;
 
-  for (; found.first != found.second; ++found.first) {
-    unsigned int tp_id = found.first->second.first;
-    time::timeperiod::ptr tp = _timeperiods.get_timeperiod(tp_id);
-    if (!tp) {
-      throw exceptions::msg() << "BAM-BI: could not find the timeperiod "
-                              << tp_id << " in cache";
-    }
-    bool is_default = found.first->second.second;
+  for (std::vector<std::pair<time::timeperiod::ptr, bool> >::const_iterator
+         it(timeperiods.begin()),
+         end(timeperiods.end());
+       it != end;
+       ++it) {
+    time::timeperiod::ptr tp = it->first;
+    bool is_default = it->second;
 
     misc::shared_ptr<ba_duration_event> dur_ev(new ba_duration_event);
     dur_ev->ba_id = ev->ba_id;
@@ -1453,64 +1639,85 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
   logging::debug(logging::low)
     << "BAM-BI: processing rebuild signal";
 
-  // Delete obsolete ba events durations.
-  {
-    std::string query;
-    query.append("DELETE a"
-                 "  FROM mod_bam_reporting_ba_events_durations as a"
-                 "    INNER JOIN mod_bam_reporting_ba_events as b"
-                 "      ON a.ba_event_id = b.ba_event_id"
-                 "  WHERE b.ba_id IN (");
-    query.append(r.bas_to_rebuild.toStdString());
-    query.append(")");
-    database_query q(_db);
-    try { q.run_query(query); }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "BAM-BI: could not delete BA durations "
-             << r.bas_to_rebuild << ": " << e.what());
+  _update_status("rebuilding");
+
+  // We block the availability thread to prevent it waking
+  // up on truncated event durations.
+  try {
+    std::auto_ptr<QMutexLocker> lock(_availabilities->lock());
+
+    // Delete obsolete ba events durations.
+    {
+      std::string query;
+      query.append(
+        "DELETE a"
+        "  FROM mod_bam_reporting_ba_events_durations as a"
+        "    INNER JOIN mod_bam_reporting_ba_events as b"
+        "      ON a.ba_event_id = b.ba_event_id"
+        "  WHERE b.ba_id IN (");
+      query.append(r.bas_to_rebuild.toStdString());
+      query.append(")");
+      database_query q(_db);
+      try { q.run_query(query); }
+      catch (std::exception const& e) {
+        throw (exceptions::msg()
+               << "BAM-BI: could not delete BA durations "
+               << r.bas_to_rebuild << ": " << e.what());
+      }
     }
+
+    // Get the ba events.
+    std::vector<misc::shared_ptr<ba_event> > ba_events;
+    {
+      std::string query;
+      query.append(
+              "SELECT ba_id, start_time, end_time, "
+              "       status, in_downtime boolean"
+              "  FROM mod_bam_reporting_ba_events"
+              "  WHERE end_time != 0"
+              "    AND ba_id IN (");
+      query.append(r.bas_to_rebuild.toStdString());
+      query.append(")");
+      database_query q(_db);
+      try { q.run_query(query); }
+      catch (std::exception const& e) {
+        throw (exceptions::msg()
+               << "BAM-BI: could not get BA events of "
+               << r.bas_to_rebuild << " :" << e.what());
+      }
+      while (q.next()) {
+        misc::shared_ptr<ba_event> baev(new ba_event);
+        baev->ba_id = q.value(0).toInt();
+        baev->start_time = q.value(1).toInt();
+        baev->end_time = q.value(2).toInt();
+        baev->status = q.value(3).toInt();
+        baev->in_downtime = q.value(4).toBool();
+        ba_events.push_back(baev);
+        logging::debug(logging::low)
+          << "BAM-BI: got events of BA " << baev->ba_id;
+      }
+    }
+
+    logging::info(logging::medium)
+      << "BAM-BI: will now rebuild the event durations";
+
+    // Generate new ba events durations for each ba events.
+    {
+      for (std::vector<misc::shared_ptr<ba_event> >::const_iterator
+             it(ba_events.begin()),
+             end(ba_events.end());
+          it != end;
+          ++it)
+        _compute_event_durations(*it, this);
+    }
+  } catch(...) {
+    _update_status("");
+    throw ;
   }
 
-  // Get the ba events.
-  std::vector<misc::shared_ptr<ba_event> > ba_events;
-  {
-    std::string query = "SELECT ba_id, start_time, end_time, "
-                        "       status, in_downtime boolean"
-                        "  FROM mod_bam_reporting_ba_events"
-                        "  WHERE end_time != 0"
-                        "    AND ba_id IN (";
-    query.append(r.bas_to_rebuild.toStdString());
-    query.append(")");
-    database_query q(_db);
-    try { q.run_query(query); }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "BAM-BI: could not get BA events of "
-             << r.bas_to_rebuild << " :" << e.what());
-    }
-    while (q.next()) {
-      misc::shared_ptr<ba_event> baev(new ba_event);
-      baev->ba_id = q.value(0).toInt();
-      baev->start_time = q.value(1).toInt();
-      baev->end_time = q.value(2).toInt();
-      baev->status = q.value(3).toInt();
-      baev->in_downtime = q.value(4).toBool();
-      ba_events.push_back(baev);
-      logging::debug(logging::low)
-        << "BAM-BI: got ba events of " << baev->ba_id;
-    }
-  }
-
-  // Generate new ba events durations for each ba events.
-  {
-    for (std::vector<misc::shared_ptr<ba_event> >::const_iterator
-           it(ba_events.begin()),
-           end(ba_events.end());
-         it != end;
-         ++it)
-      _compute_event_durations(*it, this);
-  }
+  logging::info(logging::medium)
+    << "BAM-BI: event durations rebuild finished, "
+       " will rebuild availabilities now";
 
   // Ask for the availabilities thread to recompute the availabilities.
   _availabilities->rebuild_availabilities(r.bas_to_rebuild);
