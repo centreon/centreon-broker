@@ -23,72 +23,63 @@
 #  include <ctime>
 #  include <memory>
 #  include <QThread>
+#  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 // Forward declaration.
-class              database;
+class               database;
 
-namespace          storage {
+namespace           storage {
   /**
    *  @class rebuilder rebuilder.hh "com/centreon/broker/storage/rebuilder.hh"
    *  @brief Check for graphs to be rebuild.
    *
    *  Check for graphs to be rebuild at fixed interval.
    */
-  class            rebuilder : public QThread {
+  class             rebuilder : public QThread {
   public:
-                   rebuilder(
-                     std::string const& db_type,
-                     std::string const& db_host,
-                     unsigned short db_port,
-                     std::string const& db_user,
-                     std::string const& db_password,
-                     std::string const& db_name,
-                     unsigned int rebuild_check_interval = 600,
-                     time_t interval_length = 60,
-                     unsigned int rrd_length = 15552000);
-                   ~rebuilder() throw ();
-    void           exit() throw ();
-    unsigned int   get_interval() const throw ();
-    time_t         get_interval_length() const throw ();
-    unsigned int   get_rrd_length() const throw ();
-    void           run();
+                    rebuilder(
+                      database_config const& db_cfg,
+                      unsigned int rebuild_check_interval = 600,
+                      time_t interval_length = 60,
+                      unsigned int rrd_length = 15552000);
+                    ~rebuilder() throw ();
+    void            exit() throw ();
+    unsigned int    get_interval() const throw ();
+    time_t          get_interval_length() const throw ();
+    unsigned int    get_rrd_length() const throw ();
+    void            run();
 
   private:
-                   rebuilder(rebuilder const& other);
-    rebuilder&     operator=(rebuilder const& other);
-    void           _rebuild_metric(
-                     database& db,
-                     unsigned int metric_id,
-                     QString const& metric_name,
-                     short metric_type,
-                     unsigned int interval,
-                     unsigned length);
-    void           _rebuild_status(
+                    rebuilder(rebuilder const& other);
+    rebuilder&      operator=(rebuilder const& other);
+    void            _rebuild_metric(
+                      database& db,
+                      unsigned int metric_id,
+                      QString const& metric_name,
+                      short metric_type,
+                      unsigned int interval,
+                      unsigned length);
+    void            _rebuild_status(
+                       database& db,
+                       unsigned int index_id,
+                       unsigned int interval);
+    void            _send_rebuild_event(
+                      bool end,
+                      unsigned int id,
+                      bool is_index);
+    void            _set_index_rebuild(
                       database& db,
                       unsigned int index_id,
-                      unsigned int interval);
-    void           _send_rebuild_event(
-                     bool end,
-                     unsigned int id,
-                     bool is_index);
-    void           _set_index_rebuild(
-                     database& db,
-                     unsigned int index_id,
-                     short state);
+                      short state);
 
-    std::string    _db_type;
-    std::string    _db_host;
-    unsigned short _db_port;
-    std::string    _db_user;
-    std::string    _db_password;
-    std::string    _db_name;
-    unsigned int   _interval;
-    time_t         _interval_length;
-    unsigned int   _rrd_len;
-    volatile bool  _should_exit;
+    database_config _db_cfg;
+    unsigned int    _interval;
+    time_t          _interval_length;
+    unsigned int    _rrd_len;
+    volatile bool   _should_exit;
   };
 }
 

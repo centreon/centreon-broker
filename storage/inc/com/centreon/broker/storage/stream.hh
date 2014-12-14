@@ -36,6 +36,9 @@
 
 CCB_BEGIN()
 
+// Forward declaration.
+class              database_config;
+
 namespace          storage {
   /**
    *  @class stream stream.hh "com/centreon/broker/storage/stream.hh"
@@ -47,18 +50,11 @@ namespace          storage {
   class            stream : public multiplexing::hooker {
   public:
                    stream(
-                     std::string const& storage_type,
-                     std::string const& storage_host,
-                     unsigned short storage_port,
-                     std::string const& storage_user,
-                     std::string const& storage_password,
-                     std::string const& storage_db,
-                     unsigned int queries_per_transaction,
+                     database_config const& db_cfg,
                      unsigned int rrd_len,
                      time_t interval_length,
                      unsigned int rebuild_check_interval,
                      bool store_in_db = true,
-                     bool check_replication = true,
                      bool insert_in_index_data = false);
                    ~stream();
     void           process(bool in = false, bool out = true);

@@ -25,6 +25,7 @@
 #include <QSqlRecord>
 #include <QVariant>
 #include "com/centreon/broker/database.hh"
+#include "com/centreon/broker/database_config.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
@@ -34,37 +35,12 @@ using namespace com::centreon::broker;
 /**
  *  Constructor.
  *
- *  @param[in] type                     DB type.
- *  @param[in] host                     DB server.
- *  @param[in] port                     Port of the DB server.
- *  @param[in] user                     DB user.
- *  @param[in] password                 DB user's password.
- *  @param[in] db_name                  DB name.
- *  @param[in] queries_per_transaction  Number of queries within a
- *                                      transaction before a commit
- *                                      should occur.
- *  @param[in] check_replication        Should we check the replication
- *                                      status of the database ?
+ *  @param[in] db_cfg  Database configuration.
  */
-database::database(
-            std::string const& type,
-            std::string const& host,
-            unsigned short port,
-            std::string const& user,
-            std::string const& password,
-            std::string const& db_name,
-            int queries_per_transaction,
-            bool check_replication)
-  : _db_name(db_name),
-    _host(host),
-    _password(password),
-    _pending_queries(0),
-    _port(port),
-    _queries_per_transaction(queries_per_transaction),
-    _type(type),
-    _user(user) {
+database::database(database_config const& db_cfg)
+  : _db_cfg(db_cfg), _pending_queries(0) {
   // Qt type.
-  QString qt_type(qt_db_type(_type));
+  QString qt_type(qt_db_type(_db_cfg.get_type()));
 
   // Compute connection ID.
   _connection_id.setNum((qulonglong)this, 16);
@@ -78,11 +54,11 @@ database::database(
       _db->setConnectOptions("CLIENT_FOUND_ROWS");
 
     // Open database.
-    _db->setHostName(_host.c_str());
-    _db->setPort(_port);
-    _db->setUserName(_user.c_str());
-    _db->setPassword(_password.c_str());
-    _db->setDatabaseName(_db_name.c_str());
+    _db->setHostName(_db_cfg.get_host().c_str());
+    _db->setPort(_db_cfg.get_port());
+    _db->setUserName(_db_cfg.get_user().c_str());
+    _db->setPassword(_db_cfg.get_password().c_str());
+    _db->setDatabaseName(_db_cfg.get_name().c_str());
     {
       QMutexLocker lock(&misc::global_lock);
       if (!_db->open())
@@ -91,21 +67,22 @@ database::database(
     }
 
     // Check that replication is OK.
-    if (check_replication) {
+    if (_db_cfg.get_check_replication()) {
       logging::debug(logging::medium)
         << "core: checking replication status of database '"
-        << _db_name << "' on host '" << _host << "'";
+        << _db_cfg.get_name() << "' on host '" << _db_cfg.get_host()
+        << "'";
       QSqlQuery q(*_db);
       if (!q.exec("SHOW SLAVE STATUS"))
         logging::info(logging::medium)
           << "core: could not check replication status of database '"
-          << _db_name << "' on host '" << _host << "': "
-          << q.lastError().text();
+          << _db_cfg.get_name() << "' on host '" << _db_cfg.get_host()
+          << "': " << q.lastError().text();
       else {
         if (!q.next())
           logging::info(logging::medium)
-            << "core: database '" << _db_name << "' on host '"
-            << _host << "' is not under replication";
+            << "core: database '" << _db_cfg.get_name() << "' on host '"
+            << _db_cfg.get_host() << "' is not under replication";
         else {
           QSqlRecord record(q.record());
           unsigned int i(0);
@@ -118,13 +95,13 @@ database::database(
                     && (q.value(i).toString() != "Yes"))
                 || ((field == "Seconds_Behind_Master")
                     && (q.value(i).toInt() != 0)))
-              throw (exceptions::msg()
-                     << "replication of database '" << _db_name
-                     << "' on host '" << _host << "' is not complete: "
+              throw (exceptions::msg() << "replication of database '"
+                     << _db_cfg.get_name() << "' on host '"
+                     << _db_cfg.get_host() << "' is not complete: "
                      << field << "=" << q.value(i).toString());
           logging::info(logging::medium)
-            << "core: replication of database '" << _db_name
-            << "' on host '" << _host
+            << "core: replication of database '" << _db_cfg.get_name()
+            << "' on host '" << _db_cfg.get_host()
             << "' is complete, connection granted";
         }
       }
@@ -132,7 +109,8 @@ database::database(
     else
       logging::debug(logging::medium)
         << "core: NOT checking replication status of database '"
-        << _db_name << "' on host '" << _host << "'";
+        << _db_cfg.get_name() << "' on host '" << _db_cfg.get_host()
+        << "'";
 
     // Initialize transaction.
     _new_transaction();
@@ -254,9 +232,10 @@ QString database::qt_db_type(std::string const& broker_type) {
  *  Let the database class know that a query was just executed.
  */
 void database::query_executed() {
-  if (_queries_per_transaction > 1) {
+  int qpt(_db_cfg.get_queries_per_transaction());
+  if (qpt > 1) {
     ++_pending_queries;
-    if (_pending_queries >= _queries_per_transaction) {
+    if (_pending_queries >= qpt) {
       _commit();
       _new_transaction();
     }
@@ -270,7 +249,8 @@ void database::query_executed() {
 void database::_commit() {
   if (!_db->commit())
     throw (exceptions::msg() << "could not commit to database '"
-           << _db_name << "' on host '" << _host << "': "
+           << _db_cfg.get_name() << "' on host '"
+           << _db_cfg.get_host() << "': "
            << _db->lastError().text());
   _pending_queries = 0;
   return ;
@@ -280,12 +260,12 @@ void database::_commit() {
  *  Create a new transaction on this database.
  */
 void database::_new_transaction() {
-  if (_queries_per_transaction > 1) {
+  if (_db_cfg.get_queries_per_transaction() > 1) {
     if (!_db->transaction())
       throw (exceptions::msg()
              << "could not create new transaction on database '"
-             << _db_name << "' on host '" << _host << "': "
-             << _db->lastError().text());
+             << _db_cfg.get_name() << "' on host '"
+             << _db_cfg.get_host() << "': " << _db->lastError().text());
   }
   return ;
 }

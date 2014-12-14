@@ -65,25 +65,9 @@ using namespace com::centreon::broker::bam;
  *  @param[in] queries_per_transaction Queries per transaction.
  *  @param[in] check_replication       true to check replication status.
  */
-reporting_stream::reporting_stream(
-                    std::string const& db_type,
-                    std::string const& db_host,
-                    unsigned short db_port,
-                    std::string const& db_user,
-                    std::string const& db_password,
-                    std::string const& db_name,
-                    unsigned int queries_per_transaction,
-                    bool check_replication)
+reporting_stream::reporting_stream(database_config const& db_cfg)
   : _pending_events(0),
-    _db(
-      db_type,
-      db_host,
-      db_port,
-      db_user,
-      db_password,
-      db_name,
-      queries_per_transaction,
-      check_replication),
+    _db(db_cfg),
     _ba_event_insert(_db),
     _ba_full_event_insert(_db),
     _ba_event_update(_db),
@@ -116,14 +100,7 @@ reporting_stream::reporting_stream(
   _load_last_events();
 
   // Initialize the availabilities thread.
-  _availabilities.reset(new availability_thread(
-                              db_type.c_str(),
-                              db_host.c_str(),
-                              db_port,
-                              db_user.c_str(),
-                              db_password.c_str(),
-                              db_name.c_str(),
-                              _timeperiods));
+  _availabilities.reset(new availability_thread(db_cfg, _timeperiods));
   _availabilities->start();
 }
 

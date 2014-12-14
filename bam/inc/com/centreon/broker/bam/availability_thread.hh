@@ -27,8 +27,8 @@
 #  include <QThread>
 #  include <QMutex>
 #  include <QMutexLocker>
-#  include <QSqlDatabase>
 #  include <QWaitCondition>
+#  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
@@ -38,73 +38,64 @@
 
 CCB_BEGIN()
 
-namespace        bam {
+// Forward declarations.
+class               database;
+class               database_query;
+
+namespace           bam {
   /**
    *  @class availability_thread availability_thread.hh "com/centreon/broker/bam/availability_thread.hh"
    *  @brief Availability thread
    *
    */
-  class          availability_thread : public QThread {
+  class             availability_thread : public QThread {
   public:
-                 availability_thread(
-                   QString const& db_type,
-                   QString const& db_host,
-                   unsigned short db_port,
-                   QString const& db_user,
-                   QString const& db_password,
-                   QString const& db_name,
-                   timeperiod_map& shared_map);
-                 ~availability_thread();
-    virtual void run();
-    void         terminate();
+                    availability_thread(
+                      database_config const& db_cfg,
+                      timeperiod_map& shared_map);
+                    ~availability_thread();
+    virtual void    run();
+    void            terminate();
 
     std::auto_ptr<QMutexLocker>
-                 lock();
+                    lock();
 
-    void         rebuild_availabilities(QString const& bas_to_rebuild);
+    void            rebuild_availabilities(QString const& bas_to_rebuild);
 
   private:
-                 availability_thread(availability_thread const& other);
+                    availability_thread(availability_thread const& other);
     availability_thread&
-                  operator=(availability_thread const& other) const;
+                    operator=(availability_thread const& other) const;
 
-    void         _delete_all_availabilities();
-    void         _build_availabilities(time_t midnight);
-    void         _build_daily_availabilities(
-                   QSqlQuery &q,
-                   time_t day_start,
-                   time_t day_end);
-    static void  _write_availability(
-                   QSqlQuery& q,
-                   availability_builder const& builder,
-                   unsigned int ba_id,
-                   time_t day_start,
-                   unsigned int timeperiod_id);
+    void            _delete_all_availabilities();
+    void            _build_availabilities(time_t midnight);
+    void            _build_daily_availabilities(
+                      database_query& q,
+                      time_t day_start,
+                      time_t day_end);
+    static void     _write_availability(
+                      database_query& q,
+                      availability_builder const& builder,
+                      unsigned int ba_id,
+                      time_t day_start,
+                      unsigned int timeperiod_id);
 
-    time_t       _compute_next_midnight();
-    time_t       _compute_start_of_day(time_t when);
+    time_t          _compute_next_midnight();
+    time_t          _compute_start_of_day(time_t when);
 
-    void         _open_database();
-    void         _close_database();
+    void            _open_database();
+    void            _close_database();
 
-    QString      _db_type;
-    QString      _db_host;
-    unsigned short
-                 _db_port;
-    QString      _db_user;
-    QString      _db_password;
-    QString      _db_name;
-    std::auto_ptr<QSqlDatabase>
-                 _db;
-    timeperiod_map&
-                 _shared_tps;
+    std::auto_ptr<database>
+                    _db;
+    database_config _db_cfg;
+    timeperiod_map& _shared_tps;
 
-    QMutex       _mutex;
-    bool         _should_exit;
-    bool         _should_rebuild_all;
-    QString      _bas_to_rebuild;
-    QWaitCondition
-                 _wait;
+    QMutex          _mutex;
+    bool            _should_exit;
+    bool            _should_rebuild_all;
+    QString         _bas_to_rebuild;
+    QWaitCondition  _wait;
   };
 }
 

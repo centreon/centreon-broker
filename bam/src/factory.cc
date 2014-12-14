@@ -21,6 +21,7 @@
 #include "com/centreon/broker/bam/connector.hh"
 #include "com/centreon/broker/bam/factory.hh"
 #include "com/centreon/broker/config/parser.hh"
+#include "com/centreon/broker/database_config.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
@@ -141,12 +142,13 @@ io::endpoint* factory::new_endpoint(
   (void)is_output;
 
   // Find DB parameters.
-  QString type(find_param(cfg, "db_type"));
-  QString host(find_param(cfg, "db_host"));
-  unsigned short port(find_param(cfg, "db_port").toUShort());
-  QString user(find_param(cfg, "db_user"));
-  QString password(find_param(cfg, "db_password"));
-  QString name(find_param(cfg, "db_name"));
+  database_config db_cfg;
+  db_cfg.set_type(find_param(cfg, "db_type").toStdString());
+  db_cfg.set_host(find_param(cfg, "db_host").toStdString());
+  db_cfg.set_port(find_param(cfg, "db_port").toUShort());
+  db_cfg.set_user(find_param(cfg, "db_user").toStdString());
+  db_cfg.set_password(find_param(cfg, "db_password").toStdString());
+  db_cfg.set_name(find_param(cfg, "db_name").toStdString());
 
   // Transaction size.
   unsigned int queries_per_transaction(0);
@@ -158,6 +160,7 @@ io::endpoint* factory::new_endpoint(
     else
       queries_per_transaction = 1000;
   }
+  db_cfg.set_queries_per_transaction(queries_per_transaction);
 
   // Check replication status ?
   bool check_replication(true);
@@ -167,6 +170,7 @@ io::endpoint* factory::new_endpoint(
     if (it != cfg.params.end())
       check_replication = config::parser::parse_boolean(*it);
   }
+  db_cfg.set_check_replication(check_replication);
 
   // Is it a BAM or BAM-BI output ?
   bool is_bam_bi(!cfg.type.compare("bam_bi", Qt::CaseInsensitive)
@@ -183,15 +187,8 @@ io::endpoint* factory::new_endpoint(
        is_bam_bi
        ? bam::connector::bam_bi_type
        : bam::connector::bam_type,
-       type.toStdString(),
-       host.toStdString(),
-       port,
-       user.toStdString(),
-       password.toStdString(),
-       name.toStdString(),
-       ext_cmd_file.toStdString(),
-       queries_per_transaction,
-       check_replication);
+       db_cfg,
+       ext_cmd_file.toStdString());
   is_acceptor = false;
   return (c.release());
 }

@@ -38,11 +38,11 @@ connector::connector() : io::endpoint(false), _type(bam_type) {}
 /**
  *  Copy constructor.
  *
- *  @param[in] c Object to copy.
+ *  @param[in] other  Object to copy.
  */
-connector::connector(connector const& c)
-  : io::endpoint(c) {
-  _internal_copy(c);
+connector::connector(connector const& other)
+  : io::endpoint(other) {
+  _internal_copy(other);
 }
 
 /**
@@ -53,14 +53,14 @@ connector::~connector() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] c Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-connector& connector::operator=(connector const& c) {
-  if (this != &c) {
-    io::endpoint::operator=(c);
-    _internal_copy(c);
+connector& connector::operator=(connector const& other) {
+  if (this != &other) {
+    io::endpoint::operator=(other);
+    _internal_copy(other);
   }
   return (*this);
 }
@@ -84,39 +84,17 @@ void connector::close() {
 /**
  *  Set connection parameters.
  *
- *  @param[in] type                    BAM stream type.
- *  @param[in] db_type                 BAM DB type.
- *  @param[in] db_host                 BAM DB host.
- *  @param[in] db_port                 BAM DB port.
- *  @param[in] db_user                 BAM DB user.
- *  @param[in] db_password             BAM DB password.
- *  @param[in] db_name                 BAM DB name.
- *  @param[in] ext_cmd_file            External command file.
- *  @param[in] queries_per_transaction Queries per transaction.
- *  @param[in] check_replication       Check for replication status or
- *                                     not.
+ *  @param[in] type          BAM stream type.
+ *  @param[in] db_cfg        Database configuration.
+ *  @param[in] ext_cmd_file  External command file.
  */
 void connector::connect_to(
                   stream_type type,
-                  std::string const& db_type,
-                  std::string const& db_host,
-                  unsigned short db_port,
-                  std::string const& db_user,
-                  std::string const& db_password,
-                  std::string const& db_name,
-                  std::string const& ext_cmd_file,
-                  unsigned int queries_per_transaction,
-                  bool check_replication) {
+                  database_config const& db_cfg,
+                  std::string const& ext_cmd_file) {
   _type = type;
-  _db_type = db_type;
-  _db_host = db_host;
-  _db_port = db_port;
-  _db_user = db_user;
-  _db_password = db_password;
-  _db_name = db_name;
+  _db_cfg = db_cfg;
   _ext_cmd_file = ext_cmd_file;
-  _queries_per_transaction = queries_per_transaction;
-  _check_replication = check_replication;
   return ;
 }
 
@@ -128,29 +106,12 @@ void connector::connect_to(
 misc::shared_ptr<io::stream> connector::open() {
   if (_type == bam_bi_type) {
     misc::shared_ptr<reporting_stream>
-      s(new reporting_stream(
-              _db_type,
-              _db_host,
-              _db_port,
-              _db_user,
-              _db_password,
-              _db_name,
-              _queries_per_transaction,
-              _check_replication));
+      s(new reporting_stream(_db_cfg));
     return (s.staticCast<io::stream>());
   }
   else {
     misc::shared_ptr<monitoring_stream>
-      s(new monitoring_stream(
-              _db_type,
-              _db_host,
-              _db_port,
-              _db_user,
-              _db_password,
-              _db_name,
-              _ext_cmd_file,
-              _queries_per_transaction,
-              _check_replication));
+      s(new monitoring_stream(_db_cfg, _ext_cmd_file));
     s->initialize();
     return (s.staticCast<io::stream>());
   }
@@ -177,18 +138,11 @@ misc::shared_ptr<io::stream> connector::open(QString const& id) {
 /**
  *  Copy internal data members.
  *
- *  @param[in] c Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void connector::_internal_copy(connector const& c) {
-  _check_replication = c._check_replication;
-  _db_name = c._db_name;
-  _db_host = c._db_host;
-  _db_password = c._db_password;
-  _db_port = c._db_port;
-  _db_user = c._db_user;
-  _db_type = c._db_type;
-  _ext_cmd_file = c._ext_cmd_file;
-  _queries_per_transaction = c._queries_per_transaction;
-  _type = c._type;
+void connector::_internal_copy(connector const& other) {
+  _db_cfg = other._db_cfg;
+  _ext_cmd_file = other._ext_cmd_file;
+  _type = other._type;
   return ;
 }

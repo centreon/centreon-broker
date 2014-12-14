@@ -19,8 +19,6 @@
 
 #include <ctime>
 #include <QMutexLocker>
-#include <QSqlQuery>
-#include <QSqlError>
 #include <QVariant>
 #include <sstream>
 #include "com/centreon/broker/bam/availability_thread.hh"
@@ -34,28 +32,13 @@ using namespace com::centreon::broker::bam;
 /**
  *  Constructor.
  *
- *  @param[in] db_type      BAM DB type.
- *  @param[in] db_host      BAM DB host.
- *  @param[in] db_port      BAM DB port.
- *  @param[in] db_user      BAM DB user.
- *  @param[in] db_password  BAM DB password.
- *  @param[in] db_name      BAM DB name.
+ *  @param[in] db_cfg       Database configuration.
  *  @param[in] shared_map   A timeperiod map shared with the reporting.
  */
 availability_thread::availability_thread(
-                       QString const& db_type,
-                       QString const& db_host,
-                       unsigned short db_port,
-                       QString const& db_user,
-                       QString const& db_password,
-                       QString const& db_name,
+                       database_config const& db_cfg,
                        timeperiod_map& shared_map)
-  : _db_type(db_type),
-    _db_host(db_host),
-    _db_port(db_port),
-    _db_user(db_user),
-    _db_password(db_password),
-    _db_name(db_name),
+  : _db_cfg(db_cfg),
     _shared_tps(shared_map),
     _mutex(QMutex::NonRecursive),
     _should_exit(false),
@@ -104,7 +87,7 @@ void availability_thread::run() {
 
       // Close the database.
       _close_database();
-      }
+    }
     catch (std::exception const& e) {
       // Something bad happened. Wait for the next loop.
       logging::error(logging::medium) << e.what();
@@ -137,7 +120,7 @@ std::auto_ptr<QMutexLocker> availability_thread::lock() {
  *  @param[in] bas_to_rebuild  A string containing the bas to rebuild.
  */
 void availability_thread::rebuild_availabilities(
-    QString const& bas_to_rebuild) {
+                            QString const& bas_to_rebuild) {
   QMutexLocker lock(&_mutex);
   if (bas_to_rebuild.isEmpty())
     return ;
@@ -158,13 +141,11 @@ void availability_thread::_delete_all_availabilities() {
   query << "DELETE FROM mod_bam_reporting_ba_availabilities WHERE ba_id IN ("
         << _bas_to_rebuild.toStdString() << ")";
 
-  QSqlQuery q(*_db);
-  q.setForwardOnly(true);
-  if (!q.exec(query.str().c_str()))
-    throw (exceptions::msg()
-           << "BAM-BI: availability thread could not delete the "
-              "BA availabilities from the reporting database: "
-           << q.lastError().text());
+  database_query q(*_db);
+  q.run_query(
+      query.str(),
+      "BAM-BI: availability thread could not delete the "
+      "BA availabilities from the reporting database");
 }
 
 /**
@@ -177,8 +158,7 @@ void availability_thread::_delete_all_availabilities() {
 void availability_thread::_build_availabilities(time_t midnight) {
   time_t first_day = 0;
   time_t last_day = midnight;
-  QSqlQuery q(*_db);
-  q.setForwardOnly(true);
+  database_query q(*_db);
   std::stringstream query;
 
   // Get the first day of rebuilding. If a complete rebuilding was asked,
@@ -188,10 +168,16 @@ void availability_thread::_build_availabilities(time_t midnight) {
     query << "SELECT MIN(start_time), MAX(end_time), MIN(IFNULL(end_time, '0'))"
              "  FROM mod_bam_reporting_ba_events"
              "  WHERE ba_id IN (" << _bas_to_rebuild.toStdString() << ")";
-    if (!q.exec(query.str().c_str()) || !q.next())
+    try {
+      q.run_query(query.str());
+      if (!q.next())
+        throw (exceptions::msg() << "no events matching BAs to rebuild");
+    }
+    catch (std::exception const& e) {
       throw (exceptions::msg()
              << "BAM-BI: availability thread could not select the BA durations "
-                "from the reporting database: " << q.lastError().text());
+                "from the reporting database: " << e.what());
+    }
 
     first_day = q.value(0).toInt();
     first_day = _compute_start_of_day(first_day);
@@ -207,11 +193,17 @@ void availability_thread::_build_availabilities(time_t midnight) {
   else {
     query << "SELECT MAX(time_id)"
              "  FROM mod_bam_reporting_ba_availabilities";
-    if (!q.exec(query.str().c_str()) || !q.next())
+    try {
+      q.run_query(query.str());
+      if (!q.next())
+        throw (exceptions::msg() << "no availability in table");
+    }
+    catch (std::exception const& e) {
       throw (exceptions::msg()
              << "BAM-BI: availability thread "
                 "could not select the BA availabilities "
-                "from the reporting database: " << q.lastError().text());
+                "from the reporting database: " << e.what());
+    }
 
     first_day = q.value(0).toInt();
     first_day += (3600 * 24);

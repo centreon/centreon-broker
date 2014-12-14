@@ -23,6 +23,7 @@
 #  include <memory>
 #  include <QSqlDatabase>
 #  include <string>
+#  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -36,15 +37,7 @@ CCB_BEGIN()
  */
 class               database {
 public:
-                    database(
-                      std::string const& type,
-                      std::string const& host,
-                      unsigned short port,
-                      std::string const& user,
-                      std::string const& password,
-                      std::string const& db_name,
-                      int queries_per_transaction = 1,
-                      bool check_replication = false);
+                    database(database_config const& db_cfg);
                     ~database();
   void              commit();
   QSqlDatabase&     get_qt_db();
@@ -59,17 +52,11 @@ private:
   void              _commit();
   void              _new_transaction();
 
-  QString           _connection_id;
   std::auto_ptr<QSqlDatabase>
                     _db;
-  std::string       _db_name;
-  std::string       _host;
-  std::string       _password;
+  QString           _connection_id;
+  database_config   _db_cfg;
   int               _pending_queries;
-  unsigned short    _port;
-  int               _queries_per_transaction;
-  std::string       _type;
-  std::string       _user;
 };
 
 CCB_END()

@@ -55,42 +55,20 @@ using namespace com::centreon::broker::bam;
 /**
  *  Constructor.
  *
- *  @param[in] db_type                 BAM DB type.
- *  @param[in] db_host                 BAM DB host.
- *  @param[in] db_port                 BAM DB port.
- *  @param[in] db_user                 BAM DB user.
- *  @param[in] db_password             BAM DB password.
- *  @param[in] db_name                 BAM DB name.
- *  @param[in] ext_cmd_file            External command file.
- *  @param[in] queries_per_transaction Queries per transaction.
- *  @param[in] check_replication       true to check replication status.
+ *  @param[in] db_cfg        Database configuration.
+ *  @param[in] ext_cmd_file  External command file.
  */
 monitoring_stream::monitoring_stream(
-                     std::string const& db_type,
-                     std::string const& db_host,
-                     unsigned short db_port,
-                     std::string const& db_user,
-                     std::string const& db_password,
-                     std::string const& db_name,
-                     std::string const& ext_cmd_file,
-                     unsigned int queries_per_transaction,
-                     bool check_replication)
+                     database_config const& db_cfg,
+                     std::string const& ext_cmd_file)
   : _ext_cmd_file(ext_cmd_file),
     _process_out(true),
-    _db(
-      db_type,
-      db_host,
-      db_port,
-      db_user,
-      db_password,
-      db_name,
-      queries_per_transaction,
-      check_replication),
-  _ba_update(_db),
-  _bool_exp_update(_db),
-  _kpi_update(_db),
-  _meta_service_update(_db),
-  _pending_events(0) {
+    _db(db_cfg),
+    _ba_update(_db),
+    _bool_exp_update(_db),
+    _kpi_update(_db),
+    _meta_service_update(_db),
+    _pending_events(0) {
   // Prepare queries.
   _prepare();
 
@@ -355,7 +333,7 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
  */
 monitoring_stream::monitoring_stream(monitoring_stream const& other)
   : io::stream(other),
-    _db("", "", 0, "", "", ""),
+    _db(database_config()),
     _ba_update(_db),
     _bool_exp_update(_db),
     _kpi_update(_db),

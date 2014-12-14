@@ -18,8 +18,6 @@
 */
 
 #include <ctime>
-#include <QSqlError>
-#include <QSqlQuery>
 #include <sstream>
 #include "com/centreon/broker/database.hh"
 #include "com/centreon/broker/database_query.hh"

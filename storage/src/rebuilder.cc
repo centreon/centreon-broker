@@ -61,33 +61,18 @@ struct metric_info {
 /**
  *  Constructor.
  *
- *  @param[in] db_type                 DB type.
- *  @param[in] db_host                 DB host.
- *  @param[in] db_port                 DB port.
- *  @param[in] db_user                 DB user.
- *  @param[in] db_password             DB password.
- *  @param[in] db_name                 DB name.
+ *  @param[in] db_cfg                  Database configuration.
  *  @param[in] rebuild_check_interval  How often the rebuild thread will
  *                                     check for rebuild.
  *  @param[in] interval_length         Base time unit.
  *  @param[in] rrd_length              Length of RRD files.
  */
 rebuilder::rebuilder(
-             std::string const& db_type,
-             std::string const& db_host,
-             unsigned short db_port,
-             std::string const& db_user,
-             std::string const& db_password,
-             std::string const& db_name,
+             database_config const& db_cfg,
              unsigned int rebuild_check_interval,
              time_t interval_length,
              unsigned int rrd_length)
-  : _db_type(db_type),
-    _db_host(db_host),
-    _db_port(db_port),
-    _db_user(db_user),
-    _db_password(db_password),
-    _db_name(db_name),
+  : _db_cfg(db_cfg),
     _interval(rebuild_check_interval),
     _interval_length(interval_length),
     _rrd_len(rrd_length),
@@ -142,13 +127,7 @@ void rebuilder::run() {
       // Open DB.
       std::auto_ptr<database> db;
       try {
-        db.reset(new database(
-                       _db_type,
-                       _db_host,
-                       _db_port,
-                       _db_user,
-                       _db_password,
-                       _db_name));
+        db.reset(new database(_db_cfg));
       }
       catch (std::exception const& e) {
         throw (broker::exceptions::msg() << "storage: rebuilder: could "

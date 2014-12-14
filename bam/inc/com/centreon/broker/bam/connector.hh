@@ -21,60 +21,47 @@
 #  define CCB_BAM_CONNECTOR_HH
 
 #  include <QString>
+#  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace          bam {
+namespace           bam {
   /**
    *  @class connector connector.hh "com/centreon/broker/bam/connector.hh"
    *  @brief Connect to a database.
    *
    *  Send perfdata in a Centreon bam database.
    */
-  class            connector : public io::endpoint {
+  class             connector : public io::endpoint {
   public:
     enum stream_type {
       bam_type = 1,
       bam_bi_type
     };
 
-                   connector();
-                   connector(connector const& c);
-                   ~connector();
-    connector&     operator=(connector const& c);
-    io::endpoint*  clone() const;
-    void           close();
-    void           connect_to(
-                     stream_type type,
-                     std::string const& db_type,
-                     std::string const& db_host,
-                     unsigned short db_port,
-                     std::string const& db_user,
-                     std::string const& db_password,
-                     std::string const& db_name,
-                     std::string const& ext_cmd_file,
-                     unsigned int queries_per_transaction,
-                     bool check_replication);
+                    connector();
+                    connector(connector const& other);
+                    ~connector();
+    connector&      operator=(connector const& other);
+    io::endpoint*   clone() const;
+    void            close();
+    void            connect_to(
+                      stream_type type,
+                      database_config const& db_cfg,
+                      std::string const& ext_cmd_file);
     misc::shared_ptr<io::stream>
-                   open();
+                    open();
     misc::shared_ptr<io::stream>
-                   open(QString const& id);
+                    open(QString const& id);
 
    private:
-    void           _internal_copy(connector const& c);
+    void            _internal_copy(connector const& other);
 
-    bool           _check_replication;
-    std::string    _db_host;
-    std::string    _db_name;
-    std::string    _db_password;
-    unsigned short _db_port;
-    std::string    _db_user;
-    std::string    _db_type;
-    std::string    _ext_cmd_file;
-    unsigned int   _queries_per_transaction;
-    stream_type    _type;
+    database_config _db_cfg;
+    std::string     _ext_cmd_file;
+    stream_type     _type;
   };
 }
 

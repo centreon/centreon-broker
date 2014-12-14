@@ -30,6 +30,9 @@
 
 CCB_BEGIN()
 
+// Forward declaration.
+class              database_config;
+
 namespace          bam {
   /**
    *  @class monitoring_stream monitoring_stream.hh "com/centreon/broker/bam/monitoring_stream.hh"
@@ -41,15 +44,8 @@ namespace          bam {
   class            monitoring_stream : public io::stream {
   public:
                    monitoring_stream(
-                     std::string const& db_type,
-                     std::string const& db_host,
-                     unsigned short db_port,
-                     std::string const& db_user,
-                     std::string const& db_password,
-                     std::string const& db_name,
-                     std::string const& ext_cmd_file,
-                     unsigned int queries_per_transaction,
-                     bool check_replication = true);
+                     database_config const& db_cfg,
+                     std::string const& ext_cmd_file);
                    ~monitoring_stream();
     void           initialize();
     void           process(bool in = false, bool out = true);

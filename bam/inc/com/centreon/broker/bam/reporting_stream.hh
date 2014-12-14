@@ -36,6 +36,9 @@
 
 CCB_BEGIN()
 
+// Forward declaration.
+class              database_config;
+
 namespace          bam {
   // Forward declarations.
   class            dimension_timeperiod;
@@ -51,15 +54,7 @@ namespace          bam {
    */
   class            reporting_stream : public io::stream {
   public:
-                   reporting_stream(
-                     std::string const& db_type,
-                     std::string const& db_host,
-                     unsigned short db_port,
-                     std::string const& db_user,
-                     std::string const& db_password,
-                     std::string const& db_name,
-                     unsigned int queries_per_transaction,
-                     bool check_replication = true);
+                   reporting_stream(database_config const& db_cfg);
                    ~reporting_stream();
     void           process(bool in = false, bool out = true);
     void           read(misc::shared_ptr<io::data>& d);

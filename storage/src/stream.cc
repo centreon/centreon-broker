@@ -94,62 +94,35 @@ static inline bool double_equal(double a, double b) {
 /**
  *  Constructor.
  *
- *  @param[in] storage_type            Storage DB type.
- *  @param[in] storage_host            Storage DB host.
- *  @param[in] storage_port            Storage DB port.
- *  @param[in] storage_user            Storage DB user.
- *  @param[in] storage_password        Storage DB password.
- *  @param[in] storage_db              Storage DB name.
- *  @param[in] queries_per_transaction Queries per transaction.
+ *  @param[in] db_cfg                  Database configuration.
  *  @param[in] rrd_len                 RRD length.
  *  @param[in] interval_length         Interval length.
  *  @param[in] rebuild_check_interval  How often the stream must check
  *                                     for graph rebuild.
  *  @param[in] store_in_db             Should we insert data in
  *                                     data_bin ?
- *  @param[in] check_replication       true to check replication status.
  *  @param[in] insert_in_index_data    Create entries in index_data or
  *                                     not.
  */
 stream::stream(
-          std::string const& storage_type,
-          std::string const& storage_host,
-          unsigned short storage_port,
-          std::string const& storage_user,
-          std::string const& storage_password,
-          std::string const& storage_db,
-          unsigned int queries_per_transaction,
+          database_config const& db_cfg,
           unsigned int rrd_len,
           time_t interval_length,
           unsigned int rebuild_check_interval,
           bool store_in_db,
-          bool check_replication,
           bool insert_in_index_data)
   : _insert_in_index_data(insert_in_index_data),
     _interval_length(interval_length),
     _pending_events(0),
     _process_out(true),
     _rebuild_thread(
-      storage_type,
-      storage_host,
-      storage_port,
-      storage_user,
-      storage_password,
-      storage_db,
+      db_cfg,
       rebuild_check_interval,
       interval_length,
       rrd_len),
     _rrd_len(rrd_len ? rrd_len : 15552000),
     _store_in_db(store_in_db),
-    _db(
-      storage_type,
-      storage_host,
-      storage_port,
-      storage_user,
-      storage_password,
-      storage_db,
-      queries_per_transaction,
-      check_replication),
+    _db(db_cfg),
     _update_metrics(_db) {
   // Prepare queries.
   _prepare();
