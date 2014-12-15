@@ -28,6 +28,7 @@
 #  include <QMutex>
 #  include <QMutexLocker>
 #  include <QWaitCondition>
+#  include <QSemaphore>
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/database.hh"
 #  include "com/centreon/broker/io/data.hh"
@@ -98,6 +99,7 @@ namespace           bam {
     bool            _should_rebuild_all;
     QString         _bas_to_rebuild;
     QWaitCondition  _wait;
+    QSemaphore      _started;
   };
 }
 

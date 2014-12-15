@@ -58,6 +58,8 @@ availability_thread::~availability_thread() {
 void availability_thread::run() {
   // Lock the mutex.
   QMutexLocker lock(&_mutex);
+  // Release the thread that is waiting on our start.
+  _started.release();
 
   // Check for termination asked.
   if (_should_exit)
@@ -107,10 +109,13 @@ void availability_thread::terminate() {
 }
 
 /**
- *  Wait for the starting of this thread.
+ *  Start a thread, and wait for its initialization.
  */
 void availability_thread::start_and_wait() {
-  start();
+  if (!isRunning()) {
+    start();
+    _started.acquire();
+  }
 }
 
 
@@ -441,7 +446,6 @@ void availability_thread::_open_database() {
  */
 void availability_thread::_close_database() {
   if (_db.get()) {
-    _db->commit();
     _db.reset();
   }
 }
