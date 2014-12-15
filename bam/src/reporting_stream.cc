@@ -1753,7 +1753,7 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
               "SELECT ba_id, start_time, end_time, "
               "       status, in_downtime boolean"
               "  FROM mod_bam_reporting_ba_events"
-              "  WHERE end_time != 0"
+              "  WHERE end_time IS NOT NULL"
               "    AND ba_id IN (");
       query.append(r.bas_to_rebuild.toStdString());
       query.append(")");

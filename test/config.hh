@@ -43,6 +43,8 @@ public:
                   char const* bi_db_name = NULL,
                   char const* centreon_db_name = NULL);
 
+  void          set_remove_db_on_close(bool val);
+
 private:
                 test_db(test_db const& other);
   test_db&      operator=(test_db const& other);
@@ -56,6 +58,8 @@ private:
                 _centreon;
   std::auto_ptr<QSqlDatabase>
                 _storage;
+
+  bool          _remove_db_on_close;
 };
 
 /**

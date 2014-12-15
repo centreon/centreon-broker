@@ -18,6 +18,7 @@
 */
 
 #include <cmath>
+#include <ctime>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -129,7 +130,7 @@ static void check_ba_availability(
              "      alert_unknown_opened, nb_downtime,"
              "      timeperiod_is_default"
              "  FROM mod_bam_reporting_ba_availabilities"
-             "  ORDER BY ba_id");
+             "  ORDER BY ba_id, time_id ASC");
   QSqlQuery q(db);
   if (!q.exec(query))
     throw (exceptions::msg()
@@ -174,7 +175,7 @@ static void check_ba_availability(
              << baav[i].degraded << ", " << baav[i].unknown << ", "
              << baav[i].downtime << ", " << baav[i].alert_unavailable_opened << ", "
              << baav[i].alert_degraded_opened << ", " << baav[i].alert_unknown_opened << ", "
-             << baav[i].alert_unknown_opened << "," << baav[i].nb_downtime << ", "
+             << baav[i].alert_unknown_opened << ", " << baav[i].nb_downtime << ", "
              << baav[i].timeperiod_is_default << ")");
   }
   if (q.next())
@@ -283,14 +284,23 @@ int main() {
                << q.lastError().text());
     }
 
+    time_t now = ::time(NULL);
+    time_t midnight_time;
     // Create BA events.
     {
-      QString query(
-                "INSERT INTO mod_bam_reporting_ba_events (ba_event_id, ba_id, start_time, end_time, status, in_downtime)"
-                "  VALUES (1, 1, 0, 30, 0, false),"
-                "         (2, 2, 0, 50, 0, false),"
-                "         (3, 1, 30, 120, 1, false),"
-                "         (4, 2, 50, 160, 2, true)");
+      struct tm midnight;
+      ::localtime_r(&now, &midnight);
+      midnight.tm_sec = midnight.tm_min = midnight.tm_hour = 0;
+      midnight_time = ::mktime(&midnight) - (3600 * 24);
+      std::stringstream ss;
+      ss << "INSERT INTO mod_bam_reporting_ba_events (ba_event_id, ba_id, start_time, end_time, status, in_downtime)"
+            "  VALUES (1, 1, 0, 30, 0, false),"
+            "         (2, 2, 0, 50, 0, false),"
+            "         (3, 1, 30, 120, 1, false),"
+            "         (4, 2, 50, 160, 2, true),"
+            "         (5, 1, " << midnight_time << ", NULL, 1, false),"
+            "         (6, 2, " << midnight_time << ", NULL, 2, true)";
+      QString query(ss.str().c_str());
       QSqlQuery q(*db.bi_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create BA events: "
@@ -316,7 +326,7 @@ int main() {
     broker.update();
 
     // Let the broker do its things.
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // See if the ba events durations were created.
     {
@@ -335,7 +345,9 @@ int main() {
     {
       ba_availability baav[] =
       {{1, -3600, 1, 30, 0, 90, 0, 0, 0, 1, 0, 0, true},
-       {2, -3600, 1, 50, 110, 0, 0, 110, 1, 0, 0, 1, false}};
+       {1, midnight_time, 1, 0, 0, 3600 * 24, 0, 0, 0, 1, 0, 0, true},
+       {2, -3600, 1, 50, 110, 0, 0, 110, 1, 0, 0, 1, false},
+       {2, midnight_time, 1, 0, 3600 * 24, 0, 0, 3600 * 24, 1, 0, 0, 1, false},};
       check_ba_availability(*db.bi_db(),
                             baav,
                             sizeof(baav) / sizeof(*baav));
@@ -358,6 +370,7 @@ int main() {
     error = false;
   }
   catch (std::exception const& e) {
+    db.set_remove_db_on_close(false);
     std::cerr << e.what() << std::endl;
   }
   catch (...) {

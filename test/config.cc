@@ -34,7 +34,8 @@ using namespace com::centreon::broker;
 /**
  *  Default constructor.
  */
-test_db::test_db() {}
+test_db::test_db()
+  : _remove_db_on_close(true) {}
 
 /**
  *  Destructor.
@@ -149,6 +150,16 @@ void test_db::open(
 }
 
 /**
+ *  Should the db be removed on exit ?
+ *
+ *  @param[in] val  True if the db should be removed on exit.
+ */
+void test_db::set_remove_db_on_close(bool val) {
+  _remove_db_on_close = val;
+}
+
+
+/**
  *  Close a single database.
  *
  *  @param[in] db  Database.
@@ -156,7 +167,7 @@ void test_db::open(
 void test_db::_close(std::auto_ptr<QSqlDatabase>& db) {
   QString connection_name(db->connectionName());
 
-  {
+  if (_remove_db_on_close) {
     std::ostringstream query;
     query << "DROP DATABASE " << db->databaseName().toStdString();
     QSqlQuery q(*db);
