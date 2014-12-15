@@ -101,7 +101,7 @@ reporting_stream::reporting_stream(database_config const& db_cfg)
 
   // Initialize the availabilities thread.
   _availabilities.reset(new availability_thread(db_cfg, _timeperiods));
-  _availabilities->start();
+  _availabilities->start_and_wait();
 }
 
 /**
@@ -241,7 +241,7 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
  */
 reporting_stream::reporting_stream(reporting_stream const& other)
   : io::stream(other),
-    _db("", "", 0, "", "", ""),
+    _db(database_config("", "", 0, "", "", "")),
     _ba_event_insert(_db),
     _ba_full_event_insert(_db),
     _ba_event_update(_db),
@@ -867,6 +867,11 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
     // If nothing was updated (can happen when there is a gap between
     // the events for some reasons, then insert a new event in the database.
     if (_ba_event_update.num_rows_affected() == 0) {
+      logging::error(logging::medium)
+        << "BAM-BI: could not update the event of the BA " << be.ba_id
+        << " starting at " << it->second.front().start_time.get_time_t()
+        << " and ending at " << it->second.front().end_time.get_time_t()
+        << ": inserting a new event instead";
       _ba_full_event_insert.bind_value(":ba_id", be.ba_id);
       _ba_full_event_insert.bind_value(":first_level", be.first_level);
       _ba_full_event_insert.bind_value(
@@ -1045,6 +1050,11 @@ void reporting_stream::_process_kpi_event(
     // If nothing was updated (can happen when there is a gap between
     // the events for some reasons, then insert a new event in the database.
     if (_kpi_event_update.num_rows_affected() == 0) {
+      logging::error(logging::medium)
+        << "BAM-BI: could not update the event of the KPI " << ke.kpi_id
+        << " starting at " << ke.start_time.get_time_t()
+        << " and ending at " << ke.end_time.get_time_t()
+        << ": inserting a new event instead";
       _kpi_full_event_insert.bind_value(":kpi_id", ke.kpi_id);
       _kpi_full_event_insert.bind_value(
         ":start_time",

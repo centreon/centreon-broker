@@ -90,13 +90,13 @@ unsigned int cleanup::get_interval() const throw () {
 void cleanup::run() {
   while (!_should_exit && _interval) {
     try {
-      database db(
-                 _db_type,
-                 _db_host,
-                 _db_port,
-                 _db_user,
-                 _db_password,
-                 _db_name);
+      database db(database_config(
+                   _db_type,
+                   _db_host,
+                   _db_port,
+                   _db_user,
+                   _db_password,
+                   _db_name));
       database_query q(db);
 
       q.run_query(

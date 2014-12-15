@@ -22,6 +22,7 @@
 #include <QVariant>
 #include <sstream>
 #include "com/centreon/broker/bam/availability_thread.hh"
+#include "com/centreon/broker/database_query.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
@@ -104,6 +105,14 @@ void availability_thread::terminate() {
   _should_exit = true;
   _wait.wakeOne();
 }
+
+/**
+ *  Wait for the starting of this thread.
+ */
+void availability_thread::start_and_wait() {
+  start();
+}
+
 
 /**
  *  Lock the main mutex of the availability thread.
@@ -229,7 +238,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
  *  @param[in] day_end   The end of the day.
  */
 void availability_thread::_build_daily_availabilities(
-                            QSqlQuery& q,
+                            database_query& q,
                             time_t day_start,
                             time_t day_end) {
   logging::info(logging::medium)
@@ -249,10 +258,10 @@ void availability_thread::_build_daily_availabilities(
     query << "(b.ba_id IN (" << _bas_to_rebuild.toStdString() << ")) AND ";
   query << "(a.end_time >= " << day_start << " AND a.end_time < " << day_end
         << ")";
-  if (!q.exec(query.str().c_str()))
-    throw (exceptions::msg()
-           << "BAM-BI: availability thread could not build the data: "
-            << q.lastError().text());
+
+  q.run_query(
+      query.str(),
+      "BAM-BI: availability thread could not build the data: ");
 
   // Create a builder for each ba_id and associated timeperiod_id.
   std::map<std::pair<unsigned int, unsigned int>,
@@ -295,10 +304,10 @@ void availability_thread::_build_daily_availabilities(
   if (_should_rebuild_all)
     query << "(ba_id IN (" << _bas_to_rebuild.toStdString() << ")) AND ";
   query << "(start_time < " << day_end << " AND end_time IS NULL)";
-  if (!q.exec(query.str().c_str()))
-    throw (exceptions::msg()
-           << "BAM-BI: availability thread could not build the data: "
-            << q.lastError().text());
+
+  q.run_query(
+      query.str(),
+      "BAM-BI: availability thread could not build the data: ");
 
   while (q.next()) {
     unsigned int ba_id = q.value(1).toInt();
@@ -353,7 +362,7 @@ void availability_thread::_build_daily_availabilities(
  *  @param[in] timeperiod_id          The id of the timeperiod.
  */
 void availability_thread::_write_availability(
-                            QSqlQuery& q,
+                            database_query& q,
                             availability_builder const& builder,
                             unsigned int ba_id,
                             time_t day_start,
@@ -377,10 +386,9 @@ void availability_thread::_write_availability(
         << builder.get_unavailable_opened() << ", "
         << builder.get_degraded_opened() << ", " << builder.get_unknown_opened()
         << ", " << builder.get_downtime_opened() << ")";
-  if (!q.exec(query.str().c_str()))
-    throw (exceptions::msg()
-           << "BAM-BI: availability thread could not insert an availability: "
-           << q.lastError().text());
+  q.run_query(
+      query.str(),
+      "BAM-BI: availability thread could not insert an availability: ");
 }
 
 /**
@@ -418,24 +426,14 @@ void availability_thread::_open_database() {
   bam_id.setNum((qulonglong)this, 16);
 
   // Add database connection.
-  _db.reset(
-        new QSqlDatabase(QSqlDatabase::addDatabase(
-                                         _db_type,
-                                         bam_id)));
-  // Set DB parameters.
-  _db->setHostName(_db_host);
-  _db->setPort(_db_port);
-  _db->setUserName(_db_user);
-  _db->setPassword(_db_password);
-  _db->setDatabaseName(_db_name);
-
-  // Open database.
-  if (!_db->open())
+  try {
+  _db.reset(new database(_db_cfg));
+  }
+  catch (std::exception const& e) {
     throw (exceptions::msg()
            << "BAM-BI: availability thread could not connect to "
-              "reporting database '"
-           << _db_name << "' on host '" << _db_host
-           << ":" << _db_port << "': " << _db->lastError().text());
+              "reporting database '" << e.what());
+  }
 }
 
 /**
@@ -443,10 +441,7 @@ void availability_thread::_open_database() {
  */
 void availability_thread::_close_database() {
   if (_db.get()) {
-    _db->close();
+    _db->commit();
     _db.reset();
-    QString bam_id;
-    bam_id.setNum((qulonglong)this, 16);
-    QSqlDatabase::removeDatabase(bam_id);
   }
 }

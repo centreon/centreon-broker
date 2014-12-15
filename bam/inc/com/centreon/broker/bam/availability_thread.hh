@@ -29,6 +29,7 @@
 #  include <QMutexLocker>
 #  include <QWaitCondition>
 #  include "com/centreon/broker/database_config.hh"
+#  include "com/centreon/broker/database.hh"
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
@@ -56,6 +57,7 @@ namespace           bam {
                     ~availability_thread();
     virtual void    run();
     void            terminate();
+    void            start_and_wait();
 
     std::auto_ptr<QMutexLocker>
                     lock();
