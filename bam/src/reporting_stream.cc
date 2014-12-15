@@ -342,6 +342,86 @@ void reporting_stream::_apply(
 }
 
 /**
+ *  Delete inconsistent events.
+ *
+ *  @param[in] event_type  Event type (BA or KPI).
+ *  @param[in] table       Table name.
+ *  @param[in] id          Table ID name.
+ */
+void reporting_stream::_close_inconsistent_events(
+                         char const* event_type,
+                         char const* table,
+                         char const* id) {
+  database_query q(_db);
+
+  // Get events to close.
+  std::list<std::pair<unsigned int, time_t> > events;
+  {
+    std::ostringstream query;
+    query << "SELECT e1." << id << ", e1.start_time"
+          << "  FROM " << table << " As e1 INNER JOIN ("
+          << "    SELECT " << id << ", MAX(start_time) AS max_start_time"
+          << "      FROM " << table
+          << "      GROUP BY " << id << ") AS e2"
+          << "        ON e1." << id << "=e2." << id
+          << "  WHERE e1.end_time IS NULL"
+          << "    AND e1.start_time!=e2.max_start_time";
+    q.run_query(
+        query.str(),
+        "BAM-BI: could not get inconsistent events");
+    while (q.next())
+      events.push_back(std::make_pair(
+               q.value(0).toUInt(),
+               static_cast<time_t>(q.value(1).toLongLong())));
+  }
+
+  // Close each event.
+  for (std::list<std::pair<unsigned int, time_t> >::const_iterator
+         it(events.begin()),
+         end(events.end());
+       it != end;
+       ++it) {
+    time_t end_time;
+    {
+      std::ostringstream oss;
+      oss << "SELECT start_time"
+          << "  FROM " << table
+          << "  WHERE " << id << "=" << it->first
+          << "    AND start_time>" << it->second
+          << "  ORDER BY start_time ASC"
+          << "  LIMIT 1";
+      try {
+        q.run_query(oss.str());
+        if (!q.next())
+          throw (exceptions::msg() << "no event following this one");
+      }
+      catch (std::exception const& e) {
+        throw (exceptions::msg()
+               << "BAM-BI: could not get end time of inconsistent event of "
+               << event_type << " " << it->first << " starting at "
+               << it->second << ": " << e.what());
+      }
+      end_time = q.value(0).toLongLong();
+    }
+    {
+      std::ostringstream oss;
+      oss << "UPDATE " << table
+          << "  SET end_time=" << end_time
+          << "  WHERE " << id << "=" << it->first
+          << "  AND start_time=" << it->second;
+      try { q.run_query(oss.str()); }
+      catch (std::exception const& e) {
+        throw (exceptions::msg()
+               << "BAM-BI: could not close inconsistent event of "
+               << event_type << it->first << " starting at "
+               << it->second << ": " << e.what());
+      }
+    }
+  }
+  return ;
+}
+
+/**
  *  Load last BA/KPI events from DB.
  */
 void reporting_stream::_load_last_events() {
@@ -355,6 +435,18 @@ void reporting_stream::_load_last_events() {
         "BAM-BI: could not fetch the list of existing BAs");
     while (q.next())
       ids.push_back(q.value(0).toUInt());
+  }
+
+  // Delete inconsistent entries.
+  {
+    _close_inconsistent_events(
+      "BA",
+      "mod_bam_reporting_ba_events",
+      "ba_id");
+    _close_inconsistent_events(
+      "KPI",
+      "mod_bam_reporting_kpi_events",
+      "kpi_id");
   }
 
   // Load the last two events for each BA.

@@ -68,6 +68,10 @@ namespace          bam {
     void           _apply(dimension_timeperiod const& tp);
     void           _apply(dimension_timeperiod_exception const& tpe);
     void           _apply(dimension_timeperiod_exclusion const& tpe);
+    void           _close_inconsistent_events(
+                     char const* event_type,
+                     char const* table,
+                     char const* id);
     void           _load_last_events();
     void           _load_timeperiods();
     void           _prepare();
