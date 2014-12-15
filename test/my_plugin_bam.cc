@@ -76,7 +76,8 @@ int main(int argc, char* argv[]) {
     retval = q.value(0).toInt();
     std::cout << "BA " << ba_id << " has state " << retval
               << " and level " << q.value(1).toFloat()
-              << "|value=" << q.value(1).toFloat() << "\n";
+              << "|BA_Level=" << static_cast<int>(q.value(1).toFloat())
+              << "%\n";
   }
   catch (std::exception const& e) {
     std::cout << e.what() << "\n";
