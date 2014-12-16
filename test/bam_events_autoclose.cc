@@ -117,7 +117,7 @@ int main() {
                << q.lastError().text());
       size_t i(0);
       while (q.next()) {
-        if (i > sizeof(entries) / sizeof(*entries))
+        if (i >= sizeof(entries) / sizeof(*entries))
           throw (exceptions::msg() << "too much BA events");
         if ((q.value(0).toUInt() != entries[i].ba_id)
             || (q.value(1).toLongLong() != entries[i].start_time)
