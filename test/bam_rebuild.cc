@@ -323,10 +323,10 @@ int main() {
     broker.set_config_file(config_file);
     broker.start();
     sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
-    broker.update();
 
+    broker.update();
     // Let the broker do its things.
-    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(6 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // See if the ba events durations were created.
     {
@@ -347,7 +347,7 @@ int main() {
       {{1, -3600, 1, 30, 0, 90, 0, 0, 0, 1, 0, 0, true},
        {1, midnight_time, 1, 0, 0, 3600 * 24, 0, 0, 0, 1, 0, 0, true},
        {2, -3600, 1, 50, 110, 0, 0, 110, 1, 0, 0, 1, false},
-       {2, midnight_time, 1, 0, 3600 * 24, 0, 0, 3600 * 24, 1, 0, 0, 1, false},};
+       {2, midnight_time, 1, 0, 3600 * 24, 0, 0, 3600 * 24, 1, 0, 0, 1, false}};
       check_ba_availability(*db.bi_db(),
                             baav,
                             sizeof(baav) / sizeof(*baav));
