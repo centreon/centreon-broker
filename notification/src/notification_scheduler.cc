@@ -108,7 +108,7 @@ void notification_scheduler::exit() throw () {
 /**
  *  @brief Add an action to the internal queue.
  *
- *  Called outside the notif thread context.
+ *  Can be called outside or inside the notif thread context.
  *
  *  @param at  The time of the action.
  *  @param a   The action.

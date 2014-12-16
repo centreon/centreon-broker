@@ -41,8 +41,6 @@ namespace        notification {
    *  @tparam precision  The precision.
    *
    *  @param[out] ost    The stringstream to modify.
-   *
-   *  @return  The value of the macro.
    */
   template <int precision>
   void set_precision(std::ostringstream& ost) {
@@ -55,8 +53,6 @@ namespace        notification {
    *  Specialization of set_precision for precision = 0;
    *
    *  @param[out] ost    The stringstream to modify.
-   *
-   *  @return  The value of the macro.
    */
   template <> void inline set_precision<0>(std::ostringstream& ost) {}
 
