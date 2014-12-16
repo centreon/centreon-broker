@@ -232,7 +232,8 @@ int main() {
                 "                     sla_month_duration_warn, sla_month_duration_crit,"
                 "                     must_be_rebuild, id_reporting_period, activate)"
                 "  VALUES (1, 'BA1', 'DESC1', 90, 80, 70, 60, '1', 1, '1'),"
-                "         (2, 'BA2', 'DESC2', 80, 70, 60, 50, '1', NULL, '1')");
+                "         (2, 'BA2', 'DESC2', 80, 70, 60, 50, '1', NULL, '1'),"
+                "         (3, 'BA3', 'DESC3', 70, 60, 50, 40, '1', 1, '1')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create BAs: "
@@ -251,7 +252,8 @@ int main() {
       QString query(
                 "INSERT INTO service (service_id, service_description)"
                 "  VALUES (1001, 'ba_1'),"
-                "         (1002, 'ba_2')");
+                "         (1002, 'ba_2'),"
+                "         (1003, 'ba_3')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg()
@@ -262,7 +264,7 @@ int main() {
       QString query(
                 "INSERT INTO host_service_relation"
                 "            (host_host_id, service_service_id)"
-                "  VALUES (1001, 1001), (1001, 1002)");
+                "  VALUES (1001, 1001), (1001, 1002), (1001, 1003)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg()
@@ -277,7 +279,8 @@ int main() {
                 "                     sla_month_percent_crit, sla_month_percent_warn,"
                 "                     sla_month_duration_crit, sla_month_duration_warn)"
                 "  VALUES (1, 'BA1', 'DESC1', 90, 80, 70, 60),"
-                "         (2, 'BA2', 'DESC2', 80, 70, 60, 50)");
+                "         (2, 'BA2', 'DESC2', 80, 70, 60, 50),"
+                "         (3, 'BA3', 'DESC3', 70, 60, 50, 40)");
       QSqlQuery q(*db.bi_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create BA dimensions: "
@@ -299,7 +302,11 @@ int main() {
             "         (3, 1, 30, 120, 1, false),"
             "         (4, 2, 50, 160, 2, true),"
             "         (5, 1, " << midnight_time << ", NULL, 1, false),"
-            "         (6, 2, " << midnight_time << ", NULL, 2, true)";
+            "         (6, 2, " << midnight_time << ", NULL, 2, true),"
+            "         (7, 3, 1418209039, 1418314059, 0, false),"
+            "         (8, 3, 1418314059, 1418327489, 0, false),"
+            "         (9, 3, 1418327489, 1418329589, 2, false),"
+            "         (10, 3, 1418329589, 1418398892, 0, false)";
       QString query(ss.str().c_str());
       QSqlQuery q(*db.bi_db());
       if (!q.exec(query))
@@ -324,33 +331,42 @@ int main() {
     broker.start();
     sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
-    broker.update();
     // Let the broker do its things.
     sleep_for(6 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // See if the ba events durations were created.
     {
-      ba_event_duration baed[] =
-      {{1, 1, 0, 30, 30, 30, true},
-       {2, 1, 0, 50, 50, 50, false},
-       {3, 1, 30, 120, 90, 90, true},
-       {4, 1, 50, 160, 110, 110, false}};
-
-      check_ba_event_durations(*db.bi_db(),
-                               baed,
-                               sizeof(baed) / sizeof(*baed));
+      ba_event_duration baed[] = {
+        { 1, 1, 0, 30, 30, 30, true },
+        { 2, 1, 0, 50, 50, 50, false },
+        { 3, 1, 30, 120, 90, 90, true },
+        { 4, 1, 50, 160, 110, 110, false },
+        { 7, 1, 1418209039, 1418314059, 105020, 105020, true },
+        { 8, 1, 1418314059, 1418327489, 13430, 13430, true },
+        { 9, 1, 1418327489, 1418329589, 2100, 2100, true },
+        { 10, 1, 1418329589, 1418398892, 69303, 69303, true }
+      };
+      check_ba_event_durations(
+        *db.bi_db(),
+        baed,
+        sizeof(baed) / sizeof(*baed));
     }
 
     // See if the ba availabilities were created.
     {
-      ba_availability baav[] =
-      {{1, -3600, 1, 30, 0, 90, 0, 0, 0, 1, 0, 0, true},
-       {1, midnight_time, 1, 0, 0, 3600 * 24, 0, 0, 0, 1, 0, 0, true},
-       {2, -3600, 1, 50, 110, 0, 0, 110, 1, 0, 0, 1, false},
-       {2, midnight_time, 1, 0, 3600 * 24, 0, 0, 3600 * 24, 1, 0, 0, 1, false}};
-      check_ba_availability(*db.bi_db(),
-                            baav,
-                            sizeof(baav) / sizeof(*baav));
+      ba_availability baav[] = {
+        { 1, -3600, 1, 30, 0, 90, 0, 0, 0, 1, 0, 0, true },
+        { 1, midnight_time, 1, 0, 0, 3600 * 24, 0, 0, 0, 1, 0, 0, true },
+        { 2, -3600, 1, 50, 110, 0, 0, 110, 1, 0, 0, 1, false },
+        { 2, midnight_time, 1, 0, 3600 * 24, 0, 0, 3600 * 24, 1, 0, 0, 1, false },
+        { 3, 1418166000, 1, 43361, 0, 0, 0, 0, 0, 0, 0, 0, true },
+        { 3, 1418252400, 1, 84300, 2100, 0, 0, 0, 1, 0, 0, 0, true },
+        { 3, 1418338800, 1, 60092, 0, 0, 0, 0, 0, 0, 0, 0, true }
+      };
+      check_ba_availability(
+        *db.bi_db(),
+        baav,
+        sizeof(baav) / sizeof(*baav));
     }
 
     // See if the ba were marked as rebuilt.
