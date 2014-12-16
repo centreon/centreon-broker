@@ -43,9 +43,18 @@ notification_scheduler::notification_scheduler(state& st, node_cache& cache)
  *  Called by the notification thread when it starts.
  */
 void notification_scheduler::run() {
+  bool just_started = true;
+
   while (1) {
     // Lock the general mutex used by the notification scheduler.
     _general_mutex.lock();
+
+    // Signal the thread waiting on us that we have started.
+    if (just_started) {
+      _started.release();
+      just_started = false;
+    }
+
     // Wait until the first action in the queue - or forever until awakened
     // if the queue is empty.
     time_t first_time = _queue.get_first_time();
@@ -72,6 +81,15 @@ void notification_scheduler::run() {
     // Process the actions and release the mutex.
     _process_actions();
   }
+}
+
+/**
+ *  Start the notification scheduler and wait until it has started.
+ */
+void notification_scheduler::start() {
+  QThread::start();
+  // Wait until the thread has started.
+  _started.acquire();
 }
 
 /**

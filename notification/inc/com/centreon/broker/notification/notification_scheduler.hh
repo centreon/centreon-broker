@@ -24,6 +24,7 @@
 #  include <map>
 #  include <QThread>
 #  include <QMutex>
+#  include <QSemaphore>
 #  include <QWaitCondition>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/action.hh"
@@ -48,6 +49,7 @@ namespace             notification {
                   ::com::centreon::broker::notification::state& st,
                   ::com::centreon::broker::notification::node_cache& cache);
 
+    void       start();
     void       exit() throw ();
     void       add_action_to_queue(time_t at, action a);
     void       remove_actions_of_node(objects::node_id id);
@@ -61,6 +63,7 @@ namespace             notification {
     QMutex     _general_mutex;
     QWaitCondition
                _general_condition;
+    QSemaphore _started;
 
     void       _process_actions();
     void       _schedule_actions(
