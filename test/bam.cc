@@ -760,6 +760,7 @@ int main() {
     // Modify service states.
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;3;1;output2 for (1, 3)");
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;5;1;output2 for (1, 5)");
+    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;8;1;output2 for (1, 8)");
 
     // Sleep a while.
