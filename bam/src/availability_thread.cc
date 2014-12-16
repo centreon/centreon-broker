@@ -261,12 +261,13 @@ void availability_thread::_build_daily_availabilities(
            "  WHERE ";
   if (_should_rebuild_all)
     query << "(b.ba_id IN (" << _bas_to_rebuild.toStdString() << ")) AND ";
-  query << "(a.end_time >= " << day_start << " AND a.end_time < " << day_end
-        << ")";
+  query << "((a.start_time BETWEEN " << day_start << " AND " << day_end
+        << ") OR (a.end_time BETWEEN " << day_start << " AND " << day_end
+        << ") OR (" << day_start << " BETWEEN a.start_time AND a.end_time))";
 
   q.run_query(
       query.str(),
-      "BAM-BI: availability thread could not build the data: ");
+      "BAM-BI: availability thread could not build the data");
 
   // Create a builder for each ba_id and associated timeperiod_id.
   std::map<std::pair<unsigned int, unsigned int>,

@@ -112,12 +112,11 @@ void availability_builder::add_event(
   // computing.
   if (end < _start)
     return ;
-  // Check that the start of the event is not before the starting point of the
-  // computing.
-  if (start < _start) {
-    double diff = std::difftime(_start, start);
-    start += diff;
-  }
+  // Check that the event times are within the computed day.
+  if (start < _start)
+    start = _start;
+  if (_end < end)
+    end = _end;
 
   // Compute the sla_duration on the period.
   unsigned int sla_duration = tp->duration_intersect(start, end);
