@@ -242,7 +242,7 @@ CREATE TABLE meta_service (
   graph_id int default NULL,
   meta_comment text,
   meta_activate enum('0','1') default NULL,
---  value float default NULL,
+  value float default NULL,
 
   PRIMARY KEY (meta_id)
 );
