@@ -88,6 +88,7 @@ monitoring_stream::monitoring_stream(
   // Apply configuration.
   _applier.apply(s);
   _ba_mapping = s.get_ba_svc_mapping();
+  _meta_mapping = s.get_meta_svc_mapping();
 
   // Check if we need to rebuild something.
   _rebuild();
@@ -158,6 +159,7 @@ void monitoring_stream::update() {
     }
     _applier.apply(s);
     _ba_mapping = s.get_ba_svc_mapping();
+    _meta_mapping = s.get_meta_svc_mapping();
     _rebuild();
   }
   catch (std::exception const& e) {
@@ -310,6 +312,25 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
         throw (exceptions::msg()
                << "BAM: could not update meta-service "
                << status->meta_service_id << ": " << e.what());
+      }
+
+      if (status->state_changed) {
+        std::pair<std::string, std::string>
+          meta_svc_name(_meta_mapping.get_service(status->meta_service_id));
+        if (meta_svc_name.first.empty() || meta_svc_name.second.empty()) {
+          logging::error(logging::high)
+            << "BAM: could not trigger check of virtual service of meta-service "
+            << status->meta_service_id
+            << ": host name and service description were not found";
+        }
+        else {
+          std::ostringstream oss;
+          time_t now(time(NULL));
+          oss << "[" << now << "] SCHEDULE_FORCED_SVC_CHECK;"
+              << meta_svc_name.first << ";" << meta_svc_name.second
+              << ";" << now;
+          _write_external_command(oss.str());
+        }
       }
     }
   }

@@ -89,14 +89,16 @@ void applier::meta_service::apply(
          end(to_create.end());
        it != end;) {
     std::map<unsigned int, applied>::iterator
-      cfg_it(to_delete.find(it->get_id()));
+      cfg_it(to_delete.find(it->first));
     // Found = modify (or not).
     if (cfg_it != to_delete.end()) {
       // Configuration mismatch, modify object.
-      if (cfg_it->second.cfg != *it)
-        to_modify.push_back(*it);
+      if (cfg_it->second.cfg != it->second)
+        to_modify.push_back(it->second);
       to_delete.erase(cfg_it);
-      it = to_create.erase(it);
+      bam::configuration::state::meta_services::iterator tmp = it;
+      ++it;
+      to_create.erase(tmp);
     }
     // Not found = create.
     else
@@ -127,10 +129,11 @@ void applier::meta_service::apply(
        it != end;
        ++it) {
     logging::config(logging::medium)
-      << "BAM: creating meta-service " << it->get_id();
-    misc::shared_ptr<bam::meta_service> new_meta(_new_meta(*it, book));
-    applied& content(_applied[it->get_id()]);
-    content.cfg = *it;
+      << "BAM: creating meta-service " << it->first;
+    misc::shared_ptr<bam::meta_service>
+      new_meta(_new_meta(it->second, book));
+    applied& content(_applied[it->first]);
+    content.cfg = it->second;
     content.obj = new_meta;
   }
 

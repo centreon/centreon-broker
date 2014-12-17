@@ -84,6 +84,7 @@ namespace            bam {
 
     computation_type _computation;
     unsigned int     _id;
+    short            _last_state;
     double           _level_critical;
     double           _level_warning;
     umap<unsigned int, double>

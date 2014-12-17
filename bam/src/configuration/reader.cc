@@ -72,7 +72,7 @@ void reader::read(state& st) {
     _load(st.get_bas(), st.get_ba_svc_mapping());
     _load(st.get_kpis());
     _load(st.get_bool_exps());
-    _load(st.get_meta_services());
+    _load(st.get_meta_services(), st.get_meta_svc_mapping());
     _load(st.get_hst_svc_mapping());
   }
   catch (std::exception const& e) {
@@ -224,8 +224,8 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
            << e.what());
   }
 
-  // Load the associated ba_id from the table services.
-  // All the associated services have for description 'ba_[id]'.
+  // Load host_id/service_id of virtual BA services. All the associated
+  // services have for description 'ba_[id]'.
   try {
     database_query query(_db);
     query.run_query(
@@ -413,8 +413,12 @@ void reader::_load(state::bool_exps& bool_exps) {
  *  Load meta-services from the DB.
  *
  *  @param[out] meta_services  Meta-services.
+ *  @param[out] mapping        The mapping of meta-service ID to
+ *                             host/service IDs.
  */
-void reader::_load(state::meta_services& meta_services) {
+void reader::_load(
+               state::meta_services& meta_services,
+               bam::ba_svc_mapping& mapping) {
   // Load meta-services.
   try {
     database_query q(_db);
@@ -423,19 +427,22 @@ void reader::_load(state::meta_services& meta_services) {
       "       meta_select_mode, regexp_str, metric"
       "  FROM meta_service"
       "  WHERE meta_activate='1'");
-    while (q.next())
-      meta_services.push_back(meta_service(
-                                q.value(0).toUInt(),
-                                q.value(1).toString().toStdString(),
-                                q.value(2).toString().toStdString(),
-                                q.value(3).toDouble(),
-                                q.value(4).toDouble(),
-                                (q.value(5).toInt() == 2
-                                ? q.value(6).toString().toStdString()
-                                : ""),
-                                (q.value(5).toInt() == 2
-                                 ? q.value(7).toString().toStdString()
-                                 : "")));
+    while (q.next()) {
+      unsigned int meta_id(q.value(0).toUInt());
+      meta_services[meta_id] =
+        meta_service(
+          q.value(0).toUInt(),
+          q.value(1).toString().toStdString(),
+          q.value(2).toString().toStdString(),
+          q.value(3).toDouble(),
+          q.value(4).toDouble(),
+          (q.value(5).toInt() == 2
+           ? q.value(6).toString().toStdString()
+           : ""),
+          (q.value(5).toInt() == 2
+           ? q.value(7).toString().toStdString()
+           : ""));
+    }
   }
   catch (reader_exception const& e) {
     (void)e;
@@ -447,6 +454,68 @@ void reader::_load(state::meta_services& meta_services) {
            << e.what());
   }
 
+  // Load host_id/service_id of virtual meta-service services. All
+  // associated services have for description 'meta_[id]'.
+  try {
+    database_query q(_db);
+    q.run_query(
+      "SELECT h.host_name, s.service_description"
+      "  FROM service AS s"
+      "  INNER JOIN host_service_relation AS hsr"
+      "    ON s.service_id=hsr.service_service_id"
+      "  INNER JOIN host AS h"
+      "    ON hsr.host_host_id=h.host_id"
+      "  WHERE s.service_description LIKE 'meta_%'");
+    while (q.next()) {
+      std::string service_description(q.value(1).toString().toStdString());
+      service_description.erase(0, strlen("meta_"));
+      bool ok(false);
+      unsigned int meta_id(QString(service_description.c_str()).toUInt(&ok));
+      if (!ok) {
+        logging::info(logging::medium)
+          << "BAM: service '" << q.value(1).toString() << "' of host '"
+          << q.value(0).toString()
+          << "' is not a valid virtual meta-service service";
+        continue ;
+      }
+      state::meta_services::iterator found(meta_services.find(meta_id));
+      if (found == meta_services.end()) {
+        logging::info(logging::medium)
+          << "BAM: virtual meta-service service '"
+          << q.value(1).toString() << "' of host '"
+          << q.value(0).toString()
+          << "' references an unknown meta-service (" << meta_id << ")";
+        continue ;
+      }
+      mapping.set(
+                meta_id,
+                q.value(0).toString().toStdString(),
+                q.value(1).toString().toStdString());
+    }
+  }
+  catch (reader_exception const& e) {
+    (void)e;
+    throw ;
+  }
+  catch (std::exception const& e) {
+    throw (reader_exception()
+           << "BAM: could not retrieve meta-services' service IDs from DB: "
+           << e.what());
+  }
+
+  // Check for meta-services without service ID.
+  for (state::meta_services::const_iterator
+         it(meta_services.begin()),
+         end(meta_services.end());
+       it != end;
+       ++it) {
+    std::pair<std::string, std::string>
+      svc(mapping.get_service(it->first));
+    if (svc.first.empty() || svc.second.empty())
+      throw (reader_exception() << "BAM: meta-service "
+             << it->first << " has no associated service");
+  }
+
   // Load metrics of meta-services.
   std::auto_ptr<database> storage_db;
   for (state::meta_services::iterator
@@ -455,8 +524,8 @@ void reader::_load(state::meta_services& meta_services) {
        it != end;
        ++it) {
     // SQL LIKE mode.
-    if (!it->get_service_filter().empty()
-        && !it->get_metric_name().empty()) {
+    if (!it->second.get_service_filter().empty()
+        && !it->second.get_metric_name().empty()) {
       std::ostringstream query;
       query << "SELECT m.metric_id"
             << "  FROM metrics AS m"
@@ -464,8 +533,10 @@ void reader::_load(state::meta_services& meta_services) {
             << "    ON m.index_id=i.id"
             << "    INNER JOIN services AS s"
             << "    ON i.host_id=s.host_id AND i.service_id=s.service_id"
-            << "  WHERE s.description LIKE '" << it->get_service_filter() << "'"
-            << "    AND m.metric_name='" << it->get_metric_name() << "'";
+            << "  WHERE s.description LIKE '"
+            << it->second.get_service_filter() << "'"
+            << "    AND m.metric_name='"
+            << it->second.get_metric_name() << "'";
       if (!storage_db.get())
         try { storage_db.reset(new database(_storage_cfg)); }
         catch (std::exception const& e) {
@@ -479,10 +550,10 @@ void reader::_load(state::meta_services& meta_services) {
       catch (std::exception const& e) {
         throw (reader_exception()
                << "BAM: could not retrieve members of meta-service '"
-               << it->get_name() << "': " << e.what());
+               << it->second.get_name() << "': " << e.what());
       }
       while (q.next())
-        it->add_metric(q.value(0).toUInt());
+        it->second.add_metric(q.value(0).toUInt());
     }
     // Service list mode.
     else {
@@ -490,12 +561,12 @@ void reader::_load(state::meta_services& meta_services) {
         std::ostringstream query;
         query << "SELECT metric_id"
               << "  FROM meta_service_relation"
-              << "  WHERE meta_id=" << it->get_id()
+              << "  WHERE meta_id=" << it->second.get_id()
               << "    AND activate='1'";
         database_query q(_db);
         q.run_query(query.str());
         while (q.next())
-          it->add_metric(q.value(0).toUInt());
+          it->second.add_metric(q.value(0).toUInt());
       }
       catch (reader_exception const& e) {
         (void)e;
@@ -504,7 +575,7 @@ void reader::_load(state::meta_services& meta_services) {
       catch (std::exception const& e) {
         throw (reader_exception()
                << "BAM: could not retrieve members of meta-service '"
-               << it->get_name() << "': " << e.what());
+               << it->second.get_name() << "': " << e.what());
       }
     }
   }

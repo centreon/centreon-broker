@@ -38,6 +38,7 @@ state::state(state const& other)
     _kpis(other._kpis),
     _bool_expressions(other._bool_expressions),
     _hst_svc_mapping(other._hst_svc_mapping),
+    _meta_svc_mapping(other._meta_svc_mapping),
     _meta_services(other._meta_services) {}
 
 /**
@@ -59,6 +60,7 @@ state& state::operator=(state const& other) {
     _kpis= other._kpis;
     _bool_expressions = other._bool_expressions;
     _hst_svc_mapping = other._hst_svc_mapping;
+    _meta_svc_mapping = other._meta_svc_mapping;
     _meta_services = other._meta_services;
   }
   return (*this);
@@ -130,6 +132,15 @@ bam::ba_svc_mapping const& state::get_ba_svc_mapping() const {
 }
 
 /**
+ *  Get meta-service/service mapping.
+ *
+ *  @return Mapping.
+ */
+bam::ba_svc_mapping const& state::get_meta_svc_mapping() const {
+  return (_meta_svc_mapping);
+}
+
+/**
  *  Get all the business activities
  *
  *  @return  The list of all the business activities.
@@ -181,4 +192,13 @@ bam::hst_svc_mapping& state::get_hst_svc_mapping() {
  */
 bam::ba_svc_mapping& state::get_ba_svc_mapping() {
   return (_ba_svc_mapping);
+}
+
+/**
+ *  Get meta-service/service mapping.
+ *
+ *  @return Mapping.
+ */
+bam::ba_svc_mapping& state::get_meta_svc_mapping() {
+  return (_meta_svc_mapping);
 }

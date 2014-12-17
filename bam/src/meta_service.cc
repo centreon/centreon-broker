@@ -20,6 +20,7 @@
 #include <cmath>
 #include "com/centreon/broker/bam/meta_service.hh"
 #include "com/centreon/broker/bam/meta_service_status.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/storage/metric.hh"
 
 using namespace com::centreon::broker;
@@ -31,6 +32,7 @@ using namespace com::centreon::broker::bam;
 meta_service::meta_service()
   : _computation(meta_service::average),
     _id(0),
+    _last_state(-1),
     _level_critical(0.0),
     _level_warning(0.0),
     _recompute_count(0),
@@ -271,8 +273,15 @@ void meta_service::visit(io::stream* visitor) {
     // Send meta-service status.
     misc::shared_ptr<meta_service_status>
       status(new meta_service_status);
+    short new_state(get_state());
     status->meta_service_id = _id;
     status->value = _value;
+    status->state_changed = (_last_state != new_state);
+    _last_state = new_state;
+    logging::debug(logging::low)
+      << "BAM: generating status of meta-service "
+      << status->meta_service_id << " (value " << status->value
+      << ")";
     visitor->write(status.staticCast<io::data>());
   }
   return ;
@@ -286,6 +295,7 @@ void meta_service::visit(io::stream* visitor) {
 void meta_service::_internal_copy(meta_service const& other) {
   _computation = other._computation;
   _id = other._id;
+  _last_state = other._last_state;
   _level_critical = other._level_critical;
   _level_warning = other._level_warning;
   _metrics = other._metrics;

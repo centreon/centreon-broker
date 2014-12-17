@@ -60,7 +60,9 @@ namespace               bam {
                           state::bas& bas,
                           bam::ba_svc_mapping& mapping);
       void              _load(state::bool_exps& bool_exps);
-      void              _load(state::meta_services& meta_services);
+      void              _load(
+                          state::meta_services& meta_services,
+                          bam::ba_svc_mapping& mapping);
       void              _load(bam::hst_svc_mapping& mapping);
       void              _load_dimensions();
 

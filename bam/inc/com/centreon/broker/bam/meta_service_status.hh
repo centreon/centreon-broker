@@ -43,6 +43,7 @@ namespace                bam {
     unsigned int         type() const;
 
     unsigned int         meta_service_id;
+    bool                 state_changed;
     double               value;
 
   private:

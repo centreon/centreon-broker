@@ -128,6 +128,10 @@ static mapped_data<bam::meta_service_status> const meta_service_status_mapping[]
     &bam::meta_service_status::value,
     2,
     "value"),
+  mapped_data<bam::meta_service_status>(
+    &bam::meta_service_status::state_changed,
+    3,
+    NULL),
   mapped_data<bam::meta_service_status>()
 };
 

@@ -68,6 +68,7 @@ namespace           bam {
     ba_svc_mapping  _ba_mapping;
     std::string     _ext_cmd_file;
     bool            _process_out;
+    ba_svc_mapping  _meta_mapping;
     std::string     _status;
     mutable QMutex  _statusm;
     database_config _storage_cfg;
