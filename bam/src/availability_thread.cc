@@ -84,7 +84,8 @@ void availability_thread::run() {
       // Open the database.
       _open_database();
 
-      _build_availabilities(midnight);
+      _build_availabilities(time::timeperiod::add_round_days_to_midnight(
+                              midnight, -3600 * 24));
       _should_rebuild_all = false;
       _bas_to_rebuild.clear();
 
@@ -199,8 +200,6 @@ void availability_thread::_build_availabilities(time_t midnight) {
     // If not, rebuild until the last closed events.
     if (q.value(2).toInt() != 0)
       last_day = _compute_start_of_day(q.value(1).toDouble());
-    else
-      last_day -= (3600 * 24);
     q.next();
     _delete_all_availabilities();
   }
@@ -220,7 +219,8 @@ void availability_thread::_build_availabilities(time_t midnight) {
     }
 
     first_day = q.value(0).toInt();
-    first_day += (3600 * 24);
+    first_day = time::timeperiod::add_round_days_to_midnight(
+                                    last_day, 3600 * 24);
     q.next();
   }
 
@@ -229,8 +229,12 @@ void availability_thread::_build_availabilities(time_t midnight) {
     << first_day << " to " << last_day;
 
   // Write the availabilities day after day.
-  for (; first_day < last_day; first_day += (3600*24))
-    _build_daily_availabilities(q, first_day, first_day + (3600 * 24));
+  while (first_day < last_day) {
+    time_t next_day =
+      time::timeperiod::add_round_days_to_midnight(first_day, 3600 * 24);
+    _build_daily_availabilities(q, first_day, next_day);
+    first_day = next_day;
+  }
 }
 
 /**
@@ -240,7 +244,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
  *
  *  @param[in] q         A SQL query object.
  *  @param[in] day_start The start of the day.
- *  @param[in] day_end   The end of the day.
+ *  @param[in] day_end   The first second of the next day.
  */
 void availability_thread::_build_daily_availabilities(
                             database_query& q,
@@ -261,8 +265,8 @@ void availability_thread::_build_daily_availabilities(
            "  WHERE ";
   if (_should_rebuild_all)
     query << "(b.ba_id IN (" << _bas_to_rebuild.toStdString() << ")) AND ";
-  query << "((a.start_time BETWEEN " << day_start << " AND " << day_end
-        << ") OR (a.end_time BETWEEN " << day_start << " AND " << day_end
+  query << "((a.start_time BETWEEN " << day_start << " AND " << day_end - 1
+        << ") OR (a.end_time BETWEEN " << day_start << " AND " << day_end - 1
         << ") OR (" << day_start << " BETWEEN a.start_time AND a.end_time))";
 
   q.run_query(
@@ -403,7 +407,9 @@ void availability_thread::_write_availability(
  *  @return  The next midnight.
  */
 time_t availability_thread::_compute_next_midnight() {
-  return (_compute_start_of_day(::time(NULL)) + (24 * 3600));
+  return (time::timeperiod::add_round_days_to_midnight(
+                              _compute_start_of_day(::time(NULL)),
+                              3600 * 24));
 }
 
 /**

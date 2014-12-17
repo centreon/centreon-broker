@@ -101,6 +101,10 @@ namespace               bam {
                             time_t start_time,
                             time_t end_time) const;
 
+      static time_t       add_round_days_to_midnight(
+                            time_t midnight,
+                            long long skip);
+
     private:
       unsigned int        _id;
       std::string         _alias;

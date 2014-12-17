@@ -88,8 +88,8 @@ static void check_ba_event_durations(
              << q.value(2).toInt() << ", end time "
              << q.value(3).toInt() << ", duration "
              << q.value(4).toInt() << ", sla duration "
-             << q.value(5).toBool() << ", timeperiod is default "
-             << q.value(6).toInt() << ") expected ("
+             << q.value(5).toInt() << ", timeperiod is default "
+             << q.value(6).toBool() << ") expected ("
              << baed[i].ba_event_id << ", " << baed[i].timeperiod_id << ", "
              << baed[i].start_time << ", " << baed[i].end_time << ", "
              << baed[i].duration << ", " << baed[i].sla_duration << ", "
@@ -167,7 +167,7 @@ static void check_ba_availability(
              << q.value(8).toUInt() << ", alert_degraded_opened "
              << q.value(9).toUInt() << ", alert_unknown_opened "
              << q.value(10).toUInt() << ", nb_downtime "
-             << q.value(11).toUInt() << ", timeperiod_is_default"
+             << q.value(11).toUInt() << ", timeperiod_is_default "
              << q.value(12).toBool() << ") expected ("
              << baav[i].ba_id << ", " << baav[i].time_id << ", "
              << baav[i].timeperiod_id << ", " << baav[i].available
@@ -233,7 +233,8 @@ int main() {
                 "                     must_be_rebuild, id_reporting_period, activate)"
                 "  VALUES (1, 'BA1', 'DESC1', 90, 80, 70, 60, '1', 1, '1'),"
                 "         (2, 'BA2', 'DESC2', 80, 70, 60, 50, '1', NULL, '1'),"
-                "         (3, 'BA3', 'DESC3', 70, 60, 50, 40, '1', 1, '1')");
+                "         (3, 'BA3', 'DESC3', 70, 60, 50, 40, '1', 1, '1'),"
+                "         (4, 'BA4', 'DESC4', 60, 50, 40, 30, '1', 1, '1')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create BAs: "
@@ -253,7 +254,8 @@ int main() {
                 "INSERT INTO service (service_id, service_description)"
                 "  VALUES (1001, 'ba_1'),"
                 "         (1002, 'ba_2'),"
-                "         (1003, 'ba_3')");
+                "         (1003, 'ba_3'),"
+                "         (1004, 'ba_4')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg()
@@ -264,7 +266,7 @@ int main() {
       QString query(
                 "INSERT INTO host_service_relation"
                 "            (host_host_id, service_service_id)"
-                "  VALUES (1001, 1001), (1001, 1002), (1001, 1003)");
+                "  VALUES (1001, 1001), (1001, 1002), (1001, 1003), (1001, 1004)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg()
@@ -280,7 +282,8 @@ int main() {
                 "                     sla_month_duration_crit, sla_month_duration_warn)"
                 "  VALUES (1, 'BA1', 'DESC1', 90, 80, 70, 60),"
                 "         (2, 'BA2', 'DESC2', 80, 70, 60, 50),"
-                "         (3, 'BA3', 'DESC3', 70, 60, 50, 40)");
+                "         (3, 'BA3', 'DESC3', 70, 60, 50, 40),"
+                "         (4, 'BA4', 'DESC4', 60, 50, 40, 30)");
       QSqlQuery q(*db.bi_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create BA dimensions: "
@@ -306,7 +309,8 @@ int main() {
             "         (7, 3, 1418209039, 1418314059, 0, false),"
             "         (8, 3, 1418314059, 1418327489, 0, false),"
             "         (9, 3, 1418327489, 1418329589, 2, false),"
-            "         (10, 3, 1418329589, 1418398892, 0, false)";
+            "         (10, 3, 1418329589, 1418398892, 0, false),"
+            "         (11, 4, 1396303200, 1396389600, 0, false)";
       QString query(ss.str().c_str());
       QSqlQuery q(*db.bi_db());
       if (!q.exec(query))
@@ -344,7 +348,8 @@ int main() {
         { 7, 1, 1418209039, 1418314059, 105020, 105020, true },
         { 8, 1, 1418314059, 1418327489, 13430, 13430, true },
         { 9, 1, 1418327489, 1418329589, 2100, 2100, true },
-        { 10, 1, 1418329589, 1418398892, 69303, 69303, true }
+        { 10, 1, 1418329589, 1418398892, 69303, 69303, true },
+        { 11, 1, 1396303200, 1396389600, 86400, 86400, true }
       };
       check_ba_event_durations(
         *db.bi_db(),
@@ -361,7 +366,9 @@ int main() {
         { 2, midnight_time, 1, 0, 3600 * 24, 0, 0, 3600 * 24, 1, 0, 0, 1, false },
         { 3, 1418166000, 1, 43361, 0, 0, 0, 0, 0, 0, 0, 0, true },
         { 3, 1418252400, 1, 84300, 2100, 0, 0, 0, 1, 0, 0, 0, true },
-        { 3, 1418338800, 1, 60092, 0, 0, 0, 0, 0, 0, 0, 0, true }
+        { 3, 1418338800, 1, 60092, 0, 0, 0, 0, 0, 0, 0, 0, true },
+        { 4, 1396303200, 1, 86400, 0, 0, 0, 0, 0, 0, 0, 0, true },
+        { 4, 1396389600, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, true}
       };
       check_ba_availability(
         *db.bi_db(),
