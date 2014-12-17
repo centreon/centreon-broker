@@ -404,12 +404,12 @@ time_t timeperiod::add_round_days_to_midnight(time_t midnight, long long skip) {
   // There was a DST shift in between.
   if (next_day.tm_hour || next_day.tm_min || next_day.tm_sec) {
     /*
-    ** The trick here is to move from midnight to noon, add the skip
-    ** seconds and break time down in a tm structure. We're now sure to
+    ** The trick here is to move from midnight to noon
+    ** and break time down in a tm structure. We're now sure to
     ** be in the proper day (DST shift is +-1h) we only have to reset
     ** time to midnight, convert back and we're done.
     */
-    next_day_time += 12 * 60 * 60 + skip;
+    next_day_time += 12 * 60 * 60;
     localtime_r(&next_day_time, &next_day);
     next_day.tm_hour = 0;
     next_day.tm_min = 0;
