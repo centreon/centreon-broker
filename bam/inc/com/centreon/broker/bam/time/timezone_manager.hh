@@ -61,11 +61,16 @@ namespace   bam  {
       };
 
                                timezone_manager();
-                               timezone_manager(timezone_manager const& other);
+                               timezone_manager(
+                                 timezone_manager const& other);
                                ~timezone_manager();
       timezone_manager&        operator=(timezone_manager const& other);
-      void                     _backup_timezone(tz_info* info);
-      void                     _set_timezone(char const* tz);
+      void                     _fill_tz_info(
+                                 tz_info* info,
+                                 char const* old_tz);
+      void                     _set_timezone(
+                                 tz_info const& from,
+                                 tz_info const& to);
 
       tz_info                  _base;
       static timezone_manager* _instance;

@@ -190,6 +190,9 @@ static void check_ba_availability(
  *  @return EXIT_SUCCESS on success.
  */
 int main() {
+  // Set timezone.
+  setenv("TZ", ":Europe/Paris", 1);
+
   // Error flag.
   bool error(true);
 
