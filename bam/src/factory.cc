@@ -181,6 +181,15 @@ io::endpoint* factory::new_endpoint(
   if (!is_bam_bi)
     ext_cmd_file = find_param(cfg, "command_file");
 
+  // Storage database.
+  QString storage_db_name;
+  if (!is_bam_bi) {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("storage_db_name"));
+    if (it != cfg.params.end())
+      storage_db_name = *it;
+  }
+
   // Connector.
   std::auto_ptr<bam::connector> c(new bam::connector);
   c->connect_to(
@@ -188,7 +197,8 @@ io::endpoint* factory::new_endpoint(
        ? bam::connector::bam_bi_type
        : bam::connector::bam_type,
        db_cfg,
-       ext_cmd_file.toStdString());
+       ext_cmd_file.toStdString(),
+       storage_db_name.toStdString());
   is_acceptor = false;
   return (c.release());
 }

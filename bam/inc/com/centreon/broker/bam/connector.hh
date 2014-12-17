@@ -50,7 +50,8 @@ namespace           bam {
     void            connect_to(
                       stream_type type,
                       database_config const& db_cfg,
-                      std::string const& ext_cmd_file);
+                      std::string const& ext_cmd_file,
+                      std::string const& storage_db_name);
     misc::shared_ptr<io::stream>
                     open();
     misc::shared_ptr<io::stream>
@@ -61,6 +62,7 @@ namespace           bam {
 
     database_config _db_cfg;
     std::string     _ext_cmd_file;
+    std::string     _storage_db_name;
     stream_type     _type;
   };
 }

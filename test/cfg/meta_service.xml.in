@@ -25,7 +25,7 @@
     <db_port>@DB_PORT@</db_port>
     <db_user>@DB_USER@</db_user>
     <db_password>@DB_PASSWORD@</db_password>
-    <db_name>broker_meta_service</db_name>
+    <db_name>broker_meta_service_storage</db_name>
     <queries_per_transaction>0</queries_per_transaction>
     <interval>10</interval>
     <length>2592000</length>
@@ -38,7 +38,8 @@
     <db_port>@DB_PORT@</db_port>
     <db_user>@DB_USER@</db_user>
     <db_password>@DB_PASSWORD@</db_password>
-    <db_name>broker_meta_service</db_name>
+    <db_name>broker_meta_service_centreon</db_name>
+    <storage_db_name>broker_meta_service_storage</storage_db_name>
     <queries_per_transaction>0</queries_per_transaction>
   </output>
 </centreonbroker>

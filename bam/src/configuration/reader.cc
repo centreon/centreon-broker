@@ -47,9 +47,13 @@ using namespace com::centreon::broker::bam::configuration;
 /**
  *  Constructor.
  *
- *  @param[in] db  Database connection.
+ *  @param[in] centreon_db  Centreon database connection.
+ *  @param[in] storage_cfg  Storage database configuration.
  */
-reader::reader(database& db) : _db(db) {}
+reader::reader(
+          database& centreon_db,
+          database_config const& storage_cfg)
+  : _db(centreon_db), _storage_cfg(storage_cfg) {}
 
 /**
  *  Destructor.
@@ -444,6 +448,7 @@ void reader::_load(state::meta_services& meta_services) {
   }
 
   // Load metrics of meta-services.
+  std::auto_ptr<database> storage_db;
   for (state::meta_services::iterator
          it(meta_services.begin()),
          end(meta_services.end());
@@ -461,14 +466,23 @@ void reader::_load(state::meta_services& meta_services) {
             << "    ON i.host_id=s.host_id AND i.service_id=s.service_id"
             << "  WHERE s.description LIKE '" << it->get_service_filter() << "'"
             << "    AND m.metric_name='" << it->get_metric_name() << "'";
-      // XXX : we do not have access to the centreon_storage DB
-      // QSqlQuery q(_db->exec(query.str().c_str()));
-      // if (q.lastError().isValid())
-      //   throw (reader_exception()
-      //          << "BAM: could not retrieve members of meta-service '"
-      //          << it->get_name() << "': " << q.lastError().text());
-      // while (q.next())
-      //   it->add_metric(q.value(0).toUInt());
+      if (!storage_db.get())
+        try { storage_db.reset(new database(_storage_cfg)); }
+        catch (std::exception const& e) {
+          throw (reader_exception()
+                 << "BAM: could not initialize storage database to "
+                    "retrieve metrics associated with some "
+                    "meta-service: " << e.what());
+        }
+      database_query q(*storage_db);
+      try { q.run_query(query.str()); }
+      catch (std::exception const& e) {
+        throw (reader_exception()
+               << "BAM: could not retrieve members of meta-service '"
+               << it->get_name() << "': " << e.what());
+      }
+      while (q.next())
+        it->add_metric(q.value(0).toUInt());
     }
     // Service list mode.
     else {

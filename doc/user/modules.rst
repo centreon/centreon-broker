@@ -345,7 +345,9 @@ db_host                 Database host.
 db_port                 Database port.
 db_user                 Database user.
 db_password             Password associated with *db_user*.
-db_name                 Database name.
+db_name                 Centreon database name (usually *centreon*).
+storage_db_name         Storage database name (usually
+                        *centreon_storage*).
 queries_per_transaction Number of queries per transaction. Set to 1 or
                         below to disable transactions. Default to 1.
 read_timeout            When using transactions, maximum time between
@@ -411,7 +413,8 @@ Example
     <db_port>3306</db_port>
     <db_user>centreon</db_user>
     <db_password>noertnec</db_password>
-    <db_name>centreon_storage</db_name>
+    <db_name>centreon</db_name>
+    <storage_db_name>centreon_storage</storage_db_name>
   </output>
 
 

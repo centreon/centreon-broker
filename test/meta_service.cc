@@ -31,7 +31,8 @@
 #include "test/misc.hh"
 #include "test/vars.hh"
 
-#define DB_NAME "broker_meta_service"
+#define DB_NAME_CENTREON "broker_meta_service_centreon"
+#define DB_NAME_STORAGE "broker_meta_service_storage"
 #define SERVICES_BY_HOST 10
 
 using namespace com::centreon::broker;
@@ -55,7 +56,7 @@ int main() {
 
   try {
     // Prepare database.
-    db.open(DB_NAME);
+    db.open(DB_NAME_STORAGE, NULL, DB_NAME_CENTREON);
 
     // Prepare monitoring engine configuration parameters.
     generate_commands(commands, SERVICES_BY_HOST);
@@ -130,14 +131,6 @@ int main() {
            << "    WHERE host_id=1 AND service_id=" << i;
       queries.push_back(oss3.str());
     }
-    queries.push_back(
-              "INSERT INTO meta_service (meta_name, calcul_type, "
-              "            meta_select_mode, regexp_str, metric, "
-              "            warning, critical, meta_activate)"
-              "  VALUES ('1-AVE', 'AVE', '2', '%', 'metric', 'W', 'C', '1'),"
-              "         ('2-MIN', 'MIN', '2', '%', 'metric', 'W', 'C', '1'),"
-              "         ('3-MAX', 'MAX', '2', '%', 'metric', 'W', 'C', '1'),"
-              "         ('4-SUM', 'SOM', '2', '%', 'metric', 'W', 'C', '1')");
 
     // Execute initialization queries.
     {
@@ -151,6 +144,19 @@ int main() {
           throw (exceptions::msg() << "could not execute a query: "
                  << q.lastError().text() << " (" << *it << ")");
       }
+    }
+    {
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(
+              "INSERT INTO meta_service (meta_name, calcul_type, "
+              "            meta_select_mode, regexp_str, metric, "
+              "            warning, critical, meta_activate)"
+              "  VALUES ('1-AVE', 'AVE', '2', '%', 'metric', 'W', 'C', '1'),"
+              "         ('2-MIN', 'MIN', '2', '%', 'metric', 'W', 'C', '1'),"
+              "         ('3-MAX', 'MAX', '2', '%', 'metric', 'W', 'C', '1'),"
+              "         ('4-SUM', 'SOM', '2', '%', 'metric', 'W', 'C', '1')"))
+        throw (exceptions::msg() << "could not create meta-services: "
+               << q.lastError().text());
     }
 
     // Start monitoring engine.
@@ -168,7 +174,7 @@ int main() {
         42.0 + SERVICES_BY_HOST - 1.0,
         ((SERVICES_BY_HOST - 1) / 2.0 + 42.0) * SERVICES_BY_HOST
       };
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(
                "SELECT value, meta_name"
                "  FROM meta_service"

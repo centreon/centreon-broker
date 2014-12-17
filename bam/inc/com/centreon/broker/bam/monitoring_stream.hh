@@ -24,16 +24,14 @@
 #  include "com/centreon/broker/bam/ba_svc_mapping.hh"
 #  include "com/centreon/broker/bam/configuration/applier/state.hh"
 #  include "com/centreon/broker/database.hh"
+#  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/database_query.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-// Forward declaration.
-class              database_config;
-
-namespace          bam {
+namespace           bam {
   /**
    *  @class monitoring_stream monitoring_stream.hh "com/centreon/broker/bam/monitoring_stream.hh"
    *  @brief bam monitoring_stream.
@@ -41,42 +39,44 @@ namespace          bam {
    *  Handle perfdata and insert proper informations in index_data and
    *  metrics table of a centbam DB.
    */
-  class            monitoring_stream : public io::stream {
+  class             monitoring_stream : public io::stream {
   public:
-                   monitoring_stream(
-                     database_config const& db_cfg,
-                     std::string const& ext_cmd_file);
-                   ~monitoring_stream();
-    void           initialize();
-    void           process(bool in = false, bool out = true);
-    void           read(misc::shared_ptr<io::data>& d);
-    void           statistics(io::properties& tree) const;
-    void           update();
-    unsigned int   write(misc::shared_ptr<io::data> const& d);
+                    monitoring_stream(
+                      database_config const& db_cfg,
+                      std::string const& ext_cmd_file,
+                      std::string const& storage_db_name);
+                    ~monitoring_stream();
+    void            initialize();
+    void            process(bool in = false, bool out = true);
+    void            read(misc::shared_ptr<io::data>& d);
+    void            statistics(io::properties& tree) const;
+    void            update();
+    unsigned int    write(misc::shared_ptr<io::data> const& d);
 
   private:
-                   monitoring_stream(monitoring_stream const& other);
+                    monitoring_stream(monitoring_stream const& other);
     monitoring_stream&
-                   operator=(monitoring_stream const& other);
-    void           _check_replication();
-    void           _prepare();
-    void           _rebuild();
-    void           _update_status(std::string const& status);
-    void           _write_external_command(std::string const& cmd);
+                    operator=(monitoring_stream const& other);
+    void            _check_replication();
+    void            _prepare();
+    void            _rebuild();
+    void            _update_status(std::string const& status);
+    void            _write_external_command(std::string const& cmd);
 
     configuration::applier::state
-                   _applier;
-    ba_svc_mapping _ba_mapping;
-    std::string    _ext_cmd_file;
-    bool           _process_out;
-    std::string    _status;
-    mutable QMutex _statusm;
-    database       _db;
-    database_query _ba_update;
-    database_query _bool_exp_update;
-    database_query _kpi_update;
-    database_query _meta_service_update;
-    int            _pending_events;
+                    _applier;
+    ba_svc_mapping  _ba_mapping;
+    std::string     _ext_cmd_file;
+    bool            _process_out;
+    std::string     _status;
+    mutable QMutex  _statusm;
+    database_config _storage_cfg;
+    database        _db;
+    database_query  _ba_update;
+    database_query  _bool_exp_update;
+    database_query  _kpi_update;
+    database_query  _meta_service_update;
+    int             _pending_events;
   };
 }
 

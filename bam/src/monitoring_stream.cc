@@ -55,14 +55,17 @@ using namespace com::centreon::broker::bam;
 /**
  *  Constructor.
  *
- *  @param[in] db_cfg        Database configuration.
- *  @param[in] ext_cmd_file  External command file.
+ *  @param[in] db_cfg           Database configuration.
+ *  @param[in] ext_cmd_file     External command file.
+ *  @param[in] storage_db_name  Storage DB name.
  */
 monitoring_stream::monitoring_stream(
                      database_config const& db_cfg,
-                     std::string const& ext_cmd_file)
+                     std::string const& ext_cmd_file,
+                     std::string const& storage_db_name)
   : _ext_cmd_file(ext_cmd_file),
     _process_out(true),
+    _storage_cfg(db_cfg),
     _db(db_cfg),
     _ba_update(_db),
     _bool_exp_update(_db),
@@ -72,10 +75,13 @@ monitoring_stream::monitoring_stream(
   // Prepare queries.
   _prepare();
 
+  // Storage DB configuration.
+  _storage_cfg.set_name(storage_db_name);
+
   // Read configuration from DB.
   configuration::state s;
   {
-    configuration::reader r(_db);
+    configuration::reader r(_db, _storage_cfg);
     r.read(s);
   }
 
@@ -147,7 +153,7 @@ void monitoring_stream::update() {
   try {
     configuration::state s;
     {
-      configuration::reader r(_db);
+      configuration::reader r(_db, _storage_cfg);
       r.read(s);
     }
     _applier.apply(s);
