@@ -27,6 +27,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
+#include "test/external_command.hh"
 #include "test/generate.hh"
 #include "test/misc.hh"
 #include "test/vars.hh"
@@ -51,8 +52,10 @@ int main() {
   std::list<host> hosts;
   std::list<service> services;
   std::string engine_config_path(tmpnam(NULL));
+  external_command commander;
   engine monitoring;
   test_db db;
+  test_file cfg;
 
   try {
     // Prepare database.
@@ -91,11 +94,15 @@ int main() {
         strcpy(it->service_check_command, cmd.c_str());
       }
     }
+    commander.set_file(tmpnam(NULL));
+    cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/meta_service.xml.in");
+    cfg.set("COMMAND_FILE", commander.get_file());
     std::string additional_config;
     {
       std::ostringstream oss;
-      oss << "broker_module=" << CBMOD_PATH << " "
-          << PROJECT_SOURCE_DIR << "/test/cfg/meta_service.xml\n";
+      oss << commander.get_engine_config()
+          << "broker_module=" << CBMOD_PATH << " "
+          << cfg.generate() << "\n";
       additional_config = oss.str();
     }
 

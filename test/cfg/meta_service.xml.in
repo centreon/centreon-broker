@@ -41,5 +41,6 @@
     <db_name>broker_meta_service_centreon</db_name>
     <storage_db_name>broker_meta_service_storage</storage_db_name>
     <queries_per_transaction>0</queries_per_transaction>
+    <command_file>@COMMAND_FILE@</command_file>
   </output>
 </centreonbroker>

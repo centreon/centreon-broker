@@ -301,15 +301,16 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
         << "BAM: processing meta-service status (id "
         << status->meta_service_id << ", value " << status->value
         << ")";
-      _meta_service_update->bindValue(
+      _meta_service_update.bind_value(
                               ":meta_service_id",
                               status->meta_service_id);
-      _meta_service_update->bindValue(":value", status->value);
-      if (!_meta_service_update->exec())
+      _meta_service_update.bind_value(":value", status->value);
+      try { _meta_service_update.run_statement(); }
+      catch (std::exception const& e) {
         throw (exceptions::msg()
                << "BAM: could not update meta-service "
-               << status->meta_service_id << ": "
-               << _meta_service_update->lastError().text());
+               << status->meta_service_id << ": " << e.what());
+      }
     }
   }
   else
@@ -421,14 +422,9 @@ void monitoring_stream::_prepare() {
     query = "UPDATE meta_service"
             "  SET value=:value"
             "  WHERE meta_id=:meta_service_id";
-    try {
-      _meta_service_update->prepare(query);
-    }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "BAM: could not prepare meta-service update query: "
-             << e.what());
-    }
+    _meta_service_update.prepare(
+      query,
+      "BAM: could not prepare meta-service update query");
   }
 
   return ;
