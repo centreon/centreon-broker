@@ -1257,10 +1257,10 @@ void reporting_stream::_process_dimension_ba(
                          dba.sla_month_percent_warn);
   _dimension_ba_insert.bind_value(
                          ":sla_month_duration_crit",
-                         dba.sla_duration_1);
+                         dba.sla_duration_crit);
   _dimension_ba_insert.bind_value(
                          ":sla_month_duration_warn"
-                         , dba.sla_duration_2);
+                         , dba.sla_duration_warn);
   try { _dimension_ba_insert.run_statement(); }
   catch (std::exception const& e) {
     throw (exceptions::msg() << "BAM-BI: could not insert BA "

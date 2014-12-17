@@ -49,8 +49,8 @@ namespace                bam {
     QString              ba_description;
     double               sla_month_percent_crit;
     double               sla_month_percent_warn;
-    unsigned int         sla_duration_1;
-    unsigned int         sla_duration_2;
+    unsigned int         sla_duration_crit;
+    unsigned int         sla_duration_warn;
 
   private:
     void                 _internal_copy(

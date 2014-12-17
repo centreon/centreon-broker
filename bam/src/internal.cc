@@ -262,13 +262,13 @@ static mapped_data<bam::dimension_ba_event> const dimension_ba_event_mapping[] =
     5,
     "sla_month_percent_warn"),
   mapped_data<bam::dimension_ba_event>(
-    &bam::dimension_ba_event::sla_duration_1,
+    &bam::dimension_ba_event::sla_duration_crit,
     6,
-    "sla_duration_1"),
+    "sla_month_duration_crit"),
   mapped_data<bam::dimension_ba_event>(
-    &bam::dimension_ba_event::sla_duration_2,
+    &bam::dimension_ba_event::sla_duration_warn,
     7,
-    "sla_duration_2"),
+    "sla_month_duration_warn"),
   mapped_data<bam::dimension_ba_event>()
 };
 

@@ -31,8 +31,8 @@ dimension_ba_event::dimension_ba_event()
   : ba_id(0),
     sla_month_percent_crit(0),
     sla_month_percent_warn(0),
-    sla_duration_1(0),
-    sla_duration_2(0) {}
+    sla_duration_crit(0),
+    sla_duration_warn(0) {}
 
 /**
  *  Copy constructor.
@@ -98,7 +98,7 @@ void dimension_ba_event::_internal_copy(dimension_ba_event const& other) {
   ba_description = other.ba_description;
   sla_month_percent_crit = other.sla_month_percent_crit;
   sla_month_percent_warn = other.sla_month_percent_warn;
-  sla_duration_1 = other.sla_duration_1;
-  sla_duration_2 = other.sla_duration_2;
+  sla_duration_crit = other.sla_duration_crit;
+  sla_duration_warn = other.sla_duration_warn;
   return ;
 }

@@ -49,10 +49,10 @@ struct ba_dimension {
   unsigned int id;
   const char* name;
   const char* description;
-  double month_p1;
-  double month_p2;
-  double month_d1;
-  double month_d2;
+  double month_percent_warn;
+  double month_percent_crit;
+  double month_duration_warn;
+  double month_duration_crit;
 };
 
 static void check_bas(
@@ -78,23 +78,24 @@ static void check_bas(
     if (q.value(0).toUInt() != bas[i].id
         || q.value(1).toString() != bas[i].name
         || q.value(2).toString() != bas[i].description
-        || !double_equals(q.value(3).toDouble(), bas[i].month_p1)
-        || !double_equals(q.value(4).toDouble(), bas[i].month_p2)
-        || !double_equals(q.value(5).toDouble(), bas[i].month_d1)
-        || !double_equals(q.value(6).toDouble(), bas[i].month_d2))
+        || !double_equals(q.value(3).toDouble(), bas[i].month_percent_crit)
+        || !double_equals(q.value(4).toDouble(), bas[i].month_percent_warn)
+        || !double_equals(q.value(5).toDouble(), bas[i].month_duration_crit)
+        || !double_equals(q.value(6).toDouble(), bas[i].month_duration_warn))
       throw (exceptions::msg() << "invalid BA " << q.value(0).toUInt()
              << " at iteration " << iteration << ": got (id "
              << q.value(0).toUInt() << ", name "
              << q.value(1).toString() << ", description "
-             << q.value(2).toString() << ", sla_month_percent1 "
-             << q.value(3).toDouble() << ", sla_month_percent2 "
-             << q.value(4).toDouble() << ", sla_month_duration1 "
-             << q.value(5).toDouble() << ", sla_month_duration2 "
+             << q.value(2).toString() << ", sla_month_percent_crit "
+             << q.value(3).toDouble() << ", sla_month_percent_warn "
+             << q.value(4).toDouble() << ", sla_month_duration_crit "
+             << q.value(5).toDouble() << ", sla_month_duration_warn "
              << q.value(6).toDouble() << ") expected ("
              << bas[i].id << ", " << bas[i].name << ", "
-             << bas[i].description << ", " << bas[i].month_p1
-             << ", " << bas[i].month_p2 << ", " << bas[i].month_d1
-             << ", " << bas[i].month_d2 <<  ")");
+             << bas[i].description << ", " << bas[i].month_percent_crit
+             << ", " << bas[i].month_percent_warn << ", "
+             << bas[i].month_duration_crit << ", "
+             << bas[i].month_duration_warn <<  ")");
   }
   if (q.next())
     throw (exceptions::msg() << "too much BAs at iteration "
