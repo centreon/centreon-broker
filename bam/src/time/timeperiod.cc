@@ -386,14 +386,16 @@ unsigned int timeperiod::duration_intersect(time_t start_time,
 }
 
 /**
- *  Add a round number of days (expressed in seconds) to a date.
+ *  @brief Add a round number of days (expressed in seconds) to a date.
+ *
+ *  The number of day added can be negative, effectively removing round days.
  *
  *  @param[in] middnight  Midnight of base day.
  *  @param[in] skip       Number of days to skip (in seconds).
  *
  *  @return Midnight of the day in skip seconds.
  */
-static time_t _add_round_days_to_midnight(time_t midnight, time_t skip) {
+time_t timeperiod::add_round_days_to_midnight(time_t midnight, long long skip) {
   // Compute expected time with no DST.
   time_t next_day_time(midnight + skip);
   struct tm next_day;
@@ -439,7 +441,7 @@ static time_t _earliest_midnight_in_daterange(
   while ((drange_start_time < drange_end_time)
          || (drange_end_time == (time_t)-1)) {
     // Next day at midnight.
-    time_t next_day(_add_round_days_to_midnight(
+    time_t next_day(timeperiod::add_round_days_to_midnight(
                       drange_start_time,
                       24 * 60 * 60));
 
@@ -453,9 +455,9 @@ static time_t _earliest_midnight_in_daterange(
     if (drange.skip_interval() <= 1)
       drange_start_time = next_day;
     else
-      drange_start_time = _add_round_days_to_midnight(
-                            drange_start_time,
-                            drange.skip_interval() * 24 * 60 * 60);
+      drange_start_time = timeperiod::add_round_days_to_midnight(
+                           drange_start_time,
+                           drange.skip_interval() * 24 * 60 * 60);
   }
   return ((time_t)-1);
 }
@@ -559,7 +561,7 @@ static time_t _get_next_valid_time_per_timeperiod(
         weekday -= 7;
 
       // Calculate start of this future weekday.
-      time_t day_start(_add_round_days_to_midnight(
+      time_t day_start(timeperiod::add_round_days_to_midnight(
                          midnight,
                          days_into_the_future * 24 * 60 * 60));
       struct tm day_midnight;
@@ -628,7 +630,7 @@ static time_t _get_next_valid_time_per_timeperiod(
     }
     // Increment preferred time to next day.
     else
-      preferred_time = _add_round_days_to_midnight(
+      preferred_time = timeperiod::add_round_days_to_midnight(
                          midnight,
                          24 * 60 * 60);
   }
