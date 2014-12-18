@@ -220,10 +220,26 @@ int main() {
                 "                        tp_tuesday, tp_wednesday, tp_thursday,"
                 "                        tp_friday, tp_saturday)"
                 "  VALUES (1, '24x7', '00:00-24:00', '00:00-24:00', '00:00-24:00',"
+                "          '00:00-24:00', '00:00-24:00', '00:00-24:00', '00:00-24:00'),"
+                "         (2, 'workhours', '', '09:00-17:00', '09:00-17:00',"
+                "          '09:00-17:00', '09:00-17:00', '09:00-17:00', ''),"
+                "         (3, 'non-worhours', '00:00-24:00', '00:00-24:00', '00:00-24:00',"
                 "          '00:00-24:00', '00:00-24:00', '00:00-24:00', '00:00-24:00')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create timeperiods: "
+               << q.lastError().text());
+    }
+
+    // Create timeperiod excludes
+    {
+      QString query("INSERT INTO timeperiod_exclude_relations"
+                    "            (exclude_id, timeperiod_id,"
+                    "             timeperiod_exclude_id)"
+                    "  VALUES (1, 3, 2)");
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not create timeperiod excludes: "
                << q.lastError().text());
     }
 
@@ -237,7 +253,8 @@ int main() {
                 "  VALUES (1, 'BA1', 'DESC1', 90, 80, 70, 60, '1', 1, '1'),"
                 "         (2, 'BA2', 'DESC2', 80, 70, 60, 50, '1', NULL, '1'),"
                 "         (3, 'BA3', 'DESC3', 70, 60, 50, 40, '1', 1, '1'),"
-                "         (4, 'BA4', 'DESC4', 60, 50, 40, 30, '1', 1, '1')");
+                "         (4, 'BA4', 'DESC4', 60, 50, 40, 30, '1', 1, '1'),"
+                "         (5, 'BA5', 'DESC5', 50, 40, 30, 20, '1', 2, '1')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create BAs: "
@@ -258,7 +275,8 @@ int main() {
                 "  VALUES (1001, 'ba_1'),"
                 "         (1002, 'ba_2'),"
                 "         (1003, 'ba_3'),"
-                "         (1004, 'ba_4')");
+                "         (1004, 'ba_4'),"
+                "         (1005, 'ba_5')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg()
@@ -269,7 +287,7 @@ int main() {
       QString query(
                 "INSERT INTO host_service_relation"
                 "            (host_host_id, service_service_id)"
-                "  VALUES (1001, 1001), (1001, 1002), (1001, 1003), (1001, 1004)");
+                "  VALUES (1001, 1001), (1001, 1002), (1001, 1003), (1001, 1004), (1001, 1005)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg()
@@ -286,7 +304,8 @@ int main() {
                 "  VALUES (1, 'BA1', 'DESC1', 90, 80, 70, 60),"
                 "         (2, 'BA2', 'DESC2', 80, 70, 60, 50),"
                 "         (3, 'BA3', 'DESC3', 70, 60, 50, 40),"
-                "         (4, 'BA4', 'DESC4', 60, 50, 40, 30)");
+                "         (4, 'BA4', 'DESC4', 60, 50, 40, 30),"
+                "         (5, 'BA5', 'DESC5', 50, 40, 30, 20)");
       QSqlQuery q(*db.bi_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create BA dimensions: "
@@ -313,7 +332,8 @@ int main() {
             "         (8, 3, 1418314059, 1418327489, 0, false),"
             "         (9, 3, 1418327489, 1418329589, 2, false),"
             "         (10, 3, 1418329589, 1418398892, 0, false),"
-            "         (11, 4, 1396303200, 1396389600, 0, false)";
+            "         (11, 4, 1396303200, 1396389600, 0, false),"
+            "         (12, 5, 1418598000, 1418684400, 0, false)";
       QString query(ss.str().c_str());
       QSqlQuery q(*db.bi_db());
       if (!q.exec(query))
@@ -352,7 +372,8 @@ int main() {
         { 8, 1, 1418314059, 1418327489, 13430, 13430, true },
         { 9, 1, 1418327489, 1418329589, 2100, 2100, true },
         { 10, 1, 1418329589, 1418398892, 69303, 69303, true },
-        { 11, 1, 1396303200, 1396389600, 86400, 86400, true }
+        { 11, 1, 1396303200, 1396389600, 86400, 86400, true },
+        { 12, 2, 1418630400, 1418684400, 54000, 28800, true },
       };
       check_ba_event_durations(
         *db.bi_db(),
@@ -371,7 +392,9 @@ int main() {
         { 3, 1418252400, 1, 84300, 2100, 0, 0, 0, 1, 0, 0, 0, true },
         { 3, 1418338800, 1, 60092, 0, 0, 0, 0, 0, 0, 0, 0, true },
         { 4, 1396303200, 1, 86400, 0, 0, 0, 0, 0, 0, 0, 0, true },
-        { 4, 1396389600, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, true}
+        { 4, 1396389600, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, true},
+        { 5, 1418598000, 2, 28800, 0, 0, 0, 0, 0, 0, 0, 0, true },
+        { 5, 1418684400, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, true }
       };
       check_ba_availability(
         *db.bi_db(),

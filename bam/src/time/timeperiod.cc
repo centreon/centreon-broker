@@ -332,7 +332,7 @@ bool timeperiod::is_valid(time_t preferred_time) const {
 time_t timeperiod::get_next_valid(time_t preferred_time) const {
   // First check for possible timeperiod exclusions
   // before getting a valid_time.
-  timezone_locker tzlock(_timezone.c_str());
+  timezone_locker tzlock(_timezone.empty() ? NULL : _timezone.c_str());
   return (_get_next_valid_time_per_timeperiod(
           preferred_time,
           *this));
@@ -346,7 +346,7 @@ time_t timeperiod::get_next_valid(time_t preferred_time) const {
  *  @return                    The next invalid time.
  */
 time_t timeperiod::get_next_invalid(time_t preferred_time) const {
-  timezone_locker tzlock(_timezone.c_str());
+  timezone_locker tzlock(_timezone.empty() ? NULL : _timezone.c_str());
 
   return (_get_min_invalid_time_per_timeperiod(preferred_time,
                                                *this));
@@ -604,8 +604,6 @@ static time_t _get_next_valid_time_per_timeperiod(
 
     // Check exclusions.
     if (earliest_time != (time_t)-1) {
-      /*timeperiodexclusion* first_exclusion(tperiod->exclusions);
-      tperiod->exclusions = NULL;*/
       time_t max_invalid((time_t)-1);
       for (std::vector<timeperiod::ptr>::const_iterator
              exclusion(tperiod.get_excluded().begin()),
@@ -621,7 +619,6 @@ static time_t _get_next_valid_time_per_timeperiod(
                 || (invalid > max_invalid)))
           max_invalid = invalid;
       }
-      //tperiod->exclusions = first_exclusion;
       if ((max_invalid != (time_t)-1)
           && (max_invalid != earliest_time)) {
         earliest_time = (time_t)-1;

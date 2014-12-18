@@ -1718,7 +1718,7 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
   logging::debug(logging::low)
     << "BAM-BI: processing rebuild signal";
 
-  _update_status("rebuilding");
+  _update_status("rebuilding: querying ba events");
 
   // We block the availability thread to prevent it waking
   // up on truncated event durations.
@@ -1780,14 +1780,23 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
     logging::info(logging::medium)
       << "BAM-BI: will now rebuild the event durations";
 
+    size_t ba_events_num = ba_events.size();
+    size_t ba_events_curr = 0;
+    std::stringstream ss;
+
     // Generate new ba events durations for each ba events.
     {
       for (std::vector<misc::shared_ptr<ba_event> >::const_iterator
              it(ba_events.begin()),
              end(ba_events.end());
           it != end;
-          ++it)
+          ++it, ++ba_events_curr) {
+        ss.str("");
+        ss << "rebuilding: ba event " << ba_events_curr
+           << "/" << ba_events_num;
+        _update_status(ss.str());
         _compute_event_durations(*it, this);
+      }
     }
   } catch(...) {
     _update_status("");
@@ -1800,6 +1809,8 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
 
   // Ask for the availabilities thread to recompute the availabilities.
   _availabilities->rebuild_availabilities(r.bas_to_rebuild);
+
+  _update_status("");
 }
 
 /**

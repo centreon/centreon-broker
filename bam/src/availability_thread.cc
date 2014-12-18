@@ -84,8 +84,7 @@ void availability_thread::run() {
       // Open the database.
       _open_database();
 
-      _build_availabilities(time::timeperiod::add_round_days_to_midnight(
-                              midnight, -3600 * 24));
+      _build_availabilities(_compute_start_of_day(::time(NULL)));
       _should_rebuild_all = false;
       _bas_to_rebuild.clear();
 
