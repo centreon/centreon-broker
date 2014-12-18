@@ -37,9 +37,9 @@ using namespace com::centreon::broker;
 
 #define CENTREON_DB_NAME "broker_bam_centreon"
 #define BI_DB_NAME "broker_bam_bi"
-#define BA_COUNT 9
+#define BA_COUNT 10
 #define HOST_COUNT 1
-#define SERVICES_BY_HOST 10
+#define SERVICES_BY_HOST 14
 
 typedef struct {
   double current_level;
@@ -498,7 +498,7 @@ int main() {
                    << i << ": " << q.lastError().text());
         }
         for (int j((i - 1) * SERVICES_BY_HOST + 1), limit(i * SERVICES_BY_HOST);
-             j < limit;
+             j <= limit;
              ++j) {
           {
             std::ostringstream oss;
@@ -538,7 +538,8 @@ int main() {
                   "         (6, 'BA6', 40, 30, '1', 1),"
                   "         (7, 'BA7', 30, 21, '1', 1),"
                   "         (8, 'BA8', 20, 10, '1', 1),"
-                  "         (9, 'BA9', 10, 0, '1', 1)");
+                  "         (9, 'BA9', 10, 0, '1', 1),"
+                  "         (10, 'BA10', 80, 60, '1', 1)");
         QSqlQuery q(*db.centreon_db());
         if (!q.exec(query))
           throw (exceptions::msg() << "could not create BAs: "
@@ -556,7 +557,8 @@ int main() {
       //             "         (6, 1, 1),"
       //             "         (7, 1, 1),"
       //             "         (8, 1, 1),"
-      //             "         (9, 1, 1)");
+      //             "         (9, 1, 1),"
+      //             "         (10, 1, 1)");
       //   QSqlQuery q(*db.centreon_db());
       //   if (!q.exec(query))
       //     throw (exceptions::msg()
@@ -575,7 +577,7 @@ int main() {
                  << "could not create virtual BA host: "
                  << q.lastError().text());
       }
-      for (int i(1); i <= 9; ++i) {
+      for (int i(1); i <= BA_COUNT; ++i) {
         {
           std::ostringstream oss;
           oss << "INSERT INTO service (service_id, service_description)"
@@ -608,7 +610,8 @@ int main() {
                 "            expression, bool_state, activate)"
                 "  VALUES (1, 'BoolExp1', '{1 1} {is} {OK}', 0, 1),"
                 "         (2, 'BoolExp2', '{1 2} {not} {CRITICAL} {OR} {1 3} {not} {OK}', 1, 1),"
-                "         (3, 'BoolExp3', '({1 5} {not} {WARNING} {AND} {1 6} {is} {WARNING}) {OR} {1 7} {is} {CRITICAL}', 1, 1)");
+                "         (3, 'BoolExp3', '({1 5} {not} {WARNING} {AND} {1 6} {is} {WARNING}) {OR} {1 7} {is} {CRITICAL}', 1, 1),"
+                "         (4, 'BoolExp4', '{1 14} {is} {CRITICAL}', 1, 1)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create boolexps: "
@@ -644,7 +647,11 @@ int main() {
                 "         (16, '1', NULL, NULL, 7, 8, NULL, NULL, '0', 95, NULL, 105, NULL, 99, NULL, '0', '0', '1', '1'),"
                 "         (17, '3', NULL, NULL, NULL, 9, NULL, 1, '0', 10, NULL, 75, NULL, 99, NULL, '0', '0', '1', '1'),"
                 "         (18, '3', NULL, NULL, NULL, 9, NULL, 2, '0', 10, NULL, 25, NULL, 99, NULL, '0', '0', '1', '1'),"
-                "         (19, '3', NULL, NULL, NULL, 9, NULL, 3, '0', 10, NULL, 6, NULL, 99, NULL, '0', '0', '1', '1')");
+                "         (19, '3', NULL, NULL, NULL, 9, NULL, 3, '0', 10, NULL, 6, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (20, '0', 1, 11, NULL, 10, NULL, NULL, '0', NULL, NULL, NULL, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (21, '0', 1, 12, NULL, 10, NULL, NULL, '0', NULL, NULL, NULL, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (22, '0', 1, 13, NULL, 10, NULL, NULL, '0', NULL, NULL, NULL, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (23, '3', NULL, NULL, NULL, 10, NULL, 4, '0', NULL, NULL, NULL, NULL, 99, NULL, '0', '0', '1', '1')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create KPIs: "
@@ -675,7 +682,8 @@ int main() {
         { 100.0, 0.0, 0.0 },
         { 100.0, 0.0, 0.0 },
         { 100.0, 0.0, 0.0 },
-        { 75.0, 0.0, 0.0 }
+        { 75.0, 0.0, 0.0 },
+        { 100.0, 0.0, 0.0 }
       };
       check_bas(*db.centreon_db(), bas, sizeof(bas) / sizeof(*bas));
     }
@@ -699,6 +707,10 @@ int main() {
         { 1, 0, 0.0, 0.0, 0.0 },
         { 1, 0, 0.0, 0.0, 0.0 },
         { 1, 2, 25.0, 0.0, 0.0 },
+        { 1, 0, 0.0, 0.0, 0.0 },
+        { 1, 0, 0.0, 0.0, 0.0 },
+        { 1, 0, 0.0, 0.0, 0.0 },
+        { 1, 0, 0.0, 0.0, 0.0 },
         { 1, 0, 0.0, 0.0, 0.0 }
       };
       check_kpis(*db.centreon_db(), kpis, sizeof(kpis) / sizeof(*kpis));
@@ -709,6 +721,7 @@ int main() {
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;1;2;output1 for (1, 1)");
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;4;2;output1 for (1, 4)");
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;7;2;output1 for (1, 7)");
+    commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;11;2;output1 for (1, 11)");
 
     // Sleep a while.
     sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
@@ -728,7 +741,8 @@ int main() {
         { 35.0, 0.0, 0.0 },  // BA2 W  = 65 => W
         { 65.0, 0.0, 0.0 },  // BA3 C  = 35 => O
         { 15.0, 0.0, 0.0 },  // BA6 W  = 85 => W
-        { 19.0, 0.0, 0.0 }   // BE1 F  = 75, BE3 T = 6 => O
+        { 19.0, 0.0, 0.0 },  // BE1 F  = 75, BE3 T = 6 => O
+        { 75.0, 0.0, 0.0 }   // SVC11 C = 25 => O
       };
       check_bas(*db.centreon_db(), bas, sizeof(bas) / sizeof(*bas));
     }
@@ -752,7 +766,11 @@ int main() {
         { 1, 0, 0.0, 0.0, 0.0 },
         { 1, 2, 75.0, 0.0, 0.0 },
         { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 2, 6.0, 0.0, 0.0 }
+        { 1, 2, 6.0, 0.0, 0.0 },
+        { 1, 2, 25.0, 0.0, 0.0 },
+        { 1, 0, 0.0, 0.0, 0.0 },
+        { 1, 0, 0.0, 0.0, 0.0 },
+        { 1, 0, 0.0, 0.0, 0.0 }
       };
       check_kpis(*db.centreon_db(), kpis, sizeof(kpis) / sizeof(*kpis));
     }
@@ -762,6 +780,7 @@ int main() {
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;5;1;output2 for (1, 5)");
     sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;8;1;output2 for (1, 8)");
+    commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;12;2;output2 for (1, 12)");
 
     // Sleep a while.
     sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
@@ -781,7 +800,8 @@ int main() {
         { 35.0, 0.0, 0.0 },  // BA2 W  = 65 => W
         { 0.0, 0.0, 0.0 },   // BA3 C  = 35, BA4 C  = 45, BA5 W = 45 => C
         { 0.0, 0.0, 0.0 },   // BA6 W  = 85 => W, BA7 C = 105 => C
-        { 0.0, 0.0, 0.0 }    // BE1 F  = 75, BE2 T = 25, BE3 T = 6 => C
+        { 0.0, 0.0, 0.0 },   // BE1 F  = 75, BE2 T = 25, BE3 T = 6 => C
+        { 50.0, 0.0, 0.0 }   // SVC11 C = 25, SVC12 C = 25 => W
       };
       check_bas(*db.centreon_db(), bas, sizeof(bas) / sizeof(*bas));
     }
@@ -805,7 +825,11 @@ int main() {
         { 1, 2, 105.0, 0.0, 0.0 },
         { 1, 2, 75.0, 0.0, 0.0 },
         { 1, 2, 25.0, 0.0, 0.0 },
-        { 1, 2, 6.0, 0.0, 0.0 }
+        { 1, 2, 6.0, 0.0, 0.0 },
+        { 1, 2, 25.0, 0.0, 0.0 },
+        { 1, 2, 25.0, 0.0, 0.0 },
+        { 1, 0, 0.0, 0.0, 0.0 },
+        { 1, 0, 0.0, 0.0, 0.0 }
       };
       check_kpis(*db.centreon_db(), kpis, sizeof(kpis) / sizeof(*kpis));
     }
@@ -828,7 +852,10 @@ int main() {
         { 8, t1, t2, false, t2, t3, 1, false },
         { 8, t2, t3, true, 0, 0, 2, false },
         { 9, t0, t1, false, t2, t3, 0, false },
-        { 9, t2, t3, true, 0, 0, 2, false }
+        { 9, t2, t3, true, 0, 0, 2, false },
+        { 10, t0, t1, false, t1, t2, 0, false },
+        { 10, t1, t2, false, t2, t3, 1, false },
+        { 10, t2, t3, true, 0, 0, 2, false }
       };
       check_ba_events(
         *db.bi_db(),
@@ -873,7 +900,13 @@ int main() {
         { false, 18, t1, t2, false, t2, t3, 0, false, 0, "BAM boolean expression computed by Centreon Broker", "" },
         { false, 18, t2, t3, true, 0, 0, 2, false, 25, "BAM boolean expression computed by Centreon Broker", "" },
         { false, 19, t0, t1, false, t1, t2, 0, false, 0, "BAM boolean expression computed by Centreon Broker", "" },
-        { false, 19, t1, t2, true, 0, 0, 2, false, 6, "BAM boolean expression computed by Centreon Broker", "" }
+        { false, 19, t1, t2, true, 0, 0, 2, false, 6, "BAM boolean expression computed by Centreon Broker", "" },
+        { false, 20, t0, t1, false, t1, t2, 0, false, 0, "", "" },
+        { false, 20, t1, t2, true, 0, 0, 2, false, 25, "output1 for (1, 11)\n", "" },
+        { false, 21, t0, t1, false, t2, t3, 0, false, 0, "", "" },
+        { false, 21, t2, t3, true, 0, 0, 2, false, 25, "output2 for (1, 12)\n", "" },
+        { false, 22, t0, t1, true, 0, 0, 0, false, 0, "", "" },
+        { false, 23, t0, t1, true, 0, 0, 0, false, 0, "BAM boolean expression computed by Centreon Broker", "" }
       };
       check_kpi_events(
         *db.bi_db(),
@@ -890,7 +923,9 @@ int main() {
         { 7, t0, t1, t2, t3, t2 - t1, t3 - t0, t2 - t1, t3 - t0, true },
         { 8, t0, t1, t1, t2, 0, t2 - t0, 0, t2 - t0, true },
         { 8, t1, t2, t2, t3, 0, t3 - t1, 0, t3 - t1, true },
-        { 9, t0, t1, t2, t3, t2 - t1, t3 - t0, t2 - t1, t3 - t0, true }
+        { 9, t0, t1, t2, t3, t2 - t1, t3 - t0, t2 - t1, t3 - t0, true },
+        { 10, t0, t1, t1, t2, 0, t2 - t0, 0, t2 - t0, true },
+        { 10, t1, t2, t2, t3, 0, t3 - t1, 0, t3 - t1, true }
       };
       check_ba_events_durations(
         *db.bi_db(),
