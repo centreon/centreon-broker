@@ -23,7 +23,6 @@
 #include "com/centreon/broker/bam/bool_status.hh"
 #include "com/centreon/broker/bam/bool_value.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
-#include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker::bam;
@@ -33,18 +32,16 @@ using namespace com::centreon::broker::bam;
  */
 bool_expression::bool_expression()
   : _id(0),
-    _impact_if(true),
-    _impact_hard(0.0),
-    _impact_soft(0.0) {}
+    _impact_if(true) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-bool_expression::bool_expression(bool_expression const& right)
-  : kpi(right) {
-  _internal_copy(right);
+bool_expression::bool_expression(bool_expression const& other)
+  : computable(other) {
+  _internal_copy(other);
 }
 
 /**
@@ -55,29 +52,17 @@ bool_expression::~bool_expression() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
 bool_expression& bool_expression::operator=(
-                                    bool_expression const& right) {
-  if (this != &right) {
-    kpi::operator=(right);
-    _internal_copy(right);
+                                    bool_expression const& other) {
+  if (this != &other) {
+    computable::operator=(other);
+    _internal_copy(other);
   }
   return (*this);
-}
-
-/**
- *  @brief Add a KPI ID to this boolean expression.
- *
- *  Boolean expression are simulated as KPI.
- *
- *  @param[in] id  One of the boolean expression KPI ID.
- */
-void bool_expression::add_kpi_id(unsigned int id) {
-  _kpis.push_back(id);
-  return ;
 }
 
 /**
@@ -95,61 +80,24 @@ bool bool_expression::child_has_update(
   // class, as the bool_* classes already cache most of them.
   if (child == _expression.data()) {
     // Logging.
-    logging::debug(logging::low) << "BAM: boolexp " << _id
+    logging::debug(logging::low) << "BAM: boolean expression " << _id
       << " is getting notified of child update";
 
     // Generate status event.
     visit(visitor);
   }
-  return true;
+  return (true);
 }
 
 /**
- *  Get the hard state.
+ *  Get the boolean expression state.
  *
- *  @return Boolean expression hard state.
+ *  @return Either OK (0) or CRITICAL (2).
  */
-short bool_expression::get_state_hard() const {
-  return ((_expression->value_hard() == _impact_if) ? 2 : 0);
-}
-
-/**
- *  Get the soft state.
- *
- *  @return Boolean expression soft state.
- */
-short bool_expression::get_state_soft() const {
-  return ((_expression->value_soft() == _impact_if) ? 2 : 0);
-}
-
-/**
- *  Get the hard impacts.
- *
- *  @param[out] hard_impact Hard impacts.
- */
-void bool_expression::impact_hard(impact_values& hard_impact) {
-  bool value(_expression->value_hard());
-  hard_impact.set_nominal(((value && _impact_if)
-                           || (!value && !_impact_if))
-                          ? _impact_hard
-                          : 0.0);
-  hard_impact.set_acknowledgement(0.0);
-  hard_impact.set_downtime(0.0);
-  return ;
-}
-
-/**
- *  Get the soft impacts.
- *
- *  @param[out] soft_impact Soft impacts.
- */
-void bool_expression::impact_soft(impact_values& soft_impact) {
-  bool value(_expression->value_soft());
-  soft_impact.set_nominal(((value && _impact_if)
-                           || (!value && !_impact_if))
-                          ? _impact_soft
-                          : 0.0);
-  return ;
+short bool_expression::get_state() const {
+  return ((_expression->value_hard() == _impact_if)
+          ? 2
+          : 0);
 }
 
 /**
@@ -174,16 +122,6 @@ void bool_expression::set_id(unsigned int id) {
 }
 
 /**
- *  Set hard impact.
- *
- *  @param[in] impact Hard impact.
- */
-void bool_expression::set_impact_hard(double impact) {
-  _impact_hard = impact;
-  return ;
-}
-
-/**
  *  Set whether we should impact if the expression is true or false.
  *
  *  @param[in] impact_if True if impact is applied if the expression is
@@ -195,25 +133,6 @@ void bool_expression::set_impact_if(bool impact_if) {
 }
 
 /**
- *  Set soft impact.
- *
- *  @param[in] impact Soft impact.
- */
-void bool_expression::set_impact_soft(double impact) {
-  _impact_soft = impact;
-  return ;
-}
-
-/**
- *  Set the kpi id of this boolean expression.
- *
- *  @param[in] id  The kpi id to set.
- */
-void bool_expression::set_kpi_id(unsigned int id) {
-  kpi::set_id(id);
-}
-
-/**
  *  Visit boolean expression.
  *
  *  @param[out] visitor  Object that will receive status.
@@ -222,72 +141,14 @@ void bool_expression::visit(io::stream* visitor) {
   if (visitor) {
     // Generate status events.
     bool hard_value(_expression->value_hard());
-    bool soft_value(_expression->value_soft());
     {
       misc::shared_ptr<bool_status> b(new bool_status);
       b->bool_id = _id;
       b->state = hard_value;
       logging::debug(logging::low)
-        << "BAM: generating status of boolexp " << b->bool_id
+        << "BAM: generating status of boolean expression " << b->bool_id
         << " (state " << b->state << ")";
       visitor->write(b.staticCast<io::data>());
-    }
-    {
-      kpi_status k;
-      if (hard_value == _impact_if) {
-        k.level_nominal_hard = _impact_hard;
-        k.state_hard = 2;
-      }
-      else {
-        k.level_nominal_hard = 0.0;
-        k.state_hard = 0;
-      }
-      if (soft_value == _impact_if) {
-        k.level_nominal_soft = _impact_soft;
-        k.state_soft = 2;
-      }
-      else {
-        k.level_nominal_soft = 0.0;
-        k.state_soft = 0;
-      }
-      for (std::list<unsigned int>::const_iterator
-             it(_kpis.begin()),
-             end(_kpis.end());
-           it != end;
-           ++it) {
-        misc::shared_ptr<kpi_status> e(new kpi_status(k));
-        e->kpi_id = *it;
-        visitor->write(e.staticCast<io::data>());
-      }
-    }
-
-    // Generate BI events.
-    {
-      // Get impact.
-      impact_values impacts;
-      impact_hard(impacts);
-
-      // If no event was cached, create one.
-      if (_event.isNull()) {
-        _open_new_event(visitor, ::time(NULL));
-      }
-      // If state changed, close event and open a new one.
-      else if (get_state_hard() != _event->status) {
-        timestamp now(::time(NULL));
-        now = std::max(now, _event->start_time);
-        _event->end_time = now;
-        for (std::list<unsigned int>::const_iterator
-               it(_kpis.begin()),
-               end(_kpis.end());
-             it != end;
-             ++it) {
-          misc::shared_ptr<kpi_event> ke(new kpi_event(*_event));
-          ke->kpi_id = *it;
-          visitor->write(ke.staticCast<io::data>());
-        }
-        _event.clear();
-        _open_new_event(visitor, now);
-      }
     }
   }
   return ;
@@ -299,42 +160,8 @@ void bool_expression::visit(io::stream* visitor) {
  *  @param[in] right Object to copy.
  */
 void bool_expression::_internal_copy(bool_expression const& right) {
-  _event = right._event;
   _expression = right._expression;
   _id = right._id;
   _impact_if = right._impact_if;
-  _impact_hard = right._impact_hard;
-  _impact_soft = right._impact_soft;
-  return ;
-}
-
-/**
- *  Open a new event.
- *
- *  @param[out] visitor     Visitor that will receive events.
- *  @param[in]  start_time  Event start time.
- */
-void bool_expression::_open_new_event(
-                        io::stream* visitor,
-                        timestamp start_time) {
-  impact_values impacts;
-  impact_hard(impacts);
-  _event = new kpi_event;
-  _event->impact_level = impacts.get_nominal();
-  _event->in_downtime = false;
-  _event->output = "BAM boolean expression computed by Centreon Broker";
-  _event->perfdata.clear();
-  _event->start_time = start_time;
-  _event->status = get_state_hard();
-  if (visitor)
-    for (std::list<unsigned int>::const_iterator
-           it(_kpis.begin()),
-           end(_kpis.end());
-         it != end;
-         ++it) {
-      misc::shared_ptr<kpi_event> ke(new kpi_event(*_event));
-      ke->kpi_id = *it;
-      visitor->write(ke.staticCast<io::data>());
-    }
   return ;
 }

@@ -55,8 +55,9 @@ namespace                bam {
         void             apply(
                            configuration::state::bool_exps const& my_bools,
                            hst_svc_mapping const& mapping,
-                           ba& my_bas,
                            service_book& book);
+        misc::shared_ptr<bam::bool_expression>
+                         find_boolexp(unsigned int id);
         void             visit(io::stream* visitor);
 
       private:

@@ -32,6 +32,7 @@ kpi::kpi(
        unsigned int ba_id,
        unsigned int indicator_ba,
        unsigned int meta_id,
+       unsigned int boolexp_id,
        short status,
        short last_level,
        bool downtimed,
@@ -48,6 +49,7 @@ kpi::kpi(
     _ba_id(ba_id),
     _indicator_ba_id(indicator_ba),
     _meta_id(meta_id),
+    _boolexp_id(boolexp_id),
     _status(status),
     _last_level(last_level),
     _downtimed(downtimed),
@@ -56,8 +58,7 @@ kpi::kpi(
     _ignore_acknowledgement(ignore_acknowledgement),
     _impact_warning(warning),
     _impact_critical(critical),
-    _impact_unknown(unknown)
-{}
+    _impact_unknown(unknown) {}
 
 /**
  *  Copy constructor.
@@ -72,6 +73,7 @@ kpi::kpi(kpi const& other)
     _ba_id(other._ba_id),
     _indicator_ba_id(other._indicator_ba_id),
     _meta_id(other._meta_id),
+    _boolexp_id(other._boolexp_id),
     _status(other._status),
     _last_level(other._last_level),
     _downtimed(other._downtimed),
@@ -81,8 +83,7 @@ kpi::kpi(kpi const& other)
     _impact_warning(other._impact_warning),
     _impact_critical(other._impact_critical),
     _impact_unknown(other._impact_unknown),
-    _event(other._event)
-{}
+    _event(other._event) {}
 
 /**
  *  Destructor.
@@ -105,6 +106,7 @@ kpi& kpi::operator=(kpi const& other) {
     _ba_id = other._ba_id;
     _indicator_ba_id = other._indicator_ba_id;
     _meta_id = other._meta_id;
+    _boolexp_id = other._boolexp_id;
     _status = other._status;
     _last_level = other._last_level;
     _downtimed = other._downtimed;
@@ -134,6 +136,7 @@ bool kpi::operator==(kpi const& other) const {
           && (_ba_id == other._ba_id)
           && (_indicator_ba_id == other._indicator_ba_id)
           && (_meta_id == other._meta_id)
+          && (_boolexp_id == other._boolexp_id)
           && (_status == other._status)
           && (_last_level == other._last_level)
           && (_downtimed == other._downtimed)
@@ -221,6 +224,15 @@ bool kpi::is_meta() const {
 }
 
 /**
+ *  Check if this KPI is a boolean expression.
+ *
+ *  @return True if this KPI is a boolean expression.
+ */
+bool kpi::is_boolexp() const {
+  return (_boolexp_id != 0);
+}
+
+/**
  *  Get ba id.
  *
  *  @return The id of the business activity.
@@ -245,6 +257,15 @@ unsigned int kpi::get_indicator_ba_id() const {
  */
 unsigned int kpi::get_meta_id() const {
   return (_meta_id);
+}
+
+/**
+ *  Get the boolean expression ID.
+ *
+ *  @return Boolean expression ID of this KPI.
+ */
+unsigned int kpi::get_boolexp_id() const {
+  return (_boolexp_id);
 }
 
 /**
@@ -390,6 +411,16 @@ void kpi::set_indicator_ba_id(unsigned int ba_id) {
  */
 void kpi::set_meta_id(unsigned int meta_id) {
   _meta_id = meta_id;
+  return ;
+}
+
+/**
+ *  Set the boolean expression ID that affects this KPI.
+ *
+ *  @param[in] boolexp_id  Boolean expression ID.
+ */
+void kpi::set_boolexp_id(unsigned int boolexp_id) {
+  _boolexp_id = boolexp_id;
   return ;
 }
 

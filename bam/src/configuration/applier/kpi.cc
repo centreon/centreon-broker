@@ -18,9 +18,12 @@
 */
 
 #include "com/centreon/broker/bam/configuration/applier/ba.hh"
+#include "com/centreon/broker/bam/configuration/applier/bool_expression.hh"
 #include "com/centreon/broker/bam/configuration/applier/kpi.hh"
 #include "com/centreon/broker/bam/configuration/applier/meta_service.hh"
+#include "com/centreon/broker/bam/bool_expression.hh"
 #include "com/centreon/broker/bam/kpi_ba.hh"
+#include "com/centreon/broker/bam/kpi_boolexp.hh"
 #include "com/centreon/broker/bam/kpi_meta.hh"
 #include "com/centreon/broker/bam/kpi_service.hh"
 #include "com/centreon/broker/bam/meta_service.hh"
@@ -66,10 +69,11 @@ applier::kpi& applier::kpi::operator=(applier::kpi const& right) {
 /**
  *  Apply configuration.
  *
- *  @param[in]     my_kpis   Object to copy.
- *  @param[in,out] my_bas    Already applied BAs.
- *  @param[in,out] my_metas  Already applied meta-services.
- *  @param[out]    book      Service book.
+ *  @param[in]     my_kpis      Object to copy.
+ *  @param[in,out] my_bas       Already applied BAs.
+ *  @param[in,out] my_metas     Already applied meta-services.
+ *  @param[in,out] my_boolexps  Already applied boolean expressions.
+ *  @param[out]    book         Service book.
  *
  *  @return This object.
  */
@@ -77,6 +81,7 @@ void applier::kpi::apply(
                      bam::configuration::state::kpis const& my_kpis,
                      applier::ba& my_bas,
                      applier::meta_service& my_metas,
+                     applier::bool_expression& my_boolexps,
                      bam::service_book& book) {
   //
   // DIFF
@@ -146,6 +151,7 @@ void applier::kpi::apply(
                                           it->second,
                                           my_bas,
                                           my_metas,
+                                          my_boolexps,
                                           book));
     applied& content(_applied[it->first]);
     content.cfg = it->second;
@@ -183,10 +189,12 @@ void applier::kpi::_internal_copy(applier::kpi const& right) {
 /**
  *  Create new KPI object.
  *
- *  @param[in]     cfg    KPI configuration.
- *  @param[in,out] my_bas Already applied BAs.
- *  @param[out]    book   Service book, used to notify kpi_service of
- *                        service change.
+ *  @param[in]     cfg          KPI configuration.
+ *  @param[in,out] my_bas       Already applied BAs.
+ *  @param[in,out] my_metas     Already applied meta-services.
+ *  @param[in,out] my_boolexps  Already applied boolean expressions.
+ *  @param[out]    book         Service book, used to notify kpi_service
+ *                              of service change.
  *
  *  @return New KPI object.
  */
@@ -194,6 +202,7 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
                                            configuration::kpi const& cfg,
                                            applier::ba& my_bas,
                                            applier::meta_service& my_metas,
+                                           applier::bool_expression& my_boolexps,
                                            service_book& book) {
   misc::shared_ptr<bam::kpi> my_kpi;
   if (cfg.is_service()) {
@@ -246,6 +255,24 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
              << "BAM: could not create KPI " << cfg.get_id()
              << ": could not find meta-service " << cfg.get_meta_id());
     obj->link_meta(target);
+    target->add_parent(obj.staticCast<bam::computable>());
+    my_kpi = obj.staticCast<bam::kpi>();
+  }
+  else if (cfg.is_boolexp()) {
+    logging::config(logging::medium)
+      << "BAM: creating new KPI " << cfg.get_id()
+      << " of boolean expression " << cfg.get_boolexp_id()
+      << " impacting BA " << cfg.get_ba_id();
+    misc::shared_ptr<bam::kpi_boolexp> obj(new bam::kpi_boolexp);
+    obj->set_impact(cfg.get_impact_critical());
+    misc::shared_ptr<bam::bool_expression>
+      target(my_boolexps.find_boolexp(cfg.get_boolexp_id()));
+    if (target.isNull())
+      throw (exceptions::msg()
+             << "BAM: could not create KPI " << cfg.get_id()
+             << ": could not find boolean expression "
+             << cfg.get_boolexp_id());
+    obj->link_boolexp(target);
     target->add_parent(obj.staticCast<bam::computable>());
     my_kpi = obj.staticCast<bam::kpi>();
   }

@@ -38,6 +38,7 @@ namespace     bam {
     namespace applier {
       // Forward declarations.
       class   ba;
+      class   bool_expression;
       class   meta_service;
 
       /**
@@ -56,6 +57,7 @@ namespace     bam {
                 configuration::state::kpis const& my_kpis,
                 ba& my_bas,
                 meta_service& my_metas,
+                bool_expression& my_boolexps,
                 service_book& book);
         void  visit(io::stream* visitor);
 
@@ -71,6 +73,7 @@ namespace     bam {
                 configuration::kpi const& cfg,
                 ba& my_bas,
                 meta_service& my_metas,
+                bool_expression& my_boolexps,
                 service_book& book);
 
         std::map<unsigned int, applied>

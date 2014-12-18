@@ -45,6 +45,7 @@ namespace           bam {
                       unsigned int ba_id = 0,
                       unsigned int indicator_ba = 0,
                       unsigned int meta_id = 0,
+                      unsigned int boolexp_id = 0,
                       short status = 0,
                       short last_level = 0,
                       bool downtimed = false,
@@ -67,9 +68,11 @@ namespace           bam {
       bool          is_service() const;
       bool          is_ba() const;
       bool          is_meta() const;
+      bool          is_boolexp() const;
       unsigned int  get_ba_id() const;
       unsigned int  get_indicator_ba_id() const;
       unsigned int  get_meta_id() const;
+      unsigned int  get_boolexp_id() const;
       short         get_status() const;
       short         get_last_level() const;
       bool          is_downtimed() const;
@@ -89,6 +92,7 @@ namespace           bam {
       void          set_ba_id(unsigned int ba_id);
       void          set_indicator_ba_id(unsigned int ba_id);
       void          set_meta_id(unsigned int meta_id);
+      void          set_boolexp_id(unsigned int boolexp_id);
       void          set_status(short status);
       void          set_last_level(short last_level);
       void          set_downtimed(bool downtimed);
@@ -108,6 +112,7 @@ namespace           bam {
       unsigned int  _ba_id;
       unsigned int  _indicator_ba_id;
       unsigned int  _meta_id;
+      unsigned int  _boolexp_id;
       short         _status;
       short         _last_level;
       bool          _downtimed;

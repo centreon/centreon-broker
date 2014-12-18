@@ -21,7 +21,6 @@
 #  define CCB_BAM_KPI_META_HH
 
 #  include "com/centreon/broker/bam/kpi.hh"
-#  include "com/centreon/broker/bam/kpi_event.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"

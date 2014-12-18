@@ -68,15 +68,12 @@ applier::bool_expression& applier::bool_expression::operator=(
  *
  *  @param[in]     my_bools Boolean expressions.
  *  @param[in]     mapping  Host/service mapping (names to IDs).
- *  @param[in,out] my_bas   BAs on which boolean expressions will be
- *                          applied.
  *  @param[out]    book     Used to notify bool_service of service
  *                          change.
  */
 void applier::bool_expression::apply(
                                  configuration::state::bool_exps const& my_bools,
                                  hst_svc_mapping const& mapping,
-                                 ba& my_bas,
                                  service_book& book) {
   //
   // DIFF
@@ -125,17 +122,8 @@ void applier::bool_expression::apply(
          end(to_delete.end());
        it != end;
        ++it) {
-    for (bam::configuration::bool_expression::ids_of_bas::const_iterator
-           it2(it->second.cfg.get_impacted_bas().begin()),
-           end2(it->second.cfg.get_impacted_bas().end());
-         it2 != end2;
-         ++it2) {
-      misc::shared_ptr<bam::ba> target(my_bas.find_ba(*it2));
-      if (!target.isNull()) {
-        target->remove_impact(it->second.obj.staticCast<bam::kpi>());
-        it->second.obj->remove_parent(target.staticCast<bam::computable>());
-      }
-    }
+    logging::config(logging::medium)
+      << "BAM: removing boolean expression " << it->second.cfg.get_id();
     for (std::list<bool_service::ptr>::const_iterator
            it2(it->second.svc.begin()),
            end2(it->second.svc.end());
@@ -155,6 +143,8 @@ void applier::bool_expression::apply(
          end(to_create.end());
        it != end;
        ++it) {
+    logging::config(logging::medium)
+      << "BAM: creating new boolean expression " << it->first;
     misc::shared_ptr<bam::bool_expression>
       new_bool_exp(new bam::bool_expression);
     {
@@ -178,41 +168,26 @@ void applier::bool_expression::apply(
                it2->data());
     }
     new_bool_exp->set_id(it->first);
-    new_bool_exp->set_impact_hard(it->second.get_impact());
     new_bool_exp->set_impact_if(it->second.get_impact_if());
-    new_bool_exp->set_impact_soft(it->second.get_impact());
-    for (bam::configuration::bool_expression::kpi_ids::const_iterator
-           it2(it->second.get_kpi_ids().begin()),
-           end2(it->second.get_kpi_ids().end());
-         it2 != end2;
-         ++it2)
-      new_bool_exp->add_kpi_id(*it2);
-    if (it->second.get_opened_event().kpi_id != 0)
-      new_bool_exp->set_initial_event(it->second.get_opened_event());
-    logging::config(logging::medium)
-      << "BAM: creating new boolexp " << it->first;
-    for (bam::configuration::bool_expression::ids_of_bas::const_iterator
-           it2(it->second.get_impacted_bas().begin()),
-           end2(it->second.get_impacted_bas().end());
-         it2 != end2;
-         ++it2) {
-      misc::shared_ptr<bam::ba> target(my_bas.find_ba(*it2));
-      if (target.isNull())
-        logging::config(logging::high) << "BAM: could not find BA "
-          << *it2 << " for boolean expression " << it->first
-          << ", BA won't be impacted by this boolean expression";
-      else {
-        logging::config(logging::low) << "BAM: boolexp "
-          << it->first << " impacts BA " << *it2 << " of "
-          << it->second.get_impact() << " when "
-          << it->second.get_impact_if();
-        target->add_impact(new_bool_exp.staticCast<bam::kpi>());
-        new_bool_exp->add_parent(target.staticCast<bam::computable>());
-      }
-    }
   }
 
   return ;
+}
+
+/**
+ *  Find a boolean expression by its ID.
+ *
+ *  @param[in] id  Boolean expression ID.
+ *
+ *  @return Shared pointer to the applied boolean expression object.
+ */
+misc::shared_ptr<bam::bool_expression> applier::bool_expression::find_boolexp(
+                                                                   unsigned int id) {
+  std::map<unsigned int, applied>::iterator
+    it(_applied.find(id));
+  return ((it != _applied.end())
+          ? it->second.obj
+          : misc::shared_ptr<bam::bool_expression>());
 }
 
 /**

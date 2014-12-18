@@ -26,32 +26,26 @@ using namespace com::centreon::broker::bam::configuration;
  *  Constructor.
  *
  *  @param[in] id             BA id.
- *  @param[in] impact         BA impact.
  *  @param[in] expression     BA expression.
  *  @param[in] impact_if      BA impact_if
  */
 bool_expression::bool_expression(
                    unsigned int id,
-                   double impact,
                    std::string const& expression,
                    bool impact_if)
   : _id(id),
-    _impact(impact),
     _expression(expression),
     _impact_if(impact_if) {}
+
 /**
  *  Copy constructor.
  *
- *  @param[in] other The object to copy.
+ *  @param[in] other  The object to copy.
  */
 bool_expression::bool_expression(bool_expression const& other)
   : _id(other._id),
-    _impact(other._impact),
-    _impacted(other._impacted),
     _expression(other._expression),
-    _impact_if(other._impact_if),
-    _kpi_ids(other._kpi_ids),
-    _event(other._event) {}
+    _impact_if(other._impact_if) {}
 
 /**
  *  Destructor
@@ -61,19 +55,15 @@ bool_expression::~bool_expression() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] other Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
 bool_expression& bool_expression::operator=(bool_expression const& other) {
   if (&other != this) {
     _id = other._id;
-    _impact = other._impact ;
-    _impacted = other._impacted;
     _expression = other._expression;
     _impact_if = other._impact_if;
-    _kpi_ids = other._kpi_ids;
-    _event = other._event;
   }
   return (*this);
 }
@@ -81,24 +71,20 @@ bool_expression& bool_expression::operator=(bool_expression const& other) {
 /**
  *  Equality operator.
  *
- *  @param[in] other Object to compare to.
+ *  @param[in] other  Object to compare to.
  *
  *  @return True if this and other objects are equal.
  */
 bool bool_expression::operator==(bool_expression const& other) const {
   return ((_id == other._id)
-          && (_impact == other._impact)
-          && (_impacted == other._impacted)
           && (_expression == other._expression)
-          && (_impact_if == other._impact_if)
-          && (_kpi_ids == other._kpi_ids)
-          && (_event == other._event));
+          && (_impact_if == other._impact_if));
 }
 
 /**
  *  Inequality operator.
  *
- *  @param[in] other Object to compare to.
+ *  @param[in] other  Object to compare to.
  *
  *  @return True if this and other objects are equal.
  */
@@ -113,28 +99,6 @@ bool bool_expression::operator!=(bool_expression const& other) const {
  */
 unsigned int bool_expression::get_id() const {
   return (_id);
-}
-
-/**
- *  Get the impact.
- *
- *  @return The impact refers to the negative effect of a business activity
- *          failure to the higher-level enclosing business activity. Depending
- *          on the boolean expression, this can be applicable whether the
- *          evaluation is false or true.
- *
- */
-double bool_expression::get_impact() const {
-  return (_impact);
-}
-
-/**
- *  Get impacted BAs.
- *
- *  @return Impacted BAs.
- */
-bool_expression::ids_of_bas const& bool_expression::get_impacted_bas() const {
-  return (_impacted);
 }
 
 /**
@@ -157,59 +121,22 @@ bool bool_expression::get_impact_if() const {
 }
 
 /**
- *  Get the KPI IDs of this boolean expression.
- *
- *  @return KPI IDs of this boolean expression.
- */
-bool_expression::kpi_ids const& bool_expression::get_kpi_ids() const {
-  return (_kpi_ids);
-}
-
-/**
- *  Get the opened event associated with this boolean expression.
- *
- *  @return  The event.
- */
-com::centreon::broker::bam::kpi_event const&
-      bool_expression::get_opened_event() const {
-  return (_event);
-}
-
-/**
- *  Add a KPI ID.
- *
- *  @param[in] id  New KPI ID.
- */
-void bool_expression::add_kpi_id(unsigned int id) {
-  _kpi_ids.push_back(id);
-  return ;
-}
-
-/**
- *  Get modifiable list of BAs impacted by this boolean expression.
- *
- *  @return List of BAs impacted by this boolean expression.
- */
-bool_expression::ids_of_bas& bool_expression::impacted_bas() {
-  return (_impacted);
-}
-
-/**
- *  Set impact.
- *
- *  @param[in] si Impact value for the bool expression.
- */
-void bool_expression::set_impact(double si) {
-  _impact = si;
-}
-
-/**
  *  Set expression
  *
  *  @param[in]  exp Set the textual value for the expression.
  */
 void bool_expression::set_expression(std::string const& exp) {
   _expression = exp;
+}
+
+/**
+ *  Set the boolean expression ID.
+ *
+ *  @param[in] id  Boolean expression ID.
+ */
+void bool_expression::set_id(unsigned int id) {
+  _id = id;
+  return ;
 }
 
 /**
@@ -220,13 +147,4 @@ void bool_expression::set_expression(std::string const& exp) {
  */
 void bool_expression::set_impact_if(bool bif) {
   _impact_if = bif;
-}
-
-/**
- *  Set the initial opened event of this boolean expression.
- *
- *  @param[in] event  The event to set.
- */
-void bool_expression::set_opened_event(bam::kpi_event const& event) {
-  _event = event;
 }

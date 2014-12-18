@@ -119,12 +119,13 @@ void reader::_load(state::kpis& kpis) {
     database_query query(_db);
     query.run_query(
       "SELECT  k.kpi_id, k.state_type, k.host_id, k.service_id, k.id_ba,"
-      "        k.id_indicator_ba, k.meta_id, k.current_status,"
-      "        k.last_level, k.downtime, k.acknowledged,"
-      "        k.ignore_downtime, k.ignore_acknowledged,"
-      "        COALESCE(k.drop_warning, ww.impact),"
-      "        COALESCE(k.drop_critical, cc.impact),"
-      "        COALESCE(k.drop_unknown, uu.impact),"
+      "        k.id_indicator_ba, k.meta_id, k.boolean_id,"
+      "        k.current_status, k.last_level, k.downtime,"
+      "        k.acknowledged, k.ignore_downtime,"
+      "        k.ignore_acknowledged,"
+      "        COALESCE(COALESCE(k.drop_warning, ww.impact), g.average_impact),"
+      "        COALESCE(COALESCE(k.drop_critical, cc.impact), g.average_impact),"
+      "        COALESCE(COALESCE(k.drop_unknown, uu.impact), g.average_impact),"
       "        k.last_state_change, k.in_downtime"
       "  FROM  mod_bam_kpi AS k"
       "  LEFT JOIN mod_bam_impacts AS ww"
@@ -133,7 +134,12 @@ void reader::_load(state::kpis& kpis) {
       "    ON k.drop_critical_impact_id = cc.id_impact"
       "  LEFT JOIN mod_bam_impacts AS uu"
       "    ON k.drop_unknown_impact_id = uu.id_impact"
-      "  WHERE k.activate='1' AND k.boolean_id IS NULL");
+      "  LEFT JOIN (SELECT id_ba, 100.0 / COUNT(kpi_id) AS average_impact"
+      "               FROM mod_bam_kpi"
+      "               WHERE activate='1'"
+      "               GROUP BY id_ba) AS g"
+      "    ON k.id_ba=g.id_ba"
+      "  WHERE k.activate='1'");
     while (query.next()) {
       // KPI object.
       unsigned int kpi_id(query.value(0).toUInt());
@@ -146,23 +152,24 @@ void reader::_load(state::kpis& kpis) {
           query.value(4).toUInt(), // BA ID.
           query.value(5).toUInt(), // BA indicator ID.
           query.value(6).toUInt(), // Meta-service ID.
-          query.value(7).toInt(), // Status.
-          query.value(8).toInt(), // Last level.
-          query.value(9).toFloat(), // Downtimed.
-          query.value(10).toFloat(), // Acknowledged.
-          query.value(11).toBool(), // Ignore downtime.
-          query.value(12).toBool(), // Ignore acknowledgement.
-          query.value(13).toDouble(), // Warning.
-          query.value(14).toDouble(), // Critical.
-          query.value(15).toDouble()); // Unknown.
+          query.value(7).toUInt(), // Boolean expression ID.
+          query.value(8).toInt(), // Status.
+          query.value(9).toInt(), // Last level.
+          query.value(10).toFloat(), // Downtimed.
+          query.value(11).toFloat(), // Acknowledged.
+          query.value(12).toBool(), // Ignore downtime.
+          query.value(13).toBool(), // Ignore acknowledgement.
+          query.value(14).toDouble(), // Warning.
+          query.value(15).toDouble(), // Critical.
+          query.value(16).toDouble()); // Unknown.
 
       // KPI state.
-      if (!query.value(16).isNull()) {
+      if (!query.value(17).isNull()) {
         kpi_event e;
         e.kpi_id = kpi_id;
-        e.status = query.value(7).toInt();
-        e.start_time = query.value(16).toLongLong();
-        e.in_downtime = query.value(17).toBool();
+        e.status = query.value(8).toInt();
+        e.start_time = query.value(17).toLongLong();
+        e.in_downtime = query.value(18).toBool();
         kpis[kpi_id].set_opened_event(e);
       }
     }
@@ -302,22 +309,15 @@ void reader::_load(state::bool_exps& bool_exps) {
   try {
     database_query query(_db);
     query.run_query(
-      "SELECT  be.boolean_id, COALESCE(kpi.drop_critical, imp.impact),"
-      "        be.expression, be.bool_state"
-      "  FROM  mod_bam_boolean as be"
-      "  LEFT JOIN mod_bam_kpi AS kpi"
-      "    ON be.boolean_id=kpi.boolean_id"
-      "  LEFT JOIN mod_bam_impacts as imp"
-      "    ON kpi.drop_critical_impact_id=imp.id_impact"
-      "  WHERE be.activate=1"
-      "  GROUP BY be.boolean_id");
+      "SELECT  boolean_id, expression, bool_state"
+      "  FROM  mod_bam_boolean"
+      "  WHERE activate=1");
     while (query.next()) {
       bool_exps[query.value(0).toUInt()] =
                   bool_expression(
                     query.value(0).toUInt(), // ID.
-                    query.value(1).toFloat(),// Impact.
-                    query.value(2).toString().toStdString(), // Expression.
-                    query.value(3).toBool()); // Impact if.
+                    query.value(1).toString().toStdString(), // Expression.
+                    query.value(2).toBool()); // Impact if.
     }
   }
   catch (reader_exception const& e) {
@@ -328,82 +328,6 @@ void reader::_load(state::bool_exps& bool_exps) {
     throw (reader_exception()
            << "BAM: could not retrieve boolean expression "
            << "configuration from DB: " << e.what());
-  }
-
-  // Load relations of boolean expressions with BAs.
-  {
-    std::map<unsigned int, bool_expression::ids_of_bas> impacted_bas;
-    try {
-      database_query q(_db);
-      q.run_query(
-          "SELECT b.boolean_id, k.id_ba"
-          "  FROM mod_bam_boolean AS b"
-          "  LEFT JOIN mod_bam_kpi AS k"
-          "    ON b.boolean_id=k.boolean_id"
-          "  WHERE b.activate=1");
-      while (q.next())
-        impacted_bas[q.value(0).toUInt()].push_back(q.value(1).toUInt());
-    }
-    catch (reader_exception const& e) {
-      (void)e;
-      throw ;
-    }
-    catch (std::exception const& e) {
-      throw (reader_exception()
-             << "BAM: could not retrieve BAs impacted by boolean "
-             << "expressions: " << e.what());
-    }
-
-    for (state::bool_exps::iterator
-           it(bool_exps.begin()), end(bool_exps.end());
-         it != end;
-         ++it) {
-      std::map<unsigned int, bool_expression::ids_of_bas>::iterator
-        it_impacted_bas(impacted_bas.find(it->first));
-      if (it_impacted_bas != impacted_bas.end())
-        it->second.impacted_bas().swap(it_impacted_bas->second);
-      else
-        it->second.impacted_bas().clear();
-    }
-  }
-
-  // Load kpi_id associated with boolean KPIs.
-  try {
-    database_query q(_db);
-    q.run_query(
-      "SELECT boolean_id, kpi_id, last_state_change,"
-      "       current_status, in_downtime"
-      "  FROM mod_bam_kpi"
-      "  WHERE activate='1' AND boolean_id IS NOT NULL");
-    while (q.next()) {
-      // Boolean KPI ID.
-      unsigned int boolean_id = q.value(0).toUInt();
-      unsigned int kpi_id = q.value(1).toUInt();
-      state::bool_exps::iterator found = bool_exps.find(boolean_id);
-      if (found == bool_exps.end())
-        throw (reader_exception()
-               << "BAM: found a KPI pointing to an inexisting boolean of ID "
-               << boolean_id);
-      found->second.add_kpi_id(kpi_id);
-      if (!q.value(2).isNull()
-          && (q.value(2).toLongLong()
-              > found->second.get_opened_event().start_time)) {
-        kpi_event e;
-        e.start_time = q.value(2).toLongLong();
-        e.status = q.value(3).toInt();
-        e.in_downtime = q.value(4).toBool();
-        found->second.set_opened_event(e);
-      }
-    }
-  }
-  catch (reader_exception const& e) {
-    (void)e;
-    throw ;
-  }
-  catch (std::exception const& e) {
-    throw (reader_exception()
-           << "BAM: could not retrieve the KPI IDs of the boolean "
-           "expressions: " << e.what());
   }
 
   return ;
@@ -787,10 +711,10 @@ void reader::_load_dimensions() {
     // this KPI. This explains the numerous joins.
     q.run_query(
       "SELECT k.kpi_id, k.kpi_type, k.host_id, k.service_id, k.id_ba,"
-        "       k.id_indicator_ba, k.meta_id, k.boolean_id,"
-        "        COALESCE(k.drop_warning, ww.impact),"
-      "        COALESCE(k.drop_critical, cc.impact),"
-      "        COALESCE(k.drop_unknown, uu.impact),"
+      "       k.id_indicator_ba, k.meta_id, k.boolean_id,"
+      "       COALESCE(COALESCE(k.drop_warning, ww.impact), g.average_impact),"
+      "       COALESCE(COALESCE(k.drop_critical, cc.impact), g.average_impact),"
+      "       COALESCE(COALESCE(k.drop_unknown, uu.impact), g.average_impact),"
       "       h.host_name, s.service_description, b.name,"
       "       meta.meta_name, boo.name"
       "  FROM mod_bam_kpi AS k"
@@ -810,6 +734,11 @@ void reader::_load_dimensions() {
       "    ON meta.meta_id = k.meta_id"
       "  LEFT JOIN mod_bam_boolean as boo"
       "    ON boo.boolean_id = k.boolean_id"
+      "  LEFT JOIN (SELECT id_ba, 100.0 / COUNT(kpi_id) AS average_impact"
+      "               FROM mod_bam_kpi"
+      "               WHERE activate='1'"
+      "               GROUP BY id_ba) AS g"
+      "   ON k.id_ba=g.id_ba"
       "  WHERE k.activate='1'",
       "could not retrieve KPI dimensions");
     while (q.next()) {
