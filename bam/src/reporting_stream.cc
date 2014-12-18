@@ -1696,12 +1696,15 @@ void reporting_stream::_compute_event_durations(
     dur_ev->real_start_time = ev->start_time;
     dur_ev->start_time = tp->get_next_valid(ev->start_time);
     dur_ev->end_time = ev->end_time;
-    dur_ev->duration = dur_ev->end_time - dur_ev->start_time;
-    dur_ev->sla_duration = tp->duration_intersect(dur_ev->start_time,
-                                                  dur_ev->end_time);
-    dur_ev->timeperiod_id = tp->get_id();
-    dur_ev->timeperiod_is_default = is_default;
-    visitor->write(dur_ev.staticCast<io::data>());
+    if (dur_ev->start_time < dur_ev->end_time) {
+      dur_ev->duration = dur_ev->end_time - dur_ev->start_time;
+      dur_ev->sla_duration = tp->duration_intersect(
+                                   dur_ev->start_time,
+                                   dur_ev->end_time);
+      dur_ev->timeperiod_id = tp->get_id();
+      dur_ev->timeperiod_is_default = is_default;
+      visitor->write(dur_ev.staticCast<io::data>());
+    }
   }
 }
 
