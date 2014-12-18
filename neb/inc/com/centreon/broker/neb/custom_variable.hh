@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2012,2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -41,6 +41,7 @@ namespace            neb {
     custom_variable& operator=(custom_variable const& cv);
     unsigned int     type() const;
 
+    bool             enabled;
     short            var_type;
 
   private:
