@@ -362,9 +362,9 @@ int main() {
         "INSERT INTO host (host_id, host_name)"
         "  VALUES (1001, 'Virtual BA host')",
         "INSERT INTO service (service_id, service_description)"
-        "  VALUES (1001, 'ba_1'), (1002, 'ba_2')",
+        "  VALUES (1001, 'ba_1'), (1002, 'ba_2'), (1003, 'meta_1'), (1004, 'meta_2')",
         "INSERT INTO host_service_relation (host_host_id, service_service_id)"
-        "  VALUES (1001, 1001), (1001, 1002)"
+        "  VALUES (1001, 1001), (1001, 1002), (1001, 1003), (1001, 1004)"
       };
       for (size_t i(0); i < sizeof(queries) / sizeof(*queries); ++i) {
         QSqlQuery q(*db.centreon_db());
