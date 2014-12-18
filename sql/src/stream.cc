@@ -379,6 +379,7 @@ void stream::_prepare() {
   id["name"] = false;
   id["service_id"] = true;
   _prepare_update<neb::custom_variable>(_custom_variable_update, id);
+  _prepare_delete<neb::custom_variable>(_custom_variable_delete, id);
 
   id.clear();
   id["host_id"] = false;
@@ -545,7 +546,7 @@ void stream::_prepare_insert(database_query& st) {
   query.append(")");
 
   // Prepare statement.
-  st.prepare(query);
+  st.prepare(query, "SQL: could not prepare insertion query");
 
   return ;
 }
@@ -602,7 +603,49 @@ void stream::_prepare_update(
   query.resize(query.size() - 5);
 
   // Prepare statement.
-  st.prepare(query);
+  st.prepare(query, "SQL: could not prepare update query");
+
+  return ;
+}
+
+/**
+ *  Prepare a deletion query.
+ *
+ *  @param[out] st  Query object.
+ *  @param[in]  id  List of fields that form an UNIQUE.
+ */
+template <typename T>
+void stream::_prepare_delete(
+               database_query& st,
+               std::map<std::string, bool> const& id) {
+  // Build query string.
+  std::string query;
+  query = "DELETE FROM ";
+  query.append(mapped_type<T>::table);
+  query.append(" WHERE ");
+  for (std::map<std::string, bool>::const_iterator
+         it(id.begin()),
+         end(id.end());
+       it != end;
+       ++it) {
+    if (it->second) {
+      query.append("COALESCE(");
+      query.append(it->first);
+      query.append(", -1)=COALESCE(:");
+      query.append(it->first);
+      query.append(", -1)");
+    }
+    else {
+      query.append(it->first);
+      query.append("=:");
+      query.append(it->first);
+    }
+    query.append(" AND ");
+  }
+  query.resize(query.size() - 5);
+
+  // Prepare statement.
+  st.prepare(query, "SQL: could not prepare deletion query");
 
   return ;
 }
@@ -682,11 +725,26 @@ void stream::_process_custom_variable(
     << ", service: " << cv.service_id << ", name: " << cv.name << ")";
 
   // Processing.
-  _update_on_none_insert(
-    _custom_variable_insert,
-    _custom_variable_update,
-    cv);
-
+  if (cv.enabled) {
+    _update_on_none_insert(
+      _custom_variable_insert,
+      _custom_variable_update,
+      cv);
+  }
+  else {
+    _custom_variable_delete.bind_value(":host_id", cv.host_id);
+    _custom_variable_delete.bind_value(
+      ":service_id",
+      (cv.service_id ? QVariant(cv.service_id) : QVariant(QVariant::Int)));
+    _custom_variable_delete.bind_value(":name", cv.name);
+    try { _custom_variable_delete.run_statement(); }
+    catch (std::exception const& e) {
+      throw (exceptions::msg()
+             << "SQL: could not remove custom variable (host: "
+             << cv.host_id << ", service: " << cv.service_id
+             << ", name '" << cv.name << "'): " << e.what());
+    }
+  }
   return ;
 }
 
@@ -1646,11 +1704,13 @@ void stream::_process_service_group_member(
 
     // Execute query.
     database_query q(_db);
-    q.prepare(
-        oss.str(),
-        "SQL: cannot prepare service group membership deletion statement");
-    q << sgm;
-    try { q.run_statement(); }
+    try {
+      q.prepare(
+          oss.str(),
+          "SQL: cannot prepare service group membership deletion statement");
+      q << sgm;
+      q.run_statement();
+    }
     catch (std::exception const& e) {
       throw (exceptions::msg()
              << "SQL: cannot delete membership of service ("
@@ -2052,6 +2112,7 @@ stream::stream(
     _comment_update(_db),
     _custom_variable_insert(_db),
     _custom_variable_update(_db),
+    _custom_variable_delete(_db),
     _custom_variable_status_update(_db),
     _downtime_insert(_db),
     _downtime_update(_db),

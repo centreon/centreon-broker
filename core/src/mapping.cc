@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -189,6 +189,10 @@ static mapped_data<custom_variable> const custom_variable_mapping[] = {
   mapped_data<custom_variable>(
     &custom_variable::instance_id,
     NDO_DATA_INSTANCE,
+    NULL),
+  mapped_data<custom_variable>(
+    &custom_variable::enabled,
+    NDO_DATA_X3D,
     NULL),
   mapped_data<custom_variable>()
 };

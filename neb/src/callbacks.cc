@@ -361,6 +361,7 @@ int neb::callback_custom_variable(int callback_type, void* data) {
             if (it != neb::gl_hosts.end()) {
               misc::shared_ptr<custom_variable>
                 new_cvar(new custom_variable);
+              new_cvar->enabled = true;
               new_cvar->instance_id = instance_id;
               new_cvar->host_id = it->second;
               new_cvar->modified = false;
@@ -375,6 +376,29 @@ int neb::callback_custom_variable(int callback_type, void* data) {
                 << "' on host " << new_cvar->host_id;
               neb::gl_publisher.write(new_cvar);
             }
+          }
+        }
+      }
+      else if (NEBTYPE_HOSTCUSTOMVARIABLE_DELETE == cvar->type) {
+        ::host* hst(static_cast< ::host*>(cvar->object_ptr));
+        if (hst && hst->name && strcmp(cvar->var_name, "HOST_ID")) {
+          umap<std::string, int>::iterator
+            it(neb::gl_hosts.find(hst->name));
+          if (it != neb::gl_hosts.end()) {
+            misc::shared_ptr<custom_variable>
+              old_cvar(new custom_variable);
+            old_cvar->enabled = false;
+            old_cvar->instance_id = instance_id;
+            old_cvar->host_id = it->second;
+            old_cvar->name = cvar->var_name;
+            old_cvar->var_type = 0;
+            old_cvar->update_time = cvar->timestamp.tv_sec;
+
+            // Send custom variable event.
+            logging::info(logging::low)
+              << "callbacks: deleted custom variable '"
+              << old_cvar->name << "' on host '" << old_cvar->host_id;
+            neb::gl_publisher.write(old_cvar);
           }
         }
       }
@@ -462,6 +486,7 @@ int neb::callback_custom_variable(int callback_type, void* data) {
             if (it != neb::gl_services.end()) {
               misc::shared_ptr<custom_variable>
                 new_cvar(new custom_variable);
+              new_cvar->enabled = true;
               new_cvar->instance_id = instance_id;
               new_cvar->host_id = it->second.first;
               new_cvar->modified = false;
@@ -478,6 +503,38 @@ int neb::callback_custom_variable(int callback_type, void* data) {
                 << new_cvar->service_id << ")";
               neb::gl_publisher.write(new_cvar);
             }
+          }
+        }
+      }
+      else if (NEBTYPE_SERVICECUSTOMVARIABLE_DELETE == cvar->type) {
+        ::service* svc(static_cast< ::service*>(cvar->object_ptr));
+        if (svc
+            && svc->description
+            && svc->host_name
+            && strcmp(cvar->var_name, "SERVICE_ID")) {
+          std::map<std::pair<std::string, std::string>,
+                   std::pair<int, int> >::const_iterator
+            it(neb::gl_services.find(std::make_pair<std::string, std::string>(
+                                       svc->host_name,
+                                       svc->description)));
+          if (it != neb::gl_services.end()) {
+            misc::shared_ptr<custom_variable>
+              old_cvar(new custom_variable);
+            old_cvar->enabled = false;
+            old_cvar->instance_id = instance_id;
+            old_cvar->host_id = it->second.first;
+            old_cvar->modified = true;
+            old_cvar->name = cvar->var_name;
+            old_cvar->service_id = it->second.second;
+            old_cvar->var_type = 1;
+            old_cvar->update_time = cvar->timestamp.tv_sec;
+
+            // Send custom variable event.
+            logging::info(logging::low)
+              << "callbacks: deleted custom variable '" << old_cvar->name
+              << "' on service (" << old_cvar->host_id << ", "
+              << old_cvar->service_id << ")";
+            neb::gl_publisher.write(old_cvar);
           }
         }
       }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -32,7 +32,7 @@ using namespace com::centreon::broker::neb;
 /**
  *  Default constructor.
  */
-custom_variable::custom_variable() : var_type(0) {
+custom_variable::custom_variable() : enabled(true), var_type(0) {
   modified = false;
 }
 
@@ -87,6 +87,7 @@ unsigned int custom_variable::type() const {
  *  @param[in] cv Object to copy.
  */
 void custom_variable::_internal_copy(custom_variable const& cv) {
+  enabled = cv.enabled;
   var_type = cv.var_type;
   return ;
 }

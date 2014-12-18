@@ -76,6 +76,10 @@ namespace          sql {
     void           _prepare_update(
                      database_query& st,
                      std::map<std::string, bool> const& id);
+    template       <typename T>
+    void           _prepare_delete(
+                     database_query& st,
+                     std::map<std::string, bool> const& id);
     void           _process_acknowledgement(misc::shared_ptr<io::data> const& e);
     void           _process_comment(misc::shared_ptr<io::data> const& e);
     void           _process_custom_variable(misc::shared_ptr<io::data> const& e);
@@ -126,6 +130,7 @@ namespace          sql {
     database_query _comment_update;
     database_query _custom_variable_insert;
     database_query _custom_variable_update;
+    database_query _custom_variable_delete;
     database_query _custom_variable_status_update;
     database_query _downtime_insert;
     database_query _downtime_update;
