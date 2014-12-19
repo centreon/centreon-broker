@@ -124,24 +124,25 @@ void availability_builder::add_event(
     return ;
 
   // Update the data.
-  if (status == 0)
-    _available += sla_duration;
-  else if (status == 1) {
-    _degraded += sla_duration;
-    ++_alert_degraded_opened;
-  }
-  else if (status == 2) {
-    _unavailable += sla_duration;
-    ++_alert_unavailable_opened;
-  }
-  else {
-    _unknown += sla_duration;
-    ++_alert_unknown_opened;
-  }
-
   if (was_in_downtime) {
     _downtime += sla_duration;
     ++_nb_downtime;
+  }
+  else {
+    if (status == 0)
+      _available += sla_duration;
+    else if (status == 1) {
+      _degraded += sla_duration;
+      ++_alert_degraded_opened;
+    }
+    else if (status == 2) {
+      _unavailable += sla_duration;
+      ++_alert_unavailable_opened;
+    }
+    else {
+      _unknown += sla_duration;
+      ++_alert_unknown_opened;
+    }
   }
 }
 
