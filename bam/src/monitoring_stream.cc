@@ -443,9 +443,9 @@ void monitoring_stream::_prepare() {
     query = "UPDATE meta_service"
             "  SET value=:value"
             "  WHERE meta_id=:meta_service_id";
-    _meta_service_update.prepare(
-      query,
-      "BAM: could not prepare meta-service update query");
+    // XXX : _meta_service_update.prepare(
+    //  query,
+    //  "BAM: could not prepare meta-service update query");
   }
 
   return ;
