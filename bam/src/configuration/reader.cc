@@ -72,7 +72,7 @@ void reader::read(state& st) {
     _load(st.get_bas(), st.get_ba_svc_mapping());
     _load(st.get_kpis());
     _load(st.get_bool_exps());
-    _load(st.get_meta_services(), st.get_meta_svc_mapping());
+    // XXX : _load(st.get_meta_services(), st.get_meta_svc_mapping());
     _load(st.get_hst_svc_mapping());
   }
   catch (std::exception const& e) {
