@@ -571,7 +571,7 @@ static time_t _get_next_valid_time_per_timeperiod(
       for (std::list<timerange>::const_iterator
            trange(tperiod.get_timeranges_by_day(weekday).begin()),
            trange_end(tperiod.get_timeranges_by_day(weekday).end());
-           trange != trange_end && !got_earliest_time;
+           trange != trange_end;
            ++trange) {
         // Get range limits.
         time_t range_start((time_t)-1);

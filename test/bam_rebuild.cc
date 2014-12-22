@@ -130,7 +130,7 @@ static void check_ba_availability(
              "      alert_unknown_opened, nb_downtime,"
              "      timeperiod_is_default"
              "  FROM mod_bam_reporting_ba_availabilities"
-             "  ORDER BY ba_id, time_id ASC");
+             "  ORDER BY ba_id, time_id ASC, timeperiod_id ASC");
   QSqlQuery q(db);
   if (!q.exec(query))
     throw (exceptions::msg()
@@ -223,8 +223,10 @@ int main() {
                 "          '00:00-24:00', '00:00-24:00', '00:00-24:00', '00:00-24:00'),"
                 "         (2, 'workhours', '', '09:00-17:00', '09:00-17:00',"
                 "          '09:00-17:00', '09:00-17:00', '09:00-17:00', ''),"
-                "         (3, 'non-worhours', '00:00-24:00', '00:00-24:00', '00:00-24:00',"
-                "          '00:00-24:00', '00:00-24:00', '00:00-24:00', '00:00-24:00')");
+                "         (3, 'non-worhours', '', "
+                "          '00:00-09:00,17:00-24:00', '00:00-09:00,17:00-24:00',"
+                "          '00:00-09:00,17:00-24:00', '00:00-09:00,17:00-24:00',"
+                "           '00:00-09:00,17:00-24:00', '')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create timeperiods: "
@@ -232,7 +234,7 @@ int main() {
     }
 
     // Create timeperiod excludes
-    {
+    /*{
       QString query("INSERT INTO timeperiod_exclude_relations"
                     "            (exclude_id, timeperiod_id,"
                     "             timeperiod_exclude_id)"
@@ -241,7 +243,7 @@ int main() {
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create timeperiod excludes: "
                << q.lastError().text());
-    }
+    }*/
 
     // Create BAs.
     {
@@ -345,7 +347,7 @@ int main() {
     {
       QString query(
                 "INSERT INTO mod_bam_relations_ba_timeperiods (ba_id, tp_id)"
-                "  VALUES (2, 1)");
+                "  VALUES (2, 1), (5, 3)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg()
@@ -374,6 +376,7 @@ int main() {
         { 10, 1, 1418329589, 1418398892, 69303, 69303, true },
         { 11, 1, 1396303200, 1396389600, 86400, 86400, true },
         { 12, 2, 1418630400, 1418684400, 54000, 28800, true },
+        { 12, 3, 1418598000, 1418684400, 86400, 57600, false },
       };
       check_ba_event_durations(
         *db.bi_db(),
@@ -394,7 +397,9 @@ int main() {
         { 4, 1396303200, 1, 86400, 0, 0, 0, 0, 0, 0, 0, 0, true },
         { 4, 1396389600, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, true},
         { 5, 1418598000, 2, 28800, 0, 0, 0, 0, 0, 0, 0, 0, true },
-        { 5, 1418684400, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, true }
+        { 5, 1418598000, 3, 57600, 0, 0, 0, 0, 0, 0, 0, 0, false },
+        { 5, 1418684400, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, true },
+        { 5, 1418684400, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, false }
       };
       check_ba_availability(
         *db.bi_db(),
