@@ -22,6 +22,7 @@
 
 #  include <memory>
 #  include <list>
+#  include <set>
 #  include <string>
 #  include <QMutex>
 #  include <QMutexLocker>
@@ -38,23 +39,22 @@ namespace                          com {
          *  @class process_manager process_manager.hh "com/centreon/broker/notification/processprocess_manager.hh"
          *  @brief Manage the processes.
          */
-        class                      process_manager : public QThread {
+        class                      process_manager : public QObject {
           Q_OBJECT
 
         public:
           static process_manager&  instance();
           static void              release();
 
-          virtual void             run();
           void                     create_process(
                                      std::string const& command,
                                      unsigned int timeout = 0);
 
-          void                     add_timeout(unsigned int timeout);
+          QThread&                 get_thread();
 
         public slots:
-          void                     process_finished();
-          void                     process_timeouted();
+          void                     process_finished(process&);
+          void                     process_timeouted(process&);
 
         private:
           static process_manager*  _instance_ptr;
@@ -63,10 +63,9 @@ namespace                          com {
           process_manager&         operator=(process_manager const&);
 
           QMutex                   _process_list_mutex;
-          std::list<misc::shared_ptr<process> >
-                                   _process_list;
-          std::list<misc::shared_ptr<QTimer> >
-                                   _timer_list;
+          std::set<process*>       _process_list;
+
+          std::auto_ptr<QThread>   _thread;
         };
       }
     }

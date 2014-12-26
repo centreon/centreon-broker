@@ -24,41 +24,55 @@
 #  include <string>
 #  include <QProcess>
 #  include "com/centreon/broker/namespace.hh"
+#  include <QObject>
 
-CCB_BEGIN()
-
-namespace             notification {
-  // Forward declaration.
-  class               process_manager;
-  /**
+namespace                          com {
+  namespace                        centreon {
+    namespace                      broker {
+      namespace                    notification {
+      // Forward declaration.
+      class               process_manager;
+      /**
    *  @class process process.hh "com/centreon/broker/notification/process.hh"
    *  @brief Represent a process being executed.
    */
-  class               process {
-  public:
-                      process(int timeout = 0);
+      class               process : public QObject {
+        Q_OBJECT
 
-    unsigned int      get_timeout() const throw();
-    bool              is_running() const;
-    void              kill();
+      public:
+        process(int timeout = 0);
 
-    bool              exec(
-                        std::string const& program,
-                        process_manager* manager = NULL);
+        unsigned int      get_timeout() const throw();
+        bool              is_running() const;
+        void              kill();
 
-    bool              is_timeout() const throw();
+        bool              exec(
+                            std::string const& program,
+                            process_manager* manager = NULL);
 
-  private:
-                      process(process const&);
-    process&          operator=(process const&);
+        bool              is_timeout() const throw();
 
-    unsigned int      _timeout;
-    time_t            _start_time;
-    std::auto_ptr<QProcess>
-                      _process;
-  };
+      public slots:
+        void              start(QString const& command_line);
+        void              finished();
+        void              timeouted();
+
+      signals:
+        void              finished(process&);
+        void              timeouted(process&);
+
+      private:
+                          process(process const&);
+        process&          operator=(process const&);
+
+        unsigned int      _timeout;
+        time_t            _start_time;
+        std::auto_ptr<QProcess>
+                          _process;
+      };
+      }
+    }
+  }
 }
-
-CCB_END()
 
 #endif // !CCB_NOTIFICATION_PROCESS_HH

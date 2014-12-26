@@ -20,6 +20,7 @@
 #include <QObject>
 #include <QStringList>
 #include "com/centreon/broker/notification/process.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/process_manager.hh"
 
 using namespace com::centreon::broker::notification;
@@ -74,6 +75,8 @@ void process::kill() {
  *  If a process manager is given, the process manager will manage
  *  process timeout, process termination, and process freeing.
  *
+ *  Else, the process will blocks until the end of its execution.
+ *
  *  @param[in] program      The program to execute, with its arguments.
  *  @param[in,out] manager  The manager to which register the process.
  *
@@ -85,15 +88,68 @@ bool process::exec(
   if (is_running())
     return (false);
 
-  if (manager) {
-    _process->moveToThread(manager);
-    QObject::connect(_process.get(), SIGNAL(finished(int,
-                                                     QProcess::ExitStatus)),
-                     manager, SLOT(process_finished()));
-    if (_timeout != 0)
-      manager->add_timeout(_timeout);
-  }
   time(&_start_time);
-  _process->start(program.c_str());
+
+  if (manager) {
+    _process->moveToThread(&manager->get_thread());
+    moveToThread(&manager->get_thread());
+    QProcess::connect(
+                this,
+                SIGNAL(finished(process&)),
+                manager,
+                SIGNAL(process_finished(process&)));
+    if (_timeout != 0) {
+      QTimer* timer(new QTimer(this));
+      timer->setSingleShot(true);
+      connect(
+        this,
+        SIGNAL(timeouted(process&)),
+        manager,
+        SLOT(process_timeouted(process&)));
+      connect(timer, SIGNAL(timeout()), this, SLOT(timeouted()));
+    }
+    QMetaObject::invokeMethod(
+                   this,
+                   "start",
+                   Qt::QueuedConnection,
+                   Q_ARG(QString, program.c_str()));
+  }
+  else {
+    return (_process->execute(program.c_str()) == 0);
+  }
   return (true);
+}
+
+/**
+ *  Start the process.
+ *
+ *  @param[in] command_line  The command to execute.
+ */
+void process::start(QString const& command_line) {
+  QProcess::connect(
+             _process.get(),
+             SIGNAL(QProcess::finished()),
+             this,
+             SLOT(finished()));
+  QProcess::connect(
+             _process.get(),
+             SIGNAL(QProcess::error()),
+             this,
+             SLOT(finished()));
+  _process->start(command_line);
+  _process->closeWriteChannel();
+}
+
+/**
+ *  The process was finished, or in an error state.
+ */
+void process::finished() {
+  emit finished(*this);
+}
+
+/**
+ *  The process timeouted.
+ */
+void process::timeouted() {
+  emit timeouted(*this);
 }

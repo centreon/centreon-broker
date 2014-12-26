@@ -21,6 +21,8 @@
 #include "com/centreon/broker/notification/process.hh"
 #include "com/centreon/broker/notification/process_manager.hh"
 
+#include "com/centreon/broker/logging/logging.hh"
+
 using namespace com::centreon::broker::notification;
 
 process_manager* process_manager::_instance_ptr = 0;
@@ -33,7 +35,7 @@ process_manager* process_manager::_instance_ptr = 0;
 process_manager& process_manager::instance() {
   if (!_instance_ptr) {
     _instance_ptr = new process_manager;
-    _instance_ptr->start();
+    _instance_ptr->_thread->start();
   }
   return (*_instance_ptr);
 }
@@ -43,19 +45,10 @@ process_manager& process_manager::instance() {
  */
 void process_manager::release() {
   if (_instance_ptr) {
-    if (_instance_ptr->isRunning()) {
-      _instance_ptr->exit(0);
-      _instance_ptr->wait();
-    }
+    _instance_ptr->_thread->exit(0);
+    _instance_ptr->_thread->wait();
     delete _instance_ptr;
   }
-}
-
-/**
- *  Called when the thread start. Run the event loop.
- */
-void process_manager::run() {
-  exec();
 }
 
 /**
@@ -69,11 +62,13 @@ void process_manager::run() {
 void process_manager::create_process(
                         std::string const& command,
                         unsigned int timeout) {
-  process* pr = new process(timeout);
+  // No memory leak possible because we set the parent of the process as us.
+  process* pr(new process(timeout));
 
   {
     QMutexLocker lock(&_process_list_mutex);
-    _process_list.push_back(misc::shared_ptr<process>(pr));
+    pr->setParent(this);
+    _process_list.insert(pr);
   }
 
   pr->exec(command, this);
@@ -84,31 +79,27 @@ void process_manager::create_process(
  */
 process_manager::process_manager()
   : _process_list_mutex(QMutex::Recursive) {
-  moveToThread(this);
+  _thread.reset(new QThread);
+  moveToThread(_thread.get());
 }
 
 /**
  *  @brief A process was finished: reap the finished processes.
  *
  *  It is always executed from the QT event loop of the process manager thread.
+ *
+ *  @param[in] process  The process that has finished execution.
  */
-void process_manager::process_finished() {
+void process_manager::process_finished(process& pr) {
+  logging::debug(logging::medium)
+    << "notification: a process has finished";
+
   QMutexLocker lock(&_process_list_mutex);
 
-  for (std::list<misc::shared_ptr<process> >::iterator
-                                                it(_process_list.begin()),
-                                                end(_process_list.end());
-       ++it != end;) {
-    if (!(*it)->is_running()) {
-      // Do something with the process.
-
-      // Remove the process.
-      std::list<misc::shared_ptr<process> >::iterator tmp = it;
-      ++it;
-      _process_list.erase(tmp);
-    }
-    else
-      ++it;
+  std::set<process*>::iterator found(_process_list.find(&pr));
+  if (found != _process_list.end()) {
+    delete *found;
+    _process_list.erase(found);
   }
 }
 
@@ -116,62 +107,22 @@ void process_manager::process_finished() {
  *  @brief A process was timeouted: reap the timeouted processes.
  *
  *  It is always executed from the QT event loop of the process manager thread.
+ *
+ *  @param[in] process  The process that has finished timeouted.
  */
-void process_manager::process_timeouted() {
-  QMutexLocker lock(&_process_list_mutex);
+void process_manager::process_timeouted(process& process) {
+  logging::debug(logging::medium)
+    << "notification: a process has timeouted";
 
-  for (std::list<misc::shared_ptr<process> >::iterator
-                                                it(_process_list.begin()),
-                                                end(_process_list.end());
-       it != end;) {
-    if ((*it)->is_timeout()) {
-      // Kill the process.
-      (*it)->kill();
-      // Remove the process.
-      std::list<misc::shared_ptr<process> >::iterator tmp = it;
-      ++it;
-      _process_list.erase(tmp);
-    }
-    else
-      ++it;
-  }
-
-  for (std::list<misc::shared_ptr<QTimer> >::iterator it(_timer_list.begin()),
-                                                      end(_timer_list.end());
-       it != end;) {
-    if (!(*it)->isActive()) {
-      std::list<misc::shared_ptr<QTimer> >::iterator tmp = it;
-      ++it;
-      _timer_list.erase(tmp);
-    }
-    else
-      ++it;
-  }
+  process.kill();
+  process_finished(process);
 }
 
 /**
- *  @brief Add a timeout.
+ *  Get the thread of this process manager.
  *
- *  Thread safe in and out the of the process manager thread.
- *
- *  @param[in] timeout  The timeout to add, in second.
+ *  @return  The thread of this process manager.
  */
-void process_manager::add_timeout(unsigned int timeout) {
-  QMutexLocker lock(&_process_list_mutex);
-
-  // Warning: This does some Qt black magic to create a thread safe timer
-  // executed in the context of the process manager thread.
-  // The Timer is moved to the process manager thread, which means all of its
-  // events will be processed by that thread. Then we call invokeMethod()
-  // to queue the invocation of the start of the timer in that thread.
-  QTimer* timer = new QTimer(this);
-  timer->moveToThread(this);
-  timer->setSingleShot(true);
-  connect(timer, SIGNAL(timeout()), this, SLOT(process_timeouted()));
-  _timer_list.push_back(misc::shared_ptr<QTimer>(timer));
-  QMetaObject::invokeMethod(
-                 timer,
-                 "start",
-                 Qt::QueuedConnection,
-                 Q_ARG(unsigned int, timeout * 1000));
+QThread& process_manager::get_thread() {
+  return (*_thread);
 }
