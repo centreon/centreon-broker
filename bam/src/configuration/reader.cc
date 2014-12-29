@@ -173,6 +173,31 @@ void reader::_load(state::kpis& kpis) {
         kpis[kpi_id].set_opened_event(e);
       }
     }
+
+    // Load host ID/service ID of meta-services (temporary fix until
+    // Centreon Broker 3 where meta-services will be computed by Broker
+    // itself.
+    for (state::kpis::iterator it(kpis.begin()), end(kpis.end());
+         it != end;
+         ++it) {
+      if (it->second.is_meta()) {
+        std::ostringstream oss;
+        oss << "SELECT hsr.host_host_id, hsr.service_service_id"
+               "  FROM service AS s"
+               "  LEFT JOIN host_service_relation AS hsr"
+               "    ON s.service_id=hsr.service_service_id"
+               "  WHERE s.service_description='meta_" << it->first
+            << "'";
+        query.run_query(
+                oss.str(),
+                "could not virtual meta-service's service");
+        if (!query.next())
+          throw (exceptions::msg() << "virtual service of meta-service "
+                 << it->first << " does not exist");
+        it->second.set_host_id(query.value(0).toUInt());
+        it->second.set_service_id(query.value(1).toUInt());
+      }
+    }
   }
   catch (reader_exception const& e) {
     (void)e;
