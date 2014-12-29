@@ -22,6 +22,7 @@
 #include <iostream>
 #include <QFile>
 #include <fstream>
+#include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
@@ -34,6 +35,52 @@ using namespace com::centreon::broker;
 
 #define DB_NAME "broker_notification"
 #define UTIL_FILE_WRITER PROJECT_SOURCE_DIR"/build/util_write_into_file"
+#define TIME_MACROS "$LONGDATETIME$\n$SHORTDATETIME$\n$DATE$\n$TIME$\n$TIMET$\n"
+#define HOST_MACROS \
+  "$HOSTDISPLAYNAME$\n$HOSTALIAS$\n$HOSTADDRESS$\n$HOSTSTATE$\n$HOSTSTATEID$\n"\
+  "$HOSTSTATETYPE$\n$HOSTATTEMPT$\n$MAXHOSTATTEMPTS$\n$HOSTLATENCY$\n"\
+  "$HOSTEXECUTIONTIME$\n$HOSTDURATION$\n$HOSTDURATIONSEC$\n$HOSTDOWNTIME$\n"\
+  "$HOSTPERCENTCHANGE$\n$HOSTGROUPNAME$\n$HOSTGROUPNAMES$\n$LASTHOSTCHECK$\n"\
+  "$LASTHOSTSTATECHANGE$\n$LASTHOSTUP$\n$LASTHOSTDOWN$\n"\
+  "$LASTHOSTUNREACHABLE$\n$HOSTOUTPUT$\n$LONGHOSTOUTPUT$\n$HOSTPERFDATA$\n"\
+  "$HOSTCHECKCOMMAND$\n$TOTALHOSTSERVICES$\n$TOTALHOSTSERVICESOK$\n"\
+  "$TOTALHOSTSERVICESWARNING$\n$TOTALHOSTSERVICESUNKNOWN$\n"\
+  "$TOTALHOSTSERVICESCRITICAL$\n"
+#define SERVICE_MACROS \
+  "$SERVICEDESC$\n$SERVICEDISPLAYNAME$\n$SERVICESTATE$\n$SERVICESTATEID$\n"\
+  "$LASTSERVICESTATE$\n$LASTSERVICESTATEID$\n$SERVICESTATETYPE$\n"\
+  "$SERVICEATTEMPT$\n$MAXSERVICEATTEMPTS$\n$SERVICEISVOLATILE$\n"\
+  "$SERVICELATENCY$\n$SERVICEEXECUTIONTIME$\n$SERVICEDURATION$\n"\
+  "$SERVICEDURATIONSEC$\n$SERVICEDOWNTIME$\n$SERVICEPERCENTCHANGE$\n"\
+  "$SERVICEGROUPNAME$\n$SERVICEGROUPNAMES$\n$LASTSERVICECHECK$\n"\
+  "$LASTSERVICESTATECHANGE$\n$LASTSERVICEOK$\n$LASTSERVICEWARNING$\n"\
+  "$LASTSERVICEUNKNOWN$n\n$LASTSERVICECRITICAL$\n$SERVICEOUTPUT$n\n"\
+  "$LONGSERVICEOUTPUT$n\n$SERVICEPERFDATA$\n$SERVICECHECKCOMMAND$\n"
+
+#define COUNTING_MACROS \
+  "$TOTALHOSTSUP$\n$TOTALHOSTSDOWN$\n$TOTALHOSTSUNREACHABLE$\n"\
+  "$TOTALHOSTSDOWNUNHANDLED$\n$TOTALHOSTSUNREACHABLEUNHANDLED$\n"\
+  "$TOTALHOSTPROBLEMS$\n$TOTALHOSTPROBLEMSUNHANDLED$\n$TOTALSERVICESOK$\n"\
+  "$TOTALSERVICESWARNING$\n$TOTALSERVICESCRITICAL$\n$TOTALSERVICESUNKNOWN$\n"\
+  "$TOTALSERVICESWARNINGUNHANDLED$\n$TOTALSERVICESCRITICALUNHANDLED$\n"\
+  "$TOTALSERVICESUNKNOWNUNHANDLED$\n$TOTALSERVICEPROBLEMS$\n"\
+  "$TOTALSERVICEPROBLEMSUNHANDLED$\n"
+
+#define GROUP_MACROS \
+  "$HOSTGROUPALIAS$\n$HOSTGROUPMEMBERS$\n$SERVICEGROUPALIAS$\n$SERVICEGROUPMEMBERS$\n"
+
+#define CONTACT_MACROS \
+  "$CONTACTNAME$\n$CONTACTALIAS$\n$CONTACTEMAIL$\n$CONTACTPAGER$\n"\
+  "$CONTACTADDRESS1$\n$CONTACTADDRESS2$\n$CONTACTADDRESS3$\n"\
+  "$CONTACTADDRESS4$\n$CONTACTADDRESS5$\n$CONTACTADDRESS6$\n"\
+  "$CONTACTGROUPALIAS$\n$CONTACTGROUPMEMBERS$\n"
+
+#define NOTIFICATION_MACROS \
+  "$NOTIFICATIONTYPE$\n$NOTIFICATIONRECIPIENTS$\n$HOSTNOTIFICATIONNUMBER$\n"\
+  "$SERVICENOTIFICATIONNUMBER$\n"
+
+#define MACRO_LIST \
+  "\"" TIME_MACROS HOST_MACROS SERVICE_MACROS COUNTING_MACROS NOTIFICATION_MACROS "\""
 
 /**
  *  Check that notification is properly enabled when non-correlation
@@ -112,7 +159,7 @@ int main() {
     db.centreon_run(
          "INSERT INTO cfg_commands (command_id, command_name,"
          "            command_line)"
-         "  VALUES (1, 'NotificationCommand1', '"UTIL_FILE_WRITER" \"Mon bon sapin, roi des forets\" $_SERVICEFLAGFILE$')",
+         "  VALUES (1, 'NotificationCommand1', '"UTIL_FILE_WRITER" "MACRO_LIST" $_SERVICEFLAGFILE$')",
          "could not create notification command");
 
     // Create notification rules in DB.
@@ -175,10 +222,20 @@ int main() {
     // Check file creation.
     error = !QFile::exists(flag_file.c_str());
 
-    if (!error)
-      std::cout
-        <<  "content of " << flag_file << ": "
-        << std::fstream(flag_file.c_str()).rdbuf() << std::endl;
+    if (error)
+      throw exceptions::msg() << "Flag file doesn't exist";
+
+    std::ifstream filestream(flag_file.c_str());
+    filestream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    std::ostringstream ss;
+
+    ss << filestream.rdbuf();
+
+    std::cout
+      <<  "content of " << flag_file << ": "
+      << ss.str() << std::endl;
+
+
   }
   catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
