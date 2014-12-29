@@ -98,22 +98,20 @@ std::string command::resolve(
                        state const& st,
                        action const& act) {
   // Match all the macros with the wonderful magic of RegExp.
-  if (_macro_regex.indexIn(
-        QString::fromStdString(_base_command)) == -1)
+  QString base_command = QString::fromStdString(_base_command);
+  macro_generator::macro_container macros;
+  int index = 0;
+  while ((index = _macro_regex.indexIn(base_command, index)) != -1) {
+    macros.insert(_macro_regex.cap(1).toStdString(), "");
+    index += _macro_regex.matchedLength();
+  }
+  if (macros.empty())
     return (_base_command);
-  QStringList macro_list = _macro_regex.capturedTexts();
-  macro_list.removeDuplicates();
-  if (!macro_list.empty())
-    macro_list.pop_front();
+
+  logging::debug(logging::medium)
+    << "notification: found " << macros.size() << " macros";
 
   // Generate each macro.
-  macro_generator::macro_container macros;
-  macros.reserve(macro_list.size());
-  for (QStringList::const_iterator it(macro_list.begin()),
-                                   end(macro_list.end());
-       it != end;
-       ++it)
-    macros.insert(it->toStdString(), "");
   try {
     macro_generator generator;
     generator.generate(macros, n->get_node_id(), *cnt, st, cache, act);
