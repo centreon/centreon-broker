@@ -75,18 +75,18 @@ void macro_generator::generate(
                                  end(container.end());
        it != end;
        ++it) {
-    if (_get_global_macros(it.key(), st, *it))
+    if (_get_global_macros(it.key(), st, it.value()))
       continue ;
     else if (_get_x_macros(
                it.key(),
                macro_context(id, cnt, st, cache, act),
-               *it))
+               it.value()))
       continue ;
     else if (_get_custom_macros(
                it.key(),
                id,
                cache,
-               *it))
+               it.value()))
       continue ;
     else {
       logging::debug(logging::medium) << "notification: macro '"

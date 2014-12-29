@@ -310,11 +310,11 @@ namespace        notification {
   template <int date_type>
   std::string get_datetime_string(
                 macro_context const& context) {
-    utilities::get_datetime_string(
+    return (utilities::get_datetime_string(
                  ::time(NULL),
                  48,
                  date_type,
-                 context.get_state().get_date_format());
+                 context.get_state().get_date_format()));
   }
 
   /**

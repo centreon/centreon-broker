@@ -19,6 +19,7 @@
 
 #include <cstdio>
 #include <ctime>
+#include <vector>
 #include "com/centreon/broker/notification/utilities/get_datetime_string.hh"
 
 using namespace com::centreon::broker::notification;
@@ -42,7 +43,9 @@ std::string utilities::get_datetime_string(
   static char const* weekdays[7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
   static char const* months[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec" };
 
-  char buffer[max_length];
+  std::vector<char> buffer;
+  buffer.resize(max_length);
+  //char buffer[max_length];
 
   std::string ret;
   ret.resize(max_length);
@@ -65,7 +68,7 @@ std::string utilities::get_datetime_string(
   /* ctime() style date/time */
   if (type == long_date_time)
     snprintf(
-      buffer,
+      &buffer[0],
       max_length,
       "%s %s %d %02d:%02d:%02d %s %d",
       weekdays[tm_s.tm_wday],
@@ -81,7 +84,7 @@ std::string utilities::get_datetime_string(
   else if (type == short_date_time) {
     if (format == date_format_euro)
       snprintf(
-        buffer,
+        &buffer[0],
         max_length,
         "%02d-%02d-%04d %02d:%02d:%02d",
         day,
@@ -93,7 +96,7 @@ std::string utilities::get_datetime_string(
     else if (format == date_format_iso8601
              || format == date_format_strict_iso8601)
       snprintf(
-        buffer,
+        &buffer[0],
         max_length,
         "%04d-%02d-%02d%c%02d:%02d:%02d",
         year,
@@ -105,7 +108,7 @@ std::string utilities::get_datetime_string(
         second);
     else
       snprintf(
-        buffer,
+        &buffer[0],
         max_length,
         "%02d-%02d-%04d %02d:%02d:%02d",
         month,
@@ -120,7 +123,7 @@ std::string utilities::get_datetime_string(
   else if (type == short_date) {
     if (format == date_format_euro)
       snprintf(
-        buffer,
+        &buffer[0],
         max_length,
         "%02d-%02d-%04d",
         day,
@@ -129,7 +132,7 @@ std::string utilities::get_datetime_string(
     else if (format == date_format_iso8601
              || format == date_format_strict_iso8601)
       snprintf(
-        buffer,
+        &buffer[0],
         max_length,
         "%04d-%02d-%02d",
         year,
@@ -137,7 +140,7 @@ std::string utilities::get_datetime_string(
         day);
     else
       snprintf(
-        buffer,
+        &buffer[0],
         max_length,
         "%02d-%02d-%04d",
         month,
@@ -148,7 +151,7 @@ std::string utilities::get_datetime_string(
   /* expiration date/time for HTTP headers */
   else if (type == http_date_time)
     snprintf(
-      buffer,
+      &buffer[0],
       max_length,
       "%s, %02d %s %d %02d:%02d:%02d GMT",
       weekdays[tm_s.tm_wday],
@@ -162,7 +165,7 @@ std::string utilities::get_datetime_string(
   /* short time */
   else
     snprintf(
-      buffer,
+      &buffer[0],
       max_length,
       "%02d:%02d:%02d",
       hour,
@@ -171,5 +174,5 @@ std::string utilities::get_datetime_string(
 
   buffer[max_length - 1] = '\x0';
 
-  return (std::string(buffer));
+  return (std::string(&buffer[0]));
 }
