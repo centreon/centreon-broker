@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -41,6 +41,36 @@ namespace               bam {
     class                 timeperiod {
     public:
                           DECLARE_SHARED_PTR(timeperiod);
+
+      class               exclusion_backup {
+      public:
+                          exclusion_backup(timeperiod* tp) {
+        _tp = tp;
+        _exclusions = _tp->_exclude;
+        _tp->_exclude.clear();
+      }
+
+                          ~exclusion_backup() {
+        _tp->_exclude = _exclusions;
+      }
+
+      std::vector<timeperiod::ptr>::const_iterator
+                          begin() {
+        return (_exclusions.begin());
+      }
+
+      std::vector<timeperiod::ptr>::const_iterator
+                          end() {
+        return (_exclusions.end());
+      }
+
+      private:
+        timeperiod*       _tp;
+        std::vector<timeperiod::ptr>
+                          _exclusions;
+      };
+
+      friend class        exclusion_backup;
 
                           timeperiod();
                           timeperiod(
