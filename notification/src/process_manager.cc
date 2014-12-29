@@ -94,6 +94,13 @@ void process_manager::process_finished(process& pr) {
   logging::debug(logging::medium)
     << "notification: a process has finished";
 
+  std::string error_output;
+  int exit_code;
+  if (pr.get_error(exit_code, error_output))
+    logging::error(logging::low)
+      << "notification: error while executing a process: "
+      << error_output;
+
   QMutexLocker lock(&_process_list_mutex);
 
   std::set<process*>::iterator found(_process_list.find(&pr));

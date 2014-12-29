@@ -40,7 +40,7 @@ namespace                          com {
         Q_OBJECT
 
       public:
-        process(int timeout = 0);
+                          process(int timeout = 0);
 
         unsigned int      get_timeout() const throw();
         bool              is_running() const;
@@ -52,8 +52,13 @@ namespace                          com {
 
         bool              is_timeout() const throw();
 
+        bool              get_error(
+                            int& exit_code,
+                            std::string& error_output);
+
       public slots:
         void              start(QString const& command_line);
+        void              error();
         void              finished();
         void              timeouted();
 
@@ -69,6 +74,14 @@ namespace                          com {
         time_t            _start_time;
         std::auto_ptr<QProcess>
                           _process;
+
+        bool              _in_error;
+        QProcess::ProcessError
+                          _error;
+        QProcess::ExitStatus
+                          _status;
+        int               _exit_code;
+        std::string       _error_output;
       };
       }
     }

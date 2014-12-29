@@ -32,7 +32,9 @@ using namespace com::centreon::broker::notification;
  */
 process::process(int timeout /* = 0 */)
   : _timeout(timeout),
-    _process(new QProcess) {}
+    _process(new QProcess),
+    _in_error(false),
+    _exit_code(-1) {}
 
 /**
  *  Get the timeout of this process.
@@ -67,6 +69,26 @@ bool process::is_timeout() const throw() {
 void process::kill() {
   if (is_running())
     _process->kill();
+}
+
+/**
+ *  Get any error of the process.
+ *
+ *  @param[out] exit_code     The exit code of the process.
+ *  @param[out] error_output  The standard error output of the process.
+ *
+ *  @return  True if an error ocurred.
+ */
+bool process::get_error(
+                int& exit_code,
+                std::string& error_output) {
+  if (_in_error)
+  {
+    exit_code = _exit_code;
+    error_output = _error_output;
+    return (true);
+  }
+  return (false);
 }
 
 /**
@@ -135,15 +157,30 @@ void process::start(QString const& command_line) {
              _process.get(),
              SIGNAL(QProcess::error()),
              this,
-             SLOT(finished()));
+             SLOT(error()));
   _process->start(command_line);
   _process->closeWriteChannel();
+  _process->closeReadChannel(QProcess::StandardOutput);
 }
 
 /**
- *  The process was finished, or in an error state.
+ *  The process is in an error state.
+ */
+void process::error() {
+  _in_error = true;
+  _error = _process->error();
+}
+
+
+/**
+ *  The process was finished.
  */
 void process::finished() {
+  _exit_code = _process->exitCode();
+  _status = _process->exitStatus();
+  if (_exit_code != 0 || _status == QProcess::CrashExit)
+    _in_error = true;
+  _error_output = _process->readAllStandardError().data();
   emit finished(*this);
 }
 
