@@ -510,6 +510,7 @@ namespace        notification {
         res.append(", ");
       res.append(*it);
     }
+    return (res);
   }
 
   /**

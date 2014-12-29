@@ -75,6 +75,8 @@ void macro_generator::generate(
                                  end(container.end());
        it != end;
        ++it) {
+    logging::debug(logging::low)
+      << "notification: searching macro " << it.key();
     if (_get_global_macros(it.key(), st, it.value()))
       continue ;
     else if (_get_x_macros(

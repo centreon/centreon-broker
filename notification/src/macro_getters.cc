@@ -62,6 +62,8 @@ template <> std::string get_host_groups<false>(
     context.get_cache().get_host(context.get_id()).get_groups();
   if (!group_map.empty())
     return (group_map.begin()->first);
+  else
+    return ("");
 }
 
 /**
@@ -107,6 +109,8 @@ template <> std::string get_service_groups<false>(
                        .get_groups();
   if (!group_map.empty())
     return (group_map.begin()->first);
+  else
+    return ("");
 }
 
 /**
