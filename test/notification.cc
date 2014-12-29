@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <QFile>
+#include <fstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
@@ -32,6 +33,7 @@
 using namespace com::centreon::broker;
 
 #define DB_NAME "broker_notification"
+#define UTIL_FILE_WRITER PROJECT_SOURCE_DIR"/build/util_write_into_file"
 
 /**
  *  Check that notification is properly enabled when non-correlation
@@ -110,7 +112,7 @@ int main() {
     db.centreon_run(
          "INSERT INTO cfg_commands (command_id, command_name,"
          "            command_line)"
-         "  VALUES (1, 'NotificationCommand1', 'sh -c \\'echo \"test\" > $_SERVICEFLAGFILE$\\'')",
+         "  VALUES (1, 'NotificationCommand1', '"UTIL_FILE_WRITER" \"Mon bon sapin, roi des forets\" $_SERVICEFLAGFILE$')",
          "could not create notification command");
 
     // Create notification rules in DB.
@@ -168,13 +170,15 @@ int main() {
       "PROCESS_SERVICE_CHECK_RESULT;1;2;2;Submitted by unit test");
     sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
+    sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
+
     // Check file creation.
     error = !QFile::exists(flag_file.c_str());
 
     if (!error)
       std::cout
-        <<  "content of " << flag_file << ":"
-        << QFile(flag_file.c_str()).readAll().data() << std::endl;
+        <<  "content of " << flag_file << ": "
+        << std::fstream(flag_file.c_str()).rdbuf() << std::endl;
   }
   catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;

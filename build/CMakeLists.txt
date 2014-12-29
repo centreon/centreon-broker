@@ -785,6 +785,10 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
+  # Notification write into file utility
+  add_executable("util_write_into_file"
+    "${PROJECT_SOURCE_DIR}/test/write_into_file.cc")
+
   # Notification.
   set(TEST_NAME "running_notification")
   add_executable("${TEST_NAME}"
