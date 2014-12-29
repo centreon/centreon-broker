@@ -447,18 +447,14 @@ namespace        notification {
       std::map<std::string, neb::host_group_member> map =
         cache.get_host(context.get_id()).get_groups();
       if (map.empty())
-        throw (exceptions::msg()
-               << "notification: macro: could not get the group alias "
-                  "of host " << context.get_id().get_host_id());
+        return ("");
       ngr = st.get_nodegroup_by_name(map.begin()->first);
     }
     else {
       std::map<std::string, neb::service_group_member> map =
         cache.get_service(context.get_id()).get_groups();
       if (map.empty())
-        throw (exceptions::msg()
-               << "notification: macro: could not get the group alias "
-                  "of service " << context.get_id().get_service_id());
+        return ("");
       ngr = st.get_nodegroup_by_name(map.begin()->first);
     }
 
@@ -487,18 +483,14 @@ namespace        notification {
       std::map<std::string, neb::host_group_member> map =
         cache.get_host(context.get_id()).get_groups();
       if (map.empty())
-        throw (exceptions::msg()
-               << "notification: macro: could not get the group members "
-                  "of host " << context.get_id().get_host_id());
+        return ("");
       members = cache.get_all_node_contained_in(map.begin()->first, true);
     }
     else {
       std::map<std::string, neb::service_group_member> map =
         cache.get_service(context.get_id()).get_groups();
       if (map.empty())
-        throw (exceptions::msg()
-               << "notification: macro: could not get the group members "
-                  "of service " << context.get_id().get_service_id());
+        return ("");
       members = cache.get_all_node_contained_in(map.begin()->first, false);
     }
     std::string res;

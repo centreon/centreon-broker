@@ -80,7 +80,7 @@ using namespace com::centreon::broker;
   "$SERVICENOTIFICATIONNUMBER$\n"
 
 #define MACRO_LIST \
-  "\"" TIME_MACROS HOST_MACROS SERVICE_MACROS COUNTING_MACROS NOTIFICATION_MACROS "\""
+  "\"" TIME_MACROS HOST_MACROS SERVICE_MACROS COUNTING_MACROS NOTIFICATION_MACROS GROUP_MACROS CONTACT_MACROS "\""
 
 /**
  *  Check that notification is properly enabled when non-correlation
