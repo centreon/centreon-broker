@@ -473,13 +473,13 @@ static time_t _earliest_midnight_in_daterange(
  *  @param[in]  preferred_time  The preferred time to check.
  *  @param[out] valid_time      Variable to fill.
  *  @param[in]  tperiod         The time period to use.
+ *
+ *  @return Next valid time after preferred_time in this timeperiod. If
+ *          no valid time could be found, (time_t)-1 will be returned.
  */
 static time_t _get_next_valid_time_per_timeperiod(
                 time_t preferred_time,
                 timeperiod const& tperiod) {
-  // If no time can be found, the original preferred time will be returned.
-  time_t original_preferred_time(preferred_time);
-
   // Do not compute more than one year ahead (we might compute forever).
   time_t earliest_time((time_t)-1);
   time_t in_one_year(preferred_time + 366 * 24 * 60 * 60);
@@ -647,11 +647,7 @@ static time_t _get_next_valid_time_per_timeperiod(
                          24 * 60 * 60);
   }
 
-  // If we couldn't find a time period there must be none defined.
-  if (earliest_time == (time_t)-1)
-    return (original_preferred_time);
-  else
-    return (earliest_time);
+  return (earliest_time);
 }
 
 /**
@@ -665,9 +661,6 @@ static time_t _get_next_valid_time_per_timeperiod(
 static time_t _get_min_invalid_time_per_timeperiod(
                 time_t preferred_time,
                 timeperiod const& tperiod) {
-  // If no time can be found, the original preferred time will be returned.
-  time_t original_preferred_time(preferred_time);
-
   // Do not compute more than one year ahead (we might compute forever).
   time_t earliest_time(preferred_time);
   time_t in_one_year(preferred_time + 366 * 24 * 60 * 60);
@@ -816,9 +809,9 @@ static time_t _get_min_invalid_time_per_timeperiod(
     }
   }
 
-  // If we couldn't find a time period there must be none defined.
+  // If we couldn't find an invalid time there must be none.
   if (earliest_time != (time_t)-1)
-    return (original_preferred_time);
+    return ((time_t)-1);
   // Else use the calculated time.
   else
     return (preferred_time);

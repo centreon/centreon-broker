@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <algorithm>
 #include <ctime>
 #include <fstream>
 #include <iostream>
@@ -44,13 +45,12 @@
 
 using namespace com::centreon::broker;
 
-static time_t _current_time = 0;
-
 struct    options {
           options()
   : preferred_time(0), ref_time(0) {}
   std::vector<misc::shared_ptr<bam::time::timeperiod> >
           period;
+  time_t  current_time;
   time_t  preferred_time;
   time_t  ref_time;
 };
@@ -64,14 +64,6 @@ static time_t string_to_time_t(std::string const& data) {
   t.tm_isdst = -1; // Not set by strptime().
   bam::time::timezone_locker tzlock((*ptr == ' ') ? ptr + 1 : NULL);
   return (mktime(&t));
-}
-
-// Overload of libc time function.
-// Use the global variable _current_time.
-extern "C" time_t time(time_t *t) __THROW {
-  if (t)
-    *t = _current_time;
-  return (_current_time);
 }
 
 /**
@@ -106,7 +98,7 @@ static void parse_file(char const* filename, options& opt) {
     if (key == "preferred_time")
       opt.preferred_time = string_to_time_t(value);
     else if (key == "current_time")
-      _current_time = string_to_time_t(value);
+      opt.current_time = string_to_time_t(value);
     else if (key == "ref_time")
       opt.ref_time = string_to_time_t(value);
     else if (key == "weekday") {
@@ -159,7 +151,7 @@ static void parse_file(char const* filename, options& opt) {
              << "' failed because of line: " << line);
   }
   if (!opt.preferred_time
-      || !_current_time
+      || !opt.current_time
       || !opt.ref_time
       || !opt.period.size())
     throw (exceptions::msg()
@@ -191,7 +183,10 @@ int main(int argc, char* argv[]) {
 
     // Get next valid time.
     time_t valid;
-    valid = opt.period.back()->get_next_valid(opt.preferred_time);
+    valid = opt.period.back()->get_next_valid(
+                                 std::max(
+                                        opt.preferred_time,
+                                        opt.current_time));
 
     // Check against reference time.
     if (valid != opt.ref_time) {
