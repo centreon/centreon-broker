@@ -48,32 +48,59 @@ namespace         notification {
      */
     virtual void  add_dependency(
                     unsigned int id,
-                    objects::dependency::ptr d) {}
+                    objects::dependency::ptr d) {
+      (void)id;
+      (void)d;
+    }
     virtual void  dependency_node_id_parent_relation(
                     unsigned int dep_id,
-                    objects::node_id id) {}
+                    objects::node_id id) {
+      (void)dep_id;
+      (void)id;
+    }
     virtual void  dependency_node_id_child_relation(
                     unsigned int dep_id,
-                    objects::node_id id) {}
+                    objects::node_id id) {
+      (void)dep_id;
+      (void)id;
+    }
     virtual void  dependency_hostgroup_parent_relation(
                     unsigned int dep_id,
-                    unsigned int hostgroup_id) {}
+                    unsigned int hostgroup_id) {
+      (void)dep_id;
+      (void)hostgroup_id;
+    }
     virtual void  dependency_hostgroup_child_relation(
                     unsigned int dep_id,
-                    unsigned int hostgroup_id) {}
+                    unsigned int hostgroup_id) {
+      (void)dep_id;
+      (void)hostgroup_id;
+    }
     virtual void  dependency_servicegroup_child_relation(
                     unsigned int dep_id,
-                    unsigned int servicegroup_id) {}
+                    unsigned int servicegroup_id) {
+      (void)dep_id;
+      (void)servicegroup_id;
+    }
     virtual void  dependency_servicegroup_parent_relation(
                     unsigned int dep_id,
-                    unsigned int servicegroup_id) {}
+                    unsigned int servicegroup_id) {
+      (void)dep_id;
+      (void)servicegroup_id;
+    }
 
     virtual void  set_notification_failure_options(
                     unsigned int dep_id,
-                    std::string const& line) {}
+                    std::string const& line) {
+      (void)dep_id;
+      (void)line;
+    }
     virtual void  set_execution_failure_options(
                     unsigned int dep_id,
-                    std::string const& line) {}
+                    std::string const& line) {
+      (void)dep_id;
+      (void)line;
+    }
   };
 
 }

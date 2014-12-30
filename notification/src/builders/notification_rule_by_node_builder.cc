@@ -40,5 +40,6 @@ notification_rule_by_node_builder::notification_rule_by_node_builder(
 void notification_rule_by_node_builder::add_rule(
                                           unsigned int rule_id,
                                           objects::notification_rule::ptr rule) {
+  (void)rule_id;
   _map.insert(rule->get_node_id(), rule);
 }

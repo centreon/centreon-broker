@@ -36,5 +36,6 @@ nodegroup_by_name_builder::nodegroup_by_name_builder(
 void nodegroup_by_name_builder::add_nodegroup(
                                   objects::node_id id,
                                   objects::nodegroup::ptr ndg) {
+  (void)id;
   _map.insert(ndg->get_name(), ndg);
 }

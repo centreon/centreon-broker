@@ -65,8 +65,6 @@ using namespace com::centreon::broker::notification::objects;
  *  @param[in] password                Password.
  *  @param[in] centreon_db             Database name.
  *  @param[in] qpt                     Queries per transaction.
- *  @param[in] cleanup_thread_interval How often the stream must
- *                                     check for cleanup database.
  *  @param[in] check_replication       true to check replication status.
  *  @param[in] wse                     With state events.
  *  @param[in] node_cache              A loaded node event cache.
@@ -79,7 +77,6 @@ stream::stream(
           QString const& password,
           QString const& centreon_db,
           unsigned int qpt,
-          unsigned int cleanup_check_interval,
           bool check_replication,
           bool wse,
           node_cache& cache)
@@ -485,7 +482,7 @@ void stream::_process_service_status_event(neb::service_status const& event) {
     a.set_type(action::notification_processing);
     a.set_forwarded_type(action::notification_attempt);
     a.set_node_id(id);
-    _notif_scheduler->add_action_to_queue(time(NULL) + 1, a);
+    _notif_scheduler->add_action_to_queue(when_to_schedule, a);
   }
   // From NOT-OK to OK
   else if (old_hard_state != event.last_hard_state &&
@@ -495,7 +492,7 @@ void stream::_process_service_status_event(neb::service_status const& event) {
     a.set_type(action::notification_processing);
     a.set_forwarded_type(action::notification_up);;
     a.set_node_id(id);
-    _notif_scheduler->add_action_to_queue(time(NULL) + 1, a);
+    _notif_scheduler->add_action_to_queue(when_to_schedule, a);
   }
 }
 

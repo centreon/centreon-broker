@@ -51,7 +51,6 @@ namespace                        notification {
                                    QString const& centreon_db,
                                    QString const& node_cache_file,
                                    unsigned int queries_per_transaction = 1,
-                                   unsigned int cleanup_check_interval = 0,
                                    bool check_replication = true,
                                    bool with_state_events = false);
     misc::shared_ptr<io::stream> open();
@@ -59,7 +58,6 @@ namespace                        notification {
 
   private:
     bool                         _check_replication;
-    unsigned int                 _cleanup_check_interval;
     QString                      _centreon_db;
     QString                      _host;
     QString                      _password;

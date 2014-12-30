@@ -54,7 +54,9 @@ namespace        notification {
    *
    *  @param[out] ost    The stringstream to modify.
    */
-  template <> void inline set_precision<0>(std::ostringstream& ost) {}
+  template <> void inline set_precision<0>(std::ostringstream& ost) {
+    (void)ost;
+  }
 
   /**
    *  Write a type into string.
@@ -233,7 +235,7 @@ namespace        notification {
    */
   template <bool get_all>
   std::string get_host_groups(
-                 macro_context const& context) {}
+                 macro_context const& context) {return ("");}
 
   template <> std::string get_host_groups<true>(
                             macro_context const& context);
@@ -252,7 +254,7 @@ namespace        notification {
    */
   template <bool get_all>
   std::string get_service_groups(
-                 macro_context const& context) {}
+                 macro_context const& context) {return ("");}
 
   template <> std::string get_service_groups<true>(
                             macro_context const& context);
@@ -271,7 +273,7 @@ namespace        notification {
    */
   template <bool get_long_output>
   std::string get_host_output(
-                macro_context const& context) {}
+                macro_context const& context) {return ("");}
 
   template <> std::string get_host_output<false>(
                             macro_context const& context);
@@ -290,7 +292,7 @@ namespace        notification {
    */
   template <bool get_long_output>
   std::string get_service_output(
-                macro_context const& context) {}
+                macro_context const& context) {return ("");}
 
   template <> std::string get_service_output<false>(
                             macro_context const& context);
@@ -312,7 +314,7 @@ namespace        notification {
                 macro_context const& context) {
     return (utilities::get_datetime_string(
                  ::time(NULL),
-                 48,
+                 /*48*/3500,
                  date_type,
                  context.get_state().get_date_format()));
   }
@@ -477,7 +479,6 @@ namespace        notification {
   std::string get_group_members(
                 macro_context const& context) {
     std::vector<std::string> members;
-    state const& st = context.get_state();
     node_cache const& cache = context.get_cache();
     if (is_host) {
       std::map<std::string, neb::host_group_member> map =

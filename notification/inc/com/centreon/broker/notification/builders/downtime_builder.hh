@@ -48,7 +48,10 @@ namespace         notification {
      */
     virtual void  add_downtime(
                     unsigned int downtime_id,
-                    objects::downtime::ptr downtime) {}
+                    objects::downtime::ptr downtime) {
+      (void)downtime_id;
+      (void)downtime;
+    }
 
     /**
      *  Connect a downtime to a node_id.
@@ -58,7 +61,10 @@ namespace         notification {
      */
     virtual void  connect_downtime_to_node(
                     unsigned int downtime_id,
-                    objects::node_id node_id) {}
+                    objects::node_id node_id) {
+      (void)downtime_id;
+      (void)node_id;
+    }
   };
 
 }

@@ -42,7 +42,6 @@ connector::connector() : io::endpoint(false) {}
 connector::connector(connector const& c)
   : io::endpoint(c),
     _check_replication(c._check_replication),
-    _cleanup_check_interval(c._cleanup_check_interval),
     _centreon_db(c._centreon_db),
     _host(c._host),
     _password(c._password),
@@ -70,7 +69,6 @@ connector& connector::operator=(connector const& c) {
   if (this != &c) {
     io::endpoint::operator=(c);
     _check_replication = c._check_replication;
-    _cleanup_check_interval = c._cleanup_check_interval;
     _centreon_db = c._centreon_db;
     _host = c._host;
     _password = c._password;
@@ -113,8 +111,6 @@ void connector::close() {
  *  @param[in] centreon_db             Database name.
  *  @param[in] node_cache_file         The node cache filename.
  *  @param[in] queries_per_transaction Queries per transaction.
- *  @param[in] cleanup_check_interval  How often the stream must
- *                                     check for cleanup database.
  *  @param[in] check_replication       true to check replication status.
  *  @param[in] with_state_events       Enable state events ?
  */
@@ -127,10 +123,8 @@ void connector::connect_to(
                   QString const& centreon_db,
                   QString const& node_cache_file,
                   unsigned int queries_per_transaction,
-                  unsigned int cleanup_check_interval,
                   bool check_replication,
                   bool with_state_events) {
-  _cleanup_check_interval = cleanup_check_interval;
   _check_replication = check_replication;
   _centreon_db = centreon_db;
   _host = host;
@@ -159,7 +153,6 @@ misc::shared_ptr<io::stream> connector::open() {
                                              _password,
                                              _centreon_db,
                                              _queries_per_transaction,
-                                             _cleanup_check_interval,
                                              _check_replication,
                                              _with_state_events,
                                              _node_cache)));

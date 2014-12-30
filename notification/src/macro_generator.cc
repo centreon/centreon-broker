@@ -69,7 +69,6 @@ void macro_generator::generate(
     throw (exceptions::msg()
            << "notification: can't find the host "
            << id.get_host_id() << " while generating macros");
-  node_cache::host_node_state const& hns = cache.get_host(id);
 
   for (macro_container::iterator it(container.begin()),
                                  end(container.end());

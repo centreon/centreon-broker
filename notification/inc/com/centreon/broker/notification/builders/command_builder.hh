@@ -47,7 +47,10 @@ namespace         notification {
      */
     virtual void  add_command(
                     unsigned int id,
-                    objects::command::ptr com) {}
+                    objects::command::ptr com) {
+      (void)id;
+      (void)com;
+    }
   };
 
 }

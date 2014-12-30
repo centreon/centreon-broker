@@ -48,15 +48,13 @@ namespace        notification {
    */
   class          stream : public io::stream {
   public:
-                 stream(
-                   QString const& type,
+                 stream(QString const& type,
                    QString const& host,
                    unsigned short port,
                    QString const& user,
                    QString const& password,
                    QString const& centreon_db,
                    unsigned int queries_per_transaction,
-                   unsigned int cleanup_check_interval,
                    bool check_replication,
                    bool with_state_events,
                    node_cache& cache);

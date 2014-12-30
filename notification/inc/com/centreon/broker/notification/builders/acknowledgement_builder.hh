@@ -48,7 +48,10 @@ namespace       notification {
      */
     virtual void add_ack(
                    objects::node_id id,
-                   objects::acknowledgement::ptr ack) {}
+                   objects::acknowledgement::ptr ack) {
+      (void)id;
+      (void)ack;
+    }
   };
 
 }

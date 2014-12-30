@@ -47,14 +47,19 @@ namespace        notification {
      */
     virtual void add_global_macro(
                    std::string const& macro_name,
-                   std::string const& macro_value) {}
+                   std::string const& macro_value) {
+      (void)macro_name;
+      (void)macro_value;
+    }
 
     /**
      *  Add the date format of the macros to the builder.
      *
      *  @param[in] format  The date format.
      */
-    virtual void add_date_format(int format) {}
+    virtual void add_date_format(int format) {
+      (void)format;
+    }
 
     /**
      *  Add a resource macro to the builder.
@@ -64,7 +69,10 @@ namespace        notification {
      */
     virtual void add_resource_macro(
                    std::string const& macro_name,
-                   std::string const& macro_value) {}
+                   std::string const& macro_value) {
+      (void)macro_name;
+      (void)macro_value;
+    }
   };
 
 }

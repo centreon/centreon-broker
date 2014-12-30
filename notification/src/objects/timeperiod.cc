@@ -75,8 +75,8 @@ timeperiod::timeperiod(
       std::string const& friday,
       std::string const& saturday) :
   _id(id),
-  _timeperiod_name(name),
-  _alias(alias) {
+  _alias(alias),
+  _timeperiod_name(name) {
   _timeranges.resize(7);
   _exceptions.resize(daterange::daterange_types);
   std::vector<bool> success;
@@ -172,7 +172,7 @@ std::vector<std::list<daterange> > const&
  */
 std::list<daterange> const&
     timeperiod::get_exceptions_from_type(int type) const {
-  if (type < 0 || type > daterange::daterange_types)
+  if (type < 0 || (unsigned int)type > daterange::daterange_types)
     throw std::out_of_range("get_exceptions_from_type(): out of range");
   else
     return (_exceptions[type]);

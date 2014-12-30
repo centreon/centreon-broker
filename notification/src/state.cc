@@ -371,7 +371,6 @@ bool state::is_node_in_downtime(objects::node_id id) const {
  *  @return        True of the node has been acknowledged.
  */
 bool state::has_node_been_acknowledged(objects::node_id id) const {
-  time_t current_time = time(NULL);
   QList<acknowledgement::ptr> acknowledgements = _acks.values(id);
 
   for (QList<acknowledgement::ptr>::iterator it(acknowledgements.begin()),

@@ -49,7 +49,10 @@ namespace        notification {
      */
     virtual void add_nodegroup(
                    objects::node_id id,
-                   objects::nodegroup::ptr ndg) {}
+                   objects::nodegroup::ptr ndg) {
+      (void)id;
+      (void)ndg;
+    }
   };
 
 }

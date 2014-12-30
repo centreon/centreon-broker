@@ -48,7 +48,10 @@ namespace        notification {
      */
     virtual void add_contactgroup(
                    unsigned int id,
-                   objects::contactgroup::ptr ctg) {}
+                   objects::contactgroup::ptr ctg) {
+      (void)id;
+      (void)ctg;
+    }
 
     /**
      *  Add a contactgroup contact relation to the builder.
@@ -58,7 +61,10 @@ namespace        notification {
      */
     virtual void add_contactgroup_contact_relation(
                    unsigned int contact_id,
-                   unsigned int contactgroup_id) {}
+                   unsigned int contactgroup_id) {
+      (void)contact_id;
+      (void)contactgroup_id;
+    }
   };
 
 }

@@ -47,7 +47,10 @@ namespace         notification {
      */
     virtual void  add_timeperiod(
                     unsigned int id,
-                    objects::timeperiod::ptr tperiod) {}
+                    objects::timeperiod::ptr tperiod) {
+      (void)id;
+      (void)tperiod;
+    }
     /**
      *  Add a timeperiod exception to the builder.
      *
@@ -58,7 +61,11 @@ namespace         notification {
     virtual void  add_timeperiod_exception(
                     unsigned int timeperiod_id,
                     std::string const& days,
-                    std::string const& timerange) {}
+                    std::string const& timerange) {
+      (void)timeperiod_id;
+      (void)days;
+      (void)timerange;
+    }
 
     /**
      *  Add a timeperiod exclude relation to the builder.
@@ -68,7 +75,10 @@ namespace         notification {
      */
     virtual void  add_timeperiod_exclude_relation(
                     unsigned int timeperiod_id,
-                    unsigned int exclude_id) {}
+                    unsigned int exclude_id) {
+      (void)timeperiod_id;
+      (void)exclude_id;
+    }
 
     /**
      *  Add a timeperiod include relation to the builder.
@@ -78,7 +88,10 @@ namespace         notification {
      */
     virtual void  add_timeperiod_include_relation(
                     unsigned int timeperiod_id,
-                    unsigned int include_id) {}
+                    unsigned int include_id) {
+      (void)timeperiod_id;
+      (void)include_id;
+    }
   };
 
 }

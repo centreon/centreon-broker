@@ -170,15 +170,6 @@ io::endpoint* factory::new_endpoint(
       queries_per_transaction = 1000;
   }
 
-  // Cleanup check interval.
-  unsigned int cleanup_check_interval(0);
-  {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("cleanup_check_interval"));
-    if (it != cfg.params.end())
-      cleanup_check_interval = it.value().toUInt();
-  }
-
   // Check replication status ?
   bool check_replication(true);
   {
@@ -208,7 +199,6 @@ io::endpoint* factory::new_endpoint(
        db_name,
        node_cache_file,
        queries_per_transaction,
-       cleanup_check_interval,
        check_replication,
        wse);
   is_acceptor = false;

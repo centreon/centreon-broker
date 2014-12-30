@@ -28,10 +28,11 @@ node::node() :
   _notification_number(0),
   _notifications_enabled(true),
   _notification_interval(0),
-  _notification_options(node_notification_opt::none),
   _last_notification_time(0),
   _hard_state(),
-  _soft_state() {}
+  _soft_state(),
+  _notification_options(node_notification_opt::none)
+  {}
 
 /**
  *  Copy constructor.

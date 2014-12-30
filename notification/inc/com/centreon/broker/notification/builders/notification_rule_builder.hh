@@ -42,7 +42,10 @@ namespace           notification {
      */
     virtual void    add_rule(
                       unsigned int rule_id,
-                      objects::notification_rule::ptr rule) {}
+                      objects::notification_rule::ptr rule) {
+      (void)rule_id;
+      (void)rule;
+    }
   };
 
 }

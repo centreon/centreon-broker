@@ -48,7 +48,10 @@ namespace         notification {
      */
     virtual void  add_contact(
                     unsigned int id,
-                    objects::contact::ptr con) {}
+                    objects::contact::ptr con) {
+      (void)id;
+      (void)con;
+    }
 
     /**
      *  Add a contact param to the builder.
@@ -60,7 +63,11 @@ namespace         notification {
     virtual void  add_contact_param(
                     unsigned int contact_id,
                     std::string const& key,
-                    std::string const& value) {}
+                    std::string const& value) {
+      (void)contact_id;
+      (void)key;
+      (void)value;
+    }
   };
 
 }

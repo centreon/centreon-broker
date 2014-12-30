@@ -44,7 +44,9 @@ namespace        notification {
      *
      *  @param[in] node The node.
      */
-    virtual void add_node(objects::node::ptr node) {}
+    virtual void add_node(objects::node::ptr node) {
+      (void)node;
+    }
   };
 
 }
