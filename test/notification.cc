@@ -20,7 +20,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
-#include <QFile>
 #include <fstream>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -82,9 +81,67 @@ using namespace com::centreon::broker;
 #define MACRO_LIST \
   "\"" TIME_MACROS HOST_MACROS SERVICE_MACROS COUNTING_MACROS NOTIFICATION_MACROS GROUP_MACROS CONTACT_MACROS "\""
 
+struct macros_struct {
+  enum macro_type {
+    null,
+    string,
+    integer
+  };
+  union data {
+    const char* string;
+    int         num;
+  };
+
+  macro_type type;
+  data d;
+};
+
 /**
- *  Check that notification is properly enabled when non-correlation
- *  option is set on services.
+ *  @brief Validate the macros.
+ *
+ *  Throw on error.
+ *
+ *  @param[in] macros  The macros.
+ */
+void validate_macros(
+       std::string const& macros_string,
+       macros_struct* macros,
+       unsigned int num_macros) {
+  // Validate that all macros were correctly processed.
+  if (macros_string.find_first_of('$') != std::string::npos)
+    throw (exceptions::msg() << "a macro wasn't replaced");
+
+  // Validate each macro manually.
+  unsigned int index = 0;
+  for (unsigned int i = 0; i < num_macros; ++i) {
+    size_t next = macros_string.find_first_of('\n', index);
+    if (next == std::string::npos)
+      throw (exceptions::msg() << "not enough macro: expected " << num_macros << " macros.");
+    std::string substr = macros_string.substr(index, next);
+
+    if (macros[i].type == macros_struct::null)
+      ; //pass
+    else if (macros[i].type == macros_struct::string) {
+      if (substr != macros[i].d.string)
+        throw (exceptions::msg()
+                 << "invalid macro: expected '" << macros[i].d.string
+                 << "'' got '" << substr << "'");
+    }
+    else if (macros[i].type == macros_struct::integer) {
+      std::stringstream ss;
+      ss << macros[i].d.num;
+      if (substr != ss.str())
+        throw (exceptions::msg()
+                 << "invalid macro: expected '" << ss.str()
+                 << "'' got '" << substr << "'");
+    }
+
+    index = next + 1;
+  }
+}
+
+/**
+ *  Check that notification is properly enabled.
  *
  *  @return EXIT_SUCCESS on success.
  */
@@ -220,12 +277,11 @@ int main() {
     sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Check file creation.
-    error = !QFile::exists(flag_file.c_str());
+    std::ifstream filestream(flag_file.c_str());
 
-    if (error)
+    if ((error = !filestream.is_open()))
       throw exceptions::msg() << "Flag file doesn't exist";
 
-    std::ifstream filestream(flag_file.c_str());
     filestream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     std::ostringstream ss;
 
@@ -235,13 +291,19 @@ int main() {
       <<  "content of " << flag_file << ": "
       << ss.str() << std::endl;
 
+    macros_struct macros[]
+        = {};
+
+    validate_macros(ss.str(), macros, sizeof(macros) / sizeof(*macros));
 
   }
   catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
+    error = true;
   }
   catch (...) {
     std::cerr << "unknown exception" << std::endl;
+    error = true;
   }
 
   // Cleanup.
