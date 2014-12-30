@@ -45,7 +45,6 @@ std::string utilities::get_datetime_string(
 
   std::vector<char> buffer;
   buffer.resize(max_length);
-  //char buffer[max_length];
 
   std::string ret;
   ret.resize(max_length);

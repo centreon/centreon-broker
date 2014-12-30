@@ -314,7 +314,7 @@ namespace        notification {
                 macro_context const& context) {
     return (utilities::get_datetime_string(
                  ::time(NULL),
-                 /*48*/3500,
+                 48,
                  date_type,
                  context.get_state().get_date_format()));
   }

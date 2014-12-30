@@ -441,9 +441,7 @@ std::string com::centreon::broker::notification::get_contactgroup_alias(
     context.get_state().get_contactgroup_by_contact_id(
       context.get_contact().get_id());
   if (!ctg)
-    throw (com::centreon::broker::exceptions::msg()
-           << "notification: macro: could not get the contactgroup alias "
-              "of contact " << context.get_contact().get_name());
+    return ("");
   return (ctg->get_alias());
 }
 
