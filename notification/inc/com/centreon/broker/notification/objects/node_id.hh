@@ -50,6 +50,7 @@ namespace         notification {
       unsigned int  get_service_id() const throw();
       bool          is_host() const throw();
       bool          is_service() const throw();
+      node_id       to_host() const throw();
 
     private:
       unsigned int  _host_id;

@@ -332,7 +332,7 @@ namespace        notification {
   std::string get_total_host_services(
                 macro_context const& context) {
     QList<objects::node::ptr> services =
-      context.get_state().get_all_services_of_host(context.get_id());
+      context.get_state().get_all_services_of_host(context.get_id().to_host());
     if (service_state != -1) {
       size_t count = 0;
       for (QList<objects::node::ptr>::iterator it(services.begin()),

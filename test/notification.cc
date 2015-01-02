@@ -385,7 +385,16 @@ int main() {
       {macros_struct::between, NULL, 0, NULL, start, now, "LASTHOSTSTATECHANGE"},
       {macros_struct::between, NULL, 0, NULL, start, now, "LASTHOSTUP"},
       {macros_struct::integer, NULL, 0, NULL, 0, 0, "LASTHOSTDOWN"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "LASTHOSTUNREACHABLE"}
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "LASTHOSTUNREACHABLE"},
+      {macros_struct::string, "Host Check Ok", 0, NULL, 0, 0, "HOSTOUTPUT"},
+      {macros_struct::string, "", 0, NULL, 0, 0, "LONGHOSTOUTPUT"},
+      {macros_struct::string, "", 0, NULL, 0, 0, "HOSTPERFDATA"},
+      {macros_struct::string, "default_command", 0, NULL, 0, 0, "HOSTCHECKCOMMAND"},
+      {macros_struct::integer, NULL, 2, NULL, 0, 0, "TOTALHOSTSERVICES"},
+      {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALHOSTSERVICESOK"},
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSERVICESWARNING"},
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSERVICESUNKNOWN"},
+      {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALHOSTSERVICESCRITICAL"}
       };
 
     validate_macros(ss.str(), macros, sizeof(macros) / sizeof(*macros));
@@ -405,8 +414,8 @@ int main() {
   sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
   ::remove(flag_file.c_str());
   ::remove(node_cache_file.c_str());
-  std::cout << engine_config_path << std::endl;
-  //config_remove(engine_config_path.c_str());
+  //std::cout << engine_config_path << std::endl;
+  config_remove(engine_config_path.c_str());
   free_hosts(hosts);
   free_services(services);
 

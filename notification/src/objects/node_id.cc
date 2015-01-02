@@ -139,6 +139,15 @@ bool node_id::is_service() const throw() {
 }
 
 /**
+ *  Return the node_id of the host associated with this node.
+ *
+ *  @return  The node_id of the host associated with this node.
+ */
+node_id node_id::to_host() const throw() {
+  return (node_id(_host_id));
+}
+
+/**
  *  QHash function for hash and sets.
  *
  *  @param[in] id  A node id.
