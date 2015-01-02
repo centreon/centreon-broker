@@ -146,7 +146,7 @@ template <> std::string get_host_output<true>(
       context.get_id()).get_status().output.toStdString();
   size_t found = output.find_first_of('\n');
   if (found != std::string::npos)
-    return (output.substr(found == std::string::npos));
+    return (output.substr(found, std::string::npos));
   return ("");
 }
 
@@ -183,7 +183,7 @@ template <> std::string get_service_output<true>(
       context.get_id()).get_status().output.toStdString();
   size_t found = output.find_first_of('\n');
   if (found != std::string::npos)
-    return (output.substr(found == std::string::npos));
+    return (output.substr(found, std::string::npos));
   return ("");
 }
 

@@ -198,6 +198,13 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
 
   // Host specific macros.
   map.insert(
+    "HOSTNAME",
+    &get_host_member_as_string<
+      neb::host,
+      QString,
+      &neb::host::host_name,
+      0>);
+  map.insert(
     "HOSTDISPLAYNAME",
     &get_host_member_as_string<
       neb::host_service,

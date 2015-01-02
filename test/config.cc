@@ -736,6 +736,9 @@ void config_write(
                                           ? it->notification_period
                                           : "default_timeperiod")
           << "\n"
+          << "  display_name " << ((it->display_name) ?
+                                    it->display_name : it->name)
+          << "\n"
           << "  contacts ";
       if (it->contacts) {
         ofs << it->contacts->contact_name;
@@ -798,6 +801,8 @@ void config_write(
           << "  service_description " << it->description << "\n"
           << "  _SERVICE_ID " << it->description << "\n"
           << "  host_name " << it->host_name << "\n"
+          << "  display_name " << ((it->display_name) ?
+                                    it->display_name : it->description) << "\n"
           << "  active_checks_enabled " << it->checks_enabled << "\n"
           << "  passive_checks_enabled "
           << it->accept_passive_service_checks << "\n"

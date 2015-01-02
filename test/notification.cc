@@ -36,8 +36,8 @@ using namespace com::centreon::broker;
 #define UTIL_FILE_WRITER PROJECT_SOURCE_DIR"/build/util_write_into_file"
 #define TIME_MACROS "$LONGDATETIME$\n$SHORTDATETIME$\n$DATE$\n$TIME$\n$TIMET$\n"
 #define HOST_MACROS \
-  "$HOSTDISPLAYNAME$\n$HOSTALIAS$\n$HOSTADDRESS$\n$HOSTSTATE$\n$HOSTSTATEID$\n"\
-  "$HOSTSTATETYPE$\n$HOSTATTEMPT$\n$MAXHOSTATTEMPTS$\n$HOSTLATENCY$\n"\
+  "$HOSTNAME$\n$HOSTDISPLAYNAME$\n$HOSTALIAS$\n$HOSTADDRESS$\n$HOSTSTATE$\n"\
+  "$HOSTSTATEID$\n$HOSTSTATETYPE$\n$HOSTATTEMPT$\n$MAXHOSTATTEMPTS$\n$HOSTLATENCY$\n"\
   "$HOSTEXECUTIONTIME$\n$HOSTDURATION$\n$HOSTDURATIONSEC$\n$HOSTDOWNTIME$\n"\
   "$HOSTPERCENTCHANGE$\n$HOSTGROUPNAME$\n$HOSTGROUPNAMES$\n$LASTHOSTCHECK$\n"\
   "$LASTHOSTSTATECHANGE$\n$LASTHOSTUP$\n$LASTHOSTDOWN$\n"\
@@ -81,19 +81,27 @@ using namespace com::centreon::broker;
 #define MACRO_LIST \
   "\"" TIME_MACROS HOST_MACROS SERVICE_MACROS COUNTING_MACROS NOTIFICATION_MACROS GROUP_MACROS CONTACT_MACROS "\""
 
+static const double epsilon = 0.000001;
+
 struct macros_struct {
   enum macro_type {
     null,
     string,
-    integer
-  };
-  union data {
-    const char* string;
-    int         num;
+    integer,
+    function,
+    between
   };
 
   macro_type type;
-  data d;
+
+  // Not using an union because no designated initializer in the C++ standard.
+  const char* str;
+  int         num;
+  bool        (*f)(std::string const&);
+  double      value1;
+  double      value2;
+
+  const char* macro_name;
 };
 
 /**
@@ -113,30 +121,60 @@ void validate_macros(
 
   // Validate each macro manually.
   unsigned int index = 0;
-  for (unsigned int i = 0; i < num_macros; ++i) {
-    size_t next = macros_string.find_first_of('\n', index);
-    if (next == std::string::npos)
-      throw (exceptions::msg() << "not enough macro: expected " << num_macros << " macros.");
-    std::string substr = macros_string.substr(index, next);
+  unsigned int i = 0;
+  try {
+    for (; i < num_macros; ++i) {
+      size_t next = macros_string.find_first_of('\n', index);
+      if (next == std::string::npos)
+        throw (exceptions::msg() << "not enough macro: expected " << num_macros << " macros.");
+      std::string substr = macros_string.substr(index, next - index);
 
-    if (macros[i].type == macros_struct::null)
-      ; //pass
-    else if (macros[i].type == macros_struct::string) {
-      if (substr != macros[i].d.string)
-        throw (exceptions::msg()
-                 << "invalid macro: expected '" << macros[i].d.string
-                 << "'' got '" << substr << "'");
+      if (macros[i].type == macros_struct::null)
+        ; //pass
+      else if (macros[i].type == macros_struct::string) {
+        if (substr != macros[i].str)
+          throw (exceptions::msg()
+                   << "invalid macro: expected '" << macros[i].str
+                   << "' got '" << substr << "'");
+      }
+      else if (macros[i].type == macros_struct::integer) {
+        std::stringstream ss;
+        int num;
+        ss << substr;
+        ss >> num;
+        if (!ss.eof())
+          throw (exceptions::msg()
+                   << "couldn't parse '" << substr << "' into an int");
+        if (num != macros[i].num)
+          throw (exceptions::msg()
+                   << "invalid macro: expected '" << macros[i].num
+                   << "'' got '" << num << "'");
+      }
+      else if (macros[i].type == macros_struct::function) {
+        if (!macros[i].f(substr))
+          throw (exceptions::msg()
+                   << "could not validate '" << substr << "'");
+      }
+      else if (macros[i].type == macros_struct::between) {
+        std::stringstream ss;
+        double value;
+        ss << substr;
+        ss >> value;
+        if (!ss.eof())
+          throw (exceptions::msg()
+                   << "couldn't parse '" << substr << "' into a double");
+        if (value < macros[i].value1 - epsilon || value > macros[i].value2 + epsilon)
+          throw (exceptions::msg()
+                  << "value outside of bound " << macros[i].value1
+                  << " and " << macros[i].value2 << " in '" << substr << "'");
+      }
+      index = next + 1;
     }
-    else if (macros[i].type == macros_struct::integer) {
-      std::stringstream ss;
-      ss << macros[i].d.num;
-      if (substr != ss.str())
-        throw (exceptions::msg()
-                 << "invalid macro: expected '" << ss.str()
-                 << "'' got '" << substr << "'");
-    }
-
-    index = next + 1;
+  }
+ catch (std::exception const& e) {
+      throw (exceptions::msg()
+               << "error while trying to validate macro "
+               << macros[i].macro_name << ": " << e.what());
   }
 }
 
@@ -152,6 +190,8 @@ int main() {
   // Variables that need cleaning.
   std::list<host> hosts;
   std::list<service> services;
+  std::list<hostgroup> hostgroups;
+  std::list<servicegroup> servicegroups;
   std::string engine_config_path(tmpnam(NULL));
   std::string flag_file(tmpnam(NULL));
   std::string node_cache_file(tmpnam(NULL));
@@ -169,7 +209,19 @@ int main() {
     db.open(NULL, NULL, DB_NAME);
 
     // Prepare monitoring engine configuration parameters.
+    generate_host_groups(hostgroups, 1);
+    delete hostgroups.begin()->group_name;
+    hostgroups.begin()->group_name = ::strdup("HostGroup1");
+    generate_service_groups(servicegroups, 1);
+    delete servicegroups.begin()->group_name;
+    servicegroups.begin()->group_name = ::strdup("ServiceGroup1");
     generate_hosts(hosts, 1);
+    hosts.begin()->display_name = ::strdup("DisplayName1");
+    delete hosts.begin()->alias;
+    hosts.begin()->alias = ::strdup("HostAlias1");
+    hosts.begin()->checks_enabled = 0;
+    hosts.begin()->accept_passive_host_checks = 1;
+    link(*hosts.begin(), *hostgroups.begin());
     generate_services(services, hosts, 2);
     for (std::list<service>::iterator
            it(services.begin()),
@@ -179,6 +231,7 @@ int main() {
       it->checks_enabled = 0;
       it->accept_passive_service_checks = 1;
       it->max_attempts = 1;
+      link(*it, *servicegroups.begin());
     }
     set_custom_variable(
       services.back(),
@@ -187,8 +240,8 @@ int main() {
 
     // Populate database.
     db.centreon_run(
-         "INSERT INTO cfg_hosts (host_id, host_name)"
-         "  VALUES (1, 'Host1')",
+         "INSERT INTO cfg_hosts (host_id, host_name, display_name, host_alias)"
+         "  VALUES (1, 'Host1', 'DisplayName1', 'HostAlias1')",
          "could not create host");
     db.centreon_run(
          "INSERT INTO cfg_services (service_id,"
@@ -200,6 +253,12 @@ int main() {
          "            service_service_id)"
          "  VALUES (1, 1), (1, 2)",
          "could not link host and services");
+    db.centreon_run(
+         "INSERT INTO cfg_hostgroups (hg_name) VALUES('HostGroup1')",
+         "could not create the host group");
+    db.centreon_run(
+         "INSERT INTO cfg_servicegroups (sg_name) VALUES('ServiceGroup1')",
+         "could not create the service group");
 
     // Create contact in DB.
     db.centreon_run(
@@ -255,9 +314,13 @@ int main() {
       engine_config_path.c_str(),
       additional_config.c_str(),
       &hosts,
-      &services);
+      &services,
+      NULL,
+      &hostgroups,
+      &servicegroups);
 
     // Start monitoring.
+    time_t start(time(NULL));
     std::string engine_config_file(engine_config_path);
     engine_config_file.append("/nagios.cfg");
     monitoring.set_config_file(engine_config_file);
@@ -272,6 +335,8 @@ int main() {
     // Make service 2 CRITICAL.
     commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;1;2;2;Submitted by unit test");
+    commander.execute(
+      "PROCESS_HOST_CHECK_RESULT;1;0;Host Check Ok");
     sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
@@ -291,8 +356,37 @@ int main() {
       <<  "content of " << flag_file << ": "
       << ss.str() << std::endl;
 
-    macros_struct macros[]
-        = {};
+    time_t now(::time(NULL));
+
+    macros_struct macros[] = {
+      {macros_struct::null, NULL, 0, NULL, 0, 0, "LONGDATETIME"},
+      {macros_struct::null, NULL, 0, NULL, 0, 0, "SHORTDATETIME"},
+      {macros_struct::null, NULL, 0, NULL, 0, 0, "DATE"},
+      {macros_struct::null, NULL, 0, NULL, 0, 0, "TIME"},
+      {macros_struct::between, NULL, 0, NULL, start, now, "TIMET"},
+      {macros_struct::string, "1", 0, NULL, 0, 0, "HOSTNAME"},
+      {macros_struct::string, "DisplayName1", 0, NULL, 0, 0, "HOSTDISPLAYNAME"},
+      {macros_struct::string, "HostAlias1", 0, NULL, 0, 0, "HOSTALIAS"},
+      {macros_struct::string, "localhost", 0, NULL, 0, 0, "HOSTADDRESS"},
+      {macros_struct::string, "UP", 0, NULL, 0, 0, "HOSTSTATE"},
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "HOSTSTATEID"},
+      {macros_struct::string, "HARD", 0, NULL, 0, 0, "HOSTSTATETYPE"},
+      {macros_struct::integer, NULL, 1, NULL, 0, 0, "HOSTATTEMPT"},
+      {macros_struct::integer, NULL, 3, NULL, 0, 0, "MAXHOSTATTEMPS"},
+      {macros_struct::between, NULL, 0, NULL, 0.0000005, 1.20, "HOSTLATENCY"},
+      {macros_struct::between, NULL, 0, NULL, 0.0000005, 1.20, "HOSTEXECUTIONTIME"},
+      {macros_struct::null, NULL, 0, NULL, 0, 0, "HOSTDURATION"},
+      {macros_struct::between, NULL, 0, NULL, 1, 20, "HOSTDURATIONSEC"},
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "HOSTDOWNTIME"},
+      {macros_struct::between, NULL, 0, NULL, 0, 0, "HOSTPERCENTCHANGE"},
+      {macros_struct::string, "HostGroup1", 0, NULL, 0, 0, "HOSTGROUPNAME"},
+      {macros_struct::string, "HostGroup1", 0, NULL, 0, 0, "HOSTGROUPNAMES"},
+      {macros_struct::between, NULL, 0, NULL, start, now, "LASTHOSTCHECK"},
+      {macros_struct::between, NULL, 0, NULL, start, now, "LASTHOSTSTATECHANGE"},
+      {macros_struct::between, NULL, 0, NULL, start, now, "LASTHOSTUP"},
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "LASTHOSTDOWN"},
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "LASTHOSTUNREACHABLE"}
+      };
 
     validate_macros(ss.str(), macros, sizeof(macros) / sizeof(*macros));
 
@@ -311,7 +405,8 @@ int main() {
   sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
   ::remove(flag_file.c_str());
   ::remove(node_cache_file.c_str());
-  config_remove(engine_config_path.c_str());
+  std::cout << engine_config_path << std::endl;
+  //config_remove(engine_config_path.c_str());
   free_hosts(hosts);
   free_services(services);
 
