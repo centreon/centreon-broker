@@ -458,7 +458,23 @@ int main() {
       {macros_struct::string, "Critical submitted by unit test", 0, NULL, 0, 0, "SERVICEOUTPUT"},
       {macros_struct::string, "", 0, NULL, 0, 0, "LONGSERVICEOUTPUT"},
       {macros_struct::string, "", 0, NULL, 0, 0, "SERVICEPERFDATA"},
-      {macros_struct::string, "service_command_1", 0, NULL, 0, 0, "SERVICECHECKCOMMAND"}
+      {macros_struct::string, "service_command_1", 0, NULL, 0, 0, "SERVICECHECKCOMMAND"},
+      {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALHOSTSUP"},
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSDOWN"},
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSUNREACHABLE"},
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSDOWNUNHANDLED"},
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSUNREACHABLEUNHANDLED"},
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTPROBLEMS"},
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTPROBLEMSUNHANDLED"},
+      {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALSERVICESOK"},
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALSERVICESWARNING"},
+      {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALSERVICESCRITICAL"},
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALSERVICESUNKNOWN"},
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALSERVICESWARNINGUNHANDLED"},
+      {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALSERVICESCRITICALUNHANDLED"},
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALSERVICESUNKNOWNUNHANDLED"},
+      {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALSERVICEPROBLEMS"},
+      {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALSERVICEPROBLEMSUNHANDLED"}
       };
 
     validate_macros(ss.str(), macros, sizeof(macros) / sizeof(*macros));
