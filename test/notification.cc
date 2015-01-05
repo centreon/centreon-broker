@@ -81,7 +81,7 @@ using namespace com::centreon::broker;
 #define MACRO_LIST \
   "\"" TIME_MACROS HOST_MACROS SERVICE_MACROS COUNTING_MACROS NOTIFICATION_MACROS GROUP_MACROS CONTACT_MACROS "\""
 
-static const double epsilon = 0.000001;
+static const double epsilon = 0.000000001;
 
 struct macros_struct {
   enum macro_type {
@@ -192,6 +192,7 @@ int main() {
   std::list<service> services;
   std::list<hostgroup> hostgroups;
   std::list<servicegroup> servicegroups;
+  std::list<command> commands;
   std::string engine_config_path(tmpnam(NULL));
   std::string flag_file(tmpnam(NULL));
   std::string node_cache_file(tmpnam(NULL));
@@ -209,19 +210,43 @@ int main() {
     db.open(NULL, NULL, DB_NAME);
 
     // Prepare monitoring engine configuration parameters.
-    generate_host_groups(hostgroups, 1);
-    delete hostgroups.begin()->group_name;
-    hostgroups.begin()->group_name = ::strdup("HostGroup1");
-    generate_service_groups(servicegroups, 1);
-    delete servicegroups.begin()->group_name;
-    servicegroups.begin()->group_name = ::strdup("ServiceGroup1");
+    generate_host_groups(hostgroups, 2);
+    unsigned int i = 1;
+    for (std::list<hostgroup>::iterator
+           it(hostgroups.begin()),
+           end(hostgroups.end());
+         it != end;
+         ++it, ++i) {
+      delete [] it->group_name;
+      char name[32];
+      ::snprintf(name, 31, "HostGroup%i", i);
+      name[31] = '\0';
+      it->group_name = ::strdup(name);
+    }
+    generate_service_groups(servicegroups, 2);
+    i = 1;
+    for (std::list<servicegroup>::iterator
+           it(servicegroups.begin()),
+           end(servicegroups.end());
+         it != end;
+         ++it, ++i) {
+      delete [] it->group_name;
+      char name[32];
+      ::snprintf(name, 31, "ServiceGroup%i", i);
+      name[31] = '\0';
+      it->group_name = ::strdup(name);
+    }
+    generate_commands(commands, 1);
+    delete [] commands.begin()->name;
+    commands.begin()->name = ::strdup("service_command_1");
     generate_hosts(hosts, 1);
     hosts.begin()->display_name = ::strdup("DisplayName1");
-    delete hosts.begin()->alias;
+    delete [] hosts.begin()->alias;
     hosts.begin()->alias = ::strdup("HostAlias1");
     hosts.begin()->checks_enabled = 0;
     hosts.begin()->accept_passive_host_checks = 1;
     link(*hosts.begin(), *hostgroups.begin());
+    link(*hosts.begin(), *(++hostgroups.begin()));
     generate_services(services, hosts, 2);
     for (std::list<service>::iterator
            it(services.begin()),
@@ -232,6 +257,14 @@ int main() {
       it->accept_passive_service_checks = 1;
       it->max_attempts = 1;
       link(*it, *servicegroups.begin());
+      link(*it, *(++servicegroups.begin()));
+      delete [] it->display_name;
+      char display_name[32];
+      ::snprintf(display_name, 31, "ServiceDisplayName%s", it->description);
+      display_name[31] = '\0';
+      it->display_name = ::strdup(display_name);
+      delete [] it->service_check_command;
+      it->service_check_command = ::strdup("service_command_1");
     }
     set_custom_variable(
       services.back(),
@@ -257,7 +290,8 @@ int main() {
          "INSERT INTO cfg_hostgroups (hg_name) VALUES('HostGroup1')",
          "could not create the host group");
     db.centreon_run(
-         "INSERT INTO cfg_servicegroups (sg_name) VALUES('ServiceGroup1')",
+         "INSERT INTO cfg_servicegroups (sg_name)"
+          "           VALUES('ServiceGroup1'), ('ServiceGroup2')",
          "could not create the service group");
 
     // Create contact in DB.
@@ -315,7 +349,7 @@ int main() {
       additional_config.c_str(),
       &hosts,
       &services,
-      NULL,
+      &commands,
       &hostgroups,
       &servicegroups);
 
@@ -327,6 +361,8 @@ int main() {
     monitoring.start();
     sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
     commander.execute(
+      "PROCESS_HOST_CHECK_RESULT;1;0;Host Check Ok");
+    commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;1;1;0;Submitted by unit test");
     commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;1;2;0;Submitted by unit test");
@@ -334,7 +370,7 @@ int main() {
 
     // Make service 2 CRITICAL.
     commander.execute(
-      "PROCESS_SERVICE_CHECK_RESULT;1;2;2;Submitted by unit test");
+      "PROCESS_SERVICE_CHECK_RESULT;1;2;2;Critical submitted by unit test");
     commander.execute(
       "PROCESS_HOST_CHECK_RESULT;1;0;Host Check Ok");
     sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
@@ -359,10 +395,10 @@ int main() {
     time_t now(::time(NULL));
 
     macros_struct macros[] = {
-      {macros_struct::null, NULL, 0, NULL, 0, 0, "LONGDATETIME"},
-      {macros_struct::null, NULL, 0, NULL, 0, 0, "SHORTDATETIME"},
-      {macros_struct::null, NULL, 0, NULL, 0, 0, "DATE"},
-      {macros_struct::null, NULL, 0, NULL, 0, 0, "TIME"},
+      {macros_struct::null, NULL, 0, NULL, 0, 0, "LONGDATETIME"}, //to parse
+      {macros_struct::null, NULL, 0, NULL, 0, 0, "SHORTDATETIME"}, //to parse
+      {macros_struct::null, NULL, 0, NULL, 0, 0, "DATE"}, //to parse
+      {macros_struct::null, NULL, 0, NULL, 0, 0, "TIME"}, //to parse
       {macros_struct::between, NULL, 0, NULL, start, now, "TIMET"},
       {macros_struct::string, "1", 0, NULL, 0, 0, "HOSTNAME"},
       {macros_struct::string, "DisplayName1", 0, NULL, 0, 0, "HOSTDISPLAYNAME"},
@@ -374,13 +410,13 @@ int main() {
       {macros_struct::integer, NULL, 1, NULL, 0, 0, "HOSTATTEMPT"},
       {macros_struct::integer, NULL, 3, NULL, 0, 0, "MAXHOSTATTEMPS"},
       {macros_struct::between, NULL, 0, NULL, 0.0000005, 1.20, "HOSTLATENCY"},
-      {macros_struct::between, NULL, 0, NULL, 0.0000005, 1.20, "HOSTEXECUTIONTIME"},
-      {macros_struct::null, NULL, 0, NULL, 0, 0, "HOSTDURATION"},
-      {macros_struct::between, NULL, 0, NULL, 1, 20, "HOSTDURATIONSEC"},
+      {macros_struct::between, NULL, 0, NULL, 0, 0, "HOSTEXECUTIONTIME"},
+      {macros_struct::null, NULL, 0, NULL, 0, 0, "HOSTDURATION"}, //to parse
+      {macros_struct::between, NULL, 0, NULL, 1, ::difftime(now, start), "HOSTDURATIONSEC"},
       {macros_struct::integer, NULL, 0, NULL, 0, 0, "HOSTDOWNTIME"},
       {macros_struct::between, NULL, 0, NULL, 0, 0, "HOSTPERCENTCHANGE"},
       {macros_struct::string, "HostGroup1", 0, NULL, 0, 0, "HOSTGROUPNAME"},
-      {macros_struct::string, "HostGroup1", 0, NULL, 0, 0, "HOSTGROUPNAMES"},
+      {macros_struct::string, "HostGroup1, HostGroup2", 0, NULL, 0, 0, "HOSTGROUPNAMES"},
       {macros_struct::between, NULL, 0, NULL, start, now, "LASTHOSTCHECK"},
       {macros_struct::between, NULL, 0, NULL, start, now, "LASTHOSTSTATECHANGE"},
       {macros_struct::between, NULL, 0, NULL, start, now, "LASTHOSTUP"},
@@ -394,7 +430,35 @@ int main() {
       {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALHOSTSERVICESOK"},
       {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSERVICESWARNING"},
       {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSERVICESUNKNOWN"},
-      {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALHOSTSERVICESCRITICAL"}
+      {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALHOSTSERVICESCRITICAL"},
+      {macros_struct::string, "2", 0, NULL, 0, 0, "SERVICEDESC"},
+      {macros_struct::string, "ServiceDisplayName2", 0, NULL, 0, 0, "SERVICEDISPLAYNAME"},
+      {macros_struct::string, "CRITICAL", 0, NULL, 0, 0, "SERVICESTATE"},
+      {macros_struct::integer, NULL, 2, NULL, 0, 0, "SERVICESTATEID"},
+      {macros_struct::string, "CRITICAL", 0, NULL, 0, 0, "LASTSERVICESTATE"},
+      {macros_struct::integer, NULL, 2, NULL, 0, 0, "LASTSERVICESTATEID"},
+      {macros_struct::string, "HARD", 0, NULL, 0, 0, "SERVICESTATETYPE"},
+      {macros_struct::integer, NULL, 1, NULL, 0, 0, "SERVICEATTEMPT"},
+      {macros_struct::integer, NULL, 1, NULL, 0, 0, "MAXSERVICEATTEMPTS"},
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "SERVICEISVOLATILE"},
+      {macros_struct::between, NULL, 0, NULL, 0.0000005, 1.20, "SERVICELATENCY"},
+      {macros_struct::between, NULL, 0, NULL, 0, 0, "SERVICEEXECUTIONTIME"},
+      {macros_struct::null, NULL, 0, NULL, 0, 0, "SERVICEDURATION"}, //to parse
+      {macros_struct::between, NULL, 0, NULL, 1, ::difftime(now, start), "SERVICEDURATIONSEC"},
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "SERVICEDOWNTIME"},
+      {macros_struct::between, NULL, 0, NULL, 6.25, 6.25, "SERVICEPERCENTCHANGE"},
+      {macros_struct::string, "ServiceGroup1", 0, NULL, 0, 0, "SERVICEGROUPNAME"},
+      {macros_struct::string, "ServiceGroup1, ServiceGroup2", 0, NULL, 0, 0, "SERVICEGROUPNAMES"},
+      {macros_struct::between, NULL, 0, NULL, start, now, "LASTSERVICECHECK"},
+      {macros_struct::between, NULL, 0, NULL, start, now, "LASTSERVICESTATECHANGE"},
+      {macros_struct::between, NULL, 0, NULL, start, now, "LASTSERVICEOK"},
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "LASTSERVICEWARNING"},
+      {macros_struct::integer, NULL, 0, NULL, 0, 0, "LASTSERVICEUNKNOWN"},
+      {macros_struct::between, NULL, 0, NULL, start, now, "LASTSERVICECRITICAL"},
+      {macros_struct::string, "Critical submitted by unit test", 0, NULL, 0, 0, "SERVICEOUTPUT"},
+      {macros_struct::string, "", 0, NULL, 0, 0, "LONGSERVICEOUTPUT"},
+      {macros_struct::string, "", 0, NULL, 0, 0, "SERVICEPERFDATA"},
+      {macros_struct::string, "service_command_1", 0, NULL, 0, 0, "SERVICECHECKCOMMAND"}
       };
 
     validate_macros(ss.str(), macros, sizeof(macros) / sizeof(*macros));
@@ -418,6 +482,9 @@ int main() {
   config_remove(engine_config_path.c_str());
   free_hosts(hosts);
   free_services(services);
+  free_host_groups(hostgroups);
+  free_service_groups(servicegroups);
+  free_commands(commands);
 
   return (error ? EXIT_FAILURE : EXIT_SUCCESS);
 }

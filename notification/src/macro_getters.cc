@@ -162,7 +162,7 @@ template <> std::string get_host_output<true>(
 template <> std::string get_service_output<false>(
                           macro_context const& context) {
   std::string output =
-    context.get_cache().get_host(
+    context.get_cache().get_service(
       context.get_id()).get_status().output.toStdString();
   return (output.substr(0, output.find_first_of('\n')));
 }
@@ -179,7 +179,7 @@ template <> std::string get_service_output<false>(
 template <> std::string get_service_output<true>(
                           macro_context const& context) {
   std::string output =
-    context.get_cache().get_host(
+    context.get_cache().get_service(
       context.get_id()).get_status().output.toStdString();
   size_t found = output.find_first_of('\n');
   if (found != std::string::npos)
