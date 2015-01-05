@@ -219,7 +219,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
 
     first_day = q.value(0).toInt();
     first_day = time::timeperiod::add_round_days_to_midnight(
-                                    last_day, 3600 * 24);
+                                    first_day, 3600 * 24);
     q.next();
   }
 
