@@ -263,6 +263,7 @@ void action::_spawn_notification_attempts(
     a.set_node_id(_id);
     a.set_type(action::notification_attempt);
     a.set_notification_rule_id((*it)->get_id());
+    a.set_notification_number(1);
 
     // Choose running time.
     time_t at;
@@ -412,6 +413,7 @@ void action::_process_notification(
 
   bool should_send_the_notification = true;
   action next = *this;
+  next.set_notification_number(_notification_number + 1);
 
   // See if the node is in downtime.
   if (st.is_node_in_downtime(_id) == true) {
@@ -444,7 +446,6 @@ void action::_process_notification(
       << " and not in the method's valid range (["
       << method->get_start() << "-" << method->get_end() << "])";
     should_send_the_notification = false;
-    next.set_notification_number(_notification_number + 1);
   }
 
   // Send the notification.

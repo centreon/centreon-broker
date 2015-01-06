@@ -222,6 +222,10 @@ int main() {
       ::snprintf(name, 31, "HostGroup%i", i);
       name[31] = '\0';
       it->group_name = ::strdup(name);
+      delete [] it->alias;
+      ::snprintf(name, 31, "HostGroupAlias%i", i);
+      name[31] = '\0';
+      it->alias = ::strdup(name);
     }
     generate_service_groups(servicegroups, 2);
     i = 1;
@@ -235,6 +239,10 @@ int main() {
       ::snprintf(name, 31, "ServiceGroup%i", i);
       name[31] = '\0';
       it->group_name = ::strdup(name);
+      delete [] it->alias;
+      ::snprintf(name, 31, "ServiceGroupAlias%i", i);
+      name[31] = '\0';
+      it->alias = ::strdup(name);
     }
     generate_commands(commands, 1);
     delete [] commands.begin()->name;
@@ -287,23 +295,41 @@ int main() {
          "  VALUES (1, 1), (1, 2)",
          "could not link host and services");
     db.centreon_run(
-         "INSERT INTO cfg_hostgroups (hg_name) VALUES('HostGroup1')",
+         "INSERT INTO cfg_hostgroups (hg_name, hg_alias)"
+          "           VALUES ('HostGroup1', 'HostGroupAlias1'),"
+          "                  ('HostGroup2', 'HostGroupAlias2')",
          "could not create the host group");
     db.centreon_run(
-         "INSERT INTO cfg_servicegroups (sg_name)"
-          "           VALUES('ServiceGroup1'), ('ServiceGroup2')",
+         "INSERT INTO cfg_servicegroups (sg_name, sg_alias)"
+          "           VALUES ('ServiceGroup1', 'ServiceGroupAlias1'),"
+          "                  ('ServiceGroup2', 'ServiceGroupAlias2')",
          "could not create the service group");
 
     // Create contact in DB.
     db.centreon_run(
-         "INSERT INTO cfg_contacts (contact_id, contact_name)"
-         "  VALUES (1, 'Contact1')",
+         "INSERT INTO cfg_contacts (contact_id, contact_name, contact_alias,"
+          "           contact_email, contact_pager, contact_address1,"
+          "           contact_address2, contact_address3, contact_address4,"
+          "           contact_address5, contact_address6)"
+         "  VALUES (1, 'Contact1', 'ContactAlias1', 'ContactEmail',"
+          "         'ContactPager', 'ContactAddress1', 'ContactAddress2',"
+          "         'ContactAddress3', 'ContactAddress4', 'ContactAddress5',"
+          "         'ContactAddress6')",
          "could not create contact");
     db.centreon_run(
          "INSERT INTO cfg_contacts_services_relations (contact_id,"
          "            service_service_id)"
          "  VALUES (1, 1), (1, 2)",
          "could not link services and contact");
+    db.centreon_run(
+         "INSERT INTO cfg_contactgroups (cg_id, cg_name, cg_alias)"
+         "  VALUES (1, 'ContactGroupName', 'ContactGroupAlias')",
+         "could not create contactgroup");
+    db.centreon_run(
+         "INSERT INTO cfg_contactgroups_contacts_relations"
+          "             (contact_contact_id, contactgroup_cg_id)"
+          "  VALUES (1, 1)",
+          "could not link contactgroup and contact");
 
     // Create notification command in DB.
     db.centreon_run(
@@ -474,8 +500,28 @@ int main() {
       {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALSERVICESCRITICALUNHANDLED"},
       {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALSERVICESUNKNOWNUNHANDLED"},
       {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALSERVICEPROBLEMS"},
-      {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALSERVICEPROBLEMSUNHANDLED"}
-      };
+      {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALSERVICEPROBLEMSUNHANDLED"},
+      {macros_struct::string, "PROBLEM", 0, NULL, 0, 0, "NOTIFICATIONTYPE"},
+      {macros_struct::string, "Contact1", 0, NULL, 0, 0, "NOTIFICATIONRECIPIENT"},
+      {macros_struct::integer, NULL, 1, NULL, 0, 0, "HOSTNOTIFICATIONNUMBER"},
+      {macros_struct::integer, NULL, 1, NULL, 0, 0, "SERVICENOTIFICATIONNUMBER"},
+      {macros_struct::string, "HostGroupAlias1", 0, NULL, 0, 0, "HOSTGROUPALIAS"},
+      {macros_struct::string, "1", 0, NULL, 0, 0, "HOSTGROUPMEMBERS"},
+      {macros_struct::string, "ServiceGroupAlias1", 0, NULL, 0, 0, "SERVICEGROUPALIAS"},
+      {macros_struct::string, "1, 2", 0, NULL, 0, 0, "SERVICEGROUPMEMBERS"},
+      {macros_struct::string, "Contact1", 0, NULL, 0, 0, "CONTACTNAME"},
+      {macros_struct::string, "ContactAlias1", 0, NULL, 0, 0, "CONTACTALIAS"},
+      {macros_struct::string, "ContactEmail", 0, NULL, 0, 0, "CONTACTEMAIL"},
+      {macros_struct::string, "ContactPager", 0, NULL, 0, 0, "CONTACTPAGER"},
+      {macros_struct::string, "ContactAddress1", 0, NULL, 0, 0, "CONTACTADDRESS1"},
+      {macros_struct::string, "ContactAddress2", 0, NULL, 0, 0, "CONTACTADDRESS2"},
+      {macros_struct::string, "ContactAddress3", 0, NULL, 0, 0, "CONTACTADDRESS3"},
+      {macros_struct::string, "ContactAddress4", 0, NULL, 0, 0, "CONTACTADDRESS4"},
+      {macros_struct::string, "ContactAddress5", 0, NULL, 0, 0, "CONTACTADDRESS5"},
+      {macros_struct::string, "ContactAddress6", 0, NULL, 0, 0, "CONTACTADDRESS6"},
+      {macros_struct::string, "ContactGroupAlias", 0, NULL, 0, 0, "CONTACTGROUPALIAS"},
+      {macros_struct::string, "Contact1", 0, NULL, 0, 0, "CONTACTGROUPMEMBERS"}
+    };
 
     validate_macros(ss.str(), macros, sizeof(macros) / sizeof(*macros));
 

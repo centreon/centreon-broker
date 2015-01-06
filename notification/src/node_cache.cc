@@ -349,7 +349,7 @@ std::vector<std::string> node_cache::get_all_node_contained_in(
                                        bool is_host_group) const {
   std::vector<std::string> res;
 
-  if (is_host_group)
+  if (is_host_group) {
     for (QHash<objects::node_id, host_node_state>::const_iterator
            it(_host_node_states.begin()),
            end(_host_node_states.end());
@@ -357,14 +357,16 @@ std::vector<std::string> node_cache::get_all_node_contained_in(
         ++it)
       if (it->get_groups().count(group_name) != 0)
         res.push_back(it->get_node().host_name.toStdString());
-  else
+  }
+  else {
     for (QHash<objects::node_id, service_node_state>::const_iterator
            it(_service_node_states.begin()),
            end(_service_node_states.end());
         it != end;
         ++it)
       if (it->get_groups().count(group_name) != 0)
-        res.push_back(it->get_node().host_name.toStdString());
+        res.push_back(it->get_node().service_description.toStdString());
+  }
 
   return (res);
 }
