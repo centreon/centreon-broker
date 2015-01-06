@@ -72,7 +72,7 @@ void contactgroup_loader::load(
               "from database: "
            << query.lastError().text());
 
-  while (query.next()) {
-
-  }
+  while (query.next())
+    output->add_contactgroup_contact_relation(
+              query.value(0).toUInt(), query.value(1).toUInt());
 }
