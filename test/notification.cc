@@ -120,8 +120,8 @@ bool validate_date(std::string const& str) {
     return (false);
 
   struct tm t;
-  time_t now = ::time(NULL);
-  ::localtime_r(&now, &t);
+  time_t now_time = ::time(NULL);
+  ::localtime_r(&now_time, &t);
 
   if (month != t.tm_mon + 1 || day != t.tm_mday || year != t.tm_year + 1900)
     return (false);
@@ -143,8 +143,8 @@ bool validate_time(std::string const& str) {
     return (false);
 
   struct tm t;
-  time_t now = ::time(NULL);
-  ::localtime_r(&now, &t);
+  time_t now_time = ::time(NULL);
+  ::localtime_r(&now_time, &t);
   t.tm_hour = hour;
   t.tm_min = min;
   t.tm_sec = sec;
@@ -164,6 +164,8 @@ bool validate_time(std::string const& str) {
  *  @return  True if valid.
  */
 bool validate_long_date_time(std::string const& str) {
+  (void)str;
+
   return (true);
 }
 
@@ -197,7 +199,7 @@ bool validate_durations(std::string const& str) {
   if (sscanf(str.c_str(), "%id %ih %im %is", &day, &hour, &min, &sec) != 4)
     return (false);
 
-  if (day != 0 || hour != 0 || min != 0 || sec < 0)
+  if (day != 0 || hour != 0 || min != 0 || sec <= 0)
     return (false);
 
   return (true);
