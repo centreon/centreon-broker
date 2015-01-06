@@ -210,7 +210,9 @@ bool validate_durations(std::string const& str) {
  *
  *  Throw on error.
  *
- *  @param[in] macros  The macros.
+ *  @param[in] macros_string  The string containing all the macros.
+ *  @param[in] macros         The model macros.
+ *  @param[in] num_macros     The number of macros expected.
  */
 void validate_macros(
        std::string const& macros_string,
