@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <ctime>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -82,6 +83,8 @@ using namespace com::centreon::broker;
   "\"" TIME_MACROS HOST_MACROS SERVICE_MACROS COUNTING_MACROS NOTIFICATION_MACROS GROUP_MACROS CONTACT_MACROS "\""
 
 static const double epsilon = 0.000000001;
+static time_t start;
+static time_t now;
 
 struct macros_struct {
   enum macro_type {
@@ -103,6 +106,102 @@ struct macros_struct {
 
   const char* macro_name;
 };
+
+/**
+ *  Validate a date.
+ *
+ *  @param[in] str  The string to validate.
+ *
+ *  @return  True if valid.
+ */
+bool validate_date(std::string const& str) {
+  int month, day, year;
+  if (sscanf(str.c_str(), "%i-%i-%i", &month, &day, &year) != 3)
+    return (false);
+
+  struct tm t;
+  time_t now = ::time(NULL);
+  ::localtime_r(&now, &t);
+
+  if (month != t.tm_mon + 1 || day != t.tm_mday || year != t.tm_year + 1900)
+    return (false);
+
+  return (true);
+}
+
+/**
+ *  Validate a time.
+ *
+ *  @param[in] str  The string to validate.
+ *
+ *  @return  True if valid.
+ */
+bool validate_time(std::string const& str) {
+  int hour, min, sec;
+
+  if (sscanf(str.c_str(), "%i:%i:%i", &hour, &min, &sec) != 3)
+    return (false);
+
+  struct tm t;
+  time_t now = ::time(NULL);
+  ::localtime_r(&now, &t);
+  t.tm_hour = hour;
+  t.tm_min = min;
+  t.tm_sec = sec;
+  time_t res = ::mktime(&t);
+
+  if (res < start || res > now)
+    return (false);
+
+  return (true);
+}
+
+/**
+ *  Validate a long date time.
+ *
+ *  @param[in] str  The string to validate.
+ *
+ *  @return  True if valid.
+ */
+bool validate_long_date_time(std::string const& str) {
+  return (true);
+}
+
+/**
+ *  Validate a short date time.
+ *
+ *  @param[in] str  The string to validate.
+ *
+ *  @return  True if valid.
+ */
+bool validate_short_date_time(std::string const& str) {
+  size_t sub = str.find_first_of(' ');
+  if (sub == std::string::npos)
+    return (false);
+
+  std::string date = str.substr(0, sub);
+  std::string time = str.substr(sub + 1);
+
+  return (validate_date(date) && validate_time(time));
+}
+
+/**
+ *  Validate a duration string (xd x'h x''m x'''s)
+ *
+ *  @param[in] str  The string.
+ *
+ *  @return  True if valid.
+ */
+bool validate_durations(std::string const& str) {
+  int day, hour, min, sec;
+  if (sscanf(str.c_str(), "%id %ih %im %is", &day, &hour, &min, &sec) != 4)
+    return (false);
+
+  if (day != 0 || hour != 0 || min != 0 || sec < 0)
+    return (false);
+
+  return (true);
+}
 
 /**
  *  @brief Validate the macros.
@@ -380,7 +479,7 @@ int main() {
       &servicegroups);
 
     // Start monitoring.
-    time_t start(time(NULL));
+    start = ::time(NULL);
     std::string engine_config_file(engine_config_path);
     engine_config_file.append("/nagios.cfg");
     monitoring.set_config_file(engine_config_file);
@@ -416,15 +515,15 @@ int main() {
 
     std::cout
       <<  "content of " << flag_file << ": "
-      << ss.str() << std::endl;
+      << ss.str();
 
-    time_t now(::time(NULL));
+    now = ::time(NULL);
 
     macros_struct macros[] = {
-      {macros_struct::null, NULL, 0, NULL, 0, 0, "LONGDATETIME"}, //to parse
-      {macros_struct::null, NULL, 0, NULL, 0, 0, "SHORTDATETIME"}, //to parse
-      {macros_struct::null, NULL, 0, NULL, 0, 0, "DATE"}, //to parse
-      {macros_struct::null, NULL, 0, NULL, 0, 0, "TIME"}, //to parse
+      {macros_struct::function, NULL, 0, validate_long_date_time, 0, 0, "LONGDATETIME"},
+      {macros_struct::function, NULL, 0, validate_short_date_time, 0, 0, "SHORTDATETIME"},
+      {macros_struct::function, NULL, 0, validate_date, 0, 0, "DATE"},
+      {macros_struct::function, NULL, 0,validate_time, 0, 0, "TIME"},
       {macros_struct::between, NULL, 0, NULL, start, now, "TIMET"},
       {macros_struct::string, "1", 0, NULL, 0, 0, "HOSTNAME"},
       {macros_struct::string, "DisplayName1", 0, NULL, 0, 0, "HOSTDISPLAYNAME"},
@@ -437,7 +536,7 @@ int main() {
       {macros_struct::integer, NULL, 3, NULL, 0, 0, "MAXHOSTATTEMPS"},
       {macros_struct::between, NULL, 0, NULL, 0.0000005, 1.20, "HOSTLATENCY"},
       {macros_struct::between, NULL, 0, NULL, 0, 0, "HOSTEXECUTIONTIME"},
-      {macros_struct::null, NULL, 0, NULL, 0, 0, "HOSTDURATION"}, //to parse
+      {macros_struct::function, NULL, 0, validate_durations, 0, 0, "HOSTDURATION"},
       {macros_struct::between, NULL, 0, NULL, 1, ::difftime(now, start), "HOSTDURATIONSEC"},
       {macros_struct::integer, NULL, 0, NULL, 0, 0, "HOSTDOWNTIME"},
       {macros_struct::between, NULL, 0, NULL, 0, 0, "HOSTPERCENTCHANGE"},
@@ -469,7 +568,7 @@ int main() {
       {macros_struct::integer, NULL, 0, NULL, 0, 0, "SERVICEISVOLATILE"},
       {macros_struct::between, NULL, 0, NULL, 0.0000005, 1.20, "SERVICELATENCY"},
       {macros_struct::between, NULL, 0, NULL, 0, 0, "SERVICEEXECUTIONTIME"},
-      {macros_struct::null, NULL, 0, NULL, 0, 0, "SERVICEDURATION"}, //to parse
+      {macros_struct::function, NULL, 0, validate_durations, 0, 0, "SERVICEDURATION"},
       {macros_struct::between, NULL, 0, NULL, 1, ::difftime(now, start), "SERVICEDURATIONSEC"},
       {macros_struct::integer, NULL, 0, NULL, 0, 0, "SERVICEDOWNTIME"},
       {macros_struct::between, NULL, 0, NULL, 6.25, 6.25, "SERVICEPERCENTCHANGE"},
@@ -540,7 +639,6 @@ int main() {
   sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
   ::remove(flag_file.c_str());
   ::remove(node_cache_file.c_str());
-  //std::cout << engine_config_path << std::endl;
   config_remove(engine_config_path.c_str());
   free_hosts(hosts);
   free_services(services);
