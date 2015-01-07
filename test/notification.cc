@@ -108,6 +108,21 @@ struct macros_struct {
 };
 
 /**
+ *  Del a c string and dup another.
+ *
+ *  @param[out] str    The string to del.
+ *  @param[in] format  The format of the string to dup.
+ *  @param[in] i       Param for the format.
+ */
+void del_and_dup(char** str, std::string const& format, int i) {
+  delete [] *str;
+  char name[32];
+  ::snprintf(name, 31, format.c_str(), i);
+  name[31] = '\0';
+  *str = ::strdup(name);
+}
+
+/**
  *  Validate a date.
  *
  *  @param[in] str  The string to validate.
@@ -320,15 +335,8 @@ int main() {
            end(hostgroups.end());
          it != end;
          ++it, ++i) {
-      delete [] it->group_name;
-      char name[32];
-      ::snprintf(name, 31, "HostGroup%i", i);
-      name[31] = '\0';
-      it->group_name = ::strdup(name);
-      delete [] it->alias;
-      ::snprintf(name, 31, "HostGroupAlias%i", i);
-      name[31] = '\0';
-      it->alias = ::strdup(name);
+      del_and_dup(&it->group_name, "HostGroup%i", i);
+      del_and_dup(&it->alias, "HostGroupAlias%i", i);
     }
     generate_service_groups(servicegroups, 2);
     i = 1;
@@ -337,45 +345,32 @@ int main() {
            end(servicegroups.end());
          it != end;
          ++it, ++i) {
-      delete [] it->group_name;
-      char name[32];
-      ::snprintf(name, 31, "ServiceGroup%i", i);
-      name[31] = '\0';
-      it->group_name = ::strdup(name);
-      delete [] it->alias;
-      ::snprintf(name, 31, "ServiceGroupAlias%i", i);
-      name[31] = '\0';
-      it->alias = ::strdup(name);
+      del_and_dup(&it->group_name, "ServiceGroup%i", i);
+      del_and_dup(&it->alias, "ServiceGroupAlias%i", i);
     }
     generate_commands(commands, 1);
-    delete [] commands.begin()->name;
-    commands.begin()->name = ::strdup("service_command_1");
+    del_and_dup(&commands.begin()->name, "service_command_%i", 1);
     generate_hosts(hosts, 1);
-    hosts.begin()->display_name = ::strdup("DisplayName1");
-    delete [] hosts.begin()->alias;
-    hosts.begin()->alias = ::strdup("HostAlias1");
+    del_and_dup(&hosts.begin()->display_name, "DisplayName%i", 1);
+    del_and_dup(&hosts.begin()->alias, "HostAlias%i", 1);
     hosts.begin()->checks_enabled = 0;
     hosts.begin()->accept_passive_host_checks = 1;
     link(*hosts.begin(), *hostgroups.begin());
     link(*hosts.begin(), *(++hostgroups.begin()));
     generate_services(services, hosts, 2);
+    i = 1;
     for (std::list<service>::iterator
            it(services.begin()),
            end(services.end());
          it != end;
-         ++it) {
+         ++it, ++i) {
       it->checks_enabled = 0;
       it->accept_passive_service_checks = 1;
       it->max_attempts = 1;
       link(*it, *servicegroups.begin());
       link(*it, *(++servicegroups.begin()));
-      delete [] it->display_name;
-      char display_name[32];
-      ::snprintf(display_name, 31, "ServiceDisplayName%s", it->description);
-      display_name[31] = '\0';
-      it->display_name = ::strdup(display_name);
-      delete [] it->service_check_command;
-      it->service_check_command = ::strdup("service_command_1");
+      del_and_dup(&it->display_name, "ServiceDisplayName%i", i);
+      del_and_dup(&it->service_check_command, "service_command_%i", 1);
     }
     set_custom_variable(
       services.back(),
