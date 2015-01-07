@@ -490,6 +490,8 @@ std::string com::centreon::broker::notification::get_notification_type(
   action::action_type type = context.get_action().get_type();
   if (type == action::notification_attempt)
     return ("PROBLEM");
+  else if (type == action::notification_up)
+    return ("RECOVERY");
   else
     return ("UNKNOWN");
 }

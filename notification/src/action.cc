@@ -231,7 +231,7 @@ void action::process_action(
 
   if (_act == notification_processing)
     _spawn_notification_attempts(st, spawned_actions);
-  else if (_act == notification_attempt)
+  else if (_act == notification_attempt || _act == notification_up)
     _process_notification(st, cache, spawned_actions);
 }
 
@@ -261,7 +261,7 @@ void action::_spawn_notification_attempts(
     // Build action (viability checks will be made later.
     action a;
     a.set_node_id(_id);
-    a.set_type(action::notification_attempt);
+    a.set_type(_forwarded_action);
     a.set_notification_rule_id((*it)->get_id());
     a.set_notification_number(1);
 
@@ -390,12 +390,12 @@ void action::_process_notification(
   node::ptr n = st.get_node_by_id(_id);
 
   // Check if the state is valid.
-  if (!rule->should_be_notified_for(n->get_hard_state())) {
+  if (!method->should_be_notified_for(n->get_hard_state())) {
     logging::debug(logging::low)
       << "notification: node (" << _id.get_host_id() << ", "
       << _id.get_service_id() << ") should not be notified for state "
-      << static_cast<int>(n->get_hard_state()) << " according to rule "
-      << _notification_rule_id;
+      << static_cast<int>(n->get_hard_state()) << " according to method "
+      << rule->get_method_id();
     return ;
   }
 
@@ -460,6 +460,7 @@ void action::_process_notification(
   }
 
   // Create the next notification.
-  spawned_actions.push_back(std::make_pair(now + method->get_interval(),
-                                           next));
+  if (_act != notification_up)
+    spawned_actions.push_back(std::make_pair(now + method->get_interval(),
+                                             next));
 }

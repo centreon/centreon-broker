@@ -146,15 +146,3 @@ void notification_rule::set_node_id(node_id val) throw() {
   _node_id = val;
 }
 
-/**
- *  Should this notification rule be executed for this state?
- *
- *  @param[in] nst  The state of the node.
- *
- *  @return         True if this notification rule should be executed.
- */
-bool notification_rule::should_be_notified_for(node_state nst) const throw() {
-  // STUB
-  (void)nst;
-  return (true);
-}

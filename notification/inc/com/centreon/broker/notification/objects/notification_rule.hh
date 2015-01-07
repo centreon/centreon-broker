@@ -59,8 +59,6 @@ namespace         notification {
       node_id       get_node_id() const throw();
       void          set_node_id(node_id val) throw();
 
-      bool          should_be_notified_for(node_state nst) const throw();
-
     private:
       unsigned int  _id;
       unsigned int  _method_id;
