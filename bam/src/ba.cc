@@ -367,8 +367,10 @@ void ba::set_level_warning(double level) {
  *  @param[in] event  The event to set.
  */
 void ba::set_initial_event(ba_event const& event) {
-  if (_event.isNull())
+  if (_event.isNull()) {
     _event = misc::shared_ptr<ba_event>(new ba_event(event));
+    _last_service_update = _event->start_time;
+  }
 }
 
 /**
