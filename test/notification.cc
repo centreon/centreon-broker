@@ -82,6 +82,9 @@ using namespace com::centreon::broker;
 #define MACRO_LIST \
   "\"" TIME_MACROS HOST_MACROS SERVICE_MACROS COUNTING_MACROS NOTIFICATION_MACROS GROUP_MACROS CONTACT_MACROS "\""
 
+#define RECOVERY_FILE_CONTENT \
+  "\"$NOTIFICATIONTYPE$\n\""
+
 static const double epsilon = 0.000000001;
 static time_t start;
 static time_t now;
@@ -131,7 +134,7 @@ void del_and_dup(char** str, std::string const& format, int i) {
  */
 bool validate_date(std::string const& str) {
   int month, day, year;
-  if (sscanf(str.c_str(), "%i-%i-%i", &month, &day, &year) != 3)
+  if (sscanf(str.c_str(), "%d-%d-%d", &month, &day, &year) != 3)
     return (false);
 
   struct tm t;
@@ -154,7 +157,7 @@ bool validate_date(std::string const& str) {
 bool validate_time(std::string const& str) {
   int hour, min, sec;
 
-  if (sscanf(str.c_str(), "%i:%i:%i", &hour, &min, &sec) != 3)
+  if (sscanf(str.c_str(), "%d:%d:%d", &hour, &min, &sec) != 3)
     return (false);
 
   struct tm t;
@@ -313,6 +316,7 @@ int main() {
   std::list<command> commands;
   std::string engine_config_path(tmpnam(NULL));
   std::string flag_file(tmpnam(NULL));
+  std::string flag_file2(tmpnam(NULL));
   std::string node_cache_file(tmpnam(NULL));
   external_command commander;
   engine monitoring;
@@ -322,6 +326,7 @@ int main() {
   try {
     // Log some info.
     std::cout << "flag file: " << flag_file << "\n";
+    std::cout << "flag file2: " << flag_file2 << "\n";
     std::cout << "node cache: " << node_cache_file << "\n";
 
     // Prepare database.
@@ -376,6 +381,10 @@ int main() {
       services.back(),
       "FLAGFILE",
       flag_file.c_str());
+    set_custom_variable(
+      services.back(),
+      "FLAGFILE2",
+      flag_file2.c_str());
 
     // Populate database.
     db.centreon_run(
@@ -433,26 +442,30 @@ int main() {
     db.centreon_run(
          "INSERT INTO cfg_commands (command_id, command_name,"
          "            command_line)"
-         "  VALUES (1, 'NotificationCommand1', '"UTIL_FILE_WRITER" "MACRO_LIST" $_SERVICEFLAGFILE$')",
+         "  VALUES (1, 'NotificationCommand1', '"UTIL_FILE_WRITER" "MACRO_LIST" $_SERVICEFLAGFILE$'),"
+         "         (2, 'NotificationCommand2', '"UTIL_FILE_WRITER" "RECOVERY_FILE_CONTENT" $_SERVICEFLAGFILE2$')",
          "could not create notification command");
 
     // Create notification rules in DB.
     db.centreon_run(
          "INSERT INTO cfg_notification_methods (method_id,"
          "            name, command_id, `interval`, types)"
-         "  VALUES (1, 'NotificationMethod', 1, 300, 'rc')",
+         "  VALUES (1, 'NotificationMethod', 1, 300, 'n'),"
+         "         (2, 'NotificationMethod2', 2, 300, 'r')",
          "could not create notification method");
     db.centreon_run(
          "INSERT INTO cfg_notification_rules (rule_id, method_id, "
          "            timeperiod_id, owner_id, contact_id, host_id,"
          "            service_id, enabled)"
-         "  VALUES (1, 1, NULL, 1, 1, 1, 2, 1)",
+         "  VALUES (1, 1, NULL, 1, 1, 1, 2, 1),"
+         "         (2, 2, NULL, 1, 1, 1, 2, 1)",
          "could not create notification rule (cfg)");
     db.centreon_run(
          "INSERT INTO rt_notification_rules (rule_id, method_id,"
          "            timeperiod_id, contact_id, host_id,"
          "            service_id)"
-         "  VALUES (1, 1, NULL, 1, 1, 2)",
+         "  VALUES (1, 1, NULL, 1, 1, 2),"
+         "         (2, 2, NULL, 1, 1, 2)",
          "could not create notification rule (rt)");
 
     // Generate configuration.
@@ -502,126 +515,161 @@ int main() {
     sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Check file creation.
-    std::ifstream filestream(flag_file.c_str());
-
-    if ((error = !filestream.is_open()))
-      throw exceptions::msg() << "Flag file doesn't exist";
-
-    filestream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     std::ostringstream ss;
+    {
+      std::ifstream filestream(flag_file.c_str());
 
-    ss << filestream.rdbuf();
+      if ((error = !filestream.is_open()))
+        throw exceptions::msg() << "Flag file doesn't exist";
+
+      filestream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+      ss << filestream.rdbuf();
+    }
 
     std::cout
       <<  "content of " << flag_file << ": "
       << ss.str();
 
     now = ::time(NULL);
+    {
 
-    macros_struct macros[] = {
-      {macros_struct::function, NULL, 0, validate_long_date_time, 0, 0, "LONGDATETIME"},
-      {macros_struct::function, NULL, 0, validate_short_date_time, 0, 0, "SHORTDATETIME"},
-      {macros_struct::function, NULL, 0, validate_date, 0, 0, "DATE"},
-      {macros_struct::function, NULL, 0,validate_time, 0, 0, "TIME"},
-      {macros_struct::between, NULL, 0, NULL, start, now, "TIMET"},
-      {macros_struct::string, "1", 0, NULL, 0, 0, "HOSTNAME"},
-      {macros_struct::string, "DisplayName1", 0, NULL, 0, 0, "HOSTDISPLAYNAME"},
-      {macros_struct::string, "HostAlias1", 0, NULL, 0, 0, "HOSTALIAS"},
-      {macros_struct::string, "localhost", 0, NULL, 0, 0, "HOSTADDRESS"},
-      {macros_struct::string, "UP", 0, NULL, 0, 0, "HOSTSTATE"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "HOSTSTATEID"},
-      {macros_struct::string, "HARD", 0, NULL, 0, 0, "HOSTSTATETYPE"},
-      {macros_struct::integer, NULL, 1, NULL, 0, 0, "HOSTATTEMPT"},
-      {macros_struct::integer, NULL, 3, NULL, 0, 0, "MAXHOSTATTEMPS"},
-      {macros_struct::between, NULL, 0, NULL, 0.0000005, 1.20, "HOSTLATENCY"},
-      {macros_struct::between, NULL, 0, NULL, 0, 0, "HOSTEXECUTIONTIME"},
-      {macros_struct::function, NULL, 0, validate_durations, 0, 0, "HOSTDURATION"},
-      {macros_struct::between, NULL, 0, NULL, 1, ::difftime(now, start), "HOSTDURATIONSEC"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "HOSTDOWNTIME"},
-      {macros_struct::between, NULL, 0, NULL, 0, 0, "HOSTPERCENTCHANGE"},
-      {macros_struct::string, "HostGroup1", 0, NULL, 0, 0, "HOSTGROUPNAME"},
-      {macros_struct::string, "HostGroup1, HostGroup2", 0, NULL, 0, 0, "HOSTGROUPNAMES"},
-      {macros_struct::between, NULL, 0, NULL, start, now, "LASTHOSTCHECK"},
-      {macros_struct::between, NULL, 0, NULL, start, now, "LASTHOSTSTATECHANGE"},
-      {macros_struct::between, NULL, 0, NULL, start, now, "LASTHOSTUP"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "LASTHOSTDOWN"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "LASTHOSTUNREACHABLE"},
-      {macros_struct::string, "Host Check Ok", 0, NULL, 0, 0, "HOSTOUTPUT"},
-      {macros_struct::string, "", 0, NULL, 0, 0, "LONGHOSTOUTPUT"},
-      {macros_struct::string, "", 0, NULL, 0, 0, "HOSTPERFDATA"},
-      {macros_struct::string, "default_command", 0, NULL, 0, 0, "HOSTCHECKCOMMAND"},
-      {macros_struct::integer, NULL, 2, NULL, 0, 0, "TOTALHOSTSERVICES"},
-      {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALHOSTSERVICESOK"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSERVICESWARNING"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSERVICESUNKNOWN"},
-      {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALHOSTSERVICESCRITICAL"},
-      {macros_struct::string, "2", 0, NULL, 0, 0, "SERVICEDESC"},
-      {macros_struct::string, "ServiceDisplayName2", 0, NULL, 0, 0, "SERVICEDISPLAYNAME"},
-      {macros_struct::string, "CRITICAL", 0, NULL, 0, 0, "SERVICESTATE"},
-      {macros_struct::integer, NULL, 2, NULL, 0, 0, "SERVICESTATEID"},
-      {macros_struct::string, "CRITICAL", 0, NULL, 0, 0, "LASTSERVICESTATE"},
-      {macros_struct::integer, NULL, 2, NULL, 0, 0, "LASTSERVICESTATEID"},
-      {macros_struct::string, "HARD", 0, NULL, 0, 0, "SERVICESTATETYPE"},
-      {macros_struct::integer, NULL, 1, NULL, 0, 0, "SERVICEATTEMPT"},
-      {macros_struct::integer, NULL, 1, NULL, 0, 0, "MAXSERVICEATTEMPTS"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "SERVICEISVOLATILE"},
-      {macros_struct::between, NULL, 0, NULL, 0.0000005, 1.20, "SERVICELATENCY"},
-      {macros_struct::between, NULL, 0, NULL, 0, 0, "SERVICEEXECUTIONTIME"},
-      {macros_struct::function, NULL, 0, validate_durations, 0, 0, "SERVICEDURATION"},
-      {macros_struct::between, NULL, 0, NULL, 1, ::difftime(now, start), "SERVICEDURATIONSEC"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "SERVICEDOWNTIME"},
-      {macros_struct::between, NULL, 0, NULL, 6.25, 6.25, "SERVICEPERCENTCHANGE"},
-      {macros_struct::string, "ServiceGroup1", 0, NULL, 0, 0, "SERVICEGROUPNAME"},
-      {macros_struct::string, "ServiceGroup1, ServiceGroup2", 0, NULL, 0, 0, "SERVICEGROUPNAMES"},
-      {macros_struct::between, NULL, 0, NULL, start, now, "LASTSERVICECHECK"},
-      {macros_struct::between, NULL, 0, NULL, start, now, "LASTSERVICESTATECHANGE"},
-      {macros_struct::between, NULL, 0, NULL, start, now, "LASTSERVICEOK"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "LASTSERVICEWARNING"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "LASTSERVICEUNKNOWN"},
-      {macros_struct::between, NULL, 0, NULL, start, now, "LASTSERVICECRITICAL"},
-      {macros_struct::string, "Critical submitted by unit test", 0, NULL, 0, 0, "SERVICEOUTPUT"},
-      {macros_struct::string, "", 0, NULL, 0, 0, "LONGSERVICEOUTPUT"},
-      {macros_struct::string, "", 0, NULL, 0, 0, "SERVICEPERFDATA"},
-      {macros_struct::string, "service_command_1", 0, NULL, 0, 0, "SERVICECHECKCOMMAND"},
-      {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALHOSTSUP"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSDOWN"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSUNREACHABLE"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSDOWNUNHANDLED"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSUNREACHABLEUNHANDLED"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTPROBLEMS"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTPROBLEMSUNHANDLED"},
-      {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALSERVICESOK"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALSERVICESWARNING"},
-      {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALSERVICESCRITICAL"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALSERVICESUNKNOWN"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALSERVICESWARNINGUNHANDLED"},
-      {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALSERVICESCRITICALUNHANDLED"},
-      {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALSERVICESUNKNOWNUNHANDLED"},
-      {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALSERVICEPROBLEMS"},
-      {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALSERVICEPROBLEMSUNHANDLED"},
-      {macros_struct::string, "PROBLEM", 0, NULL, 0, 0, "NOTIFICATIONTYPE"},
-      {macros_struct::string, "Contact1", 0, NULL, 0, 0, "NOTIFICATIONRECIPIENT"},
-      {macros_struct::integer, NULL, 1, NULL, 0, 0, "HOSTNOTIFICATIONNUMBER"},
-      {macros_struct::integer, NULL, 1, NULL, 0, 0, "SERVICENOTIFICATIONNUMBER"},
-      {macros_struct::string, "HostGroupAlias1", 0, NULL, 0, 0, "HOSTGROUPALIAS"},
-      {macros_struct::string, "1", 0, NULL, 0, 0, "HOSTGROUPMEMBERS"},
-      {macros_struct::string, "ServiceGroupAlias1", 0, NULL, 0, 0, "SERVICEGROUPALIAS"},
-      {macros_struct::string, "1, 2", 0, NULL, 0, 0, "SERVICEGROUPMEMBERS"},
-      {macros_struct::string, "Contact1", 0, NULL, 0, 0, "CONTACTNAME"},
-      {macros_struct::string, "ContactAlias1", 0, NULL, 0, 0, "CONTACTALIAS"},
-      {macros_struct::string, "ContactEmail", 0, NULL, 0, 0, "CONTACTEMAIL"},
-      {macros_struct::string, "ContactPager", 0, NULL, 0, 0, "CONTACTPAGER"},
-      {macros_struct::string, "ContactAddress1", 0, NULL, 0, 0, "CONTACTADDRESS1"},
-      {macros_struct::string, "ContactAddress2", 0, NULL, 0, 0, "CONTACTADDRESS2"},
-      {macros_struct::string, "ContactAddress3", 0, NULL, 0, 0, "CONTACTADDRESS3"},
-      {macros_struct::string, "ContactAddress4", 0, NULL, 0, 0, "CONTACTADDRESS4"},
-      {macros_struct::string, "ContactAddress5", 0, NULL, 0, 0, "CONTACTADDRESS5"},
-      {macros_struct::string, "ContactAddress6", 0, NULL, 0, 0, "CONTACTADDRESS6"},
-      {macros_struct::string, "ContactGroupAlias", 0, NULL, 0, 0, "CONTACTGROUPALIAS"},
-      {macros_struct::string, "Contact1", 0, NULL, 0, 0, "CONTACTGROUPMEMBERS"}
-    };
+      macros_struct macros[] = {
+        {macros_struct::function, NULL, 0, validate_long_date_time, 0, 0, "LONGDATETIME"},
+        {macros_struct::function, NULL, 0, validate_short_date_time, 0, 0, "SHORTDATETIME"},
+        {macros_struct::function, NULL, 0, validate_date, 0, 0, "DATE"},
+        {macros_struct::function, NULL, 0,validate_time, 0, 0, "TIME"},
+        {macros_struct::between, NULL, 0, NULL, start, now, "TIMET"},
+        {macros_struct::string, "1", 0, NULL, 0, 0, "HOSTNAME"},
+        {macros_struct::string, "DisplayName1", 0, NULL, 0, 0, "HOSTDISPLAYNAME"},
+        {macros_struct::string, "HostAlias1", 0, NULL, 0, 0, "HOSTALIAS"},
+        {macros_struct::string, "localhost", 0, NULL, 0, 0, "HOSTADDRESS"},
+        {macros_struct::string, "UP", 0, NULL, 0, 0, "HOSTSTATE"},
+        {macros_struct::integer, NULL, 0, NULL, 0, 0, "HOSTSTATEID"},
+        {macros_struct::string, "HARD", 0, NULL, 0, 0, "HOSTSTATETYPE"},
+        {macros_struct::integer, NULL, 1, NULL, 0, 0, "HOSTATTEMPT"},
+        {macros_struct::integer, NULL, 3, NULL, 0, 0, "MAXHOSTATTEMPS"},
+        {macros_struct::between, NULL, 0, NULL, 0.0000005, 1.20, "HOSTLATENCY"},
+        {macros_struct::between, NULL, 0, NULL, 0, 0, "HOSTEXECUTIONTIME"},
+        {macros_struct::function, NULL, 0, validate_durations, 0, 0, "HOSTDURATION"},
+        {macros_struct::between, NULL, 0, NULL, 1, ::difftime(now, start), "HOSTDURATIONSEC"},
+        {macros_struct::integer, NULL, 0, NULL, 0, 0, "HOSTDOWNTIME"},
+        {macros_struct::between, NULL, 0, NULL, 0, 0, "HOSTPERCENTCHANGE"},
+        {macros_struct::string, "HostGroup1", 0, NULL, 0, 0, "HOSTGROUPNAME"},
+        {macros_struct::string, "HostGroup1, HostGroup2", 0, NULL, 0, 0, "HOSTGROUPNAMES"},
+        {macros_struct::between, NULL, 0, NULL, start, now, "LASTHOSTCHECK"},
+        {macros_struct::between, NULL, 0, NULL, start, now, "LASTHOSTSTATECHANGE"},
+        {macros_struct::between, NULL, 0, NULL, start, now, "LASTHOSTUP"},
+        {macros_struct::integer, NULL, 0, NULL, 0, 0, "LASTHOSTDOWN"},
+        {macros_struct::integer, NULL, 0, NULL, 0, 0, "LASTHOSTUNREACHABLE"},
+        {macros_struct::string, "Host Check Ok", 0, NULL, 0, 0, "HOSTOUTPUT"},
+        {macros_struct::string, "", 0, NULL, 0, 0, "LONGHOSTOUTPUT"},
+        {macros_struct::string, "", 0, NULL, 0, 0, "HOSTPERFDATA"},
+        {macros_struct::string, "default_command", 0, NULL, 0, 0, "HOSTCHECKCOMMAND"},
+        {macros_struct::integer, NULL, 2, NULL, 0, 0, "TOTALHOSTSERVICES"},
+        {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALHOSTSERVICESOK"},
+        {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSERVICESWARNING"},
+        {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSERVICESUNKNOWN"},
+        {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALHOSTSERVICESCRITICAL"},
+        {macros_struct::string, "2", 0, NULL, 0, 0, "SERVICEDESC"},
+        {macros_struct::string, "ServiceDisplayName2", 0, NULL, 0, 0, "SERVICEDISPLAYNAME"},
+        {macros_struct::string, "CRITICAL", 0, NULL, 0, 0, "SERVICESTATE"},
+        {macros_struct::integer, NULL, 2, NULL, 0, 0, "SERVICESTATEID"},
+        {macros_struct::string, "CRITICAL", 0, NULL, 0, 0, "LASTSERVICESTATE"},
+        {macros_struct::integer, NULL, 2, NULL, 0, 0, "LASTSERVICESTATEID"},
+        {macros_struct::string, "HARD", 0, NULL, 0, 0, "SERVICESTATETYPE"},
+        {macros_struct::integer, NULL, 1, NULL, 0, 0, "SERVICEATTEMPT"},
+        {macros_struct::integer, NULL, 1, NULL, 0, 0, "MAXSERVICEATTEMPTS"},
+        {macros_struct::integer, NULL, 0, NULL, 0, 0, "SERVICEISVOLATILE"},
+        {macros_struct::between, NULL, 0, NULL, 0.0000005, 1.20, "SERVICELATENCY"},
+        {macros_struct::between, NULL, 0, NULL, 0, 0, "SERVICEEXECUTIONTIME"},
+        {macros_struct::function, NULL, 0, validate_durations, 0, 0, "SERVICEDURATION"},
+        {macros_struct::between, NULL, 0, NULL, 1, ::difftime(now, start), "SERVICEDURATIONSEC"},
+        {macros_struct::integer, NULL, 0, NULL, 0, 0, "SERVICEDOWNTIME"},
+        {macros_struct::between, NULL, 0, NULL, 6.25, 6.25, "SERVICEPERCENTCHANGE"},
+        {macros_struct::string, "ServiceGroup1", 0, NULL, 0, 0, "SERVICEGROUPNAME"},
+        {macros_struct::string, "ServiceGroup1, ServiceGroup2", 0, NULL, 0, 0, "SERVICEGROUPNAMES"},
+        {macros_struct::between, NULL, 0, NULL, start, now, "LASTSERVICECHECK"},
+        {macros_struct::between, NULL, 0, NULL, start, now, "LASTSERVICESTATECHANGE"},
+        {macros_struct::between, NULL, 0, NULL, start, now, "LASTSERVICEOK"},
+        {macros_struct::integer, NULL, 0, NULL, 0, 0, "LASTSERVICEWARNING"},
+        {macros_struct::integer, NULL, 0, NULL, 0, 0, "LASTSERVICEUNKNOWN"},
+        {macros_struct::between, NULL, 0, NULL, start, now, "LASTSERVICECRITICAL"},
+        {macros_struct::string, "Critical submitted by unit test", 0, NULL, 0, 0, "SERVICEOUTPUT"},
+        {macros_struct::string, "", 0, NULL, 0, 0, "LONGSERVICEOUTPUT"},
+        {macros_struct::string, "", 0, NULL, 0, 0, "SERVICEPERFDATA"},
+        {macros_struct::string, "service_command_1", 0, NULL, 0, 0, "SERVICECHECKCOMMAND"},
+        {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALHOSTSUP"},
+        {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSDOWN"},
+        {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSUNREACHABLE"},
+        {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSDOWNUNHANDLED"},
+        {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSUNREACHABLEUNHANDLED"},
+        {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTPROBLEMS"},
+        {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTPROBLEMSUNHANDLED"},
+        {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALSERVICESOK"},
+        {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALSERVICESWARNING"},
+        {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALSERVICESCRITICAL"},
+        {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALSERVICESUNKNOWN"},
+        {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALSERVICESWARNINGUNHANDLED"},
+        {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALSERVICESCRITICALUNHANDLED"},
+        {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALSERVICESUNKNOWNUNHANDLED"},
+        {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALSERVICEPROBLEMS"},
+        {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALSERVICEPROBLEMSUNHANDLED"},
+        {macros_struct::string, "PROBLEM", 0, NULL, 0, 0, "NOTIFICATIONTYPE"},
+        {macros_struct::string, "Contact1", 0, NULL, 0, 0, "NOTIFICATIONRECIPIENT"},
+        {macros_struct::integer, NULL, 1, NULL, 0, 0, "HOSTNOTIFICATIONNUMBER"},
+        {macros_struct::integer, NULL, 1, NULL, 0, 0, "SERVICENOTIFICATIONNUMBER"},
+        {macros_struct::string, "HostGroupAlias1", 0, NULL, 0, 0, "HOSTGROUPALIAS"},
+        {macros_struct::string, "1", 0, NULL, 0, 0, "HOSTGROUPMEMBERS"},
+        {macros_struct::string, "ServiceGroupAlias1", 0, NULL, 0, 0, "SERVICEGROUPALIAS"},
+        {macros_struct::string, "1, 2", 0, NULL, 0, 0, "SERVICEGROUPMEMBERS"},
+        {macros_struct::string, "Contact1", 0, NULL, 0, 0, "CONTACTNAME"},
+        {macros_struct::string, "ContactAlias1", 0, NULL, 0, 0, "CONTACTALIAS"},
+        {macros_struct::string, "ContactEmail", 0, NULL, 0, 0, "CONTACTEMAIL"},
+        {macros_struct::string, "ContactPager", 0, NULL, 0, 0, "CONTACTPAGER"},
+        {macros_struct::string, "ContactAddress1", 0, NULL, 0, 0, "CONTACTADDRESS1"},
+        {macros_struct::string, "ContactAddress2", 0, NULL, 0, 0, "CONTACTADDRESS2"},
+        {macros_struct::string, "ContactAddress3", 0, NULL, 0, 0, "CONTACTADDRESS3"},
+        {macros_struct::string, "ContactAddress4", 0, NULL, 0, 0, "CONTACTADDRESS4"},
+        {macros_struct::string, "ContactAddress5", 0, NULL, 0, 0, "CONTACTADDRESS5"},
+        {macros_struct::string, "ContactAddress6", 0, NULL, 0, 0, "CONTACTADDRESS6"},
+        {macros_struct::string, "ContactGroupAlias", 0, NULL, 0, 0, "CONTACTGROUPALIAS"},
+        {macros_struct::string, "Contact1", 0, NULL, 0, 0, "CONTACTGROUPMEMBERS"}
+      };
 
-    validate_macros(ss.str(), macros, sizeof(macros) / sizeof(*macros));
+      validate_macros(ss.str(), macros, sizeof(macros) / sizeof(*macros));
+    }
+
+    // Make service 2 OK.
+    start = ::time(NULL);
+    commander.execute(
+      "PROCESS_SERVICE_CHECK_RESULT;1;2;0;Critical submitted by unit test");
+    sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
+
+    // Check file creation.
+    ss.str("");
+    {
+      std::ifstream filestream(flag_file2.c_str());
+
+      if ((error = !filestream.is_open()))
+        throw exceptions::msg() << "Flag file 2 doesn't exist";
+
+      filestream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+      ss << filestream.rdbuf();
+    }
+
+    now = ::time(NULL);
+
+    std::cout
+      <<  "content of " << flag_file << ": "
+      << ss.str();
+
+    {
+      macros_struct macros [] = {
+        {macros_struct::string, "RECOVERY", 0, NULL, 0, 0, "NOTIFICATIONTYPE"}
+      };
+
+      validate_macros(ss.str(), macros, sizeof(macros) / sizeof(*macros));
+    }
 
   }
   catch (std::exception const& e) {
@@ -637,6 +685,7 @@ int main() {
   monitoring.stop();
   sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
   ::remove(flag_file.c_str());
+  ::remove(flag_file2.c_str());
   ::remove(node_cache_file.c_str());
   config_remove(engine_config_path.c_str());
   free_hosts(hosts);

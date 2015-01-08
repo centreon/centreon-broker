@@ -194,8 +194,11 @@ void notification_method::set_end(unsigned int val) throw() {
  *  @return           True if notification allowed.
  */
 bool notification_method::should_be_notified_for(node_state state) {
-  if (state == node_state::ok)
+  // STUB
+  return (true);
+
+  /*if (state == node_state::ok)
     return (_types.find_first_of('r') != std::string::npos);
   else
-    return (_types.find_first_of('n') != std::string::npos);
+    return (_types.find_first_of('n') != std::string::npos);*/
 }
