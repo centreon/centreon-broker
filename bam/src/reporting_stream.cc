@@ -936,8 +936,10 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
   else if ((be.end_time != 0) && (be.end_time != (time_t)-1)) {
     std::map<unsigned int, std::list<ba_event> >::iterator
       it(_ba_event_cache.find(be.ba_id));
-    if (it == _ba_event_cache.end())
+    if (it == _ba_event_cache.end()) {
       _ba_event_cache[be.ba_id].push_front(be);
+      it = _ba_event_cache.find(be.ba_id);
+    }
     else if (it->second.empty())
       it->second.push_front(be);
     else
