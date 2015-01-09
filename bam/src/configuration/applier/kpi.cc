@@ -137,6 +137,10 @@ void applier::kpi::apply(
              it->second.cfg.get_host_id(),
              it->second.cfg.get_service_id(),
              static_cast<kpi_service*>(it->second.obj.data()));
+    misc::shared_ptr<bam::ba>
+      my_ba(my_bas.find_ba(it->second.cfg.get_ba_id()));
+    if (!my_ba.isNull())
+      my_ba->remove_impact(it->second.obj);
     _applied.erase(it->first);
   }
   to_delete.clear();
