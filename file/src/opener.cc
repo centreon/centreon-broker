@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <QCoreApplication>
+#include <QString>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/opener.hh"
@@ -93,9 +93,12 @@ void opener::close() {
 /**
  *  Open a new stream.
  *
+ *  @param[in] cache  File module does not use the persistent cache.
+ *
  *  @return Opened stream.
  */
-misc::shared_ptr<io::stream> opener::open() {
+misc::shared_ptr<io::stream> opener::open(persistent_cache* cache) {
+  (void)cache;
   QString filename(_filename);
   return (misc::shared_ptr<io::stream>(
             new stream(qPrintable(filename), _max_size)));
@@ -104,11 +107,15 @@ misc::shared_ptr<io::stream> opener::open() {
 /**
  *  Open a new stream.
  *
- *  @param[in] id The identifier.
+ *  @param[in] id     The identifier.
+ *  @param[in] cache  File module does not use the persistent cache.
  *
  *  @return Opened stream.
  */
-misc::shared_ptr<io::stream> opener::open(QString const& id) {
+misc::shared_ptr<io::stream> opener::open(
+                                       QString const& id,
+                                       persistent_cache* cache) {
+  (void)cache;
   return (misc::shared_ptr<io::stream>(
                   new stream(qPrintable(_filename + "-" + id), _max_size)));
 }

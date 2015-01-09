@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -52,8 +52,10 @@ namespace                        sql {
                                    unsigned int cleanup_check_interval = 0,
                                    bool check_replication = true,
                                    bool with_state_events = false);
-    misc::shared_ptr<io::stream> open();
-    misc::shared_ptr<io::stream> open(QString const& id);
+    misc::shared_ptr<io::stream> open(persistent_cache* cache = NULL);
+    misc::shared_ptr<io::stream> open(
+                                   QString const& id,
+                                   persistent_cache* cache = NULL);
 
   private:
     bool                         _check_replication;

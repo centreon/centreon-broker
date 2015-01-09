@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -41,8 +41,10 @@ namespace                        dumper {
     opener&                      operator=(opener const& o);
     io::endpoint*                clone() const;
     void                         close();
-    misc::shared_ptr<io::stream> open();
-    misc::shared_ptr<io::stream> open(QString const& id);
+    misc::shared_ptr<io::stream> open(persistent_cache* cache = NULL);
+    misc::shared_ptr<io::stream> open(
+                                   QString const& id,
+                                   persistent_cache* cache = NULL);
     void                         set_path(std::string const& path);
     void                         set_tagname(std::string const& tagname);
 
@@ -56,4 +58,4 @@ namespace                        dumper {
 
 CCB_END()
 
-#endif /* !CCB_DUMPER_OPENER_HH */
+#endif // !CCB_DUMPER_OPENER_HH

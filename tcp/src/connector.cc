@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -109,8 +109,12 @@ void connector::connect_to(QString const& host, unsigned short port) {
 
 /**
  *  Connect to the remote host.
+ *
+ *  @param[in] cache  TCP module does not use the persistent cache.
  */
-misc::shared_ptr<io::stream> connector::open() {
+misc::shared_ptr<io::stream> connector::open(persistent_cache* cache) {
+  (void)cache;
+
   // Close previous connection.
   this->close();
 
@@ -140,10 +144,14 @@ misc::shared_ptr<io::stream> connector::open() {
 /**
  *  Connect to the remote host.
  *
- *  @param[in] id Unused.
+ *  @param[in] id     Unused.
+ *  @param[in] cache  TCP module does not use the persistent cache.
  */
-misc::shared_ptr<io::stream> connector::open(QString const& id) {
+misc::shared_ptr<io::stream> connector::open(
+                                          QString const& id,
+                                          persistent_cache* cache) {
   (void)id;
+  (void)cache;
   return (open());
 }
 

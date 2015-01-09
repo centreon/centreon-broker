@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Merethis
+** Copyright 2013-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -126,9 +126,13 @@ void connector::close() {
 /**
  *  Open the connector.
  *
+ *  @param[in] cache  BBDO module does not use the persistent cache.
+ *
  *  @return Open stream.
  */
-misc::shared_ptr<io::stream> connector::open() {
+misc::shared_ptr<io::stream> connector::open(persistent_cache* cache) {
+  (void)cache;
+
   // Return value.
   misc::shared_ptr<io::stream> retval;
 
@@ -143,9 +147,15 @@ misc::shared_ptr<io::stream> connector::open() {
 /**
  *  Open the connector.
  *
+ *  @param[in] cache  BBDO module does not use the persistent cache.
+ *
  *  @return Open stream.
  */
-misc::shared_ptr<io::stream> connector::open(QString const& id) {
+misc::shared_ptr<io::stream> connector::open(
+                                          QString const& id,
+                                          persistent_cache* cache) {
+  (void)cache;
+
   // Return value.
   misc::shared_ptr<io::stream> retval;
 

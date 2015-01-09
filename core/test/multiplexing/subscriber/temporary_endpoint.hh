@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -40,9 +40,11 @@ public:
   io::endpoint*       clone() const;
   void                close();
   misc::shared_ptr<io::stream>
-                      open();
+                      open(persistent_cache* cache = NULL);
   misc::shared_ptr<io::stream>
-                      open(QString const& id);
+                      open(
+                        QString const& id,
+                        persistent_cache* cache = NULL);
 
 private:
   QString             _id;

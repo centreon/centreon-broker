@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -139,9 +139,12 @@ void connector::connect_to(
 /**
  *  Connect to a DB.
  *
+ *  @param[in] cache  SQL module does not use the persistent cache.
+ *
  *  @return SQL connection object.
  */
-misc::shared_ptr<io::stream> connector::open() {
+misc::shared_ptr<io::stream> connector::open(persistent_cache* cache) {
+  (void)cache;
   return (misc::shared_ptr<io::stream>(new stream(
                                              _type,
                                              _host,
@@ -158,11 +161,15 @@ misc::shared_ptr<io::stream> connector::open() {
 /**
  *  Connect to a DB.
  *
- *  @param[in] id Unused.
+ *  @param[in] id     Unused.
+ *  @param[in] cache  SQL module does not use the persistent cache.
  *
  *  @return SQL connection object.
  */
-misc::shared_ptr<io::stream> connector::open(QString const& id) {
+misc::shared_ptr<io::stream> connector::open(
+                                          QString const& id,
+                                          persistent_cache* cache) {
   (void)id;
+  (void)cache;
   return (open());
 }

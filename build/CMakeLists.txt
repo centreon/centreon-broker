@@ -309,6 +309,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/multiplexing/internal.cc"
   "${SRC_DIR}/multiplexing/publisher.cc"
   "${SRC_DIR}/multiplexing/subscriber.cc"
+  "${SRC_DIR}/persistent_cache.cc"
   "${SRC_DIR}/processing/failover.cc"
   "${SRC_DIR}/processing/feeder.cc"
   ${QT_WRAPPED_SOURCES}
@@ -359,6 +360,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/multiplexing/internal.hh"
   "${INC_DIR}/multiplexing/publisher.hh"
   "${INC_DIR}/multiplexing/subscriber.hh"
+  "${INC_DIR}/persistent_cache.hh"
   "${INC_DIR}/processing/failover.hh"
   "${INC_DIR}/processing/feeder.hh"
   "${INC_DIR}/timestamp.hh"

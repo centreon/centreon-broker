@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -126,8 +126,12 @@ void acceptor::listen_on(unsigned short port) {
 
 /**
  *  Start connection acception.
+ *
+ *  @param[in] cache  TCP module does not use the persistent cache.
  */
-misc::shared_ptr<io::stream> acceptor::open() {
+misc::shared_ptr<io::stream> acceptor::open(persistent_cache* cache) {
+  (void)cache;
+
   // Listen on port.
   QMutexLocker lock(&_mutex);
   if (!_socket.get()) {
@@ -201,10 +205,14 @@ misc::shared_ptr<io::stream> acceptor::open() {
 /**
  *  Start connection acception.
  *
- *  @param[in] id Unused.
+ *  @param[in] id     Unused.
+ *  @param[in] cache  TCP module does not use the persistent cache.
  */
-misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
+misc::shared_ptr<io::stream> acceptor::open(
+                                         QString const& id,
+                                         persistent_cache* cache) {
   (void)id;
+  (void)cache;
   return (open());
 }
 

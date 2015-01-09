@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -40,9 +40,12 @@ public:
                     clone() const;
   void              close();
   com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::stream>
-                    open();
+                    open(
+                      com::centreon::broker::persistent_cache* cache = NULL);
   com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::stream>
-                    open(QString const& id);
+                    open(
+                      QString const& id,
+                      com::centreon::broker::persistent_cache* cache = NULL);
   unsigned int      opened_streams() const;
   void              set_initial_count(unsigned int cnt);
   void              set_initial_replay_events(bool replay);

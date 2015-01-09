@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -101,11 +101,15 @@ void acceptor::close() {
  *  TLS checks (if configured to do so) and return a TLS encrypted
  *  stream.
  *
+ *  @param[in] cache  TLS module does not use the persistent cache.
+ *
  *  @return A TLS-encrypted stream (namely a tls::stream object).
  *
  *  @see tls::stream
  */
-misc::shared_ptr<io::stream> acceptor::open() {
+misc::shared_ptr<io::stream> acceptor::open(persistent_cache* cache) {
+  (void)cache;
+
   /*
   ** The process of accepting a TLS client is pretty straight-forward.
   ** Just follow the comments the have an overview of performed
@@ -190,9 +194,16 @@ misc::shared_ptr<io::stream> acceptor::open(
 /**
  *  Overwrite method open.
  *
+ *  @param[in] id     Connection ID.
+ *  @param[in] cache  TLS module does not use the persistent cache.
+ *
  *  @return A TLS-encrypted stream (namely a tls::stream object).
  */
-misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
+misc::shared_ptr<io::stream> acceptor::open(
+                                         QString const& id,
+                                         persistent_cache* cache) {
+  (void)cache;
+
   /*
   ** The process of accepting a TLS client is pretty straight-forward.
   ** Just follow the comments the have an overview of performed

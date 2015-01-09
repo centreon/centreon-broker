@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Merethis
+** Copyright 2013-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -155,12 +155,16 @@ void acceptor::close() {
 }
 
 /**
- *  @brief Wait for incoming connection.
+ *  Wait for incoming connection.
+ *
+ *  @param[in] cache  BBDO module does not use persistent cache.
  *
  *  @return Always return null stream. A new thread will be launched to
  *          process the incoming connection.
  */
-misc::shared_ptr<io::stream> acceptor::open() {
+misc::shared_ptr<io::stream> acceptor::open(persistent_cache* cache) {
+  (void)cache;
+
   // Clean client threads.
   for (QList<QThread*>::iterator
          it(_clients.begin()),
@@ -204,12 +208,18 @@ misc::shared_ptr<io::stream> acceptor::open() {
 }
 
 /**
- *  @brief Wait for incoming connection.
+ *  Wait for incoming connection.
+ *
+ *  @param[in] cache  BBDO module does not used persistent cache.
  *
  *  @return Always return null stream. A new thread will be launched to
  *          process the incoming connection.
  */
-misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
+misc::shared_ptr<io::stream> acceptor::open(
+                                         QString const& id,
+                                         persistent_cache* cache) {
+  (void)cache;
+
   // Clean client threads.
   for (QList<QThread*>::iterator
          it(_clients.begin()),

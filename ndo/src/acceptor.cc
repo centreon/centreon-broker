@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -139,8 +139,12 @@ void acceptor::close() {
 
 /**
  *  Open the acceptor.
+ *
+ *  @param[in] cache  NDO module does not use the persistent cache.
  */
-misc::shared_ptr<io::stream> acceptor::open() {
+misc::shared_ptr<io::stream> acceptor::open(persistent_cache* cache) {
+  (void)cache;
+
   // Wait for client from the lower layer.
   if (!_from.isNull()) {
     if (_one_peer_retention_mode) {
@@ -163,8 +167,15 @@ misc::shared_ptr<io::stream> acceptor::open() {
 
 /**
  *  Open the acceptor.
+ *
+ *  @param[in] id     Connection ID.
+ *  @param[in] cache  NDO module does not use the persistent cache.
  */
-misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
+misc::shared_ptr<io::stream> acceptor::open(
+                                         QString const& id,
+                                         persistent_cache* cache) {
+  (void)cache;
+
   // Wait for client from the lower layer.
   if (!_from.isNull()) {
     if (_one_peer_retention_mode) {

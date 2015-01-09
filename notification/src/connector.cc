@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -142,9 +142,13 @@ void connector::connect_to(
 /**
  *  Connect to a notification cache DB and return a notification stream.
  *
+ *  @param[in,out] cache  Notification module use the persistent cache
+ *                        to store information about current status of
+ *                        notification process between restarts.
+ *
  *  @return Notification stream object.
  */
-misc::shared_ptr<io::stream> connector::open() {
+misc::shared_ptr<io::stream> connector::open(persistent_cache* cache) {
   return (misc::shared_ptr<io::stream>(new stream(
                                              _type,
                                              _host,
@@ -161,11 +165,16 @@ misc::shared_ptr<io::stream> connector::open() {
 /**
  *  Connect to a notification cache DB and return a notification stream.
  *
- *  @param[in] id Unused.
+ *  @param[in]     id     Unused.
+ *  @param[in,out] cache  Notification module use the persistent cache
+ *                        to store information about current status of
+ *                        notification process between restarts.
  *
  *  @return Notification connection object.
  */
-misc::shared_ptr<io::stream> connector::open(QString const& id) {
+misc::shared_ptr<io::stream> connector::open(
+                                          QString const& id,
+                                          persistent_cache* cache) {
   (void)id;
-  return (open());
+  return (open(cache));
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -50,11 +50,13 @@ namespace         tls {
     io::endpoint* clone() const;
     void          close();
     misc::shared_ptr<io::stream>
-                  open();
+                  open(persistent_cache* cache = NULL);
     misc::shared_ptr<io::stream>
                   open(misc::shared_ptr<io::stream> lower);
     misc::shared_ptr<io::stream>
-                  open(QString const& id);
+                  open(
+                    QString const& id,
+                    persistent_cache* cache = NULL);
 
   private:
     void          _internal_copy(acceptor const& right);

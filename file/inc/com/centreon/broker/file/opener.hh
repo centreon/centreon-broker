@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -40,8 +40,10 @@ namespace                        file {
     opener&                      operator=(opener const& o);
     io::endpoint*                clone() const;
     void                         close();
-    misc::shared_ptr<io::stream> open();
-    misc::shared_ptr<io::stream> open(QString const& id);
+    misc::shared_ptr<io::stream> open(persistent_cache* cache = NULL);
+    misc::shared_ptr<io::stream> open(
+                                   QString const& id,
+                                   persistent_cache* cache = NULL);
     void                         set_filename(QString const& filename);
     void                         set_max_size(unsigned long long max);
 
@@ -55,4 +57,4 @@ namespace                        file {
 
 CCB_END()
 
-#endif /* !CCB_FILE_OPENER_HH_ */
+#endif // !CCB_FILE_OPENER_HH

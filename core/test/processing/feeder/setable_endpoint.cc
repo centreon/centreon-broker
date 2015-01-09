@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -90,9 +90,14 @@ void setable_endpoint::close() {
 /**
  *  Open endpoint.
  *
+ *  @param[in] cache  Unused.
+ *
  *  @return New setable_stream.
  */
-misc::shared_ptr<io::stream> setable_endpoint::open() {
+misc::shared_ptr<io::stream> setable_endpoint::open(
+                                                 persistent_cache* cache) {
+  (void)cache;
+
   // Increment open attempts.
   ++_opened_streams;
 
@@ -113,13 +118,16 @@ misc::shared_ptr<io::stream> setable_endpoint::open() {
 /**
  *  Open endpoint.
  *
- *  @param[in] id Unused.
+ *  @param[in] id     Unused.
+ *  @param[in] cache  Unused.
  *
  *  @return New setable_stream.
  */
-misc::shared_ptr<io::stream> setable_endpoint::open(QString const& id) {
+misc::shared_ptr<io::stream> setable_endpoint::open(
+                                                 QString const& id,
+                                                 persistent_cache* cache) {
   (void)id;
-  return (open());
+  return (open(cache));
 }
 
 /**

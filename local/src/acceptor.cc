@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -110,9 +110,13 @@ void acceptor::listen_on(QString const& name) {
 /**
  *  Open the acceptor.
  *
+ *  @param[in] cache  Local module does not use the persistent cache.
+ *
  *  @return A new stream.
  */
-misc::shared_ptr<io::stream> acceptor::open() {
+misc::shared_ptr<io::stream> acceptor::open(persistent_cache* cache) {
+  (void)cache;
+
   // Listen.
   QMutexLocker lock(&_mutex);
   if (!_socket.get()) {
@@ -159,11 +163,15 @@ misc::shared_ptr<io::stream> acceptor::open() {
 /**
  *  Open the acceptor.
  *
- *  @param[in] id Unused.
+ *  @param[in] id     Unused.
+ *  @param[in] cache  Local module does not use the persistent cache.
  *
  *  @return A new stream.
  */
-misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
+misc::shared_ptr<io::stream> acceptor::open(
+                                         QString const& id,
+                                         persistent_cache* cache) {
   (void)id;
+  (void)cache;
   return (open());
 }

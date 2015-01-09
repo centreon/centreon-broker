@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -90,8 +90,11 @@ void connector::close() {
 
 /**
  *  Open the connector.
+ *
+ *  @param[in] cache  NDO module does not use the persistent cache.
  */
-misc::shared_ptr<io::stream> connector::open() {
+misc::shared_ptr<io::stream> connector::open(persistent_cache* cache) {
+  (void)cache;
   misc::shared_ptr<io::stream> retval;
   if (!_from.isNull())
     retval = _open(_from->open());
@@ -100,8 +103,14 @@ misc::shared_ptr<io::stream> connector::open() {
 
 /**
  *  Open the connector.
+ *
+ *  @param[in] id     Connection ID.
+ *  @param[in] cache  NDO module does not use the persistent cache.
  */
-misc::shared_ptr<io::stream> connector::open(QString const& id) {
+misc::shared_ptr<io::stream> connector::open(
+                                          QString const& id,
+                                          persistent_cache* cache) {
+  (void)cache;
   misc::shared_ptr<io::stream> retval;
   if (!_from.isNull())
     retval = _open(_from->open(id));

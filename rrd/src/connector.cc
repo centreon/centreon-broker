@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2014,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -93,9 +93,12 @@ void connector::close() {
 /**
  *  Connect.
  *
+ *  @param[in] cache  RRD module does not use the persistent cache.
+ *
  *  @return Stream object.
  */
-misc::shared_ptr<io::stream> connector::open() {
+misc::shared_ptr<io::stream> connector::open(persistent_cache* cache) {
+  (void)cache;
   misc::shared_ptr<io::stream> retval;
   if (!_cached_local.isEmpty())
     retval = misc::shared_ptr<io::stream>(new output(
@@ -129,12 +132,16 @@ misc::shared_ptr<io::stream> connector::open() {
 /**
  *  Connect.
  *
- *  @param[in] id Unused.
+ *  @param[in] id     Unused.
+ *  @param[in] cache  RRD module does not use the persistent cache.
  *
  *  @return Stream object.
  */
-misc::shared_ptr<io::stream> connector::open(QString const& id) {
+misc::shared_ptr<io::stream> connector::open(
+                                          QString const& id,
+                                          persistent_cache* cache) {
   (void)id;
+  (void)cache;
   return (open());
 }
 
