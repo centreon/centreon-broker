@@ -752,6 +752,8 @@ void reporting_stream::_prepare() {
             "    INNER JOIN mod_bam_reporting_ba_events AS be"
             "    ON ((ke.start_time >= be.start_time)"
             "       AND (be.end_time IS NULL OR ke.start_time < be.end_time))"
+            "    INNER JOIN mod_bam_reporting_kpi AS rki"
+            "     ON (rki.ba_id = be.ba_id AND rki.kpi_id = ke.kpi_id)"
             "    WHERE ke.kpi_id=:kpi_id AND ke.start_time=:start_time";
     _kpi_event_link.prepare(
       query,
