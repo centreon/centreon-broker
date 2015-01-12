@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -102,7 +102,10 @@ void state::apply(
   temporary::instance().apply(s.temporary());
 
   // Apply input and output configuration.
-  endpoint::instance().apply(s.inputs(), s.outputs());
+  endpoint::instance().apply(
+                         s.inputs(),
+                         s.outputs(),
+                         s.cache_directory());
 
   // Enable multiplexing loop.
   if (run_mux)

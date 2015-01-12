@@ -116,6 +116,11 @@ include              Include another Centreon Broker configuration file that
                                                                                 <include>
                                                                                   /etc/centreon-broker/common.xml
                                                                                 </include>
+cache_directory      Cache directory of Centreon Broker.                      ::
+
+                                                                                <cache_directory>
+                                                                                  /var/lib/centreon-broker/cache
+                                                                                </cache_directory>
 event_queue_max_size Maximum number of events that can be stored in memory.   ::
                      Exceeding this limit will launch the **temporary**.
                                                                                 <event_queue_max_size>

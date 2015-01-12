@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -66,6 +66,7 @@ state& state::operator=(state const& s) {
  *  Reset state to default values.
  */
 void state::clear() {
+  _cache_directory.clear();
   _event_queue_max_size = 0;
   _flush_logs = true;
   _inputs.clear();
@@ -81,6 +82,27 @@ void state::clear() {
   _params.clear();
   _temporary = endpoint();
   return ;
+}
+
+/**
+ *  Set the cache directory.
+ *
+ *  @param[in] dir  Cache directory.
+ */
+void state::cache_directory(QString const& dir) {
+  _cache_directory = dir;
+  if (_cache_directory[_cache_directory.size() - 1] != '/')
+    _cache_directory.append("/");
+  return ;
+}
+
+/**
+ *  Get the cache directory.
+ *
+ *  @return Cache directory.
+ */
+QString const& state::cache_directory() const throw () {
+  return (_cache_directory);
 }
 
 /**
@@ -333,6 +355,7 @@ endpoint const& state::temporary() const throw () {
  *  @param[in] s Object to copy.
  */
 void state::_internal_copy(state const& s) {
+  _cache_directory = s._cache_directory;
   _event_queue_max_size = s._event_queue_max_size;
   _inputs = s._inputs;
   _instance_id = s._instance_id;

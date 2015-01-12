@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -48,7 +48,8 @@ namespace                    com {
                              ~endpoint();
             void             apply(
                                QList<config::endpoint> const& inputs,
-                               QList<config::endpoint> const& outputs);
+                               QList<config::endpoint> const& outputs,
+                               QString const& cache_directory);
             void             discard();
             iterator         input_begin();
             iterator         input_end();
@@ -80,6 +81,7 @@ namespace                    com {
                                QList<config::endpoint> const& new_endpoints,
                                QList<config::endpoint>& to_create);
 
+            QString          _cache_directory;
             QMap<config::endpoint, processing::failover*>
                              _inputs;
             QMutex           _inputsm;

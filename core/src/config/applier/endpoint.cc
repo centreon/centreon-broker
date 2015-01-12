@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -99,12 +99,14 @@ endpoint::~endpoint() {
 /**
  *  Apply the endpoint configuration.
  *
- *  @param[in] inputs  Inputs configuration.
- *  @param[in] outputs Outputs configuration.
+ *  @param[in] inputs           Inputs configuration.
+ *  @param[in] outputs          Outputs configuration.
+ *  @param[in] cache_directory  Endpoint cache directory.
  */
 void endpoint::apply(
                  QList<config::endpoint> const& inputs,
-                 QList<config::endpoint> const& outputs) {
+                 QList<config::endpoint> const& outputs,
+                 QString const& cache_directory) {
   // Log messages.
   logging::config(logging::medium)
     << "endpoint applier: loading configuration";
@@ -112,6 +114,7 @@ void endpoint::apply(
     << " inputs and " << outputs.size() << " outputs to apply";
 
   // Copy endpoint configurations and apply eventual modifications.
+  _cache_directory = cache_directory;
   QList<config::endpoint> tmp_inputs(inputs);
   QList<config::endpoint> tmp_outputs(outputs);
   for (QMap<QString, io::protocols::protocol>::const_iterator

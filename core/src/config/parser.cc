@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -142,6 +142,8 @@ void parser::parse(QString const& file, state& s) {
         unsigned int val(elem.text().toUInt());
         s.event_queue_max_size(val);
       }
+      else if (name == "cache_directory")
+        s.cache_directory(elem.text());
       else if (name == "module")
         s.module_list().push_back(elem.text());
       else if (name == "module_directory")
