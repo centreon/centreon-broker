@@ -1168,18 +1168,18 @@ void reporting_stream::_process_kpi_event(
                << ke.kpi_id << " starting at " << ke.start_time << ": "
                << e.what());
       }
-    }
 
-    _kpi_event_link.bind_value(
-      ":start_time",
-      static_cast<qlonglong>(ke.start_time.get_time_t()));
-    _kpi_event_link.bind_value(":kpi_id", ke.kpi_id);
-    try { _kpi_event_link.run_statement(); }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "BAM-BI: could not create link from event of KPI "
-             << ke.kpi_id << " starting at " << ke.start_time
-             << " to its associated BA event: " << e.what());
+      _kpi_event_link.bind_value(
+        ":start_time",
+        static_cast<qlonglong>(ke.start_time.get_time_t()));
+      _kpi_event_link.bind_value(":kpi_id", ke.kpi_id);
+      try { _kpi_event_link.run_statement(); }
+      catch (std::exception const& e) {
+        throw (exceptions::msg()
+               << "BAM-BI: could not create link from event of KPI "
+               << ke.kpi_id << " starting at " << ke.start_time
+               << " to its associated BA event: " << e.what());
+      }
     }
   }
   // Start of event.
@@ -1226,6 +1226,19 @@ void reporting_stream::_process_kpi_event(
                << ke.kpi_id << " starting at " << ke.start_time << ": "
                << e.what());
       }
+
+      _kpi_event_link.bind_value(
+        ":start_time",
+        static_cast<qlonglong>(ke.start_time.get_time_t()));
+      _kpi_event_link.bind_value(":kpi_id", ke.kpi_id);
+      try { _kpi_event_link.run_statement(); }
+      catch (std::exception const& e) {
+        throw (exceptions::msg()
+               << "BAM-BI: could not create link from event of KPI "
+               << ke.kpi_id << " starting at " << ke.start_time
+               << " to its associated BA event: " << e.what());
+      }
+
       std::list<kpi_event>& event_list(_kpi_event_cache[ke.kpi_id]);
       event_list.push_front(ke);
       if (event_list.size() > 2)
