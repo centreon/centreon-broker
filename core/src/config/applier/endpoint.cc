@@ -30,6 +30,7 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/stringifier.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/persistent_cache.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
@@ -480,7 +481,6 @@ processing::failover* endpoint::_create_endpoint(
     elements.insert(tmp_elements.begin(), tmp_elements.end());
   }
 
-
   // Check that failover is configured.
   misc::shared_ptr<processing::failover> failovr;
   if (!cfg.failover.isEmpty()) {
@@ -549,9 +549,24 @@ processing::failover* endpoint::_create_endpoint(
     ++level;
   }
 
+  // Create cache object.
+  misc::shared_ptr<persistent_cache> cache;
+  {
+    QString cache_path;
+    cache_path = _cache_directory;
+    cache_path.append(cfg.name);
+    cache = misc::shared_ptr<persistent_cache>(
+                    new persistent_cache());
+  }
+
   // Return failover thread.
   std::auto_ptr<processing::failover>
-    fo(new processing::failover(endp, is_output, cfg.name, elements));
+    fo(new processing::failover(
+                         endp,
+                         is_output,
+                         cfg.name,
+                         elements,
+                         cache));
   fo->set_buffering_timeout(cfg.buffering_timeout);
   fo->set_read_timeout(cfg.read_timeout);
   fo->set_retry_interval(cfg.retry_interval);
