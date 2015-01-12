@@ -349,8 +349,9 @@ bool state::is_node_in_downtime(objects::node_id id) const {
   time_t current_time = time(NULL);
   QList<downtime::ptr> downtimes = _downtimes.values(id);
 
-  for (QList<downtime::ptr>::iterator it(downtimes.begin()),
-                                      end(downtimes.end());
+  for (QList<downtime::ptr>::const_iterator
+         it(downtimes.begin()),
+         end(downtimes.end());
        it != end;
        ++it) {
     if ((*it)->get_actual_end_time() > current_time &&
@@ -373,8 +374,9 @@ bool state::is_node_in_downtime(objects::node_id id) const {
 bool state::has_node_been_acknowledged(objects::node_id id) const {
   QList<acknowledgement::ptr> acknowledgements = _acks.values(id);
 
-  for (QList<acknowledgement::ptr>::iterator it(acknowledgements.begin()),
-                                             end(acknowledgements.end());
+  for (QList<acknowledgement::ptr>::const_iterator
+         it(acknowledgements.begin()),
+         end(acknowledgements.end());
        it != end;
        ++it) {
     return (true);
