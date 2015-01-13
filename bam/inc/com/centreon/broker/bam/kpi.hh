@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -47,6 +47,7 @@ namespace        bam {
     virtual      ~kpi();
     kpi&         operator=(kpi const& right);
     unsigned int get_id() const;
+    timestamp    get_last_state_change() const;
     virtual void impact_hard(impact_values& hard_impact) = 0;
     virtual void impact_soft(impact_values& soft_impact) = 0;
     void         set_id(unsigned int id);

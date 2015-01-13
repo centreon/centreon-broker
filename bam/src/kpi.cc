@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,6 +20,7 @@
 #include "com/centreon/broker/bam/ba.hh"
 #include "com/centreon/broker/bam/kpi.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
 /**
@@ -65,6 +66,15 @@ kpi& kpi::operator=(kpi const& right) {
  */
 unsigned int kpi::get_id() const {
   return (_id);
+}
+
+/**
+ *  Get the last state change.
+ *
+ *  @return Last state change.
+ */
+timestamp kpi::get_last_state_change() const {
+  return (!_event.isNull() ? _event->start_time : timestamp(time(NULL)));
 }
 
 /**

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <sstream>
 #include "com/centreon/broker/bam/ba.hh"
 #include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
@@ -54,7 +55,7 @@ ba::ba()
     _host_id(0),
     _id(0),
     _in_downtime(false),
-    _last_state(-1),
+    _last_kpi_update(0),
     _level_critical(0.0),
     _level_hard(100.0),
     _level_soft(100.0),
@@ -106,6 +107,11 @@ void ba::add_impact(misc::shared_ptr<kpi> const& impact) {
     impact->impact_hard(ii.hard_impact);
     impact->impact_soft(ii.soft_impact);
     _apply_impact(ii);
+    timestamp last_state_change(impact->get_last_state_change());
+    if (last_state_change.get_time_t() != (time_t)-1)
+      _last_kpi_update = std::max(
+                                _last_kpi_update.get_time_t(),
+                                last_state_change.get_time_t());
   }
   return ;
 }
@@ -124,20 +130,29 @@ bool ba::child_has_update(
   umap<kpi*, impact_info>::iterator
     it(_impacts.find(static_cast<kpi*>(child)));
   if (it != _impacts.end()) {
-    // Logging.
-    logging::debug(logging::low)
-      << "BAM: BA " << _id << " is getting notified of child update";
-
+    // Get impact.
     impact_values new_hard_impact;
     impact_values new_soft_impact;
-
     it->second.kpi_ptr->impact_hard(new_hard_impact);
     it->second.kpi_ptr->impact_soft(new_soft_impact);
+
+    // Logging.
+    logging::debug(logging::low) << "BAM: BA " << _id
+      << " is getting notified of child update (KPI "
+      << it->second.kpi_ptr->get_id() << ", impact "
+      << new_hard_impact.get_nominal() << ", last state change "
+      << it->second.kpi_ptr->get_last_state_change() << ")";
 
     // If the new impact is the same as the old, don't update.
     if (it->second.hard_impact == new_hard_impact
         && it->second.soft_impact == new_soft_impact)
       return (false);
+    timestamp last_state_change(
+                it->second.kpi_ptr->get_last_state_change());
+    if (last_state_change.get_time_t() != (time_t)-1)
+      _last_kpi_update = std::max(
+                                _last_kpi_update.get_time_t(),
+                                last_state_change.get_time_t());
 
     // Discard old data.
     _unapply_impact(it->second);
@@ -238,12 +253,21 @@ bool ba::get_in_downtime() const {
 }
 
 /**
- *  Get the time of the last update of the attached service.
+ *  Get the time at which the most recent KPI was updated.
  *
- *  @return Time of the last update of the attached service.
+ *  @return Time at which the most recent KPI was updated.
  */
-timestamp ba::get_last_service_update() const {
-  return (_last_service_update);
+timestamp ba::get_last_kpi_update() const {
+  return (_last_kpi_update);
+}
+
+/**
+ *  Get the BA name.
+ *
+ *  @return BA name.
+ */
+std::string const& ba::get_name() const {
+  return (_name);
 }
 
 /**
@@ -251,8 +275,11 @@ timestamp ba::get_last_service_update() const {
  *
  *  @return Service output.
  */
-std::string const& ba::get_output() const {
-  return (_output);
+std::string ba::get_output() const {
+  std::ostringstream oss;
+  oss << "BA : " << _name << " - current_level = "
+      << static_cast<int>(normalize(_level_hard)) << "%";
+  return (oss.str());
 }
 
 /**
@@ -260,8 +287,13 @@ std::string const& ba::get_output() const {
  *
  *  @return Performance data.
  */
-std::string const& ba::get_perfdata() const {
-  return (_perfdata);
+std::string ba::get_perfdata() const {
+  std::ostringstream oss;
+  oss << "BA_Level=" << static_cast<int>(normalize(_level_hard)) << "%;"
+      << static_cast<int>(_level_warning) << ";"
+      << static_cast<int>(_level_critical) << ";0;100 "
+      << "BA_Downtime=" << static_cast<int>(normalize(_downtime_hard));
+  return (oss.str());
 }
 
 /**
@@ -369,8 +401,18 @@ void ba::set_level_warning(double level) {
 void ba::set_initial_event(ba_event const& event) {
   if (_event.isNull()) {
     _event = misc::shared_ptr<ba_event>(new ba_event(event));
-    _last_service_update = _event->start_time;
+    _last_kpi_update = _event->start_time;
   }
+}
+
+/**
+ *  Set the BA name.
+ *
+ *  @param[in] name  New BA name.
+ */
+void ba::set_name(std::string const& name) {
+  _name = name;
+  return ;
 }
 
 /**
@@ -380,21 +422,38 @@ void ba::set_initial_event(ba_event const& event) {
  */
 void ba::visit(io::stream* visitor) {
   if (visitor) {
+    // If no event was cached, create one if necessary.
+    short hard_state(get_state_hard());
+    bool state_changed(false);
+    if (_event.isNull()) {
+      if ((_last_kpi_update.get_time_t() == (time_t)-1)
+          || (_last_kpi_update.get_time_t() == (time_t)0))
+        _last_kpi_update = time(NULL);
+      _open_new_event(visitor, hard_state);
+    }
+    // If state changed, close event and open a new one.
+    else if ((_in_downtime != _event->in_downtime)
+             || (hard_state != _event->status)) {
+      state_changed = true;
+      _event->end_time = _last_kpi_update;
+      visitor->write(_event.staticCast<io::data>());
+      _event.clear();
+      _open_new_event(visitor, hard_state);
+    }
+
     // Generate status event.
     misc::shared_ptr<ba_status> status(new ba_status);
     status->ba_id = _id;
     status->in_downtime = _in_downtime;
-    // XXX : last state change is not valid right now
-    //       it will become so when virtual service result
-    //       comes back through service_update()
-    status->last_state_change = _last_service_update;
+    if (!_event.isNull())
+      status->last_state_change = _event->start_time;
+    else
+      status->last_state_change = _last_kpi_update;
     status->level_acknowledgement = normalize(_acknowledgement_hard);
     status->level_downtime = normalize(_downtime_hard);
     status->level_nominal = normalize(_level_hard);
-    short new_state(get_state_hard());
-    status->state = new_state;
-    status->state_changed = (_last_state != new_state);
-    _last_state = new_state;
+    status->state = hard_state;
+    status->state_changed = state_changed;
     logging::debug(logging::low)
       << "BAM: generating status of BA " << status->ba_id << " (state "
       << status->state << ", in downtime " << status->in_downtime
@@ -405,9 +464,9 @@ void ba::visit(io::stream* visitor) {
 }
 
 /**
- *  @brief The service associated to this ba was updated.
+ *  @brief The service associated to this BA was updated.
  *
- *  Used to watch for downtime and update output and perfdata.
+ *  Used to watch for downtime.
  *
  *  @param status   Status of the service.
  *  @param visitor  Visitor that will receive events.
@@ -423,34 +482,17 @@ void ba::service_update(
       << "BAM: BA " << _id << " is getting notified of service ("
       << _host_id << ", " << _service_id << ") update";
 
-    // Set variables.
-    _output = status->output.toStdString();
-    _perfdata = status->perf_data.toStdString();
-    _in_downtime = (status->scheduled_downtime_depth > 0);
+    // Check if there was a change.
+    bool in_downtime(status->scheduled_downtime_depth > 0);
+    if (_in_downtime != in_downtime) {
+      _in_downtime = in_downtime;
 
-    // If no event was cached, create one if we already had a service
-    // update (of our own service).
-    if (_event.isNull()) {
-      _last_service_update = status->last_update;
-      _open_new_event(visitor, status->last_hard_state);
+      // Generate status event.
+      visit(visitor);
+
+      // Propagate change.
+      propagate_update(visitor);
     }
-    // If state changed, close event and open a new one.
-    else if ((_in_downtime != _event->in_downtime)
-             || (status->last_hard_state != _event->status)) {
-      _last_service_update = status->last_update;
-      _event->end_time = _last_service_update;
-      if (visitor) {
-        visitor->write(_event.staticCast<io::data>());
-        _event.clear();
-        _open_new_event(visitor, status->last_hard_state);
-      }
-    }
-
-    // Generate status event.
-    visit(visitor);
-
-    // Propagate change.
-    propagate_update(visitor);
   }
   else
     logging::error(logging::medium)
@@ -494,14 +536,11 @@ void ba::_internal_copy(ba const& right) {
   _host_id = right._host_id;
   _impacts = right._impacts;
   _in_downtime = right._in_downtime;
-  _last_state = right._last_state;
-  _last_service_update = right._last_service_update;
+  _last_kpi_update = right._last_kpi_update;
   _level_critical = right._level_critical;
   _level_hard = right._level_hard;
   _level_soft = right._level_soft;
   _level_warning = right._level_warning;
-  _output = right._output;
-  _perfdata = right._perfdata;
   return ;
 }
 
@@ -519,7 +558,7 @@ void ba::_open_new_event(
   _event->first_level = _level_hard < 0 ? 0 : _level_hard;
   _event->in_downtime = _in_downtime;
   _event->status = service_hard_state;
-  _event->start_time = _last_service_update;
+  _event->start_time = _last_kpi_update;
   if (visitor) {
     misc::shared_ptr<io::data> be(new ba_event(*_event));
     visitor->write(be);

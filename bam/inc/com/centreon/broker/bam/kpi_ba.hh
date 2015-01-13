@@ -69,7 +69,8 @@ namespace   bam {
     void    _open_new_event(
               io::stream* visitor,
               int impact,
-              short ba_state);
+              short ba_state,
+              timestamp event_start_time);
 
     misc::shared_ptr<ba>
             _ba;

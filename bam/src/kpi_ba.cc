@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -200,21 +200,29 @@ void kpi_ba::visit(io::stream* visitor) {
       // BA event state.
       ba_event* bae(_ba->get_ba_event());
       short ba_state(bae ? bae->status : 0);
+      timestamp last_ba_update(bae ? bae->start_time : timestamp(time(NULL)));
 
       // If no event was cached, create one.
       if (_event.isNull()) {
-        timestamp last_ba_update(_ba->get_last_service_update());
         if ((last_ba_update.get_time_t() != (time_t)-1)
             && (last_ba_update.get_time_t() != (time_t)0))
-          _open_new_event(visitor, hard_values.get_nominal(), ba_state);
+          _open_new_event(
+            visitor,
+            hard_values.get_nominal(),
+            ba_state,
+            last_ba_update);
       }
       // If state changed, close event and open a new one.
       else if ((_ba->get_in_downtime() != _event->in_downtime)
                || (ba_state != _event->status)) {
-        _event->end_time = _ba->get_last_service_update();
+        _event->end_time = last_ba_update;
         visitor->write(_event.staticCast<io::data>());
         _event.clear();
-        _open_new_event(visitor, hard_values.get_nominal(), ba_state);
+        _open_new_event(
+          visitor,
+          hard_values.get_nominal(),
+          ba_state,
+          last_ba_update);
       }
     }
   }
@@ -277,21 +285,23 @@ void kpi_ba::_internal_copy(kpi_ba const& right) {
 /**
  *  Open a new event for this KPI.
  *
- *  @param[out] visitor   Visitor that will receive events.
- *  @param[in]  impact    Current impact of this KPI.
- *  @param[in]  ba_state  BA state.
+ *  @param[out] visitor           Visitor that will receive events.
+ *  @param[in]  impact            Current impact of this KPI.
+ *  @param[in]  ba_state          BA state.
+ *  @param[in]  event_start_time  Event start time.
  */
 void kpi_ba::_open_new_event(
                io::stream* visitor,
                int impact,
-               short ba_state) {
+               short ba_state,
+               timestamp event_start_time) {
   _event = new kpi_event;
   _event->kpi_id = _id;
   _event->impact_level = impact;
   _event->in_downtime = _ba->get_in_downtime();
   _event->output = _ba->get_output().c_str();
   _event->perfdata = _ba->get_perfdata().c_str();
-  _event->start_time = _ba->get_last_service_update();
+  _event->start_time = event_start_time;
   _event->status = ba_state;
   if (visitor) {
     misc::shared_ptr<io::data> ke(new kpi_event(*_event));

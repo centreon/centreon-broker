@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -64,11 +64,11 @@ namespace        bam {
     unsigned int get_host_id() const;
     unsigned int get_service_id() const;
     bool         get_in_downtime() const;
-    timestamp    get_last_service_update() const;
+    timestamp    get_last_kpi_update() const;
     std::string const&
-                 get_output() const;
-    std::string const&
-                 get_perfdata() const;
+                 get_name() const;
+    std::string  get_output() const;
+    std::string  get_perfdata() const;
     short        get_state_hard();
     short        get_state_soft();
     void         remove_impact(misc::shared_ptr<kpi> const& impact);
@@ -78,6 +78,7 @@ namespace        bam {
     void         set_level_critical(double level);
     void         set_level_warning(double level);
     void         set_initial_event(ba_event const& event);
+    void         set_name(std::string const& name);
     void         visit(io::stream* visitor);
     void         service_update(
                    misc::shared_ptr<neb::service_status> const& status,
@@ -111,14 +112,12 @@ namespace        bam {
     umap<kpi*, impact_info>
                  _impacts;
     bool         _in_downtime;
-    short        _last_state;
-    timestamp    _last_service_update;
+    timestamp    _last_kpi_update;
     double       _level_critical;
     double       _level_hard;
     double       _level_soft;
     double       _level_warning;
-    std::string  _output;
-    std::string  _perfdata;
+    std::string  _name;
     int          _recompute_count;
     unsigned int _service_id;
   };
