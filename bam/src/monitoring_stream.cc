@@ -42,6 +42,7 @@
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/bam/event_cache_visitor.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -104,7 +105,9 @@ monitoring_stream::~monitoring_stream() {}
  */
 void monitoring_stream::initialize() {
   multiplexing::publisher pblshr;
-  _applier.visit(&pblshr);
+  event_cache_visitor ev_cache;
+  _applier.visit(&ev_cache);
+  ev_cache.commit_to(pblshr);
   return ;
 }
 
@@ -199,7 +202,9 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
         << ", hard state " << ss->last_hard_state << ", current state "
         << ss->current_state << ")";
       multiplexing::publisher pblshr;
-      _applier.book_service().update(ss, &pblshr);
+      event_cache_visitor ev_cache;
+      _applier.book_service().update(ss, &ev_cache);
+      ev_cache.commit_to(pblshr);
     }
     else if (data->type()
              == io::events::data_type<io::events::storage, storage::de_metric>::value) {
@@ -209,7 +214,9 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
         << "BAM: processing metric (id " << m->metric_id << ", time "
         << m->ctime << ", value " << m->value << ")";
       multiplexing::publisher pblshr;
-      _applier.book_metric().update(m, &pblshr);
+      event_cache_visitor ev_cache;
+      _applier.book_metric().update(m, &ev_cache);
+      ev_cache.commit_to(pblshr);
     }
     else if (data->type()
              == io::events::data_type<io::events::bam, bam::de_ba_status>::value) {
