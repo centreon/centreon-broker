@@ -459,3 +459,15 @@ void kpi_service::_open_new_event(
   }
   return ;
 }
+
+/**
+ *  Set the initial event.
+ *
+ *  @param[in] e  the event.
+ */
+void kpi_service::set_initial_event(kpi_event const& e) {
+  if (_event.isNull()) {
+    _event = misc::shared_ptr<kpi_event>(new kpi_event(e));
+    _last_check = _event->start_time;
+  }
+}

@@ -51,7 +51,7 @@ namespace        bam {
     virtual void impact_hard(impact_values& hard_impact) = 0;
     virtual void impact_soft(impact_values& soft_impact) = 0;
     void         set_id(unsigned int id);
-    void         set_initial_event(kpi_event const& e);
+    virtual void set_initial_event(kpi_event const& e);
     virtual void visit(io::stream* visitor) = 0;
 
   protected:
