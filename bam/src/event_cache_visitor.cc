@@ -35,7 +35,10 @@ event_cache_visitor::event_cache_visitor() {}
  *  @param[in] in  Ignored.
  *  @param[in] out Ignored.
  */
-void event_cache_visitor::process(bool in, bool out) {}
+void event_cache_visitor::process(bool in, bool out) {
+  (void)in;
+  (void)out;
+}
 
 /**
  *  Read an event from the stream.
