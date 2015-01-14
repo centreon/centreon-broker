@@ -22,6 +22,7 @@
 
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -49,6 +50,7 @@ namespace        bam {
     double       level_nominal_soft;
     short        state_hard;
     short        state_soft;
+    timestamp    last_state_change;
 
   private:
     void         _internal_copy(kpi_status const& other);

@@ -180,21 +180,6 @@ void kpi_ba::visit(io::stream* visitor) {
     impact_hard(hard_values);
     impact_soft(soft_values);
 
-    // Generate status event.
-    {
-      misc::shared_ptr<kpi_status> status(new kpi_status);
-      status->kpi_id = _id;
-      status->level_acknowledgement_hard = hard_values.get_acknowledgement();
-      status->level_acknowledgement_soft = soft_values.get_acknowledgement();
-      status->level_downtime_hard = hard_values.get_downtime();
-      status->level_downtime_soft = soft_values.get_downtime();
-      status->level_nominal_hard = hard_values.get_nominal();
-      status->level_nominal_soft = soft_values.get_nominal();
-      status->state_hard = _ba->get_state_hard();
-      status->state_soft = _ba->get_state_soft();
-      visitor->write(status.staticCast<io::data>());
-    }
-
     // Generate BI events.
     {
       // BA event state.
@@ -225,6 +210,23 @@ void kpi_ba::visit(io::stream* visitor) {
           last_ba_update);
       }
     }
+
+    // Generate status event.
+    {
+      misc::shared_ptr<kpi_status> status(new kpi_status);
+      status->kpi_id = _id;
+      status->level_acknowledgement_hard = hard_values.get_acknowledgement();
+      status->level_acknowledgement_soft = soft_values.get_acknowledgement();
+      status->level_downtime_hard = hard_values.get_downtime();
+      status->level_downtime_soft = soft_values.get_downtime();
+      status->level_nominal_hard = hard_values.get_nominal();
+      status->level_nominal_soft = soft_values.get_nominal();
+      status->state_hard = _ba->get_state_hard();
+      status->state_soft = _ba->get_state_soft();
+      status->last_state_change = get_last_state_change();
+      visitor->write(status.staticCast<io::data>());
+    }
+
   }
   return ;
 }

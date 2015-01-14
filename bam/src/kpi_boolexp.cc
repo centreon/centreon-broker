@@ -155,21 +155,6 @@ void kpi_boolexp::visit(io::stream* visitor) {
     impact_hard(values);
     short state(_boolexp->get_state());
 
-    // Generate status event.
-    {
-      misc::shared_ptr<kpi_status> status(new kpi_status);
-      status->kpi_id = _id;
-      status->level_acknowledgement_hard = values.get_acknowledgement();
-      status->level_acknowledgement_soft = values.get_acknowledgement();
-      status->level_downtime_hard = values.get_downtime();
-      status->level_downtime_soft = values.get_downtime();
-      status->level_nominal_hard = values.get_nominal();
-      status->level_nominal_soft = values.get_nominal();
-      status->state_hard = state;
-      status->state_soft = state;
-      visitor->write(status.staticCast<io::data>());
-    }
-
     // Generate BI events.
     {
       // If no event was cached, create one.
@@ -182,6 +167,22 @@ void kpi_boolexp::visit(io::stream* visitor) {
         _event.clear();
         _open_new_event(visitor, values.get_nominal(), state);
       }
+    }
+
+    // Generate status event.
+    {
+      misc::shared_ptr<kpi_status> status(new kpi_status);
+      status->kpi_id = _id;
+      status->level_acknowledgement_hard = values.get_acknowledgement();
+      status->level_acknowledgement_soft = values.get_acknowledgement();
+      status->level_downtime_hard = values.get_downtime();
+      status->level_downtime_soft = values.get_downtime();
+      status->level_nominal_hard = values.get_nominal();
+      status->level_nominal_soft = values.get_nominal();
+      status->state_hard = state;
+      status->state_soft = state;
+      status->last_state_change = get_last_state_change();
+      visitor->write(status.staticCast<io::data>());
     }
   }
   return ;

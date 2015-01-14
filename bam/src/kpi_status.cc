@@ -91,5 +91,6 @@ void kpi_status::_internal_copy(kpi_status const& other) {
   level_nominal_soft = other.level_nominal_soft;
   state_hard = other.state_hard;
   state_soft = other.state_soft;
+  last_state_change = other.last_state_change;
   return ;
 }
