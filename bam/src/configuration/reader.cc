@@ -186,7 +186,7 @@ void reader::_load(state::kpis& kpis) {
                "  FROM service AS s"
                "  LEFT JOIN host_service_relation AS hsr"
                "    ON s.service_id=hsr.service_service_id"
-               "  WHERE s.service_description='meta_" << it->first
+               "  WHERE s.service_description='meta_" << it->second.get_meta_id()
             << "'";
         query.run_query(
                 oss.str(),
