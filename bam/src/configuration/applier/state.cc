@@ -70,6 +70,7 @@ void applier::state::apply(bam::configuration::state const& my_state) {
                       _book_service);
   _kpi_applier.apply(
                  my_state.get_kpis(),
+                 my_state.get_hst_svc_mapping(),
                  _ba_applier,
                  _meta_service_applier,
                  _bool_exp_applier,

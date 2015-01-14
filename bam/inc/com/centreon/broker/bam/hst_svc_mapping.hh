@@ -52,7 +52,12 @@ namespace            bam {
                        std::string const& hst,
                        std::string const& svc,
                        unsigned int host_id,
-                       unsigned int service_id);
+                       unsigned int service_id,
+                       bool activated);
+
+    bool             get_activated(
+                       unsigned int hst_id,
+                       unsigned int service_id) const;
 
   private:
     void             _internal_copy(hst_svc_mapping const& other);
@@ -60,6 +65,10 @@ namespace            bam {
     std::map<std::pair<std::string, std::string>,
              std::pair<unsigned int, unsigned int> >
                      _mapping;
+
+    std::map<std::pair<unsigned int, unsigned int>,
+             bool>
+                     _activated_mapping;
   };
 }
 

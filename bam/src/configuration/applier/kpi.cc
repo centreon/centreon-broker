@@ -79,6 +79,7 @@ applier::kpi& applier::kpi::operator=(applier::kpi const& right) {
  */
 void applier::kpi::apply(
                      bam::configuration::state::kpis const& my_kpis,
+                     hst_svc_mapping const& mapping,
                      applier::ba& my_bas,
                      applier::meta_service& my_metas,
                      applier::bool_expression& my_boolexps,
@@ -151,6 +152,14 @@ void applier::kpi::apply(
          end(to_create.end());
        it != end;
        ++it) {
+    if (!mapping.get_activated(
+                   it->second.get_host_id(),
+                   it->second.get_service_id())) {
+      logging::info(logging::medium)
+        << "BAM: ignoring kpi '" << it->first
+        << "' linked to a deactivated service";
+      continue;
+    }
     misc::shared_ptr<bam::kpi> new_kpi(_new_kpi(
                                           it->second,
                                           my_bas,

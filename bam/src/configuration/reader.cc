@@ -536,12 +536,14 @@ void reader::_load(
  *
  *  @param[out] mapping  Host/service mapping.
  */
-void reader::_load(bam::hst_svc_mapping& mapping) {
+void reader::_load(
+               bam::hst_svc_mapping& mapping) {
   try {
     // XXX : expand hostgroups and servicegroups
     database_query q(_db);
     q.run_query(
-      "SELECT h.host_id, s.service_id, h.host_name, s.service_description"
+      "SELECT h.host_id, s.service_id, h.host_name, s.service_description,"
+          "   service_activate"
       "  FROM service AS s"
       "  LEFT JOIN host_service_relation AS hsr"
       "    ON s.service_id=hsr.service_service_id"
@@ -552,7 +554,8 @@ void reader::_load(bam::hst_svc_mapping& mapping) {
                 q.value(2).toString().toStdString(),
                 q.value(3).toString().toStdString(),
                 q.value(0).toUInt(),
-                q.value(1).toUInt());
+                q.value(1).toUInt(),
+                q.value(4).toString() == "1");
   }
   catch (reader_exception const& e) {
     (void)e;

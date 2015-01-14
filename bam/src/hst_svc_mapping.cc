@@ -93,7 +93,7 @@ std::pair<unsigned int, unsigned int> hst_svc_mapping::get_service_id(
 void hst_svc_mapping::set_host(
                         std::string const& hst,
                         unsigned int host_id) {
-  set_service(hst, "", host_id, 0u);
+  set_service(hst, "", host_id, 0u, true);
   return ;
 }
 
@@ -109,10 +109,29 @@ void hst_svc_mapping::set_service(
                         std::string const& hst,
                         std::string const& svc,
                         unsigned int host_id,
-                        unsigned int service_id) {
+                        unsigned int service_id,
+                        bool activated) {
   _mapping[std::make_pair(hst, svc)] = std::make_pair(host_id, service_id);
+  _activated_mapping[std::make_pair(host_id, service_id)] = activated;
   return ;
 }
+
+/**
+ *  Get if the service is activated.
+ *
+ *  @param[in] hst_id       The host id.
+ *  @param[in] service_id   The service id.
+ *
+ *  @return                 True if activated.
+ */
+bool hst_svc_mapping::get_activated (
+                        unsigned int hst_id,
+                        unsigned int service_id) const {
+  std::map<std::pair<unsigned int, unsigned int>, bool>::const_iterator
+        it (_activated_mapping.find(std::make_pair(hst_id, service_id)));
+  return (it == _activated_mapping.end() ? true : it->second);
+}
+
 
 /**
  *  Copy internal data members.

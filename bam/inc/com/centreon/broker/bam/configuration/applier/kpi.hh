@@ -55,6 +55,7 @@ namespace     bam {
         kpi&  operator=(kpi const& right);
         void  apply(
                 configuration::state::kpis const& my_kpis,
+                hst_svc_mapping const& mapping,
                 ba& my_bas,
                 meta_service& my_metas,
                 bool_expression& my_boolexps,
