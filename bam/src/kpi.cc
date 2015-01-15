@@ -93,6 +93,12 @@ void kpi::set_id(unsigned int id) {
  *  @param[in] e  The kpi event.
  */
 void kpi::set_initial_event(kpi_event const& e) {
-  if (_event.isNull())
+  if (_event.isNull()) {
     _event = misc::shared_ptr<kpi_event>(new kpi_event(e));
+    impact_values impacts;
+    impact_hard(impacts);
+    _event->impact_level = _event->in_downtime
+                           ? impacts.get_downtime()
+                           : impacts.get_nominal();
+  }
 }
