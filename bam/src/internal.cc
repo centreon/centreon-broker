@@ -114,6 +114,10 @@ static mapped_data<bam::kpi_status> const kpi_status_mapping[] = {
     &bam::kpi_status::state_soft,
     9,
     "state_soft"),
+  mapped_data<bam::kpi_status>(
+    &bam::kpi_status::last_state_change,
+    10,
+    "last_state_change"),
   mapped_data<bam::kpi_status>()
 };
 
@@ -213,7 +217,7 @@ static mapped_data<bam::ba_duration_event> const ba_duration_event_mapping[] = {
   mapped_data<bam::ba_duration_event>(
     &bam::ba_duration_event::real_start_time,
     2,
-    "real start_time"),
+    "real_start_time"),
   mapped_data<bam::ba_duration_event>(
     &bam::ba_duration_event::end_time,
     3,

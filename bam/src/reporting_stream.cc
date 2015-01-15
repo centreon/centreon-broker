@@ -526,7 +526,7 @@ void reporting_stream::_load_last_events() {
       kpie.in_downtime = q.value(3).toBool();
       kpie.impact_level = q.value(4).toInt();
       kpie.output = q.value(5).toString();
-      kpie.perfdata = q.value(5).toString();
+      kpie.perfdata = q.value(6).toString();
       _kpi_event_cache[*it].push_back(kpie);
     }
   }
