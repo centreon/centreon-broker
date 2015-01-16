@@ -1038,8 +1038,6 @@ state                     short integer    The state of the BA.                 
                                                                                            (BBDO 1.2.0).
 state_changed             boolean          True if the state of the BA just changed.       Since 2.8.0
                                                                                            (BBDO 1.2.0).
-instance_id unsigned      integer          Instance ID.                                    Since 2.8.0
-                                                                                           (BBDO 1.2.0).
 ========================= ================ =============================================== =============
 
 Bool expression status event
@@ -1053,8 +1051,6 @@ Property                  Type             Description                          
 bool_id                   unsigned integer The id of the boolean expression.               Since 2.8.0
                                                                                            (BBDO 1.2.0).
 state                     boolean          The state of the boolean expression.            Since 2.8.0
-                                                                                           (BBDO 1.2.0).
-instance_id unsigned      integer          Instance ID.                                    Since 2.8.0
                                                                                            (BBDO 1.2.0).
 ========================= ================ =============================================== =============
 
@@ -1088,8 +1084,6 @@ state_soft                   short integer    The soft state of the KPI.        
                                                                                               (BBDO 1.2.0).
 last_state_change            time             The time of the last state change of the KPI.   Since 2.8.0
                                                                                               (BBDO 1.2.0).
-instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
-                                                                                              (BBDO 1.2.0).
 ============================ ================ =============================================== =============
 
 Meta service status event
@@ -1105,8 +1099,6 @@ meta_service_id              unsigned integer The id of the meta service.       
 value                        real             The value of the meta service.                  Since 2.8.0
                                                                                               (BBDO 1.2.0).
 state_changed                boolean          True if the state just changed.                 Since 2.8.0
-                                                                                              (BBDO 1.2.0).
-instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
                                                                                               (BBDO 1.2.0).
 ============================ ================ =============================================== =============
 
@@ -1129,8 +1121,6 @@ in_downtime                  boolean          True if BA was in downtime during 
 start_time                   time             The start_time of the event.                    Since 2.8.0
                                                                                               (BBDO 1.2.0).
 status                       short integer    The status of the BA during the event.          Since 2.8.0
-                                                                                              (BBDO 1.2.0).
-instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
                                                                                               (BBDO 1.2.0).
 ============================ ================ =============================================== =============
 
@@ -1158,8 +1148,6 @@ start_time                   time             The start_time of the event.      
                                                                                               (BBDO 1.2.0).
 status                       short integer    The status of the BA during the event.          Since 2.8.0
                                                                                               (BBDO 1.2.0).
-instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
-                                                                                              (BBDO 1.2.0).
 ============================ ================ =============================================== =============
 
 BA duration event event
@@ -1184,8 +1172,6 @@ sla_duration                 unsigned integer The duration of the event in the g
                                               timperiod.                                      (BBDO 1.2.0).
 timeperiod_is_default        boolean          True if the timeperiod if the default for       Since 2.8.0
                                               this BA.                                        (BBDO 1.2.0).
-instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
-                                                                                              (BBDO 1.1.0).
 ============================ ================ =============================================== =============
 
 Dimension BA
@@ -1210,8 +1196,6 @@ sla_month_percent_warn       real                                               
 sla_month_duration_crit      unsigned integer                                                 Since 2.8.0
                                                                                               (BBDO 1.2.0).
 sla_month_duration_warn      unsigned integer                                                 Since 2.8.0
-                                                                                              (BBDO 1.2.0).
-instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
                                                                                               (BBDO 1.2.0).
 ============================ ================ =============================================== =============
 
@@ -1256,8 +1240,6 @@ impact_critical              real             The impact of a critical state for
                                                                                               (BBDO 1.2.0).
 impact_unknown               real             The impact of a unknown state for this KPI.     Since 2.8.0
                                                                                               (BBDO 1.2.0).
-instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
-                                                                                              (BBDO 1.2.0).
 ============================ ================ =============================================== =============
 
 Dimension BA BV relation
@@ -1272,8 +1254,6 @@ Property                     Type             Description                       
 ba_id                        unsigned integer The id of the BA.                               Since 2.8.0
                                                                                               (BBDO 1.2.0).
 bv_id                        unsigned integer The id of the BV.                               Since 2.8.0
-                                                                                              (BBDO 1.2.0).
-instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
                                                                                               (BBDO 1.2.0).
 ============================ ================ =============================================== =============
 
@@ -1292,8 +1272,6 @@ bv_name                      string           The name of the BV.               
                                                                                               (BBDO 1.2.0).
 bv_description               string           The description of the BV.                      Since 2.8.0
                                                                                               (BBDO 1.2.0).
-instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
-                                                                                              (BBDO 1.2.0).
 ============================ ================ =============================================== =============
 
 Dimension table signal
@@ -1309,8 +1287,6 @@ Property                     Type             Description                       
 ============================ ================ =============================================== =============
 update_started               boolean          True if this is the start of the dump,          Since 2.8.0
                                               false if it's the end.                          (BBD0 1.2.0).
-instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
-                                                                                              (BBDO 1.1.0).
 ============================ ================ =============================================== =============
 
 Rebuild signal
@@ -1325,8 +1301,6 @@ Property                     Type             Description                       
 bas_to_rebuild               string           A string containing the id of all the BAs       Since 2.8.0
                                               to rebuild, separated by a comma and a space    (BBDO 1.2.0).
                                               (i.e "1, 5, 8, 12").
-instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
-                                                                                              (BBDO 1.2.0).
 ============================ ================ =============================================== =============
 
 Dimension timeperiod
@@ -1356,8 +1330,6 @@ saturday                     string           The timeperiod rule for this day. 
                                                                                               (BBDO 1.2.0).
 sunday                       string           The timeperiod rule for this day.               Since 2.8.0
                                                                                               (BBDO 1.2.0).
-instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
-                                                                                              (BBDO 1.2.0).
 ============================ ================ =============================================== =============
 
 Dimension BA timeperiod relation
@@ -1375,8 +1347,6 @@ timeperiod_id                unsigned integer The id of the timeperiod.         
                                                                                               (BBDO 1.2.0).
 is_default                   boolean          True if the timeperiod is the default one for   Since 2.8.0
                                               this BA.                                        (BBDO 1.2.0).
-instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
-                                                                                              (BBDO 1.1.0).
 ============================ ================ =============================================== =============
 
 Dimension timeperiod exception
@@ -1392,8 +1362,6 @@ timeperiod_id                unsigned integer The id of the timeperiod having th
 daterange                    string           A string containing the date of the range.      Since 2.8.0
 timerange                    string           A string containing the time of the range.      Since 2.8.0
                                                                                               (BBDO 1.2.0).
-instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
-                                                                                              (BBDO 1.2.0).
 ============================ ================ =============================================== =============
 
 Dimension timeperiod exclusion
@@ -1408,7 +1376,5 @@ Property                     Type             Description                       
 timeperiod_id                unsigned integer The id of the timeperiod having this exclusion. Since 2.8.0
                                                                                               (BBDO 1.2.0).
 excluded_timeperiod_id       unsigned integer The id of the excluded timeperiod.              Since 2.8.0
-                                                                                              (BBDO 1.2.0).
-instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
                                                                                               (BBDO 1.2.0).
 ============================ ================ =============================================== =============
