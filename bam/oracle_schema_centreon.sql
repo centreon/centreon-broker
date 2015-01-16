@@ -131,6 +131,7 @@ CREATE TABLE mod_bam_kpi (
   ignore_acknowledged enum('0','1') default '0',
   last_state_change int default NULL,
   in_downtime boolean default NULL,
+  last_impact float default NULL,
 
   PRIMARY KEY (kpi_id),
   FOREIGN KEY (id_indicator_ba) REFERENCES mod_bam (ba_id)
