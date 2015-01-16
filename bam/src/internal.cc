@@ -391,6 +391,10 @@ static mapped_data<bam::dimension_bv_event> const dimension_bv_event_mapping[] =
 
 // dimension_truncate_table_signal members mapping.
 static mapped_data<bam::dimension_truncate_table_signal> const dimension_truncate_table_signal_mapping[] = {
+  mapped_date<bam::dimension_truncate_table_signal>(
+  &bam::dimension_truncate_table_signal::update_started,
+  1,
+  "update_started",),
   mapped_data<bam::dimension_truncate_table_signal>()
 };
 
