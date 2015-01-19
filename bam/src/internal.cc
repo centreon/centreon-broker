@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -58,6 +58,10 @@ static mapped_data<bam::ba_status> const ba_status_mapping[] = {
     &bam::ba_status::state_changed,
     8,
     "state_changed"),
+  mapped_data<bam::ba_status>(
+    &bam::ba_status::instance_id,
+    9,
+    NULL),
   mapped_data<bam::ba_status>()
 };
 
@@ -72,6 +76,10 @@ static mapped_data<bam::bool_status> const bool_status_mapping[] = {
     &bam::bool_status::state,
     2,
     "state"),
+  mapped_data<bam::bool_status>(
+    &bam::bool_status::state,
+    3,
+    NULL),
   mapped_data<bam::bool_status>()
 };
 
@@ -118,6 +126,10 @@ static mapped_data<bam::kpi_status> const kpi_status_mapping[] = {
     &bam::kpi_status::last_state_change,
     10,
     "last_state_change"),
+  mapped_data<bam::kpi_status>(
+    &bam::kpi_status::instance_id,
+    11,
+    NULL),
   mapped_data<bam::kpi_status>()
 };
 
@@ -135,6 +147,10 @@ static mapped_data<bam::meta_service_status> const meta_service_status_mapping[]
   mapped_data<bam::meta_service_status>(
     &bam::meta_service_status::state_changed,
     3,
+    NULL),
+  mapped_data<bam::meta_service_status>(
+    &bam::meta_service_status::instance_id,
+    4,
     NULL),
   mapped_data<bam::meta_service_status>()
 };
@@ -166,6 +182,10 @@ static mapped_data<bam::ba_event> const ba_event_mapping[] = {
     &bam::ba_event::status,
     6,
     "status"),
+  mapped_data<bam::ba_event>(
+    &bam::ba_event::instance_id,
+    7,
+    NULL),
   mapped_data<bam::ba_event>()
 };
 
@@ -204,6 +224,10 @@ static mapped_data<bam::kpi_event> const kpi_event_mapping[] = {
     &bam::kpi_event::status,
     8,
     "status"),
+  mapped_data<bam::kpi_event>(
+    &bam::kpi_event::instance_id,
+    9,
+    NULL),
   mapped_data<bam::kpi_event>()
 };
 
@@ -243,6 +267,10 @@ static mapped_data<bam::ba_duration_event> const ba_duration_event_mapping[] = {
     &bam::ba_duration_event::timeperiod_is_default,
     8,
     "timeperiod_is_default"),
+  mapped_data<bam::ba_duration_event>(
+    &bam::ba_duration_event::instance_id,
+    9,
+    NULL),
   mapped_data<bam::ba_duration_event>()
 };
 
@@ -277,6 +305,10 @@ static mapped_data<bam::dimension_ba_event> const dimension_ba_event_mapping[] =
     &bam::dimension_ba_event::sla_duration_warn,
     7,
     "sla_month_duration_warn"),
+  mapped_data<bam::dimension_ba_event>(
+    &bam::dimension_ba_event::instance_id,
+    8,
+    NULL),
   mapped_data<bam::dimension_ba_event>()
 };
 
@@ -353,6 +385,10 @@ static mapped_data<bam::dimension_kpi_event> const dimension_kpi_event_mapping[]
     &bam::dimension_kpi_event::impact_unknown,
     14,
     "impact_unknown"),
+  mapped_data<bam::dimension_kpi_event>(
+    &bam::dimension_kpi_event::instance_id,
+    15,
+    NULL),
   mapped_data<bam::dimension_kpi_event>()
 };
 
@@ -368,6 +404,10 @@ static mapped_data<bam::dimension_ba_bv_relation_event> const dimension_ba_bv_re
     2,
     "bv_id",
     NULL_ON_ZERO),
+  mapped_data<bam::dimension_ba_bv_relation_event>(
+    &bam::dimension_ba_bv_relation_event::instance_id,
+    3,
+    NULL),
   mapped_data<bam::dimension_ba_bv_relation_event>()
 };
 
@@ -386,15 +426,23 @@ static mapped_data<bam::dimension_bv_event> const dimension_bv_event_mapping[] =
     &bam::dimension_bv_event::bv_description,
     3,
     "bv_description"),
+  mapped_data<bam::dimension_bv_event>(
+    &bam::dimension_bv_event::instance_id,
+    4,
+    NULL),
   mapped_data<bam::dimension_bv_event>()
 };
 
 // dimension_truncate_table_signal members mapping.
 static mapped_data<bam::dimension_truncate_table_signal> const dimension_truncate_table_signal_mapping[] = {
-  mapped_date<bam::dimension_truncate_table_signal>(
-  &bam::dimension_truncate_table_signal::update_started,
-  1,
-  "update_started",),
+  mapped_data<bam::dimension_truncate_table_signal>(
+    &bam::dimension_truncate_table_signal::update_started,
+    1,
+    "update_started"),
+  mapped_data<bam::dimension_truncate_table_signal>(
+    &bam::dimension_truncate_table_signal::instance_id,
+    2,
+    NULL),
   mapped_data<bam::dimension_truncate_table_signal>()
 };
 
@@ -404,6 +452,10 @@ static mapped_data<bam::rebuild> const rebuild_mapping[] = {
     &bam::rebuild::bas_to_rebuild,
     1,
     "bas_to_rebuild"),
+  mapped_data<bam::rebuild>(
+    &bam::rebuild::instance_id,
+    2,
+    NULL),
   mapped_data<bam::rebuild>()
 };
 
@@ -446,6 +498,10 @@ static mapped_data<bam::dimension_timeperiod> const dimension_timeperiod_mapping
     &bam::dimension_timeperiod::sunday,
     9,
     "sunday"),
+  mapped_data<bam::dimension_timeperiod>(
+    &bam::dimension_timeperiod::instance_id,
+    10,
+    NULL),
   mapped_data<bam::dimension_timeperiod>()
 };
 
@@ -465,6 +521,10 @@ static mapped_data<bam::dimension_ba_timeperiod_relation> const dimension_ba_tim
     &bam::dimension_ba_timeperiod_relation::is_default,
     3,
     "is_default"),
+  mapped_data<bam::dimension_ba_timeperiod_relation>(
+    &bam::dimension_ba_timeperiod_relation::instance_id,
+    4,
+    NULL),
   mapped_data<bam::dimension_ba_timeperiod_relation>()
 };
 
@@ -483,6 +543,10 @@ static mapped_data<bam::dimension_timeperiod_exception> const dimension_timeperi
     &bam::dimension_timeperiod_exception::timerange,
     3,
     "timerange"),
+  mapped_data<bam::dimension_timeperiod_exception>(
+    &bam::dimension_timeperiod_exception::instance_id,
+    4,
+    NULL),
   mapped_data<bam::dimension_timeperiod_exception>()
 };
 
@@ -498,6 +562,10 @@ static mapped_data<bam::dimension_timeperiod_exclusion> const dimension_timeperi
     2,
     "excluded_timeperiod_id",
     NULL_ON_ZERO),
+  mapped_data<bam::dimension_timeperiod_exclusion>(
+    &bam::dimension_timeperiod_exclusion::instance_id,
+    3,
+    NULL),
   mapped_data<bam::dimension_timeperiod_exclusion>()
 };
 
