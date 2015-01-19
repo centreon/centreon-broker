@@ -36,7 +36,8 @@ kpi_status::kpi_status()
     level_nominal_hard(100.0),
     level_nominal_soft(100.0),
     state_hard(0),
-    state_soft(0) {}
+    state_soft(0),
+    last_impact(0) {}
 
 /**
  *  Copy constructor.
@@ -92,5 +93,6 @@ void kpi_status::_internal_copy(kpi_status const& other) {
   state_hard = other.state_hard;
   state_soft = other.state_soft;
   last_state_change = other.last_state_change;
+  last_impact = other.last_impact;
   return ;
 }

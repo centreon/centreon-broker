@@ -126,7 +126,7 @@ void reader::_load(state::kpis& kpis) {
       "        COALESCE(COALESCE(k.drop_warning, ww.impact), g.average_impact),"
       "        COALESCE(COALESCE(k.drop_critical, cc.impact), g.average_impact),"
       "        COALESCE(COALESCE(k.drop_unknown, uu.impact), g.average_impact),"
-      "        k.last_state_change, k.in_downtime"
+      "        k.last_state_change, k.in_downtime, k.last_impact"
       "  FROM  mod_bam_kpi AS k"
       "  LEFT JOIN mod_bam_impacts AS ww"
       "    ON k.drop_warning_impact_id = ww.id_impact"
@@ -170,6 +170,8 @@ void reader::_load(state::kpis& kpis) {
         e.status = query.value(8).toInt();
         e.start_time = query.value(17).toLongLong();
         e.in_downtime = query.value(18).toBool();
+        e.impact_level = query.value(19).isNull() ?
+                                 -1 : query.value(19).toDouble();
         kpis[kpi_id].set_opened_event(e);
       }
     }

@@ -303,6 +303,7 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
           || (status->last_state_change == 0))
          ? QVariant(QVariant::LongLong)
          : QVariant(static_cast<qlonglong>(status->last_state_change.get_time_t()))));
+      _kpi_update.bind_value(":last_impact", status->last_impact);
       try { _kpi_update.run_statement(); }
       catch (std::exception const& e) {
         throw (exceptions::msg() << "BAM: could not update KPI "
@@ -444,7 +445,8 @@ void monitoring_stream::_prepare() {
             "      current_status=:state,"
             "      downtime=:level_downtime, last_level=:level_nominal,"
             "      state_type=:state_type,"
-            "      last_state_change=:last_state_change"
+            "      last_state_change=:last_state_change,"
+            "      last_impact=:last_impact"
             "  WHERE kpi_id=:kpi_id";
     _kpi_update.prepare(
                   query,

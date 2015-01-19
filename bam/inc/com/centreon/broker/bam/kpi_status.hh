@@ -51,6 +51,7 @@ namespace        bam {
     short        state_hard;
     short        state_soft;
     timestamp    last_state_change;
+    double       last_impact;
 
   private:
     void         _internal_copy(kpi_status const& other);

@@ -199,6 +199,7 @@ void kpi_meta::visit(io::stream* visitor) {
       status->state_hard = state;
       status->state_soft = state;
       status->last_state_change = get_last_state_change();
+      status->last_impact = values.get_nominal();
       visitor->write(status.staticCast<io::data>());
     }
 

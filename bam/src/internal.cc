@@ -127,8 +127,12 @@ static mapped_data<bam::kpi_status> const kpi_status_mapping[] = {
     10,
     "last_state_change"),
   mapped_data<bam::kpi_status>(
-    &bam::kpi_status::instance_id,
+    &bam::kpi_status::last_impact,
     11,
+    "last_impact"),
+  mapped_data<bam::kpi_status>(
+    &bam::kpi_status::instance_id,
+    12,
     NULL),
   mapped_data<bam::kpi_status>()
 };
