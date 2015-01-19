@@ -389,7 +389,7 @@ void kpi_service::visit(io::stream* visitor) {
       status->state_hard = _state_hard;
       status->state_soft = _state_soft;
       status->last_state_change = get_last_state_change();
-      status->last_impact = _event->in_downtime
+      status->last_impact = _downtimed
                              ? hard_values.get_downtime()
                              : hard_values.get_nominal();
       visitor->write(status.staticCast<io::data>());
