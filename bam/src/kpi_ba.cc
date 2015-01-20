@@ -174,6 +174,9 @@ void kpi_ba::unlink_ba() {
  */
 void kpi_ba::visit(io::stream* visitor) {
   if (visitor) {
+    // Commit the initial events saved in the cache.
+    commit_initial_events(visitor);
+
     // Get information.
     impact_values hard_values;
     impact_values soft_values;

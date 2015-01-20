@@ -20,7 +20,6 @@
 #include <ctime>
 #include "com/centreon/broker/bam/ba.hh"
 #include "com/centreon/broker/bam/kpi.hh"
-#include "com/centreon/broker/multiplexing/publisher.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -109,12 +108,33 @@ void kpi::set_initial_event(kpi_event const& e) {
           && _event->impact_level != -1) {
       time_t now = ::time(NULL);
       misc::shared_ptr<kpi_event> new_event(new kpi_event(e));
-      _event->end_time = now;
-      multiplexing::publisher pub;
-      pub.write(_event);
+      new_event->end_time = now;
+      _initial_events.push_back(new_event);
+      new_event = misc::shared_ptr<kpi_event> (new kpi_event(e));
+      new_event->start_time = now;
+      _initial_events.push_back(new_event);
       _event = new_event;
-      _event->start_time = now;
     }
     _event->impact_level = new_impact_level;
   }
+}
+
+/**
+ * Commit the initial events of this kpi.
+ *
+ *  @param[in] visitor  The visitor.
+ */
+void kpi::commit_initial_events(io::stream* visitor) {
+  if (_initial_events.empty())
+    return ;
+
+  if (visitor) {
+    for (std::vector<misc::shared_ptr<kpi_event> >::const_iterator
+           it(_initial_events.begin()),
+           end(_initial_events.end());
+         it != end;
+         ++it)
+      visitor->write(misc::shared_ptr<kpi_event>(new kpi_event(**it)));
+  }
+  _initial_events.clear();
 }

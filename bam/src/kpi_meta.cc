@@ -167,6 +167,9 @@ void kpi_meta::unlink_meta() {
  */
 void kpi_meta::visit(io::stream* visitor) {
   if (visitor) {
+    // Commit the initial events saved in the cache.
+    commit_initial_events(visitor);
+
     // Get information (HARD and SOFT values are the same).
     impact_values values;
     impact_hard(values);

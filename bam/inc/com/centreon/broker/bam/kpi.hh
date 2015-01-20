@@ -20,6 +20,7 @@
 #ifndef CCB_BAM_KPI_HH
 #  define CCB_BAM_KPI_HH
 
+#  include <vector>
 #  include "com/centreon/broker/bam/computable.hh"
 #  include "com/centreon/broker/bam/kpi_event.hh"
 #  include "com/centreon/broker/io/stream.hh"
@@ -54,10 +55,14 @@ namespace        bam {
     virtual void set_initial_event(kpi_event const& e);
     virtual void visit(io::stream* visitor) = 0;
 
+    void         commit_initial_events(io::stream* visitor);
+
   protected:
     unsigned int _id;
     misc::shared_ptr<kpi_event>
                  _event;
+    std::vector<misc::shared_ptr<kpi_event> >
+                 _initial_events;
   };
 }
 

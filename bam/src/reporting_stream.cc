@@ -1191,7 +1191,9 @@ void reporting_stream::_process_kpi_event(
     // Reopen event.
     if ((it != _kpi_event_cache.end())
         && !it->second.empty()
-        && (it->second.front().end_time == ke.start_time)
+        && ((it->second.front().end_time == ke.start_time)
+             || (it->second.front().end_time == (time_t)(-1)
+                 && ke.start_time == it->second.front().start_time))
         && (it->second.front().in_downtime == ke.in_downtime)
         && (it->second.front().status == ke.status)) {
       _kpi_event_update.bind_value(":kpi_id", ke.kpi_id);
