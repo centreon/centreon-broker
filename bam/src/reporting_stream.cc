@@ -1195,7 +1195,8 @@ void reporting_stream::_process_kpi_event(
              || (it->second.front().end_time == (time_t)(-1)
                  && ke.start_time == it->second.front().start_time))
         && (it->second.front().in_downtime == ke.in_downtime)
-        && (it->second.front().status == ke.status)) {
+        && (it->second.front().status == ke.status)
+        && (it->second.front().impact_level == ke.impact_level)) {
       _kpi_event_update.bind_value(":kpi_id", ke.kpi_id);
       _kpi_event_update.bind_value(
         ":start_time",

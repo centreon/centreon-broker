@@ -164,6 +164,7 @@ void monitoring_stream::update() {
     _ba_mapping = s.get_ba_svc_mapping();
     _meta_mapping = s.get_meta_svc_mapping();
     _rebuild();
+    initialize();
   }
   catch (std::exception const& e) {
     logging::error(logging::high)

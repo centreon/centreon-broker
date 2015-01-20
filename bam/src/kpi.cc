@@ -134,7 +134,7 @@ void kpi::commit_initial_events(io::stream* visitor) {
            end(_initial_events.end());
          it != end;
          ++it)
-      visitor->write(misc::shared_ptr<kpi_event>(new kpi_event(**it)));
+      visitor->write(misc::shared_ptr<io::data>(new kpi_event(**it)));
   }
   _initial_events.clear();
 }
