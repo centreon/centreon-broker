@@ -1068,8 +1068,6 @@ Property                     Type             Description                       
 ============================ ================ =============================================== =============
 kpi_id                       unsigned integer The id of the KPI.                              Since 2.8.0
                                                                                               (BBDO 1.2.0).
-state                        boolean          The state of the boolean expression.            Since 2.8.0
-                                                                                              (BBDO 1.2.0).
 level_acknowledgement_hard   real             The hard acknowledgement level of the KPI.      Since 2.8.0
                                                                                               (BBDO 1.2.0).
 level_acknowledgement_soft   real             The soft acknowledgement level of the KPI.      Since 2.8.0
