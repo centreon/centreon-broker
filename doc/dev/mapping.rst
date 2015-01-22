@@ -1038,7 +1038,7 @@ state                     short integer    The state of the BA.                 
                                                                                            (BBDO 1.2.0).
 state_changed             boolean          True if the state of the BA just changed.       Since 2.8.0
                                                                                            (BBDO 1.2.0).
-instance_id unsigned      integer          Instance ID.                                    Since 2.8.0
+instance_id               unsigned         Instance ID.                                    Since 2.8.0
                                                                                            (BBDO 1.2.0).
 ========================= ================ =============================================== =============
 
