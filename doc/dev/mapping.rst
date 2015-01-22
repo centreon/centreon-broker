@@ -1086,6 +1086,8 @@ state_soft                   short integer    The soft state of the KPI.        
                                                                                               (BBDO 1.2.0).
 last_state_change            time             The time of the last state change of the KPI.   Since 2.8.0
                                                                                               (BBDO 1.2.0).
+last_impact                  real             The last impact of the KPI.                     Since 2.8.0
+                                                                                              (BBDO 1.2.0).
 instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
                                                                                               (BBDO 1.2.0).
 ============================ ================ =============================================== =============
