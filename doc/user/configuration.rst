@@ -86,93 +86,97 @@ XML file.
 ==================== ======================================================== =============================================
 Option               Description                                              Example
 ==================== ======================================================== =============================================
-module_directory     Where Centreon Broker’s modules are stored.              ::
+module_directory             Where Centreon Broker’s modules are stored.              ::
 
-                                                                                <module_directory>
-                                                                                  /var/lib/centreon/broker/
-                                                                                </module_directory>
-module               If you do not want to load all modules of a
-                     *module_directory* you can use this directive to load    ::
-                     only one module. This directive can be repeated as much
-                     as wanted.                                                 <module>
-                                                                                  /usr/lib/centreon-broker/10-neb.so
-                                                                                </module>
-                                                                                <module>
-                                                                                  /usr/lib/centreon-broker/50-tcp.so
-                                                                                </module>
-                                                                                <module>
-                                                                                  /usr/lib/centreon-broker/80-bbdo.so
-                                                                                </module>
-instance             Only useful if Centreon Broker is loaded as              ::
-                     a module of a monitoring engine (Centreon
-                     Engine, Nagios ...). Unique number that                    <instance>42</instance>
-                     identify the poller.
-instance_name        An optional name used to identify a poller (see          ::
-                     *instance* above).
-                                                                                <instance_name>MyPoller</instance_name>
-include              Include another Centreon Broker configuration file that
-                     must respect the same syntax.                            ::
+                                                                                        <module_directory>
+                                                                                          /var/lib/centreon/broker/
+                                                                                        </module_directory>
+module                       If you do not want to load all modules of a
+                             *module_directory* you can use this directive to load    ::
+                             only one module. This directive can be repeated as much
+                             as wanted.                                                 <module>
+                                                                                          /usr/lib/centreon-broker/10-neb.so
+                                                                                        </module>
+                                                                                        <module>
+                                                                                          /usr/lib/centreon-broker/50-tcp.so
+                                                                                        </module>
+                                                                                        <module>
+                                                                                          /usr/lib/centreon-broker/80-bbdo.so
+                                                                                        </module>
+instance                     Only useful if Centreon Broker is loaded as              ::
+                             a module of a monitoring engine (Centreon
+                             Engine, Nagios ...). Unique number that                    <instance>42</instance>
+                             identify the poller.
+instance_name                An optional name used to identify a poller (see          ::
+                             *instance* above).
+                                                                                        <instance_name>MyPoller</instance_name>
+include                      Include another Centreon Broker configuration file that
+                             must respect the same syntax.                            ::
 
-                                                                                <include>
-                                                                                  /etc/centreon-broker/common.xml
-                                                                                </include>
-event_queue_max_size Maximum number of events that can be stored in memory.   ::
-                     Exceeding this limit will launch the **temporary**.
-                                                                                <event_queue_max_size>
-                                                                                  1000000
-                                                                                </event_queue_max_size>
-flush_logs           Enable or not log flushing. Flushing (aka syncing) tends
-                     to slow the software down. Default is disabled and we    ::
-                     recommend to only enable flushing in case of abnormal
-                     process failures.                                          <flush_logs>0</flush_logs>
-log_thread_id        Enable or not thread ID logging. This option will        ::
-                     affect all loggers. Default is 0 (disabled).
-                                                                                <log_thread_id>1</log_thread_id>
-log_timestamp        Enable or not timestamp logging. This option will
-                     affect all loggers. Default is 1 (enabled) except when   ::
-                     Broker is loaded as a monitoring engine module to
-                     prevent incompatibilities that might arise with            <log_timestamp>1</log_timestamp>
-                     non-thread-safe use of time-related functions.
-logger               Start a :ref:`logger definition
-                     <user_configuration_logger>`.                            ::
+                                                                                        <include>
+                                                                                          /etc/centreon-broker/common.xml
+                                                                                        </include>
+event_queue_max_size         Maximum number of events that can be stored in memory.   ::
+                             Exceeding this limit will launch the **temporary**.
+                                                                                        <event_queue_max_size>
+                                                                                          1000000
+                                                                                        </event_queue_max_size>
+flush_logs                   Enable or not log flushing. Flushing (aka syncing) tends
+                             to slow the software down. Default is disabled and we    ::
+                             recommend to only enable flushing in case of abnormal
+                             process failures.                                          <flush_logs>0</flush_logs>
+log_thread_id                Enable or not thread ID logging. This option will        ::
+                             affect all loggers. Default is 0 (disabled).
+                                                                                        <log_thread_id>1</log_thread_id>
+log_timestamp                Enable or not timestamp logging. This option will
+                             affect all loggers. Default is 1 (enabled) except when   ::
+                             Broker is loaded as a monitoring engine module to
+                             prevent incompatibilities that might arise with            <log_timestamp>1</log_timestamp>
+                             non-thread-safe use of time-related functions.
+log_human_readable_timestamp Enable a human readable timestamp in the logs. This      ::
+                             option affect all loggers. If this option is set to
+                             true, it implies log_timestamp = true.                     <log_human_readable_timestamp>1</log_human_readable_timestamp>
 
-                                                                                <logger>
-                                                                                  <type>file</type>
-                                                                                  <name>/var/log/centreon/broker.log</name>
-                                                                                  <config>1</config>
-                                                                                  <debug>0</debug>
-                                                                                  <error>1</error>
-                                                                                  <info>1</info>
-                                                                                  <level>medium</level>
-                                                                                </logger>
-input                Start an :ref:`input stream definition
-                     <user_configuration_input_output_temporary>`.            ::
+logger                       Start a :ref:`logger definition
+                             <user_configuration_logger>`.                            ::
 
-                                                                                <input>
-                                                                                  <type>tcp</type>
-                                                                                  <port>5668</port>
-                                                                                  <protocol>bbdo</protocol>
-                                                                                </input>
-output               Start an :ref:`output stream definition
-                     <user_configuration_input_output_temporary>`.            ::
+                                                                                        <logger>
+                                                                                          <type>file</type>
+                                                                                          <name>/var/log/centreon/broker.log</name>
+                                                                                          <config>1</config>
+                                                                                          <debug>0</debug>
+                                                                                          <error>1</error>
+                                                                                          <info>1</info>
+                                                                                          <level>medium</level>
+                                                                                        </logger>
+input                        Start an :ref:`input stream definition
+                             <user_configuration_input_output_temporary>`.            ::
 
-                                                                                <output>
-                                                                                  <type>sql</type>
-                                                                                  <db_type>mysql</db_type>
-                                                                                  <db_host>localhost</db_host>
-                                                                                  <db_port>3306</db_port>
-                                                                                  <db_user>centreon</db_user>
-                                                                                  <db_password>noertnec</db_password>
-                                                                                  <db_name>centreon_storage</db_name>
-                                                                                </output>
-temporary            Start an :ref:`temporary stream definition
-                     <user_configuration_input_output_temporary>`.            ::
+                                                                                        <input>
+                                                                                          <type>tcp</type>
+                                                                                          <port>5668</port>
+                                                                                          <protocol>bbdo</protocol>
+                                                                                        </input>
+output                       Start an :ref:`output stream definition
+                             <user_configuration_input_output_temporary>`.            ::
 
-                                                                                <temporary>
-                                                                                  <type>file</type>
-                                                                                  <path>/tmp/brokertemp</path>
-                                                                                  <protocol>bbdo</protocol>
-                                                                                </temporary>
+                                                                                        <output>
+                                                                                          <type>sql</type>
+                                                                                          <db_type>mysql</db_type>
+                                                                                          <db_host>localhost</db_host>
+                                                                                          <db_port>3306</db_port>
+                                                                                          <db_user>centreon</db_user>
+                                                                                          <db_password>noertnec</db_password>
+                                                                                          <db_name>centreon_storage</db_name>
+                                                                                        </output>
+temporary                    Start an :ref:`temporary stream definition
+                             <user_configuration_input_output_temporary>`.            ::
+
+                                                                                        <temporary>
+                                                                                          <type>file</type>
+                                                                                          <path>/tmp/brokertemp</path>
+                                                                                          <protocol>bbdo</protocol>
+                                                                                        </temporary>
 ==================== ======================================================== =============================================
 
 .. _user_configuration_logger:
