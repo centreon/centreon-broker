@@ -390,11 +390,23 @@ void action::_process_notification(
   node::ptr n = st.get_node_by_id(_id);
 
   // Check if the state is valid.
-  if (!method->should_be_notified_for(n->get_hard_state())) {
+  if (!method->should_be_notified_for(
+                 n->get_hard_state(),
+                 n->get_node_id().is_service())) {
     logging::debug(logging::low)
       << "notification: node (" << _id.get_host_id() << ", "
       << _id.get_service_id() << ") should not be notified for state "
       << static_cast<int>(n->get_hard_state()) << " according to method "
+      << rule->get_method_id();
+    return ;
+  }
+
+  // Check if the notification type is valid.
+  if (!method->should_be_notified_for(_act)) {
+    logging::debug(logging::low)
+      << "notification: node (" << _id.get_host_id() << ", "
+      << _id.get_service_id() << ") should not be notified for action type "
+      << static_cast<int>(_act) << " according to method "
       << rule->get_method_id();
     return ;
   }

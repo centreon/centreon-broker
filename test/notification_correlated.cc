@@ -119,8 +119,8 @@ int main() {
     // Create notification rules in DB.
     db.centreon_run(
          "INSERT INTO cfg_notification_methods (method_id,"
-         "            name, command_id, `interval`)"
-         "  VALUES (1, 'NotificationMethod', 1, 300)",
+         "            name, command_id, `interval`, status, types)"
+         "  VALUES (1, 'NotificationMethod', 1, 300, 'w,c,u', 'n')",
          "could not create notification method");
     db.centreon_run(
          "INSERT INTO cfg_notification_rules (rule_id, method_id, "
@@ -169,7 +169,7 @@ int main() {
       "PROCESS_SERVICE_CHECK_RESULT;1;2;2;Submitted by unit test");
     sleep_for(25 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
-    // Check file creation.
+    // Check file creation. No file should be created.
     error = QFile::exists(flag_file.c_str());
 
     if (error)
