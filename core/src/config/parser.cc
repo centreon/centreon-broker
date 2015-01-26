@@ -138,6 +138,10 @@ void parser::parse(QString const& file, state& s) {
         QString val(elem.text());
         s.log_timestamp((val == "yes") || val.toInt());
       }
+      else if (name == "log_human_readable_timestamp") {
+        QString val(elem.text());
+        s.log_human_readable_timestamp((val == "yes") || val.toInt());
+      }
       else if (name == "event_queue_max_size") {
         unsigned int val(elem.text().toUInt());
         s.event_queue_max_size(val);

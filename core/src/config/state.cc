@@ -74,6 +74,8 @@ void state::clear() {
   _log_thread_id = false;
   _log_timestamp
     = com::centreon::broker::logging::file::with_timestamp();
+  _log_human_readable_timestamp
+    = com::centreon::broker::logging::file::with_human_redable_timestamp();
   _loggers.clear();
   _module_dir.clear();
   _module_list.clear();
@@ -222,6 +224,26 @@ bool state::log_timestamp() const throw () {
 }
 
 /**
+ *  Set whether or not a human readable timestamp logging should be enabled.
+ *
+ *  @param[in] human_log_time true to log a human readable timestamp.
+ */
+void state::log_human_readable_timestamp(bool human_log_time) throw () {
+  _log_human_readable_timestamp = human_log_time;
+  return ;
+}
+
+
+/**
+ *  Get whether or not to log a human readable timestamp.
+ *
+ *  @return true if a human redable timestamp must be logged.
+ */
+bool state::log_human_readable_timestamp() const throw() {
+  return (_log_human_readable_timestamp);
+}
+
+/**
  *  Get the logger list.
  *
  *  @return Logger list.
@@ -339,6 +361,7 @@ void state::_internal_copy(state const& s) {
   _instance_name = s._instance_name;
   _log_thread_id = s._log_thread_id;
   _log_timestamp = s._log_timestamp;
+  _log_human_readable_timestamp = s._log_human_readable_timestamp;
   _loggers = s._loggers;
   _module_dir = s._module_dir;
   _module_list = s._module_list;

@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <ctime>
 #include <climits>
 #include <cstdlib>
 #include <QThread>
@@ -36,6 +37,8 @@ bool file::_with_flush(true);
 bool file::_with_thread_id(false);
 // Should timestamp be printed ?
 bool file::_with_timestamp(true);
+// Should a human readable timestamp be printed?
+bool file::_with_human_readable_timestamp(false);
 
 /**************************************
 *                                     *
@@ -139,7 +142,7 @@ void file::log_msg(char const* msg,
      default:
       prefix = "unknown: ";
     }
-    if (_with_timestamp) {
+    if (_with_timestamp || _with_human_readable_timestamp) {
       _write("[");
       char buffer[integer_width<time_t>::value];
       snprintf(buffer,
@@ -148,6 +151,15 @@ void file::log_msg(char const* msg,
         static_cast<unsigned long long>(time(NULL)));
       _write(buffer);
       _write("] ");
+      if (_with_human_readable_timestamp) {
+        _write("[");
+        time_t now = std::time(NULL);
+        // ctime never write more than 26 characters
+        char human_readable_date[26];
+        ctime_r(&now, human_readable_date);
+        _write(human_readable_date);
+        _write("] ");
+      }
     }
     if (_with_thread_id) {
       _write("[");
@@ -223,6 +235,24 @@ bool file::with_timestamp() throw () {
 void file::with_timestamp(bool enable) throw () {
   _with_timestamp = enable;
   return ;
+}
+
+/**
+ *  Check if a human readable timestamp should be printed.
+ *
+ *  @return true if a human readable timestamp should be printed.
+ */
+bool file::with_human_redable_timestamp() throw() {
+  return (_with_human_readable_timestamp);
+}
+
+/**
+ *  Set if a human readable timestamp should be printed.
+ *
+ *  @param[in] enable  true to enable human readable timestamp printing.
+ */
+void file::with_human_redable_timestamp(bool enable) throw() {
+  _with_human_readable_timestamp = enable;
 }
 
 /**************************************

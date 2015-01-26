@@ -72,6 +72,10 @@ void state::apply(
   com::centreon::broker::logging::file::with_timestamp(
     s.log_timestamp());
 
+  // Enable or not human readable timstamp logging.
+  com::centreon::broker::logging::file::with_human_redable_timestamp(
+    s.log_human_readable_timestamp());
+
   // Apply modules configuration.
   modules::instance().apply(
                         s.module_list(),
