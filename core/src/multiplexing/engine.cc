@@ -65,6 +65,14 @@ static bool _processing;
 engine::~engine() {}
 
 /**
+ *  Clear events stored in the multiplexing engine.
+ */
+void engine::clear() {
+  _kiew.clear();
+  return ;
+}
+
+/**
  *  Set a hook.
  *
  *  @param[in] h    Hook.
