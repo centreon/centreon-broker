@@ -449,9 +449,9 @@ int main() {
     // Create notification rules in DB.
     db.centreon_run(
          "INSERT INTO cfg_notification_methods (method_id,"
-         "            name, command_id, `interval`, types)"
-         "  VALUES (1, 'NotificationMethod', 1, 300, 'n'),"
-         "         (2, 'NotificationMethod2', 2, 300, 'r')",
+         "            name, command_id, `interval`, types, status)"
+         "  VALUES (1, 'NotificationMethod', 1, 300, 'n', 'w,c,u'),"
+         "         (2, 'NotificationMethod2', 2, 300, 'r', 'o')",
          "could not create notification method");
     db.centreon_run(
          "INSERT INTO cfg_notification_rules (rule_id, method_id, "

@@ -19,17 +19,17 @@
   </logger>
   -->
   <correlation>
-    <file>@PROJECT_SOURCE_DIR@/test/cfg/notification_non_correlated_file.xml</file>
+    <file>@PROJECT_SOURCE_DIR@/test/cfg/notification_correlated_file.xml</file>
   </correlation>
   <output>
-    <name>NotificationNonCorrelatedUnitTest</name>
+    <name>NotificationCorrelatedUnitTest</name>
     <type>notification</type>
     <db_type>@DB_TYPE@</db_type>
     <db_host>@DB_HOST@</db_host>
     <db_port>@DB_PORT@</db_port>
     <db_user>@DB_USER@</db_user>
     <db_password>@DB_PASSWORD@</db_password>
-    <db_name>broker_notification_non_correlated</db_name>
+    <db_name>broker_notification_correlated</db_name>
     <queries_per_transaction>0</queries_per_transaction>
     <node_cache_file>@NODE_CACHE_FILE@</node_cache_file>
   </output>

@@ -24,6 +24,7 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
 #  include "com/centreon/broker/notification/objects/defines.hh"
+#  include "com/centreon/broker/notification/action.hh"
 
 CCB_BEGIN()
 
@@ -67,7 +68,8 @@ namespace         notification {
       unsigned int  get_end() const throw();
       void          set_end(unsigned int val) throw();
 
-      bool          should_be_notified_for(node_state state);
+      bool          should_be_notified_for(node_state state, bool is_service);
+      bool          should_be_notified_for(action::action_type type);
 
     private:
       std::string   _name;

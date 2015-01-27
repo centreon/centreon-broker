@@ -187,18 +187,47 @@ void notification_method::set_end(unsigned int val) throw() {
 }
 
 /**
+ *  Check if the status allow a notification.
+ *
+ *  @param[in] state        State of the node.
+ *  @param[in] is_service   Is the node a service?
+ *
+ *  @return                 True if the notification is allowed.
+ */
+bool notification_method::should_be_notified_for(
+                            node_state state,
+                            bool is_service) {
+  if (state == node_state::ok)
+    return (_status.find_first_of('o') != std::string::npos);
+  if (is_service) {
+    if (state == node_state::service_warning)
+        return (_status.find_first_of('w') != std::string::npos);
+      else if (state == node_state::service_critical)
+        return (_status.find_first_of('c') != std::string::npos);
+      else if (state == node_state::service_unknown)
+        return (_status.find_first_of('u') != std::string::npos);
+  }
+  else {
+    if (state == node_state::host_down)
+      return (_status.find_first_of('d') != std::string::npos);
+    else if (state == node_state::host_unreachable)
+      return (_status.find_first_of('n') != std::string::npos);
+  }
+  return (false);
+}
+
+/**
  *  Check if the types allow a notification.
  *
- *  @param[in] state  State of the node.
+ *  @param[in] type  The type of the notification.
  *
- *  @return           True if notification allowed.
+ *  @return          True if the notification is allowed.
  */
-bool notification_method::should_be_notified_for(node_state state) {
-  // STUB
-  return (true);
-
-  /*if (state == node_state::ok)
+bool notification_method::should_be_notified_for(action::action_type type) {
+  if (type == action::notification_attempt)
+    return (_types.find_first_of('n') != std::string::npos);
+  else if (type == action::notification_up)
     return (_types.find_first_of('r') != std::string::npos);
   else
-    return (_types.find_first_of('n') != std::string::npos);*/
+    return (false);
 }

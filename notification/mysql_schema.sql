@@ -19,8 +19,8 @@ CREATE TABLE cfg_notification_methods (
 
   command_id int NOT NULL,
   `interval` int default NULL,
-  status int default NULL,
-  types int default NULL,
+  status varchar (32) default NULL,
+  types varchar (32) default NULL,
   start int default NULL,
   end int default NULL,
 

@@ -31,7 +31,7 @@
 
 using namespace com::centreon::broker;
 
-#define DB_NAME "broker_notification_non_correlated"
+#define DB_NAME "broker_notification_correlated"
 
 /**
  *  Check that notification is properly enabled when non-correlation
@@ -64,6 +64,8 @@ int main() {
 
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, 1);
+    hosts.begin()->checks_enabled = 0;
+    hosts.begin()->accept_passive_host_checks = 1;
     generate_services(services, hosts, 2);
     for (std::list<service>::iterator
            it(services.begin()),
@@ -126,16 +128,10 @@ int main() {
          "            service_id, enabled)"
          "  VALUES (1, 1, NULL, 1, 1, 1, 2, 1)",
          "could not create notification rule (cfg)");
-    db.centreon_run(
-         "INSERT INTO rt_notification_rules (rule_id, method_id,"
-         "            timeperiod_id, contact_id, host_id,"
-         "            service_id)"
-         "  VALUES (1, 1, NULL, 1, 1, 2)",
-         "could not create notification rule (rt)");
 
     // Generate configuration.
     broker_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/notification_non_correlated.xml.in");
+      PROJECT_SOURCE_DIR "/test/cfg/notification_correlated.xml.in");
     broker_cfg.set("NODE_CACHE_FILE", node_cache_file);
     commander.set_file(tmpnam(NULL));
     std::string additional_config;
@@ -159,6 +155,8 @@ int main() {
     monitoring.start();
     sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
     commander.execute(
+      "PROCESS_HOST_CHECK_RESULT;1;0;Host Check Ok");
+    commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;1;1;0;Submitted by unit test");
     commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;1;2;0;Submitted by unit test");
@@ -171,8 +169,12 @@ int main() {
       "PROCESS_SERVICE_CHECK_RESULT;1;2;2;Submitted by unit test");
     sleep_for(25 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
-    // Check file creation.
-    error = !QFile::exists(flag_file.c_str());
+    // Check file creation. No file should be created.
+    error = QFile::exists(flag_file.c_str());
+
+    if (error)
+      std::cout << "error: file " << flag_file
+                << " has been created" << std::endl;
   }
   catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
