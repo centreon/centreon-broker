@@ -43,6 +43,7 @@ namespace                 com {
 
          public:
                           ~engine();
+          void            clear();
           void            hook(hooker& h, bool data = true);
           static engine&  instance();
           static void     load();
