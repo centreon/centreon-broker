@@ -152,7 +152,7 @@ static void get_timestamp(
               T const& t,
               data_member<T> const& member,
               QByteArray& buffer) {
-  long long ts((t.*(member.t)).get_time_t());
+  uint64_t ts((t.*(member.t)).get_time_t());
   uint32_t high(htonl(ts / (1ll << 32)));
   uint32_t low(htonl(ts % (1ll << 32)));
   buffer.append(
@@ -279,7 +279,7 @@ static unsigned int set_timestamp(
            << "BBDO: cannot extract timestamp value: "
            << size << " bytes left in packet");
   uint32_t const* ptr(static_cast<uint32_t const*>(data));
-  long long val(ntohl(*ptr));
+  uint64_t val(ntohl(*ptr));
   ++ptr;
   val <<= 32;
   val |= ntohl(*ptr);
