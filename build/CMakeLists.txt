@@ -1,5 +1,5 @@
 ##
-## Copyright 2009-2014 Merethis
+## Copyright 2009-2015 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -121,7 +121,6 @@ if (WITH_TESTING)
   include(CTest)
   enable_testing()
   include_directories("${PROJECT_SOURCE_DIR}/core")
-  include_directories("${PROJECT_SOURCE_DIR}/bbdo/inc")
   include_directories("${PROJECT_SOURCE_DIR}/compression/inc")
   include_directories("${PROJECT_SOURCE_DIR}/ndo/inc")
   include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
@@ -254,6 +253,7 @@ endif ()
 
 # Some files must be processed by Qt's moc.
 qt4_wrap_cpp(QT_WRAPPED_SOURCES
+  "${INC_DIR}/bbdo/acceptor.hh"
   "${INC_DIR}/config/applier/endpoint.hh"
   "${INC_DIR}/logging/backend.hh"
   "${INC_DIR}/logging/manager.hh"
@@ -266,6 +266,15 @@ qt4_wrap_cpp(QT_WRAPPED_SOURCES
 # Core library.
 set(LIBROKER_SOURCES
   # Sources.
+  "${SRC_DIR}/bbdo/acceptor.cc"
+  "${SRC_DIR}/bbdo/connector.cc"
+  "${SRC_DIR}/bbdo/factory.cc"
+  "${SRC_DIR}/bbdo/input.cc"
+  "${SRC_DIR}/bbdo/internal.cc"
+  "${SRC_DIR}/bbdo/main.cc"
+  "${SRC_DIR}/bbdo/output.cc"
+  "${SRC_DIR}/bbdo/stream.cc"
+  "${SRC_DIR}/bbdo/version_response.cc"
   "${SRC_DIR}/config/applier/endpoint.cc"
   "${SRC_DIR}/config/applier/modules.cc"
   "${SRC_DIR}/config/applier/state.cc"
@@ -276,6 +285,11 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/config/state.cc"
   "${SRC_DIR}/exceptions/msg.cc"
   "${SRC_DIR}/exceptions/with_pointer.cc"
+  "${SRC_DIR}/file/cfile.cc"
+  "${SRC_DIR}/file/factory.cc"
+  "${SRC_DIR}/file/main.cc"
+  "${SRC_DIR}/file/opener.cc"
+  "${SRC_DIR}/file/stream.cc"
 # #	../src/interface/xml/destination.cc
 # #	../src/interface/xml/internal.cc
 # #	../src/interface/xml/source.cc
@@ -314,6 +328,14 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/processing/feeder.cc"
   ${QT_WRAPPED_SOURCES}
   # Headers.
+  "${INC_DIR}/bbdo/acceptor.hh"
+  "${INC_DIR}/bbdo/connector.hh"
+  "${INC_DIR}/bbdo/factory.hh"
+  "${INC_DIR}/bbdo/input.hh"
+  "${INC_DIR}/bbdo/internal.hh"
+  "${INC_DIR}/bbdo/output.hh"
+  "${INC_DIR}/bbdo/stream.hh"
+  "${INC_DIR}/bbdo/version_response.hh"
   "${INC_DIR}/config/applier/endpoint.hh"
   "${INC_DIR}/config/applier/init.hh"
   "${INC_DIR}/config/applier/logger.hh"
@@ -326,6 +348,10 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/config/state.hh"
   "${INC_DIR}/exceptions/msg.hh"
   "${INC_DIR}/exceptions/with_pointer.hh"
+  "${INC_DIR}/file/cfile.hh"
+  "${INC_DIR}/file/factory.hh"
+  "${INC_DIR}/file/opener.hh"
+  "${INC_DIR}/file/stream.hh"
   "${INC_DIR}/io/data.hh"
   "${INC_DIR}/io/endpoint.hh"
   "${INC_DIR}/io/events.hh"
@@ -422,13 +448,6 @@ if (WITH_MODULE_NEB)
   list(APPEND MODULE_LIST "neb")
 endif()
 
-# File module.
-option(WITH_MODULE_FILE "Build file module." ON)
-if (WITH_MODULE_FILE)
-  add_subdirectory("file")
-  list(APPEND MODULE_LIST "file")
-endif()
-
 # Compression module.
 option(WITH_MODULE_COMPRESSION "Build compression module." ON)
 if (WITH_MODULE_COMPRESSION)
@@ -492,13 +511,6 @@ option(WITH_MODULE_TLS "Build TLS module." ON)
 if (WITH_MODULE_TLS)
   add_subdirectory("tls")
   list(APPEND MODULE_LIST "tls")
-endif()
-
-# BBDO module.
-option(WITH_MODULE_BBDO "Build BBDO module." ON)
-if (WITH_MODULE_BBDO)
-  add_subdirectory("bbdo")
-  list(APPEND MODULE_LIST "bbdo")
 endif()
 
 # NDO module.
@@ -820,7 +832,7 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/bench_bbdo.cc"
     "${PROJECT_SOURCE_DIR}/test/bench_stream.cc"
     "${PROJECT_SOURCE_DIR}/test/bench_stream.hh")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${BBDO} ${COMPRESSION} ${CORRELATION} ${NEB} ${NDO} ${STORAGE})
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${COMPRESSION} ${CORRELATION} ${NEB} ${NDO} ${STORAGE})
 
   # Last file to configure, based on target paths.
   configure_file("${PROJECT_SOURCE_DIR}/test/vars.hh.in"
@@ -1419,6 +1431,41 @@ if (WITH_TESTING)
     "${TEST_DIR}/processing/failover/recovery.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+
+
+  # file namespace tests.
+  # file::stream tests.
+  #   Writing.
+  set(TEST_NAME "file_stream_write")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/file/stream/write.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Reading.
+  set(TEST_NAME "file_stream_read")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/file/stream/read.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Size limitation.
+  set(TEST_NAME "file_stream_max_size")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/file/stream/max_size.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Mixed reads/writes.
+  set(TEST_NAME "file_stream_mixed")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/file/stream/mixed.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   I/O processing.
+  set(TEST_NAME "file_stream_process")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/file/stream/process.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
 
   # cbd tests.
   add_test("cbd_help" "cbd" "-h")
