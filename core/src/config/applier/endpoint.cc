@@ -237,12 +237,6 @@ void endpoint::apply(
   return ;
 }
 
-static void get_all_threads(
-  misc::stringifier& thread_list,
-  QMap<config::endpoint, processing::failover*> const& endpoints) {
-  // stub
-}
-
 /**
  *  Discard applied configuration.
  */
@@ -295,15 +289,11 @@ void endpoint::discard() {
     // Wait for threads.
     while (!_outputs.empty()) {
       misc::stringifier thread_list;
-      get_all_threads(thread_list, _outputs);
-      /*misc::stringifier thread_list;
       thread_list << *_outputs.begin();
-      for (QMap<config::endpoint, QList<processing::failover*> >::iterator
-             it = ++_outputs.begin(),
-             end = _outputs.end();
+      for (iterator it = ++_outputs.begin(), end = _outputs.end();
            it != end;
            ++it)
-        thread_list << ", " << *it;*/
+        thread_list << ", " << *it;
       logging::debug(logging::low) << "endpoint applier: "
         << _outputs.size() << " output threads remaining: "
         << thread_list.data();

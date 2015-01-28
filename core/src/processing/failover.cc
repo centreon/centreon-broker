@@ -762,8 +762,9 @@ bool failover::failovers_contains(processing::failover* failover) {
          end(_failovers.end());
        it != end;
        ++it)
-  if (&**it == failover)
-    return (true);
+    if (&**it == failover)
+      return (true);
+  return (false);
 }
 
 /**
