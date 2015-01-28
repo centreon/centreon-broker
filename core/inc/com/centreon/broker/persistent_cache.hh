@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,6 +20,9 @@
 #ifndef CCB_PERSISTENT_CACHE_HH
 #  define CCB_PERSISTENT_CACHE_HH
 
+#  include <string>
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -33,12 +36,26 @@ CCB_BEGIN()
  */
 class               persistent_cache {
 public:
-                    persistent_cache();
+                    persistent_cache(std::string const& cache_file);
                     ~persistent_cache();
+  void              add(misc::shared_ptr<io::data> const& d);
+  void              commit();
+  void              get(misc::shared_ptr<io::data>& d);
+  void              rollback();
+  void              transaction();
 
 private:
                     persistent_cache(persistent_cache const& other);
   persistent_cache& operator=(persistent_cache const& other);
+  std::string       _new_file() const;
+  std::string       _old_file() const;
+  void              _open();
+
+  std::string       _cache_file;
+  misc::shared_ptr<io::stream>
+                    _read_file;
+  misc::shared_ptr<io::stream>
+                    _write_file;
 };
 
 CCB_END()

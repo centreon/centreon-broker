@@ -556,7 +556,7 @@ processing::failover* endpoint::_create_endpoint(
     cache_path = _cache_directory;
     cache_path.append(cfg.name);
     cache = misc::shared_ptr<persistent_cache>(
-                    new persistent_cache());
+                    new persistent_cache(cache_path.toStdString()));
   }
 
   // Return failover thread.
