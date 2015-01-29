@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,9 +20,6 @@
 #ifndef CCB_IO_EVENTS_HH
 #  define CCB_IO_EVENTS_HH
 
-#  include <map>
-#  include <set>
-#  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -36,6 +33,13 @@ namespace               io {
    */
   class                 events {
   public:
+    typedef std::map<unsigned int, event_info>  events_container;
+    struct              category_info {
+      std::string       name;
+      events_container  events;
+    };
+    typedef std::map<unsigned short, category_info> categories_container;
+    // Reserved categories, for reference.
     enum                data_category {
       neb = 1,
       bbdo,
@@ -44,14 +48,30 @@ namespace               io {
       dumper,
       internal = 65535
     };
-
     template <unsigned short category, unsigned short element>
     struct data_type {
       enum { value = static_cast<unsigned int>(category << 16 | element) };
     };
 
-    std::map<std::string, std::set<unsigned int> >::const_iterator
-                        begin() const;
+    // Singleton.
+    static events&      instance();
+    static void         load();
+    static void         unload();
+
+    // Category.
+    unsigned short      register_category(
+                          std::string const& name,
+                          unsigned short hint = 0);
+    void                unregister_category(unsigned short category_id);
+
+    // Events.
+    unsigned int        register_event(
+                          unsigned short category_id,
+                          unsigned short event_id,
+                          event_info const& info);
+    void                unregister_event(unsigned int type_id);
+
+    // ID manipulations.
     static unsigned short
                         category_of_type(unsigned int type) throw () {
       return (static_cast<unsigned short>(type >> 16));
@@ -60,25 +80,30 @@ namespace               io {
                         element_of_type(unsigned int type) throw () {
       return (static_cast<unsigned short>(type));
     }
-    std::map<std::string, std::set<unsigned int> >::const_iterator
+    static unsigned int
+                        make_type(
+                          unsigned short category_id,
+                          unsigned short element_id) throw () {
+      return ((static_cast<unsigned int>(category_id) << 16)
+              | element_id);
+    }
+
+    // Event browsing.
+    categories_container::const_iterator
+                        begin() const;
+    categories_container::const_iterator
                         end() const;
-    std::set<unsigned int> const&
-                        get(std::string const& name) const;
-    static events&      instance();
-    static void         load();
-    void                reg(
-                          std::string const& name,
-                          std::set<unsigned int> const& elems);
-    static void         unload();
-    void                unreg(std::string const& name);
+    events_container const&
+                        get_events_by_category_name(
+                          std::string const& name) const;
 
   private:
                         events();
-                        events(events const& right);
+                        events(events const& other);
                         ~events();
-    events&             operator=(events const& right);
+    events&             operator=(events const& other);
 
-    std::map<std::string, std::set<unsigned int> >
+    categories_container
                         _elements;
   };
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -33,42 +33,7 @@ static events* _instance(NULL);
 **************************************/
 
 /**
- *  Get first iterator.
- *
- *  @return First iterator.
- */
-std::map<std::string, std::set<unsigned int> >::const_iterator events::begin() const {
-  return (_elements.begin());
-}
-
-/**
- *  Get last iterator.
- *
- *  @return Last iterator.
- */
-std::map<std::string, std::set<unsigned int> >::const_iterator events::end() const {
-  return (_elements.end());
-}
-
-/**
- *  Get the content of a category.
- *
- *  @param[in] name Category name.
- *
- *  @return Category elements.
- */
-std::set<unsigned int> const& events::get(
-                                        std::string const& name) const {
-  std::map<std::string, std::set<unsigned int> >::const_iterator
-    it(_elements.find(name));
-  if (it == _elements.end())
-    throw (exceptions::msg() << "core: cannot find event category '"
-           << name << "'");
-  return (it->second);
-}
-
-/**
- *  Get the class instance.
+ *  Get class instance.
  *
  *  @return Class instance.
  */
@@ -77,7 +42,7 @@ events& events::instance() {
 }
 
 /**
- *  Load the singleton.
+ *  Load singleton.
  */
 void events::load() {
   if (!_instance)
@@ -86,36 +51,125 @@ void events::load() {
 }
 
 /**
- *  Register a new category.
- *
- *  @param[in] name     Category name.
- *  @param[in] category Category value.
- *  @param[in] elems    Category elements.
- */
-void events::reg(
-               std::string const& name,
-               std::set<unsigned int> const& elems) {
-  _elements[name] = elems;
-  return ;
-}
-
-/**
- *  Unload the singleton.
+ *  Unload singleton.
  */
 void events::unload() {
+  // Delete operator is NULL-aware.
   delete _instance;
   _instance = NULL;
   return ;
 }
 
 /**
+ *  Register a category.
+ *
+ *  @param[in] name  Categoy name.
+ *  @param[in] hint  Whished category ID.
+ *
+ *  @return Assigned category ID. This could be different than hint.
+ */
+unsigned short events::register_category(
+                         std::string const& name,
+                         unsigned short hint) {
+  if (!hint)
+    ++hint;
+  while (_elements.find(hint) != _elements.end()) {
+    if (!++hint)
+      ++hint;
+  }
+  _elements[hint].name = name;
+  return (hint);
+}
+
+/**
  *  Unregister a category.
  *
- *  @param[in] category Category name.
+ *  @param[in] category_id  Category ID.
  */
-void events::unreg(std::string const& name) {
-  _elements.erase(name);
+void events::unregister_category(unsigned short category_id) {
+  categories_container::iterator it(_elements.find(category_id));
+  if (it != _elements.end())
+    _elements.erase(it);
   return ;
+}
+
+/**
+ *  Register an event.
+ *
+ *  @param[in] category_id  Category ID. Category must have been
+ *                          registered through register_category().
+ *  @param[in] event_id     Event ID whithin the category.
+ *  @param[in] info         Information about the event.
+ *
+ *  @return Event type ID.
+ */
+unsigned int events::register_event(
+                       unsigned short category_id,
+                       unsigned short event_id,
+                       event_info const& info) {
+  categories_container::iterator it(_elements.find(category_id));
+  if (it == _elements.end())
+    throw (exceptions::msg() << "core: could not register event '"
+           << info.get_name() << "': category " << category_id
+           << " was not registered");
+  int type(make_type(category_id, event_id));
+  it->second.events[type] = info;
+  return (type);
+}
+
+/**
+ *  Unregister an event.
+ *
+ *  @param[in] type_id  Type ID.
+ */
+void events::unregister_event(unsigned int type_id) {
+  unsigned short category_id(category_of_type(type_id));
+  categories_container::iterator itc(_elements.find(category_id));
+  if (itc != _elements.end()) {
+    events_container::iterator ite(itc->second.events.find(type_id));
+    if (ite != itc->second.end())
+      itc->second.events.erase(ite);
+  }
+  return ;
+}
+
+/**
+ *  Get first iterator.
+ *
+ *  @return First iterator.
+ */
+events::categories_container::const_iterator events::begin() const {
+  return (_elements.begin());
+}
+
+/**
+ *  Get last iterator.
+ *
+ *  @return Last iterator.
+ */
+events::categories_container::const_iterator events::end() const {
+  return (_elements.end());
+}
+
+/**
+ *  Get the content of a category.
+ *
+ *  @param[in] name  Category name.
+ *
+ *  @return Category elements.
+ */
+events::events_container const& events::get_events_by_category_name(
+                                          std::string const& name) const {
+  for (categories_container::const_iterator
+         it(_elements.begin()),
+         end(_elements.end());
+       it != end;
+       ++it) {
+    if (it->second.name == name)
+      return (it->second.events);
+  }
+  throw (exceptions::msg() << "core: cannot find event category '"
+         << name << "'");
 }
 
 /**************************************
