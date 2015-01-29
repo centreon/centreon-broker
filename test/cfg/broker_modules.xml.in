@@ -7,7 +7,6 @@
   <module>@STORAGE_MODULE_PATH@</module>
   <module>@BAM_MODULE_PATH@</module>
   <module>@FILE_MODULE_PATH@</module>
-  <module>@LOCAL_MODULE_PATH@</module>
   <module>@TCP_MODULE_PATH@</module>
   <module>@COMPRESSION_MODULE_PATH@</module>
   <module>@TLS_MODULE_PATH@</module>

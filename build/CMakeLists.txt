@@ -1,5 +1,5 @@
 ##
-## Copyright 2009-2014 Merethis
+## Copyright 2009-2015 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -33,7 +33,7 @@ set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")
 
 # Version.
 set(CENTREON_BROKER_MAJOR 2)
-set(CENTREON_BROKER_MINOR 8)
+set(CENTREON_BROKER_MINOR 9)
 set(CENTREON_BROKER_PATCH 0)
 set(CENTREON_BROKER_VERSION "${CENTREON_BROKER_MAJOR}.${CENTREON_BROKER_MINOR}.${CENTREON_BROKER_PATCH}")
 add_definitions(-DCENTREON_BROKER_VERSION=\"${CENTREON_BROKER_VERSION}\")
@@ -453,15 +453,6 @@ if (WITH_MODULE_DUMPER)
   add_subdirectory("dumper")
   list(APPEND MODULE_LIST "dumper")
 endif()
-
-# Local sockets module.
-option(WITH_MODULE_LOCAL "Build local module." ON)
-if (WITH_MODULE_LOCAL)
-  if ("${QT_VERSION}" VERSION_GREATER "4.4.0")
-    add_subdirectory("local")
-    list(APPEND MODULE_LIST "local")
-  endif ()
-endif ()
 
 # RRD module.
 option(WITH_MODULE_RRD "Build RRD module." ON)
