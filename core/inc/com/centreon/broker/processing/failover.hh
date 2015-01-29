@@ -22,6 +22,7 @@
 
 #  include <climits>
 #  include <ctime>
+#  include <vector>
 #  include <memory>
 #  include <QMutex>
 #  include <QReadWriteLock>
@@ -78,6 +79,9 @@ namespace                com {
           void           set_buffering_timeout(time_t secs);
           void           set_failover(
                            misc::shared_ptr<processing::failover> fo);
+          void           add_failover(
+                           misc::shared_ptr<processing::failover> fo);
+          bool           failovers_contains(processing::failover* failover);
           void           set_read_timeout(time_t read_timeout);
           void           set_retry_interval(time_t retry_interval);
           void           statistics(io::properties& tree) const;
@@ -104,6 +108,8 @@ namespace                com {
           unsigned int   _events[event_window_length];
           misc::shared_ptr<failover>
                          _failover;
+          std::vector<misc::shared_ptr<failover> >
+                         _failovers;
           bool           _initial;
           bool           _is_out;
           time_t         _last_connect_attempt;

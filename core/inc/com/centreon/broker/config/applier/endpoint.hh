@@ -44,6 +44,8 @@ namespace                    com {
            public:
             typedef          QMap<config::endpoint, processing::failover*>::iterator
                              iterator;
+            typedef          QMap<config::endpoint, processing::failover*>::const_iterator
+                             const_iterator;
 
                              ~endpoint();
             void             apply(
@@ -75,9 +77,7 @@ namespace                    com {
                                bool is_input,
                                bool is_output,
                                QList<config::endpoint>& l);
-            void             _diff_endpoints(
-                               QMap<config::endpoint,
-                               processing::failover*>& current,
+            void             _diff_endpoints(QMap<config::endpoint, processing::failover*>& current,
                                QList<config::endpoint> const& new_endpoints,
                                QList<config::endpoint>& to_create);
 

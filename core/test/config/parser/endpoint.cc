@@ -119,7 +119,8 @@ int main() {
     config::endpoint output1(*(it++));
     if ((output1.name != "CentreonDatabase")
         || (output1.type != "sql")
-        || (output1.failover != "CentreonRetention")
+        || (output1.failover.size() != 1)
+        || (*output1.failover.begin() != "CentreonRetention")
         || (output1.buffering_timeout != 10)
         || (output1.read_timeout != 5)
         || (output1.retry_interval != 300)

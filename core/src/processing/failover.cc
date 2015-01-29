@@ -741,6 +741,37 @@ void failover::set_failover(misc::shared_ptr<failover> fo) {
 }
 
 /**
+ *  Add a failover to this thread.
+ *
+ *  @param[in] fo  A thread's failover
+ */
+void failover::add_failover(
+                 misc::shared_ptr<processing::failover> fo) {
+  set_failover(fo);
+  if (!fo.isNull()) {
+    _failovers.push_back(fo);
+  }
+}
+
+/**
+ *  Check for the existence of a failover in the forwarded failovers list.
+ *
+ *  @param[in] failover  The failover
+ *
+ *  @return              True if the failover is contained in the list.
+ */
+bool failover::failovers_contains(processing::failover* failover) {
+  for (std::vector<misc::shared_ptr<processing::failover> >::const_iterator
+         it(_failovers.begin()),
+         end(_failovers.end());
+       it != end;
+       ++it)
+    if (&**it == failover)
+      return (true);
+  return (false);
+}
+
+/**
  *  Set the read timeout.
  *
  *  @param[in] read_timeout Read timeout.

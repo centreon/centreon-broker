@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <memory>
+#include <vector>
 #include <QCoreApplication>
 #include <QMutexLocker>
 #include "com/centreon/broker/config/applier/endpoint.hh"
@@ -77,7 +78,7 @@ public:
     return (*this);
   }
   bool                 operator()(config::endpoint const& endp) const {
-    return (_name == endp.failover);
+    return (endp.failover.find(_name) != endp.failover.end());
   }
 
 private:
@@ -158,20 +159,16 @@ void endpoint::apply(
   }
 
   // Update existing endpoints.
-  for (QMap<config::endpoint, processing::failover*>::iterator
-         it(_outputs.begin()),
-         end(_outputs.end());
+  for (iterator it(_outputs.begin()), end(_outputs.end());
        it != end;
        ++it)
-    if (*it)
-      (*it)->update();
-  for (QMap<config::endpoint, processing::failover*>::iterator
-         it(_inputs.begin()),
-         end(_inputs.end());
+    (*it)->update();
+
+
+  for (iterator it(_inputs.begin()), end(_inputs.end());
        it != end;
        ++it)
-    if (*it)
-      (*it)->update();
+    (*it)->update();
 
   // Debug message.
   logging::debug(logging::high) << "endpoint applier: "
@@ -257,9 +254,7 @@ void endpoint::discard() {
     QMutexLocker lock(&_inputsm);
 
     // Send termination requests.
-    for (QMap<config::endpoint, processing::failover*>::iterator
-           it = _inputs.begin(),
-           end = _inputs.end();
+    for (iterator it = _inputs.begin(), end = _inputs.end();
          it != end;
          ++it)
       (*it)->process(false, false);
@@ -290,9 +285,7 @@ void endpoint::discard() {
     QMutexLocker lock(&_outputsm);
 
     // Send termination requests.
-    for (QMap<config::endpoint, processing::failover*>::iterator
-           it = _outputs.begin(),
-           end = _outputs.end();
+    for (iterator it = _outputs.begin(), end = _outputs.end();
          it != end;
          ++it)
       (*it)->process(false, false);
@@ -301,9 +294,7 @@ void endpoint::discard() {
     while (!_outputs.empty()) {
       misc::stringifier thread_list;
       thread_list << *_outputs.begin();
-      for (QMap<config::endpoint, processing::failover*>::iterator
-             it = ++_outputs.begin(),
-             end = _outputs.end();
+      for (iterator it = ++_outputs.begin(), end = _outputs.end();
            it != end;
            ++it)
         thread_list << ", " << *it;
@@ -403,8 +394,12 @@ void endpoint::terminated_input() {
   logging::debug(logging::medium) << "endpoint applier: input thread "
     << sendr << " terminated";
   QMutexLocker lock(&_inputsm);
-  QList<config::endpoint> keys(_inputs.keys(
-    static_cast<processing::failover*>(sendr)));
+  QList<config::endpoint> keys;
+  for (const_iterator it(_inputs.begin()), end(_inputs.end());
+       it != end;
+       ++it)
+    if ((*it)->failovers_contains(static_cast<processing::failover*>(sendr)))
+      keys.push_back(it.key());
   for (QList<config::endpoint>::iterator
          it = keys.begin(),
          end = keys.end();
@@ -422,8 +417,12 @@ void endpoint::terminated_output() {
   logging::debug(logging::medium) << "endpoint applier: output thread "
     << sendr << " terminated";
   QMutexLocker lock(&_outputsm);
-  QList<config::endpoint> keys(_outputs.keys(
-    static_cast<processing::failover*>(sendr)));
+  QList<config::endpoint> keys;
+  for (const_iterator it(_outputs.begin()), end(_outputs.end());
+       it != end;
+       ++it)
+    if ((*it)->failovers_contains(static_cast<processing::failover*>(sendr)))
+      keys.push_back(it.key());
   for (QList<config::endpoint>::iterator
          it = keys.begin(),
          end = keys.end();
@@ -482,19 +481,25 @@ processing::failover* endpoint::_create_endpoint(
   }
 
   // Check that failover is configured.
-  misc::shared_ptr<processing::failover> failovr;
-  if (!cfg.failover.isEmpty()) {
-    QList<config::endpoint>::iterator it(std::find_if(l.begin(), l.end(), failover_match_name(cfg.failover)));
-    if (it == l.end())
-      throw (exceptions::msg() << "endpoint applier: could not find " \
-                  "failover '" << cfg.failover << "' for endpoint '"
-               << cfg.name << "'");
-    failovr = misc::shared_ptr<processing::failover>(
-                      _create_endpoint(
-                        *it,
-                        is_input || is_output,
-                        is_output,
-                        l));
+  std::vector<misc::shared_ptr<processing::failover> > failovr;
+  if (!cfg.failover.empty()) {
+    for (std::set<QString>::const_iterator
+           failover_it(cfg.failover.begin()),
+           failover_end(cfg.failover.end());
+         failover_it != failover_end;
+         ++failover_it) {
+      QList<config::endpoint>::iterator it(std::find_if(l.begin(), l.end(), failover_match_name(*failover_it)));
+      if (it == l.end())
+        throw (exceptions::msg() << "endpoint applier: could not find " \
+                    "failover '" << *failover_it << "' for endpoint '"
+                 << cfg.name << "'");
+      failovr.push_back(misc::shared_ptr<processing::failover>(
+                        _create_endpoint(
+                          *it,
+                          is_input || is_output,
+                          is_output,
+                          l)));
+    }
   }
 
   // Create endpoint object.
@@ -570,7 +575,12 @@ processing::failover* endpoint::_create_endpoint(
   fo->set_buffering_timeout(cfg.buffering_timeout);
   fo->set_read_timeout(cfg.read_timeout);
   fo->set_retry_interval(cfg.retry_interval);
-  fo->set_failover(failovr);
+  for (std::vector<misc::shared_ptr<processing::failover> >::iterator
+         it(failovr.begin()),
+         end(failovr.end());
+       it != end;
+       ++it)
+    fo->add_failover(*it);
   return (fo.release());
 }
 
@@ -609,22 +619,27 @@ void endpoint::_diff_endpoints(
     new_ep.erase(list_it);
 
     // Find all subentries.
-    while (!entries.last().failover.isEmpty()) {
-      list_it = std::find_if(
-                       new_ep.begin(),
-                       new_ep.end(),
-                       failover_match_name(entries.last().failover));
-      if (list_it == new_ep.end())
-        throw (exceptions::msg() << "endpoint applier: could not find "\
-               "failover '" << entries.last().failover
-               << "' for endpoint '" << entries.last().name << "'");
-      entries.push_back(*list_it);
-      new_ep.erase(list_it);
+    while (!entries.last().failover.empty()) {
+      for (std::set<QString>::const_iterator
+             failover_it(entries.last().failover.begin()),
+             failover_end(entries.last().failover.end());
+           failover_it != failover_end;
+           ++failover_it) {
+        list_it = std::find_if(
+                         new_ep.begin(),
+                         new_ep.end(),
+                         failover_match_name(*failover_it));
+        if (list_it == new_ep.end())
+          throw (exceptions::msg() << "endpoint applier: could not find "\
+                 "failover '" << *failover_it
+                 << "' for endpoint '" << entries.last().name << "'");
+        entries.push_back(*list_it);
+        new_ep.erase(list_it);
+      }
     }
 
     // Try to find entry and subentries in the endpoints already running.
-    QMap<config::endpoint, processing::failover*>::iterator
-      map_it(to_delete.find(entries.first()));
+    iterator map_it(to_delete.find(entries.first()));
     if (map_it == to_delete.end())
       for (QList<config::endpoint>::iterator
              it(entries.begin()),
@@ -637,8 +652,7 @@ void endpoint::_diff_endpoints(
   }
 
   // Remove old endpoints.
-  for (QMap<config::endpoint, processing::failover*>::iterator it = to_delete.begin(),
-         end = to_delete.end();
+  for (iterator it = to_delete.begin(), end = to_delete.end();
        it != end;
        ++it) {
     // Send only termination request, object will be destroyed by event
