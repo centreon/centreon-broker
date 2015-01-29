@@ -23,6 +23,7 @@
 #include <vector>
 #include <QCoreApplication>
 #include <QMutexLocker>
+#include <QLinkedList>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/endpoint.hh"
@@ -77,7 +78,9 @@ public:
     return (*this);
   }
   bool                 operator()(config::endpoint const& endp) const {
-    return (endp.failover.find(_name) != endp.failover.end());
+    return (endp.failover == _name
+              || endp.secondary_failovers.find(_name)
+                   != endp.secondary_failovers.end());
   }
 
 private:
@@ -470,25 +473,39 @@ processing::failover* endpoint::_create_endpoint(
 
 
   // Check that failover is configured.
-  std::vector<misc::shared_ptr<processing::failover> > failovr;
-  if (!cfg.failover.empty()) {
-    for (std::set<QString>::const_iterator
-           failover_it(cfg.failover.begin()),
-           failover_end(cfg.failover.end());
-         failover_it != failover_end;
-         ++failover_it) {
-      QList<config::endpoint>::iterator it(std::find_if(l.begin(), l.end(), failover_match_name(*failover_it)));
-      if (it == l.end())
-        throw (exceptions::msg() << "endpoint applier: could not find " \
-                    "failover '" << *failover_it << "' for endpoint '"
-                 << cfg.name << "'");
-      failovr.push_back(misc::shared_ptr<processing::failover>(
-                        _create_endpoint(
-                          *it,
-                          is_input || is_output,
-                          is_output,
-                          l)));
-    }
+  misc::shared_ptr<processing::failover> failovr;
+  if (!cfg.failover.isEmpty()) {
+    QList<config::endpoint>::iterator it(std::find_if(l.begin(), l.end(), failover_match_name(cfg.failover)));
+    if (it == l.end())
+      throw (exceptions::msg() << "endpoint applier: could not find " \
+                  "failover '" << cfg.failover << "' for endpoint '"
+               << cfg.name << "'");
+    failovr = misc::shared_ptr<processing::failover>(
+                _create_endpoint(
+                  *it,
+                  is_input || is_output,
+                  is_output,
+                  l));
+  }
+
+  // Check secondary failovers
+  std::vector<misc::shared_ptr<processing::failover> > secondary_failovrs;
+  for (std::set<QString>::const_iterator
+         failover_it(cfg.secondary_failovers.begin()),
+         failover_end(cfg.secondary_failovers.end());
+       failover_it != failover_end;
+       ++failover_it) {
+    QList<config::endpoint>::iterator it(std::find_if(l.begin(), l.end(), failover_match_name(*failover_it)));
+    if (it == l.end())
+      throw (exceptions::msg() << "endpoint applier: could not find " \
+                  "secondary failover '" << *failover_it << "' for endpoint '"
+               << cfg.name << "'");
+    secondary_failovrs.push_back(misc::shared_ptr<processing::failover>(
+                         _create_endpoint(
+                           *it,
+                           is_input || is_output,
+                           is_output,
+                           l)));
   }
 
   // Create endpoint object.
@@ -549,12 +566,13 @@ processing::failover* endpoint::_create_endpoint(
   fo->set_buffering_timeout(cfg.buffering_timeout);
   fo->set_read_timeout(cfg.read_timeout);
   fo->set_retry_interval(cfg.retry_interval);
+  fo->set_failover(failovr);
   for (std::vector<misc::shared_ptr<processing::failover> >::iterator
-         it(failovr.begin()),
-         end(failovr.end());
+         it(secondary_failovrs.begin()),
+         end(secondary_failovrs.end());
        it != end;
        ++it)
-    fo->add_failover(*it);
+    fo->add_secondary_failover(*it);
   return (fo.release());
 }
 
@@ -588,34 +606,52 @@ void endpoint::_diff_endpoints(
     if (list_it == new_ep.end())
       throw (exceptions::msg() << "endpoint applier: error while " \
                                   "diff'ing new and old configuration");
-    QList<config::endpoint> entries;
+    QLinkedList<config::endpoint> entries;
     entries.push_back(*list_it);
     new_ep.erase(list_it);
 
     // Find all subentries.
-    while (!entries.last().failover.empty()) {
-      for (std::set<QString>::const_iterator
-             failover_it(entries.last().failover.begin()),
-             failover_end(entries.last().failover.end());
-           failover_it != failover_end;
-           ++failover_it) {
-        list_it = std::find_if(
-                         new_ep.begin(),
-                         new_ep.end(),
-                         failover_match_name(*failover_it));
-        if (list_it == new_ep.end())
-          throw (exceptions::msg() << "endpoint applier: could not find "\
-                 "failover '" << *failover_it
-                 << "' for endpoint '" << entries.last().name << "'");
-        entries.push_back(*list_it);
-        new_ep.erase(list_it);
+    for (QLinkedList<config::endpoint>::iterator
+           it_entries(entries.begin()),
+           it_end(entries.end());
+         it_entries != it_end;
+         ++it_entries) {
+      // Find primary failover.
+        if (!it_entries->failover.isEmpty()) {
+          list_it = std::find_if(
+                           new_ep.begin(),
+                           new_ep.end(),
+                           failover_match_name(it_entries->failover));
+          if (list_it == new_ep.end())
+            throw (exceptions::msg() << "endpoint applier: could not find "\
+                   "failover '" << it_entries->failover
+                   << "' for endpoint '" << it_entries->name << "'");
+          entries.push_back(*list_it);
+          new_ep.erase(list_it);
+        }
+        // Find secondary failovers.
+        for (std::set<QString>::const_iterator
+               failover_it(entries.last().secondary_failovers.begin()),
+               failover_end(entries.last().secondary_failovers.end());
+             failover_it != failover_end;
+             ++failover_it) {
+          list_it = std::find_if(
+                           new_ep.begin(),
+                           new_ep.end(),
+                           failover_match_name(*failover_it));
+          if (list_it == new_ep.end())
+            throw (exceptions::msg() << "endpoint applier: could not find "\
+                   "secondary failover '" << *failover_it
+                   << "' for endpoint '" << it_entries->name << "'");
+          entries.push_back(*list_it);
+          new_ep.erase(list_it);
       }
     }
 
     // Try to find entry and subentries in the endpoints already running.
     iterator map_it(to_delete.find(entries.first()));
     if (map_it == to_delete.end())
-      for (QList<config::endpoint>::iterator
+      for (QLinkedList<config::endpoint>::iterator
              it(entries.begin()),
              end(entries.end());
            it != end;

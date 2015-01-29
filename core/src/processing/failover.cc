@@ -94,6 +94,7 @@ failover::failover(failover const& f)
      _buffering_timeout(f._buffering_timeout),
      _endpoint(f._endpoint),
      _failover(f._failover),
+     _secondary_failovers(f._secondary_failovers),
      _initial(true),
      _is_out(f._is_out),
      _last_connect_attempt(f._last_connect_attempt),
@@ -138,6 +139,7 @@ failover& failover::operator=(failover const& f) {
   if (this != &f) {
     _endpoint = f._endpoint;
     _failover = f._failover;
+    _secondary_failovers = f._secondary_failovers;
     _is_out = f._is_out;
     _name = f._name;
     _next_timeout = f._next_timeout;
@@ -737,16 +739,14 @@ void failover::set_failover(misc::shared_ptr<failover> fo) {
 }
 
 /**
- *  Add a failover to this thread.
+ *  Add a secondary failover to this thread.
  *
  *  @param[in] fo  A thread's failover
  */
-void failover::add_failover(
+void failover::add_secondary_failover(
                  misc::shared_ptr<processing::failover> fo) {
-  set_failover(fo);
-  if (!fo.isNull()) {
-    _failovers.push_back(fo);
-  }
+  if (!fo.isNull())
+    _secondary_failovers.push_back(fo);
 }
 
 /**
@@ -758,8 +758,8 @@ void failover::add_failover(
  */
 bool failover::failovers_contains(processing::failover* failover) {
   for (std::vector<misc::shared_ptr<processing::failover> >::const_iterator
-         it(_failovers.begin()),
-         end(_failovers.end());
+         it(_secondary_failovers.begin()),
+         end(_secondary_failovers.end());
        it != end;
        ++it)
     if (&**it == failover)

@@ -48,6 +48,8 @@ namespace                com {
          *  @brief Failover thread.
          *
          *  Thread that provide failover on inputs or outputs.
+         *
+         *  Multiple failover can be forwarded.
          */
         class            failover : public QThread, public io::stream {
           Q_OBJECT
@@ -77,7 +79,7 @@ namespace                com {
           void           set_buffering_timeout(time_t secs);
           void           set_failover(
                            misc::shared_ptr<processing::failover> fo);
-          void           add_failover(
+          void           add_secondary_failover(
                            misc::shared_ptr<processing::failover> fo);
           bool           failovers_contains(processing::failover* failover);
           void           set_read_timeout(time_t read_timeout);
@@ -105,7 +107,7 @@ namespace                com {
           misc::shared_ptr<failover>
                          _failover;
           std::vector<misc::shared_ptr<failover> >
-                         _failovers;
+                         _secondary_failovers;
           bool           _initial;
           bool           _is_out;
           time_t         _last_connect_attempt;
