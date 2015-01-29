@@ -390,12 +390,8 @@ void endpoint::terminated_input() {
   logging::debug(logging::medium) << "endpoint applier: input thread "
     << sendr << " terminated";
   QMutexLocker lock(&_inputsm);
-  QList<config::endpoint> keys;
-  for (const_iterator it(_inputs.begin()), end(_inputs.end());
-       it != end;
-       ++it)
-    if ((*it)->failovers_contains(static_cast<processing::failover*>(sendr)))
-      keys.push_back(it.key());
+  QList<config::endpoint> keys(_inputs.keys(
+    static_cast<processing::failover*>(sendr)));
   for (QList<config::endpoint>::iterator
          it = keys.begin(),
          end = keys.end();
@@ -413,12 +409,8 @@ void endpoint::terminated_output() {
   logging::debug(logging::medium) << "endpoint applier: output thread "
     << sendr << " terminated";
   QMutexLocker lock(&_outputsm);
-  QList<config::endpoint> keys;
-  for (const_iterator it(_outputs.begin()), end(_outputs.end());
-       it != end;
-       ++it)
-    if ((*it)->failovers_contains(static_cast<processing::failover*>(sendr)))
-      keys.push_back(it.key());
+  QList<config::endpoint> keys(_outputs.keys(
+    static_cast<processing::failover*>(sendr)));
   for (QList<config::endpoint>::iterator
          it = keys.begin(),
          end = keys.end();
