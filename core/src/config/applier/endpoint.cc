@@ -489,7 +489,7 @@ processing::failover* endpoint::_create_endpoint(
   }
 
   // Check secondary failovers
-  std::vector<misc::shared_ptr<processing::failover> > secondary_failovrs;
+  std::vector<misc::shared_ptr<io::endpoint> > secondary_failovrs;
   for (std::set<QString>::const_iterator
          failover_it(cfg.secondary_failovers.begin()),
          failover_end(cfg.secondary_failovers.end());
@@ -500,14 +500,45 @@ processing::failover* endpoint::_create_endpoint(
       throw (exceptions::msg() << "endpoint applier: could not find " \
                   "secondary failover '" << *failover_it << "' for endpoint '"
                << cfg.name << "'");
-    secondary_failovrs.push_back(misc::shared_ptr<processing::failover>(
-                         _create_endpoint(
+    secondary_failovrs.push_back(misc::shared_ptr<io::endpoint>(
+                         _create_new_endpoint(
                            *it,
                            is_input || is_output,
-                           is_output,
-                           l)));
+                           is_output)));
   }
 
+  // Create endpoint object.
+  misc::shared_ptr<io::endpoint> endp =
+                         _create_new_endpoint(cfg, is_input, is_output);
+
+  // Return failover thread.
+  std::auto_ptr<processing::failover>
+    fo(new processing::failover(endp, is_output, cfg.name, elements));
+  fo->set_buffering_timeout(cfg.buffering_timeout);
+  fo->set_read_timeout(cfg.read_timeout);
+  fo->set_retry_interval(cfg.retry_interval);
+  fo->set_failover(failovr);
+  for (std::vector<misc::shared_ptr<io::endpoint> >::iterator
+         it(secondary_failovrs.begin()),
+         end(secondary_failovrs.end());
+       it != end;
+       ++it)
+    failovr->add_secondary_failover(*it);
+  return (fo.release());
+}
+
+/**
+ *  Create a new endpoint object.
+ *
+ *  @param[in] cfg        The config.
+ *  @param[in] is_input   true if the endpoint will act as input.
+ *  @param[in] is_output  true if the endpoint will act as output.
+ *  @return               A new endpoint.
+ */
+misc::shared_ptr<io::endpoint> endpoint::_create_new_endpoint(
+                                          config::endpoint& cfg,
+                                          bool is_input,
+                                          bool is_output) {
   // Create endpoint object.
   misc::shared_ptr<io::endpoint> endp;
   bool is_acceptor(false);
@@ -559,21 +590,7 @@ processing::failover* endpoint::_create_endpoint(
                "protocol found for endpoint '" << cfg.name << "'");
     ++level;
   }
-
-  // Return failover thread.
-  std::auto_ptr<processing::failover>
-    fo(new processing::failover(endp, is_output, cfg.name, elements));
-  fo->set_buffering_timeout(cfg.buffering_timeout);
-  fo->set_read_timeout(cfg.read_timeout);
-  fo->set_retry_interval(cfg.retry_interval);
-  fo->set_failover(failovr);
-  for (std::vector<misc::shared_ptr<processing::failover> >::iterator
-         it(secondary_failovrs.begin()),
-         end(secondary_failovrs.end());
-       it != end;
-       ++it)
-    fo->add_secondary_failover(*it);
-  return (fo.release());
+  return (endp);
 }
 
 /**

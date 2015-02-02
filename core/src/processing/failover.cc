@@ -695,6 +695,7 @@ void failover::run() {
         this,
         SLOT(quit()));
     }
+
     if (!_should_exit) {
       // Unlock thread lock.
       exit_lock.unlock();
@@ -743,8 +744,7 @@ void failover::set_failover(misc::shared_ptr<failover> fo) {
  *
  *  @param[in] fo  A thread's failover
  */
-void failover::add_secondary_failover(
-                 misc::shared_ptr<processing::failover> fo) {
+void failover::add_secondary_failover(misc::shared_ptr<io::endpoint> fo) {
   if (!fo.isNull())
     _secondary_failovers.push_back(fo);
 }
@@ -757,13 +757,8 @@ void failover::add_secondary_failover(
  *  @return              True if the failover is contained in the list.
  */
 bool failover::failovers_contains(processing::failover* failover) {
-  for (std::vector<misc::shared_ptr<processing::failover> >::const_iterator
-         it(_secondary_failovers.begin()),
-         end(_secondary_failovers.end());
-       it != end;
-       ++it)
-    if (&**it == failover)
-      return (true);
+  if (&*_failover == failover)
+    return (true);
   return (false);
 }
 

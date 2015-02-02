@@ -80,7 +80,7 @@ namespace                com {
           void           set_failover(
                            misc::shared_ptr<processing::failover> fo);
           void           add_secondary_failover(
-                           misc::shared_ptr<processing::failover> fo);
+                           misc::shared_ptr<io::endpoint> fo);
           bool           failovers_contains(processing::failover* failover);
           void           set_read_timeout(time_t read_timeout);
           void           set_retry_interval(time_t retry_interval);
@@ -106,7 +106,7 @@ namespace                com {
           unsigned int   _events[event_window_length];
           misc::shared_ptr<failover>
                          _failover;
-          std::vector<misc::shared_ptr<failover> >
+          std::vector<misc::shared_ptr<io::endpoint> >
                          _secondary_failovers;
           bool           _initial;
           bool           _is_out;

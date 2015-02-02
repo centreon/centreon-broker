@@ -76,6 +76,11 @@ namespace                    com {
                                bool is_input,
                                bool is_output,
                                QList<config::endpoint>& l);
+            misc::shared_ptr<io::endpoint>
+                              _create_new_endpoint(
+                               config::endpoint& cfg,
+                               bool is_input,
+                               bool is_output);
             void             _diff_endpoints(QMap<config::endpoint, processing::failover*>& current,
                                QList<config::endpoint> const& new_endpoints,
                                QList<config::endpoint>& to_create);
