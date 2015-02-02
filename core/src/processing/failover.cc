@@ -534,13 +534,14 @@ void failover::run() {
       {
         QWriteLocker wl(&_secondary_fm);
         secondary_streams.reserve(_secondary_failovers.size());
+        unsigned int num = 0;
         for (std::vector<misc::shared_ptr<io::endpoint> >::iterator
                it(_secondary_failovers.begin()),
                end(_secondary_failovers.end());
              it != end;
-             ++it) {
+             ++it, ++num) {
           logging::debug(logging::medium) << "failover: endpoint '"
-            << _name << "' opening secondary failover";
+            << _name << "' opening secondary failover number " << num;
           misc::shared_ptr<io::stream> tmp((*it)->open());
           if (tmp)
             secondary_streams.push_back(tmp);
