@@ -311,6 +311,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/multiplexing/subscriber.cc"
   "${SRC_DIR}/processing/failover.cc"
   "${SRC_DIR}/processing/feeder.cc"
+  "${SRC_DIR}/processing/multiple_writer.cc"
   ${QT_WRAPPED_SOURCES}
   # Headers.
   "${INC_DIR}/config/applier/endpoint.hh"
@@ -361,6 +362,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/multiplexing/subscriber.hh"
   "${INC_DIR}/processing/failover.hh"
   "${INC_DIR}/processing/feeder.hh"
+  "${INC_DIR}/processing/multiple_writer.hh"
   "${INC_DIR}/timestamp.hh"
 )
 
@@ -782,6 +784,13 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_notification_non_correlated")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/notification_non_correlated.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # Correlated notification.
+  set(TEST_NAME "running_notification_correlated")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/notification_correlated.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 

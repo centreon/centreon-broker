@@ -33,6 +33,7 @@
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
 #include "com/centreon/broker/processing/failover.hh"
+#include "com/centreon/broker/processing/multiple_writer.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
@@ -485,6 +486,7 @@ void failover::run() {
 
   time_t buffering(0);
   while (!_should_exit) {
+    std::vector<misc::shared_ptr<io::stream> > secondary_streams;
     misc::shared_ptr<io::stream> copy_handler;
     exit_lock.unlock();
     try {
@@ -528,6 +530,24 @@ void failover::run() {
           (*s)->update();
       }
 
+      // Open secondary endpoints
+      {
+        QWriteLocker wl(&_secondary_fm);
+        secondary_streams.reserve(_secondary_failovers.size());
+        for (std::vector<misc::shared_ptr<io::endpoint> >::iterator
+               it(_secondary_failovers.begin()),
+               end(_secondary_failovers.end());
+             it != end;
+             ++it) {
+          logging::debug(logging::medium) << "failover: endpoint '"
+            << _name << "' opening secondary failover";
+          misc::shared_ptr<io::stream> tmp((*it)->open());
+          if (tmp)
+            secondary_streams.push_back(tmp);
+        }
+      }
+
+
       // Initial buffering.
       {
         logging::info(logging::medium)
@@ -552,6 +572,17 @@ void failover::run() {
       while (!_should_exit || !_immediate) {
         exit_lock.unlock();
         bool timed_out(false);
+
+        if (_update) {
+          QWriteLocker secondary_lock(&_secondary_fm);
+          for (std::vector<misc::shared_ptr<io::stream> >::iterator
+                 it(secondary_streams.begin()),
+                 end(secondary_streams.end());
+               it != end;
+               ++it)
+            (*it)->update();
+        }
+
         if (_unprocessed.empty()) {
           QReadLocker lock(&_fromm);
           if (!_from.isNull()) {
@@ -568,13 +599,25 @@ void failover::run() {
               _next_timeout = time(NULL) + _read_timeout;
           }
         }
+
         QWriteLocker lock(&_tom);
+        QWriteLocker secondary_lock(&_secondary_fm);
+        multiple_writer writer;
+        writer.set_primary_output(_to.data());
+        for (std::vector<misc::shared_ptr<io::stream> >::iterator
+               it(secondary_streams.begin()),
+               end(secondary_streams.end());
+             it != end;
+             ++it)
+          writer.add_secondary_output(it->data());
+
         if (!_to.isNull()) {
           if (_update && _is_out) {
             _update = false;
             _to->update();
           }
-          unsigned int written(_to->write(_unprocessed.front()));
+          unsigned int written(writer.write(_unprocessed.front()));
+          //unsigned int written(_to->write(_unprocessed.front()));
           time_t now(time(NULL));
           if (!_unprocessed.front().isNull()) {
             if (now > _last_event) {

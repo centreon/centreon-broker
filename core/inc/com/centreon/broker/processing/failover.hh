@@ -141,6 +141,7 @@ namespace                com {
           // Stream locking.
           mutable QReadWriteLock _fromm;
           mutable QReadWriteLock _tom;
+          mutable QReadWriteLock _secondary_fm;
         };
       }
     }
