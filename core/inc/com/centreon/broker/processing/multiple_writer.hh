@@ -21,6 +21,8 @@
 #  define CCB_PROCESSING_MULTIPLE_WRITER_HH
 
 #  include <vector>
+#  include <list>
+#  include <string>
 #  include <set>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/io/stream.hh"
@@ -49,7 +51,12 @@ namespace                com {
                    operator=(multiple_writer const& right);
 
           void     set_primary_output(io::stream* output);
-          void     add_secondary_output(io::stream* output);
+          void     register_secondary_endpoints(
+                     std::string const& failover_name,
+                     std::vector<misc::shared_ptr<io::endpoint> >&
+                                                        secondary_endpoints);
+
+          void     update();
 
           unsigned int
                    write(misc::shared_ptr<io::data> const& d);
@@ -57,9 +64,12 @@ namespace                com {
          private:
           io::stream*
                    _primary_output;
-          std::vector<io::stream*>
+          std::list<misc::shared_ptr<io::stream> >
                    _secondary_outputs;
-
+          std::vector<misc::shared_ptr<io::endpoint> >*
+                   _secondary_endpoints;
+          std::string
+                   _name;
         };
       }
     }
