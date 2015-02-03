@@ -486,8 +486,8 @@ void failover::run() {
 
   time_t buffering(0);
   while (!_should_exit) {
-    std::vector<misc::shared_ptr<io::stream> > secondary_streams;
     misc::shared_ptr<io::stream> copy_handler;
+    multiple_writer writer;
     exit_lock.unlock();
     try {
       // Close previous endpoint if any and then open it.
@@ -533,19 +533,7 @@ void failover::run() {
       // Open secondary endpoints
       {
         QWriteLocker wl(&_secondary_fm);
-        secondary_streams.reserve(_secondary_failovers.size());
-        unsigned int num = 0;
-        for (std::vector<misc::shared_ptr<io::endpoint> >::iterator
-               it(_secondary_failovers.begin()),
-               end(_secondary_failovers.end());
-             it != end;
-             ++it, ++num) {
-          logging::debug(logging::medium) << "failover: endpoint '"
-            << _name << "' opening secondary failover number " << num;
-          misc::shared_ptr<io::stream> tmp((*it)->open());
-          if (tmp)
-            secondary_streams.push_back(tmp);
-        }
+        writer.register_secondary_endpoints(_secondary_failovers);
       }
 
 
@@ -576,12 +564,7 @@ void failover::run() {
 
         if (_update) {
           QWriteLocker secondary_lock(&_secondary_fm);
-          for (std::vector<misc::shared_ptr<io::stream> >::iterator
-                 it(secondary_streams.begin()),
-                 end(secondary_streams.end());
-               it != end;
-               ++it)
-            (*it)->update();
+          writer.update();
         }
 
         if (_unprocessed.empty()) {
@@ -603,14 +586,7 @@ void failover::run() {
 
         QWriteLocker lock(&_tom);
         QWriteLocker secondary_lock(&_secondary_fm);
-        multiple_writer writer;
         writer.set_primary_output(_to.data());
-        for (std::vector<misc::shared_ptr<io::stream> >::iterator
-               it(secondary_streams.begin()),
-               end(secondary_streams.end());
-             it != end;
-             ++it)
-          writer.add_secondary_output(it->data());
 
         if (!_to.isNull()) {
           if (_update && _is_out) {
@@ -618,7 +594,6 @@ void failover::run() {
             _to->update();
           }
           unsigned int written(writer.write(_unprocessed.front()));
-          //unsigned int written(_to->write(_unprocessed.front()));
           time_t now(time(NULL));
           if (!_unprocessed.front().isNull()) {
             if (now > _last_event) {
@@ -789,8 +764,10 @@ void failover::set_failover(misc::shared_ptr<failover> fo) {
  *  @param[in] fo  A thread's failover
  */
 void failover::add_secondary_failover(misc::shared_ptr<io::endpoint> fo) {
-  if (!fo.isNull())
+  if (!fo.isNull()) {
+    QWriteLocker lock(&_secondary_fm);
     _secondary_failovers.push_back(fo);
+  }
 }
 
 /**
