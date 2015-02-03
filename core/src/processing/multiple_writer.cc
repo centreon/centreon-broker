@@ -41,7 +41,7 @@ using namespace com::centreon::broker::processing;
 multiple_writer::multiple_writer()
   : _primary_output(NULL),
     _secondary_endpoints(NULL),
-    _name("(UNKNOWN)"){
+    _name("(UNKNOWN)") {
 
 }
 
@@ -71,6 +71,7 @@ multiple_writer& multiple_writer::operator=(multiple_writer const& right) {
     _primary_output = right._primary_output;
     _secondary_outputs = right._secondary_outputs;
     _secondary_endpoints = right._secondary_endpoints;
+    _name = right._name;
   }
   return (*this);
 }
@@ -122,6 +123,7 @@ unsigned int multiple_writer::write(misc::shared_ptr<io::data> const& d) {
     }
     catch (std::exception const& e) {
       logging::error(logging::medium)
+
         << "failover: endpoint '" << _name
         << "' a secondary endpoint failed: '" << e.what()
         << "', closing it";
