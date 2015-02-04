@@ -345,7 +345,7 @@ void stream::_prepare() {
   _prepare_insert<correlation::issue>(_issue_insert);
   _prepare_insert<correlation::service_state>(_service_state_insert);
   {
-    QString query(
+    std::string query(
       "INSERT INTO rt_issues_issues_parents (child_id, end_time, start_time, parent_id)"
       " VALUES (:child_id, :end_time, :start_time, :parent_id)");
     _issue_parent_insert.prepare(query, "SQL: could not prepare query");
@@ -499,7 +499,7 @@ void stream::_prepare() {
   _prepare_update<correlation::service_state>(_service_state_update, id);
 
   {
-    QString query(
+    std::string query(
       "UPDATE rt_issues_issues_parents SET end_time=:end_time"
       " WHERE child_id=:child_id"
       "       AND start_time=:start_time"

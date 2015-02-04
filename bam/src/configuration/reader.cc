@@ -185,8 +185,8 @@ void reader::_load(state::kpis& kpis) {
       if (it->second.is_meta()) {
         std::ostringstream oss;
         oss << "SELECT hsr.host_host_id, hsr.service_service_id"
-               "  FROM service AS s"
-               "  LEFT JOIN host_service_relation AS hsr"
+               "  FROM cfg_service AS s"
+               "  LEFT JOIN cfg_host_service_relation AS hsr"
                "    ON s.service_id=hsr.service_service_id"
                "  WHERE s.service_description='meta_" << it->second.get_meta_id()
             << "'";
@@ -265,10 +265,10 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
     query.run_query(
             "SELECT h.host_name, s.service_description,"
             "       hsr.host_host_id, hsr.service_service_id"
-            "  FROM service AS s"
-            "  INNER JOIN host_service_relation AS hsr"
+            "  FROM cfg_service AS s"
+            "  INNER JOIN cfg_host_service_relation AS hsr"
             "    ON s.service_id=hsr.service_service_id"
-            "  INNER JOIN host AS h"
+            "  INNER JOIN cfg_host AS h"
             "    ON hsr.host_host_id=h.host_id"
             "  WHERE s.service_description LIKE 'ba_%'");
     while (query.next()) {
@@ -376,7 +376,7 @@ void reader::_load(
     q.run_query(
       "SELECT meta_id, meta_name, calcul_type, warning, critical,"
       "       meta_select_mode, regexp_str, metric"
-      "  FROM meta_service"
+      "  FROM cfg_meta_service"
       "  WHERE meta_activate='1'");
     while (q.next()) {
       unsigned int meta_id(q.value(0).toUInt());
@@ -411,10 +411,10 @@ void reader::_load(
     database_query q(_db);
     q.run_query(
       "SELECT h.host_name, s.service_description"
-      "  FROM service AS s"
+      "  FROM cfg_service AS s"
       "  INNER JOIN host_service_relation AS hsr"
       "    ON s.service_id=hsr.service_service_id"
-      "  INNER JOIN host AS h"
+      "  INNER JOIN cfg_host AS h"
       "    ON hsr.host_host_id=h.host_id"
       "  WHERE s.service_description LIKE 'meta_%'");
     while (q.next()) {
@@ -479,10 +479,10 @@ void reader::_load(
         && !it->second.get_metric_name().empty()) {
       std::ostringstream query;
       query << "SELECT m.metric_id"
-            << "  FROM metrics AS m"
-            << "    INNER JOIN index_data AS i"
+            << "  FROM rt_metrics AS m"
+            << "    INNER JOIN rt_index_data AS i"
             << "    ON m.index_id=i.id"
-            << "    INNER JOIN services AS s"
+            << "    INNER JOIN rt_services AS s"
             << "    ON i.host_id=s.host_id AND i.service_id=s.service_id"
             << "  WHERE s.description LIKE '"
             << it->second.get_service_filter() << "'"
@@ -511,7 +511,7 @@ void reader::_load(
       try {
         std::ostringstream query;
         query << "SELECT metric_id"
-              << "  FROM meta_service_relation"
+              << "  FROM cfg_meta_service_relation"
               << "  WHERE meta_id=" << it->second.get_id()
               << "    AND activate='1'";
         database_query q(_db);
@@ -546,10 +546,10 @@ void reader::_load(
     q.run_query(
       "SELECT h.host_id, s.service_id, h.host_name, s.service_description,"
           "   service_activate"
-      "  FROM service AS s"
+      "  FROM cfg_service AS s"
       "  LEFT JOIN host_service_relation AS hsr"
       "    ON s.service_id=hsr.service_service_id"
-      "  LEFT JOIN host AS h"
+      "  LEFT JOIN cfg_host AS h"
       "    ON hsr.host_host_id=h.host_id");
     while (q.next())
       mapping.set_service(
@@ -754,13 +754,13 @@ void reader::_load_dimensions() {
       "    ON k.drop_critical_impact_id = cc.id_impact"
       "  LEFT JOIN mod_bam_impacts AS uu"
       "    ON k.drop_unknown_impact_id = uu.id_impact"
-      "  LEFT JOIN host AS h"
+      "  LEFT JOIN cfg_host AS h"
       "    ON h.host_id = k.host_id"
-      "  LEFT JOIN service AS s"
+      "  LEFT JOIN cfg_service AS s"
       "    ON s.service_id = k.service_id"
       "  INNER JOIN mod_bam AS b"
       "    ON b.ba_id = k.id_ba"
-      "  LEFT JOIN meta_service AS meta"
+      "  LEFT JOIN cfg_meta_service AS meta"
       "    ON meta.meta_id = k.meta_id"
       "  LEFT JOIN mod_bam_boolean as boo"
       "    ON boo.boolean_id = k.boolean_id"
