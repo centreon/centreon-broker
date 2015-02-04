@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,11 +20,11 @@
 #ifndef CCB_SQL_INTERNAL_HH
 #  define CCB_SQL_INTERNAL_HH
 
-#  include <QSqlQuery>
 #  include <string>
 #  include <utility>
 #  include <vector>
 #  include "com/centreon/broker/correlation/events.hh"
+#  include "com/centreon/broker/database_query.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/neb/events.hh"
 #  include "mapping.hh"
@@ -39,7 +39,7 @@ namespace                 sql {
                             T const&,
                             QString const&,
                             data_member<T> const&,
-                            QSqlQuery&);
+                            database_query&);
   };
 
   // DB mappings.
@@ -61,33 +61,33 @@ namespace                 sql {
 CCB_END()
 
 // ORM operators.
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::acknowledgement const& a);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::comment const& c);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::custom_variable const& cv);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::custom_variable_status const& cvs);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::downtime const& d);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::event_handler const& eh);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::flapping_status const& fs);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::host const& h);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::host_check const& hc);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::host_dependency const& hd);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::host_group const& hg);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::host_group_member const& hgm);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::host_parent const& hp);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::host_status const& hs);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::instance const& p);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::instance_status const& ps);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::log_entry const& le);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::module const& m);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::notification const& n);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::service const& s);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::service_check const& sc);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::service_dependency const& sd);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::service_group const& sg);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::service_group_member const& sgm);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::neb::service_status const& ss);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::correlation::host_state const& hs);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::correlation::issue const& i);
-QSqlQuery& operator<<(QSqlQuery& q, com::centreon::broker::correlation::service_state const& ss);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::acknowledgement const& a);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::comment const& c);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::custom_variable const& cv);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::custom_variable_status const& cvs);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::downtime const& d);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::event_handler const& eh);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::flapping_status const& fs);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::host const& h);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::host_check const& hc);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::host_dependency const& hd);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::host_group const& hg);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::host_group_member const& hgm);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::host_parent const& hp);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::host_status const& hs);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::instance const& p);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::instance_status const& ps);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::log_entry const& le);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::module const& m);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::notification const& n);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::service const& s);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::service_check const& sc);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::service_dependency const& sd);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::service_group const& sg);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::service_group_member const& sgm);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::service_status const& ss);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::correlation::host_state const& hs);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::correlation::issue const& i);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::correlation::service_state const& ss);
 
 #endif // !CCB_SQL_INTERNAL_HH

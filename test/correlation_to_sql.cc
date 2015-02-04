@@ -64,6 +64,7 @@ int main() {
   external_command commander;
   engine daemon;
   cbd broker;
+  test_db db;
 
   // Information.
   std::cout << "base retention: " << cbmod_correlation_path << "\n"
@@ -175,7 +176,7 @@ int main() {
     }
 
     // Prepare database.
-    QSqlDatabase db(config_db_open(DB_NAME));
+    db.open(DB_NAME);
 
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, HOST_COUNT);
@@ -386,7 +387,7 @@ int main() {
       };
 
       // Get host state events.
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec("SELECT host_id, start_time, end_time, state,"
                   "       ack_time, in_downtime"
                   " FROM rt_hoststateevents"
@@ -567,7 +568,7 @@ int main() {
       };
 
       // Get service state events.
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec("SELECT host_id, service_id, start_time, end_time,"
                   "       state, ack_time, in_downtime"
                   " FROM rt_servicestateevents"
@@ -691,7 +692,6 @@ int main() {
   ::remove(broker_correlation_path.c_str());
   ::remove(cbmod_config_path.c_str());
   ::remove(cbmod_correlation_path.c_str());
-  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -54,6 +54,7 @@ void config::applier::deinit() {
   config::applier::temporary::unload();
   config::applier::logger::unload();
   io::temporary::unload();
+  multiplexing::engine::instance().clear();
   config::applier::modules::unload();
   multiplexing::engine::unload();
   io::protocols::unload();

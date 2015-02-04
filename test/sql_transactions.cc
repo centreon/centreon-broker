@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -51,10 +51,11 @@ int main() {
   std::list<service> services;
   std::string engine_config_path(tmpnam(NULL));
   engine daemon;
+  test_db db;
 
   try {
     // Prepare database.
-    QSqlDatabase db(config_db_open(DB_NAME));
+    db.open(DB_NAME);
 
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, 10);
@@ -90,7 +91,7 @@ int main() {
       query << "SELECT last_alive, name"
             << "  FROM rt_instances"
             << "  WHERE instance_id=42";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()) || !q.next())
         throw (exceptions::msg() << "cannot read instances from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -115,7 +116,7 @@ int main() {
       query << "SELECT host_id, name, last_check"
             << "  FROM rt_hosts"
             << "  ORDER BY host_id ASC";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read hosts from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -148,7 +149,7 @@ int main() {
       query << "SELECT host_id, service_id, description, last_check"
             << "  FROM rt_services"
             << "  ORDER BY host_id ASC, service_id ASC";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read services from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -191,7 +192,6 @@ int main() {
   // Cleanup.
   daemon.stop();
   config_remove(engine_config_path.c_str());
-  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
 

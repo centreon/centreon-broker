@@ -21,12 +21,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <QSqlDriver>
-#include <QSqlError>
-#include <QSqlField>
-#include <QSqlQuery>
-#include <QSqlRecord>
 #include <QThread>
-#include <QVariant>
 #include <QMutexLocker>
 #include <sstream>
 #include "com/centreon/broker/misc/global_lock.hh"
@@ -99,219 +94,44 @@ static inline bool double_equal(double a, double b) {
 /**
  *  Constructor.
  *
- *  @param[in] storage_type            Storage DB type.
- *  @param[in] storage_host            Storage DB host.
- *  @param[in] storage_port            Storage DB port.
- *  @param[in] storage_user            Storage DB user.
- *  @param[in] storage_password        Storage DB password.
- *  @param[in] storage_db              Storage DB name.
- *  @param[in] queries_per_transaction Queries per transaction.
+ *  @param[in] db_cfg                  Database configuration.
  *  @param[in] rrd_len                 RRD length.
  *  @param[in] interval_length         Interval length.
  *  @param[in] rebuild_check_interval  How often the stream must check
  *                                     for graph rebuild.
  *  @param[in] store_in_db             Should we insert data in
  *                                     data_bin ?
- *  @param[in] check_replication       true to check replication status.
  *  @param[in] insert_in_index_data    Create entries in index_data or
  *                                     not.
  */
 stream::stream(
-          QString const& storage_type,
-          QString const& storage_host,
-          unsigned short storage_port,
-          QString const& storage_user,
-          QString const& storage_password,
-          QString const& storage_db,
-          unsigned int queries_per_transaction,
+          database_config const& db_cfg,
           unsigned int rrd_len,
           time_t interval_length,
           unsigned int rebuild_check_interval,
           bool store_in_db,
-          bool check_replication,
-          bool insert_in_index_data) {
-  // Process events.
-  _process_out = true;
+          bool insert_in_index_data)
+  : _insert_in_index_data(insert_in_index_data),
+    _interval_length(interval_length),
+    _pending_events(0),
+    _process_out(true),
+    _rebuild_thread(
+      db_cfg,
+      rebuild_check_interval,
+      interval_length,
+      rrd_len),
+    _rrd_len(rrd_len ? rrd_len : 15552000),
+    _store_in_db(store_in_db),
+    _db(db_cfg),
+    _update_metrics(_db) {
+  // Prepare queries.
+  _prepare();
 
-  // Queries per transaction.
-  _queries_per_transaction = ((queries_per_transaction >= 2)
-                              ? queries_per_transaction
-                              : 1);
-  _transaction_queries = 0;
+  // Run rebuild thread.
+  _rebuild_thread.start();
 
-  // Store in DB.
-  _store_in_db = store_in_db;
-  _insert_in_index_data = insert_in_index_data;
-
-  // Storage connection ID.
-  QString storage_id;
-  storage_id.setNum((qulonglong)this, 16);
-
-  // Add database connection.
-  _storage_db.reset(
-    new QSqlDatabase(QSqlDatabase::addDatabase(
-                                     storage_type,
-                                     storage_id)));
-  if (storage_type == "QMYSQL")
-    _storage_db->setConnectOptions("CLIENT_FOUND_ROWS");
-
-  // Set database parameters.
-  _storage_db->setHostName(storage_host);
-  _storage_db->setPort(storage_port);
-  _storage_db->setUserName(storage_user);
-  _storage_db->setPassword(storage_password);
-  _storage_db->setDatabaseName(storage_db);
-
-  try {
-    {
-      QMutexLocker lock(&global_lock);
-      // Open database.
-      if (!_storage_db->open()) {
-        _clear_qsql();
-        throw (broker::exceptions::msg() << "storage: could not connect " \
-               "to Centreon Storage database");
-      }
-    }
-
-    // Check that replication is OK.
-    if (check_replication) {
-      logging::debug(logging::medium)
-        << "storage: checking replication status";
-      QSqlQuery q(*_storage_db);
-      if (!q.exec("SHOW SLAVE STATUS"))
-        logging::info(logging::medium)
-          << "storage: could not check replication status";
-      else {
-        if (!q.next())
-          logging::info(logging::medium)
-            << "storage: database is not under replication";
-        else {
-          QSqlRecord record(q.record());
-          unsigned int i(0);
-          for (QString field = record.fieldName(i);
-               !field.isEmpty();
-               field = record.fieldName(++i))
-            if (((field == "Slave_IO_Running")
-                 && (q.value(i).toString() != "Yes"))
-                || ((field == "Slave_SQL_Running")
-                    && (q.value(i).toString() != "Yes"))
-                || ((field == "Seconds_Behind_Master")
-                    && (q.value(i).toInt() != 0)))
-              throw (broker::exceptions::msg() << "storage: " \
-                          "replication is not complete: " << field
-                       << "=" << q.value(i).toString());
-          logging::info(logging::medium)
-            << "storage: database replication is complete, " \
-               "connection granted";
-        }
-      }
-    }
-    else
-      logging::debug(logging::medium)
-        << "storage: NOT checking replication status";
-
-    // Set parameters.
-    _rrd_len = (rrd_len ? rrd_len : 15552000);
-    _interval_length = interval_length;
-
-    // Prepare queries.
-    _prepare();
-
-    // Initial transaction.
-    if (_queries_per_transaction > 1)
-      _storage_db->transaction();
-
-    // Run rebuild thread.
-    _rebuild_thread.set_interval(rebuild_check_interval);
-    _rebuild_thread.set_interval_length(interval_length);
-    _rebuild_thread.set_rrd_length(_rrd_len);
-    _rebuild_thread.set_db(*_storage_db);
-    _rebuild_thread.start();
-
-    // Register with multiplexer.
-    multiplexing::engine::instance().hook(*this, false);
-  }
-  catch (...) {
-    {
-      QMutexLocker lock(&global_lock);
-      // Delete statements.
-      _clear_qsql();
-    }
-
-    // Remove this connection.
-    QSqlDatabase::removeDatabase(storage_id);
-    throw ;
-  }
-}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] s Object to copy.
- */
-stream::stream(stream const& s) : multiplexing::hooker(s) {
-  // Processing.
-  _process_out = s._process_out;
-
-  // Queries per transaction.
-  _queries_per_transaction = s._queries_per_transaction;
-  _transaction_queries = 0;
-
-  // Store in DB.
-  _store_in_db = s._store_in_db;
-  _insert_in_index_data = s._insert_in_index_data;
-
-  // Storage connection ID.
-  QString storage_id;
-  storage_id.setNum((qulonglong)this, 16);
-
-  // Clone Storage database.
-  _storage_db.reset(new QSqlDatabase(QSqlDatabase::cloneDatabase(
-                                                     *s._storage_db,
-                                                     storage_id)));
-
-  // Copy rebuild thread.
-  _rebuild_thread = s._rebuild_thread;
-
-  try {
-    {
-      QMutexLocker lock(&global_lock);
-      // Open database.
-      if (!_storage_db->open()) {
-        _clear_qsql();
-        throw (broker::exceptions::msg() << "storage: could not connect " \
-               "to Centreon Storage database");
-      }
-    }
-
-    // Set parameters.
-    _rrd_len = s._rrd_len;
-    _interval_length = s._interval_length;
-
-    // Prepare queries.
-    _prepare();
-
-    // Initial transaction.
-    if (_queries_per_transaction > 1)
-      _storage_db->transaction();
-
-    // Run rebuild thread.
-    _rebuild_thread.start();
-
-    // Register with multiplexer.
-    multiplexing::engine::instance().hook(*this, false);
-  }
-  catch (...) {
-    {
-      QMutexLocker lock(&global_lock);
-      // Delete statements.
-      _clear_qsql();
-    }
-
-    // Remove this connection.
-    QSqlDatabase::removeDatabase(storage_id);
-    throw ;
-  }
+  // Register with multiplexer.
+  multiplexing::engine::instance().hook(*this, false);
 }
 
 /**
@@ -324,19 +144,6 @@ stream::~stream() {
 
   // Unregister from multiplexer.
   multiplexing::engine::instance().unhook(*this);
-
-  // Connection ID.
-  QString storage_id;
-  storage_id.setNum((qulonglong)this, 16);
-
-  {
-    QMutexLocker lock(&global_lock);
-    // Reset statements.
-    _clear_qsql();
-  }
-
-  // Remove this connection.
-  QSqlDatabase::removeDatabase(storage_id);
 }
 
 /**
@@ -416,6 +223,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
 
   // Process service status events.
   if (!data.isNull()) {
+    ++_pending_events;
     if (data->type() == io::events::data_type<io::events::neb, neb::de_service_status>::value) {
       misc::shared_ptr<neb::service_status>
         ss(data.staticCast<neb::service_status>());
@@ -423,9 +231,6 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
         << "storage: processing service status event of service "
         << ss->service_id << " of host " << ss->host_id
         << " (ctime " << ss->last_check << ")";
-
-      // Increase event count.
-      ++_transaction_queries;
 
       unsigned int rrd_len;
       bool index_locked(false);
@@ -528,31 +333,25 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
       }
     }
   }
-
-  // Commit transactions.
-  if (_queries_per_transaction > 1) {
-    logging::debug(logging::low) << "storage: current transaction has "
-      << _transaction_queries << " pending queries";
-    if (_storage_db->isOpen()
-        && ((_transaction_queries >= _queries_per_transaction)
-            || data.isNull())) {
-      logging::info(logging::medium)
-        << "storage: committing transaction";
-      _update_status("status=committing current transaction\n");
-      _storage_db->commit();
-      _storage_db->transaction();
-      _transaction_queries = 0;
-      _update_status("");
-    }
+  else {
+    logging::info(logging::medium)
+      << "storage: committing transaction";
+    _update_status("status=committing current transaction\n");
+    _db.commit();
+    _update_status("");
   }
-  unsigned int perfdata_events(_perfdata_queue.size());
-  logging::debug(logging::low) << "storage: " << perfdata_events
-    << " data_bin events are pending";
-  if ((perfdata_events >= _queries_per_transaction)
-      || data.isNull())
-    _insert_perfdatas();
 
-  return (1);
+  // Event acknowledgement.
+  logging::debug(logging::low)
+    << "storage: " << _pending_events << " have not yet been acknowledged";
+  if (!_db.pending_queries()) {
+    _insert_perfdatas();
+    int retval(_pending_events);
+    _pending_events = 0;
+    return (retval);
+  }
+  else
+    return (0);
 }
 
 /**************************************
@@ -577,12 +376,10 @@ void stream::_check_deleted_index() {
     // Fetch next index to delete.
     unsigned long long index_id;
     {
-      QSqlQuery q(*_storage_db);
-      if (!q.exec("SELECT id FROM rt_index_data WHERE to_delete=1 LIMIT 1")
-          || q.lastError().isValid())
-        throw (broker::exceptions::msg()
-               << "storage: could not query rt_index_data to get index to delete: "
-               << q.lastError().text());
+      database_query q(_db);
+      q.run_query(
+          "SELECT id FROM rt_index_data WHERE to_delete=1 LIMIT 1",
+          "storage: could not query index_data to get index to delete");
       if (!q.next())
         break ;
       index_id = q.value(0).toULongLong();
@@ -593,11 +390,13 @@ void stream::_check_deleted_index() {
     {
       std::ostringstream oss;
       oss << "SELECT metric_id FROM rt_metrics WHERE index_id=" << index_id;
-      QSqlQuery q(*_storage_db);
-      if (!q.exec(oss.str().c_str()) || q.lastError().isValid())
+      database_query q(_db);
+      try { q.run_query(oss.str()); }
+      catch (std::exception const& e) {
         throw (broker::exceptions::msg()
-               << "storage: could not get rt_metrics of index "
-               << index_id);
+               << "storage: could not get metrics of index "
+               << index_id << ": " << e.what());
+      }
       while (q.next())
         metrics_to_delete.push_back(q.value(0).toULongLong());
     }
@@ -610,10 +409,12 @@ void stream::_check_deleted_index() {
     {
       std::ostringstream oss;
       oss << "DELETE FROM rt_index_data WHERE id=" << index_id;
-      QSqlQuery q(*_storage_db);
-      if (!q.exec(oss.str().c_str()) || q.lastError().isValid())
+      database_query q(_db);
+      try { q.run_query(oss.str()); }
+      catch (std::exception const& e) {
         logging::error(logging::low) << "storage: cannot delete index "
-          << index_id << ": " << q.lastError().text();
+          << index_id << ": " << e.what();
+      }
     }
     ++deleted_index;
 
@@ -627,11 +428,10 @@ void stream::_check_deleted_index() {
   // Search standalone metrics to delete.
   std::list<unsigned long long> metrics_to_delete;
   {
-    QSqlQuery q(*_storage_db);
-    if (!q.exec("SELECT metric_id FROM rt_metrics WHERE to_delete=1")
-        || q.lastError().isValid())
-      throw (broker::exceptions::msg()
-             << "storage: could not get the list of metrics to delete");
+    database_query q(_db);
+    q.run_query(
+        "SELECT metric_id FROM rt_metrics WHERE to_delete=1",
+        "storage: could not get the list of metrics to delete");
     while (q.next())
       metrics_to_delete.push_back(q.value(0).toULongLong());
   }
@@ -646,21 +446,6 @@ void stream::_check_deleted_index() {
     << deleted_index << " index removed";
   _update_status("");
 
-  return ;
-}
-
-/**
- *  Clear QtSql objects.
- */
-void stream::_clear_qsql() {
-  _update_metrics.reset();
-  if (_storage_db.get() && _storage_db->isOpen()) {
-    _insert_perfdatas();
-    if (_queries_per_transaction > 1)
-      _storage_db->commit();
-    _storage_db->close();
-  }
-  _storage_db.reset();
   return ;
 }
 
@@ -698,11 +483,13 @@ void stream::_delete_metrics(
     {
       std::ostringstream oss;
       oss << "DELETE FROM rt_metrics WHERE metric_id=" << metric_id;
-      QSqlQuery q(*_storage_db);
-      if (!q.exec(oss.str().c_str()) || q.lastError().isValid())
+      database_query q(_db);
+      try { q.run_query(oss.str()); }
+      catch (std::exception const& e) {
         logging::error(logging::low)
           << "storage: cannot remove metric " << metric_id << ": "
-          << q.lastError().text();
+          << e.what();
+      }
     }
 
     // Remove associated graph.
@@ -765,26 +552,31 @@ unsigned int stream::_find_index_id(
         << service_id << ") (host: " << host_name << ", service: "
         << service_desc << ", special: " << special << ")";
       // Update index_data table.
-      QString query("UPDATE rt_index_data"
-                    " SET host_name=:host_name,"
-                    "     service_description=:service_description,"
-                    "     special=:special"
-                    " WHERE host_id=:host_id"
-                    " AND service_id=:service_id");
-      QSqlQuery q(*_storage_db);
-      q.prepare(query);
-      q.bindValue(":host_name", host_name);
-      q.bindValue(":service_description", service_desc);
-      q.bindValue(":special", (special ? 2 : 1));
-      q.bindValue(":host_id", host_id);
-      q.bindValue(":service_id", service_id);
-      if (!q.exec() || q.lastError().isValid())
+      std::string query(
+        "UPDATE rt_index_data"
+        " SET host_name=:host_name,"
+        "     service_description=:service_description,"
+        "     special=:special"
+        " WHERE host_id=:host_id"
+        " AND service_id=:service_id");
+      try {
+        database_query q(_db);
+        q.prepare(query);
+        q.bind_value(":host_name", host_name);
+        q.bind_value(":service_description", service_desc);
+        q.bind_value(":special", (special ? 2 : 1));
+        q.bind_value(":host_id", host_id);
+        q.bind_value(":service_id", service_id);
+        q.run_statement();
+      }
+      catch (std::exception const& e) {
         throw (broker::exceptions::msg() << "storage: could not update "
                   "service information in rt_index_data (host_id "
                << host_id << ", service_id " << service_id
                << ", host_name " << host_name
                << ", service_description " << service_desc
-               << "): " << q.lastError().text());
+               << "): " << e.what());
+      }
 
       // Update cache entry.
       it->second.host_name = host_name;
@@ -813,42 +605,51 @@ unsigned int stream::_find_index_id(
         << service_id << ")";
       // Build query.
       std::ostringstream oss;
-      oss << "INSERT INTO rt_index_data (" \
-             "  host_id, host_name," \
-             "  service_id, service_description, " \
-             "  must_be_rebuild, special)" \
+      oss << "INSERT INTO rt_index_data ("
+             "  host_id, host_name,"
+             "  service_id, service_description, "
+             "  must_be_rebuild, special)"
              " VALUES (" << host_id << ", :host_name, " << service_id
           << ", :service_description, 1, :special)";
-      QSqlQuery q(*_storage_db);
-      q.prepare(oss.str().c_str());
-      q.bindValue(":host_name", host_name);
-      q.bindValue(":service_description", service_desc);
-      q.bindValue(":special", (special ? 2 : 1));
+      database_query q(_db);
+      try {
+        q.prepare(oss.str());
+        q.bind_value(":host_name", host_name);
+        q.bind_value(":service_description", service_desc);
+        q.bind_value(":special", (special ? 2 : 1));
 
-      // Execute query.
-      if (!q.exec() || q.lastError().isValid())
-        throw (broker::exceptions::msg() << "storage: insertion of " \
+        // Execute query.
+        q.run_statement();
+      }
+      catch (std::exception const& e) {
+        throw (broker::exceptions::msg() << "storage: insertion of "
                   "index (" << host_id << ", " << service_id
-               << ") failed: " << q.lastError().text());
+               << ") failed: " << e.what());
+      }
 
       // Fetch insert ID with query if possible.
-      if (_storage_db->driver()->hasFeature(QSqlDriver::LastInsertId)
-          || !(retval = q.lastInsertId().toUInt())) {
-#if QT_VERSION >= 0x040302
+      if (!_db.get_qt_driver()->hasFeature(QSqlDriver::LastInsertId)
+          || !(retval = q.last_insert_id().toUInt())) {
         q.finish();
-#endif // Qt >= 4.3.2
         std::ostringstream oss2;
-        oss2 << "SELECT id" \
-                " FROM rt_index_data" \
+        oss2 << "SELECT id"
+                " FROM rt_index_data"
                 " WHERE host_id=" << host_id
              << " AND service_id=" << service_id;
-        QSqlQuery q2(oss2.str().c_str(), *_storage_db);
-        if (!q2.exec() || q2.lastError().isValid() || !q2.next())
-          throw (broker::exceptions::msg() << "storage: could not " \
+        database_query q(_db);
+        try {
+          q.run_query(oss2.str());
+          if (!q.next())
+            throw (broker::exceptions::msg()
+                   << "no ID was returned");
+        }
+        catch (std::exception const& e) {
+          throw (broker::exceptions::msg() << "storage: could not "
                     "fetch index_id of newly inserted index ("
                  << host_id << ", " << service_id << "): "
-                 << q2.lastError().text());
-        retval = q2.value(0).toUInt();
+                 << e.what());
+        }
+        retval = q.value(0).toUInt();
         if (!retval)
           throw (broker::exceptions::msg() << "storage: index_data " \
                     "table is corrupted: got 0 as index_id");
@@ -933,24 +734,24 @@ unsigned int stream::_find_metric_id(
       << warn_low << ":" << warn << ", critical: " << crit_low << ":"
       << crit << ", min: " << min << ", max: " << max << ")";
     // Update metrics table.
-    _update_metrics->bindValue(":unit_name", unit_name);
-    _update_metrics->bindValue(":warn", check_double(warn));
-    _update_metrics->bindValue(":warn_low", check_double(warn_low));
-    _update_metrics->bindValue(":warn_threshold_mode", warn_mode);
-    _update_metrics->bindValue(":crit", check_double(crit));
-    _update_metrics->bindValue(":crit_low", check_double(crit_low));
-    _update_metrics->bindValue(":crit_threshold_mode", crit_mode);
-    _update_metrics->bindValue(":min", check_double(min));
-    _update_metrics->bindValue(":max", check_double(max));
-    _update_metrics->bindValue(":current_value", check_double(value));
-    _update_metrics->bindValue(":index_id", index_id);
-    _update_metrics->bindValue(":metric_name", metric_name);
-    if (!_update_metrics->exec()
-        || _update_metrics->lastError().isValid())
-      throw (broker::exceptions::msg() << "storage: could not " \
+    _update_metrics.bind_value(":unit_name", unit_name);
+    _update_metrics.bind_value(":warn", check_double(warn));
+    _update_metrics.bind_value(":warn_low", check_double(warn_low));
+    _update_metrics.bind_value(":warn_threshold_mode", warn_mode);
+    _update_metrics.bind_value(":crit", check_double(crit));
+    _update_metrics.bind_value(":crit_low", check_double(crit_low));
+    _update_metrics.bind_value(":crit_threshold_mode", crit_mode);
+    _update_metrics.bind_value(":min", check_double(min));
+    _update_metrics.bind_value(":max", check_double(max));
+    _update_metrics.bind_value(":current_value", check_double(value));
+    _update_metrics.bind_value(":index_id", index_id);
+    _update_metrics.bind_value(":metric_name", metric_name);
+    try { _update_metrics.run_statement(); }
+    catch (std::exception const& e) {
+      throw (broker::exceptions::msg() << "storage: could not "
                 "update metric (index_id " << index_id
-             << ", metric " << metric_name << "): "
-             << _update_metrics->lastError().text());
+             << ", metric " << metric_name << "): " << e.what());
+    }
 
     // Remember, we found the metric ID.
     retval = it->second.metric_id;
@@ -967,66 +768,71 @@ unsigned int stream::_find_metric_id(
     // Build query.
     if (*type == perfdata::automatic)
       *type = perfdata::gauge;
-    QString query(
-              "INSERT INTO rt_metrics "
-              "  (index_id, metric_name, unit_name, warn, warn_low, "
-              "   warn_threshold_mode, crit, crit_low, "
-              "   crit_threshold_mode, min, max, current_value,"
-              "   data_source_type)"
-              " VALUES (:index_id, :metric_name, :unit_name, :warn, "
-              "         :warn_low, :warn_threshold_mode, :crit, "
-              "         :crit_low, :crit_threshold_mode, :min, :max, "
-              "         :current_value, :data_source_type)");
-    QSqlQuery q(*_storage_db);
-    if (!q.prepare(query))
-      throw (broker::exceptions::msg()
-             << "storage: could not prepare metric insertion query: "
-             << q.lastError().text());
-    q.bindValue(":index_id", index_id);
-    q.bindValue(":metric_name", metric_name);
-    q.bindValue(":unit_name", unit_name);
-    q.bindValue(":warn", check_double(warn));
-    q.bindValue(":warn_low", check_double(warn_low));
-    q.bindValue(":warn_threshold_mode", warn_mode);
-    q.bindValue(":crit", check_double(crit));
-    q.bindValue(":crit_low", check_double(crit_low));
-    q.bindValue(":crit_threshold_mode", crit_mode);
-    q.bindValue(":min", check_double(min));
-    q.bindValue(":max", check_double(max));
-    q.bindValue(":current_value", check_double(value));
-    q.bindValue(":data_source_type", *type + 1);
+    std::string query(
+      "INSERT INTO rt_metrics "
+      "  (index_id, metric_name, unit_name, warn, warn_low, "
+      "   warn_threshold_mode, crit, crit_low, "
+      "   crit_threshold_mode, min, max, current_value,"
+      "   data_source_type)"
+      " VALUES (:index_id, :metric_name, :unit_name, :warn, "
+      "         :warn_low, :warn_threshold_mode, :crit, "
+      "         :crit_low, :crit_threshold_mode, :min, :max, "
+      "         :current_value, :data_source_type)");
+    database_query q(_db);
+    q.prepare(
+        query,
+        "storage: could not prepare metric insertion query");
+    q.bind_value(":index_id", index_id);
+    q.bind_value(":metric_name", metric_name);
+    q.bind_value(":unit_name", unit_name);
+    q.bind_value(":warn", check_double(warn));
+    q.bind_value(":warn_low", check_double(warn_low));
+    q.bind_value(":warn_threshold_mode", warn_mode);
+    q.bind_value(":crit", check_double(crit));
+    q.bind_value(":crit_low", check_double(crit_low));
+    q.bind_value(":crit_threshold_mode", crit_mode);
+    q.bind_value(":min", check_double(min));
+    q.bind_value(":max", check_double(max));
+    q.bind_value(":current_value", check_double(value));
+    q.bind_value(":data_source_type", *type + 1);
 
     // Execute query.
-    if (!q.exec() || q.lastError().isValid())
-      throw (broker::exceptions::msg() << "storage: insertion of " \
-                  "metric '" << metric_name << "' of index " << index_id
-               << " failed: " << q.lastError().text());
+    try { q.run_statement(); }
+    catch (std::exception const& e) {
+      throw (broker::exceptions::msg() << "storage: insertion of "
+                "metric '" << metric_name << "' of index " << index_id
+             << " failed: " << e.what());
+    }
 
     // Fetch insert ID with query if possible.
-    if (!_storage_db->driver()->hasFeature(QSqlDriver::LastInsertId)
-        || !(retval = q.lastInsertId().toUInt())) {
-#if QT_VERSION >= 0x040302
+    if (!_db.get_qt_driver()->hasFeature(QSqlDriver::LastInsertId)
+        || !(retval = q.last_insert_id().toUInt())) {
       q.finish();
-#endif // Qt >= 4.3.2
-      QString query("SELECT metric_id"
-                    " FROM rt_metrics"
-                    " WHERE index_id=:index_id"
-                    " AND metric_name=:metric_name");
-      QSqlQuery q2(*_storage_db);
-      if (!q2.prepare(query))
-        throw (broker::exceptions::msg()
-               << "storage: could not prepare metric ID fetching query: "
-               << q2.lastError().text());
-      q2.bindValue(":index_id", index_id);
-      q2.bindValue(":metric_name", metric_name);
-      if (!q2.exec() || q2.lastError().isValid() || !q2.next())
-        throw (broker::exceptions::msg() << "storage: could not fetch" \
-                    " metric_id of newly inserted metric '"
-                 << metric_name << "' of index " << index_id << ": "
-                 << q2.lastError().text());
+      std::string query(
+        "SELECT metric_id"
+        " FROM rt_metrics"
+        " WHERE index_id=:index_id"
+        " AND metric_name=:metric_name");
+      database_query q2(_db);
+      q2.prepare(
+           query,
+           "storage: could not prepare metric ID fetching query");
+      q2.bind_value(":index_id", index_id);
+      q2.bind_value(":metric_name", metric_name);
+      try {
+        q2.run_statement();
+        if (!q2.next())
+          throw (broker::exceptions::msg() << "no ID was returned");
+      }
+      catch (std::exception const& e) {
+        throw (broker::exceptions::msg() << "storage: could not fetch"
+                  " metric_id of newly inserted metric '"
+               << metric_name << "' of index " << index_id << ": "
+               << e.what());
+      }
       retval = q2.value(0).toUInt();
       if (!retval)
-        throw (broker::exceptions::msg() << "storage: metrics table " \
+        throw (broker::exceptions::msg() << "storage: metrics table "
                  "is corrupted: got 0 as metric_id");
     }
 
@@ -1087,14 +893,10 @@ void stream::_insert_perfdatas() {
     }
 
     // Execute query.
-    QSqlQuery q(*_storage_db);
-    logging::debug(logging::low)
-      << "storage: executing query: " << query.str().c_str();
-    if (!q.exec(query.str().c_str())
-        || q.lastError().isValid())
-      throw (broker::exceptions::msg()
-             << "storage: could not insert data in data_bin: "
-             << q.lastError().text());
+    database_query q(_db);
+    q.run_query(
+        query.str(),
+        "storage: could not insert data in data_bin");
     _update_status("");
   }
 
@@ -1109,23 +911,21 @@ void stream::_prepare() {
   _rebuild_cache();
 
   // Prepare metrics update query.
-  _update_metrics.reset(new QSqlQuery(*_storage_db));
-  if (!_update_metrics->prepare("UPDATE rt_metrics" \
-                                " SET unit_name=:unit_name," \
-                                " warn=:warn," \
-                                " warn_low=:warn_low," \
-                                " warn_threshold_mode=:warn_threshold_mode," \
-                                " crit=:crit," \
-                                " crit_low=:crit_low," \
-                                " crit_threshold_mode=:crit_threshold_mode," \
-                                " min=:min," \
-                                " max=:max," \
-                                " current_value=:current_value" \
-                                " WHERE index_id=:index_id" \
-                                " AND metric_name=:metric_name"))
-    throw (broker::exceptions::msg() << "storage: could not prepare " \
-                "metrics update query: "
-             << _update_metrics->lastError().text());
+  _update_metrics.prepare(
+    "UPDATE rt_metrics"
+    " SET unit_name=:unit_name,"
+    " warn=:warn,"
+    " warn_low=:warn_low,"
+    " warn_threshold_mode=:warn_threshold_mode,"
+    " crit=:crit,"
+    " crit_low=:crit_low,"
+    " crit_threshold_mode=:crit_threshold_mode,"
+    " min=:min,"
+    " max=:max,"
+    " current_value=:current_value"
+    " WHERE index_id=:index_id"
+    " AND metric_name=:metric_name",
+    "storage: could not prepare metrics update query");
 
   return ;
 }
@@ -1144,13 +944,12 @@ void stream::_rebuild_cache() {
   // Fill index cache.
   {
     // Execute query.
-    QSqlQuery q("SELECT id, host_id, service_id, host_name, rrd_retention, service_description, special, locked" \
-                " FROM rt_index_data",
-                *_storage_db);
-    if (!q.exec() || q.lastError().isValid())
-      throw (broker::exceptions::msg() << "storage: could not fetch " \
-                  "index list from data DB: "
-               << q.lastError().text());
+    database_query q(_db);
+    q.run_query(
+        "SELECT id, host_id, service_id, host_name, rrd_retention,"
+        "       service_description, special, locked"
+        " FROM rt_index_data",
+        "storage: could not fetch index list from data DB");
 
     // Loop through result set.
     while (q.next()) {
@@ -1175,14 +974,12 @@ void stream::_rebuild_cache() {
   // Fill metric cache.
   {
     // Execute query.
-    QSqlQuery q("SELECT metric_id, index_id, metric_name," \
-                "       data_source_type, locked" \
-                " FROM rt_metrics",
-                *_storage_db);
-    if (!q.exec() || q.lastError().isValid())
-      throw (broker::exceptions::msg() << "storage: could not fetch " \
-                  "metric list from data DB: "
-               << q.lastError().text());
+    database_query q(_db);
+    q.run_query(
+        "SELECT metric_id, index_id, metric_name,"
+        "       data_source_type, locked"
+        " FROM rt_metrics",
+        "storage: could not fetch metric list from data DB");
 
     // Loop through result set.
     while (q.next()) {

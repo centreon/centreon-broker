@@ -202,8 +202,10 @@ io::endpoint* factory::new_endpoint(
 
   // Create endpoint.
   std::auto_ptr<rrd::connector> endp(new rrd::connector);
-  endp->set_metrics_path(metrics_path);
-  endp->set_status_path(status_path);
+  if (write_metrics)
+    endp->set_metrics_path(metrics_path);
+  if (write_status)
+    endp->set_status_path(status_path);
   if (!path.isEmpty())
     endp->set_cached_local(path);
   else if (port)

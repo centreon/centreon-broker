@@ -37,6 +37,7 @@ using namespace com::centreon::broker;
 
 #define DB_NAME "broker_sql_instance_update_outdated"
 #define INSTANCE_TIMEOUT 30
+#define INSTANCE_TIMEOUT_STR "30"
 
 /**
  *  Check that instance outdated status and
@@ -53,18 +54,23 @@ int main() {
   std::string engine_config_path(tmpnam(NULL));
   engine daemon;
   cbd broker;
+  test_db db;
+  test_file cfg_cbmod;
+  test_file cfg_cbd;
 
   try {
-    QSqlDatabase db(config_db_open(DB_NAME));
+    db.open(DB_NAME);
 
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, 10);
     generate_services(services, hosts, 5);
+    cfg_cbmod.set_template(
+      PROJECT_SOURCE_DIR "/test/cfg/sql_instance_update_outdated_1.xml.in");
     std::string cbmod_loading;
     {
       std::ostringstream oss;
       oss << "broker_module=" << CBMOD_PATH << " "
-          << PROJECT_SOURCE_DIR << "/test/cfg/sql_instance_update_outdated_1.xml\n";
+          << cfg_cbmod.generate() << "\n";
       cbmod_loading = oss.str();
     }
 
@@ -76,8 +82,10 @@ int main() {
       &services);
 
     // Start Broker daemon.
-    broker.set_config_file(
-      PROJECT_SOURCE_DIR "/test/cfg/sql_instance_update_outdated_2.xml");
+    cfg_cbd.set_template(
+      PROJECT_SOURCE_DIR "/test/cfg/sql_instance_update_outdated_2.xml.in");
+    cfg_cbd.set("INSTANCE_TIMEOUT", INSTANCE_TIMEOUT_STR);
+    broker.set_config_file(cfg_cbd.generate());
     broker.start();
     sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
     broker.update();
@@ -100,7 +108,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(instance_id) from rt_instances where outdated = TRUE";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check outdated instances from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -115,7 +123,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT COUNT(service_id)"
             << "  FROM rt_services WHERE state = " << STATE_UNKNOWN;
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check outdated services from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -131,7 +139,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT COUNT(host_id)"
             << "  FROM rt_hosts WHERE state = " << HOST_UNREACHABLE;
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check outdated hosts from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -150,8 +158,8 @@ int main() {
     {
       std::ostringstream query;
       query
-        << "SELECT COUNT(instance_id) from rt_instances WHERE outdated=FALSE";
-      QSqlQuery q(db);
+        << "SELECT COUNT(instance_id) FROM rt_instances WHERE outdated=0";
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check living instances from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -166,7 +174,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT COUNT(service_id)"
             << "  FROM rt_services WHERE state != " << STATE_UNKNOWN;
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check living services from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -182,7 +190,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT COUNT(host_id)"
             << "  FROM rt_hosts WHERE state != " << HOST_UNREACHABLE;
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check living hosts from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -208,7 +216,6 @@ int main() {
   daemon.stop();
   broker.stop();
   config_remove(engine_config_path.c_str());
-  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
 

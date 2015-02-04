@@ -194,8 +194,7 @@ void parser::parse_perfdata(
     int i(0);
     while (ptr[i] && (in_quote
                       || ((ptr[i] != '=') && !isspace(ptr[i]))
-                      || (static_cast<int>(ptr[i]) >= 128)
-                      || (static_cast<int>(ptr[i]) < 0))) {
+                      || (static_cast<unsigned char>(ptr[i]) >= 128))) {
       if ('\'' == ptr[i])
         in_quote = !in_quote;
       ++i;

@@ -1009,3 +1009,406 @@ extensions  string           Space-separated string of extensions supported
 instance_id unsigned integer Instance ID.                                    Since 2.6.0
                                                                              (BBDO 1.1.0).
 =========== ================ =============================================== =============
+
+*******
+BAM
+*******
+
+BA status event
+===============
+
+This event is sent when a BA's status changed.
+
+========================= ================ =============================================== =============
+Property                  Type             Description                                     Version
+========================= ================ =============================================== =============
+ba_id                     unsigned integer The id of the BA.                               Since 2.8.0
+                                                                                           (BBDO 1.2.0).
+in_downtime               boolean          True of the BA is in downtime.                  Since 2.8.0
+                                                                                           (BBDO 1.2.0).
+last_state_change         time             The time of the last state change of the BA.    Since 2.8.0
+                                                                                           (BBDO 1.2.0).
+level_acknowledgement     real             The acknowledgment level of the BA.             Since 2.8.0
+                                                                                           (BBDO 1.2.0).
+level_downtime            real             The downtime level of the BA.                   Since 2.8.0
+                                                                                           (BBDO 1.2.0).
+level_nominal             real             The nominal level of the BA.                    Since 2.8.0
+                                                                                           (BBDO 1.2.0).
+state                     short integer    The state of the BA.                            Since 2.8.0
+                                                                                           (BBDO 1.2.0).
+state_changed             boolean          True if the state of the BA just changed.       Since 2.8.0
+                                                                                           (BBDO 1.2.0).
+instance_id               unsigned         Instance ID.                                    Since 2.8.0
+                                                                                           (BBDO 1.2.0).
+========================= ================ =============================================== =============
+
+Bool expression status event
+============================
+
+This event is sent when a boolean expression's status changed.
+
+========================= ================ =============================================== =============
+Property                  Type             Description                                     Version
+========================= ================ =============================================== =============
+bool_id                   unsigned integer The id of the boolean expression.               Since 2.8.0
+                                                                                           (BBDO 1.2.0).
+state                     boolean          The state of the boolean expression.            Since 2.8.0
+                                                                                           (BBDO 1.2.0).
+instance_id unsigned      integer          Instance ID.                                    Since 2.8.0
+                                                                                           (BBDO 1.2.0).
+========================= ================ =============================================== =============
+
+KPI status event
+================
+
+This event is sent when a KPI's status changed.
+
+============================ ================ =============================================== =============
+Property                     Type             Description                                     Version
+============================ ================ =============================================== =============
+kpi_id                       unsigned integer The id of the KPI.                              Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+level_acknowledgement_hard   real             The hard acknowledgement level of the KPI.      Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+level_acknowledgement_soft   real             The soft acknowledgement level of the KPI.      Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+level_downtime_hard          real             The hard downtime level of the KPI.             Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+level_downtime_soft          real             The soft downtime level of the KPI.             Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+level_nominal_hard           real             The hard nominal level of the KPI.              Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+level_nominal_soft           real             The soft nominal level of the KPI.              Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+state_hard                   short integer    The hard state of the KPI.                      Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+state_soft                   short integer    The soft state of the KPI.                      Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+last_state_change            time             The time of the last state change of the KPI.   Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+last_impact                  real             The last impact of the KPI.                     Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+============================ ================ =============================================== =============
+
+Meta service status event
+=========================
+
+This event is sent when a meta service's status changed.
+
+============================ ================ =============================================== =============
+Property                     Type             Description                                     Version
+============================ ================ =============================================== =============
+meta_service_id              unsigned integer The id of the meta service.                     Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+value                        real             The value of the meta service.                  Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+state_changed                boolean          True if the state just changed.                 Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+============================ ================ =============================================== =============
+
+BA-event event
+==============
+
+This event is sent when a new BA event is opened, or an old one is closed.
+
+============================ ================ =============================================== =============
+Property                     Type             Description                                     Version
+============================ ================ =============================================== =============
+ba_id                        unsigned integer The id of the BA.                               Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+first_level                  real             The first level of the BA event.                Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+end_time                     time             The end_time of the event. 0 or (time)-1 for    Since 2.8.0
+                                              an opened event.                                (BBDO 1.2.0).
+in_downtime                  boolean          True if BA was in downtime during the BA event. Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+start_time                   time             The start_time of the event.                    Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+status                       short integer    The status of the BA during the event.          Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+============================ ================ =============================================== =============
+
+KPI-event event
+===============
+
+This event is sent when a new KPI event is opened, or an old one is closed.
+
+============================ ================ =============================================== =============
+Property                     Type             Description                                     Version
+============================ ================ =============================================== =============
+kpi_id                       unsigned integer The id of the KPI.                              Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+end_time                     time             The end_time of the event. 0 or (time)-1 for    Since 2.8.0
+                                              an opened event.                                (BBDO 1.2.0).
+impact_level                 integer          The level of the impact.                        Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+in_downtime                  boolean          True if BA was in downtime during the BA event. Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+first_output                 string           The first output of the KPI during the event.   Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+perfdata                     string           The first perfdata of the KPI during the event. Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+start_time                   time             The start_time of the event.                    Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+status                       short integer    The status of the BA during the event.          Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+============================ ================ =============================================== =============
+
+BA duration event event
+=======================
+
+This event is sent when a new BA duration event is computed by BAM broker.
+
+============================ ================ =============================================== =============
+Property                     Type             Description                                     Version
+============================ ================ =============================================== =============
+ba_id                        unsigned integer The id of the BA.                               Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+real_start_time              time             The first level of the BA event.                Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+end_time                     time             The end_time of the event, in the given         Since 2.8.0
+                                              timeperiod.                                     (BBDO 1.2.0).
+start_time                   time             The start_time of the event, in the given       Since 2.8.0
+                                              timeperiod.                                     (BBDO 1.2.0).
+duration                     unsigned integer end_time - start_time.                          Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+sla_duration                 unsigned integer The duration of the event in the given          Since 2.8.0
+                                              timperiod.                                      (BBDO 1.2.0).
+timeperiod_is_default        boolean          True if the timeperiod if the default for       Since 2.8.0
+                                              this BA.                                        (BBDO 1.2.0).
+instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
+                                                                                              (BBDO 1.1.0).
+============================ ================ =============================================== =============
+
+Dimension BA
+============
+
+This event is part of the dimension (i.e configuration) dump occuring at
+startup and after each BAM configuration reload.
+
+============================ ================ =============================================== =============
+Property                     Type             Description                                     Version
+============================ ================ =============================================== =============
+ba_id                        unsigned integer The id of the BA.                               Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+ba_name                      string           The name of the BA.                             Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+ba_description               string           The description of the BA.                      Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+sla_month_percent_crit       real                                                             Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+sla_month_percent_warn       real                                                             Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+sla_month_duration_crit      unsigned integer                                                 Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+sla_month_duration_warn      unsigned integer                                                 Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+============================ ================ =============================================== =============
+
+Dimension KPI
+=============
+
+This event is part of the dimension (i.e configuration) dump occuring at
+startup and after each BAM configuration reload.
+
+============================ ================ =============================================== =============
+Property                     Type             Description                                     Version
+============================ ================ =============================================== =============
+kpi_id                       unsigned integer The id of the KPI.                              Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+ba_id                        unsigned integer The id of the parent BA of this KPI.            Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+ba_name                      string           The name of the parent BA of this KPI.          Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+host_id                      unsigned integer The id of the host associated with this KPI     Since 2.8.0
+                                              for service KPI.                                (BBDO 1.2.0).
+host_name                    string           The name of the host associated with this KPI   Since 2.8.0
+                                              for service KPI.                                (BBDO 1.2.0)
+service_id                   unsigned integer The id of the service associated with this KPI  Since 2.8.0
+                                              for service KPI.                                (BBDO 1.2.0).
+service_description          string           The description of the service associated with  Since 2.8.0
+                                              this KPI for service KPI.                       (BBDO 1.2.0).
+kpi_ba_id                    unsigned integer The id of the BA associated with this KPI for   Since 2.8.0
+                                              BA KPI.                                         (BBDO 1.2.0).
+kpi_ba_name                  string           The name of the BA associated with this KPI     Since 2.8.0
+                                              for BA KPI.                                     (BBDO 1.2.0).
+meta_service_id              unsigned int     The id of the meta-service associated with this Since 2.8.0
+                                              KPI for meta-service KPI.                       (BBDO 1.2.0).
+meta_service_name            string           The name of the meta-service associated with    Since 2.8.0
+                                              this KPI for meta-service KPI.                  (BBDO 1.2.0).
+boolean_id                   unsigned int     The id of the boolean expression associated     Since 2.8.0
+                                              with this KPI for boolean KPI.                  (BBDO 1.2.0).
+boolean_name                 string           The name of the boolean expression              Since 2.8.0
+                                              associated with this KPI for boolean KPI.       (BBDO 1.2.0).
+impact_warning               real             The impact of a warning state for this KPI.     Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+impact_critical              real             The impact of a critical state for this KPI.    Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+impact_unknown               real             The impact of a unknown state for this KPI.     Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+============================ ================ =============================================== =============
+
+Dimension BA BV relation
+========================
+
+This event is part of the dimension (i.e configuration) dump occuring at
+startup and after each BAM configuration reload.
+
+============================ ================ =============================================== =============
+Property                     Type             Description                                     Version
+============================ ================ =============================================== =============
+ba_id                        unsigned integer The id of the BA.                               Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+bv_id                        unsigned integer The id of the BV.                               Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+============================ ================ =============================================== =============
+
+Dimension BV
+============
+
+This event is part of the dimension (i.e configuration) dump occuring at
+startup and after each BAM configuration reload.
+
+============================ ================ =============================================== =============
+Property                     Type             Description                                     Version
+============================ ================ =============================================== =============
+bv_id                        unsigned integer The id of the BV.                               Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+bv_name                      string           The name of the BV.                             Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+bv_description               string           The description of the BV.                      Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+============================ ================ =============================================== =============
+
+Dimension table signal
+======================
+
+This event is part of the dimension (i.e configuration) dump occuring at
+startup and after each BAM configuration reload.
+
+This signal is sent before the dump of all the dimensions, and again at the end of the dump.
+
+============================ ================ =============================================== =============
+Property                     Type             Description                                     Version
+============================ ================ =============================================== =============
+update_started               boolean          True if this is the start of the dump,          Since 2.8.0
+                                              false if it's the end.                          (BBD0 1.2.0).
+instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
+                                                                                              (BBDO 1.1.0).
+============================ ================ =============================================== =============
+
+Rebuild signal
+==============
+
+This event is sent when a rebuild of the event durations and availabilities
+is asked to the BAM broker endpoint.
+
+============================ ================ =============================================== =============
+Property                     Type             Description                                     Version
+============================ ================ =============================================== =============
+bas_to_rebuild               string           A string containing the id of all the BAs       Since 2.8.0
+                                              to rebuild, separated by a comma and a space    (BBDO 1.2.0).
+                                              (i.e "1, 5, 8, 12").
+instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+============================ ================ =============================================== =============
+
+Dimension timeperiod
+====================
+
+This event is part of the dimension (i.e configuration) dump occuring at
+startup and after each BAM configuration reload.
+
+============================ ================ =============================================== =============
+Property                     Type             Description                                     Version
+============================ ================ =============================================== =============
+tp_id                        unsigned integer The id of the timeperiod.                       Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+name                         string           The name of the timeperiod.                     Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+monday                       string           The timeperiod rule for this day.               Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+tuesday                      string           The timeperiod rule for this day.               Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+wednesday                    string           The timeperiod rule for this day.               Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+thursday                     string           The timeperiod rule for this day.               Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+friday                       string           The timeperiod rule for this day.               Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+saturday                     string           The timeperiod rule for this day.               Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+sunday                       string           The timeperiod rule for this day.               Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+============================ ================ =============================================== =============
+
+Dimension BA timeperiod relation
+================================
+
+This event is part of the dimension (i.e configuration) dump occuring at
+startup and after each BAM configuration reload.
+
+============================ ================ =============================================== =============
+Property                     Type             Description                                     Version
+============================ ================ =============================================== =============
+ba_id                        unsigned integer The id of the BA.                               Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+timeperiod_id                unsigned integer The id of the timeperiod.                       Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+is_default                   boolean          True if the timeperiod is the default one for   Since 2.8.0
+                                              this BA.                                        (BBDO 1.2.0).
+instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
+                                                                                              (BBDO 1.1.0).
+============================ ================ =============================================== =============
+
+Dimension timeperiod exception
+==============================
+
+This event is part of the dimension (i.e configuration) dump occuring at
+startup and after each BAM configuration reload.
+
+============================ ================ =============================================== =============
+Property                     Type             Description                                     Version
+============================ ================ =============================================== =============
+timeperiod_id                unsigned integer The id of the timeperiod having this exception. Since 2.8.0
+daterange                    string           A string containing the date of the range.      Since 2.8.0
+timerange                    string           A string containing the time of the range.      Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+============================ ================ =============================================== =============
+
+Dimension timeperiod exclusion
+==============================
+
+This event is part of the dimension (i.e configuration) dump occuring at
+startup and after each BAM configuration reload.
+
+============================ ================ =============================================== =============
+Property                     Type             Description                                     Version
+============================ ================ =============================================== =============
+timeperiod_id                unsigned integer The id of the timeperiod having this exclusion. Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+excluded_timeperiod_id       unsigned integer The id of the excluded timeperiod.              Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
+                                                                                              (BBDO 1.2.0).
+============================ ================ =============================================== =============

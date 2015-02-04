@@ -93,6 +93,7 @@ NEB         BBDO_NEB_TYPE         1     Classical monitoring events
 Storage     BBDO_STORAGE_TYPE     2     Category related to RRD graph
                                         building.
 Correlation BBDO_CORRELATION_TYPE 3     Status correlation.
+Bam         BBDO_BAM_TYPE         4     Bam events.
 Internal    BBDO_INTERNAL_TYPE    65535 Reserved for internal protocol
                                         use.
 =========== ===================== ===== ================================
@@ -178,6 +179,35 @@ Type             Value
 ================ =====
 version_response 1
 ================ =====
+
+BAM
+===
+
+The table below lists event types available in the BAM category.
+They have to be mixed with the BBDO_BAM_TYPE category to get a
+BBDO event ID.
+
+================================= =====
+Type                              Value
+================================= =====
+ba_status                         1
+bool_status                       2
+kpi_status                        3
+meta_service_status               4
+ba_event                          5
+kpi_event                         6
+ba_duration_event                 7
+dimension_ba_event                8
+dimension_kpi_event               9
+dimension_ba_bv_relation_event    10
+dimension_bv_event                11
+dimension_truncate_table_signal   12
+rebuild                           13
+dimension_timeperiod              14
+dimension_ba_timeperiod_relation  15
+dimension_timeperiod_exception    16
+dimension_timeperiod_exclusion    17
+================================= =====
 
 *******************
 Event serialization

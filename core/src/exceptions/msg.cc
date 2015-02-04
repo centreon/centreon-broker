@@ -30,14 +30,14 @@ using namespace com::centreon::broker::exceptions;
 /**
  *  Default constructor.
  */
-msg::msg() throw () {}
+msg::msg()  {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] b Object to build from.
  */
-msg::msg(msg const& b) throw ()
+msg::msg(msg const& b) 
   : misc::stringifier(b), std::exception(b) {}
 
 /**
@@ -52,7 +52,7 @@ msg::~msg() throw () {}
  *
  *  @return This instance.
  */
-msg& msg::operator=(msg const& b) throw () {
+msg& msg::operator=(msg const& b)  {
   misc::stringifier::operator=(b);
   std::exception::operator=(b);
   return (*this);

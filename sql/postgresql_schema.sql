@@ -2,6 +2,10 @@
 --                                   --
 -- Centreon Broker's database schema --
 --                                   --
+--                                   --
+--          Real-time data           --
+--              Logs                 --
+--         Performance data          --
 -- ------------------------------------
 
 -- rt_acknowledgements

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <centreonbroker>
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
+  <!--
   <stats>
     <fifo>/tmp/cbd.fifo</fifo>
   </stats>
@@ -13,6 +14,7 @@
     <info>1</info>
     <level>3</level>
   </logger>
+  -->
   <input>
     <name>InputInstanceUpdateTest</name>
     <type>tcp</type>
@@ -29,5 +31,6 @@
     <db_password>@DB_PASSWORD@</db_password>
     <db_name>broker_sql_instance_update_outdated</db_name>
     <queries_per_transaction>0</queries_per_transaction>
+    <instance_timeout>@INSTANCE_TIMEOUT@</instance_timeout>
   </output>
 </centreonbroker>

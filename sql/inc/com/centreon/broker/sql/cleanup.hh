@@ -20,37 +20,46 @@
 #ifndef CCB_SQL_CLEANUP_HH
 #  define CCB_SQL_CLEANUP_HH
 
-#  include <QSqlDatabase>
 #  include <QThread>
+#  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace         sql {
+namespace          sql {
   /**
    *  @class cleanup cleanup.hh "com/centreon/broker/sql/cleanup.hh"
    *  @brief Check to cleanup database.
    *
    *  Check to cleanup database.
    */
-  class           cleanup : public QThread {
+  class            cleanup : public QThread {
   public:
-                  cleanup();
-                  cleanup(cleanup const& right);
-                  ~cleanup() throw ();
-    cleanup&      operator=(cleanup const& right);
-    void          exit() throw ();
-    unsigned int  get_interval() const throw ();
-    void          run();
-    void          set_db(QSqlDatabase const& db);
-    void          set_interval(unsigned int interval) throw ();
+                   cleanup(
+                     std::string const& db_type,
+                     std::string const& db_host,
+                     unsigned short db_port,
+                     std::string const& db_user,
+                     std::string const& db_password,
+                     std::string const& db_name,
+                     unsigned int cleanup_interval = 600);
+                   ~cleanup() throw ();
+    void           exit() throw ();
+    unsigned int   get_interval() const throw ();
+    void           run();
 
   private:
-    void          _internal_copy(cleanup const& right);
+                   cleanup(cleanup const& other);
+    cleanup&       operator=(cleanup const& other);
 
-    QSqlDatabase  _db;
-    unsigned int  _interval;
-    volatile bool _should_exit;
+    std::string    _db_type;
+    std::string    _db_host;
+    unsigned short _db_port;
+    std::string    _db_user;
+    std::string    _db_password;
+    std::string    _db_name;
+    unsigned int   _interval;
+    volatile bool  _should_exit;
   };
 }
 

@@ -22,61 +22,48 @@
 
 #  include <ctime>
 #  include <QString>
+#  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace          storage {
+namespace           storage {
   /**
    *  @class connector connector.hh "com/centreon/broker/storage/connector.hh"
    *  @brief Connect to a database.
    *
    *  Send perfdata in a Centreon Storage database.
    */
-  class            connector : public io::endpoint {
+  class             connector : public io::endpoint {
   public:
-                   connector();
-                   connector(connector const& c);
-                   ~connector();
-    connector&     operator=(connector const& c);
-    io::endpoint*  clone() const;
-    void           close();
-    void           connect_to(
-                     QString const& storage_type,
-                     QString const& storage_host,
-                     unsigned short storage_port,
-                     QString const& storage_user,
-                     QString const& storage_password,
-                     QString const& storage_db,
-                     unsigned int queries_per_transaction,
-                     unsigned int rrd_len,
-                     time_t interval_length,
-                     unsigned int rebuild_check_interval,
-                     bool check_replication,
-                     bool store_in_data_bin = true,
-                     bool insert_in_index_data = false);
+                    connector();
+                    connector(connector const& other);
+                    ~connector();
+    connector&      operator=(connector const& other);
+    io::endpoint*   clone() const;
+    void            close();
+    void            connect_to(
+                      database_config const& db_cfg,
+                      unsigned int rrd_len,
+                      time_t interval_length,
+                      unsigned int rebuild_check_interval,
+                      bool store_in_data_bin = true,
+                      bool insert_in_index_data = false);
     misc::shared_ptr<io::stream>
-                   open();
+                    open();
     misc::shared_ptr<io::stream>
-                   open(QString const& id);
+                    open(QString const& id);
 
    private:
-    void           _internal_copy(connector const& c);
+    void            _internal_copy(connector const& other);
 
-    bool           _check_replication;
-    bool           _insert_in_index_data;
-    time_t         _interval_length;
-    unsigned int   _queries_per_transaction;
-    unsigned int   _rebuild_check_interval;
-    unsigned int   _rrd_len;
-    QString        _storage_db;
-    QString        _storage_host;
-    QString        _storage_password;
-    unsigned short _storage_port;
-    QString        _storage_user;
-    QString        _storage_type;
-    bool           _store_in_data_bin;
+    database_config _db_cfg;
+    bool            _insert_in_index_data;
+    time_t          _interval_length;
+    unsigned int    _rebuild_check_interval;
+    unsigned int    _rrd_len;
+    bool            _store_in_data_bin;
   };
 }
 

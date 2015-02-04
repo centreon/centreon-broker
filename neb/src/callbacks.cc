@@ -307,20 +307,33 @@ int neb::callback_custom_variable(int callback_type, void* data) {
             int host_id(strtol(cvar->var_value, NULL, 0));
             if (host_id) {
               // Already existing ?
-              if (neb::gl_hosts.find(hst->name)
-                  != neb::gl_hosts.end()) {
-                // Generate host event.
-                nebstruct_adaptive_host_data nsahd;
-                memset(&nsahd, 0, sizeof(nsahd));
-                nsahd.type = NEBTYPE_HOST_DELETE;
-                nsahd.timestamp.tv_sec = cvar->timestamp.tv_sec;
-                nsahd.command_type = CMD_NONE;
-                nsahd.modified_attribute = MODATTR_ALL;
-                nsahd.modified_attributes = MODATTR_ALL;
-                nsahd.object_ptr = hst;
+              umap<std::string, int>::const_iterator
+                existing_hst(neb::gl_hosts.find(hst->name));
+              if (existing_hst != neb::gl_hosts.end()) {
+                // Was the ID changed ?
+                bool id_changed(false);
+                for (umap<std::string, int>::const_iterator
+                       it(gl_hosts.begin()),
+                       end(gl_hosts.end());
+                     it != end;
+                     ++it)
+                  if ((it->second == existing_hst->second)
+                      && (it->first != existing_hst->first))
+                    id_changed = true;
+                if (!id_changed) {
+                  // Generate host event.
+                  nebstruct_adaptive_host_data nsahd;
+                  memset(&nsahd, 0, sizeof(nsahd));
+                  nsahd.type = NEBTYPE_HOST_DELETE;
+                  nsahd.timestamp.tv_sec = cvar->timestamp.tv_sec;
+                  nsahd.command_type = CMD_NONE;
+                  nsahd.modified_attribute = MODATTR_ALL;
+                  nsahd.modified_attributes = MODATTR_ALL;
+                  nsahd.object_ptr = hst;
 
-                // Callback.
-                callback_host(NEBCALLBACK_ADAPTIVE_HOST_DATA, &nsahd);
+                  // Callback.
+                  callback_host(NEBCALLBACK_ADAPTIVE_HOST_DATA, &nsahd);
+                }
               }
 
               // Record host ID.
@@ -348,6 +361,7 @@ int neb::callback_custom_variable(int callback_type, void* data) {
             if (it != neb::gl_hosts.end()) {
               misc::shared_ptr<custom_variable>
                 new_cvar(new custom_variable);
+              new_cvar->enabled = true;
               new_cvar->instance_id = instance_id;
               new_cvar->host_id = it->second;
               new_cvar->modified = false;
@@ -362,6 +376,29 @@ int neb::callback_custom_variable(int callback_type, void* data) {
                 << "' on host " << new_cvar->host_id;
               neb::gl_publisher.write(new_cvar);
             }
+          }
+        }
+      }
+      else if (NEBTYPE_HOSTCUSTOMVARIABLE_DELETE == cvar->type) {
+        ::host* hst(static_cast< ::host*>(cvar->object_ptr));
+        if (hst && hst->name && strcmp(cvar->var_name, "HOST_ID")) {
+          umap<std::string, int>::iterator
+            it(neb::gl_hosts.find(hst->name));
+          if (it != neb::gl_hosts.end()) {
+            misc::shared_ptr<custom_variable>
+              old_cvar(new custom_variable);
+            old_cvar->enabled = false;
+            old_cvar->instance_id = instance_id;
+            old_cvar->host_id = it->second;
+            old_cvar->name = cvar->var_name;
+            old_cvar->var_type = 0;
+            old_cvar->update_time = cvar->timestamp.tv_sec;
+
+            // Send custom variable event.
+            logging::info(logging::low)
+              << "callbacks: deleted custom variable '"
+              << old_cvar->name << "' on host '" << old_cvar->host_id;
+            neb::gl_publisher.write(old_cvar);
           }
         }
       }
@@ -387,22 +424,38 @@ int neb::callback_custom_variable(int callback_type, void* data) {
 
             if (host_id && service_id) {
               // Already existing ?
-              if (neb::gl_services.find(
-                    std::make_pair<std::string, std::string>(
-                      svc->host_name,
-                      svc->description)) != neb::gl_services.end()) {
-                // Generate service event.
-                nebstruct_adaptive_service_data nsasd;
-                memset(&nsasd, 0, sizeof(nsasd));
-                nsasd.type = NEBTYPE_SERVICE_DELETE;
-                nsasd.timestamp.tv_sec = cvar->timestamp.tv_sec;
-                nsasd.command_type = CMD_NONE;
-                nsasd.modified_attribute = MODATTR_ALL;
-                nsasd.modified_attributes = MODATTR_ALL;
-                nsasd.object_ptr = svc;
+              std::pair<std::string, std::string>
+                pair_svc_name(svc->host_name, svc->description);
+              std::map<std::pair<std::string, std::string>,
+                       std::pair<int, int> >::const_iterator
+                existing_svc(neb::gl_services.find(pair_svc_name));
+              if (existing_svc != neb::gl_services.end()) {
+                // Were the IDs changed ?
+                bool ids_changed(false);
+                for (std::map<std::pair<std::string, std::string>,
+                              std::pair<int, int> >::const_iterator
+                       it(gl_services.begin()),
+                       end(gl_services.end());
+                     it != end;
+                     ++it) {
+                  if ((it->second == existing_svc->second)
+                      && (it->first != existing_svc->first))
+                    ids_changed = true;
+                }
+                if (!ids_changed) {
+                  // Generate service event.
+                  nebstruct_adaptive_service_data nsasd;
+                  memset(&nsasd, 0, sizeof(nsasd));
+                  nsasd.type = NEBTYPE_SERVICE_DELETE;
+                  nsasd.timestamp.tv_sec = cvar->timestamp.tv_sec;
+                  nsasd.command_type = CMD_NONE;
+                  nsasd.modified_attribute = MODATTR_ALL;
+                  nsasd.modified_attributes = MODATTR_ALL;
+                  nsasd.object_ptr = svc;
 
-                // Callback.
-                callback_service(NEBCALLBACK_ADAPTIVE_SERVICE_DATA, &nsasd);
+                  // Callback.
+                  callback_service(NEBCALLBACK_ADAPTIVE_SERVICE_DATA, &nsasd);
+                }
               }
 
               // Record host ID/service ID.
@@ -433,6 +486,7 @@ int neb::callback_custom_variable(int callback_type, void* data) {
             if (it != neb::gl_services.end()) {
               misc::shared_ptr<custom_variable>
                 new_cvar(new custom_variable);
+              new_cvar->enabled = true;
               new_cvar->instance_id = instance_id;
               new_cvar->host_id = it->second.first;
               new_cvar->modified = false;
@@ -449,6 +503,38 @@ int neb::callback_custom_variable(int callback_type, void* data) {
                 << new_cvar->service_id << ")";
               neb::gl_publisher.write(new_cvar);
             }
+          }
+        }
+      }
+      else if (NEBTYPE_SERVICECUSTOMVARIABLE_DELETE == cvar->type) {
+        ::service* svc(static_cast< ::service*>(cvar->object_ptr));
+        if (svc
+            && svc->description
+            && svc->host_name
+            && strcmp(cvar->var_name, "SERVICE_ID")) {
+          std::map<std::pair<std::string, std::string>,
+                   std::pair<int, int> >::const_iterator
+            it(neb::gl_services.find(std::make_pair<std::string, std::string>(
+                                       svc->host_name,
+                                       svc->description)));
+          if (it != neb::gl_services.end()) {
+            misc::shared_ptr<custom_variable>
+              old_cvar(new custom_variable);
+            old_cvar->enabled = false;
+            old_cvar->instance_id = instance_id;
+            old_cvar->host_id = it->second.first;
+            old_cvar->modified = true;
+            old_cvar->name = cvar->var_name;
+            old_cvar->service_id = it->second.second;
+            old_cvar->var_type = 1;
+            old_cvar->update_time = cvar->timestamp.tv_sec;
+
+            // Send custom variable event.
+            logging::info(logging::low)
+              << "callbacks: deleted custom variable '" << old_cvar->name
+              << "' on service (" << old_cvar->host_id << ", "
+              << old_cvar->service_id << ")";
+            neb::gl_publisher.write(old_cvar);
           }
         }
       }

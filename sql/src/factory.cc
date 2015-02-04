@@ -176,6 +176,16 @@ io::endpoint* factory::new_endpoint(
       cleanup_check_interval = it.value().toUInt();
   }
 
+  // Instance timeout
+  // By default, 5 minutes.
+  unsigned int instance_timeout(5 * 60);
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("instance_timeout"));
+    if (it != cfg.params.end())
+      instance_timeout = it.value().toUInt();
+  }
+
   // Check replication status ?
   bool check_replication(true);
   {
@@ -205,6 +215,7 @@ io::endpoint* factory::new_endpoint(
        name,
        queries_per_transaction,
        cleanup_check_interval,
+       instance_timeout,
        check_replication,
        wse);
   is_acceptor = false;

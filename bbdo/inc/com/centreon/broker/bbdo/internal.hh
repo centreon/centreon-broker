@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -27,12 +27,13 @@
 
 #  define BBDO_HEADER_SIZE 8
 #  define BBDO_VERSION_MAJOR 1
-#  define BBDO_VERSION_MINOR 1
+#  define BBDO_VERSION_MINOR 2
 #  define BBDO_VERSION_PATCH 0
 
 #  define BBDO_NEB_TYPE 1u
 #  define BBDO_STORAGE_TYPE 2u
 #  define BBDO_CORRELATION_TYPE 3u
+#  define BBDO_BAM_TYPE 4u
 #  define BBDO_INTERNAL_TYPE 65535u
 #  define BBDO_ID(type, id) ((type << 16) | id)
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -58,10 +58,11 @@ int main() {
   commander.set_file(tmpnam(NULL));
   engine daemon;
   cbd broker;
+  test_db db;
 
   try {
     // Prepare database.
-    QSqlDatabase db(config_db_open(DB_NAME));
+    db.open(DB_NAME);
 
     // Write cbmod configuration file.
     {
@@ -154,7 +155,7 @@ int main() {
     {
       std::ostringstream oss;
       oss << "SELECT last_check FROM rt_services";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(oss.str().c_str()))
         throw (exceptions::msg()
                << "cannot get services' last check time from DB: "
@@ -200,7 +201,7 @@ int main() {
     {
       std::ostringstream oss;
       oss << "SELECT last_check FROM rt_services";
-      QSqlQuery q(db);
+      QSqlQuery q(*db.storage_db());
       if (!q.exec(oss.str().c_str()))
         throw (exceptions::msg()
                << "cannot get services' last check time from DB: "
@@ -243,7 +244,6 @@ int main() {
   config_remove(engine_config_path.c_str());
   ::remove(cbmod_config_path.c_str());
   ::remove(retention_file_path.c_str());
-  config_db_close(DB_NAME);
   free_hosts(hosts);
   free_services(services);
 

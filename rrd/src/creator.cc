@@ -121,6 +121,10 @@ void creator::create(
                 unsigned int step,
                 short value_type) {
   // Fill template informations.
+  if (!step)
+    step = 5 * 60 * 60; // Default to every 5 minutes.
+  if (!length)
+    length = 31 * 24 * 60 * 60 / step; // Default to one month long.
   tmpl_info info;
   info.length = length;
   info.step = step;
@@ -223,7 +227,7 @@ void creator::_duplicate(std::string const& filename, fd_info const& in_fd) {
  *  @param[in] filename   Path to the RRD file.
  *  @param[in] length     Number of recording in the RRD file.
  *  @param[in] from       Timestamp of the first record.
- *  @param[in] interval   Time interval between each record.
+ *  @param[in] step       Time interval between each record.
  *  @param[in] value_type Type of the metric.
  */
 void creator::_open(

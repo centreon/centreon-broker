@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -27,12 +27,17 @@
 #  include <QSqlDatabase>
 #  include <QString>
 #  include <utility>
+#  include "com/centreon/broker/database.hh"
+#  include "com/centreon/broker/database_query.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/multiplexing/hooker.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/storage/rebuilder.hh"
 
 CCB_BEGIN()
+
+// Forward declaration.
+class              database_config;
 
 namespace          storage {
   /**
@@ -45,20 +50,12 @@ namespace          storage {
   class            stream : public multiplexing::hooker {
   public:
                    stream(
-                     QString const& storage_type,
-                     QString const& storage_host,
-                     unsigned short storage_port,
-                     QString const& storage_user,
-                     QString const& storage_password,
-                     QString const& storage_db,
-                     unsigned int queries_per_transaction,
+                     database_config const& db_cfg,
                      unsigned int rrd_len,
                      time_t interval_length,
                      unsigned int rebuild_check_interval,
                      bool store_in_db = true,
-                     bool check_replication = true,
                      bool insert_in_index_data = false);
-                   stream(stream const& s);
                    ~stream();
     void           process(bool in = false, bool out = true);
     void           read(misc::shared_ptr<io::data>& d);
@@ -89,9 +86,9 @@ namespace          storage {
       double       value;
     };
 
-    stream&        operator=(stream const& s);
+                   stream(stream const& other);
+    stream&        operator=(stream const& other);
     void           _check_deleted_index();
-    void           _clear_qsql();
     void           _delete_metrics(
                      std::list<unsigned long long> const& metrics_to_delete);
     unsigned int   _find_index_id(
@@ -127,20 +124,17 @@ namespace          storage {
     time_t         _interval_length;
     std::map<std::pair<unsigned int, QString>, metric_info>
                    _metric_cache;
+    unsigned int   _pending_events;
     std::deque<metric_value>
                    _perfdata_queue;
     bool           _process_out;
-    unsigned int   _queries_per_transaction;
     rebuilder      _rebuild_thread;
     unsigned int   _rrd_len;
     std::string    _status;
     mutable QMutex _statusm;
     bool           _store_in_db;
-    unsigned int   _transaction_queries;
-    std::auto_ptr<QSqlQuery>
-                   _update_metrics;
-    std::auto_ptr<QSqlDatabase>
-                   _storage_db;
+    database       _db;
+    database_query _update_metrics;
   };
 }
 

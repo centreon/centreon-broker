@@ -136,21 +136,26 @@ intelligence on what to update and when is not done here.
 Configuration
 -------------
 
-============= ===========================================================
-Tag           Description
-============= ===========================================================
-metrics_path  Path to where the metrics graphs should be written.
-status_path   Path to where the status graphs should be written.
-path          If using *rrdcached* software with local socket connection,
-              path to this socket.
-port          If using *rrdcached* software with a network connection,
-              port on which rrdcached listens. The RRD module onlys
-              supports connection with localhost *rrdcached*.
-write_metrics Enable or disable metrics graph creation and update.
-              Enabled by default.
-write_status  Enable or disable status graph creation and update. Enabled
-              by default.
-============= ===========================================================
+==================== ===================================================
+Tag                  Description
+==================== ===================================================
+metrics_path         Path to where the metrics graphs should be written.
+status_path          Path to where the status graphs should be written.
+path                 If using *rrdcached* software with local socket
+                     connection, path to this socket.
+port                 If using *rrdcached* software with a network
+                     connection, port on which rrdcached listens. The
+                     RRD module onlys supports connection with localhost
+                     *rrdcached*.
+write_metrics        Enable or disable metrics graph creation and
+                     update. Enabled by default.
+write_status         Enable or disable status graph creation and update.
+                     Enabled by default.
+cache_size           Maximum number of templates (used for file
+                     creation) kept on disk.
+ignore_update_errors Ignore RRD files update errors (Broker 2.4
+                     compatible behavior).
+==================== ===================================================
 
 Example
 -------
@@ -213,6 +218,12 @@ check_replication       Useful when using DB replication. Enable or
 cleanup_check_interval  How often the cleanup thread should run. This
                         thread cleans multiple tables of the database
                         containing outdated data.
+instance_timeout        In seconds, how long the broker will wait for
+                        a poller before signaling the poller as
+                        unresponsive. 0 to disable this feature.
+with_state_events       Generate host/service state events. This is an
+                        *experimental* feature used to compute
+                        real-time BI information.
 ======================= ===============================================
 
 Example
@@ -256,9 +267,10 @@ Tag                     Description
 ======================= ===============================================
 interval                Monitoring engine base interval (usually 60
                         seconds).
-length RRD              file length in seconds (ie. how much data your
-                        RRD file will contain). For 180 days
-                        (recommanded), 15552000.
+length                  RRD file length in seconds (ie. how much data
+                        your RRD file will contain). For 180 days
+                        (recommended), use 15552000
+                        (180 * 24 * 60 * 60).
 db_type                 Database type. One of db2, ibase, mysql,
                         oracle, odbc, postgresql, sqlite, tds.
 db_host                 Database host.
@@ -275,6 +287,14 @@ read_timeout            When using transactions, maximum time between
 check_replication       Useful when using DB replication. Enable or
                         disable replication check when connecting.
                         Default is enabled.
+rebuild_check_interval  How often (in seconds) metrics should be
+                        checked for rebuild.
+store_in_data_bin       This can be used to avoid keeping performance
+                        data in the *data_bin* table. *Warning*: this
+                        will prevent you to rebuild RRD files.
+insert_in_index_data    Internal option used by Centreon to allow
+                        graphs to properly work on satellite (deported
+                        interface).
 ======================= ===============================================
 
 Example
@@ -293,6 +313,110 @@ Example
     <db_password>noertnec</db_password>
     <db_name>centreon_storage</db_name>
   </output>
+
+
+BAM
+===
+
+Monitoring endpoint
+-------------------
+
+Compute Business Activity and Key Performance Indicator levels as well
+as meta-services. This is the improved version (as a Centreon Broker
+module) of the Centreon BAM extension.
+
+===================== ===
+**Type**              bam
+**Layer(s)**          1-7
+**Work on input**     No
+**Work on output**    Yes
+**Work on temporary** No
+===================== ===
+
+Configuration of the monitoring endpoint
+----------------------------------------
+
+======================= ===============================================
+Tag                     Description
+======================= ===============================================
+db_type                 Type of the database (mysql, postgresql,
+                        oracle, ...).
+db_host                 Database host.
+db_port                 Database port.
+db_user                 Database user.
+db_password             Password associated with *db_user*.
+db_name                 Centreon database name (usually *centreon*).
+storage_db_name         Storage database name (usually
+                        *centreon_storage*).
+queries_per_transaction Number of queries per transaction. Set to 1 or
+                        below to disable transactions. Default to 1.
+read_timeout            When using transactions, maximum time between
+                        commits. This prevent database from not being
+                        updated due to lack of queries to fill the
+                        transaction.
+check_replication       Useful when using DB replication. Enable or
+                        disable replication check when connecting.
+                        Default is enabled.
+command_file            Centreon Engine external command file. This is
+                        used to provide check results on BAs and launch
+                        notifications as a consequence.
+======================= ===============================================
+
+Reporting endpoint
+------------------
+
+Compute reporting information on BAs. This is only useful for use with
+Centreon BI to generate reports on Business Activities.
+
+===================== ======
+**Type**              bam_bi
+**Layer(s)**          1-7
+**Work on input**     No
+**Work on output**    Yes
+**Work on temporary** No
+===================== ======
+
+Configuration of the reporting endpoint
+---------------------------------------
+
+======================= ===============================================
+Tag                     Description
+======================= ===============================================
+db_type                 Type of the database (mysql, postgresql,
+                        oracle, ...).
+db_host                 Database host.
+db_port                 Database port.
+db_user                 Database user.
+db_password             Password associated with *db_user*.
+db_name                 Database name.
+queries_per_transaction Number of queries per transaction. Set to 1 or
+                        below to disable transactions. Default to 1.
+read_timeout            When using transactions, maximum time between
+                        commits. This prevent database from not being
+                        updated due to lack of queries to fill the
+                        transaction.
+check_replication       Useful when using DB replication. Enable or
+                        disable replication check when connecting.
+                        Default is enabled.
+======================= ===============================================
+
+
+Example
+-------
+
+::
+
+  <output>
+    <type>bam</type>
+    <db_type>mysql</db_type>
+    <db_host>localhost</db_host>
+    <db_port>3306</db_port>
+    <db_user>centreon</db_user>
+    <db_password>noertnec</db_password>
+    <db_name>centreon</db_name>
+    <storage_db_name>centreon_storage</storage_db_name>
+  </output>
+
 
 TCP
 ===
@@ -385,11 +509,12 @@ possible, to use compression and TLS modules.
 Configuration
 -------------
 
-======== =====================
-Tag      Description
-======== =====================
-protocol Must be set to *bbdo*.
-======== =====================
+=========== =====================================================
+Tag         Description
+=========== =====================================================
+protocol    Must be set to *bbdo*.
+negociation Enable or disable BBDO automatic feature negociation.
+=========== =====================================================
 
 NDO
 ===

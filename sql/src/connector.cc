@@ -45,6 +45,7 @@ connector::connector(connector const& c)
     _cleanup_check_interval(c._cleanup_check_interval),
     _db(c._db),
     _host(c._host),
+    _instance_timeout(c._instance_timeout),
     _password(c._password),
     _port(c._port),
     _queries_per_transaction(0),
@@ -71,6 +72,7 @@ connector& connector::operator=(connector const& c) {
     _cleanup_check_interval = c._cleanup_check_interval;
     _db = c._db;
     _host = c._host;
+    _instance_timeout = c._instance_timeout;
     _password = c._password;
     _port = c._port;
     _queries_per_transaction = c._queries_per_transaction;
@@ -121,9 +123,11 @@ void connector::connect_to(
                   QString const& db,
                   unsigned int queries_per_transaction,
                   unsigned int cleanup_check_interval,
+                  unsigned int instance_timeout,
                   bool check_replication,
                   bool with_state_events) {
   _cleanup_check_interval = cleanup_check_interval;
+  _instance_timeout = instance_timeout;
   _check_replication = check_replication;
   _db = db;
   _host = host;
@@ -143,14 +147,15 @@ void connector::connect_to(
  */
 misc::shared_ptr<io::stream> connector::open() {
   return (misc::shared_ptr<io::stream>(new stream(
-                                             _type,
-                                             _host,
+                                             _type.toStdString(),
+                                             _host.toStdString(),
                                              _port,
-                                             _user,
-                                             _password,
-                                             _db,
+                                             _user.toStdString(),
+                                             _password.toStdString(),
+                                             _db.toStdString(),
                                              _queries_per_transaction,
                                              _cleanup_check_interval,
+                                             _instance_timeout,
                                              _check_replication,
                                              _with_state_events)));
 }

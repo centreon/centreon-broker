@@ -1,5 +1,5 @@
 ##
-## Copyright 2009-2014 Merethis
+## Copyright 2009-2015 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -274,6 +274,9 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/config/logger.cc"
   "${SRC_DIR}/config/parser.cc"
   "${SRC_DIR}/config/state.cc"
+  "${SRC_DIR}/database.cc"
+  "${SRC_DIR}/database_config.cc"
+  "${SRC_DIR}/database_query.cc"
   "${SRC_DIR}/exceptions/msg.cc"
   "${SRC_DIR}/exceptions/with_pointer.cc"
 # #	../src/interface/xml/destination.cc
@@ -323,6 +326,9 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/config/logger.hh"
   "${INC_DIR}/config/parser.hh"
   "${INC_DIR}/config/state.hh"
+  "${INC_DIR}/database.hh"
+  "${INC_DIR}/database_config.hh"
+  "${INC_DIR}/database_query.hh"
   "${INC_DIR}/exceptions/msg.hh"
   "${INC_DIR}/exceptions/with_pointer.hh"
   "${INC_DIR}/io/data.hh"
@@ -448,15 +454,6 @@ if (WITH_MODULE_DUMPER)
   list(APPEND MODULE_LIST "dumper")
 endif()
 
-# Local sockets module.
-option(WITH_MODULE_LOCAL "Build local module." ON)
-if (WITH_MODULE_LOCAL)
-  if ("${QT_VERSION}" VERSION_GREATER "4.4.0")
-    add_subdirectory("local")
-    list(APPEND MODULE_LIST "local")
-  endif ()
-endif ()
-
 # RRD module.
 option(WITH_MODULE_RRD "Build RRD module." ON)
 if (WITH_MODULE_RRD)
@@ -476,6 +473,13 @@ option(WITH_MODULE_STORAGE "Build storage module." ON)
 if (WITH_MODULE_STORAGE)
   add_subdirectory("storage")
   list(APPEND MODULE_LIST "storage")
+endif()
+
+# BAM module.
+option(WITH_MODULE_BAM "Build BAM module." ON)
+if (WITH_MODULE_BAM)
+  add_subdirectory("bam")
+  list(APPEND MODULE_LIST "bam")
 endif()
 
 # TCP module.
@@ -511,14 +515,6 @@ string(REPLACE ";" ", " MODULE_LIST "${MODULE_LIST}")
 
 # Functional tests.
 if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
-  # My plugin.
-  set(MY_PLUGIN "my_plugin")
-  add_executable("${MY_PLUGIN}"
-    "${PROJECT_SOURCE_DIR}/test/my_plugin.cc")
-  get_property(MY_PLUGIN_PATH
-    TARGET "${MY_PLUGIN}"
-    PROPERTY LOCATION)
-
   # Configure files.
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml")
@@ -572,10 +568,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/temporary.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/temporary.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_instance_update_outdated_1.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/sql_instance_update_outdated_1.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_instance_update_outdated_2.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/sql_instance_update_outdated_2.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_cleanup.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/sql_cleanup.xml")
 
@@ -605,6 +597,22 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/rrd_file.hh"
     )
   target_link_libraries("${TEST_LIB}" "roker")
+
+  # My plugin.
+  set(MY_PLUGIN "my_plugin")
+  add_executable("${MY_PLUGIN}"
+    "${PROJECT_SOURCE_DIR}/test/my_plugin.cc")
+  get_property(MY_PLUGIN_PATH
+    TARGET "${MY_PLUGIN}"
+    PROPERTY LOCATION)
+  # My BAM plugin.
+  set(MY_PLUGIN_BAM "my_plugin_bam")
+  add_executable("${MY_PLUGIN_BAM}"
+    "${PROJECT_SOURCE_DIR}/test/my_plugin_bam.cc")
+  target_link_libraries("${MY_PLUGIN_BAM}" "${TEST_LIB}")
+  get_property(MY_PLUGIN_BAM_PATH
+    TARGET "${MY_PLUGIN_BAM}"
+    PROPERTY LOCATION)
 
   # Monitoring to SQL.
   set(TEST_NAME "running_monitoring_to_sql")
@@ -779,6 +787,41 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
+  # BAM engine.
+  set(TEST_NAME "running_bam")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/bam.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # BAM dimension.
+  set(TEST_NAME "running_bam_dimension")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/bam_dimension.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # BAM rebuild.
+  set(TEST_NAME "running_bam_rebuild")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/bam_rebuild.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # BAM BI events autoclose.
+  set(TEST_NAME "running_bam_events_autoclose")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/bam_events_autoclose.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # Meta-services.
+  set(TEST_NAME "running_meta_service")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/meta_service.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
   # RRD benchmark.
   unset(QT_WRAPPED_SOURCES)
   qt4_wrap_cpp(QT_WRAPPED_SOURCES
@@ -801,7 +844,7 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/bench_bbdo.cc"
     "${PROJECT_SOURCE_DIR}/test/bench_stream.cc"
     "${PROJECT_SOURCE_DIR}/test/bench_stream.hh")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${BBDO} ${COMPRESSION} ${CORRELATION} ${NEB} ${NDO} ${STORAGE})
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${BBDO} ${COMPRESSION} ${BAM} ${CORRELATION} ${NEB} ${NDO} ${STORAGE})
 
   # Last file to configure, based on target paths.
   configure_file("${PROJECT_SOURCE_DIR}/test/vars.hh.in"
