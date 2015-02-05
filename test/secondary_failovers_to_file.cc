@@ -95,6 +95,8 @@ int main() {
           << "  <output>\n"
           << "    <name>EngineToTCP</name>\n"
           << "    <failover>ToRetentionFile</failover>\n"
+          << "    <secondary_failover>SecondaryRetentionFile1</secondary_failover>\n"
+          << "    <secondary_failover>SecondaryRetentionFile2</secondary_failover>\n"
           << "    <type>tcp</type>\n"
           << "    <host>localhost</host>\n"
           << "    <port>5680</port>\n"
