@@ -1357,12 +1357,22 @@ void reporting_stream::_process_dimension(
       std::auto_ptr<QMutexLocker> lock(_availabilities->lock());
 
       // XXX : dimension event acknowledgement might not work !!!
+      //       For this reason, ignore any db error. We wouldn't
+      //       be able to manage it on a stream level.
+      try {
       for (std::vector<misc::shared_ptr<io::data> >::const_iterator
              it(_dimension_data_cache.begin()),
              end(_dimension_data_cache.end());
            it != end;
            ++it)
         _dimension_dispatch(*it);
+      _db.commit();
+      }
+      catch (std::exception const& e) {
+        logging::error(logging::medium)
+          << "BAM-BI: ignored dimension insertion failure: " << e.what();
+      }
+
       _dimension_data_cache.clear();
     }
     else
