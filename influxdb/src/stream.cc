@@ -69,13 +69,6 @@ stream::stream(
 stream::~stream() {
   // Unregister from multiplexer.
   multiplexing::engine::instance().unhook(*this);
-
-  try {
-    _influx_db.commit();
-  }
-  catch (std::exception const& e) {
-    logging::error(logging::medium) << e.what();
-  }
 }
 
 /**

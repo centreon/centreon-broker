@@ -103,6 +103,8 @@ void influxdb::influxdb::write(storage::metric const& m) {
     << m.value << ","
     << m.value_type
     << "]";
+  if (!_query.empty())
+    _query.append(",");
   _query.append(s.str());
 }
 
