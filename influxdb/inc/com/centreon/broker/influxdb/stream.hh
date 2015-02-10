@@ -27,11 +27,10 @@
 #  include <QSqlDatabase>
 #  include <QString>
 #  include <utility>
-#  include "com/centreon/broker/database.hh"
-#  include "com/centreon/broker/database_query.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/multiplexing/hooker.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/influxdb/influxdb.hh"
 
 CCB_BEGIN()
 
@@ -51,6 +50,7 @@ namespace          influxdb {
                      std::string const& user,
                      std::string const& passwd,
                      std::string const& addr,
+                     unsigned short port,
                      std::string const& db,
                      unsigned int queries_per_transaction);
                    ~stream();
@@ -69,8 +69,12 @@ namespace          influxdb {
     std::string  _user;
     std::string  _password;
     std::string  _address;
+    unsigned short
+                 _port;
     std::string  _db;
     unsigned int _queries_per_transaction;
+
+    influxdb     _influx_db;
 
     // Internal working members
     unsigned int _actual_query;

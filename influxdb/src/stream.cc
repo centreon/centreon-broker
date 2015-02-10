@@ -17,11 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cfloat>
-#include <cmath>
-#include <cstdlib>
-#include <QSqlDriver>
-#include <QThread>
 #include <QMutexLocker>
 #include <sstream>
 #include "com/centreon/broker/misc/global_lock.hh"
@@ -31,53 +26,12 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
-#include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/service.hh"
-#include "com/centreon/broker/neb/service_status.hh"
+#include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/influxdb/stream.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::misc;
 using namespace com::centreon::broker::influxdb;
-
-#define EPSILON 0.0001
-
-/**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
-
-/**
- *  Check that the floating point value is a NaN, in which case return a
- *  NULL QVariant.
- *
- *  @param[in] f Floating point value.
- *
- *  @return NULL QVariant if f is a NaN, f casted as QVariant otherwise.
- */
-static inline QVariant check_double(double f) {
-  return (isnan(f) ? QVariant(QVariant::Double) : QVariant(f));
-}
-
-/**
- *  Check that two double are equal.
- *
- *  @param[in] a First value.
- *  @param[in] b Second value.
- *
- *  @return true if a and b are equal.
- */
-static inline bool double_equal(double a, double b) {
-  return ((isnan(a) && isnan(b))
-          || (isinf(a)
-              && isinf(b)
-              && (std::signbit(a) == std::signbit(b)))
-          || (std::isfinite(a)
-              && std::isfinite(b)
-              && !(fabs((a) - (b)) > (0.01 * fabs(a)))));
-}
 
 /**************************************
 *                                     *
@@ -93,15 +47,18 @@ stream::stream(
           std::string const& user,
           std::string const& passwd,
           std::string const& addr,
+          unsigned short port,
           std::string const& db,
           unsigned int queries_per_transaction)
   : _process_out(false),
     _user(user),
     _password(passwd),
     _address(addr),
+    _port(port),
     _db(db),
     _queries_per_transaction(queries_per_transaction),
-    _actual_query(0) {
+    _actual_query(0),
+    _influx_db(user, passwd, addr, port, db) {
   // Register with multiplexer.
   multiplexing::engine::instance().hook(*this, false);
 }
@@ -112,6 +69,13 @@ stream::stream(
 stream::~stream() {
   // Unregister from multiplexer.
   multiplexing::engine::instance().unhook(*this);
+
+  try {
+    _influx_db.commit();
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium) << e.what();
+  }
 }
 
 /**
@@ -189,13 +153,18 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
 
   // Process metric events.
   if (!data.isNull()) {
-
-    ++_actual_query;
+    if (data->type()
+          == io::events::data_type<io::events::storage,
+                                   storage::de_metric>::value) {
+      _influx_db.write(data.ref_as<storage::metric const>());
+      ++_actual_query;
+    }
   }
 
   if (_actual_query >= _queries_per_transaction) {
     unsigned int ret = _actual_query;
     _actual_query = 0;
+    _influx_db.commit();
     return (ret);
   }
   else

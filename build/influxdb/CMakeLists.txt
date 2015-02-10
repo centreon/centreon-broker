@@ -34,10 +34,12 @@ add_library("${INFLUXDB}" SHARED
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
+  "${SRC_DIR}/influxdb.cc"
   "${SRC_DIR}/stream.cc"
   # Headers.
   "${INC_DIR}/connector.hh"
   "${INC_DIR}/factory.hh"
+  "${INC_DIR}/influxdb.hh"
   "${INC_DIR}/stream.hh"
 )
 target_link_libraries("${INFLUXDB}" ${QT_LIBRARIES})

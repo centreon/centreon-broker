@@ -18,6 +18,7 @@
 */
 
 #include <memory>
+#include <sstream>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/influxdb/connector.hh"
@@ -136,6 +137,16 @@ io::endpoint* factory::new_endpoint(
   std::string addr(find_param(cfg, "address"));
   std::string db(find_param(cfg, "db"));
 
+  unsigned short port(0);
+  {
+    std::stringstream ss;
+    ss << find_param(cfg, "port");
+    ss >> port;
+    if (!ss.eof())
+      throw (exceptions::msg() << "influxdb: couldn't parse port '" << ss.str()
+             << "' defined for endpoint '" << cfg.name << "'");
+  }
+
   unsigned int queries_per_transaction(0);
   {
     QMap<QString, QString>::const_iterator
@@ -148,7 +159,7 @@ io::endpoint* factory::new_endpoint(
 
   // Connector.
   std::auto_ptr<influxdb::connector> c(new influxdb::connector);
-  c->connect_to(user, passwd, addr, db, queries_per_transaction);
+  c->connect_to(user, passwd, addr, port, db, queries_per_transaction);
   is_acceptor = false;
   return (c.release());
 }

@@ -41,8 +41,11 @@ namespace           influxdb {
     connector&      operator=(connector const& other);
     io::endpoint*   clone() const;
     void            close();
-    void            connect_to(std::string const& user,
+    void            connect_to(
+                      std::string const& user,
                       std::string const& passwd,
+                      std::string const& addr,
+                      unsigned short _port,
                       std::string const& db,
                       unsigned int queries_per_transaction);
     misc::shared_ptr<io::stream>
@@ -54,6 +57,7 @@ namespace           influxdb {
     std::string     _user;
     std::string     _password;
     std::string     _addr;
+    unsigned short  _port;
     std::string     _db;
     unsigned int    _queries_per_transaction;
 
