@@ -475,6 +475,13 @@ if (WITH_MODULE_STORAGE)
   list(APPEND MODULE_LIST "storage")
 endif()
 
+# Influxdb module.
+option(WITH_MODULE_INFLUXDB "Build influxdb module." ON)
+if (WITH_MODULE_INFLUXDB)
+  add_subdirectory("influxdb")
+  list(APPEND MODULE_LIST "influxdb")
+endif()
+
 # BAM module.
 option(WITH_MODULE_BAM "Build BAM module." ON)
 if (WITH_MODULE_BAM)
