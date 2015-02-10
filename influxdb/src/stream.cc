@@ -50,7 +50,7 @@ stream::stream(
           unsigned short port,
           std::string const& db,
           unsigned int queries_per_transaction)
-  : _process_out(false),
+  : _process_out(true),
     _user(user),
     _password(passwd),
     _address(addr),

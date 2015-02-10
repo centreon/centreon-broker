@@ -131,7 +131,9 @@ void influxdb::influxdb::commit() {
       << "influxdb: couldn't commit data to influxdb with address '"
       << _socket->peerAddress().toString()
       << "' and port '" << _socket->peerPort() << "': "
-      << _socket->error();
+      << _socket->errorString();
+
+  _socket->waitForBytesWritten();
 
   _query.clear();
 }

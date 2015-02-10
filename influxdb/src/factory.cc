@@ -134,7 +134,7 @@ io::endpoint* factory::new_endpoint(
 
   std::string user(find_param(cfg, "user"));
   std::string passwd(find_param(cfg, "password"));
-  std::string addr(find_param(cfg, "address"));
+  std::string addr(find_param(cfg, "host"));
   std::string db(find_param(cfg, "db"));
 
   unsigned short port(0);
