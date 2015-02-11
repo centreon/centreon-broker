@@ -120,6 +120,11 @@ namespace        bam {
     std::string  _name;
     int          _recompute_count;
     unsigned int _service_id;
+
+    void         _commit_initial_events(io::stream* visitor);
+
+    std::vector<misc::shared_ptr<ba_event> >
+                 _initial_events;
   };
 }
 

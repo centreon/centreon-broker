@@ -997,7 +997,9 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
     // Reopen event.
     if ((it != _ba_event_cache.end())
         && !it->second.empty()
-        && (it->second.front().end_time == be.start_time)
+        && ((it->second.front().end_time == be.start_time)
+             || (it->second.front().end_time == (time_t)(-1)
+                 && be.start_time == it->second.front().start_time))
         && (it->second.front().in_downtime == be.in_downtime)
         && (it->second.front().status == be.status)) {
       _ba_event_update.bind_value(":ba_id", be.ba_id);
