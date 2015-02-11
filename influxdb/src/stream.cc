@@ -144,17 +144,20 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
     throw (io::exceptions::shutdown(true, true)
              << "influxdb stream is shutdown");
 
+  ++_actual_query;
+
   // Process metric events.
   if (!data.isNull()) {
     if (data->type()
           == io::events::data_type<io::events::storage,
                                    storage::de_metric>::value) {
       _influx_db.write(data.ref_as<storage::metric const>());
-      ++_actual_query;
     }
   }
 
   if (_actual_query >= _queries_per_transaction) {
+    logging::debug(logging::medium)
+      << "influxdb: commiting " << _actual_query << " queries";
     unsigned int ret = _actual_query;
     _actual_query = 0;
     _influx_db.commit();

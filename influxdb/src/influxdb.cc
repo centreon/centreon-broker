@@ -48,7 +48,8 @@ influxdb::influxdb::influxdb(
   base_url
     .append("/db/").append(db)
     .append("/series?u=").append(user)
-    .append("&p=").append(passwd);
+    .append("&p=").append(passwd)
+    .append("&time_precision=s");
   _post_header.append("POST ").append(base_url).append(" HTTP/1.0\n");
 }
 
