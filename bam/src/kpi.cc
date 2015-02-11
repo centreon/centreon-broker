@@ -115,6 +115,8 @@ void kpi::set_initial_event(kpi_event const& e) {
       _initial_events.push_back(new_event);
       _event = new_event;
     }
+    else
+      _initial_events.push_back(_event);;
     _event->impact_level = new_impact_level;
   }
 }
