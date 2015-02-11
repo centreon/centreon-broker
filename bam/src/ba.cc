@@ -402,6 +402,7 @@ void ba::set_initial_event(ba_event const& event) {
   if (_event.isNull()) {
     _event = misc::shared_ptr<ba_event>(new ba_event(event));
     _last_kpi_update = _event->start_time;
+    _initial_events.push_back(_event);
   }
 }
 
@@ -422,6 +423,9 @@ void ba::set_name(std::string const& name) {
  */
 void ba::visit(io::stream* visitor) {
   if (visitor) {
+    // Commit initial events.
+    _commit_initial_events(visitor);
+
     // If no event was cached, create one if necessary.
     short hard_state(get_state_hard());
     bool state_changed(false);
@@ -609,4 +613,24 @@ void ba::_unapply_impact(ba::impact_info& impact) {
   _level_soft += impact.soft_impact.get_nominal();
 
   return ;
+}
+
+/**
+ * Commit the initial events of this ba.
+ *
+ *  @param[in] visitor  The visitor.
+ */
+void ba::_commit_initial_events(io::stream* visitor) {
+  if (_initial_events.empty())
+    return ;
+
+  if (visitor) {
+    for (std::vector<misc::shared_ptr<ba_event> >::const_iterator
+           it(_initial_events.begin()),
+           end(_initial_events.end());
+         it != end;
+         ++it)
+      visitor->write(misc::shared_ptr<io::data>(new ba_event(**it)));
+  }
+  _initial_events.clear();
 }
