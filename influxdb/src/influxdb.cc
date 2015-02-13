@@ -36,13 +36,11 @@ influxdb::influxdb::influxdb(
             std::string const& passwd,
             std::string const& addr,
             unsigned short port,
-            std::string const& db) {
-  _socket.reset(new QTcpSocket);
-  _socket->connectToHost(QString::fromStdString(addr), port);
-  if (!_socket->waitForConnected())
-    throw exceptions::msg()
-      << "influxdb: couldn't connect to influxdb with address '"
-      << addr << "' and port '" << port << "': " << _socket->error();
+            std::string const& db)
+  : _host(addr),
+    _port(port) {
+  _connect_socket();
+  _socket->close();
 
   std::string base_url;
   base_url
@@ -126,6 +124,8 @@ void influxdb::influxdb::commit() {
     .append(_post_header).append(content_length.str()).append("\n")
     .append(query_header).append(_query).append(query_footer);
 
+  _connect_socket();
+
   if (_socket->write(final_query.c_str(), final_query.size())
         != final_query.size())
     throw exceptions::msg()
@@ -137,4 +137,16 @@ void influxdb::influxdb::commit() {
   _socket->waitForBytesWritten();
 
   _query.clear();
+}
+
+/**
+ *  Connect the socket to the endpoint.
+ */
+void influxdb::influxdb::_connect_socket() {
+  _socket.reset(new QTcpSocket);
+  _socket->connectToHost(QString::fromStdString(_host), _port);
+  if (!_socket->waitForConnected())
+    throw exceptions::msg()
+      << "influxdb: couldn't connect to influxdb with address '"
+      << _host << "' and port '" << _port << "': " << _socket->error();
 }

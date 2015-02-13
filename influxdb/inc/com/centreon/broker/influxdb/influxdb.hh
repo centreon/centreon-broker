@@ -59,6 +59,12 @@ namespace         influxdb {
 
     std::auto_ptr<QTcpSocket>
                   _socket;
+
+    std::string   _host;
+    unsigned short
+                  _port;
+
+    void          _connect_socket();
   };
 }
 
