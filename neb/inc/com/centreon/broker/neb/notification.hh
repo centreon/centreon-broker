@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,6 +22,8 @@
 
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
 
@@ -38,9 +40,9 @@ namespace          neb {
   class            notification : public io::data {
   public:
                    notification();
-                   notification(notification const& n);
+                   notification(notification const& other);
                    ~notification();
-    notification&  operator=(notification const& n);
+    notification&  operator=(notification const& other);
     unsigned int   type() const;
 
     QString        ack_author;
@@ -58,8 +60,13 @@ namespace          neb {
     timestamp      start_time;
     int            state;
 
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
+
   private:
-    void           _internal_copy(notification const& n);
+    void           _internal_copy(notification const& other);
   };
 }
 

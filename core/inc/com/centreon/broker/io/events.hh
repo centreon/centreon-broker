@@ -20,6 +20,8 @@
 #ifndef CCB_IO_EVENTS_HH
 #  define CCB_IO_EVENTS_HH
 
+#  include <map>
+#  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()

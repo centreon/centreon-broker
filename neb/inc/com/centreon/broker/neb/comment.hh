@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,6 +22,8 @@
 
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
 
@@ -37,9 +39,9 @@ namespace          neb {
   class            comment : public io::data {
   public:
                    comment();
-                   comment(comment const& c);
+                   comment(comment const& other);
                    ~comment();
-    comment&       operator=(comment const& c);
+    comment&       operator=(comment const& other);
     unsigned int   type() const;
 
     QString        author;
@@ -56,8 +58,13 @@ namespace          neb {
     unsigned int   service_id;
     short          source;
 
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
+
   private:
-    void           _internal_copy(comment const& c);
+    void           _internal_copy(comment const& other);
   };
 }
 

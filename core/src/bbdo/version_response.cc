@@ -26,6 +26,35 @@ using namespace com::centreon::broker::bbdo;
 
 /**************************************
 *                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// /**
+//  *  Internal protocol objects mappings.
+//  */
+// static mapped_data<version_response> const version_response_mapping[] = {
+//   mapped_data<version_response>(
+//     &version_response::bbdo_major,
+//     1,
+//     "major"),
+//   mapped_data<version_response>(
+//     &version_response::bbdo_minor,
+//     2,
+//     "minor"),
+//   mapped_data<version_response>(
+//     &version_response::bbdo_patch,
+//     3,
+//     "patch"),
+//   mapped_data<version_response>(
+//     &version_response::extensions,
+//     4,
+//     "extensions"),
+//   mapped_data<version_response>()
+// };
+
+/**************************************
+*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/

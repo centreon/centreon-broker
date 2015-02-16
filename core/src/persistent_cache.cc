@@ -17,7 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cerrno>
 #include <cstdio>
+#include <cstring>
+#include <QFile>
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/stream.hh"
@@ -125,7 +128,7 @@ void persistent_cache::transaction() {
     throw (exceptions::msg() << "core: cache file '"
            << _cache_file << "' is already open for writing");
   misc::shared_ptr<file::stream> fs(new file::stream(_new_file()));
-  misc::shared_ptr<bbdo::stream> bs(new bbdo::stream);
+  misc::shared_ptr<bbdo::stream> bs(new bbdo::stream(false, true));
   bs->read_from(fs);
   bs->write_to(fs);
   _write_file = bs.staticCast<io::stream>();
@@ -170,7 +173,7 @@ void persistent_cache::_open() {
   fs->reset();
 
   // Create BBDO layer.
-  misc::shared_ptr<bbdo::stream> bs(new bbdo::stream);
+  misc::shared_ptr<bbdo::stream> bs(new bbdo::stream(true, false));
   bs->read_from(fs);
   bs->write_to(fs);
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #include "com/centreon/broker/neb/host_check.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
@@ -37,9 +38,9 @@ host_check::host_check() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] hc Object to copy.
+ *  @param[in] other  Object to copy.
  */
-host_check::host_check(host_check const& hc) : check(hc) {}
+host_check::host_check(host_check const& other) : check(other) {}
 
 /**
  *  Destructor.
@@ -49,12 +50,12 @@ host_check::~host_check() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] hc Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-host_check& host_check::operator=(host_check const& hc) {
-  check::operator=(hc);
+host_check& host_check::operator=(host_check const& other) {
+  check::operator=(other);
   return (*this);
 }
 
@@ -66,3 +67,47 @@ host_check& host_check::operator=(host_check const& hc) {
 unsigned int host_check::type() const {
   return (io::events::data_type<io::events::neb, neb::de_host_check>::value);
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const host_check::entries[] = {
+  mapping::entry(
+    &host_check::active_checks_enabled,
+    "",
+    1),
+  mapping::entry(
+    &host_check::check_type,
+    "",
+    2),
+  mapping::entry(
+    &host_check::host_id,
+    "host_id",
+    3,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &host_check::next_check,
+    "",
+    4),
+  mapping::entry(
+    &host_check::command_line,
+    "command_line",
+    5),
+  mapping::entry(
+    &host_check::instance_id,
+    "",
+    6),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_host_check() {
+  return (new host_check);
+}
+io::event_info::event_operations const host_check::operations = {
+  &new_host_check
+};

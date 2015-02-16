@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,6 +20,8 @@
 #ifndef CCB_NEB_SERVICE_CHECK_HH
 #  define CCB_NEB_SERVICE_CHECK_HH
 
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/neb/check.hh"
 
@@ -36,12 +38,17 @@ namespace          neb {
   class            service_check : public check {
   public:
                    service_check();
-                   service_check(service_check const& sc);
+                   service_check(service_check const& other);
     virtual        ~service_check();
-    service_check& operator=(service_check const& sc);
+    service_check& operator=(service_check const& other);
     unsigned int   type() const;
 
     unsigned int   service_id;
+
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
   };
 }
 

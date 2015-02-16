@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,8 @@
 #  define CCB_NEB_HOST_HH
 
 #  include <QString>
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/neb/host_service.hh"
 #  include "com/centreon/broker/neb/host_status.hh"
@@ -40,9 +42,9 @@ namespace          neb {
   public:
                    host();
                    host(host_status const& hs);
-                   host(host const& h);
+                   host(host const& other);
                    ~host();
-    host&          operator=(host const& h);
+    host&          operator=(host const& other);
     unsigned int   type() const;
 
     QString        address;
@@ -58,8 +60,13 @@ namespace          neb {
     bool           stalk_on_up;
     QString        statusmap_image;
 
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
+
   private:
-    void           _internal_copy(host const& h);
+    void           _internal_copy(host const& other);
     void           _zero_initialize();
   };
 }

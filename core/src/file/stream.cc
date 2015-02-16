@@ -53,7 +53,8 @@ using namespace com::centreon::broker::file;
 stream::stream(
           std::string const& path,
           unsigned long long max_size)
-  : _last_read_offset(0),
+  : _auto_delete(true),
+    _last_read_offset(0),
     _last_time(0),
     _last_write_offset(0),
     _max_size(max_size),
@@ -132,9 +133,15 @@ void stream::read(misc::shared_ptr<io::data>& d) {
       _rfile->close();
       _rfile.clear();
       std::string file_path(_file_path(_rid));
-      logging::info(logging::high) << "file: end of last file '"
-        << file_path.c_str() << "' reached, closing and erasing file";
-      ::remove(file_path.c_str());
+      if (_auto_delete) {
+        logging::info(logging::high) << "file: end of last file '"
+          << file_path.c_str() << "' reached, closing and erasing file";
+        ::remove(file_path.c_str());
+      }
+      else {
+        logging::info(logging::high) << "file: end of last file '"
+          << file_path.c_str() << "' reached, closing but NOT erasing file";
+      }
       throw ;
     }
     _open_next_read();
@@ -161,6 +168,23 @@ void stream::read(misc::shared_ptr<io::data>& d) {
     written += _rfile->write(
                          header.bytes + written,
                          sizeof(header.bytes) - written);
+  return ;
+}
+
+/**
+ *  Reset read file to the beginning.
+ */
+void stream::reset() {
+  // XXX
+}
+
+/**
+ *  @brief Set auto-delete mode.
+ *
+ *  In auto-delete mode, file parts are deleted as they are read.
+ */
+void stream::set_auto_delete(bool auto_delete) {
+  _auto_delete = auto_delete;
   return ;
 }
 
@@ -473,9 +497,15 @@ void stream::_open_next_read() {
 
   // Remove previous file.
   std::string file_path(_file_path(_rid));
-  logging::info(logging::high) << "file: end of file '"
-    << file_path.c_str() << "' reached, erasing file";
-  ::remove(file_path.c_str());
+  if (_auto_delete) {
+    logging::info(logging::high) << "file: end of file '"
+      << file_path.c_str() << "' reached, erasing file";
+    ::remove(file_path.c_str());
+  }
+  else {
+    logging::info(logging::high) << "file: end of file '"
+      << file_path.c_str() << "' reached, NOT erasing file";
+  }
 
   // Adjust current index.
   ++_rid;

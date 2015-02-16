@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,6 +22,8 @@
 
 #  include <ctime>
 #  include <QString>
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/neb/host_service.hh"
 #  include "com/centreon/broker/neb/service_status.hh"
@@ -43,9 +45,9 @@ namespace          neb {
   public:
                    service();
                    service(service_status const& ss);
-                   service(service const& s);
+                   service(service const& other);
                    ~service();
-    service&       operator=(service const& s);
+    service&       operator=(service const& other);
     unsigned int   type() const;
 
     QString        failure_prediction_options;
@@ -62,8 +64,13 @@ namespace          neb {
     bool           stalk_on_unknown;
     bool           stalk_on_warning;
 
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
+
   private:
-    void           _internal_copy(service const& s);
+    void           _internal_copy(service const& other);
     void           _zero_initialize();
   };
 }

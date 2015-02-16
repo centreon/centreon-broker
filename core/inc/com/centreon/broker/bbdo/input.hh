@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -37,9 +37,9 @@ namespace                bbdo {
   class                  input : virtual public io::stream {
   public:
                          input();
-                         input(input const& right);
+                         input(input const& other);
     virtual              ~input();
-    input&               operator=(input const& right);
+    input&               operator=(input const& other);
     void                 process(bool in = false, bool out = false);
     virtual void         read(misc::shared_ptr<io::data>& d);
     virtual unsigned int read_any(

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #include "com/centreon/broker/neb/event_handler.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
@@ -38,7 +39,7 @@ event_handler::event_handler()
     execution_time(0),
     handler_type(0),
     host_id(0),
-        return_code(0),
+    return_code(0),
     service_id(0),
     start_time(0),
     state(0),
@@ -48,10 +49,11 @@ event_handler::event_handler()
 /**
  *  Copy constructor.
  *
- *  @param[in] eh Object to copy.
+ *  @param[in] other  Object to copy.
  */
-event_handler::event_handler(event_handler const& eh) : io::data(eh) {
-  _internal_copy(eh);
+event_handler::event_handler(event_handler const& other)
+  : io::data(other) {
+  _internal_copy(other);
 }
 
 /**
@@ -62,13 +64,15 @@ event_handler::~event_handler() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] eh Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-event_handler& event_handler::operator=(event_handler const& eh) {
-  io::data::operator=(eh);
-  _internal_copy(eh);
+event_handler& event_handler::operator=(event_handler const& other) {
+  if (this != &other) {
+    io::data::operator=(other);
+    _internal_copy(other);
+  }
   return (*this);
 }
 
@@ -90,22 +94,103 @@ unsigned int event_handler::type() const {
 /**
  *  Copy internal data members.
  *
- *  @param[in] eh Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void event_handler::_internal_copy(event_handler const& eh) {
-  command_args = eh.command_args;
-  command_line = eh.command_line;
-  early_timeout = eh.early_timeout;
-  end_time = eh.end_time;
-  execution_time = eh.execution_time;
-  handler_type = eh.handler_type;
-  host_id = eh.host_id;
-    output = eh.output;
-  return_code = eh.return_code;
-  service_id = eh.service_id;
-  start_time = eh.start_time;
-  state = eh.state;
-  state_type = eh.state_type;
-  timeout = eh.timeout;
+void event_handler::_internal_copy(event_handler const& other) {
+  command_args = other.command_args;
+  command_line = other.command_line;
+  early_timeout = other.early_timeout;
+  end_time = other.end_time;
+  execution_time = other.execution_time;
+  handler_type = other.handler_type;
+  host_id = other.host_id;
+  output = other.output;
+  return_code = other.return_code;
+  service_id = other.service_id;
+  start_time = other.start_time;
+  state = other.state;
+  state_type = other.state_type;
+  timeout = other.timeout;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const event_handler::entries[] = {
+  mapping::entry(
+    &event_handler::early_timeout,
+    "early_timeout",
+    1),
+  mapping::entry(
+    &event_handler::end_time,
+    "end_time",
+    2),
+  mapping::entry(
+    &event_handler::execution_time,
+    "execution_time",
+    3),
+  mapping::entry(
+    &event_handler::handler_type,
+    "type",
+    4),
+  mapping::entry(
+    &event_handler::host_id,
+    "host_id",
+    5,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &event_handler::return_code,
+    "return_code",
+    6),
+  mapping::entry(
+    &event_handler::service_id,
+    "service_id",
+    7,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &event_handler::start_time,
+    "start_time",
+    8),
+  mapping::entry(
+    &event_handler::state,
+    "state",
+    9),
+  mapping::entry(
+    &event_handler::state_type,
+    "state_type",
+    10),
+  mapping::entry(
+    &event_handler::timeout,
+    "timeout",
+    11),
+  mapping::entry(
+    &event_handler::command_args,
+    "command_args",
+    12),
+  mapping::entry(
+    &event_handler::command_line,
+    "command_line",
+    13),
+  mapping::entry(
+    &event_handler::output,
+    "output",
+    14),
+  mapping::entry(
+    &event_handler::instance_id,
+    "",
+    15),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_event_handler() {
+  return (new event_handler);
+}
+io::event_info::event_operations const event_handler::operations = {
+  &new_event_handler
+};

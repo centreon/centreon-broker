@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,8 @@
 #  define CCB_NEB_FLAPPING_STATUS_HH
 
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
 
@@ -36,9 +38,9 @@ namespace            neb {
   class              flapping_status : public io::data {
   public:
                      flapping_status();
-                     flapping_status(flapping_status const& fs);
+                     flapping_status(flapping_status const& other);
                      ~flapping_status();
-    flapping_status& operator=(flapping_status const& fs);
+    flapping_status& operator=(flapping_status const& other);
     unsigned int     type() const;
 
     timestamp        comment_time;
@@ -53,8 +55,13 @@ namespace            neb {
     short            reason_type;
     unsigned int     service_id;
 
+    static mapping::entry const
+                     entries[];
+    static io::event_info::event_operations const
+                     operations;
+
   private:
-    void             _internal_copy(flapping_status const& fs);
+    void             _internal_copy(flapping_status const& other);
   };
 }
 

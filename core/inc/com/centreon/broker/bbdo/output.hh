@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -36,9 +36,9 @@ namespace                bbdo {
   class                  output : virtual public io::stream {
   public:
                          output();
-                         output(output const& right);
+                         output(output const& other);
     virtual              ~output();
-    output&              operator=(output const& right);
+    output&              operator=(output const& other);
     void                 process(bool in = false, bool out = false);
     virtual void         read(misc::shared_ptr<io::data>& e);
     virtual void         statistics(io::properties& tree) const;

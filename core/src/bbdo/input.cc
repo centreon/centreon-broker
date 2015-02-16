@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -23,13 +23,11 @@
 #include "com/centreon/broker/bbdo/input.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
-#include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/neb/events.hh"
-#include "com/centreon/broker/storage/events.hh"
+#include "com/centreon/broker/mapping/entry.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
@@ -45,20 +43,26 @@ using namespace com::centreon::broker::bbdo;
  *
  *  @param[in] buffer Serialized data.
  *  @param[in] size   Buffer size.
+ *  @param[in] info   Event informations.
  *
  *  @return Event.
  */
-template <typename T>
-static io::data* unserialize(char const* buffer, unsigned int size) {
-  std::auto_ptr<T> t(new T);
-  for (typename std::vector<getter_setter<T> >::const_iterator
-         it(bbdo_mapped_type<T>::table.begin()),
-         end(bbdo_mapped_type<T>::table.end());
+static io::data* unserialize(
+                   char const* buffer,
+                   unsigned int size,
+                   bbdo_mapped_type const& mapping_info) {
+  std::auto_ptr<io::data>
+    t(mapping_info.mapped_type->get_operations().constructor());
+  mapping::entry const*
+    current_entry(mapping_info.mapped_type->get_mapping());
+  for (std::vector<getter_setter>::const_iterator
+         it(mapping_info.bbdo_entries.begin()),
+         end(mapping_info.bbdo_entries.end());
        it != end;
-       ++it) {
+       ++it, ++current_entry) {
     unsigned int processed((*it->setter)(
                              *t,
-                             *it->member,
+                             *current_entry,
                              buffer,
                              size));
     size -= processed;
@@ -81,10 +85,10 @@ input::input() : _process_in(true), _processed(0) {}
 /**
  *  Copy constructor.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-input::input(input const& right) : io::stream(right) {
-  _internal_copy(right);
+input::input(input const& other) : io::stream(other) {
+  _internal_copy(other);
 }
 
 /**
@@ -95,14 +99,14 @@ input::~input() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-input& input::operator=(input const& right) {
-  if (this != &right) {
-    io::stream::operator=(right);
-    _internal_copy(right);
+input& input::operator=(input const& other) {
+  if (this != &other) {
+    io::stream::operator=(other);
+    _internal_copy(other);
   }
   return (*this);
 }
@@ -175,83 +179,6 @@ void input::read(misc::shared_ptr<io::data>& d) {
 unsigned int input::read_any(
                       misc::shared_ptr<io::data>& d,
                       time_t timeout) {
-  // Redirection array.
-  static struct {
-    unsigned int id;
-    io::data* (* routine)(char const*, unsigned int);
-  } const helpers[] = {
-    { BBDO_ID(BBDO_NEB_TYPE, 1),
-      &unserialize<neb::acknowledgement> },
-    { BBDO_ID(BBDO_NEB_TYPE, 2),
-      &unserialize<neb::comment> },
-    { BBDO_ID(BBDO_NEB_TYPE, 3),
-      &unserialize<neb::custom_variable> },
-    { BBDO_ID(BBDO_NEB_TYPE, 4),
-      &unserialize<neb::custom_variable_status> },
-    { BBDO_ID(BBDO_NEB_TYPE, 5),
-      &unserialize<neb::downtime> },
-    { BBDO_ID(BBDO_NEB_TYPE, 6),
-      &unserialize<neb::event_handler> },
-    { BBDO_ID(BBDO_NEB_TYPE, 7),
-      &unserialize<neb::flapping_status> },
-    { BBDO_ID(BBDO_NEB_TYPE, 8),
-      &unserialize<neb::host> },
-    { BBDO_ID(BBDO_NEB_TYPE, 9),
-      &unserialize<neb::host_check> },
-    { BBDO_ID(BBDO_NEB_TYPE, 10),
-      &unserialize<neb::host_dependency> },
-    { BBDO_ID(BBDO_NEB_TYPE, 11),
-      &unserialize<neb::host_group> },
-    { BBDO_ID(BBDO_NEB_TYPE, 12),
-      &unserialize<neb::host_group_member> },
-    { BBDO_ID(BBDO_NEB_TYPE, 13),
-      &unserialize<neb::host_parent> },
-    { BBDO_ID(BBDO_NEB_TYPE, 14),
-      &unserialize<neb::host_status> },
-    { BBDO_ID(BBDO_NEB_TYPE, 15),
-      &unserialize<neb::instance> },
-    { BBDO_ID(BBDO_NEB_TYPE, 16),
-      &unserialize<neb::instance_status> },
-    { BBDO_ID(BBDO_NEB_TYPE, 17),
-      &unserialize<neb::log_entry> },
-    { BBDO_ID(BBDO_NEB_TYPE, 18),
-      &unserialize<neb::module> },
-    { BBDO_ID(BBDO_NEB_TYPE, 19),
-      &unserialize<neb::notification> },
-    { BBDO_ID(BBDO_NEB_TYPE, 20),
-      &unserialize<neb::service> },
-    { BBDO_ID(BBDO_NEB_TYPE, 21),
-      &unserialize<neb::service_check> },
-    { BBDO_ID(BBDO_NEB_TYPE, 22),
-      &unserialize<neb::service_dependency> },
-    { BBDO_ID(BBDO_NEB_TYPE, 23),
-      &unserialize<neb::service_group> },
-    { BBDO_ID(BBDO_NEB_TYPE, 24),
-      &unserialize<neb::service_group_member> },
-    { BBDO_ID(BBDO_NEB_TYPE, 25),
-      &unserialize<neb::service_status> },
-    { BBDO_ID(BBDO_STORAGE_TYPE, 1),
-      &unserialize<storage::metric> },
-    { BBDO_ID(BBDO_STORAGE_TYPE, 2),
-      &unserialize<storage::rebuild> },
-    { BBDO_ID(BBDO_STORAGE_TYPE, 3),
-      &unserialize<storage::remove_graph> },
-    { BBDO_ID(BBDO_STORAGE_TYPE, 4),
-      &unserialize<storage::status> },
-    { BBDO_ID(BBDO_CORRELATION_TYPE, 1),
-      &unserialize<correlation::engine_state> },
-    { BBDO_ID(BBDO_CORRELATION_TYPE, 2),
-      &unserialize<correlation::host_state> },
-    { BBDO_ID(BBDO_CORRELATION_TYPE, 3),
-      &unserialize<correlation::issue> },
-    { BBDO_ID(BBDO_CORRELATION_TYPE, 4),
-      &unserialize<correlation::issue_parent> },
-    { BBDO_ID(BBDO_CORRELATION_TYPE, 5),
-      &unserialize<correlation::service_state> },
-    { BBDO_ID(BBDO_INTERNAL_TYPE, 1),
-      &unserialize<version_response> }
-  };
-
   // Return value.
   std::auto_ptr<io::data> e;
   d.clear();
@@ -329,13 +256,14 @@ unsigned int input::read_any(
   total_size += packet_size;
 
   // Find routine.
-  for (unsigned int i(0); i < sizeof(helpers) / sizeof(*helpers); ++i)
-    if (helpers[i].id == event_id) {
-      d = (*helpers[i].routine)(
-            _buffer.c_str() + _processed,
-            total_size);
-      break ;
-    }
+  umap<unsigned int, bbdo_mapped_type>::const_iterator
+    mapped_type(bbdo_mapping.find(event_id));
+  if (mapped_type != bbdo_mapping.end()) {
+    d = unserialize(
+          _buffer.c_str() + _processed,
+          total_size,
+          mapped_type->second);
+  }
 
   // Mark data as processed.
   logging::debug(logging::medium) << "BBDO: unserialized "

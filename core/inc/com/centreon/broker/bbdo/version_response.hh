@@ -20,6 +20,7 @@
 #ifndef CCB_BBDO_VERSION_RESPONSE_HH
 #  define CCB_BBDO_VERSION_RESPONSE_HH
 
+#  include <QString>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 

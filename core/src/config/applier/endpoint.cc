@@ -475,9 +475,14 @@ processing::failover* endpoint::_create_endpoint(
          it(cfg.filters.begin()), end(cfg.filters.end());
        it != end;
        ++it) {
-    std::set<unsigned int> const&
-      tmp_elements(io::events::instance().get(*it));
-    elements.insert(tmp_elements.begin(), tmp_elements.end());
+    io::events::events_container const&
+      tmp_elements(io::events::instance().get_events_by_category_name(*it));
+    for (io::events::events_container::const_iterator
+           it(tmp_elements.begin()),
+           end(tmp_elements.end());
+         it != end;
+         ++it)
+      elements.insert(it->first);
   }
 
   // Check that failover is configured.

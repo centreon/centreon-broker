@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
@@ -46,10 +47,10 @@ instance::instance()
  *
  *  Copy all members of the given object to the current instance.
  *
- *  @param[in] i Object to copy.
+ *  @param[in] other  Object to copy.
  */
-instance::instance(instance const& i) : io::data(i) {
-  _internal_copy(i);
+instance::instance(instance const& other) : io::data(other) {
+  _internal_copy(other);
 }
 
 /**
@@ -62,11 +63,13 @@ instance::~instance() {}
  *
  *  Copy all members of the given object to the current instance.
  *
- *  @param[in] i Object to copy.
+ *  @param[in] other  Object to copy.
  */
-instance& instance::operator=(instance const& i) {
-  io::data::operator=(i);
-  _internal_copy(i);
+instance& instance::operator=(instance const& other) {
+  if (this != &other) {
+    io::data::operator=(other);
+    _internal_copy(other);
+  }
   return (*this);
 }
 
@@ -92,16 +95,68 @@ unsigned int instance::type() const {
  *  Copy data defined within the instance class. This method is used by
  *  the copy constructor and the assignment operator.
  *
- *  @param[in] i Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void instance::_internal_copy(instance const& i) {
-  engine = i.engine;
-  id = i.id;
-  is_running = i.is_running;
-  name = i.name;
-  pid = i.pid;
-  program_end = i.program_end;
-  program_start = i.program_start;
-  version = i.version;
+void instance::_internal_copy(instance const& other) {
+  engine = other.engine;
+  id = other.id;
+  is_running = other.is_running;
+  name = other.name;
+  pid = other.pid;
+  program_end = other.program_end;
+  program_start = other.program_start;
+  version = other.version;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const instance::entries[] = {
+  mapping::entry(
+    &instance::engine,
+    "engine",
+    1),
+  mapping::entry(
+    &instance::id,
+    "instance_id",
+    2,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &instance::name,
+    "name",
+    3),
+  mapping::entry(
+    &instance::is_running,
+    "running",
+    4),
+  mapping::entry(
+    &instance::pid,
+    "pid",
+    5),
+  mapping::entry(
+    &instance::program_end,
+    "end_time",
+    6),
+  mapping::entry(
+    &instance::program_start,
+    "start_time",
+    7),
+  mapping::entry(
+    &instance::version,
+    "version",
+    8),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_instance() {
+  return (new instance);
+}
+io::event_info::event_operations const instance::operations = {
+  &new_instance
+};

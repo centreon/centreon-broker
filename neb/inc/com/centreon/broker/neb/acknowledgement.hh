@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,6 +22,8 @@
 
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
 
@@ -39,9 +41,9 @@ namespace            neb {
   class              acknowledgement : public io::data {
   public:
                      acknowledgement();
-                     acknowledgement(acknowledgement const& ack);
+                     acknowledgement(acknowledgement const& other);
                      ~acknowledgement();
-    acknowledgement& operator=(acknowledgement const& ack);
+    acknowledgement& operator=(acknowledgement const& other);
     unsigned int     type() const;
 
     short            acknowledgement_type;
@@ -56,8 +58,13 @@ namespace            neb {
     unsigned int     service_id;
     short            state;
 
+    static mapping::entry const
+                     entries[];
+    static io::event_info::event_operations const
+                     operations;
+
   private:
-    void             _internal_copy(acknowledgement const& ack);
+    void             _internal_copy(acknowledgement const& other);
   };
 }
 

@@ -127,7 +127,7 @@ void events::unregister_event(unsigned int type_id) {
   categories_container::iterator itc(_elements.find(category_id));
   if (itc != _elements.end()) {
     events_container::iterator ite(itc->second.events.find(type_id));
-    if (ite != itc->second.end())
+    if (ite != itc->second.events.end())
       itc->second.events.erase(ite);
   }
   return ;

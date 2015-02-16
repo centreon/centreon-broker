@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,6 +20,8 @@
 #ifndef CCB_NEB_HOST_DEPENDENCY_HH
 #  define CCB_NEB_HOST_DEPENDENCY_HH
 
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/neb/dependency.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -35,10 +37,15 @@ namespace            neb {
   class              host_dependency : public dependency {
   public:
                      host_dependency();
-                     host_dependency(host_dependency const& hd);
+                     host_dependency(host_dependency const& other);
                      ~host_dependency();
-    host_dependency& operator=(host_dependency const& hd);
+    host_dependency& operator=(host_dependency const& other);
     unsigned int     type() const;
+
+    static mapping::entry const
+                     entries[];
+    static io::event_info::event_operations const
+                     operations;
   };
 }
 

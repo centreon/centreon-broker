@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,6 +22,8 @@
 
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -37,9 +39,9 @@ namespace          neb {
   class            module : public io::data {
   public:
                    module();
-                   module(module const& m);
+                   module(module const& other);
                    ~module();
-    module&        operator=(module const& m);
+    module&        operator=(module const& other);
     unsigned int   type() const;
 
     QString        args;
@@ -48,8 +50,13 @@ namespace          neb {
     bool           loaded;
     bool           should_be_loaded;
 
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
+
   private:
-    void           _internal_copy(module const& m);
+    void           _internal_copy(module const& other);
   };
 }
 

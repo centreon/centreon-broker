@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,8 @@
 #  define CCB_NEB_HOST_PARENT_HH
 
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -35,14 +37,19 @@ namespace          neb {
   class            host_parent : public io::data {
   public:
                    host_parent();
-                   host_parent(host_parent const& hp);
+                   host_parent(host_parent const& other);
                    ~host_parent();
-    host_parent&   operator=(host_parent const& hp);
+    host_parent&   operator=(host_parent const& other);
     unsigned int   type() const;
 
     bool           enabled;
     unsigned int   host_id;
     unsigned int   parent_id;
+
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
   };
 }
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,6 +22,8 @@
 
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
 
@@ -38,9 +40,9 @@ namespace          neb {
   class            event_handler : public io::data {
   public:
                    event_handler();
-                   event_handler(event_handler const& eh);
+                   event_handler(event_handler const& other);
                    ~event_handler();
-    event_handler& operator=(event_handler const& eh);
+    event_handler& operator=(event_handler const& other);
     unsigned int   type() const;
 
     QString        command_args;
@@ -58,8 +60,13 @@ namespace          neb {
     short          state_type;
     short          timeout;
 
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
+
   private:
-    void           _internal_copy(event_handler const& eh);
+    void           _internal_copy(event_handler const& other);
   };
 }
 

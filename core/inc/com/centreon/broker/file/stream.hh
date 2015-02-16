@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -46,6 +46,8 @@ namespace              file {
                          bool in = false,
                          bool out = false);
     void               read(misc::shared_ptr<io::data>& d);
+    void               reset();
+    void               set_auto_delete(bool auto_delete);
     void               statistics(io::properties& tree) const;
     unsigned int       write(misc::shared_ptr<io::data> const& d);
 
@@ -58,6 +60,7 @@ namespace              file {
     void               _open_next_read();
     void               _open_next_write(bool truncate = true);
 
+    bool               _auto_delete;
     mutable unsigned long long
                        _last_read_offset;
     mutable time_t     _last_time;

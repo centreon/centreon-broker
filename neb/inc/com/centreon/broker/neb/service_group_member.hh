@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,6 +20,8 @@
 #ifndef CCB_NEB_SERVICE_GROUP_MEMBER_HH
 #  define CCB_NEB_SERVICE_GROUP_MEMBER_HH
 
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/neb/group_member.hh"
 
@@ -40,12 +42,17 @@ namespace                 neb {
   public:
                           service_group_member();
                           service_group_member(
-                            service_group_member const& sgm);
+                            service_group_member const& other);
     virtual               ~service_group_member();
-    service_group_member& operator=(service_group_member const& sgm);
+    service_group_member& operator=(service_group_member const& other);
     unsigned int          type() const;
 
     unsigned int          service_id;
+
+    static mapping::entry const
+                          entries[];
+    static io::event_info::event_operations const
+                          operations;
   };
 }
 

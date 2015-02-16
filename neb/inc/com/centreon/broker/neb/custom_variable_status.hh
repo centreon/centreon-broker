@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,6 +22,8 @@
 
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
 
@@ -38,9 +40,10 @@ namespace                   neb {
   public:
                             custom_variable_status();
                             custom_variable_status(
-                              custom_variable_status const& cvs);
+                              custom_variable_status const& other);
     virtual                 ~custom_variable_status();
-    custom_variable_status& operator=(custom_variable_status const& cvs);
+    custom_variable_status& operator=(
+                              custom_variable_status const& other);
     virtual unsigned int    type() const;
 
     unsigned int            host_id;
@@ -50,8 +53,14 @@ namespace                   neb {
     timestamp               update_time;
     QString                 value;
 
+    static mapping::entry const
+                            entries[];
+    static io::event_info::event_operations const
+                            operations;
+
   private:
-    void                    _internal_copy(custom_variable_status const& cvs);
+    void                    _internal_copy(
+                              custom_variable_status const& other);
   };
 }
 

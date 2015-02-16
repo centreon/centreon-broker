@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,8 @@
 #  define CCB_NEB_SERVICE_STATUS_HH
 
 #  include <QString>
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/neb/host_service_status.hh"
 #  include "com/centreon/broker/timestamp.hh"
@@ -37,9 +39,9 @@ namespace           neb {
   class             service_status : public host_service_status {
   public:
                     service_status();
-                    service_status(service_status const& ss);
+                    service_status(service_status const& other);
     virtual         ~service_status();
-    service_status& operator=(service_status const& ss);
+    service_status& operator=(service_status const& other);
     unsigned int    type() const;
 
     QString         host_name;
@@ -50,8 +52,13 @@ namespace           neb {
     QString         service_description;
     unsigned int    service_id;
 
+    static mapping::entry const
+                    entries[];
+    static io::event_info::event_operations const
+                    operations;
+
   private:
-    void            _internal_copy(service_status const& ss);
+    void            _internal_copy(service_status const& other);
   };
 }
 
