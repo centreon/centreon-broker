@@ -98,6 +98,8 @@ namespace               io {
     events_container const&
                         get_events_by_category_name(
                           std::string const& name) const;
+    events_container   get_matching_events(
+                          std::string const& name) const;
 
   private:
                         events();

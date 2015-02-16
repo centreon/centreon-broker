@@ -172,6 +172,47 @@ events::events_container const& events::get_events_by_category_name(
          << name << "'");
 }
 
+/**
+ *  Get all the events matching this name.
+ *
+ *  If it's a category name, get the content of the category.
+ *  If it's a category name followed by : and the name of an event,
+ *  get this event.
+ *
+ *  @param[in] name  The name.
+ *
+ *  @return  A list of all the matching events.
+ */
+events::events_container events::get_matching_events(
+                                   std::string const& name) const {
+  size_t num = std::count(name.begin(), name.end(), ':');
+  if (num == 0)
+    return (get_events_by_category_name(name));
+  else if (num == 1) {
+    size_t place = name.find_first_of(':');
+    std::string category_name = name.substr(0, place);
+    events::events_container const &events = get_events_by_category_name(
+                                               category_name);
+    std::string event_name = name.substr(place + 1);
+    for (events::events_container::const_iterator
+           it(events.begin()),
+           end(events.end());
+         it != end;
+         ++it) {
+      if (it->second.get_name() == event_name) {
+        events::events_container res;
+        res[it->first] = it->second;
+        return (res);
+      }
+    }
+    throw (exceptions::msg() << "core: cannot find event '"
+           << event_name << "' in '" << name << "'");
+  }
+  else
+    throw (exceptions::msg() << "core: too many ':' in '"
+           << name << "'");
+}
+
 /**************************************
 *                                     *
 *           Private Methods           *

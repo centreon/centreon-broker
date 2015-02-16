@@ -471,7 +471,7 @@ processing::failover* endpoint::_create_endpoint(
        it != end;
        ++it) {
     io::events::events_container const&
-      tmp_elements(io::events::instance().get_events_by_category_name(*it));
+      tmp_elements(io::events::instance().get_matching_events(*it));
     for (io::events::events_container::const_iterator
            it(tmp_elements.begin()),
            end(tmp_elements.end());
