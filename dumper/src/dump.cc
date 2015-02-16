@@ -78,3 +78,34 @@ void dump::_internal_copy(dump const& right) {
   tag = right.tag;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const dump::entries[] = {
+  mapping::entry(
+    &dump::content,
+    "content",
+    1),
+  mapping::entry(
+    &dump::instance_id,
+    "instance_id",
+    2),
+  mapping::entry(
+    &dump::tag,
+    "tag",
+    3),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_dump() {
+  return (new dump);
+}
+io::event_info::event_operations const dump::operations = {
+  &new_dump
+};

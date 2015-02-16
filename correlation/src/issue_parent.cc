@@ -105,3 +105,68 @@ void issue_parent::_internal_copy(issue_parent const& ip) {
   start_time = ip.start_time;
   return ;
 }
+
+
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const issue_parent::entries[] = {
+  mapping::entry(
+    &issue_parent::child_host_id,
+    "child_host_id",
+    1,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &issue_parent::child_service_id,
+    "child_service_id",
+    2,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &issue_parent::child_start_time,
+    "child_start_time",
+    3),
+  mapping::entry(
+    &issue_parent::end_time,
+    "end_time",
+    4),
+  mapping::entry(
+    &issue_parent::parent_host_id,
+    "parent_host_id",
+    5,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &issue_parent::parent_service_id,
+    "parent_service_id",
+    6,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &issue_parent::parent_start_time,
+    "parent_start_time",
+    7),
+  mapping::entry(
+    &issue_parent::start_time,
+    "start_time",
+    8),
+  mapping::entry(
+    &issue_parent::child_instance_id,
+    "",
+    9),
+  mapping::entry(
+    &issue_parent::parent_instance_id,
+    "",
+    10),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_issue_parent() {
+  return (new issue_parent);
+}
+io::event_info::event_operations const issue_parent::operations = {
+  &new_issue_parent
+};

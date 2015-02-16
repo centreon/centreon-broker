@@ -21,6 +21,7 @@
 #include "com/centreon/broker/neb/log_entry.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
@@ -116,3 +117,85 @@ void log_entry::_internal_copy(log_entry const& le) {
   status = le.status;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const log_entry::entries[] = {
+  mapping::entry(
+    &log_entry::c_time,
+    "ctime",
+    1),
+  mapping::entry(
+    &log_entry::host_id,
+    "host_id",
+    2,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &log_entry::host_name,
+    "host_name",
+    3),
+  mapping::entry(
+    &log_entry::instance_name,
+    "instance_name",
+    4),
+  mapping::entry(
+    &log_entry::issue_start_time,
+    "",
+    5),
+  mapping::entry(
+    &log_entry::log_type,
+    "type",
+    6),
+  mapping::entry(
+    &log_entry::msg_type,
+    "msg_type",
+    7),
+  mapping::entry(
+    &log_entry::notification_cmd,
+    "notification_cmd",
+    8),
+  mapping::entry(
+    &log_entry::notification_contact,
+    "notification_contact",
+    9),
+  mapping::entry(
+    &log_entry::retry,
+    "retry",
+    10),
+  mapping::entry(
+    &log_entry::service_description,
+    "service_description",
+    11,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &log_entry::service_id,
+    "service_id",
+    12,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &log_entry::status,
+    "status",
+    13),
+  mapping::entry(
+    &log_entry::output,
+    "output",
+    14),
+  mapping::entry(
+    &log_entry::instance_id,
+    "",
+    15),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_log_entry() {
+  return (new log_entry);
+}
+io::event_info::event_operations const log_entry::operations = {
+  &new_log_entry
+};

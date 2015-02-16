@@ -21,8 +21,10 @@
 #  define CCB_STORAGE_STATUS_HH
 
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 
 CCB_BEGIN()
 
@@ -47,6 +49,11 @@ namespace          storage {
     bool           is_for_rebuild;
     timestamp      rrd_len;
     short          state;
+
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
 
   private:
     void           _internal_copy(status const& s);

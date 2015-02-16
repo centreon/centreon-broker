@@ -21,6 +21,7 @@
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_dependency.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
@@ -91,3 +92,66 @@ void service_dependency::_internal_copy(service_dependency const& sd) {
   service_id = sd.service_id;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const service_dependency::entries[] = {
+  mapping::entry(
+    &service_dependency::dependency_period,
+    "dependency_period",
+    1),
+  mapping::entry(
+    &service_dependency::dependent_host_id,
+    "dependent_host_id",
+    2,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &service_dependency::dependent_service_id,
+    "dependent_service_id",
+    3,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &service_dependency::enabled,
+    "",
+    4),
+  mapping::entry(
+    &service_dependency::execution_failure_options,
+    "execution_failure_options",
+    5),
+  mapping::entry(
+    &service_dependency::host_id,
+    "host_id",
+    6,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &service_dependency::inherits_parent,
+    "inherits_parent",
+    7),
+  mapping::entry(
+    &service_dependency::notification_failure_options,
+    "notification_failure_options",
+    8),
+  mapping::entry(
+    &service_dependency::service_id,
+    "service_id",
+    9,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &service_dependency::instance_id,
+    "",
+    10),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_service_dependency() {
+  return (new service_dependency);
+}
+io::event_info::event_operations const service_dependency::operations = {
+  &new_service_dependency
+};

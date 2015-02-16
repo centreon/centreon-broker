@@ -20,8 +20,10 @@
 #ifndef CCB_CORRELATION_HOST_STATE_HH
 #  define CCB_CORRELATION_HOST_STATE_HH
 
+#  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/correlation/state.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 
 CCB_BEGIN()
 
@@ -41,6 +43,11 @@ namespace          correlation {
     bool           operator==(host_state const& hs) const;
     bool           operator!=(host_state const& hs) const;
     unsigned int   type() const;
+
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
   };
 }
 

@@ -21,7 +21,9 @@
 #  define CCB_STORAGE_REMOVE_GRAPH_HH
 
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 
 CCB_BEGIN()
 
@@ -42,6 +44,11 @@ namespace          storage {
 
     unsigned int   id;
     bool           is_index;
+
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
 
   private:
     void           _internal_copy(remove_graph const& right);

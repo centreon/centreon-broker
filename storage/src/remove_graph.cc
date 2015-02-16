@@ -21,6 +21,7 @@
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/remove_graph.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
 /**************************************
@@ -89,3 +90,30 @@ void remove_graph::_internal_copy(remove_graph const& right) {
   is_index = right.is_index;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const remove_graph::entries[] = {
+  mapping::entry(
+    &remove_graph::id,
+    "id",
+    1),
+  mapping::entry(
+    &remove_graph::is_index,
+    "is_end",
+    2),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_remove_graph() {
+  return (new remove_graph);
+}
+io::event_info::event_operations const remove_graph::operations = {
+  &new_remove_graph
+};

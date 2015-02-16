@@ -21,6 +21,7 @@
 #include "com/centreon/broker/correlation/service_state.hh"
 #include "com/centreon/broker/io/events.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
 
 /**************************************
@@ -95,3 +96,56 @@ bool service_state::operator!=(service_state const& ss) const {
 unsigned int service_state::type() const {
   return (io::events::data_type<io::events::correlation, correlation::de_service_state>::value);
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const service_state::entries[] = {
+  mapping::entry(
+    &service_state::ack_time,
+    "ack_time",
+    1,
+    mapping::entry::NULL_ON_MINUS_ONE),
+  mapping::entry(
+    &service_state::current_state,
+    "state",
+    2),
+  mapping::entry(
+    &service_state::end_time,
+    "end_time",
+    3,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &service_state::host_id,
+    "host_id",
+    4),
+  mapping::entry(
+    &service_state::in_downtime,
+    "in_downtime",
+    5),
+  mapping::entry(
+    &service_state::service_id,
+    "service_id",
+    6),
+  mapping::entry(
+    &service_state::start_time,
+    "start_time",
+    7),
+  mapping::entry(
+    &service_state::instance_id,
+    "",
+    8),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_service_state() {
+  return (new service_state);
+}
+io::event_info::event_operations const service_state::operations = {
+  &new_service_state
+};

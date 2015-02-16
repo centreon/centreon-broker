@@ -111,7 +111,6 @@ add_library("${NOTIFICATION}" SHARED
   "${SRC_DIR}/utilities/data_loggers.cc"
   "${SRC_DIR}/utilities/qhash_func.cc"
   "${SRC_DIR}/utilities/get_datetime_string.cc"
-  "${PROJECT_SOURCE_DIR}/core/src/mapping.cc"
   # Headers.
   "${INC_DIR}/action.hh"
   "${INC_DIR}/factory.hh"

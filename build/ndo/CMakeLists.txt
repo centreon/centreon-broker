@@ -45,8 +45,6 @@ add_library("${NDO}" SHARED
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/output.cc"
   "${SRC_DIR}/stream.cc"
-  "${SRC_DIR}/temp_mapping.cc"
-  "${PROJECT_SOURCE_DIR}/core/src/mapping.cc"
   ${QT_WRAPPED_SOURCES}
   # Headers.
   "${INC_DIR}/com/centreon/broker/ndo/acceptor.hh"

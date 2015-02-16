@@ -37,7 +37,6 @@ add_library("${SQL}" SHARED
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/stream.cc"
   "${SRC_DIR}/stored_timestamp.cc"
-  "${PROJECT_SOURCE_DIR}/core/src/mapping.cc"
   # Headers.
   "${INC_DIR}/com/centreon/broker/sql/cleanup.hh"
   "${INC_DIR}/com/centreon/broker/sql/connector.hh"

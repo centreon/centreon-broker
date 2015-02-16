@@ -23,8 +23,10 @@
 #  define CCB_CORRELATION_ISSUE_PARENT_HH
 
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 
 CCB_BEGIN()
 
@@ -53,6 +55,11 @@ namespace          correlation {
     unsigned int   parent_service_id;
     timestamp      parent_start_time;
     timestamp      start_time;
+
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
 
   private:
     void           _internal_copy(issue_parent const& ip);

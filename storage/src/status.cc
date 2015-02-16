@@ -21,6 +21,7 @@
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/status.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
 /**************************************
@@ -96,3 +97,46 @@ void status::_internal_copy(status const& s) {
   state = s.state;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const status::entries[] = {
+  mapping::entry(
+    &status::ctime,
+    "ctime",
+    1),
+  mapping::entry(
+    &status::index_id,
+    "index_id",
+    2),
+  mapping::entry(
+    &status::interval,
+    "interval",
+    3),
+  mapping::entry(
+    &status::rrd_len,
+    "rrd_len",
+    4),
+  mapping::entry(
+    &status::state,
+    "state",
+    5),
+  mapping::entry(
+    &status::is_for_rebuild,
+    "is_for_rebuild",
+    6),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_status() {
+  return (new status);
+}
+io::event_info::event_operations const status::operations = {
+  &new_status
+};
