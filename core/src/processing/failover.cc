@@ -33,6 +33,7 @@
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
 #include "com/centreon/broker/processing/failover.hh"
+#include "com/centreon/broker/processing/multiple_writer.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
@@ -98,6 +99,7 @@ failover::failover(failover const& f)
      _buffering_timeout(f._buffering_timeout),
      _endpoint(f._endpoint),
      _failover(f._failover),
+     _secondary_failovers(f._secondary_failovers),
      _initial(true),
      _is_out(f._is_out),
      _last_connect_attempt(f._last_connect_attempt),
@@ -142,6 +144,7 @@ failover& failover::operator=(failover const& f) {
   if (this != &f) {
     _endpoint = f._endpoint;
     _failover = f._failover;
+    _secondary_failovers = f._secondary_failovers;
     _is_out = f._is_out;
     _name = f._name;
     _next_timeout = f._next_timeout;
@@ -488,6 +491,7 @@ void failover::run() {
   time_t buffering(0);
   while (!_should_exit) {
     misc::shared_ptr<io::stream> copy_handler;
+    multiple_writer writer;
     exit_lock.unlock();
     try {
       // Close previous endpoint if any and then open it.
@@ -530,6 +534,15 @@ void failover::run() {
           (*s)->update();
       }
 
+      // Open secondary endpoints
+      {
+        QWriteLocker wl(&_secondary_fm);
+        writer.register_secondary_endpoints(
+                 _name.toStdString(),
+                 _secondary_failovers);
+      }
+
+
       // Initial buffering.
       {
         logging::info(logging::medium)
@@ -554,6 +567,12 @@ void failover::run() {
       while (!_should_exit || !_immediate) {
         exit_lock.unlock();
         bool timed_out(false);
+
+        if (_update) {
+          QWriteLocker secondary_lock(&_secondary_fm);
+          writer.update();
+        }
+
         if (_unprocessed.empty()) {
           QReadLocker lock(&_fromm);
           if (!_from.isNull()) {
@@ -570,13 +589,17 @@ void failover::run() {
               _next_timeout = time(NULL) + _read_timeout;
           }
         }
+
         QWriteLocker lock(&_tom);
+        QWriteLocker secondary_lock(&_secondary_fm);
+        writer.set_primary_output(_to.data());
+
         if (!_to.isNull()) {
           if (_update && _is_out) {
             _update = false;
             _to->update();
           }
-          unsigned int written(_to->write(_unprocessed.front()));
+          unsigned int written(writer.write(_unprocessed.front()));
           time_t now(time(NULL));
           if (!_unprocessed.front().isNull()) {
             if (now > _last_event) {
@@ -697,6 +720,7 @@ void failover::run() {
         this,
         SLOT(quit()));
     }
+
     if (!_should_exit) {
       // Unlock thread lock.
       exit_lock.unlock();
@@ -741,15 +765,14 @@ void failover::set_failover(misc::shared_ptr<failover> fo) {
 }
 
 /**
- *  Add a failover to this thread.
+ *  Add a secondary failover to this thread.
  *
  *  @param[in] fo  A thread's failover
  */
-void failover::add_failover(
-                 misc::shared_ptr<processing::failover> fo) {
-  set_failover(fo);
+void failover::add_secondary_failover(misc::shared_ptr<io::endpoint> fo) {
   if (!fo.isNull()) {
-    _failovers.push_back(fo);
+    QWriteLocker lock(&_secondary_fm);
+    _secondary_failovers.push_back(fo);
   }
 }
 
@@ -761,13 +784,8 @@ void failover::add_failover(
  *  @return              True if the failover is contained in the list.
  */
 bool failover::failovers_contains(processing::failover* failover) {
-  for (std::vector<misc::shared_ptr<processing::failover> >::const_iterator
-         it(_failovers.begin()),
-         end(_failovers.end());
-       it != end;
-       ++it)
-    if (&**it == failover)
-      return (true);
+  if (&*_failover == failover)
+    return (true);
   return (false);
 }
 

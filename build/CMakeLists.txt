@@ -326,6 +326,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/persistent_cache.cc"
   "${SRC_DIR}/processing/failover.cc"
   "${SRC_DIR}/processing/feeder.cc"
+  "${SRC_DIR}/processing/multiple_writer.cc"
   ${QT_WRAPPED_SOURCES}
   # Headers.
   "${INC_DIR}/bbdo/acceptor.hh"
@@ -390,6 +391,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/persistent_cache.hh"
   "${INC_DIR}/processing/failover.hh"
   "${INC_DIR}/processing/feeder.hh"
+  "${INC_DIR}/processing/multiple_writer.hh"
   "${INC_DIR}/timestamp.hh"
 )
 
@@ -768,6 +770,13 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
+  # Secondary failover to file.
+  set(TEST_NAME "running_secondary_failovers_to_file")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/secondary_failovers_to_file.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
   # RRD endpoint as failover.
   set(TEST_NAME "running_rrd_as_failover")
   add_test("${TEST_NAME}" "cbd" "-c" "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
@@ -797,6 +806,13 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_notification_non_correlated")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/notification_non_correlated.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # Correlated notification.
+  set(TEST_NAME "running_notification_correlated")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/notification_correlated.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 

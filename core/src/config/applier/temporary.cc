@@ -114,7 +114,7 @@ misc::shared_ptr<io::endpoint> temporary::_create_temporary(
     << "endpoint applier: creating new temporary '" << cfg.name << "'";
 
   // Check that failover is configured.
-  if (!cfg.failover.empty())
+  if (!cfg.failover.isEmpty() || !cfg.secondary_failovers.empty())
     throw (exceptions::msg() << "endpoint applier: find failover into "
            "temporary '" << cfg.name << "'");
 

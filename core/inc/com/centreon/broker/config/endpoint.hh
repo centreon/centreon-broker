@@ -49,7 +49,8 @@ namespace                    config {
     bool                     operator<(endpoint const& e) const;
 
     time_t                   buffering_timeout;
-    std::set<QString>        failover;
+    QString                  failover;
+    std::set<QString>        secondary_failovers;
     QString                  name;
     QMap<QString, QString>   params;
     time_t                   read_timeout;
