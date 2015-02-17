@@ -26,6 +26,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/notification/node_cache.hh"
 #include "com/centreon/broker/neb/internal.hh"
+#include "com/centreon/broker/neb/custom_variable.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::notification;
@@ -186,28 +187,20 @@ unsigned int node_cache::write(misc::shared_ptr<io::data> const& data) {
     return (1);
 
   unsigned int type = data->type();
-  if (type == io::events::data_type<io::events::neb,
-                                    neb::de_host>::value)
+  if (type == neb::host::static_type())
     update(*data.staticCast<neb::host>());
-  else if (type == io::events::data_type<io::events::neb,
-                                         neb::de_host_status>::value)
+  else if (type == neb::host_status::static_type())
     update(*data.staticCast<neb::host_status>());
-  else if (type == io::events::data_type<io::events::neb,
-                                         neb::de_host_group_member>::value)
+  else if (type == neb::host_group_member::static_type())
     update(*data.staticCast<neb::host_group_member>());
-  else if (type == io::events::data_type<io::events::neb,
-                                         neb::de_service>::value)
+  else if (type == neb::service::static_type())
     update(*data.staticCast<neb::service>());
-  else if (type == io::events::data_type<io::events::neb,
-                                         neb::de_service_status>::value)
+  else if (type == neb::service_status::static_type())
     update(*data.staticCast<neb::service_status>());
-  else if (type == io::events::data_type<io::events::neb,
-                                         neb::de_service_group_member>::value)
+  else if (type == neb::service_group_member::static_type())
     update(*data.staticCast<neb::service_group_member>());
-  else if (type == io::events::data_type<io::events::neb,
-                                         neb::de_custom_variable>::value
-           || type == io::events::data_type<io::events::neb,
-                                            neb::de_custom_variable_status>::value)
+  else if (type == neb::custom_variable::static_type()
+           || type == neb::custom_variable_status::static_type())
     update(*data.staticCast<neb::custom_variable_status>());
 
   return (1);

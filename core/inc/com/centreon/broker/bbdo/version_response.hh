@@ -40,6 +40,8 @@ namespace             bbdo {
                       ~version_response();
     version_response& operator=(version_response const& right);
     unsigned int      type() const;
+    static unsigned int
+                      static_type();
 
     short             bbdo_major;
     short             bbdo_minor;

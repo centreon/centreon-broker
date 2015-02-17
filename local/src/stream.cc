@@ -151,8 +151,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
   if (d.isNull())
     return (1);
 
-  if (d->type()
-      == io::events::data_type<io::events::internal, 1>::value) {
+  if (d->type() == io::raw::static_type()) {
     misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
     QMutexLocker lock(&*_mutex);
     qint64 wb(_socket->write(static_cast<char*>(r->QByteArray::data()),

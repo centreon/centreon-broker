@@ -290,9 +290,7 @@ void acceptor::_negociate_features(
   // Read initial packet.
   misc::shared_ptr<io::data> d;
   my_bbdo->read_any(d, time(NULL) + _timeout);
-  if (d.isNull()
-      || (d->type()
-          != io::events::data_type<io::events::bbdo, bbdo::de_version_response>::value))
+  if (d.isNull() || (d->type() != version_response::static_type()))
     throw (exceptions::msg()
            << "BBDO: invalid protocol header, aborting connection");
 

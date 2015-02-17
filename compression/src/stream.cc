@@ -172,7 +172,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
     _flush();
   else {
     // Process raw data only.
-    if (d->type() == io::events::data_type<io::events::internal, 1>::value) {
+    if (d->type() == io::raw::static_type()) {
       // Append data to write buffer.
       misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
       _wbuffer.append(*r);
@@ -235,7 +235,7 @@ bool stream::_get_data(unsigned int size) {
     if (d.isNull())
       retval = false;
     else {
-      if (d->type() == io::events::data_type<io::events::internal, 1>::value) {
+      if (d->type() == io::raw::static_type()) {
         misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
         _rbuffer.append(*r);
       }

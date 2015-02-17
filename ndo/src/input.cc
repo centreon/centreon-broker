@@ -58,7 +58,7 @@ char const* input::_get_line() {
       _from->read(data);
       if (data.isNull())
         break ;
-      if (data->type() == io::events::data_type<io::events::internal, 1>::value) {
+      if (data->type() == io::raw::static_type()) {
         io::raw* raw(static_cast<io::raw*>(data.data()));
         _buffer.append(static_cast<char*>(
           raw->QByteArray::data()),

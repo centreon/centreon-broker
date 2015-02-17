@@ -99,7 +99,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
     return (1);
 
   // Check if the event is a dumper event.
-  if (d->type() == io::events::data_type<io::events::dumper, dumper::de_dump>::value) {
+  if (d->type() == dump::static_type()) {
     dump* data(static_cast<dump*>(d.data()));
 
     // Check if this output dump this event.

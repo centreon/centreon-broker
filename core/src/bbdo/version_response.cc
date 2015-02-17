@@ -104,8 +104,18 @@ version_response& version_response::operator=(
  *  @return The event type.
  */
 unsigned int version_response::type() const {
+  return (version_response::static_type());
+}
+
+/**
+ *  Get the event type.
+ *
+ *  @return The event type.
+ */
+unsigned int version_response::static_type() {
   return (io::events::data_type<io::events::bbdo, bbdo::de_version_response>::value);
 }
+
 
 /**************************************
 *                                     *

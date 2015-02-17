@@ -308,8 +308,7 @@ void input::_buffer_must_have_unprocessed(
   while (_buffer.size() < (_processed + bytes)) {
     misc::shared_ptr<io::data> d;
     _from->read(d);
-    if (!d.isNull()
-        && d->type() == io::events::data_type<io::events::internal, 1>::value) {
+    if (!d.isNull() && d->type() == io::raw::static_type()) {
       misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
       _buffer.append(r->QByteArray::data(), r->size());
     }

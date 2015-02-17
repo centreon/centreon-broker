@@ -199,9 +199,7 @@ misc::shared_ptr<io::stream> connector::_open(
       // Version packet (first packet).
       misc::shared_ptr<io::data> d;
       bbdo_stream->read_any(d, time(NULL) + _timeout);
-      if (d.isNull()
-          || (d->type()
-              != io::events::data_type<io::events::bbdo, bbdo::de_version_response>::value))
+      if (d.isNull() || (d->type() != version_response::static_type()))
         throw (exceptions::msg() << "BBDO: invalid protocol header, "
                << "aborting connection");
       welcome_packet = d.staticCast<version_response>();

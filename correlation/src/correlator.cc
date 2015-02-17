@@ -24,7 +24,6 @@
 #include "com/centreon/broker/correlation/correlator.hh"
 #include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/correlation/host_state.hh"
-#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
 #include "com/centreon/broker/correlation/parser.hh"
@@ -34,11 +33,11 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
-#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/neb/host_status.hh"
 #include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_status.hh"
+#include "com/centreon/broker/neb/instance_status.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
@@ -1048,17 +1047,17 @@ QMap<QPair<unsigned int, unsigned int>, node>::iterator correlator::_remove_node
 void correlator::_process_event_on_active(
                    misc::shared_ptr<io::data> const& e) {
   unsigned int e_type(e->type());
-  if ((e_type == io::events::data_type<io::events::neb, neb::de_service_status>::value)
-      || (e_type == io::events::data_type<io::events::neb, neb::de_service>::value))
+  if ((e_type == neb::service_status::static_type())
+        || (e_type == neb::service::static_type()))
     _correlate_service_status(e);
-  else if ((e_type == io::events::data_type<io::events::neb, neb::de_host_status>::value)
-           || (e_type == io::events::data_type<io::events::neb, neb::de_host>::value))
+  else if ((e_type == neb::host_status::static_type())
+           || (e_type == neb::host::static_type()))
     _correlate_host_status(e);
-  else if (e_type == io::events::data_type<io::events::neb, neb::de_log_entry>::value)
+  else if (e_type == neb::log_entry::static_type())
     _correlate_log(e);
-  else if (e_type == io::events::data_type<io::events::neb, neb::de_acknowledgement>::value)
+  else if (e_type == neb::acknowledgement::static_type())
     _correlate_acknowledgement(e);
-  else if (e_type == io::events::data_type<io::events::neb, neb::de_instance_status>::value) {
+  else if (e_type == neb::instance_status::static_type()) {
     // Dump retention file.
     static time_t next_dump(0);
     time_t now(time(NULL));
@@ -1083,13 +1082,13 @@ void correlator::_process_event_on_passive(
 
   // if (e_type == io::events::data_type<io::events::correlation, correlation::de_engine_state>::value)
   //   ;
-  if (e_type == io::events::data_type<io::events::correlation, correlation::de_host_state>::value)
+  if (e_type == correlation::host_state::static_type())
     _update_host_service_state(e.staticCast<state>());
-  else if (e_type == io::events::data_type<io::events::correlation, correlation::de_issue>::value)
+  else if (e_type == correlation::issue::static_type())
     _update_issue(e.staticCast<issue>());
   // else if (e_type == io::events::data_type<io::events::correlation, correlation::de_issue_parent>::value)
   //   _update_issue_parent(e.staticCast<issue_parent>());
-  else if (e_type == io::events::data_type<io::events::correlation, correlation::de_service_state>::value)
+  else if (e_type == correlation::service_state::static_type())
     _update_host_service_state(e.staticCast<state>());
 
   return ;

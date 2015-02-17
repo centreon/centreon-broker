@@ -124,9 +124,7 @@ unsigned int stream::read_encrypted(void* buffer, unsigned int size) {
   while (_buffer.isEmpty()) {
     misc::shared_ptr<io::data> d;
     _from->read(d);
-    if (!d.isNull()
-        && (d->type()
-            == io::events::data_type<io::events::internal, 1>::value)) {
+    if (!d.isNull() && (d->type() == io::raw::static_type())) {
       io::raw* r(static_cast<io::raw*>(d.data()));
       _buffer.append(r->QByteArray::data(), r->size());
     }
@@ -162,9 +160,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
            << "TLS stream is shutdown");
 
   // Send data.
-  if (!d.isNull()
-      && d->type()
-      == io::events::data_type<io::events::internal, 1>::value) {
+  if (!d.isNull() && d->type() == io::raw::static_type()) {
     io::raw const* packet(static_cast<io::raw const*>(d.data()));
     char const* ptr(packet->QByteArray::data());
     int size(packet->size());
