@@ -45,6 +45,8 @@ namespace            neb {
                      ~instance_status();
     instance_status& operator=(instance_status const& other);
     unsigned int     type() const;
+    static unsigned int
+                     static_type();
 
     bool             active_host_checks_enabled;
     bool             active_service_checks_enabled;

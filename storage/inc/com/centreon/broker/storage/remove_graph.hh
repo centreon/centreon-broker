@@ -41,6 +41,8 @@ namespace          storage {
                    ~remove_graph();
     remove_graph&  operator=(remove_graph const& right);
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
 
     unsigned int   id;
     bool           is_index;

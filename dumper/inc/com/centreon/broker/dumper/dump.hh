@@ -42,6 +42,8 @@ namespace        dumper {
                  ~dump();
     dump&        operator=(dump const& right);
     unsigned int type() const;
+    static unsigned int
+                 static_type();
 
     QString      content;
     unsigned int instance_id;

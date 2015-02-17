@@ -77,6 +77,15 @@ notification& notification::operator=(notification const& n) {
  *  @return The event_type.
  */
 unsigned int notification::type() const {
+  return (notification::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int notification::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_notification>::value);
 }
 

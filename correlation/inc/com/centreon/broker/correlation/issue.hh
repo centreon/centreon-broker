@@ -44,6 +44,8 @@ namespace          correlation {
     bool           operator==(issue const& i) const;
     bool           operator!=(issue const& i) const;
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
 
     timestamp      ack_time;
     timestamp      end_time;

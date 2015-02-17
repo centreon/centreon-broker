@@ -77,6 +77,15 @@ metric& metric::operator=(metric const& m) {
  *  @return The event type.
  */
 unsigned int metric::type() const {
+  return (metric::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int metric::static_type() {
   return (io::events::data_type<io::events::storage, storage::de_metric>::value);
 }
 

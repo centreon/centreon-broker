@@ -79,6 +79,15 @@ instance& instance::operator=(instance const& other) {
  *  @return The event_type.
  */
 unsigned int instance::type() const {
+  return (instance::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int instance::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_instance>::value);
 }
 

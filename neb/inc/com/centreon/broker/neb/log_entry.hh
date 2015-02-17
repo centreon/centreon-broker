@@ -46,6 +46,8 @@ namespace          neb {
                    ~log_entry();
     log_entry&     operator=(const log_entry& other);
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
 
     timestamp      c_time;
     unsigned int   host_id;

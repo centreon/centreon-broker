@@ -74,6 +74,15 @@ status& status::operator=(status const& s) {
  *  @return The event type.
  */
 unsigned int status::type() const {
+  return (status::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int status::static_type() {
   return (io::events::data_type<io::events::storage, storage::de_status>::value);
 }
 

@@ -96,6 +96,15 @@ bool host_state::operator!=(host_state const& hs) const {
  *  @return The event type.
  */
 unsigned int host_state::type() const {
+  return (host_state::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int host_state::static_type() {
   return (io::events::data_type<io::events::correlation, correlation::de_host_state>::value);
 }
 

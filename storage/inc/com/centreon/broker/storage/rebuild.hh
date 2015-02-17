@@ -41,6 +41,8 @@ namespace          storage {
                    ~rebuild();
     rebuild&       operator=(rebuild const& right);
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
 
     bool           end;
     unsigned int   id;

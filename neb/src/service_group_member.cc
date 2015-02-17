@@ -67,6 +67,15 @@ service_group_member& service_group_member::operator=(service_group_member const
  *  @return The event_type.
  */
 unsigned int service_group_member::type() const {
+  return (service_group_member::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int service_group_member::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_service_group_member>::value);
 }
 

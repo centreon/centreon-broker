@@ -71,6 +71,15 @@ module& module::operator=(module const& m) {
  *  @return The event_type.
  */
 unsigned int module::type() const {
+  return (module::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int module::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_module>::value);
 }
 

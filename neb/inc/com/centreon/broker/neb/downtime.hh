@@ -46,6 +46,8 @@ namespace          neb {
                    ~downtime();
     downtime&      operator=(downtime const& other);
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
 
     timestamp      actual_end_time;
     timestamp      actual_start_time;

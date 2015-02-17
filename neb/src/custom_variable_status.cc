@@ -77,6 +77,15 @@ custom_variable_status& custom_variable_status::operator=(
  *  @return The event type.
  */
 unsigned int custom_variable_status::type() const {
+  return (custom_variable_status::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int custom_variable_status::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_custom_variable_status>::value);
 }
 

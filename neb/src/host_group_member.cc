@@ -67,6 +67,15 @@ host_group_member& host_group_member::operator=(
  *  @return The event type.
  */
 unsigned int host_group_member::type() const {
+  return (host_group_member::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int host_group_member::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_host_group_member>::value);
 }
 

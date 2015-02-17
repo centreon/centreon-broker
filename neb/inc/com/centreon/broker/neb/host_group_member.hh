@@ -44,6 +44,8 @@ namespace              neb {
     virtual            ~host_group_member();
     host_group_member& operator=(host_group_member const& other);
     unsigned int       type() const;
+    static unsigned int
+                       static_type();
 
     static mapping::entry const
                        entries[];

@@ -82,6 +82,15 @@ service_status& service_status::operator=(service_status const& ss) {
  *  @return The event_type.
  */
 unsigned int service_status::type() const {
+  return (service_status::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int service_status::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_service_status>::value);
 }
 

@@ -43,6 +43,8 @@ namespace          correlation {
     bool           operator==(host_state const& hs) const;
     bool           operator!=(host_state const& hs) const;
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
 
     static mapping::entry const
                    entries[];

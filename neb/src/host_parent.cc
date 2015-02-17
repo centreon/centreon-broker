@@ -77,6 +77,15 @@ host_parent& host_parent::operator=(host_parent const& other) {
  *  @return The event_type.
  */
 unsigned int host_parent::type() const {
+  return (host_parent::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int host_parent::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_host_parent>::value);
 }
 

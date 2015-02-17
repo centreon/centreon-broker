@@ -44,6 +44,8 @@ namespace          neb {
                    ~event_handler();
     event_handler& operator=(event_handler const& other);
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
 
     QString        command_args;
     QString        command_line;

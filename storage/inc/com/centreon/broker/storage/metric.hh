@@ -43,6 +43,8 @@ namespace          storage {
                    ~metric();
     metric&        operator=(metric const& m);
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
 
     timestamp      ctime;
     unsigned int   interval;

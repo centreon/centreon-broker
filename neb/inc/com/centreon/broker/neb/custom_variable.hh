@@ -42,6 +42,8 @@ namespace            neb {
                      ~custom_variable();
     custom_variable& operator=(custom_variable const& other);
     unsigned int     type() const;
+    static unsigned int
+                     static_type();
 
     short            var_type;
 

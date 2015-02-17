@@ -41,6 +41,8 @@ namespace          neb {
                    ~host_parent();
     host_parent&   operator=(host_parent const& other);
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
 
     bool           enabled;
     unsigned int   host_id;

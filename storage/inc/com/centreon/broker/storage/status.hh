@@ -42,6 +42,8 @@ namespace          storage {
                    ~status();
     status&        operator=(status const& s);
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
 
     timestamp      ctime;
     unsigned int   index_id;

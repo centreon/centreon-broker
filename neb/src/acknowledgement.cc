@@ -86,6 +86,15 @@ acknowledgement& acknowledgement::operator=(acknowledgement const& other) {
  *  @return The event type.
  */
 unsigned int acknowledgement::type() const {
+  return (acknowledgement::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int acknowledgement::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_acknowledgement>::value);
 }
 

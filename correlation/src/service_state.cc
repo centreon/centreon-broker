@@ -94,8 +94,18 @@ bool service_state::operator!=(service_state const& ss) const {
  *  @return The event type.
  */
 unsigned int service_state::type() const {
+  return (service_state::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int service_state::static_type() {
   return (io::events::data_type<io::events::correlation, correlation::de_service_state>::value);
 }
+
 
 /**************************************
 *                                     *

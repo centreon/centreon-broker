@@ -44,6 +44,8 @@ namespace          correlation {
                    ~issue_parent();
     issue_parent&  operator=(issue_parent const& ip);
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
 
     unsigned int   child_host_id;
     unsigned int   child_instance_id;

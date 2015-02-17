@@ -41,6 +41,8 @@ namespace          correlation {
     virtual        ~engine_state();
     engine_state&  operator=(engine_state const& es);
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
 
     unsigned int   instance_id;
     bool           started;

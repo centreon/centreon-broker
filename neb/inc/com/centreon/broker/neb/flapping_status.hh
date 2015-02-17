@@ -42,6 +42,8 @@ namespace            neb {
                      ~flapping_status();
     flapping_status& operator=(flapping_status const& other);
     unsigned int     type() const;
+    static unsigned int
+                     static_type();
 
     timestamp        comment_time;
     timestamp        event_time;

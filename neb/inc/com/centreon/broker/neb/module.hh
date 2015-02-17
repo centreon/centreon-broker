@@ -43,6 +43,8 @@ namespace          neb {
                    ~module();
     module&        operator=(module const& other);
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
 
     QString        args;
     bool           enabled;

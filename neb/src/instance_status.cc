@@ -91,6 +91,15 @@ instance_status& instance_status::operator=(
  *  @return The event_type.
  */
 unsigned int instance_status::type() const {
+  return (instance_status::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int instance_status::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_instance_status>::value);
 }
 

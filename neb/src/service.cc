@@ -92,6 +92,15 @@ service& service::operator=(service const& s) {
  *  @return The event_type.
  */
 unsigned int service::type() const {
+  return (service::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int service::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_service>::value);
 }
 

@@ -42,6 +42,8 @@ namespace          neb {
     virtual        ~host_check();
     host_check&    operator=(host_check const& other);
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
 
     static mapping::entry const
                    entries[];

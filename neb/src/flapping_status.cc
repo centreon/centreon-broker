@@ -83,6 +83,15 @@ flapping_status& flapping_status::operator=(
  *  @return The event type.
  */
 unsigned int flapping_status::type() const {
+  return (flapping_status::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int flapping_status::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_flapping_status>::value);
 }
 

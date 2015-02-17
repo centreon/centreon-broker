@@ -94,6 +94,15 @@ host& host::operator=(host const& other) {
  *  @return The event type.
  */
 unsigned int host::type() const {
+  return (host::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int host::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_host>::value);
 }
 

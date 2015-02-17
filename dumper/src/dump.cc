@@ -64,8 +64,18 @@ dump& dump::operator=(dump const& right) {
  *  @return Event type.
  */
 unsigned int dump::type() const {
+  return (dump::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int dump::static_type() {
   return (io::events::data_type<io::events::dumper, dumper::de_dump>::value);
 }
+
 
 /**
  *  Copy internal data members.

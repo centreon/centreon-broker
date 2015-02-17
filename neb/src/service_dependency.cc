@@ -73,6 +73,15 @@ service_dependency& service_dependency::operator=(
  *  @return The event_type.
  */
 unsigned int service_dependency::type() const {
+  return (service_dependency::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int service_dependency::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_service_dependency>::value);
 }
 

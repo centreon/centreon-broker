@@ -41,6 +41,8 @@ namespace            neb {
                      ~host_dependency();
     host_dependency& operator=(host_dependency const& other);
     unsigned int     type() const;
+    static unsigned int
+                     static_type();
 
     static mapping::entry const
                      entries[];

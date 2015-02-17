@@ -45,6 +45,7 @@ namespace                   neb {
     custom_variable_status& operator=(
                               custom_variable_status const& other);
     virtual unsigned int    type() const;
+    static unsigned int     static_type();
 
     unsigned int            host_id;
     bool                    modified;

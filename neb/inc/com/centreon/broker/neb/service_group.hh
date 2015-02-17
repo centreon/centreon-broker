@@ -39,6 +39,8 @@ namespace          neb {
                    ~service_group();
     service_group& operator=(service_group const& other);
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
 
     static mapping::entry const
                    entries[];

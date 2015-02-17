@@ -71,6 +71,15 @@ remove_graph& remove_graph::operator=(remove_graph const& right) {
  *  @return The event type.
  */
 unsigned int remove_graph::type() const {
+  return (remove_graph::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int remove_graph::static_type() {
   return (io::events::data_type<io::events::storage, storage::de_remove_graph>::value);
 }
 

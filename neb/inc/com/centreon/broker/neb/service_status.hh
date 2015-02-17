@@ -43,6 +43,8 @@ namespace           neb {
     virtual         ~service_status();
     service_status& operator=(service_status const& other);
     unsigned int    type() const;
+    static unsigned int
+                    static_type();
 
     QString         host_name;
     timestamp       last_time_critical;

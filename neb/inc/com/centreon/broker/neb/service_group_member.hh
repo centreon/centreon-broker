@@ -46,6 +46,7 @@ namespace                 neb {
     virtual               ~service_group_member();
     service_group_member& operator=(service_group_member const& other);
     unsigned int          type() const;
+    static unsigned int   static_type();
 
     unsigned int          service_id;
 

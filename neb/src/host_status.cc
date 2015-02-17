@@ -80,6 +80,15 @@ host_status& host_status::operator=(host_status const& other) {
  *  @return The event_type.
  */
 unsigned int host_status::type() const {
+  return (host_status::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int host_status::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_host_status>::value);
 }
 

@@ -85,6 +85,15 @@ comment& comment::operator=(comment const& other) {
  *  @return The event type.
  */
 unsigned int comment::type() const {
+  return (comment::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int comment::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_comment>::value);
 }
 

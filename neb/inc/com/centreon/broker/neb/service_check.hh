@@ -42,6 +42,8 @@ namespace          neb {
     virtual        ~service_check();
     service_check& operator=(service_check const& other);
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
 
     unsigned int   service_id;
 

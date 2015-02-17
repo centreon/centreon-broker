@@ -44,6 +44,8 @@ namespace          neb {
                    ~notification();
     notification&  operator=(notification const& other);
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
 
     QString        ack_author;
     QString        ack_data;

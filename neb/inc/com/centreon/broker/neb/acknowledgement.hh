@@ -45,6 +45,8 @@ namespace            neb {
                      ~acknowledgement();
     acknowledgement& operator=(acknowledgement const& other);
     unsigned int     type() const;
+    static unsigned int
+                     static_type();
 
     short            acknowledgement_type;
     QString          author;
