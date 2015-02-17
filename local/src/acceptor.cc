@@ -110,13 +110,9 @@ void acceptor::listen_on(QString const& name) {
 /**
  *  Open the acceptor.
  *
- *  @param[in] cache  Local module does not use the persistent cache.
- *
  *  @return A new stream.
  */
-misc::shared_ptr<io::stream> acceptor::open(persistent_cache* cache) {
-  (void)cache;
-
+misc::shared_ptr<io::stream> acceptor::open() {
   // Listen.
   QMutexLocker lock(&_mutex);
   if (!_socket.get()) {
@@ -164,14 +160,10 @@ misc::shared_ptr<io::stream> acceptor::open(persistent_cache* cache) {
  *  Open the acceptor.
  *
  *  @param[in] id     Unused.
- *  @param[in] cache  Local module does not use the persistent cache.
  *
  *  @return A new stream.
  */
-misc::shared_ptr<io::stream> acceptor::open(
-                                         QString const& id,
-                                         persistent_cache* cache) {
+misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
   (void)id;
-  (void)cache;
   return (open());
 }

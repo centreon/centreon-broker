@@ -142,13 +142,9 @@ void connector::connect_to(
 /**
  *  Connect to a notification cache DB and return a notification stream.
  *
- *  @param[in,out] cache  Notification module use the persistent cache
- *                        to store information about current status of
- *                        notification process between restarts.
- *
  *  @return Notification stream object.
  */
-misc::shared_ptr<io::stream> connector::open(persistent_cache* cache) {
+misc::shared_ptr<io::stream> connector::open() {
   return (misc::shared_ptr<io::stream>(new stream(
                                              _type,
                                              _host,
@@ -166,15 +162,10 @@ misc::shared_ptr<io::stream> connector::open(persistent_cache* cache) {
  *  Connect to a notification cache DB and return a notification stream.
  *
  *  @param[in]     id     Unused.
- *  @param[in,out] cache  Notification module use the persistent cache
- *                        to store information about current status of
- *                        notification process between restarts.
  *
  *  @return Notification connection object.
  */
-misc::shared_ptr<io::stream> connector::open(
-                                          QString const& id,
-                                          persistent_cache* cache) {
+misc::shared_ptr<io::stream> connector::open(QString const& id) {
   (void)id;
-  return (open(cache));
+  return (open());
 }

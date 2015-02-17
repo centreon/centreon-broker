@@ -40,10 +40,8 @@ namespace                        file {
     opener&                      operator=(opener const& o);
     io::endpoint*                clone() const;
     void                         close();
-    misc::shared_ptr<io::stream> open(persistent_cache* cache = NULL);
-    misc::shared_ptr<io::stream> open(
-                                   QString const& id,
-                                   persistent_cache* cache = NULL);
+    misc::shared_ptr<io::stream> open();
+    misc::shared_ptr<io::stream> open(QString const& id);
     void                         set_filename(QString const& filename);
     void                         set_max_size(unsigned long long max);
 

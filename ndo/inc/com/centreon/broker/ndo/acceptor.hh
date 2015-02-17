@@ -49,11 +49,9 @@ namespace               com {
           io::endpoint* clone() const;
           void          close();
           misc::shared_ptr<io::stream>
-                        open(persistent_cache* cache = NULL);
+                        open();
           misc::shared_ptr<io::stream>
-                        open(
-                          QString const& id,
-                          persistent_cache* cache = NULL);
+                        open(QString const& id);
           void          stats(io::properties& tree);
 
          private:

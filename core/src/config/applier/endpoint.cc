@@ -598,6 +598,14 @@ misc::shared_ptr<io::endpoint> endpoint::_create_new_endpoint(
                "protocol found for endpoint '" << cfg.name << "'");
     ++level;
   }
+
+  // Create the cache object if needed.
+  if (cfg.cache_enabled) {
+    misc::shared_ptr<persistent_cache> cache(
+      new persistent_cache((_cache_directory + '/' + cfg.name).toStdString()));
+    endp->set_cache(cache);
+  }
+
   return (endp);
 }
 

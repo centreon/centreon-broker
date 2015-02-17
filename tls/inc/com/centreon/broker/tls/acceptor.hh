@@ -50,13 +50,11 @@ namespace         tls {
     io::endpoint* clone() const;
     void          close();
     misc::shared_ptr<io::stream>
-                  open(persistent_cache* cache = NULL);
+                  open();
     misc::shared_ptr<io::stream>
                   open(misc::shared_ptr<io::stream> lower);
     misc::shared_ptr<io::stream>
-                  open(
-                    QString const& id,
-                    persistent_cache* cache = NULL);
+                  open(QString const& id);
 
   private:
     void          _internal_copy(acceptor const& right);

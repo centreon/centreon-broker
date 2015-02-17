@@ -177,8 +177,7 @@ void connector::connect_to(
  *
  *  @return Storage connection object.
  */
-misc::shared_ptr<io::stream> connector::open(persistent_cache* cache) {
-  (void)cache;
+misc::shared_ptr<io::stream> connector::open() {
   return (misc::shared_ptr<io::stream>(
             new stream(
                   _storage_type,
@@ -200,16 +199,11 @@ misc::shared_ptr<io::stream> connector::open(persistent_cache* cache) {
  *  Connect to a DB.
  *
  *  @param[in] id     Unused.
- *  @param[in] cache  Persistent cache is not used by the storage
- *                    module.
  *
  *  @return Storage connection object.
  */
-misc::shared_ptr<io::stream> connector::open(
-                                          QString const& id,
-                                          persistent_cache* cache) {
+misc::shared_ptr<io::stream> connector::open(QString const& id) {
   (void)id;
-  (void)cache;
   return (open());
 }
 

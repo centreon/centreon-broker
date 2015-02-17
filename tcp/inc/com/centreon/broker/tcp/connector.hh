@@ -45,11 +45,9 @@ namespace          tcp {
     void           close();
     void           connect_to(QString const& host, unsigned short port);
     misc::shared_ptr<io::stream>
-                   open(persistent_cache* cache = NULL);
+                   open();
     misc::shared_ptr<io::stream>
-                   open(
-                     QString const& id,
-                     persistent_cache* cache = NULL);
+                   open(QString const& id);
     void           set_timeout(int msecs);
 
   private:

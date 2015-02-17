@@ -90,13 +90,9 @@ void opener::close() {
 /**
  *  Open a compression stream.
  *
- *  @param[in] cache  Persistent cache is not used by compression
- *                    module.
- *
  *  @return New compression object.
  */
-misc::shared_ptr<io::stream> opener::open(persistent_cache* cache) {
-  (void)cache;
+misc::shared_ptr<io::stream> opener::open() {
   misc::shared_ptr<io::stream> retval;
   if (!_from.isNull())
     retval = _open(_from->open());
@@ -106,15 +102,9 @@ misc::shared_ptr<io::stream> opener::open(persistent_cache* cache) {
 /**
  *  Open a compression stream.
  *
- *  @param[in] cache  Persistent cache is not used by compression
- *                    module.
- *
  *  @return New compression object.
  */
-misc::shared_ptr<io::stream> opener::open(
-                                       QString const& id,
-                                       persistent_cache* cache) {
-  (void)cache;
+misc::shared_ptr<io::stream> opener::open(QString const& id) {
   misc::shared_ptr<io::stream> retval;
   if (!_from.isNull())
     retval = _open(_from->open(id));

@@ -57,6 +57,7 @@ namespace                    config {
     time_t                   retry_interval;
     std::set<std::string>    filters;
     QString                  type;
+    bool                     cache_enabled;
 
   private:
     void                     _internal_copy(endpoint const& e);

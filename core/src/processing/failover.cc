@@ -52,16 +52,12 @@ using namespace com::centreon::broker::processing;
  *                          thread.
  *  @param[in]     name     The failover name.
  *  @param[in]     filters  Event filters.
- *  @param[in,out] cache    Persistent cache.
  */
-failover::failover(
-            misc::shared_ptr<io::endpoint> endp,
+failover::failover(misc::shared_ptr<io::endpoint> endp,
             bool is_out,
             QString const& name,
-            std::set<unsigned int> const& filters,
-            misc::shared_ptr<persistent_cache> cache)
+            std::set<unsigned int> const& filters)
   : _buffering_timeout(0),
-    _cache(cache),
     _endpoint(endp),
     _initial(true),
     _is_out(is_out),

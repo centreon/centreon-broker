@@ -53,10 +53,8 @@ namespace                        notification {
                                    unsigned int queries_per_transaction = 1,
                                    bool check_replication = true,
                                    bool with_state_events = false);
-    misc::shared_ptr<io::stream> open(persistent_cache* cache = NULL);
-    misc::shared_ptr<io::stream> open(
-                                   QString const& id,
-                                   persistent_cache* cache = NULL);
+    misc::shared_ptr<io::stream> open();
+    misc::shared_ptr<io::stream> open(QString const& id);
 
   private:
     bool                         _check_replication;

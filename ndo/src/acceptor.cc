@@ -139,12 +139,8 @@ void acceptor::close() {
 
 /**
  *  Open the acceptor.
- *
- *  @param[in] cache  NDO module does not use the persistent cache.
  */
-misc::shared_ptr<io::stream> acceptor::open(persistent_cache* cache) {
-  (void)cache;
-
+misc::shared_ptr<io::stream> acceptor::open() {
   // Wait for client from the lower layer.
   if (!_from.isNull()) {
     if (_one_peer_retention_mode) {
@@ -169,13 +165,8 @@ misc::shared_ptr<io::stream> acceptor::open(persistent_cache* cache) {
  *  Open the acceptor.
  *
  *  @param[in] id     Connection ID.
- *  @param[in] cache  NDO module does not use the persistent cache.
  */
-misc::shared_ptr<io::stream> acceptor::open(
-                                         QString const& id,
-                                         persistent_cache* cache) {
-  (void)cache;
-
+misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
   // Wait for client from the lower layer.
   if (!_from.isNull()) {
     if (_one_peer_retention_mode) {

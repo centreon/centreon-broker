@@ -57,11 +57,9 @@ namespace          storage {
                      bool store_in_data_bin = true,
                      bool insert_in_index_data = false);
     misc::shared_ptr<io::stream>
-                   open(persistent_cache* cache = NULL);
+                   open();
     misc::shared_ptr<io::stream>
-                   open(
-                     QString const& id,
-                     persistent_cache* cache = NULL);
+                   open(QString const& id);
 
    private:
     void           _internal_copy(connector const& c);

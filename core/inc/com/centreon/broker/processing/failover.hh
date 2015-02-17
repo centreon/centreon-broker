@@ -32,7 +32,6 @@
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
-#  include "com/centreon/broker/persistent_cache.hh"
 #  include "com/centreon/broker/processing/feeder.hh"
 
 namespace                com {
@@ -61,8 +60,7 @@ namespace                com {
                            misc::shared_ptr<io::endpoint> endp,
                            bool is_out,
                            QString const& name = "(unknown)",
-                           std::set<unsigned int> const& filters = std::set<unsigned int>(),
-                           misc::shared_ptr<persistent_cache> cache = misc::shared_ptr<persistent_cache>());
+                           std::set<unsigned int> const& filters = std::set<unsigned int>());
                          failover(failover const& f);
                          ~failover();
           failover&      operator=(failover const& f);
@@ -103,8 +101,6 @@ namespace                com {
 
           // Data that doesn't require locking.
           volatile time_t _buffering_timeout;
-          misc::shared_ptr<persistent_cache>
-                         _cache;
           misc::shared_ptr<io::endpoint>
                          _endpoint;
           unsigned int   _events[event_window_length];

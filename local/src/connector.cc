@@ -113,13 +113,9 @@ void connector::connect_to(QString const& name) {
 /**
  *  Open the connection.
  *
- *  @param[in] cache  Local module does not use the persistent cache.
- *
  *  @return A new connection object.
  */
-misc::shared_ptr<io::stream> connector::open(persistent_cache* cache) {
-  (void)cache;
-
+misc::shared_ptr<io::stream> connector::open() {
   // Close previous connection.
   this->close();
 
@@ -151,15 +147,11 @@ misc::shared_ptr<io::stream> connector::open(persistent_cache* cache) {
  *  Open the connection.
  *
  *  @param[in] id     Unused.
- *  @param[in] cache  Local module does not the persistent cache.
  *
  *  @return A new connection object.
  */
-misc::shared_ptr<io::stream> connector::open(
-                                          QString const& id,
-                                          persistent_cache* cache) {
+misc::shared_ptr<io::stream> connector::open(QString const& id) {
   (void)id;
-  (void)cache;
   return (open());
 }
 

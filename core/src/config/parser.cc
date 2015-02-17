@@ -239,6 +239,8 @@ void parser::_parse_endpoint(QDomElement& elem, endpoint& e) {
           }
         }
       }
+      else if (name == "cache")
+        e.cache_enabled = parse_boolean(entry.text());
       else if (name == "type")
         e.type = entry.text();
       e.params[name] = entry.text();

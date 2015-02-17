@@ -18,6 +18,7 @@
 */
 #include <iostream>
 #include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/persistent_cache.hh"
 
 using namespace com::centreon::broker::io;
 
@@ -100,6 +101,15 @@ void endpoint::stats(io::properties& tree) {
   return ;
 }
 
+/**
+ *  Set the persistent cache associated with this endpoint.
+ *
+ *  @param[in] cache  The persistent cache.
+ */
+void endpoint::set_cache(misc::shared_ptr<persistent_cache> cache) {
+  _cache = cache;
+}
+
 /**************************************
 *                                     *
 *           Private Methods           *
@@ -114,5 +124,6 @@ void endpoint::stats(io::properties& tree) {
 void endpoint::_internal_copy(endpoint const& e) {
   _from = e._from;
   _is_acceptor = e._is_acceptor;
+  _cache = e._cache;
   return ;
 }

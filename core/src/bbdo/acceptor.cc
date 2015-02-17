@@ -157,14 +157,10 @@ void acceptor::close() {
 /**
  *  Wait for incoming connection.
  *
- *  @param[in] cache  BBDO module does not use persistent cache.
- *
  *  @return Always return null stream. A new thread will be launched to
  *          process the incoming connection.
  */
-misc::shared_ptr<io::stream> acceptor::open(persistent_cache* cache) {
-  (void)cache;
-
+misc::shared_ptr<io::stream> acceptor::open() {
   // Clean client threads.
   for (QList<QThread*>::iterator
          it(_clients.begin()),
@@ -210,16 +206,10 @@ misc::shared_ptr<io::stream> acceptor::open(persistent_cache* cache) {
 /**
  *  Wait for incoming connection.
  *
- *  @param[in] cache  BBDO module does not used persistent cache.
- *
  *  @return Always return null stream. A new thread will be launched to
  *          process the incoming connection.
  */
-misc::shared_ptr<io::stream> acceptor::open(
-                                         QString const& id,
-                                         persistent_cache* cache) {
-  (void)cache;
-
+misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
   // Clean client threads.
   for (QList<QThread*>::iterator
          it(_clients.begin()),

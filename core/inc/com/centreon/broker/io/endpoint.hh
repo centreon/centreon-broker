@@ -53,18 +53,20 @@ namespace                            io {
                                        misc::shared_ptr<endpoint> endp);
     bool                             is_acceptor() const throw ();
     bool                             is_connector() const throw ();
+    virtual misc::shared_ptr<stream> open() = 0;
     virtual misc::shared_ptr<stream> open(
-                                       persistent_cache* cache = NULL) = 0;
-    virtual misc::shared_ptr<stream> open(
-                                       QString const& id,
-                                       persistent_cache* cache = NULL) = 0;
+                                       QString const& id) = 0;
     virtual void                     stats(io::properties& tree);
+    void                             set_cache(misc::shared_ptr<persistent_cache> cache);
 
    protected:
     void                             _internal_copy(endpoint const& e);
 
     misc::shared_ptr<endpoint>       _from;
     bool                             _is_acceptor;
+
+    misc::shared_ptr<persistent_cache>
+                                     _cache;
   };
 }
 

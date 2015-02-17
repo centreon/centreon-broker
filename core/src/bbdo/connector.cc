@@ -126,13 +126,9 @@ void connector::close() {
 /**
  *  Open the connector.
  *
- *  @param[in] cache  BBDO module does not use the persistent cache.
- *
  *  @return Open stream.
  */
-misc::shared_ptr<io::stream> connector::open(persistent_cache* cache) {
-  (void)cache;
-
+misc::shared_ptr<io::stream> connector::open() {
   // Return value.
   misc::shared_ptr<io::stream> retval;
 
@@ -147,15 +143,9 @@ misc::shared_ptr<io::stream> connector::open(persistent_cache* cache) {
 /**
  *  Open the connector.
  *
- *  @param[in] cache  BBDO module does not use the persistent cache.
- *
  *  @return Open stream.
  */
-misc::shared_ptr<io::stream> connector::open(
-                                          QString const& id,
-                                          persistent_cache* cache) {
-  (void)cache;
-
+misc::shared_ptr<io::stream> connector::open(QString const& id) {
   // Return value.
   misc::shared_ptr<io::stream> retval;
 

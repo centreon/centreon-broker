@@ -33,7 +33,8 @@ using namespace com::centreon::broker::config;
 endpoint::endpoint()
   : buffering_timeout(0),
     read_timeout((time_t)-1),
-    retry_interval(30) {}
+    retry_interval(30),
+    cache_enabled(false) {}
 
 /**
  *  Copy constructor.
@@ -77,7 +78,8 @@ bool endpoint::operator==(endpoint const& e) const {
           && (failover == e.failover)
           && (secondary_failovers == e.secondary_failovers)
           && (filters == e.filters)
-          && (params == e.params));
+          && (params == e.params)
+          && (cache_enabled == e.cache_enabled));
 }
 
 /**
@@ -116,6 +118,8 @@ bool endpoint::operator<(endpoint const& e) const {
     return (secondary_failovers < e.secondary_failovers);
   else if (filters != e.filters)
     return (filters < e.filters);
+  else if (cache_enabled != e.cache_enabled)
+    return (cache_enabled < e.cache_enabled);
 
   // Need to check all parameters one by one.
   QMap<QString, QString>::const_iterator it1(params.begin()),
@@ -158,5 +162,6 @@ void endpoint::_internal_copy(endpoint const& e) {
   retry_interval = e.retry_interval;
   filters = e.filters;
   type = e.type;
+  cache_enabled = e.cache_enabled;
   return ;
 }

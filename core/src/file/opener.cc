@@ -93,12 +93,9 @@ void opener::close() {
 /**
  *  Open a new stream.
  *
- *  @param[in] cache  File module does not use the persistent cache.
- *
  *  @return Opened stream.
  */
-misc::shared_ptr<io::stream> opener::open(persistent_cache* cache) {
-  (void)cache;
+misc::shared_ptr<io::stream> opener::open() {
   QString filename(_filename);
   return (misc::shared_ptr<io::stream>(
             new stream(qPrintable(filename), _max_size)));
@@ -108,14 +105,11 @@ misc::shared_ptr<io::stream> opener::open(persistent_cache* cache) {
  *  Open a new stream.
  *
  *  @param[in] id     The identifier.
- *  @param[in] cache  File module does not use the persistent cache.
  *
  *  @return Opened stream.
  */
 misc::shared_ptr<io::stream> opener::open(
-                                       QString const& id,
-                                       persistent_cache* cache) {
-  (void)cache;
+                                       QString const& id) {
   return (misc::shared_ptr<io::stream>(
                   new stream(qPrintable(_filename + "-" + id), _max_size)));
 }

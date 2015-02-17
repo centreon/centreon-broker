@@ -96,13 +96,9 @@ void connector::close() {
 /**
  *  Connect to the remote TLS peer.
  *
- *  @param[in] cache  TLS module does not use the persistent cache.
- *
  *  @return New connected stream.
  */
-misc::shared_ptr<io::stream> connector::open(persistent_cache* cache) {
-  (void)cache;
-
+misc::shared_ptr<io::stream> connector::open() {
   // First connect the lower layer.
   misc::shared_ptr<io::stream> lower(_from->open());
   misc::shared_ptr<io::stream> new_stream;
@@ -181,15 +177,10 @@ misc::shared_ptr<io::stream> connector::open(
  *  Overwite method open.
  *
  *  @param[in] id     Connection ID.
- *  @param[in] cache  TLS module does not use the persistent cache.
  *
  *  @return New connected stream.
  */
-misc::shared_ptr<io::stream> connector::open(
-                                          QString const& id,
-                                          persistent_cache* cache) {
-  (void)cache;
-
+misc::shared_ptr<io::stream> connector::open(QString const& id) {
   // First connect the lower layer.
   misc::shared_ptr<io::stream> lower(_from->open(id));
   misc::shared_ptr<io::stream> new_stream;

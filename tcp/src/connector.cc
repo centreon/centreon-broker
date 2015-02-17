@@ -109,12 +109,8 @@ void connector::connect_to(QString const& host, unsigned short port) {
 
 /**
  *  Connect to the remote host.
- *
- *  @param[in] cache  TCP module does not use the persistent cache.
  */
-misc::shared_ptr<io::stream> connector::open(persistent_cache* cache) {
-  (void)cache;
-
+misc::shared_ptr<io::stream> connector::open() {
   // Close previous connection.
   this->close();
 
@@ -147,11 +143,8 @@ misc::shared_ptr<io::stream> connector::open(persistent_cache* cache) {
  *  @param[in] id     Unused.
  *  @param[in] cache  TCP module does not use the persistent cache.
  */
-misc::shared_ptr<io::stream> connector::open(
-                                          QString const& id,
-                                          persistent_cache* cache) {
+misc::shared_ptr<io::stream> connector::open(QString const& id) {
   (void)id;
-  (void)cache;
   return (open());
 }
 

@@ -45,10 +45,8 @@ namespace                        local {
     io::endpoint*                clone() const;
     void                         close();
     void                         listen_on(QString const& name);
-    misc::shared_ptr<io::stream> open(persistent_cache* cache = NULL);
-    misc::shared_ptr<io::stream> open(
-                                   QString const& id,
-                                   persistent_cache* cache = NULL);
+    misc::shared_ptr<io::stream> open();
+    misc::shared_ptr<io::stream> open(QString const& id);
 
   private:
     QMutex                       _mutex;
