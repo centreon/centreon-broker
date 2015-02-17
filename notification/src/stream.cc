@@ -33,13 +33,11 @@
 #include <sstream>
 #include <limits>
 #include "com/centreon/engine/common.hh"
-#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/neb/internal.hh"
 #include "mapping.hh"
 #include "com/centreon/broker/notification/utilities/data_loggers.hh"
 #include "com/centreon/broker/notification/stream.hh"
@@ -258,26 +256,13 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   // Update node cache.
   _node_cache.write(data);
 
-  unsigned int type(data->type());
-  unsigned short cat(io::events::category_of_type(type));
-  unsigned short elem(io::events::element_of_type(type));
-
-  if (cat == io::events::neb)  {
-    if (elem == neb::de_host_status) {
-      misc::shared_ptr<neb::host_status>
-        hs(data.staticCast<neb::host_status>());
-      _process_host_status_event(*hs);
-    }
-    else if (elem == neb::de_service_status) {
-      misc::shared_ptr<neb::service_status>
-        ss(data.staticCast<neb::service_status>());
-      _process_service_status_event(*ss);
-    }
-  }
-  else if(cat == io::events::correlation) {
-    if (elem == correlation::de_issue_parent)
-      _process_issue_parent_event(*data.staticCast<correlation::issue_parent>());
-  }
+  // Process events.
+  if (data->type() == neb::host_status::static_type())
+    _process_host_status_event(*data.staticCast<neb::host_status>());
+  else if (data->type() == neb::service_status::static_type())
+    _process_service_status_event(*data.staticCast<neb::service_status>());
+  else if (data->type() == correlation::issue_parent::static_type())
+    _process_issue_parent_event(*data.staticCast<correlation::issue_parent>());
 
   return (retval);
 }
