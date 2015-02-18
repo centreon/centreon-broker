@@ -90,14 +90,9 @@ void setable_endpoint::close() {
 /**
  *  Open endpoint.
  *
- *  @param[in] cache  Unused.
- *
  *  @return New setable_stream.
  */
-misc::shared_ptr<io::stream> setable_endpoint::open(
-                                                 persistent_cache* cache) {
-  (void)cache;
-
+misc::shared_ptr<io::stream> setable_endpoint::open() {
   // Increment open attempts.
   ++_opened_streams;
 
@@ -119,15 +114,13 @@ misc::shared_ptr<io::stream> setable_endpoint::open(
  *  Open endpoint.
  *
  *  @param[in] id     Unused.
- *  @param[in] cache  Unused.
  *
  *  @return New setable_stream.
  */
 misc::shared_ptr<io::stream> setable_endpoint::open(
-                                                 QString const& id,
-                                                 persistent_cache* cache) {
+                                                 QString const& id) {
   (void)id;
-  return (open(cache));
+  return (open());
 }
 
 /**

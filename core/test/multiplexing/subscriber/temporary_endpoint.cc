@@ -90,13 +90,9 @@ void temporary_endpoint::close() {
 /**
  *  Open endpoint.
  *
- *  @param[in] cache  Unused.
- *
  *  @return New temporary_stream.
  */
-misc::shared_ptr<io::stream> temporary_endpoint::open(
-                                                   persistent_cache* cache) {
-  (void)cache;
+misc::shared_ptr<io::stream> temporary_endpoint::open() {
   return (misc::shared_ptr<io::stream>(new temporary_stream));
 }
 
@@ -104,13 +100,9 @@ misc::shared_ptr<io::stream> temporary_endpoint::open(
  *  Open endpoint.
  *
  *  @param[in] id     The temporary id.
- *  @param[in] cache  Unused.
  *
  *  @return New temporary_stream.
  */
-misc::shared_ptr<io::stream> temporary_endpoint::open(
-                                                   QString const& id,
-                                                   persistent_cache* cache) {
-  (void)cache;
+misc::shared_ptr<io::stream> temporary_endpoint::open(QString const& id) {
   return (misc::shared_ptr<io::stream>(new temporary_stream(id)));
 }

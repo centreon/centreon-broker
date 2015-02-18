@@ -192,8 +192,22 @@ void correlator::load(
       && !access(_retention_file.toStdString().c_str(), F_OK)) {
     logging::config(logging::medium)
       << "correlation: loading retention file";
-    parser p;
-    p.parse(_retention_file, true, _nodes);
+    persistent_cache cache(_retention_file.toStdString());
+    misc::shared_ptr<io::data> data;
+    do {
+      cache.get(data);
+      if (!data.isNull() && data->type() == issue::static_type()) {
+        issue const& is = *data.staticCast<issue>();
+        if (!_nodes.contains(qMakePair(is.host_id, is.service_id)))
+          throw (
+            exceptions::msg()
+            << "correlation: couldn't find node (" << is.host_id
+            << ", " << is.service_id << ")");
+        _nodes.find(qMakePair(is.host_id, is.service_id))->my_issue
+                                   = std::auto_ptr<issue>(new issue(is));
+      }
+    }
+    while (!data.isNull());
   }
 
   // Reopen issues.
@@ -1152,79 +1166,19 @@ void correlator::_update_issue(misc::shared_ptr<issue> i) {
  */
 void correlator::_write_issues() {
   if (!_retention_file.isEmpty()) {
-    // Prepare XML document.
-    QDomDocument doc;
-    QDomElement root(doc.createElement("centreonbroker"));
-    doc.appendChild(root);
-
-    // Dump nodes and issues.
+    // Write issue file
+    persistent_cache f(_retention_file.toStdString());
+    f.transaction();
     for (QMap<QPair<unsigned int, unsigned int>, node>::const_iterator
            it(_nodes.begin()),
            end(_nodes.end());
          it != end;
-         ++it) {
-      {
-        QDomElement elem;
-        if (it->service_id) {
-          elem = doc.createElement("service");
-          elem.setAttribute(
-            "host",
-            QString("%1").arg(it->host_id));
-          elem.setAttribute(
-            "id",
-            QString("%1").arg(it->service_id));
-        }
-        else {
-          elem = doc.createElement("host");
-          elem.setAttribute(
-            "id",
-            QString("%1").arg(it->host_id));
-        }
-        elem.setAttribute(
-          "since",
-          QString("%1").arg(it->since));
-        elem.setAttribute(
-          "state",
-          QString("%1").arg(it->state));
-        root.appendChild(elem);
-      }
-      if (it->my_issue.get()) {
-        QDomElement elem(doc.createElement("issue"));
-        elem.setAttribute(
-          "ack_time",
-          QString("%1").arg(it->my_issue->ack_time));
-        elem.setAttribute(
-          "host",
-          QString("%1").arg(it->my_issue->host_id));
-        elem.setAttribute(
-          "service",
-          QString("%1").arg(it->my_issue->service_id));
-        elem.setAttribute(
-          "start_time",
-          QString("%1").arg(it->my_issue->start_time));
-        root.appendChild(elem);
-      }
-    }
+         ++it)
+      f.add(misc::shared_ptr<issue>(new issue(*it->my_issue)));
+    f.commit();
 
-    // Write issue file
-    QFile f(_retention_file);
-    if (!f.open(QIODevice::WriteOnly))
-      logging::config(logging::high) << "correlation: could not write"
-        " retention file: " << f.errorString();
-    else {
-      QByteArray ba(doc.toByteArray());
-      qint64 wb;
-      while (ba.size() > 0) {
-        f.waitForBytesWritten(-1);
-        wb = f.write(ba);
-        if (wb <= 0) {
-          logging::config(logging::medium) << "correlation: finished "
-            "writing retention file: " << f.errorString();
-          break ;
-        }
-        ba.remove(0, wb);
-      }
-    }
+    logging::config(logging::medium) << "correlation: finished "
+      "writing retention file: " << _retention_file;
   }
 
   return ;

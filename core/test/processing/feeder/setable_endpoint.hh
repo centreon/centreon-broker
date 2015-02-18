@@ -40,12 +40,9 @@ public:
                     clone() const;
   void              close();
   com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::stream>
-                    open(
-                      com::centreon::broker::persistent_cache* cache = NULL);
+                    open();
   com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::stream>
-                    open(
-                      QString const& id,
-                      com::centreon::broker::persistent_cache* cache = NULL);
+                    open(QString const& id);
   unsigned int      opened_streams() const;
   void              set_initial_count(unsigned int cnt);
   void              set_initial_replay_events(bool replay);
