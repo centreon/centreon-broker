@@ -237,7 +237,9 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
             e->value_type);
         }
         std::ostringstream oss;
-        if (e->value_type != storage::perfdata::gauge)
+        if (e->value_type == storage::perfdata::counter)
+          oss << static_cast<unsigned long long>(e->value);
+        else if (e->value_type == storage::perfdata::derive)
           oss << static_cast<long long>(e->value);
         else
           oss << std::fixed << e->value;
