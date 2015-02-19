@@ -258,7 +258,7 @@ if (WITH_TESTING)
   include_directories("${PROJECT_SOURCE_DIR}/dumper/inc")
   #add_library("neb_mapping"
   #  "${PROJECT_SOURCE_DIR}/core/src/mapping.cc")
-  #set(TEST_LIBRARIES "${NEB}" "neb_mapping" "roker")
+  set(TEST_LIBRARIES "${NEB}" "roker")
   # Acknowledgement tests.
   #   Default constructor.
   set(TEST_NAME "neb_acknowledgement_ctor_default")

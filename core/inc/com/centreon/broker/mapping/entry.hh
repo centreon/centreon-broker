@@ -97,6 +97,7 @@ namespace                    mapping {
     void                     set_ushort(
                                io::data& d,
                                unsigned short value) const;
+    bool                     is_null() const;
 
   private:
     attribute                _attribute;

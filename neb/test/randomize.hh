@@ -27,6 +27,9 @@
 #  include <vector>
 #  include "com/centreon/broker/namespace.hh"
 #  include "mapping.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
+#  include "com/centreon/broker/mapping/source.hh"
+#  include "com/centreon/broker/mapping/property.hh"
 
 CCB_BEGIN()
 
@@ -55,70 +58,57 @@ template <typename T>
 void     randomize(
            T& t,
            std::vector<randval>* values = NULL) {
-  mapped_data<T> const* members(mapped_type<T>::members);
-  for (unsigned int i(0); members[i].type; ++i) {
+  using namespace com::centreon::broker;
+  mapping::entry const* entries = T::entries;
+  for (unsigned int i(0); !entries[i].is_null(); ++i) {
     randval r;
-    switch (members[i].type) {
-    case 'b':
-      if (i && (members[i - 1].member.b == members[i].member.b))
-        continue ;
+    switch (entries[i].get_type()) {
+    case mapping::source::BOOL:
       {
         r.b = ((rand() % 2) ? true : false);
-        (t.*members[i].member.b) = r.b;
+        entries[i].set_bool(t, r.b);
       }
       break ;
-    case 'd':
-      if (i && (members[i - 1].member.d == members[i].member.d))
-        continue ;
+    case mapping::source::DOUBLE:
       {
         r.d = rand() + (rand() / 100000.0);
-        (t.*members[i].member.d) = r.d;
+        entries[i].set_double(t, r.d);
       }
       break ;
-    case 'i':
-      if (i && (members[i - 1].member.i == members[i].member.i))
-        continue ;
+    case mapping::source::INT:
       {
         r.i = rand();
-        (t.*members[i].member.i) = r.i;
+        entries[i].set_int(t, r.i);
       }
       break ;
-    case 's':
-      if (i && (members[i - 1].member.s == members[i].member.s))
-        continue ;
+    case mapping::source::SHORT:
       {
         r.s = rand();
-        (t.*members[i].member.s) = r.s;
+        entries[i].set_short(t, r.s);
       }
       break ;
-    case 'S':
-      if (i && (members[i - 1].member.S == members[i].member.S))
-        continue ;
+    case mapping::source::STRING:
       {
         char buffer[1024];
         snprintf(buffer, sizeof(buffer), "%d", rand());
         r.S = new char[strlen(buffer) + 1];
         generated.push_back(r.S);
         strcpy(r.S, buffer);
-        (t.*members[i].member.S) = r.S;
+        entries[i].set_string(t, r.S);
       }
       break ;
 #  ifndef NO_TIME_T_MAPPING
-    case 't':
-      if (i && (members[i - 1].member.t == members[i].member.t))
-        continue ;
+    case mapping::source::TIME:
       {
         r.t = rand();
-        (t.*members[i].member.t) = r.t;
+        entries[i].set_time(t, r.t);
       }
       break ;
 #  endif // !NO_TIME_T_MAPPING
-    case 'u':
-      if (i && (members[i - 1].member.u == members[i].member.u))
-        continue ;
+    case mapping::source::UINT:
       {
         r.u = rand();
-        (t.*members[i].member.u) = r.u;
+        entries[i].set_uint(t, r.u);
       }
       break ;
     }
@@ -155,61 +145,33 @@ bool     operator==(
            T const& t,
            std::vector<com::centreon::broker::randval> const& randvals) {
   using namespace com::centreon::broker;
-  mapped_data<T> const* members(mapped_type<T>::members);
+  mapping::entry const* entries = T::entries;
   std::vector<randval>::const_iterator it(randvals.begin());
   bool retval(true);
-  for (unsigned int i(0); retval && members[i].type; ++i, ++it) {
-    switch (members[i].type) {
-    case 'b':
-      if (i && (members[i - 1].member.b == members[i].member.b)) {
-        --it;
-        continue ;
-      }
-      retval = (t.*members[i].member.b == it->b);
+  for (unsigned int i(0); retval && entries[i].is_null(); ++i, ++it) {
+    switch (entries[i].get_type()) {
+    case mapping::source::BOOL:
+      retval = (entries[i].get_bool(t) == it->b);
       break ;
-    case 'd':
-      if (i && (members[i - 1].member.d == members[i].member.d)) {
-        --it;
-        continue ;
-      }
-      retval = (t.*members[i].member.d == it->d);
+    case mapping::source::DOUBLE:
+      retval = (entries[i].get_double(t) == it->d);
       break ;
-    case 'i':
-      if (i && (members[i - 1].member.i == members[i].member.i)) {
-        --it;
-        continue ;
-      }
-      retval = (t.*members[i].member.i == it->i);
+    case mapping::source::INT:
+      retval = (entries[i].get_int(t) == it->i);
       break ;
-    case 's':
-      if (i && (members[i - 1].member.s == members[i].member.s)) {
-        --it;
-        continue ;
-      }
-      retval = (t.*members[i].member.s == it->s);
+    case mapping::source::SHORT:
+      retval = (entries[i].get_short(t) == it->s);
       break ;
-    case 'S':
-      if (i && (members[i - 1].member.S == members[i].member.S)) {
-        --it;
-        continue ;
-      }
-      retval = (t.*members[i].member.S == it->S);
+    case mapping::source::STRING:
+      retval = (entries[i].get_string(t) == it->S);
       break ;
 #  ifndef NO_TIME_T_MAPPING
-    case 't':
-      if (i && (members[i - 1].member.t == members[i].member.t)) {
-        --it;
-        continue ;
-      }
-      retval = (t.*members[i].member.t == it->t);
+    case mapping::source::TIME:
+      retval = (entries[i].get_time(t) == it->t);
       break ;
 #  endif // !NO_TIME_T_MAPPING
-    case 'u':
-      if (i && (members[i - 1].member.u == members[i].member.u)) {
-        --it;
-        continue ;
-      }
-      retval = (t.*members[i].member.u == it->u);
+    case mapping::source::UINT:
+      retval = (entries[i].get_uint(t) == it->u);
       break ;
     }
   }

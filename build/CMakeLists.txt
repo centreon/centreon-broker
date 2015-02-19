@@ -122,7 +122,6 @@ if (WITH_TESTING)
   enable_testing()
   include_directories("${PROJECT_SOURCE_DIR}/core")
   include_directories("${PROJECT_SOURCE_DIR}/compression/inc")
-  include_directories("${PROJECT_SOURCE_DIR}/ndo/inc")
   include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 endif ()
 
@@ -516,13 +515,6 @@ if (WITH_MODULE_TLS)
   list(APPEND MODULE_LIST "tls")
 endif()
 
-# NDO module.
-option(WITH_MODULE_NDO "Build NDO module." ON)
-if (WITH_MODULE_NDO)
-  add_subdirectory("ndo")
-  list(APPEND MODULE_LIST "ndo")
-endif()
-
 # Notification module.
 option(WITH_MODULE_NOTIFICATION "Build NOTIFICATION module." ON)
 if (WITH_MODULE_NOTIFICATION)
@@ -849,7 +841,7 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/bench_bbdo.cc"
     "${PROJECT_SOURCE_DIR}/test/bench_stream.cc"
     "${PROJECT_SOURCE_DIR}/test/bench_stream.hh")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${COMPRESSION} ${CORRELATION} ${NEB} ${NDO} ${STORAGE})
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${COMPRESSION} ${CORRELATION} ${NEB} ${STORAGE})
 
   # Last file to configure, based on target paths.
   configure_file("${PROJECT_SOURCE_DIR}/test/vars.hh.in"

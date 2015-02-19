@@ -273,3 +273,12 @@ void entry::set_ushort(io::data& d, unsigned short value) const {
   _ptr->set_ushort(d, value);
   return ;
 }
+
+/**
+ *  Get if this entry is a null entry.
+ *
+ *  @return  True if this entry is a null entry (last entry).
+ */
+bool entry::is_null() const {
+  return (_type == source::UNKNOWN);
+}
