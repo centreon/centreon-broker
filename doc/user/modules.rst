@@ -956,6 +956,9 @@ Example
 InfluxDB
 ========
 
+.. warning::
+  This module is experimental.
+
 This module fills an InfluxDB instance with metrics. It uses the
 :ref:`storage engine <user_modules_storage>` as its performance data
 source.
