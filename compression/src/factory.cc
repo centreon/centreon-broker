@@ -123,6 +123,7 @@ bool factory::has_not_endpoint(
  *  @param[in]  is_output   true if the endpoint should be an output
  *                          object.
  *  @param[out] is_acceptor Unused.
+ *  @param[in]  cache       cache
  *
  *  @return New endpoint object.
  */
@@ -130,10 +131,12 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool is_input,
                          bool is_output,
-                         bool& is_acceptor) const {
+                         bool& is_acceptor,
+                         misc::shared_ptr<persistent_cache> cache) const {
   (void)is_input;
   (void)is_output;
   (void)is_acceptor;
+  (void)cache;
 
   // Get compression level.
   int level(-1);

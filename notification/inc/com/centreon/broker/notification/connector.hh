@@ -20,10 +20,12 @@
 #ifndef CCB_SQL_CONNECTOR_HH
 #  define CCB_SQL_CONNECTOR_HH
 
+#  include <memory>
 #  include <QString>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/node_cache.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
 
 CCB_BEGIN()
 
@@ -36,7 +38,7 @@ namespace                        notification {
    */
   class                          connector : public io::endpoint {
   public:
-                                 connector();
+                                 connector(misc::shared_ptr<persistent_cache> cache);
                                  connector(connector const& c);
                                  ~connector();
     connector&                   operator=(connector const& c);
@@ -49,7 +51,6 @@ namespace                        notification {
                                    QString const& user,
                                    QString const& password,
                                    QString const& centreon_db,
-                                   QString const& node_cache_file,
                                    unsigned int queries_per_transaction = 1,
                                    bool check_replication = true,
                                    bool with_state_events = false);
@@ -66,7 +67,8 @@ namespace                        notification {
     QString                      _type;
     QString                      _user;
     bool                         _with_state_events;
-    QString                      _node_cache_file;
+    misc::shared_ptr<persistent_cache>
+                                 _cache;
     node_cache                   _node_cache;
   };
 }

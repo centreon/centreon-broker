@@ -136,6 +136,15 @@ void persistent_cache::transaction() {
 }
 
 /**
+ *  Get the name of the cache file.
+ *
+ *  @return  The name of the cache file.
+ */
+std::string const& persistent_cache::get_cache_file() const {
+  return (_cache_file);
+}
+
+/**
  *  Get the new file name.
  *
  *  @return Cache file name appended with ".new".

@@ -558,12 +558,18 @@ misc::shared_ptr<io::endpoint> endpoint::_create_new_endpoint(
        ++it) {
     if ((it.value().osi_from == 1)
         && it.value().endpntfactry->has_endpoint(cfg, !is_output, is_output)) {
+      misc::shared_ptr<persistent_cache> cache;
+      if (cfg.cache_enabled)
+        cache = misc::shared_ptr<persistent_cache>(
+              new persistent_cache((_cache_directory + '/' + cfg.name).toStdString()));
+
       endp = misc::shared_ptr<io::endpoint>(
                      it.value().endpntfactry->new_endpoint(
                                                 cfg,
                                                 is_input,
                                                 is_output,
-                                                is_acceptor));
+                                                is_acceptor,
+                                                cache));
       level = it.value().osi_to + 1;
       break ;
     }
@@ -597,13 +603,6 @@ misc::shared_ptr<io::endpoint> endpoint::_create_new_endpoint(
       throw (exceptions::msg() << "endpoint applier: no matching " \
                "protocol found for endpoint '" << cfg.name << "'");
     ++level;
-  }
-
-  // Create the cache object if needed.
-  if (cfg.cache_enabled) {
-    misc::shared_ptr<persistent_cache> cache(
-      new persistent_cache((_cache_directory + '/' + cfg.name).toStdString()));
-    endp->set_cache(cache);
   }
 
   return (endp);

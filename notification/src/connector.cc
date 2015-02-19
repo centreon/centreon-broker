@@ -30,9 +30,12 @@ using namespace com::centreon::broker::notification;
 **************************************/
 
 /**
- *  Default constructor.
+ *  Constructor.
  */
-connector::connector() : io::endpoint(false) {}
+connector::connector(misc::shared_ptr<persistent_cache> cache)
+  : io::endpoint(false),
+    _cache(cache),
+    _node_cache(_cache) {}
 
 /**
  *  Copy constructor.
@@ -50,7 +53,7 @@ connector::connector(connector const& c)
     _type(c._type),
     _user(c._user),
     _with_state_events(c._with_state_events),
-    _node_cache_file(c._node_cache_file),
+    _cache(c._cache),
     _node_cache(c._node_cache) {}
 
 /**
@@ -77,7 +80,7 @@ connector& connector::operator=(connector const& c) {
     _type = c._type;
     _user = c._user;
     _with_state_events = c._with_state_events;
-    _node_cache_file = c._node_cache_file;
+    _cache = c._cache;
     _node_cache = c._node_cache;
   }
   return (*this);
@@ -96,7 +99,6 @@ io::endpoint* connector::clone() const {
  *  Close the connector.
  */
 void connector::close() {
-  _node_cache.unload(_node_cache_file.toStdString());
   return ;
 }
 
@@ -109,7 +111,6 @@ void connector::close() {
  *  @param[in] user                    User.
  *  @param[in] password                Password.
  *  @param[in] centreon_db             Database name.
- *  @param[in] node_cache_file         The node cache filename.
  *  @param[in] queries_per_transaction Queries per transaction.
  *  @param[in] check_replication       true to check replication status.
  *  @param[in] with_state_events       Enable state events ?
@@ -121,7 +122,6 @@ void connector::connect_to(
                   QString const& user,
                   QString const& password,
                   QString const& centreon_db,
-                  QString const& node_cache_file,
                   unsigned int queries_per_transaction,
                   bool check_replication,
                   bool with_state_events) {
@@ -134,8 +134,6 @@ void connector::connect_to(
   _type = type;
   _user = user;
   _with_state_events = with_state_events;
-  _node_cache_file = node_cache_file;
-  _node_cache.load(_node_cache_file.toStdString());
   return ;
 }
 

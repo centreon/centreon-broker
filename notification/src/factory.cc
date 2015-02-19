@@ -127,6 +127,7 @@ bool factory::has_endpoint(
  *  @param[in]  is_input    true if the endpoint should be an input.
  *  @param[in]  is_output   true if the endpoint should be an output.
  *  @param[out] is_acceptor Will be set to false.
+ *  @param[in]  cache       The persistent cache for this module.
  *
  *  @return New endpoint.
  */
@@ -134,7 +135,8 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool is_input,
                          bool is_output,
-                         bool& is_acceptor) const {
+                         bool& is_acceptor,
+                         misc::shared_ptr<persistent_cache> cache) const {
   (void)is_input;
   (void)is_output;
 
@@ -189,7 +191,7 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Connector.
-  std::auto_ptr<notification::connector> c(new notification::connector);
+  std::auto_ptr<notification::connector> c(new notification::connector(cache));
   c->connect_to(
        type,
        host,
@@ -197,7 +199,6 @@ io::endpoint* factory::new_endpoint(
        user,
        password,
        db_name,
-       node_cache_file,
        queries_per_transaction,
        check_replication,
        wse);

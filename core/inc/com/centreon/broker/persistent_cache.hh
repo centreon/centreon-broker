@@ -44,6 +44,9 @@ public:
   void              rollback();
   void              transaction();
 
+  std::string const&
+                    get_cache_file() const;
+
 private:
                     persistent_cache(persistent_cache const& other);
   persistent_cache& operator=(persistent_cache const& other);

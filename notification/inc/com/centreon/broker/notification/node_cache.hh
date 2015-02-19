@@ -37,6 +37,8 @@
 #  include "com/centreon/broker/neb/host_group_member.hh"
 #  include "com/centreon/broker/neb/service_group_member.hh"
 #  include "com/centreon/broker/neb/custom_variable_status.hh"
+#  include "com/centreon/broker/multiplexing/hooker.hh"
+#  include "com/centreon/broker/persistent_cache.hh"
 
 CCB_BEGIN()
 
@@ -48,20 +50,20 @@ namespace         notification {
    *  Used by and for the macro processing. Load from a file at startup,
    *  unload at shutdown.
    */
-  class           node_cache {
+  class           node_cache : public multiplexing::hooker {
   public:
     typedef object_cache<neb::host, neb::host_status, neb::host_group_member>
                   host_node_state;
     typedef object_cache<neb::service, neb::service_status, neb::service_group_member>
                   service_node_state;
 
-                  node_cache();
+                  node_cache(misc::shared_ptr<persistent_cache> cache);
+                  ~node_cache();
                   node_cache(node_cache const& f);
     node_cache&   operator=(node_cache const& f);
 
-    bool          load(std::string const& cache_file);
-    bool          unload(std::string const& cache_file);
-
+    virtual void  starting();
+    virtual void  stopping();
     virtual void  read(misc::shared_ptr<io::data>& d);
     virtual unsigned int
                   write(misc::shared_ptr<io::data> const& d);
@@ -93,6 +95,9 @@ namespace         notification {
     QHash<objects::node_id, service_node_state>
                   _service_node_states;
     QMutex        _mutex;
+
+    misc::shared_ptr<persistent_cache>
+                  _cache;
 
     std::deque<misc::shared_ptr<io::data> >
                   _serialized_data;

@@ -27,15 +27,29 @@
 #include "com/centreon/broker/notification/node_cache.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/custom_variable.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::notification;
 
 /**
- *  Default constructor.
+ *  Constructor.
+ *
+ *  @param[in] cache  The persistent cache used by the node cache.
  */
-node_cache::node_cache()
-  : _mutex(QMutex::NonRecursive) {}
+node_cache::node_cache(misc::shared_ptr<persistent_cache> cache)
+  : _mutex(QMutex::NonRecursive),
+    _cache(cache) {
+  multiplexing::engine::instance().hook(*this);
+}
+
+/**
+ *  Destructor.
+ */
+node_cache::~node_cache() {
+  multiplexing::engine::instance().unhook(*this);
+}
+
 
 /**
  *  Copy constructor.
@@ -51,81 +65,63 @@ node_cache::node_cache(node_cache const& obj) {
  *
  *  @param[in] obj  The object to copy.
  *
- *  @return         A reference tot his object.
+ *  @return         A reference to his object.
  */
 node_cache& node_cache::operator=(node_cache const& obj) {
   if (this != &obj) {
     _host_node_states = obj._host_node_states;
     _service_node_states = obj._service_node_states;
+    _cache = obj._cache;
   }
   return (*this);
 }
 
 /**
- *  Load the node cache from a file.
- *
- *  @param[in] cache_file  The cache file.
- *
- *  @return  True if the node cache was sucessfully loaded.
+ *  Called when the engine starts. Used to load cache file.
  */
-bool node_cache::load(std::string const& cache_file) {
+void node_cache::starting() {
+  // No cache, nothing to do.
+  if (_cache.isNull())
+    return ;
+
   logging::debug(logging::low)
-    << "notification: loading the node cache " << cache_file;
-
-  // Create the streams.
-  misc::shared_ptr<file::stream> file(new file::stream(cache_file));
-  misc::shared_ptr<compression::stream> compression(new compression::stream(9));
-  misc::shared_ptr<bbdo::stream> bbdo(new bbdo::stream(true, false));
-
-  // Connect the streams.
-  file->process(true, false);
-  compression->process(true, false);
-  compression->read_from(file);
-  bbdo->read_from(compression);
+    << "notification: loading the node cache " << _cache->get_cache_file();
 
   misc::shared_ptr<io::data> data;
   try {
     while (true) {
-      bbdo->read(data);
+      _cache->get(data);
+      if (data.isNull())
+        break ;
       write(data);
     }
-  }
-  catch (io::exceptions::shutdown const& s) {
-    // Normal termination of the stream (ie nothing to read anymore)
-    (void)s;
-    logging::debug(logging::low)
-      << "notification: finished loading the node cache "
-      << cache_file << " succesfully";
   }
   catch (std::exception const& e) {
     // Abnormal termination of the stream.
     logging::error(logging::high)
       << "notification: could not load the node cache "
-      << cache_file << ": " << e.what();
-    return (false);
+      << _cache->get_cache_file() << ": " << e.what();
+    return ;
   }
 
-  return (true);
+  logging::debug(logging::low)
+    << "notification: finished loading the node cache "
+    << _cache->get_cache_file() << " succesfully";
 }
 
 /**
- *  Save the node_cache to a file.
- *
- *  @param[in] cache_file  The cache file to save.
- *
- *  @return  True if the node cache was succesfully saved.
+ *  Called when the engine stops. Used to unload cache file.
  */
-bool node_cache::unload(std::string const& cache_file) {
-  // Create the streams.
-  misc::shared_ptr<file::stream> file(new file::stream(cache_file));
-  misc::shared_ptr<compression::stream> compression(new compression::stream(9));
-  misc::shared_ptr<bbdo::stream> bbdo(new bbdo::stream(false, true));
+void node_cache::stopping() {
+  // No cache, nothing to do.
+  if (_cache.isNull())
+    return ;
 
-  // Connect the streams.
-  file->process(false, true);
-  compression->process(false, true);
-  compression->write_to(file);
-  bbdo->write_to(compression);
+  logging::debug(logging::low)
+    << "notification: writing the node cache " << _cache->get_cache_file();
+
+  // Start a transaction.
+  _cache->transaction();
 
   // Lock the mutex;
   QMutexLocker lock(&_mutex);
@@ -138,7 +134,7 @@ bool node_cache::unload(std::string const& cache_file) {
   try {
     while (true) {
       read(data);
-      bbdo->write(data);
+      _cache->add(data);
     }
   }
   catch (io::exceptions::shutdown const& s) {
@@ -146,17 +142,31 @@ bool node_cache::unload(std::string const& cache_file) {
     (void)s;
     logging::debug(logging::low)
       << "notification: finished writing the node cache "
-      << cache_file << " succesfully";
+      << _cache->get_cache_file() << " succesfully";
   }
   catch (std::exception const& e) {
     // Abnormal termination of the stream.
     logging::error(logging::high)
       << "notification: could not write the node cache "
-      << cache_file << ": " << e.what();
-    return (false);
+      << _cache->get_cache_file() << ": " << e.what();
+    return ;
   }
 
-  return (true);
+  logging::debug(logging::low)
+    << "notification: commiting the node cache '"
+    << _cache->get_cache_file() << "'";
+
+  try {
+    _cache->commit();
+  } catch (std::exception const& e) {
+    logging::error(logging::high)
+      << "notification: could not commit the node cache '"
+      << _cache->get_cache_file() << "': " << e.what();
+  }
+
+  logging::debug(logging::low)
+    << "notification: commited the node cache '"
+    << _cache->get_cache_file() << "' succesfully";
 }
 
 /**

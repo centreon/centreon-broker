@@ -57,16 +57,12 @@ namespace                            io {
     virtual misc::shared_ptr<stream> open(
                                        QString const& id) = 0;
     virtual void                     stats(io::properties& tree);
-    void                             set_cache(misc::shared_ptr<persistent_cache> cache);
 
    protected:
     void                             _internal_copy(endpoint const& e);
 
     misc::shared_ptr<endpoint>       _from;
     bool                             _is_acceptor;
-
-    misc::shared_ptr<persistent_cache>
-                                     _cache;
   };
 }
 
