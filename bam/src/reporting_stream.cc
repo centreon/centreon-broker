@@ -1121,7 +1121,7 @@ void reporting_stream::_process_kpi_event(
     }
   }
   // End of event.
-  if ((ke.end_time != 0) && (ke.end_time != (time_t)-1)) {
+  else if ((ke.end_time != 0) && (ke.end_time != (time_t)-1)) {
     std::map<unsigned int, std::list<kpi_event> >::iterator
       it(_kpi_event_cache.find(ke.kpi_id));
     if (it == _kpi_event_cache.end())
