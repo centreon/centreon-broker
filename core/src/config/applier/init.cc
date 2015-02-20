@@ -56,6 +56,7 @@ void config::applier::deinit() {
   config::applier::logger::unload();
   io::temporary::unload();
   bbdo::unload();
+  multiplexing::engine::instance().clear();
   config::applier::modules::unload();
   multiplexing::engine::unload();
   io::protocols::unload();
