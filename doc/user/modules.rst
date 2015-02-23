@@ -981,6 +981,14 @@ holds three columns which are filled by the module :
   - *value* : the metric value
   - *metric_id* : the ID of the metric within Centreon's *metrics* table
 
+Statuses are stored within a time serie named *statuses* with the
+following columns :
+
+  - *time* : obvious
+  - *value* : status value
+  - *index_id* : the index ID of the host / service within Centreon's
+    *index_data* table
+
 Configuration
 -------------
 
