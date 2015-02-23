@@ -21,6 +21,7 @@
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/rebuild.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
 /**************************************
@@ -69,6 +70,15 @@ rebuild& rebuild::operator=(rebuild const& right) {
  *  @return The event type.
  */
 unsigned int rebuild::type() const {
+  return (rebuild::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int rebuild::static_type() {
   return (io::events::data_type<io::events::storage, storage::de_rebuild>::value);
 }
 
@@ -89,3 +99,34 @@ void rebuild::_internal_copy(rebuild const& right) {
   is_index = right.is_index;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const rebuild::entries[] = {
+  mapping::entry(
+    &rebuild::end,
+    "end",
+    1),
+  mapping::entry(
+    &rebuild::id,
+    "id",
+    2),
+  mapping::entry(
+    &rebuild::is_index,
+    "is_index",
+    3),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_rebuild() {
+  return (new rebuild);
+}
+io::event_info::event_operations const rebuild::operations = {
+  &new_rebuild
+};

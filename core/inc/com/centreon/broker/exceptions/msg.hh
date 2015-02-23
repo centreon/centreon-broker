@@ -32,9 +32,7 @@ namespace               exceptions {
    *  @brief Base class of exceptions thrown in Centreon Broker.
    *
    *  msg is a simple exception class that is only associated with a
-   *  message. msg accepts multiple types on input but its limitation is
-   *  that it only accepts a limited number of characters in the
-   *  exception message.
+   *  message. msg accepts multiple types on input.
    */
   class                 msg : private misc::stringifier,
 			      public std::exception {

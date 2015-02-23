@@ -22,6 +22,8 @@
 
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 
 CCB_BEGIN()
 
@@ -41,9 +43,16 @@ namespace        bam {
     dimension_timeperiod_exclusion&
                  operator=(dimension_timeperiod_exclusion const& other);
     unsigned int type() const;
+    static unsigned int
+                 static_type();
 
     unsigned int excluded_timeperiod_id;
     unsigned int timeperiod_id;
+
+    static mapping::entry const
+                 entries[];
+    static io::event_info::event_operations const
+                 operations;
 
   private:
     void         _internal_copy(

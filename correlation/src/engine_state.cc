@@ -70,5 +70,41 @@ engine_state& engine_state::operator=(engine_state const& es) {
  *  @return The event type.
  */
 unsigned int engine_state::type() const {
+  return (engine_state::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int engine_state::static_type() {
   return (io::events::data_type<io::events::correlation, correlation::de_engine_state>::value);
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const engine_state::entries[] = {
+  mapping::entry(
+    &engine_state::started,
+    "started",
+    1),
+  mapping::entry(
+    &engine_state::instance_id,
+    "",
+    2),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_engine_state() {
+  return (new engine_state);
+}
+io::event_info::event_operations const engine_state::operations = {
+  &new_engine_state
+};

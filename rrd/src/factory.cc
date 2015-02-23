@@ -125,6 +125,7 @@ bool factory::has_endpoint(
  *  @param[in]  is_input    true if endpoint should act as input.
  *  @param[in]  is_output   true if endpoint should act as output.
  *  @param[out] is_acceptor Will be set to false.
+ *  @param[in]  cache       Unused.
  *
  *  @return Endpoint matching the given configuration.
  */
@@ -132,9 +133,11 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool is_input,
                          bool is_output,
-                         bool& is_acceptor) const {
+                         bool& is_acceptor,
+                         misc::shared_ptr<persistent_cache> cache) const {
   (void)is_acceptor;
   (void)is_input;
+  (void)cache;
 
   // Check that endpoint is output only.
   if (!is_output)

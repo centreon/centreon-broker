@@ -102,6 +102,15 @@ bool issue::operator!=(issue const& i) const {
  *  @return The event type.
  */
 unsigned int issue::type() const {
+  return (issue::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int issue::static_type() {
   return (io::events::data_type<io::events::correlation, correlation::de_issue>::value);
 }
 
@@ -128,3 +137,49 @@ void issue::_internal_copy(issue const& i) {
   start_time = i.start_time;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const issue::entries[] = {
+  mapping::entry(
+    &issue::ack_time,
+    "ack_time",
+    1),
+  mapping::entry(
+    &issue::end_time,
+    "end_time",
+    2,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &issue::host_id,
+    "host_id",
+    3,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &issue::service_id,
+    "service_id",
+    4,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &issue::start_time,
+    "start_time",
+    5),
+  mapping::entry(
+    &issue::instance_id,
+    "",
+    6),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_issue() {
+  return (new issue);
+}
+io::event_info::event_operations const issue::operations = {
+  &new_issue
+};

@@ -26,7 +26,6 @@
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/compression/stream.hh"
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/ndo/stream.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "test/bench_stream.hh"
 
@@ -65,36 +64,17 @@ static void send_events(io::stream* s) {
 /**
  *  Benchmark two streams.
  *
- *  @param[in] ndos   NDO stream.
- *  @param[in] ndob   NDO benchmark.
  *  @param[in] bbdos  BBDO stream.
  *  @param[in] bbdob  BBDO benchmark.
  */
-static void benchmark_streams(
-              ndo::stream& ndos,
-              bench_stream& ndob,
+static void benchmark_stream(
               bbdo::stream& bbdos,
               bench_stream& bbdob) {
-  // Benchmark NDO stream.
-  std::cout << "  NDO\n";
-  send_events(&ndos);
-  std::cout << "  - events  " << ndob.get_write_events() << "\n"
-            << "  - size    " << ndob.get_write_size() << "\n";
-
   // Benchmark BBDO stream.
   std::cout << "  BBDO\n";
   send_events(&bbdos);
   std::cout << "  - events  " << bbdob.get_write_events() << "\n"
             << "  - size    " << bbdob.get_write_size() << "\n";
-
-  // Diff.
-  std::cout << std::setprecision(2) << "  DIFF (NDO is 100%)\n"
-    << "  - events  +" << std::fixed
-    << (bbdob.get_write_events() * 100.0 / ndob.get_write_events() - 100.0)
-    << "%\n  - size    " << std::fixed
-    << ((bbdob.get_write_size() * 100.0 / bbdob.get_write_events())
-        / (ndob.get_write_size() / ndob.get_write_events()) - 100.0)
-    << "%\n";
   return ;
 }
 
@@ -114,47 +94,33 @@ int main(int argc, char* argv[]) {
   // #1 Default streams.
   std::cout << "Bench #1 (default streams)\n";
   {
-    ndo::stream ndos;
-    misc::shared_ptr<bench_stream> ndob(new bench_stream);
-    ndos.write_to(ndob);
     bbdo::stream bbdos(true, true);
     misc::shared_ptr<bench_stream> bbdob(new bench_stream);
     bbdos.write_to(bbdob);
-    benchmark_streams(ndos, *ndob, bbdos, *bbdob);
+    benchmark_stream(bbdos, *bbdob);
   }
 
   // #2 Default compression.
   std::cout << "\nBench #2 (default compression)\n";
   {
-    ndo::stream ndos;
-    misc::shared_ptr<compression::stream> ndoc(new compression::stream);
-    misc::shared_ptr<bench_stream> ndob(new bench_stream);
-    ndos.write_to(ndoc);
-    ndoc->write_to(ndob);
     bbdo::stream bbdos(true, true);
     misc::shared_ptr<compression::stream> bbdoc(new compression::stream);
     misc::shared_ptr<bench_stream> bbdob(new bench_stream);
     bbdos.write_to(bbdoc);
     bbdoc->write_to(bbdob);
-    benchmark_streams(ndos, *ndob, bbdos, *bbdob);
+    benchmark_stream(bbdos, *bbdob);
   }
 
   // #3 Optimized compression.
   std::cout << "\nBench #3 (optimized compression)\n";
   {
-    ndo::stream ndos;
-    misc::shared_ptr<compression::stream>
-      ndoc(new compression::stream(9, 1000000));
-    misc::shared_ptr<bench_stream> ndob(new bench_stream);
-    ndos.write_to(ndoc);
-    ndoc->write_to(ndob);
     bbdo::stream bbdos(true, true);
     misc::shared_ptr<compression::stream>
       bbdoc(new compression::stream(9, 1000000));
     misc::shared_ptr<bench_stream> bbdob(new bench_stream);
     bbdos.write_to(bbdoc);
     bbdoc->write_to(bbdob);
-    benchmark_streams(ndos, *ndob, bbdos, *bbdob);
+    benchmark_stream(bbdos, *bbdob);
   }
 
   // Cleanup.

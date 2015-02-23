@@ -74,9 +74,17 @@ kpi_status& kpi_status::operator=(kpi_status const& other) {
  *  @return Event type.
  */
 unsigned int kpi_status::type() const {
-  return (io::events::data_type<io::events::bam, bam::de_kpi_status>::value);
+  return (kpi_status::static_type());
 }
 
+/**
+ *  Get the event type.
+ *
+ *  @return Event type.
+ */
+unsigned int kpi_status::static_type() {
+  return (io::events::data_type<io::events::bam, bam::de_kpi_status>::value);
+}
 /**
  *  Copy internal data members.
  *
@@ -96,3 +104,71 @@ void kpi_status::_internal_copy(kpi_status const& other) {
   last_impact = other.last_impact;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const kpi_status::entries[] = {
+  mapping::entry(
+    &bam::kpi_status::kpi_id,
+    "kpi_id",
+    1,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &bam::kpi_status::level_acknowledgement_hard,
+    "level_acknowledgement_hard",
+    2),
+  mapping::entry(
+    &bam::kpi_status::level_acknowledgement_soft,
+    "level_acknowledgement_soft",
+    3),
+  mapping::entry(
+    &bam::kpi_status::level_downtime_hard,
+    "level_downtime_hard",
+    4),
+  mapping::entry(
+    &bam::kpi_status::level_downtime_soft,
+    "level_downtime_soft",
+    5),
+  mapping::entry(
+    &bam::kpi_status::level_nominal_hard,
+    "level_nominal_hard",
+    6),
+  mapping::entry(
+    &bam::kpi_status::level_nominal_soft,
+    "level_nominal_soft",
+    7),
+  mapping::entry(
+    &bam::kpi_status::state_hard,
+    "state_hard",
+    8),
+  mapping::entry(
+    &bam::kpi_status::state_soft,
+    "state_soft",
+    9),
+  mapping::entry(
+    &bam::kpi_status::last_state_change,
+    "last_state_change",
+    10),
+  mapping::entry(
+    &bam::kpi_status::last_impact,
+    "last_impact",
+    11),
+  mapping::entry(
+    &bam::kpi_status::instance_id,
+    "",
+    12),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_kpi_status() {
+  return (new kpi_status);
+}
+io::event_info::event_operations const kpi_status::operations = {
+  &new_kpi_status
+};

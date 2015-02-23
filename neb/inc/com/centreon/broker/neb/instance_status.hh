@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,8 @@
 #  define CCB_EVENTS_INSTANCE_STATUS_HH
 
 #  include <QString>
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/neb/status.hh"
 #  include "com/centreon/broker/timestamp.hh"
@@ -39,10 +41,12 @@ namespace            neb {
   class              instance_status : public status {
   public:
                      instance_status();
-                     instance_status(instance_status const& is);
+                     instance_status(instance_status const& other);
                      ~instance_status();
-    instance_status& operator=(instance_status const& is);
+    instance_status& operator=(instance_status const& other);
     unsigned int     type() const;
+    static unsigned int
+                     static_type();
 
     bool             active_host_checks_enabled;
     bool             active_service_checks_enabled;
@@ -64,8 +68,13 @@ namespace            neb {
     bool             passive_host_checks_enabled;
     bool             passive_service_checks_enabled;
 
+    static mapping::entry const
+                     entries[];
+    static io::event_info::event_operations const
+                     operations;
+
   private:
-    void             _internal_copy(instance_status const& is);
+    void             _internal_copy(instance_status const& other);
   };
 }
 

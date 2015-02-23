@@ -2245,8 +2245,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
     bool deleted(false);
     if ((_cache_deleted_instance_id.find(data->instance_id)
         != _cache_deleted_instance_id.end())
-        && (data->type()
-            != io::events::data_type<io::events::neb, neb::de_log_entry>::value)) {
+        && (data->type() != neb::log_entry::static_type())) {
       logging::info(logging::low)
         << "SQL: discarding some event related to a deleted instance ("
         << data->instance_id << ")";

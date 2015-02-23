@@ -23,6 +23,8 @@
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 
 CCB_BEGIN()
 
@@ -40,6 +42,8 @@ namespace        bam {
                  ~kpi_status();
     kpi_status&  operator=(kpi_status const& other);
     unsigned int type() const;
+    static unsigned int
+                 static_type();
 
     unsigned int kpi_id;
     double       level_acknowledgement_hard;
@@ -52,6 +56,11 @@ namespace        bam {
     short        state_soft;
     timestamp    last_state_change;
     double       last_impact;
+
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
 
   private:
     void         _internal_copy(kpi_status const& other);

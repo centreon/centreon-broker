@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<centreonbroker>
+  <host id="1" />
+  <service id="1" host="1" />
+  <service id="2" host="1" />
+  <dependency host="1" service="1" dependent_host="1" dependent_service="2" />
+</centreonbroker>

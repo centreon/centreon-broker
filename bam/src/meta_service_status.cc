@@ -69,6 +69,15 @@ meta_service_status& meta_service_status::operator=(
  *  @return Event type.
  */
 unsigned int meta_service_status::type() const {
+  return (meta_service_status::static_type());
+}
+
+/**
+ *  Get event type.
+ *
+ *  @return Event type.
+ */
+unsigned int meta_service_status::static_type() {
   return (io::events::data_type<io::events::bam, bam::de_meta_service_status>::value);
 }
 
@@ -84,3 +93,39 @@ void meta_service_status::_internal_copy(
   value = other.value;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const meta_service_status::entries[] = {
+  mapping::entry(
+    &bam::meta_service_status::meta_service_id,
+    "meta_service_id",
+    1,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &bam::meta_service_status::value,
+    "value",
+    2),
+  mapping::entry(
+    &bam::meta_service_status::state_changed,
+    "",
+    3),
+  mapping::entry(
+    &bam::meta_service_status::instance_id,
+    "",
+    4),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_meta_service_status() {
+  return (new meta_service_status);
+}
+io::event_info::event_operations const meta_service_status::operations = {
+  &new_meta_service_status
+};

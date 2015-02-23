@@ -90,6 +90,15 @@ bool ba_duration_event::operator==(ba_duration_event const& other) const {
  *  @return Event type.
  */
 unsigned int ba_duration_event::type() const {
+  return (ba_duration_event::static_type());
+}
+
+/**
+ *  Get the event type.
+ *
+ *  @return Event type.
+ */
+unsigned int ba_duration_event::static_type() {
   return (io::events::data_type<io::events::bam,
                                 bam::de_ba_duration_event>::value);
 }
@@ -110,3 +119,60 @@ void ba_duration_event::_internal_copy(ba_duration_event const& other) {
   timeperiod_is_default = other.timeperiod_is_default;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const ba_duration_event::entries[] = {
+  mapping::entry(
+    &bam::ba_duration_event::ba_id,
+    "ba_id",
+    1,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &bam::ba_duration_event::real_start_time,
+    "real_start_time",
+    2),
+  mapping::entry(
+    &bam::ba_duration_event::end_time,
+    "end_time",
+    3),
+  mapping::entry(
+    &bam::ba_duration_event::start_time,
+    "start_time",
+    4),
+  mapping::entry(
+    &bam::ba_duration_event::duration,
+    "duration",
+    5),
+  mapping::entry(
+    &bam::ba_duration_event::sla_duration,
+    "sla_duration",
+    6),
+  mapping::entry(
+    &bam::ba_duration_event::timeperiod_id,
+    "timeperiod_id",
+    7,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &bam::ba_duration_event::timeperiod_is_default,
+    "timeperiod_is_default",
+    8),
+  mapping::entry(
+    &bam::ba_duration_event::instance_id,
+    "",
+    9),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_ba_duration_event() {
+  return (new ba_duration_event);
+}
+io::event_info::event_operations const ba_duration_event::operations = {
+  &new_ba_duration_event
+};

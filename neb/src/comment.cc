@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #include "com/centreon/broker/neb/comment.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
@@ -42,7 +43,7 @@ comment::comment()
      expire_time(0),
      expires(false),
      host_id(0),
-          internal_id(0),
+     internal_id(0),
      persistent(false),
      service_id(0),
      source(0) {}
@@ -52,10 +53,10 @@ comment::comment()
  *
  *  Copy data from the given comment to the current instance.
  *
- *  @param[in] c Object to copy.
+ *  @param[in] other  Object to copy.
  */
-comment::comment(comment const& c) : io::data(c) {
-  _internal_copy(c);
+comment::comment(comment const& other) : io::data(other) {
+  _internal_copy(other);
 }
 
 /**
@@ -68,13 +69,13 @@ comment::~comment() {}
  *
  *  Copy data from the given comment to the current instance.
  *
- *  @param[in] c Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-comment& comment::operator=(comment const& c) {
-  io::data::operator=(c);
-  _internal_copy(c);
+comment& comment::operator=(comment const& other) {
+  io::data::operator=(other);
+  _internal_copy(other);
   return (*this);
 }
 
@@ -84,6 +85,15 @@ comment& comment::operator=(comment const& c) {
  *  @return The event type.
  */
 unsigned int comment::type() const {
+  return (comment::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int comment::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_comment>::value);
 }
 
@@ -102,24 +112,103 @@ unsigned int comment::type() const {
  *  superclass data are copied. This method is used in comment copy
  *  constructor and in the assignment operator.
  *
- *  @param[in] c Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @see comment(comment const&)
  *  @see operator=(comment const&)
  */
-void comment::_internal_copy(comment const& c) {
-  author = c.author;
-  comment_type = c.comment_type;
-  data = c.data;
-  deletion_time = c.deletion_time;
-  entry_time = c.entry_time;
-  entry_type = c.entry_type;
-  expire_time = c.expire_time;
-  expires = c.expires;
-  host_id = c.host_id;
-    internal_id = c.internal_id;
-  persistent = c.persistent;
-  service_id = c.service_id;
-  source = c.source;
+void comment::_internal_copy(comment const& other) {
+  author = other.author;
+  comment_type = other.comment_type;
+  data = other.data;
+  deletion_time = other.deletion_time;
+  entry_time = other.entry_time;
+  entry_type = other.entry_type;
+  expire_time = other.expire_time;
+  expires = other.expires;
+  host_id = other.host_id;
+  internal_id = other.internal_id;
+  persistent = other.persistent;
+  service_id = other.service_id;
+  source = other.source;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const comment::entries[] = {
+  mapping::entry(
+    &comment::author,
+    "author",
+    1),
+  mapping::entry(
+    &comment::comment_type,
+    "type",
+    2),
+  mapping::entry(
+    &comment::deletion_time,
+    "deletion_time",
+    3,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &comment::entry_time,
+    "entry_time",
+    4),
+  mapping::entry(
+    &comment::entry_type,
+    "entry_type",
+    5),
+  mapping::entry(
+    &comment::expire_time,
+    "expire_time",
+    6),
+  mapping::entry(
+    &comment::expires,
+    "expires",
+    7),
+  mapping::entry(
+    &comment::host_id,
+    "host_id",
+    8,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &comment::instance_id,
+    "instance_id",
+    9,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &comment::internal_id,
+    "internal_id",
+    10),
+  mapping::entry(
+    &comment::persistent,
+    "persistent",
+    11),
+  mapping::entry(
+    &comment::service_id,
+    "service_id",
+    12,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &comment::source,
+    "source",
+    13),
+  mapping::entry(
+    &comment::data,
+    "data",
+    14),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_comment() {
+  return (new comment);
+}
+io::event_info::event_operations const comment::operations = {
+  &new_comment
+};

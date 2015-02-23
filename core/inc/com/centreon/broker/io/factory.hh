@@ -24,6 +24,7 @@
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/persistent_cache.hh"
 
 CCB_BEGIN()
 
@@ -53,7 +54,8 @@ namespace             io {
                         com::centreon::broker::config::endpoint& cfg,
                         bool is_input,
                         bool is_output,
-                        bool& is_acceptor) const = 0;
+                        bool& is_acceptor,
+                        misc::shared_ptr<persistent_cache> cache = misc::shared_ptr<persistent_cache>()) const = 0;
     virtual misc::shared_ptr<stream>
                       new_stream(
                         misc::shared_ptr<stream> to,

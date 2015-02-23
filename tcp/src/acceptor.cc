@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -126,6 +126,7 @@ void acceptor::listen_on(unsigned short port) {
 
 /**
  *  Start connection acception.
+ *
  */
 misc::shared_ptr<io::stream> acceptor::open() {
   // Listen on port.
@@ -204,7 +205,7 @@ misc::shared_ptr<io::stream> acceptor::open() {
 /**
  *  Start connection acception.
  *
- *  @param[in] id Unused.
+ *  @param[in] id     Unused.
  */
 misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
   (void)id;

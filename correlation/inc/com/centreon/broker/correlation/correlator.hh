@@ -29,6 +29,7 @@
 #  include "com/centreon/broker/multiplexing/hooker.hh"
 #  include "com/centreon/broker/neb/host_status.hh"
 #  include "com/centreon/broker/neb/log_entry.hh"
+#  include "com/centreon/broker/persistent_cache.hh"
 
 namespace                          com {
   namespace                        centreon {
@@ -105,6 +106,9 @@ namespace                          com {
           void                     _update_issue(
                                      misc::shared_ptr<issue> i);
           void                     _write_issues();
+
+          std::auto_ptr<persistent_cache>
+                                   _cache;
 
           void                     (correlator::*_process_event)(
                                      misc::shared_ptr<io::data> const&);

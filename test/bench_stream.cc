@@ -93,8 +93,7 @@ void bench_stream::reset_bench() {
  */
 unsigned int bench_stream::write(misc::shared_ptr<io::data> const& d) {
   if (!d.isNull()
-      && (d->type()
-          == io::events::data_type<io::events::internal, 1>::value)) {
+      && (d->type() == io::raw::static_type())) {
     misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
     ++_write_events;
     _write_size += r->size();

@@ -55,8 +55,11 @@ int main() {
   engine daemon;
   cbd broker;
   test_db db;
+<<<<<<< HEAD
   test_file cfg_cbmod;
   test_file cfg_cbd;
+=======
+>>>>>>> notification
 
   try {
     db.open(DB_NAME);
@@ -107,7 +110,11 @@ int main() {
     // Check for outdated instance
     {
       std::ostringstream query;
+<<<<<<< HEAD
       query << "SELECT COUNT(instance_id) from rt_instances where outdated = TRUE";
+=======
+      query << "SELECT COUNT(instance_id) from instances where outdated = TRUE";
+>>>>>>> notification
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check outdated instances from DB: "
@@ -122,7 +129,11 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(service_id)"
+<<<<<<< HEAD
             << "  FROM rt_services WHERE state = " << STATE_UNKNOWN;
+=======
+            << "  FROM services where last_hard_state = " << STATE_UNKNOWN;
+>>>>>>> notification
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check outdated services from DB: "
@@ -138,7 +149,11 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(host_id)"
+<<<<<<< HEAD
             << "  FROM rt_hosts WHERE state = " << HOST_UNREACHABLE;
+=======
+            << "  FROM hosts where last_hard_state = " << HOST_UNREACHABLE;
+>>>>>>> notification
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check outdated hosts from DB: "

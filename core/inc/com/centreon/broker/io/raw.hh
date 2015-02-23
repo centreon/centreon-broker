@@ -40,6 +40,8 @@ namespace          io {
                    ~raw();
     raw&           operator=(raw const& r);
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
   };
 }
 

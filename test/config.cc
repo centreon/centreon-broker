@@ -81,6 +81,78 @@ void test_db::close() {
     _close(_centreon);
   if (_storage.get())
     _close(_storage);
+}
+
+/*
+ *  Run a query on the BI database.
+ *
+ *  @param[in] query      Query to run.
+ *  @param[in] error_msg  Error message.
+ */
+void test_db::bi_run(
+                QString const& query,
+                QString const& error_msg) {
+  _run_query(_bi.get(), query, error_msg);
+  return ;
+}
+
+/**
+ *  Get the Centreon database.
+ *
+ *  @param[in] storage_db_name   Centreon storage DB name.
+ *  @param[in] bi_db_name        Centreon BI DB name.
+ *  @param[in] centreon_db_name  Centreon Storage DB name.
+ *  @return Centreon database object.
+ */
+QSqlDatabase* test_db::centreon_db() {
+  return (_centreon.get());
+}
+
+/**
+ *  Run a query on the Centreon database.
+ *
+ *  @param[in] query      Query to run.
+ *  @param[in] error_msg  Error message.
+ */
+void test_db::centreon_run(
+                QString const& query,
+                QString const& error_msg) {
+  _run_query(_centreon.get(), query, error_msg);
+  return ;
+}
+
+/**
+ *  Get the Storage database.
+ *
+ *  @return Centreon Storage database object.
+ */
+QSqlDatabase* test_db::storage_db() {
+  return (_storage.get());
+}
+
+/**
+ *  Run a query on the Storage database.
+ *
+ *  @param[in] query      Query to run.
+ *  @param[in] error_msg  Error message.
+ */
+void test_db::storage_run(
+                QString const& query,
+                QString const& error_msg) {
+  _run_query(_storage.get(), query, error_msg);
+  return ;
+}
+
+/**
+ *  Close databases.
+ */
+void test_db::close() {
+  if (_bi.get())
+    _close(_bi);
+  if (_centreon.get())
+    _close(_centreon);
+  if (_storage.get())
+    _close(_storage);
   return ;
 }
 
@@ -135,6 +207,8 @@ void test_db::open(
     _open(*_centreon, centreon_db_name);
     _run_script(*_centreon, PROJECT_SOURCE_DIR "/bam/centreon.sql");
     _run_script(*_centreon, PROJECT_SOURCE_DIR "/bam/mysql_schema_centreon.sql");
+    _run_script(*_centreon, PROJECT_SOURCE_DIR "/test/centreon.sql");
+    _run_script(*_centreon, PROJECT_SOURCE_DIR "/notification/mysql_schema.sql");
   }
 
   // Open Storage DB.
@@ -229,6 +303,27 @@ void test_db::_open(
            << db_name << "': "
            << db.lastError().text().toStdString().c_str());
 
+  return ;
+}
+
+/**
+ *  Run a query on a database.
+ *
+ *  @param[in,out] db         Database object.
+ *  @param[in]     query      Query to run.
+ *  @param[in]     error_msg  Error message.
+ */
+void test_db::_run_query(
+                QSqlDatabase* db,
+                QString const& query,
+                QString const& error_msg) {
+  if (!db)
+    throw (exceptions::msg()
+           << error_msg << ": database not initialized");
+  QSqlQuery q(*db);
+  if (!q.exec(query))
+    throw (exceptions::msg()
+           << error_msg << ": " << q.lastError().text());
   return ;
 }
 
@@ -690,6 +785,9 @@ void config_write(
                                           ? it->notification_period
                                           : "default_timeperiod")
           << "\n"
+          << "  display_name " << ((it->display_name) ?
+                                    it->display_name : it->name)
+          << "\n"
           << "  contacts ";
       if (it->contacts) {
         ofs << it->contacts->contact_name;
@@ -754,6 +852,8 @@ void config_write(
                                   ? it->display_name
                                   : it->description) << "\n"
           << "  host_name " << it->host_name << "\n"
+          << "  display_name " << ((it->display_name) ?
+                                    it->display_name : it->description) << "\n"
           << "  active_checks_enabled " << it->checks_enabled << "\n"
           << "  passive_checks_enabled "
           << it->accept_passive_service_checks << "\n"

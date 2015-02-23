@@ -64,8 +64,18 @@ dump& dump::operator=(dump const& right) {
  *  @return Event type.
  */
 unsigned int dump::type() const {
+  return (dump::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int dump::static_type() {
   return (io::events::data_type<io::events::dumper, dumper::de_dump>::value);
 }
+
 
 /**
  *  Copy internal data members.
@@ -78,3 +88,34 @@ void dump::_internal_copy(dump const& right) {
   tag = right.tag;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const dump::entries[] = {
+  mapping::entry(
+    &dump::content,
+    "content",
+    1),
+  mapping::entry(
+    &dump::instance_id,
+    "instance_id",
+    2),
+  mapping::entry(
+    &dump::tag,
+    "tag",
+    3),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_dump() {
+  return (new dump);
+}
+io::event_info::event_operations const dump::operations = {
+  &new_dump
+};

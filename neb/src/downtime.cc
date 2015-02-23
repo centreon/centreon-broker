@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
@@ -56,10 +57,10 @@ downtime::downtime()
  *
  *  Copy internal data of the downtime object to the current instance.
  *
- *  @param[in] d Object to copy.
+ *  @param[in] other  Object to copy.
  */
-downtime::downtime(downtime const& d) : io::data(d) {
-  _internal_copy(d);
+downtime::downtime(downtime const& other) : io::data(other) {
+  _internal_copy(other);
 }
 
 /**
@@ -72,13 +73,13 @@ downtime::~downtime() {}
  *
  *  Copy internal data of the downtime object to the current instance.
  *
- *  @param[in] d Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-downtime& downtime::operator=(downtime const& d) {
-  io::data::operator=(d);
-  _internal_copy(d);
+downtime& downtime::operator=(downtime const& other) {
+  io::data::operator=(other);
+  _internal_copy(other);
   return (*this);
 }
 
@@ -88,6 +89,15 @@ downtime& downtime::operator=(downtime const& d) {
  *  @return The event type.
  */
 unsigned int downtime::type() const {
+  return (downtime::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int downtime::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_downtime>::value);
 }
 
@@ -105,28 +115,126 @@ unsigned int downtime::type() const {
  *  that no superclass data are copied. This method is used in downtime
  *  copy constructor and in the assignment operator.
  *
- *  @param[in] d Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @see downtime(downtime const&)
  *  @see operator=(downtime const&)
  */
-void downtime::_internal_copy(downtime const& d) {
-  actual_end_time = d.actual_end_time;
-  actual_start_time = d.actual_start_time;
-  author = d.author;
-  comment = d.comment;
-  deletion_time = d.deletion_time;
-  downtime_type = d.downtime_type;
-  duration = d.duration;
-  end_time = d.end_time;
-  entry_time = d.entry_time;
-  fixed = d.fixed;
-  host_id = d.host_id;
-    internal_id = d.internal_id;
-  service_id = d.service_id;
-  start_time = d.start_time;
-  triggered_by = d.triggered_by;
-  was_cancelled = d.was_cancelled;
-  was_started = d.was_started;
+void downtime::_internal_copy(downtime const& other) {
+  actual_end_time = other.actual_end_time;
+  actual_start_time = other.actual_start_time;
+  author = other.author;
+  comment = other.comment;
+  deletion_time = other.deletion_time;
+  downtime_type = other.downtime_type;
+  duration = other.duration;
+  end_time = other.end_time;
+  entry_time = other.entry_time;
+  fixed = other.fixed;
+  host_id = other.host_id;
+  internal_id = other.internal_id;
+  service_id = other.service_id;
+  start_time = other.start_time;
+  triggered_by = other.triggered_by;
+  was_cancelled = other.was_cancelled;
+  was_started = other.was_started;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const downtime::entries[] = {
+  mapping::entry(
+    &downtime::actual_end_time,
+    "actual_end_time",
+    1,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &downtime::actual_start_time,
+    "actual_start_time",
+    2,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &downtime::author,
+    "author",
+    3),
+  mapping::entry(
+    &downtime::downtime_type,
+    "type",
+    4),
+  mapping::entry(
+    &downtime::deletion_time,
+    "deletion_time",
+    5,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &downtime::duration,
+    "duration",
+    6),
+  mapping::entry(
+    &downtime::end_time,
+    "end_time",
+    7),
+  mapping::entry(
+    &downtime::entry_time,
+    "entry_time",
+    8),
+  mapping::entry(
+    &downtime::fixed,
+    "fixed",
+    9),
+  mapping::entry(
+    &downtime::host_id,
+    "host_id",
+    10,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &downtime::instance_id,
+    "instance_id",
+    11,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &downtime::internal_id,
+    "internal_id",
+    12),
+  mapping::entry(
+    &downtime::service_id,
+    "service_id",
+    13,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &downtime::start_time,
+    "start_time",
+    14),
+  mapping::entry(
+    &downtime::triggered_by,
+    "triggered_by",
+    15,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &downtime::was_cancelled,
+    "cancelled",
+    16),
+  mapping::entry(
+    &downtime::was_started,
+    "started",
+    17),
+  mapping::entry(
+    &downtime::comment,
+    "comment_data",
+    18),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_downtime() {
+  return (new downtime);
+}
+io::event_info::event_operations const downtime::operations = {
+  &new_downtime
+};

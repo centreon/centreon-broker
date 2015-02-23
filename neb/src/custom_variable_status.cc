@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #include "com/centreon/broker/neb/custom_variable_status.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
@@ -34,18 +35,19 @@ using namespace com::centreon::broker::neb;
  */
 custom_variable_status::custom_variable_status()
   : host_id(0),
-        modified(true),
+    modified(true),
     service_id(0),
     update_time(0) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] cvs Object to copy.
+ *  @param[in] other Object to copy.
  */
-custom_variable_status::custom_variable_status(custom_variable_status const& cvs)
-  : io::data(cvs) {
-  _internal_copy(cvs);
+custom_variable_status::custom_variable_status(
+                          custom_variable_status const& other)
+  : io::data(other) {
+  _internal_copy(other);
 }
 
 /**
@@ -56,13 +58,16 @@ custom_variable_status::~custom_variable_status() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] cvs Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-custom_variable_status& custom_variable_status::operator=(custom_variable_status const& cvs) {
-  io::data::operator=(cvs);
-  _internal_copy(cvs);
+custom_variable_status& custom_variable_status::operator=(
+                          custom_variable_status const& other) {
+  if (this != &other) {
+    io::data::operator=(other);
+    _internal_copy(other);
+  }
   return (*this);
 }
 
@@ -72,6 +77,15 @@ custom_variable_status& custom_variable_status::operator=(custom_variable_status
  *  @return The event type.
  */
 unsigned int custom_variable_status::type() const {
+  return (custom_variable_status::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int custom_variable_status::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_custom_variable_status>::value);
 }
 
@@ -84,14 +98,63 @@ unsigned int custom_variable_status::type() const {
 /**
  *  Copy internal data members.
  *
- *  @param[in] cvs Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void custom_variable_status::_internal_copy(custom_variable_status const& cvs) {
-  host_id = cvs.host_id;
-    modified = cvs.modified;
-  name = cvs.name;
-  service_id = cvs.service_id;
-  update_time = cvs.update_time;
-  value = cvs.value;
+void custom_variable_status::_internal_copy(custom_variable_status const& other) {
+  host_id = other.host_id;
+  modified = other.modified;
+  name = other.name;
+  service_id = other.service_id;
+  update_time = other.update_time;
+  value = other.value;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const custom_variable_status::entries[] = {
+  mapping::entry(
+    &custom_variable_status::host_id,
+    "host_id",
+    1,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &custom_variable_status::modified,
+    "modified",
+    2),
+  mapping::entry(
+    &custom_variable_status::name,
+    "name",
+    3),
+  mapping::entry(
+    &custom_variable_status::service_id,
+    "service_id",
+    4,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &custom_variable_status::update_time,
+    "update_time",
+    5),
+  mapping::entry(
+    &custom_variable_status::value,
+    "value",
+    6),
+  mapping::entry(
+    &custom_variable_status::instance_id,
+    "",
+    7),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_custom_var_status() {
+  return (new custom_variable_status);
+}
+io::event_info::event_operations const custom_variable_status::operations = {
+  &new_custom_var_status
+};

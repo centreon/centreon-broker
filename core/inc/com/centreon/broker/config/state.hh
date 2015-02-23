@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -44,6 +44,8 @@ namespace                         config {
                                   state(state const& s);
                                   ~state();
     state&                        operator=(state const& s);
+    void                          cache_directory(QString const& dir);
+    QString const&                cache_directory() const throw ();
     void                          clear();
     void                          event_queue_max_size(
                                     unsigned int val) throw ();
@@ -76,6 +78,7 @@ namespace                         config {
   private:
     void                          _internal_copy(state const& s);
 
+    QString                       _cache_directory;
     unsigned int                  _event_queue_max_size;
     bool                          _flush_logs;
     QList<endpoint>               _inputs;

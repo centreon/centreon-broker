@@ -21,6 +21,7 @@
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_group_member.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
@@ -66,5 +67,55 @@ service_group_member& service_group_member::operator=(service_group_member const
  *  @return The event_type.
  */
 unsigned int service_group_member::type() const {
+  return (service_group_member::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int service_group_member::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_service_group_member>::value);
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const service_group_member::entries[] = {
+  mapping::entry(
+    &service_group_member::enabled,
+    "",
+    1),
+  mapping::entry(
+    &service_group_member::group, // XXX : should be replaced by servicegroup_id
+    "group",
+    2),
+  mapping::entry(
+    &service_group_member::host_id,
+    "host_id",
+    3,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &service_group_member::instance_id,
+    "instance_id",
+    4),
+  mapping::entry(
+    &service_group_member::service_id,
+    "service_id",
+    5,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_service_group_member() {
+  return (new service_group_member);
+}
+io::event_info::event_operations const service_group_member::operations = {
+  &new_service_group_member
+};

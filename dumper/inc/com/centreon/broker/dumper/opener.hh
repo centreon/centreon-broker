@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -56,4 +56,4 @@ namespace                        dumper {
 
 CCB_END()
 
-#endif /* !CCB_DUMPER_OPENER_HH */
+#endif // !CCB_DUMPER_OPENER_HH

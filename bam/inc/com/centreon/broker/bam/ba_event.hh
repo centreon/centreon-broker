@@ -23,6 +23,8 @@
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 
 CCB_BEGIN()
 
@@ -40,6 +42,8 @@ namespace        bam {
     ba_event&    operator=(ba_event const& other);
     bool         operator==(ba_event const& other) const;
     unsigned int type() const;
+    static unsigned int
+                 static_type();
 
     unsigned int ba_id;
     double       first_level;
@@ -47,6 +51,11 @@ namespace        bam {
     bool         in_downtime;
     timestamp    start_time;
     short        status;
+
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
 
   private:
     void         _internal_copy(ba_event const& other);

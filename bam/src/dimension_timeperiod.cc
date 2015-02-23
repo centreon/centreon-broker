@@ -81,13 +81,21 @@ bool dimension_timeperiod::operator==(
           && (sunday == other.sunday));
 }
 
-
 /**
  *  Get the event type.
  *
  *  @return Event type.
  */
 unsigned int dimension_timeperiod::type() const {
+  return (dimension_timeperiod::static_type());
+}
+
+/**
+ *  Get the event type.
+ *
+ *  @return Event type.
+ */
+unsigned int dimension_timeperiod::static_type() {
   return (io::events::data_type<io::events::bam,
                                 bam::de_dimension_timeperiod>::value);
 }
@@ -110,3 +118,63 @@ void dimension_timeperiod::_internal_copy(
   sunday = other.sunday;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const dimension_timeperiod::entries[] = {
+  mapping::entry(
+    &bam::dimension_timeperiod::id,
+    "tp_id",
+    1,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &bam::dimension_timeperiod::name,
+    "name",
+    2),
+  mapping::entry(
+    &bam::dimension_timeperiod::monday,
+    "monday",
+    3),
+  mapping::entry(
+    &bam::dimension_timeperiod::tuesday,
+    "tuesday",
+    4),
+  mapping::entry(
+    &bam::dimension_timeperiod::wednesday,
+    "wednesday",
+    5),
+  mapping::entry(
+    &bam::dimension_timeperiod::thursday,
+    "thursday",
+    6),
+  mapping::entry(
+    &bam::dimension_timeperiod::friday,
+    "friday",
+    7),
+  mapping::entry(
+    &bam::dimension_timeperiod::saturday,
+    "saturday",
+    8),
+  mapping::entry(
+    &bam::dimension_timeperiod::sunday,
+    "sunday",
+    9),
+  mapping::entry(
+    &bam::dimension_timeperiod::instance_id,
+    "",
+    10),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_dimension_timeperiod() {
+  return (new dimension_timeperiod);
+}
+io::event_info::event_operations const dimension_timeperiod::operations = {
+  &new_dimension_timeperiod
+};

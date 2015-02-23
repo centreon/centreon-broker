@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -189,6 +189,8 @@ misc::shared_ptr<io::stream> acceptor::open(
 
 /**
  *  Overwrite method open.
+ *
+ *  @param[in] id     Connection ID.
  *
  *  @return A TLS-encrypted stream (namely a tls::stream object).
  */

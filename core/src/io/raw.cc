@@ -64,5 +64,14 @@ raw& raw::operator=(raw const& r) {
  *  @return Raw data.
  */
 unsigned int raw::type() const {
+  return (raw::static_type());
+}
+
+/**
+ *  Get the data type.
+ *
+ *  @return Raw data.
+ */
+unsigned int raw::static_type() {
   return (events::data_type<events::internal, 1>::value);
 }

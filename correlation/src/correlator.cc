@@ -24,7 +24,6 @@
 #include "com/centreon/broker/correlation/correlator.hh"
 #include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/correlation/host_state.hh"
-#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
 #include "com/centreon/broker/correlation/parser.hh"
@@ -34,11 +33,11 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
-#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/neb/host_status.hh"
 #include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_status.hh"
+#include "com/centreon/broker/neb/instance_status.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
@@ -193,8 +192,22 @@ void correlator::load(
       && !access(_retention_file.toStdString().c_str(), F_OK)) {
     logging::config(logging::medium)
       << "correlation: loading retention file";
-    parser p;
-    p.parse(_retention_file, true, _nodes);
+    persistent_cache cache(_retention_file.toStdString());
+    misc::shared_ptr<io::data> data;
+    do {
+      cache.get(data);
+      if (!data.isNull() && data->type() == issue::static_type()) {
+        issue const& is = *data.staticCast<issue>();
+        if (!_nodes.contains(qMakePair(is.host_id, is.service_id)))
+          throw (
+            exceptions::msg()
+            << "correlation: couldn't find node (" << is.host_id
+            << ", " << is.service_id << ")");
+        _nodes.find(qMakePair(is.host_id, is.service_id))->my_issue
+                                   = std::auto_ptr<issue>(new issue(is));
+      }
+    }
+    while (!data.isNull());
   }
 
   // Reopen issues.
@@ -1048,17 +1061,17 @@ QMap<QPair<unsigned int, unsigned int>, node>::iterator correlator::_remove_node
 void correlator::_process_event_on_active(
                    misc::shared_ptr<io::data> const& e) {
   unsigned int e_type(e->type());
-  if ((e_type == io::events::data_type<io::events::neb, neb::de_service_status>::value)
-      || (e_type == io::events::data_type<io::events::neb, neb::de_service>::value))
+  if ((e_type == neb::service_status::static_type())
+        || (e_type == neb::service::static_type()))
     _correlate_service_status(e);
-  else if ((e_type == io::events::data_type<io::events::neb, neb::de_host_status>::value)
-           || (e_type == io::events::data_type<io::events::neb, neb::de_host>::value))
+  else if ((e_type == neb::host_status::static_type())
+           || (e_type == neb::host::static_type()))
     _correlate_host_status(e);
-  else if (e_type == io::events::data_type<io::events::neb, neb::de_log_entry>::value)
+  else if (e_type == neb::log_entry::static_type())
     _correlate_log(e);
-  else if (e_type == io::events::data_type<io::events::neb, neb::de_acknowledgement>::value)
+  else if (e_type == neb::acknowledgement::static_type())
     _correlate_acknowledgement(e);
-  else if (e_type == io::events::data_type<io::events::neb, neb::de_instance_status>::value) {
+  else if (e_type == neb::instance_status::static_type()) {
     // Dump retention file.
     static time_t next_dump(0);
     time_t now(time(NULL));
@@ -1083,13 +1096,13 @@ void correlator::_process_event_on_passive(
 
   // if (e_type == io::events::data_type<io::events::correlation, correlation::de_engine_state>::value)
   //   ;
-  if (e_type == io::events::data_type<io::events::correlation, correlation::de_host_state>::value)
+  if (e_type == correlation::host_state::static_type())
     _update_host_service_state(e.staticCast<state>());
-  else if (e_type == io::events::data_type<io::events::correlation, correlation::de_issue>::value)
+  else if (e_type == correlation::issue::static_type())
     _update_issue(e.staticCast<issue>());
   // else if (e_type == io::events::data_type<io::events::correlation, correlation::de_issue_parent>::value)
   //   _update_issue_parent(e.staticCast<issue_parent>());
-  else if (e_type == io::events::data_type<io::events::correlation, correlation::de_service_state>::value)
+  else if (e_type == correlation::service_state::static_type())
     _update_host_service_state(e.staticCast<state>());
 
   return ;
@@ -1153,79 +1166,19 @@ void correlator::_update_issue(misc::shared_ptr<issue> i) {
  */
 void correlator::_write_issues() {
   if (!_retention_file.isEmpty()) {
-    // Prepare XML document.
-    QDomDocument doc;
-    QDomElement root(doc.createElement("centreonbroker"));
-    doc.appendChild(root);
-
-    // Dump nodes and issues.
+    // Write issue file
+    persistent_cache f(_retention_file.toStdString());
+    f.transaction();
     for (QMap<QPair<unsigned int, unsigned int>, node>::const_iterator
            it(_nodes.begin()),
            end(_nodes.end());
          it != end;
-         ++it) {
-      {
-        QDomElement elem;
-        if (it->service_id) {
-          elem = doc.createElement("service");
-          elem.setAttribute(
-            "host",
-            QString("%1").arg(it->host_id));
-          elem.setAttribute(
-            "id",
-            QString("%1").arg(it->service_id));
-        }
-        else {
-          elem = doc.createElement("host");
-          elem.setAttribute(
-            "id",
-            QString("%1").arg(it->host_id));
-        }
-        elem.setAttribute(
-          "since",
-          QString("%1").arg(it->since));
-        elem.setAttribute(
-          "state",
-          QString("%1").arg(it->state));
-        root.appendChild(elem);
-      }
-      if (it->my_issue.get()) {
-        QDomElement elem(doc.createElement("issue"));
-        elem.setAttribute(
-          "ack_time",
-          QString("%1").arg(it->my_issue->ack_time));
-        elem.setAttribute(
-          "host",
-          QString("%1").arg(it->my_issue->host_id));
-        elem.setAttribute(
-          "service",
-          QString("%1").arg(it->my_issue->service_id));
-        elem.setAttribute(
-          "start_time",
-          QString("%1").arg(it->my_issue->start_time));
-        root.appendChild(elem);
-      }
-    }
+         ++it)
+      f.add(misc::shared_ptr<issue>(new issue(*it->my_issue)));
+    f.commit();
 
-    // Write issue file
-    QFile f(_retention_file);
-    if (!f.open(QIODevice::WriteOnly))
-      logging::config(logging::high) << "correlation: could not write"
-        " retention file: " << f.errorString();
-    else {
-      QByteArray ba(doc.toByteArray());
-      qint64 wb;
-      while (ba.size() > 0) {
-        f.waitForBytesWritten(-1);
-        wb = f.write(ba);
-        if (wb <= 0) {
-          logging::config(logging::medium) << "correlation: finished "
-            "writing retention file: " << f.errorString();
-          break ;
-        }
-        ba.remove(0, wb);
-      }
-    }
+    logging::config(logging::medium) << "correlation: finished "
+      "writing retention file: " << _retention_file;
   }
 
   return ;

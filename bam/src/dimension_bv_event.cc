@@ -75,13 +75,21 @@ bool dimension_bv_event::operator==(
           && (bv_description == other.bv_description));
 }
 
-
 /**
  *  Get the event type.
  *
  *  @return Event type.
  */
 unsigned int dimension_bv_event::type() const {
+  return (dimension_bv_event::static_type());
+}
+
+/**
+ *  Get the event type.
+ *
+ *  @return Event type.
+ */
+unsigned int dimension_bv_event::static_type() {
   return (io::events::data_type<io::events::bam, bam::de_dimension_bv_event>::value);
 }
 
@@ -96,3 +104,39 @@ void dimension_bv_event::_internal_copy(dimension_bv_event const& other) {
   bv_description = other.bv_description;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const dimension_bv_event::entries[] = {
+  mapping::entry(
+    &bam::dimension_bv_event::bv_id,
+    "bv_id",
+    1,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &bam::dimension_bv_event::bv_name,
+    "bv_name",
+    2),
+  mapping::entry(
+    &bam::dimension_bv_event::bv_description,
+    "bv_description",
+    3),
+  mapping::entry(
+    &bam::dimension_bv_event::instance_id,
+    "",
+    4),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_dimension_bv_event() {
+  return (new dimension_bv_event);
+}
+io::event_info::event_operations const dimension_bv_event::operations = {
+  &new_dimension_bv_event
+};

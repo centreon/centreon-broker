@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,6 +22,7 @@
 
 #  include <climits>
 #  include <ctime>
+#  include <vector>
 #  include <memory>
 #  include <QMutex>
 #  include <QReadWriteLock>
@@ -47,6 +48,8 @@ namespace                com {
          *  @brief Failover thread.
          *
          *  Thread that provide failover on inputs or outputs.
+         *
+         *  Multiple failover can be forwarded.
          */
         class            failover : public QThread, public io::stream {
           Q_OBJECT
@@ -76,6 +79,9 @@ namespace                com {
           void           set_buffering_timeout(time_t secs);
           void           set_failover(
                            misc::shared_ptr<processing::failover> fo);
+          void           add_secondary_failover(
+                           misc::shared_ptr<io::endpoint> fo);
+          bool           failovers_contains(processing::failover* failover);
           void           set_read_timeout(time_t read_timeout);
           void           set_retry_interval(time_t retry_interval);
           void           statistics(io::properties& tree) const;
@@ -100,6 +106,8 @@ namespace                com {
           unsigned int   _events[event_window_length];
           misc::shared_ptr<failover>
                          _failover;
+          std::vector<misc::shared_ptr<io::endpoint> >
+                         _secondary_failovers;
           bool           _initial;
           bool           _is_out;
           time_t         _last_connect_attempt;
@@ -133,6 +141,7 @@ namespace                com {
           // Stream locking.
           mutable QReadWriteLock _fromm;
           mutable QReadWriteLock _tom;
+          mutable QReadWriteLock _secondary_fm;
         };
       }
     }

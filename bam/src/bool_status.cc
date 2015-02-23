@@ -64,6 +64,15 @@ bool_status& bool_status::operator=(bool_status const& other) {
  *  @return Event type.
  */
 unsigned int bool_status::type() const {
+  return (bool_status::static_type());
+}
+
+/**
+ *  Get event type.
+ *
+ *  @return Event type.
+ */
+unsigned int bool_status::static_type() {
   return (io::events::data_type<io::events::bam, bam::de_bool_status>::value);
 }
 
@@ -77,3 +86,35 @@ void bool_status::_internal_copy(bool_status const& other) {
   state = other.state;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const bool_status::entries[] = {
+  mapping::entry(
+    &bam::bool_status::bool_id,
+    "bool_id",
+    1,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &bam::bool_status::state,
+    "state",
+    2),
+  mapping::entry(
+    &bam::bool_status::state,
+    "",
+    3),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_bool_status() {
+  return (new bool_status);
+}
+io::event_info::event_operations const bool_status::operations = {
+  &new_bool_status
+};

@@ -50,12 +50,14 @@ namespace                    config {
 
     time_t                   buffering_timeout;
     QString                  failover;
+    std::set<QString>        secondary_failovers;
     QString                  name;
     QMap<QString, QString>   params;
     time_t                   read_timeout;
     time_t                   retry_interval;
     std::set<std::string>    filters;
     QString                  type;
+    bool                     cache_enabled;
 
   private:
     void                     _internal_copy(endpoint const& e);

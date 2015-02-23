@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011,2015 Merethis
+
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -34,10 +35,10 @@ source::source() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] other  Object to copy.
  */
-source::source(source const& s) {
-  (void)s;
+source::source(source const& other) {
+  (void)other;
 }
 
 /**
@@ -48,11 +49,11 @@ source::~source() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-source& source::operator=(source const& s) {
-  (void)s;
+source& source::operator=(source const& other) {
+  (void)other;
   return (*this);
 }

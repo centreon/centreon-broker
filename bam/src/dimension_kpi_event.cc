@@ -131,3 +131,97 @@ void dimension_kpi_event::_internal_copy(dimension_kpi_event const& other) {
   impact_unknown = other.impact_unknown;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const dimension_kpi_event::entries[] = {
+  mapping::entry(
+    &bam::dimension_kpi_event::kpi_id,
+    "kpi_id",
+    1,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &bam::dimension_kpi_event::ba_id,
+    "ba_id",
+    2,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &bam::dimension_kpi_event::ba_name,
+    "ba_name",
+    3),
+  mapping::entry(
+    &bam::dimension_kpi_event::host_id,
+    "host_id",
+    4,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &bam::dimension_kpi_event::host_name,
+    "host_name",
+    5),
+  mapping::entry(
+    &bam::dimension_kpi_event::service_id,
+    "service_id",
+    6,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &bam::dimension_kpi_event::service_description,
+    "service_description",
+    7),
+  mapping::entry(
+    &bam::dimension_kpi_event::kpi_ba_id,
+    "kpi_ba_id",
+    8,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &bam::dimension_kpi_event::kpi_ba_name,
+    "kpi_ba_name",
+    9),
+  mapping::entry(
+    &bam::dimension_kpi_event::meta_service_id,
+    "meta_service_id",
+    10,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &bam::dimension_kpi_event::meta_service_name,
+    "meta_service_name",
+    11),
+  mapping::entry(
+    &bam::dimension_kpi_event::boolean_id,
+    "boolean_id",
+    12,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &bam::dimension_kpi_event::boolean_name,
+    "boolean_name",
+    13),
+  mapping::entry(
+    &bam::dimension_kpi_event::impact_warning,
+    "impact_warning",
+    14),
+  mapping::entry(
+    &bam::dimension_kpi_event::impact_critical,
+    "impact_critical",
+    15),
+  mapping::entry(
+    &bam::dimension_kpi_event::impact_unknown,
+    "impact_unknown",
+    16),
+  mapping::entry(
+    &bam::dimension_kpi_event::instance_id,
+    "",
+    17),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_dimension_kpi_event() {
+  return (new dimension_kpi_event);
+}
+io::event_info::event_operations const dimension_kpi_event::operations = {
+  &new_dimension_kpi_event
+};

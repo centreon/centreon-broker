@@ -71,6 +71,16 @@ ba_status& ba_status::operator=(ba_status const& other) {
  *  @return Event type.
  */
 unsigned int ba_status::type() const {
+  return (ba_status::static_type());
+}
+
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int ba_status::static_type() {
   return (io::events::data_type<io::events::bam, bam::de_ba_status>::value);
 }
 
@@ -90,3 +100,59 @@ void ba_status::_internal_copy(ba_status const& other) {
   state_changed = other.state_changed;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const ba_status::entries[] = {
+mapping::entry(
+    &bam::ba_status::ba_id,
+    "ba_id",
+    1,
+    mapping::entry::NULL_ON_ZERO),
+mapping::entry(
+    &bam::ba_status::in_downtime,
+    "in_downtime",
+    2),
+mapping::entry(
+    &bam::ba_status::last_state_change,
+    "last_state_change",
+    3),
+mapping::entry(
+    &bam::ba_status::level_acknowledgement,
+    "level_acknowledgement",
+    4),
+mapping::entry(
+    &bam::ba_status::level_downtime,
+    "level_downtime",
+    5),
+mapping::entry(
+    &bam::ba_status::level_nominal,
+    "level_nominal",
+    6),
+mapping::entry(
+    &bam::ba_status::state,
+    "state",
+    7),
+mapping::entry(
+    &bam::ba_status::state_changed,
+    "state_changed",
+    8),
+mapping::entry(
+    &bam::ba_status::instance_id,
+    "",
+    9),
+mapping::entry()
+};
+
+// Operations.
+static io::data* new_ba_status() {
+  return (new ba_status);
+}
+io::event_info::event_operations const ba_status::operations = {
+  &new_ba_status
+};

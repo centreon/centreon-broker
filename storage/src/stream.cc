@@ -224,7 +224,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   // Process service status events.
   if (!data.isNull()) {
     ++_pending_events;
-    if (data->type() == io::events::data_type<io::events::neb, neb::de_service_status>::value) {
+    if (data->type() == neb::service_status::static_type()) {
       misc::shared_ptr<neb::service_status>
         ss(data.staticCast<neb::service_status>());
       logging::debug(logging::high)

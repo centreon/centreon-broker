@@ -23,6 +23,7 @@
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
 /**************************************
@@ -76,6 +77,15 @@ metric& metric::operator=(metric const& m) {
  *  @return The event type.
  */
 unsigned int metric::type() const {
+  return (metric::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int metric::static_type() {
   return (io::events::data_type<io::events::storage, storage::de_metric>::value);
 }
 
@@ -101,3 +111,54 @@ void metric::_internal_copy(metric const& m) {
   value_type = m.value_type;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const metric::entries[] = {
+  mapping::entry(
+    &metric::ctime,
+    "ctime",
+    1),
+  mapping::entry(
+    &metric::interval,
+    "interval",
+    2),
+  mapping::entry(
+    &metric::metric_id,
+    "metric_id",
+    3),
+  mapping::entry(
+    &metric::name,
+    "name",
+    4),
+  mapping::entry(
+    &metric::rrd_len,
+    "rrd_len",
+    6),
+  mapping::entry(
+    &metric::value,
+    "value",
+    7),
+  mapping::entry(
+    &metric::value_type,
+    "value_type",
+    8),
+  mapping::entry(
+    &metric::is_for_rebuild,
+    "is_for_rebuild",
+    9),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_metric() {
+  return (new metric);
+}
+io::event_info::event_operations const metric::operations = {
+  &new_metric
+};

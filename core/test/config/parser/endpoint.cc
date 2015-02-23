@@ -70,6 +70,8 @@ int main() {
         "    <db_password>merethis</db_password>\n"
         "    <db_name>centreon_storage</db_name>\n"
         "    <failover>CentreonRetention</failover>\n"
+        "    <secondary_failover>CentreonSecondaryFailover1</secondary_failover>\n"
+        "    <secondary_failover>CentreonSecondaryFailover2</secondary_failover>\n"
         "    <buffering_timeout>10</buffering_timeout>\n"
         "    <read_timeout>5</read_timeout>\n"
         "    <retry_interval>300</retry_interval>\n"
@@ -80,6 +82,18 @@ int main() {
         "    <path>retention.dat</path>\n"
         "    <protocol>ndo</protocol>\n"
         "  </output>\n"
+          "  <output>\n"
+          "    <name>CentreonSecondaryFailover1</name>\n"
+          "    <type>file</type>\n"
+          "    <path>retention.dat</path>\n"
+          "    <protocol>ndo</protocol>\n"
+          "  </output>\n"
+          "  <output>\n"
+          "    <name>CentreonSecondaryFailover2</name>\n"
+          "    <type>file</type>\n"
+          "    <path>retention.dat</path>\n"
+          "    <protocol>ndo</protocol>\n"
+          "  </output>\n"
         "</centreonbroker>\n";
 
       // Write data.
@@ -99,11 +113,11 @@ int main() {
     // Check against expected result.
     if ((s.loggers().size() != 0)
         || (s.inputs().size() != 1)
-        || (s.outputs().size() != 2))
+        || (s.outputs().size() != 4))
       throw (exceptions::msg() << "invalid parsing: "
              << s.loggers().size() << " loggers, " << s.inputs().size()
              << " inputs, " << s.outputs().size()
-             << " outputs (expected 0, 1, 2 respectively)");
+             << " outputs (expected 0, 1, 4 respectively)");
 
     // Check input #1.
     config::endpoint input1(s.inputs().first());
@@ -120,6 +134,9 @@ int main() {
     if ((output1.name != "CentreonDatabase")
         || (output1.type != "sql")
         || (output1.failover != "CentreonRetention")
+        || (output1.secondary_failovers.size() != 2)
+        || (output1.secondary_failovers.count("CentreonSecondaryFailover1") != 1)
+        || (output1.secondary_failovers.count("CentreonSecondaryFailover2") != 1)
         || (output1.buffering_timeout != 10)
         || (output1.read_timeout != 5)
         || (output1.retry_interval != 300)
@@ -132,12 +149,28 @@ int main() {
       throw (exceptions::msg() << "invalid output #1");
 
     // Check output #2.
-    config::endpoint output2(*it);
+    config::endpoint output2(*(it++));
     if ((output2.name != "CentreonRetention")
         || (output2.type != "file")
         || (output2.params["path"] != "retention.dat")
         || (output2.params["protocol"] != "ndo"))
       throw (exceptions::msg() << "invalid output #2");
+
+    // Check output #3.
+    config::endpoint output3(*(it++));
+    if ((output3.name != "CentreonSecondaryFailover1")
+        || (output3.type != "file")
+        || (output3.params["path"] != "retention.dat")
+        || (output3.params["protocol"] != "ndo"))
+      throw (exceptions::msg() << "invalid output #3");
+
+    // Check output #4.
+    config::endpoint output4(*it);
+    if ((output4.name != "CentreonSecondaryFailover2")
+        || (output4.type != "file")
+        || (output4.params["path"] != "retention.dat")
+        || (output4.params["protocol"] != "ndo"))
+      throw (exceptions::msg() << "invalid output #4");
 
     // Success !
     retval = EXIT_SUCCESS;

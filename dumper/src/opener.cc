@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -99,7 +99,7 @@ misc::shared_ptr<io::stream> opener::open() {
 /**
  *  Open a new stream.
  *
- *  @param[in] id The identifier.
+ *  @param[in] id     The identifier.
  *
  *  @return Opened stream.
  */

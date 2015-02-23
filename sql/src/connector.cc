@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -163,7 +163,7 @@ misc::shared_ptr<io::stream> connector::open() {
 /**
  *  Connect to a DB.
  *
- *  @param[in] id Unused.
+ *  @param[in] id     Unused.
  *
  *  @return SQL connection object.
  */

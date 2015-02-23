@@ -21,6 +21,7 @@
 #include "com/centreon/broker/correlation/host_state.hh"
 #include "com/centreon/broker/io/events.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
 
 /**************************************
@@ -95,5 +96,63 @@ bool host_state::operator!=(host_state const& hs) const {
  *  @return The event type.
  */
 unsigned int host_state::type() const {
+  return (host_state::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int host_state::static_type() {
   return (io::events::data_type<io::events::correlation, correlation::de_host_state>::value);
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const host_state::entries[] = {
+  mapping::entry(
+    &host_state::ack_time,
+    "ack_time",
+    1,
+    mapping::entry::NULL_ON_MINUS_ONE),
+  mapping::entry(
+    &host_state::current_state,
+    "state",
+    2),
+  mapping::entry(
+    &host_state::end_time,
+    "end_time",
+    3,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &host_state::host_id,
+    "host_id",
+    4),
+  mapping::entry(
+    &host_state::in_downtime,
+    "in_downtime",
+    5),
+  mapping::entry(
+    &host_state::start_time,
+    "start_time",
+    6),
+  mapping::entry(
+    &host_state::instance_id,
+    "",
+    7),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_host_state() {
+  return (new host_state);
+}
+io::event_info::event_operations const host_state::operations = {
+  &new_host_state
+};

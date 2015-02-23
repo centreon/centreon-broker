@@ -68,6 +68,15 @@ dimension_timeperiod_exception& dimension_timeperiod_exception::operator=(
  *  @return Event type.
  */
 unsigned int dimension_timeperiod_exception::type() const {
+  return (dimension_timeperiod_exception::static_type());
+}
+
+/**
+ *  Get the event type.
+ *
+ *  @return Event type.
+ */
+unsigned int dimension_timeperiod_exception::static_type() {
   return (io::events::data_type<io::events::bam, bam::de_dimension_timeperiod_exception>::value);
 }
 
@@ -83,3 +92,39 @@ void dimension_timeperiod_exception::_internal_copy(
   timeperiod_id = other.timeperiod_id;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const dimension_timeperiod_exception::entries[] = {
+  mapping::entry(
+    &bam::dimension_timeperiod_exception::timeperiod_id,
+    "timeperiod_id",
+    1,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &bam::dimension_timeperiod_exception::daterange,
+    "daterange",
+    2),
+  mapping::entry(
+    &bam::dimension_timeperiod_exception::timerange,
+    "timerange",
+    3),
+  mapping::entry(
+    &bam::dimension_timeperiod_exception::instance_id,
+    "",
+    4),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_dimension_timeperiod_exception() {
+  return (new dimension_timeperiod_exception);
+}
+io::event_info::event_operations const dimension_timeperiod_exception::operations = {
+  &new_dimension_timeperiod_exception
+};

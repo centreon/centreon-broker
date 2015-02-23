@@ -77,13 +77,21 @@ bool dimension_ba_event::operator==(
   return ((ba_id == other.ba_id));
 }
 
-
 /**
  *  Get the event type.
  *
  *  @return Event type.
  */
 unsigned int dimension_ba_event::type() const {
+  return (dimension_ba_event::static_type());
+}
+
+/**
+ *  Get the event type.
+ *
+ *  @return Event type.
+ */
+unsigned int dimension_ba_event::static_type() {
   return (io::events::data_type<io::events::bam, bam::de_dimension_ba_event>::value);
 }
 
@@ -102,3 +110,55 @@ void dimension_ba_event::_internal_copy(dimension_ba_event const& other) {
   sla_duration_warn = other.sla_duration_warn;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const dimension_ba_event::entries[] = {
+  mapping::entry(
+    &bam::dimension_ba_event::ba_id,
+    "ba_id",
+    1,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &bam::dimension_ba_event::ba_name,
+    "ba_name",
+    2),
+  mapping::entry(
+    &bam::dimension_ba_event::ba_description,
+    "ba_description",
+    3),
+  mapping::entry(
+    &bam::dimension_ba_event::sla_month_percent_crit,
+    "sla_month_percent_crit",
+    4),
+  mapping::entry(
+    &bam::dimension_ba_event::sla_month_percent_warn,
+    "sla_month_percent_warn",
+    5),
+  mapping::entry(
+    &bam::dimension_ba_event::sla_duration_crit,
+    "sla_month_duration_crit",
+    6),
+  mapping::entry(
+    &bam::dimension_ba_event::sla_duration_warn,
+    "sla_month_duration_warn",
+    7),
+  mapping::entry(
+    &bam::dimension_ba_event::instance_id,
+    "",
+    8),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_dimension_ba_event() {
+  return (new dimension_ba_event);
+}
+io::event_info::event_operations const dimension_ba_event::operations = {
+  &new_dimension_ba_event
+};

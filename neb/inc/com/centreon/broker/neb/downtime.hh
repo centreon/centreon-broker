@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,6 +22,8 @@
 
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
 
@@ -40,10 +42,12 @@ namespace          neb {
   class            downtime : public io::data {
   public:
                    downtime();
-                   downtime(downtime const& d);
+                   downtime(downtime const& other);
                    ~downtime();
-    downtime&      operator=(downtime const& d);
+    downtime&      operator=(downtime const& other);
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
 
     timestamp      actual_end_time;
     timestamp      actual_start_time;
@@ -63,8 +67,13 @@ namespace          neb {
     bool           was_cancelled;
     bool           was_started;
 
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
+
   private:
-    void           _internal_copy(downtime const& d);
+    void           _internal_copy(downtime const& other);
   };
 }
 

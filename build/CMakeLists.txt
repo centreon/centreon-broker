@@ -121,9 +121,7 @@ if (WITH_TESTING)
   include(CTest)
   enable_testing()
   include_directories("${PROJECT_SOURCE_DIR}/core")
-  include_directories("${PROJECT_SOURCE_DIR}/bbdo/inc")
   include_directories("${PROJECT_SOURCE_DIR}/compression/inc")
-  include_directories("${PROJECT_SOURCE_DIR}/ndo/inc")
   include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 endif ()
 
@@ -254,6 +252,7 @@ endif ()
 
 # Some files must be processed by Qt's moc.
 qt4_wrap_cpp(QT_WRAPPED_SOURCES
+  "${INC_DIR}/bbdo/acceptor.hh"
   "${INC_DIR}/config/applier/endpoint.hh"
   "${INC_DIR}/logging/backend.hh"
   "${INC_DIR}/logging/manager.hh"
@@ -266,6 +265,14 @@ qt4_wrap_cpp(QT_WRAPPED_SOURCES
 # Core library.
 set(LIBROKER_SOURCES
   # Sources.
+  "${SRC_DIR}/bbdo/acceptor.cc"
+  "${SRC_DIR}/bbdo/connector.cc"
+  "${SRC_DIR}/bbdo/factory.cc"
+  "${SRC_DIR}/bbdo/input.cc"
+  "${SRC_DIR}/bbdo/internal.cc"
+  "${SRC_DIR}/bbdo/output.cc"
+  "${SRC_DIR}/bbdo/stream.cc"
+  "${SRC_DIR}/bbdo/version_response.cc"
   "${SRC_DIR}/config/applier/endpoint.cc"
   "${SRC_DIR}/config/applier/modules.cc"
   "${SRC_DIR}/config/applier/state.cc"
@@ -279,11 +286,17 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/database_query.cc"
   "${SRC_DIR}/exceptions/msg.cc"
   "${SRC_DIR}/exceptions/with_pointer.cc"
+  "${SRC_DIR}/file/cfile.cc"
+  "${SRC_DIR}/file/factory.cc"
+  "${SRC_DIR}/file/main.cc"
+  "${SRC_DIR}/file/opener.cc"
+  "${SRC_DIR}/file/stream.cc"
 # #	../src/interface/xml/destination.cc
 # #	../src/interface/xml/internal.cc
 # #	../src/interface/xml/source.cc
   "${SRC_DIR}/io/data.cc"
   "${SRC_DIR}/io/endpoint.cc"
+  "${SRC_DIR}/io/event_info.cc"
   "${SRC_DIR}/io/events.cc"
   "${SRC_DIR}/io/exceptions/shutdown.cc"
   "${SRC_DIR}/io/factory.cc"
@@ -300,8 +313,8 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/logging/manager.cc"
   "${SRC_DIR}/logging/syslogger.cc"
   "${SRC_DIR}/logging/temp_logger.cc"
-  #"${SRC_DIR}/mapping/entry.cc"
-  #"${SRC_DIR}/mapping/source.cc"
+  "${SRC_DIR}/mapping/entry.cc"
+  "${SRC_DIR}/mapping/source.cc"
   "${SRC_DIR}/misc/diagnostic.cc"
   "${SRC_DIR}/misc/stringifier.cc"
   "${SRC_DIR}/misc/global_lock.cc"
@@ -312,10 +325,20 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/multiplexing/internal.cc"
   "${SRC_DIR}/multiplexing/publisher.cc"
   "${SRC_DIR}/multiplexing/subscriber.cc"
+  "${SRC_DIR}/persistent_cache.cc"
   "${SRC_DIR}/processing/failover.cc"
   "${SRC_DIR}/processing/feeder.cc"
+  "${SRC_DIR}/processing/multiple_writer.cc"
   ${QT_WRAPPED_SOURCES}
   # Headers.
+  "${INC_DIR}/bbdo/acceptor.hh"
+  "${INC_DIR}/bbdo/connector.hh"
+  "${INC_DIR}/bbdo/factory.hh"
+  "${INC_DIR}/bbdo/input.hh"
+  "${INC_DIR}/bbdo/internal.hh"
+  "${INC_DIR}/bbdo/output.hh"
+  "${INC_DIR}/bbdo/stream.hh"
+  "${INC_DIR}/bbdo/version_response.hh"
   "${INC_DIR}/config/applier/endpoint.hh"
   "${INC_DIR}/config/applier/init.hh"
   "${INC_DIR}/config/applier/logger.hh"
@@ -331,8 +354,13 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/database_query.hh"
   "${INC_DIR}/exceptions/msg.hh"
   "${INC_DIR}/exceptions/with_pointer.hh"
+  "${INC_DIR}/file/cfile.hh"
+  "${INC_DIR}/file/factory.hh"
+  "${INC_DIR}/file/opener.hh"
+  "${INC_DIR}/file/stream.hh"
   "${INC_DIR}/io/data.hh"
   "${INC_DIR}/io/endpoint.hh"
+  "${INC_DIR}/io/event_info.hh"
   "${INC_DIR}/io/events.hh"
   "${INC_DIR}/io/exceptions/shutdown.hh"
   "${INC_DIR}/io/factory.hh"
@@ -350,9 +378,9 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/logging/manager.hh"
   "${INC_DIR}/logging/syslogger.hh"
   "${INC_DIR}/logging/temp_logger.hh"
-  #"${INC_DIR}/mapping/entry.hh"
-  #"${INC_DIR}/mapping/property.hh"
-  #"${INC_DIR}/mapping/source.hh"
+  "${INC_DIR}/mapping/entry.hh"
+  "${INC_DIR}/mapping/property.hh"
+  "${INC_DIR}/mapping/source.hh"
   "${INC_DIR}/misc/diagnostic.hh"
   "${INC_DIR}/misc/string.hh"
   "${INC_DIR}/misc/stringifier.hh"
@@ -365,8 +393,10 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/multiplexing/internal.hh"
   "${INC_DIR}/multiplexing/publisher.hh"
   "${INC_DIR}/multiplexing/subscriber.hh"
+  "${INC_DIR}/persistent_cache.hh"
   "${INC_DIR}/processing/failover.hh"
   "${INC_DIR}/processing/feeder.hh"
+  "${INC_DIR}/processing/multiple_writer.hh"
   "${INC_DIR}/timestamp.hh"
 )
 
@@ -424,13 +454,6 @@ option(WITH_MODULE_NEB "Build NEB module." ON)
 if (WITH_MODULE_NEB)
   add_subdirectory("neb")
   list(APPEND MODULE_LIST "neb")
-endif()
-
-# File module.
-option(WITH_MODULE_FILE "Build file module." ON)
-if (WITH_MODULE_FILE)
-  add_subdirectory("file")
-  list(APPEND MODULE_LIST "file")
 endif()
 
 # Compression module.
@@ -496,18 +519,11 @@ if (WITH_MODULE_TLS)
   list(APPEND MODULE_LIST "tls")
 endif()
 
-# BBDO module.
-option(WITH_MODULE_BBDO "Build BBDO module." ON)
-if (WITH_MODULE_BBDO)
-  add_subdirectory("bbdo")
-  list(APPEND MODULE_LIST "bbdo")
-endif()
-
-# NDO module.
-option(WITH_MODULE_NDO "Build NDO module." ON)
-if (WITH_MODULE_NDO)
-  add_subdirectory("ndo")
-  list(APPEND MODULE_LIST "ndo")
+# Notification module.
+option(WITH_MODULE_NOTIFICATION "Build NOTIFICATION module." ON)
+if (WITH_MODULE_NOTIFICATION)
+  add_subdirectory("notification")
+  list(APPEND MODULE_LIST "notification")
 endif()
 
 # Format string.
@@ -690,7 +706,7 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_sql_cleanup")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/sql_cleanup.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
   # Protocols.
@@ -762,6 +778,13 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
+  # Secondary failover to file.
+  set(TEST_NAME "running_secondary_failovers_to_file")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/secondary_failovers_to_file.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
   # RRD endpoint as failover.
   set(TEST_NAME "running_rrd_as_failover")
   add_test("${TEST_NAME}" "cbd" "-c" "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
@@ -819,6 +842,29 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_meta_service")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/meta_service.cc")
+
+  # Non-correlated notification.
+  set(TEST_NAME "running_notification_non_correlated")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/notification_non_correlated.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # Correlated notification.
+  set(TEST_NAME "running_notification_correlated")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/notification_correlated.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # Notification write into file utility
+  add_executable("util_write_into_file"
+    "${PROJECT_SOURCE_DIR}/test/write_into_file.cc")
+
+  # Notification.
+  set(TEST_NAME "running_notification")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/notification.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
@@ -844,7 +890,7 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/bench_bbdo.cc"
     "${PROJECT_SOURCE_DIR}/test/bench_stream.cc"
     "${PROJECT_SOURCE_DIR}/test/bench_stream.hh")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${BBDO} ${COMPRESSION} ${BAM} ${CORRELATION} ${NEB} ${NDO} ${STORAGE})
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${COMPRESSION} ${BAM} ${CORRELATION} ${NEB} ${STORAGE})
 
   # Last file to configure, based on target paths.
   configure_file("${PROJECT_SOURCE_DIR}/test/vars.hh.in"
@@ -1443,6 +1489,41 @@ if (WITH_TESTING)
     "${TEST_DIR}/processing/failover/recovery.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+
+
+  # file namespace tests.
+  # file::stream tests.
+  #   Writing.
+  set(TEST_NAME "file_stream_write")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/file/stream/write.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Reading.
+  set(TEST_NAME "file_stream_read")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/file/stream/read.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Size limitation.
+  set(TEST_NAME "file_stream_max_size")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/file/stream/max_size.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Mixed reads/writes.
+  set(TEST_NAME "file_stream_mixed")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/file/stream/mixed.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   I/O processing.
+  set(TEST_NAME "file_stream_process")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/file/stream/process.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
 
   # cbd tests.
   add_test("cbd_help" "cbd" "-h")

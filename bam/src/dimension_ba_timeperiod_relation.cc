@@ -78,13 +78,21 @@ bool dimension_ba_timeperiod_relation::operator==(
           && (is_default == other.is_default));
 }
 
-
 /**
  *  Get the event type.
  *
  *  @return Event type.
  */
 unsigned int dimension_ba_timeperiod_relation::type() const {
+  return (dimension_ba_timeperiod_relation::static_type());
+}
+
+/**
+ *  Get the event type.
+ *
+ *  @return Event type.
+ */
+unsigned int dimension_ba_timeperiod_relation::static_type() {
   return (io::events::data_type<io::events::bam,
                                 bam::de_dimension_ba_timeperiod_relation>::value);
 }
@@ -101,3 +109,40 @@ void dimension_ba_timeperiod_relation::_internal_copy(
   is_default = other.is_default;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const dimension_ba_timeperiod_relation::entries[] = {
+  mapping::entry(
+    &bam::dimension_ba_timeperiod_relation::ba_id,
+    "ba_id",
+    1,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &bam::dimension_ba_timeperiod_relation::timeperiod_id,
+    "timeperiod_id",
+    2,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &bam::dimension_ba_timeperiod_relation::is_default,
+    "is_default",
+    3),
+  mapping::entry(
+    &bam::dimension_ba_timeperiod_relation::instance_id,
+    "",
+    4),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_dimension_ba_timeperiod_relation() {
+  return (new dimension_ba_timeperiod_relation);
+}
+io::event_info::event_operations const dimension_ba_timeperiod_relation::operations = {
+  &new_dimension_ba_timeperiod_relation
+};

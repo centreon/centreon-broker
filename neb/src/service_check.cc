@@ -21,6 +21,7 @@
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_check.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
@@ -66,5 +67,63 @@ service_check& service_check::operator=(service_check const& sc) {
  *  @return The event_type.
  */
 unsigned int service_check::type() const {
+  return (service_check::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int service_check::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_service_check>::value);
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const service_check::entries[] = {
+  mapping::entry(
+    &service_check::active_checks_enabled,
+    "",
+    1),
+  mapping::entry(
+    &service_check::check_type,
+    "",
+    2),
+  mapping::entry(
+    &service_check::host_id,
+    "host_id",
+    3,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &service_check::next_check,
+    "",
+    4),
+  mapping::entry(
+    &service_check::service_id,
+    "service_id",
+    5,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &service_check::command_line,
+    "command_line",
+    6),
+  mapping::entry(
+    &service_check::instance_id,
+    "",
+    7),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_service_check() {
+  return (new service_check);
+}
+io::event_info::event_operations const service_check::operations = {
+  &new_service_check
+};

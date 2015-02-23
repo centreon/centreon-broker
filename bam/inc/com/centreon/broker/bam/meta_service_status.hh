@@ -22,6 +22,8 @@
 
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 
 CCB_BEGIN()
 
@@ -41,10 +43,16 @@ namespace                bam {
                          ~meta_service_status();
     meta_service_status& operator=(meta_service_status const& other);
     unsigned int         type() const;
+    static unsigned int  static_type();
 
     unsigned int         meta_service_id;
     bool                 state_changed;
     double               value;
+
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
 
   private:
     void                 _internal_copy(

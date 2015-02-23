@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -144,7 +144,8 @@ misc::shared_ptr<io::stream> connector::open() {
 /**
  *  Connect to the remote host.
  *
- *  @param[in] id Unused.
+ *  @param[in] id     Unused.
+ *  @param[in] cache  TCP module does not use the persistent cache.
  */
 misc::shared_ptr<io::stream> connector::open(QString const& id) {
   (void)id;

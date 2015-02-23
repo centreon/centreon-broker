@@ -23,6 +23,12 @@
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/correlation/correlator.hh"
 #include "com/centreon/broker/correlation/internal.hh"
+#include "com/centreon/broker/correlation/engine_state.hh"
+#include "com/centreon/broker/correlation/host_state.hh"
+#include "com/centreon/broker/correlation/issue.hh"
+#include "com/centreon/broker/correlation/issue_parent.hh"
+#include "com/centreon/broker/correlation/service_state.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -47,8 +53,8 @@ namespace correlation {
       multiplexing::engine::instance().unhook(*correlation::obj);
       correlation::obj.clear();
 
-      // Remove elements.
-      io::events::instance().unreg("correlation");
+      // Remove events.
+      io::events::instance().unregister_category(io::events::correlation);
     }
     return ;
   }
@@ -66,20 +72,55 @@ namespace correlation {
         << "correlation: module for Centreon Broker "
         << CENTREON_BROKER_VERSION;
 
-      // Load elements.
+      io::events& e(io::events::instance());
+
+      // Register category.
+      int correlation_category(e.register_category("correlation", io::events::correlation));
+      if (correlation_category != io::events::correlation) {
+        e.unregister_category(correlation_category);
+        --correlation::instances;
+        throw (exceptions::msg() << "correlation: category " << io::events::correlation
+               << " is already registered whereas it should be "
+               << "reserved for the correlation module");
+      }
+
+      // Register events.
       {
-        std::set<unsigned int> elements;
-        elements.insert(
-                   io::events::data_type<io::events::correlation, correlation::de_engine_state>::value);
-        elements.insert(
-                   io::events::data_type<io::events::correlation, correlation::de_host_state>::value);
-        elements.insert(
-                   io::events::data_type<io::events::correlation, correlation::de_issue>::value);
-        elements.insert(
-                   io::events::data_type<io::events::correlation, correlation::de_issue_parent>::value);
-        elements.insert(
-                   io::events::data_type<io::events::correlation, correlation::de_service_state>::value);
-        io::events::instance().reg("correlation", elements);
+        e.register_event(
+            io::events::correlation,
+            correlation::de_engine_state,
+            io::event_info(
+                  "engine_state",
+                  &correlation::engine_state::operations,
+                  correlation::engine_state::entries));
+        e.register_event(
+            io::events::correlation,
+            correlation::de_host_state,
+            io::event_info(
+                  "host_state",
+                  &correlation::host_state::operations,
+                  correlation::host_state::entries));
+        e.register_event(
+            io::events::correlation,
+            correlation::de_issue,
+            io::event_info(
+                  "issue",
+                  &correlation::issue::operations,
+                  correlation::issue::entries));
+        e.register_event(
+            io::events::correlation,
+            correlation::de_issue_parent,
+            io::event_info(
+                  "issue_parent",
+                  &correlation::issue_parent::operations,
+                  correlation::issue_parent::entries));
+        e.register_event(
+            io::events::correlation,
+            correlation::de_service_state,
+            io::event_info(
+                  "service_state",
+                  &correlation::service_state::operations,
+                  correlation::service_state::entries));
       }
 
       // Check that correlation is enabled.

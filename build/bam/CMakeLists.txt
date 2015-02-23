@@ -76,7 +76,6 @@ add_library("${BAM}" SHARED
   "${SRC_DIR}/event_cache_visitor.cc"
   "${SRC_DIR}/hst_svc_mapping.cc"
   "${SRC_DIR}/impact_values.cc"
-  "${SRC_DIR}/internal.cc"
   "${SRC_DIR}/kpi.cc"
   "${SRC_DIR}/kpi_ba.cc"
   "${SRC_DIR}/kpi_boolexp.cc"

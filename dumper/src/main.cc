@@ -18,7 +18,9 @@
 */
 
 #include "com/centreon/broker/dumper/factory.hh"
+#include "com/centreon/broker/dumper/dump.hh"
 #include "com/centreon/broker/dumper/internal.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -36,7 +38,8 @@ extern "C" {
     // Decrement instance number.
     if (!--instances) {
       // Deregister storage layer.
-      io::events::instance().unreg("dumper");
+      // Remove events.
+      io::events::instance().unregister_category(io::events::dumper);
       io::protocols::instance().unreg("dumper");
     }
     return ;
@@ -57,18 +60,37 @@ extern "C" {
         << "dumper: module for Centreon Broker "
         << CENTREON_BROKER_VERSION;
 
+
+      io::events& e(io::events::instance());
+
+      // Register category.
+      int dumper_category(e.register_category("dumper", io::events::dumper));
+      if (dumper_category != io::events::dumper) {
+        e.unregister_category(dumper_category);
+        --instances;
+        throw (exceptions::msg() << "dumper: category " << io::events::dumper
+               << " is already registered whereas it should be "
+               << "reserved for the dumper module");
+      }
+
+      // Register events.
+      {
+        e.register_event(
+            io::events::dumper,
+            dumper::de_dump,
+            io::event_info(
+                  "dump",
+                  &dumper::dump::operations,
+                  dumper::dump::entries));
+      }
+
+
       // Register dumper layer.
       io::protocols::instance().reg(
                                   "dumper",
                                   dumper::factory(),
                                   1,
                                   7);
-
-      // Register dumper events.
-      std::set<unsigned int> elements;
-      elements.insert(
-                 io::events::data_type<io::events::dumper, dumper::de_dump>::value);
-      io::events::instance().reg("dumper", elements);
     }
     return ;
   }

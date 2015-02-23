@@ -21,6 +21,7 @@
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/notification.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
@@ -76,6 +77,15 @@ notification& notification::operator=(notification const& n) {
  *  @return The event_type.
  */
 unsigned int notification::type() const {
+  return (notification::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int notification::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_notification>::value);
 }
 
@@ -107,3 +117,84 @@ void notification::_internal_copy(notification const& n) {
   state = n.state;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const notification::entries[] = {
+  mapping::entry(
+    &notification::contacts_notified,
+    "contacts_notified",
+    1),
+  mapping::entry(
+    &notification::end_time,
+    "end_time",
+    2),
+  mapping::entry(
+    &notification::escalated,
+    "escalated",
+    3),
+  mapping::entry(
+    &notification::host_id,
+    "host_id",
+    4,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &notification::notification_type,
+    "type",
+    5),
+  mapping::entry(
+    &notification::reason_type,
+    "reason_type",
+    6),
+  mapping::entry(
+    &notification::service_id,
+    "service_id",
+    7,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &notification::start_time,
+    "start_time",
+    8),
+  mapping::entry(
+    &notification::state,
+    "state",
+    9),
+  mapping::entry(
+    &notification::ack_author,
+    "ack_author",
+    10),
+  mapping::entry(
+    &notification::ack_data,
+    "ack_data",
+    11),
+  mapping::entry(
+    &notification::command_name,
+    "command_name",
+    12),
+  mapping::entry(
+    &notification::contact_name,
+    "contact_name",
+    13),
+  mapping::entry(
+    &notification::output,
+    "output",
+    14),
+  mapping::entry(
+    &notification::instance_id,
+    "",
+    15),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_notification() {
+  return (new notification);
+}
+io::event_info::event_operations const notification::operations = {
+  &new_notification
+};

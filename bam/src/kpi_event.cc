@@ -86,6 +86,15 @@ bool kpi_event::operator==(kpi_event const& other) const {
  *  @return Event type.
  */
 unsigned int kpi_event::type() const {
+  return (kpi_event::static_type());
+}
+
+/**
+ *  Get the event type.
+ *
+ *  @return Event type.
+ */
+unsigned int kpi_event::static_type() {
   return (io::events::data_type<io::events::bam, bam::de_kpi_event>::value);
 }
 
@@ -105,3 +114,59 @@ void kpi_event::_internal_copy(kpi_event const& other) {
   status = other.status;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const kpi_event::entries[] = {
+  mapping::entry(
+    &bam::kpi_event::kpi_id,
+    "kpi_id",
+    1,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &bam::kpi_event::end_time,
+    "end_time",
+    2),
+  mapping::entry(
+    &bam::kpi_event::impact_level,
+    "impact_level",
+    3),
+  mapping::entry(
+    &bam::kpi_event::in_downtime,
+    "in_downtime",
+    4),
+  mapping::entry(
+    &bam::kpi_event::output,
+    "first_output",
+    5),
+  mapping::entry(
+    &bam::kpi_event::perfdata,
+    "first_perfdata",
+    6),
+  mapping::entry(
+    &bam::kpi_event::start_time,
+    "start_time",
+    7),
+  mapping::entry(
+    &bam::kpi_event::status,
+    "status",
+    8),
+  mapping::entry(
+    &bam::kpi_event::instance_id,
+    "",
+    9),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_kpi_event() {
+  return (new kpi_event);
+}
+io::event_info::event_operations const kpi_event::operations = {
+  &new_kpi_event
+};

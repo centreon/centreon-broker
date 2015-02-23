@@ -101,6 +101,7 @@ bool factory::has_endpoint(
  *  @param[in]  is_input    true if the dumper should act as input.
  *  @param[in]  is_output   true if the dumper should act as output.
  *  @param[out] is_acceptor Will be set to false.
+ *  @param[in]  cache       Unused.
  *
  *  @return Acceptor matching configuration.
  */
@@ -108,7 +109,8 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool is_input,
                          bool is_output,
-                         bool& is_acceptor) const {
+                         bool& is_acceptor,
+                         misc::shared_ptr<persistent_cache> cache) const {
   (void)is_acceptor;
 
   // Find path to the dumper.

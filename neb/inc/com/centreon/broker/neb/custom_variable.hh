@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012,2014 Merethis
+** Copyright 2009-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,6 +20,8 @@
 #ifndef CCB_NEB_CUSTOM_VARIABLE_HH
 #  define CCB_NEB_CUSTOM_VARIABLE_HH
 
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/neb/custom_variable_status.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -36,16 +38,23 @@ namespace            neb {
   class              custom_variable : public custom_variable_status {
   public:
                      custom_variable();
-                     custom_variable(custom_variable const& cv);
+                     custom_variable(custom_variable const& other);
                      ~custom_variable();
-    custom_variable& operator=(custom_variable const& cv);
+    custom_variable& operator=(custom_variable const& other);
     unsigned int     type() const;
+    static unsigned int
+                     static_type();
 
     bool             enabled;
     short            var_type;
 
+    static mapping::entry const
+                     entries[];
+    static io::event_info::event_operations const
+                     operations;
+
   private:
-    void             _internal_copy(custom_variable const& cv);
+    void             _internal_copy(custom_variable const& other);
   };
 }
 
