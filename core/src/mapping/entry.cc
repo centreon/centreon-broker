@@ -289,6 +289,6 @@ bool entry::is_null() const {
  *  @return  The name of this entry.
  */
 
-std::string const& entry::get_name() const {
+std::string entry::get_name() const {
   return (_name.toStdString());
 }

@@ -98,7 +98,7 @@ namespace                    mapping {
                                io::data& d,
                                unsigned short value) const;
     bool                     is_null() const;
-    std::string const&       get_name() const;
+    std::string              get_name() const;
 
   private:
     attribute                _attribute;
