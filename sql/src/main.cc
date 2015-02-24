@@ -70,7 +70,6 @@ extern "C" {
         sql::factory(),
         1,
         7);
-      sql::stream::initialize();
     }
 
     return ;

@@ -597,12 +597,16 @@ void stream::_prepare_insert(
   query.append(" (");
   mapping::entry const* entries = T::entries;
   for (size_t i = 0; !entries[i].is_null(); ++i) {
+    if (entries[i].get_name().empty())
+      continue;
     query.append(entries[i].get_name());
     query.append(", ");
   }
   query.resize(query.size() - 2);
   query.append(") VALUES(");
   for (size_t i = 0; !entries[i].is_null(); ++i) {
+    if (entries[i].get_name().empty())
+      continue;
     query.append(":");
     query.append(entries[i].get_name());
     query.append(", ");
@@ -635,6 +639,8 @@ void stream::_prepare_update(
   query.append(" SET ");
   mapping::entry const* entries = T::entries;
   for (size_t i = 0; !entries[i].is_null(); ++i) {
+    if (entries[i].get_name().empty())
+      continue;
     bool found(id.find(entries[i].get_name()) != id.end());
     if (!found) {
       query.append(entries[i].get_name());

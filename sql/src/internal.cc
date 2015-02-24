@@ -230,6 +230,8 @@ template <typename T>
 static void to_base(database_query& q, T const& t) {
   mapping::entry const* entries = T::entries;
   for (size_t i = 0; !entries[i].is_null(); ++i) {
+    if (entries[i].get_name().empty())
+      continue ;
     QString field(":");
     field.append(entries[i].get_name().c_str());
     switch (entries[i].get_type()) {
