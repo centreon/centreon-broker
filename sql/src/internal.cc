@@ -24,7 +24,6 @@
 #include "com/centreon/broker/sql/internal.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::sql;
 
 /**************************************
 *                                     *
@@ -35,52 +34,43 @@ using namespace com::centreon::broker::sql;
 /**
  *  Get a boolean from an object.
  */
-template <typename T>
-static void get_boolean(
-              T const& t,
+static void bind_boolean(
               QString const& field,
-              data_member<T> const& member,
+              bool val,
               database_query& q) {
-  q.bind_value(field, QVariant(t.*(member.b)));
+  q.bind_value(field, QVariant(val));
   return ;
 }
 
 /**
  *  Get a double from an object.
  */
-template <typename T>
-static void get_double(
-              T const& t,
+static void bind_double(
               QString const& field,
-              data_member<T> const& member,
+              double val,
               database_query& q) {
-  q.bind_value(field, QVariant(t.*(member.d)));
+  q.bind_value(field, QVariant(val));
   return ;
 }
 
 /**
  *  Get an integer from an object.
  */
-template <typename T>
-static void get_integer(
-              T const& t,
+static void bind_integer(
               QString const& field,
-              data_member<T> const& member,
+              int val,
               database_query& q) {
-  q.bind_value(field, QVariant(t.*(member.i)));
+  q.bind_value(field, QVariant(val));
   return ;
 }
 
 /**
  *  Get an integer that is null on zero.
  */
-template <typename T>
-static void get_integer_null_on_zero(
-              T const& t,
+static void bind_integer_null_on_zero(
               QString const& field,
-              data_member<T> const& member,
+              int val,
               database_query& q) {
-  int val(t.*(member.i));
   // Not-NULL.
   if (val)
     q.bind_value(field, QVariant(val));
@@ -93,13 +83,10 @@ static void get_integer_null_on_zero(
 /**
  *  Get an integer that is null on -1.
  */
-template <typename T>
-static void get_integer_null_on_minus_one(
-              T const& t,
+static void bind_integer_null_on_minus_one(
               QString const& field,
-              data_member<T> const& member,
+              int val,
               database_query& q) {
-  int val(t.*(member.i));
   // Not-NULL.
   if (val != -1)
     q.bind_value(field, QVariant(val));
@@ -111,42 +98,35 @@ static void get_integer_null_on_minus_one(
 /**
  *  Get a short from an object.
  */
-template <typename T>
-static void get_short(
-              T const& t,
+static void bind_short(
               QString const& field,
-              data_member<T> const& member,
+              short val,
               database_query& q) {
-  q.bind_value(field, QVariant(t.*(member.s)));
+  q.bind_value(field, QVariant(val));
   return ;
 }
 
 /**
  *  Get a string from an object.
  */
-template <typename T>
-static void get_string(
-              T const& t,
+static void bind_string(
               QString const& field,
-              data_member<T> const& member,
+              QString const& val,
               database_query& q) {
-  // XXX : toStdString ?
-  q.bind_value(field, QVariant((t.*(member.S)).toStdString().c_str()));
+  q.bind_value(field, QVariant(val.toStdString().c_str()));
   return ;
 }
 
 /**
  *  Get a string that might be null from an object.
  */
-template <typename T>
-static void get_string_null_on_empty(
-              T const& t,
+static void bind_string_null_on_empty(
               QString const& field,
-              data_member<T> const& member,
+              QString const& val,
               database_query& q) {
   // Not-NULL.
-  if (!(t.*(member.S)).isEmpty())
-    q.bind_value(field, QVariant((t.*(member.S)).toStdString().c_str()));
+  if (!val.isEmpty())
+    q.bind_value(field, QVariant(val.toStdString().c_str()));
   // NULL.
   else
     q.bind_value(field, QVariant(QVariant::String));
@@ -156,31 +136,27 @@ static void get_string_null_on_empty(
 /**
  *  Get a time_t from an object.
  */
-template <typename T>
-static void get_timet(
-              T const& t,
+static void bind_timet(
               QString const& field,
-              data_member<T> const& member,
+              time_t val,
               database_query& q) {
   q.bind_value(
       field,
-      QVariant(static_cast<qlonglong>((t.*(member.t)).get_time_t())));
+      QVariant(static_cast<qlonglong>(val)));
   return ;
 }
 
 /**
  *  Get a time_t that is null on 0.
  */
-template <typename T>
-static void get_timet_null_on_zero(
-              T const& t,
+static void bind_timet_null_on_zero(
               QString const& field,
-              data_member<T> const& member,
+              time_t val,
               database_query& q) {
-  qlonglong val((t.*(member.t)).get_time_t());
+  qlonglong vall(val);
   // Not-NULL.
-  if (val)
-    q.bind_value(field, QVariant(val));
+  if (vall)
+    q.bind_value(field, QVariant(vall));
   // NULL.
   else
     q.bind_value(field, QVariant(QVariant::LongLong));
@@ -190,16 +166,14 @@ static void get_timet_null_on_zero(
 /**
  *  Get a time_t that is null on -1.
  */
-template <typename T>
-static void get_timet_null_on_minus_one(
-              T const& t,
+static void bind_timet_null_on_minus_one(
               QString const& field,
-              data_member<T> const& member,
+              time_t val,
               database_query& q) {
-  qlonglong val((t.*(member.t)).get_time_t());
+  qlonglong vall(val);
   // Not-NULL.
-  if (val != -1)
-    q.bind_value(field, QVariant(val));
+  if (vall != -1)
+    q.bind_value(field, QVariant(vall));
   // NULL.
   else
     q.bind_value(field, QVariant(QVariant::LongLong));
@@ -209,26 +183,21 @@ static void get_timet_null_on_minus_one(
 /**
  *  Get an unsigned int from an object.
  */
-template <typename T>
-static void get_uint(
-              T const& t,
+static void bind_uint(
               QString const& field,
-              data_member<T> const& member,
+              unsigned int val,
               database_query& q) {
-  q.bind_value(field, QVariant(t.*member.u));
+  q.bind_value(field, QVariant(val));
   return ;
 }
 
 /**
  *  Get an unsigned int that is null on zero.
  */
-template <typename T>
-static void get_uint_null_on_zero(
-              T const& t,
+static void bind_uint_null_on_zero(
               QString const& field,
-              data_member<T> const& member,
+              unsigned int val,
               database_query& q) {
-  unsigned int val(t.*(member.u));
   // Not-NULL.
   if (val)
     q.bind_value(field, QVariant(val));
@@ -241,13 +210,10 @@ static void get_uint_null_on_zero(
 /**
  *  Get an unsigned int that is null on -1.
  */
-template <typename T>
-static void get_uint_null_on_minus_one(
-              T const& t,
+static void bind_uint_null_on_minus_one(
               QString const& field,
-              data_member<T> const& member,
+              unsigned int val,
               database_query& q) {
-  unsigned int val(t.*(member.u));
   // Not-NULL.
   if (val != (unsigned int)-1)
     q.bind_value(field, QVariant(val));
@@ -258,226 +224,59 @@ static void get_uint_null_on_minus_one(
 }
 
 /**
- *  Static initialization template used by initialize().
- */
-template <typename T>
-static void static_init() {
-  for (unsigned int i = 0; mapped_type<T>::members[i].type; ++i)
-    if (mapped_type<T>::members[i].name) {
-      db_mapped_type<T>::list.push_back(db_mapped_entry<T>());
-      db_mapped_entry<T>& entry(db_mapped_type<T>::list.back());
-      entry.name = mapped_type<T>::members[i].name;
-      entry.name.squeeze();
-      entry.field = ":";
-      entry.field.append(entry.name);
-      entry.field.squeeze();
-      entry.gs.member = &mapped_type<T>::members[i].member;
-      // XXX : setters are not set.
-      switch (mapped_type<T>::members[i].type) {
-      case mapped_data<T>::BOOL:
-        entry.gs.getter = &get_boolean<T>;
-        break ;
-      case mapped_data<T>::DOUBLE:
-        entry.gs.getter = &get_double<T>;
-        break ;
-      case mapped_data<T>::INT:
-        if (mapped_type<T>::members[i].null_on_value == NULL_ON_ZERO)
-          entry.gs.getter = &get_integer_null_on_zero<T>;
-        else if (mapped_type<T>::members[i].null_on_value
-                 == NULL_ON_MINUS_ONE)
-          entry.gs.getter = &get_integer_null_on_minus_one<T>;
-        else
-          entry.gs.getter = &get_integer<T>;
-        break ;
-      case mapped_data<T>::SHORT:
-        entry.gs.getter = &get_short<T>;
-        break ;
-      case mapped_data<T>::STRING:
-        if (mapped_type<T>::members[i].null_on_value == NULL_ON_ZERO)
-          entry.gs.getter = &get_string_null_on_empty<T>;
-        else
-          entry.gs.getter = &get_string<T>;
-        break ;
-      case mapped_data<T>::TIMESTAMP:
-        if (mapped_type<T>::members[i].null_on_value == NULL_ON_ZERO)
-          entry.gs.getter = &get_timet_null_on_zero<T>;
-        else if (mapped_type<T>::members[i].null_on_value
-                 == NULL_ON_MINUS_ONE)
-          entry.gs.getter = &get_timet_null_on_minus_one<T>;
-        else
-          entry.gs.getter = &get_timet<T>;
-        break ;
-      case mapped_data<T>::UINT:
-        if (mapped_type<T>::members[i].null_on_value == NULL_ON_ZERO)
-          entry.gs.getter = &get_uint_null_on_zero<T>;
-        else if (mapped_type<T>::members[i].null_on_value
-                 == NULL_ON_MINUS_ONE)
-          entry.gs.getter = &get_uint_null_on_minus_one;
-        else
-          entry.gs.getter = &get_uint<T>;
-        break ;
-      default: // Error in one of the mappings.
-        assert(false);
-        abort();
-      }
-    }
-  return ;
-}
-
-/**
  *  Extract data from object to DB row.
  */
 template <typename T>
 static void to_base(database_query& q, T const& t) {
-  for (typename std::vector<db_mapped_entry<T> >::const_iterator
-         it = db_mapped_type<T>::list.begin(),
-         end = db_mapped_type<T>::list.end();
-       it != end;
-       ++it)
-    (it->gs.getter)(t, it->field, *it->gs.member, q);
-  return ;
-}
-
-/**************************************
-*                                     *
-*           Global Objects            *
-*                                     *
-**************************************/
-
-namespace       com {
-  namespace     centreon {
-    namespace   broker {
-      namespace sql {
-        template <> std::vector<db_mapped_entry<neb::acknowledgement> >
-          db_mapped_type<neb::acknowledgement>::list =
-            std::vector<db_mapped_entry<neb::acknowledgement> >();
-        template <> std::vector<db_mapped_entry<neb::comment> >
-          db_mapped_type<neb::comment>::list =
-            std::vector<db_mapped_entry<neb::comment> >();
-        template <> std::vector<db_mapped_entry<neb::custom_variable> >
-          db_mapped_type<neb::custom_variable>::list =
-            std::vector<db_mapped_entry<neb::custom_variable> >();
-        template <> std::vector<db_mapped_entry<neb::custom_variable_status> >
-          db_mapped_type<neb::custom_variable_status>::list =
-            std::vector<db_mapped_entry<neb::custom_variable_status> >();
-        template <> std::vector<db_mapped_entry<neb::downtime> >
-          db_mapped_type<neb::downtime>::list =
-            std::vector<db_mapped_entry<neb::downtime> >();
-        template <> std::vector<db_mapped_entry<neb::event_handler> >
-          db_mapped_type<neb::event_handler>::list =
-            std::vector<db_mapped_entry<neb::event_handler> >();
-        template <> std::vector<db_mapped_entry<neb::flapping_status> >
-          db_mapped_type<neb::flapping_status>::list =
-            std::vector<db_mapped_entry<neb::flapping_status> >();
-        template <> std::vector<db_mapped_entry<neb::host> >
-          db_mapped_type<neb::host>::list =
-            std::vector<db_mapped_entry<neb::host> >();
-        template <> std::vector<db_mapped_entry<neb::host_check> >
-          db_mapped_type<neb::host_check>::list =
-            std::vector<db_mapped_entry<neb::host_check> >();
-        template <> std::vector<db_mapped_entry<neb::host_dependency> >
-          db_mapped_type<neb::host_dependency>::list =
-            std::vector<db_mapped_entry<neb::host_dependency> >();
-        template <> std::vector<db_mapped_entry<neb::host_group> >
-          db_mapped_type<neb::host_group>::list =
-            std::vector<db_mapped_entry<neb::host_group> >();
-        template <> std::vector<db_mapped_entry<neb::host_group_member> >
-          db_mapped_type<neb::host_group_member>::list =
-            std::vector<db_mapped_entry<neb::host_group_member> >();
-        template <> std::vector<db_mapped_entry<neb::host_parent> >
-          db_mapped_type<neb::host_parent>::list =
-            std::vector<db_mapped_entry<neb::host_parent> >();
-        template <> std::vector<db_mapped_entry<neb::host_status> >
-          db_mapped_type<neb::host_status>::list =
-            std::vector<db_mapped_entry<neb::host_status> >();
-        template <> std::vector<db_mapped_entry<neb::instance> >
-          db_mapped_type<neb::instance>::list =
-            std::vector<db_mapped_entry<neb::instance> >();
-        template <> std::vector<db_mapped_entry<neb::instance_status> >
-          db_mapped_type<neb::instance_status>::list =
-            std::vector<db_mapped_entry<neb::instance_status> >();
-        template <> std::vector<db_mapped_entry<neb::log_entry> >
-          db_mapped_type<neb::log_entry>::list =
-            std::vector<db_mapped_entry<neb::log_entry> >();
-        template <> std::vector<db_mapped_entry<neb::module> >
-          db_mapped_type<neb::module>::list =
-            std::vector<db_mapped_entry<neb::module> >();
-        template <> std::vector<db_mapped_entry<neb::notification> >
-          db_mapped_type<neb::notification>::list =
-            std::vector<db_mapped_entry<neb::notification> >();
-        template <> std::vector<db_mapped_entry<neb::service> >
-          db_mapped_type<neb::service>::list =
-            std::vector<db_mapped_entry<neb::service> >();
-        template <> std::vector<db_mapped_entry<neb::service_check> >
-          db_mapped_type<neb::service_check>::list =
-            std::vector<db_mapped_entry<neb::service_check> >();
-        template <> std::vector<db_mapped_entry<neb::service_dependency> >
-          db_mapped_type<neb::service_dependency>::list =
-            std::vector<db_mapped_entry<neb::service_dependency> >();
-        template <> std::vector<db_mapped_entry<neb::service_group> >
-          db_mapped_type<neb::service_group>::list =
-            std::vector<db_mapped_entry<neb::service_group> >();
-        template <> std::vector<db_mapped_entry<neb::service_group_member> >
-          db_mapped_type<neb::service_group_member>::list =
-            std::vector<db_mapped_entry<neb::service_group_member> >();
-        template <> std::vector<db_mapped_entry<neb::service_status> >
-          db_mapped_type<neb::service_status>::list =
-            std::vector<db_mapped_entry<neb::service_status> >();
-        template <> std::vector<db_mapped_entry<correlation::host_state> >
-          db_mapped_type<correlation::host_state>::list =
-            std::vector<db_mapped_entry<correlation::host_state> >();
-        template <> std::vector<db_mapped_entry<correlation::issue> >
-          db_mapped_type<correlation::issue>::list =
-            std::vector<db_mapped_entry<correlation::issue> >();
-        template <> std::vector<db_mapped_entry<correlation::service_state> >
-          db_mapped_type<correlation::service_state>::list =
-            std::vector<db_mapped_entry<correlation::service_state> >();
-     }
+  mapping::entry const* entries = T::entries;
+  for (size_t i = 0; !entries[i].is_null(); ++i) {
+    QString field(":");
+    field.append(entries[i].get_name().c_str());
+    switch (entries[i].get_type()) {
+    case mapping::source::BOOL:
+      bind_boolean(field, entries[i].get_bool(t), q);
+      break ;
+    case mapping::source::DOUBLE:
+      bind_double(field, entries[i].get_double(t), q);
+      break ;
+    case mapping::source::INT:
+      if (entries[i].get_attribute() == mapping::entry::NULL_ON_ZERO)
+        bind_integer_null_on_zero(field, entries[i].get_int(t), q);
+      else if (entries[i].get_attribute() == mapping::entry::NULL_ON_MINUS_ONE)
+        bind_integer_null_on_minus_one(field, entries[i].get_int(t), q);
+      else
+        bind_integer(field, entries[i].get_int(t), q);
+      break ;
+    case mapping::source::SHORT:
+      bind_short(field, entries[i].get_short(t), q);
+      break ;
+    case mapping::source::STRING:
+      if (entries[i].get_attribute() == mapping::entry::NULL_ON_ZERO)
+        bind_string_null_on_empty(field, entries[i].get_string(t), q);
+      else
+        bind_string(field, entries[i].get_string(t), q);
+      break ;
+    case mapping::source::TIME:
+      if (entries[i].get_attribute() == mapping::entry::NULL_ON_ZERO)
+        bind_timet_null_on_zero(field, entries[i].get_time(t), q);
+      else if (entries[i].get_attribute() == mapping::entry::NULL_ON_MINUS_ONE)
+        bind_timet_null_on_minus_one(field, entries[i].get_time(t), q);
+      else
+        bind_timet(field, entries[i].get_time(t), q);
+      break ;
+    case mapping::source::UINT:
+      if (entries[i].get_attribute() == mapping::entry::NULL_ON_ZERO)
+        bind_uint_null_on_zero(field, entries[i].get_uint(t), q);
+      else if (entries[i].get_attribute() == mapping::entry::NULL_ON_MINUS_ONE)
+        bind_uint_null_on_minus_one(field, entries[i].get_uint(t), q);
+      else
+        bind_uint(field, entries[i].get_uint(t), q);
+      break ;
+    default: // Error in one of the mappings.
+      assert(false);
+      abort();
     }
   }
-}
-
-/**************************************
-*                                     *
-*          Global Functions           *
-*                                     *
-**************************************/
-
-/**
- *  @brief Initialization routine.
- *
- *  Initialize DB mappings.
- */
-void sql::initialize() {
-  static_init<neb::acknowledgement>();
-  static_init<neb::comment>();
-  static_init<neb::custom_variable>();
-  static_init<neb::custom_variable_status>();
-  static_init<neb::downtime>();
-  static_init<neb::event_handler>();
-  static_init<neb::flapping_status>();
-  static_init<neb::host>();
-  static_init<neb::host_check>();
-  static_init<neb::host_dependency>();
-  static_init<neb::host_group>();
-  static_init<neb::host_group_member>();
-  static_init<neb::host_parent>();
-  static_init<neb::host_status>();
-  static_init<neb::instance>();
-  static_init<neb::instance_status>();
-  static_init<neb::log_entry>();
-  static_init<neb::module>();
-  static_init<neb::notification>();
-  static_init<neb::service>();
-  static_init<neb::service_check>();
-  static_init<neb::service_dependency>();
-  static_init<neb::service_group>();
-  static_init<neb::service_group_member>();
-  static_init<neb::service_status>();
-  static_init<correlation::host_state>();
-  static_init<correlation::issue>();
-  static_init<correlation::service_state>();
-  return ;
 }
 
 /**

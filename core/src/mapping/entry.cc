@@ -282,3 +282,13 @@ void entry::set_ushort(io::data& d, unsigned short value) const {
 bool entry::is_null() const {
   return (_type == source::UNKNOWN);
 }
+
+/**
+ *  Get the name of this entry.
+ *
+ *  @return  The name of this entry.
+ */
+
+std::string const& entry::get_name() const {
+  return (_name.toStdString());
+}

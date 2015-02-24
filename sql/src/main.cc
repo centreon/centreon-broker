@@ -70,8 +70,6 @@ extern "C" {
         sql::factory(),
         1,
         7);
-      // Initialize mappings.
-      sql::initialize();
       sql::stream::initialize();
     }
 

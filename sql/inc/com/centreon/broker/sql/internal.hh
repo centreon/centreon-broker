@@ -29,37 +29,6 @@
 #  include "com/centreon/broker/neb/events.hh"
 #  include "mapping.hh"
 
-CCB_BEGIN()
-
-namespace                 sql {
-  template                <typename T>
-  struct                  getter_setter {
-    data_member<T> const* member;
-    void (*               getter)(
-                            T const&,
-                            QString const&,
-                            data_member<T> const&,
-                            database_query&);
-  };
-
-  // DB mappings.
-  template               <typename T>
-  struct                 db_mapped_entry {
-    QString              field;
-    getter_setter<T>     gs;
-    QString              name;
-  };
-  template               <typename T>
-  struct                 db_mapped_type {
-    static std::vector<db_mapped_entry<T> > list;
-  };
-
-  // Mapping initialization routine.
-  void                   initialize();
-}
-
-CCB_END()
-
 // ORM operators.
 com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::acknowledgement const& a);
 com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::comment const& c);

@@ -104,7 +104,7 @@ void stream::_cache_clean() {
 void stream::_cache_create() {
   std::ostringstream ss;
   ss << "SELECT instance_id"
-     << " FROM " << mapped_type<neb::instance>::table
+     << " FROM rt_instances"
      << " WHERE deleted=1";
   try {
     database_query q(_db);
@@ -135,14 +135,11 @@ void stream::_clean_tables(int instance_id) {
   // Disable hosts and services.
   {
     std::ostringstream ss;
-    ss << "UPDATE " << mapped_type<neb::host>::table
-       << " LEFT JOIN " << mapped_type<neb::service>::table << " ON "
-       << mapped_type<neb::host>::table << ".host_id="
-       << mapped_type<neb::service>::table << ".host_id SET "
-       << mapped_type<neb::host>::table << ".enabled=0, "
-       << mapped_type<neb::service>::table << ".enabled=0"
-          " WHERE " << mapped_type<neb::host>::table
-       << ".instance_id=" << instance_id;
+    ss << "UPDATE rt_hosts"
+          " LEFT JOIN rt_services "
+          "  ON rt_hosts.host_id = rt_services.host_id"
+          " SET rt_hosts.enabled=0, rt_services.enabled=0"
+          " WHERE rt_hosts.instance_id=" << instance_id;
     q.run_query(
         ss.str(),
         "SQL: could not clean hosts and services tables");
@@ -151,9 +148,9 @@ void stream::_clean_tables(int instance_id) {
   // Disable host groups.
   {
     std::ostringstream ss;
-    ss << "UPDATE " << mapped_type<neb::host_group>::table
-       << " SET enabled=0"
-       << " WHERE instance_id=" << instance_id;
+    ss << "UPDATE rt_hostgroups"
+          " SET enabled = 0"
+          " WHERE instance_id=" << instance_id;
     q.run_query(
         ss.str(),
         "SQL: could not clean host groups table");
@@ -162,7 +159,7 @@ void stream::_clean_tables(int instance_id) {
   // Disable service groups.
   {
     std::ostringstream ss;
-    ss << "UPDATE " << mapped_type<neb::service_group>::table
+    ss << "UPDATE rt_servicegroups"
        << " SET enabled=0"
        << " WHERE instance_id=" << instance_id;
     q.run_query(
@@ -173,26 +170,22 @@ void stream::_clean_tables(int instance_id) {
   // Remove host group memberships.
   {
     std::ostringstream ss;
-    ss << "DELETE " << mapped_type<neb::host_group_member>::table
-       << " FROM " << mapped_type<neb::host_group_member>::table
-       << " LEFT JOIN " << mapped_type<neb::host>::table
-       << " ON " << mapped_type<neb::host_group_member>::table << ".host_id="
-       << mapped_type<neb::host>::table << ".host_id"
-       << " WHERE " << mapped_type<neb::host>::table
-       << ".instance_id=" << instance_id;
+    ss << "DELETE rt_hosts_hostgroups"
+          " FROM rt_hosts_hostgroups"
+          " LEFT JOIN rt_hosts"
+          "  ON rt_hosts_hostgroups.host_id = rt_hosts.host_id"
+          " WHERE rt_hosts.instance_id=" << instance_id;
     q.run_query(
         ss.str(),
         "SQL: could not clean host groups memberships tables");
   }
   {
     std::ostringstream ss;
-    ss << "DELETE " << mapped_type<neb::host_group_member>::table
-       << " FROM " << mapped_type<neb::host_group_member>::table
-       << " LEFT JOIN " << mapped_type<neb::host_group>::table
-       << " ON " << mapped_type<neb::host_group_member>::table << ".hostgroup_id="
-       << mapped_type<neb::host_group>::table << ".hostgroup_id"
-       << " WHERE " << mapped_type<neb::host_group>::table
-       << ".instance_id=" << instance_id;
+    ss << "DELETE rt_hosts_hostgroups"
+          " FROM rt_hosts_hostgroups"
+          " LEFT JOIN rt_hostgroups"
+          " ON rt_hosts_hostgroups.hostgroup_id = rt_hostgroups.hostgroup_id"
+          " WHERE rt_hostgroups.instance_id=" << instance_id;
     q.run_query(
         ss.str(),
         "SQL: could not clean host groups memberships tables");
@@ -201,26 +194,22 @@ void stream::_clean_tables(int instance_id) {
   // Remove service group memberships
   {
     std::ostringstream ss;
-    ss << "DELETE " << mapped_type<neb::service_group_member>::table
-       << " FROM " << mapped_type<neb::service_group_member>::table
-       << " LEFT JOIN " << mapped_type<neb::host>::table
-       << " ON " << mapped_type<neb::service_group_member>::table << ".host_id="
-       << mapped_type<neb::host>::table << ".host_id"
-       << " WHERE " << mapped_type<neb::host>::table
-       << ".instance_id=" << instance_id;
+    ss << "DELETE rt_services_servicegroups"
+          " FROM rt_services_servicegroups"
+          " LEFT JOIN rt_hosts"
+          " ON rt_services_servicegroups.host_id = rt_hosts.host_id"
+          " WHERE rt_hosts.instance_id=" << instance_id;
     q.run_query(
         ss.str(),
         "SQL: could not clean service groups memberships tables");
   }
   {
     std::ostringstream ss;
-    ss << "DELETE " << mapped_type<neb::service_group_member>::table
-       << " FROM " << mapped_type<neb::service_group_member>::table
-       << " LEFT JOIN " << mapped_type<neb::service_group>::table
-       << " ON " << mapped_type<neb::service_group_member>::table << ".servicegroup_id="
-       << mapped_type<neb::service_group>::table << ".servicegroup_id"
-       << " WHERE " << mapped_type<neb::service_group>::table
-       << ".instance_id=" << instance_id;
+    ss << "DELETE rt_services_servicegroups"
+          " FROM rt_services_servicegroups"
+          " LEFT JOIN rt_servicegroups"
+          " ON rt_services_servicegroups.servicegroup_id=rt_servicegroups.servicegroup_id"
+          " WHERE rt_servicegroups.instance_id=" << instance_id;
     q.run_query(
         ss.str(),
         "SQL: could not clean service groups memberships tables");
@@ -229,15 +218,15 @@ void stream::_clean_tables(int instance_id) {
   // Remove host dependencies.
   {
     std::ostringstream ss;
-    ss << "DELETE FROM " << mapped_type<neb::host_dependency>::table
-       << " WHERE host_id IN ("
+    ss << "DELETE FROM rt_hosts_hosts_dependencies"
+          " WHERE host_id IN ("
           "  SELECT host_id"
-          "   FROM " << mapped_type<neb::host>::table
-       << "   WHERE instance_id=" << instance_id << ")"
+          "   FROM rt_hosts"
+          "   WHERE instance_id=" << instance_id << ")"
           " OR dependent_host_id IN ("
           "  SELECT host_id"
-          "   FROM " << mapped_type<neb::host>::table
-       << "   WHERE instance_id=" << instance_id << ")";
+          "   FROM rt_hosts"
+          "   WHERE instance_id=" << instance_id << ")";
     q.run_query(
         ss.str(),
         "SQL: could not clean host dependencies table");
@@ -246,15 +235,15 @@ void stream::_clean_tables(int instance_id) {
   // Remove host parents.
   {
     std::ostringstream ss;
-    ss << "DELETE FROM " << mapped_type<neb::host_parent>::table
-       << " WHERE child_id IN ("
+    ss << "DELETE FROM rt_hosts_hosts_parents"
+          " WHERE child_id IN ("
           "  SELECT host_id"
-          "   FROM " << mapped_type<neb::host>::table
-       << "   WHERE instance_id=" << instance_id << ")"
+          "   FROM rt_hosts"
+          "   WHERE instance_id=" << instance_id << ")"
           " OR parent_id IN ("
           "  SELECT host_id"
-          "   FROM " << mapped_type<neb::host>::table
-       << "   WHERE instance_id=" << instance_id << ")";
+          "   FROM rt_hosts"
+          "   WHERE instance_id=" << instance_id << ")";
     q.run_query(
         ss.str(),
         "SQL: could not clean host parents table");
@@ -263,17 +252,17 @@ void stream::_clean_tables(int instance_id) {
   // Remove service dependencies.
   {
     std::ostringstream ss;
-    ss << "DELETE FROM " << mapped_type<neb::service_dependency>::table
-       << " WHERE service_id IN ("
+    ss << "DELETE FROM rt_services_services_dependencies"
+          " WHERE service_id IN ("
           "  SELECT services.service_id"
-          "   FROM " << mapped_type<neb::service>::table << " AS services"
-          "   JOIN " << mapped_type<neb::host>::table << " AS hosts"
+          "   FROM rt_services AS services"
+          "   JOIN rt_hosts AS hosts"
           "   ON hosts.host_id=services.host_id WHERE hosts.instance_id="
        << instance_id << ")"
           " OR dependent_service_id IN ("
           "  SELECT services.service_id "
-          "   FROM " << mapped_type<neb::service>::table << " AS services"
-          "   JOIN " << mapped_type<neb::host>::table << " AS hosts"
+          "   FROM rt_services AS services"
+          "   JOIN rt_hosts AS hosts"
           "   ON hosts.host_id=services.host_id WHERE hosts.instance_id="
        << instance_id << ")";
     q.run_query(
@@ -284,21 +273,19 @@ void stream::_clean_tables(int instance_id) {
   // Remove list of modules.
   {
     std::ostringstream ss;
-    ss << "DELETE FROM " << mapped_type<neb::module>::table
-       << " WHERE instance_id=" << instance_id;
+    ss << "DELETE FROM rt_modules"
+          " WHERE instance_id=" << instance_id;
     q.run_query(ss.str(), "SQL: could not clean modules table");
   }
 
   // Remove custom variables.
   {
     std::ostringstream ss;
-    ss << "DELETE FROM " << mapped_type<neb::custom_variable>::table
-       << " USING " << mapped_type<neb::custom_variable>::table
-       << " JOIN "  << mapped_type<neb::host>::table << " ON "
-       << mapped_type<neb::custom_variable>::table << ".host_id="
-       << mapped_type<neb::host>::table << ".host_id" << " WHERE "
-       << mapped_type<neb::host>::table << ".instance_id="
-       << instance_id;
+    ss << "DELETE FROM rt_customvariables"
+          " USING rt_customvariables"
+          " JOIN rt_hosts"
+          "  ON rt_customvariables.host_id = rt_hosts.host_id"
+          " WHERE rt_hosts.instance_id=" << instance_id;
     q.run_query(
         ss.str(),
         "SQL: could not clean custom variables table");
@@ -307,8 +294,8 @@ void stream::_clean_tables(int instance_id) {
   // Remove comments.
   {
     std::ostringstream ss;
-    ss << "UPDATE " << mapped_type<neb::comment>::table << " AS c"
-          " JOIN " << mapped_type<neb::host>::table << " AS h"
+    ss << "UPDATE rt_comments AS c"
+          " JOIN rt_hosts AS h"
           " ON c.host_id=h.host_id"
           " SET c.deletion_time=" << time(NULL)
        << " WHERE h.instance_id=" << instance_id
@@ -325,25 +312,63 @@ void stream::_clean_tables(int instance_id) {
  */
 void stream::_prepare() {
   // Prepare insert queries.
-  _prepare_insert<neb::acknowledgement>(_acknowledgement_insert);
-  _prepare_insert<neb::comment>(_comment_insert);
-  _prepare_insert<neb::custom_variable>(_custom_variable_insert);
-  _prepare_insert<neb::downtime>(_downtime_insert);
-  _prepare_insert<neb::event_handler>(_event_handler_insert);
-  _prepare_insert<neb::flapping_status>(_flapping_status_insert);
-  _prepare_insert<neb::host>(_host_insert);
-  _prepare_insert<neb::host_dependency>(_host_dependency_insert);
-  _prepare_insert<neb::host_group>(_host_group_insert);
-  _prepare_insert<neb::host_parent>(_host_parent_insert);
-  _prepare_insert<neb::instance>(_instance_insert);
-  _prepare_insert<neb::module>(_module_insert);
-  _prepare_insert<neb::notification>(_notification_insert);
-  _prepare_insert<neb::service>(_service_insert);
-  _prepare_insert<neb::service_dependency>(_service_dependency_insert);
-  _prepare_insert<neb::service_group>(_service_group_insert);
-  _prepare_insert<correlation::host_state>(_host_state_insert);
-  _prepare_insert<correlation::issue>(_issue_insert);
-  _prepare_insert<correlation::service_state>(_service_state_insert);
+  _prepare_insert<neb::acknowledgement>(
+                         _acknowledgement_insert,
+                        "rt_acknowledgements");
+  _prepare_insert<neb::comment>(
+                         _comment_insert,
+                         "rt_comments");
+  _prepare_insert<neb::custom_variable>(
+                         _custom_variable_insert,
+                         "rt_customvariables");
+  _prepare_insert<neb::downtime>(
+                         _downtime_insert,
+                         "rt_downtimes");
+  _prepare_insert<neb::event_handler>(
+                         _event_handler_insert,
+                         "rt_eventhandlers");
+  _prepare_insert<neb::flapping_status>(
+                         _flapping_status_insert,
+                         "rt_flappingstatuses");
+  _prepare_insert<neb::host>(
+                         _host_insert,
+                         "rt_hosts");
+  _prepare_insert<neb::host_dependency>(
+                         _host_dependency_insert,
+                         "rt_hosts_hosts_dependencies");
+  _prepare_insert<neb::host_group>(
+                         _host_group_insert,
+                         "rt_hostgroups");
+  _prepare_insert<neb::host_parent>(
+                         _host_parent_insert,
+                         "rt_hosts_hosts_parents");
+  _prepare_insert<neb::instance>(
+                         _instance_insert,
+                         "rt_instances");
+  _prepare_insert<neb::module>(
+                         _module_insert,
+                         "rt_modules");
+  _prepare_insert<neb::notification>(
+                         _notification_insert,
+                         "rt_notifications");
+  _prepare_insert<neb::service>(
+                         _service_insert,
+                         "rt_services");
+  _prepare_insert<neb::service_dependency>(
+                         _service_dependency_insert,
+                         "rt_services_services_dependencies");
+  _prepare_insert<neb::service_group>(
+                         _service_group_insert,
+                         "rt_servicegroups");
+  _prepare_insert<correlation::host_state>(
+                                 _host_state_insert,
+                                 "rt_hoststateevents");
+  _prepare_insert<correlation::issue>(
+                                  _issue_insert,
+                                  "rt_issues");
+  _prepare_insert<correlation::service_state>(
+                                 _service_state_insert,
+                                 "rt_servicestateevents");
   {
     std::string query(
       "INSERT INTO rt_issues_issues_parents (child_id, end_time, start_time, parent_id)"
@@ -366,20 +391,29 @@ void stream::_prepare() {
   id["entry_time"] = false;
   id["host_id"] = false;
   id["service_id"] = true;
-  _prepare_update<neb::acknowledgement>(_acknowledgement_update, id);
+  _prepare_update<neb::acknowledgement>(
+                         _acknowledgement_update,
+                         "rt_acknowledgements",
+                         id);
 
   id.clear();
   id["host_id"] = false;
   id["service_id"] = true;
   id["entry_time"] = false;
-  _prepare_update<neb::comment>(_comment_update, id);
+  _prepare_update<neb::comment>(_comment_update, "rt_comments", id);
 
   id.clear();
   id["host_id"] = false;
   id["name"] = false;
   id["service_id"] = true;
-  _prepare_update<neb::custom_variable>(_custom_variable_update, id);
-  _prepare_delete<neb::custom_variable>(_custom_variable_delete, id);
+  _prepare_update<neb::custom_variable>(
+                         _custom_variable_update,
+                         "rt_customvariables",
+                         id);
+  _prepare_delete<neb::custom_variable>(
+                         _custom_variable_delete,
+                         "rt_customvariables",
+                         id);
 
   id.clear();
   id["host_id"] = false;
@@ -387,12 +421,13 @@ void stream::_prepare() {
   id["service_id"] = true;
   _prepare_update<neb::custom_variable_status>(
     _custom_variable_status_update,
+    "rt_customvariables",
     id);
 
   {
     std::ostringstream oss;
-    oss << "UPDATE " << mapped_type<neb::downtime>::table
-        << " SET actual_end_time=GREATEST(COALESCE(actual_end_time, -1), :actual_end_time),"
+    oss << "UPDATE rt_downtimes"
+           " SET actual_end_time=GREATEST(COALESCE(actual_end_time, -1), :actual_end_time),"
            "     actual_start_time=COALESCE(actual_start_time, :actual_start_time),"
            "     author=:author, cancelled=:cancelled, comment_data=:comment_data,"
            "     deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
@@ -410,93 +445,126 @@ void stream::_prepare() {
   id["host_id"] = false;
   id["service_id"] = true;
   id["start_time"] = false;
-  _prepare_update<neb::event_handler>(_event_handler_update, id);
+  _prepare_update<neb::event_handler>(
+                         _event_handler_update,
+                         "rt_eventhandlers",
+                         id);
 
   id.clear();
   id["host_id"] = false;
   id["service_id"] = true;
   id["event_time"] = false;
-  _prepare_update<neb::flapping_status>(_flapping_status_update, id);
+  _prepare_update<neb::flapping_status>(
+                         _flapping_status_update,
+                         "rt_flappingstatuses",
+                         id);
 
   id.clear();
   id["host_id"] = false;
-  _prepare_update<neb::host>(_host_update, id);
+  _prepare_update<neb::host>(_host_update, "rt_hosts", id);
 
   id.clear();
   id["host_id"] = false;
-  _prepare_update<neb::host_check>(_host_check_update, id);
+  _prepare_update<neb::host_check>(_host_check_update, "rt_hosts", id);
 
   id.clear();
   id["host_id"] = false;
   id["dependent_host_id"] = false;
-  _prepare_update<neb::host_dependency>(_host_dependency_update, id);
+  _prepare_update<neb::host_dependency>(
+                         _host_dependency_update,
+                         "rt_hosts_hosts_dependencies",
+                         id);
 
   id.clear();
   id["instance_id"] = false;
   id["name"] = false;
-  _prepare_update<neb::host_group>(_host_group_update, id);
+  _prepare_update<neb::host_group>(_host_group_update, "rt_hostgroups", id);
 
   id.clear();
   id["host_id"] = false;
-  _prepare_update<neb::host_status>(_host_status_update, id);
+  _prepare_update<neb::host_status>(_host_status_update, "rt_hosts", id);
 
   id.clear();
   id["instance_id"] = false;
-  _prepare_update<neb::instance>(_instance_update, id);
+  _prepare_update<neb::instance>(_instance_update, "rt_instances", id);
 
   id.clear();
   id["instance_id"] = false;
-  _prepare_update<neb::instance_status>(_instance_status_update, id);
+  _prepare_update<neb::instance_status>(
+                         _instance_status_update,
+                         "rt_instances",
+                         id);
 
   id.clear();
   id["host_id"] = false;
   id["service_id"] = true;
   id["start_time"] = false;
-  _prepare_update<neb::notification>(_notification_update, id);
+  _prepare_update<neb::notification>(
+                         _notification_update,
+                         "rt_notifications",
+                         id);
 
   id.clear();
   id["host_id"] = false;
   id["service_id"] = false;
-  _prepare_update<neb::service>(_service_update, id);
+  _prepare_update<neb::service>(_service_update, "rt_services", id);
 
   id.clear();
   id["host_id"] = false;
   id["service_id"] = false;
-  _prepare_update<neb::service_check>(_service_check_update, id);
+  _prepare_update<neb::service_check>(
+                         _service_check_update,
+                         "rt_services",
+                         id);
 
   id.clear();
   id["dependent_host_id"] = false;
   id["dependent_service_id"] = false;
   id["host_id"] = false;
   id["service_id"] = false;
-  _prepare_update<neb::service_dependency>(_service_dependency_update, id);
+  _prepare_update<neb::service_dependency>(
+                         _service_dependency_update,
+                         "rt_services_services_dependencies",
+                         id);
 
   id.clear();
   id["instance_id"] = false;
   id["name"] = false;
-  _prepare_update<neb::service_group>(_service_group_update, id);
+  _prepare_update<neb::service_group>(
+                        _service_group_update,
+                        "rt_servicegroups",
+                        id);
 
   id.clear();
   id["host_id"] = false;
   id["service_id"] = false;
-  _prepare_update<neb::service_status>(_service_status_update, id);
+  _prepare_update<neb::service_status>(
+                         _service_status_update,
+                         "rt_services",
+                         id);
 
   id.clear();
   id["host_id"] = false;
   id["start_time"] = false;
-  _prepare_update<correlation::host_state>(_host_state_update, id);
+  _prepare_update<correlation::host_state>(
+                                 _host_state_update,
+                                 "rt_hoststateevents",
+                                 id);
 
   id.clear();
   id["host_id"] = false;
   id["service_id"] = true;
   id["start_time"] = false;
-  _prepare_update<correlation::issue>(_issue_update, id);
+  _prepare_update<correlation::issue>(_issue_update, "rt_issues", id);
 
   id.clear();
   id["host_id"] = false;
   id["service_id"] = false;
   id["start_time"] = false;
-  _prepare_update<correlation::service_state>(_service_state_update, id);
+  _prepare_update<correlation::service_state>(
+                                 _service_state_update,
+                                 "rt_servicestateevents",
+                                 id);
 
   {
     std::string query(
@@ -515,31 +583,28 @@ void stream::_prepare() {
 /**
  *  Prepare an insert statement for later execution.
  *
- *  @param[out] st  Query object.
+ *  @param[out] st          Query object.
+ *  @param[in]  table_name  The name of the table.
  */
 template <typename T>
-void stream::_prepare_insert(database_query& st) {
+void stream::_prepare_insert(
+               database_query& st,
+               std::string const& table_name) {
   // Build query string.
   std::string query;
   query = "INSERT INTO ";
-  query.append(mapped_type<T>::table);
+  query.append(table_name);
   query.append(" (");
-  for (typename std::vector<db_mapped_entry<T> >::const_iterator
-         it = db_mapped_type<T>::list.begin(),
-         end = db_mapped_type<T>::list.end();
-       it != end;
-       ++it) {
-    query.append(it->name.toStdString());
+  mapping::entry const* entries = T::entries;
+  for (size_t i = 0; !entries[i].is_null(); ++i) {
+    query.append(entries[i].get_name());
     query.append(", ");
   }
   query.resize(query.size() - 2);
   query.append(") VALUES(");
-  for (typename std::vector<db_mapped_entry<T> >::const_iterator
-         it = db_mapped_type<T>::list.begin(),
-         end = db_mapped_type<T>::list.end();
-       it != end;
-       ++it) {
-    query.append(it->field.toStdString());
+  for (size_t i = 0; !entries[i].is_null(); ++i) {
+    query.append(":");
+    query.append(entries[i].get_name());
     query.append(", ");
   }
   query.resize(query.size() - 2);
@@ -554,28 +619,27 @@ void stream::_prepare_insert(database_query& st) {
 /**
  *  Prepare an update statement for later execution.
  *
- *  @param[out] st  Query object.
- *  @param[in]  id  List of fields that form an UNIQUE.
+ *  @param[out] st          Query object.
+ *  @param[in]  table_name  The name of the table.
+ *  @param[in]  id          List of fields that form an UNIQUE.
  */
 template <typename T>
 void stream::_prepare_update(
                database_query& st,
+               std::string const& table_name,
                std::map<std::string, bool> const& id) {
   // Build query string.
   std::string query;
   query = "UPDATE ";
-  query.append(mapped_type<T>::table);
+  query.append(table_name);
   query.append(" SET ");
-  for (typename std::vector<db_mapped_entry<T> >::const_iterator
-         it(db_mapped_type<T>::list.begin()),
-         end(db_mapped_type<T>::list.end());
-       it != end;
-       ++it) {
-    bool found(id.find(it->name.toStdString()) != id.end());
+  mapping::entry const* entries = T::entries;
+  for (size_t i = 0; !entries[i].is_null(); ++i) {
+    bool found(id.find(entries[i].get_name()) != id.end());
     if (!found) {
-      query.append(it->name.toStdString());
-      query.append("=");
-      query.append(it->field.toStdString());
+      query.append(entries[i].get_name());
+      query.append("=:");
+      query.append(entries[i].get_name());
       query.append(", ");
     }
   }
@@ -611,17 +675,19 @@ void stream::_prepare_update(
 /**
  *  Prepare a deletion query.
  *
- *  @param[out] st  Query object.
- *  @param[in]  id  List of fields that form an UNIQUE.
+ *  @param[out] st          Query object.
+ *  @param[in]  table_name  The name of the table.
+ *  @param[in]  id          List of fields that form an UNIQUE.
  */
 template <typename T>
 void stream::_prepare_delete(
                database_query& st,
+               std::string const& table_name,
                std::map<std::string, bool> const& id) {
   // Build query string.
   std::string query;
   query = "DELETE FROM ";
-  query.append(mapped_type<T>::table);
+  query.append(table_name);
   query.append(" WHERE ");
   for (std::map<std::string, bool>::const_iterator
          it(id.begin()),
@@ -1045,9 +1111,8 @@ void stream::_process_host_group_member(
 
     // Fetch host group ID.
     std::ostringstream ss;
-    ss << "SELECT hostgroup_id FROM "
-       << mapped_type<neb::host_group>::table
-       << " WHERE instance_id=" << hgm.instance_id
+    ss << "SELECT hostgroup_id FROM rt_hostgroups"
+          " WHERE instance_id=" << hgm.instance_id
        << " AND name=\"" << hgm.group.toStdString() << "\"";
     logging::info(logging::low)
       << "SQL: host group member: " << ss.str().c_str();
@@ -1061,9 +1126,8 @@ void stream::_process_host_group_member(
 
       // Insert hostgroup membership.
       std::ostringstream oss;
-      oss << "INSERT INTO "
-          << mapped_type<neb::host_group_member>::table
-          << " (host_id, hostgroup_id) VALUES("
+      oss << "INSERT INTO rt_hosts_hostgroups"
+             " (host_id, hostgroup_id) VALUES("
           << hgm.host_id << ", "
           << hostgroup_id << ")";
       logging::info(logging::low) << "SQL: executing query: "
@@ -1088,8 +1152,8 @@ void stream::_process_host_group_member(
     // Build query.
     std::ostringstream oss;
     oss << "DELETE hgm"
-      "  FROM " << mapped_type<neb::host_group_member>::table << " AS hgm "
-      "  INNER JOIN " << mapped_type<neb::host_group>::table << " AS hg "
+      "  FROM rt_hosts_hostgroups AS hgm "
+      "  INNER JOIN rt_hostgroups AS hg "
       "  ON hgm.hostgroup_id=hg.hostgroup_id "
       "  WHERE hg.name=:group"
       "    AND hgm.host_id=:host_id"
@@ -1301,8 +1365,7 @@ void stream::_process_issue_parent(
   // Get child ID.
   {
     std::ostringstream query;
-    query << "SELECT issue_id FROM "
-          << mapped_type<correlation::issue>::table << " WHERE host_id="
+    query << "SELECT issue_id FROM rt_issues WHERE host_id="
           << ip.child_host_id << " AND service_id";
     if (ip.child_service_id)
       query << "=" << ip.child_service_id;
@@ -1331,8 +1394,7 @@ void stream::_process_issue_parent(
   // Get parent ID.
   {
     std::ostringstream query;
-    query << "SELECT issue_id FROM "
-          << mapped_type<correlation::issue>::table << " WHERE host_id="
+    query << "SELECT issue_id FROM rt_issues WHERE host_id="
           << ip.parent_host_id << " AND service_id";
     if (ip.parent_service_id)
       query << "=" << ip.parent_service_id;
@@ -1646,9 +1708,8 @@ void stream::_process_service_group_member(
       int servicegroup_id;
       {
         std::ostringstream ss;
-        ss << "SELECT servicegroup_id FROM "
-           << mapped_type<neb::service_group>::table
-           << " WHERE instance_id=" << sgm.instance_id
+        ss << "SELECT servicegroup_id FROM rt_servicegroups"
+              " WHERE instance_id=" << sgm.instance_id
            << " AND name=:name";
         database_query q(_db);
         q.prepare(ss.str());
@@ -1665,9 +1726,8 @@ void stream::_process_service_group_member(
       // Insert servicegroup membership.
       {
         std::ostringstream oss;
-        oss << "INSERT INTO "
-            << mapped_type<neb::service_group_member>::table
-            << " (host_id, service_id, servicegroup_id) VALUES("
+        oss << "INSERT INTO rt_services_servicegroups"
+               " (host_id, service_id, servicegroup_id) VALUES("
             << sgm.host_id << ", "
             << sgm.service_id << ", "
             << servicegroup_id << ")";
@@ -1694,8 +1754,8 @@ void stream::_process_service_group_member(
     // Build query.
     std::ostringstream oss;
     oss << "DELETE sgm"
-           "  FROM " << mapped_type<neb::service_group_member>::table << " AS sgm "
-           "  INNER JOIN " << mapped_type<neb::service_group>::table << " AS sg "
+           "  FROM rt_services_servicegroups AS sgm "
+           "  INNER JOIN rt_servicegroups AS sg "
            "  ON sgm.servicegroup_id=sg.servicegroup_id "
            "  WHERE sg.name=:group "
            "    AND sgm.host_id=:host_id "
@@ -1820,7 +1880,7 @@ void stream::_write_logs() {
     // Log insertion query.
     QString q;
     QTextStream query(&q);
-    query << "INSERT INTO " << mapped_type<neb::log_entry>::table
+    query << "INSERT INTO log_logs"
           << "  (ctime, host_id, host_name, instance_name, issue_id, "
           << "  msg_type, notification_cmd, notification_contact, "
           << "  output, retry, service_description, service_id, status, "
@@ -1969,7 +2029,7 @@ void stream::_update_timestamp(unsigned int instance_id) {
 void stream::_get_all_outdated_instances_from_db() {
   std::ostringstream ss;
   ss << "SELECT instance_id"
-     << " FROM " << mapped_type<neb::instance>::table
+     << " FROM rt_instances"
      << " WHERE outdated=TRUE";
   database_query q(_db);
   q.run_query(
@@ -2029,15 +2089,15 @@ void stream::_update_hosts_and_services_of_instance(
                bool responsive) {
   std::ostringstream ss;
   if (responsive) {
-    ss << "UPDATE " << mapped_type<neb::instance>::table
+    ss << "UPDATE rt_instances"
        << "  SET outdated=FALSE"
        << "  WHERE instance_id=" << id;
     database_query q(_db);
     q.run_query(ss.str(), "SQL: could not restore outdated instance");
     ss.str("");
     ss.clear();
-    ss << "UPDATE " << mapped_type<neb::host>::table << " AS h"
-       << "  LEFT JOIN " << mapped_type<neb::service>::table << " AS s"
+    ss << "UPDATE rt_hosts AS h"
+       << "  LEFT JOIN rt_services AS s"
        << "  ON h.host_id=s.host_id"
        << "  SET h.state=h.real_state,"
        << "      s.state=s.real_state"
@@ -2045,15 +2105,15 @@ void stream::_update_hosts_and_services_of_instance(
     q.run_query(ss.str(), "SQL: could not restore outdated instance");
   }
   else {
-    ss << "UPDATE " << mapped_type<neb::instance>::table
+    ss << "UPDATE rt_instances"
        << "  SET outdated=TRUE"
        << "  WHERE instance_id=" << id;
     database_query q(_db);
     q.run_query(ss.str(), "SQL: could not outdate instance");
     ss.str("");
     ss.clear();
-    ss << "UPDATE " << mapped_type<neb::host>::table << " AS h"
-       << "  LEFT JOIN " << mapped_type<neb::service>::table << " AS s"
+    ss << "UPDATE rt_hosts AS h"
+       << "  LEFT JOIN rt_services AS s"
        << "  ON h.host_id=s.host_id"
        << "  SET h.real_state=h.state,"
        << "      s.real_state=s.state,"

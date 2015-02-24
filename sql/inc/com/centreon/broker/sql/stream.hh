@@ -71,14 +71,18 @@ namespace          sql {
     void           _clean_tables(int instance_id);
     void           _prepare();
     template       <typename T>
-    void           _prepare_insert(database_query& st);
+    void           _prepare_insert(
+                     database_query& st,
+                     std::string const& table_name);
     template       <typename T>
     void           _prepare_update(
                      database_query& st,
+                     std::string const& table_name,
                      std::map<std::string, bool> const& id);
     template       <typename T>
     void           _prepare_delete(
                      database_query& st,
+                     std::string const& table_name,
                      std::map<std::string, bool> const& id);
     void           _process_acknowledgement(misc::shared_ptr<io::data> const& e);
     void           _process_comment(misc::shared_ptr<io::data> const& e);
