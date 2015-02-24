@@ -97,18 +97,6 @@ void test_db::bi_run(
 }
 
 /**
- *  Get the Centreon database.
- *
- *  @param[in] storage_db_name   Centreon storage DB name.
- *  @param[in] bi_db_name        Centreon BI DB name.
- *  @param[in] centreon_db_name  Centreon Storage DB name.
- *  @return Centreon database object.
- */
-QSqlDatabase* test_db::centreon_db() {
-  return (_centreon.get());
-}
-
-/**
  *  Run a query on the Centreon database.
  *
  *  @param[in] query      Query to run.
@@ -122,15 +110,6 @@ void test_db::centreon_run(
 }
 
 /**
- *  Get the Storage database.
- *
- *  @return Centreon Storage database object.
- */
-QSqlDatabase* test_db::storage_db() {
-  return (_storage.get());
-}
-
-/**
  *  Run a query on the Storage database.
  *
  *  @param[in] query      Query to run.
@@ -140,19 +119,6 @@ void test_db::storage_run(
                 QString const& query,
                 QString const& error_msg) {
   _run_query(_storage.get(), query, error_msg);
-  return ;
-}
-
-/**
- *  Close databases.
- */
-void test_db::close() {
-  if (_bi.get())
-    _close(_bi);
-  if (_centreon.get())
-    _close(_centreon);
-  if (_storage.get())
-    _close(_storage);
   return ;
 }
 

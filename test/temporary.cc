@@ -141,11 +141,7 @@ int main() {
     // Lock tables.
     {
       QSqlQuery q(*db.storage_db());
-<<<<<<< HEAD
       std::string query("LOCK TABLES log_logs WRITE, rt_instances WRITE");
-=======
-      std::string query("LOCK TABLES logs WRITE, instances WRITE");
->>>>>>> notification
       if (!q.exec(query.c_str()))
         throw (exceptions::msg() << "cannot lock tables: "
                << q.lastError().text());
