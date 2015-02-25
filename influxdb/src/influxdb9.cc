@@ -21,6 +21,7 @@
 #include <QHostAddress>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/influxdb/influxdb9.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker::influxdb;
 
@@ -39,6 +40,8 @@ influxdb9::influxdb9(
             std::string const& db)
   : _host(addr),
     _port(port) {
+  logging::debug(logging::medium)
+    << "influxdb: connecting using 0.9 version protocol";
   _connect_socket();
   _socket->close();
 
