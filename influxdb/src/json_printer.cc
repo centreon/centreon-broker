@@ -77,6 +77,11 @@ size_t json_printer::get_size() const {
   return (_data.size());
 }
 
+static void add_tag(std::string& data, std::string const& name) {
+  if (!name.empty())
+    data.append("\"").append(name).append("\":");
+}
+
 /**
  *  Open an object.
  *
@@ -85,8 +90,7 @@ size_t json_printer::get_size() const {
  *  @return          A reference to this object.
  */
 json_printer& json_printer::open_object(std::string const& name) {
-  if (!name.empty())
-    _data.append("\"").append(name).append("\":\"");
+  add_tag(_data, name);
   _data.append("{");
   return (*this);
 }
@@ -109,7 +113,7 @@ json_printer& json_printer::close_object() {
  *  @return          A reference to this object.
  */
 json_printer& json_printer::open_array(std::string const& name) {
-  _data.append("\"").append(name).append("\":\"");
+  add_tag(_data, name);
   _data.append("[");
   return (*this);
 }
@@ -135,6 +139,7 @@ json_printer& json_printer::close_array() {
 json_printer& json_printer::add_string(
                 std::string const& name,
                 std::string const& value) {
-  _data.append("\"").append(name).append("\":\"").append(value).append("\",");
+  add_tag(_data, name);
+  _data.append("\"").append(value).append("\",");
   return (*this);
 }
