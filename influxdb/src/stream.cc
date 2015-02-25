@@ -29,6 +29,8 @@
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/influxdb/stream.hh"
+#include "com/centreon/broker/influxdb/influxdb8.hh"
+#include "com/centreon/broker/influxdb/influxdb9.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
@@ -49,7 +51,8 @@ stream::stream(
           std::string const& addr,
           unsigned short port,
           std::string const& db,
-          unsigned int queries_per_transaction)
+          unsigned int queries_per_transaction,
+          std::string const& version)
   : _process_out(true),
     _user(user),
     _password(passwd),
@@ -57,8 +60,14 @@ stream::stream(
     _port(port),
     _db(db),
     _queries_per_transaction(queries_per_transaction),
-    _actual_query(0),
-    _influx_db(user, passwd, addr, port, db) {
+    _actual_query(0) {
+  if (version == "0.8")
+    _influx_db.reset(new influxdb8(user, passwd, addr, port, db));
+  else if (version == "0.9")
+    _influx_db.reset(new influxdb9(user, passwd, addr, port, db));
+  else
+    throw (exceptions::msg()
+           << "influxdb: unrecognized influxdb version '" << version << "'");
   // Register with multiplexer.
   multiplexing::engine::instance().hook(*this, false);
 }
@@ -151,7 +160,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
     if (data->type()
           == io::events::data_type<io::events::storage,
                                    storage::de_metric>::value) {
-      _influx_db.write(data.ref_as<storage::metric const>());
+      _influx_db->write(data.ref_as<storage::metric const>());
     }
   }
 
@@ -160,7 +169,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
       << "influxdb: commiting " << _actual_query << " queries";
     unsigned int ret = _actual_query;
     _actual_query = 0;
-    _influx_db.commit();
+    _influx_db->commit();
     return (ret);
   }
   else

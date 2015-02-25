@@ -157,9 +157,19 @@ io::endpoint* factory::new_endpoint(
       queries_per_transaction = 1000;
   }
 
+  std::string version;
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("influxdb_version"));
+    if (it != cfg.params.end())
+      version = it.value().toStdString();
+    else
+      version = "0.8";
+  }
+
   // Connector.
   std::auto_ptr<influxdb::connector> c(new influxdb::connector);
-  c->connect_to(user, passwd, addr, port, db, queries_per_transaction);
+  c->connect_to(user, passwd, addr, port, db, queries_per_transaction, version);
   is_acceptor = false;
   return (c.release());
 }

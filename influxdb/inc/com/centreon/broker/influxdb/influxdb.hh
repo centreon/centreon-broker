@@ -31,40 +31,30 @@ CCB_BEGIN()
 namespace         influxdb {
   /**
    *  @class influxdb influxdb.hh "com/centreon/broker/influxdb/influxdb.hh"
-   *  @brief Influxdb connection/query manager.
+   *  @brief Interface for influxdb connection manager.
    *
-   *  This object manage connection and query to influxdb through the POST
-   *  API.
+   *  This object is an interface all influxdb connection manager needs
+   *  to implements.
    */
   class           influxdb {
   public:
-                  influxdb(
-                    std::string const& user,
-                    std::string const& passwd,
-                    std::string const& addr,
-                    unsigned short port,
-                    std::string const& db);
-                  influxdb(influxdb const& f);
-                  ~influxdb();
-    influxdb&     operator=(influxdb const& f);
+    virtual       ~influxdb() {}
 
-    void          clear();
-    void          write(storage::metric const& m);
-    void          commit();
+    /**
+     *  Clear all the events pending.
+     */
+    virtual void  clear() = 0;
 
-  private:
-    std::string   _post_header;
-    std::string   _url;
-    std::string   _query;
+    /**
+     *  Write an event to the queue of event pending.
+     *  @param[in] m  The event.
+     */
+    virtual void  write(storage::metric const& m) = 0;
 
-    std::auto_ptr<QTcpSocket>
-                  _socket;
-
-    std::string   _host;
-    unsigned short
-                  _port;
-
-    void          _connect_socket();
+    /**
+     *  Commit all the events pending to the db.
+     */
+    virtual void  commit() = 0;
   };
 }
 

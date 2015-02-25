@@ -52,7 +52,8 @@ namespace          influxdb {
                      std::string const& addr,
                      unsigned short port,
                      std::string const& db,
-                     unsigned int queries_per_transaction);
+                     unsigned int queries_per_transaction,
+                     std::string const& version);
                    ~stream();
     void           process(bool in = false, bool out = true);
     void           read(misc::shared_ptr<io::data>& d);
@@ -74,7 +75,8 @@ namespace          influxdb {
     std::string  _db;
     unsigned int _queries_per_transaction;
 
-    influxdb     _influx_db;
+    std::auto_ptr<influxdb>
+                 _influx_db;
 
     // Internal working members
     unsigned int _actual_query;

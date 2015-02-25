@@ -20,9 +20,9 @@
 #include <sstream>
 #include <QHostAddress>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/influxdb/influxdb.hh"
+#include "com/centreon/broker/influxdb/influxdb8.hh"
 
-using namespace com::centreon::broker;
+using namespace com::centreon::broker::influxdb;
 
 static const char* query_header =
     "[{\"name\":\"metric_data\",\"columns\":[\"time\", \"metric_id\", \"name\", \"interval\", \"value\", \"value_type\"],\"points\":[";
@@ -31,7 +31,7 @@ static const char* query_footer = "]}]";
 /**
  *  Constructor.
  */
-influxdb::influxdb::influxdb(
+influxdb8::influxdb8(
             std::string const& user,
             std::string const& passwd,
             std::string const& addr,
@@ -56,14 +56,14 @@ influxdb::influxdb::influxdb(
  *
  *  @param[in] f Object to copy.
  */
-influxdb::influxdb::influxdb(influxdb const& f) {
+influxdb8::influxdb8(influxdb8 const& f) {
   influxdb::operator=(f);
 }
 
 /**
  *  Destructor.
  */
-influxdb::influxdb::~influxdb() {}
+influxdb8::~influxdb8() {}
 
 /**
  *  Assignment operator.
@@ -72,7 +72,7 @@ influxdb::influxdb::~influxdb() {}
  *
  *  @return This object.
  */
-influxdb::influxdb& influxdb::influxdb::operator=(influxdb const& f) {
+influxdb8& influxdb8::operator=(influxdb8 const& f) {
   if (this != &f) {
     _query = f._query;
   }
@@ -82,7 +82,7 @@ influxdb::influxdb& influxdb::influxdb::operator=(influxdb const& f) {
 /**
  *  Clear the query.
  */
-void influxdb::influxdb::clear() {
+void influxdb8::clear() {
   _query.clear();
 }
 
@@ -91,7 +91,7 @@ void influxdb::influxdb::clear() {
  *
  *  @param[in] m  The metric to write.
  */
-void influxdb::influxdb::write(storage::metric const& m) {
+void influxdb8::write(storage::metric const& m) {
   std::stringstream s;
 
   s << "["
@@ -110,7 +110,7 @@ void influxdb::influxdb::write(storage::metric const& m) {
 /**
  *  Commit a query.
  */
-void influxdb::influxdb::commit() {
+void influxdb8::commit() {
   if (_query.empty())
     return ;
 
@@ -142,7 +142,7 @@ void influxdb::influxdb::commit() {
 /**
  *  Connect the socket to the endpoint.
  */
-void influxdb::influxdb::_connect_socket() {
+void influxdb8::_connect_socket() {
   _socket.reset(new QTcpSocket);
   _socket->connectToHost(QString::fromStdString(_host), _port);
   if (!_socket->waitForConnected())

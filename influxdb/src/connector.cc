@@ -91,13 +91,15 @@ void connector::connect_to(
                   std::string const& addr,
                   unsigned short port,
                   std::string const& db,
-                  unsigned int queries_per_transaction) {
+                  unsigned int queries_per_transaction,
+                  std::string const& version) {
   _user = user;
   _password = passwd;
   _addr = addr;
   _port = port,
   _db = db;
   _queries_per_transaction = queries_per_transaction;
+  _version = version;
   return ;
 }
 
@@ -114,7 +116,8 @@ misc::shared_ptr<io::stream> connector::open() {
                   _addr,
                   _port,
                   _db,
-                  _queries_per_transaction)));
+                  _queries_per_transaction,
+                  _version)));
 }
 
 /**
@@ -147,5 +150,6 @@ void connector::_internal_copy(connector const& other) {
   _port = other._port;
   _db = other._db;
   _queries_per_transaction = other._queries_per_transaction;
+  _version = other._version;
   return ;
 }
