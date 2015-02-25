@@ -148,5 +148,5 @@ void influxdb::influxdb::_connect_socket() {
   if (!_socket->waitForConnected())
     throw exceptions::msg()
       << "influxdb: couldn't connect to influxdb with address '"
-      << _host << "' and port '" << _port << "': " << _socket->error();
+      << _host << "' and port '" << _port << "': " << _socket->errorString();
 }
