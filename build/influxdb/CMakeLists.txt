@@ -37,6 +37,7 @@ add_library("${INFLUXDB}" SHARED
   "${SRC_DIR}/influxdb8.cc"
   "${SRC_DIR}/influxdb9.cc"
   "${SRC_DIR}/stream.cc"
+  "${SRC_DIR}/json_printer.cc"
   # Headers.
   "${INC_DIR}/connector.hh"
   "${INC_DIR}/factory.hh"
@@ -44,6 +45,7 @@ add_library("${INFLUXDB}" SHARED
   "${INC_DIR}/influxdb8.hh"
   "${INC_DIR}/influxdb9.hh"
   "${INC_DIR}/stream.hh"
+  "${INC_DIR}/json_printer.hh"
 )
 target_link_libraries("${INFLUXDB}" ${QT_LIBRARIES})
 set_target_properties("${INFLUXDB}" PROPERTIES PREFIX "")

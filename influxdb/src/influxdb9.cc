@@ -22,11 +22,10 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/influxdb/influxdb9.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/influxdb/json_printer.hh"
 
 using namespace com::centreon::broker::influxdb;
 
-static const char* query_header =
-    "\"points\": [";
 static const char* query_footer = "]}";
 
 /**
@@ -52,7 +51,9 @@ influxdb9::influxdb9(
     .append("&p=").append(passwd)
     .append("&time_precision=s");
   _post_header.append("POST ").append(base_url).append(" HTTP/1.0\n");
-  _db_header.append("{\"database\":\"").append(db).append("\",").append(query_header);
+  json_printer p;
+  p.open_object().add_string("database", db).open_array("points");
+  _db_header.append(p.get_data());
 }
 
 /**
@@ -96,13 +97,19 @@ void influxdb9::clear() {
  *  @param[in] m  The metric to write.
  */
 void influxdb9::write(storage::metric const& m) {
-  std::stringstream s;
+  json_printer p;
 
-  s << "{ \"name\": \"" << m.name.toStdString() << "\","
-    << "\"tags\": {" << "\"metric_id = \"" << m.metric_id << "},"
-    << "\"timestamp\":" << m.ctime
-    << "\"fields\": {" << "\"value\":" << m.value << "} },";
-  _query.append(s.str());
+  p.open_object()
+     .add_string("name", m.name.toStdString())
+     .open_object("tags")
+       .add_number("metric_id", m.metric_id)
+     .close_object()
+     .add_number("timestamp", m.ctime)
+     .open_object("fields")
+       .add_number("value", m.value)
+     .close_object()
+   .close_object();
+  _query.append(p.get_data());
 }
 
 /**
