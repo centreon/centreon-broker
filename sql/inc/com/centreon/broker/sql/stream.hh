@@ -80,6 +80,9 @@ namespace          sql {
     void           _prepare_delete(
                      database_query& st,
                      std::map<std::string, bool> const& id);
+    template <typename T>
+    void           _prepare_select(
+                     database_query& st);
     void           _process_acknowledgement(misc::shared_ptr<io::data> const& e);
     void           _process_comment(misc::shared_ptr<io::data> const& e);
     void           _process_custom_variable(misc::shared_ptr<io::data> const& e);
@@ -145,6 +148,7 @@ namespace          sql {
     database_query _host_dependency_update;
     database_query _host_group_insert;
     database_query _host_group_update;
+    database_query _host_parent_select;
     database_query _host_parent_insert;
     database_query _host_state_insert;
     database_query _host_state_update;
