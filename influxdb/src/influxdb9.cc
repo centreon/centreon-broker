@@ -46,7 +46,6 @@ influxdb9::influxdb9(
 
   std::string base_url;
   base_url
-    .append("/db/").append(db)
     .append("/write?u=").append(user)
     .append("&p=").append(passwd);
   _post_header.append("POST ").append(base_url).append(" HTTP/1.0\n");
