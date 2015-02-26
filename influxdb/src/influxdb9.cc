@@ -102,11 +102,11 @@ void influxdb9::write(storage::metric const& m) {
   p.open_object()
      .add_string("name", m.name.toStdString())
      .open_object("tags")
-       .add_number("metric_id", m.metric_id)
+       .add_string("metric_id", m.metric_id)
      .close_object()
      .add_number("timestamp", m.ctime)
      .open_object("fields")
-       .add_number("value", m.value)
+       .add_string("value", m.value)
      .close_object()
    .close_object();
   _query.append(p.get_data());
