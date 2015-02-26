@@ -119,6 +119,9 @@ void influxdb9::commit() {
   if (_query.empty())
     return ;
 
+  // Remove trailing coma.
+  _query[_query.size() - 1] = ' ';
+
   std::stringstream content_length;
   size_t length = _query.size() + _db_header.size() + ::strlen(query_footer);
   content_length << "Content-Length: " << length << "\n";
