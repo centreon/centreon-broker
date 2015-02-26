@@ -65,6 +65,9 @@ json_printer& json_printer::operator=(json_printer const& other) {
  *  @return  The resulting string.
  */
 std::string const& json_printer::get_data() const {
+  std::string& data = (const_cast<json_printer*>(this))->_data;
+  if (!data.empty() && data[data.size() - 1] == ',')
+    data[data.size() - 1] = ' ';
   return (_data);
 }
 
@@ -101,6 +104,8 @@ json_printer& json_printer::open_object(std::string const& name) {
  *  @return          A reference to this object.
  */
 json_printer& json_printer::close_object() {
+  if (!_data.empty() && _data[_data.size() - 1] == ',')
+    _data[_data.size() - 1] = ' ';
   _data.append("},");
   return (*this);
 }
@@ -124,7 +129,10 @@ json_printer& json_printer::open_array(std::string const& name) {
  *  @return          A reference to this object.
  */
 json_printer& json_printer::close_array() {
-  _data.append("]");
+  if (!_data.empty() && _data[_data.size() - 1] == ',')
+    _data[_data.size() - 1] = ']';
+  else
+    _data.append("]");
   return (*this);
 }
 
