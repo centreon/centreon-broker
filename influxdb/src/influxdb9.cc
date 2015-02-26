@@ -47,9 +47,8 @@ influxdb9::influxdb9(
   std::string base_url;
   base_url
     .append("/db/").append(db)
-    .append("/series?u=").append(user)
-    .append("&p=").append(passwd)
-    .append("&time_precision=s");
+    .append("/write?u=").append(user)
+    .append("&p=").append(passwd);
   _post_header.append("POST ").append(base_url).append(" HTTP/1.0\n");
   json_printer p;
   p.open_object().add_string("database", db).open_array("points");
