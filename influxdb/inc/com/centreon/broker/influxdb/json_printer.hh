@@ -69,6 +69,7 @@ namespace influxdb {
     std::stringstream ss;
     ss << value;
     _data.append("\"").append(ss.str()).append("\",");
+    return (*this);
   }
 
   /**
