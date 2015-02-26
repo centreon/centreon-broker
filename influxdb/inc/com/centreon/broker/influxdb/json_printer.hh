@@ -45,11 +45,31 @@ namespace influxdb {
                 get_data() const;
   size_t        get_size() const;
 
+  inline  void add_tag(std::string const& name) {
+    if (!name.empty())
+      _data.append("\"").append(name).append("\":");
+  }
+
   json_printer& open_object(std::string const& name = std::string());
   json_printer& close_object();
   json_printer& open_array(std::string const& name);
   json_printer& close_array();
-  json_printer& add_string(std::string const& name, std::string const& value);
+
+  /**
+   *  Add a string value.
+   *
+   *  @param[in] name   The name of the value.
+   *  @param[in] value  The value.
+   *
+   *  @return           A reference to this object.
+   */
+  template <typename T>
+  json_printer& add_string(std::string const& name, T const& value) {
+    add_tag(name);
+    std::stringstream ss;
+    ss << value << "";
+    _data.append("\"").append(ss.str()).append("\",");
+  }
 
   /**
    *  Add a number value.
@@ -60,9 +80,10 @@ namespace influxdb {
    *  @return           A reference to this object.
    */
   template <typename T>
-  json_printer& add_number(std::string const& name, T value) {
+  json_printer& add_number(std::string const& name, T const& value) {
+    add_tag(name);
     std::stringstream ss;
-    ss << '"' << name << "\":" << value << ",";
+    ss << value << ",";
     _data.append(ss.str());
     return (*this);
   }

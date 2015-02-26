@@ -77,11 +77,6 @@ size_t json_printer::get_size() const {
   return (_data.size());
 }
 
-static void add_tag(std::string& data, std::string const& name) {
-  if (!name.empty())
-    data.append("\"").append(name).append("\":");
-}
-
 /**
  *  Open an object.
  *
@@ -90,7 +85,7 @@ static void add_tag(std::string& data, std::string const& name) {
  *  @return          A reference to this object.
  */
 json_printer& json_printer::open_object(std::string const& name) {
-  add_tag(_data, name);
+  add_tag(name);
   _data.append("{");
   return (*this);
 }
@@ -115,7 +110,7 @@ json_printer& json_printer::close_object() {
  *  @return          A reference to this object.
  */
 json_printer& json_printer::open_array(std::string const& name) {
-  add_tag(_data, name);
+  add_tag(name);
   _data.append("[");
   return (*this);
 }
@@ -130,21 +125,5 @@ json_printer& json_printer::close_array() {
     _data[_data.size() - 1] = ']';
   else
     _data.append("]");
-  return (*this);
-}
-
-/**
- *  Add a string value.
- *
- *  @param[in] name   The name of the value.
- *  @param[in] value  The value.
- *
- *  @return           A reference to this object.
- */
-json_printer& json_printer::add_string(
-                std::string const& name,
-                std::string const& value) {
-  add_tag(_data, name);
-  _data.append("\"").append(value).append("\",");
   return (*this);
 }
