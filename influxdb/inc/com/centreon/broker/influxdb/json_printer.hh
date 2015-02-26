@@ -67,7 +67,7 @@ namespace influxdb {
   json_printer& add_string(std::string const& name, T const& value) {
     add_tag(name);
     std::stringstream ss;
-    ss << value << "";
+    ss << value;
     _data.append("\"").append(ss.str()).append("\",");
   }
 
