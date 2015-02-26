@@ -575,8 +575,10 @@ void stream::_prepare() {
     _issue_parent_update.prepare(query, "SQL: could not prepare query");
   }
 
-  _cache_create();
-
+  // Prepare select queries.
+  _prepare_select<neb::host_parent>(
+                        _host_parent_select,
+                        "rt_hosts_hosts_parents");
   return ;
 }
 
@@ -618,6 +620,36 @@ void stream::_prepare_insert(
   st.prepare(query, "SQL: could not prepare insertion query");
 
   return ;
+}
+/**
+ *  Prepare a select statement for later execution.
+ *
+ *  @param[out] st          Query object.
+ *  @param[in]  table_name  The name of the table.
+ */
+template <typename T>
+void stream::_prepare_select(
+               database_query& st,
+               std::string const& table_name) {
+  // Build query string.
+  std::string query;
+  query = "SELECT * FROM ";
+  query.append(table_name);
+  query.append(" WHERE ");
+  mapping::entry const* entries = T::entries;
+  for (size_t i = 0; !entries[i].is_null(); ++i) {
+    if (entries[i].get_name().empty())
+      continue;
+    query.append(entries[i].get_name());
+    query.append(" = :");
+    query.append(entries[i].get_name());
+    query.append(" AND ");
+  }
+
+  query.resize(query.size() - 5);
+
+  // Prepare statement.
+  st.prepare(query, "SQL: could not prepare select query");
 }
 
 /**
@@ -1130,15 +1162,33 @@ void stream::_process_host_group_member(
       logging::debug(logging::medium)
         << "SQL: fetch hostgroup of id " << hostgroup_id;
 
-      // Insert hostgroup membership.
+      // Check if the hostgroup membership
+      // doesn't already exists.
       std::ostringstream oss;
+      oss << "SELECT * FROM rt_hosts_hostgroups"
+             " WHERE host_id = " << hgm.host_id
+          << "   AND hostgroup_id = " << hostgroup_id;
+      logging::info(logging::low) << "SQL: executing query: "
+        << oss.str().c_str();
+      database_query q(_db);
+      q.run_query(oss.str(), "SQL");
+      if (q.size() > 0) {
+        logging::info(logging::medium)
+           << "SQL: hostgroup membership already existing between host '"
+           << hgm.host_id << "' and hostgroup '" << hostgroup_id << "'";
+        q.finish();
+        return ;
+      }
+      q.finish();
+
+      // Insert hostgroup membership.
+      oss.str("");
       oss << "INSERT INTO rt_hosts_hostgroups"
              " (host_id, hostgroup_id) VALUES("
           << hgm.host_id << ", "
           << hostgroup_id << ")";
       logging::info(logging::low) << "SQL: executing query: "
         << oss.str().c_str();
-      database_query q(_db);
       q.run_query(oss.str(), "SQL");
     }
     else
@@ -1193,6 +1243,11 @@ void stream::_process_host_parent(
 
   // Insert.
   try {
+    _host_parent_select << hp;
+    _host_parent_select.run_statement();
+    if (_host_parent_select.size() == 1)
+      return ;
+
     _host_parent_insert << hp;
     _host_parent_insert.run_statement();
   }
@@ -1729,6 +1784,28 @@ void stream::_process_service_group_member(
           << sgm.instance_id << " has ID " << servicegroup_id;
       }
 
+      // Check if the servicegroup membership
+      // doesn't already exists.
+      std::ostringstream oss;
+      oss << "SELECT * FROM "
+          << mapped_type<neb::service_group_member>::table
+          << " WHERE host_id = " << sgm.host_id
+          << "  AND service_id = " << sgm.service_id
+          << "  AND servicegroup_id = " << servicegroup_id;
+      logging::info(logging::low) << "SQL: executing query: "
+        << oss.str().c_str();
+      database_query q(_db);
+      q.run_query(oss.str(), "SQL");
+      if (q.size() > 0) {
+        logging::info(logging::medium)
+           << "SQL: servicegroup membership already existing between host '"
+           << sgm.host_id << "' and hostgroup '" << servicegroup_id << "'";
+        q.finish();
+        return ;
+      }
+      q.finish();
+
+
       // Insert servicegroup membership.
       {
         std::ostringstream oss;
@@ -2194,6 +2271,7 @@ stream::stream(
     _host_group_insert(_db),
     _host_group_update(_db),
     _host_parent_insert(_db),
+    _host_parent_select(_db),
     _host_state_insert(_db),
     _host_state_update(_db),
     _host_status_update(_db),

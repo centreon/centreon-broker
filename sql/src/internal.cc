@@ -229,50 +229,50 @@ static void bind_uint_null_on_minus_one(
 template <typename T>
 static void to_base(database_query& q, T const& t) {
   mapping::entry const* entries = T::entries;
-  for (size_t i = 0; !entries[i].is_null(); ++i) {
-    if (entries[i].get_name().empty())
+  for (; entries->is_null(); ++entries) {
+    if (entries->get_name().empty())
       continue ;
     QString field(":");
-    field.append(entries[i].get_name().c_str());
-    switch (entries[i].get_type()) {
+    field.append(entries->get_name().c_str());
+    switch (entries->get_type()) {
     case mapping::source::BOOL:
-      bind_boolean(field, entries[i].get_bool(t), q);
+      bind_boolean(field, entries->get_bool(t), q);
       break ;
     case mapping::source::DOUBLE:
-      bind_double(field, entries[i].get_double(t), q);
+      bind_double(field, entries->get_double(t), q);
       break ;
     case mapping::source::INT:
-      if (entries[i].get_attribute() == mapping::entry::NULL_ON_ZERO)
-        bind_integer_null_on_zero(field, entries[i].get_int(t), q);
-      else if (entries[i].get_attribute() == mapping::entry::NULL_ON_MINUS_ONE)
-        bind_integer_null_on_minus_one(field, entries[i].get_int(t), q);
+      if (entries->get_attribute() == mapping::entry::NULL_ON_ZERO)
+        bind_integer_null_on_zero(field, entries->get_int(t), q);
+      else if (entries->get_attribute() == mapping::entry::NULL_ON_MINUS_ONE)
+        bind_integer_null_on_minus_one(field, entries->get_int(t), q);
       else
-        bind_integer(field, entries[i].get_int(t), q);
+        bind_integer(field, entries->get_int(t), q);
       break ;
     case mapping::source::SHORT:
-      bind_short(field, entries[i].get_short(t), q);
+      bind_short(field, entries->get_short(t), q);
       break ;
     case mapping::source::STRING:
-      if (entries[i].get_attribute() == mapping::entry::NULL_ON_ZERO)
-        bind_string_null_on_empty(field, entries[i].get_string(t), q);
+      if (entries->get_attribute() == mapping::entry::NULL_ON_ZERO)
+        bind_string_null_on_empty(field, entries->get_string(t), q);
       else
-        bind_string(field, entries[i].get_string(t), q);
+        bind_string(field, entries->get_string(t), q);
       break ;
     case mapping::source::TIME:
-      if (entries[i].get_attribute() == mapping::entry::NULL_ON_ZERO)
-        bind_timet_null_on_zero(field, entries[i].get_time(t), q);
-      else if (entries[i].get_attribute() == mapping::entry::NULL_ON_MINUS_ONE)
-        bind_timet_null_on_minus_one(field, entries[i].get_time(t), q);
+      if (entries->get_attribute() == mapping::entry::NULL_ON_ZERO)
+        bind_timet_null_on_zero(field, entries->get_time(t), q);
+      else if (entries->get_attribute() == mapping::entry::NULL_ON_MINUS_ONE)
+        bind_timet_null_on_minus_one(field, entries->get_time(t), q);
       else
-        bind_timet(field, entries[i].get_time(t), q);
+        bind_timet(field, entries->get_time(t), q);
       break ;
     case mapping::source::UINT:
-      if (entries[i].get_attribute() == mapping::entry::NULL_ON_ZERO)
-        bind_uint_null_on_zero(field, entries[i].get_uint(t), q);
-      else if (entries[i].get_attribute() == mapping::entry::NULL_ON_MINUS_ONE)
-        bind_uint_null_on_minus_one(field, entries[i].get_uint(t), q);
+      if (entries->get_attribute() == mapping::entry::NULL_ON_ZERO)
+        bind_uint_null_on_zero(field, entries->get_uint(t), q);
+      else if (entries->get_attribute() == mapping::entry::NULL_ON_MINUS_ONE)
+        bind_uint_null_on_minus_one(field, entries->get_uint(t), q);
       else
-        bind_uint(field, entries[i].get_uint(t), q);
+        bind_uint(field, entries->get_uint(t), q);
       break ;
     default: // Error in one of the mappings.
       assert(false);

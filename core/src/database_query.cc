@@ -84,6 +84,17 @@ int database_query::num_rows_affected() {
 }
 
 /**
+ *  Get the number of rows returned by the last select.
+ *
+ *  @return Number of rows returned by the last select, a negative value
+ *          if it could not be determined.
+ */
+int database_query::size() {
+  return (_q.size());
+}
+
+
+/**
  *  Execute a query.
  *
  *  @param[in] query      Query to run on the database.
