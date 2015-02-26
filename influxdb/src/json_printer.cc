@@ -65,9 +65,6 @@ json_printer& json_printer::operator=(json_printer const& other) {
  *  @return  The resulting string.
  */
 std::string const& json_printer::get_data() const {
-  std::string& data = (const_cast<json_printer*>(this))->_data;
-  if (!data.empty() && data[data.size() - 1] == ',')
-    data[data.size() - 1] = ' ';
   return (_data);
 }
 
