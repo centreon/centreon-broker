@@ -1003,9 +1003,9 @@ db_name                 Database name.
 queries_per_transaction Number of queries per transaction. Set to 1 or
                         below to disable transactions. Default to 1.
 read_timeout            When using transactions, maximum time between
-                        commits. This prevent database from not being
-                        updated due to lack of queries to fill the
-                        transaction.
+                        commits in seconds. This prevent database from
+                        not being updated due to lack of queries to
+                        fill the transaction. Default to 1s.
 ======================= ===============================================
 
 Example
