@@ -197,6 +197,11 @@ bool influxdb9::_check_answer_string(std::string const& ans) {
     return (false);
   std::string first_line_str = ans.substr(0, first_line);
 
+  logging::debug(logging::medium)
+    << "influxdb: received an answer from "
+    << _socket->peerAddress().toString()
+    << "' and port '" << _socket->peerPort() << "': '" << ans << "'";
+
   // Split the first line using the power of std.
   std::istringstream iss(first_line_str);
   std::vector<std::string> split;
