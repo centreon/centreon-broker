@@ -167,9 +167,19 @@ io::endpoint* factory::new_endpoint(
       version = "0.8";
   }
 
+  unsigned int read_timeout(0);
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("read_timeout"));
+    if (it != cfg.params.end())
+      read_timeout = it.value().toUInt();
+    else
+      read_timeout = 1;
+  }
+
   // Connector.
   std::auto_ptr<influxdb::connector> c(new influxdb::connector);
-  c->connect_to(user, passwd, addr, port, db, queries_per_transaction, version);
+  c->connect_to(user, passwd, addr, port, db, queries_per_transaction, version, read_timeout);
   is_acceptor = false;
   return (c.release());
 }

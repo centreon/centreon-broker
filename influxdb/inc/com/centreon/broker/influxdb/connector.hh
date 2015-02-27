@@ -48,7 +48,8 @@ namespace           influxdb {
                       unsigned short _port,
                       std::string const& db,
                       unsigned int queries_per_transaction,
-                      std::string const& version);
+                      std::string const& version,
+                      unsigned int read_timeout);
     misc::shared_ptr<io::stream>
                     open();
     misc::shared_ptr<io::stream>
@@ -62,6 +63,7 @@ namespace           influxdb {
     std::string     _db;
     unsigned int    _queries_per_transaction;
     std::string     _version;
+    unsigned int    _read_timeout;
 
     void            _internal_copy(connector const& other);
   };

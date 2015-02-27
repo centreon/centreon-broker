@@ -52,7 +52,8 @@ stream::stream(
           unsigned short port,
           std::string const& db,
           unsigned int queries_per_transaction,
-          std::string const& version)
+          std::string const& version,
+          unsigned int read_timeout)
   : _process_out(true),
     _user(user),
     _password(passwd),
@@ -60,6 +61,7 @@ stream::stream(
     _port(port),
     _db(db),
     _queries_per_transaction(queries_per_transaction),
+    _read_timeout(read_timeout),
     _actual_query(0) {
   if (version == "0.8")
     _influx_db.reset(new influxdb8(user, passwd, addr, port, db));
@@ -153,22 +155,24 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
     throw (io::exceptions::shutdown(true, true)
              << "influxdb stream is shutdown");
 
-  ++_actual_query;
-
   // Process metric events.
   if (!data.isNull()) {
     if (data->type()
           == io::events::data_type<io::events::storage,
                                    storage::de_metric>::value) {
       _influx_db->write(data.ref_as<storage::metric const>());
+      ++_actual_query;
     }
   }
 
-  if (_actual_query >= _queries_per_transaction) {
+  timestamp now(std::time(NULL));
+  if (_actual_query >= _queries_per_transaction
+      || std::difftime(now, _last_query) >= _read_timeout) {
     logging::debug(logging::medium)
       << "influxdb: commiting " << _actual_query << " queries";
     unsigned int ret = _actual_query;
     _actual_query = 0;
+    _last_query = std::time(NULL);
     _influx_db->commit();
     return (ret);
   }
