@@ -172,7 +172,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
       << "influxdb: commiting " << _actual_query << " queries";
     unsigned int ret = _actual_query;
     _actual_query = 0;
-    _last_query = std::time(NULL);
+    _last_query = now;
     _influx_db->commit();
     return (ret);
   }
