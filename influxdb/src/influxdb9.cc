@@ -17,7 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <algorithm>
+#include <iterator>
 #include <sstream>
+#include <vector>
 #include <QHostAddress>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/influxdb/influxdb9.hh"
@@ -132,16 +135,40 @@ void influxdb9::commit() {
 
   _connect_socket();
 
+  // Send the data to the server.
   if (_socket->write(final_query.c_str(), final_query.size())
         != final_query.size())
-    throw exceptions::msg()
+    throw (exceptions::msg()
       << "influxdb: couldn't commit data to influxdb with address '"
       << _socket->peerAddress().toString()
       << "' and port '" << _socket->peerPort() << "': "
-      << _socket->errorString();
+      << _socket->errorString());
 
-  _socket->waitForBytesWritten();
+  while (_socket->bytesToWrite() != 0) {
+    if (_socket->waitForBytesWritten() == -1)
+      throw (exceptions::msg()
+        << "influxdb: couldn't send data to influxdb with address '"
+        << _socket->peerAddress().toString()
+        << "' and port '" << _socket->peerPort() << "': "
+        << _socket->errorString());
+  }
 
+  // Receive the server answer.
+  QString answer;
+  while (true) {
+    if (_socket->waitForReadyRead() == -1)
+      throw (exceptions::msg()
+        << "influxdb: couldn't receive influxdb answer with address '"
+        << _socket->peerAddress().toString()
+        << "' and port '" << _socket->peerPort() << "': "
+        << _socket->errorString());
+
+    answer.append(_socket->readAll());
+
+    if (_check_answer_string(answer.toStdString()) == true)
+      break;
+  }
+  _socket->close();
   _query.clear();
 }
 
@@ -155,4 +182,42 @@ void influxdb9::_connect_socket() {
     throw exceptions::msg()
       << "influxdb: couldn't connect to influxdb with address '"
       << _host << "' and port '" << _port << "': " << _socket->errorString();
+}
+
+/**
+ *  Check the server's answer.
+ *
+ *  @param[in] ans  The server's answer.
+ *
+ *  @return         True of the answer was complete, false otherwise.
+ */
+bool influxdb9::_check_answer_string(std::string const& ans) {
+  size_t first_line = ans.find_first_of('\n');
+  if (first_line == std::string::npos)
+    return (false);
+  std::string first_line_str = ans.substr(0, first_line);
+
+  // Split the first line using the power of std.
+  std::istringstream iss(first_line_str);
+  std::vector<std::string> split;
+  std::copy(
+         std::istream_iterator<std::string>(iss),
+         std::istream_iterator<std::string>(),
+         std::back_inserter(split));
+
+  if (split.size() != 3)
+    throw (exceptions::msg()
+      << "influxdb: unrecognizable HTTP header for '"
+      << _socket->peerAddress().toString()
+      << "' and port '" << _socket->peerPort() << "': got '"
+      << first_line_str << "'");
+
+  if (split[0] == "HTTP/1.0" && split[1] == "200" && split[2] == "OK")
+    return (true);
+  else
+    throw (exceptions::msg()
+      << "influxdb: got an error from '"
+      << _socket->peerAddress().toString()
+      << "' and port '" << _socket->peerPort() << "': '"
+      << ans << "'");
 }
