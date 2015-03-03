@@ -267,6 +267,7 @@ which holds build scripts. Generate the Makefile by running the
 following command ::
 
   $ cd /path_to_centreon_broker/build
+  $ cmake .
 
 Your Centreon Broker can be tweaked to your particular needs using
 CMake's variable system. Variables can be set like this ::
