@@ -31,7 +31,6 @@
 #  include "com/centreon/broker/multiplexing/hooker.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/influxdb/influxdb.hh"
-#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
@@ -54,8 +53,7 @@ namespace          influxdb {
                      unsigned short port,
                      std::string const& db,
                      unsigned int queries_per_transaction,
-                     std::string const& version,
-                     unsigned int read_timeout);
+                     std::string const& version);
                    ~stream();
     void           process(bool in = false, bool out = true);
     void           read(misc::shared_ptr<io::data>& d);
@@ -76,14 +74,12 @@ namespace          influxdb {
                  _port;
     std::string  _db;
     unsigned int _queries_per_transaction;
-    unsigned int _read_timeout;
 
     std::auto_ptr<influxdb>
                  _influx_db;
 
     // Internal working members
     unsigned int _actual_query;
-    timestamp    _last_query;
 
     // Status members
     std::string    _status;
