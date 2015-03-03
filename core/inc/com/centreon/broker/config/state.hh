@@ -62,6 +62,9 @@ namespace                         config {
     bool                          log_thread_id() const throw ();
     void                          log_timestamp(bool log_time) throw ();
     bool                          log_timestamp() const throw ();
+    void                          log_human_readable_timestamp(
+                                    bool human_log_time) throw ();
+    bool                          log_human_readable_timestamp() const throw();
     QList<logger>&                loggers() throw ();
     QList<logger> const&          loggers() const throw ();
     QString const&                module_directory() const throw ();
@@ -86,6 +89,7 @@ namespace                         config {
     QString                       _instance_name;
     bool                          _log_thread_id;
     bool                          _log_timestamp;
+    bool                          _log_human_readable_timestamp;
     QList<logger>                 _loggers;
     QString                       _module_dir;
     QList<QString>                _module_list;
