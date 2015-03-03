@@ -29,7 +29,6 @@
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/influxdb/stream.hh"
-#include "com/centreon/broker/influxdb/influxdb8.hh"
 #include "com/centreon/broker/influxdb/influxdb9.hh"
 
 using namespace com::centreon::broker;
@@ -61,9 +60,7 @@ stream::stream(
     _db(db),
     _queries_per_transaction(queries_per_transaction),
     _actual_query(0) {
-  if (version == "0.8")
-    _influx_db.reset(new influxdb8(user, passwd, addr, port, db));
-  else if (version == "0.9")
+  if (version == "0.9")
     _influx_db.reset(new influxdb9(user, passwd, addr, port, db));
   else
     throw (exceptions::msg()

@@ -164,7 +164,7 @@ io::endpoint* factory::new_endpoint(
     if (it != cfg.params.end())
       version = it.value().toStdString();
     else
-      version = "0.8";
+      version = "0.9";
   }
 
   // Connector.
