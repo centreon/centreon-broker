@@ -561,6 +561,10 @@ void failover::run() {
               misc::shared_ptr<io::data> data;
               _from->read(data, _next_timeout, &timed_out);
               _unprocessed.push_back(data);
+              if (_next_timeout >= ::time(NULL)) {
+                timed_out = true;
+                _unprocessed.push_back(misc::shared_ptr<io::data>());
+              }
             }
             if (timed_out && (_read_timeout != (time_t)-1))
               _next_timeout = time(NULL) + _read_timeout;
