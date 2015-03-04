@@ -177,7 +177,9 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
     if ((wb < 0) || (_socket->state() == QAbstractSocket::UnconnectedState))
       throw (exceptions::msg() << "TCP: error while writing: "
              << _socket->errorString());
-    _socket->waitForBytesWritten(-1);
+    if (_socket->waitForBytesWritten(-1) == false)
+      throw (exceptions::msg() << "TCP: error while sending data: "
+             << _socket->errorString());
   }
   return (1);
 }
