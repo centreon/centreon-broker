@@ -49,6 +49,7 @@ namespace          tcp {
     misc::shared_ptr<io::stream>
                    open(QString const& id);
     void           set_timeout(int msecs);
+    void           set_write_timeout(int msecs);
 
   private:
     void           _internal_copy(connector const& c);
@@ -60,6 +61,7 @@ namespace          tcp {
     misc::shared_ptr<QTcpSocket>
                    _socket;
     int            _timeout;
+    int            _write_timeout;
   };
 }
 

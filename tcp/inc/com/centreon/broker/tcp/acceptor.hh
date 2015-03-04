@@ -55,6 +55,7 @@ namespace                com {
           misc::shared_ptr<io::stream>
                          open(QString const& id);
           void           stats(io::properties& tree);
+          void           set_write_timeout(int msecs);
 
          private:
           void           _internal_copy(acceptor const& a);
@@ -66,6 +67,7 @@ namespace                com {
           unsigned short _port;
           std::auto_ptr<QTcpServer>
                          _socket;
+          int            _write_timeout;
 
          private slots:
           void           _on_stream_destroy(QObject* obj);

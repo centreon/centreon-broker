@@ -445,6 +445,10 @@ one_peer_retention_mode Allow only one connection for a specific output.
 port                    Port on which Centreon Broker should listen (if
                         no host is defined) or connect to.
 protocol                Choose your protocol (bbdo or ndo).
+socket_write_timeout    The number of milliseconds to wait for data to
+                        be sent in the socket before the waiting
+                        timeout. If not present, or 0, the write will
+                        never time out.
 ======================= ================================================
 
 Example
