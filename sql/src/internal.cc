@@ -229,7 +229,7 @@ static void bind_uint_null_on_minus_one(
 template <typename T>
 static void to_base(database_query& q, T const& t) {
   mapping::entry const* entries = T::entries;
-  for (; entries->is_null(); ++entries) {
+  for (; !entries->is_null(); ++entries) {
     if (entries->get_name().empty())
       continue ;
     QString field(":");

@@ -1787,9 +1787,8 @@ void stream::_process_service_group_member(
       // Check if the servicegroup membership
       // doesn't already exists.
       std::ostringstream oss;
-      oss << "SELECT * FROM "
-          << mapped_type<neb::service_group_member>::table
-          << " WHERE host_id = " << sgm.host_id
+      oss << "SELECT * FROM rt_services_servicegroups"
+             " WHERE host_id = " << sgm.host_id
           << "  AND service_id = " << sgm.service_id
           << "  AND servicegroup_id = " << servicegroup_id;
       logging::info(logging::low) << "SQL: executing query: "
