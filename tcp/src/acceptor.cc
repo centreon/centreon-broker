@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <sys/socket.h>
 #include <QMutexLocker>
 #include <QWaitCondition>
 #include <sstream>
@@ -38,7 +39,7 @@ using namespace com::centreon::broker::tcp;
 /**
  *  Default constructor.
  */
-acceptor::acceptor() : io::endpoint(true), _port(0) {}
+acceptor::acceptor() : io::endpoint(true), _port(0), _write_timeout(-1) {}
 
 /**
  *  @brief Copy constructor.
@@ -173,6 +174,21 @@ misc::shared_ptr<io::stream> acceptor::open() {
   // Set the SO_KEEPALIVE option.
   incoming->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 
+  // Set the write timeout option.
+  if (_write_timeout >= 0) {
+#ifndef _WIN32
+    struct timeval t;
+    t.tv_sec = _write_timeout % 1000000;
+    t.tv_usec = _write_timeout / 1000000;
+    setsockopt(
+      incoming->socketDescriptor(),
+      SOL_SOCKET,
+      SO_SNDTIMEO,
+      &t,
+      sizeof(t));
+#endif //!_WIN32
+  }
+
   // Create child objects.
   misc::shared_ptr<QMutex> mutex(new QMutex);
   connect(
@@ -236,6 +252,15 @@ void acceptor::stats(io::properties& tree) {
   return ;
 }
 
+/**
+ *  Set write timeout on data.
+ *
+ *  @param[in] msecs  Timeout in ms.
+ */
+void acceptor::set_write_timeout(int msecs) {
+  _write_timeout = msecs;
+}
+
 /**************************************
 *                                     *
 *           Private Methods           *
@@ -249,6 +274,7 @@ void acceptor::stats(io::properties& tree) {
  */
 void acceptor::_internal_copy(acceptor const& a) {
   _port = a._port;
+  _write_timeout = a._write_timeout;
   return ;
 }
 
