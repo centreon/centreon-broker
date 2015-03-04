@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <sys/socket.h>
 #include <QMutexLocker>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -39,7 +40,8 @@ connector::connector()
   : io::endpoint(false),
     _mutex(new QMutex),
     _port(0),
-    _timeout(-1) {}
+    _timeout(-1),
+    _write_timeout(-1) {}
 
 /**
  *  Copy constructor.
@@ -135,6 +137,21 @@ misc::shared_ptr<io::stream> connector::open() {
   // Set the SO_KEEPALIVE option.
   _socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 
+  // Set the write timeout option.
+  if (_write_timeout >= 0) {
+#ifndef _WIN32
+    struct timeval t;
+    t.tv_sec = _write_timeout % 1000000;
+    t.tv_usec = _write_timeout / 1000000;
+    setsockopt(
+      _socket->socketDescriptor(),
+      SOL_SOCKET,
+      SO_SNDTIMEO,
+      &t,
+      sizeof(t));
+#endif //!_WIN32
+  }
+
   // Return stream.
   misc::shared_ptr<stream> s(new stream(_socket, _mutex));
   s->set_timeout(_timeout);
@@ -162,6 +179,16 @@ void connector::set_timeout(int msecs) {
   return ;
 }
 
+/**
+ *  Set write timeout on data.
+ *
+ *  @param[in] msecs  Timeout in ms.
+ */
+void connector::set_write_timeout(int msecs) {
+  _write_timeout = msecs;
+}
+
+
 /**************************************
 *                                     *
 *           Private Methods           *
@@ -178,5 +205,6 @@ void connector::_internal_copy(connector const& c) {
   _port = c._port;
   _socket = c._socket;
   _timeout = c._timeout;
+  _write_timeout = c._write_timeout;
   return ;
 }
