@@ -27,7 +27,7 @@ include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 set(INC_DIR "${INC_DIR}/com/centreon/broker/influxdb")
 
 # INFLUXDB module.
-set(INFLUXDB "25-influxdb")
+set(INFLUXDB "80-influxdb")
 set(INFLUXDB "${INFLUXDB}" PARENT_SCOPE)
 add_library("${INFLUXDB}" SHARED
   # Sources.
