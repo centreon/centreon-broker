@@ -952,3 +952,72 @@ Example
     <tagname>CentralBroker</tagname>
     <path>/var/lib/centreon-broker/$instance_id$.stats</path>
   </output>
+
+InfluxDB
+========
+
+.. warning::
+  This module is experimental.
+
+This module fills an InfluxDB instance with metrics. It uses the
+:ref:`storage engine <user_modules_storage>` as its performance data
+source.
+
+===================== ======
+**Type**              dumper
+**Layer(s)**          1-7
+**Work on input**     No
+**Work on output**    Yes
+**Work on temporary** No
+===================== ======
+
+Description
+-----------
+
+Time series are named after metric names (like *rtmax*, for example) and
+holds three columns which are filled by the module :
+
+  - *time* : obvious
+  - *value* : the metric value
+  - *metric_id* : the ID of the metric within Centreon's *metrics* table
+
+Statuses are stored within a time serie named *statuses* with the
+following columns :
+
+  - *time* : obvious
+  - *value* : status value
+  - *index_id* : the index ID of the host / service within Centreon's
+    *index_data* table
+
+Configuration
+-------------
+
+======================= ===============================================
+Tag                     Description
+======================= ===============================================
+db_host                 Database host.
+db_port                 Database port.
+db_user                 Database user.
+db_password             Password associated with *db_user*.
+db_name                 Database name.
+queries_per_transaction Number of queries per transaction. Set to 1 or
+                        below to disable transactions. Default to 1.
+read_timeout            When using transactions, maximum time between
+                        commits in seconds. This prevent database from
+                        not being updated due to lack of queries to
+                        fill the transaction. Default to 1s.
+======================= ===============================================
+
+Example
+-------
+
+::
+
+  <output>
+    <type>influxdb</type>
+    <db_host>localhost</db_host>
+    <db_port>8086</db_port>
+    <db_user>centreon</db_user>
+    <db_password>noertnec</db_password>
+    <db_name>metrics</db_name>
+  </output>
