@@ -67,6 +67,8 @@ namespace                 bbdo {
   };
   extern umap<unsigned int, bbdo_mapped_type> bbdo_mapping;
 
+  // Create mappings.
+  void create_mappings();
   // Mapping load/unload routines.
   void load();
   void unload();

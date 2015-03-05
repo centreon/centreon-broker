@@ -33,24 +33,24 @@ using namespace com::centreon::broker::bbdo;
 // /**
 //  *  Internal protocol objects mappings.
 //  */
-// static mapped_data<version_response> const version_response_mapping[] = {
-//   mapped_data<version_response>(
+// static mapping::entry const version_response_mapping[] = {
+//   mapping::entry(
 //     &version_response::bbdo_major,
 //     1,
 //     "major"),
-//   mapped_data<version_response>(
+//   mapping::entry(
 //     &version_response::bbdo_minor,
 //     2,
 //     "minor"),
-//   mapped_data<version_response>(
+//   mapping::entry(
 //     &version_response::bbdo_patch,
 //     3,
 //     "patch"),
-//   mapped_data<version_response>(
+//   mapping::entry(
 //     &version_response::extensions,
 //     4,
 //     "extensions"),
-//   mapped_data<version_response>()
+//   mapping::entry()
 // };
 
 /**************************************
@@ -135,3 +135,38 @@ void version_response::_internal_copy(version_response const& right) {
   extensions = right.extensions;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const version_response::entries[] = {
+  mapping::entry(
+    &version_response::bbdo_major,
+    "major",
+    1),
+  mapping::entry(
+    &version_response::bbdo_minor,
+    "minor",
+    2),
+  mapping::entry(
+    &version_response::bbdo_patch,
+    "patch",
+    3),
+  mapping::entry(
+    &version_response::extensions,
+    "extensions",
+    4),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_version_response() {
+  return (new version_response);
+}
+io::event_info::event_operations const version_response::operations = {
+  &new_version_response
+};

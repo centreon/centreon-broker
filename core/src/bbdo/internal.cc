@@ -27,6 +27,7 @@
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/io/event_info.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
@@ -309,6 +310,33 @@ static void init_mapping(
   return ;
 }
 
+/**
+ *  Create all the event mappings.
+ */
+void bbdo::create_mappings() {
+  // Clear mappings.
+  bbdo_mapping.clear();
+  // Create mappings.
+  for (io::events::categories_container::const_iterator
+         itc(io::events::instance().begin()),
+         endc(io::events::instance().end());
+       itc != endc;
+       ++itc) {
+    for (io::events::events_container::const_iterator
+           ite(itc->second.events.begin()),
+           ende(itc->second.events.end());
+         ite != ende;
+         ++ite) {
+      logging::debug(logging::low)
+        << "BBDO: creating mapping for event " << ite->first;
+      bbdo_mapped_type& m(bbdo_mapping[ite->first]);
+      m.mapped_type = &ite->second;
+      init_mapping(m.bbdo_entries, *m.mapped_type);
+    }
+  }
+
+}
+
 /**************************************
 *                                     *
 *           Global Objects            *
@@ -321,22 +349,28 @@ static void init_mapping(
  *  Initialize BBDO mappings and register BBDO protocol.
  */
 void bbdo::load() {
-  // Create mappings.
-  for (io::events::categories_container::const_iterator
-         itc(io::events::instance().begin()),
-         endc(io::events::instance().end());
-       itc != endc;
-       ++itc) {
-    for (io::events::events_container::const_iterator
-           ite(itc->second.events.begin()),
-           ende(itc->second.events.end());
-         ite != ende;
-         ++ite) {
-      bbdo_mapped_type& m(bbdo_mapping[ite->first]);
-      m.mapped_type = &ite->second;
-      init_mapping(m.bbdo_entries, *m.mapped_type);
-    }
+  io::events& e(io::events::instance());
+
+  // Register BBDO category.
+  int bbdo_category(e.register_category("bbdo", io::events::bbdo));
+  if (bbdo_category != io::events::bbdo) {
+    e.unregister_category(bbdo_category);
+    throw (exceptions::msg() << "BBDO: category " << io::events::bbdo
+           << " is already registered whereas it should be "
+           << "reserved for the bbdo core");
   }
+
+  // Register BBDO events.
+  e.register_event(
+      io::events::bbdo,
+      bbdo::de_version_response,
+      io::event_info(
+            "version_response",
+            &version_response::operations,
+            version_response::entries));
+
+  // Create mappings.
+  create_mappings();
 
   // Register BBDO protocol.
   io::protocols::instance().reg(
@@ -356,6 +390,9 @@ void bbdo::load() {
 void bbdo::unload() {
   // Unregister protocol.
   io::protocols::instance().unreg("BBDO");
+
+  // Unregister category.
+  io::events::instance().unregister_category(io::events::bbdo);
 
   // Clean mappings.
   bbdo_mapping.clear();

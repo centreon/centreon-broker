@@ -27,6 +27,7 @@
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
@@ -189,27 +190,52 @@ unsigned int output::write(misc::shared_ptr<io::data> const& e) {
 
   // Check if data exists.
   if (!e.isNull()) {
-    unsigned int event_type(e->type());
-    // Find routine.
-    umap<unsigned int, bbdo_mapped_type>::const_iterator
-      mapped_type(bbdo_mapping.find(event_type));
-    if (mapped_type != bbdo_mapping.end()) {
+    if (_write_event(e) == false) {
+      unsigned int event_type(e->type());
+      // BBDO doesn't know this event.
+      // Reload all the event mappings and try again.
       logging::debug(logging::medium)
-        << "BBDO: serializing event of type " << event_type;
-      misc::shared_ptr<io::raw> data(new io::raw);
-      serialize(*data, *e, mapped_type->second);
-      logging::debug(logging::medium) << "BBDO: event of type "
-        << event_type << " successfully serialized in "
-        << data->size() << " bytes";
-      _to->write(data);
+        << "BBDO: unknown type " << event_type
+        << ": reloading mappings and retrying";
+      create_mappings();
+
+      if (_write_event(e) == false)
+        logging::debug(logging::medium)
+          << "BBDO: could not serialize event of type " << event_type
+          << " (category = " << io::events::category_of_type(event_type)
+          << ", element = " << io::events::element_of_type(event_type) << ")"
+          << ": event mapping was not found";
     }
-    else
-      logging::debug(logging::medium)
-        << "BBDO: could not serialize event of type " << event_type
-        << ": event mapping was not found";
   }
   else
     _to->write(e);
 
   return (1);
+}
+
+/**
+ *  Attempt to write an event.
+ *
+ *  @param[in] e  The event.
+ *
+ *  @return       True if the event is known.
+ */
+bool output::_write_event(misc::shared_ptr<io::data> const& e) {
+  unsigned int event_type(e->type());
+  // Find routine.
+  umap<unsigned int, bbdo_mapped_type>::const_iterator
+    mapped_type(bbdo_mapping.find(event_type));
+  if (mapped_type != bbdo_mapping.end()) {
+    logging::debug(logging::medium)
+      << "BBDO: serializing event of type " << event_type;
+    misc::shared_ptr<io::raw> data(new io::raw);
+    serialize(*data, *e, mapped_type->second);
+    logging::debug(logging::medium) << "BBDO: event of type "
+      << event_type << " successfully serialized in "
+      << data->size() << " bytes";
+    _to->write(data);
+    return (true);
+  }
+  else
+    return (false);
 }
