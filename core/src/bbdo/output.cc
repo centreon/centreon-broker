@@ -60,6 +60,10 @@ static void serialize(
          end(mapping_info.bbdo_entries.end());
        it != end;
        ++it, ++current_entry) {
+    // Skip 0 numbered entries.
+    for (;!current_entry->is_null() && !current_entry->get_number();
+         ++current_entry);
+
     // Serialization itself.
     (*it->getter)(e, *current_entry, data);
 
@@ -195,7 +199,7 @@ unsigned int output::write(misc::shared_ptr<io::data> const& e) {
       // BBDO doesn't know this event.
       // Reload all the event mappings and try again.
       logging::debug(logging::medium)
-        << "BBDO: unknown type " << event_type
+        << "BBDO: unknown event type " << event_type
         << ": reloading mappings and retrying";
       create_mappings();
 
