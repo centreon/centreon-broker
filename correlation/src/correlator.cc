@@ -1173,8 +1173,10 @@ void correlator::_write_issues() {
            it(_nodes.begin()),
            end(_nodes.end());
          it != end;
-         ++it)
+         ++it) {
+      if (it->my_issue.get())
       f.add(misc::shared_ptr<issue>(new issue(*it->my_issue)));
+    }
     f.commit();
 
     logging::config(logging::medium) << "correlation: finished "
