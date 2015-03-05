@@ -61,7 +61,7 @@ static void serialize(
        it != end;
        ++it, ++current_entry) {
     // Skip 0 numbered entries.
-    for (;!current_entry->is_null() && !current_entry->get_number();
+    for (;!current_entry->is_null() && current_entry->get_number() == 0;
          ++current_entry);
 
     // Serialization itself.

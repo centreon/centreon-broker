@@ -61,7 +61,7 @@ static io::data* unserialize(
        it != end;
        ++it, ++current_entry) {
     // Skip 0 numbered entries.
-    for (; !current_entry->is_null() && !current_entry->get_number();
+    for (; !current_entry->is_null() && current_entry->get_number() == 0;
          ++current_entry);
 
     unsigned int processed((*it->setter)(
@@ -273,7 +273,7 @@ unsigned int input::read_any(
       << "BBDO: got unknown event type " << event_id
       << ": recreating mappings and retrying";
     create_mappings();
-    mapped_type = bbdo_mapping.end();
+    mapped_type = bbdo_mapping.find(event_id);
     if (mapped_type != bbdo_mapping.end())
       d = unserialize(
             _buffer.c_str() + _processed,
