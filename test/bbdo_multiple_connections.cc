@@ -117,10 +117,10 @@ int main() {
         throw (exceptions::msg() << "cannot read host count from DB: "
                << q.lastError().text().toStdString().c_str());
       if (!q.next()
-          || (q.value(0).toUInt() != 2)
+          || (q.value(0).toUInt() != 3)
           || q.next())
         throw (exceptions::msg() << "invalid host count: got "
-               << q.value(0).toUInt() << ", expected 2");
+               << q.value(0).toUInt() << ", expected 3");
     }
 
     // Check service count.
@@ -133,10 +133,10 @@ int main() {
                << "cannot read service count from DB: "
                << q.lastError().text().toStdString().c_str());
       if (!q.next()
-          || (q.value(0).toUInt() != 5)
+          || (q.value(0).toUInt() != 6)
           || q.next())
         throw (exceptions::msg() << "invalid service count: got "
-               << q.value(0).toUInt() << ", expected 5");
+               << q.value(0).toUInt() << ", expected 6");
     }
 
     // Success.
