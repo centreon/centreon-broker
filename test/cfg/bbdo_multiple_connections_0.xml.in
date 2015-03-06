@@ -22,6 +22,6 @@
     <type>tcp</type>
     <host>localhost</host>
     <port>5684</port>
-    <protocol>ndo</protocol>
+    <protocol>bbdo</protocol>
   </output>
 </centreonbroker>

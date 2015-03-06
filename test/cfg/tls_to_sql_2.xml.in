@@ -19,7 +19,7 @@
     <name>InputCompressionToSQLUnitTest</name>
     <type>tcp</type>
     <port>5679</port>
-    <protocol>ndo</protocol>
+    <protocol>bbdo</protocol>
     <tls>yes</tls>
     <private_key>@PROJECT_SOURCE_DIR@/test/cfg/tls_to_sql_2.key</private_key>
     <public_cert>@PROJECT_SOURCE_DIR@/test/cfg/tls_to_sql_2.cert</public_cert>
