@@ -228,11 +228,11 @@ int main() {
     daemon.set_config_file(engine_config_file);
     daemon.start();
 
-    // T1.
-    time_t t1(time(NULL));
-
     // Let the daemon initialize.
     sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+
+    // T1.
+    time_t t1(time(NULL));
 
     /* Test cases
     ** ----------
