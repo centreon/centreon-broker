@@ -288,7 +288,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/exceptions/with_pointer.cc"
   "${SRC_DIR}/file/cfile.cc"
   "${SRC_DIR}/file/factory.cc"
-  "${SRC_DIR}/file/main.cc"
+  "${SRC_DIR}/file/internal.cc"
   "${SRC_DIR}/file/opener.cc"
   "${SRC_DIR}/file/stream.cc"
 # #	../src/interface/xml/destination.cc
@@ -356,6 +356,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/exceptions/with_pointer.hh"
   "${INC_DIR}/file/cfile.hh"
   "${INC_DIR}/file/factory.hh"
+  "${INC_DIR}/file/internal.hh"
   "${INC_DIR}/file/opener.hh"
   "${INC_DIR}/file/stream.hh"
   "${INC_DIR}/io/data.hh"

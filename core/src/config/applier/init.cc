@@ -28,6 +28,7 @@
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/config/applier/temporary.hh"
+#include "com/centreon/broker/file/internal.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/io/temporary.hh"
@@ -55,6 +56,7 @@ void config::applier::deinit() {
   config::applier::temporary::unload();
   config::applier::logger::unload();
   io::temporary::unload();
+  file::unload();
   bbdo::unload();
   multiplexing::engine::instance().clear();
   config::applier::modules::unload();
@@ -76,6 +78,7 @@ void config::applier::init() {
   io::events::load();
   io::protocols::load();
   config::applier::modules::load();
+  file::load();
   bbdo::load();
   config::applier::logger::load();
   config::applier::temporary::load();

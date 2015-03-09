@@ -18,48 +18,27 @@
 */
 
 #include "com/centreon/broker/file/factory.hh"
+#include "com/centreon/broker/file/internal.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::broker::file;
 
-// Load count.
-static unsigned int instances(0);
+void file::unload() {
+  // Unregister file layer.
+  io::protocols::instance().unreg("file");
+}
 
-extern "C" {
-  /**
-   *  Module deinitialization routine.
-   */
-  void broker_module_deinit() {
-    // Decrement instance number.
-    if (!--instances)
-      // Unregister file layer.
-      io::protocols::instance().unreg("file");
-    return ;
-  }
+void file::load() {
+  // File module.
+  logging::info(logging::high)
+    << "file: module for Centreon Broker "
+    << CENTREON_BROKER_VERSION;
 
-  /**
-   *  Module initialization routine.
-   *
-   *  @param[in] arg Configuration object.
-   */
-  void broker_module_init(void const* arg) {
-    (void)arg;
-
-    // Increment instance number.
-    if (!instances++) {
-      // File module.
-      logging::info(logging::high)
-        << "file: module for Centreon Broker "
-        << CENTREON_BROKER_VERSION;
-
-      // Register file layer.
-      io::protocols::instance().reg("file",
-        file::factory(),
-        1,
-        3);
-    }
-
-    return ;
-  }
+  // Register file layer.
+  io::protocols::instance().reg("file",
+    file::factory(),
+    1,
+    3);
 }

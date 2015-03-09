@@ -576,7 +576,7 @@ misc::shared_ptr<io::endpoint> endpoint::_create_new_endpoint(
   }
   if (endp.isNull())
     throw (exceptions::msg() << "endpoint applier: no matching " \
-             "protocol found for endpoint '" << cfg.name << "'");
+             "type found for endpoint '" << cfg.name << "'");
 
   // Create remaining objects.
   while (level <= 7) {
