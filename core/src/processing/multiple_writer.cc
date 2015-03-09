@@ -86,9 +86,6 @@ void multiple_writer::set_primary_output(io::stream *output) {
 }
 
 unsigned int multiple_writer::write(misc::shared_ptr<io::data> const& d) {
-  if (d.isNull())
-    return (1);
-
   // We return the number of packet processed by the primary output, or
   // the first secondary output if the primary output isn't set.
   unsigned int packet_processed = 1;
