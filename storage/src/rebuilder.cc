@@ -141,7 +141,7 @@ void rebuilder::run() {
         database_query index_to_rebuild_query(*db);
         index_to_rebuild_query.run_query(
           "SELECT id, host_id, service_id, rrd_retention"
-          " FROM index_data"
+          " FROM rt_index_data"
           " WHERE must_be_rebuild='1'",
           "storage: rebuilder: could not fetch index to rebuild");
         while (!_should_exit && index_to_rebuild_query.next()) {

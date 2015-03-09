@@ -793,7 +793,7 @@ CREATE TABLE rt_metrics (
 
   PRIMARY KEY (metric_id),
   UNIQUE KEY (index_id, metric_name),
-  FOREIGN KEY (index_id) REFERENCES log_index_data (id)
+  FOREIGN KEY (index_id) REFERENCES rt_index_data (id)
     ON DELETE CASCADE,
   INDEX (index_id)
 );
