@@ -231,7 +231,7 @@ int main() {
     std::map<unsigned long, std::list<unsigned long> > metrics;
     {
       QSqlQuery q(*db.storage_db());
-      std::string query("SELECT index_id, metric_id FROM metrics");
+      std::string query("SELECT index_id, metric_id FROM rt_metrics");
       if (!q.exec(query.c_str()))
         throw (exceptions::msg() << "cannot get metrics list: "
                << qPrintable(q.lastError().text()));
@@ -291,7 +291,7 @@ int main() {
     // Flag metrics to delete.
     {
       QSqlQuery q(*db.storage_db());
-      std::string query("UPDATE rt_metrics AS m JOIN index_data AS i"
+      std::string query("UPDATE rt_metrics AS m JOIN rt_index_data AS i"
                         "  ON m.index_id=i.id"
                         "  SET m.to_delete=1"
                         "  WHERE i.host_id=1 AND i.service_id<>1");
@@ -336,7 +336,7 @@ int main() {
     {
       QSqlQuery q(*db.storage_db());
       std::string query("SELECT i.host_id, i.service_id"
-                        "  FROM rt_metrics AS m JOIN index_data AS i"
+                        "  FROM rt_metrics AS m JOIN rt_index_data AS i"
                         "  ON m.index_id=i.id");
       if (!q.exec(query.c_str()))
         throw (exceptions::msg() << "cannot read metrics: "
