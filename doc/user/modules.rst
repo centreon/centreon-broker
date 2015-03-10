@@ -1021,3 +1021,55 @@ Example
     <db_password>noertnec</db_password>
     <db_name>metrics</db_name>
   </output>
+
+Graphite
+========
+
+.. warning::
+  This module is experimental.
+
+This module fills a Graphite instance with metrics. It uses the
+:ref:`storage engine <user_modules_storage>` as its performance data
+source.
+
+===================== ========
+**Type**              graphite
+**Layer(s)**          1-7
+**Work on input**     No
+**Work on output**    Yes
+**Work on temporary** NO
+===================== ========
+
+Description
+-----------
+
+The naming hierarchy used by the Graphite module is :
+
+::
+  centreon.metrics.<index_id>.<metric>
+
+Where *index_id* is the index of the host / service within Centreon's
+*index_data* table and *metric* is the metric name. Node status is
+provided in a special metric named *status*.
+
+The module uses only the plaintext protocol.
+
+Configuration
+-------------
+
+======================= ===============================================
+Tag                     Description
+======================= ===============================================
+db_host                 Database host.
+db_port                 Database port. Default to 80.
+db_user                 Database user. Default is empty (no
+                        authentication).
+db_password             Password associated with *db_user*. Default is
+                        empty (no authentication).
+queries_per_transaction Number of queries per transaction. Set to 1 or
+                        below to disable transactions. Default to 1.
+read_timeout            When using transactions, maximum time between
+                        commits in seconds. This prevent database from
+                        not being updated due to lack of queries to
+                        fill the transaction. Default to 1s.
+======================= ===============================================
