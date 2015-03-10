@@ -644,10 +644,10 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
     &get_address_of_contact<6>);
   map.insert(
     "CONTACTGROUPALIAS",
-    &get_contactgroup_alias);
+    &null_getter);
   map.insert(
     "CONTACTGROUPMEMBERS",
-    &get_contactgroup_members);
+    &null_getter);
 
   // Notification macro.
   map.insert(

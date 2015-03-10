@@ -429,56 +429,6 @@ std::string com::centreon::broker::notification::get_timet_string(
 }
 
 /**
- *  Get the alias of the contactgroup.
- *
- *  @param[in] context  The context from where the macro is being executed.
- *
- *  @return  The value of the macro.
- */
-std::string com::centreon::broker::notification::get_contactgroup_alias(
-              macro_context const& context) {
-  objects::contactgroup::ptr ctg =
-    context.get_state().get_contactgroup_by_contact_id(
-      context.get_contact().get_id());
-  if (!ctg)
-    return ("");
-  return (ctg->get_alias());
-}
-
-/**
- *  Get the members of a contactgroup.
- *
- *  @param[in] context  The context from where the macro is being executed.
- *
- *  @return  The value of the macro.
- */
-std::string com::centreon::broker::notification::get_contactgroup_members(
-              macro_context const& context) {
-  state const& st = context.get_state();
-  objects::contactgroup::ptr ctg =
-    st.get_contactgroup_by_contact_id(
-      context.get_contact().get_id());
-  if (!ctg)
-    return ("");
-  std::string res;
-  QList<unsigned int> members = st.get_contacts_by_contactgroup(ctg);
-  for (QList<unsigned int>::const_iterator it(members.begin()),
-                                           end(members.end());
-       it != end;
-       ++it) {
-    if (!res.empty())
-      res.append(", ");
-    objects::contact::ptr cont = st.get_contact_by_id(*it);
-    if (!cont)
-      throw (com::centreon::broker::exceptions::msg()
-             << "notification: macro: could not get the contactgroup members "
-                "of contact " << cont->get_name());
-    res.append(cont->get_name());
-  }
-  return (res);
-}
-
-/**
  *  Get the type of a notification.
  *
  *  @param[in] context  The context from where the macro is being executed.

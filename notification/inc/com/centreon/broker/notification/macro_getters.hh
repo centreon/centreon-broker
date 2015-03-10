@@ -592,12 +592,6 @@ namespace        notification {
   std::string  get_timet_string(
                  macro_context const& context);
 
-  std::string  get_contactgroup_alias(
-                 macro_context const& context);
-
-  std::string  get_contactgroup_members(
-                 macro_context const& context);
-
   std::string  get_notification_type(
                  macro_context const& context);
 }

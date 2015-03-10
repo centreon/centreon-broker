@@ -43,7 +43,6 @@
 #include "com/centreon/broker/notification/builders/notification_rule_by_node_builder.hh"
 #include "com/centreon/broker/notification/builders/notification_rule_by_id_builder.hh"
 #include "com/centreon/broker/notification/builders/nodegroup_by_name_builder.hh"
-#include "com/centreon/broker/notification/builders/contactgroup_by_contact_builder.hh"
 #include "com/centreon/broker/notification/builders/global_macro_builder.hh"
 
 using namespace com::centreon::broker::notification;
@@ -88,8 +87,6 @@ state& state::operator=(state const& obj) {
     _date_format = obj._date_format;
     _global_constant_macros = obj._global_constant_macros;
     _nodegroups_by_name = obj._nodegroups_by_name;
-    _contactgroups_by_contact_id = obj._contactgroups_by_contact_id;
-    _contact_id_by_contactgroups = obj._contact_id_by_contactgroups;
   }
   return (*this);
 }
@@ -116,8 +113,6 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
   _notification_rule_by_id.clear();
   _global_constant_macros.clear();
   _nodegroups_by_name.clear();
-  _contactgroups_by_contact_id.clear();
-  _contact_id_by_contactgroups.clear();
 
   // Get new objects
   {
@@ -210,14 +205,7 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
     nodegroup_by_name_builder builder(_nodegroups_by_name);
     nl.load(&centreon_db, &builder);
   }
-  {
-    // Get contactgroups.
-    contactgroup_loader cl;
-    contactgroup_by_contact_builder builder(
-                                      _contactgroups_by_contact_id,
-                                      _contact_id_by_contactgroups);
-    cl.load(&centreon_db, &builder);
-  }
+
   // Debug logging for all the data loaded.
 #ifndef NDEBUG
     // data_logger::log_container("_nodes", _nodes);
@@ -412,30 +400,6 @@ int state::get_date_format() const {
 objects::nodegroup::ptr state::get_nodegroup_by_name(
                                  std::string const& name) const {
   return (_nodegroups_by_name.value(name));
-}
-
-/**
- *  Get the first contactgroup of a contact.
- *
- *  @param[in] name  The id of the contact..
- *
- *  @return  The contactgroup or a null ptr.
- */
-objects::contactgroup::ptr state::get_contactgroup_by_contact_id(
-                                    unsigned int contact_id) const {
-  return (_contactgroups_by_contact_id.value(contact_id));
-}
-
-/**
- *  Get all the contacts in a contactgroup.
- *
- *  @param[in] cnt  The contactgroup.
- *
- *  @return  A list of the contacts.
- */
-QList<unsigned int> state::get_contacts_by_contactgroup(
-                             objects::contactgroup::ptr cnt) const {
-  return (_contact_id_by_contactgroups.values(cnt));
 }
 
 /**
