@@ -1125,13 +1125,13 @@ CREATE TABLE `cfg_dependencies_hostchildren_relations` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `cfg_dependencies_hostgroupchildren_relation`
+-- Table structure for table `cfg_dependencies_hostgroupchildren_relations`
 --
 
-DROP TABLE IF EXISTS `cfg_dependencies_hostgroupchildren_relation`;
+DROP TABLE IF EXISTS `cfg_dependencies_hostgroupchildren_relations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `cfg_dependencies_hostgroupchildren_relation` (
+CREATE TABLE `cfg_dependencies_hostgroupchildren_relations` (
   `dhgcr_id` int(11) NOT NULL AUTO_INCREMENT,
   `dependency_dep_id` int(11) DEFAULT NULL,
   `hostgroup_hg_id` int(11) DEFAULT NULL,
@@ -1439,6 +1439,92 @@ CREATE TABLE `cfg_downtimes_services_relations` (
   CONSTRAINT `downtime_service_relation_ibfk_1` FOREIGN KEY (`service_service_id`) REFERENCES `cfg_services` (`service_id`) ON DELETE CASCADE,
   CONSTRAINT `downtime_service_relation_ibfk_2` FOREIGN KEY (`dt_id`) REFERENCES `cfg_downtimes` (`dt_id`) ON DELETE CASCADE,
   CONSTRAINT `downtime_service_relation_ibfk_3` FOREIGN KEY (`host_host_id`) REFERENCES `cfg_hosts` (`host_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `cfg_engine`
+--
+
+DROP TABLE IF EXISTS `cfg_engine`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `cfg_engine` (
+  `poller_id` int(11) NOT NULL,
+  `conf_dir` varchar(255) DEFAULT NULL,
+  `log_dir` varchar(255) DEFAULT NULL,
+  `var_lib_dir` varchar(255) DEFAULT NULL,
+  `module_dir` varchar(255) DEFAULT NULL,
+  `init_script` varchar(255) DEFAULT NULL,
+  `enable_notifications` tinyint(1) DEFAULT NULL,
+  `enable_event_handlers` tinyint(1) DEFAULT NULL,
+  `external_command_buffer_slots` int(11) DEFAULT NULL,
+  `command_check_interval` varchar(255) DEFAULT NULL,
+  `command_file` varchar(255) DEFAULT NULL,
+  `use_syslog` tinyint(1) DEFAULT NULL,
+  `log_notifications` tinyint(1) DEFAULT NULL,
+  `log_service_retries` tinyint(1) DEFAULT NULL,
+  `log_host_retries` tinyint(1) DEFAULT NULL,
+  `log_event_handlers` tinyint(1) DEFAULT NULL,
+  `log_initial_states` tinyint(1) DEFAULT NULL,
+  `log_external_commands` tinyint(1) DEFAULT NULL,
+  `log_passive_checks` tinyint(1) DEFAULT NULL,
+  `global_host_event_handler` int(11) DEFAULT NULL,
+  `global_service_event_handler` int(11) DEFAULT NULL,
+  `max_concurrent_checks` int(11) DEFAULT NULL,
+  `max_service_check_spread` int(11) DEFAULT NULL,
+  `max_host_check_spread` int(11) DEFAULT NULL,
+  `check_result_reaper_frequency` int(11) DEFAULT NULL,
+  `enable_flap_detection` tinyint(1) DEFAULT NULL,
+  `low_service_flap_threshold` varchar(255) DEFAULT NULL,
+  `high_service_flap_threshold` varchar(255) DEFAULT NULL,
+  `low_host_flap_threshold` varchar(255) DEFAULT NULL,
+  `high_host_flap_threshold` varchar(255) DEFAULT NULL,
+  `service_check_timeout` int(11) DEFAULT NULL,
+  `host_check_timeout` int(11) DEFAULT NULL,
+  `event_handler_timeout` int(11) DEFAULT NULL,
+  `notification_timeout` int(11) DEFAULT NULL,
+  `ocsp_timeout` int(11) DEFAULT NULL,
+  `ochp_timeout` int(11) DEFAULT NULL,
+  `ocsp_command` int(11) DEFAULT NULL,
+  `ochp_command` int(11) DEFAULT NULL,
+  `check_service_freshness` tinyint(1) DEFAULT NULL,
+  `freshness_check_interval` int(11) DEFAULT NULL,
+  `check_host_freshness` tinyint(1) DEFAULT NULL,
+  `date_format` varchar(255) DEFAULT NULL,
+  `enable_predictive_host_dependency_checks` tinyint(1) DEFAULT NULL,
+  `enable_predictive_service_dependency_checks` tinyint(1) DEFAULT NULL,
+  `debug_level` int(11) DEFAULT NULL,
+  `debug_verbosity` tinyint(1) DEFAULT NULL,
+  `max_debug_file_size` int(11) DEFAULT NULL,
+  PRIMARY KEY (`poller_id`),
+  KEY `cmd1_index` (`global_host_event_handler`),
+  KEY `cmd2_index` (`global_service_event_handler`),
+  KEY `cmd3_index` (`ocsp_command`),
+  KEY `cmd4_index` (`ochp_command`),
+  KEY `poller_id` (`poller_id`),
+  CONSTRAINT `cfg_engine_ibfk_gheh` FOREIGN KEY (`global_host_event_handler`) REFERENCES `cfg_commands` (`command_id`) ON DELETE SET NULL,
+  CONSTRAINT `cfg_engine_ibfk_gseh` FOREIGN KEY (`global_service_event_handler`) REFERENCES `cfg_commands` (`command_id`) ON DELETE SET NULL,
+  CONSTRAINT `cfg_engine_ibfk_ochpc` FOREIGN KEY (`ochp_command`) REFERENCES `cfg_commands` (`command_id`) ON DELETE SET NULL,
+  CONSTRAINT `cfg_engine_ibfk_ocspc` FOREIGN KEY (`ocsp_command`) REFERENCES `cfg_commands` (`command_id`) ON DELETE SET NULL,
+  CONSTRAINT `cfg_engine_ibfk_poller_id` FOREIGN KEY (`poller_id`) REFERENCES `cfg_pollers` (`poller_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `cfg_engine_broker_module`
+--
+
+DROP TABLE IF EXISTS `cfg_engine_broker_module`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `cfg_engine_broker_module` (
+  `bk_mod_id` int(11) NOT NULL AUTO_INCREMENT,
+  `poller_id` int(11) DEFAULT NULL,
+  `broker_module` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`bk_mod_id`),
+  KEY `fk_engine_cfg` (`poller_id`),
+  CONSTRAINT `fk_engine_cfg` FOREIGN KEY (`poller_id`) REFERENCES `cfg_engine` (`poller_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

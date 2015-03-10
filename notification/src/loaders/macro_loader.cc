@@ -54,7 +54,7 @@ void macro_loader::load(QSqlDatabase *db, macro_builder *output) {
   query.setForwardOnly(true);
 
   // Load global, constant macro.
-  if (!query.exec(
+  /*if (!query.exec(
                "SELECT admin_email, admin_pager, cfg_file, status_file,"
                "       state_retention_file, object_cache_file, temp_file,"
                "       log_file, command_file, host_perfdata_file, "
@@ -115,7 +115,7 @@ void macro_loader::load(QSqlDatabase *db, macro_builder *output) {
       output->add_date_format(utilities::date_format_strict_iso8601);
     else
       output->add_date_format(utilities::date_format_us);
-  }
+  }*/
 
   // Load global resource macros.
   if (!query.exec(

@@ -61,21 +61,3 @@ void composed_contact_builder::add_contact_info(
     (*it)->add_contact_info(contact_id, key, value);
 }
 
-
-/**
- *  Add a contact param to the builder.
- *
- *  @param[in] contact_id  The id of the contact.
- *  @param[in] key         The key (name) of the contact param.
- *  @param[in] value       The value of the contact param.
- */
-void composed_contact_builder::add_contact_param(
-                                 unsigned int contact_id,
-                                 std::string const& key,
-                                 std::string const& value) {
-  for (composed_builder<contact_builder>::iterator it(begin()),
-                                                   end_it(end());
-       it != end_it;
-       ++it)
-    (*it)->add_contact_param(contact_id, key, value);
-}

@@ -42,7 +42,6 @@ CREATE TABLE cfg_notification_rules (
   service_id int default NULL,
   hg_id int default NULL,
   sg_id int default NULL,
-  cg_id int default NULL,
   contact_id int default NULL,
   timeperiod_id int default NULL,
   enabled boolean NOT NULL default 1,
@@ -59,8 +58,6 @@ CREATE TABLE cfg_notification_rules (
   FOREIGN KEY (hg_id) REFERENCES cfg_hostgroups (hg_id)
     ON DELETE CASCADE,
   FOREIGN KEY (sg_id) REFERENCES cfg_servicegroups (sg_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (cg_id) REFERENCES cfg_contactgroups (cg_id)
     ON DELETE CASCADE,
   FOREIGN KEY (contact_id) REFERENCES cfg_contacts (contact_id)
     ON DELETE CASCADE,

@@ -331,6 +331,7 @@ int main() {
 
     // Prepare database.
     db.open(NULL, NULL, DB_NAME);
+    db.set_remove_db_on_close(false);
 
     // Prepare monitoring engine configuration parameters.
     generate_host_groups(hostgroups, 2);
@@ -388,13 +389,18 @@ int main() {
 
     // Populate database.
     db.centreon_run(
-         "INSERT INTO cfg_hosts (host_id, host_name, display_name, host_alias)"
-         "  VALUES (1, 'Host1', 'DisplayName1', 'HostAlias1')",
+        "INSERT INTO cfg_organizations (organization_id, name, shortname)"
+        "  VALUES (1, '42', '42')",
+        "could not create organization");
+
+    db.centreon_run(
+         "INSERT INTO cfg_hosts (host_id, host_name, display_name, host_alias, organization_id)"
+         "  VALUES (1, 'Host1', 'DisplayName1', 'HostAlias1', 1)",
          "could not create host");
     db.centreon_run(
          "INSERT INTO cfg_services (service_id,"
-         "            service_description)"
-         "  VALUES (1, 'Service1'), (2, 'Service2')",
+         "            service_description, organization_id)"
+         "  VALUES (1, 'Service1', 1), (2, 'Service2', 1)",
          "could not create services");
     db.centreon_run(
          "INSERT INTO cfg_hosts_services_relations (host_host_id,"
@@ -402,48 +408,35 @@ int main() {
          "  VALUES (1, 1), (1, 2)",
          "could not link host and services");
     db.centreon_run(
-         "INSERT INTO cfg_hostgroups (hg_name, hg_alias)"
-          "           VALUES ('HostGroup1', 'HostGroupAlias1'),"
-          "                  ('HostGroup2', 'HostGroupAlias2')",
+         "INSERT INTO cfg_hostgroups (hg_name, hg_alias, organization_id)"
+          "           VALUES ('HostGroup1', 'HostGroupAlias1', 1),"
+          "                  ('HostGroup2', 'HostGroupAlias2', 1)",
          "could not create the host group");
     db.centreon_run(
-         "INSERT INTO cfg_servicegroups (sg_name, sg_alias)"
-          "           VALUES ('ServiceGroup1', 'ServiceGroupAlias1'),"
-          "                  ('ServiceGroup2', 'ServiceGroupAlias2')",
+         "INSERT INTO cfg_servicegroups (sg_name, sg_alias, organization_id)"
+          "           VALUES ('ServiceGroup1', 'ServiceGroupAlias1', 1),"
+          "                  ('ServiceGroup2', 'ServiceGroupAlias2', 1)",
          "could not create the service group");
 
     // Create contact in DB.
     db.centreon_run(
-         "INSERT INTO cfg_contacts (contact_id, contact_name, contact_alias,"
-          "           contact_email, contact_pager, contact_address1,"
-          "           contact_address2, contact_address3, contact_address4,"
-          "           contact_address5, contact_address6)"
-         "  VALUES (1, 'Contact1', 'ContactAlias1', 'ContactEmail',"
-          "         'ContactPager', 'ContactAddress1', 'ContactAddress2',"
-          "         'ContactAddress3', 'ContactAddress4', 'ContactAddress5',"
-          "         'ContactAddress6')",
+         "INSERT INTO cfg_contacts (contact_id, description)"
+         "  VALUES (1, 'Contact1')",
          "could not create contact");
     db.centreon_run(
-         "INSERT INTO cfg_contacts_services_relations (contact_id,"
-         "            service_service_id)"
-         "  VALUES (1, 1), (1, 2)",
-         "could not link services and contact");
-    db.centreon_run(
-         "INSERT INTO cfg_contactgroups (cg_id, cg_name, cg_alias)"
-         "  VALUES (1, 'ContactGroupName', 'ContactGroupAlias')",
-         "could not create contactgroup");
-    db.centreon_run(
-         "INSERT INTO cfg_contactgroups_contacts_relations"
-          "             (contact_contact_id, contactgroup_cg_id)"
-          "  VALUES (1, 1)",
-          "could not link contactgroup and contact");
+         "INSERT INTO cfg_contacts_infos (contact_id, info_key, info_value)"
+         "  VALUES (1, 'email', 'ContactEmail1'), (1, 'pager', 'ContactPager1'),"
+          "        (1, 'address1', 'ContactAddress1'), (1, 'address2', 'ContactAddress2'),"
+          "        (1, 'address3', 'ContactAddress3'), (1, 'address4', 'ContactAddress4'),"
+          "        (1, 'address5', 'ContactAddress5'), (1, 'address6', 'ContactAddress6')",
+          "could not create contact infos");
 
     // Create notification command in DB.
     db.centreon_run(
          "INSERT INTO cfg_commands (command_id, command_name,"
-         "            command_line)"
-         "  VALUES (1, 'NotificationCommand1', '"UTIL_FILE_WRITER" "MACRO_LIST" $_SERVICEFLAGFILE$'),"
-         "         (2, 'NotificationCommand2', '"UTIL_FILE_WRITER" "RECOVERY_FILE_CONTENT" $_SERVICEFLAGFILE2$')",
+         "            command_line, organization_id)"
+         "  VALUES (1, 'NotificationCommand1', '"UTIL_FILE_WRITER" "MACRO_LIST" $_SERVICEFLAGFILE$', 1),"
+         "         (2, 'NotificationCommand2', '"UTIL_FILE_WRITER" "RECOVERY_FILE_CONTENT" $_SERVICEFLAGFILE2$', 1)",
          "could not create notification command");
 
     // Create notification rules in DB.

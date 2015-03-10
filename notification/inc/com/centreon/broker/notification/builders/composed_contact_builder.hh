@@ -47,10 +47,6 @@ namespace         notification {
                     unsigned int contact_id,
                     std::string const& key,
                     std::string const& value);
-    virtual void  add_contact_param(
-                    unsigned int contact_id,
-                    std::string const& key,
-                    std::string const& value);
   };
 
 }

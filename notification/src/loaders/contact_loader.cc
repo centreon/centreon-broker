@@ -75,7 +75,7 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
   if (!query.exec("SELECT contact_id, info_key, info_value "
                   "  FROM cfg_contacts_infos"))
     throw (exceptions::msg()
-           << "notification: cannot load contacts parameters from database: "
+           << "notification: cannot load contacts infos from database: "
            << query.lastError().text());
 
   while (query.next()) {
@@ -83,19 +83,5 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
               query.value(0).toUInt(),
               query.value(1).toString().toStdString(),
               query.value(2).toString().toStdString());
-  }
-
-  // Load the custom variables of the contact.
-  if (!query.exec("SELECT cp_key, cp_value, cp_contact_id "
-                  "  FROM cfg_contacts_params"))
-    throw (exceptions::msg()
-           << "notification: cannot load contacts parameters from database: "
-           << query.lastError().text());
-
-  while (query.next()) {
-    output->add_contact_param(
-              query.value(2).toUInt(),
-              query.value(0).toString().toStdString(),
-              query.value(1).toString().toStdString());
   }
 }
