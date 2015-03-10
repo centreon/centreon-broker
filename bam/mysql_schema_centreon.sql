@@ -6,8 +6,8 @@
 --    Business Activity Monitoring   --
 -- ------------------------------------
 
--- meta_service
--- meta_service_relation
+-- cfg_meta_services
+-- cfg_meta_services_relations
 -- mod_bam
 -- mod_bam_ba_groups
 -- mod_bam_bagroup_ba_relation
@@ -43,7 +43,7 @@ CREATE TABLE mod_bam (
 
   PRIMARY KEY (ba_id),
   UNIQUE (name),
-  FOREIGN KEY (id_reporting_period) REFERENCES timeperiod (tp_id)
+  FOREIGN KEY (id_reporting_period) REFERENCES cfg_timeperiods (tp_id)
     ON DELETE SET NULL
 ) ENGINE=InnoDB CHARACTER SET utf8;
 
@@ -125,7 +125,7 @@ CREATE TABLE mod_bam_relations_ba_timeperiods (
 
   FOREIGN KEY (ba_id) REFERENCES mod_bam (ba_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (tp_id) REFERENCES timeperiod (tp_id)
+  FOREIGN KEY (tp_id) REFERENCES cfg_timeperiods (tp_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB CHARACTER SET utf8;
 
@@ -160,7 +160,7 @@ CREATE TABLE mod_bam_bagroup_ba_relation (
 --
 -- Meta Services.
 --
-CREATE TABLE meta_service (
+CREATE TABLE cfg_meta_services (
   meta_id int NOT NULL auto_increment,
 
   meta_name varchar(254) default NULL,
@@ -191,7 +191,7 @@ CREATE TABLE meta_service (
 --
 -- Meta Services Relationships.
 --
-CREATE TABLE meta_service_relation (
+CREATE TABLE cfg_meta_services_relations (
   msr_id int NOT NULL auto_increment,
 
   meta_id int default NULL,
@@ -201,5 +201,5 @@ CREATE TABLE meta_service_relation (
   activate enum('0','1') default NULL,
 
   PRIMARY KEY (msr_id),
-  FOREIGN KEY (meta_id) REFERENCES meta_service (meta_id) ON DELETE CASCADE
+  FOREIGN KEY (meta_id) REFERENCES cfg_meta_services (meta_id) ON DELETE CASCADE
 ) ENGINE=InnoDB CHARACTER SET utf8;

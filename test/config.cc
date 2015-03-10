@@ -171,9 +171,8 @@ void test_db::open(
                                                      db_type,
                                                      centreon_connection)));
     _open(*_centreon, centreon_db_name);
-    _run_script(*_centreon, PROJECT_SOURCE_DIR "/bam/centreon.sql");
-    _run_script(*_centreon, PROJECT_SOURCE_DIR "/bam/mysql_schema_centreon.sql");
     _run_script(*_centreon, PROJECT_SOURCE_DIR "/test/centreon.sql");
+    _run_script(*_centreon, PROJECT_SOURCE_DIR "/bam/mysql_schema_centreon.sql");
     _run_script(*_centreon, PROJECT_SOURCE_DIR "/notification/mysql_schema.sql");
   }
 

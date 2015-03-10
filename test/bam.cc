@@ -377,6 +377,7 @@ int main() {
   try {
     // Prepare database.
     db.open(NULL, BI_DB_NAME, CENTREON_DB_NAME);
+    db.set_remove_db_on_close(false);
 
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, HOST_COUNT);
@@ -468,16 +469,27 @@ int main() {
       &services,
       &commands);
 
+    // Create organization.
+    {
+      QString query;
+      query = "INSERT INTO cfg_organizations (organization_id, name, shortname)"
+              "  VALUES (1, '42', '42')";
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not create organization: "
+               << q.lastError().text());
+    }
+
     // Create timeperiods.
     {
       QString query;
-      query = "INSERT INTO timeperiod (tp_id, tp_name, tp_alias, "
+      query = "INSERT INTO cfg_timeperiods (tp_id, tp_name, tp_alias, "
               "            tp_sunday, tp_monday, tp_tuesday,"
               "            tp_wednesday, tp_thursday, tp_friday, "
-              "            tp_saturday)"
+              "            tp_saturday, organization_id)"
               "  VALUES (1, '24x7', '24x7', '00:00-24:00',"
               "          '00:00-24:00', '00:00-24:00', '00:00-24:00',"
-              "          '00:00-24:00', '00:00-24:00', '00:00-24:00')";
+              "          '00:00-24:00', '00:00-24:00', '00:00-24:00', 1)";
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create timeperiods: "
@@ -490,8 +502,8 @@ int main() {
       for (int i(1); i <= HOST_COUNT; ++i) {
         {
           std::ostringstream oss;
-          oss << "INSERT INTO host (host_id, host_name)"
-              << "  VALUES (" << i << ", '" << i << "')";
+          oss << "INSERT INTO cfg_hosts (host_id, host_name, organization_id)"
+              << "  VALUES (" << i << ", '" << i << "', 1)";
           QSqlQuery q(*db.centreon_db());
           if (!q.exec(oss.str().c_str()))
             throw (exceptions::msg() << "could not create host "
@@ -502,8 +514,8 @@ int main() {
              ++j) {
           {
             std::ostringstream oss;
-            oss << "INSERT INTO service (service_id, service_description)"
-                << "  VALUES (" << j << ", '" << j << "')";
+            oss << "INSERT INTO cfg_services (service_id, service_description, organization_id)"
+                << "  VALUES (" << j << ", '" << j << "', 1)";
             QSqlQuery q(*db.centreon_db());
             if (!q.exec(oss.str().c_str()))
               throw (exceptions::msg() << "could not create service ("
@@ -512,7 +524,7 @@ int main() {
           }
           {
             std::ostringstream oss;
-            oss << "INSERT INTO host_service_relation (host_host_id, service_service_id)"
+            oss << "INSERT INTO cfg_hosts_services_relations (host_host_id, service_service_id)"
                 << "  VALUES (" << i << ", " << j << ")";
             QSqlQuery q(*db.centreon_db());
             if (!q.exec(oss.str().c_str()))
@@ -569,8 +581,8 @@ int main() {
       // Create associated services.
       {
         QString query(
-                  "INSERT INTO host (host_id, host_name)"
-                  "  VALUES (1001, 'virtual_ba_host')");
+                  "INSERT INTO cfg_hosts (host_id, host_name, organization_id)"
+                  "  VALUES (1001, 'virtual_ba_host', 1)");
         QSqlQuery q(*db.centreon_db());
         if (!q.exec(query))
           throw (exceptions::msg()
@@ -580,8 +592,8 @@ int main() {
       for (int i(1); i <= BA_COUNT; ++i) {
         {
           std::ostringstream oss;
-          oss << "INSERT INTO service (service_id, service_description)"
-              << "  VALUES (" << 1000 + i << ", 'ba_" << i << "')";
+          oss << "INSERT INTO cfg_services (service_id, service_description, organization_id)"
+              << "  VALUES (" << 1000 + i << ", 'ba_" << i << "', 1)";
           QSqlQuery q(*db.centreon_db());
           if (!q.exec(oss.str().c_str()))
             throw (exceptions::msg()
@@ -590,7 +602,7 @@ int main() {
         }
         {
           std::ostringstream oss;
-          oss << "INSERT INTO host_service_relation (host_host_id, "
+          oss << "INSERT INTO cfg_hosts_services_relations (host_host_id, "
               << "            service_service_id)"
               << "  VALUES (1001, " << 1000 + i << ")";
           QSqlQuery q(*db.centreon_db());

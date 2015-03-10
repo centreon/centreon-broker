@@ -185,8 +185,8 @@ void reader::_load(state::kpis& kpis) {
       if (it->second.is_meta()) {
         std::ostringstream oss;
         oss << "SELECT hsr.host_host_id, hsr.service_service_id"
-               "  FROM cfg_service AS s"
-               "  LEFT JOIN cfg_host_service_relation AS hsr"
+               "  FROM cfg_services AS s"
+               "  LEFT JOIN cfg_hosts_services_relations AS hsr"
                "    ON s.service_id=hsr.service_service_id"
                "  WHERE s.service_description='meta_" << it->second.get_meta_id()
             << "'";
@@ -265,10 +265,10 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
     query.run_query(
             "SELECT h.host_name, s.service_description,"
             "       hsr.host_host_id, hsr.service_service_id"
-            "  FROM cfg_service AS s"
-            "  INNER JOIN cfg_host_service_relation AS hsr"
+            "  FROM cfg_services AS s"
+            "  INNER JOIN cfg_hosts_services_relations AS hsr"
             "    ON s.service_id=hsr.service_service_id"
-            "  INNER JOIN cfg_host AS h"
+            "  INNER JOIN cfg_hosts AS h"
             "    ON hsr.host_host_id=h.host_id"
             "  WHERE s.service_description LIKE 'ba_%'");
     while (query.next()) {
@@ -376,7 +376,7 @@ void reader::_load(
     q.run_query(
       "SELECT meta_id, meta_name, calcul_type, warning, critical,"
       "       meta_select_mode, regexp_str, metric"
-      "  FROM cfg_meta_service"
+      "  FROM cfg_meta_services"
       "  WHERE meta_activate='1'");
     while (q.next()) {
       unsigned int meta_id(q.value(0).toUInt());
@@ -411,10 +411,10 @@ void reader::_load(
     database_query q(_db);
     q.run_query(
       "SELECT h.host_name, s.service_description"
-      "  FROM cfg_service AS s"
-      "  INNER JOIN host_service_relation AS hsr"
+      "  FROM cfg_services AS s"
+      "  INNER JOIN cfg_hosts_services_relations AS hsr"
       "    ON s.service_id=hsr.service_service_id"
-      "  INNER JOIN cfg_host AS h"
+      "  INNER JOIN cfg_hosts AS h"
       "    ON hsr.host_host_id=h.host_id"
       "  WHERE s.service_description LIKE 'meta_%'");
     while (q.next()) {
@@ -511,7 +511,7 @@ void reader::_load(
       try {
         std::ostringstream query;
         query << "SELECT metric_id"
-              << "  FROM cfg_meta_service_relation"
+              << "  FROM cfg_meta_services_relations"
               << "  WHERE meta_id=" << it->second.get_id()
               << "    AND activate='1'";
         database_query q(_db);
@@ -546,10 +546,10 @@ void reader::_load(
     q.run_query(
       "SELECT h.host_id, s.service_id, h.host_name, s.service_description,"
           "   service_activate"
-      "  FROM cfg_service AS s"
-      "  LEFT JOIN host_service_relation AS hsr"
+      "  FROM cfg_services AS s"
+      "  LEFT JOIN cfg_hosts_services_relations AS hsr"
       "    ON s.service_id=hsr.service_service_id"
-      "  LEFT JOIN cfg_host AS h"
+      "  LEFT JOIN cfg_hosts AS h"
       "    ON hsr.host_host_id=h.host_id");
     while (q.next())
       mapping.set_service(
@@ -596,7 +596,7 @@ void reader::_load_dimensions() {
     q.run_query(
       "SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday, tp_tuesday, "
       "tp_wednesday, tp_thursday, tp_friday, tp_saturday"
-      "  FROM timeperiod",
+      "  FROM cfg_timeperiods",
       "could not load timeperiods from the database");
     while (q.next()) {
       timeperiods[q.value(0).toUInt()] = time::timeperiod::ptr(
@@ -627,7 +627,7 @@ void reader::_load_dimensions() {
     // Load the timeperiod exceptions.
     q.run_query(
       "SELECT timeperiod_id, days, timerange"
-      "  FROM timeperiod_exceptions",
+      "  FROM cfg_timeperiods_exceptions",
       "could not retrieve timeperiod exceptions from the database");
     while (q.next()) {
       unsigned int timeperiod_id = q.value(0).toUInt();
@@ -652,7 +652,7 @@ void reader::_load_dimensions() {
     // Load the excluded timeperiods.
     q.run_query(
       "SELECT timeperiod_id, timeperiod_exclude_id"
-      "  FROM timeperiod_exclude_relations",
+      "  FROM cfg_timeperiods_exclude_relations",
       "could not retrieve timeperiod exclusions from the database");
     while (q.next()) {
       unsigned int timeperiod_id = q.value(0).toUInt();
@@ -754,13 +754,13 @@ void reader::_load_dimensions() {
       "    ON k.drop_critical_impact_id = cc.id_impact"
       "  LEFT JOIN mod_bam_impacts AS uu"
       "    ON k.drop_unknown_impact_id = uu.id_impact"
-      "  LEFT JOIN cfg_host AS h"
+      "  LEFT JOIN cfg_hosts AS h"
       "    ON h.host_id = k.host_id"
-      "  LEFT JOIN cfg_service AS s"
+      "  LEFT JOIN cfg_services AS s"
       "    ON s.service_id = k.service_id"
       "  INNER JOIN mod_bam AS b"
       "    ON b.ba_id = k.id_ba"
-      "  LEFT JOIN cfg_meta_service AS meta"
+      "  LEFT JOIN cfg_meta_services AS meta"
       "    ON meta.meta_id = k.meta_id"
       "  LEFT JOIN mod_bam_boolean as boo"
       "    ON boo.boolean_id = k.boolean_id"

@@ -6,8 +6,8 @@
 --    Business Activity Monitoring   --
 -- ------------------------------------
 
--- meta_service
--- meta_service_relation
+-- cfg_meta_services
+-- cfg_meta_services_relations
 -- mod_bam
 -- mod_bam_ba_groups
 -- mod_bam_bagroup_ba_relation
@@ -160,7 +160,7 @@ CREATE TABLE mod_bam_bagroup_ba_relation (
 --
 -- Meta Services.
 --
-CREATE TABLE meta_service (
+CREATE TABLE cfg_meta_services (
   meta_id serial,
 
   meta_name varchar(254) default NULL,
@@ -191,7 +191,7 @@ CREATE TABLE meta_service (
 --
 -- Meta Services Relationships.
 --
-CREATE TABLE meta_service_relation (
+CREATE TABLE cfg_meta_services_relations (
   msr_id serial,
 
   meta_id int default NULL,
@@ -201,5 +201,5 @@ CREATE TABLE meta_service_relation (
   activate enum('0','1') default NULL,
 
   PRIMARY KEY (msr_id),
-  FOREIGN KEY (meta_id) REFERENCES meta_service (meta_id) ON DELETE CASCADE
+  FOREIGN KEY (meta_id) REFERENCES cfg_meta_services (meta_id) ON DELETE CASCADE
 );

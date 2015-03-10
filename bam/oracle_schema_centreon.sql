@@ -220,7 +220,7 @@ END;
 --
 -- Meta Services.
 --
-CREATE TABLE meta_service (
+CREATE TABLE cfg_meta_services (
   meta_id int NOT NULL,
 
   meta_name varchar(254) default NULL,
@@ -261,7 +261,7 @@ END;
 --
 -- Meta Services Relationships.
 --
-CREATE TABLE meta_service_relation (
+CREATE TABLE cfg_meta_services_relations (
   msr_id int NOT NULL,
 
   meta_id int default NULL,
@@ -271,13 +271,13 @@ CREATE TABLE meta_service_relation (
   activate enum('0','1') default NULL,
 
   PRIMARY KEY (msr_id),
-  FOREIGN KEY (meta_id) REFERENCES meta_service (meta_id) ON DELETE CASCADE
+  FOREIGN KEY (meta_id) REFERENCES cfg_meta_services (meta_id) ON DELETE CASCADE
 );
 CREATE SEQUENCE meta_service_relation_seq
 START WITH 1
 INCREMENT BY 1;
 CREATE TRIGGER meta_service_relation_trigger
-BEFORE INSERT ON meta_service_relation
+BEFORE INSERT ON cfg_meta_services_relations
 FOR EACH ROW
 BEGIN
   SELECT meta_service_relation_seq.nextval INTO :NEW.msr_id FROM dual;
