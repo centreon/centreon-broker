@@ -60,6 +60,7 @@ int main() {
   try {
     // Prepare database.
     db.open(DB_NAME_STORAGE, NULL, DB_NAME_CENTREON);
+    db.set_remove_db_on_close(false);
 
     // Prepare monitoring engine configuration parameters.
     generate_commands(commands, SERVICES_BY_HOST);
@@ -118,49 +119,52 @@ int main() {
     std::list<std::string> storageq;
     std::list<std::string> centreonq;
     storageq.push_back(
-      "INSERT INTO instances (instance_id, name)"
+      "INSERT INTO rt_instances (instance_id, name)"
       "  VALUES (42, 'Central')");
     storageq.push_back(
-      "INSERT INTO hosts (host_id, name, instance_id)"
+      "INSERT INTO rt_hosts (host_id, name, instance_id)"
       "  VALUES (1, '1', 42)");
     for (int i(1); i <= SERVICES_BY_HOST; ++i) {
       {
         std::ostringstream oss;
-        oss << "INSERT INTO services (host_id, description, service_id)"
+        oss << "INSERT INTO rt_services (host_id, description, service_id)"
             << "  VALUES (1, '" << i << "', " << i << ")";
         storageq.push_back(oss.str());
       }
       {
         std::ostringstream oss;
-        oss << "INSERT INTO index_data (host_id, service_id)"
+        oss << "INSERT INTO rt_index_data (host_id, service_id)"
             << "  VALUES (1, " << i << ")";
         storageq.push_back(oss.str());
       }
       {
         std::ostringstream oss;
-        oss << "INSERT INTO metrics (index_id, metric_name)"
+        oss << "INSERT INTO rt_metrics (index_id, metric_name)"
             << "  SELECT id, 'metric'"
-            << "    FROM index_data"
+            << "    FROM rt_index_data"
             << "    WHERE host_id=1 AND service_id=" << i;
         storageq.push_back(oss.str());
       }
     }
     centreonq.push_back(
-      "INSERT INTO meta_service (meta_name, calcul_type, "
+      "INSERT INTO cfg_organizations (organization_id, name, shortname)"
+      "  VALUES (1, '42', '42')");
+    centreonq.push_back(
+      "INSERT INTO cfg_meta_services (meta_name, calcul_type, "
       "            meta_select_mode, regexp_str, metric, "
-      "            warning, critical, meta_activate)"
-      "  VALUES ('1-AVE', 'AVE', '2', '%', 'metric', 'W', 'C', '1'),"
-      "         ('2-MIN', 'MIN', '2', '%', 'metric', 'W', 'C', '1'),"
-      "         ('3-MAX', 'MAX', '2', '%', 'metric', 'W', 'C', '1'),"
-      "         ('4-SUM', 'SOM', '2', '%', 'metric', 'W', 'C', '1')");
+      "            warning, critical, meta_activate, organization_id)"
+      "  VALUES ('1-AVE', 'AVE', '2', '%', 'metric', 'W', 'C', '1', 1),"
+      "         ('2-MIN', 'MIN', '2', '%', 'metric', 'W', 'C', '1', 1),"
+      "         ('3-MAX', 'MAX', '2', '%', 'metric', 'W', 'C', '1', 1),"
+      "         ('4-SUM', 'SOM', '2', '%', 'metric', 'W', 'C', '1', 1)");
     centreonq.push_back(
-      "INSERT INTO host (host_id, host_name) VALUES (1, 'Central')");
+      "INSERT INTO cfg_hosts (host_id, host_name, organization_id) VALUES (1, 'Central', 1)");
     centreonq.push_back(
-      "INSERT INTO service (service_id, service_description)"
-      "  VALUES (1, 'meta_1'), (2, 'meta_2'), (3, 'meta_3'),"
-      "         (4, 'meta_4')");
+      "INSERT INTO cfg_services (service_id, service_description, organization_id)"
+      "  VALUES (1, 'meta_1', 1), (2, 'meta_2', 1), (3, 'meta_3', 1),"
+      "         (4, 'meta_4', 1)");
     centreonq.push_back(
-      "INSERT INTO host_service_relation (host_host_id, service_service_id)"
+      "INSERT INTO cfg_hosts_services_relations (host_host_id, service_service_id)"
       "  VALUES (1, 1), (1, 2), (1, 3), (1, 4)");
 
     // Execute initialization queries.
@@ -205,7 +209,7 @@ int main() {
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(
                "SELECT value, meta_name"
-               "  FROM meta_service"
+               "  FROM cfg_meta_services"
                "  ORDER BY meta_name ASC"))
         throw (exceptions::msg()
                << "could not fetch meta-services values: "

@@ -2216,6 +2216,7 @@ CREATE TABLE `cfg_meta_services` (
   `meta_comment` text,
   `meta_activate` enum('0','1') DEFAULT NULL,
   `organization_id` int(11) NOT NULL,
+  `value` FLOAT DEFAULT NULL,
   PRIMARY KEY (`meta_id`),
   KEY `name_index` (`meta_name`),
   KEY `check_period_index` (`check_period`),
