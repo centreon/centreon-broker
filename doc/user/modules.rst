@@ -1043,15 +1043,6 @@ source.
 Description
 -----------
 
-The naming hierarchy used by the Graphite module is :
-
-::
-  centreon.metrics.<index_id>.<metric>
-
-Where *index_id* is the index of the host / service within Centreon's
-*index_data* table and *metric* is the metric name. Node status is
-provided in a special metric named *status*.
-
 The module uses only the plaintext protocol.
 
 Configuration
@@ -1060,6 +1051,15 @@ Configuration
 ======================= ===============================================
 Tag                     Description
 ======================= ===============================================
+metric_naming           Naming hierarchy within Graphite. This defaults
+                        to *centreon.metrics.<metric_id>* where
+                        *metric_id* is the metric's ID within
+                        Centreon's *metrics* table. Other available
+                        variable is *<metric_name>*.
+status_naming           Naming hierarchy within Graphite. This defaults
+                        to *centreon.statuses.<index_id>* where
+                        *index_id* is the index ID of the host /
+                        service within Centreon's *index_data* table.
 db_host                 Database host.
 db_port                 Database port. Default to 80.
 db_user                 Database user. Default is empty (no
