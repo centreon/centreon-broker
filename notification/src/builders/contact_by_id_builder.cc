@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/notification/utilities/qhash_func.hh"
 #include "com/centreon/broker/notification/builders/contact_by_id_builder.hh"
 
 using namespace com::centreon::broker::notification;
@@ -28,8 +29,10 @@ using namespace com::centreon::broker::notification::objects;
  *  @param[in] table  The table to fill.
  */
 contact_by_id_builder::contact_by_id_builder(
-                         QHash<unsigned int, objects::contact::ptr>& table)
-  : _table(table) {}
+  QHash<unsigned int, objects::contact::ptr>& table,
+  QHash<unsigned int, QHash<std::string, std::string> >& contact_infos)
+  : _table(table),
+    _contact_infos(contact_infos) {}
 
 /**
  *  Add a contact to the builder.
@@ -41,4 +44,18 @@ void contact_by_id_builder::add_contact(
                               unsigned int id,
                               objects::contact::ptr con) {
   _table[id] = con;
+}
+
+/**
+ *  Add a contact info to the builder.
+ *
+ *  @param[in] contact_id  The id of the contact.
+ *  @param[in] key         The key of the contact info.
+ *  @param[in] value       The value of the contact info.
+ */
+void contact_by_id_builder::add_contact_info(
+       unsigned int contact_id,
+       std::string const& key,
+       std::string const& value) {
+  _contact_infos[contact_id].insert(key, value);
 }

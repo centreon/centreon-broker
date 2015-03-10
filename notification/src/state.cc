@@ -77,6 +77,7 @@ state& state::operator=(state const& obj) {
     _acks = obj._acks;
     _commands = obj._commands;
     _contacts = obj._contacts;
+    _contact_infos = obj._contact_infos;
     _dependency_by_child_id = obj._dependency_by_child_id;
     _dependency_by_parent_id = obj._dependency_by_parent_id;
     _downtimes = obj._downtimes;
@@ -104,6 +105,7 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
   _acks.clear();
   _commands.clear();
   _contacts.clear();
+  _contact_infos.clear();
   _dependency_by_child_id.clear();
   _dependency_by_parent_id.clear();
   _downtimes.clear();
@@ -137,7 +139,7 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
     // Get contacts.
     contact_loader contact;
     composed_contact_builder composed;
-    contact_by_id_builder by_id_builder(_contacts);
+    contact_by_id_builder by_id_builder(_contacts, _contact_infos);
     composed.push_back(by_id_builder);
     contact.load(&centreon_db, &composed);
   }
@@ -293,6 +295,17 @@ timeperiod::ptr state::get_timeperiod_by_id(unsigned int id) const {
  */
 objects::contact::ptr state::get_contact_by_id(unsigned int id) const {
   return (_contacts.value(id));
+}
+
+/**
+ *  Get the infos of a contact by its contact id.
+ *
+ *  @param[in] id  The id of the contact.
+ *
+ *  @return        A map of the contact infos.
+ */
+QHash<std::string, std::string> state::get_contact_infos(unsigned int id) const {
+  return (_contact_infos.value(id));
 }
 
 /**

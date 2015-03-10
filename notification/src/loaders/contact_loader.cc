@@ -57,13 +57,7 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
   QSqlQuery query(*db);
 
   // Load the contacts.
-  if (!query.exec("SELECT contact_id, timeperiod_tp_id, timeperiod_tp_id2,"
-                  "       contact_name, contact_alias,"
-                  "       contact_host_notification_options,"
-                  "       contact_service_notification_options, contact_email,"
-                  "       contact_pager, contact_address1, contact_address2,"
-                  "       contact_address3, contact_address4, contact_address5,"
-                  "       contact_address6, contact_enable_notifications"
+  if (!query.exec("SELECT contact_id, description"
                   "  FROM cfg_contacts"))
     throw (exceptions::msg()
            << "notification: cannot load contacts from database: "
@@ -73,31 +67,22 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
     contact::ptr cont(new contact);
     unsigned int id = query.value(0).toUInt();
     cont->set_id(id);
-    cont->set_host_notification_period(
-      query.value(1).toString().toStdString());
-    cont->set_service_notification_period(
-      query.value(2).toString().toStdString());
-    cont->set_name(query.value(3).toString().toStdString());
-    cont->set_alias(query.value(4).toString().toStdString());
-    _parse_host_notification_options(
-      query.value(5).toString().toStdString(),
-      *cont);
-    _parse_service_notification_options(
-      query.value(6).toString().toStdString(),
-      *cont);
-    cont->set_email(query.value(7).toString().toStdString());
-    cont->set_pager(query.value(8).toString().toStdString());
-    cont->add_address(query.value(9).toString().toStdString());
-    cont->add_address(query.value(10).toString().toStdString());
-    cont->add_address(query.value(11).toString().toStdString());
-    cont->add_address(query.value(12).toString().toStdString());
-    cont->add_address(query.value(13).toString().toStdString());
-    cont->add_address(query.value(14).toString().toStdString());
-    bool is_enabled = (query.value(15).toInt() == 0);
-    cont->set_host_notifications_enabled(is_enabled);
-    cont->set_service_notifications_enabled(is_enabled);
-
+    cont->set_description(query.value(1).toString().toStdString());
     output->add_contact(id, cont);
+  }
+
+  // Load the infos of this contact.
+  if (!query.exec("SELECT contact_id, info_key, info_value "
+                  "  FROM cfg_contacts_infos"))
+    throw (exceptions::msg()
+           << "notification: cannot load contacts parameters from database: "
+           << query.lastError().text());
+
+  while (query.next()) {
+    output->add_contact_info(
+              query.value(0).toUInt(),
+              query.value(1).toString().toStdString(),
+              query.value(2).toString().toStdString());
   }
 
   // Load the custom variables of the contact.
@@ -112,63 +97,5 @@ void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
               query.value(2).toUInt(),
               query.value(0).toString().toStdString(),
               query.value(1).toString().toStdString());
-  }
-}
-
-static void _parse_host_notification_options(
-              std::string const& line,
-              contact& cont) {
-  if (line == "n")
-    cont.set_host_notification_options(contact::host_none);
-  else {
-    std::vector<std::string> tokens;
-    string::split(line, tokens, ',');
-
-    for (std::vector<std::string>::const_iterator it(tokens.begin()),
-         end(tokens.end()); it != end; ++it) {
-      if (*it == "d")
-        cont.set_host_notification_option(contact::host_down);
-      else if (*it == "u")
-        cont.set_host_notification_option(contact::host_unreachable);
-      else if (*it == "r")
-        cont.set_host_notification_option(contact::host_up);
-      else if (*it == "f")
-        cont.set_host_notification_option(contact::host_flapping);
-      else if (*it == "s")
-        cont.set_host_notification_option(contact::host_downtime);
-    }
-  }
-}
-
-/**
- *  Parse the notification options from a string list of options.
- *
- *  @param[in] line   The line to parse
- *  @param[out] cont  The object to fill.
- */
-static void _parse_service_notification_options(
-              std::string const& line,
-              contact& cont) {
-  if (line == "n")
-    cont.set_service_notification_options(contact::service_none);
-  else {
-    std::vector<std::string> tokens;
-    string::split(line, tokens, ',');
-
-    for (std::vector<std::string>::const_iterator it(tokens.begin()),
-         end(tokens.end()); it != end; ++it) {
-      if (*it == "w")
-        cont.set_service_notification_option(contact::service_warning);
-      else if (*it == "u")
-        cont.set_service_notification_option(contact::service_unknown);
-      else if (*it == "c")
-        cont.set_service_notification_option(contact::service_critical);
-      else if (*it == "r")
-        cont.set_service_notification_option(contact::service_ok);
-      else if (*it == "f")
-        cont.set_service_notification_option(contact::service_flapping);
-      else if (*it == "s")
-        cont.set_service_notification_option(contact::service_downtime);
-    }
   }
 }

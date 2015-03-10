@@ -37,15 +37,23 @@ namespace       notification {
                   : public composed_builder<contact_builder> {
   public:
                 contact_by_id_builder(
-                  QHash<unsigned int, objects::contact::ptr>& table);
+                  QHash<unsigned int, objects::contact::ptr>& table,
+                  QHash<unsigned int, QHash<std::string, std::string> >& contact_infos);
 
     void        add_contact(
                   unsigned int id,
                   objects::contact::ptr con);
 
+    void        add_contact_info(
+                  unsigned int contact_id,
+                  std::string const& key,
+                  std::string const& value);
+
   private:
     QHash<unsigned int, objects::contact::ptr>&
                   _table;
+    QHash<unsigned int, QHash<std::string, std::string> >&
+                  _contact_infos;
   };
 
 }

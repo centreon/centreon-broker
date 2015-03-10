@@ -54,6 +54,22 @@ namespace         notification {
     }
 
     /**
+     *  Add a contact info to the builder.
+     *
+     *  @param[in] contact_id  The id of the contact.
+     *  @param[in] key         The key of the contact info.
+     *  @param[in] value       The value of the contact info.
+     */
+    virtual void  add_contact_info(
+                    unsigned int contact_id,
+                    std::string const& key,
+                    std::string const& value) {
+      (void)contact_id;
+      (void)key;
+      (void)value;
+    }
+
+    /**
      *  Add a contact param to the builder.
      *
      *  @param[in] contact_id  The id of the contact.

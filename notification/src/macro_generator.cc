@@ -29,6 +29,10 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::notification;
 
+// Used for contact macros.
+const char* get_email_key() {return "email";}
+const char* get_pager_key() {return "pager";}
+
 macro_generator::x_macro_map macro_generator::_map;
 
 /**
@@ -614,16 +618,16 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
   // Contact macros.
   map.insert(
     "CONTACTNAME",
-    &get_contact_member<std::string const&, &objects::contact::get_name, 0>);
+    &get_contact_member<std::string const&, &objects::contact::get_description, 0>);
   map.insert(
     "CONTACTALIAS",
-    &get_contact_member<std::string const&, &objects::contact::get_alias, 0>);
+    &get_contact_member<std::string const&, &objects::contact::get_description, 0>);
   map.insert(
     "CONTACTEMAIL",
-    &get_contact_member<std::string const&, &objects::contact::get_email, 0>);
+    &get_contact_info<get_email_key>);
   map.insert(
     "CONTACTPAGER",
-    &get_contact_member<std::string const&, &objects::contact::get_pager, 0>);
+    &get_contact_info<get_pager_key>);
   map.insert(
     "CONTACTADDRESS1",
     &get_address_of_contact<1>);
@@ -655,7 +659,7 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
     &get_notification_type);
   map.insert(
     "NOTIFICATIONRECIPIENTS",
-    &get_contact_member<std::string const&, &objects::contact::get_name, 0>);
+    &get_contact_member<std::string const&, &objects::contact::get_description, 0>);
   map.insert(
     "HOSTNOTIFICATIONNUMBER",
     &get_action_member<unsigned int, &action::get_notification_number, 0>);

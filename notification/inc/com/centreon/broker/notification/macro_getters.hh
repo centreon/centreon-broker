@@ -524,6 +524,22 @@ namespace        notification {
   }
 
   /**
+   *  Get a contact info.
+   *
+   *  @tparam f          A function returning the name of the contact info.
+   *
+   *  @param[in] context The context from where the macro is being executed.
+   *
+   *  @return  The value of the macro.
+   */
+  template <const char* (f)()>
+  std::string get_contact_info(macro_context const& context) {
+    QHash<std::string, std::string> infos =
+      context.get_state().get_contact_infos(context.get_contact().get_id());
+    return (infos.value(f()));
+  }
+
+  /**
    *  Get the member of an action as a string.
    *
    *  @tparam U          The type of the member.
@@ -552,7 +568,11 @@ namespace        notification {
   template <int number>
   std::string get_address_of_contact(
                 macro_context const& context) {
-    return (context.get_contact().get_address().at(number - 1));
+    std::stringstream ss;
+    ss << "address" << number;
+    return (context.get_state().get_contact_infos(
+              context.get_contact().get_id())
+            .value(ss.str()));
   }
 
   // Static, non template getters.

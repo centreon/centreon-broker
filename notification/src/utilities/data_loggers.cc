@@ -118,21 +118,7 @@ logging::temp_logger& logging::operator<<(
                         logging::temp_logger const& left,
                         notification::objects::contact const& obj) throw() {
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
-  tmp LOG_MEMBER(contact, get_alias)
-      LOG_MEMBER(contact, get_address)
-      LOG_MEMBER(contact, get_customvariables)
-      LOG_MEMBER(contact, get_can_submit_commands)
-      LOG_MEMBER(contact, get_name)
-      LOG_MEMBER(contact, get_email)
-      LOG_MEMBER(contact, get_host_notifications_enabled)
-      LOG_MEMBER(contact, get_host_notification_options)
-      LOG_MEMBER(contact, get_host_notification_period)
-      LOG_MEMBER(contact, get_retain_nonstatus_information)
-      LOG_MEMBER(contact, get_retain_status_information)
-      LOG_MEMBER(contact, get_pager)
-      LOG_MEMBER(contact, get_service_notification_options)
-      LOG_MEMBER(contact, get_service_notification_period)
-      LOG_MEMBER(contact, get_service_notifications_enabled);
+  tmp LOG_MEMBER(contact, get_description);
   return (tmp);
 }
 

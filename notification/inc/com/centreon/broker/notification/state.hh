@@ -76,6 +76,8 @@ namespace             notification {
                       get_notification_rule_by_id(unsigned int id) const;
     objects::contact::ptr
                       get_contact_by_id(unsigned int id) const;
+    QHash<std::string, std::string>
+                      get_contact_infos(unsigned int id) const;
     objects::command::ptr
                       get_command_by_id(unsigned int id) const;
     QHash<std::string, std::string> const&
@@ -105,6 +107,8 @@ namespace             notification {
                       _commands;
     QHash<unsigned int, objects::contact::ptr>
                       _contacts;
+    QHash<unsigned int, QHash<std::string, std::string> >
+                      _contact_infos;
     QMultiHash<objects::node_id, objects::dependency::ptr>
                       _dependency_by_child_id;
     QMultiHash<objects::node_id, objects::dependency::ptr>
