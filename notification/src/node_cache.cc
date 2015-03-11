@@ -175,10 +175,8 @@ void node_cache::stopping() {
  *  @param[out] d  An output data event.
  */
 void node_cache::read(misc::shared_ptr<io::data>& d) {
-  if (_serialized_data.empty())
-    throw (io::exceptions::shutdown(true, true)
-           << "node cache is empty");
-  else {
+  d.clear();
+  if (!_serialized_data.empty()) {
     d = _serialized_data.front();
     _serialized_data.pop_front();
   }

@@ -615,21 +615,21 @@ int main() {
         {macros_struct::integer, NULL, 1, NULL, 0, 0, "HOSTNOTIFICATIONNUMBER"},
         {macros_struct::integer, NULL, 1, NULL, 0, 0, "SERVICENOTIFICATIONNUMBER"},
         {macros_struct::string, "HostGroupAlias1", 0, NULL, 0, 0, "HOSTGROUPALIAS"},
-        {macros_struct::string, "1", 0, NULL, 0, 0, "HOSTGROUPMEMBERS"},
+        {macros_struct::string, "Host1", 0, NULL, 0, 0, "HOSTGROUPMEMBERS"},
         {macros_struct::string, "ServiceGroupAlias1", 0, NULL, 0, 0, "SERVICEGROUPALIAS"},
-        {macros_struct::string, "1, 2", 0, NULL, 0, 0, "SERVICEGROUPMEMBERS"},
+        {macros_struct::string, "Service1, Service2", 0, NULL, 0, 0, "SERVICEGROUPMEMBERS"},
         {macros_struct::string, "Contact1", 0, NULL, 0, 0, "CONTACTNAME"},
-        {macros_struct::string, "ContactAlias1", 0, NULL, 0, 0, "CONTACTALIAS"},
-        {macros_struct::string, "ContactEmail", 0, NULL, 0, 0, "CONTACTEMAIL"},
-        {macros_struct::string, "ContactPager", 0, NULL, 0, 0, "CONTACTPAGER"},
+        {macros_struct::string, "Contact1", 0, NULL, 0, 0, "CONTACTALIAS"},
+        {macros_struct::string, "ContactEmail1", 0, NULL, 0, 0, "CONTACTEMAIL"},
+        {macros_struct::string, "ContactPager1", 0, NULL, 0, 0, "CONTACTPAGER"},
         {macros_struct::string, "ContactAddress1", 0, NULL, 0, 0, "CONTACTADDRESS1"},
         {macros_struct::string, "ContactAddress2", 0, NULL, 0, 0, "CONTACTADDRESS2"},
         {macros_struct::string, "ContactAddress3", 0, NULL, 0, 0, "CONTACTADDRESS3"},
         {macros_struct::string, "ContactAddress4", 0, NULL, 0, 0, "CONTACTADDRESS4"},
         {macros_struct::string, "ContactAddress5", 0, NULL, 0, 0, "CONTACTADDRESS5"},
         {macros_struct::string, "ContactAddress6", 0, NULL, 0, 0, "CONTACTADDRESS6"},
-        {macros_struct::string, "ContactGroupAlias", 0, NULL, 0, 0, "CONTACTGROUPALIAS"},
-        {macros_struct::string, "Contact1", 0, NULL, 0, 0, "CONTACTGROUPMEMBERS"}
+        {macros_struct::string, "", 0, NULL, 0, 0, "CONTACTGROUPALIAS"},
+        {macros_struct::string, "", 0, NULL, 0, 0, "CONTACTGROUPMEMBERS"}
       };
 
       validate_macros(ss.str(), macros, sizeof(macros) / sizeof(*macros));
@@ -638,7 +638,7 @@ int main() {
     // Make service 2 OK.
     start = ::time(NULL);
     commander.execute(
-      "PROCESS_SERVICE_CHECK_RESULT;1;2;0;Critical submitted by unit test");
+      "PROCESS_SERVICE_CHECK_RESULT;Host1;Service2;0;Critical submitted by unit test");
     sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Check file creation.
@@ -683,8 +683,7 @@ int main() {
   ::remove(flag_file.c_str());
   ::remove(flag_file2.c_str());
   ::remove(node_cache_file.c_str());
-  std::cout << engine_config_path << std::endl;
-  //config_remove(engine_config_path.c_str());
+  config_remove(engine_config_path.c_str());
   free_hosts(hosts);
   free_services(services);
   free_host_groups(hostgroups);
