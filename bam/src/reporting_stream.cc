@@ -1523,7 +1523,7 @@ void reporting_stream::_process_dimension_kpi(
       e.ref_as<bam::dimension_kpi_event const>();
   QString kpi_name;
   if (!dk.service_description.isEmpty())
-    kpi_name = dk.service_description;
+    kpi_name = dk.host_name + " " + dk.service_description;
   else if (!dk.kpi_ba_name.isEmpty())
     kpi_name = dk.kpi_ba_name;
   else if (!dk.boolean_name.isEmpty())
