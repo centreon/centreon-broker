@@ -357,7 +357,8 @@ int main() {
     generate_commands(commands, 1);
     del_and_dup(&commands.begin()->name, "service_command_%i", 1);
     generate_hosts(hosts, 1);
-    del_and_dup(&hosts.begin()->display_name, "DisplayName%i", 1);
+    del_and_dup(&hosts.begin()->name, "Host%i", 1);
+    del_and_dup(&hosts.begin()->display_name, "%i", 1);
     del_and_dup(&hosts.begin()->alias, "HostAlias%i", 1);
     hosts.begin()->checks_enabled = 0;
     hosts.begin()->accept_passive_host_checks = 1;
@@ -373,10 +374,12 @@ int main() {
       it->checks_enabled = 0;
       it->accept_passive_service_checks = 1;
       it->max_attempts = 1;
+      del_and_dup(&it->description, "Service%i", i);
+      del_and_dup(&it->display_name, "%i", i);
+      del_and_dup(&it->service_check_command, "service_command_%i", 1);
+      del_and_dup(&it->host_name, "Host%i", 1);
       link(*it, *servicegroups.begin());
       link(*it, *(++servicegroups.begin()));
-      del_and_dup(&it->display_name, "ServiceDisplayName%i", i);
-      del_and_dup(&it->service_check_command, "service_command_%i", 1);
     }
     set_custom_variable(
       services.back(),
@@ -491,18 +494,18 @@ int main() {
     monitoring.start();
     sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
     commander.execute(
-      "PROCESS_HOST_CHECK_RESULT;1;0;Host Check Ok");
+      "PROCESS_HOST_CHECK_RESULT;Host1;0;Host Check Ok");
     commander.execute(
-      "PROCESS_SERVICE_CHECK_RESULT;1;1;0;Submitted by unit test");
+      "PROCESS_SERVICE_CHECK_RESULT;Host1;Service1;0;Submitted by unit test");
     commander.execute(
-      "PROCESS_SERVICE_CHECK_RESULT;1;2;0;Submitted by unit test");
+      "PROCESS_SERVICE_CHECK_RESULT;Host1;Service2;0;Submitted by unit test");
     sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Make service 2 CRITICAL.
     commander.execute(
-      "PROCESS_SERVICE_CHECK_RESULT;1;2;2;Critical submitted by unit test");
+      "PROCESS_SERVICE_CHECK_RESULT;Host1;Service2;2;Critical submitted by unit test");
     commander.execute(
-      "PROCESS_HOST_CHECK_RESULT;1;0;Host Check Ok");
+      "PROCESS_HOST_CHECK_RESULT;Host1;0;Host Check Ok");
     sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
@@ -532,8 +535,8 @@ int main() {
         {macros_struct::function, NULL, 0, validate_date, 0, 0, "DATE"},
         {macros_struct::function, NULL, 0,validate_time, 0, 0, "TIME"},
         {macros_struct::between, NULL, 0, NULL, start, now, "TIMET"},
-        {macros_struct::string, "1", 0, NULL, 0, 0, "HOSTNAME"},
-        {macros_struct::string, "DisplayName1", 0, NULL, 0, 0, "HOSTDISPLAYNAME"},
+        {macros_struct::string, "Host1", 0, NULL, 0, 0, "HOSTNAME"},
+        {macros_struct::string, "1", 0, NULL, 0, 0, "HOSTDISPLAYNAME"},
         {macros_struct::string, "HostAlias1", 0, NULL, 0, 0, "HOSTALIAS"},
         {macros_struct::string, "localhost", 0, NULL, 0, 0, "HOSTADDRESS"},
         {macros_struct::string, "UP", 0, NULL, 0, 0, "HOSTSTATE"},
@@ -563,8 +566,8 @@ int main() {
         {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSERVICESWARNING"},
         {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSERVICESUNKNOWN"},
         {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALHOSTSERVICESCRITICAL"},
-        {macros_struct::string, "2", 0, NULL, 0, 0, "SERVICEDESC"},
-        {macros_struct::string, "ServiceDisplayName2", 0, NULL, 0, 0, "SERVICEDISPLAYNAME"},
+        {macros_struct::string, "Service2", 0, NULL, 0, 0, "SERVICEDESC"},
+        {macros_struct::string, "2", 0, NULL, 0, 0, "SERVICEDISPLAYNAME"},
         {macros_struct::string, "CRITICAL", 0, NULL, 0, 0, "SERVICESTATE"},
         {macros_struct::integer, NULL, 2, NULL, 0, 0, "SERVICESTATEID"},
         {macros_struct::string, "CRITICAL", 0, NULL, 0, 0, "LASTSERVICESTATE"},
@@ -680,7 +683,8 @@ int main() {
   ::remove(flag_file.c_str());
   ::remove(flag_file2.c_str());
   ::remove(node_cache_file.c_str());
-  config_remove(engine_config_path.c_str());
+  std::cout << engine_config_path << std::endl;
+  //config_remove(engine_config_path.c_str());
   free_hosts(hosts);
   free_services(services);
   free_host_groups(hostgroups);
