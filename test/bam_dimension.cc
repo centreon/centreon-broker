@@ -484,8 +484,8 @@ int main() {
     kpi_dimension kpis[] =
     {
       // Host/Service kpis.
-      {1, "1", 1, "BA1", 1, "1", 1, "1", 0, NULL, 0, NULL, 15, 25, 99, 0, NULL},
-      {2, "2", 2, "BA2", 1, "1", 2, "2", 0, NULL, 0, NULL, 35, 45, 99, 0, NULL},
+      {1, "1 1", 1, "BA1", 1, "1", 1, "1", 0, NULL, 0, NULL, 15, 25, 99, 0, NULL},
+      {2, "1 2", 2, "BA2", 1, "1", 2, "2", 0, NULL, 0, NULL, 35, 45, 99, 0, NULL},
       // Ba kpis.
       {3, "BA1", 2, "BA2", 0, NULL, 0, NULL, 1, "BA1", 0, NULL, 65, 75, 99, 0, NULL},
       {4, "BA2", 1, "BA1", 0, NULL, 0, NULL, 2, "BA2", 0, NULL, 25, 35, 99, 0, NULL},
