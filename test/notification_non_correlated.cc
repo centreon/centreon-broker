@@ -81,14 +81,19 @@ int main() {
 
     // Populate database.
     db.centreon_run(
-         "INSERT INTO cfg_hosts (host_id, host_name)"
-         "  VALUES (1, 'Host1')",
+        "INSERT INTO cfg_organizations (organization_id, name, shortname)"
+        "  VALUES (1, '42', '42')",
+        "could not create organization");
+
+    db.centreon_run(
+         "INSERT INTO cfg_hosts (host_id, host_name, organization_id)"
+         "  VALUES (1, 'Host1', 1)",
          "could not create host");
     db.centreon_run(
          "INSERT INTO cfg_services (service_id,"
          "            service_description,"
-         "            service_notification_options)"
-         "  VALUES (1, 'Service1', 'ywcu'), (2, 'Service2', 'ywcu')",
+         "            service_notification_options, organization_id)"
+         "  VALUES (1, 'Service1', 'ywcu', 1), (2, 'Service2', 'ywcu', 1)",
          "could not create services");
     db.centreon_run(
          "INSERT INTO cfg_hosts_services_relations (host_host_id,"
@@ -98,20 +103,15 @@ int main() {
 
     // Create contact in DB.
     db.centreon_run(
-         "INSERT INTO cfg_contacts (contact_id, contact_name)"
+         "INSERT INTO cfg_contacts (contact_id, description)"
          "  VALUES (1, 'Contact1')",
          "could not create contact");
-    db.centreon_run(
-         "INSERT INTO cfg_contacts_services_relations (contact_id,"
-         "            service_service_id)"
-         "  VALUES (1, 1), (1, 2)",
-         "could not link services and contact");
 
     // Create notification command in DB.
     db.centreon_run(
          "INSERT INTO cfg_commands (command_id, command_name,"
-         "            command_line)"
-         "  VALUES (1, 'NotificationCommand1', 'cmake -E touch $_SERVICEFLAGFILE$')",
+         "            command_line, organization_id)"
+         "  VALUES (1, 'NotificationCommand1', 'cmake -E touch $_SERVICEFLAGFILE$', 1)",
          "could not create notification command");
 
     // Create notification rules in DB.
