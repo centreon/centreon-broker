@@ -482,6 +482,13 @@ if (WITH_MODULE_INFLUXDB)
   list(APPEND MODULE_LIST "influxdb")
 endif()
 
+# Influxdb module.
+option(WITH_MODULE_GRAPHITE "Build graphite module." ON)
+if (WITH_MODULE_GRAPHITE)
+  add_subdirectory("graphite")
+  list(APPEND MODULE_LIST "graphite")
+endif()
+
 # BAM module.
 option(WITH_MODULE_BAM "Build BAM module." ON)
 if (WITH_MODULE_BAM)
