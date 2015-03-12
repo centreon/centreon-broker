@@ -28,7 +28,6 @@
 #  include <QString>
 #  include <utility>
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/multiplexing/hooker.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/influxdb/influxdb.hh"
 
@@ -44,7 +43,7 @@ namespace          influxdb {
    *
    *  Insert metrics into influxdb.
    */
-  class            stream : public multiplexing::hooker {
+  class            stream : public io::stream {
   public:
                    stream(
                      std::string const& user,
@@ -57,9 +56,7 @@ namespace          influxdb {
                    ~stream();
     void           process(bool in = false, bool out = true);
     void           read(misc::shared_ptr<io::data>& d);
-    void           starting();
     void           statistics(io::properties& tree) const;
-    void           stopping();
     void           update();
     unsigned int   write(misc::shared_ptr<io::data> const& d);
 

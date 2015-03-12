@@ -65,16 +65,12 @@ stream::stream(
   else
     throw (exceptions::msg()
            << "influxdb: unrecognized influxdb version '" << version << "'");
-  // Register with multiplexer.
-  multiplexing::engine::instance().hook(*this, false);
 }
 
 /**
  *  Destructor.
  */
 stream::~stream() {
-  // Unregister from multiplexer.
-  multiplexing::engine::instance().unhook(*this);
 }
 
 /**
@@ -96,14 +92,7 @@ void stream::process(bool in, bool out) {
 void stream::read(misc::shared_ptr<io::data>& d) {
   d.clear();
   throw (com::centreon::broker::exceptions::msg()
-         << "storage: attempt to read from an influxdb stream (not supported yet)");
-  return ;
-}
-
-/**
- *  Multiplexing starts.
- */
-void stream::starting() {
+         << "influxdb: attempt to read from an influxdb stream (not supported yet)");
   return ;
 }
 
@@ -123,15 +112,7 @@ void stream::statistics(io::properties& tree) const {
 }
 
 /**
- *  Multiplexing stopped.
- */
-void stream::stopping() {
-  _process_out = false;
-  return ;
-}
-
-/**
- *  Rebuild index and metrics cache.
+ *  Do nothing.
  */
 void stream::update() {
   return ;
