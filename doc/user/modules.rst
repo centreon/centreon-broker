@@ -1053,13 +1053,20 @@ Tag                     Description
 ======================= ===============================================
 metric_naming           Naming hierarchy within Graphite. This defaults
                         to *centreon.metrics.<metric_id>* where
-                        *metric_id* is the metric's ID within
-                        Centreon's *metrics* table. Other available
-                        variable is *<metric_name>*.
+                        *<metric_id>* is the metric's ID within
+                        Centreon's *metrics* table. Complete available
+                        variables are *<instance>* (name of the poller),
+			*<instance_id>*, *<host>* (the host name),
+			*<host_id>*, *<service>* (the service
+			description), *<service_id>*, *<metric>* (the
+			metric name), *<metric_id>* and *<index_id>*.
 status_naming           Naming hierarchy within Graphite. This defaults
                         to *centreon.statuses.<index_id>* where
-                        *index_id* is the index ID of the host /
+                        *<index_id>* is the index ID of the host /
                         service within Centreon's *index_data* table.
+                        Complete available variables are *<instance>*,
+			*<instance_id>*, *<host>*, *<host_id>*,
+			*<service>*, *<service_id>* and *<index_id>*.
 db_host                 Database host.
 db_port                 Database port. Default to 80.
 db_user                 Database user. Default is empty (no
