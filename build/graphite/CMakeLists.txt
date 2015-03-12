@@ -35,10 +35,12 @@ add_library("${GRAPHITE}" SHARED
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/stream.cc"
   "${SRC_DIR}/connector.cc"
+  "${SRC_DIR}/query.cc"
   # Headers.
   "${INC_DIR}/factory.hh"
   "${INC_DIR}/stream.hh"
   "${INC_DIR}/connector.hh"
+  "${INC_DIR}/query.hh"
 )
 target_link_libraries("${GRAPHITE}" ${QT_LIBRARIES})
 set_target_properties("${GRAPHITE}" PROPERTIES PREFIX "")

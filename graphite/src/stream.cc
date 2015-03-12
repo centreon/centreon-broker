@@ -18,6 +18,7 @@
 */
 
 #include <QMutexLocker>
+#include <QTcpSocket>
 #include <sstream>
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -59,8 +60,9 @@ stream::stream(
     _db_host(db_host),
     _db_port(db_port),
     _queries_per_transaction(queries_per_transaction),
-    _actual_query(0) {
-}
+    _actual_query(0),
+    _metric_query(_metric_naming),
+    _status_query(_status_naming) {}
 
 /**
  *  Destructor.
@@ -121,10 +123,10 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
-  /*// Check that processing is enabled.
+  // Check that processing is enabled.
   if (!_process_out)
     throw (io::exceptions::shutdown(true, true)
-             << "influxdb stream is shutdown");
+             << "graphite stream is shutdown");
 
   bool commit = false;
 
@@ -133,24 +135,30 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
     if (data->type()
           == io::events::data_type<io::events::storage,
                                    storage::de_metric>::value) {
-      _influx_db->write(data.ref_as<storage::metric const>());
+      _process_metric(data.ref_as<storage::metric const>());
       ++_actual_query;
-      if (_actual_query >= _queries_per_transaction)
-        commit = true;
     }
+    else if (data->type()
+               == io::events::data_type<io::events::storage,
+                                        storage::de_status>::value) {
+      _process_status(data.ref_as<storage::status const>());
+      ++_actual_query;
+    }
+    if (_actual_query >= _queries_per_transaction)
+      commit = true;
   }
   else
     commit = true;
 
   if (commit) {
     logging::debug(logging::medium)
-      << "influxdb: commiting " << _actual_query << " queries";
+      << "graphite: commiting " << _actual_query << " queries";
     unsigned int ret = _actual_query;
     _actual_query = 0;
-    _influx_db->commit();
+    _commit();
     return (ret);
   }
-  else*/
+  else
     return (0);
 }
 
@@ -159,3 +167,51 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
 *           Private Methods           *
 *                                     *
 **************************************/
+
+/**
+ *  Process a metric event.
+ *
+ *  @param[in] me  The event to process.
+ */
+void stream::_process_metric(storage::metric const& me) {
+  _query.append(_metric_query.generate_metric(me));
+}
+
+/**
+ *  Process a status event.
+ *
+ *  @param[in] st  The status event.
+ */
+void stream::_process_status(storage::status const& st) {
+  _query.append(_status_query.generate_status(st));
+}
+
+/**
+ *  Commit all the processed event to the database.
+ */
+void stream::_commit() {
+  std::auto_ptr<QTcpSocket> connect(new QTcpSocket);
+
+  connect->connectToHost(QString::fromStdString(_db_host), _db_port);
+  if (!connect->waitForConnected())
+    throw exceptions::msg()
+          << "graphite: can't connect to graphite on host '"
+          << _db_host << "', port '" << _db_port << "': "
+          << connect->errorString();
+
+  if (connect->write(_query.c_str(), _query.size()) == -1)
+    throw exceptions::msg()
+      << "graphite: can't send data to graphite on host '"
+      << _db_host << "', port '" << _db_port << "': "
+      << connect->errorString();
+
+  if (connect->waitForBytesWritten() == false)
+    throw exceptions::msg()
+      << "graphite: can't send data to graphite on host '"
+      << _db_host << "', port '" << _db_port << "': "
+      << connect->errorString();
+
+  connect->close();
+  connect->waitForDisconnected();
+  _query.clear();
+}

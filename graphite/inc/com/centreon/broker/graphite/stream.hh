@@ -30,6 +30,9 @@
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/multiplexing/hooker.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/storage/metric.hh"
+#  include "com/centreon/broker/storage/status.hh"
+#  include "com/centreon/broker/graphite/query.hh"
 
 CCB_BEGIN()
 
@@ -78,6 +81,15 @@ namespace          graphite {
     // Status members
     std::string    _status;
     mutable QMutex _statusm;
+
+    // Query
+    query          _metric_query;
+    query          _status_query;
+    std::string    _query;
+
+    void           _process_metric(storage::metric const& me);
+    void           _process_status(storage::status const& st);
+    void           _commit();
   };
 }
 
