@@ -108,4 +108,16 @@ std::string query::generate_status(storage::status const& st) {
 void query::_one_pass_replace(
               std::string& ret,
               std::map<std::string, std::string> const& macros) {
+  ret = _naming_scheme;
+  for (std::map<std::string, std::string>::const_iterator
+         it(macros.begin()),
+         end(macros.end());
+       it != end;
+       ++it) {
+    size_t tmp(0);
+    while ((tmp = ret.find(it->first, tmp)) != std::string::npos) {
+      ret.replace(tmp, it->first.size(), it->second);
+      tmp += it->second.size();
+    }
+  }
 }
