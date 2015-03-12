@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QByteArray>
 #include <QMutexLocker>
 #include <QTcpSocket>
 #include <sstream>
@@ -62,7 +63,21 @@ stream::stream(
     _queries_per_transaction(queries_per_transaction),
     _actual_query(0),
     _metric_query(_metric_naming),
-    _status_query(_status_naming) {}
+    _status_query(_status_naming) {
+  // Create the basic HTTP authentification header.
+  if (!_db_user.empty() && !_db_password.empty()) {
+    QByteArray auth;
+    auth
+      .append(QString::fromStdString(_db_user))
+      .append(":")
+      .append(QString::fromStdString(_db_password));
+    _auth_query
+      .append("Authorization: Basic ")
+      .append(QString(auth.toBase64()).toStdString())
+      .append("\n");
+    _query.append(_auth_query);
+  }
+}
 
 /**
  *  Destructor.
@@ -214,4 +229,5 @@ void stream::_commit() {
   connect->close();
   connect->waitForDisconnected();
   _query.clear();
+  _query.append(_auth_query);
 }

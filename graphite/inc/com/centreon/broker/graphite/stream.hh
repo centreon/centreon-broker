@@ -86,6 +86,7 @@ namespace          graphite {
     query          _metric_query;
     query          _status_query;
     std::string    _query;
+    std::string    _auth_query;
 
     void           _process_metric(storage::metric const& me);
     void           _process_status(storage::status const& st);
