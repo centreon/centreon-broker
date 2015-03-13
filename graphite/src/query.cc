@@ -20,7 +20,9 @@
 #include <algorithm>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/graphite//query.hh"
+#include "com/centreon/broker/graphite/query.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::graphite;
@@ -44,8 +46,9 @@ std::string to_string(T val) {
  *
  *  @param[in] naming_scheme  The naming scheme to use.
  */
-query::query(std::string const& naming_scheme) {
-  _naming_scheme = naming_scheme;
+query::query(std::string const& naming_scheme) :
+  _naming_scheme_index(0) {
+  _compile_naming_scheme(naming_scheme);
 }
 
 /**
@@ -54,7 +57,8 @@ query::query(std::string const& naming_scheme) {
  *  @param[in] q  The object to copy.
  */
 query::query(query const& q)
-  : _naming_scheme(q._naming_scheme) {}
+  : _compiled_naming_scheme(q._compiled_naming_scheme),
+    _compiled_getters(q._compiled_getters) {}
 
 /**
  *  Destructor
@@ -70,7 +74,8 @@ query::~query() {}
  */
 query& query::operator=(query const& q) {
   if (this != &q) {
-    _naming_scheme = q._naming_scheme;
+    _compiled_naming_scheme = q._compiled_naming_scheme;
+    _compiled_getters = q._compiled_getters;
   }
   return (*this);
 }
@@ -83,7 +88,21 @@ query& query::operator=(query const& q) {
  *  @return  The query for a metric.
  */
 std::string query::generate_metric(storage::metric const& me) {
+  _naming_scheme_index = 0;
+  _type = metric;
   std::string tmp;
+  tmp.reserve(64);
+  for (std::vector<std::string (query::*)(io::data const&)>::const_iterator
+         it(_compiled_getters.begin()),
+         end(_compiled_getters.end());
+       it != end;
+       ++it)
+    tmp.append((this->**it)(me));
+
+  tmp.append(to_string(me.value));
+  tmp.append(" ");
+  tmp.append(to_string(me.ctime));
+  tmp.append("\n");
 
   return (tmp);
 }
@@ -96,28 +115,196 @@ std::string query::generate_metric(storage::metric const& me) {
  *  @return  The query for a status.
  */
 std::string query::generate_status(storage::status const& st) {
+  _naming_scheme_index = 0;
+  _type = status;
+  std::string tmp;
+  tmp.reserve(64);
+  for (std::vector<std::string (query::*)(io::data const&)>::const_iterator
+         it(_compiled_getters.begin()),
+         end(_compiled_getters.end());
+       it != end;
+       ++it)
+    tmp.append((this->**it)(st));
 
+  tmp.append(to_string(st.state));
+  tmp.append(" ");
+  tmp.append(to_string(st.ctime));
+  tmp.append("\n");
+
+  return (tmp);
 }
 
 /**
- *  Replace in one pass.
+ *  Compile a naming scheme.
  *
- *  @param[out] ret     The string returned.
- *  @param[in]  macros  A pair of key->value macros.
+ *  @param[in] naming_scheme  The naming scheme to compile.
  */
-void query::_one_pass_replace(
-              std::string& ret,
-              std::map<std::string, std::string> const& macros) {
-  ret = _naming_scheme;
-  for (std::map<std::string, std::string>::const_iterator
-         it(macros.begin()),
-         end(macros.end());
-       it != end;
-       ++it) {
-    size_t tmp(0);
-    while ((tmp = ret.find(it->first, tmp)) != std::string::npos) {
-      ret.replace(tmp, it->first.size(), it->second);
-      tmp += it->second.size();
+void query::_compile_naming_scheme(std::string const& naming_scheme) {
+  size_t found_macro = 0;
+  size_t end_macro = 0;
+
+  while ((found_macro = naming_scheme.find_first_of('$')) != std::string::npos) {
+    std::string substr = naming_scheme.substr(end_macro, found_macro);
+    if (!substr.empty()) {
+      _compiled_naming_scheme.push_back(substr);
+      _compiled_getters.push_back(&query::_get_string);
     }
+
+    if ((end_macro = naming_scheme.find_first_of('$', found_macro + 1)) == std::string::npos)
+      throw exceptions::msg()
+            << "graphite: can't compile query, opened macro not closed: '"
+            << naming_scheme.substr(found_macro);
+
+    std::string macro = naming_scheme.substr(found_macro, end_macro + 1);
+    if (macro == "$METRICID$")
+      _compiled_getters.push_back(&query::_get_metric);
+    else if (macro == "$INSTANCE$")
+      _compiled_getters.push_back(&query::_get_instance);
+    else if (macro == "$INSTANCEID$")
+      _compiled_getters.push_back(&query::_get_instance_id);
+    else if (macro == "$HOST$")
+      _compiled_getters.push_back(&query::_get_host);
+    else if (macro == "$HOSTID$")
+      _compiled_getters.push_back(&query::_get_host_id);
+    else if (macro == "$SERVICE$")
+      _compiled_getters.push_back(&query::_get_service);
+    else if (macro == "$SERVICEID$")
+      _compiled_getters.push_back(&query::_get_service_id);
+    else if (macro == "$METRIC$")
+      _compiled_getters.push_back(&query::_get_metric);
+    else if (macro == "$METRICID$")
+      _compiled_getters.push_back(&query::_get_metric_id);
+    else if (macro == "$INDEXID$")
+      _compiled_getters.push_back(&query::_get_index_id);
+    else
+      logging::config(logging::high)
+        << "graphite: unknown macro '" << macro << "': ignoring it";
+    found_macro = end_macro + 1;
   }
+  std::string substr = naming_scheme.substr(end_macro, found_macro);
+  if (!substr.empty()) {
+    _compiled_naming_scheme.push_back(substr);
+    _compiled_getters.push_back(&query::_get_string);
+  }
+}
+
+/*
+ * Getters
+ */
+
+/**
+ *  Get a string in the compiled naming scheme.
+ *
+ *  @param[in] d  The data, unused.
+ *
+ *  @return       The string.
+ */
+std::string query::_get_string(io::data const& d) {
+  return (_compiled_naming_scheme[_naming_scheme_index++]);
+}
+
+/**
+ *  Get a metric id from the data.
+ *
+ *  @param[in] d  The data.
+ *
+ *  @return       The string.
+ */
+std::string query::_get_metric_id(io::data const& d) {
+  if (_type == metric)
+    return (to_string(static_cast<storage::metric const&>(d).metric_id));
+  else
+    throw exceptions::msg()
+          << "graphite: can't get metric id of a non metric query";
+}
+
+/**
+ *  Get a metric from the data.
+ *
+ *  @param[in] d  The data.
+ *
+ *  @return       The string.
+ */
+std::string query::_get_metric(io::data const& d) {
+  return ("");
+}
+
+/**
+ *  Get a index id from the data.
+ *
+ *  @param[in] d  The data.
+ *
+ *  @return       The string.
+ */
+std::string query::_get_index_id(io::data const& d) {
+  if (_type == status)
+    return (to_string(static_cast<storage::status const&>(d).index_id));
+  throw exceptions::msg()
+        << "graphite: can't get metric id of a non status query";
+}
+
+/**
+ *  Get an instance id from the data.
+ *
+ *  @param[in] d  The data.
+ *
+ *  @return       The string.
+ */
+std::string query::_get_instance_id(io::data const& d) {
+  return (to_string(d.instance_id));
+}
+
+/**
+ *  Get an instance from the data.
+ *
+ *  @param[in] d  The data.
+ *
+ *  @return       The string.
+ */
+std::string query::_get_instance(io::data const& d) {
+  return ("");
+}
+
+/**
+ *  Get a host id from the data.
+ *
+ *  @param[in] d  The data.
+ *
+ *  @return       The string.
+ */
+std::string query::_get_host_id(io::data const& d) {
+  return ("");
+}
+
+/**
+ *  Get a host from the data.
+ *
+ *  @param[in] d  The data.
+ *
+ *  @return       The string.
+ */
+std::string query::_get_host(io::data const& d) {
+  return ("");
+}
+
+/**
+ *  Get a service id from the data.
+ *
+ *  @param[in] d  The data.
+ *
+ *  @return       The string.
+ */
+std::string query::_get_service_id(io::data const& d) {
+  return ("");
+}
+
+/**
+ *  Get a service from the data.
+ *
+ *  @param[in] d  The data.
+ *
+ *  @return       The string.
+ */
+std::string query::_get_service(io::data const& d) {
+  return ("");
 }

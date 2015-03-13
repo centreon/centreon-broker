@@ -20,8 +20,9 @@
 #ifndef CCB_GRAPHITE_QUERY_HH
 #  define CCB_GRAPHITE_QUERY_HH
 
+#  include <utility>
 #  include <string>
-#  include <map>
+#  include <vector>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/storage/metric.hh"
 #  include "com/centreon/broker/storage/status.hh"
@@ -43,12 +44,32 @@ namespace         graphite {
     std::string   generate_metric(storage::metric const& me);
     std::string   generate_status(storage::status const& st);
   private:
+    // Compiled data.
+    std::vector<std::string>
+                  _compiled_naming_scheme;
+    std::vector<std::string (query::*)(io::data const&)>
+                  _compiled_getters;
 
-    std::string   _naming_scheme;
+    // Used for generation.
+    size_t        _naming_scheme_index;
+    enum          data_type {
+      metric,
+      status
+    };
+    data_type     _type;
 
-    void          _one_pass_replace(
-                    std::string& ret,
-                    std::map<std::string, std::string> const& macros);
+    void          _compile_naming_scheme(std::string const& naming_scheme);
+
+    std::string   _get_string(io::data const& d);
+    std::string   _get_metric_id(io::data const& d);
+    std::string   _get_metric(io::data const& d);
+    std::string   _get_index_id(io::data const& d);
+    std::string   _get_instance_id(io::data const& d);
+    std::string   _get_instance(io::data const& d);
+    std::string   _get_host_id(io::data const& d);
+    std::string   _get_host(io::data const& d);
+    std::string   _get_service_id(io::data const& d);
+    std::string   _get_service(io::data const& d);
   };
 }
 
