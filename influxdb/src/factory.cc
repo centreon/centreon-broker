@@ -135,15 +135,15 @@ io::endpoint* factory::new_endpoint(
   (void)is_output;
   (void)cache;
 
-  std::string user(find_param(cfg, "user"));
-  std::string passwd(find_param(cfg, "password"));
-  std::string addr(find_param(cfg, "host"));
-  std::string db(find_param(cfg, "db"));
+  std::string user(find_param(cfg, "db_user"));
+  std::string passwd(find_param(cfg, "db_password"));
+  std::string addr(find_param(cfg, "db_host"));
+  std::string db(find_param(cfg, "db_name"));
 
   unsigned short port(0);
   {
     std::stringstream ss;
-    ss << find_param(cfg, "port");
+    ss << find_param(cfg, "db_port");
     ss >> port;
     if (!ss.eof())
       throw (exceptions::msg() << "influxdb: couldn't parse port '" << ss.str()
