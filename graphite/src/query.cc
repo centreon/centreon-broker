@@ -143,7 +143,7 @@ void query::_compile_naming_scheme(std::string const& naming_scheme) {
   size_t found_macro = 0;
   size_t end_macro = 0;
 
-  while ((found_macro = naming_scheme.find_first_of('$')) != std::string::npos) {
+  while ((found_macro = naming_scheme.find_first_of('$', found_macro)) != std::string::npos) {
     std::string substr = naming_scheme.substr(end_macro, found_macro);
     if (!substr.empty()) {
       _compiled_naming_scheme.push_back(substr);
@@ -153,7 +153,7 @@ void query::_compile_naming_scheme(std::string const& naming_scheme) {
     if ((end_macro = naming_scheme.find_first_of('$', found_macro + 1)) == std::string::npos)
       throw exceptions::msg()
             << "graphite: can't compile query, opened macro not closed: '"
-            << naming_scheme.substr(found_macro);
+            << naming_scheme.substr(found_macro) << "'";
 
     std::string macro = naming_scheme.substr(found_macro, end_macro + 1);
     if (macro == "$METRICID$")

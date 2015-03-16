@@ -33,6 +33,9 @@ namespace         graphite {
   /**
    *  @class query query.hh "com/centreon/broker/graphite/query.hh"
    *  @brief Query compiling/generation.
+   *
+   *  This class compiles a query for further uses, generating
+   *  the query fast.
    */
   class           query {
   public:
@@ -43,6 +46,7 @@ namespace         graphite {
 
     std::string   generate_metric(storage::metric const& me);
     std::string   generate_status(storage::status const& st);
+
   private:
     // Compiled data.
     std::vector<std::string>
