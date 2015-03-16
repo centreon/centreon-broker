@@ -12,4 +12,5 @@
   <module>@RRD_MODULE_PATH@</module>
   <module>@SQL_MODULE_PATH@</module>
   <module>@NOTIFICATION_MODULE_PATH@</module>
+  <module>@INFLUXDB_MODULE_PATH@</module>
 </centreonbroker>

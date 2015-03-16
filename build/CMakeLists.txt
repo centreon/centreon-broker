@@ -878,6 +878,13 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
+  # Influxdb
+  set(TEST_NAME "running_influxdb")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/influxdb.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIB})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
   # RRD benchmark.
   unset(QT_WRAPPED_SOURCES)
   qt4_wrap_cpp(QT_WRAPPED_SOURCES

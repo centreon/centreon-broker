@@ -20,7 +20,7 @@
 # Global options.
 set(INC_DIR "${PROJECT_SOURCE_DIR}/influxdb/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/influxdb/src")
-set(TEST_DIR "${PROJECT_SOURCE_DIR}/influxdb/test")
+set(TEST_DIR "${PROJECT_SOURCE_DIR}/test")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
@@ -50,7 +50,7 @@ set_target_properties("${INFLUXDB}" PROPERTIES PREFIX "")
 get_property(INFLUXDB_MODULE_PATH
   TARGET "${INFLUXDB}"
   PROPERTY LOCATION)
-set(BAM_MODULE_PATH "${INFLUXDB_MODULE_PATH}" PARENT_SCOPE)
+set(INFLUXDB_MODULE_PATH "${INFLUXDB_MODULE_PATH}" PARENT_SCOPE)
 
 # Testing.
 if (WITH_TESTING)
