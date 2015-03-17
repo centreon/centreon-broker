@@ -75,6 +75,9 @@ namespace         influxdb {
     std::string   _get_host(io::data const& d);
     std::string   _get_service_id(io::data const& d);
     std::string   _get_service(io::data const& d);
+    std::string   _get_value(io::data const& d);
+    std::string   _get_dollar_sign(io::data const& d);
+    std::string   _get_time(io::data const& d);
   };
 }
 

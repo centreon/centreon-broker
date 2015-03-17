@@ -121,8 +121,9 @@ int main() {
     commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;1;1;0;Submitted by unit test | influxdb_test=0.80");
 
-    // Wait twice for an incoming connection. The first connection is the connection used
-    // by influxdb module to check if the server exist, the second one is the data.
+    // Wait twice for an incoming connection. The first connection is
+    // the connection used by influxdb module to check if the server exist,
+    // the second one is the data.
     if (!server.waitForNewConnection(8000 * MONITORING_ENGINE_INTERVAL_LENGTH))
       throw exceptions::msg()
             << "no incoming connection to " << INFLUXDB_DB_PORT_S;
@@ -150,7 +151,9 @@ int main() {
          first_timestamp_possible <= last_timestamp_possible;
          ++first_timestamp_possible) {
       QString expected = expected_result;
-      expected.replace("$timestamp$", QString::number(first_timestamp_possible));
+      expected.replace(
+                "$timestamp$",
+                QString::number(first_timestamp_possible));
       if (expected == data) {
         got = true;
         break;

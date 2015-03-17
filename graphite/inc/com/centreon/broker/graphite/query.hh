@@ -65,6 +65,7 @@ namespace         graphite {
     void          _compile_naming_scheme(std::string const& naming_scheme);
 
     std::string   _get_string(io::data const& d);
+
     std::string   _get_metric_id(io::data const& d);
     std::string   _get_metric(io::data const& d);
     std::string   _get_index_id(io::data const& d);
@@ -74,6 +75,7 @@ namespace         graphite {
     std::string   _get_host(io::data const& d);
     std::string   _get_service_id(io::data const& d);
     std::string   _get_service(io::data const& d);
+    std::string   _get_dollar_sign(io::data const& d);
   };
 }
 

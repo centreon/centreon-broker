@@ -143,10 +143,10 @@ std::string query::generate_status(storage::status const& st) {
  */
 void query::_compile_naming_scheme(std::string const& naming_scheme) {
   size_t found_macro = 0;
-  size_t end_macro = -1;
+  size_t end_macro = 0;
 
   while ((found_macro = naming_scheme.find_first_of('$', found_macro)) != std::string::npos) {
-    std::string substr = naming_scheme.substr(end_macro + 1, found_macro);
+    std::string substr = naming_scheme.substr(end_macro, found_macro - end_macro);
     if (!substr.empty()) {
       _compiled_naming_scheme.push_back(substr);
       _compiled_getters.push_back(&query::_get_string);
@@ -157,7 +157,9 @@ void query::_compile_naming_scheme(std::string const& naming_scheme) {
             << "graphite: can't compile query, opened macro not closed: '"
             << naming_scheme.substr(found_macro) << "'";
 
-    std::string macro = naming_scheme.substr(found_macro, end_macro + 1);
+    std::string macro = naming_scheme.substr(found_macro, end_macro + 1 - found_macro);
+    /*if (macro == "")
+      _compiled_getters.push_back(&query::_get_dollar_sign);*/
     if (macro == "$METRIC$")
       _compiled_getters.push_back(&query::_get_metric);
     else if (macro == "$INSTANCE$")
@@ -181,9 +183,9 @@ void query::_compile_naming_scheme(std::string const& naming_scheme) {
     else
       logging::config(logging::high)
         << "graphite: unknown macro '" << macro << "': ignoring it";
-    found_macro = end_macro + 1;
+    found_macro = end_macro = end_macro + 1;
   }
-  std::string substr = naming_scheme.substr(end_macro + 1, found_macro);
+  std::string substr = naming_scheme.substr(end_macro, found_macro - end_macro);
   if (!substr.empty()) {
     _compiled_naming_scheme.push_back(substr);
     _compiled_getters.push_back(&query::_get_string);
@@ -228,7 +230,11 @@ std::string query::_get_metric_id(io::data const& d) {
  *  @return       The string.
  */
 std::string query::_get_metric(io::data const& d) {
-  return ("");
+  if (_type == metric)
+    return (to_string(static_cast<storage::metric const&>(d).name.toStdString()));
+  else
+    throw exceptions::msg()
+          << "graphite: can't get metric id of a status query";
 }
 
 /**
@@ -309,4 +315,14 @@ std::string query::_get_service_id(io::data const& d) {
  */
 std::string query::_get_service(io::data const& d) {
   return ("");
+}
+
+/**
+ *  Get a dollar sign (for escape).
+ *
+ *  @param[in] d  unused.
+ *  @return       A dollar sign.
+ */
+std::string query::_get_dollar_sign(io::data const& d) {
+  return ("$");
 }

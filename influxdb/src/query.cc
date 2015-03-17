@@ -41,6 +41,20 @@ std::string to_string(T val) {
   return (ss.str());
 }
 
+template <typename T>
+/**
+ *  Transform a value to string.
+ *
+ *  @param[in] val  The value.
+ *
+ *  @return         A string containing the value.
+ */
+std::string to_string_escaped(T val) {
+  std::stringstream ss;
+  ss << "\"" << val << "\"";
+  return (ss.str());
+}
+
 /**
  *  Create an empty query.
  */
@@ -103,13 +117,6 @@ std::string query::generate_metric(storage::metric const& me) {
        it != end;
        ++it)
     tmp.append((this->**it)(me));
-
-  tmp.append(" ");
-  tmp.append(to_string(me.value));
-  tmp.append(" ");
-  tmp.append(to_string(me.ctime));
-  tmp.append("\n");
-
   return (tmp);
 }
 
@@ -131,13 +138,6 @@ std::string query::generate_status(storage::status const& st) {
        it != end;
        ++it)
     tmp.append((this->**it)(st));
-
-  tmp.append(" ");
-  tmp.append(to_string(st.state));
-  tmp.append(" ");
-  tmp.append(to_string(st.ctime));
-  tmp.append("\n");
-
   return (tmp);
 }
 
@@ -148,10 +148,10 @@ std::string query::generate_status(storage::status const& st) {
  */
 void query::_compile_naming_scheme(std::string const& naming_scheme) {
   size_t found_macro = 0;
-  size_t end_macro = -1;
+  size_t end_macro = 0;
 
   while ((found_macro = naming_scheme.find_first_of('$', found_macro)) != std::string::npos) {
-    std::string substr = naming_scheme.substr(end_macro + 1, found_macro);
+    std::string substr = naming_scheme.substr(end_macro, found_macro - end_macro);
     if (!substr.empty()) {
       _compiled_naming_scheme.push_back(substr);
       _compiled_getters.push_back(&query::_get_string);
@@ -162,7 +162,9 @@ void query::_compile_naming_scheme(std::string const& naming_scheme) {
             << "graphite: can't compile query, opened macro not closed: '"
             << naming_scheme.substr(found_macro) << "'";
 
-    std::string macro = naming_scheme.substr(found_macro, end_macro + 1);
+    std::string macro = naming_scheme.substr(found_macro, end_macro + 1 - found_macro);
+    /*if (macro == "")
+      _compiled_getters.push_back(&query::_get_dollar_sign);*/
     if (macro == "$METRIC$")
       _compiled_getters.push_back(&query::_get_metric);
     else if (macro == "$INSTANCE$")
@@ -183,12 +185,16 @@ void query::_compile_naming_scheme(std::string const& naming_scheme) {
       _compiled_getters.push_back(&query::_get_metric_id);
     else if (macro == "$INDEXID$")
       _compiled_getters.push_back(&query::_get_index_id);
+    else if (macro == "$VALUE$")
+      _compiled_getters.push_back(&query::_get_value);
+    else if (macro == "$TIME$")
+      _compiled_getters.push_back(&query::_get_time);
     else
       logging::config(logging::high)
         << "graphite: unknown macro '" << macro << "': ignoring it";
-    found_macro = end_macro + 1;
+    found_macro = end_macro = end_macro + 1;
   }
-  std::string substr = naming_scheme.substr(end_macro + 1, found_macro);
+  std::string substr = naming_scheme.substr(end_macro, found_macro - end_macro);
   if (!substr.empty()) {
     _compiled_naming_scheme.push_back(substr);
     _compiled_getters.push_back(&query::_get_string);
@@ -233,7 +239,11 @@ std::string query::_get_metric_id(io::data const& d) {
  *  @return       The string.
  */
 std::string query::_get_metric(io::data const& d) {
-  return ("");
+  if (_type == metric)
+    return (to_string_escaped(static_cast<storage::metric const&>(d).name.toStdString()));
+  else
+    throw exceptions::msg()
+          << "graphite: can't get metric id of a status query";
 }
 
 /**
@@ -313,5 +323,44 @@ std::string query::_get_service_id(io::data const& d) {
  *  @return       The string.
  */
 std::string query::_get_service(io::data const& d) {
+  return ("");
+}
+
+/**
+ *  Get the value of a data.
+ *
+ *  @param[in] d  The data.
+ *
+ *  @return       The string.
+ */
+std::string query::_get_value(io::data const& d) {
+  if (_type == metric)
+    return (to_string(static_cast<storage::metric const&>(d).value));
+  else if (_type == status)
+    return (to_string(static_cast<storage::status const&>(d).state));
+  return ("");
+}
+
+/**
+ *  Get a dollar sign (for escape).
+ *
+ *  @param[in] d  unused.
+ *  @return       A dollar sign.
+ */
+std::string query::_get_dollar_sign(io::data const& d) {
+  return ("$");
+}
+
+/**
+ *  Get the time.
+ *
+ *  @param[in] d  The data.
+ *  @return       The string.
+ */
+std::string query::_get_time(io::data const& d) {
+  if (_type == metric)
+    return (to_string(static_cast<storage::metric const&>(d).ctime));
+  else if (_type == status)
+    return (to_string(static_cast<storage::status const&>(d).ctime));
   return ("");
 }
