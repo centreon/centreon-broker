@@ -24,6 +24,7 @@
 #  include <QMap>
 #  include <QString>
 #  include <set>
+#  include <QDomElement>
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
@@ -56,6 +57,7 @@ namespace                    config {
     time_t                   retry_interval;
     std::set<std::string>    filters;
     QString                  type;
+    QDomElement              cfg;
 
   private:
     void                     _internal_copy(endpoint const& e);

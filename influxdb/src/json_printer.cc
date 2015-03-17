@@ -60,6 +60,14 @@ json_printer& json_printer::operator=(json_printer const& other) {
 }
 
 /**
+ *  Clear the printer string.
+ */
+void json_printer::clear() {
+  _data.clear();
+}
+
+
+/**
  *  Get the resulting string.
  *
  *  @return  The resulting string.

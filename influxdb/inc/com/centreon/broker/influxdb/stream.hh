@@ -30,6 +30,7 @@
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/influxdb/influxdb.hh"
+#  include "com/centreon/broker/influxdb/column.hh"
 
 CCB_BEGIN()
 
@@ -52,7 +53,11 @@ namespace          influxdb {
                      unsigned short port,
                      std::string const& db,
                      unsigned int queries_per_transaction,
-                     std::string const& version);
+                     std::string const& version,
+                     std::string const& status_ts,
+                     std::vector<column> const& status_cols,
+                     std::string const& metric_ts,
+                     std::vector<column> const& metric_cols);
                    ~stream();
     void           process(bool in = false, bool out = true);
     void           read(misc::shared_ptr<io::data>& d);

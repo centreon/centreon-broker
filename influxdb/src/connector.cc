@@ -92,7 +92,11 @@ void connector::connect_to(
                   unsigned short port,
                   std::string const& db,
                   unsigned int queries_per_transaction,
-                  std::string const& version) {
+                  std::string const& version,
+                  std::string const& status_ts,
+                  std::vector<column> const& status_cols,
+                  std::string const& metric_ts,
+                  std::vector<column> const& metric_cols) {
   _user = user;
   _password = passwd;
   _addr = addr;
@@ -100,6 +104,10 @@ void connector::connect_to(
   _db = db;
   _queries_per_transaction = queries_per_transaction;
   _version = version;
+  _status_ts = status_ts;
+  _status_cols = status_cols;
+  _metric_ts = metric_ts;
+  _metric_cols = metric_cols;
   return ;
 }
 
@@ -117,7 +125,11 @@ misc::shared_ptr<io::stream> connector::open() {
                   _port,
                   _db,
                   _queries_per_transaction,
-                  _version)));
+                  _version,
+                  _status_ts,
+                  _status_cols,
+                  _metric_ts,
+                  _metric_cols)));
 }
 
 /**
@@ -151,5 +163,9 @@ void connector::_internal_copy(connector const& other) {
   _db = other._db;
   _queries_per_transaction = other._queries_per_transaction;
   _version = other._version;
+  _status_ts = other._status_ts;
+  _status_cols = other._status_cols;
+  _metric_ts = other._metric_ts;
+  _metric_cols = other._metric_cols;
   return ;
 }

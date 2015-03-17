@@ -19,10 +19,12 @@
 
 #include <memory>
 #include <sstream>
+#include <vector>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/influxdb/connector.hh"
 #include "com/centreon/broker/influxdb/factory.hh"
+#include "com/centreon/broker/influxdb/column.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
@@ -167,9 +169,61 @@ io::endpoint* factory::new_endpoint(
       version = "0.9";
   }
 
+  // Get status query.
+  std::string status_timeseries(find_param(cfg, "status_timeseries"));
+  std::vector<column> status_column_list;
+  QDomNodeList status_columns = cfg.cfg.elementsByTagName("status_column");
+  for (size_t i = 0; i < status_columns.size(); ++i) {
+    QDomNode status = status_columns.item(i);
+    QDomNode name = status.namedItem("name");
+    QDomNode value = status.namedItem("status");
+    QDomNode is_tag = status.namedItem("is_tag");
+    if (name.isNull() || value.isNull())
+      throw (exceptions::msg())
+             << "influxdb: couldn't get the configuration of a status column";
+    status_column_list.push_back(column(
+      name.toElement().text().toStdString(),
+      value.toElement().text().toStdString(),
+      is_tag.isNull() ?
+        false :
+        config::parser::parse_boolean(is_tag.toElement().text())));
+
+  }
+
+  // Get metric query.
+  std::string metric_timeseries(find_param(cfg, "metrics_timeseries"));
+  std::vector<column> metric_column_list;
+  QDomNodeList metric_columns = cfg.cfg.elementsByTagName("metric_column");
+  for (size_t i = 0; i < metric_columns.size(); ++i) {
+    QDomNode metric = metric_columns.item(i);
+    QDomNode name = metric.namedItem("name");
+    QDomNode value = metric.namedItem("status");
+    QDomNode is_tag = metric.namedItem("is_tag");
+    if (name.isNull() || value.isNull())
+      throw (exceptions::msg())
+             << "influxdb: couldn't get the configuration of a metric column";
+    metric_column_list.push_back(column(
+      name.toElement().text().toStdString(),
+      value.toElement().text().toStdString(),
+      is_tag.isNull() ?
+        false :
+        config::parser::parse_boolean(is_tag.toElement().text())));
+  }
+
   // Connector.
   std::auto_ptr<influxdb::connector> c(new influxdb::connector);
-  c->connect_to(user, passwd, addr, port, db, queries_per_transaction, version);
+  c->connect_to(
+       user,
+       passwd,
+       addr,
+       port,
+       db,
+       queries_per_transaction,
+       version,
+       status_timeseries,
+       status_column_list,
+       metric_timeseries,
+       metric_column_list);
   is_acceptor = false;
   return (c.release());
 }

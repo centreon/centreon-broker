@@ -60,7 +60,8 @@ stream::stream(
     _db_password(db_password),
     _db_host(db_host),
     _db_port(db_port),
-    _queries_per_transaction(queries_per_transaction),
+    _queries_per_transaction(queries_per_transaction == 0 ?
+                               1 : queries_per_transaction),
     _actual_query(0),
     _metric_query(_metric_naming),
     _status_query(_status_naming) {

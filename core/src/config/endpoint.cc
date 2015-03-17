@@ -76,7 +76,8 @@ bool endpoint::operator==(endpoint const& e) const {
           && (name == e.name)
           && (failover == e.failover)
           && (filters == e.filters)
-          && (params == e.params));
+          && (params == e.params)
+          && (cfg == e.cfg));
 }
 
 /**
@@ -113,6 +114,8 @@ bool endpoint::operator<(endpoint const& e) const {
     return (failover < e.failover);
   else if (filters != e.filters)
     return (filters < e.filters);
+  else if (cfg != e.cfg)
+    return (cfg.toText().data() < e.cfg.toText().data());
 
   // Need to check all parameters one by one.
   QMap<QString, QString>::const_iterator it1(params.begin()),
@@ -154,5 +157,6 @@ void endpoint::_internal_copy(endpoint const& e) {
   retry_interval = e.retry_interval;
   filters = e.filters;
   type = e.type;
+  cfg = e.cfg;
   return ;
 }

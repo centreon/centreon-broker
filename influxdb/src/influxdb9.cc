@@ -39,22 +39,21 @@ influxdb9::influxdb9(
             std::string const& passwd,
             std::string const& addr,
             unsigned short port,
-            std::string const& db)
+            std::string const& db,
+            std::string const& status_ts,
+            std::vector<column> const& status_cols,
+            std::string const& metric_ts,
+            std::vector<column> const& metric_cols)
   : _host(addr),
     _port(port) {
   logging::debug(logging::medium)
     << "influxdb: connecting using 0.9 version protocol";
+
+  // Try to connect to the server.
   _connect_socket();
   _socket->close();
 
-  std::string base_url;
-  base_url
-    .append("/write?u=").append(user)
-    .append("&p=").append(passwd);
-  _post_header.append("POST ").append(base_url).append(" HTTP/1.0\n");
-  json_printer p;
-  p.open_object().add_string("database", db).open_array("points");
-  _db_header.append(p.get_data());
+  _create_queries(user, passwd, db, status_ts, status_cols, metric_ts, metric_cols);
 }
 
 /**
@@ -98,19 +97,16 @@ void influxdb9::clear() {
  *  @param[in] m  The metric to write.
  */
 void influxdb9::write(storage::metric const& m) {
-  json_printer p;
+  _query.append(_metric_query.generate_metric(m));
+}
 
-  p.open_object()
-     .add_string("name", m.name.toStdString())
-     .open_object("tags")
-       .add_string("metric_id", m.metric_id)
-     .close_object()
-     .add_number("timestamp", m.ctime)
-     .open_object("fields")
-       .add_number("value", m.value)
-     .close_object()
-   .close_object();
-  _query.append(p.get_data());
+/**
+ *  Write a status to the query.
+ *
+ *  @param[in] s  The status to write.
+ */
+void influxdb9::write(storage::status const& s) {
+  _query.append(_status_query.generate_status(s));
 }
 
 /**
@@ -225,4 +221,79 @@ bool influxdb9::_check_answer_string(std::string const& ans) {
       << _socket->peerAddress().toString()
       << "' and port '" << _socket->peerPort() << "': '"
       << ans << "'");
+}
+
+/**
+ *  Create the queries for influxdb.
+ *
+ *  @param[in] status_ts    Name of the timeseries status.
+ *  @param[in] status_cols  Column for the statuses.
+ *  @param[in] metric_ts    Name of the timeseries metric.
+ *  @param[in] metric_cols  Column for the metrics.
+ */
+void influxdb9::_create_queries(
+                  std::string const& user,
+                  std::string const& passwd,
+                  std::string const& db,
+                  std::string const& status_ts,
+                  std::vector<column> const& status_cols,
+                  std::string const& metric_ts,
+                  std::vector<column> const& metric_cols) {
+  // Create POST HTTP header.
+  std::string base_url;
+  base_url
+    .append("/write?u=").append(user)
+    .append("&p=").append(passwd);
+  _post_header.append("POST ").append(base_url).append(" HTTP/1.0\n");
+
+  // Create influxdb header.
+  json_printer p;
+  p.open_object().add_string("database", db).open_array("points");
+  _db_header.append(p.get_data());
+  p.clear();
+
+  // Create status query.
+  p.open_object()
+     .add_value("name", status_ts)
+     .open_object("tags");
+  for (std::vector<column>::const_iterator
+         it(status_cols.begin()),
+         end(status_cols.end());
+       it != end; ++it)
+    if (it->is_flag())
+      p.add_value(it->get_name(), it->get_value());
+   p.close_object()
+     .add_value("timestamp", "$TIME$")
+     .open_object("fields");
+   for (std::vector<column>::const_iterator
+          it(status_cols.begin()),
+          end(status_cols.end());
+        it != end; ++it)
+     if (!it->is_flag())
+       p.add_value(it->get_name(), it->get_value());
+   p.close_object().close_object();
+   _status_query = query(p.get_data());
+   p.clear();
+
+   // Create metric query.
+   p.open_object()
+      .add_value("name", status_ts)
+      .open_object("tags");
+   for (std::vector<column>::const_iterator
+          it(metric_cols.begin()),
+          end(metric_cols.end());
+        it != end; ++it)
+     if (it->is_flag())
+       p.add_value(it->get_name(), it->get_value());
+    p.close_object()
+      .add_value("timestamp", "$TIME$")
+      .open_object("fields");
+    for (std::vector<column>::const_iterator
+           it(metric_cols.begin()),
+           end(metric_cols.end());
+         it != end; ++it)
+      if (!it->is_flag())
+        p.add_value(it->get_name(), it->get_value());
+    p.close_object().close_object();
+    _metric_query = query(p.get_data());
 }

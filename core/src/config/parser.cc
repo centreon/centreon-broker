@@ -208,6 +208,7 @@ bool parser::parse_boolean(QString const& value) {
  *  @param[out] e    Element object.
  */
 void parser::_parse_endpoint(QDomElement& elem, endpoint& e) {
+  e.cfg = elem;
   QDomNodeList nlist(elem.childNodes());
   for (int i = 0, len = nlist.size(); i < len; ++i) {
     QDomElement entry(nlist.item(i).toElement());

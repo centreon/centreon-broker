@@ -26,6 +26,8 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/storage/metric.hh"
 #  include "com/centreon/broker/influxdb/influxdb.hh"
+#  include "com/centreon/broker/influxdb/column.hh"
+#  include "com/centreon/broker/influxdb/query.hh"
 
 CCB_BEGIN()
 
@@ -44,13 +46,18 @@ namespace         influxdb {
                     std::string const& passwd,
                     std::string const& addr,
                     unsigned short port,
-                    std::string const& db);
+                    std::string const& db,
+                    std::string const& status_ts,
+                    std::vector<column> const& status_cols,
+                    std::string const& metric_ts,
+                    std::vector<column> const& metric_cols);
                   influxdb9(influxdb9 const& f);
                   ~influxdb9();
     influxdb9&    operator=(influxdb9 const& f);
 
     void          clear();
     void          write(storage::metric const& m);
+    void          write(storage::status const& s);
     void          commit();
 
   private:
@@ -58,6 +65,8 @@ namespace         influxdb {
     std::string   _db_header;
     std::string   _url;
     std::string   _query;
+    query         _status_query;
+    query         _metric_query;
 
     std::auto_ptr<QTcpSocket>
                   _socket;
@@ -68,6 +77,14 @@ namespace         influxdb {
 
     void          _connect_socket();
     bool          _check_answer_string(std::string const& ans);
+    void          _create_queries(
+                    std::string const& user,
+                    std::string const& passwd,
+                    std::string const& db,
+                    std::string const& status_ts,
+                    std::vector<column> const& status_cols,
+                    std::string const& metric_ts,
+                    std::vector<column> const& metric_cols);
   };
 }
 
