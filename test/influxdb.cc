@@ -111,8 +111,6 @@ int main() {
       &hosts,
       &services);
 
-    std::cout << engine_config_path << std::endl;
-
     std::string engine_config_file(engine_config_path);
     engine_config_file.append("/nagios.cfg");
     monitoring.set_config_file(engine_config_file);
@@ -179,6 +177,7 @@ int main() {
   monitoring.stop();
   free_hosts(hosts);
   free_services(services);
+  config_remove(engine_config_path.c_str());
 
   return (error ? EXIT_FAILURE : EXIT_SUCCESS);
 }
