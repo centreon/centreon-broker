@@ -169,8 +169,9 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
     logging::debug(logging::medium)
       << "graphite: commiting " << _actual_query << " queries";
     unsigned int ret = _actual_query;
+    if (_actual_query != 0)
+      _commit();
     _actual_query = 0;
-    _commit();
     return (ret);
   }
   else

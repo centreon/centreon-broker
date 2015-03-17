@@ -99,6 +99,7 @@ std::string query::generate_metric(storage::metric const& me) {
        ++it)
     tmp.append((this->**it)(me));
 
+  tmp.append(" ");
   tmp.append(to_string(me.value));
   tmp.append(" ");
   tmp.append(to_string(me.ctime));
@@ -126,6 +127,7 @@ std::string query::generate_status(storage::status const& st) {
        ++it)
     tmp.append((this->**it)(st));
 
+  tmp.append(" ");
   tmp.append(to_string(st.state));
   tmp.append(" ");
   tmp.append(to_string(st.ctime));
@@ -141,10 +143,10 @@ std::string query::generate_status(storage::status const& st) {
  */
 void query::_compile_naming_scheme(std::string const& naming_scheme) {
   size_t found_macro = 0;
-  size_t end_macro = 0;
+  size_t end_macro = -1;
 
   while ((found_macro = naming_scheme.find_first_of('$', found_macro)) != std::string::npos) {
-    std::string substr = naming_scheme.substr(end_macro, found_macro);
+    std::string substr = naming_scheme.substr(end_macro + 1, found_macro);
     if (!substr.empty()) {
       _compiled_naming_scheme.push_back(substr);
       _compiled_getters.push_back(&query::_get_string);
@@ -156,7 +158,7 @@ void query::_compile_naming_scheme(std::string const& naming_scheme) {
             << naming_scheme.substr(found_macro) << "'";
 
     std::string macro = naming_scheme.substr(found_macro, end_macro + 1);
-    if (macro == "$METRICID$")
+    if (macro == "$METRIC$")
       _compiled_getters.push_back(&query::_get_metric);
     else if (macro == "$INSTANCE$")
       _compiled_getters.push_back(&query::_get_instance);
@@ -181,7 +183,7 @@ void query::_compile_naming_scheme(std::string const& naming_scheme) {
         << "graphite: unknown macro '" << macro << "': ignoring it";
     found_macro = end_macro + 1;
   }
-  std::string substr = naming_scheme.substr(end_macro, found_macro);
+  std::string substr = naming_scheme.substr(end_macro + 1, found_macro);
   if (!substr.empty()) {
     _compiled_naming_scheme.push_back(substr);
     _compiled_getters.push_back(&query::_get_string);

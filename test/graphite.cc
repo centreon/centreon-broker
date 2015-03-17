@@ -37,23 +37,22 @@
 
 using namespace com::centreon::broker;
 
-#define STORAGE_DB_NAME "broker_influxdb_centreon_storage"
-#define COMMAND_FILE "broker_influxdb_command_file"
+#define STORAGE_DB_NAME "broker_graphite_centreon_storage"
+#define COMMAND_FILE "broker_graphite_command_file"
 
-#define INFLUXDB_DB_NAME "influxdb_unittest"
-#define INFLUXDB_DB_PORT "6421"
-#define INFLUXDB_DB_PORT_S 6421
-#define INFLUXDB_DB_PASSWORD "influxdb_password"
-#define INFLUXDB_DB_HOST "localhost"
-#define INFLUXDB_DB_USER "influxdb_user"
+#define GRAPHITE_DB_PORT "6422"
+#define GRAPHITE_DB_PORT_S 6422
+#define GRAPHITE_DB_PASSWORD "graphite_password"
+#define GRAPHITE_DB_HOST "localhost"
+#define GRAPHITE_DB_USER "graphite_user"
 
 static const char* expected_result =
-    "POST /write?u=" INFLUXDB_DB_USER "&p="INFLUXDB_DB_PASSWORD" HTTP/1.0\n"
-    "Content-Length: 143\n\n"
-    "{\"database\":\""INFLUXDB_DB_NAME"\",\"points\":[{\"name\":\"influxdb_test\",\"tags\":{\"metric_id\":\"1\" },\"timestamp\":$timestamp$,\"fields\":{\"value\":0.8 } } ]}";
+    "Authorization: Basic $auth$\n"
+    "centreon.statuses.1 0 $timestamp$\n"
+    "centreon.metrics.1 0.8 $timestamp$\n";
 
 /**
- *  Check that the influxdb works.
+ *  Check that the graphite works.
  *
  *  @return EXIT_SUCCESS on success.
  */
@@ -72,22 +71,21 @@ int main() {
   try {
     // Open the socket
     QTcpServer server;
-    if (!server.listen(QHostAddress::Any, INFLUXDB_DB_PORT_S))
-      throw exceptions::msg() << "couldn't listen to " << INFLUXDB_DB_PORT_S;
+    if (!server.listen(QHostAddress::Any, GRAPHITE_DB_PORT_S))
+      throw exceptions::msg() << "couldn't listen to " << GRAPHITE_DB_PORT_S;
 
     // Prepare database.
     db.open(STORAGE_DB_NAME);
 
-    // Create the config influxdb xml file.
+    // Create the config graphite xml file.
     test_file file;
     file.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/influxdb.xml.in");
+      PROJECT_SOURCE_DIR "/test/cfg/graphite.xml.in");
     file.set("MYSQL_DB_NAME", STORAGE_DB_NAME);
-    file.set("INFLUXDB_DB_NAME", INFLUXDB_DB_NAME);
-    file.set("INFLUXDB_DB_PORT", INFLUXDB_DB_PORT);
-    file.set("INFLUXDB_DB_PASSWORD", INFLUXDB_DB_PASSWORD);
-    file.set("INFLUXDB_DB_HOST", INFLUXDB_DB_HOST);
-    file.set("INFLUXDB_DB_USER", INFLUXDB_DB_USER);
+    file.set("GRAPHITE_DB_PORT", GRAPHITE_DB_PORT);
+    file.set("GRAPHITE_DB_PASSWORD", GRAPHITE_DB_PASSWORD);
+    file.set("GRAPHITE_DB_HOST", GRAPHITE_DB_HOST);
+    file.set("GRAPHITE_DB_USER", GRAPHITE_DB_USER);
     std::string config_file = file.generate();
 
     // Prepare monitoring engine configuration parameters.
@@ -119,25 +117,15 @@ int main() {
     sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
     time_t first_timestamp_possible = std::time(NULL);
     commander.execute(
-      "PROCESS_SERVICE_CHECK_RESULT;1;1;0;Submitted by unit test | influxdb_test=0.80");
+      "PROCESS_SERVICE_CHECK_RESULT;1;1;0;Submitted by unit test | graphite_test=0.80");
 
-    // Wait twice for an incoming connection. The first connection is the connection used
-    // by influxdb module to check if the server exist, the second one is the data.
     if (!server.waitForNewConnection(8000 * MONITORING_ENGINE_INTERVAL_LENGTH))
       throw exceptions::msg()
-            << "no incoming connection to " << INFLUXDB_DB_PORT_S;
+            << "no incoming connection to " << GRAPHITE_DB_PORT_S;
     QTcpSocket* s = server.nextPendingConnection();
     if (!s)
       throw exceptions::msg()
-            << "no incoming connection to " << INFLUXDB_DB_PORT_S;
-    delete s;
-    if (!server.waitForNewConnection(8000 * MONITORING_ENGINE_INTERVAL_LENGTH))
-      throw exceptions::msg()
-            << "no incoming connection to " << INFLUXDB_DB_PORT_S;
-    s = server.nextPendingConnection();
-    if (!s)
-      throw exceptions::msg()
-            << "no incoming connection to " << INFLUXDB_DB_PORT_S;
+            << "no incoming connection to " << GRAPHITE_DB_PORT_S;
     QByteArray array;
     while (s->isOpen() && s->waitForReadyRead())
       array.append(s->readAll());
@@ -145,12 +133,14 @@ int main() {
 
     time_t last_timestamp_possible = std::time(NULL);
     bool got = false;
+    QString auth_base64 = QByteArray(GRAPHITE_DB_USER ":" GRAPHITE_DB_PASSWORD).toBase64();
     // Check the data got for everything is okay.
     for (;
          first_timestamp_possible <= last_timestamp_possible;
          ++first_timestamp_possible) {
       QString expected = expected_result;
       expected.replace("$timestamp$", QString::number(first_timestamp_possible));
+      expected.replace("$auth$", auth_base64);
       if (expected == data) {
         got = true;
         break;
@@ -158,7 +148,7 @@ int main() {
     }
     if (!got)
       throw exceptions::msg()
-            << "incorrect influxdb data: got: "
+            << "incorrect graphite data: got: "
             << data
             << "\nexpected: "
             << expected_result;
