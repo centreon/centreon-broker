@@ -33,6 +33,7 @@
 #  include "com/centreon/broker/storage/metric.hh"
 #  include "com/centreon/broker/storage/status.hh"
 #  include "com/centreon/broker/graphite/query.hh"
+#  include "com/centreon/broker/graphite/macro_cache.hh"
 
 CCB_BEGIN()
 
@@ -55,7 +56,8 @@ namespace          graphite {
                      std::string const& db_password,
                      std::string const& db_host,
                      unsigned short db_port,
-                     unsigned int queries_per_transaction);
+                     unsigned int queries_per_transaction,
+                     misc::shared_ptr<persistent_cache> const& cache);
                    ~stream();
     void           process(bool in = false, bool out = true);
     void           read(misc::shared_ptr<io::data>& d);
@@ -88,6 +90,10 @@ namespace          graphite {
     std::string    _query;
     std::string    _auth_query;
 
+    // Cache
+    macro_cache    _cache;
+
+    // Process metric/status and generate query.
     void           _process_metric(storage::metric const& me);
     void           _process_status(storage::status const& st);
     void           _commit();
