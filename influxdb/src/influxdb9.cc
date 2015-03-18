@@ -272,7 +272,7 @@ void influxdb9::_create_queries(
      if (!it->is_flag())
        p.add_value(it->get_name(), it->get_value());
    p.close_object().close_object();
-   _status_query = query(p.get_data());
+   _status_query = query(p.get_data(), query::status);
    p.clear();
 
    // Create metric query.
@@ -295,5 +295,5 @@ void influxdb9::_create_queries(
       if (!it->is_flag())
         p.add_value(it->get_name(), it->get_value());
     p.close_object().close_object();
-    _metric_query = query(p.get_data());
+    _metric_query = query(p.get_data(), query::metric);
 }

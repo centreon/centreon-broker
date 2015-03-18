@@ -130,6 +130,7 @@ std::string query::generate_status(storage::status const& st) {
  *  Compile a naming scheme.
  *
  *  @param[in] naming_scheme  The naming scheme to compile.
+ *  @param[in] type           The type of this query.
  */
 void query::_compile_naming_scheme(
               std::string const& naming_scheme,

@@ -165,6 +165,7 @@ int main() {
             << data
             << "\nexpected: "
             << expected_result;
+    delete s;
 
     // Success.
     error = false;

@@ -27,6 +27,8 @@
 #  include "com/centreon/broker/storage/metric.hh"
 #  include "com/centreon/broker/storage/status.hh"
 
+std::ostream& operator<<(std::ostream& in, QString const& string);
+
 CCB_BEGIN()
 
 namespace         influxdb {
@@ -39,8 +41,14 @@ namespace         influxdb {
    */
   class           query {
   public:
+  public:
+    enum          data_type {
+                  unknown,
+                  metric,
+                  status
+    };
                   query();
-                  query(std::string const& naming_scheme);
+                  query(std::string const& naming_scheme, data_type type);
                   query(query const& f);
                   ~query();
     query&        operator=(query const& f);
@@ -52,32 +60,26 @@ namespace         influxdb {
     // Compiled data.
     std::vector<std::string>
                   _compiled_naming_scheme;
-    std::vector<std::string (query::*)(io::data const&)>
+    std::vector<void (query::*)(io::data const&, std::ostream&)>
                   _compiled_getters;
 
     // Used for generation.
     size_t        _naming_scheme_index;
-    enum          data_type {
-      metric,
-      status
-    };
     data_type     _type;
 
-    void          _compile_naming_scheme(std::string const& naming_scheme);
+    void          _compile_naming_scheme(
+                    std::string const& naming_scheme,
+                    data_type type);
+    void          _throw_on_invalid(data_type macro_type);
 
-    std::string   _get_string(io::data const& d);
-    std::string   _get_metric_id(io::data const& d);
-    std::string   _get_metric(io::data const& d);
-    std::string   _get_index_id(io::data const& d);
-    std::string   _get_instance_id(io::data const& d);
-    std::string   _get_instance(io::data const& d);
-    std::string   _get_host_id(io::data const& d);
-    std::string   _get_host(io::data const& d);
-    std::string   _get_service_id(io::data const& d);
-    std::string   _get_service(io::data const& d);
-    std::string   _get_value(io::data const& d);
-    std::string   _get_dollar_sign(io::data const& d);
-    std::string   _get_time(io::data const& d);
+    template <typename T, typename U, T (U::*member)>
+    void          _get_member(io::data const& d, std::ostream& is) {
+      is << static_cast<U const&>(d).*member;
+    }
+
+    void          _get_string(io::data const& d, std::ostream& is);
+    void          _get_null(io::data const& d, std::ostream& is);
+    void          _get_dollar_sign(io::data const& d, std::ostream& is);
   };
 }
 
