@@ -32,11 +32,17 @@ namespace           influxdb {
    */
   class             column {
   public:
+    enum            type {
+                    string,
+                    number
+    };
+
                     column();
                     column(
                       std::string const& name,
                       std::string const& value,
-                      bool is_flag);
+                      bool is_flag,
+                      type col_type);
                     column(column const& c);
     column&         operator=(column const& c);
 
@@ -45,11 +51,13 @@ namespace           influxdb {
     std::string const&
                     get_value() const;
     bool            is_flag() const;
+    type            get_type() const;
 
   private:
     std::string     _name;
     std::string     _value;
     bool            _is_flag;
+    type            _type;
   };
 }
 

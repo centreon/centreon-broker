@@ -63,8 +63,8 @@ stream::stream(
     _queries_per_transaction(queries_per_transaction == 0 ?
                                1 : queries_per_transaction),
     _actual_query(0),
-    _metric_query(_metric_naming),
-    _status_query(_status_naming) {
+    _metric_query(_metric_naming, query::metric),
+    _status_query(_status_naming, query::status) {
   // Create the basic HTTP authentification header.
   if (!_db_user.empty() && !_db_password.empty()) {
     QByteArray auth;

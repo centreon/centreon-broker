@@ -178,6 +178,7 @@ io::endpoint* factory::new_endpoint(
     QDomNode name = status.namedItem("name");
     QDomNode value = status.namedItem("value");
     QDomNode is_tag = status.namedItem("is_tag");
+    QDomNode type = status.namedItem("type");
     if (name.isNull() || value.isNull())
       throw (exceptions::msg())
              << "influxdb: couldn't get the configuration of a status column";
@@ -186,7 +187,10 @@ io::endpoint* factory::new_endpoint(
       value.toElement().text().toStdString(),
       is_tag.isNull() ?
         false :
-        config::parser::parse_boolean(is_tag.toElement().text())));
+        config::parser::parse_boolean(is_tag.toElement().text()),
+      type.isNull() ?
+        column::number :
+        column::string));
 
   }
 
@@ -199,6 +203,7 @@ io::endpoint* factory::new_endpoint(
     QDomNode name = metric.namedItem("name");
     QDomNode value = metric.namedItem("value");
     QDomNode is_tag = metric.namedItem("is_tag");
+    QDomNode type = metric.namedItem("type");
     if (name.isNull() || value.isNull())
       throw (exceptions::msg())
              << "influxdb: couldn't get the configuration of a metric column";
@@ -207,7 +212,10 @@ io::endpoint* factory::new_endpoint(
       value.toElement().text().toStdString(),
       is_tag.isNull() ?
         false :
-        config::parser::parse_boolean(is_tag.toElement().text())));
+        config::parser::parse_boolean(is_tag.toElement().text()),
+      type.isNull() ?
+        column::number :
+        column::string));
   }
 
   // Connector.

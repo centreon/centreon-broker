@@ -28,15 +28,18 @@ column::column()
 column::column(
           std::string const& name,
           std::string const& value,
-          bool is_flag)
+          bool is_flag,
+          type col_type)
   : _name(name),
     _value(value),
-    _is_flag(is_flag) {}
+    _is_flag(is_flag),
+    _type(col_type) {}
 
 column::column(column const& c) {
   _name = c._name;
   _value = c._value;
   _is_flag = c._is_flag;
+  _type = c._type;
 }
 
 column& column::operator=(column const& c) {
@@ -44,6 +47,7 @@ column& column::operator=(column const& c) {
     _name = c._name;
     _value = c._value;
     _is_flag = c._is_flag;
+    _type = c._type;
   }
   return (*this);
 }
@@ -58,4 +62,8 @@ std::string const& column::get_value() const {
 
 bool column::is_flag() const {
   return (_is_flag);
+}
+
+column::type column::get_type() const {
+  return (_type);
 }

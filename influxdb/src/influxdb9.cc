@@ -254,7 +254,7 @@ void influxdb9::_create_queries(
 
   // Create status query.
   p.open_object()
-     .add_value("name", status_ts)
+     .add_string("name", status_ts)
      .open_object("tags");
   for (std::vector<column>::const_iterator
          it(status_cols.begin()),
@@ -277,7 +277,7 @@ void influxdb9::_create_queries(
 
    // Create metric query.
    p.open_object()
-      .add_value("name", metric_ts)
+      .add_string("name", metric_ts)
       .open_object("tags");
    for (std::vector<column>::const_iterator
           it(metric_cols.begin()),
