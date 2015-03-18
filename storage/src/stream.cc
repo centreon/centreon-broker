@@ -36,10 +36,12 @@
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/storage/metric_mapping.hh"
 #include "com/centreon/broker/storage/parser.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 #include "com/centreon/broker/storage/remove_graph.hh"
 #include "com/centreon/broker/storage/status.hh"
+#include "com/centreon/broker/storage/status_mapping.hh"
 #include "com/centreon/broker/storage/stream.hh"
 
 using namespace com::centreon::broker;
@@ -937,6 +939,9 @@ void stream::_rebuild_cache() {
   // Status.
   _update_status("status=rebuilding index and metrics cache\n");
 
+  // Create multiplexing publisher for metric and status mappings.
+  multiplexing::publisher pblshr;
+
   // Delete old cache.
   _index_cache.clear();
   _metric_cache.clear();
@@ -968,6 +973,13 @@ void stream::_rebuild_cache() {
         << info.index_id << " of (" << host_id << ", "
         << service_id << ")";
       _index_cache[std::make_pair(host_id, service_id)] = info;
+
+      // Create the metric mapping.
+      misc::shared_ptr<status_mapping> mm(new status_mapping);
+      mm->index_id = info.index_id;
+      mm->host_id = host_id;
+      mm->service_id = service_id;
+      pblshr.write(mm);
     }
   }
 
@@ -995,6 +1007,12 @@ void stream::_rebuild_cache() {
         << info.metric_id << " of (" << index_id << ", " << name
         << "), type " << info.type;
       _metric_cache[std::make_pair(index_id, name)] = info;
+
+      // Create the metric mapping.
+      misc::shared_ptr<metric_mapping> mm(new metric_mapping);
+      mm->metric_id = info.metric_id;
+      mm->status_id = index_id;
+      pblshr.write(mm);
     }
   }
 
