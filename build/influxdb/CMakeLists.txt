@@ -33,17 +33,21 @@ add_library("${INFLUXDB}" SHARED
   # Sources.
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/connector.cc"
+  "${SRC_DIR}/column.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/influxdb9.cc"
   "${SRC_DIR}/stream.cc"
   "${SRC_DIR}/json_printer.cc"
+  "${SRC_DIR}/query.cc"
   # Headers.
   "${INC_DIR}/connector.hh"
+  "${INC_DIR}/column.hh"
   "${INC_DIR}/factory.hh"
   "${INC_DIR}/influxdb.hh"
   "${INC_DIR}/influxdb9.hh"
   "${INC_DIR}/stream.hh"
   "${INC_DIR}/json_printer.hh"
+  "${INC_DIR}/query.hh"
 )
 target_link_libraries("${INFLUXDB}" ${QT_LIBRARIES})
 set_target_properties("${INFLUXDB}" PROPERTIES PREFIX "")

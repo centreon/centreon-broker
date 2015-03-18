@@ -41,6 +41,7 @@ namespace influxdb {
                 json_printer(json_printer const&);
   json_printer& operator=(json_printer const&);
 
+  void          clear();
   std::string const&
                 get_data() const;
   size_t        get_size() const;
@@ -73,7 +74,7 @@ namespace influxdb {
   }
 
   /**
-   *  Add a number value.
+   *  Add value.
    *
    *  @param[in] name   The name of the value.
    *  @param[in] value  The value.
@@ -81,7 +82,7 @@ namespace influxdb {
    *  @return           A reference to this object.
    */
   template <typename T>
-  json_printer& add_number(std::string const& name, T const& value) {
+  json_printer& add_value(std::string const& name, T const& value) {
     add_tag(name);
     std::stringstream ss;
     ss << value << ",";

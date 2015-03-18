@@ -20,17 +20,22 @@
 #include <algorithm>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/graphite/query.hh"
+#include "com/centreon/broker/influxdb/query.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::graphite;
+using namespace com::centreon::broker::influxdb;
 
 std::ostream& operator<<(std::ostream& in, QString const& string) {
   in << string.toStdString();
 }
 
+/**
+ *  Create an empty query.
+ */
+query::query()
+  : _type(query::unknown) {}
 
 /**
  *  Constructor.
@@ -95,8 +100,6 @@ std::string query::generate_metric(storage::metric const& me) {
        ++it)
     (this->**it)(me, iss);
 
-  iss << (" ") << me.value << " " << me.ctime << "\n";
-
   return (iss.str());
 }
 
@@ -121,8 +124,6 @@ std::string query::generate_status(storage::status const& st) {
        ++it)
     (this->**it)(st, iss);
 
-  iss << (" ") << st.state << " " << st.ctime << "\n";
-
   return (iss.str());
 }
 
@@ -135,7 +136,6 @@ std::string query::generate_status(storage::status const& st) {
 void query::_compile_naming_scheme(
               std::string const& naming_scheme,
               data_type type) {
-  (void)type;
   size_t found_macro = 0;
   size_t end_macro = 0;
 
@@ -150,7 +150,7 @@ void query::_compile_naming_scheme(
     }
 
     if ((end_macro = naming_scheme.find_first_of('$', found_macro + 1))
-            == std::string::npos)
+          == std::string::npos)
       throw exceptions::msg()
             << "graphite: can't compile query, opened macro not closed: '"
             << naming_scheme.substr(found_macro) << "'";
@@ -194,6 +194,34 @@ void query::_compile_naming_scheme(
                   unsigned int,
                   storage::status,
                   &storage::status::index_id>);
+    }
+    else if (macro == "$VALUE$") {
+      if (type == metric)
+        _compiled_getters.push_back(
+          &query::_get_member<
+                    double,
+                    storage::metric,
+                    &storage::metric::value>);
+      else if (type == status)
+        _compiled_getters.push_back(
+          &query::_get_member<
+                    short,
+                    storage::status,
+                    &storage::status::state>);
+    }
+    else if (macro == "$TIME$") {
+      if (type == metric)
+        _compiled_getters.push_back(
+          &query::_get_member<
+                    timestamp,
+                    storage::metric,
+                    &storage::metric::ctime>);
+      else if (type == status)
+        _compiled_getters.push_back(
+          &query::_get_member<
+                    timestamp,
+                    storage::status,
+                    &storage::status::ctime>);
     }
     else
       logging::config(logging::high)

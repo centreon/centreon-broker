@@ -38,6 +38,26 @@
     <db_user>@INFLUXDB_DB_USER@</db_user>
     <db_password>@INFLUXDB_DB_PASSWORD@</db_password>
     <db_name>@INFLUXDB_DB_NAME@</db_name>
-    <queries_per_transaction>0</queries_per_transaction>
+    <metrics_timeseries>$METRIC$</metrics_timeseries>
+    <metrics_column>
+      <name>metric_id</name>
+      <value>$METRICID$</value>
+      <is_flag>true</is_flag>
+    </metrics_column>
+    <metrics_column>
+      <name>value</name>
+      <value>$VALUE$</value>
+    </metrics_column>
+    <status_timeseries>status</status_timeseries>
+    <status_column>
+      <name>status_id</name>
+      <value>$INDEXID$</value>
+      <is_flag>true</is_flag>
+    </status_column>
+    <status_column>
+      <name>value</name>
+      <value>$VALUE$</value>
+    </status_column>
+    <queries_per_transaction>2</queries_per_transaction>
   </output>
 </centreonbroker>

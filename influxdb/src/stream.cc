@@ -51,17 +51,31 @@ stream::stream(
           unsigned short port,
           std::string const& db,
           unsigned int queries_per_transaction,
-          std::string const& version)
+          std::string const& version,
+          std::string const& status_ts,
+          std::vector<column> const& status_cols,
+          std::string const& metric_ts,
+          std::vector<column> const& metric_cols)
   : _process_out(true),
     _user(user),
     _password(passwd),
     _address(addr),
     _port(port),
     _db(db),
-    _queries_per_transaction(queries_per_transaction),
+    _queries_per_transaction(queries_per_transaction == 0 ?
+                               1 : queries_per_transaction),
     _actual_query(0) {
   if (version == "0.9")
-    _influx_db.reset(new influxdb9(user, passwd, addr, port, db));
+    _influx_db.reset(new influxdb9(
+                           user,
+                           passwd,
+                           addr,
+                           port,
+                           db,
+                           status_ts,
+                           status_cols,
+                           metric_ts,
+                           metric_cols));
   else
     throw (exceptions::msg()
            << "influxdb: unrecognized influxdb version '" << version << "'");
@@ -140,9 +154,15 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
                                    storage::de_metric>::value) {
       _influx_db->write(data.ref_as<storage::metric const>());
       ++_actual_query;
-      if (_actual_query >= _queries_per_transaction)
-        commit = true;
     }
+    else if (data->type()
+             == io::events::data_type<io::events::storage,
+                                      storage::de_status>::value) {
+      _influx_db->write(data.ref_as<storage::status const>());
+      ++_actual_query;
+    }
+    if (_actual_query >= _queries_per_transaction)
+      commit = true;
   }
   else
     commit = true;

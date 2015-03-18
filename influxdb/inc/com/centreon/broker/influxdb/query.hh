@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_GRAPHITE_QUERY_HH
-#  define CCB_GRAPHITE_QUERY_HH
+#ifndef CCB_INFLUXDB_QUERY_HH
+#  define CCB_INFLUXDB_QUERY_HH
 
 #  include <utility>
 #  include <string>
@@ -31,7 +31,7 @@ std::ostream& operator<<(std::ostream& in, QString const& string);
 
 CCB_BEGIN()
 
-namespace         graphite {
+namespace         influxdb {
   /**
    *  @class query query.hh "com/centreon/broker/graphite/query.hh"
    *  @brief Query compiling/generation.
@@ -41,10 +41,13 @@ namespace         graphite {
    */
   class           query {
   public:
+  public:
     enum          data_type {
+                  unknown,
                   metric,
                   status
     };
+                  query();
                   query(std::string const& naming_scheme, data_type type);
                   query(query const& f);
                   ~query();
@@ -82,4 +85,4 @@ namespace         graphite {
 
 CCB_END()
 
-#endif // !CCB_GRAPHITE_QUERY_HH
+#endif // !CCB_INFLUXDB_QUERY_HH

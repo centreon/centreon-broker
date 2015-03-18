@@ -22,9 +22,11 @@
 
 #  include <ctime>
 #  include <QString>
+#  include <vector>
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/influxdb/column.hh"
 
 CCB_BEGIN()
 
@@ -48,7 +50,11 @@ namespace           influxdb {
                       unsigned short _port,
                       std::string const& db,
                       unsigned int queries_per_transaction,
-                      std::string const& version);
+                      std::string const& version,
+                      std::string const& status_ts,
+                      std::vector<column> const& status_cols,
+                      std::string const& metric_ts,
+                      std::vector<column> const& metric_cols);
     misc::shared_ptr<io::stream>
                     open();
     misc::shared_ptr<io::stream>
@@ -62,6 +68,12 @@ namespace           influxdb {
     std::string     _db;
     unsigned int    _queries_per_transaction;
     std::string     _version;
+    std::string     _status_ts;
+    std::vector<column>
+                    _status_cols;
+    std::string     _metric_ts;
+    std::vector<column>
+                    _metric_cols;
 
     void            _internal_copy(connector const& other);
   };
