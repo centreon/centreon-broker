@@ -41,14 +41,14 @@ namespace           graphite {
     connector&      operator=(connector const& other);
     io::endpoint*   clone() const;
     void            close();
-    void            connect_to(
-                      std::string const& metric_naming,
+    void            connect_to(std::string const& metric_naming,
                       std::string const& status_naming,
                       std::string const& db_user,
                       std::string const& db_passwd,
                       std::string const& db_host,
                       unsigned short db_port,
-                      unsigned int queries_per_transaction);
+                      unsigned int queries_per_transaction,
+                      misc::shared_ptr<persistent_cache> const& cache);
     misc::shared_ptr<io::stream>
                     open();
     misc::shared_ptr<io::stream>
@@ -62,6 +62,8 @@ namespace           graphite {
     std::string     _addr;
     unsigned short  _port;
     unsigned int    _queries_per_transaction;
+    misc::shared_ptr<persistent_cache>
+                    _persistent_cache;
 
     void            _internal_copy(connector const& other);
   };

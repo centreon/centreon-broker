@@ -199,7 +199,8 @@ io::endpoint* factory::new_endpoint(
        db_password,
        db_host,
        db_port,
-       queries_per_transaction);
+       queries_per_transaction,
+       cache);
   is_acceptor = false;
   return (c.release());
 }

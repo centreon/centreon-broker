@@ -21,7 +21,6 @@
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/graphite/query.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -36,10 +35,16 @@ std::ostream& operator<<(std::ostream& in, QString const& string) {
  *  Constructor.
  *
  *  @param[in] naming_scheme  The naming scheme to use.
+ *  @param[in] type           The type of the query: metric or status.
+ *  @param[in] cache          The macro cache.
  */
-query::query(std::string const& naming_scheme, data_type type) :
+query::query(
+        std::string const& naming_scheme,
+        data_type type,
+        macro_cache const& cache) :
   _naming_scheme_index(0),
-  _type(type) {
+  _type(type),
+  _cache(&cache) {
   _compile_naming_scheme(naming_scheme, type);
 }
 
@@ -51,7 +56,8 @@ query::query(std::string const& naming_scheme, data_type type) :
 query::query(query const& q)
   : _compiled_naming_scheme(q._compiled_naming_scheme),
     _compiled_getters(q._compiled_getters),
-    _type(q._type) {}
+    _type(q._type),
+    _cache(q._cache){}
 
 /**
  *  Destructor
@@ -70,6 +76,7 @@ query& query::operator=(query const& q) {
     _compiled_naming_scheme = q._compiled_naming_scheme;
     _compiled_getters = q._compiled_getters;
     _type = q._type;
+    _cache = q._cache;
   }
   return (*this);
 }
@@ -170,18 +177,18 @@ void query::_compile_naming_scheme(
     }
     else if (macro == "$INSTANCE$")
       _compiled_getters.push_back(
-        &query::_get_null);
+        &query::_get_instance);
     else if (macro == "$INSTANCEID$")
       _compiled_getters.push_back(
         &query::_get_member<unsigned int, io::data, &io::data::instance_id>);
     else if (macro == "$HOST$")
-      _compiled_getters.push_back(&query::_get_null);
+      _compiled_getters.push_back(&query::_get_host);
     else if (macro == "$HOSTID$")
-      _compiled_getters.push_back(&query::_get_null);
+      _compiled_getters.push_back(&query::_get_host_id);
     else if (macro == "$SERVICE$")
-      _compiled_getters.push_back(&query::_get_null);
+      _compiled_getters.push_back(&query::_get_service);
     else if (macro == "$SERVICEID$")
-      _compiled_getters.push_back(&query::_get_null);
+      _compiled_getters.push_back(&query::_get_service_id);
     else if (macro == "$METRIC$") {
       _throw_on_invalid(metric);
       _compiled_getters.push_back(
@@ -225,6 +232,17 @@ void query::_throw_on_invalid(data_type macro_type) {
  */
 
 /**
+ *  Get a member of the data.
+ *
+ *  @param[in] d    The data.
+ *  @param[out] is  The stream.
+ */
+template <typename T, typename U, T (U::*member)>
+void query::_get_member(io::data const& d, std::ostream& is) {
+  is << static_cast<U const&>(d).*member;
+}
+
+/**
  *  Get a string in the compiled naming scheme.
  *
  *  @param[in] d     The data, unused.
@@ -254,4 +272,75 @@ void query::_get_null(io::data const& d, std::ostream& is) {
  */
 void query::_get_dollar_sign(io::data const& d, std::ostream& is) {
   is << "$";
+}
+
+/**
+ *  Get the status index id of a data, be it either metric or status.
+ *
+ *  @param[in] d  The data.
+ *
+ *  @return       The index id.
+ */
+unsigned int query::_get_status_id(io::data const& d) {
+  if (_type == status)
+    return (static_cast<storage::status const&>(d).index_id);
+  else if (_type == metric)
+    return (_cache->get_metric_mapping(
+                      static_cast<storage::metric const&>(d).metric_id).status_id);
+  return (0);
+}
+
+/**
+ *  Get the name of a host.
+ *
+ *  @param[in] d  The data.
+ *  @param is     The stream.
+ */
+void query::_get_host(io::data const& d, std::ostream& is) {
+  unsigned int index_id = _get_status_id(d);
+  is << _cache->get_host_name(_cache->get_status_mapping(index_id).host_id);
+}
+
+/**
+ *  Get the id of a host.
+ *
+ *  @param[in] d  The data.
+ *  @param is     The stream.
+ */
+void query::_get_host_id(io::data const& d, std::ostream& is) {
+  unsigned int index_id = _get_status_id(d);
+  is << _cache->get_status_mapping(index_id).host_id;
+}
+
+/**
+ *  Get the name of a service.
+ *
+ *  @param[in] d  The data.
+ *  @param is     The stream.
+ */
+void query::_get_service(io::data const& d, std::ostream& is) {
+  unsigned int index_id = _get_status_id(d);
+  storage::status_mapping const& stm = _cache->get_status_mapping(index_id);
+  is << _cache->get_service_description(stm.host_id, stm.service_id);
+}
+
+/**
+ *  Get the id of a service.
+ *
+ *  @param[in] d  The data.
+ *  @param is     The stream.
+ */
+void query::_get_service_id(io::data const& d, std::ostream& is) {
+  unsigned int index_id = _get_status_id(d);
+  is << _cache->get_status_mapping(index_id).service_id;
+}
+
+/**
+ *  Get the name of an instance.
+ *
+ *  @param[in] d  The data.
+ *  @param is     The stream.
+ */
+void query::_get_instance(io::data const& d, std::ostream& is) {
+  _cache->get_instance(d.instance_id);
 }
