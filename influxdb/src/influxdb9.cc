@@ -141,7 +141,7 @@ void influxdb9::commit() {
       << _socket->errorString());
 
   while (_socket->bytesToWrite() != 0) {
-    if (_socket->waitForBytesWritten() == -1)
+    if (_socket->waitForBytesWritten() == false)
       throw (exceptions::msg()
         << "influxdb: couldn't send data to influxdb with address '"
         << _socket->peerAddress().toString()
@@ -152,7 +152,7 @@ void influxdb9::commit() {
   // Receive the server answer.
   QString answer;
   while (true) {
-    if (_socket->waitForReadyRead() == -1)
+    if (_socket->waitForReadyRead() == false)
       throw (exceptions::msg()
         << "influxdb: couldn't receive influxdb answer with address '"
         << _socket->peerAddress().toString()
