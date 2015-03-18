@@ -160,11 +160,11 @@ int main() {
       }
     }
     if (!got)
-      throw exceptions::msg()
-            << "incorrect influxdb data: got: "
-            << data
-            << "\nexpected: "
-            << expected_result;
+      throw (exceptions::msg()
+             << "incorrect influxdb data: got: "
+             << data
+             << "\nexpected: "
+             << expected_result);
     delete s;
 
     // Success.

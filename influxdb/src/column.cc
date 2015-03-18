@@ -22,9 +22,20 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
 
+/**
+ *  Create an empty column.
+ */
 column::column()
   : _is_flag(false) {}
 
+/**
+ *  Create a column.
+ *
+ *  @param[in] name      The name of the column.
+ *  @param[in] value     The value of the column.
+ *  @param[in] is_flag   Is the column a flag?
+ *  @param[in] col_type  Is the value of this column a string or a number?
+ */
 column::column(
           std::string const& name,
           std::string const& value,
@@ -35,6 +46,11 @@ column::column(
     _is_flag(is_flag),
     _type(col_type) {}
 
+/**
+ *  Copy constructor.
+ *
+ *  @param[in] c  The column to copy.
+ */
 column::column(column const& c) {
   _name = c._name;
   _value = c._value;
@@ -42,6 +58,13 @@ column::column(column const& c) {
   _type = c._type;
 }
 
+/**
+ *  Assignment operator.
+ *
+ *  @param[in] c  The column to copy.
+ *
+ *  @return       A reference to this object.
+ */
 column& column::operator=(column const& c) {
   if (this != &c) {
     _name = c._name;
@@ -52,18 +75,38 @@ column& column::operator=(column const& c) {
   return (*this);
 }
 
+/**
+ *  Get the name of this column.
+ *
+ *  @return  The name of this column.
+ */
 std::string const& column::get_name() const {
   return (_name);
 }
 
+/**
+ *  Get the value of this column.
+ *
+ *  @return  The value of this column.
+ */
 std::string const& column::get_value() const {
   return (_value);
 }
 
+/**
+ *  Is this column a flag?
+ *
+ *  @return  True if this column is a flag.
+ */
 bool column::is_flag() const {
   return (_is_flag);
 }
 
+/**
+ *  Get the type of this column.
+ *
+ *  @return  The type of this column.
+ */
 column::type column::get_type() const {
   return (_type);
 }

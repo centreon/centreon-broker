@@ -28,7 +28,7 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
 
 std::ostream& operator<<(std::ostream& in, QString const& string) {
-  in << string.data();
+  in << string.toStdString();
 }
 
 /**
@@ -89,7 +89,7 @@ query& query::operator=(query const& q) {
 std::string query::generate_metric(storage::metric const& me) {
   if (_type != metric)
     throw (exceptions::msg()
-           << "graphite: attempt to generatre metric"
+           << "graphite: attempt to generate metric"
               " with a query of the bad type");
   _naming_scheme_index = 0;
   std::ostringstream iss;
@@ -115,7 +115,7 @@ std::string query::generate_metric(storage::metric const& me) {
 std::string query::generate_status(storage::status const& st) {
   if (_type != status)
     throw (exceptions::msg()
-           << "graphite: attempt to generatre metric"
+           << "graphite: attempt to generate status"
               " with a query of the bad type");
   _naming_scheme_index = 0;
   std::ostringstream iss;
@@ -143,25 +143,34 @@ void query::_compile_naming_scheme(
   size_t found_macro = 0;
   size_t end_macro = 0;
 
-  while ((found_macro = naming_scheme.find_first_of('$', found_macro)) != std::string::npos) {
-    std::string substr = naming_scheme.substr(end_macro, found_macro - end_macro);
+  while ((found_macro = naming_scheme.find_first_of('$', found_macro))
+           != std::string::npos) {
+    std::string substr = naming_scheme.substr(
+                           end_macro,
+                           found_macro - end_macro);
     if (!substr.empty()) {
       _compiled_naming_scheme.push_back(substr);
       _compiled_getters.push_back(&query::_get_string);
     }
 
-    if ((end_macro = naming_scheme.find_first_of('$', found_macro + 1)) == std::string::npos)
+    if ((end_macro = naming_scheme.find_first_of('$', found_macro + 1))
+          == std::string::npos)
       throw exceptions::msg()
             << "graphite: can't compile query, opened macro not closed: '"
             << naming_scheme.substr(found_macro) << "'";
 
-    std::string macro = naming_scheme.substr(found_macro, end_macro + 1 - found_macro);
+    std::string macro = naming_scheme.substr(
+                          found_macro,
+                          end_macro + 1 - found_macro);
     if (macro == "")
       _compiled_getters.push_back(&query::_get_dollar_sign);
     if (macro == "$METRICID$") {
       _throw_on_invalid(metric);
       _compiled_getters.push_back(
-        &query::_get_member<unsigned int, storage::metric, &storage::metric::metric_id>);
+        &query::_get_member<
+                  unsigned int,
+                  storage::metric,
+                  &storage::metric::metric_id>);
     }
     else if (macro == "$INSTANCE$")
       _compiled_getters.push_back(
@@ -185,26 +194,47 @@ void query::_compile_naming_scheme(
     else if (macro == "$INDEXID$") {
       _throw_on_invalid(status);
       _compiled_getters.push_back(
-        &query::_get_member<unsigned int, storage::status, &storage::status::index_id>);
+        &query::_get_member<
+                  unsigned int,
+                  storage::status,
+                  &storage::status::index_id>);
     }
     else if (macro == "$VALUE$") {
       if (type == metric)
-        _compiled_getters.push_back(&query::_get_member<double, storage::metric, &storage::metric::value>);
+        _compiled_getters.push_back(
+          &query::_get_member<
+                    double,
+                    storage::metric,
+                    &storage::metric::value>);
       else if (type == status)
-        _compiled_getters.push_back(&query::_get_member<short, storage::status, &storage::status::state>);
+        _compiled_getters.push_back(
+          &query::_get_member<
+                    short,
+                    storage::status,
+                    &storage::status::state>);
     }
     else if (macro == "$TIME$") {
       if (type == metric)
-        _compiled_getters.push_back(&query::_get_member<timestamp, storage::metric, &storage::metric::ctime>);
+        _compiled_getters.push_back(
+          &query::_get_member<
+                    timestamp,
+                    storage::metric,
+                    &storage::metric::ctime>);
       else if (type == status)
-        _compiled_getters.push_back(&query::_get_member<timestamp, storage::status, &storage::status::ctime>);
+        _compiled_getters.push_back(
+          &query::_get_member<
+                    timestamp,
+                    storage::status,
+                    &storage::status::ctime>);
     }
     else
       logging::config(logging::high)
         << "graphite: unknown macro '" << macro << "': ignoring it";
     found_macro = end_macro = end_macro + 1;
   }
-  std::string substr = naming_scheme.substr(end_macro, found_macro - end_macro);
+  std::string substr = naming_scheme.substr(
+                         end_macro,
+                         found_macro - end_macro);
   if (!substr.empty()) {
     _compiled_naming_scheme.push_back(substr);
     _compiled_getters.push_back(&query::_get_string);
