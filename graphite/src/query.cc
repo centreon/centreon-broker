@@ -135,6 +135,7 @@ std::string query::generate_status(storage::status const& st) {
 void query::_compile_naming_scheme(
               std::string const& naming_scheme,
               data_type type) {
+  (void)type;
   size_t found_macro = 0;
   size_t end_macro = 0;
 

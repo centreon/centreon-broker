@@ -100,8 +100,6 @@ std::string query::generate_metric(storage::metric const& me) {
        ++it)
     (this->**it)(me, iss);
 
-  iss << (" ") << me.value << " " << me.ctime << "\n";
-
   return (iss.str());
 }
 
@@ -125,8 +123,6 @@ std::string query::generate_status(storage::status const& st) {
        it != end;
        ++it)
     (this->**it)(st, iss);
-
-  iss << (" ") << st.state << " " << st.ctime << "\n";
 
   return (iss.str());
 }
