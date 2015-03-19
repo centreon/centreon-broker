@@ -95,12 +95,19 @@ std::string query::generate_metric(storage::metric const& me) {
               " with a query of the bad type");
   _naming_scheme_index = 0;
   std::ostringstream iss;
-  for (std::vector<void (query::*)(io::data const&, std::ostream&)>::const_iterator
-         it(_compiled_getters.begin()),
-         end(_compiled_getters.end());
-       it != end;
-       ++it)
-    (this->**it)(me, iss);
+  try {
+    for (std::vector<void (query::*)(io::data const&, std::ostream&)>::const_iterator
+           it(_compiled_getters.begin()),
+           end(_compiled_getters.end());
+         it != end;
+         ++it)
+      (this->**it)(me, iss);
+  } catch (std::exception e) {
+    logging::error(logging::medium)
+      << "graphite: couldn't generate query for metric "
+      << me.metric_id << ":" << e.what();
+    return ("");
+  }
 
   iss << (" ") << me.value << " " << me.ctime << "\n";
 
@@ -121,12 +128,19 @@ std::string query::generate_status(storage::status const& st) {
               " with a query of the bad type");
   _naming_scheme_index = 0;
   std::ostringstream iss;
-  for (std::vector<void (query::*)(io::data const&, std::ostream&)>::const_iterator
-         it(_compiled_getters.begin()),
-         end(_compiled_getters.end());
-       it != end;
-       ++it)
-    (this->**it)(st, iss);
+  try {
+    for (std::vector<void (query::*)(io::data const&, std::ostream&)>::const_iterator
+           it(_compiled_getters.begin()),
+           end(_compiled_getters.end());
+         it != end;
+         ++it)
+      (this->**it)(st, iss);
+  } catch (std::exception e) {
+    logging::error(logging::medium)
+      << "graphite: couldn't generate query for status "
+      << st.index_id << ":" << e.what();
+    return ("");
+  }
 
   iss << (" ") << st.state << " " << st.ctime << "\n";
 
