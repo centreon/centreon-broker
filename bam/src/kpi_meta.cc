@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -259,8 +259,8 @@ void kpi_meta::_open_new_event(
   _event->kpi_id = _id;
   _event->impact_level = impact;
   _event->in_downtime = false;
-  _event->output = ""; // XXX _meta->get_output().c_str();
-  _event->perfdata = ""; // XXX _ba->get_perfdata().c_str();
+  _event->output = _meta->get_output().c_str();
+  _event->perfdata = _meta->get_perfdata().c_str();
   _event->start_time = time(NULL); // XXX _ba->get_last_service_update();
   _event->status = state;
   if (visitor) {

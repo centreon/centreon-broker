@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -245,25 +245,6 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
         throw (exceptions::msg() << "BAM: could not update BA "
                << status->ba_id << ": " << e.what());
       }
-
-      if (status->state_changed) {
-        std::pair<std::string, std::string>
-          ba_svc_name(_ba_mapping.get_service(status->ba_id));
-        if (ba_svc_name.first.empty() || ba_svc_name.second.empty()) {
-          logging::error(logging::high)
-            << "BAM: could not trigger check of virtual service of BA "
-            << status->ba_id
-            << ": host name and service description were not found";
-        }
-        else {
-          std::ostringstream oss;
-          time_t now(time(NULL));
-          oss << "[" << now << "] SCHEDULE_FORCED_SVC_CHECK;"
-              << ba_svc_name.first << ";" << ba_svc_name.second << ";"
-              << now;
-          _write_external_command(oss.str());
-        }
-      }
     }
     else if (data->type()
              == io::events::data_type<io::events::bam, bam::de_bool_status>::value) {
@@ -327,25 +308,6 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
         throw (exceptions::msg()
                << "BAM: could not update meta-service "
                << status->meta_service_id << ": " << e.what());
-      }
-
-      if (status->state_changed) {
-        std::pair<std::string, std::string>
-          meta_svc_name(_meta_mapping.get_service(status->meta_service_id));
-        if (meta_svc_name.first.empty() || meta_svc_name.second.empty()) {
-          logging::error(logging::high)
-            << "BAM: could not trigger check of virtual service of meta-service "
-            << status->meta_service_id
-            << ": host name and service description were not found";
-        }
-        else {
-          std::ostringstream oss;
-          time_t now(time(NULL));
-          oss << "[" << now << "] SCHEDULE_FORCED_SVC_CHECK;"
-              << meta_svc_name.first << ";" << meta_svc_name.second
-              << ";" << now;
-          _write_external_command(oss.str());
-        }
       }
     }
   }
@@ -457,12 +419,12 @@ void monitoring_stream::_prepare() {
   // Meta-service status.
   {
     std::string query;
-    query = "UPDATE meta_service"
+    query = "UPDATE cfg_meta_services"
             "  SET value=:value"
             "  WHERE meta_id=:meta_service_id";
-    // XXX : _meta_service_update.prepare(
-    //  query,
-    //  "BAM: could not prepare meta-service update query");
+    _meta_service_update.prepare(
+      query,
+      "BAM: could not prepare meta-service update query");
   }
 
   return ;

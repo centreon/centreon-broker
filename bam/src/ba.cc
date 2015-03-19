@@ -445,24 +445,93 @@ void ba::visit(io::stream* visitor) {
       _open_new_event(visitor, hard_state);
     }
 
-    // Generate status event.
-    misc::shared_ptr<ba_status> status(new ba_status);
-    status->ba_id = _id;
-    status->in_downtime = _in_downtime;
-    if (!_event.isNull())
-      status->last_state_change = _event->start_time;
-    else
-      status->last_state_change = _last_kpi_update;
-    status->level_acknowledgement = normalize(_acknowledgement_hard);
-    status->level_downtime = normalize(_downtime_hard);
-    status->level_nominal = normalize(_level_hard);
-    status->state = hard_state;
-    status->state_changed = state_changed;
-    logging::debug(logging::low)
-      << "BAM: generating status of BA " << status->ba_id << " (state "
-      << status->state << ", in downtime " << status->in_downtime
-      << ", level " << status->level_nominal << ")";
-    visitor->write(status.staticCast<io::data>());
+    // Generate BA status event.
+    {
+      misc::shared_ptr<ba_status> status(new ba_status);
+      status->ba_id = _id;
+      status->in_downtime = _in_downtime;
+      if (!_event.isNull())
+        status->last_state_change = _event->start_time;
+      else
+        status->last_state_change = _last_kpi_update;
+      status->level_acknowledgement = normalize(_acknowledgement_hard);
+      status->level_downtime = normalize(_downtime_hard);
+      status->level_nominal = normalize(_level_hard);
+      status->state = hard_state;
+      status->state_changed = state_changed;
+      logging::debug(logging::low)
+        << "BAM: generating status of BA " << status->ba_id << " (state "
+        << status->state << ", in downtime " << status->in_downtime
+        << ", level " << status->level_nominal << ")";
+      visitor->write(status);
+    }
+
+    // Generate virtual service status event.
+    {
+      misc::shared_ptr<neb::service_status> status(new neb::service_status);
+      // status->acknowledgement_type = XXX;
+      status->active_checks_enabled = false;
+      status->check_interval = 0.0;
+      status->check_type = 1; // Passive.
+      status->current_check_attempt = 1;
+      // status->current_notification_number = XXX;
+      status->current_state = hard_state;
+      status->enabled = true;
+      status->event_handler_enabled = false;
+      status->execution_time = 0.0;
+      // status->failure_prediction_enabled = XXX;
+      status->flap_detection_enabled = false;
+      status->has_been_checked = true;
+      status->host_id = _host_id;
+      // status->host_name = XXX;
+      status->is_flapping = false;
+      if (!_event.isNull())
+        status->last_check = _event->start_time;
+      else
+        status->last_check = _last_kpi_update;
+      status->last_hard_state = hard_state;
+      status->last_hard_state_change = status->last_check;
+      // status->last_notification = XXX;
+      status->last_state_change = status->last_check;
+      // status->last_time_critical = XXX;
+      // status->last_time_unknown = XXX;
+      // status->last_time_warning = XXX;
+      status->last_update = time(NULL);
+      status->latency = 0.0;
+      status->max_check_attempts = 1;
+      status->modified_attributes = 0;
+      // status->next_notification = XXX;
+      // status->no_more_notifications = XXX;
+      // status->notifications_enabled = XXX;
+      status->obsess_over = false;
+      {
+        std::ostringstream oss;
+        oss << "BA : Business Activity " << _id << " - current_level = "
+            << static_cast<int>(normalize(_level_hard)) << "%";
+        status->output = oss.str().c_str();
+      }
+      status->passive_checks_enabled = true;
+      // status->percent_state_chagne = XXX;
+      {
+        std::ostringstream oss;
+        oss << "BA_Level=" << static_cast<int>(normalize(_level_hard))
+            << "%;" << static_cast<int>(_level_warning) << ";"
+            << static_cast<int>(_level_critical) << ";0;100 BA_Downtime="
+            << static_cast<int>(_downtime_hard)
+            << " BA_Acknowledgement="
+            << static_cast<int>(_acknowledgement_hard);
+        status->perf_data = oss.str().c_str();
+      }
+      // status->problem_has_been_acknowledged = XXX;
+      // status->process_performance_data = XXX;
+      status->retry_interval = 0;
+      // status->scheduled_downtime_depth = XXX;
+      // status->service_description = XXX;
+      status->service_id = _service_id;
+      status->should_be_scheduled = false;
+      status->state_type = 1; // Hard.
+      visitor->write(status);
+    }
   }
   return ;
 }

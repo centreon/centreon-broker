@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -72,7 +72,7 @@ void reader::read(state& st) {
     _load(st.get_bas(), st.get_ba_svc_mapping());
     _load(st.get_kpis());
     _load(st.get_bool_exps());
-    // XXX : _load(st.get_meta_services(), st.get_meta_svc_mapping());
+    _load(st.get_meta_services(), st.get_meta_svc_mapping());
     _load(st.get_hst_svc_mapping());
   }
   catch (std::exception const& e) {
@@ -410,7 +410,8 @@ void reader::_load(
   try {
     database_query q(_db);
     q.run_query(
-      "SELECT h.host_name, s.service_description"
+      "SELECT h.host_name, s.service_description,"
+      "       hsr.host_host_id, hsr.service_service_id"
       "  FROM cfg_services AS s"
       "  INNER JOIN cfg_hosts_services_relations AS hsr"
       "    ON s.service_id=hsr.service_service_id"
@@ -418,6 +419,8 @@ void reader::_load(
       "    ON hsr.host_host_id=h.host_id"
       "  WHERE s.service_description LIKE 'meta_%'");
     while (q.next()) {
+      unsigned int host_id(q.value(2).toUInt());
+      unsigned int service_id(q.value(3).toUInt());
       std::string service_description(q.value(1).toString().toStdString());
       service_description.erase(0, strlen("meta_"));
       bool ok(false);
@@ -438,6 +441,8 @@ void reader::_load(
           << "' references an unknown meta-service (" << meta_id << ")";
         continue ;
       }
+      found->second.set_host_id(host_id);
+      found->second.set_service_id(service_id);
       mapping.set(
                 meta_id,
                 q.value(0).toString().toStdString(),

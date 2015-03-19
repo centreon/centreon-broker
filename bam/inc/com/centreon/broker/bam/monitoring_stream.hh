@@ -65,10 +65,10 @@ namespace           bam {
 
     configuration::applier::state
                     _applier;
-    ba_svc_mapping  _ba_mapping;
+    ba_svc_mapping  _ba_mapping; // XXX : to delete
     std::string     _ext_cmd_file;
     bool            _process_out;
-    ba_svc_mapping  _meta_mapping;
+    ba_svc_mapping  _meta_mapping; // XXX : to delete
     std::string     _status;
     mutable QMutex  _statusm;
     database_config _storage_cfg;

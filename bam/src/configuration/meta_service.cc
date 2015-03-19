@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -42,6 +42,8 @@ meta_service::meta_service(
                 std::string const& metric)
   : _computation(computation),
     _id(id),
+    _host_id(0),
+    _service_id(0),
     _level_critical(critical_level),
     _level_warning(warning_level),
     _metric_name(metric),
@@ -84,6 +86,8 @@ meta_service& meta_service::operator=(meta_service const& other) {
  */
 bool meta_service::operator==(meta_service const& other) const {
   return ((_id == other._id)
+          && (_host_id == other._host_id)
+          && (_service_id == other._service_id)
           && (_level_critical == other._level_critical)
           && (_level_warning == other._level_warning)
           && (_computation == other._computation)
@@ -120,6 +124,24 @@ std::string const& meta_service::get_computation() const {
  */
 unsigned int meta_service::get_id() const {
   return (_id);
+}
+
+/**
+ *  Get the meta-service's virtual host ID.
+ *
+ *  @return Virtual host ID.
+ */
+unsigned int meta_service::get_host_id() const {
+  return (_host_id);
+}
+
+/**
+ *  Get the meta-service's virtual service ID.
+ *
+ *  @return Virtual service ID.
+ */
+unsigned int meta_service::get_service_id() const {
+  return (_service_id);
 }
 
 /**
@@ -216,6 +238,26 @@ void meta_service::set_id(unsigned int id) {
 }
 
 /**
+ *  Set the meta-service's virtual host ID.
+ *
+ *  @param[in] host_id  Virtual host ID.
+ */
+void meta_service::set_host_id(unsigned int host_id) {
+  _host_id = host_id;
+  return ;
+}
+
+/**
+ *  Set the meta-service's virtual service ID.
+ *
+ *  @param[in] service_id  Virtual service ID.
+ */
+void meta_service::set_service_id(unsigned int service_id) {
+  _service_id = service_id;
+  return ;
+}
+
+/**
  *  Set the critical level.
  *
  *  @param[in] level  Critical level.
@@ -273,6 +315,8 @@ void meta_service::set_service_filter(std::string const& filter) {
 void meta_service::_internal_copy(meta_service const& other) {
   _computation = other._computation;
   _id = other._id;
+  _host_id = other._host_id;
+  _service_id = other._service_id;
   _level_critical = other._level_critical;
   _level_warning = other._level_warning;
   _metric_name = other._metric_name;

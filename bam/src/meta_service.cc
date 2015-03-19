@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,9 +18,11 @@
 */
 
 #include <cmath>
+#include <sstream>
 #include "com/centreon/broker/bam/meta_service.hh"
 #include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/storage/metric.hh"
 
 using namespace com::centreon::broker;
@@ -32,6 +34,8 @@ using namespace com::centreon::broker::bam;
 meta_service::meta_service()
   : _computation(meta_service::average),
     _id(0),
+    _host_id(0),
+    _service_id(0),
     _last_state(-1),
     _level_critical(0.0),
     _level_warning(0.0),
@@ -103,6 +107,47 @@ bool meta_service::child_has_update(
  */
 unsigned int meta_service::get_id() const {
   return (_id);
+}
+
+/**
+ *  Get the meta-service's virtual host ID.
+ *
+ *  @return Virtual host ID.
+ */
+unsigned int meta_service::get_host_id() const {
+  return (_host_id);
+}
+
+/**
+ *  Get the meta-service's virtual service ID.
+ *
+ *  @return Virtual service ID.
+ */
+unsigned int meta_service::get_service_id() const {
+  return (_service_id);
+}
+
+/**
+ *  Get meta-service output.
+ *
+ *  @return Meta-service output.
+ */
+std::string meta_service::get_output() const {
+  std::ostringstream oss;
+  oss << "Meta-Service " << _id;
+  return (oss.str());
+}
+
+/**
+ *  Get meta-service performance data.
+ *
+ *  @return Meta-servier performance data.
+ */
+std::string meta_service::get_perfdata() const {
+  std::ostringstream oss;
+  oss << "g[rta]=" << _value << ";" << _level_warning << ";"
+      << _level_critical;
+  return (oss.str());
 }
 
 /**
@@ -240,6 +285,26 @@ void meta_service::set_id(unsigned int id) {
 }
 
 /**
+ *  Set the meta-service's virtual host ID.
+ *
+ *  @param[in] host_id  Virtual host ID.
+ */
+void meta_service::set_host_id(unsigned int host_id) {
+  _host_id = host_id;
+  return ;
+}
+
+/**
+ *  Set the meta-service's virtual service ID.
+ *
+ *  @param[in] service_id  Virtual service ID.
+ */
+void meta_service::set_service_id(unsigned int service_id) {
+  _service_id = service_id;
+  return ;
+}
+
+/**
  *  Set critical level.
  *
  *  @param[in] level  Critical level.
@@ -270,19 +335,74 @@ void meta_service::visit(io::stream* visitor) {
     if (_recompute_count >= _recompute_limit)
       recompute();
 
-    // Send meta-service status.
-    misc::shared_ptr<meta_service_status>
-      status(new meta_service_status);
+    // New state.
     short new_state(get_state());
-    status->meta_service_id = _id;
-    status->value = _value;
-    status->state_changed = (_last_state != new_state);
-    _last_state = new_state;
-    logging::debug(logging::low)
-      << "BAM: generating status of meta-service "
-      << status->meta_service_id << " (value " << status->value
-      << ")";
-    visitor->write(status.staticCast<io::data>());
+
+    // Send meta-service status.
+    {
+      misc::shared_ptr<meta_service_status>
+        status(new meta_service_status);
+      status->meta_service_id = _id;
+      status->value = _value;
+      status->state_changed = (_last_state != new_state);
+      _last_state = new_state;
+      logging::debug(logging::low)
+        << "BAM: generating status of meta-service "
+        << status->meta_service_id << " (value " << status->value
+        << ")";
+      visitor->write(status.staticCast<io::data>());
+    }
+
+    // Send virtual service status.
+    {
+      misc::shared_ptr<neb::service_status>
+        status(new neb::service_status);
+      // status->acknowledgement_type = XXX;
+      status->active_checks_enabled = false;
+      status->check_interval = 0.0;
+      status->check_type = 1; // Passive.
+      status->current_check_attempt = 1;
+      // status->current_notification_number = XXX;
+      status->current_state = new_state;
+      status->enabled = true;
+      status->event_handler_enabled = false;
+      status->execution_time = 0.0;
+      // status->failure_prediction_enabled = XXX;
+      status->flap_detection_enabled = false;
+      status->has_been_checked = true;
+      status->host_id = _host_id;
+      // status->host_name = XXX;
+      status->is_flapping = false;
+      status->last_check = time(NULL);
+      status->last_hard_state = new_state;
+      status->last_hard_state_change = status->last_check;
+      // status->last_notification = XXX;
+      status->last_state_change = status->last_check;
+      // status->last_time_critical = XXX;
+      // status->last_time_unknown = XXX;
+      // status->last_time_warning = XXX;
+      status->last_update = time(NULL);
+      status->latency = 0.0;
+      status->max_check_attempts = 1;
+      status->modified_attributes = 0;
+      // status->next_notification = XXX;
+      // status->no_more_notifications = XXX;
+      // status->notifications_enabled = XXX;
+      status->obsess_over = false;
+      status->output = get_output().c_str();
+      status->passive_checks_enabled = true;
+      // status->percent_state_chagne = XXX;
+      status->perf_data = get_perfdata().c_str();
+      // status->problem_has_been_acknowledged = XXX;
+      // status->process_performance_data = XXX;
+      status->retry_interval = 0;
+      // status->scheduled_downtime_depth = XXX;
+      // status->service_description = XXX;
+      status->service_id = _service_id;
+      status->should_be_scheduled = false;
+      status->state_type = 1; // Hard.
+      visitor->write(status);
+    }
   }
   return ;
 }
@@ -295,6 +415,8 @@ void meta_service::visit(io::stream* visitor) {
 void meta_service::_internal_copy(meta_service const& other) {
   _computation = other._computation;
   _id = other._id;
+  _host_id = other._host_id;
+  _service_id = other._service_id;
   _last_state = other._last_state;
   _level_critical = other._level_critical;
   _level_warning = other._level_warning;

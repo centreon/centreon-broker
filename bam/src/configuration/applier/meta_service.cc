@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -240,6 +240,8 @@ void applier::meta_service::_modify_meta(
     computation = bam::meta_service::average;
   obj.set_computation(computation);
   obj.set_id(new_cfg.get_id());
+  obj.set_host_id(new_cfg.get_host_id());
+  obj.set_service_id(new_cfg.get_service_id());
   obj.set_level_warning(new_cfg.get_level_warning());
   obj.set_level_critical(new_cfg.get_level_critical());
 
