@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -62,6 +62,10 @@ namespace            bam {
                        computable* child,
                        io::stream* visitor = NULL);
     unsigned int     get_id() const;
+    unsigned int     get_host_id() const;
+    unsigned int     get_service_id() const;
+    std::string      get_output() const;
+    std::string      get_perfdata() const;
     short            get_state() const;
     void             metric_update(
                        misc::shared_ptr<storage::metric> const& m,
@@ -70,6 +74,8 @@ namespace            bam {
     void             recompute();
     void             set_computation(computation_type type);
     void             set_id(unsigned int id);
+    void             set_host_id(unsigned int host_id);
+    void             set_service_id(unsigned int service_id);
     void             set_level_critical(double level);
     void             set_level_warning(double level);
     void             visit(io::stream* visitor);
@@ -84,6 +90,8 @@ namespace            bam {
 
     computation_type _computation;
     unsigned int     _id;
+    unsigned int     _host_id;
+    unsigned int     _service_id;
     short            _last_state;
     double           _level_critical;
     double           _level_warning;

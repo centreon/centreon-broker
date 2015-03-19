@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -50,7 +50,6 @@ namespace           bam {
     void            connect_to(
                       stream_type type,
                       database_config const& db_cfg,
-                      std::string const& ext_cmd_file,
                       std::string const& storage_db_name);
     misc::shared_ptr<io::stream>
                     open();
@@ -61,7 +60,6 @@ namespace           bam {
     void            _internal_copy(connector const& other);
 
     database_config _db_cfg;
-    std::string     _ext_cmd_file;
     std::string     _storage_db_name;
     stream_type     _type;
   };

@@ -1,5 +1,5 @@
 ##
-## Copyright 2011-2014 Merethis
+## Copyright 2011-2015 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -35,7 +35,6 @@ add_library("${BAM}" SHARED
   "${SRC_DIR}/availability_thread.cc"
   "${SRC_DIR}/ba.cc"
   "${SRC_DIR}/ba_status.cc"
-  "${SRC_DIR}/ba_svc_mapping.cc"
   "${SRC_DIR}/ba_event.cc"
   "${SRC_DIR}/ba_duration_event.cc"
   "${SRC_DIR}/bool_and.cc"
@@ -105,7 +104,6 @@ add_library("${BAM}" SHARED
   "${INC_DIR}/availability_thread.hh"
   "${INC_DIR}/ba.hh"
   "${INC_DIR}/ba_status.hh"
-  "${INC_DIR}/ba_svc_mapping.hh"
   "${INC_DIR}/ba_event.hh"
   "${INC_DIR}/ba_duration_event.hh"
   "${INC_DIR}/bool_and.hh"

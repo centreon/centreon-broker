@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,7 +21,6 @@
 #  define CCB_BAM_MONITORING_STREAM_HH
 
 #  include <string>
-#  include "com/centreon/broker/bam/ba_svc_mapping.hh"
 #  include "com/centreon/broker/bam/configuration/applier/state.hh"
 #  include "com/centreon/broker/database.hh"
 #  include "com/centreon/broker/database_config.hh"
@@ -43,7 +42,6 @@ namespace           bam {
   public:
                     monitoring_stream(
                       database_config const& db_cfg,
-                      std::string const& ext_cmd_file,
                       std::string const& storage_db_name);
                     ~monitoring_stream();
     void            initialize();
@@ -61,14 +59,10 @@ namespace           bam {
     void            _prepare();
     void            _rebuild();
     void            _update_status(std::string const& status);
-    void            _write_external_command(std::string const& cmd);
 
     configuration::applier::state
                     _applier;
-    ba_svc_mapping  _ba_mapping;
-    std::string     _ext_cmd_file;
     bool            _process_out;
-    ba_svc_mapping  _meta_mapping;
     std::string     _status;
     mutable QMutex  _statusm;
     database_config _storage_cfg;
