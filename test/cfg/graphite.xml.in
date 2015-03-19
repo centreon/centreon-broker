@@ -38,5 +38,7 @@
     <db_user>@GRAPHITE_DB_USER@</db_user>
     <db_password>@GRAPHITE_DB_PASSWORD@</db_password>
     <queries_per_transaction>2</queries_per_transaction>
+    <metric_naming>centreon.metrics.$METRICID$.$METRIC$.$HOSTID$.$HOST$.$SERVICEID$.$SERVICE$</metric_naming>
+    <status_naming>centreon.statuses.$INDEXID$.$HOSTID$.$HOST$.$SERVICEID$.$SERVICE$</status_naming>
   </output>
 </centreonbroker>

@@ -669,6 +669,14 @@ unsigned int stream::_find_index_id(
       info.rrd_retention = _rrd_len;
       _index_cache[std::make_pair(host_id, service_id)] = info;
 
+      // Create the metric mapping.
+      misc::shared_ptr<status_mapping> mm(new status_mapping);
+      mm->index_id = retval;
+      mm->host_id = host_id;
+      mm->service_id = service_id;
+      multiplexing::publisher pblshr;
+      pblshr.write(mm);
+
       // Provide RRD retention.
       if (rrd_len)
         *rrd_len = info.rrd_retention;
@@ -846,6 +854,14 @@ unsigned int stream::_find_metric_id(
     info.metric_id = retval;
     info.type = *type;
     _metric_cache[std::make_pair(index_id, metric_name)] = info;
+
+    // Create the metric mapping.
+    misc::shared_ptr<metric_mapping> mm(new metric_mapping);
+    mm->metric_id = info.metric_id;
+    mm->status_id = index_id;
+    multiplexing::publisher pblshr;
+    pblshr.write(mm);
+
     *locked = info.locked;
   }
 
