@@ -88,8 +88,6 @@ monitoring_stream::monitoring_stream(
 
   // Apply configuration.
   _applier.apply(s);
-  _ba_mapping = s.get_ba_svc_mapping();
-  _meta_mapping = s.get_meta_svc_mapping();
 
   // Check if we need to rebuild something.
   _rebuild();
@@ -161,8 +159,6 @@ void monitoring_stream::update() {
       r.read(s);
     }
     _applier.apply(s);
-    _ba_mapping = s.get_ba_svc_mapping();
-    _meta_mapping = s.get_meta_svc_mapping();
     _rebuild();
     initialize();
   }

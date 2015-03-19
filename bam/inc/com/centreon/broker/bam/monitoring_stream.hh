@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,7 +21,6 @@
 #  define CCB_BAM_MONITORING_STREAM_HH
 
 #  include <string>
-#  include "com/centreon/broker/bam/ba_svc_mapping.hh"
 #  include "com/centreon/broker/bam/configuration/applier/state.hh"
 #  include "com/centreon/broker/database.hh"
 #  include "com/centreon/broker/database_config.hh"
@@ -65,10 +64,8 @@ namespace           bam {
 
     configuration::applier::state
                     _applier;
-    ba_svc_mapping  _ba_mapping; // XXX : to delete
     std::string     _ext_cmd_file;
     bool            _process_out;
-    ba_svc_mapping  _meta_mapping; // XXX : to delete
     std::string     _status;
     mutable QMutex  _statusm;
     database_config _storage_cfg;

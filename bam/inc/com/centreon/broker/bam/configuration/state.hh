@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,7 +22,6 @@
 
 #  include <deque>
 #  include <map>
-#  include "com/centreon/broker/bam/ba_svc_mapping.hh"
 #  include "com/centreon/broker/bam/configuration/kpi.hh"
 #  include "com/centreon/broker/bam/configuration/bool_expression.hh"
 #  include "com/centreon/broker/bam/configuration/ba.hh"
@@ -59,24 +58,18 @@ namespace                    bam {
       bool_exps const&       get_bool_exps() const;
       meta_services const&   get_meta_services() const;
       hst_svc_mapping const& get_hst_svc_mapping() const;
-      ba_svc_mapping const&  get_ba_svc_mapping() const;
-      ba_svc_mapping const&  get_meta_svc_mapping() const;
 
       bas&                   get_bas();
       kpis&                  get_kpis();
       bool_exps&             get_bool_exps();
       meta_services&         get_meta_services();
       hst_svc_mapping&       get_hst_svc_mapping();
-      ba_svc_mapping&        get_ba_svc_mapping();
-      ba_svc_mapping&        get_meta_svc_mapping();
 
     private:
-      ba_svc_mapping         _ba_svc_mapping;
       bas                    _bas;
       kpis                   _kpis;
       bool_exps              _bool_expressions;
       hst_svc_mapping        _hst_svc_mapping;
-      ba_svc_mapping         _meta_svc_mapping;
       meta_services          _meta_services;
     };
   }

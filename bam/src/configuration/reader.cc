@@ -21,7 +21,6 @@
 #include <cstdlib>
 #include <sstream>
 #include <memory>
-#include "com/centreon/broker/bam/ba_svc_mapping.hh"
 #include "com/centreon/broker/bam/configuration/state.hh"
 #include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/reader_exception.hh"
@@ -69,10 +68,10 @@ reader::~reader() {}
 void reader::read(state& st) {
   try {
     _load_dimensions();
-    _load(st.get_bas(), st.get_ba_svc_mapping());
+    _load(st.get_bas());
     _load(st.get_kpis());
     _load(st.get_bool_exps());
-    _load(st.get_meta_services(), st.get_meta_svc_mapping());
+    _load(st.get_meta_services());
     _load(st.get_hst_svc_mapping());
   }
   catch (std::exception const& e) {
@@ -216,10 +215,9 @@ void reader::_load(state::kpis& kpis) {
 /**
  *  Load BAs from the DB.
  *
- *  @param[out] bas      The list of BAs in database.
- *  @param[out] mapping  The mapping of BA ID to host/service IDs.
+ *  @param[out] bas  The list of BAs in database.
  */
-void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
+void reader::_load(state::bas& bas) {
   try {
     database_query query(_db);
     query.run_query(
@@ -297,10 +295,6 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
         }
         found->second.set_host_id(host_id);
         found->second.set_service_id(service_id);
-        mapping.set(
-                  ba_id,
-                  query.value(0).toString().toStdString(),
-                  query.value(1).toString().toStdString());
       }
     }
   }
@@ -315,13 +309,14 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
   }
 
   // Test for BA without service ID.
-  for (state::bas::const_iterator it(bas.begin()),
-                                  end(bas.end());
+  for (state::bas::const_iterator
+         it(bas.begin()),
+         end(bas.end());
        it != end;
        ++it)
-    if (it->second.get_service_id() == 0)
-      throw (reader_exception() << "BAM: BA " << it->second.get_id()
-             << " has no associated service");
+    if (!it->second.get_host_id() || !it->second.get_service_id())
+      throw (reader_exception() << "BAM: BA " << it->first
+             << " has no associated virtual service");
 
   return ;
 }
@@ -364,12 +359,8 @@ void reader::_load(state::bool_exps& bool_exps) {
  *  Load meta-services from the DB.
  *
  *  @param[out] meta_services  Meta-services.
- *  @param[out] mapping        The mapping of meta-service ID to
- *                             host/service IDs.
  */
-void reader::_load(
-               state::meta_services& meta_services,
-               bam::ba_svc_mapping& mapping) {
+void reader::_load(state::meta_services& meta_services) {
   // Load meta-services.
   try {
     database_query q(_db);
@@ -443,10 +434,6 @@ void reader::_load(
       }
       found->second.set_host_id(host_id);
       found->second.set_service_id(service_id);
-      mapping.set(
-                meta_id,
-                q.value(0).toString().toStdString(),
-                q.value(1).toString().toStdString());
     }
   }
   catch (reader_exception const& e) {
@@ -464,13 +451,10 @@ void reader::_load(
          it(meta_services.begin()),
          end(meta_services.end());
        it != end;
-       ++it) {
-    std::pair<std::string, std::string>
-      svc(mapping.get_service(it->first));
-    if (svc.first.empty() || svc.second.empty())
+       ++it)
+    if (!it->second.get_host_id() || !it->second.get_service_id())
       throw (reader_exception() << "BAM: meta-service "
-             << it->first << " has no associated service");
-  }
+             << it->first << " has no associated virtual service");
 
   // Load metrics of meta-services.
   std::auto_ptr<database> storage_db;
@@ -543,8 +527,7 @@ void reader::_load(
  *
  *  @param[out] mapping  Host/service mapping.
  */
-void reader::_load(
-               bam::hst_svc_mapping& mapping) {
+void reader::_load(bam::hst_svc_mapping& mapping) {
   try {
     // XXX : expand hostgroups and servicegroups
     database_query q(_db);
