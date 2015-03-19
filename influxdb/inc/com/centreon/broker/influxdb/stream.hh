@@ -32,6 +32,7 @@
 #  include "com/centreon/broker/influxdb/influxdb.hh"
 #  include "com/centreon/broker/influxdb/column.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
+#  include "com/centreon/broker/influxdb/macro_cache.hh"
 
 CCB_BEGIN()
 
@@ -84,6 +85,9 @@ namespace          influxdb {
 
     // Internal working members
     unsigned int _actual_query;
+
+    // Cache
+    macro_cache  _cache;
 
     // Status members
     std::string    _status;

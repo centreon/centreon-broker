@@ -42,21 +42,57 @@
     <metrics_column>
       <name>metric_id</name>
       <value>$METRICID$</value>
-      <is_flag>true</is_flag>
+      <is_tag>true</is_tag>
     </metrics_column>
     <metrics_column>
       <name>value</name>
       <value>$VALUE$</value>
     </metrics_column>
+    <metrics_column>
+      <name>metric</name>
+      <value>$METRIC$</value>
+    </metrics_column>
+    <metrics_column>
+      <name>hostid</name>
+      <value>$HOSTID$</value>
+    </metrics_column>
+    <metrics_column>
+      <name>host</name>
+      <value>$HOST$</value>
+    </metrics_column>
+    <metrics_column>
+      <name>serviceid</name>
+      <value>$SERVICEID$</value>
+    </metrics_column>
+    <metrics_column>
+      <name>service</name>
+      <value>$SERVICE$</value>
+    </metrics_column>
     <status_timeseries>status</status_timeseries>
     <status_column>
       <name>status_id</name>
       <value>$INDEXID$</value>
-      <is_flag>true</is_flag>
+      <is_tag>true</is_tag>
     </status_column>
     <status_column>
       <name>value</name>
       <value>$VALUE$</value>
+    </status_column>
+    <status_column>
+      <name>hostid</name>
+      <value>$HOSTID$</value>
+    </status_column>
+    <status_column>
+      <name>host</name>
+      <value>$HOST$</value>
+    </status_column>
+    <status_column>
+      <name>serviceid</name>
+      <value>$SERVICEID$</value>
+    </status_column>
+    <status_column>
+      <name>service</name>
+      <value>$SERVICE$</value>
     </status_column>
     <queries_per_transaction>2</queries_per_transaction>
   </output>

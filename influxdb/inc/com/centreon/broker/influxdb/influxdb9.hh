@@ -52,7 +52,7 @@ namespace         influxdb {
                     std::vector<column> const& status_cols,
                     std::string const& metric_ts,
                     std::vector<column> const& metric_cols,
-                    misc::shared_ptr<persistent_cache> const& cache);
+                    macro_cache const& cache);
                   ~influxdb9();
 
     void          clear();
@@ -75,7 +75,8 @@ namespace         influxdb {
     unsigned short
                   _port;
 
-    macro_cache   _cache;
+    macro_cache const&
+                  _cache;
 
     void          _connect_socket();
     bool          _check_answer_string(std::string const& ans);

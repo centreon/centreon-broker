@@ -44,7 +44,7 @@ influxdb9::influxdb9(
             std::vector<column> const& status_cols,
             std::string const& metric_ts,
             std::vector<column> const& metric_cols,
-            misc::shared_ptr<persistent_cache> const& cache)
+            macro_cache const& cache)
   : _host(addr),
     _port(port),
     _cache(cache){
