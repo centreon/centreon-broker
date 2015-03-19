@@ -234,7 +234,8 @@ io::endpoint* factory::new_endpoint(
        status_timeseries,
        status_column_list,
        metric_timeseries,
-       metric_column_list);
+       metric_column_list,
+       cache);
   is_acceptor = false;
   return (c.release());
 }

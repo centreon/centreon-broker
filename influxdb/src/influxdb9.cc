@@ -43,9 +43,11 @@ influxdb9::influxdb9(
             std::string const& status_ts,
             std::vector<column> const& status_cols,
             std::string const& metric_ts,
-            std::vector<column> const& metric_cols)
+            std::vector<column> const& metric_cols,
+            misc::shared_ptr<persistent_cache> const& cache)
   : _host(addr),
-    _port(port) {
+    _port(port),
+    _cache(cache){
   logging::debug(logging::medium)
     << "influxdb: connecting using 0.9 version protocol";
 
@@ -57,32 +59,9 @@ influxdb9::influxdb9(
 }
 
 /**
- *  Copy constructor.
- *
- *  @param[in] f Object to copy.
- */
-influxdb9::influxdb9(influxdb9 const& f) {
-  influxdb::operator=(f);
-}
-
-/**
  *  Destructor.
  */
 influxdb9::~influxdb9() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] f Object to copy.
- *
- *  @return This object.
- */
-influxdb9& influxdb9::operator=(influxdb9 const& f) {
-  if (this != &f) {
-    _query = f._query;
-  }
-  return (*this);
-}
 
 /**
  *  Clear the query.
@@ -280,7 +259,7 @@ void influxdb9::_create_queries(
          p.add_string(it->get_name(), it->get_value());
      }
    p.close_object().close_object();
-   _status_query = query(p.get_data(), query::status);
+   _status_query = query(p.get_data(), query::status, _cache);
    p.clear();
 
    // Create metric query.
@@ -303,5 +282,5 @@ void influxdb9::_create_queries(
       if (!it->is_flag())
         p.add_value(it->get_name(), it->get_value());
     p.close_object().close_object();
-    _metric_query = query(p.get_data(), query::metric);
+    _metric_query = query(p.get_data(), query::metric, _cache);
 }

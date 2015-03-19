@@ -18,11 +18,11 @@
 */
 
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/graphite/macro_cache.hh"
+#include "com/centreon/broker/influxdb//macro_cache.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::graphite;
+using namespace com::centreon::broker::influxdb;
 
 /**
  *  Construct a macro cache
@@ -49,7 +49,7 @@ macro_cache::~macro_cache() {
       _save_to_disk();
     } catch (std::exception e) {
       logging::error(logging::medium)
-        << "graphite: macro cache couldn't save data to disk: '"
+        << "influxdb: macro cache couldn't save data to disk: '"
         << e.what() << "'";
     }
   }
@@ -68,7 +68,7 @@ storage::metric_mapping const& macro_cache::get_metric_mapping(
     found(_metric_mappings.find(metric_id));
   if (found == _metric_mappings.end())
     throw (exceptions::msg()
-           << "graphite: could not find metric mapping for " << metric_id);
+           << "influxdb: could not find metric mapping for " << metric_id);
   return (*found);
 }
 
@@ -85,7 +85,7 @@ storage::status_mapping const& macro_cache::get_status_mapping(
     found(_status_mappings.find(status_id));
   if (found == _status_mappings.end())
     throw (exceptions::msg()
-           << "graphite: could not find status mapping for " << status_id);
+           << "influxdb: could not find status mapping for " << status_id);
   return (*found);
 }
 
@@ -101,7 +101,7 @@ QString const& macro_cache::get_host_name(unsigned int host_id) const {
     found(_hosts.find(host_id));
   if (found == _hosts.end())
     throw (exceptions::msg()
-           << "graphite: could not find host infos for " << host_id);
+           << "influxdb: could not find host infos for " << host_id);
   return (found->host_name);
 }
 
@@ -120,7 +120,7 @@ QString const& macro_cache::get_service_description(
     found(_services.find(qMakePair(host_id, service_id)));
   if (found == _services.end())
     throw (exceptions::msg()
-           << "graphite: could not find service infos for ("
+           << "influxdb: could not find service infos for ("
            << host_id << ", " << service_id << ")");
   return (found->service_description);
 }
@@ -137,7 +137,7 @@ QString const& macro_cache::get_instance(unsigned int instance_id) const {
     found(_instances.find(instance_id));
   if (found == _instances.end())
     throw (exceptions::msg()
-           << "graphite: could not find instance infos for " << instance_id);
+           << "influxdb: could not find instance infos for " << instance_id);
   return (found->name);
 }
 

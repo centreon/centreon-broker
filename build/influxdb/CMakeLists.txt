@@ -37,6 +37,7 @@ add_library("${INFLUXDB}" SHARED
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/influxdb9.cc"
   "${SRC_DIR}/stream.cc"
+  "${SRC_DIR}/macro_cache.cc"
   "${SRC_DIR}/json_printer.cc"
   "${SRC_DIR}/query.cc"
   # Headers.
@@ -46,6 +47,7 @@ add_library("${INFLUXDB}" SHARED
   "${INC_DIR}/influxdb.hh"
   "${INC_DIR}/influxdb9.hh"
   "${INC_DIR}/stream.hh"
+  "${INC_DIR}/macro_cache.hh"
   "${INC_DIR}/json_printer.hh"
   "${INC_DIR}/query.hh"
 )

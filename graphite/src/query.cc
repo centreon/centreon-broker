@@ -300,7 +300,7 @@ unsigned int query::_get_status_id(io::data const& d) {
     return (static_cast<storage::status const&>(d).index_id);
   else if (_type == metric)
     return (_cache->get_metric_mapping(
-                      static_cast<storage::metric const&>(d).metric_id).status_id);
+              static_cast<storage::metric const&>(d).metric_id).status_id);
   return (0);
 }
 

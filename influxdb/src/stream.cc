@@ -55,7 +55,8 @@ stream::stream(
           std::string const& status_ts,
           std::vector<column> const& status_cols,
           std::string const& metric_ts,
-          std::vector<column> const& metric_cols)
+          std::vector<column> const& metric_cols,
+          misc::shared_ptr<persistent_cache> const& cache)
   : _process_out(true),
     _user(user),
     _password(passwd),
@@ -75,7 +76,8 @@ stream::stream(
                            status_ts,
                            status_cols,
                            metric_ts,
-                           metric_cols));
+                           metric_cols,
+                           cache));
   else
     throw (exceptions::msg()
            << "influxdb: unrecognized influxdb version '" << version << "'");
