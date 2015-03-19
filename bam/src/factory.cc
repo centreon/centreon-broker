@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -178,11 +178,6 @@ io::endpoint* factory::new_endpoint(
   bool is_bam_bi(!cfg.type.compare("bam_bi", Qt::CaseInsensitive)
                  && is_output);
 
-  // External command file.
-  QString ext_cmd_file;
-  if (!is_bam_bi)
-    ext_cmd_file = find_param(cfg, "command_file");
-
   // Storage database.
   QString storage_db_name;
   if (!is_bam_bi) {
@@ -199,7 +194,6 @@ io::endpoint* factory::new_endpoint(
        ? bam::connector::bam_bi_type
        : bam::connector::bam_type,
        db_cfg,
-       ext_cmd_file.toStdString(),
        storage_db_name.toStdString());
   is_acceptor = false;
   return (c.release());

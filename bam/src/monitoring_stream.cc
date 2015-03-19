@@ -57,15 +57,12 @@ using namespace com::centreon::broker::bam;
  *  Constructor.
  *
  *  @param[in] db_cfg           Database configuration.
- *  @param[in] ext_cmd_file     External command file.
  *  @param[in] storage_db_name  Storage DB name.
  */
 monitoring_stream::monitoring_stream(
                      database_config const& db_cfg,
-                     std::string const& ext_cmd_file,
                      std::string const& storage_db_name)
-  : _ext_cmd_file(ext_cmd_file),
-    _process_out(true),
+  : _process_out(true),
     _storage_cfg(db_cfg),
     _db(db_cfg),
     _ba_update(_db),
@@ -485,33 +482,5 @@ void monitoring_stream::_rebuild() {
 void monitoring_stream::_update_status(std::string const& status) {
   QMutexLocker lock(&_statusm);
   _status = status;
-  return ;
-}
-
-/**
- *  Write an external command to Engine.
- *
- *  @param[in] cmd  Command to write to the external command pipe.
- */
-void monitoring_stream::_write_external_command(
-                          std::string const& cmd) {
-  std::ofstream ofs;
-  ofs.open(_ext_cmd_file.c_str());
-  if (!ofs.good()) {
-    logging::error(logging::medium)
-      << "BAM: could not write BA check result to command file '"
-      << _ext_cmd_file << "'";
-  }
-  else {
-    ofs.write(cmd.c_str(), cmd.size());
-    if (!ofs.good())
-      logging::error(logging::medium)
-        << "BAM: could not write BA check result to command file '"
-        << _ext_cmd_file << "'";
-    else
-      logging::debug(logging::medium)
-        << "BAM: sent external command '" << cmd << "'";
-    ofs.close();
-  }
   return ;
 }

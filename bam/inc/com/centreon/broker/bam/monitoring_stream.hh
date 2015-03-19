@@ -42,7 +42,6 @@ namespace           bam {
   public:
                     monitoring_stream(
                       database_config const& db_cfg,
-                      std::string const& ext_cmd_file,
                       std::string const& storage_db_name);
                     ~monitoring_stream();
     void            initialize();
@@ -60,11 +59,9 @@ namespace           bam {
     void            _prepare();
     void            _rebuild();
     void            _update_status(std::string const& status);
-    void            _write_external_command(std::string const& cmd);
 
     configuration::applier::state
                     _applier;
-    std::string     _ext_cmd_file;
     bool            _process_out;
     std::string     _status;
     mutable QMutex  _statusm;
