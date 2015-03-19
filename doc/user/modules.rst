@@ -967,50 +967,78 @@ This module fills an InfluxDB instance with metrics. It uses the
 :ref:`storage engine <user_modules_storage>` as its performance data
 source.
 
-===================== ======
-**Type**              dumper
+===================== ========
+**Type**              influxdb
 **Layer(s)**          1-7
 **Work on input**     No
 **Work on output**    Yes
 **Work on temporary** No
-===================== ======
+===================== ========
 
 Description
 -----------
 
-Time series are named after metric names (like *rtmax*, for example) and
-holds three columns which are filled by the module :
-
-  - *time* : obvious
-  - *value* : the metric value
-  - *metric_id* : the ID of the metric within Centreon's *metrics* table
-
-Statuses are stored within a time serie named *statuses* with the
-following columns :
-
-  - *time* : obvious
-  - *value* : status value
-  - *index_id* : the index ID of the host / service within Centreon's
-    *index_data* table
+Users of this module can make their own storage scheme to suite their
+needs. The InfluxDB module will provide information on a particular
+metric using a macro system. Each macro must be written between two
+dollar-sign (like *$MACRO$*). If one wishes to write a dollar-sign he
+must write two continguous dollar-signs (*$$*).
 
 Configuration
 -------------
 
-======================= ===============================================
-Tag                     Description
-======================= ===============================================
-db_host                 Database host.
-db_port                 Database port.
-db_user                 Database user.
-db_password             Password associated with *db_user*.
-db_name                 Database name.
-queries_per_transaction Number of queries per transaction. Set to 1 or
-                        below to disable transactions. Default to 1.
-read_timeout            When using transactions, maximum time between
-                        commits in seconds. This prevent database from
-                        not being updated due to lack of queries to
-                        fill the transaction. Default to 1s.
-======================= ===============================================
+======================== ===============================================
+Tag                      Description
+======================== ===============================================
+db_host                  Database host.
+db_port                  Database port.
+db_user                  Database user.
+db_password              Password associated with *db_user*.
+db_name                  Database name.
+queries_per_transaction  Number of queries per transaction. Set to 1 or
+                         below to disable transactions. Default to 1.
+read_timeout             When using transactions, maximum time between
+                         commits in seconds. This prevent database from
+                         not being updated due to lack of queries to
+                         fill the transaction. Default to 1s.
+status_timeseries        Name of the time series for statuses. Macros
+                         accepted.
+status_column            Define one status column. Each InfluxDB
+                         endpoint can have multiple status columns.
+                         Macros accepted.
+status_column -> name    Name of the column. Macros accepted.
+status_column -> value   Value of the column. Macros accepted.
+status_column -> is_tag  Boolean value that is set to true if the
+                         current column is a tag. Defaults to false.
+metrics_timeseries       Name of the time series for metrics. Macros
+                         accepted.
+metrics_column           Define one metrics column. Each InfluxDB
+                         endpoint can have multiplex metrics columns.
+                         Macros accepted.
+metrics_column -> name   Name of the column. Macros accepted.
+metrics_column -> value  Value of the column Macros accepted.
+metrics_column -> is_tag Boolean value that is set to true if the
+                         current column is a tag. Defaults to false.
+======================== ===============================================
+
+Available macros are described in the following table.
+
+============ ================================== ============ ===========
+Macro        Description                        For statuses For metrics
+============ ================================== ============ ===========
+INSTANCE     Instance (poller) name.                 X            X
+INSTANCEID   Instance (poller) ID.                   X            X
+HOST         Host.                                   X            X
+HOSTID       Host ID.                                X            X
+SERVICE      Service.                                X            X
+SERVICEID    Service ID.                             X            X
+INDEXID      Index of the host / service within      X            X
+             Centreon's *index_data* table.
+METRIC       Metric name.                                         X
+METRICID     ID of the metric within Centreon's                   X
+             *metrics* table.
+============ ================================== ============ ===========
+
 
 Example
 -------
@@ -1024,4 +1052,96 @@ Example
     <db_user>centreon</db_user>
     <db_password>noertnec</db_password>
     <db_name>metrics</db_name>
+
+    <!-- All statuses will be stored in the 'status' time series. -->
+    <status_timeseries>status</status_timeseries>
+    <status_column>
+      <name>time</name>
+      <value>$TIME$</value>
+    </status_column>
+    <status_column>
+      <name>value</name>
+      <value>$VALUE$</value>
+    </status_column>
+    <status_column>
+      <name>index_id</name>
+      <value>$INDEXID$</value>
+      <is_tag>1</is_tag>
+    </status_column>
+
+    <!-- Each separate metric will be stored in a time series that has
+         the same name as the metric name. -->
+    <metrics_timeseries>$METRIC$</metrics_timeseries>
+    <metrics_column>
+      <name>time</name>
+      <value>$TIME$</value>
+    </metrics_column>
+    <metrics_column>
+      <name>value</name>
+      <value>$VALUE$</value>
+    </metrics_column>
+    <metrics_column>
+      <name>metric_id</name>
+      <value>$METRICID$</value>
+      <is_tag>1</is_tag>
+    </metrics_column>
   </output>
+
+Graphite
+========
+
+.. warning::
+  This module is experimental.
+
+This module fills a Graphite instance with metrics. It uses the
+:ref:`storage engine <user_modules_storage>` as its performance data
+source.
+
+===================== ========
+**Type**              graphite
+**Layer(s)**          1-7
+**Work on input**     No
+**Work on output**    Yes
+**Work on temporary** NO
+===================== ========
+
+Description
+-----------
+
+The module uses only the plaintext protocol.
+
+Configuration
+-------------
+
+======================= ===============================================
+Tag                     Description
+======================= ===============================================
+metric_naming           Naming hierarchy within Graphite. This defaults
+                        to *centreon.metrics.$METRICID$* where
+                        *$METRICID$* is the metric's ID within
+                        Centreon's *metrics* table. Complete available
+                        variables are *$INSTANCE$* (name of the poller),
+			*$INSTANCEID$*, *$HOST$* (the host name),
+			*$HOSTID$*, *$SERVICE$* (the service
+			description), *$SERVICEID$*, *$METRIC$* (the
+			metric name), *$METRICID$* and *$INDEXID$*.
+status_naming           Naming hierarchy within Graphite. This defaults
+                        to *centreon.statuses.$INDEXID$* where
+                        *$INDEXID$* is the index ID of the host /
+                        service within Centreon's *index_data* table.
+                        Complete available variables are *$INSTANCE$*,
+			*$INSTANCEID$*, *$HOST$*, *$HOSTID$*,
+			*$SERVICE$*, *$SERVICEID$* and *$INDEXID$*.
+db_host                 Database host.
+db_port                 Database port. Default to 80.
+db_user                 Database user. Default is empty (no
+                        authentication).
+db_password             Password associated with *db_user*. Default is
+                        empty (no authentication).
+queries_per_transaction Number of queries per transaction. Set to 1 or
+                        below to disable transactions. Default to 1.
+read_timeout            When using transactions, maximum time between
+                        commits in seconds. This prevent database from
+                        not being updated due to lack of queries to
+                        fill the transaction. Default to 1s.
+======================= ===============================================

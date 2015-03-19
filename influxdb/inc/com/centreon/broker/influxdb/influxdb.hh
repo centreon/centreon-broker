@@ -25,6 +25,7 @@
 #  include <QTcpSocket>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/storage/metric.hh"
+#  include "com/centreon/broker/storage/status.hh"
 
 CCB_BEGIN()
 
@@ -50,6 +51,12 @@ namespace         influxdb {
      *  @param[in] m  The event.
      */
     virtual void  write(storage::metric const& m) = 0;
+
+    /**
+     *  Write an event to the queue of event pending.
+     *  @param[in] m  The event.
+     */
+    virtual void  write(storage::status const& m) = 0;
 
     /**
      *  Commit all the events pending to the db.

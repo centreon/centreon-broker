@@ -19,15 +19,13 @@
 
 #include <memory>
 #include <sstream>
-#include <vector>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/influxdb/connector.hh"
-#include "com/centreon/broker/influxdb/factory.hh"
-#include "com/centreon/broker/influxdb/column.hh"
+#include "com/centreon/broker/graphite//connector.hh"
+#include "com/centreon/broker/graphite/factory.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::influxdb;
+using namespace com::centreon::broker::graphite;
 
 /**************************************
 *                                     *
@@ -48,9 +46,49 @@ static std::string find_param(
                      QString const& key) {
   QMap<QString, QString>::const_iterator it(cfg.params.find(key));
   if (cfg.params.end() == it)
-    throw (exceptions::msg() << "influxdb: no '" << key
+    throw (exceptions::msg() << "graphite: no '" << key
            << "' defined for endpoint '" << cfg.name << "'");
   return (it.value().toStdString());
+}
+
+/**
+ *  Get a parameter in configuration, or return a default value.
+ *
+ *  @param[in] cfg Configuration object.
+ *  @param[in] key Property to get.
+ *  @param[in] def The default value if nothing found.
+ *
+ *  @return Property value.
+ */
+static std::string get_string_param(
+              config::endpoint const& cfg,
+              QString const& key,
+              std::string const& def) {
+  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+  if (cfg.params.end() == it)
+    return (def);
+  else
+    return (it->toStdString());
+}
+
+/**
+ *  Get a parameter in configuration, or return a default value.
+ *
+ *  @param[in] cfg Configuration object.
+ *  @param[in] key Property to get.
+ *  @param[in] def The default value if nothing found.
+ *
+ *  @return Property value.
+ */
+static unsigned int get_uint_param(
+             config::endpoint const& cfg,
+             QString const& key,
+             unsigned int def) {
+  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+  if (cfg.params.end() == it)
+    return (def);
+  else
+    return (it->toUInt());
 }
 
 /**************************************
@@ -111,7 +149,7 @@ bool factory::has_endpoint(
                 bool is_input,
                 bool is_output) const {
   (void)is_input;
-  bool is_ifdb(!cfg.type.compare("influxdb", Qt::CaseInsensitive)
+  bool is_ifdb(!cfg.type.compare("graphite", Qt::CaseInsensitive)
                   && is_output);
   return (is_ifdb);
 }
@@ -123,7 +161,7 @@ bool factory::has_endpoint(
  *  @param[in]  is_input    true if endpoint should act as input.
  *  @param[in]  is_output   true if endpoint should act as output.
  *  @param[out] is_acceptor Will be set to false.
- *  @param[in]  cache       Unused.
+ *  @param[in]  cache       The persistent cache.
  *
  *  @return Endpoint matching the given configuration.
  */
@@ -137,104 +175,32 @@ io::endpoint* factory::new_endpoint(
   (void)is_output;
   (void)cache;
 
-  std::string user(find_param(cfg, "db_user"));
-  std::string passwd(find_param(cfg, "db_password"));
-  std::string addr(find_param(cfg, "db_host"));
-  std::string db(find_param(cfg, "db_name"));
+  std::string db_host(find_param(cfg, "db_host"));
 
-  unsigned short port(0);
-  {
-    std::stringstream ss;
-    ss << find_param(cfg, "db_port");
-    ss >> port;
-    if (!ss.eof())
-      throw (exceptions::msg() << "influxdb: couldn't parse port '" << ss.str()
-             << "' defined for endpoint '" << cfg.name << "'");
-  }
-
-  unsigned int queries_per_transaction(0);
-  {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("queries_per_transaction"));
-    if (it != cfg.params.end())
-      queries_per_transaction = it.value().toUInt();
-    else
-      queries_per_transaction = 1000;
-  }
-
-  std::string version;
-  {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("influxdb_version"));
-    if (it != cfg.params.end())
-      version = it.value().toStdString();
-    else
-      version = "0.9";
-  }
-
-  // Get status query.
-  std::string status_timeseries(find_param(cfg, "status_timeseries"));
-  std::vector<column> status_column_list;
-  QDomNodeList status_columns = cfg.cfg.elementsByTagName("status_column");
-  for (size_t i = 0; i < status_columns.size(); ++i) {
-    QDomNode status = status_columns.item(i);
-    QDomNode name = status.namedItem("name");
-    QDomNode value = status.namedItem("value");
-    QDomNode is_tag = status.namedItem("is_tag");
-    QDomNode type = status.namedItem("type");
-    if (name.isNull() || value.isNull())
-      throw (exceptions::msg())
-             << "influxdb: couldn't get the configuration of a status column";
-    status_column_list.push_back(column(
-      name.toElement().text().toStdString(),
-      value.toElement().text().toStdString(),
-      is_tag.isNull() ?
-        false :
-        config::parser::parse_boolean(is_tag.toElement().text()),
-      type.isNull() ?
-        column::number :
-        column::string));
-
-  }
-
-  // Get metric query.
-  std::string metric_timeseries(find_param(cfg, "metrics_timeseries"));
-  std::vector<column> metric_column_list;
-  QDomNodeList metric_columns = cfg.cfg.elementsByTagName("metrics_column");
-  for (size_t i = 0; i < metric_columns.size(); ++i) {
-    QDomNode metric = metric_columns.item(i);
-    QDomNode name = metric.namedItem("name");
-    QDomNode value = metric.namedItem("value");
-    QDomNode is_tag = metric.namedItem("is_tag");
-    QDomNode type = metric.namedItem("type");
-    if (name.isNull() || value.isNull())
-      throw (exceptions::msg())
-             << "influxdb: couldn't get the configuration of a metric column";
-    metric_column_list.push_back(column(
-      name.toElement().text().toStdString(),
-      value.toElement().text().toStdString(),
-      is_tag.isNull() ?
-        false :
-        config::parser::parse_boolean(is_tag.toElement().text()),
-      type.isNull() ?
-        column::number :
-        column::string));
-  }
+  std::string metric_naming(
+        get_string_param(cfg, "metric_naming", "centreon.metrics.$METRICID$"));
+  std::string status_naming(
+        get_string_param(cfg, "status_naming", "centreon.statuses.$INDEXID$"));
+  unsigned short db_port(
+        get_uint_param(cfg, "db_port", 80));
+  std::string db_user(
+        get_string_param(cfg, "db_user", ""));
+  std::string db_password(
+        get_string_param(cfg, "db_password", ""));
+  unsigned int queries_per_transaction(
+                 get_uint_param(cfg, "queries_per_transaction", 1));
 
   // Connector.
-  std::auto_ptr<influxdb::connector> c(new influxdb::connector);
+  std::auto_ptr<graphite::connector> c(new graphite::connector);
   c->connect_to(
-       user,
-       passwd,
-       addr,
-       port,
-       db,
+       metric_naming,
+       status_naming,
+       db_user,
+       db_password,
+       db_host,
+       db_port,
        queries_per_transaction,
-       version,
-       status_timeseries,
-       status_column_list,
-       metric_timeseries,
-       metric_column_list);
+       cache);
   is_acceptor = false;
   return (c.release());
 }

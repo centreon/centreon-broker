@@ -506,6 +506,13 @@ if (WITH_MODULE_INFLUXDB)
   list(APPEND MODULE_LIST "influxdb")
 endif()
 
+# Influxdb module.
+option(WITH_MODULE_GRAPHITE "Build graphite module." ON)
+if (WITH_MODULE_GRAPHITE)
+  add_subdirectory("graphite")
+  list(APPEND MODULE_LIST "graphite")
+endif()
+
 # BAM module.
 option(WITH_MODULE_BAM "Build BAM module." ON)
 if (WITH_MODULE_BAM)
@@ -876,6 +883,20 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/notification.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # Influxdb
+  set(TEST_NAME "running_influxdb")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/influxdb.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIB})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # Graphite
+  set(TEST_NAME "running_graphite")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/graphite.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIB})
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
   # RRD benchmark.

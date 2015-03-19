@@ -17,23 +17,21 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_INFLUXDB_CONNECTOR_HH
-#  define CCB_INFLUXDB_CONNECTOR_HH
+#ifndef CCB_GRAPHITE_CONNECTOR_HH
+#  define CCB_GRAPHITE_CONNECTOR_HH
 
 #  include <ctime>
 #  include <QString>
-#  include <vector>
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/influxdb/column.hh"
 
 CCB_BEGIN()
 
-namespace           influxdb {
+namespace           graphite {
   /**
-   *  @class connector connector.hh "com/centreon/broker/influxdb/connector.hh"
-   *  @brief Connect to an influxdb stream.
+   *  @class connector connector.hh "com/centreon/broker/graphite/connector.hh"
+   *  @brief Connect to a graphite stream.
    */
   class             connector : public io::endpoint {
   public:
@@ -43,37 +41,29 @@ namespace           influxdb {
     connector&      operator=(connector const& other);
     io::endpoint*   clone() const;
     void            close();
-    void            connect_to(
-                      std::string const& user,
-                      std::string const& passwd,
-                      std::string const& addr,
-                      unsigned short _port,
-                      std::string const& db,
+    void            connect_to(std::string const& metric_naming,
+                      std::string const& status_naming,
+                      std::string const& db_user,
+                      std::string const& db_passwd,
+                      std::string const& db_host,
+                      unsigned short db_port,
                       unsigned int queries_per_transaction,
-                      std::string const& version,
-                      std::string const& status_ts,
-                      std::vector<column> const& status_cols,
-                      std::string const& metric_ts,
-                      std::vector<column> const& metric_cols);
+                      misc::shared_ptr<persistent_cache> const& cache);
     misc::shared_ptr<io::stream>
                     open();
     misc::shared_ptr<io::stream>
                     open(QString const& id);
 
    private:
+    std::string     _metric_naming;
+    std::string     _status_naming;
     std::string     _user;
     std::string     _password;
     std::string     _addr;
     unsigned short  _port;
-    std::string     _db;
     unsigned int    _queries_per_transaction;
-    std::string     _version;
-    std::string     _status_ts;
-    std::vector<column>
-                    _status_cols;
-    std::string     _metric_ts;
-    std::vector<column>
-                    _metric_cols;
+    misc::shared_ptr<persistent_cache>
+                    _persistent_cache;
 
     void            _internal_copy(connector const& other);
   };
@@ -81,4 +71,4 @@ namespace           influxdb {
 
 CCB_END()
 
-#endif // !CCB_INFLUXDB_CONNECTOR_HH
+#endif // !CCB_GRAPHITE_CONNECTOR_HH

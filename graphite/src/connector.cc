@@ -17,11 +17,11 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/influxdb/connector.hh"
-#include "com/centreon/broker/influxdb/stream.hh"
+#include "com/centreon/broker/graphite/connector.hh"
+#include "com/centreon/broker/graphite/stream.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::influxdb;
+using namespace com::centreon::broker::graphite;
 
 /**************************************
 *                                     *
@@ -86,58 +86,49 @@ void connector::close() {
  *
  */
 void connector::connect_to(
-                  std::string const& user,
-                  std::string const& passwd,
-                  std::string const& addr,
-                  unsigned short port,
-                  std::string const& db,
+                  std::string const& metric_naming,
+                  std::string const& status_naming,
+                  std::string const& db_user,
+                  std::string const& db_passwd,
+                  std::string const& db_addr,
+                  unsigned short db_port,
                   unsigned int queries_per_transaction,
-                  std::string const& version,
-                  std::string const& status_ts,
-                  std::vector<column> const& status_cols,
-                  std::string const& metric_ts,
-                  std::vector<column> const& metric_cols) {
-  _user = user;
-  _password = passwd;
-  _addr = addr;
-  _port = port,
-  _db = db;
+                  misc::shared_ptr<persistent_cache> const& cache) {
+  _metric_naming = metric_naming;
+  _status_naming = status_naming;
+  _user = db_user;
+  _password = db_passwd;
+  _addr = db_addr;
+  _port = db_port,
   _queries_per_transaction = queries_per_transaction;
-  _version = version;
-  _status_ts = status_ts;
-  _status_cols = status_cols;
-  _metric_ts = metric_ts;
-  _metric_cols = metric_cols;
+  _persistent_cache = cache;
   return ;
 }
 
 /**
- *  Connect to an influxdb DB.
+ *  Connect to a graphite DB.
  *
- *  @return Influxdb connection object.
+ *  @return Graphite connection object.
  */
 misc::shared_ptr<io::stream> connector::open() {
   return (misc::shared_ptr<io::stream>(
             new stream(
+                  _metric_naming,
+                  _status_naming,
                   _user,
                   _password,
                   _addr,
                   _port,
-                  _db,
                   _queries_per_transaction,
-                  _version,
-                  _status_ts,
-                  _status_cols,
-                  _metric_ts,
-                  _metric_cols)));
+                  _persistent_cache)));
 }
 
 /**
- *  Connect to an influxdb DB.
+ *  Connect to an graphite DB.
  *
  *  @param[in] id Unused.
  *
- *  @return Influxdb connection object.
+ *  @return Graphite connection object.
  */
 misc::shared_ptr<io::stream> connector::open(QString const& id) {
   (void)id;
@@ -156,16 +147,13 @@ misc::shared_ptr<io::stream> connector::open(QString const& id) {
  *  @param[in] other  Object to copy.
  */
 void connector::_internal_copy(connector const& other) {
+  _metric_naming = other._metric_naming;
+  _status_naming = other._status_naming;
   _user = other._user;
   _password = other._password;
   _addr = other._addr;
   _port = other._port;
-  _db = other._db;
   _queries_per_transaction = other._queries_per_transaction;
-  _version = other._version;
-  _status_ts = other._status_ts;
-  _status_cols = other._status_cols;
-  _metric_ts = other._metric_ts;
-  _metric_cols = other._metric_cols;
+  _persistent_cache = other._persistent_cache;
   return ;
 }

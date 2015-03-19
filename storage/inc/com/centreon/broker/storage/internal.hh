@@ -30,7 +30,9 @@ namespace storage {
     de_metric = 1,
     de_rebuild,
     de_remove_graph,
-    de_status
+    de_status,
+    de_metric_mapping,
+    de_status_mapping
   };
 }
 

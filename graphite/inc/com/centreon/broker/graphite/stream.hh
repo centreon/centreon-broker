@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_INFLUXDB_STREAM_HH
-#  define CCB_INFLUXDB_STREAM_HH
+#ifndef CCB_GRAPHITE_STREAM_HH
+#  define CCB_GRAPHITE_STREAM_HH
 
 #  include <deque>
 #  include <list>
@@ -28,36 +28,36 @@
 #  include <QString>
 #  include <utility>
 #  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/multiplexing/hooker.hh"
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/influxdb/influxdb.hh"
-#  include "com/centreon/broker/influxdb/column.hh"
+#  include "com/centreon/broker/storage/metric.hh"
+#  include "com/centreon/broker/storage/status.hh"
+#  include "com/centreon/broker/graphite/query.hh"
+#  include "com/centreon/broker/graphite/macro_cache.hh"
 
 CCB_BEGIN()
 
 // Forward declaration.
 class              database_config;
 
-namespace          influxdb {
+namespace          graphite {
   /**
-   *  @class stream stream.hh "com/centreon/broker/influxdb/stream.hh"
-   *  @brief Influxdb stream.
+   *  @class stream stream.hh "com/centreon/broker/graphite/stream.hh"
+   *  @brief Graphite stream.
    *
-   *  Insert metrics into influxdb.
+   *  Insert metrics/statuses into graphite.
    */
   class            stream : public io::stream {
   public:
                    stream(
-                     std::string const& user,
-                     std::string const& passwd,
-                     std::string const& addr,
-                     unsigned short port,
-                     std::string const& db,
+                     std::string const& metric_naming,
+                     std::string const& status_naming,
+                     std::string const& db_user,
+                     std::string const& db_password,
+                     std::string const& db_host,
+                     unsigned short db_port,
                      unsigned int queries_per_transaction,
-                     std::string const& version,
-                     std::string const& status_ts,
-                     std::vector<column> const& status_cols,
-                     std::string const& metric_ts,
-                     std::vector<column> const& metric_cols);
+                     misc::shared_ptr<persistent_cache> const& cache);
                    ~stream();
     void           process(bool in = false, bool out = true);
     void           read(misc::shared_ptr<io::data>& d);
@@ -69,16 +69,13 @@ namespace          influxdb {
     bool          _process_out;
 
     // Database parameters
-    std::string  _user;
-    std::string  _password;
-    std::string  _address;
-    unsigned short
-                 _port;
-    std::string  _db;
-    unsigned int _queries_per_transaction;
-
-    std::auto_ptr<influxdb>
-                 _influx_db;
+    std::string   _metric_naming;
+    std::string   _status_naming;
+    std::string   _db_user;
+    std::string   _db_password;
+    std::string   _db_host;
+    unsigned short _db_port;
+    unsigned int  _queries_per_transaction;
 
     // Internal working members
     unsigned int _actual_query;
@@ -86,9 +83,23 @@ namespace          influxdb {
     // Status members
     std::string    _status;
     mutable QMutex _statusm;
+
+    // Cache
+    macro_cache    _cache;
+
+    // Query
+    query          _metric_query;
+    query          _status_query;
+    std::string    _query;
+    std::string    _auth_query;
+
+    // Process metric/status and generate query.
+    void           _process_metric(storage::metric const& me);
+    void           _process_status(storage::status const& st);
+    void           _commit();
   };
 }
 
 CCB_END()
 
-#endif // !CCB_INFLUXDB_STREAM_HH
+#endif // !CCB_GRAPHITE_STREAM_HH

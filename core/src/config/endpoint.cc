@@ -79,7 +79,8 @@ bool endpoint::operator==(endpoint const& e) const {
           && (secondary_failovers == e.secondary_failovers)
           && (filters == e.filters)
           && (params == e.params)
-          && (cache_enabled == e.cache_enabled));
+          && (cache_enabled == e.cache_enabled)
+          && (cfg == e.cfg));
 }
 
 /**
@@ -120,6 +121,8 @@ bool endpoint::operator<(endpoint const& e) const {
     return (filters < e.filters);
   else if (cache_enabled != e.cache_enabled)
     return (cache_enabled < e.cache_enabled);
+  else if (cfg != e.cfg)
+    return (cfg.toText().data() < e.cfg.toText().data());
 
   // Need to check all parameters one by one.
   QMap<QString, QString>::const_iterator it1(params.begin()),
@@ -163,5 +166,6 @@ void endpoint::_internal_copy(endpoint const& e) {
   filters = e.filters;
   type = e.type;
   cache_enabled = e.cache_enabled;
+  cfg = e.cfg;
   return ;
 }

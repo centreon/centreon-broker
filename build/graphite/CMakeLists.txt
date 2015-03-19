@@ -18,51 +18,46 @@
 ##
 
 # Global options.
-set(INC_DIR "${PROJECT_SOURCE_DIR}/influxdb/inc")
-set(SRC_DIR "${PROJECT_SOURCE_DIR}/influxdb/src")
-set(TEST_DIR "${PROJECT_SOURCE_DIR}/test")
+set(INC_DIR "${PROJECT_SOURCE_DIR}/graphite/inc")
+set(SRC_DIR "${PROJECT_SOURCE_DIR}/graphite/src")
+set(TEST_DIR "${PROJECT_SOURCE_DIR}/graphite/test")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
-set(INC_DIR "${INC_DIR}/com/centreon/broker/influxdb")
+set(INC_DIR "${INC_DIR}/com/centreon/broker/graphite")
 
-# INFLUXDB module.
-set(INFLUXDB "80-influxdb")
-set(INFLUXDB "${INFLUXDB}" PARENT_SCOPE)
-add_library("${INFLUXDB}" SHARED
+# GRAPHITE module.
+set(GRAPHITE "80-graphite")
+set(GRAPHITE "${GRAPHITE}" PARENT_SCOPE)
+add_library("${GRAPHITE}" SHARED
   # Sources.
   "${SRC_DIR}/main.cc"
-  "${SRC_DIR}/connector.cc"
-  "${SRC_DIR}/column.cc"
   "${SRC_DIR}/factory.cc"
-  "${SRC_DIR}/influxdb9.cc"
   "${SRC_DIR}/stream.cc"
-  "${SRC_DIR}/json_printer.cc"
+  "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/query.cc"
+  "${SRC_DIR}/macro_cache.cc"
   # Headers.
-  "${INC_DIR}/connector.hh"
-  "${INC_DIR}/column.hh"
   "${INC_DIR}/factory.hh"
-  "${INC_DIR}/influxdb.hh"
-  "${INC_DIR}/influxdb9.hh"
   "${INC_DIR}/stream.hh"
-  "${INC_DIR}/json_printer.hh"
+  "${INC_DIR}/connector.hh"
   "${INC_DIR}/query.hh"
+  "${INC_DIR}/macro_cache.hh"
 )
-target_link_libraries("${INFLUXDB}" ${QT_LIBRARIES})
-set_target_properties("${INFLUXDB}" PROPERTIES PREFIX "")
-get_property(INFLUXDB_MODULE_PATH
-  TARGET "${INFLUXDB}"
+target_link_libraries("${GRAPHITE}" ${QT_LIBRARIES})
+set_target_properties("${GRAPHITE}" PROPERTIES PREFIX "")
+get_property(GRAPHITE_MODULE_PATH
+  TARGET "${GRAPHITE}"
   PROPERTY LOCATION)
-set(INFLUXDB_MODULE_PATH "${INFLUXDB_MODULE_PATH}" PARENT_SCOPE)
+set(GRAPHITE_MODULE_PATH "${GRAPHITE_MODULE_PATH}" PARENT_SCOPE)
 
 # Testing.
 if (WITH_TESTING)
-  set(TEST_LIBRARIES "${NEB}" "${INFLUXDB}" "roker")
+  set(TEST_LIBRARIES "${NEB}" "${GRAPHITE}" "roker")
 
 endif ()
 
 # Install rule.
-install(TARGETS "${INFLUXDB}"
+install(TARGETS "${GRAPHITE}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
 )
