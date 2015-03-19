@@ -42,7 +42,7 @@
     <metrics_column>
       <name>metric_id</name>
       <value>$METRICID$</value>
-      <is_flag>true</is_flag>
+      <is_tag>true</is_tag>
     </metrics_column>
     <metrics_column>
       <name>value</name>
@@ -52,7 +52,7 @@
     <status_column>
       <name>status_id</name>
       <value>$INDEXID$</value>
-      <is_flag>true</is_flag>
+      <is_tag>true</is_tag>
     </status_column>
     <status_column>
       <name>value</name>

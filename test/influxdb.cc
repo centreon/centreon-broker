@@ -51,8 +51,8 @@ static const char* expected_result =
     "POST /write?u=" INFLUXDB_DB_USER "&p="INFLUXDB_DB_PASSWORD" HTTP/1.0\n"
     "Content-Length: 229\n\n"
     "{\"database\":\""INFLUXDB_DB_NAME"\",\"points\":["
-    "{\"name\":\"status\",\"tags\":{},\"timestamp\":$timestamp$,\"fields\":{\"status_id\":1,\"value\":0 } },"
-    "{\"name\":\"influxdb_test\",\"tags\":{},\"timestamp\":$timestamp$,\"fields\":{\"metric_id\":1,\"value\":0.8 } } ]}";
+    "{\"name\":\"status\",\"tags\":{\"status_id\":1 },\"timestamp\":$timestamp$,\"fields\":{\"value\":0 } },"
+    "{\"name\":\"influxdb_test\",\"tags\":{\"metric_id\":1 },\"timestamp\":$timestamp$,\"fields\":{\"value\":0.8 } } ]}";
 
 /**
  *  Check that the influxdb works.
