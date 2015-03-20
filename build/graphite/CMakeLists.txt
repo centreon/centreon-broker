@@ -1,5 +1,5 @@
 ##
-## Copyright 2011-2014 Merethis
+## Copyright 2011-2015 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -27,7 +27,7 @@ include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 set(INC_DIR "${INC_DIR}/com/centreon/broker/graphite")
 
 # GRAPHITE module.
-set(GRAPHITE "80-graphite")
+set(GRAPHITE "70-graphite")
 set(GRAPHITE "${GRAPHITE}" PARENT_SCOPE)
 add_library("${GRAPHITE}" SHARED
   # Sources.
