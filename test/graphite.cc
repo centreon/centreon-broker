@@ -48,8 +48,8 @@ using namespace com::centreon::broker;
 
 static const char* expected_result =
     "Authorization: Basic $auth$\n"
-    "centreon.statuses.1 0 $timestamp$\n"
-    "centreon.metrics.1 0.8 $timestamp$\n";
+    "centreon.statuses.1.1.1.1.1 0 $timestamp$\n"
+    "centreon.metrics.1.graphite_test.1.1.1.1 0.8 $timestamp$\n";
 
 /**
  *  Check that the graphite works.
