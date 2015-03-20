@@ -940,9 +940,11 @@ Configuration of the dumper endpoint
 Tag           Description
 ============= ===========================================================
 tagname       The tag name to write file. Tag name allow filtering.
-path          The path of the file to write data. You can use macro
-              $INSTANCEID$ into the path to write the instance id of the
-              poller.
+path          The path of the file to write data. You can use some macros
+              in the path. Available macros are *$INSTANCEID$* (the
+              instance ID of the Centreon Broker instance that generated
+              the dump event) and *$FILENAME$* (the original file name
+              of the file that generated the dump event).
 ============= ===========================================================
 
 FIFO dump endpoint
@@ -970,6 +972,31 @@ tagname       The tag name to write file. This is used by *dumper*
 path          The path of the FIFO file.
 ============= ===========================================================
 
+Directory dump endpoint
+-----------------------
+
+This endpoint transfer the content of a directory. Each time a file is
+modified it is transfered.
+
+===================== =========
+**Type**              dump_dir
+**Layer(s)**          1-7
+**Work on input**     Yes
+**Work on output**    No
+**Work on temporary** No
+===================== =========
+
+Configuration of the directory dump endpoint
+--------------------------------------------
+
+============= ===========================================================
+Tag           Description
+============= ===========================================================
+tagname       The tag name to write file. This is used by *dumper*
+              endpoints to perform filtering.
+path          The path of the directory to watch for changes.
+============= ===========================================================
+
 
 Example
 -------
@@ -978,7 +1005,14 @@ Example
 
   <input>
     <type>dump_fifo</type>
-    <tagname>extcmd-1</tagname>
+    <tagname>engine-extcmd-1</tagname>
+    <path>/var/lib/centreon/poller-1.cmd</path>
+  </input>
+
+  <input>
+    <type>dump_dir</type>
+    <tagname>engine-cfg-1</tagname>
+    <path>/var/lib/centreon/cfg/1</path>
   </input>
 
   <output>
@@ -989,8 +1023,14 @@ Example
 
   <output>
     <type>dumper</type>
-    <tagname>extcmd-1</tagname>
+    <tagname>engine-extcmd-1</tagname>
     <path>/var/lib/centreon-engine/rw/centengine.cmd</path>
+  </output>
+
+  <output>
+    <type>dumper</type>
+    <tagname>engine-cfg-1</tagname>
+    <path>/etc/centreon-engine/$FILENAME$</path>
   </output>
 
 InfluxDB
