@@ -17,38 +17,38 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_DUMPER_DUMP_HH
-#  define CCB_DUMPER_DUMP_HH
+#ifndef CCB_DUMPER_TIMESTAMP_CACHE_HH
+#  define CCB_DUMPER_TIMESTAMP_CACHE_HH
 
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
+#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
 namespace        dumper {
   /**
-   *  @class dump dump.hh "com/centreon/broker/dumper/dump.hh"
-   *  @brief Dump of a file.
+   *  @class timestamp_cache timestamp_cache.hh "com/centreon/broker/dumper/timestamp_cache.hh"
+   *  @brief Cache the last modified time of a file.
    *
-   *  Dump of a file transmitted by some provider.
+   *  This is used to cache this information in the persistant cache.
    */
-  class          dump : public io::data {
+  class          timestamp_cache : public io::data {
   public:
-                 dump();
-                 dump(dump const& right);
-                 ~dump();
-    dump&        operator=(dump const& right);
+                 timestamp_cache();
+                 timestamp_cache(timestamp_cache const& right);
+                 ~timestamp_cache();
+    timestamp_cache&
+                 operator=(timestamp_cache const& right);
     unsigned int type() const;
     static unsigned int
                  static_type();
 
-    QString      content;
-    unsigned int instance_id;
-    QString      tag;
     QString      filename;
+    timestamp    last_modified;
 
     static mapping::entry const
                     entries[];
@@ -56,10 +56,10 @@ namespace        dumper {
                     operations;
 
   private:
-    void         _internal_copy(dump const& right);
+    void         _internal_copy(timestamp_cache const& right);
   };
 }
 
 CCB_END()
 
-#endif // !CCB_DUMPER_DUMP_HH
+#endif // !CCB_DUMPER_TIMESTAMP_CACHE_HH

@@ -18,7 +18,7 @@
 */
 
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/dumper/dump.hh"
+#include "com/centreon/broker/dumper/timestamp_cache.hh"
 #include "com/centreon/broker/dumper/internal.hh"
 
 using namespace com::centreon::broker;
@@ -27,21 +27,21 @@ using namespace com::centreon::broker::dumper;
 /**
  *  Default constructor.
  */
-dump::dump() : instance_id(0) {}
+timestamp_cache::timestamp_cache() {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-dump::dump(dump const& right) : io::data(right) {
+timestamp_cache::timestamp_cache(timestamp_cache const& right) : io::data(right) {
   _internal_copy(right);
 }
 
 /**
  *  Destructor.
  */
-dump::~dump() {}
+timestamp_cache::~timestamp_cache() {}
 
 /**
  *  Assignment operator.
@@ -50,7 +50,7 @@ dump::~dump() {}
  *
  *  @return This object.
  */
-dump& dump::operator=(dump const& right) {
+timestamp_cache& timestamp_cache::operator=(timestamp_cache const& right) {
   if (this != &right) {
     io::data::operator=(right);
     _internal_copy(right);
@@ -63,8 +63,8 @@ dump& dump::operator=(dump const& right) {
  *
  *  @return Event type.
  */
-unsigned int dump::type() const {
-  return (dump::static_type());
+unsigned int timestamp_cache::type() const {
+  return (timestamp_cache::static_type());
 }
 
 /**
@@ -72,8 +72,8 @@ unsigned int dump::type() const {
  *
  *  @return  The event type.
  */
-unsigned int dump::static_type() {
-  return (io::events::data_type<io::events::dumper, dumper::de_dump>::value);
+unsigned int timestamp_cache::static_type() {
+  return (io::events::data_type<io::events::dumper, dumper::de_timestamp_cache>::value);
 }
 
 
@@ -82,10 +82,10 @@ unsigned int dump::static_type() {
  *
  *  @param[in] right Object to copy.
  */
-void dump::_internal_copy(dump const& right) {
-  content = right.content;
+void timestamp_cache::_internal_copy(timestamp_cache const& right) {
   instance_id = right.instance_id;
-  tag = right.tag;
+  filename = right.filename;
+  last_modified = right.last_modified;
   return ;
 }
 
@@ -96,30 +96,22 @@ void dump::_internal_copy(dump const& right) {
 **************************************/
 
 // Mapping.
-mapping::entry const dump::entries[] = {
+mapping::entry const timestamp_cache::entries[] = {
   mapping::entry(
-    &dump::content,
-    "content",
+    &timestamp_cache::filename,
+    "filename",
     1),
   mapping::entry(
-    &dump::instance_id,
-    "instance_id",
+    &timestamp_cache::last_modified,
+    "last_modified",
     2),
-  mapping::entry(
-    &dump::tag,
-    "tag",
-    3),
-  mapping::entry(
-    &dump::filename,
-    "filename",
-    4),
   mapping::entry()
 };
 
 // Operations.
-static io::data* new_dump() {
-  return (new dump);
+static io::data* new_timestamp_cache() {
+  return (new timestamp_cache);
 }
-io::event_info::event_operations const dump::operations = {
-  &new_dump
+io::event_info::event_operations const timestamp_cache::operations = {
+  &new_timestamp_cache
 };

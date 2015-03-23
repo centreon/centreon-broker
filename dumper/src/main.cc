@@ -19,6 +19,7 @@
 
 #include "com/centreon/broker/dumper/factory.hh"
 #include "com/centreon/broker/dumper/dump.hh"
+#include "com/centreon/broker/dumper/timestamp_cache.hh"
 #include "com/centreon/broker/dumper/internal.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -81,6 +82,13 @@ extern "C" {
             io::event_info(
                   "dump",
                   &dumper::dump::operations,
+                  dumper::dump::entries));
+        e.register_event(
+            io::events::dumper,
+            dumper::de_timestamp_cache,
+            io::event_info(
+                  "timestamp_cache",
+                  &dumper::timestamp_cache::operations,
                   dumper::dump::entries));
       }
 
