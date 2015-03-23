@@ -135,10 +135,8 @@ void directory_dumper::read(misc::shared_ptr<io::data>& d) {
  *  @return Always return 1, or throw exceptions.
  */
 unsigned int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
-  // Check that data exists and should be processed.
-  if (!_process_out)
-    throw (io::exceptions::shutdown(!_process_in, !_process_out)
-             << "directory dumper stream is shutdown");
+  throw (exceptions::msg()
+         << "dumper: attempt to write from a directory dumper stream");
   return (1);
 }
 

@@ -20,6 +20,7 @@
 #include "com/centreon/broker/dumper/opener.hh"
 #include "com/centreon/broker/dumper/stream.hh"
 #include "com/centreon/broker/dumper/directory_dumper.hh"
+#include "com/centreon/broker/dumper/fifo_dumper.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::dumper;
@@ -103,6 +104,8 @@ misc::shared_ptr<io::stream> opener::open() {
     return (new stream(_path, _tagname));
   case dump_dir:
     return (new directory_dumper(_path, _tagname, _cache));
+  case dump_fifo:
+    return (new fifo_dumper(_path, _tagname));
   default:
     return (new stream(_path, _tagname));
   }
