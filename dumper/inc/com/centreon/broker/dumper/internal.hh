@@ -28,7 +28,8 @@ namespace dumper {
   // Data elements.
   enum data_element {
     de_dump = 1,
-    de_timestamp_cache
+    de_timestamp_cache,
+    de_remove
   };
 }
 

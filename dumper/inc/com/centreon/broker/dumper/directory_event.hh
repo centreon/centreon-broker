@@ -37,6 +37,7 @@ namespace              dumper {
     enum         type {
                  created,
                  modified,
+                 deleted,
                  directory_deleted
     };
                  directory_event();

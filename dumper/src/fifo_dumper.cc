@@ -35,6 +35,8 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::dumper;
 
+extern unsigned int instance_id;
+
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -95,6 +97,7 @@ void fifo_dumper::read(misc::shared_ptr<io::data>& d) {
   dmp->content = QString(buf);
   dmp->filename = QString::fromStdString(_path);
   dmp->tag = QString::fromStdString(_tagname);
+  dmp->instance_id = instance_id;
 
   d = dmp;
 

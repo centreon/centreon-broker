@@ -37,6 +37,7 @@ add_library("${DUMPER}" SHARED
   "${SRC_DIR}/fifo_dumper.cc"
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/opener.cc"
+  "${SRC_DIR}/remove.cc"
   "${SRC_DIR}/stream.cc"
   "${SRC_DIR}/timestamp_cache.cc"
   # Headers.
@@ -48,6 +49,7 @@ add_library("${DUMPER}" SHARED
   "${INC_DIR}/com/centreon/broker/dumper/fifo_dumper.hh"
   "${INC_DIR}/com/centreon/broker/dumper/internal.hh"
   "${INC_DIR}/com/centreon/broker/dumper/opener.hh"
+  "${INC_DIR}/com/centreon/broker/dumper/remove.hh"
   "${INC_DIR}/com/centreon/broker/dumper/stream.hh"
   "${INC_DIR}/com/centreon/broker/dumper/timestamp_cache.hh"
 )

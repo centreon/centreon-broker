@@ -17,8 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/dumper/factory.hh"
 #include "com/centreon/broker/dumper/dump.hh"
+#include "com/centreon/broker/dumper/remove.hh"
 #include "com/centreon/broker/dumper/timestamp_cache.hh"
 #include "com/centreon/broker/dumper/internal.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -30,6 +32,7 @@ using namespace com::centreon::broker;
 
 // Load count.
 static unsigned int instances(0);
+unsigned int instance_id(0);
 
 extern "C" {
   /**
@@ -52,10 +55,12 @@ extern "C" {
    *  @param[in] arg Configuration argument.
    */
   void broker_module_init(void const* arg) {
-    (void)arg;
 
     // Increment instance number.
     if (!instances++) {
+      config::state const& cfg(*static_cast<config::state const*>(arg));
+      instance_id = cfg.instance_id();
+
       // Dumper module.
       logging::info(logging::high)
         << "dumper: module for Centreon Broker "
@@ -90,6 +95,13 @@ extern "C" {
                   "timestamp_cache",
                   &dumper::timestamp_cache::operations,
                   dumper::dump::entries));
+        e.register_event(
+            io::events::dumper,
+            dumper::de_remove,
+            io::event_info(
+                  "remove",
+                  &dumper::remove::operations,
+                  dumper::remove::entries));
       }
 
 

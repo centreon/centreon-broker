@@ -22,11 +22,13 @@
 #include <QFile>
 #include <QDirIterator>
 #include <QDateTime>
+#include <set>
 #include <fstream>
 #include <sstream>
 #include "com/centreon/broker/dumper/directory_dumper.hh"
 #include "com/centreon/broker/dumper/internal.hh"
 #include "com/centreon/broker/dumper/dump.hh"
+#include "com/centreon/broker/dumper/remove.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -34,6 +36,8 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::dumper;
+
+extern unsigned int instance_id;
 
 /**************************************
 *                                     *
@@ -97,8 +101,11 @@ void directory_dumper::read(misc::shared_ptr<io::data>& d) {
 
   // Get an event already in the event list.
   if (!_event_list.empty()) {
-    _last_modified_timestamps[_event_list.front().second->filename.toStdString()]
-      = _event_list.front().first;
+    int type = _event_list.front().second->type();
+    if (type == dump::static_type())
+      _last_modified_timestamps[_event_list.front().second.ref_as<dump>().filename.toStdString()] = _event_list.front().first;
+    else if (type == remove::static_type())
+      _last_modified_timestamps.erase(_event_list.front().second.ref_as<remove>().filename.toStdString());
     d = _event_list.front().second;
     _event_list.pop_front();
     return ;
@@ -119,12 +126,15 @@ void directory_dumper::read(misc::shared_ptr<io::data>& d) {
 
   // Get an event in the new event list.
   if (!_event_list.empty()) {
-    _last_modified_timestamps[_event_list.front().second->filename.toStdString()]
-      = _event_list.front().first;
+    int type = _event_list.front().second->type();
+    if (type == dump::static_type())
+      _last_modified_timestamps[_event_list.front().second.ref_as<dump>().filename.toStdString()] = _event_list.front().first;
+    else if (type == remove::static_type())
+      _last_modified_timestamps.erase(_event_list.front().second.ref_as<remove>().filename.toStdString());
     d = _event_list.front().second;
     _event_list.pop_front();
+    return ;
   }
-  return ;
 }
 
 /**
@@ -210,6 +220,7 @@ void directory_dumper::_set_watch_over_directory() {
 
   // Dump all the files that weren't already dumped at last once
   // using last modified cached timestamp.
+  std::set<std::string> found_files;
   QDirIterator dir(QString::fromStdString(_path));
   while (dir.hasNext()) {
     QString filepath = dir.next();
@@ -218,7 +229,23 @@ void directory_dumper::_set_watch_over_directory() {
     if (found_timestamp == _last_modified_timestamps.end()
           || found_timestamp->second < QFileInfo(filepath).lastModified().toTime_t())
       _event_list.push_back(_dump_a_file(filepath.toStdString()));
+    found_files.insert(filepath.toStdString());
   }
+
+  // Every file that wasn't found has been deleted
+  for (std::map<std::string, timestamp>::const_iterator
+         it(_last_modified_timestamps.begin()),
+         end(_last_modified_timestamps.end());
+       it != end;
+       ++it)
+    if (found_files.find(it->first) == found_files.end()) {
+      misc::shared_ptr<remove> d(new remove);
+
+      d->filename = QString::fromStdString(it->first);
+      d->tag = QString::fromStdString(_tagname);
+      d->instance_id = instance_id;
+      _event_list.push_back(std::make_pair(timestamp(), d));
+    }
 }
 
 /**
@@ -229,7 +256,7 @@ void directory_dumper::_set_watch_over_directory() {
  *  @return          A pair of a timestamp containing the time of the dump,
  *                   and an io::data dump containing the file.
  */
-std::pair<timestamp, misc::shared_ptr<dump> > directory_dumper::_dump_a_file(
+std::pair<timestamp, misc::shared_ptr<io::data> > directory_dumper::_dump_a_file(
                              std::string const& path) {
   QFile file(QString::fromStdString(path));
 
@@ -240,8 +267,9 @@ std::pair<timestamp, misc::shared_ptr<dump> > directory_dumper::_dump_a_file(
   QString content = file.readAll();
 
   misc::shared_ptr<dumper::dump> dump(new dumper::dump);
-  dump->filename = QString::fromStdString(path);
+  dump->filename = QFileInfo(path.c_str()).baseName();
   dump->content = content;
   dump->tag = QString::fromStdString(_tagname);
+  dump->instance_id = instance_id;
   return (std::make_pair(ts, dump));
 }

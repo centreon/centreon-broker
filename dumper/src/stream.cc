@@ -20,7 +20,9 @@
 #include <QMutexLocker>
 #include <fstream>
 #include <sstream>
+#include <cstdio>
 #include "com/centreon/broker/dumper/dump.hh"
+#include "com/centreon/broker/dumper/remove.hh"
 #include "com/centreon/broker/dumper/internal.hh"
 #include "com/centreon/broker/dumper/stream.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -125,6 +127,25 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
 
       // Write data.
       file << data->content.toStdString();
+    }
+  }
+  else if (d->type() == remove::static_type()) {
+    remove const& data = d.ref_as<remove const>();
+    if (data.tag.toStdString() == _tagname) {
+      // Lock mutex.
+      QMutexLocker lock(&_mutex);
+
+      // Get instance id.
+      std::ostringstream oss;
+      oss << data.instance_id;
+
+      // Build path.
+      std::string path(_path);
+      misc::string::replace(path, "$INSTANCEID$", oss.str());
+      misc::string::replace(path, "$FILENAME$", data.filename.toStdString());
+
+      // Remove file.
+      ::remove(_path.c_str());
     }
   }
   else

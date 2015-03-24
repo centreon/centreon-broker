@@ -87,7 +87,7 @@ void directory_watcher::add_directory(std::string const& directory) {
   int id = ::inotify_add_watch(
                 _inotify_instance_id,
                 directory.c_str(),
-                IN_CREATE | IN_MODIFY | IN_DELETE_SELF);
+                IN_CREATE | IN_MODIFY | IN_DELETE | IN_DELETE_SELF);
   if (id == -1) {
     int err = errno;
     throw (exceptions::msg()
@@ -165,6 +165,8 @@ std::vector<directory_event> directory_watcher::get_events() {
       event_type = directory_event::created;
     else if (event->mask & IN_MODIFY)
       event_type = directory_event::modified;
+    else if (event->mask & IN_DELETE)
+      event_type = directory_event::deleted;
     else if (event->mask & IN_DELETE_SELF)
       event_type = directory_event::directory_deleted;
 
