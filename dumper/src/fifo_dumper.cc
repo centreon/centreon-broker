@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <unistd.h>
 #include <sstream>
 #include "com/centreon/broker/dumper/dump.hh"
 #include "com/centreon/broker/dumper/internal.hh"
@@ -59,7 +60,9 @@ fifo_dumper::fifo_dumper(
 /**
  *  Destructor.
  */
-fifo_dumper::~fifo_dumper() {}
+fifo_dumper::~fifo_dumper() {
+  ::unlink(_path.c_str());
+}
 
 /**
  *  Set processing flags.

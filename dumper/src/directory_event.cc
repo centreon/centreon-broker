@@ -47,7 +47,8 @@ directory_event::directory_event(std::string const& path, type type)
  *  @param[in] o  The object to copy.
  */
 directory_event::directory_event(directory_event const& o)
-  : _path(o._path) {
+  : _path(o._path),
+    _type(o._type) {
 }
 
 /**
@@ -60,6 +61,7 @@ directory_event::directory_event(directory_event const& o)
 directory_event& directory_event::operator=(directory_event const& o) {
   if (this != &o) {
     _path = o._path;
+    _type = o._type;
   }
   return (*this);
 }
@@ -72,9 +74,9 @@ directory_event::~directory_event() {
 }
 
 /**
- *  Get the path of this event.
+ *  Get the fullpath of this event.
  *
- *  @return  The path of this event.
+ *  @return  The fullpath of this event.
  */
 std::string const& directory_event::get_path() const {
   return (_path);

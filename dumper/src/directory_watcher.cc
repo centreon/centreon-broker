@@ -123,7 +123,9 @@ void directory_watcher::remove_directory(std::string const& directory) {
 }
 
 /**
- *  Get the events of the watched directories.
+ *  @brief Get the events of the watched directories.
+ *
+ *  This will blocks until new events are available.
  */
 std::vector<directory_event> directory_watcher::get_events() {
   std::vector<directory_event> ret;
