@@ -150,9 +150,6 @@ void macro_cache::write(misc::shared_ptr<io::data> const& data) {
   if (data.isNull())
     return ;
 
-  logging::debug(logging::medium)
-    << "TEST: writing data into macro_cache " << data->type();
-
   if (data->type() == neb::instance::static_type())
     _process_instance(data.ref_as<neb::instance const>());
   else if (data->type() == neb::host::static_type())

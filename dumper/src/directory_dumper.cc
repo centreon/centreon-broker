@@ -193,7 +193,7 @@ void directory_dumper::_save_last_timestamps_to_cache() {
 void directory_dumper::_set_watch_over_directory() {
   // Basic checks.
   QFileInfo directory_info(QString::fromStdString(_path));
-  if (directory_info.exists())
+  if (!directory_info.exists())
     throw (exceptions::msg()
            << "dumper: directory dumper path '" << _path << "' doesn't exist");
   if (!directory_info.isDir())
@@ -216,7 +216,11 @@ void directory_dumper::_set_watch_over_directory() {
   // Dump all the files that weren't already dumped at last once
   // using last modified cached timestamp.
   std::set<std::string> found_files;
-  QDirIterator dir(QString::fromStdString(_path));
+  QDirIterator dir(
+    QDir(QString::fromStdString(_path),
+    QString(),
+    QDir::Name | QDir::IgnoreCase,
+    QDir::Files));
   while (dir.hasNext()) {
     QString filepath = dir.next();
     std::map<std::string, timestamp>::const_iterator found_timestamp(
@@ -255,6 +259,7 @@ std::pair<timestamp, misc::shared_ptr<io::data> > directory_dumper::_dump_a_file
                              std::string const& path) {
   QFile file(QString::fromStdString(path));
 
+  file.open(QFile::ReadOnly);
   if (!file.isReadable())
     throw (exceptions::msg()
            << "dumper: can't read '" << path << "'");

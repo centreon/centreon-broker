@@ -28,6 +28,8 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/dumper/directory_watcher.hh"
 
+#include "com/centreon/broker/logging/logging.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::dumper;
 
@@ -36,7 +38,7 @@ using namespace com::centreon::broker::dumper;
  */
 directory_watcher::directory_watcher()
   : _timeout(0) {
-  if (_inotify_instance_id = ::inotify_init() == -1) {
+  if ((_inotify_instance_id = ::inotify_init()) == -1) {
     int err = errno;
     throw (exceptions::msg()
            << "directory_watcher: couldn't create inotify instance: '"
@@ -140,16 +142,26 @@ std::vector<directory_event> directory_watcher::get_events() {
   FD_SET(_inotify_instance_id, &set);
   tv.tv_sec = _timeout / 1000;
   tv.tv_usec = (_timeout % 1000) * 1000;
-  ::select(1, &set, NULL, NULL, _timeout != 0 ? &tv : NULL);
+  ::select(
+    _inotify_instance_id + 1,
+    &set,
+    NULL,
+    NULL,
+    _timeout != 0 ? &tv : NULL);
+
+  if (!FD_ISSET(_inotify_instance_id, &set))
+    return (ret);
 
   // Get the events
-  int buf_size = ::ioctl(_inotify_instance_id, FIONREAD);
-  if (buf_size == -1) {
+  int buf_size;
+  if (ioctl(_inotify_instance_id, FIONREAD, &buf_size) == -1) {
     int err = errno;
     throw (exceptions::msg()
            << "directory_watcher: couldn't read events: '"
            << ::strerror(err) << "'");
   }
+  logging::error(logging::medium)
+    << "TEST: reading " << buf_size;
   char *buf = new char[buf_size];
   int len = ::read(_inotify_instance_id, buf, buf_size);
   if (len == -1) {
@@ -184,6 +196,8 @@ std::vector<directory_event> directory_watcher::get_events() {
     std::string name = found_path->second + "/" + event->name;
     char* real_name = ::realpath(name.c_str(), NULL);
     ret.push_back(directory_event(real_name, event_type));
+    logging::error(logging::medium)
+      << "TEST: realpath found: " << real_name;
     ::free(real_name);
   }
 
