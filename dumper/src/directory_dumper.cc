@@ -61,6 +61,7 @@ directory_dumper::directory_dumper(
     _process_out(true),
     _tagname(tagname),
     _cache(cache) {
+  _watcher.set_timeout(3000);
   _get_last_timestamps_from_cache();
   _set_watch_over_directory();
 }
@@ -85,9 +86,8 @@ directory_dumper::~directory_dumper() {
  *  @param[in] out Set to true to process output events.
  */
 void directory_dumper::process(bool in, bool out) {
-  QMutexLocker lock(&_mutex);
   _process_in = in;
-  _process_out = in || !out;
+  _process_out = out;
   return ;
 }
 
@@ -99,13 +99,20 @@ void directory_dumper::process(bool in, bool out) {
 void directory_dumper::read(misc::shared_ptr<io::data>& d) {
   d.clear();
 
+  if (!_process_out)
+    throw (io::exceptions::shutdown(!_process_in, !_process_out)
+           << "directory dumper stream is shutdown");
+
   // Get an event already in the event list.
   if (!_event_list.empty()) {
     int type = _event_list.front().second->type();
     if (type == dump::static_type())
-      _last_modified_timestamps[_event_list.front().second.ref_as<dump>().filename.toStdString()] = _event_list.front().first;
+      _last_modified_timestamps[
+         _event_list.front().second.ref_as<dump>().filename.toStdString()]
+         = _event_list.front().first;
     else if (type == remove::static_type())
-      _last_modified_timestamps.erase(_event_list.front().second.ref_as<remove>().filename.toStdString());
+      _last_modified_timestamps.erase(
+        _event_list.front().second.ref_as<remove>().filename.toStdString());
     d = _event_list.front().second;
     _event_list.pop_front();
     return ;
@@ -122,18 +129,6 @@ void directory_dumper::read(misc::shared_ptr<io::data>& d) {
       throw (exceptions::msg()
              << "dumper: directory '" << _path << "' deleted");
     _event_list.push_back(_dump_a_file(it->get_path()));
-  }
-
-  // Get an event in the new event list.
-  if (!_event_list.empty()) {
-    int type = _event_list.front().second->type();
-    if (type == dump::static_type())
-      _last_modified_timestamps[_event_list.front().second.ref_as<dump>().filename.toStdString()] = _event_list.front().first;
-    else if (type == remove::static_type())
-      _last_modified_timestamps.erase(_event_list.front().second.ref_as<remove>().filename.toStdString());
-    d = _event_list.front().second;
-    _event_list.pop_front();
-    return ;
   }
 }
 

@@ -47,9 +47,12 @@ namespace              dumper {
     void        remove_directory(std::string const& directory);
     std::vector<directory_event>
                 get_events();
+    void        set_timeout(unsigned int msecs);
 
   private:
     int         _inotify_instance_id;
+    unsigned int
+                _timeout;
     std::map<std::string, int>
                 _path_to_id;
     std::map<int, std::string>

@@ -34,7 +34,8 @@ using namespace com::centreon::broker::dumper;
 /**
  * Default constructor.
  */
-directory_watcher::directory_watcher() {
+directory_watcher::directory_watcher()
+  : _timeout(0) {
   if (_inotify_instance_id = ::inotify_init() == -1) {
     int err = errno;
     throw (exceptions::msg()
@@ -51,6 +52,7 @@ directory_watcher::directory_watcher() {
  */
 directory_watcher::directory_watcher(directory_watcher const& o)
   : _inotify_instance_id(o._inotify_instance_id),
+    _timeout(o._timeout),
     _path_to_id(o._path_to_id),
     _id_to_path(o._id_to_path) {
 }
@@ -65,6 +67,7 @@ directory_watcher::directory_watcher(directory_watcher const& o)
 directory_watcher& directory_watcher::operator=(directory_watcher const& o) {
   if (this != &o) {
     _inotify_instance_id = o._inotify_instance_id;
+    _timeout = o._timeout;
     _path_to_id = o._path_to_id;
     _id_to_path = o._id_to_path;
   }
@@ -132,9 +135,12 @@ std::vector<directory_event> directory_watcher::get_events() {
 
   // Wait for at least one event.
   fd_set set;
+  struct timeval tv;
   FD_ZERO(&set);
   FD_SET(_inotify_instance_id, &set);
-  ::select(1, &set, NULL, NULL, NULL);
+  tv.tv_sec = _timeout / 1000;
+  tv.tv_usec = (_timeout % 1000) * 1000;
+  ::select(1, &set, NULL, NULL, _timeout != 0 ? &tv : NULL);
 
   // Get the events
   int buf_size = ::ioctl(_inotify_instance_id, FIONREAD);
@@ -182,4 +188,13 @@ std::vector<directory_event> directory_watcher::get_events() {
   }
 
   return (ret);
+}
+
+/**
+ *  Set the timeout to check event.
+ *
+ *  @param[in] msecs  The timeout, in milliseconds. 0 for none.
+ */
+void directory_watcher::set_timeout(unsigned int msecs) {
+  _timeout = msecs;
 }

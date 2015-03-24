@@ -259,8 +259,11 @@ void endpoint::discard() {
     // Send termination requests.
     for (iterator it = _inputs.begin(), end = _inputs.end();
          it != end;
-         ++it)
+         ++it) {
+      logging::error(logging::medium)
+        << "TEST: before process in to " << false;
       (*it)->process(false, false);
+    }
 
     // Wait for threads.
     while (!_inputs.empty()) {

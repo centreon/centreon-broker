@@ -506,7 +506,7 @@ if (WITH_MODULE_INFLUXDB)
   list(APPEND MODULE_LIST "influxdb")
 endif()
 
-# Influxdb module.
+# Graphite module.
 option(WITH_MODULE_GRAPHITE "Build graphite module." ON)
 if (WITH_MODULE_GRAPHITE)
   add_subdirectory("graphite")
@@ -896,6 +896,13 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_graphite")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/graphite.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIB})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # Dumper FIFO
+  set(TEST_NAME "running_fifo_dumper")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/fifo_dumper.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIB})
   add_test("${TEST_NAME}" "${TEST_NAME}")
 

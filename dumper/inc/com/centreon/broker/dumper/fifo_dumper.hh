@@ -57,7 +57,8 @@ namespace              dumper {
     bool               _process_out;
     std::string        _tagname;
 
-    std::fstream       _file;
+    int                _file;
+    std::string        _polled_line;
 
     void               _open_fifo();
   };
