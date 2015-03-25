@@ -27,21 +27,21 @@ using namespace com::centreon::broker::dumper;
 /**
  *  Default constructor.
  */
-remove::remove() : instance_id(0) {}
+dumper::remove::remove() : instance_id(0) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-remove::remove(remove const& right) : io::data(right) {
+dumper::remove::remove(remove const& right) : io::data(right) {
   _internal_copy(right);
 }
 
 /**
  *  Destructor.
  */
-remove::~remove() {}
+dumper::remove::~remove() {}
 
 /**
  *  Assignment operator.
@@ -50,7 +50,7 @@ remove::~remove() {}
  *
  *  @return This object.
  */
-remove& remove::operator=(remove const& right) {
+dumper::remove& dumper::remove::operator=(remove const& right) {
   if (this != &right) {
     io::data::operator=(right);
     _internal_copy(right);
@@ -63,7 +63,7 @@ remove& remove::operator=(remove const& right) {
  *
  *  @return Event type.
  */
-unsigned int remove::type() const {
+unsigned int dumper::remove::type() const {
   return (remove::static_type());
 }
 
@@ -72,7 +72,7 @@ unsigned int remove::type() const {
  *
  *  @return  The event type.
  */
-unsigned int remove::static_type() {
+unsigned int dumper::remove::static_type() {
   return (io::events::data_type<io::events::dumper, dumper::de_remove>::value);
 }
 
@@ -82,7 +82,7 @@ unsigned int remove::static_type() {
  *
  *  @param[in] right Object to copy.
  */
-void remove::_internal_copy(remove const& right) {
+void dumper::remove::_internal_copy(remove const& right) {
   instance_id = right.instance_id;
   tag = right.tag;
   filename = right.filename;
@@ -96,17 +96,17 @@ void remove::_internal_copy(remove const& right) {
 **************************************/
 
 // Mapping.
-mapping::entry const remove::entries[] = {
+mapping::entry const dumper::remove::entries[] = {
   mapping::entry(
-    &remove::instance_id,
+    &dumper::remove::instance_id,
     "instance_id",
     1),
   mapping::entry(
-    &remove::tag,
+    &dumper::remove::tag,
     "tag",
     2),
   mapping::entry(
-    &remove::filename,
+    &dumper::remove::filename,
     "filename",
     3),
   mapping::entry()
@@ -114,8 +114,8 @@ mapping::entry const remove::entries[] = {
 
 // Operations.
 static io::data* new_remove() {
-  return (new remove);
+  return (new dumper::remove);
 }
-io::event_info::event_operations const remove::operations = {
+io::event_info::event_operations const dumper::remove::operations = {
   &new_remove
 };

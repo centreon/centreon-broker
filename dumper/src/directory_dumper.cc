@@ -117,9 +117,9 @@ void directory_dumper::read(misc::shared_ptr<io::data>& d) {
       _last_modified_timestamps[
          _event_list.front().second.ref_as<dump>().filename.toStdString()]
          = _event_list.front().first;
-    else if (type == remove::static_type())
+    else if (type == dumper::remove::static_type())
       _last_modified_timestamps.erase(
-        _event_list.front().second.ref_as<remove>().filename.toStdString());
+        _event_list.front().second.ref_as<dumper::remove>().filename.toStdString());
     d = _event_list.front().second;
     _event_list.pop_front();
     return ;
@@ -136,7 +136,7 @@ void directory_dumper::read(misc::shared_ptr<io::data>& d) {
       throw (exceptions::msg()
              << "dumper: directory '" << _path << "' deleted");
     else if (it->get_type() == directory_event::deleted) {
-      misc::shared_ptr<remove> d(new remove);
+      misc::shared_ptr<dumper::remove> d(new dumper::remove);
       d->filename = QFileInfo(it->get_path().c_str()).baseName();
       d->instance_id = instance_id;
       d->tag = QString::fromStdString(_tagname);
@@ -253,7 +253,7 @@ void directory_dumper::_set_watch_over_directory() {
        it != end;
        ++it)
     if (found_files.find(it->first) == found_files.end()) {
-      misc::shared_ptr<remove> d(new remove);
+      misc::shared_ptr<dumper::remove> d(new dumper::remove);
 
       d->filename = QString::fromStdString(it->first);
       d->tag = QString::fromStdString(_tagname);

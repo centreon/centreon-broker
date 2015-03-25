@@ -133,8 +133,8 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
       file << data->content.toStdString();
     }
   }
-  else if (d->type() == remove::static_type()) {
-    remove const& data = d.ref_as<remove const>();
+  else if (d->type() == dumper::remove::static_type()) {
+    remove const& data = d.ref_as<dumper::remove const>();
     if (data.tag.toStdString() == _tagname) {
       // Lock mutex.
       QMutexLocker lock(&_mutex);

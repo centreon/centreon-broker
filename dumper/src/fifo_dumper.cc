@@ -127,7 +127,7 @@ void fifo_dumper::read(misc::shared_ptr<io::data>& d) {
   // Read everything.
   char buf[BUF_SIZE];
   int ret = ::read(_file, buf, BUF_SIZE - 1);
-  if (ret == -1 && errno == EAGAIN)
+  if (ret == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))
     return ;
   if (ret == -1) {
     const char* msg = ::strerror(errno);
@@ -186,9 +186,10 @@ void fifo_dumper::_open_fifo() {
            << "' exists but is not a FIFO");
 
   // Open fifo.
-  // We use O_RDWR because select flag a FIFO at EOF when there was
+  // We use O_RDWR because select flag a FIFO at EOF when there is
   // no more data - but later writers can make data available.
-  // When using O_RDWR, this flagging never happen.
+  // When using O_RDWR, this flagging never happen, as there is always
+  // at least one writer.
   _file = ::open(_path.c_str(), O_RDWR | O_NONBLOCK);
   if (_file == -1) {
     const char* msg(::strerror(errno));
