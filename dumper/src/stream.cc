@@ -20,6 +20,7 @@
 #include <QMutexLocker>
 #include <fstream>
 #include <sstream>
+#include <errno.h>
 #include <cstdio>
 #include "com/centreon/broker/dumper/dump.hh"
 #include "com/centreon/broker/dumper/remove.hh"
@@ -109,6 +110,9 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
       // Lock mutex.
       QMutexLocker lock(&_mutex);
 
+      logging::debug(logging::medium)
+        << "dumper: dumping content of file " << data->filename;
+
       // Get instance id.
       std::ostringstream oss;
       oss << data->instance_id;
@@ -135,6 +139,9 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
       // Lock mutex.
       QMutexLocker lock(&_mutex);
 
+      logging::debug(logging::medium)
+        << "dumper: removing file " << data.filename;
+
       // Get instance id.
       std::ostringstream oss;
       oss << data.instance_id;
@@ -145,7 +152,11 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
       misc::string::replace(path, "$FILENAME$", data.filename.toStdString());
 
       // Remove file.
-      ::remove(_path.c_str());
+      if (::remove(path.c_str()) == -1) {
+        const char* msg = ::strerror(errno);
+        logging::error(logging::medium)
+          << "dumper: can't erase file '" << path << "': " << msg;
+      }
     }
   }
   else

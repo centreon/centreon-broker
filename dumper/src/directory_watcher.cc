@@ -100,8 +100,10 @@ void directory_watcher::add_directory(std::string const& directory) {
            << ::strerror(err) << "'");
   }
 
-  _path_to_id[directory] = id;
-  _id_to_path[id] = directory;
+  char *real_path = ::realpath(directory.c_str(), NULL);
+  _path_to_id[real_path] = id;
+  _id_to_path[id] = real_path;
+  ::free(real_path);
 }
 
 /**
@@ -112,7 +114,9 @@ void directory_watcher::add_directory(std::string const& directory) {
  *  @param[in] directory  The directory to remove.
  */
 void directory_watcher::remove_directory(std::string const& directory) {
-  std::map<std::string, int>::iterator it(_path_to_id.find(directory));
+  char *real_path = ::realpath(directory.c_str(), NULL);
+  std::map<std::string, int>::iterator it(_path_to_id.find(real_path));
+  ::free(real_path);
   if (it == _path_to_id.end())
     return ;
 
@@ -160,8 +164,8 @@ std::vector<directory_event> directory_watcher::get_events() {
            << "directory_watcher: couldn't read events: '"
            << ::strerror(err) << "'");
   }
-  logging::error(logging::medium)
-    << "TEST: reading " << buf_size;
+  logging::debug(logging::medium)
+    << "dumper: directory watcher getting events of size " << buf_size;
   char *buf = new char[buf_size];
   int len = ::read(_inotify_instance_id, buf, buf_size);
   if (len == -1) {
@@ -194,11 +198,10 @@ std::vector<directory_event> directory_watcher::get_events() {
       break ;
 
     std::string name = found_path->second + "/" + event->name;
-    char* real_name = ::realpath(name.c_str(), NULL);
-    ret.push_back(directory_event(real_name, event_type));
-    logging::error(logging::medium)
-      << "TEST: realpath found: " << real_name;
-    ::free(real_name);
+    ret.push_back(directory_event(name, event_type));
+    logging::debug(logging::medium)
+      << "dumper: directory watcher getting an event for path '"
+      << name << "' and type " << event_type;
   }
 
   return (ret);

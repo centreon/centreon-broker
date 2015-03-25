@@ -114,7 +114,7 @@ void fifo_dumper::read(misc::shared_ptr<io::data>& d) {
   FD_SET(_file,  &polled_fd);
   tv.tv_sec = 3;
   tv.tv_usec = 0;
-  if (::select(1, &polled_fd, NULL, NULL, &tv) == -1) {
+  if (::select(_file + 1, &polled_fd, NULL, NULL, &tv) == -1) {
     const char* msg = ::strerror(errno);
     throw (exceptions::msg()
            << "dumper: can't poll file '" << _path

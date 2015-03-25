@@ -61,8 +61,13 @@ directory_dumper::directory_dumper(
     _process_out(true),
     _tagname(tagname),
     _cache(cache) {
+  // Set watcher timeout.
   _watcher.set_timeout(3000);
+
+  // Get all the last modified timestamps from the cache.
   _get_last_timestamps_from_cache();
+
+  // Set the watch and the initial events.
   _set_watch_over_directory();
 }
 
@@ -71,6 +76,7 @@ directory_dumper::directory_dumper(
  */
 directory_dumper::~directory_dumper() {
   try {
+    // Save the last modified timestamps to the cache.
     _save_last_timestamps_to_cache();
   } catch (std::exception const& e) {
     logging::error(logging::medium)
@@ -99,6 +105,7 @@ void directory_dumper::process(bool in, bool out) {
 void directory_dumper::read(misc::shared_ptr<io::data>& d) {
   d.clear();
 
+  // If closed, do nothing.
   if (!_process_out)
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
            << "directory dumper stream is shutdown");
@@ -128,7 +135,15 @@ void directory_dumper::read(misc::shared_ptr<io::data>& d) {
     if (it->get_type() == directory_event::directory_deleted)
       throw (exceptions::msg()
              << "dumper: directory '" << _path << "' deleted");
-    _event_list.push_back(_dump_a_file(it->get_path()));
+    else if (it->get_type() == directory_event::deleted) {
+      misc::shared_ptr<remove> d(new remove);
+      d->filename = QFileInfo(it->get_path().c_str()).baseName();
+      d->instance_id = instance_id;
+      d->tag = QString::fromStdString(_tagname);
+      _event_list.push_back(std::make_pair(timestamp(), d));
+    }
+    else
+      _event_list.push_back(_dump_a_file(it->get_path()));
   }
 }
 

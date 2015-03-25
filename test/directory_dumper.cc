@@ -93,6 +93,7 @@ int main() {
 
     sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
+    // Check for file existence.
     std::ifstream ifs(expected_file.c_str());
     if (!ifs.is_open())
       throw (exceptions::msg()
@@ -107,6 +108,16 @@ int main() {
     if (got != "test")
       throw (exceptions::msg()
              << "unexpected string received, got: " << got);
+
+    // Remove file.
+    ::remove(sent_file.c_str());
+    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+
+    // Check for file removal
+    ifs.open(expected_file.c_str());
+    if (ifs.is_open())
+      throw (exceptions::msg()
+             << "file '" << expected_file << "' not deleted");
 
     // Success.
     error = false;
