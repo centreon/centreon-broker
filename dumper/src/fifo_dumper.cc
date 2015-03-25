@@ -107,7 +107,7 @@ void fifo_dumper::read(misc::shared_ptr<io::data>& d) {
     return ;
   }
 
-  logging::debug(logging::medium)
+  logging::debug(logging::low)
     << "dumper: fifo dumper polling "  << _path;
 
   // Poll for a line.
@@ -138,7 +138,7 @@ void fifo_dumper::read(misc::shared_ptr<io::data>& d) {
   buf[ret] = '\0';
   _polled_line.append(buf);
 
-  logging::debug(logging::medium)
+  logging::debug(logging::low)
     << "dumper: fifo dumper read " << ret << " bytes";
 
   return ;

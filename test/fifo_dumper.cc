@@ -80,7 +80,7 @@ int main() {
              << "can't start the process to write into the sending fifo "
              << process->errorString());
 
-    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     std::ifstream ifs(receiver_file.c_str());
     if (!ifs.is_open())
