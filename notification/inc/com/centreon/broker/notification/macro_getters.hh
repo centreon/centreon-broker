@@ -35,6 +35,10 @@ CCB_BEGIN()
 
 namespace        notification {
 
+  // Utilities to remove references from type.
+  template<class T> struct remove_all { typedef T type; };
+  template<class T> struct remove_all<T&> : remove_all<T> {};
+  template<class T> struct remove_all<T const> : remove_all<T> {};
   /**
    *  Set the precision of a stringstream.
    *
@@ -520,7 +524,9 @@ namespace        notification {
   template <typename U, U (objects::contact::* member)() const, int precision>
   std::string get_contact_member(
                 macro_context const& context) {
-    return (to_string<U, precision>((context.get_contact().*member)()));
+    return (to_string<
+              typename remove_all<U>::type,
+              precision>((context.get_contact().*member)()));
   }
 
   /**
@@ -553,7 +559,9 @@ namespace        notification {
   template <typename U, U (action::* member)() const, int precision>
   std::string get_action_member(
                 macro_context const& context) {
-    return (to_string<U, precision>((context.get_action().*member)()));
+    return (to_string<
+              typename remove_all<U>::type,
+              precision>((context.get_action().*member)()));
   }
 
   /**
