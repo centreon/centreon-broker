@@ -107,6 +107,9 @@ void fifo_dumper::read(misc::shared_ptr<io::data>& d) {
     return ;
   }
 
+  logging::debug(logging::medium)
+    << "dumper: fifo dumper polling "  << _path;
+
   // Poll for a line.
   fd_set polled_fd;
   struct timeval tv;
@@ -121,10 +124,11 @@ void fifo_dumper::read(misc::shared_ptr<io::data>& d) {
            << "' for the fifo dumper: " << msg);
   }
 
-
   // Read everything.
   char buf[BUF_SIZE];
   int ret = ::read(_file, buf, BUF_SIZE - 1);
+  if (ret == -1 && errno == EAGAIN)
+    return ;
   if (ret == -1) {
     const char* msg = ::strerror(errno);
     throw (exceptions::msg()
@@ -133,6 +137,9 @@ void fifo_dumper::read(misc::shared_ptr<io::data>& d) {
   }
   buf[ret] = '\0';
   _polled_line.append(buf);
+
+  logging::debug(logging::medium)
+    << "dumper: fifo dumper read " << ret << " bytes";
 
   return ;
 }
@@ -179,7 +186,10 @@ void fifo_dumper::_open_fifo() {
            << "' exists but is not a FIFO");
 
   // Open fifo.
-  _file = ::open(_path.c_str(), O_RDONLY);
+  // We use O_RDWR because select flag a FIFO at EOF when there was
+  // no more data - but later writers can make data available.
+  // When using O_RDWR, this flagging never happen.
+  _file = ::open(_path.c_str(), O_RDWR | O_NONBLOCK);
   if (_file == -1) {
     const char* msg(::strerror(errno));
     throw (exceptions::msg()
