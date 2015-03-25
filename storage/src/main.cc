@@ -26,9 +26,11 @@
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/stream.hh"
 #include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/storage/metric_mapping.hh"
 #include "com/centreon/broker/storage/rebuild.hh"
 #include "com/centreon/broker/storage/remove_graph.hh"
 #include "com/centreon/broker/storage/status.hh"
+#include "com/centreon/broker/storage/status_mapping.hh"
 
 using namespace com::centreon::broker;
 
@@ -111,6 +113,20 @@ extern "C" {
                   "metric",
                   &storage::status::operations,
                   storage::status::entries));
+        e.register_event(
+            io::events::storage,
+            storage::de_metric_mapping,
+            io::event_info(
+                  "metric_mapping",
+                  &storage::metric_mapping::operations,
+                  storage::metric_mapping::entries));
+        e.register_event(
+            io::events::storage,
+            storage::de_status_mapping,
+            io::event_info(
+                  "status_mapping",
+                  &storage::status_mapping::operations,
+                  storage::status_mapping::entries));
       }
 
 
