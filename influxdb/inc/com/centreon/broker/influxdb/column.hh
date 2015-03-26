@@ -52,6 +52,7 @@ namespace           influxdb {
                     get_value() const;
     bool            is_flag() const;
     type            get_type() const;
+    static type     parse_type(std::string const& type);
 
   private:
     std::string     _name;

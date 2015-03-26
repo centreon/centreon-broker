@@ -193,7 +193,7 @@ io::endpoint* factory::new_endpoint(
         config::parser::parse_boolean(is_tag.toElement().text()),
       type.isNull() ?
         column::number :
-        column::string));
+        column::parse_type(type.toElement().text().toStdString())));
 
   }
 
@@ -218,7 +218,7 @@ io::endpoint* factory::new_endpoint(
         config::parser::parse_boolean(is_tag.toElement().text()),
       type.isNull() ?
         column::number :
-        column::string));
+        column::parse_type(type.toElement().text().toStdString())));
   }
 
   // Connector.
