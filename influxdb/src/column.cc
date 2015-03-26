@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/influxdb/column.hh"
 
 using namespace com::centreon::broker;
@@ -109,4 +110,20 @@ bool column::is_flag() const {
  */
 column::type column::get_type() const {
   return (_type);
+}
+
+/**
+ *  Parse a string containing a type.
+ *
+ *  @param[in] type  The string containing the type.
+ *
+ *  @return          The type.
+ */
+column::type column::parse_type(std::string const& type) {
+  if (type == "string")
+    return (string);
+  else if (type == "number")
+    return (number);
+  throw (exceptions::msg()
+         << "influxdb: couldn't parse column type '" << type << "'");
 }
