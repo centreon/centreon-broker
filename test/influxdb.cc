@@ -49,10 +49,10 @@ using namespace com::centreon::broker;
 
 static const char* expected_result =
     "POST /write?u=" INFLUXDB_DB_USER "&p="INFLUXDB_DB_PASSWORD" HTTP/1.0\n"
-    "Content-Length: 344\n\n"
+    "Content-Length: 362\n\n"
     "{\"database\":\""INFLUXDB_DB_NAME"\",\"points\":["
-    "{\"name\":\"status\",\"tags\":{\"status_id\":1 },\"timestamp\":$timestamp$,\"fields\":{\"value\":0,\"hostid\":1,\"host\":1,\"serviceid\":1,\"service\":1 } },"
-    "{\"name\":\"influxdb_test\",\"tags\":{\"metric_id\":1 },\"timestamp\":$timestamp$,\"fields\":{\"value\":0.8,\"metric\":influxdb_test,\"hostid\":1,\"host\":1,\"serviceid\":1,\"service\":1 } } ]}";
+    "{\"name\":\"status\",\"tags\":{\"status_id\":1 },\"timestamp\":$timestamp$,\"fields\":{\"value\":0,\"hostid\":\"1\",\"host\":\"1\",\"serviceid\":\"1\",\"service\":\"1\" } },"
+    "{\"name\":\"influxdb_test\",\"tags\":{\"metric_id\":1 },\"timestamp\":$timestamp$,\"fields\":{\"value\":0.8,\"metric\":\"influxdb_test\",\"hostid\":\"1\",\"host\":\"1\",\"serviceid\":\"1\",\"service\":\"1\" } } ]}";
 
 /**
  *  Check that the influxdb works.

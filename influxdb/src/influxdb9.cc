@@ -279,8 +279,12 @@ void influxdb9::_create_queries(
            it(metric_cols.begin()),
            end(metric_cols.end());
          it != end; ++it)
-      if (!it->is_flag())
-        p.add_value(it->get_name(), it->get_value());
+      if (!it->is_flag()) {
+        if (it->get_type() == column::number)
+          p.add_value(it->get_name(), it->get_value());
+        else if (it->get_type() == column::string)
+          p.add_string(it->get_name(), it->get_value());
+      }
     p.close_object().close_object();
     _metric_query = query(p.get_data(), query::metric, _cache);
 }
