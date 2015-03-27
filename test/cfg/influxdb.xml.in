@@ -43,10 +43,12 @@
       <name>metric_id</name>
       <value>$METRICID$</value>
       <is_tag>true</is_tag>
+      <type>number</type>
     </metrics_column>
     <metrics_column>
       <name>value</name>
       <value>$VALUE$</value>
+      <type>number</type>
     </metrics_column>
     <metrics_column>
       <name>metric</name>
@@ -73,10 +75,12 @@
       <name>status_id</name>
       <value>$INDEXID$</value>
       <is_tag>true</is_tag>
+      <type>number</type>
     </status_column>
     <status_column>
       <name>value</name>
       <value>$VALUE$</value>
+      <type>number</type>
     </status_column>
     <status_column>
       <name>hostid</name>

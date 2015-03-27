@@ -145,11 +145,17 @@ io::endpoint* factory::new_endpoint(
   unsigned short port(0);
   {
     std::stringstream ss;
-    ss << find_param(cfg, "db_port");
-    ss >> port;
-    if (!ss.eof())
-      throw (exceptions::msg() << "influxdb: couldn't parse port '" << ss.str()
-             << "' defined for endpoint '" << cfg.name << "'");
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("db_port"));
+    if (it == cfg.params.end())
+      port = 8086;
+    else {
+      ss << it->toStdString();
+      ss >> port;
+      if (!ss.eof())
+        throw (exceptions::msg() << "influxdb: couldn't parse port '" << ss.str()
+               << "' defined for endpoint '" << cfg.name << "'");
+    }
   }
 
   unsigned int queries_per_transaction(0);
@@ -192,7 +198,7 @@ io::endpoint* factory::new_endpoint(
         false :
         config::parser::parse_boolean(is_tag.toElement().text()),
       type.isNull() ?
-        column::number :
+        column::string :
         column::parse_type(type.toElement().text().toStdString())));
 
   }
@@ -217,7 +223,7 @@ io::endpoint* factory::new_endpoint(
         false :
         config::parser::parse_boolean(is_tag.toElement().text()),
       type.isNull() ?
-        column::number :
+        column::string :
         column::parse_type(type.toElement().text().toStdString())));
   }
 
