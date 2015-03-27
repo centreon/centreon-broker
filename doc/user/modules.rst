@@ -987,7 +987,7 @@ Configuration
 Tag                      Description
 ======================== ===============================================
 db_host                  Database host.
-db_port                  Database port.
+db_port                  Database port. Default 8086.
 db_user                  Database user.
 db_password              Password associated with *db_user*.
 db_name                  Database name.
@@ -1006,6 +1006,8 @@ status_column -> name    Name of the column. Macros accepted.
 status_column -> value   Value of the column. Macros accepted.
 status_column -> is_tag  Boolean value that is set to true if the
                          current column is a tag. Defaults to false.
+status_column -> type    Type of the column. Can be either 'string' or
+                         'number'. Default to 'string'.
 metrics_timeseries       Name of the time series for metrics. Macros
                          accepted.
 metrics_column           Define one metrics column. Each InfluxDB
@@ -1015,6 +1017,8 @@ metrics_column -> name   Name of the column. Macros accepted.
 metrics_column -> value  Value of the column Macros accepted.
 metrics_column -> is_tag Boolean value that is set to true if the
                          current column is a tag. Defaults to false.
+metrics_column -> type   Type of the column. Can be either 'string' or
+                         'number'. Default to 'string'.
 ======================== ===============================================
 
 Available macros are described in the following table.
