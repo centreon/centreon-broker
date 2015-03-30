@@ -57,7 +57,7 @@ namespace              file {
                 _id_to_path;
 
                 directory_watcher(directory_watcher const& o);
-directory_watcher&
+    directory_watcher&
                 operator=(directory_watcher const& o);
 
   };

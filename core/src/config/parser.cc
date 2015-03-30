@@ -148,6 +148,8 @@ void parser::parse(QString const& file, state& s) {
       }
       else if (name == "cache_directory")
         s.cache_directory(elem.text());
+      else if (name == "command_file")
+        s.command_file(elem.text());
       else if (name == "module")
         s.module_list().push_back(elem.text());
       else if (name == "module_directory")

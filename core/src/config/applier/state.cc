@@ -105,6 +105,15 @@ void state::apply(
   // Apply temporary configuration.
   temporary::instance().apply(s.temporary());
 
+  // Create command file input.
+  {
+    config::endpoint ept;
+    ept.name = s.command_file();
+    ept.type = "command_file";
+    const_cast<com::centreon::broker::config::state&>(s)
+      .inputs().push_back(ept);
+  }
+
   // Apply input and output configuration.
   endpoint::instance().apply(
                          s.inputs(),

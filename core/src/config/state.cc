@@ -67,6 +67,7 @@ state& state::operator=(state const& s) {
  */
 void state::clear() {
   _cache_directory.clear();
+  _command_file.clear();
   _event_queue_max_size = 0;
   _flush_logs = true;
   _inputs.clear();
@@ -105,6 +106,24 @@ void state::cache_directory(QString const& dir) {
  */
 QString const& state::cache_directory() const throw () {
   return (_cache_directory);
+}
+
+/**
+ *  Set the command file.
+ *
+ *  @param[in] file  The command file.
+ */
+void state::command_file(QString const& file) {
+  _command_file = file;
+}
+
+/**
+ *  Get the command file.
+ *
+ *  @return  The command file.
+ */
+const QString& state::command_file() const throw() {
+  return (_command_file);
 }
 
 /**
@@ -378,6 +397,7 @@ endpoint const& state::temporary() const throw () {
  */
 void state::_internal_copy(state const& s) {
   _cache_directory = s._cache_directory;
+  _command_file = s._command_file;
   _event_queue_max_size = s._event_queue_max_size;
   _inputs = s._inputs;
   _instance_id = s._instance_id;

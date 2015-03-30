@@ -46,6 +46,8 @@ namespace                         config {
     state&                        operator=(state const& s);
     void                          cache_directory(QString const& dir);
     QString const&                cache_directory() const throw ();
+    void                          command_file(QString const& file);
+    QString const&                command_file() const throw();
     void                          clear();
     void                          event_queue_max_size(
                                     unsigned int val) throw ();
@@ -82,6 +84,7 @@ namespace                         config {
     void                          _internal_copy(state const& s);
 
     QString                       _cache_directory;
+    QString                       _command_file;
     unsigned int                  _event_queue_max_size;
     bool                          _flush_logs;
     QList<endpoint>               _inputs;

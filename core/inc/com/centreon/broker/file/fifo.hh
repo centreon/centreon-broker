@@ -41,7 +41,7 @@ namespace              file {
             ~fifo();
 
     std::string
-            read_line(int usecs_timeout);
+            read_line(int usecs_timeout = 3000000);
 
   private:
     std::string
