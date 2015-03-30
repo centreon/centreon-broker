@@ -31,8 +31,6 @@ add_library("${DUMPER}" SHARED
   # Sources.
   "${SRC_DIR}/dump.cc"
   "${SRC_DIR}/directory_dumper.cc"
-  "${SRC_DIR}/directory_event.cc"
-  "${SRC_DIR}/directory_watcher.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/fifo_dumper.cc"
   "${SRC_DIR}/main.cc"
@@ -43,8 +41,6 @@ add_library("${DUMPER}" SHARED
   # Headers.
   "${INC_DIR}/com/centreon/broker/dumper/dump.hh"
   "${INC_DIR}/com/centreon/broker/dumper/directory_dumper.hh"
-  "${INC_DIR}/com/centreon/broker/dumper/directory_event.hh"
-  "${INC_DIR}/com/centreon/broker/dumper/directory_watcher.hh"
   "${INC_DIR}/com/centreon/broker/dumper/factory.hh"
   "${INC_DIR}/com/centreon/broker/dumper/fifo_dumper.hh"
   "${INC_DIR}/com/centreon/broker/dumper/internal.hh"

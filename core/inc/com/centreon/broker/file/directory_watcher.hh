@@ -17,20 +17,20 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_DUMPER_DIRECTORY_WATCHER_HH
-#  define CCB_DUMPER_DIRECTORY_WATCHER_HH
+#ifndef CCB_FILE_DIRECTORY_WATCHER_HH
+#  define CCB_FILE_DIRECTORY_WATCHER_HH
 
 #  include <string>
 #  include <map>
 #  include <vector>
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/dumper/directory_event.hh"
+#  include "com/centreon/broker/file/directory_event.hh"
 
 CCB_BEGIN()
 
-namespace              dumper {
+namespace              file {
   /**
-   *  @class directory_watcher directory_watcher.hh "com/centreon/broker/dumper/directory_watcher.hh"
+   *  @class directory_watcher directory_watcher.hh "com/centreon/broker/file/directory_watcher.hh"
    *  @brief Directory dumper stream.
    *
    *  Watch over directories for files modifications.
@@ -38,13 +38,11 @@ namespace              dumper {
   class          directory_watcher {
   public:
                  directory_watcher();
-                 directory_watcher(directory_watcher const& o);
-    directory_watcher&
-                 operator=(directory_watcher const& o);
                  ~directory_watcher();
 
     void        add_directory(std::string const& directory);
     void        remove_directory(std::string const& directory);
+
     std::vector<directory_event>
                 get_events();
     void        set_timeout(unsigned int msecs);
@@ -58,9 +56,13 @@ namespace              dumper {
     std::map<int, std::string>
                 _id_to_path;
 
+                directory_watcher(directory_watcher const& o);
+directory_watcher&
+                operator=(directory_watcher const& o);
+
   };
 }
 
 CCB_END()
 
-#endif // !CCB_DUMPER_DIRECTORY_WATCHER_HH
+#endif // !CCB_FILE_DIRECTORY_WATCHER_HH

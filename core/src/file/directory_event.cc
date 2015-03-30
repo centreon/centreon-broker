@@ -17,10 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/dumper/directory_event.hh"
+#include "com/centreon/broker/file/directory_event.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::dumper;
+using namespace com::centreon::broker::file;
 
 /**
  *  Default constructor.

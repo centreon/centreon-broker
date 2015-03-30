@@ -56,7 +56,8 @@ directory_dumper::directory_dumper(
           std::string const& path,
           std::string const& tagname,
           misc::shared_ptr<persistent_cache> cache)
-  : _path(path),
+  try :
+    _path(path),
     _process_in(true),
     _process_out(true),
     _tagname(tagname),
@@ -69,6 +70,10 @@ directory_dumper::directory_dumper(
 
   // Set the watch and the initial events.
   _set_watch_over_directory();
+}
+catch (std::exception const& e) {
+  throw (exceptions::msg()
+         << "dumper: directory dumper couldn't initialize: " << e.what());
 }
 
 /**
@@ -126,16 +131,16 @@ void directory_dumper::read(misc::shared_ptr<io::data>& d) {
   }
 
   // If no events, watch the directory for new events.
-  std::vector<directory_event> events = _watcher.get_events();
-  for (std::vector<directory_event>::const_iterator
+  std::vector<file::directory_event> events = _watcher.get_events();
+  for (std::vector<file::directory_event>::const_iterator
          it(events.begin()),
          end(events.end());
        it != end;
        ++it) {
-    if (it->get_type() == directory_event::directory_deleted)
+    if (it->get_type() == file::directory_event::directory_deleted)
       throw (exceptions::msg()
              << "dumper: directory '" << _path << "' deleted");
-    else if (it->get_type() == directory_event::deleted) {
+    else if (it->get_type() == file::directory_event::deleted) {
       misc::shared_ptr<dumper::remove> d(new dumper::remove);
       d->filename = QFileInfo(it->get_path().c_str()).baseName();
       d->instance_id = instance_id;

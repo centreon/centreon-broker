@@ -26,12 +26,12 @@
 #include <stdlib.h>
 #include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/dumper/directory_watcher.hh"
+#include "com/centreon/broker/file/directory_watcher.hh"
 
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::dumper;
+using namespace com::centreon::broker::file;
 
 /**
  * Default constructor.
@@ -45,35 +45,6 @@ directory_watcher::directory_watcher()
            << ::strerror(err) << "'");
   }
 
-}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] o  The object to copy.
- */
-directory_watcher::directory_watcher(directory_watcher const& o)
-  : _inotify_instance_id(o._inotify_instance_id),
-    _timeout(o._timeout),
-    _path_to_id(o._path_to_id),
-    _id_to_path(o._id_to_path) {
-}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] o  The object to copy.
- *
- *  @return       A reference to this object.
- */
-directory_watcher& directory_watcher::operator=(directory_watcher const& o) {
-  if (this != &o) {
-    _inotify_instance_id = o._inotify_instance_id;
-    _timeout = o._timeout;
-    _path_to_id = o._path_to_id;
-    _id_to_path = o._id_to_path;
-  }
-  return (*this);
 }
 
 /**
@@ -165,7 +136,7 @@ std::vector<directory_event> directory_watcher::get_events() {
            << ::strerror(err) << "'");
   }
   logging::debug(logging::medium)
-    << "dumper: directory watcher getting events of size " << buf_size;
+    << "file: directory watcher getting events of size " << buf_size;
   char *buf = new char[buf_size];
   int len = ::read(_inotify_instance_id, buf, buf_size);
   if (len == -1) {
@@ -200,7 +171,7 @@ std::vector<directory_event> directory_watcher::get_events() {
     std::string name = found_path->second + "/" + event->name;
     ret.push_back(directory_event(name, event_type));
     logging::debug(logging::medium)
-      << "dumper: directory watcher getting an event for path '"
+      << "file: directory watcher getting an event for path '"
       << name << "' and type " << event_type;
   }
 

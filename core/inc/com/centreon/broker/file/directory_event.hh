@@ -17,17 +17,17 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_DUMPER_DIRECTORY_EVENT_HH
-#  define CCB_DUMPER_DIRECTORY_EVENT_HH
+#ifndef CCB_FILE_DIRECTORY_EVENT_HH
+#  define CCB_FILE_DIRECTORY_EVENT_HH
 
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace              dumper {
+namespace              file {
   /**
-   *  @class directory_event directory_event.hh "com/centreon/broker/dumper/directory_event.hh"
+   *  @class directory_event directory_event.hh "com/centreon/broker/file/directory_event.hh"
    *  @brief Event of a watched directory.
    *
    *  This represents an event happening to a watched directory.
@@ -61,4 +61,4 @@ namespace              dumper {
 
 CCB_END()
 
-#endif // !CCB_DUMPER_DIRECTORY_EVENT_HH
+#endif // !CCB_FILE_DIRECTORY_EVENT_HH

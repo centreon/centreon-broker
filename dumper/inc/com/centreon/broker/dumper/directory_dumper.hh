@@ -27,7 +27,7 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
 #  include "com/centreon/broker/dumper/dump.hh"
-#  include "com/centreon/broker/dumper/directory_watcher.hh"
+#  include "com/centreon/broker/file/directory_watcher.hh"
 #  include "com/centreon/broker/dumper/timestamp_cache.hh"
 
 CCB_BEGIN()
@@ -66,7 +66,8 @@ namespace              dumper {
 
     std::list<std::pair<timestamp, misc::shared_ptr<io::data> > >
                        _event_list;
-    directory_watcher  _watcher;
+    file::directory_watcher
+                       _watcher;
 
     std::map<std::string, timestamp>
                         _last_modified_timestamps;
