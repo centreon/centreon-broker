@@ -25,6 +25,7 @@
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/file/fifo.hh"
 
 CCB_BEGIN()
 
@@ -57,10 +58,7 @@ namespace              dumper {
     bool               _process_out;
     std::string        _tagname;
 
-    int                _file;
-    std::string        _polled_line;
-
-    void               _open_fifo();
+    file::fifo         _fifo;
   };
 }
 

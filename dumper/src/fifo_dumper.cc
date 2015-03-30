@@ -54,20 +54,21 @@ extern unsigned int instance_id;
 fifo_dumper::fifo_dumper(
           std::string const& path,
           std::string const& tagname)
-  : _path(path),
+  try :
+    _path(path),
     _process_in(true),
     _process_out(true),
     _tagname(tagname),
-    _file(-1) {
-  _open_fifo();
+    _fifo(_path) {}
+catch (std::exception const& e) {
+  throw (exceptions::msg() << "dumper: error in fifo dumper initialization: "
+                           << e.what());
 }
 
 /**
  *  Destructor.
  */
 fifo_dumper::~fifo_dumper() {
-  ::close(_file);
-  ::unlink(_path.c_str());
 }
 
 /**
@@ -94,53 +95,20 @@ void fifo_dumper::read(misc::shared_ptr<io::data>& d) {
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
            << "directory dumper stream is shutdown");
 
-  // Get a line if a line was already polled.
-  size_t index;
-  if ((index = _polled_line.find_first_of('\n')) != std::string::npos) {
-    misc::shared_ptr<dump> dmp(new dump);
-    dmp->content = QString::fromStdString(_polled_line.substr(0, index + 1));
-    dmp->filename = QString::fromStdString(_path);
-    dmp->tag = QString::fromStdString(_tagname);
-    dmp->instance_id = instance_id;
-    _polled_line.erase(0, index + 1);
-    d = dmp;
-    return ;
-  }
-
-  logging::debug(logging::low)
-    << "dumper: fifo dumper polling "  << _path;
-
-  // Poll for a line.
-  fd_set polled_fd;
-  struct timeval tv;
-  FD_ZERO(&polled_fd);
-  FD_SET(_file,  &polled_fd);
-  tv.tv_sec = 3;
-  tv.tv_usec = 0;
-  if (::select(_file + 1, &polled_fd, NULL, NULL, &tv) == -1) {
-    const char* msg = ::strerror(errno);
+  try {
+    std::string line = _fifo.read_line(3000000);
+    if (!line.empty()) {
+      misc::shared_ptr<dumper::dump> dmp(new dumper::dump);
+      dmp->content = QString::fromStdString(line);
+      dmp->filename = QString::fromStdString(_path);
+      dmp->tag = QString::fromStdString(_tagname);
+      dmp->instance_id = instance_id;
+      d = dmp;
+    }
+  } catch (std::exception const& e) {
     throw (exceptions::msg()
-           << "dumper: can't poll file '" << _path
-           << "' for the fifo dumper: " << msg);
+           << "dumper: error while trying to read fifo: " << e.what());
   }
-
-  // Read everything.
-  char buf[BUF_SIZE];
-  int ret = ::read(_file, buf, BUF_SIZE - 1);
-  if (ret == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))
-    return ;
-  if (ret == -1) {
-    const char* msg = ::strerror(errno);
-    throw (exceptions::msg()
-           << "dumper: can't read file '" << _path
-           << "' for the fifo dumper: " << msg);
-  }
-  buf[ret] = '\0';
-  _polled_line.append(buf);
-
-  logging::debug(logging::low)
-    << "dumper: fifo dumper read " << ret << " bytes";
-
   return ;
 }
 
@@ -156,45 +124,4 @@ unsigned int fifo_dumper::write(misc::shared_ptr<io::data> const& d) {
          << "dumper: attempt to write from a fifo dumper stream");
 
   return (1);
-}
-
-/**
- *  Open the fifo file.
- */
-void fifo_dumper::_open_fifo() {
-  // Does file exist and is a FIFO ?
-  struct stat s;
-  // Stat failed, probably because of inexistant file.
-  if (::stat(_path.c_str(), &s) != 0) {
-    char const* msg(strerror(errno));
-    logging::config(logging::medium) << "stats: cannot stat() '"
-      << _path << "': " << msg;
-
-    // Create FIFO.
-    if (::mkfifo(
-          _path.c_str(),
-          S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH)
-        != 0) {
-      char const* msg(strerror(errno));
-      throw (exceptions::msg()
-             << "dumper: can't create fifo '" << _path
-             << "' for the fifo dumper: " << msg);
-    }
-  }
-  else if (!S_ISFIFO(s.st_mode))
-    throw (exceptions::msg() <<  "dumper: file '" << _path
-           << "' exists but is not a FIFO");
-
-  // Open fifo.
-  // We use O_RDWR because select flag a FIFO at EOF when there is
-  // no more data - but later writers can make data available.
-  // When using O_RDWR, this flagging never happen, as there is always
-  // at least one writer.
-  _file = ::open(_path.c_str(), O_RDWR | O_NONBLOCK);
-  if (_file == -1) {
-    const char* msg(::strerror(errno));
-    throw (exceptions::msg()
-           << "dumper: can't open file '" << _path
-           << "' for the fifo dumper: " << msg);
-  }
 }
