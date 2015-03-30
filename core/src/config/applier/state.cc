@@ -106,7 +106,7 @@ void state::apply(
   temporary::instance().apply(s.temporary());
 
   // Create command file input.
-  {
+  if (!s.command_file().isEmpty()) {
     config::endpoint ept;
     ept.name = s.command_file();
     ept.type = "command_file";
