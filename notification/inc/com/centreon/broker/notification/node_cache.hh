@@ -80,6 +80,10 @@ namespace         notification {
     misc::shared_ptr<io::data>
                   parse_command(command_file::external_command const& exc);
 
+    objects::node_id
+                  get_node_by_names(
+                    std::string const& host_name,
+                    std::string const& service_description);
 
     host_node_state const&
                   get_host(objects::node_id id) const;
@@ -96,7 +100,7 @@ namespace         notification {
                   _host_node_states;
     QHash<objects::node_id, service_node_state>
                   _service_node_states;
-    std::vector<neb::acknowledgement>
+    QHash<objects::node_id, neb::acknowledgement>
                   _acknowledgements;
     QMutex        _mutex;
 
@@ -107,16 +111,33 @@ namespace         notification {
                   _serialized_data;
 
     enum          ack_type {
-                  ack_host,
+                  ack_host = 0,
                   ack_service
+    };
+
+    enum          down_time {
+                  down_host = 0,
+                  down_service,
+                  down_host_service
     };
 
     void          _prepare_serialization();
 
     misc::shared_ptr<io::data>
-                  _parse_ack(ack_type type,
-                             timestamp t,
-                             std::string const& args);
+                  _parse_ack(
+                    ack_type type,
+                    timestamp t,
+                    std::string const& args);
+    misc::shared_ptr<io::data>
+                  _parse_remove_ack(
+                    ack_type type,
+                    timestamp t,
+                    std::string const& args);
+    misc::shared_ptr<io::data>
+                  _parse_downtime(
+                    down_time type,
+                    timestamp t,
+                    std::string const& args);
   };
 }
 

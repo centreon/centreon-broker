@@ -345,10 +345,54 @@ misc::shared_ptr<io::data>
     return (_parse_ack(ack_host, timestamp, args));
   else if (command == "ACKNOWLEDGE_SERVICE_PROBLEM")
     return (_parse_ack(ack_service, timestamp, args));
+  else if (command == "REMOVE_HOST_ACKNOWLEDGEMENT")
+    return (_parse_remove_ack(ack_host, timestamp, args));
+  else if (command == "REMOVE_SVC_ACKNOWLEDGEMENT")
+    return (_parse_remove_ack(ack_service, timestamp, args));
+  else if (command == "SCHEDULE_HOST_DOWNTIME")
+    return (_parse_downtime(down_host, timestamp, args));
+  else if (command == "SCHEDULE_HOST_SVC_DOWNTIME")
+    return (_parse_downtime(down_host_service, timestamp, args));
+  else if (command == "SCHEDULE_SVC_DOWNTIME")
+    return (_parse_downtime(down_host_service, timestamp, args));
 
   return (misc::shared_ptr<io::data>());
 }
 
+/**
+ *  Get a node by its names.
+ *
+ *  @param[in] host_name            The host name.
+ *  @param[in] service_description  The service description, or empty.
+ *
+ *  @return  The node id.
+ */
+objects::node_id node_cache::get_node_by_names(
+                   std::string const& host_name,
+                   std::string const& service_description) {
+  if (service_description.empty()) {
+    for (QHash<objects::node_id, host_node_state>::const_iterator
+           it = _host_node_states.begin(),
+           end = _host_node_states.end();
+         it != end;
+         ++it)
+      if (it->get_node().host_name == host_name.c_str())
+        return (objects::node_id(it->get_node().host_id));
+  }
+  else {
+    for (QHash<objects::node_id, service_node_state>::const_iterator
+           it = _service_node_states.begin(),
+           end = _service_node_states.end();
+         it != end;
+         ++it)
+      if (it->get_node().host_name == host_name.c_str()
+            && it->get_node().service_description == service_description.c_str())
+        return (objects::node_id(
+                  it->get_node().host_id, it->get_node().service_id));
+  }
+
+  return (objects::node_id());
+}
 
 /**
  *  Get a host from the node cache.
@@ -438,7 +482,7 @@ void node_cache::_prepare_serialization() {
        it != end;
        ++it)
     it->serialize(_serialized_data);
-  for (std::vector<neb::acknowledgement>::const_iterator
+  for (QHash<objects::node_id, neb::acknowledgement>::const_iterator
          it = _acknowledgements.begin(),
          end = _acknowledgements.end();
        it != end;
@@ -450,7 +494,7 @@ void node_cache::_prepare_serialization() {
 /**
  *  Parse an acknowledgment.
  *
- *  @param[in] is_host  Is this an host acknowledgement.
+ *  @param[in] is_host  Is this a host acknowledgement.
  *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
  *
@@ -460,21 +504,23 @@ misc::shared_ptr<io::data> node_cache::_parse_ack(
                              ack_type is_host,
                              timestamp t,
                              std::string const& args) {
-  unsigned int host_id = 0;
-  unsigned int service_id = 0;
+  std::string host_name;
+  std::string service_description;
   int sticky = 0;
   int notify = 0;
   int persistent_comment = 0;
   std::string author;
   std::string comment;
+  host_name.resize(args.size());
+  service_description.resize(args.size());
   author.resize(args.size());
   comment.resize(args.size());
   bool ret = false;
   if (is_host == ack_host)
     ret = (::sscanf(
              args.c_str(),
-             "%u;%i;%i;%i;%[^;];%[^;]",
-             &host_id,
+             "%[^;];%i;%i;%i;%[^;];%[^;]",
+             &host_name[0],
              &sticky,
              &notify,
              &persistent_comment,
@@ -483,9 +529,9 @@ misc::shared_ptr<io::data> node_cache::_parse_ack(
   else
     ret = (::sscanf(
              args.c_str(),
-             "%u;%u;%i;%i;%i;%[^;];%[^;]",
-             &host_id,
-             &service_id,
+             "%[^;];%[^;];%i;%i;%i;%[^;];%[^;]",
+             &host_name[0],
+             &service_description[0],
              &sticky,
              &notify,
              &persistent_comment,
@@ -495,19 +541,77 @@ misc::shared_ptr<io::data> node_cache::_parse_ack(
     throw (exceptions::msg()
            << "couldn't parse the arguments for the acknowledgement");
 
+  objects::node_id id = get_node_by_names(host_name, service_description);
   misc::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement);
   ack->acknowledgement_type = is_host;
   ack->comment = QString::fromStdString(comment);
   ack->author = QString::fromStdString(author);
   ack->entry_time = t;
-  ack->host_id = host_id;
-  ack->service_id = service_id;
+  ack->host_id = id.get_host_id();
+  ack->service_id = id.get_service_id();
   ack->is_sticky = (sticky == 2);
   ack->persistent_comment = (persistent_comment == 1);
   ack->notify_contacts = (notify == 1);
 
   // Save acknowledgements.
-  _acknowledgements.push_back(*ack);
+  _acknowledgements[id] = *ack;
 
   return (ack);
+}
+
+/**
+ *  Parse the removal of an acknowledgment.
+ *
+ *  @param[in] is_host  Is this a host acknowledgement.
+ *  @param[in] t        The timestamp.
+ *  @param[in] args     The args to parse.
+ *
+ *  @return             An acknowledgement removal event.
+ */
+misc::shared_ptr<io::data> node_cache::_parse_remove_ack(
+                             ack_type type,
+                             timestamp t,
+                             std::string const& args) {
+  std::string host_name;
+  std::string service_description;
+  host_name.resize(args.size());
+  service_description.resize(args.size());
+  int ret = 0;
+  if (type == ack_host)
+    ret = (::sscanf(args.c_str(), "%[^;]", &host_name[0]) == 1);
+  else
+    ret = (::sscanf(
+             args.c_str(),
+             "%[^;];%[^;]",
+             &host_name[0],
+             &service_description[0]) == 2);
+  if (!ret)
+    throw (exceptions::msg()
+           << "couldn't parse the arguments for the acknowledgement removal");
+
+  // Find the node id from the host name / description.
+  objects::node_id id = get_node_by_names(host_name, service_description);
+
+  _acknowledgements.remove(id);
+
+  return (misc::shared_ptr<io::data>());
+}
+
+/**
+ *  Parse a downtime.
+ *
+ *  @param[in] type     The downtime type.
+ *  @param[in] t        The timestamp.
+ *  @param[in] args     The args to parse.
+ *
+ *  @return             A downtime event.
+ */
+misc::shared_ptr<io::data>
+  node_cache::_parse_downtime(
+                down_time type,
+                timestamp t,
+                std::string const& args) {
+  std::string host_name;
+  std::string service_description;
+  return (misc::shared_ptr<io::data>());
 }
