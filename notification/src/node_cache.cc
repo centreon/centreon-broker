@@ -17,6 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdio>
+#include <vector>
 #include "com/centreon/broker/notification/utilities/qhash_func.hh"
 #include <exception>
 #include <QMutexLocker>
@@ -28,6 +30,7 @@
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/custom_variable.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/misc/string.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::notification;
@@ -210,6 +213,17 @@ unsigned int node_cache::write(misc::shared_ptr<io::data> const& data) {
   else if (type == neb::custom_variable::static_type()
            || type == neb::custom_variable_status::static_type())
     update(*data.staticCast<neb::custom_variable_status>());
+  else if (type == command_file::external_command::static_type()) {
+    try {
+      _serialized_data.push_back(
+        parse_command(data.ref_as<command_file::external_command const>()));
+    } catch (std::exception const& e) {
+      logging::error(logging::medium)
+        << "notification: can't parse command '"
+        << data.ref_as<command_file::external_command>().command
+        << "': " << e.what();
+    }
+  }
 
   return (1);
 }
@@ -302,6 +316,41 @@ void node_cache::update(neb::custom_variable_status const& cvs) {
 }
 
 /**
+ *  Parse an external command.
+ *
+ *  @param[in] exc  External command.
+ *
+ *  @return         An event.
+ */
+misc::shared_ptr<io::data>
+  node_cache::parse_command(command_file::external_command const& exc) {
+  std::string line = exc.command.toStdString();
+  std::string command;
+  std::string args;
+  command.resize(line.size());
+  args.resize(line.size());
+
+  // Parse timestamp.
+  unsigned long timestamp;
+  if (::sscanf(
+        line.c_str(),
+        "[%lu] %[^ ;];%s",
+        &timestamp,
+        &command[0],
+        &args[0]) != 3)
+    throw (exceptions::msg()
+           << "couldn't parse the line");
+
+  if (command == "ACKNOWLEDGE_HOST_PROBLEM")
+    return (_parse_ack(ack_host, timestamp, args));
+  else if (command == "ACKNOWLEDGE_SERVICE_PROBLEM")
+    return (_parse_ack(ack_service, timestamp, args));
+
+  return (misc::shared_ptr<io::data>());
+}
+
+
+/**
  *  Get a host from the node cache.
  *
  *  @param[in] id  The id of the host.
@@ -373,7 +422,7 @@ std::vector<std::string> node_cache::get_all_node_contained_in(
 }
 
 /**
- *  Prepare the serialization of the host and service states.
+ *  Prepare the serialization of all the data.
  */
 void node_cache::_prepare_serialization() {
   _serialized_data.clear();
@@ -389,4 +438,76 @@ void node_cache::_prepare_serialization() {
        it != end;
        ++it)
     it->serialize(_serialized_data);
+  for (std::vector<neb::acknowledgement>::const_iterator
+         it = _acknowledgements.begin(),
+         end = _acknowledgements.end();
+       it != end;
+       ++it)
+    _serialized_data.push_back(
+      misc::make_shared(new neb::acknowledgement(*it)));
+}
+
+/**
+ *  Parse an acknowledgment.
+ *
+ *  @param[in] is_host  Is this an host acknowledgement.
+ *  @param[in] t        The timestamp.
+ *  @param[in] args     The args to parse.
+ *
+ *  @return             An acknowledgement event.
+ */
+misc::shared_ptr<io::data> node_cache::_parse_ack(
+                             ack_type is_host,
+                             timestamp t,
+                             std::string const& args) {
+  unsigned int host_id = 0;
+  unsigned int service_id = 0;
+  int sticky = 0;
+  int notify = 0;
+  int persistent_comment = 0;
+  std::string author;
+  std::string comment;
+  author.resize(args.size());
+  comment.resize(args.size());
+  bool ret = false;
+  if (is_host == ack_host)
+    ret = (::sscanf(
+             args.c_str(),
+             "%u;%i;%i;%i;%[^;];%[^;]",
+             &host_id,
+             &sticky,
+             &notify,
+             &persistent_comment,
+             &author[0],
+             &comment[0]) == 6);
+  else
+    ret = (::sscanf(
+             args.c_str(),
+             "%u;%u;%i;%i;%i;%[^;];%[^;]",
+             &host_id,
+             &service_id,
+             &sticky,
+             &notify,
+             &persistent_comment,
+             &author[0],
+             &comment[0]) == 7);
+  if (!ret)
+    throw (exceptions::msg()
+           << "couldn't parse the arguments for the acknowledgement");
+
+  misc::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement);
+  ack->acknowledgement_type = is_host;
+  ack->comment = QString::fromStdString(comment);
+  ack->author = QString::fromStdString(author);
+  ack->entry_time = t;
+  ack->host_id = host_id;
+  ack->service_id = service_id;
+  ack->is_sticky = (sticky == 2);
+  ack->persistent_comment = (persistent_comment == 1);
+  ack->notify_contacts = (notify == 1);
+
+  // Save acknowledgements.
+  _acknowledgements.push_back(*ack);
+
+  return (ack);
 }

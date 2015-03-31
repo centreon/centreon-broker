@@ -17,11 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cstdio>
-#include <vector>
 #include "com/centreon/broker/command_file/external_command.hh"
 #include "com/centreon/broker/command_file/stream.hh"
-#include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/namespace.hh"

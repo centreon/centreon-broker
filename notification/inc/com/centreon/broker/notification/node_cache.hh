@@ -27,9 +27,11 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/bbdo/stream.hh"
 #  include "com/centreon/broker/compression/stream.hh"
+#  include "com/centreon/broker/command_file/external_command.hh"
 #  include "com/centreon/broker/file/stream.hh"
 #  include "com/centreon/broker/notification/object_cache.hh"
 #  include "com/centreon/broker/notification/objects/node.hh"
+#  include "com/centreon/broker/neb/acknowledgement.hh"
 #  include "com/centreon/broker/neb/service.hh"
 #  include "com/centreon/broker/neb/service_status.hh"
 #  include "com/centreon/broker/neb/host.hh"
@@ -75,6 +77,8 @@ namespace         notification {
     void          update(neb::service_status const& ss);
     void          update(neb::service_group_member const& sgm);
     void          update(neb::custom_variable_status const& cvs);
+    misc::shared_ptr<io::data>
+                  parse_command(command_file::external_command const& exc);
 
 
     host_node_state const&
@@ -88,12 +92,12 @@ namespace         notification {
                     bool is_host_group) const;
 
   private:
-    void          _prepare_serialization();
-
     QHash<objects::node_id, host_node_state>
                   _host_node_states;
     QHash<objects::node_id, service_node_state>
                   _service_node_states;
+    std::vector<neb::acknowledgement>
+                  _acknowledgements;
     QMutex        _mutex;
 
     misc::shared_ptr<persistent_cache>
@@ -101,6 +105,18 @@ namespace         notification {
 
     std::deque<misc::shared_ptr<io::data> >
                   _serialized_data;
+
+    enum          ack_type {
+                  ack_host,
+                  ack_service
+    };
+
+    void          _prepare_serialization();
+
+    misc::shared_ptr<io::data>
+                  _parse_ack(ack_type type,
+                             timestamp t,
+                             std::string const& args);
   };
 }
 
