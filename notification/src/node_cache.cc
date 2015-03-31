@@ -576,7 +576,7 @@ misc::shared_ptr<io::data> node_cache::_parse_remove_ack(
   std::string service_description;
   host_name.resize(args.size());
   service_description.resize(args.size());
-  int ret = 0;
+  bool ret = false;
   if (type == ack_host)
     ret = (::sscanf(args.c_str(), "%[^;]", &host_name[0]) == 1);
   else
@@ -613,5 +613,62 @@ misc::shared_ptr<io::data>
                 std::string const& args) {
   std::string host_name;
   std::string service_description;
-  return (misc::shared_ptr<io::data>());
+  unsigned long start_time = 0;
+  unsigned long end_time = 0;
+  int fixed = 0;
+  unsigned int trigger_id = 0;
+  unsigned int duration = 0;
+  std::string author;
+  std::string comment;
+  host_name.resize(args.size());
+  service_description.resize(args.size());
+  author.resize(args.size());
+  comment.resize(args.size());
+  bool ret = false;
+
+  if (type == down_host)
+    ret = (::sscanf(
+             args.c_str(),
+             "%[^;];%lu;%lu;%i;%u;%u;%[^;];%[^;]",
+             &host_name[0],
+             &start_time,
+             &end_time,
+             &fixed,
+             &trigger_id,
+             &duration,
+             &author[0],
+             &comment[0]) == 8);
+  else
+    ret = (::sscanf(
+             args.c_str(),
+             "%[^;];%[^;];%lu;%lu;%i;%u;%u;%[^;];%[^;]",
+             &host_name[0],
+             &service_description[0],
+             &start_time,
+             &end_time,
+             &fixed,
+             &trigger_id,
+             &duration,
+             &author[0],
+             &comment[0]) == 9);
+
+  if (!ret)
+    throw (exceptions::msg() << "error while parsing downtime arguments");
+
+  objects::node_id id = get_node_by_names(host_name, service_description);
+
+  misc::shared_ptr<neb::downtime> d(new neb::downtime);
+  d->author = QString::fromStdString(author);
+  d->comment = QString::fromStdString(comment);
+  d->start_time = start_time;
+  d->end_time = end_time;
+  d->duration = duration;
+  d->fixed = (fixed == 1);
+  d->downtime_type = type;
+  d->host_id = id.get_host_id();
+  d->service_id = id.get_service_id();
+  d->was_started = true;
+  d->triggered_by = trigger_id;
+
+  return (d);
 }

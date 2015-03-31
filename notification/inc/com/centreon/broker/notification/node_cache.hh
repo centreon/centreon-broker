@@ -32,6 +32,7 @@
 #  include "com/centreon/broker/notification/object_cache.hh"
 #  include "com/centreon/broker/notification/objects/node.hh"
 #  include "com/centreon/broker/neb/acknowledgement.hh"
+#  include "com/centreon/broker/neb/downtime.hh"
 #  include "com/centreon/broker/neb/service.hh"
 #  include "com/centreon/broker/neb/service_status.hh"
 #  include "com/centreon/broker/neb/host.hh"
