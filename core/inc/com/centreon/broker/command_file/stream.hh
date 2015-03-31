@@ -52,6 +52,10 @@ namespace           command_file {
 
     misc::shared_ptr<io::data>
                     _parse_command_line(std::string const& line);
+    misc::shared_ptr<io::data>
+                    _parse_ack(bool is_host, std::string const& args);
+    misc::shared_ptr<io::data>
+                    _parse_downtime(std::string const& args);
 
                     stream(stream const& right);
     stream&         operator=(stream const& right);

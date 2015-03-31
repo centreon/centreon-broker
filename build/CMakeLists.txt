@@ -323,6 +323,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/mapping/entry.cc"
   "${SRC_DIR}/mapping/source.cc"
   "${SRC_DIR}/misc/diagnostic.cc"
+  "${SRC_DIR}/misc/string.cc"
   "${SRC_DIR}/misc/stringifier.cc"
   "${SRC_DIR}/misc/global_lock.cc"
   "${SRC_DIR}/modules/handle.cc"

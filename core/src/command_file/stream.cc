@@ -17,8 +17,11 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdio>
 #include "com/centreon/broker/command_file/stream.hh"
+#include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/namespace.hh"
 
 using namespace com::centreon::broker;
@@ -111,5 +114,54 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
  */
 misc::shared_ptr<io::data>
   stream::_parse_command_line(std::string const& line) {
+
+  std::string command;
+  std::string args;
+  command.resize(line.size());
+  args.resize(line.size());
+
+  // Parse timestamp.
+  unsigned long timestamp;
+  if (::sscanf(
+        line.c_str(),
+        "[%lu] %[^ ;];%s",
+        &timestamp,
+        &command[0],
+        &args[0]) != 3) {
+    logging::info(logging::medium)
+      << "command_line: couldn't parse the line '" << line << "'";
+  }
+
+  if (command == "ACKNOWLEDGE_HOST_PROBLEM")
+    return (_parse_ack(true, args));
+  else if (command == "ACKNOWLEDGE_SERVICE_PROBLEM")
+    return (_parse_ack(false, args));
+
   return (misc::shared_ptr<io::data>());
+}
+
+/**
+ *  Parse an acknowledgment.
+ *
+ *  @param[in] is_host  Is this an host acknowledgement.
+ *  @param[in] args     The args to parse.
+ *
+ *  @return             An acknowledgement event.
+ */
+misc::shared_ptr<io::data> stream::_parse_ack(
+                             bool is_host,
+                             std::string const& args) {
+
+}
+
+/**
+ *  Parse a downtime.
+ *
+ *  @param[in] args     The args to parse.
+ *
+ *  @return             A downtime event.
+ */
+misc::shared_ptr<io::data> stream::_parse_downtime(
+                             std::string const& args) {
+
 }
