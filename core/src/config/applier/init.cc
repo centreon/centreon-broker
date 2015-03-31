@@ -22,6 +22,7 @@
 #include <QAbstractSocket>
 #include <QtCore>
 #include "com/centreon/broker/bbdo/internal.hh"
+#include "com/centreon/broker/command_file/internal.hh"
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/config/applier/logger.hh"
@@ -58,6 +59,7 @@ void config::applier::deinit() {
   io::temporary::unload();
   file::unload();
   bbdo::unload();
+  command_file::unload();
   multiplexing::engine::instance().clear();
   config::applier::modules::unload();
   multiplexing::engine::unload();
@@ -80,6 +82,7 @@ void config::applier::init() {
   config::applier::modules::load();
   file::load();
   bbdo::load();
+  command_file::load();
   config::applier::logger::load();
   config::applier::temporary::load();
   config::applier::endpoint::load();

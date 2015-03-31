@@ -18,6 +18,8 @@
 */
 
 #include <cstdio>
+#include <vector>
+#include "com/centreon/broker/command_file/external_command.hh"
 #include "com/centreon/broker/command_file/stream.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -78,8 +80,12 @@ void stream::read(misc::shared_ptr<io::data>& d) {
            << "command file stream is shutdown");
 
   std::string line = _fifo.read_line();
-  if (!line.empty())
-    d = _parse_command_line(line);
+  if (!line.empty()) {
+    line.erase(line.size() - 1);
+    misc::shared_ptr<external_command> exc(new external_command);
+    exc->command = QString::fromStdString(line);
+    d = exc;
+  }
 }
 
 /**
@@ -112,7 +118,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
  *
  *  @return          The event.
  */
-misc::shared_ptr<io::data>
+/*misc::shared_ptr<io::data>
   stream::_parse_command_line(std::string const& line) {
 
   std::string command;
@@ -127,15 +133,14 @@ misc::shared_ptr<io::data>
         "[%lu] %[^ ;];%s",
         &timestamp,
         &command[0],
-        &args[0]) != 3) {
-    logging::info(logging::medium)
-      << "command_line: couldn't parse the line '" << line << "'";
-  }
+        &args[0]) != 3)
+    throw (exceptions::msg()
+           << "couldn't parse the line");
 
   if (command == "ACKNOWLEDGE_HOST_PROBLEM")
-    return (_parse_ack(true, args));
+    return (_parse_ack(ack_host, timestamp, args));
   else if (command == "ACKNOWLEDGE_SERVICE_PROBLEM")
-    return (_parse_ack(false, args));
+    return (_parse_ack(ack_service, timestamp, args));
 
   return (misc::shared_ptr<io::data>());
 }
@@ -144,24 +149,74 @@ misc::shared_ptr<io::data>
  *  Parse an acknowledgment.
  *
  *  @param[in] is_host  Is this an host acknowledgement.
+ *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
  *
  *  @return             An acknowledgement event.
  */
-misc::shared_ptr<io::data> stream::_parse_ack(
-                             bool is_host,
+/*misc::shared_ptr<io::data> stream::_parse_ack(
+                             ack_type is_host,
+                             timestamp t,
                              std::string const& args) {
+  unsigned int host_id = 0;
+  unsigned int service_id = 0;
+  int sticky = 0;
+  int notify = 0;
+  int persistent_comment = 0;
+  std::string author;
+  std::string comment;
+  author.resize(args.size());
+  comment.resize(args.size());
+  bool ret = false;
+  if (is_host == ack_host)
+    ret = (::sscanf(
+             args.c_str(),
+             "%u;%i;%i;%i;%[^;];%[^;]",
+             &host_id,
+             &sticky,
+             &notify,
+             &persistent_comment,
+             &author[0],
+             &comment[0]) == 6);
+  else
+    ret = (::sscanf(
+             args.c_str(),
+             "%u;%u;%i;%i",
+             &host_id,
+             &service_id,
+             &sticky,
+             &notify,
+             &persistent_comment,
+             &author[0],
+             &comment[0]) == 7);
+  if (!ret)
+    throw (exceptions::msg()
+           << "couldn't parse the arguments for the acknowledgement");
 
+  misc::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement);
+  ack->acknowledgement_type = is_host;
+  ack->comment = comment;
+  ack->author = author;
+  ack->entry_time = t;
+  ack->host_id = host_id;
+  ack->service_id = service_id;
+  ack->is_sticky = (sticky == 2);
+  ack->persistent_comment = (persistent_comment == 1);
+  ack->notify_contacts = (notify == 1);
+
+  return (ack);
 }
 
 /**
  *  Parse a downtime.
  *
  *  @param[in] args     The args to parse.
+ *  @param[in] t        The timestamp.
  *
  *  @return             A downtime event.
  */
-misc::shared_ptr<io::data> stream::_parse_downtime(
+/*misc::shared_ptr<io::data> stream::_parse_downtime(
+                             timestamp t,
                              std::string const& args) {
 
-}
+}*/

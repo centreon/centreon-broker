@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-
+#include "com/centreon/broker/command_file/external_command.hh"
 #include "com/centreon/broker/command_file/internal.hh"
 #include "com/centreon/broker/command_file/factory.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -41,12 +41,21 @@ using namespace com::centreon::broker::command_file;
 void command_file::load() {
   io::events& e(io::events::instance());
 
-  // Register command_fime protocol.
+  // Register command_file protocol.
   io::protocols::instance().reg(
                               "command_file",
                               command_file::factory(),
                               7,
                               7);
+
+  // Register event.
+  e.register_event(
+    io::events::internal,
+    command_file::de_command,
+      io::event_info(
+            "command",
+            &external_command::operations,
+            external_command::entries));
 
   return ;
 }
