@@ -186,6 +186,10 @@ events::events_container const& events::get_events_by_category_name(
  */
 events::events_container events::get_matching_events(
                                    std::string const& name) const {
+  // Ignore internal category.
+  if (name.compare(0, ::strlen("internal"), "internal") == 0)
+    return (events_container());
+
   size_t num = std::count(name.begin(), name.end(), ':');
   if (num == 0)
     return (get_events_by_category_name(name));
