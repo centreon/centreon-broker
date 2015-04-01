@@ -380,15 +380,19 @@ misc::shared_ptr<io::data>
   else if (command == "ACKNOWLEDGE_SERVICE_PROBLEM")
     return (_parse_ack(ack_service, timestamp, args));
   else if (command == "REMOVE_HOST_ACKNOWLEDGEMENT")
-    return (_parse_remove_ack(ack_host, timestamp, args));
+    return (_parse_remove_ack(ack_host, args));
   else if (command == "REMOVE_SVC_ACKNOWLEDGEMENT")
-    return (_parse_remove_ack(ack_service, timestamp, args));
+    return (_parse_remove_ack(ack_service, args));
   else if (command == "SCHEDULE_HOST_DOWNTIME")
     return (_parse_downtime(down_host, timestamp, args));
   else if (command == "SCHEDULE_HOST_SVC_DOWNTIME")
     return (_parse_downtime(down_host_service, timestamp, args));
   else if (command == "SCHEDULE_SVC_DOWNTIME")
     return (_parse_downtime(down_host_service, timestamp, args));
+  else if (command == "DELETE_HOST_DOWNTIME")
+    return (_parse_remove_downtime(down_host, args));
+  else if (command == "DELETE_SVC_DOWNTIME")
+    return (_parse_remove_downtime(down_service, args));
 
   return (misc::shared_ptr<io::data>());
 }
@@ -627,14 +631,12 @@ misc::shared_ptr<io::data> node_cache::_parse_ack(
  *  Parse the removal of an acknowledgment.
  *
  *  @param[in] is_host  Is this a host acknowledgement.
- *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
  *
  *  @return             An acknowledgement removal event.
  */
 misc::shared_ptr<io::data> node_cache::_parse_remove_ack(
                              ack_type type,
-                             timestamp t,
                              std::string const& args) {
   std::string host_name;
   std::string service_description;
@@ -685,7 +687,7 @@ misc::shared_ptr<io::data> node_cache::_parse_remove_ack(
  */
 misc::shared_ptr<io::data>
   node_cache::_parse_downtime(
-                down_time type,
+                down_type type,
                 timestamp t,
                 std::string const& args) {
   std::string host_name;
@@ -759,17 +761,14 @@ misc::shared_ptr<io::data>
  *  Parse a downtime removal.
  *
  *  @param[in] type     The downtime type.
- *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
  *
  *  @return             A downtime removal event.
  */
 misc::shared_ptr<io::data> node_cache::_parse_remove_downtime(
-                             down_time type,
-                             timestamp t,
+                             down_type type,
                              std::string const& args) {
-  (void) type;
-  (void) t;
+  (void)type;
   unsigned int downtime_id;
   if (::sscanf(args.c_str(), "%u", &downtime_id) != 1)
     throw (exceptions::msg() << "error while parsing remove downtime arguments");

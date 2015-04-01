@@ -124,7 +124,7 @@ namespace         notification {
                   ack_service
     };
 
-    enum          down_time {
+    enum          down_type {
                   down_host = 0,
                   down_service,
                   down_host_service
@@ -140,17 +140,15 @@ namespace         notification {
     misc::shared_ptr<io::data>
                   _parse_remove_ack(
                     ack_type type,
-                    timestamp t,
                     std::string const& args);
     misc::shared_ptr<io::data>
                   _parse_downtime(
-                    down_time type,
+                    down_type type,
                     timestamp t,
                     std::string const& args);
     misc::shared_ptr<io::data>
                   _parse_remove_downtime(
-                    down_time type,
-                    timestamp t,
+                    down_type type,
                     std::string const& args);
   };
 }
