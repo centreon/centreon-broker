@@ -26,6 +26,8 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/notification/acknowledgement_removed.hh"
+#include "com/centreon/broker/notification/downtime_removed.hh"
 #include "com/centreon/broker/notification/node_cache.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/custom_variable.hh"
@@ -42,7 +44,8 @@ using namespace com::centreon::broker::notification;
  */
 node_cache::node_cache(misc::shared_ptr<persistent_cache> cache)
   : _mutex(QMutex::NonRecursive),
-    _cache(cache) {
+    _cache(cache),
+    _actual_downtime_id(0) {
   multiplexing::engine::instance().hook(*this);
 }
 
@@ -75,6 +78,7 @@ node_cache& node_cache::operator=(node_cache const& obj) {
     _host_node_states = obj._host_node_states;
     _service_node_states = obj._service_node_states;
     _cache = obj._cache;
+    _actual_downtime_id = obj._actual_downtime_id;
   }
   return (*this);
 }
@@ -370,6 +374,8 @@ misc::shared_ptr<io::data>
 objects::node_id node_cache::get_node_by_names(
                    std::string const& host_name,
                    std::string const& service_description) {
+  // TODO: Faster node lookup.
+
   if (service_description.empty()) {
     for (QHash<objects::node_id, host_node_state>::const_iterator
            it = _host_node_states.begin(),
@@ -592,9 +598,22 @@ misc::shared_ptr<io::data> node_cache::_parse_remove_ack(
   // Find the node id from the host name / description.
   objects::node_id id = get_node_by_names(host_name, service_description);
 
-  _acknowledgements.remove(id);
+  // Find the ack.
+  QHash<objects::node_id, neb::acknowledgement>::iterator
+    found(_acknowledgements.find(id));
+  if (found == _acknowledgements.end())
+    throw (exceptions::msg()
+           << "couldn't find an acknowledgement for ("
+           << id.get_host_id() << ", " << id.get_service_id() << ")");
 
-  return (misc::shared_ptr<io::data>());
+  // Erase the ack.
+  _acknowledgements.erase(found);
+
+  // Send an ack removed event.
+  misc::shared_ptr<acknowledgement_removed> a(new acknowledgement_removed);
+  a->host_id = id.get_host_id();
+  a->service_id = id.get_service_id();
+  return (a);
 }
 
 /**
@@ -669,6 +688,61 @@ misc::shared_ptr<io::data>
   d->service_id = id.get_service_id();
   d->was_started = true;
   d->triggered_by = trigger_id;
+  d->internal_id = ++_actual_downtime_id;
+
+  // Save the downtime.
+  _downtimes[d->internal_id] = *d;
+  _downtime_id_by_nodes.insert(id, d->internal_id);
+
+  return (d);
+}
+
+/**
+ *  Parse a downtime removal.
+ *
+ *  @param[in] type     The downtime type.
+ *  @param[in] t        The timestamp.
+ *  @param[in] args     The args to parse.
+ *
+ *  @return             A downtime removal event.
+ */
+misc::shared_ptr<io::data> node_cache::_parse_remove_downtime(
+                             down_time type,
+                             timestamp t,
+                             std::string const& args) {
+  (void) type;
+  (void) t;
+  unsigned int downtime_id;
+  if (::sscanf(args.c_str(), "%u", &downtime_id) != 1)
+    throw (exceptions::msg() << "error while parsing remove downtime arguments");
+
+  // Find the downtime.
+  QHash<unsigned int, neb::downtime>::iterator
+    found(_downtimes.find(downtime_id));
+  if (found == _downtimes.end())
+    throw (exceptions::msg()
+           << "couldn't find a downtime for downtime id " << downtime_id);
+
+  objects::node_id node(found->host_id, found->service_id);
+
+  // Erase the downtime.
+  _downtimes.erase(found);
+  QMultiHash<objects::node_id, unsigned int>::iterator tmp;
+  for (QMultiHash<objects::node_id, unsigned int>::iterator
+         it = _downtime_id_by_nodes.find(node),
+         end = _downtime_id_by_nodes.end();
+       it != end && it.key() == node;
+       it = tmp) {
+    tmp = it;
+    ++tmp;
+    if (*it == downtime_id)
+      _downtime_id_by_nodes.erase(it);
+  }
+
+
+  // Send a downtime removed event.
+  misc::shared_ptr<downtime_removed> d(new downtime_removed);
+  d->downtime_id = downtime_id;
 
   return (d);
 }

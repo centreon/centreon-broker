@@ -17,9 +17,13 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/notification/acknowledgement_removed.hh"
+#include "com/centreon/broker/notification/downtime_removed.hh"
 #include "com/centreon/broker/notification/factory.hh"
+#include "com/centreon/broker/notification/internal.hh"
 
 using namespace com::centreon::broker;
 
@@ -35,6 +39,9 @@ extern "C" {
     if (!--instances) {
       // Deregister notification layer.
       io::protocols::instance().unreg("notification");
+
+      // Deregister events.
+      io::events::instance().unregister_category(io::events::notification);
     }
     return ;
   }
@@ -59,6 +66,24 @@ extern "C" {
         notification::factory(),
         1,
         7);
+
+      // Register events.
+      io::events& e(io::events::instance());
+      // Register event.
+      e.register_event(
+        io::events::notification,
+        notification::de_acknowledgement_removed,
+          io::event_info(
+                "command",
+                &notification::acknowledgement_removed::operations,
+                notification::acknowledgement_removed::entries));
+      e.register_event(
+        io::events::notification,
+        notification::de_acknowledgement_removed,
+          io::event_info(
+                "command",
+                &notification::acknowledgement_removed::operations,
+                notification::acknowledgement_removed::entries));
     }
 
     return ;

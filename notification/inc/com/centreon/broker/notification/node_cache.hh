@@ -24,6 +24,7 @@
 #  include <deque>
 #  include <vector>
 #  include <QMutex>
+#  include <QMultiHash>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/bbdo/stream.hh"
 #  include "com/centreon/broker/compression/stream.hh"
@@ -103,6 +104,11 @@ namespace         notification {
                   _service_node_states;
     QHash<objects::node_id, neb::acknowledgement>
                   _acknowledgements;
+    QHash<unsigned int, neb::downtime>
+                  _downtimes;
+    QMultiHash<objects::node_id, unsigned int>
+                  _downtime_id_by_nodes;
+    unsigned int  _actual_downtime_id;
     QMutex        _mutex;
 
     misc::shared_ptr<persistent_cache>
@@ -136,6 +142,11 @@ namespace         notification {
                     std::string const& args);
     misc::shared_ptr<io::data>
                   _parse_downtime(
+                    down_time type,
+                    timestamp t,
+                    std::string const& args);
+    misc::shared_ptr<io::data>
+                  _parse_remove_downtime(
                     down_time type,
                     timestamp t,
                     std::string const& args);

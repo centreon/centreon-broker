@@ -49,6 +49,7 @@ namespace               io {
       correlation,
       dumper,
       bam,
+      notification,
       internal = 65535
     };
     template <unsigned short category, unsigned short element>
