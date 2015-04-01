@@ -101,6 +101,7 @@ void node_cache::starting() {
       if (data.isNull())
         break ;
       write(data);
+      write_downtime_or_ack(data);
     }
   }
   catch (std::exception const& e) {
@@ -229,6 +230,33 @@ unsigned int node_cache::write(misc::shared_ptr<io::data> const& data) {
     }
   }
 
+  return (1);
+}
+
+/**
+ *  Write a downtime or an ack to the node cache.
+ *
+ *  @param[in] d  Downtime or ack.
+ *
+ *  @return       The number of events acknowledged.
+ */
+unsigned int node_cache::write_downtime_or_ack(
+                            misc::shared_ptr<io::data const&> d) {
+  if (d.isNull())
+    return (1);
+
+  if (d->type() == neb::downtime::static_type()) {
+    neb::downtime const& down = d.ref_as<neb::downtime const>();
+    _downtimes[down.internal_id] = down;
+    _downtime_id_by_nodes.insert(
+      objects::node_id(down.host_id, down.service_id),
+      d->internal_id);
+  }
+  else if (d->type() == neb::acknowledgement::static_type()) {
+    neb::acknowledgement const& ack = d.ref_as<neb::downtime const>();
+    _acknowledgements[objects::node_id(ack.host_id, ack.service_id)]
+      = ack;
+  }
   return (1);
 }
 
@@ -495,6 +523,12 @@ void node_cache::_prepare_serialization() {
        ++it)
     _serialized_data.push_back(
       misc::make_shared(new neb::acknowledgement(*it)));
+  for (QHash<unsigned int, neb::downtime>::const_iterator
+         it = _downtimes.begin(),
+         end = _downtimes.end();
+       it != end;
+       ++it)
+    _serialized_data.push_back(misc::make_shared(new downtime_removed(*it)));
 }
 
 /**

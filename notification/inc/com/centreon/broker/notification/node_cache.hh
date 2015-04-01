@@ -71,6 +71,7 @@ namespace         notification {
     virtual void  read(misc::shared_ptr<io::data>& d);
     virtual unsigned int
                   write(misc::shared_ptr<io::data> const& d);
+    unsigned int  write_downtime_or_ack(misc::shared_ptr<io::data const&> d);
 
     void          update(neb::host const& hst);
     void          update(neb::host_status const& hs);
