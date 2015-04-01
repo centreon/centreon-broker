@@ -22,7 +22,6 @@
 
 #  include <string>
 #  include <functional>
-#  include "com/centreon/broker/notification/objects/group.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
 

@@ -25,7 +25,6 @@
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/defines.hh"
-#  include "com/centreon/broker/notification/objects/group.hh"
 #  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
 
 CCB_BEGIN()
