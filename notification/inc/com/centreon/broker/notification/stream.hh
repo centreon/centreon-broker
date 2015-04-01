@@ -36,6 +36,8 @@
 #  include "com/centreon/broker/correlation/issue_parent.hh"
 #  include "com/centreon/broker/notification/process_manager.hh"
 #  include "com/centreon/broker/notification/node_cache.hh"
+#  include "com/centreon/broker/notification/acknowledgement_removed.hh"
+#  include "com/centreon/broker/notification/downtime_removed.hh"
 
 CCB_BEGIN()
 
@@ -102,6 +104,14 @@ namespace        notification {
                    neb::host_status const& event);
     void         _process_issue_parent_event(
                    correlation::issue_parent const& event);
+    void         _process_ack(
+                   neb::acknowledgement const& event);
+    void         _process_downtime(
+                   neb::downtime const& event);
+    void         _process_ack_removed(
+                   acknowledgement_removed const& event);
+    void         _process_downtime_removed(
+                   downtime_removed const& event);
   };
 }
 

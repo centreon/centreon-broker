@@ -263,6 +263,14 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
     _process_service_status_event(*data.staticCast<neb::service_status>());
   else if (data->type() == correlation::issue_parent::static_type())
     _process_issue_parent_event(*data.staticCast<correlation::issue_parent>());
+  else if (data->type() == neb::acknowledgement::static_type())
+    _process_ack(data.ref_as<neb::acknowledgement const>());
+  else if (data->type() == neb::downtime::static_type())
+    _process_downtime(data.ref_as<neb::downtime const>());
+  else if (data->type() == acknowledgement_removed::static_type())
+    _process_ack_removed(data.ref_as<acknowledgement_removed const>());
+  else if (data->type() == downtime_removed::static_type())
+    _process_downtime_removed(data.ref_as<downtime_removed const>());
 
   return (retval);
 }
@@ -579,4 +587,40 @@ void stream::_process_issue_parent_event(
     n->remove_parent(parent_id);
 
   return ;
+}
+
+/**
+ *  Process an ack event.
+ *
+ *  @param event  The event to process.
+ */
+void stream::_process_ack(neb::acknowledgement const& event) {
+
+}
+
+/**
+ *  Process a downtime event.
+ *
+ *  @param event  The event to process.
+ */
+void stream::_process_downtime(neb::downtime const& event) {
+
+}
+
+/**
+ *  Process an ack removed event.
+ *
+ *  @param event  The event to process.
+ */
+void stream::_process_ack_removed(acknowledgement_removed const& event) {
+
+}
+
+/**
+ *  Process a downtime removed event.
+ *
+ *  @param event  The event to process.
+ */
+void stream::_process_downtime_removed(downtime_removed const& event) {
+
 }
