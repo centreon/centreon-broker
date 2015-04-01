@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/notification/objects/string.hh"
+#include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/notification/objects/group.hh"
 
 using namespace com::centreon::broker::notification::objects;
@@ -79,13 +79,13 @@ group& group::operator=(std::string const& right) {
   if (!right.empty()) {
     if (right[0] == '+') {
       _is_inherit = true;
-      string::split(right.substr(1), _data, ',');
+      misc::string::split(right.substr(1), _data, ',');
     }
     else if (right == "null")
       _is_null = true;
     else {
       _is_inherit = false;
-      string::split(right, _data, ',');
+      misc::string::split(right, _data, ',');
     }
   }
   _is_set = true;

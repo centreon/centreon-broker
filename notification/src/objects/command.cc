@@ -21,7 +21,6 @@
 #include <QRegExp>
 #include <QStringList>
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/notification/objects/string.hh"
 #include "com/centreon/broker/notification/objects/command.hh"
 #include "com/centreon/broker/notification/state.hh"
 #include "com/centreon/broker/notification/macro_generator.hh"

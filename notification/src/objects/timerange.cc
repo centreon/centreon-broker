@@ -18,7 +18,7 @@
 */
 
 #include <cstring>
-#include "com/centreon/broker/notification/objects/string.hh"
+#include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/notification/objects/timerange.hh"
 
 using namespace com::centreon::broker;
@@ -211,10 +211,10 @@ static bool _build_time_t(std::string const& time_str,
   if (pos == std::string::npos)
     return (false);
   unsigned long hours;
-  if (!string::to(time_str.substr(0, pos).c_str(), hours))
+  if (!misc::string::to(time_str.substr(0, pos).c_str(), hours))
     return (false);
   unsigned long minutes;
-  if (!string::to(time_str.substr(pos + 1).c_str(), minutes))
+  if (!misc::string::to(time_str.substr(pos + 1).c_str(), minutes))
     return (false);
   ret = hours * 3600 + minutes * 60;
   return (true);
@@ -231,7 +231,7 @@ static bool _build_time_t(std::string const& time_str,
 bool timerange::build_timeranges_from_string(std::string const& line,
                                              std::list<timerange>& timeranges) {
   std::list<std::string> timeranges_str;
-  string::split(line, timeranges_str, ',');
+  misc::string::split(line, timeranges_str, ',');
   for (std::list<std::string>::const_iterator
          it(timeranges_str.begin()),
          end(timeranges_str.end());

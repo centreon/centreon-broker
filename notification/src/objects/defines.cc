@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/notification/objects/string.hh"
 #include "com/centreon/broker/notification/objects/defines.hh"
 
 using namespace com::centreon::broker::notification::objects;

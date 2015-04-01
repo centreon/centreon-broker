@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/notification/objects/string.hh"
+#include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/notification/objects/dependency.hh"
 
 using namespace com::centreon::broker::notification::objects;
@@ -250,7 +250,7 @@ void dependency::_parse_failure_options(
     set_notification_failure_options(none);
   else {
     std::vector<std::string> tokens;
-    string::split(line, tokens, ',');
+    misc::string::split(line, tokens, ',');
 
     static int host_actions_size = sizeof(_host_actions) / sizeof(_host_actions[0]);
     static int service_actions_size = sizeof(_service_actions) / sizeof(_service_actions[0]);

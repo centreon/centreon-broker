@@ -23,7 +23,6 @@
 #include <QSqlError>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/notification/objects/string.hh"
 #include "com/centreon/broker/notification/objects/contact.hh"
 #include "com/centreon/broker/notification/loaders/contact_loader.hh"
 
@@ -32,13 +31,6 @@ using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
 contact_loader::contact_loader() {}
-
-static void _parse_host_notification_options(
-              std::string const& line,
-              contact& cont);
-static void _parse_service_notification_options(
-              std::string const& line,
-              contact& cont);
 
 /**
  *  Load the contacts from the database.
