@@ -60,33 +60,6 @@ logging::temp_logger& logging::operator<<(
 }
 
 /**
- *  Stream operator overload for downtime.
- *
- *  @param left The logging stream.
- *  @param obj The object to log.
- *  @return The logging stream.
- */
-logging::temp_logger& logging::operator<<(
-                        logging::temp_logger const& left,
-                        notification::objects::downtime const& obj) throw() {
-  logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
-  tmp LOG_MEMBER(downtime, get_entry_time)
-      LOG_MEMBER(downtime, get_author)
-      LOG_MEMBER(downtime, get_cancelled)
-      LOG_MEMBER(downtime, get_deletion_time)
-      LOG_MEMBER(downtime, get_duration)
-      LOG_MEMBER(downtime, get_end_time)
-      LOG_MEMBER(downtime, get_fixed)
-      LOG_MEMBER(downtime, get_start_time)
-      LOG_MEMBER(downtime, get_actual_start_time)
-      LOG_MEMBER(downtime, get_actual_end_time)
-      LOG_MEMBER(downtime, get_started)
-      LOG_MEMBER(downtime, get_triggered_by)
-      LOG_MEMBER(downtime, get_type);
-  return (tmp);
-}
-
-/**
  *  Stream operator overload for dependency.
  *
  *  @param left The logging stream.
@@ -181,23 +154,5 @@ logging::temp_logger& logging::operator<<(
       LOG_MEMBER(notification_rule, get_timeperiod_id)
       LOG_MEMBER(notification_rule, get_contact_id)
       LOG_MEMBER(notification_rule, get_node_id);
-  return (tmp);
-}
-
-/**
- *  Stream operator overload for acknowledgement.
- *
- *  @param left The logging stream.
- *  @param obj The object to log.
- *  @return The logging stream.
- */
-logging::temp_logger& logging::operator<<(
-           logging::temp_logger const& left,
-           notification::objects::acknowledgement const& obj) throw() {
-  logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
-  tmp LOG_MEMBER(acknowledgement, get_type)
-      LOG_MEMBER(acknowledgement, get_acknowledgement_type)
-      LOG_MEMBER(acknowledgement, get_host_id)
-      LOG_MEMBER(acknowledgement, get_service_id);
   return (tmp);
 }

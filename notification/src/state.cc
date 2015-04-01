@@ -21,21 +21,16 @@
 #include "com/centreon/broker/notification/state.hh"
 #include "com/centreon/broker/notification/utilities/data_loggers.hh"
 
-#include "com/centreon/broker/notification/builders/composed_acknowledgement_builder.hh"
 #include "com/centreon/broker/notification/builders/composed_command_builder.hh"
 #include "com/centreon/broker/notification/builders/composed_contact_builder.hh"
 #include "com/centreon/broker/notification/builders/composed_dependency_builder.hh"
-#include "com/centreon/broker/notification/builders/composed_downtime_builder.hh"
 #include "com/centreon/broker/notification/builders/composed_node_builder.hh"
 #include "com/centreon/broker/notification/builders/composed_timeperiod_builder.hh"
 #include "com/centreon/broker/notification/builders/composed_notification_method_builder.hh"
 #include "com/centreon/broker/notification/builders/composed_notification_rule_builder.hh"
-
-#include "com/centreon/broker/notification/builders/acknowledgement_by_node_id_builder.hh"
 #include "com/centreon/broker/notification/builders/command_by_id_builder.hh"
 #include "com/centreon/broker/notification/builders/contact_by_id_builder.hh"
 #include "com/centreon/broker/notification/builders/dependency_by_node_id_builder.hh"
-#include "com/centreon/broker/notification/builders/downtime_by_node_id_builder.hh"
 #include "com/centreon/broker/notification/builders/node_set_builder.hh"
 #include "com/centreon/broker/notification/builders/node_by_node_id_builder.hh"
 #include "com/centreon/broker/notification/builders/timeperiod_by_id_builder.hh"
@@ -74,13 +69,11 @@ state& state::operator=(state const& obj) {
   if (this != &obj) {
     _nodes = obj._nodes;
     _node_by_id = obj._node_by_id;
-    _acks = obj._acks;
     _commands = obj._commands;
     _contacts = obj._contacts;
     _contact_infos = obj._contact_infos;
     _dependency_by_child_id = obj._dependency_by_child_id;
     _dependency_by_parent_id = obj._dependency_by_parent_id;
-    _downtimes = obj._downtimes;
     _timeperiod_by_id = obj._timeperiod_by_id;
     _notification_methods = obj._notification_methods;
     _notification_rules_by_node = obj._notification_rules_by_node;
@@ -102,13 +95,11 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
   // Remove old objects.
   _nodes.clear();
   _node_by_id.clear();
-  _acks.clear();
   _commands.clear();
   _contacts.clear();
   _contact_infos.clear();
   _dependency_by_child_id.clear();
   _dependency_by_parent_id.clear();
-  _downtimes.clear();
   _timeperiod_by_id.clear();
   _notification_methods.clear();
   _notification_rules_by_node.clear();
@@ -160,23 +151,6 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
     composed.push_back(by_id_builder);
     timeperiod.load(&centreon_db, &composed);
   }
-  // XXX
-  // {
-  //   // Get downtimes.
-  //   downtime_loader downtime;
-  //   composed_downtime_builder composed;
-  //   downtime_by_node_id_builder by_node_builder(_downtimes);
-  //   composed.push_back(by_node_builder);
-  //   downtime.load(&centreon_db, &composed);
-  // }
-  // {
-  //   // Get acknowledgements.
-  //   acknowledgement_loader ack;
-  //   composed_acknowledgement_builder composed;
-  //   acknowledgement_by_node_id_builder by_node_builder(_acks);
-  //   composed.push_back(by_node_builder);
-  //   ack.load(&centreon_db, &composed);
-  // }
   {
     // Get notification methods.
     notification_method_loader nml;
@@ -212,14 +186,12 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
 #ifndef NDEBUG
     // data_logger::log_container("_nodes", _nodes);
     // data_logger::log_container("_node_by_id", _node_by_id);
-    // data_logger::log_container("_acks", _acks);
     // data_logger::log_container("_commands", _commands);
     // data_logger::log_container("_contacts", _contacts);
     // data_logger::log_container("_dependency_by_child_id",
     //                            _dependency_by_child_id);
     // data_logger::log_container("_dependency_by_parent_id",
     //                            _dependency_by_parent_id);
-    // data_logger::log_container("_downtimes", _downtimes);
     // data_logger::log_container("_timeperiod_by_id", _timeperiod_by_id);
     // data_logger::log_container("_global_constant_macro", _global_constant_macros);
     // data_logger::log_container("_notification_methods", _notification_methods);
@@ -337,52 +309,6 @@ std::auto_ptr<QReadLocker> state::read_lock() {
 std::auto_ptr<QWriteLocker> state::write_lock() {
   return (std::auto_ptr<QWriteLocker>(new QWriteLocker(&_state_mutex)));
 
-}
-
-/**
- *  Is this node in downtime?
- *
- *  @param[in] id  The node id of the node.
- *
- *  @return        True of the node is in downtime.
- */
-bool state::is_node_in_downtime(objects::node_id id) const {
-  time_t current_time = time(NULL);
-  QList<downtime::ptr> downtimes = _downtimes.values(id);
-
-  for (QList<downtime::ptr>::const_iterator
-         it(downtimes.begin()),
-         end(downtimes.end());
-       it != end;
-       ++it) {
-    if ((*it)->get_actual_end_time() > current_time &&
-        (*it)->get_cancelled() == false &&
-        (*it)->get_started() == true &&
-        (*it)->get_actual_start_time() + (*it)->get_duration() > current_time)
-      return (true);
-  }
-
-  return (false);
-}
-
-/**
- *  Has this node been acknowledged?
- *
- *  @param[in] id  The node id of the node.
- *
- *  @return        True of the node has been acknowledged.
- */
-bool state::has_node_been_acknowledged(objects::node_id id) const {
-  QList<acknowledgement::ptr> acknowledgements = _acks.values(id);
-
-  for (QList<acknowledgement::ptr>::const_iterator
-         it(acknowledgements.begin()),
-         end(acknowledgements.end());
-       it != end;
-       ++it) {
-    return (true);
-  }
-  return (false);
 }
 
 /**

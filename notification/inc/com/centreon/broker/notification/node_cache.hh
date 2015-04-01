@@ -87,16 +87,17 @@ namespace         notification {
                   get_node_by_names(
                     std::string const& host_name,
                     std::string const& service_description);
-
     host_node_state const&
                   get_host(objects::node_id id) const;
     service_node_state const&
                   get_service(objects::node_id id) const;
-
     std::vector<std::string>
                   get_all_node_contained_in(
                     std::string const& group_name,
                     bool is_host_group) const;
+
+    bool          node_in_downtime(objects::node_id node) const;
+    bool          node_acknowledged(objects::node_id node) const;
 
   private:
     QHash<objects::node_id, host_node_state>

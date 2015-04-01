@@ -428,7 +428,7 @@ void action::_process_notification(
   next.set_notification_number(_notification_number + 1);
 
   // See if the node is in downtime.
-  if (st.is_node_in_downtime(_id) == true) {
+  if (_act == notification_attempt && cache.node_in_downtime(_id) == true) {
     logging::debug(logging::low)
       << "notification: node (" << _id.get_host_id() << ", "
       << _id.get_service_id()
@@ -438,7 +438,7 @@ void action::_process_notification(
   }
 
   // See if the node has been acknowledged.
-  if (st.has_node_been_acknowledged(_id) == true) {
+  if (_act == notification_attempt && cache.node_acknowledged(_id) == true) {
     logging::debug(logging::low)
       << "notification: node (" << _id.get_host_id() << ", "
       << _id.get_service_id()
@@ -472,7 +472,7 @@ void action::_process_notification(
   }
 
   // Create the next notification.
-  if (_act != notification_up)
+  if (_act == notification_attempt)
     spawned_actions.push_back(std::make_pair(now + method->get_interval(),
                                              next));
 }

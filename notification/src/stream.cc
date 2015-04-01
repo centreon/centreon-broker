@@ -264,13 +264,9 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   else if (data->type() == correlation::issue_parent::static_type())
     _process_issue_parent_event(*data.staticCast<correlation::issue_parent>());
   else if (data->type() == neb::acknowledgement::static_type())
-    _process_ack(data.ref_as<neb::acknowledgement const>());
+    _process_ack(data.ref_as<neb::acknowledgement>());
   else if (data->type() == neb::downtime::static_type())
-    _process_downtime(data.ref_as<neb::downtime const>());
-  else if (data->type() == acknowledgement_removed::static_type())
-    _process_ack_removed(data.ref_as<acknowledgement_removed const>());
-  else if (data->type() == downtime_removed::static_type())
-    _process_downtime_removed(data.ref_as<downtime_removed const>());
+    _process_downtime(data.ref_as<neb::downtime>());
 
   return (retval);
 }
@@ -595,7 +591,18 @@ void stream::_process_issue_parent_event(
  *  @param event  The event to process.
  */
 void stream::_process_ack(neb::acknowledgement const& event) {
+  objects::node_id id(event.host_id, event.service_id);
 
+  // Remove the actions for this node.
+  _notif_scheduler->remove_actions_of_node(id);
+
+  // Add the ack.
+  time_t when_to_schedule(time(NULL) + 1);
+  action a;
+  a.set_type(action::notification_processing);
+  a.set_forwarded_type(action::notification_ack);
+  a.set_node_id(id);
+  _notif_scheduler->add_action_to_queue(when_to_schedule, a);
 }
 
 /**
@@ -604,23 +611,16 @@ void stream::_process_ack(neb::acknowledgement const& event) {
  *  @param event  The event to process.
  */
 void stream::_process_downtime(neb::downtime const& event) {
+  objects::node_id id(event.host_id, event.service_id);
 
-}
+  // Remove the actions for this node.
+  _notif_scheduler->remove_actions_of_node(id);
 
-/**
- *  Process an ack removed event.
- *
- *  @param event  The event to process.
- */
-void stream::_process_ack_removed(acknowledgement_removed const& event) {
-
-}
-
-/**
- *  Process a downtime removed event.
- *
- *  @param event  The event to process.
- */
-void stream::_process_downtime_removed(downtime_removed const& event) {
-
+  // Add the downtime.
+  time_t when_to_schedule(time(NULL) + 1);
+  action a;
+  a.set_type(action::notification_processing);
+  a.set_forwarded_type(action::notification_downtime);
+  a.set_node_id(id);
+  _notif_scheduler->add_action_to_queue(when_to_schedule, a);
 }

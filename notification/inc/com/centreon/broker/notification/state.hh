@@ -35,8 +35,6 @@
 #  include "com/centreon/broker/notification/loaders/dependency_loader.hh"
 #  include "com/centreon/broker/notification/loaders/node_loader.hh"
 #  include "com/centreon/broker/notification/loaders/timeperiod_loader.hh"
-#  include "com/centreon/broker/notification/loaders/acknowledgement_loader.hh"
-#  include "com/centreon/broker/notification/loaders/downtime_loader.hh"
 #  include "com/centreon/broker/notification/loaders/macro_loader.hh"
 #  include "com/centreon/broker/notification/loaders/notification_method_loader.hh"
 #  include "com/centreon/broker/notification/loaders/notification_rule_loader.hh"
@@ -93,16 +91,11 @@ namespace             notification {
 
     int               get_date_format() const;
 
-    bool              is_node_in_downtime(objects::node_id id) const;
-    bool              has_node_been_acknowledged(objects::node_id id) const;
-
   private:
     QSet<objects::node_id>
                       _nodes;
     QHash<objects::node_id, objects::node::ptr>
                       _node_by_id;
-    QMultiHash<objects::node_id, objects::acknowledgement::ptr>
-                      _acks;
     QHash<unsigned int, objects::command::ptr>
                       _commands;
     QHash<unsigned int, objects::contact::ptr>
@@ -113,8 +106,6 @@ namespace             notification {
                       _dependency_by_child_id;
     QMultiHash<objects::node_id, objects::dependency::ptr>
                       _dependency_by_parent_id;
-    QMultiHash<objects::node_id, objects::downtime::ptr>
-                      _downtimes;
     QHash<unsigned int, objects::timeperiod::ptr>
                       _timeperiod_by_id;
     QHash<unsigned int, objects::notification_method::ptr>

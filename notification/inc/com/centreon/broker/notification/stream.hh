@@ -108,10 +108,6 @@ namespace        notification {
                    neb::acknowledgement const& event);
     void         _process_downtime(
                    neb::downtime const& event);
-    void         _process_ack_removed(
-                   acknowledgement_removed const& event);
-    void         _process_downtime_removed(
-                   downtime_removed const& event);
   };
 }
 

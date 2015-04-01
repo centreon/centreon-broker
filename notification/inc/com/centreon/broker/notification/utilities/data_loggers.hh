@@ -32,14 +32,12 @@
 #  include "com/centreon/broker/logging/logging.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
 #  include "com/centreon/broker/notification/objects/command.hh"
-#  include "com/centreon/broker/notification/objects/downtime.hh"
 #  include "com/centreon/broker/notification/objects/dependency.hh"
 #  include "com/centreon/broker/notification/objects/contact.hh"
 #  include "com/centreon/broker/notification/objects/timeperiod.hh"
 #  include "com/centreon/broker/notification/objects/node.hh"
 #  include "com/centreon/broker/notification/objects/notification_method.hh"
 #  include "com/centreon/broker/notification/objects/notification_rule.hh"
-#  include "com/centreon/broker/notification/objects/acknowledgement.hh"
 
 CCB_BEGIN()
 
@@ -55,9 +53,6 @@ namespace logging {
                  notification::objects::command const&) throw();
   temp_logger& operator<<(
                  temp_logger const& left,
-                 notification::objects::downtime const&) throw();
-  temp_logger& operator<<(
-                 temp_logger const& left,
                  notification::objects::dependency const&) throw();
   temp_logger& operator<<(
                  temp_logger const& left,
@@ -68,9 +63,6 @@ namespace logging {
   temp_logger& operator<<(
                  temp_logger const& left,
                  notification::objects::node const&) throw();
-  temp_logger& operator<<(
-                 temp_logger const& left,
-                 notification::objects::acknowledgement const&) throw();
   temp_logger& operator<<(
                  temp_logger const& left,
                  notification::objects::notification_method const&) throw();

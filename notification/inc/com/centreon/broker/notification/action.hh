@@ -46,9 +46,11 @@ namespace           notification {
      */
     enum              action_type {
       unknown = 0,
-      notification_processing,
-      notification_attempt,
-      notification_up
+      notification_processing,  // This notification is yet to be processed.
+      notification_attempt,     // Normal notification.
+      notification_up,          // Up notification.
+      notification_ack,         // Ack notification.
+      notification_downtime     // Downtime notification.
     };
                       action();
                       action(action const& obj);

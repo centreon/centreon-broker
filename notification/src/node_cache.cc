@@ -502,6 +502,28 @@ std::vector<std::string> node_cache::get_all_node_contained_in(
 }
 
 /**
+ *  Is this node in downtime ?
+ *
+ *  @param[in] node  The node.
+ *
+ *  @return          True if this node is in downtime.
+ */
+bool node_cache::node_in_downtime(objects::node_id node) const {
+  return (_downtime_id_by_nodes.contains(node));
+}
+
+/**
+ *  Is this node acknowledged ?
+ *
+ *  @param[in] node  The node.
+ *
+ *  @return          True if this node was acknowledged.
+ */
+bool node_cache::node_acknowledged(objects::node_id node) const {
+  return (_acknowledgements.contains(node));
+}
+
+/**
  *  Prepare the serialization of all the data.
  */
 void node_cache::_prepare_serialization() {

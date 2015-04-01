@@ -395,14 +395,15 @@ namespace        notification {
   std::string get_total_hosts_unhandled(
                 macro_context const& context) {
     size_t count = 0;
+    node_cache const& cache = context.get_cache();
     state const& st = context.get_state();
     QList<objects::node::ptr> list = st.get_all_hosts_in_state(host_state);
     for (QList<objects::node::ptr>::const_iterator it = list.begin(),
                                                    end = list.end();
          it != end;
          ++it) {
-      if (!st.has_node_been_acknowledged((*it)->get_node_id()) &&
-            !st.is_node_in_downtime((*it)->get_node_id()))
+      if (!cache.node_acknowledged((*it)->get_node_id()) &&
+            !cache.node_in_downtime((*it)->get_node_id()))
         ++count;
     }
     return (to_string<size_t, 0>(count));
@@ -421,14 +422,15 @@ namespace        notification {
   std::string get_total_services_unhandled(
                 macro_context const& context) {
     size_t count = 0;
+    node_cache const& cache = context.get_cache();
     state const& st = context.get_state();
     QList<objects::node::ptr> list = st.get_all_services_in_state(service_state);
     for (QList<objects::node::ptr>::const_iterator it = list.begin(),
                                                    end = list.end();
          it != end;
          ++it) {
-      if (!st.has_node_been_acknowledged((*it)->get_node_id()) &&
-            !st.is_node_in_downtime((*it)->get_node_id()))
+      if (!cache.node_acknowledged((*it)->get_node_id()) &&
+            !cache.node_in_downtime((*it)->get_node_id()))
         ++count;
     }
     return (to_string<size_t, 0>(count));
