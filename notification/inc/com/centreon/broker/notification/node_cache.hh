@@ -51,7 +51,8 @@ namespace         notification {
    *  @class node_cache node_cache.hh "com/centreon/broker/notification/node_cache.hh"
    *  @brief Contain and update a cache of node information.
    *
-   *  Used by and for the macro processing. Load from a file at startup,
+   *  Used by and for the macro processing. Also contains/generates the current
+   *  acknowledgements and downtimes. Load from a file at startup,
    *  unload at shutdown.
    */
   class           node_cache : public multiplexing::hooker {

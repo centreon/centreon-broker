@@ -185,6 +185,13 @@ void run_queue::remove(action const& a) {
     }
 }
 
+/**
+ *  Get all the actions of a node.
+ *
+ *  @param[in] id  The node id.
+ *
+ *  @return        All the actions associated to this node.
+ */
 std::vector<const action*> run_queue::get_actions_of_node(objects::node_id id) {
   std::vector<const action*> ret;
   std::pair<std::multimap<objects::node_id, const action*>::iterator,
