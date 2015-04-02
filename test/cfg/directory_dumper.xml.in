@@ -24,6 +24,6 @@
   <output>
     <type>dumper</type>
     <tagname>engine-extcmd-1</tagname>
-    <path>@RECEIVER_DIRECTORY@</path>
+    <path>@RECEIVER_DIRECTORY@/$FILENAME$</path>
   </output>
 </centreonbroker>
