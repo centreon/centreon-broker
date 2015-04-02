@@ -22,7 +22,7 @@
 
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
-#  include "com/centreon/broker/notification/objects/timeperiod.hh"
+#  include "com/centreon/broker/time/timeperiod.hh"
 #  include "com/centreon/broker/notification/builders/composed_builder.hh"
 #  include "com/centreon/broker/notification/builders/timeperiod_builder.hh"
 
@@ -37,14 +37,14 @@ namespace       notification {
                   : public composed_builder<timeperiod_builder> {
   public:
     timeperiod_by_id_builder(
-      QHash<unsigned int, objects::timeperiod::ptr>& table);
+      QHash<unsigned int, time::timeperiod::ptr>& table);
 
     void        add_timeperiod(
                   unsigned int id,
-                  objects::timeperiod::ptr con);
+                  time::timeperiod::ptr con);
 
   private:
-    QHash<unsigned int, objects::timeperiod::ptr>&
+    QHash<unsigned int, time::timeperiod::ptr>&
                   _table;
   };
 

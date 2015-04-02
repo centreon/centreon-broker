@@ -330,7 +330,7 @@ std::string com::centreon::broker::notification::get_host_duration(
     context.get_cache().get_host(
       context.get_id()).get_status().last_state_change;
   // Get duration.
-  time_t now(time(NULL));
+  time_t now(::time(NULL));
   unsigned long duration(now - last_state_change);
 
   // Break down duration.
@@ -363,7 +363,7 @@ std::string com::centreon::broker::notification::get_service_duration(
     context.get_cache().get_service(
       context.get_id()).get_status().last_state_change;
   // Get duration.
-  time_t now(time(NULL));
+  time_t now(::time(NULL));
   unsigned long duration(now - last_state_change);
 
   // Break down duration.
@@ -392,7 +392,7 @@ std::string com::centreon::broker::notification::get_service_duration(
  */
 std::string com::centreon::broker::notification::get_host_duration_sec(
              macro_context const& context) {
-  time_t now(time(NULL));
+  time_t now(::time(NULL));
   unsigned long duration(
     now - context.get_cache().get_host(
             context.get_id()).get_status().last_state_change);
@@ -408,7 +408,7 @@ std::string com::centreon::broker::notification::get_host_duration_sec(
  */
 std::string com::centreon::broker::notification::get_service_duration_sec(
              macro_context const& context) {
-  time_t now(time(NULL));
+  time_t now(::time(NULL));
   unsigned long duration(
     now - context.get_cache().get_service(
             context.get_id()).get_status().last_state_change);

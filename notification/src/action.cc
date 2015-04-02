@@ -24,6 +24,7 @@
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
+using namespace com::centreon::broker::time;
 
 /**
  *  Default constructor.
@@ -271,7 +272,7 @@ void action::_spawn_notification_attempts(
     if (tp)
       tp->get_next_valid(at);
     else
-      at = time(NULL);
+      at = ::time(NULL);
     spawned_actions.push_back(std::make_pair(at, a));
   }
   return ;
@@ -412,7 +413,7 @@ void action::_process_notification(
   }
 
   // See if the timeperiod is valid.
-  time_t now = time(NULL);
+  time_t now = ::time(NULL);
   if (tp && !tp->is_valid(now)) {
     logging::debug(logging::low)
       << "notification: notification attempt on node ("

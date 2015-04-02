@@ -21,6 +21,7 @@
 #include "com/centreon/broker/notification/state.hh"
 #include "com/centreon/broker/notification/utilities/data_loggers.hh"
 
+#include "com/centreon/broker/time/timeperiod.hh"
 #include "com/centreon/broker/notification/builders/composed_command_builder.hh"
 #include "com/centreon/broker/notification/builders/composed_contact_builder.hh"
 #include "com/centreon/broker/notification/builders/composed_dependency_builder.hh"
@@ -254,7 +255,8 @@ notification_method::ptr state::get_notification_method_by_id(
  *
  *  @return          A timeperiod::ptr to the timeperiod, or a null timeperiod::ptr.
  */
-timeperiod::ptr state::get_timeperiod_by_id(unsigned int id) const {
+::com::centreon::broker::time::timeperiod::ptr
+  state::get_timeperiod_by_id(unsigned int id) const {
   return (_timeperiod_by_id.value(id));
 }
 

@@ -20,7 +20,7 @@
 #include "com/centreon/broker/notification/builders/timeperiod_by_id_builder.hh"
 
 using namespace com::centreon::broker::notification;
-using namespace com::centreon::broker::notification::objects;
+using namespace com::centreon::broker::time;
 
 /**
  *  Default constructor.
@@ -28,7 +28,7 @@ using namespace com::centreon::broker::notification::objects;
  *  @param[in] table  The table to fill.
  */
 timeperiod_by_id_builder::timeperiod_by_id_builder(
-  QHash<unsigned int, objects::timeperiod::ptr>& table)
+  QHash<unsigned int, timeperiod::ptr>& table)
   : _table(table) {}
 
 /**
@@ -39,6 +39,6 @@ timeperiod_by_id_builder::timeperiod_by_id_builder(
  */
 void timeperiod_by_id_builder::add_timeperiod(
                                  unsigned int id,
-                                 objects::timeperiod::ptr con) {
+                                 timeperiod::ptr con) {
   _table[id] = con;
 }

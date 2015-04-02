@@ -104,7 +104,7 @@ logging::temp_logger& logging::operator<<(
  */
 logging::temp_logger& logging::operator<<(
                         logging::temp_logger const& left,
-                        notification::objects::timeperiod const& obj) throw() {
+                        time::timeperiod const& obj) throw() {
   // TODO: Exceptions, timeranges.
   logging::temp_logger& tmp = const_cast<logging::temp_logger&>(left);
   tmp LOG_MEMBER(timeperiod, get_alias)

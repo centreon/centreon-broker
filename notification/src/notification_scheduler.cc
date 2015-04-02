@@ -58,7 +58,7 @@ void notification_scheduler::run() {
     // Wait until the first action in the queue - or forever until awakened
     // if the queue is empty.
     time_t first_time = _queue.get_first_time();
-    time_t now = time(NULL);
+    time_t now = ::time(NULL);
     unsigned long wait_for = first_time == time_t(-1) ?
                                std::numeric_limits<unsigned long>::max()
                                : (first_time >= now) ?
@@ -167,7 +167,7 @@ void notification_scheduler::_process_actions() {
   // That way, we can add new actions in an external thread while this thread
   // is processing those actions.
   run_queue local_queue;
-  time_t now = time(NULL);
+  time_t now = ::time(NULL);
   _queue.move_to_queue(local_queue, now);
   _general_mutex.unlock();
 

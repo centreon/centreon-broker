@@ -21,12 +21,12 @@
 #include <QSqlError>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/notification/objects/timeperiod.hh"
+#include "com/centreon/broker/time/timeperiod.hh"
 #include "com/centreon/broker/notification/builders/timeperiod_builder.hh"
 #include "com/centreon/broker/notification/loaders/timeperiod_loader.hh"
 
 using namespace com::centreon::broker::notification;
-using namespace com::centreon::broker::notification::objects;
+using namespace com::centreon::broker::time;
 
 timeperiod_loader::timeperiod_loader() {
 

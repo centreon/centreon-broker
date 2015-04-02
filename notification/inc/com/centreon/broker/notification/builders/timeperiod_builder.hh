@@ -21,7 +21,7 @@
 #  define CCB_NOTIFICATION_BUILDERS_TIMEPERIOD_BUILDER_HH
 
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/timeperiod.hh"
+#  include "com/centreon/broker/time/timeperiod.hh"
 
 CCB_BEGIN()
 
@@ -47,7 +47,7 @@ namespace         notification {
      */
     virtual void  add_timeperiod(
                     unsigned int id,
-                    objects::timeperiod::ptr tperiod) {
+                    time::timeperiod::ptr tperiod) {
       (void)id;
       (void)tperiod;
     }

@@ -438,7 +438,7 @@ void stream::_process_service_status_event(neb::service_status const& event) {
   node_id id(event.host_id, event.service_id);
   short old_hard_state;
   short old_soft_state;
-  time_t when_to_schedule(time(NULL) + 1);
+  time_t when_to_schedule(::time(NULL) + 1);
 
   // Get the node corresponding to this id.
   {
@@ -498,7 +498,7 @@ void stream::_process_host_status_event(neb::host_status const& event) {
   node_id id(event.host_id);
   short old_hard_state;
   short old_soft_state;
-  time_t when_to_schedule(time(NULL) + 1);
+  time_t when_to_schedule(::time(NULL) + 1);
 
   // Get the node corresponding to this id.
   {
@@ -597,7 +597,7 @@ void stream::_process_ack(neb::acknowledgement const& event) {
   _notif_scheduler->remove_actions_of_node(id);
 
   // Add the ack.
-  time_t when_to_schedule(time(NULL) + 1);
+  time_t when_to_schedule(::time(NULL) + 1);
   action a;
   a.set_type(action::notification_processing);
   a.set_forwarded_type(action::notification_ack);
@@ -617,7 +617,7 @@ void stream::_process_downtime(neb::downtime const& event) {
   _notif_scheduler->remove_actions_of_node(id);
 
   // Add the downtime.
-  time_t when_to_schedule(time(NULL) + 1);
+  time_t when_to_schedule(::time(NULL) + 1);
   action a;
   a.set_type(action::notification_processing);
   a.set_forwarded_type(action::notification_downtime);

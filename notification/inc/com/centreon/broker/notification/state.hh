@@ -64,7 +64,7 @@ namespace             notification {
 
     objects::node::ptr
                       get_node_by_id(objects::node_id) const;
-    objects::timeperiod::ptr
+    time::timeperiod::ptr
                       get_timeperiod_by_id(unsigned int id) const;
     QList<objects::notification_rule::ptr>
                       get_notification_rules_by_node(objects::node_id id) const;
@@ -106,7 +106,7 @@ namespace             notification {
                       _dependency_by_child_id;
     QMultiHash<objects::node_id, objects::dependency::ptr>
                       _dependency_by_parent_id;
-    QHash<unsigned int, objects::timeperiod::ptr>
+    QHash<unsigned int, time::timeperiod::ptr>
                       _timeperiod_by_id;
     QHash<unsigned int, objects::notification_method::ptr>
                       _notification_methods;

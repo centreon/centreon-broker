@@ -29,7 +29,6 @@
 #  include "com/centreon/broker/notification/node_cache.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
 #  include "com/centreon/broker/notification/objects/notification_rule.hh"
-#  include "com/centreon/broker/notification/objects/timeperiod.hh"
 #  include "com/centreon/broker/notification/objects/notification_method.hh"
 #  include "com/centreon/broker/notification/objects/contact.hh"
 #  include "com/centreon/broker/notification/objects/node.hh"

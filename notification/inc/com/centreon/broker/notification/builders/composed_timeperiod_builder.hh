@@ -22,7 +22,7 @@
 
 #  include <vector>
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/timeperiod.hh"
+#  include "com/centreon/broker/time/timeperiod.hh"
 #  include "com/centreon/broker/notification/builders/timeperiod_builder.hh"
 #  include "com/centreon/broker/notification/builders/composed_builder.hh"
 
@@ -43,7 +43,7 @@ namespace         notification {
 
     virtual void  add_timeperiod(
                     unsigned int id,
-                    objects::timeperiod::ptr tperiod);
+                    time::timeperiod::ptr tperiod);
     virtual void  add_timeperiod_exception(
                     unsigned int timeperiod_id,
                     std::string const& days,
