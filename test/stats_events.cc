@@ -273,7 +273,7 @@ int main(int argc, char* argv[]) {
           << "  <output>\n"
           << "    <type>dumper</type>\n"
           << "    <tagname>CentralBroker</tagname>\n"
-          << "    <path>" << metrics_path << "/$instance_id$.stats" << "</path>\n"
+          << "    <path>" << metrics_path << "/$INSTANCEID$.stats" << "</path>\n"
           << "  </output>\n"
           << "</centreonbroker>\n";
       ofs.close();
