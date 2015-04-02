@@ -93,11 +93,6 @@ add_library("${BAM}" SHARED
   "${SRC_DIR}/service_book.cc"
   "${SRC_DIR}/service_listener.cc"
   "${SRC_DIR}/timeperiod_map.cc"
-  "${SRC_DIR}/time/daterange.cc"
-  "${SRC_DIR}/time/timeperiod.cc"
-  "${SRC_DIR}/time/timerange.cc"
-  "${SRC_DIR}/time/timezone_locker.cc"
-  "${SRC_DIR}/time/timezone_manager.cc"
   # Headers.
   "${INC_DIR}/availability_builder.hh"
   "${INC_DIR}/availability_thread.hh"
@@ -162,13 +157,6 @@ add_library("${BAM}" SHARED
   "${INC_DIR}/service_book.hh"
   "${INC_DIR}/service_listener.hh"
   "${INC_DIR}/timeperiod_map.hh"
-  "${INC_DIR}/time/daterange.hh"
-  "${INC_DIR}/time/ptr_typedef.hh"
-  "${INC_DIR}/time/timeperiod.hh"
-  "${INC_DIR}/time/timerange.hh"
-  "${INC_DIR}/time/timezone_locker.hh"
-  "${INC_DIR}/time/timezone_manager.hh"
-  "${INC_DIR}/time/time_info.hh"
 )
 target_link_libraries("${BAM}" ${QT_LIBRARIES})
 set_target_properties("${BAM}" PROPERTIES PREFIX "")

@@ -19,10 +19,10 @@
 
 #include <cstring>
 #include "com/centreon/broker/misc/string.hh"
-#include "com/centreon/broker/bam/time/timerange.hh"
+#include "com/centreon/broker/time/timerange.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::bam::time;
+using namespace com::centreon::broker::time;
 
 /**
  *  Constructor.

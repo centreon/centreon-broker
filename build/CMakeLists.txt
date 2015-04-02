@@ -338,6 +338,11 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/processing/failover.cc"
   "${SRC_DIR}/processing/feeder.cc"
   "${SRC_DIR}/processing/multiple_writer.cc"
+  "${SRC_DIR}/time/timezone_manager.cc"
+  "${SRC_DIR}/time/timezone_locker.cc"
+  "${SRC_DIR}/time/timerange.cc"
+  "${SRC_DIR}/time/timeperiod.cc"
+  "${SRC_DIR}/time/daterange.cc"
   ${QT_WRAPPED_SOURCES}
   # Headers.
   "${INC_DIR}/bbdo/acceptor.hh"
@@ -416,6 +421,13 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/processing/feeder.hh"
   "${INC_DIR}/processing/multiple_writer.hh"
   "${INC_DIR}/timestamp.hh"
+  "${INC_DIR}/time/timezone_manager.hh"
+  "${INC_DIR}/time/timezone_locker.hh"
+  "${INC_DIR}/time/timerange.hh"
+  "${INC_DIR}/time/timeperiod.hh"
+  "${INC_DIR}/time/time_info.hh"
+  "${INC_DIR}/time/ptr_typedef.hh"
+  "${INC_DIR}/time/daterange.hh"
 )
 
 # Static libraries.

@@ -24,7 +24,7 @@
 #  include <map>
 #  include <memory>
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/bam/time/timeperiod.hh"
+#  include "com/centreon/broker/time/timeperiod.hh"
 
 CCB_BEGIN()
 

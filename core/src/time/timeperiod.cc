@@ -20,11 +20,11 @@
 #include <stdexcept>
 #include <sstream>
 #include <ctime>
-#include "com/centreon/broker/bam/time/timezone_locker.hh"
-#include "com/centreon/broker/bam/time/timeperiod.hh"
+#include "com/centreon/broker/time/timezone_locker.hh"
+#include "com/centreon/broker/time/timeperiod.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 
-using namespace com::centreon::broker::bam::time;
+using namespace com::centreon::broker::time;
 
 static time_t _get_next_valid_time_per_timeperiod(
                 time_t preferred_time,
@@ -469,6 +469,8 @@ static time_t _earliest_midnight_in_daterange(
 
 /**
  *  Get the next valid time within a time period.
+ *
+ *  Lasciate ogni speranza, voi ch'entrate.
  *
  *  @param[in]  preferred_time  The preferred time to check.
  *  @param[out] valid_time      Variable to fill.

@@ -17,12 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_BAM_TIME_PTR_TYPEDEF_HH
-#  define CCB_BAM_TIME_PTR_TYPEDEF_HH
+#ifndef CCB_CORE_TIME_PTR_TYPEDEF_HH
+#  define CCB_CORE_TIME_PTR_TYPEDEF_HH
 
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 
 #  define DECLARE_SHARED_PTR(klass)\
   typedef ::com::centreon::broker::misc::shared_ptr<klass> ptr
 
-#endif // !CCB_BAM_TIME_PTR_TYPEDEF_HH
+#endif // !CCB_CORE_TIME_PTR_TYPEDEF_HH

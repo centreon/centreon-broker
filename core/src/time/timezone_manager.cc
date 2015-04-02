@@ -19,9 +19,9 @@
 
 #include <cstdlib>
 #include <ctime>
-#include "com/centreon/broker/bam/time/timezone_manager.hh"
+#include "com/centreon/broker/time/timezone_manager.hh"
 
-using namespace com::centreon::broker::bam::time;
+using namespace com::centreon::broker::time;
 
 // Class instance.
 timezone_manager* timezone_manager::_instance(NULL);

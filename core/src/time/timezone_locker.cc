@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2014 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -17,28 +17,25 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_BAM_TIME_TIME_INFO_HH
-#  define CCB_BAM_TIME_TIME_INFO_HH
+#include "com/centreon/broker/time/timezone_locker.hh"
+#include "com/centreon/broker/time/timezone_manager.hh"
 
-#  include <ctime>
-#  include "com/centreon/broker/namespace.hh"
+using namespace com::centreon::broker::time;
 
-CCB_BEGIN()
-
-namespace             bam {
-  namespace           time {
-    /**
-     *  @class time_info time_info.hh "com/centreon/broker/bam/time/time_info.hh"
-     *  @brief  Internal struct time information.
-     */
-    struct time_info {
-      time_t midnight;
-      time_t preferred_time;
-      tm     preftime;
-    };
-  }
+/**
+ *  Constructor.
+ *
+ *  @param[in] tz  Timezone to set during object lifetime.
+ */
+timezone_locker::timezone_locker(char const* tz) {
+  timezone_manager::instance().lock();
+  timezone_manager::instance().push_timezone(tz);
 }
 
-CCB_END()
-
-#endif // !CCB_BAM_TIME_TIME_INFO_HH
+/**
+ *  Destructor.
+ */
+timezone_locker::~timezone_locker() {
+  timezone_manager::instance().pop_timezone();
+  timezone_manager::instance().unlock();
+}

@@ -35,7 +35,7 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
 #  include "com/centreon/broker/bam/timeperiod_map.hh"
-#  include "com/centreon/broker/bam/time/timeperiod.hh"
+#  include "com/centreon/broker/time/timeperiod.hh"
 #  include "com/centreon/broker/bam/availability_builder.hh"
 
 CCB_BEGIN()

@@ -19,9 +19,9 @@
 
 #include <cstdio>
 #include <cstring>
-#include "com/centreon/broker/bam/time/daterange.hh"
+#include "com/centreon/broker/time/daterange.hh"
 
-using namespace com::centreon::broker::bam::time;
+using namespace com::centreon::broker::time;
 
 /**
  *  Constructor.

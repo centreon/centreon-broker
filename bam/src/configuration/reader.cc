@@ -33,7 +33,7 @@
 #include "com/centreon/broker/bam/dimension_timeperiod_exception.hh"
 #include "com/centreon/broker/bam/dimension_timeperiod_exclusion.hh"
 #include "com/centreon/broker/bam/dimension_ba_timeperiod_relation.hh"
-#include "com/centreon/broker/bam/time/timeperiod.hh"
+#include "com/centreon/broker/time/timeperiod.hh"
 #include "com/centreon/broker/database.hh"
 #include "com/centreon/broker/database_query.hh"
 #include "com/centreon/broker/io/stream.hh"

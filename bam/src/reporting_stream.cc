@@ -37,7 +37,7 @@
 #include "com/centreon/broker/bam/kpi_event.hh"
 #include "com/centreon/broker/bam/rebuild.hh"
 #include "com/centreon/broker/bam/reporting_stream.hh"
-#include "com/centreon/broker/bam/time/timezone_manager.hh"
+#include "com/centreon/broker/time/timezone_manager.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
