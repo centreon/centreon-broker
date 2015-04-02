@@ -24,6 +24,7 @@
 #include "com/centreon/broker/notification/downtime_removed.hh"
 #include "com/centreon/broker/notification/factory.hh"
 #include "com/centreon/broker/notification/internal.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 
@@ -69,19 +70,30 @@ extern "C" {
 
       // Register events.
       io::events& e(io::events::instance());
+      // Register category.
+      int ret;
+      if ((ret = e.register_category("notification", io::events::notification))
+            != io::events::notification) {
+        e.unregister_category(ret);
+        --instances;
+        throw (exceptions::msg() << "notification: category " << io::events::notification
+               << " is already registered whereas it should be "
+               << "reserved for the notification module");
+      }
+
       // Register event.
       e.register_event(
         io::events::notification,
         notification::de_acknowledgement_removed,
           io::event_info(
-                "command",
+                "acknowledgement_removed",
                 &notification::acknowledgement_removed::operations,
                 notification::acknowledgement_removed::entries));
       e.register_event(
         io::events::notification,
         notification::de_acknowledgement_removed,
           io::event_info(
-                "command",
+                "downtime_removed",
                 &notification::acknowledgement_removed::operations,
                 notification::acknowledgement_removed::entries));
     }
