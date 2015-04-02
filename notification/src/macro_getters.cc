@@ -442,6 +442,10 @@ std::string com::centreon::broker::notification::get_notification_type(
     return ("PROBLEM");
   else if (type == action::notification_up)
     return ("RECOVERY");
+  else if (type == action::notification_ack)
+    return ("ACKNOWLEDGEMENT");
+  else if (type == action::notification_downtime)
+    return ("DOWNTIME");
   else
     return ("UNKNOWN");
 }

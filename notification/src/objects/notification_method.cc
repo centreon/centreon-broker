@@ -228,6 +228,10 @@ bool notification_method::should_be_notified_for(action::action_type type) {
     return (_types.find_first_of('n') != std::string::npos);
   else if (type == action::notification_up)
     return (_types.find_first_of('r') != std::string::npos);
+  else if (type == action::notification_ack)
+    return (_types.find_first_of('a') != std::string::npos);
+  else if (type == action::notification_downtime)
+    return (_types.find_first_of('d') != std::string::npos);
   else
     return (false);
 }
