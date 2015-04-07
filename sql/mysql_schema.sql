@@ -203,10 +203,7 @@ CREATE TABLE rt_hostgroups (
   instance_id int NOT NULL,
   name varchar(255) NOT NULL,
 
-  action_url varchar(160) default NULL,
   alias varchar(255) default NULL,
-  notes varchar(160) default NULL,
-  notes_url varchar(160) default NULL,
   enabled bool NOT NULL default true,
 
   PRIMARY KEY (hostgroup_id),
@@ -381,10 +378,7 @@ CREATE TABLE rt_servicegroups (
   instance_id int NOT NULL,
   name varchar(255) NOT NULL,
 
-  action_url varchar(160) default NULL,
   alias varchar(255) default NULL,
-  notes varchar(160) default NULL,
-  notes_url varchar(160) default NULL,
   enabled bool NOT NULL default true,
 
   PRIMARY KEY (servicegroup_id),

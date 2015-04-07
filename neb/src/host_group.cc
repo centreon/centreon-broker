@@ -92,34 +92,22 @@ unsigned int host_group::static_type() {
 // Mapping.
 mapping::entry const host_group::entries[] = {
   mapping::entry(
-    &host_group::action_url,
-    "action_url",
-    1),
-  mapping::entry(
     &host_group::alias,
     "alias",
-    2),
+    1),
   mapping::entry(
     &host_group::enabled,
     "enabled",
-    3),
+    2),
   mapping::entry(
     &host_group::instance_id,
     "instance_id",
-    4,
+    3,
     mapping::entry::NULL_ON_ZERO),
   mapping::entry(
     &host_group::name,
     "name",
-    5),
-  mapping::entry(
-    &host_group::notes,
-    "notes",
-    6),
-  mapping::entry(
-    &host_group::notes_url,
-    "notes_url",
-    7),
+    4),
   mapping::entry()
 };
 
