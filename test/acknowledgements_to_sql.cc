@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -75,7 +75,6 @@ int main() {
     for (std::list<host>::iterator it(hosts.begin()), end(hosts.end());
          it != end;
          ++it) {
-      it->accept_passive_host_checks = 1;
       it->host_check_command = new char[2];
       strcpy(it->host_check_command, "1");
     }
@@ -85,7 +84,6 @@ int main() {
            end(services.end());
          it != end;
          ++it) {
-      it->accept_passive_service_checks = 1;
       it->service_check_command = new char[2];
       strcpy(it->service_check_command, "1");
     }

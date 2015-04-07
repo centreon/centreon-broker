@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -37,7 +37,7 @@ using namespace com::centreon::broker;
 #define UTIL_FILE_WRITER PROJECT_SOURCE_DIR"/build/util_write_into_file"
 #define TIME_MACROS "$LONGDATETIME$\n$SHORTDATETIME$\n$DATE$\n$TIME$\n$TIMET$\n"
 #define HOST_MACROS \
-  "$HOSTNAME$\n$HOSTDISPLAYNAME$\n$HOSTALIAS$\n$HOSTADDRESS$\n$HOSTSTATE$\n"\
+  "$HOSTNAME$\n$HOSTALIAS$\n$HOSTADDRESS$\n$HOSTSTATE$\n"\
   "$HOSTSTATEID$\n$HOSTSTATETYPE$\n$HOSTATTEMPT$\n$MAXHOSTATTEMPTS$\n$HOSTLATENCY$\n"\
   "$HOSTEXECUTIONTIME$\n$HOSTDURATION$\n$HOSTDURATIONSEC$\n$HOSTDOWNTIME$\n"\
   "$HOSTPERCENTCHANGE$\n$HOSTGROUPNAME$\n$HOSTGROUPNAMES$\n$LASTHOSTCHECK$\n"\
@@ -47,7 +47,7 @@ using namespace com::centreon::broker;
   "$TOTALHOSTSERVICESWARNING$\n$TOTALHOSTSERVICESUNKNOWN$\n"\
   "$TOTALHOSTSERVICESCRITICAL$\n"
 #define SERVICE_MACROS \
-  "$SERVICEDESC$\n$SERVICEDISPLAYNAME$\n$SERVICESTATE$\n$SERVICESTATEID$\n"\
+  "$SERVICEDESC$\n$SERVICESTATE$\n$SERVICESTATEID$\n"\
   "$LASTSERVICESTATE$\n$LASTSERVICESTATEID$\n$SERVICESTATETYPE$\n"\
   "$SERVICEATTEMPT$\n$MAXSERVICEATTEMPTS$\n$SERVICEISVOLATILE$\n"\
   "$SERVICELATENCY$\n$SERVICEEXECUTIONTIME$\n$SERVICEDURATION$\n"\
@@ -358,10 +358,9 @@ int main() {
     del_and_dup(&commands.begin()->name, "service_command_%i", 1);
     generate_hosts(hosts, 1);
     del_and_dup(&hosts.begin()->name, "Host%i", 1);
-    del_and_dup(&hosts.begin()->display_name, "%i", 1);
+    // XXX del_and_dup(&hosts.begin()->display_name, "%i", 1);
     del_and_dup(&hosts.begin()->alias, "HostAlias%i", 1);
     hosts.begin()->checks_enabled = 0;
-    hosts.begin()->accept_passive_host_checks = 1;
     link(*hosts.begin(), *hostgroups.begin());
     link(*hosts.begin(), *(++hostgroups.begin()));
     generate_services(services, hosts, 2);
@@ -372,10 +371,9 @@ int main() {
          it != end;
          ++it, ++i) {
       it->checks_enabled = 0;
-      it->accept_passive_service_checks = 1;
       it->max_attempts = 1;
       del_and_dup(&it->description, "Service%i", i);
-      del_and_dup(&it->display_name, "%i", i);
+      // XXX del_and_dup(&it->display_name, "%i", i);
       del_and_dup(&it->service_check_command, "service_command_%i", 1);
       del_and_dup(&it->host_name, "Host%i", 1);
       link(*it, *servicegroups.begin());
@@ -397,8 +395,8 @@ int main() {
         "could not create organization");
 
     db.centreon_run(
-         "INSERT INTO cfg_hosts (host_id, host_name, display_name, host_alias, organization_id)"
-         "  VALUES (1, 'Host1', 'DisplayName1', 'HostAlias1', 1)",
+         "INSERT INTO cfg_hosts (host_id, host_name, host_alias, organization_id)"
+         "  VALUES (1, 'Host1', 'HostAlias1', 1)",
          "could not create host");
     db.centreon_run(
          "INSERT INTO cfg_services (service_id,"
@@ -536,7 +534,6 @@ int main() {
         {macros_struct::function, NULL, 0,validate_time, 0, 0, "TIME"},
         {macros_struct::between, NULL, 0, NULL, start, now, "TIMET"},
         {macros_struct::string, "Host1", 0, NULL, 0, 0, "HOSTNAME"},
-        {macros_struct::string, "1", 0, NULL, 0, 0, "HOSTDISPLAYNAME"},
         {macros_struct::string, "HostAlias1", 0, NULL, 0, 0, "HOSTALIAS"},
         {macros_struct::string, "localhost", 0, NULL, 0, 0, "HOSTADDRESS"},
         {macros_struct::string, "UP", 0, NULL, 0, 0, "HOSTSTATE"},
@@ -567,7 +564,6 @@ int main() {
         {macros_struct::integer, NULL, 0, NULL, 0, 0, "TOTALHOSTSERVICESUNKNOWN"},
         {macros_struct::integer, NULL, 1, NULL, 0, 0, "TOTALHOSTSERVICESCRITICAL"},
         {macros_struct::string, "Service2", 0, NULL, 0, 0, "SERVICEDESC"},
-        {macros_struct::string, "2", 0, NULL, 0, 0, "SERVICEDISPLAYNAME"},
         {macros_struct::string, "CRITICAL", 0, NULL, 0, 0, "SERVICESTATE"},
         {macros_struct::integer, NULL, 2, NULL, 0, 0, "SERVICESTATEID"},
         {macros_struct::string, "CRITICAL", 0, NULL, 0, 0, "LASTSERVICESTATE"},

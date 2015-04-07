@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Merethis
+** Copyright 2013-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -92,7 +92,6 @@ int main() {
     {
       host& h(*(++hosts.begin()));
       h.checks_enabled = 0;
-      h.accept_passive_host_checks = 0;
       h.max_attempts = 3;
       h.host_check_command = new char[2];
       strcpy(h.host_check_command, "1");
@@ -104,7 +103,6 @@ int main() {
     {
       service& s(services.front());
       s.checks_enabled = 0;
-      s.accept_passive_service_checks = 0;
       s.max_attempts = 3;
       s.service_check_command = new char[2];
       strcpy(s.service_check_command, "2");

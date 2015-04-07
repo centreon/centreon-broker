@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Merethis
+** Copyright 2013-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -183,7 +183,6 @@ int main() {
     for (std::list<host>::iterator it(hosts.begin()), end(hosts.end());
          it != end;
          ++it) {
-      it->accept_passive_host_checks = 1;
       it->checks_enabled = 0;
       it->max_attempts = 1;
     }
@@ -193,7 +192,6 @@ int main() {
            end(services.end());
          it != end;
          ++it) {
-      it->accept_passive_service_checks = 1;
       it->checks_enabled = 0;
       it->max_attempts = 1;
     }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <QFile>
+#include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
@@ -71,7 +72,6 @@ int main() {
          it != end;
          ++it) {
       it->checks_enabled = 0;
-      it->accept_passive_service_checks = 1;
       it->max_attempts = 1;
     }
     set_custom_variable(

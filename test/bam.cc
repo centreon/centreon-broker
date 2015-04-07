@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -387,10 +387,9 @@ int main() {
       char const* str("virtual_ba_host");
       h.name = new char[strlen(str) + 1];
       strcpy(h.name, str);
-      str = "1001";
-      h.display_name = new char[strlen(str) + 1];
-      strcpy(h.display_name, str);
-      h.accept_passive_host_checks = 0;
+      // XXX str = "1001";
+      // h.display_name = new char[strlen(str) + 1];
+      // strcpy(h.display_name, str);
       h.checks_enabled = 0;
       hosts.push_back(h);
     }
@@ -400,7 +399,6 @@ int main() {
            end(services.end());
          it != end;
          ++it) {
-      it->accept_passive_service_checks = 1;
       it->checks_enabled = 0;
       it->max_attempts = 1;
     }
@@ -419,13 +417,13 @@ int main() {
         s.description = new char[str.size() + 1];
         strcpy(s.description, str.c_str());
       }
-      {
-        std::ostringstream oss;
-        oss << i + 1000;
-        std::string str(oss.str());
-        s.display_name = new char[str.size() + 1];
-        strcpy(s.display_name, str.c_str());
-      }
+      // XXX {
+      //   std::ostringstream oss;
+      //   oss << i + 1000;
+      //   std::string str(oss.str());
+      //   s.display_name = new char[str.size() + 1];
+      //   strcpy(s.display_name, str.c_str());
+      // }
       {
         std::ostringstream oss;
         oss << "1!" << i;
@@ -433,7 +431,6 @@ int main() {
         s.service_check_command = new char[str.size() + 1];
         strcpy(s.service_check_command, str.c_str());
       }
-      s.accept_passive_service_checks = 1;
       s.checks_enabled = 0;
       s.max_attempts = 1;
       services.push_back(s);

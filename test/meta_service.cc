@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -24,6 +24,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QVariant>
+#include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/config.hh"
 #include "test/engine.hh"

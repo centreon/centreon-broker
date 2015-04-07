@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -92,7 +92,6 @@ int main() {
     generate_hosts(hosts, 1);
     generate_services(services, hosts, 1);
     services.back().checks_enabled = 0;
-    services.back().accept_passive_service_checks = 1;
     services.back().max_attempts = 1;
     commander.set_file(tmpnam(NULL));
     std::string additional_config;

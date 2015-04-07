@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Merethis
+** Copyright 2013-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -63,61 +63,18 @@ int main() {
 
     // Group data.
     struct {
-      std::string action_url;
       std::string alias;
-      std::string notes;
-      std::string notes_url;
     } host_groups_entries[] = {
-      {
-        "http://www.centreon.com #1",
-        "MyHostGroup#1",
-        "Some notes about this host group #1",
-        "http://www.merethis.com #1"
-      },
-      {
-        "http://www.centreon.com #2",
-        "MyHostGroup#2",
-        "Some notes about this host group #2",
-        "http://www.merethis.com #2"
-      }
+      { "MyHostGroup#1" },
+      { "MyHostGroup#2" }
     },
       service_groups_entries[] = {
-      {
-        "http://www.merethis.com/?=1",
-        "MyServiceGroup#1",
-        "Some useful comment about this service group #1",
-        "http://www.centreon.com/?=1"
-      },
-      {
-        "http://www.merethis.com/?=2",
-        "MyServiceGroup#2",
-        "Some useful comment about this service group #2",
-        "http://www.centreon.com/?=2"
-      },
-      {
-        "http://www.merethis.com/?=3",
-        "MyServiceGroup#3",
-        "Some useful comment about this service group #3",
-        "http://www.centreon.com/?=3"
-      },
-      {
-        "http://www.merethis.com/?=4",
-        "MyServiceGroup#4",
-        "Some useful comment about this service group #4",
-        "http://www.centreon.com/?=4"
-      },
-      {
-        "http://www.merethis.com/?=5",
-        "MyServiceGroup#5",
-        "Some useful comment about this service group #5",
-        "http://www.centreon.com/?=5"
-      },
-      {
-        "http://www.merethis.com/?=6",
-        "MyServiceGroup#6",
-        "Some useful comment about this service group #6",
-        "http://www.centreon.com/?=6"
-      },
+      { "MyServiceGroup#1" },
+      { "MyServiceGroup#2" },
+      { "MyServiceGroup#3" },
+      { "MyServiceGroup#4" },
+      { "MyServiceGroup#5" },
+      { "MyServiceGroup#6" }
     };
 
     // Prepare monitoring engine configuration parameters.
@@ -135,14 +92,8 @@ int main() {
              end(hosts.end());
            it != end;
            ++it) {
-        hg->action_url = new char[host_groups_entries[i].action_url.size() + 1];
-        strcpy(hg->action_url, host_groups_entries[i].action_url.c_str());
         hg->alias = new char[host_groups_entries[i].alias.size() + 1];
         strcpy(hg->alias, host_groups_entries[i].alias.c_str());
-        hg->notes = new char[host_groups_entries[i].notes.size() + 1];
-        strcpy(hg->notes, host_groups_entries[i].notes.c_str());
-        hg->notes_url = new char[host_groups_entries[i].notes_url.size() + 1];
-        strcpy(hg->notes_url, host_groups_entries[i].notes_url.c_str());
         link(*it, *hg);
         if (++hg == hg_end)
           hg = host_groups.begin();
@@ -161,14 +112,8 @@ int main() {
              end(services.end());
            it != end;
            ++it) {
-        sg->action_url = new char[service_groups_entries[i].action_url.size() + 1];
-        strcpy(sg->action_url, service_groups_entries[i].action_url.c_str());
         sg->alias = new char[service_groups_entries[i].alias.size() + 1];
         strcpy(sg->alias, service_groups_entries[i].alias.c_str());
-        sg->notes = new char[service_groups_entries[i].notes.size() + 1];
-        strcpy(sg->notes, service_groups_entries[i].notes.c_str());
-        sg->notes_url = new char[service_groups_entries[i].notes_url.size() + 1];
-        strcpy(sg->notes_url, service_groups_entries[i].notes_url.c_str());
         link(*it, *sg);
         if (++sg == sg_end)
           sg = service_groups.begin();
@@ -207,7 +152,7 @@ int main() {
     std::list<unsigned int> host_groups_id;
     {
       std::ostringstream query;
-      query << "SELECT hostgroup_id, name, instance_id, action_url, alias, notes, notes_url"
+      query << "SELECT hostgroup_id, name, instance_id, alias"
             << "  FROM rt_hostgroups"
             << "  ORDER BY name";
       QSqlQuery q(*db.storage_db());
@@ -226,26 +171,14 @@ int main() {
         if ((q.value(1).toUInt() != (i + 1))
             || (q.value(2).toUInt() != 42)
             || (q.value(3).toString()
-                != host_groups_entries[i].action_url.c_str())
-            || (q.value(4).toString()
-                != host_groups_entries[i].alias.c_str())
-            || (q.value(5).toString()
-                != host_groups_entries[i].notes.c_str())
-            || (q.value(6).toString()
-                != host_groups_entries[i].notes_url.c_str()))
+                != host_groups_entries[i].alias.c_str()))
           throw (exceptions::msg()
                  << "invalid host group entry: got (name "
                  << q.value(1).toUInt() << ", instance_id "
-                 << q.value(2).toUInt() << ", action_url "
-                 << q.value(3).toString() << ", alias "
-                 << q.value(4).toString() << ", notes "
-                 << q.value(5).toString() << ", notes_url "
-                 << q.value(6).toString() << "), expected ("
+                 << q.value(2).toUInt() << ", alias "
+                 << q.value(3).toString() << "), expected ("
                  << (i + 1) << ", 42 "
-                 << host_groups_entries[i].action_url.c_str() << ", "
-                 << host_groups_entries[i].alias.c_str() << ", "
-                 << host_groups_entries[i].notes.c_str() << ", "
-                 << host_groups_entries[i].notes_url.c_str() << ")");
+                 << host_groups_entries[i].alias.c_str() << ")");
       }
       if (q.next())
         throw (exceptions::msg() << "too much host group entries");
@@ -255,7 +188,7 @@ int main() {
     std::list<unsigned int> service_groups_id;
     {
       std::ostringstream query;
-      query << "SELECT servicegroup_id, name, instance_id, action_url, alias, notes, notes_url"
+      query << "SELECT servicegroup_id, name, instance_id, alias"
             << "  FROM rt_servicegroups"
             << "  ORDER BY name";
       QSqlQuery q(*db.storage_db());
@@ -274,26 +207,14 @@ int main() {
         if ((q.value(1).toUInt() != (i + 1))
             || (q.value(2).toUInt() != 42)
             || (q.value(3).toString()
-                != service_groups_entries[i].action_url.c_str())
-            || (q.value(4).toString()
-                != service_groups_entries[i].alias.c_str())
-            || (q.value(5).toString()
-                != service_groups_entries[i].notes.c_str())
-            || (q.value(6).toString()
-                != service_groups_entries[i].notes_url.c_str()))
+                != service_groups_entries[i].alias.c_str()))
           throw (exceptions::msg()
                  << "invalid service group entry: got (name "
                  << q.value(1).toUInt() << ", instance_id "
-                 << q.value(2).toUInt() << ", action_url "
-                 << q.value(3).toString() << ", alias "
-                 << q.value(4).toString() << ", notes "
-                 << q.value(5).toString() << ", notes_url "
-                 << q.value(6).toString() << "), expected ("
+                 << q.value(2).toUInt() << ", alias "
+                 << q.value(3).toString() << "), expected ("
                  << (i + 1) << ", 42 "
-                 << service_groups_entries[i].action_url.c_str() << ", "
-                 << service_groups_entries[i].alias.c_str() << ", "
-                 << service_groups_entries[i].notes.c_str() << ", "
-                 << service_groups_entries[i].notes_url.c_str() << ")");
+                 << service_groups_entries[i].alias.c_str() << ")");
       }
       if (q.next())
         throw (exceptions::msg() << "too much service group entries");

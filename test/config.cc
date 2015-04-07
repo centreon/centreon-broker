@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -23,6 +23,7 @@
 #include <iostream>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <sstream>
 #include <sys/stat.h>
 #include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -610,26 +611,15 @@ void config_write(
   }
 
   // Base configuration.
-  ofs << "accept_passive_host_checks=1\n"
-      << "accept_passive_service_checks=1\n"
-      << "check_result_path=.\n"
-      << "check_result_reaper_frequency=1\n"
+  ofs << "check_result_reaper_frequency=1\n"
       << "command_file=monitoring_engine.cmd\n"
       << "event_broker_options=-1\n"
-      << "execute_host_checks=1\n"
-      << "execute_service_checks=1\n"
       << "interval_length=" MONITORING_ENGINE_INTERVAL_LENGTH_STR "\n"
       << "log_file=monitoring_engine.log\n"
-      << "max_service_check_spread=1\n"
       << "max_concurrent_checks=200\n"
-      << "service_inter_check_delay_method=s\n"
       << "sleep_time=0.01\n"
       << "state_retention_file=monitoring_engine_retention.dat\n"
-      << "status_file=monitoring_engine_status.dat\n"
-      << "service_inter_check_delay_method=n\n"
-      << "host_inter_check_delay_method=n\n"
-      << "temp_file=monitoring_engine.tmp\n"
-      << "temp_path=.\n";
+      << "status_file=monitoring_engine_status.dat\n";
 
   // Subconfiguration files.
   std::string hosts_file;
@@ -714,7 +704,6 @@ void config_write(
       << "  check_command default_command\n"
       << "  max_check_attempts 3\n"
       << "  check_period default_timeperiod\n"
-      << "  contacts default_contact\n"
       << "}\n\n";
   if (hosts)
     for (std::list<host>::iterator
@@ -724,15 +713,13 @@ void config_write(
          ++it) {
       ofs << "define host{\n"
           << "  host_name " << it->name << "\n"
-          << "  _HOST_ID " << (it->display_name
-                               ? it->display_name
-                               : it->name) << "\n"
+          // XXX << "  _HOST_ID " << (it->display_name
+          //                      ? it->display_name
+          //                      : it->name) << "\n"
           << "  alias " << (it->alias ? it->alias : it->name) << "\n"
           << "  address " << (it->address ? it->address : "localhost")
           << "\n"
           << "  active_checks_enabled " << it->checks_enabled << "\n"
-          << "  passive_checks_enabled "
-          << it->accept_passive_host_checks << "\n"
           << "  check_command " << (it->host_check_command
                                     ? it->host_check_command
                                     : "default_command") << "\n"
@@ -742,28 +729,7 @@ void config_write(
           << "  check_period " << (it->check_period
                                    ? it->check_period
                                    : "default_timeperiod") << "\n"
-          << "  notification_interval "
-          << ((it->notification_interval > 0)
-              ? it->notification_interval
-              : 10) << "\n"
-          << "  notification_period " << (it->notification_period
-                                          ? it->notification_period
-                                          : "default_timeperiod")
-          << "\n"
-          << "  display_name " << ((it->display_name) ?
-                                    it->display_name : it->name)
-          << "\n"
-          << "  contacts ";
-      if (it->contacts) {
-        ofs << it->contacts->contact_name;
-        for (contactsmember* mbr(it->contacts->next);
-             mbr;
-             mbr = mbr->next)
-          ofs << "," << mbr->contact_name;
-      }
-      else
-        ofs << "default_contact";
-      ofs << "\n";
+          << "\n";
       if (it->parent_hosts) {
         ofs << "  parents " << it->parent_hosts->host_name;
         for (hostsmember* parent(it->parent_hosts->next);
@@ -801,9 +767,6 @@ void config_write(
       << "  check_interval 5\n"
       << "  retry_interval 3\n"
       << "  check_period default_timeperiod\n"
-      << "  notification_interval 10\n"
-      << "  notification_period default_timeperiod\n"
-      << "  contacts default_contact\n"
       << "}\n\n";
   if (services)
     for (std::list<service>::iterator
@@ -813,15 +776,11 @@ void config_write(
          ++it) {
       ofs << "define service{\n"
           << "  service_description " << it->description << "\n"
-          << "  _SERVICE_ID " << (it->display_name
-                                  ? it->display_name
-                                  : it->description) << "\n"
+          // XXX << "  _SERVICE_ID " << (it->display_name
+          //                         ? it->display_name
+          //                         : it->description) << "\n"
           << "  host_name " << it->host_name << "\n"
-          << "  display_name " << ((it->display_name) ?
-                                    it->display_name : it->description) << "\n"
           << "  active_checks_enabled " << it->checks_enabled << "\n"
-          << "  passive_checks_enabled "
-          << it->accept_passive_service_checks << "\n"
           << "  check_command "
           << (it->service_check_command
               ? it->service_check_command
@@ -835,26 +794,7 @@ void config_write(
           << "  check_period " << (it->check_period
                                    ? it->check_period
                                    : "default_timeperiod") << "\n"
-          << "  notification_interval "
-          << ((it->notification_interval > 0)
-              ? it->notification_interval
-              : 10) << "\n"
-          << "  notification_period "
-          << (it->notification_period
-              ? it->notification_period
-              : "default_timeperiod") << "\n"
-          << "  contacts ";
-      if (it->contacts) {
-        ofs << it->contacts->contact_name;
-        for (contactsmember* mbr(it->contacts->next);
-             mbr;
-             mbr = mbr->next)
-          ofs << "," << mbr->contact_name;
-      }
-      else
-        ofs << "default_contact";
-      ofs << "\n";
-      ofs << "  event_handler_enabled " << it->event_handler_enabled
+          << "  event_handler_enabled " << it->event_handler_enabled
           << "\n";
       if (it->event_handler)
         ofs << "  event_handler " << it->event_handler << "\n";
@@ -909,14 +849,8 @@ void config_write(
          ++it) {
       ofs << "define hostgroup{\n"
           << "  hostgroup_name " << it->group_name << "\n";
-      if (it->action_url)
-        ofs << "  action_url " << it->action_url << "\n";
       if (it->alias)
         ofs << "  alias " << it->alias << "\n";
-      if (it->notes)
-        ofs << "  notes " << it->notes << "\n";
-      if (it->notes_url)
-        ofs << "  notes_url " << it->notes_url << "\n";
       if (it->members) {
         ofs << "  members " << it->members->host_name;
         for (hostsmember* m(it->members->next); m; m = m->next)
@@ -943,14 +877,8 @@ void config_write(
          ++it) {
       ofs << "define servicegroup{\n"
           << "  servicegroup_name " << it->group_name << "\n";
-      if (it->action_url)
-        ofs << "  action_url " << it->action_url << "\n";
       if (it->alias)
         ofs << "  alias " << it->alias << "\n";
-      if (it->notes)
-        ofs << "  notes " << it->notes << "\n";
-      if (it->notes_url)
-        ofs << "  notes_url " << it->notes_url << "\n";
       if (it->members) {
         ofs << "  members " << it->members->host_name
             << "," << it->members->service_description;
@@ -979,7 +907,7 @@ void config_write(
       ofs << "define hostdependency{\n"
           << "  dependent_host_name " << it->dependent_host_name << "\n"
           << "  host_name " << it->host_name << "\n"
-          << "  notification_failure_criteria d,u\n"
+          << "  failure_criteria d,u\n"
           << "}\n\n";
     }
   ofs.close();
@@ -1004,7 +932,7 @@ void config_write(
           << it->dependent_service_description << "\n"
           << "  host_name " << it->host_name << "\n"
           << "  service_description " << it->service_description << "\n"
-          << "  notification_failure_criteria w,c,u\n"
+          << "  failure_criteria w,c,u\n"
           << "}\n\n";
     }
   ofs.close();
@@ -1027,14 +955,6 @@ void config_write(
       << "  friday 00:00-24:00\n"
       << "  saturday 00:00-24:00\n"
       << "  sunday 00:00-24:00\n"
-      << "}\n"
-      << "\n"
-      << "define contact{\n"
-      << "  contact_name default_contact\n"
-      << "  host_notification_period default_timeperiod\n"
-      << "  host_notification_commands default_command\n"
-      << "  service_notification_period default_timeperiod\n"
-      << "  service_notification_commands default_command\n"
       << "}\n"
       << "\n";
 

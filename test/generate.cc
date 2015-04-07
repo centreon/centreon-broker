@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -89,7 +89,6 @@ void free_hosts(std::list<host>& hosts) {
        it != end;
        ++it) {
     delete [] it->name;
-    delete [] it->display_name;
     delete [] it->alias;
     delete [] it->host_check_command;
     for (hostsmember* child(it->child_hosts); child; ) {
@@ -148,9 +147,6 @@ void free_host_groups(std::list<hostgroup>& host_groups) {
        ++it) {
     delete [] it->group_name;
     delete [] it->alias;
-    delete [] it->notes;
-    delete [] it->notes_url;
-    delete [] it->action_url;
     for (hostsmember* m(it->members); m; ) {
       hostsmember* to_delete(m);
       m = m->next;
@@ -174,7 +170,6 @@ void free_services(std::list<service>& services) {
        it != end;
        ++it) {
     delete [] it->description;
-    delete [] it->display_name;
     delete [] it->host_name;
     delete [] it->service_check_command;
     for (customvariablesmember* cvar(it->custom_variables); cvar; ) {
@@ -223,9 +218,6 @@ void free_service_groups(std::list<servicegroup>& service_groups) {
        ++it) {
     delete [] it->group_name;
     delete [] it->alias;
-    delete [] it->notes;
-    delete [] it->notes_url;
-    delete [] it->action_url;
     for (servicesmember* m(it->members); m; ) {
       servicesmember* to_delete(m);
       m = m->next;
