@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2014 Merethis
+** Copyright 2009-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -32,7 +32,7 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
-#include "com/centreon/broker/neb/acknowledgement.hh"
+// XXX #include "com/centreon/broker/neb/acknowledgement.hh"
 #include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/neb/host_status.hh"
 #include "com/centreon/broker/neb/service.hh"
@@ -457,53 +457,53 @@ unsigned int correlator::write(misc::shared_ptr<io::data> const& e) {
 *                                     *
 **************************************/
 
-/**
- *  Process an acknowledgement event.
- *
- *  @param[in] e Event to process.
- */
-void correlator::_correlate_acknowledgement(
-                   misc::shared_ptr<io::data> e) {
-  // Cast event.
-  neb::acknowledgement& ack(
-    *static_cast<neb::acknowledgement*>(&*e));
+// XXX /**
+//  *  Process an acknowledgement event.
+//  *
+//  *  @param[in] e Event to process.
+//  */
+// void correlator::_correlate_acknowledgement(
+//                    misc::shared_ptr<io::data> e) {
+//   // Cast event.
+//   neb::acknowledgement& ack(
+//     *static_cast<neb::acknowledgement*>(&*e));
 
-  // Find associated node.
-  logging::debug(logging::low)
-    << "correlation: processing acknowledgement";
-  QMap<QPair<unsigned int, unsigned int>, node>::iterator it;
-  it = _nodes.find(qMakePair(ack.host_id, ack.service_id));
-  if ((it != _nodes.end())
-      && it->my_issue.get()
-      && !it->my_issue->ack_time) {
-    // Set issue acknowledgement time.
-    logging::debug(logging::medium)
-      << "correlation: setting issue of node (" << it->host_id << ", "
-      << it->service_id << ") first acknowledgement time to "
-      << static_cast<unsigned long long>(ack.entry_time);
-    it->my_issue->ack_time = ack.entry_time;
+//   // Find associated node.
+//   logging::debug(logging::low)
+//     << "correlation: processing acknowledgement";
+//   QMap<QPair<unsigned int, unsigned int>, node>::iterator it;
+//   it = _nodes.find(qMakePair(ack.host_id, ack.service_id));
+//   if ((it != _nodes.end())
+//       && it->my_issue.get()
+//       && !it->my_issue->ack_time) {
+//     // Set issue acknowledgement time.
+//     logging::debug(logging::medium)
+//       << "correlation: setting issue of node (" << it->host_id << ", "
+//       << it->service_id << ") first acknowledgement time to "
+//       << static_cast<unsigned long long>(ack.entry_time);
+//     it->my_issue->ack_time = ack.entry_time;
 
-    // Updated state.
-    {
-      misc::shared_ptr<state> state_update(
-        ack.service_id ? static_cast<state*>(new service_state)
-                       : static_cast<state*>(new host_state));
-      state_update->instance_id = ack.instance_id;
-      state_update->ack_time = ack.entry_time;
-      state_update->current_state = it->state;
-      state_update->host_id = it->host_id;
-      state_update->in_downtime = it->in_downtime;
-      state_update->service_id = it->service_id;
-      state_update->start_time = it->since;
-      _events.push_back(state_update);
-    }
+//     // Updated state.
+//     {
+//       misc::shared_ptr<state> state_update(
+//         ack.service_id ? static_cast<state*>(new service_state)
+//                        : static_cast<state*>(new host_state));
+//       state_update->instance_id = ack.instance_id;
+//       state_update->ack_time = ack.entry_time;
+//       state_update->current_state = it->state;
+//       state_update->host_id = it->host_id;
+//       state_update->in_downtime = it->in_downtime;
+//       state_update->service_id = it->service_id;
+//       state_update->start_time = it->since;
+//       _events.push_back(state_update);
+//     }
 
-    // Send updated issue.
-    _events.push_back(misc::shared_ptr<io::data>(
-      new issue(*it->my_issue)));
-  }
-  return ;
-}
+//     // Send updated issue.
+//     _events.push_back(misc::shared_ptr<io::data>(
+//       new issue(*it->my_issue)));
+//   }
+//   return ;
+// }
 
 /**
  *  Process a host_status or service_status event.
@@ -560,15 +560,15 @@ void correlator::_correlate_host_service_status(
   unsigned short old_state(n->state);
   bool state_changed(n->state != hss.current_state);
   if (state_changed
-      || (n->in_downtime && !hss.scheduled_downtime_depth)
-      || (!n->in_downtime && hss.scheduled_downtime_depth)) {
+      || (n->in_downtime) // XXX && !hss.scheduled_downtime_depth)
+      || (!n->in_downtime)) {// XXX&& hss.scheduled_downtime_depth)) {
 
     // Update states.
     logging::debug(logging::medium) << "correlation: node ("
       << n->host_id << ", " << n->service_id << ") has new state event";
     // Now is the last update time if getting in/out of downtime.
-    if ((n->in_downtime && !hss.scheduled_downtime_depth)
-        || (!n->in_downtime && hss.scheduled_downtime_depth))
+    if ((n->in_downtime) // XXX && !hss.scheduled_downtime_depth)
+        || (!n->in_downtime)) // XXX && hss.scheduled_downtime_depth))
       now = hss.last_update;
 
     {
@@ -594,7 +594,7 @@ void correlator::_correlate_host_service_status(
       }
 
       // Update node.
-      n->in_downtime = hss.scheduled_downtime_depth;
+      // XXX n->in_downtime = hss.scheduled_downtime_depth;
       n->since = now;
       if (state_changed)
         n->state = hss.current_state;
@@ -605,9 +605,9 @@ void correlator::_correlate_host_service_status(
           is_host ? static_cast<state*>(new host_state)
                   : static_cast<state*>(new service_state));
         state_update->instance_id = hss.instance_id;
-        state_update->ack_time = (hss.problem_has_been_acknowledged
-                                  ? n->since
-                                  : timestamp(-1));
+        // XXX state_update->ack_time = (hss.problem_has_been_acknowledged
+        //                           ? n->since
+        //                           : timestamp(-1));
         state_update->current_state = n->state;
         state_update->host_id = n->host_id;
         state_update->in_downtime = n->in_downtime;
@@ -1069,8 +1069,8 @@ void correlator::_process_event_on_active(
     _correlate_host_status(e);
   else if (e_type == neb::log_entry::static_type())
     _correlate_log(e);
-  else if (e_type == neb::acknowledgement::static_type())
-    _correlate_acknowledgement(e);
+  // XXX else if (e_type == neb::acknowledgement::static_type())
+  //   _correlate_acknowledgement(e);
   else if (e_type == neb::instance_status::static_type()) {
     // Dump retention file.
     static time_t next_dump(0);

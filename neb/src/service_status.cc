@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -130,10 +130,6 @@ void service_status::_internal_copy(service_status const& ss) {
 // Mapping.
 mapping::entry const service_status::entries[] = {
   mapping::entry(
-    &service_status::acknowledgement_type,
-    "acknowledgement_type",
-    1),
-  mapping::entry(
     &service_status::active_checks_enabled,
     "active_checks",
     2),
@@ -154,10 +150,6 @@ mapping::entry const service_status::entries[] = {
     "check_attempt",
     6),
   mapping::entry(
-    &service_status::current_notification_number,
-    "notification_number",
-    7),
-  mapping::entry(
     &service_status::current_state,
     "state",
     8),
@@ -177,10 +169,6 @@ mapping::entry const service_status::entries[] = {
     &service_status::execution_time,
     "execution_time",
     12),
-  mapping::entry(
-    &service_status::failure_prediction_enabled,
-    "failure_prediction",
-    13),
   mapping::entry(
     &service_status::flap_detection_enabled,
     "flap_detection",
@@ -215,10 +203,6 @@ mapping::entry const service_status::entries[] = {
     "last_hard_state_change",
     21),
   mapping::entry(
-    &service_status::last_notification,
-    "last_notification",
-    22),
-  mapping::entry(
     &service_status::last_state_change,
     "last_state_change",
     23),
@@ -251,53 +235,21 @@ mapping::entry const service_status::entries[] = {
     "max_check_attempts",
     30),
   mapping::entry(
-    &service_status::modified_attributes,
-    "modified_attributes",
-    31),
-  mapping::entry(
     &service_status::next_check,
     "next_check",
     32),
-  mapping::entry(
-    &service_status::next_notification,
-    "next_notification",
-    33),
-  mapping::entry(
-    &service_status::no_more_notifications,
-    "no_more_notifications",
-    34),
-  mapping::entry(
-    &service_status::notifications_enabled,
-    "notify",
-    35),
   mapping::entry(
     &service_status::obsess_over,
     "obsess_over_service",
     36),
   mapping::entry(
-    &service_status::passive_checks_enabled,
-    "passive_checks",
-    37),
-  mapping::entry(
     &service_status::percent_state_change,
     "percent_state_change",
     38),
   mapping::entry(
-    &service_status::problem_has_been_acknowledged,
-    "acknowledged",
-    39),
-  mapping::entry(
-    &service_status::process_performance_data,
-    "process_perfdata",
-    40),
-  mapping::entry(
     &service_status::retry_interval,
     "retry_interval",
     41),
-  mapping::entry(
-    &service_status::scheduled_downtime_depth,
-    "scheduled_downtime_depth",
-    42),
   mapping::entry(
     &service_status::service_description,
     "",

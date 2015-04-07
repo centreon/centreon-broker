@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -34,14 +34,12 @@ int main() {
   neb::flapping_status flappy;
 
   // Check.
-  return ((flappy.comment_time != 0)
-          || (flappy.event_time != 0)
+  return ((flappy.event_time != 0)
           || (flappy.event_type != 0)
           || (flappy.flapping_type != 0)
           || (fabs(flappy.high_threshold) > 0.000001)
           || (flappy.host_id != 0)
           || (flappy.instance_id != 0)
-          || (flappy.internal_comment_id != 0)
           || (fabs(flappy.low_threshold) > 0.000001)
           || (fabs(flappy.percent_state_change) > 0.000001)
           || (flappy.reason_type != 0)

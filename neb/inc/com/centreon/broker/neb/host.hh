@@ -55,12 +55,6 @@ namespace          neb {
     bool           flap_detection_on_unreachable;
     bool           flap_detection_on_up;
     QString        host_name;
-    bool           notify_on_down;
-    bool           notify_on_unreachable;
-    bool           stalk_on_down;
-    bool           stalk_on_unreachable;
-    bool           stalk_on_up;
-    QString        statusmap_image;
 
     static mapping::entry const
                    entries[];

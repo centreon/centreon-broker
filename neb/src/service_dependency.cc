@@ -142,18 +142,14 @@ mapping::entry const service_dependency::entries[] = {
     "inherits_parent",
     7),
   mapping::entry(
-    &service_dependency::notification_failure_options,
-    "notification_failure_options",
-    8),
-  mapping::entry(
     &service_dependency::service_id,
     "service_id",
-    9,
+    8,
     mapping::entry::NULL_ON_ZERO),
   mapping::entry(
     &service_dependency::instance_id,
     "",
-    10),
+    9),
   mapping::entry()
 };
 

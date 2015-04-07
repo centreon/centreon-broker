@@ -52,19 +52,11 @@ namespace          neb {
     static unsigned int
                    static_type();
 
-    QString        failure_prediction_options;
     bool           flap_detection_on_critical;
     bool           flap_detection_on_ok;
     bool           flap_detection_on_unknown;
     bool           flap_detection_on_warning;
     bool           is_volatile;
-    bool           notify_on_critical;
-    bool           notify_on_unknown;
-    bool           notify_on_warning;
-    bool           stalk_on_critical;
-    bool           stalk_on_ok;
-    bool           stalk_on_unknown;
-    bool           stalk_on_warning;
 
     static mapping::entry const
                    entries[];

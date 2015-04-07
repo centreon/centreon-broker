@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011,2015 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or

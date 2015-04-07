@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -40,7 +40,6 @@ int main() {
           || (hdep.host_id != 0)
           || (hdep.inherits_parent != false)
           || (hdep.instance_id != 0)
-          || (hdep.notification_failure_options != "")
           || (hdep.type()
               != io::events::data_type<io::events::neb, neb::de_host_dependency>::value));
 }

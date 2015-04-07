@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -37,11 +37,11 @@
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/monitoring_logger.hh"
 #include "com/centreon/engine/common.hh"
-#include "com/centreon/engine/events.hh"
+#include "com/centreon/engine/events/defines.hh"
+#include "com/centreon/engine/events/timed_event.hh"
 #include "com/centreon/engine/globals.hh"
 #include "com/centreon/engine/nebcallbacks.hh"
 
-using namespace com::centreon;
 using namespace com::centreon::broker;
 
 // Specify the event broker API version.
@@ -113,11 +113,8 @@ extern "C" {
       // Unregister callbacks.
       neb::unregister_callbacks();
 
-      // Clean objects.
-      neb::gl_acknowledgements.clear();
-
       // Unload singletons.
-      broker::config::applier::deinit();
+      com::centreon::broker::config::applier::deinit();
 
       // Deregister Qt application object.
       if (gl_initialized_qt) {
@@ -164,7 +161,7 @@ extern "C" {
   int nebmodule_init(int flags, char const* args, void* handle) {
     try {
       // Initialization.
-      broker::config::applier::init();
+      com::centreon::broker::config::applier::init();
 
       // Save module handle and flags for future use.
       neb::gl_mod_flags = flags;
@@ -182,7 +179,7 @@ extern "C" {
       neb_set_module_info(
         neb::gl_mod_handle,
         NEBMODULE_MODINFO_COPYRIGHT,
-        "Copyright 2009-2013 Merethis");
+        "Copyright 2009-2015 Merethis");
       neb_set_module_info(
         neb::gl_mod_handle,
         NEBMODULE_MODINFO_VERSION,
@@ -268,12 +265,13 @@ extern "C" {
                  << "main: no configuration file provided");
 
         // Try configuration parsing.
-        broker::config::parser p;
-        broker::config::state s;
+	com::centreon::broker::config::parser p;
+	com::centreon::broker::config::state s;
         p.parse(neb::gl_configuration_file, s);
 
         // Apply loggers.
-        broker::config::applier::logger::instance().apply(s.loggers());
+	com::centreon::broker::config::applier::logger::instance().apply(
+          s.loggers());
 
         // Remove monitoring log.
         logging::manager::instance().log_on(monlog, 0);

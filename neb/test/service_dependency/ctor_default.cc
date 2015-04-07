@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -40,7 +40,6 @@ int main() {
           || (sdep.host_id != 0)
           || (sdep.inherits_parent != false)
           || (sdep.instance_id != 0)
-          || (sdep.notification_failure_options != "")
           || (sdep.service_id != 0)
           || (sdep.type()
               != io::events::data_type<io::events::neb, neb::de_service_dependency>::value));

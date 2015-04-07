@@ -128,12 +128,6 @@ void host::_internal_copy(host const& other) {
   flap_detection_on_unreachable = other.flap_detection_on_unreachable;
   flap_detection_on_up = other.flap_detection_on_up;
   host_name = other.host_name;
-  notify_on_down = other.notify_on_down;
-  notify_on_unreachable = other.notify_on_unreachable;
-  stalk_on_down = other.stalk_on_down;
-  stalk_on_unreachable = other.stalk_on_unreachable;
-  stalk_on_up = other.stalk_on_up;
-  statusmap_image = other.statusmap_image;
   return ;
 }
 
@@ -147,11 +141,6 @@ void host::_zero_initialize() {
   flap_detection_on_unreachable = 0;
   flap_detection_on_up = 0;
   instance_id = 0;
-  notify_on_down = 0;
-  notify_on_unreachable = 0;
-  stalk_on_down = 0;
-  stalk_on_unreachable = 0;
-  stalk_on_up = 0;
   return ;
 }
 
@@ -164,14 +153,6 @@ void host::_zero_initialize() {
 // Mapping. Some pointer-to-member are explicitely casted because they
 // are from the host_service class which does not inherit from io::data.
 mapping::entry const host::entries[] = {
-  mapping::entry(
-    &host::acknowledgement_type,
-    "acknowledgement_type",
-    1),
-  mapping::entry(
-    static_cast<QString (host::*) >(&host::action_url),
-    "action_url",
-    2),
   mapping::entry(
     &host::active_checks_enabled,
     "active_checks",
@@ -205,10 +186,6 @@ mapping::entry const host::entries[] = {
     "check_attempt",
     10),
   mapping::entry(
-    &host::current_notification_number,
-    "notification_number",
-    11),
-  mapping::entry(
     &host::current_state,
     "state",
     12),
@@ -221,29 +198,9 @@ mapping::entry const host::entries[] = {
     "default_event_handler_enabled",
     0),
   mapping::entry(
-    static_cast<bool (host::*) >(&host::default_failure_prediction),
-    "default_failure_prediction",
-    0),
-  mapping::entry(
     static_cast<bool (host::*) >(&host::default_flap_detection_enabled),
     "default_flap_detection",
     0),
-  mapping::entry(
-    static_cast<bool (host::*) >(&host::default_notifications_enabled),
-    "default_notify",
-    0),
-  mapping::entry(
-    static_cast<bool (host::*) >(&host::default_passive_checks_enabled),
-    "default_passive_checks",
-    0),
-  mapping::entry(
-    static_cast<bool (host::*) >(&host::default_process_perf_data),
-    "default_process_perfdata",
-    0),
-  mapping::entry(
-    static_cast<QString (host::*) >(&host::display_name),
-    "display_name",
-    13),
   mapping::entry(
     &host::enabled,
     "enabled",
@@ -260,14 +217,6 @@ mapping::entry const host::entries[] = {
     &host::execution_time,
     "execution_time",
     17),
-  mapping::entry(
-    &host::failure_prediction_enabled,
-    "failure_prediction",
-    18),
-  mapping::entry(
-    static_cast<double (host::*) >(&host::first_notification_delay),
-    "first_notification_delay",
-    19),
   mapping::entry(
     &host::flap_detection_enabled,
     "flap_detection",
@@ -301,14 +250,6 @@ mapping::entry const host::entries[] = {
     "name",
     27),
   mapping::entry(
-    static_cast<QString (host::*) >(&host::icon_image),
-    "icon_image",
-    28),
-  mapping::entry(
-    static_cast<QString (host::*) >(&host::icon_image_alt),
-    "icon_image_alt",
-    29),
-  mapping::entry(
     &host::host_id,
     "host_id",
     30,
@@ -334,10 +275,6 @@ mapping::entry const host::entries[] = {
     &host::last_hard_state_change,
     "last_hard_state_change",
     35),
-  mapping::entry(
-    &host::last_notification,
-    "last_notification",
-    36),
   mapping::entry(
     &host::last_state_change,
     "last_state_change",
@@ -371,121 +308,29 @@ mapping::entry const host::entries[] = {
     "max_check_attempts",
     44),
   mapping::entry(
-    &host::modified_attributes,
-    "modified_attributes",
-    45),
-  mapping::entry(
     &host::next_check,
     "next_check",
     46),
-  mapping::entry(
-    &host::next_notification,
-    "next_host_notification",
-    47),
-  mapping::entry(
-    &host::no_more_notifications,
-    "no_more_notifications",
-    48),
-  mapping::entry(
-    static_cast<QString (host::*) >(&host::notes),
-    "notes",
-    49),
-  mapping::entry(
-    static_cast<QString (host::*) >(&host::notes_url),
-    "notes_url",
-    50),
-  mapping::entry(
-    static_cast<double (host::*) >(&host::notification_interval),
-    "notification_interval",
-    51),
-  mapping::entry(
-    static_cast<QString (host::*) >(&host::notification_period),
-    "notification_period",
-    52),
-  mapping::entry(
-    &host::notifications_enabled,
-    "notify",
-    53),
-  mapping::entry(
-    &host::notify_on_down,
-    "notify_on_down",
-    54),
-  mapping::entry(
-    static_cast<bool (host::*) >(&host::notify_on_downtime),
-    "notify_on_downtime",
-    55),
-  mapping::entry(
-    static_cast<bool (host::*) >(&host::notify_on_flapping),
-    "notify_on_flapping",
-    56),
-  mapping::entry(
-    static_cast<bool (host::*) >(&host::notify_on_recovery),
-    "notify_on_recovery",
-    57),
-  mapping::entry(
-    &host::notify_on_unreachable,
-    "notify_on_unreachable",
-    58),
   mapping::entry(
     &host::obsess_over,
     "obsess_over_host",
     59),
   mapping::entry(
-    &host::passive_checks_enabled,
-    "passive_checks",
-    60),
-  mapping::entry(
     &host::percent_state_change,
     "percent_state_change",
     61),
-  mapping::entry(
-    &host::problem_has_been_acknowledged,
-    "acknowledged",
-    62),
-  mapping::entry(
-    &host::process_performance_data,
-    "process_perfdata",
-    63),
-  mapping::entry(
-    static_cast<bool (host::*) >(&host::retain_nonstatus_information),
-    "retain_nonstatus_information",
-    64),
-  mapping::entry(
-    static_cast<bool (host::*) >(&host::retain_status_information),
-    "retain_status_information",
-    65),
   mapping::entry(
     &host::retry_interval,
     "retry_interval",
     66),
   mapping::entry(
-    &host::scheduled_downtime_depth,
-    "scheduled_downtime_depth",
-    67),
-  mapping::entry(
     &host::should_be_scheduled,
     "should_be_scheduled",
     68),
   mapping::entry(
-    &host::stalk_on_down,
-    "stalk_on_down",
-    69),
-  mapping::entry(
-    &host::stalk_on_unreachable,
-    "stalk_on_unreachable",
-    70),
-  mapping::entry(
-    &host::stalk_on_up,
-    "stalk_on_up",
-    71),
-  mapping::entry(
     &host::state_type,
     "state_type",
     72),
-  mapping::entry(
-    &host::statusmap_image,
-    "statusmap_image",
-    73),
   mapping::entry(
     &host::check_command,
     "check_command",

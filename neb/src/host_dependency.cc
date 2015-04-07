@@ -108,18 +108,14 @@ mapping::entry const host_dependency::entries[] = {
     "inherits_parent",
     5),
   mapping::entry(
-    &host_dependency::notification_failure_options,
-    "notification_failure_options",
-    6),
-  mapping::entry(
     &host_dependency::host_id,
     "host_id",
-    7,
+    6,
     mapping::entry::NULL_ON_ZERO),
   mapping::entry(
     &host_dependency::instance_id,
     "",
-    8),
+    7),
   mapping::entry()
 };
 

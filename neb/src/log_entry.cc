@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -38,7 +38,7 @@ using namespace com::centreon::broker::neb;
 log_entry::log_entry()
   : c_time(0),
     host_id(0),
-        issue_start_time(0),
+    issue_start_time(0),
     log_type(0),
     msg_type(0),
     retry(0),
@@ -113,12 +113,10 @@ void log_entry::_internal_copy(log_entry const& le) {
   c_time = le.c_time;
   host_id = le.host_id;
   host_name = le.host_name;
-    instance_name = le.instance_name;
+  instance_name = le.instance_name;
   issue_start_time = le.issue_start_time;
   log_type = le.log_type;
   msg_type = le.msg_type;
-  notification_cmd = le.notification_cmd;
-  notification_contact = le.notification_contact;
   output = le.output;
   retry = le.retry;
   service_description = le.service_description;
@@ -164,14 +162,6 @@ mapping::entry const log_entry::entries[] = {
     &log_entry::msg_type,
     "msg_type",
     7),
-  mapping::entry(
-    &log_entry::notification_cmd,
-    "notification_cmd",
-    8),
-  mapping::entry(
-    &log_entry::notification_contact,
-    "notification_contact",
-    9),
   mapping::entry(
     &log_entry::retry,
     "retry",

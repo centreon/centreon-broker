@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -219,8 +219,8 @@ void kpi_service::service_update(
       << _service_id << ") update";
 
     // Update information.
-    _acknowledged = status->problem_has_been_acknowledged;
-    _downtimed = status->scheduled_downtime_depth;
+    // XXX _acknowledged = status->problem_has_been_acknowledged;
+    // XXX _downtimed = status->scheduled_downtime_depth;
     if ((status->last_check == (time_t)-1)
         || (status->last_check == (time_t)0)) {
       if ((_last_check == (time_t)-1)

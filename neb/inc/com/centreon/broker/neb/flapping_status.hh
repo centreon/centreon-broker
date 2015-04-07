@@ -45,13 +45,11 @@ namespace            neb {
     static unsigned int
                      static_type();
 
-    timestamp        comment_time;
     timestamp        event_time;
     int              event_type;
     short            flapping_type;
     double           high_threshold;
     unsigned int     host_id;
-    unsigned int     internal_comment_id;
     double           low_threshold;
     double           percent_state_change;
     short            reason_type;

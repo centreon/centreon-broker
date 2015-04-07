@@ -34,13 +34,11 @@ using namespace com::centreon::broker::neb;
  *  Default constructor.
  */
 flapping_status::flapping_status()
-  : comment_time(0),
-    event_time(0),
+  : event_time(0),
     event_type(0),
     flapping_type(0),
     high_threshold(0),
     host_id(0),
-    internal_comment_id(0),
     low_threshold(0),
     percent_state_change(0),
     reason_type(0),
@@ -107,13 +105,11 @@ unsigned int flapping_status::static_type() {
  *  @param[in] other  Object to copy.
  */
 void flapping_status::_internal_copy(flapping_status const& other) {
-  comment_time = other.comment_time;
   event_time = other.event_time;
   event_type = other.event_type;
   flapping_type = other.flapping_type;
   high_threshold = other.high_threshold;
   host_id = other.host_id;
-  internal_comment_id = other.internal_comment_id;
   low_threshold = other.low_threshold;
   percent_state_change = other.percent_state_change;
   reason_type = other.reason_type;
@@ -130,55 +126,47 @@ void flapping_status::_internal_copy(flapping_status const& other) {
 // Mapping.
 mapping::entry const flapping_status::entries[] = {
   mapping::entry(
-    &flapping_status::comment_time,
-    "comment_time",
-    1),
-  mapping::entry(
     &flapping_status::event_time,
     "event_time",
-    2),
+    1),
   mapping::entry(
     &flapping_status::event_type,
     "event_type",
-    3),
+    2),
   mapping::entry(
     &flapping_status::flapping_type,
     "type",
-    4),
+    3),
   mapping::entry(
     &flapping_status::high_threshold,
     "high_threshold",
-    5),
+    4),
   mapping::entry(
     &flapping_status::host_id,
     "host_id",
-    6,
+    5,
     mapping::entry::NULL_ON_ZERO),
-  mapping::entry(
-    &flapping_status::internal_comment_id,
-    "internal_comment_id",
-    7),
   mapping::entry(
     &flapping_status::low_threshold,
     "low_threshold",
-    8),
+    6),
   mapping::entry(
     &flapping_status::percent_state_change,
     "percent_state_change",
-    9),
+    7),
   mapping::entry(
     &flapping_status::reason_type,
     "reason_type",
-    10),
+    8),
   mapping::entry(
     &flapping_status::service_id,
     "service_id",
-    11,
+    9,
     mapping::entry::NULL_ON_ZERO),
   mapping::entry(
     &flapping_status::instance_id,
     "",
-    12),
+    10),
   mapping::entry()
 };
 

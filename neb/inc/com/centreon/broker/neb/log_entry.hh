@@ -56,8 +56,6 @@ namespace          neb {
     timestamp      issue_start_time;
     short          log_type;
     short          msg_type;
-    QString        notification_cmd;
-    QString        notification_contact;
     QString        output;
     int            retry;
     QString        service_description;

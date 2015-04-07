@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2011,2015 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -186,7 +187,6 @@ entry const host_members[] = {
   entry(&host::default_flap_detection_enabled, "default_flap_detection_enabled"),
   entry(&host::default_notifications_enabled, "default_notifications_enabled"),
   entry(&host::default_passive_checks_enabled, "default_passive_checks_enabled"),
-  entry(&host::default_process_perf_data, "default_process_perf_data"),
   entry(&host::display_name, "display_name"),
   entry(&host::enabled, "enabled"),
   entry(&host::event_handler, "event_handler"),
@@ -239,7 +239,6 @@ entry const host_members[] = {
   entry(&host::percent_state_change, "percent_state_change"),
   entry(&host::perf_data, "perf_data"),
   entry(&host::problem_has_been_acknowledged, "problem_has_been_acknowledged"),
-  entry(&host::process_performance_data, "process_performance_data"),
   entry(&host::retain_nonstatus_information, "retain_nonstatus_information"),
   entry(&host::retain_status_information, "retain_status_information"),
   entry(&host::retry_interval, "retry_interval"),
@@ -339,7 +338,6 @@ entry const host_status_members[] = {
   entry(&host_status::percent_state_change, "percent_state_change"),
   entry(&host_status::perf_data, "perf_data"),
   entry(&host_status::problem_has_been_acknowledged, "problem_has_been_acknowledged"),
-  entry(&host_status::process_performance_data, "process_performance_data"),
   entry(&host_status::retry_interval, "retry_interval"),
   entry(&host_status::scheduled_downtime_depth, "scheduled_downtime_depth"),
   entry(&host_status::should_be_scheduled, "should_be_scheduled"),
@@ -385,7 +383,6 @@ entry const instance_status_members[] = {
   entry(&instance_status::obsess_over_services, "obsess_over_services"),
   entry(&instance_status::passive_host_checks_enabled, "passive_host_checks_enabled"),
   entry(&instance_status::passive_service_checks_enabled, "passive_service_checks_enabled"),
-  entry(&instance_status::process_performance_data, "process_performance_data"),
   entry()
 };
 
@@ -456,7 +453,6 @@ entry const service_members[] = {
   entry(&service::default_flap_detection_enabled, "default_flap_detection_enabled"),
   entry(&service::default_notifications_enabled, "default_notifications_enabled"),
   entry(&service::default_passive_checks_enabled, "default_passive_checks_enabled"),
-  entry(&service::default_process_perf_data, "default_process_perf_data"),
   entry(&service::display_name, "display_name"),
   entry(&service::enabled, "enabled"),
   entry(&service::event_handler, "event_handler"),
@@ -511,7 +507,6 @@ entry const service_members[] = {
   entry(&service::percent_state_change, "percent_state_change"),
   entry(&service::perf_data, "perf_data"),
   entry(&service::problem_has_been_acknowledged, "problem_has_been_acknowledged"),
-  entry(&service::process_performance_data, "process_performance_data"),
   entry(&service::retain_nonstatus_information, "retain_nonstatus_information"),
   entry(&service::retain_status_information, "retain_status_information"),
   entry(&service::retry_interval, "retry_interval"),
@@ -611,7 +606,6 @@ entry const service_status_members[] = {
   entry(&service_status::percent_state_change, "percent_state_change"),
   entry(&service_status::perf_data, "perf_data"),
   entry(&service_status::problem_has_been_acknowledged, "problem_has_been_acknowledged"),
-  entry(&service_status::process_performance_data, "process_performance_data"),
   entry(&service_status::retry_interval, "retry_interval"),
   entry(&service_status::scheduled_downtime_depth, "scheduled_downtime_depth"),
   entry(&service_status::service_id, "service_id"),

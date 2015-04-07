@@ -1,5 +1,5 @@
 ##
-## Copyright 2011-2013 Merethis
+## Copyright 2011-2013,2015 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -423,24 +423,24 @@ if (WITH_TESTING)
     "ccb_correlation_correlator"
     ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Downtime handling.
-  set(TEST_NAME "correlation_correlator_downtime")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/correlator/downtime.cc"
-    "${TEST_DIR}/correlator/common.hh")
-  target_link_libraries("${TEST_NAME}"
-    "ccb_correlation_correlator"
-    ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Acknowledgement handling.
-  set(TEST_NAME "correlation_correlator_acknowledgement")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/correlator/acknowledgement.cc"
-    "${TEST_DIR}/correlator/common.hh")
-  target_link_libraries("${TEST_NAME}"
-    "ccb_correlation_correlator"
-    ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # #   Downtime handling.
+  # set(TEST_NAME "correlation_correlator_downtime")
+  # add_executable("${TEST_NAME}"
+  #   "${TEST_DIR}/correlator/downtime.cc"
+  #   "${TEST_DIR}/correlator/common.hh")
+  # target_link_libraries("${TEST_NAME}"
+  #   "ccb_correlation_correlator"
+  #   ${TEST_LIBRARIES})
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # #   Acknowledgement handling.
+  # set(TEST_NAME "correlation_correlator_acknowledgement")
+  # add_executable("${TEST_NAME}"
+  #   "${TEST_DIR}/correlator/acknowledgement.cc"
+  #   "${TEST_DIR}/correlator/common.hh")
+  # target_link_libraries("${TEST_NAME}"
+  #   "ccb_correlation_correlator"
+  #   ${TEST_LIBRARIES})
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()
 
 # Install rule.

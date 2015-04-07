@@ -124,10 +124,6 @@ void host_status::_internal_copy(host_status const& other) {
 // Mapping.
 mapping::entry const host_status::entries[] = {
   mapping::entry(
-    &host_status::acknowledgement_type,
-    "acknowledgement_type",
-    1),
-  mapping::entry(
     &host_status::active_checks_enabled,
     "active_checks",
     2),
@@ -148,10 +144,6 @@ mapping::entry const host_status::entries[] = {
     "check_attempt",
     6),
   mapping::entry(
-    &host_status::current_notification_number,
-    "notification_number",
-    7),
-  mapping::entry(
     &host_status::current_state,
     "state",
     8),
@@ -171,10 +163,6 @@ mapping::entry const host_status::entries[] = {
     &host_status::execution_time,
     "execution_time",
     12),
-  mapping::entry(
-    &host_status::failure_prediction_enabled,
-    "failure_prediction",
-    13),
   mapping::entry(
     &host_status::flap_detection_enabled,
     "flap_detection",
@@ -205,10 +193,6 @@ mapping::entry const host_status::entries[] = {
     "last_hard_state_change",
     20),
   mapping::entry(
-    &host_status::last_notification,
-    "last_notification",
-    21),
-  mapping::entry(
     &host_status::last_state_change,
     "last_state_change",
     22),
@@ -237,53 +221,21 @@ mapping::entry const host_status::entries[] = {
     "max_check_attempts",
     28),
   mapping::entry(
-    &host_status::modified_attributes,
-    "modified_attributes",
-    29),
-  mapping::entry(
     &host_status::next_check,
     "next_check",
     30),
-  mapping::entry(
-    &host_status::next_notification,
-    "next_host_notification",
-    31),
-  mapping::entry(
-    &host_status::no_more_notifications,
-    "no_more_notifications",
-    32),
-  mapping::entry(
-    &host_status::notifications_enabled,
-    "notify",
-    33),
   mapping::entry(
     &host_status::obsess_over,
     "obsess_over_host",
     34),
   mapping::entry(
-    &host_status::passive_checks_enabled,
-    "passive_checks",
-    35),
-  mapping::entry(
     &host_status::percent_state_change,
     "percent_state_change",
     36),
   mapping::entry(
-    &host_status::problem_has_been_acknowledged,
-    "acknowledged",
-    37),
-  mapping::entry(
-    &host_status::process_performance_data,
-    "process_perfdata",
-    38),
-  mapping::entry(
     &host_status::retry_interval,
     "retry_interval",
     39),
-  mapping::entry(
-    &host_status::scheduled_downtime_depth,
-    "scheduled_downtime_depth",
-    40),
   mapping::entry(
     &host_status::should_be_scheduled,
     "should_be_scheduled",

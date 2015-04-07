@@ -48,25 +48,17 @@ namespace            neb {
     static unsigned int
                      static_type();
 
-    bool             active_host_checks_enabled;
-    bool             active_service_checks_enabled;
     QString          address;
     bool             check_hosts_freshness;
     bool             check_services_freshness;
-    bool             daemon_mode;
     QString          description;
     QString          global_host_event_handler;
     QString          global_service_event_handler;
     unsigned int     id;
     timestamp        last_alive;
     timestamp        last_command_check;
-    timestamp        last_log_rotation;
-    int              modified_host_attributes;
-    int              modified_service_attributes;
     bool             obsess_over_hosts;
     bool             obsess_over_services;
-    bool             passive_host_checks_enabled;
-    bool             passive_service_checks_enabled;
 
     static mapping::entry const
                      entries[];

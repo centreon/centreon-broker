@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -33,13 +33,10 @@ int main() {
   neb::service_group sgrp;
 
   // Check.
-  return ((sgrp.action_url != "")
-          || (sgrp.alias != "")
+  return ((sgrp.alias != "")
           || (sgrp.enabled != true)
           || (sgrp.instance_id != 0)
           || (sgrp.name != "")
-          || (sgrp.notes != "")
-          || (sgrp.notes_url != "")
           || (sgrp.type()
               != io::events::data_type<io::events::neb, neb::de_service_group>::value));
 }

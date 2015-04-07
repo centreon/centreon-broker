@@ -384,13 +384,11 @@ void meta_service::visit(io::stream* visitor) {
       status->last_update = time(NULL);
       status->latency = 0.0;
       status->max_check_attempts = 1;
-      status->modified_attributes = 0;
       // status->next_notification = XXX;
       // status->no_more_notifications = XXX;
       // status->notifications_enabled = XXX;
       status->obsess_over = false;
       status->output = get_output().c_str();
-      status->passive_checks_enabled = true;
       // status->percent_state_chagne = XXX;
       status->perf_data = get_perfdata().c_str();
       // status->problem_has_been_acknowledged = XXX;

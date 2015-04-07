@@ -66,20 +66,6 @@ extern "C" {
       {
         e.register_event(
             io::events::neb,
-            neb::de_acknowledgement,
-            io::event_info(
-                  "acknowledgement",
-                  &neb::acknowledgement::operations,
-                  neb::acknowledgement::entries));
-        e.register_event(
-            io::events::neb,
-            neb::de_comment,
-            io::event_info(
-                  "comment",
-                  &neb::comment::operations,
-                  neb::comment::entries));
-        e.register_event(
-            io::events::neb,
             neb::de_custom_variable,
             io::event_info(
                   "custom_variable",
@@ -92,13 +78,6 @@ extern "C" {
                   "custom_variable_status",
                   &neb::custom_variable_status::operations,
                   neb::custom_variable_status::entries));
-        e.register_event(
-            io::events::neb,
-            neb::de_downtime,
-            io::event_info(
-                  "downtime",
-                  &neb::downtime::operations,
-                  neb::downtime::entries));
         e.register_event(
             io::events::neb,
             neb::de_event_handler,
@@ -190,13 +169,6 @@ extern "C" {
                   "module",
                   &neb::module::operations,
                   neb::module::entries));
-        e.register_event(
-            io::events::neb,
-            neb::de_notification,
-            io::event_info(
-                  "notification",
-                  &neb::notification::operations,
-                  neb::notification::entries));
         e.register_event(
             io::events::neb,
             neb::de_service_check,

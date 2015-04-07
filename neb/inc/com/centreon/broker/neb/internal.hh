@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -29,18 +29,14 @@
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/multiplexing/publisher.hh"
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/acknowledgement.hh"
 #  include "com/centreon/broker/neb/callback.hh"
 
 CCB_BEGIN()
 namespace neb {
   // Data elements.
   enum data_element {
-    de_acknowledgement = 1,
-    de_comment,
-    de_custom_variable,
+    de_custom_variable = 1,
     de_custom_variable_status,
-    de_downtime,
     de_event_handler,
     de_flapping_status,
     de_host_check,
@@ -54,7 +50,6 @@ namespace neb {
     de_instance_status,
     de_log_entry,
     de_module,
-    de_notification,
     de_service_check,
     de_service_dependency,
     de_service_group,
@@ -83,14 +78,8 @@ namespace neb {
   // Registered callbacks.
   extern std::list<misc::shared_ptr<neb::callback> >
     gl_registered_callbacks;
-
-  // Acknowledgement list.
-  extern std::map<std::pair<unsigned int, unsigned int>, neb::acknowledgement>
-    gl_acknowledgements;
 }
 
 CCB_END()
 
-#endif // !CCB_MODULE_INTERNAL_HH
-
-
+#endif // !CCB_NEB_INTERNAL_HH

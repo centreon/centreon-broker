@@ -9,7 +9,6 @@
 -- ------------------------------------
 
 -- rt_acknowledgements
--- rt_comments
 -- rt_customvariables
 -- log_data_bin
 -- rt_downtimes
@@ -54,34 +53,24 @@ CREATE TABLE rt_instances (
   instance_id int NOT NULL,
   name varchar(255) default 'localhost' NOT NULL,
 
-  active_host_checks char(1) default NULL,
-  active_service_checks char(1) default NULL,
   address varchar(128) default NULL,
   check_hosts_freshness char(1) default NULL,
   check_services_freshness char(1) default NULL,
-  daemon_mode char(1) default NULL,
   deleted char(1) NOT NULL default 0,
   description varchar(128) default NULL,
   end_time int default NULL,
   engine varchar(64) default NULL,
   event_handlers char(1) default NULL,
-  failure_prediction char(1) default NULL,
   flap_detection char(1) default NULL,
   global_host_event_handler clob default NULL,
   global_service_event_handler clob default NULL,
   last_alive int default NULL,
   last_command_check int default NULL,
-  last_log_rotation int default NULL,
-  modified_host_attributes int default NULL,
-  modified_service_attributes int default NULL,
   notifications char(1) default NULL,
   obsess_over_hosts char(1) default NULL,
   obsess_over_services char(1) default NULL,
   outdated boolean default NULL,
-  passive_host_checks char(1) default NULL,
-  passive_service_checks char(1) default NULL,
   pid int default NULL,
-  process_perfdata char(1) default NULL,
   running char(1) default NULL,
   start_time int default NULL,
   version varchar(16) default NULL,
@@ -100,7 +89,6 @@ CREATE TABLE rt_hosts (
 
   acknowledged char(1) default NULL,
   acknowledgement_type smallint default NULL,
-  action_url varchar(255) default NULL,
   active_checks char(1) default NULL,
   address varchar(75) default NULL,
   alias varchar(100) default NULL,
@@ -114,17 +102,12 @@ CREATE TABLE rt_hosts (
   command_line clob default NULL,
   default_active_checks char(1) default NULL,
   default_event_handler_enabled char(1) default NULL,
-  default_failure_prediction char(1) default NULL,
   default_flap_detection char(1) default NULL,
   default_notify char(1) default NULL,
-  default_passive_checks char(1) default NULL,
-  default_process_perfdata char(1) default NULL,
-  display_name varchar(100) default NULL,
   enabled char(1) default 1 NOT NULL,
   event_handler varchar(255) default NULL,
   event_handler_enabled char(1) default NULL,
   execution_time double precision default NULL,
-  failure_prediction char(1) default NULL,
   first_notification_delay double precision default NULL,
   flap_detection char(1) default NULL,
   flap_detection_on_down char(1) default NULL,
@@ -133,8 +116,6 @@ CREATE TABLE rt_hosts (
   flapping char(1) default NULL,
   freshness_threshold double precision default NULL,
   high_flap_threshold double precision default NULL,
-  icon_image varchar(255) default NULL,
-  icon_image_alt varchar(255) default NULL,
   last_check int default NULL,
   last_hard_state smallint default NULL,
   last_hard_state_change int default NULL,
@@ -147,12 +128,9 @@ CREATE TABLE rt_hosts (
   latency double precision default NULL,
   low_flap_threshold double precision default NULL,
   max_check_attempts smallint default NULL,
-  modified_attributes int default NULL,
   next_check int default NULL,
   next_host_notification int default NULL,
   no_more_notifications char(1) default NULL,
-  notes varchar(255) default NULL,
-  notes_url varchar(255) default NULL,
   notification_interval double precision default NULL,
   notification_number smallint default NULL,
   notification_period varchar(75) default NULL,
@@ -164,13 +142,9 @@ CREATE TABLE rt_hosts (
   notify_on_unreachable char(1) default NULL,
   obsess_over_host char(1) default NULL,
   output clob default NULL,
-  passive_checks char(1) default NULL,
   percent_state_change double precision default NULL,
   perfdata clob default NULL,
-  process_perfdata char(1) default NULL,
   real_state smallint default NULL,
-  retain_nonstatus_information char(1) default NULL,
-  retain_status_information char(1) default NULL,
   retry_interval double precision default NULL,
   scheduled_downtime_depth smallint default NULL,
   should_be_scheduled char(1) default NULL,
@@ -179,7 +153,6 @@ CREATE TABLE rt_hosts (
   stalk_on_up char(1) default NULL,
   state smallint default NULL,
   state_type smallint default NULL,
-  statusmap_image varchar(255) default NULL,
 
   UNIQUE (host_id),
   FOREIGN KEY (instance_id) REFERENCES rt_instances (instance_id)
@@ -203,10 +176,7 @@ CREATE TABLE rt_hostgroups (
   instance_id int NOT NULL,
   name varchar(255) NOT NULL,
 
-  action_url varchar(160) default NULL,
   alias varchar(255) default NULL,
-  notes varchar(160) default NULL,
-  notes_url varchar(160) default NULL,
   enabled char(1) default 1 NOT NULL,
 
   PRIMARY KEY (hostgroup_id),
@@ -285,7 +255,6 @@ CREATE TABLE rt_services (
 
   acknowledged char(1) default NULL,
   acknowledgement_type smallint default NULL,
-  action_url varchar(255) default NULL,
   active_checks char(1) default NULL,
   check_attempt smallint default NULL,
   check_command clob default NULL,
@@ -297,18 +266,12 @@ CREATE TABLE rt_services (
   command_line clob default NULL,
   default_active_checks char(1) default NULL,
   default_event_handler_enabled char(1) default NULL,
-  default_failure_prediction char(1) default NULL,
   default_flap_detection char(1) default NULL,
   default_notifications char(1) default NULL,
-  default_passive_checks char(1) default NULL,
-  default_process_perfdata char(1) default NULL,
-  display_name varchar(160) default NULL,
   enabled char(1) default 1 NOT NULL,
   event_handler varchar(255) default NULL,
   event_handler_enabled char(1) default NULL,
   execution_time double precision default NULL,
-  failure_prediction char(1) default NULL,
-  failure_prediction_options varchar(64) default NULL,
   first_notification_delay double precision default NULL,
   flap_detection char(1) default NULL,
   flap_detection_on_critical char(1) default NULL,
@@ -318,8 +281,6 @@ CREATE TABLE rt_services (
   flapping char(1) default NULL,
   freshness_threshold double precision default NULL,
   high_flap_threshold double precision default NULL,
-  icon_image varchar(255) default NULL,
-  icon_image_alt varchar(255) default NULL,
   last_check int default NULL,
   last_hard_state smallint default NULL,
   last_hard_state_change int default NULL,
@@ -333,12 +294,9 @@ CREATE TABLE rt_services (
   latency double precision default NULL,
   low_flap_threshold double precision default NULL,
   max_check_attempts smallint default NULL,
-  modified_attributes int default NULL,
   next_check int default NULL,
   next_notification int default NULL,
   no_more_notifications char(1) default NULL,
-  notes varchar(255) default NULL,
-  notes_url varchar(255) default NULL,
   notification_interval double precision default NULL,
   notification_number smallint default NULL,
   notification_period varchar(75) default NULL,
@@ -351,13 +309,9 @@ CREATE TABLE rt_services (
   notify_on_warning char(1) default NULL,
   obsess_over_service char(1) default NULL,
   output clob default NULL,
-  passive_checks char(1) default NULL,
   percent_state_change double precision default NULL,
   perfdata clob default NULL,
-  process_perfdata char(1) default NULL,
   real_state smallint default NULL,
-  retain_nonstatus_information char(1) default NULL,
-  retain_status_information char(1) default NULL,
   retry_interval double precision default NULL,
   scheduled_downtime_depth smallint default NULL,
   should_be_scheduled char(1) default NULL,
@@ -391,10 +345,7 @@ CREATE TABLE rt_servicegroups (
   instance_id int NOT NULL,
   name varchar(255) NOT NULL,
 
-  action_url varchar(160) default NULL,
   alias varchar(255) default NULL,
-  notes varchar(160) default NULL,
-  notes_url varchar(160) default NULL,
   enabled char(1) default 1 NOT NULL,
 
   PRIMARY KEY (servicegroup_id),
@@ -484,46 +435,6 @@ BEFORE INSERT ON acknowledgements
 FOR EACH ROW
 BEGIN
   SELECT acknowledgements_seq.nextval INTO :NEW.acknowledgement_id FROM dual;
-END;
-/
-
-
---
--- Holds comments information.
---
-CREATE TABLE rt_comments (
-  comment_id int NOT NULL,
-  entry_time int NOT NULL,
-  host_id int NOT NULL,
-  service_id int default NULL,
-
-  author varchar(64) default NULL,
-  data clob default NULL,
-  deletion_time int default NULL,
-  entry_type smallint default NULL,
-  expire_time int default NULL,
-  expires char(1) default NULL,
-  instance_id int default NULL,
-  internal_id int NOT NULL,
-  persistent char(1) default NULL,
-  source smallint default NULL,
-  type smallint default NULL,
-
-  PRIMARY KEY (comment_id),
-  UNIQUE (host_id, service_id, entry_time),
-  FOREIGN KEY (host_id) REFERENCES rt_hosts (host_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (instance_id) REFERENCES rt_instances (instance_id)
-    ON DELETE SET NULL
-);
-CREATE SEQUENCE comments_seq
-START WITH 1
-INCREMENT BY 1;
-CREATE TRIGGER comments_trigger
-BEFORE INSERT ON comments
-FOR EACH ROW
-BEGIN
-  SELECT comments_seq.nextval INTO :NEW.comment_id FROM dual;
 END;
 /
 

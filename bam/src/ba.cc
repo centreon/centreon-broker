@@ -499,7 +499,6 @@ void ba::visit(io::stream* visitor) {
       status->last_update = time(NULL);
       status->latency = 0.0;
       status->max_check_attempts = 1;
-      status->modified_attributes = 0;
       // status->next_notification = XXX;
       // status->no_more_notifications = XXX;
       // status->notifications_enabled = XXX;
@@ -510,7 +509,6 @@ void ba::visit(io::stream* visitor) {
             << static_cast<int>(normalize(_level_hard)) << "%";
         status->output = oss.str().c_str();
       }
-      status->passive_checks_enabled = true;
       // status->percent_state_chagne = XXX;
       {
         std::ostringstream oss;
@@ -556,7 +554,7 @@ void ba::service_update(
       << _host_id << ", " << _service_id << ") update";
 
     // Check if there was a change.
-    bool in_downtime(status->scheduled_downtime_depth > 0);
+    bool in_downtime(false); // XXX status->scheduled_downtime_depth > 0);
     if (_in_downtime != in_downtime) {
       _in_downtime = in_downtime;
 
