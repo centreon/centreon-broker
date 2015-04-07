@@ -39,12 +39,11 @@
 #  include "com/centreon/engine/objects/timeperiod.hh"
 #  include "com/centreon/engine/objects/timeperiodexclusion.hh"
 #  include "com/centreon/engine/objects/timerange.hh"
-#  include "find.hh"
 
 /*
 ** Current object revision, Increment when changes are made to data
 ** structures...
 */
-#  define CURRENT_OBJECT_STRUCTURE_VERSION 307
+#  define CURRENT_OBJECT_STRUCTURE_VERSION 2000
 
 #endif /* !CCE_OBJECTS_HH */
