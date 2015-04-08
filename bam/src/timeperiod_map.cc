@@ -74,11 +74,14 @@ bool timeperiod_map::operator==(timeperiod_map const& other) const {
  *
  *  @return  A timeperiod ptr toward the timeperiod, or a null ptr.
  */
-time::timeperiod::ptr timeperiod_map::get_timeperiod(unsigned int id) const {
-  std::map<unsigned int, time::timeperiod::ptr>::const_iterator
+com::centreon::broker::time::timeperiod::ptr
+  timeperiod_map::get_timeperiod(unsigned int id) const {
+  std::map<
+      unsigned int,
+      com::centreon::broker::time::timeperiod::ptr>::const_iterator
       found = _map.find(id);
   if (found == _map.end())
-    return (time::timeperiod::ptr());
+    return (com::centreon::broker::time::timeperiod::ptr());
   else
     return (found->second);
 }
