@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,7 +20,9 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/notification/acknowledgement.hh"
 #include "com/centreon/broker/notification/acknowledgement_removed.hh"
+#include "com/centreon/broker/notification/downtime.hh"
 #include "com/centreon/broker/notification/downtime_removed.hh"
 #include "com/centreon/broker/notification/factory.hh"
 #include "com/centreon/broker/notification/internal.hh"
@@ -84,18 +86,32 @@ extern "C" {
       // Register event.
       e.register_event(
         io::events::notification,
-        notification::de_acknowledgement_removed,
-          io::event_info(
-                "acknowledgement_removed",
-                &notification::acknowledgement_removed::operations,
-                notification::acknowledgement_removed::entries));
+        notification::de_acknowledgement,
+        io::event_info(
+              "acknowledgement",
+              &notification::acknowledgement::operations,
+              notification::acknowledgement::entries));
       e.register_event(
         io::events::notification,
         notification::de_acknowledgement_removed,
+        io::event_info(
+              "acknowledgement_removed",
+              &notification::acknowledgement_removed::operations,
+              notification::acknowledgement_removed::entries));
+      e.register_event(
+          io::events::notification,
+          notification::de_acknowledgement,
           io::event_info(
-                "downtime_removed",
-                &notification::acknowledgement_removed::operations,
-                notification::acknowledgement_removed::entries));
+                "downtime",
+                &notification::downtime::operations,
+                notification::downtime::entries));
+      e.register_event(
+        io::events::notification,
+        notification::de_acknowledgement_removed,
+        io::event_info(
+              "downtime_removed",
+              &notification::downtime_removed::operations,
+              notification::downtime_removed::entries));
     }
 
     return ;
