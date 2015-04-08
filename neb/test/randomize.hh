@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -26,7 +26,6 @@
 #  include <list>
 #  include <vector>
 #  include "com/centreon/broker/namespace.hh"
-#  include "mapping.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/mapping/source.hh"
 #  include "com/centreon/broker/mapping/property.hh"

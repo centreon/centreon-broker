@@ -38,7 +38,6 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "mapping.hh"
 #include "com/centreon/broker/notification/utilities/data_loggers.hh"
 #include "com/centreon/broker/notification/stream.hh"
 

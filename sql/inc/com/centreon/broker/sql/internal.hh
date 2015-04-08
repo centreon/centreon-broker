@@ -29,7 +29,6 @@
 #  include "com/centreon/broker/neb/events.hh"
 #  include "com/centreon/broker/notification/acknowledgement.hh"
 #  include "com/centreon/broker/notification/downtime.hh"
-#  include "mapping.hh"
 
 // ORM operators.
 com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::custom_variable const& cv);
