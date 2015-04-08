@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2014 Merethis
+** Copyright 2009-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -284,18 +284,11 @@ static void to_base(database_query& q, T const& t) {
 /**
  *  ORM operator for acknowledgement.
  */
-database_query& operator<<(database_query& q, neb::acknowledgement const& a) {
-  to_base(q, a);
-  return (q);
-}
-
-/**
- *  ORM operator for comment.
- */
-database_query& operator<<(database_query& q, neb::comment const& c) {
-  to_base(q, c);
-  return (q);
-}
+// XXX
+// database_query& operator<<(database_query& q, neb::acknowledgement const& a) {
+//   to_base(q, a);
+//   return (q);
+// }
 
 /**
  *  ORM operator for custom_variable.
@@ -316,10 +309,11 @@ database_query& operator<<(database_query& q, neb::custom_variable_status const&
 /**
  *  ORM operator for downtime.
  */
-database_query& operator<<(database_query& q, neb::downtime const& d) {
-  to_base(q, d);
-  return (q);
-}
+// XXX
+// database_query& operator<<(database_query& q, neb::downtime const& d) {
+//   to_base(q, d);
+//   return (q);
+// }
 
 /**
  *  ORM operator for event_handler.
@@ -428,10 +422,11 @@ database_query& operator<<(database_query& q, neb::module const& m) {
 /**
  *  ORM operator for notification.
  */
-database_query& operator<<(database_query& q, neb::notification const& n) {
-  to_base(q, n);
-  return (q);
-}
+// XXX
+// database_query& operator<<(database_query& q, neb::notification const& n) {
+//   to_base(q, n);
+//   return (q);
+// }
 
 /**
  *  ORM operator for service.

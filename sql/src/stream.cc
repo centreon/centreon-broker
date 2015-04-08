@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2014 Merethis
+** Copyright 2009-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -58,11 +58,10 @@ void (stream::* const stream::_correlation_processing_table[])(misc::shared_ptr<
 };
 void (stream::* const stream::_neb_processing_table[])(misc::shared_ptr<io::data> const&) = {
   NULL,
-  &stream::_process_acknowledgement,
-  &stream::_process_comment,
+  //&stream::_process_acknowledgement,
   &stream::_process_custom_variable,
   &stream::_process_custom_variable_status,
-  &stream::_process_downtime,
+  //&stream::_process_downtime,
   &stream::_process_event_handler,
   &stream::_process_flapping_status,
   &stream::_process_host_check,
@@ -76,7 +75,7 @@ void (stream::* const stream::_neb_processing_table[])(misc::shared_ptr<io::data
   &stream::_process_instance_status,
   &stream::_process_log,
   &stream::_process_module,
-  &stream::_process_notification,
+  //&stream::_process_notification,
   &stream::_process_service_check,
   &stream::_process_service_dependency,
   &stream::_process_service_group,
@@ -291,19 +290,6 @@ void stream::_clean_tables(int instance_id) {
         "SQL: could not clean custom variables table");
   }
 
-  // Remove comments.
-  {
-    std::ostringstream ss;
-    ss << "UPDATE rt_comments AS c"
-          " JOIN rt_hosts AS h"
-          " ON c.host_id=h.host_id"
-          " SET c.deletion_time=" << time(NULL)
-       << " WHERE h.instance_id=" << instance_id
-       << " AND c.persistent=0"
-          " AND (c.deletion_time IS NULL OR c.deletion_time=0)";
-    q.run_query(ss.str(), "SQL: could not clean comments table");
-  }
-
   return ;
 }
 
@@ -312,18 +298,15 @@ void stream::_clean_tables(int instance_id) {
  */
 void stream::_prepare() {
   // Prepare insert queries.
-  _prepare_insert<neb::acknowledgement>(
-                         _acknowledgement_insert,
-                        "rt_acknowledgements");
-  _prepare_insert<neb::comment>(
-                         _comment_insert,
-                         "rt_comments");
+  // XXX _prepare_insert<neb::acknowledgement>(
+  //                        _acknowledgement_insert,
+  //                       "rt_acknowledgements");
   _prepare_insert<neb::custom_variable>(
                          _custom_variable_insert,
                          "rt_customvariables");
-  _prepare_insert<neb::downtime>(
-                         _downtime_insert,
-                         "rt_downtimes");
+  // XXX _prepare_insert<neb::downtime>(
+  //                        _downtime_insert,
+  //                        "rt_downtimes");
   _prepare_insert<neb::event_handler>(
                          _event_handler_insert,
                          "rt_eventhandlers");
@@ -348,9 +331,9 @@ void stream::_prepare() {
   _prepare_insert<neb::module>(
                          _module_insert,
                          "rt_modules");
-  _prepare_insert<neb::notification>(
-                         _notification_insert,
-                         "rt_notifications");
+  // XXX _prepare_insert<neb::notification>(
+  //                        _notification_insert,
+  //                        "rt_notifications");
   _prepare_insert<neb::service>(
                          _service_insert,
                          "rt_services");
@@ -387,20 +370,14 @@ void stream::_prepare() {
   // Prepare update queries.
   std::map<std::string, bool> id;
 
-  id.clear();
-  id["entry_time"] = false;
-  id["host_id"] = false;
-  id["service_id"] = true;
-  _prepare_update<neb::acknowledgement>(
-                         _acknowledgement_update,
-                         "rt_acknowledgements",
-                         id);
-
-  id.clear();
-  id["host_id"] = false;
-  id["service_id"] = true;
-  id["entry_time"] = false;
-  _prepare_update<neb::comment>(_comment_update, "rt_comments", id);
+  // XXX id.clear();
+  // id["entry_time"] = false;
+  // id["host_id"] = false;
+  // id["service_id"] = true;
+  // _prepare_update<neb::acknowledgement>(
+  //                        _acknowledgement_update,
+  //                        "rt_acknowledgements",
+  //                        id);
 
   id.clear();
   id["host_id"] = false;
@@ -424,22 +401,22 @@ void stream::_prepare() {
     "rt_customvariables",
     id);
 
-  {
-    std::ostringstream oss;
-    oss << "UPDATE rt_downtimes"
-           " SET actual_end_time=GREATEST(COALESCE(actual_end_time, -1), :actual_end_time),"
-           "     actual_start_time=COALESCE(actual_start_time, :actual_start_time),"
-           "     author=:author, cancelled=:cancelled, comment_data=:comment_data,"
-           "     deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
-           "     fixed=:fixed, instance_id=:instance_id, internal_id=:internal_id,"
-           "     start_time=:start_time, started=:started, triggered_by=:triggered_by,"
-           "     type=:type"
-           " WHERE entry_time=:entry_time"
-           "        AND host_id=:host_id"
-           "        AND COALESCE(service_id, -1)=COALESCE(:service_id, -1)";
-    std::string query(oss.str());
-    _downtime_update.prepare(query, "SQL: could not prepare query");
-  }
+  // XXX {
+  //   std::ostringstream oss;
+  //   oss << "UPDATE rt_downtimes"
+  //          " SET actual_end_time=GREATEST(COALESCE(actual_end_time, -1), :actual_end_time),"
+  //          "     actual_start_time=COALESCE(actual_start_time, :actual_start_time),"
+  //          "     author=:author, cancelled=:cancelled, comment_data=:comment_data,"
+  //          "     deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
+  //          "     fixed=:fixed, instance_id=:instance_id, internal_id=:internal_id,"
+  //          "     start_time=:start_time, started=:started, triggered_by=:triggered_by,"
+  //          "     type=:type"
+  //          " WHERE entry_time=:entry_time"
+  //          "        AND host_id=:host_id"
+  //          "        AND COALESCE(service_id, -1)=COALESCE(:service_id, -1)";
+  //   std::string query(oss.str());
+  //   _downtime_update.prepare(query, "SQL: could not prepare query");
+  // }
 
   id.clear();
   id["host_id"] = false;
@@ -495,14 +472,14 @@ void stream::_prepare() {
                          "rt_instances",
                          id);
 
-  id.clear();
-  id["host_id"] = false;
-  id["service_id"] = true;
-  id["start_time"] = false;
-  _prepare_update<neb::notification>(
-                         _notification_update,
-                         "rt_notifications",
-                         id);
+  // XXX id.clear();
+  // id["host_id"] = false;
+  // id["service_id"] = true;
+  // id["start_time"] = false;
+  // _prepare_update<neb::notification>(
+  //                        _notification_update,
+  //                        "rt_notifications",
+  //                        id);
 
   id.clear();
   id["host_id"] = false;
@@ -761,53 +738,22 @@ void stream::_prepare_delete(
  */
 void stream::_process_acknowledgement(
                misc::shared_ptr<io::data> const& e) {
-  // Cast object.
-  neb::acknowledgement const&
-    ack(*static_cast<neb::acknowledgement const*>(e.data()));
+  // XXX // Cast object.
+  // neb::acknowledgement const&
+  //   ack(*static_cast<neb::acknowledgement const*>(e.data()));
 
-  // Log message.
-  logging::info(logging::medium)
-    << "SQL: processing acknowledgement event (instance: "
-    << ack.instance_id << ", host: " << ack.host_id << ", service: "
-    << ack.service_id << ", entry time: " << ack.entry_time
-    << ", deletion time: " << ack.deletion_time << ")";
+  // // Log message.
+  // logging::info(logging::medium)
+  //   << "SQL: processing acknowledgement event (instance: "
+  //   << ack.instance_id << ", host: " << ack.host_id << ", service: "
+  //   << ack.service_id << ", entry time: " << ack.entry_time
+  //   << ", deletion time: " << ack.deletion_time << ")";
 
-  // Processing.
-  _update_on_none_insert(
-    _acknowledgement_insert,
-    _acknowledgement_update,
-    ack);
-
-  return ;
-}
-
-/**
- *  Process a comment event.
- *
- *  @param[in] e Uncasted comment.
- */
-void stream::_process_comment(
-               misc::shared_ptr<io::data> const& e) {
-  // Cast object.
-  neb::comment const& com(*static_cast<neb::comment const*>(e.data()));
-
-  // Log message.
-  logging::info(logging::medium) << "SQL: processing comment event"
-       " (instance: " << com.instance_id << ", host: " << com.host_id
-    << ", service: " << com.service_id << ", entry time: "
-    << com.entry_time << ", expire time: " << com.expire_time
-    << ", deletion time: " << com.deletion_time << ", id: "
-    << com.internal_id << ")";
-
-  // Processing.
-  if (com.host_id)
-    _update_on_none_insert(
-      _comment_insert,
-      _comment_update,
-      com);
-  else
-    logging::error(logging::low) << "SQL: could not process event " \
-      "which does not have an host ID";
+  // // Processing.
+  // _update_on_none_insert(
+  //   _acknowledgement_insert,
+  //   _acknowledgement_update,
+  //   ack);
 
   return ;
 }
@@ -887,32 +833,32 @@ void stream::_process_custom_variable_status(
  */
 void stream::_process_downtime(
                misc::shared_ptr<io::data> const& e) {
-  // Cast object.
-  neb::downtime const&
-    d(*static_cast<neb::downtime const*>(e.data()));
+  // XXX // Cast object.
+  // neb::downtime const&
+  //   d(*static_cast<neb::downtime const*>(e.data()));
 
-  // Log message.
-  logging::info(logging::medium)
-    << "SQL: processing downtime event (instance: " << d.instance_id
-    << ", host: " << d.host_id << ", service: " << d.service_id
-    << ", start time: " << d.start_time << ", end_time: " << d.end_time
-    << ", actual start time: " << d.actual_start_time
-    << ", actual end time: " << d.actual_end_time << ", duration: "
-    << d.duration << ", entry time: " << d.entry_time
-    << ", deletion time: " << d.deletion_time << ")";
+  // // Log message.
+  // logging::info(logging::medium)
+  //   << "SQL: processing downtime event (instance: " << d.instance_id
+  //   << ", host: " << d.host_id << ", service: " << d.service_id
+  //   << ", start time: " << d.start_time << ", end_time: " << d.end_time
+  //   << ", actual start time: " << d.actual_start_time
+  //   << ", actual end time: " << d.actual_end_time << ", duration: "
+  //   << d.duration << ", entry time: " << d.entry_time
+  //   << ", deletion time: " << d.deletion_time << ")";
 
-  // Only update in case of downtime termination.
-  if (d.actual_end_time) {
-    _downtime_update << d;
-    _downtime_update.run_statement("SQL");
-  }
-  // Update or insert if no entry was found, as long as the downtime
-  // is valid.
-  else
-    _update_on_none_insert(
-      _downtime_insert,
-      _downtime_update,
-      d);
+  // // Only update in case of downtime termination.
+  // if (d.actual_end_time) {
+  //   _downtime_update << d;
+  //   _downtime_update.run_statement("SQL");
+  // }
+  // // Update or insert if no entry was found, as long as the downtime
+  // // is valid.
+  // else
+  //   _update_on_none_insert(
+  //     _downtime_insert,
+  //     _downtime_update,
+  //     d);
 
   return ;
 }
@@ -1590,15 +1536,16 @@ void stream::_process_module(
  */
 void stream::_process_notification(
                misc::shared_ptr<io::data> const& e) {
-  // Log message.
-  logging::info(logging::medium)
-    << "SQL: processing notification event";
+  // XXX
+  // // Log message.
+  // logging::info(logging::medium)
+  //   << "SQL: processing notification event";
 
-  // Processing.
-  _update_on_none_insert(
-    _notification_insert,
-    _notification_update,
-    *static_cast<neb::notification const*>(e.data()));
+  // // Processing.
+  // _update_on_none_insert(
+  //   _notification_insert,
+  //   _notification_update,
+  //   *static_cast<neb::notification const*>(e.data()));
 
   return ;
 }
@@ -1964,9 +1911,8 @@ void stream::_write_logs() {
     QTextStream query(&q);
     query << "INSERT INTO log_logs"
           << "  (ctime, host_id, host_name, instance_name, issue_id, "
-          << "  msg_type, notification_cmd, notification_contact, "
-          << "  output, retry, service_description, service_id, status, "
-          << "  type) "
+          << "  msg_type,  output, retry, service_description, "
+	  << "  service_id, status, type) "
           << "VALUES ";
 
     // Fields used to escape strings.
@@ -1976,13 +1922,7 @@ void stream::_write_logs() {
     QSqlField instance_name_field(
                 "instance_name",
                 QVariant::String);
-    QSqlField notification_cmd_field(
-                "notification_cmd",
-                QVariant::String);
-    QSqlField notification_contact_field(
-                "notification_contact",
-                QVariant::String);
-    QSqlField output_field(
+     QSqlField output_field(
                 "output",
                 QVariant::String);
     QSqlField service_description_field(
@@ -2023,8 +1963,6 @@ void stream::_write_logs() {
       static QString const null_string("NULL");
       host_name_field.setValue(le->host_name);
       instance_name_field.setValue(le->instance_name);
-      notification_cmd_field.setValue(le->notification_cmd);
-      notification_contact_field.setValue(le->notification_contact);
       output_field.setValue(le->output);
       service_description_field.setValue(le->service_description);
       query << "(" << le->c_time << ", ";
@@ -2043,13 +1981,6 @@ void stream::_write_logs() {
       else
         query << "NULL";
       query << ", " << le->msg_type << ", "
-            << (notification_cmd_field.isNull()
-                ? null_string
-                : drivr->formatValue(notification_cmd_field)) << ", "
-            << (notification_contact_field.isNull()
-                ? null_string
-                : drivr->formatValue(notification_contact_field))
-            << ", "
             << (output_field.isNull()
                 ? empty_string
                 : drivr->formatValue(output_field)) << ", " << le->retry
@@ -2250,8 +2181,6 @@ stream::stream(
           check_replication)),
     _acknowledgement_insert(_db),
     _acknowledgement_update(_db),
-    _comment_insert(_db),
-    _comment_update(_db),
     _custom_variable_insert(_db),
     _custom_variable_update(_db),
     _custom_variable_delete(_db),

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -105,9 +105,9 @@ namespace        notification {
     void         _process_issue_parent_event(
                    correlation::issue_parent const& event);
     void         _process_ack(
-                   neb::acknowledgement const& event);
+                   notification::acknowledgement const& event);
     void         _process_downtime(
-                   neb::downtime const& event);
+                   notification::downtime const& event);
   };
 }
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Merethis
+** Copyright 2013-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -209,13 +209,6 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
       &neb::host::host_name,
       0>);
   map.insert(
-    "HOSTDISPLAYNAME",
-    &get_host_member_as_string<
-      neb::host_service,
-      QString,
-      &neb::host_service::display_name,
-      0>);
-  map.insert(
     "HOSTALIAS",
     &get_host_member_as_string<neb::host, QString, &neb::host::alias, 0>);
   map.insert(
@@ -283,13 +276,13 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
   map.insert(
     "HOSTDURATIONSEC",
     get_host_duration_sec);
-  map.insert(
-    "HOSTDOWNTIME",
-    &get_host_status_member_as_string<
-      neb::host_service_status,
-      short,
-      &neb::host_service_status::scheduled_downtime_depth,
-      0>);
+  // XXX map.insert(
+  //   "HOSTDOWNTIME",
+  //   &get_host_status_member_as_string<
+  //     neb::host_service_status,
+  //     short,
+  //     &neb::host_service_status::scheduled_downtime_depth,
+  //     0>);
   map.insert(
     "HOSTPERCENTCHANGE",
     &get_host_status_member_as_string<
@@ -388,13 +381,6 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
       &neb::service_status::service_description,
       0>);
   map.insert(
-    "SERVICEDISPLAYNAME",
-    &get_service_member_as_string<
-      neb::host_service,
-      QString,
-      &neb::host_service::display_name,
-      0>);
-  map.insert(
     "SERVICESTATE",
     &get_service_state);
   map.insert(
@@ -463,13 +449,13 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
   map.insert(
     "SERVICEDURATIONSEC",
     &get_service_duration_sec);
-  map.insert(
-    "SERVICEDOWNTIME",
-    &get_service_status_member_as_string<
-      neb::host_service_status,
-      short,
-      &neb::host_service_status::scheduled_downtime_depth,
-      0>);
+  // XXX map.insert(
+  //   "SERVICEDOWNTIME",
+  //   &get_service_status_member_as_string<
+  //     neb::host_service_status,
+  //     short,
+  //     &neb::host_service_status::scheduled_downtime_depth,
+  //     0>);
   map.insert(
     "SERVICEPERCENTCHANGE",
     &get_service_status_member_as_string<

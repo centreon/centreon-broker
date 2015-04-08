@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -89,7 +89,6 @@ namespace          sql {
                      database_query& st,
                      std::string const& table_name);
     void           _process_acknowledgement(misc::shared_ptr<io::data> const& e);
-    void           _process_comment(misc::shared_ptr<io::data> const& e);
     void           _process_custom_variable(misc::shared_ptr<io::data> const& e);
     void           _process_custom_variable_status(misc::shared_ptr<io::data> const& e);
     void           _process_downtime(misc::shared_ptr<io::data> const& e);
@@ -134,8 +133,6 @@ namespace          sql {
     database       _db;
     database_query _acknowledgement_insert;
     database_query _acknowledgement_update;
-    database_query _comment_insert;
-    database_query _comment_update;
     database_query _custom_variable_insert;
     database_query _custom_variable_update;
     database_query _custom_variable_delete;
@@ -153,8 +150,8 @@ namespace          sql {
     database_query _host_dependency_update;
     database_query _host_group_insert;
     database_query _host_group_update;
-    database_query _host_parent_select;
     database_query _host_parent_insert;
+    database_query _host_parent_select;
     database_query _host_state_insert;
     database_query _host_state_update;
     database_query _host_status_update;

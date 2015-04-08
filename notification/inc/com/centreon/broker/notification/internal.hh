@@ -36,7 +36,9 @@ namespace                 mapping {
 namespace     notification {
   // Data elements.
   enum {
-    de_acknowledgement_removed = 1,
+    de_acknowledgement = 1,
+    de_acknowledgement_removed,
+    de_downtime,
     de_downtime_removed
   };
 }
