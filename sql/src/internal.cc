@@ -282,15 +282,6 @@ static void to_base(database_query& q, T const& t) {
 }
 
 /**
- *  ORM operator for acknowledgement.
- */
-// XXX
-// database_query& operator<<(database_query& q, neb::acknowledgement const& a) {
-//   to_base(q, a);
-//   return (q);
-// }
-
-/**
  *  ORM operator for custom_variable.
  */
 database_query& operator<<(database_query& q, neb::custom_variable const& cv) {
@@ -305,15 +296,6 @@ database_query& operator<<(database_query& q, neb::custom_variable_status const&
   to_base(q, cvs);
   return (q);
 }
-
-/**
- *  ORM operator for downtime.
- */
-// XXX
-// database_query& operator<<(database_query& q, neb::downtime const& d) {
-//   to_base(q, d);
-//   return (q);
-// }
 
 /**
  *  ORM operator for event_handler.
@@ -473,6 +455,22 @@ database_query& operator<<(database_query& q, neb::service_group_member const& s
  */
 database_query& operator<<(database_query& q, neb::service_status const& ss) {
   to_base(q, ss);
+  return (q);
+}
+
+/**
+ *  ORM operator for acknowledgement.
+ */
+database_query& operator<<(database_query& q, notification::acknowledgement const& a) {
+  to_base(q, a);
+  return (q);
+}
+
+/**
+ *  ORM operator for downtime.
+ */
+database_query& operator<<(database_query& q, notification::downtime const& d) {
+  to_base(q, d);
   return (q);
 }
 

@@ -298,15 +298,9 @@ void stream::_clean_tables(int instance_id) {
  */
 void stream::_prepare() {
   // Prepare insert queries.
-  // XXX _prepare_insert<neb::acknowledgement>(
-  //                        _acknowledgement_insert,
-  //                       "rt_acknowledgements");
   _prepare_insert<neb::custom_variable>(
                          _custom_variable_insert,
                          "rt_customvariables");
-  // XXX _prepare_insert<neb::downtime>(
-  //                        _downtime_insert,
-  //                        "rt_downtimes");
   _prepare_insert<neb::event_handler>(
                          _event_handler_insert,
                          "rt_eventhandlers");
@@ -343,6 +337,12 @@ void stream::_prepare() {
   _prepare_insert<neb::service_group>(
                          _service_group_insert,
                          "rt_servicegroups");
+  _prepare_insert<notification::acknowledgement>(
+                                  _acknowledgement_insert,
+                                  "rt_acknowledgements");
+  _prepare_insert<notification::downtime>(
+                                  _downtime_insert,
+                                  "rt_downtimes");
   _prepare_insert<correlation::host_state>(
                                  _host_state_insert,
                                  "rt_hoststateevents");
@@ -370,15 +370,6 @@ void stream::_prepare() {
   // Prepare update queries.
   std::map<std::string, bool> id;
 
-  // XXX id.clear();
-  // id["entry_time"] = false;
-  // id["host_id"] = false;
-  // id["service_id"] = true;
-  // _prepare_update<neb::acknowledgement>(
-  //                        _acknowledgement_update,
-  //                        "rt_acknowledgements",
-  //                        id);
-
   id.clear();
   id["host_id"] = false;
   id["name"] = false;
@@ -400,23 +391,6 @@ void stream::_prepare() {
     _custom_variable_status_update,
     "rt_customvariables",
     id);
-
-  // XXX {
-  //   std::ostringstream oss;
-  //   oss << "UPDATE rt_downtimes"
-  //          " SET actual_end_time=GREATEST(COALESCE(actual_end_time, -1), :actual_end_time),"
-  //          "     actual_start_time=COALESCE(actual_start_time, :actual_start_time),"
-  //          "     author=:author, cancelled=:cancelled, comment_data=:comment_data,"
-  //          "     deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
-  //          "     fixed=:fixed, instance_id=:instance_id, internal_id=:internal_id,"
-  //          "     start_time=:start_time, started=:started, triggered_by=:triggered_by,"
-  //          "     type=:type"
-  //          " WHERE entry_time=:entry_time"
-  //          "        AND host_id=:host_id"
-  //          "        AND COALESCE(service_id, -1)=COALESCE(:service_id, -1)";
-  //   std::string query(oss.str());
-  //   _downtime_update.prepare(query, "SQL: could not prepare query");
-  // }
 
   id.clear();
   id["host_id"] = false;
@@ -519,6 +493,32 @@ void stream::_prepare() {
                          _service_status_update,
                          "rt_services",
                          id);
+
+  id.clear();
+  id["entry_time"] = false;
+  id["host_id"] = false;
+  id["service_id"] = true;
+  _prepare_update<notification::acknowledgement>(
+                                  _acknowledgement_update,
+                                  "rt_acknowledgements",
+                                  id);
+
+  {
+    std::ostringstream oss;
+    oss << "UPDATE rt_downtimes"
+           " SET actual_end_time=GREATEST(COALESCE(actual_end_time, -1), :actual_end_time),"
+           "     actual_start_time=COALESCE(actual_start_time, :actual_start_time),"
+           "     author=:author, cancelled=:cancelled, comment_data=:comment_data,"
+           "     deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
+           "     fixed=:fixed, instance_id=:instance_id, internal_id=:internal_id,"
+           "     start_time=:start_time, started=:started, triggered_by=:triggered_by,"
+           "     type=:type"
+           " WHERE entry_time=:entry_time"
+           "        AND host_id=:host_id"
+           "        AND COALESCE(service_id, -1)=COALESCE(:service_id, -1)";
+    std::string query(oss.str());
+    _downtime_update.prepare(query, "SQL: could not prepare query");
+  }
 
   id.clear();
   id["host_id"] = false;
@@ -738,22 +738,22 @@ void stream::_prepare_delete(
  */
 void stream::_process_acknowledgement(
                misc::shared_ptr<io::data> const& e) {
-  // XXX // Cast object.
-  // neb::acknowledgement const&
-  //   ack(*static_cast<neb::acknowledgement const*>(e.data()));
+  // Cast object.
+  notification::acknowledgement const&
+    ack(*static_cast<notification::acknowledgement const*>(e.data()));
 
-  // // Log message.
-  // logging::info(logging::medium)
-  //   << "SQL: processing acknowledgement event (instance: "
-  //   << ack.instance_id << ", host: " << ack.host_id << ", service: "
-  //   << ack.service_id << ", entry time: " << ack.entry_time
-  //   << ", deletion time: " << ack.deletion_time << ")";
+  // Log message.
+  logging::info(logging::medium)
+    << "SQL: processing acknowledgement event (instance: "
+    << ack.instance_id << ", host: " << ack.host_id << ", service: "
+    << ack.service_id << ", entry time: " << ack.entry_time
+    << ", deletion time: " << ack.deletion_time << ")";
 
-  // // Processing.
-  // _update_on_none_insert(
-  //   _acknowledgement_insert,
-  //   _acknowledgement_update,
-  //   ack);
+  // Processing.
+  _update_on_none_insert(
+    _acknowledgement_insert,
+    _acknowledgement_update,
+    ack);
 
   return ;
 }
@@ -833,32 +833,32 @@ void stream::_process_custom_variable_status(
  */
 void stream::_process_downtime(
                misc::shared_ptr<io::data> const& e) {
-  // XXX // Cast object.
-  // neb::downtime const&
-  //   d(*static_cast<neb::downtime const*>(e.data()));
+  // Cast object.
+  notification::downtime const&
+    d(*static_cast<notification::downtime const*>(e.data()));
 
-  // // Log message.
-  // logging::info(logging::medium)
-  //   << "SQL: processing downtime event (instance: " << d.instance_id
-  //   << ", host: " << d.host_id << ", service: " << d.service_id
-  //   << ", start time: " << d.start_time << ", end_time: " << d.end_time
-  //   << ", actual start time: " << d.actual_start_time
-  //   << ", actual end time: " << d.actual_end_time << ", duration: "
-  //   << d.duration << ", entry time: " << d.entry_time
-  //   << ", deletion time: " << d.deletion_time << ")";
+  // Log message.
+  logging::info(logging::medium)
+    << "SQL: processing downtime event (instance: " << d.instance_id
+    << ", host: " << d.host_id << ", service: " << d.service_id
+    << ", start time: " << d.start_time << ", end_time: " << d.end_time
+    << ", actual start time: " << d.actual_start_time
+    << ", actual end time: " << d.actual_end_time << ", duration: "
+    << d.duration << ", entry time: " << d.entry_time
+    << ", deletion time: " << d.deletion_time << ")";
 
-  // // Only update in case of downtime termination.
-  // if (d.actual_end_time) {
-  //   _downtime_update << d;
-  //   _downtime_update.run_statement("SQL");
-  // }
-  // // Update or insert if no entry was found, as long as the downtime
-  // // is valid.
-  // else
-  //   _update_on_none_insert(
-  //     _downtime_insert,
-  //     _downtime_update,
-  //     d);
+  // Only update in case of downtime termination.
+  if (d.actual_end_time) {
+    _downtime_update << d;
+    _downtime_update.run_statement("SQL");
+  }
+  // Update or insert if no entry was found, as long as the downtime
+  // is valid.
+  else
+    _update_on_none_insert(
+      _downtime_insert,
+      _downtime_update,
+      d);
 
   return ;
 }
@@ -1912,7 +1912,7 @@ void stream::_write_logs() {
     query << "INSERT INTO log_logs"
           << "  (ctime, host_id, host_name, instance_name, issue_id, "
           << "  msg_type,  output, retry, service_description, "
-	  << "  service_id, status, type) "
+          << "  service_id, status, type) "
           << "VALUES ";
 
     // Fields used to escape strings.

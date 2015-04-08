@@ -27,14 +27,13 @@
 #  include "com/centreon/broker/database_query.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/neb/events.hh"
+#  include "com/centreon/broker/notification/acknowledgement.hh"
+#  include "com/centreon/broker/notification/downtime.hh"
 #  include "mapping.hh"
 
 // ORM operators.
-// XXX com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::acknowledgement const& a);
-// XXX com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::comment const& c);
 com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::custom_variable const& cv);
 com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::custom_variable_status const& cvs);
-// XXX com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::downtime const& d);
 com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::event_handler const& eh);
 com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::flapping_status const& fs);
 com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::host const& h);
@@ -55,6 +54,8 @@ com::centreon::broker::database_query& operator<<(com::centreon::broker::databas
 com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::service_group const& sg);
 com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::service_group_member const& sgm);
 com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::neb::service_status const& ss);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::notification::acknowledgement const& a);
+com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::notification::downtime const& d);
 com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::correlation::host_state const& hs);
 com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::correlation::issue const& i);
 com::centreon::broker::database_query& operator<<(com::centreon::broker::database_query& q, com::centreon::broker::correlation::service_state const& ss);
