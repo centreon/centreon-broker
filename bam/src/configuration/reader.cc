@@ -725,7 +725,10 @@ void reader::_load_dimensions() {
     // Load the BA BV relations.
     q.run_query(
       "SELECT id_ba, id_ba_group"
-      "  FROM mod_bam_bagroup_ba_relation",
+      "  FROM mod_bam_bagroup_ba_relation as r"
+      "  LEFT JOIN mod_bam as b"
+      "    ON b.ba_id = r.id_ba"
+      "  WHERE b.activate='1'",
       "could not retrieve BV memberships of BAs");
     while (q.next()) {
       misc::shared_ptr<dimension_ba_bv_relation_event>
@@ -769,7 +772,8 @@ void reader::_load_dimensions() {
       "               WHERE activate='1'"
       "               GROUP BY id_ba) AS g"
       "   ON k.id_ba=g.id_ba"
-      "  WHERE k.activate='1'",
+      "  WHERE k.activate='1'"
+      "    AND b.activate='1'",
       "could not retrieve KPI dimensions");
     while (q.next()) {
       misc::shared_ptr<dimension_kpi_event> k(new dimension_kpi_event);
