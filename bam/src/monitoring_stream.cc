@@ -160,9 +160,8 @@ void monitoring_stream::update() {
     initialize();
   }
   catch (std::exception const& e) {
-    logging::error(logging::high)
-      << "BAM: could not process configuration update: "
-      << e.what();
+    throw (exceptions::msg()
+           << "BAM: could not process configuration update: " << e.what());
   }
   return ;
 }
