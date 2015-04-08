@@ -486,6 +486,13 @@ if (WITH_MODULE_NEB)
   list(APPEND MODULE_LIST "neb")
 endif()
 
+# Notification module.
+option(WITH_MODULE_NOTIFICATION "Build NOTIFICATION module." ON)
+if (WITH_MODULE_NOTIFICATION)
+  add_subdirectory("notification")
+  list(APPEND MODULE_LIST "notification")
+endif()
+
 # Compression module.
 option(WITH_MODULE_COMPRESSION "Build compression module." ON)
 if (WITH_MODULE_COMPRESSION)
@@ -561,13 +568,6 @@ option(WITH_MODULE_TLS "Build TLS module." ON)
 if (WITH_MODULE_TLS)
   add_subdirectory("tls")
   list(APPEND MODULE_LIST "tls")
-endif()
-
-# Notification module.
-option(WITH_MODULE_NOTIFICATION "Build NOTIFICATION module." ON)
-if (WITH_MODULE_NOTIFICATION)
-  add_subdirectory("notification")
-  list(APPEND MODULE_LIST "notification")
 endif()
 
 # Format string.

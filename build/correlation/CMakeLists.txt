@@ -24,6 +24,7 @@ set(TEST_DIR "${PROJECT_SOURCE_DIR}/correlation/test")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
+include_directories("${PROJECT_SOURCE_DIR}/notification/inc")
 set(INC_DIR "${INC_DIR}/com/centreon/broker/correlation")
 
 # Some files must be processed by Qt's moc.
@@ -432,15 +433,16 @@ if (WITH_TESTING)
   #   "ccb_correlation_correlator"
   #   ${TEST_LIBRARIES})
   # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Acknowledgement handling.
-  # set(TEST_NAME "correlation_correlator_acknowledgement")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/correlator/acknowledgement.cc"
-  #   "${TEST_DIR}/correlator/common.hh")
-  # target_link_libraries("${TEST_NAME}"
-  #   "ccb_correlation_correlator"
-  #   ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Acknowledgement handling.
+  set(TEST_NAME "correlation_correlator_acknowledgement")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/correlator/acknowledgement.cc"
+    "${TEST_DIR}/correlator/common.hh")
+  target_link_libraries("${TEST_NAME}"
+    "ccb_correlation_correlator"
+    ${NOTIFICATION}
+    ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()
 
 # Install rule.

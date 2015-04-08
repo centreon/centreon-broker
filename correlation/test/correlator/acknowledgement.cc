@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -24,8 +24,8 @@
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/correlation/correlator.hh"
 #include "com/centreon/broker/correlation/node.hh"
-#include "com/centreon/broker/neb/acknowledgement.hh"
 #include "com/centreon/broker/neb/service_status.hh"
+#include "com/centreon/broker/notification/acknowledgement.hh"
 #include "test/correlator/common.hh"
 
 using namespace com::centreon::broker;
@@ -72,8 +72,8 @@ int main() {
       c.write(ss);
     }
     { // #2
-      misc::shared_ptr<neb::acknowledgement>
-        ack(new neb::acknowledgement);
+      misc::shared_ptr<notification::acknowledgement>
+        ack(new notification::acknowledgement);
       ack->host_id = 42;
       ack->instance_id = 1;
       ack->service_id = 24;
@@ -92,8 +92,8 @@ int main() {
       c.write(ss);
     }
     { // #4
-      misc::shared_ptr<neb::acknowledgement>
-        ack(new neb::acknowledgement);
+      misc::shared_ptr<notification::acknowledgement>
+        ack(new notification::acknowledgement);
       ack->host_id = 42;
       ack->instance_id = 1;
       ack->service_id = 24;
@@ -109,7 +109,6 @@ int main() {
       ss->state_type = 1;
       ss->current_state = 2;
       ss->last_check = 123456793;
-      ss->problem_has_been_acknowledged = true;
       c.write(ss);
     }
     { // #6
@@ -123,8 +122,8 @@ int main() {
       c.write(ss);
     }
     { // #7
-      misc::shared_ptr<neb::acknowledgement>
-        ack(new neb::acknowledgement);
+      misc::shared_ptr<notification::acknowledgement>
+        ack(new notification::acknowledgement);
       ack->host_id = 42;
       ack->instance_id = 1;
       ack->service_id = 24;
