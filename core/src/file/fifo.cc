@@ -91,7 +91,7 @@ std::string fifo::read_line(int usecs_timeout) {
   if (ret == -1) {
     const char* msg = ::strerror(errno);
     throw (exceptions::msg()
-           << "dumper: can't read file '" << _path
+           << "fifo: can't read file '" << _path
            << "' for the fifo dumper: " << msg);
   }
   buf[ret] = '\0';

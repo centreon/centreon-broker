@@ -1060,6 +1060,8 @@ QMap<QPair<unsigned int, unsigned int>, node>::iterator correlator::_remove_node
  */
 void correlator::_process_event_on_active(
                    misc::shared_ptr<io::data> const& e) {
+  if (e.isNull())
+    return ;
   unsigned int e_type(e->type());
   if ((e_type == neb::service_status::static_type())
         || (e_type == neb::service::static_type()))
