@@ -33,4 +33,5 @@
     <queries_per_transaction>0</queries_per_transaction>
     <node_cache_file>@NODE_CACHE_FILE@</node_cache_file>
   </output>
+  <command_file>@BROKER_COMMAND_FILE@</command_file>
 </centreonbroker>

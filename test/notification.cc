@@ -33,6 +33,7 @@
 
 using namespace com::centreon::broker;
 
+#define BROKER_COMMAND_FILE "broker_notification_command_file.cmd"
 #define DB_NAME "broker_notification"
 #define UTIL_FILE_WRITER PROJECT_SOURCE_DIR"/build/util_write_into_file"
 #define TIME_MACROS "$LONGDATETIME$\n$SHORTDATETIME$\n$DATE$\n$TIME$\n$TIMET$\n"
@@ -468,6 +469,7 @@ int main() {
     broker_cfg.set_template(
       PROJECT_SOURCE_DIR "/test/cfg/notification.xml.in");
     broker_cfg.set("NODE_CACHE_FILE", node_cache_file);
+    broker_cfg.set("BROKER_COMMAND_FILE", BROKER_COMMAND_FILE);
     commander.set_file(tmpnam(NULL));
     std::string additional_config;
     {

@@ -82,6 +82,9 @@ void stream::read(misc::shared_ptr<io::data>& d) {
     misc::shared_ptr<external_command> exc(new external_command);
     exc->command = QString::fromStdString(line);
     d = exc;
+
+    logging::info(logging::high)
+      << "command_file: received external command: '" << exc->command << "'";
   }
 }
 
