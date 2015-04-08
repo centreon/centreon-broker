@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -78,15 +78,6 @@ metric& metric::operator=(metric const& m) {
  */
 unsigned int metric::type() const {
   return (metric::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-unsigned int metric::static_type() {
-  return (io::events::data_type<io::events::storage, storage::de_metric>::value);
 }
 
 /**************************************

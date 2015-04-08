@@ -39,7 +39,10 @@
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/internal.hh"
+#include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_status.hh"
+#include "com/centreon/broker/notification/acknowledgement.hh"
+#include "com/centreon/broker/notification/downtime.hh"
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/bam/event_cache_visitor.hh"
@@ -184,10 +187,8 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
     ++_pending_events;
 
     // Process service status events.
-    if ((data->type()
-        == io::events::data_type<io::events::neb, neb::de_service_status>::value)
-        || (data->type()
-            == io::events::data_type<io::events::neb, neb::de_service>::value)) {
+    if ((data->type() == neb::service_status::static_type())
+        || (data->type() == neb::service::static_type())) {
       misc::shared_ptr<neb::service_status>
         ss(data.staticCast<neb::service_status>());
       logging::debug(logging::low)
@@ -200,8 +201,29 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
       _applier.book_service().update(ss, &ev_cache);
       ev_cache.commit_to(pblshr);
     }
-    else if (data->type()
-             == io::events::data_type<io::events::storage, storage::de_metric>::value) {
+    else if (data->type() == notification::acknowledgement::static_type()) {
+      misc::shared_ptr<notification::acknowledgement>
+	ack(data.staticCast<notification::acknowledgement>());
+      logging::debug(logging::low)
+	<< "BAM: processing acknowledgement (host "
+	<< ack->host_id << ", service " << ack->service_id << ")";
+      multiplexing::publisher pblshr;
+      event_cache_visitor ev_cache;
+      _applier.book_service().update(ack, &ev_cache);
+      ev_cache.commit_to(pblshr);
+    }
+    else if (data->type() == notification::downtime::static_type()) {
+      misc::shared_ptr<notification::downtime>
+	dt(data.staticCast<notification::downtime>());
+      logging::debug(logging::low)
+	<< "BAM: processing downtime (host " << dt->host_id
+	<< ", service " << dt->service_id << ")";
+      multiplexing::publisher pblshr;
+      event_cache_visitor ev_cache;
+      _applier.book_service().update(dt, &ev_cache);
+      ev_cache.commit_to(pblshr);
+    }
+    else if (data->type() == storage::metric::static_type()) {
       misc::shared_ptr<storage::metric>
         m(data.staticCast<storage::metric>());
       logging::debug(logging::low)
@@ -212,8 +234,7 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
       _applier.book_metric().update(m, &ev_cache);
       ev_cache.commit_to(pblshr);
     }
-    else if (data->type()
-             == io::events::data_type<io::events::bam, bam::de_ba_status>::value) {
+    else if (data->type() == bam::ba_status::static_type()) {
       ba_status* status(static_cast<ba_status*>(data.data()));
       logging::debug(logging::low) << "BAM: processing BA status (id "
         << status->ba_id << ", level " << status->level_nominal
@@ -239,8 +260,7 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
                << status->ba_id << ": " << e.what());
       }
     }
-    else if (data->type()
-             == io::events::data_type<io::events::bam, bam::de_bool_status>::value) {
+    else if (data->type() == bam::bool_status::static_type()) {
       bool_status* status(static_cast<bool_status*>(data.data()));
       logging::debug(logging::low) << "BAM: processing boolexp status (id "
         << status->bool_id << ", state " << status->state << ")";
@@ -253,8 +273,7 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
                << status->bool_id << ": " << e.what());
       }
     }
-    else if (data->type()
-             == io::events::data_type<io::events::bam, bam::de_kpi_status>::value) {
+    else if (data->type() == bam::kpi_status::static_type()) {
       kpi_status* status(static_cast<kpi_status*>(data.data()));
       logging::debug(logging::low) << "BAM: processing KPI status (id "
         << status->kpi_id << ", level " << status->level_nominal_hard
@@ -285,8 +304,7 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
                << status->kpi_id << ": " << e.what());
       }
     }
-    else if (data->type()
-             == io::events::data_type<io::events::bam, bam::de_meta_service_status>::value) {
+    else if (data->type() == bam::meta_service_status::static_type()) {
       meta_service_status* status(static_cast<meta_service_status*>(data.data()));
       logging::debug(logging::low)
         << "BAM: processing meta-service status (id "

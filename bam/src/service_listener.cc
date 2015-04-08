@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -29,10 +29,10 @@ service_listener::service_listener() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-service_listener::service_listener(service_listener const& right) {
-  (void)right;
+service_listener::service_listener(service_listener const& other) {
+  (void)other;
 }
 
 /**
@@ -43,12 +43,54 @@ service_listener::~service_listener() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
 service_listener& service_listener::operator=(
-                                      service_listener const& right) {
-  (void)right;
+                                      service_listener const& other) {
+  (void)other;
   return (*this);
+}
+
+/**
+ *  Notify of a service status update.
+ *
+ *  @param[in]  status   Service status.
+ *  @param[out] visitor  Visitor.
+ */
+void service_listener::service_update(
+                         misc::shared_ptr<neb::service_status> const& status,
+                         io::stream* visitor) {
+  (void)status;
+  (void)visitor;
+  return ;
+}
+
+/**
+ *  Notify of an acknowledgement.
+ *
+ *  @param[in]  ack      Acknowledgement.
+ *  @param[out] visitor  Visitor.
+ */
+void service_listener::service_update(
+                         misc::shared_ptr<notification::acknowledgement> const& ack,
+                         io::stream* visitor) {
+  (void)ack;
+  (void)visitor;
+  return ;
+}
+
+/**
+ *  Notify of a downtime.
+ *
+ *  @param[in]  dt       Downtime.
+ *  @param[out] visitor  Visitor.
+ */
+void service_listener::service_update(
+                         misc::shared_ptr<notification::downtime> const& dt,
+                         io::stream* visitor) {
+  (void)dt;
+  (void)visitor;
+  return ;
 }

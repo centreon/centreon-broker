@@ -92,15 +92,6 @@ unsigned int downtime::type() const {
   return (downtime::static_type());
 }
 
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-unsigned int downtime::static_type() {
-  return (io::events::data_type<io::events::notification, notification::de_downtime>::value);
-}
-
 /**************************************
 *                                     *
 *           Private Methods           *

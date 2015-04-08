@@ -22,8 +22,9 @@
 #include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi.hh"
-#include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/neb/service_status.hh"
+#include "com/centreon/broker/notification/downtime.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -469,17 +470,14 @@ void ba::visit(io::stream* visitor) {
     // Generate virtual service status event.
     {
       misc::shared_ptr<neb::service_status> status(new neb::service_status);
-      // status->acknowledgement_type = XXX;
       status->active_checks_enabled = false;
       status->check_interval = 0.0;
       status->check_type = 1; // Passive.
       status->current_check_attempt = 1;
-      // status->current_notification_number = XXX;
       status->current_state = hard_state;
       status->enabled = true;
       status->event_handler_enabled = false;
       status->execution_time = 0.0;
-      // status->failure_prediction_enabled = XXX;
       status->flap_detection_enabled = false;
       status->has_been_checked = true;
       status->host_id = _host_id;
@@ -491,7 +489,6 @@ void ba::visit(io::stream* visitor) {
         status->last_check = _last_kpi_update;
       status->last_hard_state = hard_state;
       status->last_hard_state_change = status->last_check;
-      // status->last_notification = XXX;
       status->last_state_change = status->last_check;
       // status->last_time_critical = XXX;
       // status->last_time_unknown = XXX;
@@ -499,9 +496,6 @@ void ba::visit(io::stream* visitor) {
       status->last_update = time(NULL);
       status->latency = 0.0;
       status->max_check_attempts = 1;
-      // status->next_notification = XXX;
-      // status->no_more_notifications = XXX;
-      // status->notifications_enabled = XXX;
       status->obsess_over = false;
       {
         std::ostringstream oss;
@@ -520,10 +514,7 @@ void ba::visit(io::stream* visitor) {
             << static_cast<int>(_acknowledgement_hard);
         status->perf_data = oss.str().c_str();
       }
-      // status->problem_has_been_acknowledged = XXX;
-      // status->process_performance_data = XXX;
       status->retry_interval = 0;
-      // status->scheduled_downtime_depth = XXX;
       // status->service_description = XXX;
       status->service_id = _service_id;
       status->should_be_scheduled = false;
@@ -535,26 +526,27 @@ void ba::visit(io::stream* visitor) {
 }
 
 /**
- *  @brief The service associated to this BA was updated.
+ *  @brief Notify BA of a downtime 
  *
  *  Used to watch for downtime.
  *
- *  @param status   Status of the service.
+ *  @param dt       Downtime of the service.
  *  @param visitor  Visitor that will receive events.
  */
 void ba::service_update(
-          misc::shared_ptr<neb::service_status> const& status,
+          misc::shared_ptr<notification::downtime> const& dt,
           io::stream* visitor) {
-  (void) visitor;
-  if (status->host_id == _host_id
-      && status->service_id == _service_id) {
+  (void)visitor;
+  if ((dt->host_id == _host_id)
+      && (dt->service_id == _service_id)) {
     // Log message.
     logging::debug(logging::low)
-      << "BAM: BA " << _id << " is getting notified of service ("
-      << _host_id << ", " << _service_id << ") update";
+      << "BAM: BA " << _id
+      << " is getting notified of a downtime on its service ("
+      << _host_id << ", " << _service_id << ")";
 
     // Check if there was a change.
-    bool in_downtime(false); // XXX status->scheduled_downtime_depth > 0);
+    bool in_downtime(dt->was_started && (dt->actual_end_time != -1));
     if (_in_downtime != in_downtime) {
       _in_downtime = in_downtime;
 
@@ -567,11 +559,10 @@ void ba::service_update(
   }
   else
     logging::error(logging::medium)
-      << "BAM: BA " << _id << " has got an invalid status service."
-         " This should never happen : check your database. "
-         "(BA host id = " << _host_id << ", service id = " << _service_id <<
-         ", inbound host id = " << status->host_id
-      << ", service_id = " << status->service_id << ").";
+      << "BAM: BA " << _id << " has got an invalid downtime event."
+         " This should never happen. Check your database: got (host "
+      << dt->host_id << ", service " << dt->service_id
+      << ") expected (" << _host_id << ", " << _service_id << ")";
 }
 
 /**

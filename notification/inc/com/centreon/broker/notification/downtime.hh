@@ -23,8 +23,10 @@
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/io/events.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/notification/internal.hh"
 #  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
@@ -46,8 +48,18 @@ namespace          notification {
                    ~downtime();
     downtime&      operator=(downtime const& other);
     unsigned int   type() const;
+
+    /**
+     *  Get the type of this event.
+     *
+     *  @return  The event type.
+     */
     static unsigned int
-                   static_type();
+                   static_type() {
+      return (io::events::data_type<
+                            io::events::notification,
+	                    notification::de_downtime>::value);
+    }
 
     timestamp      actual_end_time;
     timestamp      actual_start_time;

@@ -357,17 +357,14 @@ void meta_service::visit(io::stream* visitor) {
     {
       misc::shared_ptr<neb::service_status>
         status(new neb::service_status);
-      // status->acknowledgement_type = XXX;
       status->active_checks_enabled = false;
       status->check_interval = 0.0;
       status->check_type = 1; // Passive.
       status->current_check_attempt = 1;
-      // status->current_notification_number = XXX;
       status->current_state = new_state;
       status->enabled = true;
       status->event_handler_enabled = false;
       status->execution_time = 0.0;
-      // status->failure_prediction_enabled = XXX;
       status->flap_detection_enabled = false;
       status->has_been_checked = true;
       status->host_id = _host_id;
@@ -376,7 +373,6 @@ void meta_service::visit(io::stream* visitor) {
       status->last_check = time(NULL);
       status->last_hard_state = new_state;
       status->last_hard_state_change = status->last_check;
-      // status->last_notification = XXX;
       status->last_state_change = status->last_check;
       // status->last_time_critical = XXX;
       // status->last_time_unknown = XXX;
@@ -384,17 +380,11 @@ void meta_service::visit(io::stream* visitor) {
       status->last_update = time(NULL);
       status->latency = 0.0;
       status->max_check_attempts = 1;
-      // status->next_notification = XXX;
-      // status->no_more_notifications = XXX;
-      // status->notifications_enabled = XXX;
       status->obsess_over = false;
       status->output = get_output().c_str();
       // status->percent_state_chagne = XXX;
       status->perf_data = get_perfdata().c_str();
-      // status->problem_has_been_acknowledged = XXX;
-      // status->process_performance_data = XXX;
       status->retry_interval = 0;
-      // status->scheduled_downtime_depth = XXX;
       // status->service_description = XXX;
       status->service_id = _service_id;
       status->should_be_scheduled = false;
