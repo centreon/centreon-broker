@@ -88,6 +88,9 @@ using namespace com::centreon::broker;
 #define DOWNTIME_FILE_CONTENT \
   "\"$NOTIFICATIONTYPE$\n\""
 
+#define ACK_FILE_CONTENT \
+  "\"$NOTIFICATIONTYPE$\n\""
+
 static const double epsilon = 0.000000001;
 static time_t start;
 static time_t now;
@@ -344,6 +347,7 @@ int main() {
   std::string flag_file(tmpnam(NULL));
   std::string flag_file2(tmpnam(NULL));
   std::string flag_file3(tmpnam(NULL));
+  std::string flag_file4(tmpnam(NULL));
   std::string node_cache_file(tmpnam(NULL));
   external_command commander;
   external_command broker_commander;
@@ -353,8 +357,10 @@ int main() {
 
   try {
     // Log some info.
-    std::cout << "flag file: " << flag_file << "\n";
-    std::cout << "flag file2: " << flag_file2 << "\n";
+    std::cout << "flag file 1 (normal notification): " << flag_file << "\n";
+    std::cout << "flag file 2 (up notification): " << flag_file2 << "\n";
+    std::cout << "flag file 3 (downtime notification): " << flag_file3 << "\n";
+    std::cout << "flag file 4 (ack notification): " << flag_file4 << "\n";
     std::cout << "node cache: " << node_cache_file << "\n";
 
     // Prepare database.
@@ -421,6 +427,10 @@ int main() {
       services.back(),
       "FLAGFILE3",
       flag_file3.c_str());
+    set_custom_variable(
+      services.back(),
+      "FLAGFILE4",
+      flag_file4.c_str());
 
     // Populate database.
     db.centreon_run(
@@ -472,7 +482,8 @@ int main() {
          "            command_line, organization_id)"
          "  VALUES (1, 'NotificationCommand1', '"UTIL_FILE_WRITER" "MACRO_LIST" $_SERVICEFLAGFILE$', 1),"
          "         (2, 'NotificationCommand2', '"UTIL_FILE_WRITER" "RECOVERY_FILE_CONTENT" $_SERVICEFLAGFILE2$', 1),"
-         "         (3, 'NotificationCommand3', '"UTIL_FILE_WRITER" "DOWNTIME_FILE_CONTENT" $_SERVICEFLAGFILE3$', 1)",
+         "         (3, 'NotificationCommand3', '"UTIL_FILE_WRITER" "DOWNTIME_FILE_CONTENT" $_SERVICEFLAGFILE3$', 1),"
+         "         (4, 'NotificationCommand4', '"UTIL_FILE_WRITER" "ACK_FILE_CONTENT" $_SERVICEFLAGFILE4$', 1)",
          "could not create notification command");
 
     // Create notification rules in DB.
@@ -481,7 +492,8 @@ int main() {
          "            name, command_id, `interval`, types, status)"
          "  VALUES (1, 'NotificationMethod', 1, 300, 'n', 'w,c,u'),"
          "         (2, 'NotificationMethod2', 2, 300, 'r', 'o'),"
-          "        (3, 'NotificationMethod3', 3, 300, 'd', 'o')",
+          "        (3, 'NotificationMethod3', 3, 300, 'd', 'o'),"
+          "        (4, 'NotificationMethod4', 4, 300, 'a', 'o')",
          "could not create notification method");
     db.centreon_run(
          "INSERT INTO cfg_notification_rules (rule_id, method_id, "
@@ -489,7 +501,8 @@ int main() {
          "            service_id, enabled)"
          "  VALUES (1, 1, NULL, 1, 1, 1, 2, 1),"
          "         (2, 2, NULL, 1, 1, 1, 2, 1),"
-         "         (3, 3, NULL, 1, 1, 1, 2, 1)",
+         "         (3, 3, NULL, 1, 1, 1, 2, 1),"
+         "         (4, 4, NULL, 1, 1, 1, 2, 1)",
          "could not create notification rule (cfg)");
     db.centreon_run(
          "INSERT INTO rt_notification_rules (rule_id, method_id,"
@@ -497,7 +510,8 @@ int main() {
          "            service_id)"
          "  VALUES (1, 1, NULL, 1, 1, 2),"
          "         (2, 2, NULL, 1, 1, 2),"
-         "         (3, 3, NULL, 1, 1, 2)",
+         "         (3, 3, NULL, 1, 1, 2),"
+         "         (4, 4, NULL, 1, 1, 2)",
           "could not create notification rule (rt)");
 
     // Generate configuration.
@@ -677,8 +691,6 @@ int main() {
       validate_macros(ss.str(), macros, sizeof(macros) / sizeof(*macros));
     }
 
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
-
     // Check downtimes
     time_t start = ::time(NULL);
     time_t end = start + 5;
@@ -693,6 +705,19 @@ int main() {
     {
       macros_struct macros [] = {
         {macros_struct::string, "DOWNTIME", 0, NULL, 0, 0, "NOTIFICATIONTYPE"}
+      };
+
+      validate_macros(ss.str(), macros, sizeof(macros) / sizeof(*macros));
+    }
+
+    // Check acks
+    broker_commander.execute("ACKNOWLEDGE_SVC_PROBLEM;Host1;Service2;2;1;1;test author;some comments");
+
+    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    get_file(flag_file4, error, ss);
+    {
+      macros_struct macros [] = {
+        {macros_struct::string, "ACKNOWLEDGEMENT", 0, NULL, 0, 0, "NOTIFICATIONTYPE"}
       };
 
       validate_macros(ss.str(), macros, sizeof(macros) / sizeof(*macros));
@@ -713,6 +738,8 @@ int main() {
   sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
   ::remove(flag_file.c_str());
   ::remove(flag_file2.c_str());
+  ::remove(flag_file3.c_str());
+  ::remove(flag_file4.c_str());
   ::remove(node_cache_file.c_str());
   config_remove(engine_config_path.c_str());
   free_hosts(hosts);

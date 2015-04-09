@@ -350,6 +350,31 @@ void node_cache::update(neb::custom_variable_status const& cvs) {
 }
 
 /**
+ *  This class holds a RAII buffer for parsing.
+ */
+class buffer {
+public:
+  explicit buffer(unsigned int size) {
+    _data = new char[size];
+  }
+  ~buffer() {
+    delete [] _data;
+  }
+  bool operator==(const char* other) const {
+    return (::strcmp(_data, other) == 0);
+  }
+  char* get() {
+    return (_data);
+  }
+  const char* get() const {
+    return (_data);
+  }
+
+private:
+  char* _data;
+};
+
+/**
  *  Parse an external command.
  *
  *  @param[in] exc  External command.
@@ -359,40 +384,43 @@ void node_cache::update(neb::custom_variable_status const& cvs) {
 misc::shared_ptr<io::data>
   node_cache::parse_command(command_file::external_command const& exc) {
   std::string line = exc.command.toStdString();
-  std::string command;
-  std::string args;
-  command.resize(line.size());
-  args.resize(line.size());
+  buffer command(line.size());
+  buffer args(line.size());
+
+  logging::debug(logging::low)
+    << "notification: received command: '" << exc.command << "'";
 
   // Parse timestamp.
   unsigned long timestamp;
   if (::sscanf(
         line.c_str(),
-        "[%lu] %[^ ;];%s",
+        "[%lu] %[^ ;];%[^\n]",
         &timestamp,
-        &command[0],
-        &args[0]) != 3)
+        command.get(),
+        args.get()) != 3)
     throw (exceptions::msg()
            << "couldn't parse the line");
 
+  size_t arg_len = ::strlen(args.get());
+
   if (command == "ACKNOWLEDGE_HOST_PROBLEM")
-    return (_parse_ack(ack_host, timestamp, args));
-  else if (command == "ACKNOWLEDGE_SERVICE_PROBLEM")
-    return (_parse_ack(ack_service, timestamp, args));
+    return (_parse_ack(ack_host, timestamp, args.get(), arg_len));
+  else if (command == "ACKNOWLEDGE_SVC_PROBLEM")
+    return (_parse_ack(ack_service, timestamp, args.get(), arg_len));
   else if (command == "REMOVE_HOST_ACKNOWLEDGEMENT")
-    return (_parse_remove_ack(ack_host, args));
+    return (_parse_remove_ack(ack_host, args.get(), arg_len));
   else if (command == "REMOVE_SVC_ACKNOWLEDGEMENT")
-    return (_parse_remove_ack(ack_service, args));
+    return (_parse_remove_ack(ack_service, args.get(), arg_len));
   else if (command == "SCHEDULE_HOST_DOWNTIME")
-    return (_parse_downtime(down_host, timestamp, args));
+    return (_parse_downtime(down_host, timestamp, args.get(), arg_len));
   else if (command == "SCHEDULE_HOST_SVC_DOWNTIME")
-    return (_parse_downtime(down_host_service, timestamp, args));
+    return (_parse_downtime(down_host_service, timestamp, args.get(), arg_len));
   else if (command == "SCHEDULE_SVC_DOWNTIME")
-    return (_parse_downtime(down_host_service, timestamp, args));
+    return (_parse_downtime(down_service, timestamp, args.get(), arg_len));
   else if (command == "DELETE_HOST_DOWNTIME")
-    return (_parse_remove_downtime(down_host, args));
+    return (_parse_remove_downtime(down_host, args.get(), arg_len));
   else if (command == "DELETE_SVC_DOWNTIME")
-    return (_parse_remove_downtime(down_service, args));
+    return (_parse_remove_downtime(down_service, args.get(), arg_len));
 
   return (misc::shared_ptr<io::data>());
 }
@@ -424,11 +452,12 @@ objects::node_id node_cache::get_node_by_names(
            it = _service_node_states.begin(),
            end = _service_node_states.end();
          it != end;
-         ++it)
+         ++it) {
       if (it->get_node().host_name == host_name.c_str()
             && it->get_node().service_description == service_description.c_str())
         return (objects::node_id(
                   it->get_node().host_id, it->get_node().service_id));
+    }
   }
 
   return (objects::node_id());
@@ -565,55 +594,55 @@ void node_cache::_prepare_serialization() {
  *  @param[in] is_host  Is this a host acknowledgement.
  *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
+ *  @param[în] arg_size The size of the arg.
  *
  *  @return             An acknowledgement event.
  */
 misc::shared_ptr<io::data> node_cache::_parse_ack(
                              ack_type is_host,
                              timestamp t,
-                             std::string const& args) {
-  std::string host_name;
-  std::string service_description;
+                             const char* args,
+                             size_t arg_size) {
+  buffer host_name(arg_size);
+  buffer service_description(arg_size);
   int sticky = 0;
   int notify = 0;
   int persistent_comment = 0;
-  std::string author;
-  std::string comment;
-  host_name.resize(args.size());
-  service_description.resize(args.size());
-  author.resize(args.size());
-  comment.resize(args.size());
+  buffer author(arg_size);
+  buffer comment(arg_size);
   bool ret = false;
   if (is_host == ack_host)
     ret = (::sscanf(
-             args.c_str(),
+             args,
              "%[^;];%i;%i;%i;%[^;];%[^;]",
-             &host_name[0],
+             host_name.get(),
              &sticky,
              &notify,
              &persistent_comment,
-             &author[0],
-             &comment[0]) == 6);
+             author.get(),
+             comment.get()) == 6);
   else
     ret = (::sscanf(
-             args.c_str(),
+             args,
              "%[^;];%[^;];%i;%i;%i;%[^;];%[^;]",
-             &host_name[0],
-             &service_description[0],
+             host_name.get(),
+             service_description.get(),
              &sticky,
              &notify,
              &persistent_comment,
-             &author[0],
-             &comment[0]) == 7);
+             author.get(),
+             comment.get()) == 7);
   if (!ret)
     throw (exceptions::msg()
            << "couldn't parse the arguments for the acknowledgement");
 
-  objects::node_id id = get_node_by_names(host_name, service_description);
+  objects::node_id id = get_node_by_names(
+                          host_name.get(),
+                          service_description.get());
   misc::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement);
   ack->acknowledgement_type = is_host;
-  ack->comment = QString::fromStdString(comment);
-  ack->author = QString::fromStdString(author);
+  ack->comment = QString(comment.get());
+  ack->author = QString(author.get());
   ack->entry_time = t;
   ack->host_id = id.get_host_id();
   ack->service_id = id.get_service_id();
@@ -632,31 +661,33 @@ misc::shared_ptr<io::data> node_cache::_parse_ack(
  *
  *  @param[in] is_host  Is this a host acknowledgement.
  *  @param[in] args     The args to parse.
+ *  @param[în] arg_size The size of the arg.
  *
  *  @return             An acknowledgement removal event.
  */
 misc::shared_ptr<io::data> node_cache::_parse_remove_ack(
                              ack_type type,
-                             std::string const& args) {
-  std::string host_name;
-  std::string service_description;
-  host_name.resize(args.size());
-  service_description.resize(args.size());
+                             const char* args,
+                             size_t arg_size) {
+  buffer host_name(arg_size);
+  buffer service_description(arg_size);
   bool ret = false;
   if (type == ack_host)
-    ret = (::sscanf(args.c_str(), "%[^;]", &host_name[0]) == 1);
+    ret = (::sscanf(args, "%[^;]", host_name.get()) == 1);
   else
     ret = (::sscanf(
-             args.c_str(),
+             args,
              "%[^;];%[^;]",
-             &host_name[0],
-             &service_description[0]) == 2);
+             host_name.get(),
+             service_description.get()) == 2);
   if (!ret)
     throw (exceptions::msg()
            << "couldn't parse the arguments for the acknowledgement removal");
 
   // Find the node id from the host name / description.
-  objects::node_id id = get_node_by_names(host_name, service_description);
+  objects::node_id id = get_node_by_names(
+                          host_name.get(),
+                          service_description.get());
 
   // Find the ack.
   QHash<objects::node_id, neb::acknowledgement>::iterator
@@ -682,6 +713,7 @@ misc::shared_ptr<io::data> node_cache::_parse_remove_ack(
  *  @param[in] type     The downtime type.
  *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
+ *  @param[în] arg_size The size of the arg.
  *
  *  @return             A downtime event.
  */
@@ -689,56 +721,58 @@ misc::shared_ptr<io::data>
   node_cache::_parse_downtime(
                 down_type type,
                 timestamp t,
-                std::string const& args) {
-  std::string host_name;
-  std::string service_description;
+                const char* args,
+                size_t arg_size) {
+  buffer host_name(arg_size);
+  buffer service_description(arg_size);
   unsigned long start_time = 0;
   unsigned long end_time = 0;
   int fixed = 0;
   unsigned int trigger_id = 0;
   unsigned int duration = 0;
-  std::string author;
-  std::string comment;
-  host_name.resize(args.size());
-  service_description.resize(args.size());
-  author.resize(args.size());
-  comment.resize(args.size());
+  buffer author(arg_size);
+  buffer comment(arg_size);
   bool ret = false;
+
+  logging::debug(logging::medium)
+    << "notification: parsing downtime command: '" << args << "'";
 
   if (type == down_host)
     ret = (::sscanf(
-             args.c_str(),
+             args,
              "%[^;];%lu;%lu;%i;%u;%u;%[^;];%[^;]",
-             &host_name[0],
+             host_name.get(),
              &start_time,
              &end_time,
              &fixed,
              &trigger_id,
              &duration,
-             &author[0],
-             &comment[0]) == 8);
+             author.get(),
+             comment.get()) == 8);
   else
     ret = (::sscanf(
-             args.c_str(),
+             args,
              "%[^;];%[^;];%lu;%lu;%i;%u;%u;%[^;];%[^;]",
-             &host_name[0],
-             &service_description[0],
+             host_name.get(),
+             service_description.get(),
              &start_time,
              &end_time,
              &fixed,
              &trigger_id,
              &duration,
-             &author[0],
-             &comment[0]) == 9);
+             author.get(),
+             comment.get()) == 9);
 
   if (!ret)
     throw (exceptions::msg() << "error while parsing downtime arguments");
 
-  objects::node_id id = get_node_by_names(host_name, service_description);
+  objects::node_id id = get_node_by_names(
+                          host_name.get(),
+                          service_description.get());
 
   misc::shared_ptr<neb::downtime> d(new neb::downtime);
-  d->author = QString::fromStdString(author);
-  d->comment = QString::fromStdString(comment);
+  d->author = QString(author.get());
+  d->comment = QString(comment.get());
   d->start_time = start_time;
   d->end_time = end_time;
   d->duration = duration;
@@ -762,15 +796,18 @@ misc::shared_ptr<io::data>
  *
  *  @param[in] type     The downtime type.
  *  @param[in] args     The args to parse.
+ *  @param[în] arg_size The size of the arg.
  *
  *  @return             A downtime removal event.
  */
 misc::shared_ptr<io::data> node_cache::_parse_remove_downtime(
                              down_type type,
-                             std::string const& args) {
+                             const char* args,
+                             size_t arg_size) {
   (void)type;
+  (void)arg_size;
   unsigned int downtime_id;
-  if (::sscanf(args.c_str(), "%u", &downtime_id) != 1)
+  if (::sscanf(args, "%u", &downtime_id) != 1)
     throw (exceptions::msg() << "error while parsing remove downtime arguments");
 
   // Find the downtime.

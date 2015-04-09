@@ -232,7 +232,7 @@ void action::process_action(
 
   if (_act == notification_processing)
     _spawn_notification_attempts(st, spawned_actions);
-  else if (_act == notification_attempt || _act == notification_up)
+  else
     _process_notification(st, cache, spawned_actions);
 }
 
@@ -249,7 +249,7 @@ void action::_spawn_notification_attempts(
                state& st,
                std::vector<std::pair<time_t, action> >& spawned_actions) const{
   logging::debug(logging::low)
-    << "notification: spawning notification attempts for node ("
+    << "notification: spawning notification action for node ("
     << _id.get_host_id() << ", " << _id.get_service_id() << ")";
 
   // Spawn an action for each rules.

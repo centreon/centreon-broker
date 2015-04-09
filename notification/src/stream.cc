@@ -593,16 +593,19 @@ void stream::_process_issue_parent_event(
 void stream::_process_ack(neb::acknowledgement const& event) {
   objects::node_id id(event.host_id, event.service_id);
 
-  // Remove the actions for this node.
-  _notif_scheduler->remove_actions_of_node(id);
+  logging::debug(logging::medium)
+    << "notification: processing acknowledgement of node ("
+    << event.host_id << ", " << event.service_id << ")";
 
   // Add the ack.
-  time_t when_to_schedule(::time(NULL) + 1);
-  action a;
-  a.set_type(action::notification_processing);
-  a.set_forwarded_type(action::notification_ack);
-  a.set_node_id(id);
-  _notif_scheduler->add_action_to_queue(when_to_schedule, a);
+  if (event.notify_contacts) {
+    time_t when_to_schedule(::time(NULL) + 1);
+    action a;
+    a.set_type(action::notification_processing);
+    a.set_forwarded_type(action::notification_ack);
+    a.set_node_id(id);
+    _notif_scheduler->add_action_to_queue(when_to_schedule, a);
+  }
 }
 
 /**
@@ -613,8 +616,10 @@ void stream::_process_ack(neb::acknowledgement const& event) {
 void stream::_process_downtime(neb::downtime const& event) {
   objects::node_id id(event.host_id, event.service_id);
 
-  // Remove the actions for this node.
-  _notif_scheduler->remove_actions_of_node(id);
+  logging::debug(logging::medium)
+    << "notification: processing downtime of node ("
+    << event.host_id << ", " << event.service_id << ") starting at "
+    << event.start_time << " and ending at " << event.end_time;
 
   // Add the downtime.
   time_t when_to_schedule(::time(NULL) + 1);

@@ -134,23 +134,26 @@ namespace         notification {
     void          _prepare_serialization();
 
     misc::shared_ptr<io::data>
-                  _parse_ack(
-                    ack_type type,
+                  _parse_ack(ack_type type,
                     timestamp t,
-                    std::string const& args);
+                    const char* args,
+                    size_t arg_size);
     misc::shared_ptr<io::data>
                   _parse_remove_ack(
                     ack_type type,
-                    std::string const& args);
+                    const char* args,
+                    size_t arg_size);
     misc::shared_ptr<io::data>
                   _parse_downtime(
                     down_type type,
                     timestamp t,
-                    std::string const& args);
+                    const char* args,
+                    size_t arg_size);
     misc::shared_ptr<io::data>
                   _parse_remove_downtime(
                     down_type type,
-                    std::string const& args);
+                    const char* args,
+                    size_t arg_size);
   };
 }
 
