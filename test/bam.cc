@@ -379,28 +379,20 @@ int main() {
     db.open(NULL, BI_DB_NAME, CENTREON_DB_NAME);
     db.set_remove_db_on_close(false);
 
-    // Prepare monitoring engine configuration parameters.
+    // Generate standard hosts and services.
     generate_hosts(hosts, HOST_COUNT);
+    generate_services(services, hosts, SERVICES_BY_HOST);
+
+    // Generate virtual BA host and services.
     {
       host h;
       memset(&h, 0, sizeof(h));
       char const* str("virtual_ba_host");
       h.name = new char[strlen(str) + 1];
       strcpy(h.name, str);
-      // XXX str = "1001";
-      // h.display_name = new char[strlen(str) + 1];
-      // strcpy(h.display_name, str);
+      set_custom_variable(h, "HOST_ID", "1001");
       h.checks_enabled = 0;
       hosts.push_back(h);
-    }
-    generate_services(services, hosts, SERVICES_BY_HOST);
-    for (std::list<service>::iterator
-           it(services.begin()),
-           end(services.end());
-         it != end;
-         ++it) {
-      it->checks_enabled = 0;
-      it->max_attempts = 1;
     }
     for (int i(1); i <= BA_COUNT; ++i) {
       service s;
@@ -417,13 +409,11 @@ int main() {
         s.description = new char[str.size() + 1];
         strcpy(s.description, str.c_str());
       }
-      // XXX {
-      //   std::ostringstream oss;
-      //   oss << i + 1000;
-      //   std::string str(oss.str());
-      //   s.display_name = new char[str.size() + 1];
-      //   strcpy(s.display_name, str.c_str());
-      // }
+      {
+        std::ostringstream oss;
+        oss << i + 1000;
+	set_custom_variable(s, "SERVICE_ID", oss.str().c_str());
+      }
       {
         std::ostringstream oss;
         oss << "1!" << i;
@@ -435,6 +425,18 @@ int main() {
       s.max_attempts = 1;
       services.push_back(s);
     }
+
+    // Update properties of all services.
+    for (std::list<service>::iterator
+           it(services.begin()),
+           end(services.end());
+         it != end;
+         ++it) {
+      it->checks_enabled = 0;
+      it->max_attempts = 1;
+    }
+
+    // Generate commands.
     generate_commands(commands, 1);
     {
       char const* cmdline;

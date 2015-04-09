@@ -19,6 +19,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 #include <sstream>
 #include "test/generate.hh"
 
@@ -293,6 +294,9 @@ void generate_hosts(
     new_host.name = new char[name.size() + 1];
     strcpy(new_host.name, name.c_str());
 
+    // Set host ID.
+    set_custom_variable(new_host, "HOST_ID", name.c_str());
+
     // Set some default properties.
     new_host.checks_enabled = 1;
 
@@ -392,6 +396,18 @@ void generate_services(
       // Set host.
       new_service.host_name = new char[strlen(it->name) + 1];
       strcpy(new_service.host_name, it->name);
+
+      // Set service ID.
+      set_custom_variable(
+        new_service,
+        "SERVICE_ID",
+        description.c_str());
+
+      // Set host ID.
+      set_custom_variable(
+        new_service,
+        "HOST_ID",
+        it->name);
 
       // Set some default properties.
       new_service.checks_enabled = 1;

@@ -713,9 +713,6 @@ void config_write(
          ++it) {
       ofs << "define host{\n"
           << "  host_name " << it->name << "\n"
-          // XXX << "  _HOST_ID " << (it->display_name
-          //                      ? it->display_name
-          //                      : it->name) << "\n"
           << "  alias " << (it->alias ? it->alias : it->name) << "\n"
           << "  address " << (it->address ? it->address : "localhost")
           << "\n"
@@ -776,9 +773,6 @@ void config_write(
          ++it) {
       ofs << "define service{\n"
           << "  service_description " << it->description << "\n"
-          // XXX << "  _SERVICE_ID " << (it->display_name
-          //                         ? it->display_name
-          //                         : it->description) << "\n"
           << "  host_name " << it->host_name << "\n"
           << "  active_checks_enabled " << it->checks_enabled << "\n"
           << "  check_command "
