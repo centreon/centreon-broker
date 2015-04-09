@@ -33,7 +33,7 @@ namespace        bam {
    *  @class kpi_status kpi_status.hh "com/centreon/broker/bam/kpi_status.hh"
    *  @brief Update status of a KPI.
    *
-   *  Update the status of a KPI, used to update the mod_bam_kpi table.
+   *  Update the status of a KPI, used to update the cfg_bam_kpi table.
    */
   class          kpi_status : public io::data {
   public:
