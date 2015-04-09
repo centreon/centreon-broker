@@ -65,20 +65,22 @@ extern "C" {
         << CENTREON_BROKER_VERSION;
 
       // Register Notification layer.
-      io::protocols::instance().reg("notification",
+      io::protocols::instance().reg(
+        "notification",
         notification::factory(),
         1,
         7);
 
-      // Register events.
-      io::events& e(io::events::instance());
       // Register category.
-      int ret;
-      if ((ret = e.register_category("notification", io::events::notification))
-            != io::events::notification) {
+      io::events& e(io::events::instance());
+      int ret(e.register_category(
+                  "notification",
+                  io::events::notification));
+      if (ret != io::events::notification) {
         e.unregister_category(ret);
         --instances;
-        throw (exceptions::msg() << "notification: category " << io::events::notification
+        throw (exceptions::msg() << "notification: category "
+               << io::events::notification
                << " is already registered whereas it should be "
                << "reserved for the notification module");
       }

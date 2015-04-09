@@ -37,8 +37,10 @@ set(CORRELATION "20-correlation")
 set(CORRELATION "${CORRELATION}" PARENT_SCOPE)
 add_library("${CORRELATION}" SHARED
   # Sources.
+  "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/correlator.cc"
   "${SRC_DIR}/engine_state.cc"
+  "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/host_state.cc"
   "${SRC_DIR}/issue.cc"
   "${SRC_DIR}/issue_parent.cc"
@@ -47,10 +49,13 @@ add_library("${CORRELATION}" SHARED
   "${SRC_DIR}/parser.cc"
   "${SRC_DIR}/service_state.cc"
   "${SRC_DIR}/state.cc"
+  "${SRC_DIR}/stream.cc"
   # Headers.
+  "${INC_DIR}/connector.hh"
   "${INC_DIR}/correlator.hh"
   "${INC_DIR}/engine_state.hh"
   "${INC_DIR}/events.hh"
+  "${INC_DIR}/factory.hh"
   "${INC_DIR}/host_state.hh"
   "${INC_DIR}/internal.hh"
   "${INC_DIR}/issue.hh"
@@ -59,6 +64,7 @@ add_library("${CORRELATION}" SHARED
   "${INC_DIR}/parser.hh"
   "${INC_DIR}/service_state.hh"
   "${INC_DIR}/state.hh"
+  "${INC_DIR}/stream.hh"
   # Qt-processed files.
   ${QT_WRAPPED_SOURCES}
 )
