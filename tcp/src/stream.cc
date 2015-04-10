@@ -46,7 +46,8 @@ stream::stream(misc::shared_ptr<QTcpSocket> sock)
     _process_in(true),
     _process_out(true),
     _socket(sock),
-    _timeout(-1) {}
+    _timeout(-1),
+    _write_timeout(-1) {}
 
 /**
  *  Constructor.
@@ -61,7 +62,8 @@ stream::stream(
     _process_in(true),
     _process_out(true),
     _socket(sock),
-    _timeout(-1) {}
+    _timeout(-1),
+    _write_timeout(-1) {}
 
 /**
  *  Destructor.
@@ -152,6 +154,10 @@ void stream::set_timeout(int msecs) {
   return ;
 }
 
+void stream::set_write_timeout(int msecs) {
+  _write_timeout = msecs;
+}
+
 /**
  *  Write data to the socket.
  *
@@ -177,7 +183,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
     if ((wb < 0) || (_socket->state() == QAbstractSocket::UnconnectedState))
       throw (exceptions::msg() << "TCP: error while writing: "
              << _socket->errorString());
-    if (_socket->waitForBytesWritten(-1) == false)
+    if (_socket->waitForBytesWritten(_write_timeout) == false)
       throw (exceptions::msg() << "TCP: error while sending data: "
              << _socket->errorString());
   }

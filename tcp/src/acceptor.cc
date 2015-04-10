@@ -178,8 +178,8 @@ misc::shared_ptr<io::stream> acceptor::open() {
   if (_write_timeout >= 0) {
 #ifndef _WIN32
     struct timeval t;
-    t.tv_sec = _write_timeout % 1000000;
-    t.tv_usec = _write_timeout / 1000000;
+    t.tv_sec = _write_timeout / 1000000;
+    t.tv_usec = _write_timeout % 1000000;
     setsockopt(
       incoming->socketDescriptor(),
       SOL_SOCKET,
