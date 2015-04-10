@@ -155,6 +155,8 @@ misc::shared_ptr<io::stream> connector::open() {
   // Return stream.
   misc::shared_ptr<stream> s(new stream(_socket, _mutex));
   s->set_timeout(_timeout);
+  if (_write_timeout >= 0)
+    s->set_write_timeout(_write_timeout / 1000);
   return (s);
 }
 
