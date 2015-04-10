@@ -914,7 +914,7 @@ void stream::_insert_perfdatas() {
     database_query q(_db);
     q.run_query(
         query.str(),
-        "storage: could not insert data in data_bin");
+        "storage: could not insert data in log_data_bin");
     _update_status("");
   }
 
