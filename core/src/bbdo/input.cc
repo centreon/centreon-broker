@@ -267,23 +267,18 @@ unsigned int input::read_any(
           _buffer.c_str() + _processed,
           total_size,
           mapped_type->second);
+    logging::debug(logging::medium) << "BBDO: unserialized "
+      << total_size + BBDO_HEADER_SIZE << " bytes";
   }
   else {
-    logging::debug(logging::medium)
-      << "BBDO: got unknown event type " << event_id
-      << ": recreating mappings and retrying";
-    create_mappings();
-    mapped_type = bbdo_mapping.find(event_id);
-    if (mapped_type != bbdo_mapping.end())
-      d = unserialize(
-            _buffer.c_str() + _processed,
-            total_size,
-            mapped_type->second);
+    logging::error(logging::medium)
+      << "BBDO: unknown event type " << event_id
+      << ": event cannot be decoded";
+    logging::debug(logging::medium) << "BBDO: discarded "
+      << total_size + BBDO_HEADER_SIZE << " bytes";
   }
 
   // Mark data as processed.
-  logging::debug(logging::medium) << "BBDO: unserialized "
-    << total_size + BBDO_HEADER_SIZE << " bytes";
   _processed += total_size;
 
   return (event_id);

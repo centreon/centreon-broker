@@ -195,20 +195,10 @@ unsigned int output::write(misc::shared_ptr<io::data> const& e) {
   // Check if data exists.
   if (!e.isNull()) {
     if (_write_event(e) == false) {
-      unsigned int event_type(e->type());
       // BBDO doesn't know this event.
-      // Reload all the event mappings and try again.
-      logging::debug(logging::medium)
-        << "BBDO: unknown event type " << event_type
-        << ": reloading mappings and retrying";
-      create_mappings();
-
-      if (_write_event(e) == false)
-        logging::debug(logging::medium)
-          << "BBDO: could not serialize event of type " << event_type
-          << " (category = " << io::events::category_of_type(event_type)
-          << ", element = " << io::events::element_of_type(event_type) << ")"
-          << ": event mapping was not found";
+      logging::error(logging::medium)
+        << "BBDO: unknown event type " << e->type()
+        << ": event won't be sent";
     }
   }
   else
