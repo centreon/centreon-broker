@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -28,7 +28,7 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
 
 std::ostream& operator<<(std::ostream& in, QString const& string) {
-  in << string.toStdString();
+  return (in << string.toStdString());
 }
 
 /**
@@ -277,9 +277,11 @@ void query::_get_null(io::data const& d, std::ostream& is) {
 /**
  *  Get a dollar sign (for escape).
  *
- *  @param[in] d  unused.
- *  @param[in]    The stream.
+ *  @param[in] d   Unused.
+ *  @param[in] is  The stream.
  */
 void query::_get_dollar_sign(io::data const& d, std::ostream& is) {
+  (void)d;
   is << "$";
+  return ;
 }
