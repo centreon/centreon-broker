@@ -20,11 +20,11 @@
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/correlation/factory.hh"
-#include "com/centreon/broker/correlation/host_state.hh"
 #include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
-#include "com/centreon/broker/correlation/service_state.hh"
+#include "com/centreon/broker/correlation/log_issue.hh"
+#include "com/centreon/broker/correlation/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
@@ -103,11 +103,11 @@ extern "C" {
                   correlation::engine_state::entries));
         e.register_event(
             io::events::correlation,
-            correlation::de_host_state,
+            correlation::de_state,
             io::event_info(
-                  "host_state",
-                  &correlation::host_state::operations,
-                  correlation::host_state::entries));
+                  "state",
+                  &correlation::state::operations,
+                  correlation::state::entries));
         e.register_event(
             io::events::correlation,
             correlation::de_issue,
@@ -124,11 +124,11 @@ extern "C" {
                   correlation::issue_parent::entries));
         e.register_event(
             io::events::correlation,
-            correlation::de_service_state,
+            correlation::de_log_issue,
             io::event_info(
-                  "service_state",
-                  &correlation::service_state::operations,
-                  correlation::service_state::entries));
+                  "log_issue",
+                  &correlation::log_issue::operations,
+                  correlation::log_issue::entries));
       }
     }
     return ;

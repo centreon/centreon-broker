@@ -477,7 +477,15 @@ database_query& operator<<(database_query& q, notification::downtime const& d) {
 /**
  *  ORM operator for host_state.
  */
-database_query& operator<<(database_query& q, correlation::host_state const& hs) {
+/*database_query& operator<<(database_query& q, correlation::host_state const& hs) {
+  to_base(q, hs);
+  return (q);
+}*/
+
+/**
+ *  ORM operator for state.
+ */
+database_query& operator<<(database_query& q, correlation::state const& hs) {
   to_base(q, hs);
   return (q);
 }
@@ -493,7 +501,7 @@ database_query& operator<<(database_query& q, correlation::issue const& i) {
 /**
  *  ORM operator for service_state.
  */
-database_query& operator<<(database_query& q, correlation::service_state const& ss) {
+/*database_query& operator<<(database_query& q, correlation::service_state const& ss) {
   to_base(q, ss);
   return (q);
-}
+}*/

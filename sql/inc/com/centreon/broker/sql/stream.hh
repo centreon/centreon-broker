@@ -117,6 +117,8 @@ namespace          sql {
     void           _process_service_group_member(misc::shared_ptr<io::data> const& e);
     void           _process_service_state(misc::shared_ptr<io::data> const& e);
     void           _process_service_status(misc::shared_ptr<io::data> const& e);
+    void           _process_state(misc::shared_ptr<io::data> const& e);
+    void           _process_log_issue(misc::shared_ptr<io::data> const& e);
     template       <typename T>
     void           _update_on_none_insert(
                      database_query& ins,

@@ -50,10 +50,12 @@ using namespace com::centreon::broker::sql;
 void (stream::* const stream::_correlation_processing_table[])(misc::shared_ptr<io::data> const&) = {
   NULL,
   &stream::_process_engine,
-  &stream::_process_host_state,
+  NULL,
   &stream::_process_issue,
   &stream::_process_issue_parent,
-  &stream::_process_service_state
+  NULL,
+  &stream::_process_state,
+  &stream::_process_log_issue
 };
 void (stream::* const stream::_neb_processing_table[])(misc::shared_ptr<io::data> const&) = {
   NULL,
@@ -342,13 +344,13 @@ void stream::_prepare() {
   _prepare_insert<notification::downtime>(
                                   _downtime_insert,
                                   "rt_downtimes");
-  _prepare_insert<correlation::host_state>(
+  _prepare_insert<correlation::state>(
                                  _host_state_insert,
                                  "rt_hoststateevents");
   _prepare_insert<correlation::issue>(
                                   _issue_insert,
                                   "rt_issues");
-  _prepare_insert<correlation::service_state>(
+  _prepare_insert<correlation::state>(
                                  _service_state_insert,
                                  "rt_servicestateevents");
   {
@@ -522,7 +524,7 @@ void stream::_prepare() {
   id.clear();
   id["host_id"] = false;
   id["start_time"] = false;
-  _prepare_update<correlation::host_state>(
+  _prepare_update<correlation::state>(
                                  _host_state_update,
                                  "rt_hoststateevents",
                                  id);
@@ -537,7 +539,7 @@ void stream::_prepare() {
   id["host_id"] = false;
   id["service_id"] = false;
   id["start_time"] = false;
-  _prepare_update<correlation::service_state>(
+  _prepare_update<correlation::state>(
                                  _service_state_update,
                                  "rt_servicestateevents",
                                  id);
@@ -1221,7 +1223,7 @@ void stream::_process_host_state(
     _update_on_none_insert(
       _host_state_insert,
       _host_state_update,
-      *static_cast<correlation::host_state const*>(e.data()));
+      *static_cast<correlation::state const*>(e.data()));
   }
 
   return ;
@@ -1827,10 +1829,32 @@ void stream::_process_service_state(
     _update_on_none_insert(
       _service_state_insert,
       _service_state_update,
-      *static_cast<correlation::service_state const*>(e.data()));
+      *static_cast<correlation::state const*>(e.data()));
   }
 
   return ;
+}
+
+/**
+ *  Process a state event.
+ *
+ *  @param[in] e  Uncasted state.
+ */
+void stream::_process_state(misc::shared_ptr<io::data> const& e) {
+  if (e.ref_as<correlation::state const>().service_id == 0)
+    _process_host_state(e);
+  else
+    _process_service_state(e);
+}
+
+/**
+ *  Process log issue event.
+ *
+ *  @param[in] e  Uncasted log issue.
+ */
+void stream::_process_log_issue(misc::shared_ptr<io::data> const& e) {
+  // TODO
+  (void) e;
 }
 
 /**
