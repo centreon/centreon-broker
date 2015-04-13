@@ -17,42 +17,51 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_CORRELATION_SERVICE_STATE_HH
-#  define CCB_CORRELATION_SERVICE_STATE_HH
+#ifndef CCB_CORRELATION_LOG_ISSUE_HH
+#  define CCB_CORRELATION_LOG_ISSUE_HH
 
-#  include "com/centreon/broker/correlation/state.hh"
+#  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/timestamp.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
 
 CCB_BEGIN()
 
 namespace          correlation {
   /**
-   *  @class service_state service_state.hh "com/centreon/broker/correlation/service_state.hh"
-   *  @brief Service state.
+   *  @class log_issue log_issue.hh "com/centreon/broker/correlation/log_issue.hh"
+   *  @brief Log issue event.
    *
-   *  State of a service at a given time.
+   *  Link a log and an issue.
    */
-  class            service_state : public state {
-   public:
-                   service_state();
-                   service_state(service_state const& ss);
-                   ~service_state();
-    service_state& operator=(service_state const& ss);
-    bool           operator==(service_state const& ss) const;
-    bool           operator!=(service_state const& ss) const;
+  class            log_issue : public io::data {
+  public:
+                   log_issue();
+                   log_issue(log_issue const& i);
+                   ~log_issue();
+    log_issue&     operator=(log_issue const& i);
+    bool           operator==(log_issue const& i) const;
+    bool           operator!=(log_issue const& i) const;
     unsigned int   type() const;
     static unsigned int
                    static_type();
+
+    timestamp      log_ctime;
+    unsigned int   host_id;
+    unsigned int   service_id;
+    timestamp      issue_start_time;
 
     static mapping::entry const
                    entries[];
     static io::event_info::event_operations const
                    operations;
+
+  private:
+    void           _internal_copy(log_issue const& i);
   };
 }
 
 CCB_END()
 
-#endif // !CCB_CORRELATION_SERVICE_STATE_HH
+#endif // !CCB_CORRELATION_LOG_ISSUE_HH

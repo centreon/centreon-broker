@@ -22,9 +22,15 @@
 
 #  include <memory>
 #  include <QList>
+#  include <QHash>
+#  include <QPair>
 #  include "com/centreon/broker/correlation/issue.hh"
+#  include "com/centreon/broker/correlation/state.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/neb/log_entry.hh"
 
 CCB_BEGIN()
 
@@ -48,30 +54,64 @@ namespace                correlation {
     void                 add_depended(node* n);
     void                 add_dependency(node* n);
     void                 add_parent(node* n);
-    QList<node*> const&  children() const throw ();
-    QList<node*> const&  depended_by() const throw ();
-    QList<node*> const&  depends_on() const throw ();
-    QList<node*> const&  parents() const throw ();
     void                 remove_child(node* n);
     void                 remove_depended(node* n);
     void                 remove_dependency(node* n);
     void                 remove_parent(node* n);
+    QPair<unsigned int, unsigned int>
+                         get_id() const;
+    bool                 all_children_with_issues() const;
+
+    void                 manage_status(
+                          short status,
+                          timestamp last_state_change,
+                          io::stream* stream);
+    void                 manage_ack(timestamp entry_time, io::stream* stream);
+    void                 manage_downtime(
+                           timestamp start_time,
+                           io::stream* stream);
+    void                 manage_downtime_removed(
+                           io::stream* stream);
+    void                 manage_log(
+                           neb::log_entry const& entry,
+                           io::stream* stream);
+    enum                 link_type {
+                         parent,
+                         children,
+                         depended_by,
+                         depends_on
+    };
+    void                 linked_node_updated(
+                           node& n,
+                           timestamp start_time,
+                           link_type type,
+                           io::stream* stream);
 
     unsigned int         host_id;
     unsigned int         instance_id;
     bool                 in_downtime;
     std::auto_ptr<issue> my_issue;
+    std::auto_ptr<correlation::state>
+                         my_state;
     unsigned int         service_id;
-    timestamp            since;
     short                state;
+    timestamp            downtime_start_time;
+    timestamp            ack_time;
 
    private:
     void                 _internal_copy(node const& n);
 
-    QList<node*>         _children;
-    QList<node*>         _depended_by;
-    QList<node*>         _depends_on;
-    QList<node*>         _parents;
+    typedef QHash<QPair<unsigned int, unsigned int>, node*>
+                         node_map;
+
+    node_map             _children;
+    node_map             _depended_by;
+    node_map             _depends_on;
+    node_map             _parents;
+
+    void                 _generate_state_event(
+                           timestamp start_time,
+                           io::stream* stream);
   };
 }
 

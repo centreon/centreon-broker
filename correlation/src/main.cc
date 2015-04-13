@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/correlation/factory.hh"
 #include "com/centreon/broker/correlation/host_state.hh"
@@ -34,6 +35,7 @@ using namespace com::centreon::broker;
 
 // Load count.
 static unsigned int instances(0);
+unsigned int instance_id(0);
 
 extern "C" {
   /**
@@ -65,6 +67,9 @@ extern "C" {
       logging::info(logging::high)
         << "correlation: module for Centreon Broker "
         << CENTREON_BROKER_VERSION;
+
+      config::state const& cfg(*static_cast<config::state const*>(arg));
+      instance_id = cfg.instance_id();
 
       // Register correlation layer.
       io::protocols::instance().reg(
