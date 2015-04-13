@@ -20,8 +20,8 @@
 #ifndef CCB_IO_EVENTS_HH
 #  define CCB_IO_EVENTS_HH
 
-#  include <map>
 #  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -35,12 +35,12 @@ namespace               io {
    */
   class                 events {
   public:
-    typedef std::map<unsigned int, event_info>  events_container;
+    typedef umap<unsigned int, event_info>  events_container;
     struct              category_info {
       std::string       name;
       events_container  events;
     };
-    typedef std::map<unsigned short, category_info> categories_container;
+    typedef umap<unsigned short, category_info> categories_container;
     // Reserved categories, for reference.
     enum                data_category {
       neb = 1,
@@ -100,7 +100,8 @@ namespace               io {
     events_container const&
                         get_events_by_category_name(
                           std::string const& name) const;
-    events_container   get_matching_events(
+    event_info const*   get_event_info(unsigned int type);
+    events_container    get_matching_events(
                           std::string const& name) const;
 
   private:
