@@ -485,6 +485,24 @@ void node::linked_node_updated(
   }
 }
 
+/**
+ *  Serialize the node.
+ *
+ *  @param[in] cache  A cache to write the event to.
+ */
+void node::serialize(persistent_cache& cache) const {
+  if (my_issue.get())
+    cache.add(misc::make_shared(new issue(*my_issue)));
+  if (my_state.get())
+    cache.add(misc::make_shared(new correlation::state(*my_state)));
+  for (std::map<unsigned int, notification::downtime>::const_iterator
+         it = downtimes.begin(),
+         end = downtimes.end();
+       it != end;
+       ++it)
+    cache.add(misc::make_shared(new notification::downtime(it->second)));
+}
+
 /**************************************
 *                                     *
 *           Private Methods           *

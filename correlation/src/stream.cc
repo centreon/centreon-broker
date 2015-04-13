@@ -210,6 +210,46 @@ void stream::_load_correlation() {
   // No cache, nothing to do.
   if (_cache.isNull())
     return ;
+
+  // Load the cache.
+  misc::shared_ptr<io::data> d;
+  while (true) {
+    _cache->get(d);
+    if (d.isNull())
+      break ;
+  }
+}
+
+/**
+ *  Load a correlation event from the cache.
+ *
+ *  @param[in] d  The event.
+ */
+void stream::_load_correlation_event(misc::shared_ptr<io::data> const& d) {
+  if (d.isNull())
+    return ;
+
+  if (d->type() == issue::static_type()) {
+    issue const& iss = d.ref_as<issue>();
+    QMap<QPair<unsigned int, unsigned int>, node>::iterator found
+      = _nodes.find(qMakePair(iss.host_id, iss.service_id));
+    if (found != _nodes.end())
+      found->my_issue.reset(new issue(iss));
+  }
+  else if (d->type() == state::static_type()) {
+    state const& st = d.ref_as<state>();
+    QMap<QPair<unsigned int, unsigned int>, node>::iterator found
+      = _nodes.find(qMakePair(st.host_id, st.service_id));
+    if (found != _nodes.end())
+      found->my_state.reset(new state(st));
+  }
+  else if (d->type() == notification::downtime::static_type()) {
+    notification::downtime const& dwn = d.ref_as<notification::downtime>();
+    QMap<QPair<unsigned int, unsigned int>, node>::iterator found
+      = _nodes.find(qMakePair(dwn.host_id, dwn.service_id));
+    if (found != _nodes.end())
+      found->manage_downtime(dwn, NULL);
+  }
 }
 
 /**
@@ -220,4 +260,13 @@ void stream::_save_persistent_cache() {
   if (_cache.isNull())
     return ;
 
+  // Serialize to the cache.
+  _cache->transaction();
+  for (QMap<QPair<unsigned int, unsigned int>, node>::const_iterator
+         it = _nodes.begin(),
+         end = _nodes.end();
+       it != end;
+       ++it)
+    it->serialize(*_cache);
+  _cache->commit();
 }

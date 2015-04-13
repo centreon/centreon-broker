@@ -33,6 +33,7 @@
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/neb/log_entry.hh"
 #  include "com/centreon/broker/notification/downtime.hh"
+#  include "com/centreon/broker/persistent_cache.hh"
 
 CCB_BEGIN()
 
@@ -89,6 +90,8 @@ namespace                correlation {
                            timestamp start_time,
                            link_type type,
                            io::stream* stream);
+
+    void                 serialize(persistent_cache& cache) const;
 
     unsigned int         host_id;
     unsigned int         instance_id;

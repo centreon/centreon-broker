@@ -58,6 +58,7 @@ namespace        correlation {
                  stream(stream const& other);
     stream&      operator=(stream const& other);
     void         _load_correlation();
+    void         _load_correlation_event(misc::shared_ptr<io::data> const& d);
     void         _save_persistent_cache();
 
     misc::shared_ptr<persistent_cache>
