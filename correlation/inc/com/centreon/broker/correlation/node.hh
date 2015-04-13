@@ -21,6 +21,7 @@
 #  define CCB_CORRELATION_NODE_HH
 
 #  include <memory>
+#  include <map>
 #  include <QList>
 #  include <QHash>
 #  include <QPair>
@@ -31,6 +32,7 @@
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/neb/log_entry.hh"
+#  include "com/centreon/broker/notification/downtime.hh"
 
 CCB_BEGIN()
 
@@ -68,9 +70,10 @@ namespace                correlation {
                           io::stream* stream);
     void                 manage_ack(timestamp entry_time, io::stream* stream);
     void                 manage_downtime(
-                           timestamp start_time,
+                           notification::downtime const& dwn,
                            io::stream* stream);
     void                 manage_downtime_removed(
+                           unsigned int id,
                            io::stream* stream);
     void                 manage_log(
                            neb::log_entry const& entry,
@@ -95,7 +98,8 @@ namespace                correlation {
                          my_state;
     unsigned int         service_id;
     short                state;
-    timestamp            downtime_start_time;
+    std::map<unsigned int, notification::downtime>
+                         downtimes;
     timestamp            ack_time;
 
    private:

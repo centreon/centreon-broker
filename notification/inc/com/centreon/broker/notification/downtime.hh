@@ -48,6 +48,7 @@ namespace          notification {
                    ~downtime();
     downtime&      operator=(downtime const& other);
     unsigned int   type() const;
+    bool           operator==(downtime const& other) const;
 
     /**
      *  Get the type of this event.

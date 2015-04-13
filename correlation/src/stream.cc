@@ -172,7 +172,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
       = _nodes.find(id);
     if (found != _nodes.end()) {
       multiplexing::publisher pblsh;
-      found->manage_downtime(dwn.start_time, &pblsh);
+      found->manage_downtime(dwn, &pblsh);
     }
   }
   else if (d->type() == neb::log_entry::static_type()) {
@@ -183,6 +183,17 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
     if (found != _nodes.end()) {
       multiplexing::publisher pblsh;
       found->manage_log(entry, &pblsh);
+    }
+  }
+  else if (d->type() == notification::downtime_removed::static_type()) {
+    notification::downtime_removed const& dr
+      = d.ref_as<notification::downtime_removed>();
+    QPair<unsigned int, unsigned int> id(dr.host_id, dr.service_id);
+    QMap<QPair<unsigned int, unsigned int>, node>::iterator found
+      = _nodes.find(id);
+    if (found != _nodes.end()) {
+      multiplexing::publisher pblsh;
+      found->manage_downtime_removed(dr.downtime_id, &pblsh);
     }
   }
 }

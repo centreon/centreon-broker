@@ -92,6 +92,33 @@ unsigned int downtime::type() const {
   return (downtime::static_type());
 }
 
+/**
+ *  Comparison operator.
+ *
+ *  @param[in] o      The object to compare with.
+ *
+ *  @return           True if both objects are equal.
+ */
+bool downtime::operator==(downtime const& o) const {
+  return ((actual_end_time == o.actual_end_time)
+          && (actual_start_time == o.actual_start_time)
+          && (author == o.author)
+          && (comment == o.comment)
+          && (deletion_time == o.deletion_time)
+          && (downtime_type == o.downtime_type)
+          && (duration == o.duration)
+          && (end_time == o.end_time)
+          && (entry_time == o.entry_time)
+          && (fixed == o.fixed)
+          && (host_id == o.host_id)
+          && (internal_id == o.internal_id)
+          && (service_id == o.service_id)
+          && (start_time == o.start_time)
+          && (triggered_by == o.triggered_by)
+          && (was_cancelled == o.was_cancelled)
+          && (was_started == o.was_started));
+}
+
 /**************************************
 *                                     *
 *           Private Methods           *

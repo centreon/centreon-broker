@@ -802,6 +802,8 @@ misc::shared_ptr<io::data> node_cache::_parse_remove_downtime(
 
   // Send a downtime removed event.
   misc::shared_ptr<downtime_removed> d(new downtime_removed);
+  d->host_id = found->host_id;
+  d->service_id = found->service_id;
   d->downtime_id = downtime_id;
 
   return (d);

@@ -47,6 +47,8 @@ namespace            notification {
     static unsigned int
                      static_type();
 
+    unsigned int     host_id;
+    unsigned int     service_id;
     unsigned int     downtime_id;
 
     static mapping::entry const

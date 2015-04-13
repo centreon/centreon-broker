@@ -37,7 +37,9 @@ using namespace com::centreon::broker::notification;
  *  default value (0, NULL or equivalent).
  */
 downtime_removed::downtime_removed()
-  : downtime_id(0) {}
+  : host_id(0),
+    service_id(0),
+    downtime_id(0) {}
 
 /**
  *  @brief acknowledgement copy constructor.
@@ -101,6 +103,8 @@ unsigned int downtime_removed::static_type() {
  *         instance.
  */
 void downtime_removed::_internal_copy(downtime_removed const& other) {
+  host_id = other.host_id;
+  service_id = other.service_id;
   downtime_id = other.downtime_id;
   return ;
 }
@@ -114,9 +118,19 @@ void downtime_removed::_internal_copy(downtime_removed const& other) {
 // Mapping.
 mapping::entry const downtime_removed::entries[] = {
   mapping::entry(
+    &downtime_removed::host_id,
+    "host_id",
+    1,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &downtime_removed::service_id,
+    "service_id",
+    2,
+    mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
     &downtime_removed::downtime_id,
     "downtime_id",
-    1,
+    3,
     mapping::entry::NULL_ON_ZERO),
   mapping::entry()
 };

@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <ctime>
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
 #include "com/centreon/broker/correlation/node.hh"
@@ -111,7 +112,7 @@ bool node::operator==(node const& n) const {
            && (service_id == n.service_id)
            && (state == n.state)
            && (ack_time == n.ack_time)
-           && (downtime_start_time == n.downtime_start_time)
+           && (downtimes == n.downtimes)
            && ((!my_issue.get() && !n.my_issue.get())
                || (my_issue.get()
                    && n.my_issue.get()
@@ -383,18 +384,32 @@ void node::manage_ack(timestamp entry_time, io::stream* stream) {
 /**
  *  Manage a downtime.
  *
- *  @param[in] start_time  The start time of the downtime.
- *  @param[out] stream     A stream to write the events to.
+ *  @param[in] dwn        The downtime.
+ *  @param[out] stream    A stream to write the events to.
  */
 void node::manage_downtime(
-       timestamp start_time,
+        notification::downtime const& dwn,
        io::stream* stream) {
-  if (!in_downtime) {
-    in_downtime = true;
-    downtime_start_time = start_time;
-    _generate_state_event(start_time, stream);
-  }
+  downtimes[dwn.internal_id] = dwn;
+  in_downtime = true;
+  _generate_state_event(dwn.start_time, stream);
 }
+
+/**
+ *  Manage a downtime removal.
+ *
+ *  @param[in] id         The downtime id.
+ *  @param[out] stream    A stream to write the events to.
+ */
+void node::manage_downtime_removed(
+        unsigned int id,
+        io::stream* stream) {
+  downtimes.erase(id);
+  if (!downtimes.empty())
+    in_downtime = false;
+  _generate_state_event(::time(NULL), stream);
+}
+
 
 /**
  *  Manage a log.
@@ -525,7 +540,7 @@ void node::_internal_copy(node const& n) {
     my_issue.reset();
   service_id = n.service_id;
   state = n.state;
-  downtime_start_time = n.downtime_start_time;
+  downtimes = n.downtimes;
   ack_time = n.ack_time;
 
   return ;
@@ -554,8 +569,17 @@ void node::_generate_state_event(
   my_state->host_id = host_id;
   my_state->current_state = state;
   my_state->instance_id = instance_id;
+  timestamp earliest_downtime;
+  for (std::map<unsigned int, notification::downtime>::const_iterator
+         it = downtimes.begin(),
+         end = downtimes.end();
+       it != end;
+       ++it)
+    if (earliest_downtime.is_null()
+        || earliest_downtime < it->second.start_time)
+      earliest_downtime = it->second.start_time;
   my_state->in_downtime
-    = downtime_start_time.is_null() ? false : downtime_start_time <= start_time;
+    = earliest_downtime.is_null() ? false : earliest_downtime <= start_time;
   my_state->ack_time = ack_time > start_time ? ack_time : start_time;
 
   if (stream)
