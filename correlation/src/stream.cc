@@ -196,6 +196,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
       found->manage_downtime_removed(dr.downtime_id, &pblsh);
     }
   }
+  return (1);
 }
 
 /**
