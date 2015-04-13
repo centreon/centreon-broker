@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2014 Merethis
+** Copyright 2009-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -26,16 +26,18 @@
 #include <sstream>
 #include <limits>
 #include "com/centreon/engine/common.hh"
+#include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "mapping.hh"
 #include "com/centreon/broker/sql/internal.hh"
 #include "com/centreon/broker/sql/stream.hh"
+#include "com/centreon/broker/storage/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;

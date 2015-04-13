@@ -207,7 +207,7 @@ static io::data* unserialize(
             break ;
           default:
             throw (exceptions::msg() << "BBDO: invalid mapping for "
-                   << "object of type '" << info->get_name () << "': "
+                   << "object of type '" << info->get_name() << "': "
                    << current_entry->get_type()
                    << " is not a known type ID");
           }

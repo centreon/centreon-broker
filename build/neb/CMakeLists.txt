@@ -1,5 +1,5 @@
 ##
-## Copyright 2009-2013 Merethis
+## Copyright 2009-2013,2015 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -49,7 +49,6 @@ set(NEB_SOURCES
   "${SRC_DIR}/instance.cc"
   "${SRC_DIR}/instance_status.cc"
   "${SRC_DIR}/log_entry.cc"
-#  "${SRC_DIR}/mapping.cc"
   "${SRC_DIR}/module.cc"
   "${SRC_DIR}/notification.cc"
   "${SRC_DIR}/service.cc"
@@ -256,8 +255,6 @@ if (WITH_TESTING)
   include_directories("${PROJECT_SOURCE_DIR}/neb")
   include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
   include_directories("${PROJECT_SOURCE_DIR}/dumper/inc")
-  #add_library("neb_mapping"
-  #  "${PROJECT_SOURCE_DIR}/core/src/mapping.cc")
   set(TEST_LIBRARIES "${NEB}" "roker")
   # Acknowledgement tests.
   #   Default constructor.
