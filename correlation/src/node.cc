@@ -18,7 +18,9 @@
 */
 
 #include "com/centreon/broker/correlation/issue.hh"
+#include "com/centreon/broker/correlation/issue_parent.hh"
 #include "com/centreon/broker/correlation/node.hh"
+#include "com/centreon/broker/correlation/log_issue.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
@@ -37,7 +39,6 @@ node::node()
     instance_id(0),
     in_downtime(false),
     service_id(0),
-    since(0),
     state(0) {}
 
 /**
@@ -54,31 +55,31 @@ node::node(node const& n) {
  */
 node::~node() {
   // Iterators.
-  QList<node*>::iterator it, end;
+  node_map::iterator it, end;
 
   // Remove self from children.
   for (it = _children.begin(), end = _children.end();
        it != end;
        ++it)
-    (*it)->_parents.removeAll(this);
+    (*it)->_parents.remove(get_id());
 
   // Remove self from node depending on self.
   for (it = _depended_by.begin(), end = _depended_by.end();
        it != end;
        ++it)
-    (*it)->_depends_on.removeAll(this);
+    (*it)->_depends_on.remove(get_id());
 
   // Remove self from dependencies.
   for (it = _depends_on.begin(), end = _depends_on.end();
        it != end;
        ++it)
-    (*it)->_depended_by.removeAll(this);
+    (*it)->_depended_by.remove(get_id());
 
   // Remove self from parents.
   for (it = _parents.begin(), end = _parents.end();
        it != end;
        ++it)
-    (*it)->_children.removeAll(this);
+    (*it)->_children.remove(get_id());
 }
 
 /**
@@ -108,24 +109,29 @@ bool node::operator==(node const& n) const {
            && (instance_id == n.instance_id)
            && (in_downtime == n.in_downtime)
            && (service_id == n.service_id)
-           && (since == n.since)
            && (state == n.state)
+           && (ack_time == n.ack_time)
+           && (downtime_start_time == n.downtime_start_time)
            && ((!my_issue.get() && !n.my_issue.get())
                || (my_issue.get()
                    && n.my_issue.get()
                    && (*my_issue == *n.my_issue)))
+           && ((!my_state.get() && n.my_state.get())
+               || (my_state.get()
+                   && n.my_state.get()
+                   && (*my_state == *n.my_state)))
            && (_children.size() == n._children.size())
            && (_depended_by.size() == n._depended_by.size())
            && (_depends_on.size() == n._depends_on.size())
            && (_parents.size() == n._parents.size())) {
     retval = true;
-    for (QList<node*>::const_iterator
+    for (node_map::const_iterator
            it1 = _children.begin(),
            end1 = _children.end();
          retval && (it1 != end1);
          ++it1) {
       retval = false;
-      for (QList<node*>::const_iterator
+      for (node_map::const_iterator
              it2 = n._children.begin(),
              end2 = n._children.end();
            it2 != end2;
@@ -133,13 +139,13 @@ bool node::operator==(node const& n) const {
         retval = retval || (((*it1)->host_id == (*it2)->host_id)
                   && ((*it1)->service_id == (*it2)->service_id));
     }
-    for (QList<node*>::const_iterator
+    for (node_map::const_iterator
            it1 = _depended_by.begin(),
            end1 = _depended_by.end();
          retval && (it1 != end1);
          ++it1) {
       retval = false;
-      for (QList<node*>::const_iterator
+      for (node_map::const_iterator
              it2 = n._depended_by.begin(),
              end2 = n._depended_by.end();
            it2 != end2;
@@ -147,13 +153,13 @@ bool node::operator==(node const& n) const {
         retval = retval || (((*it1)->host_id == (*it2)->host_id)
                   && ((*it1)->service_id == (*it2)->service_id));
     }
-    for (QList<node*>::const_iterator
+    for (node_map::const_iterator
            it1 = _depends_on.begin(),
            end1 = _depends_on.end();
          retval && (it1 != end1);
          ++it1) {
       retval = false;
-      for (QList<node*>::const_iterator
+      for (node_map::const_iterator
              it2 = n._depends_on.begin(),
              end2 = n._depends_on.end();
            it2 != end2;
@@ -161,13 +167,13 @@ bool node::operator==(node const& n) const {
         retval = retval || (((*it1)->host_id == (*it2)->host_id)
                   && ((*it1)->service_id == (*it2)->service_id));
     }
-    for (QList<node*>::const_iterator
+    for (node_map::const_iterator
            it1 = _parents.begin(),
            end1 = _parents.end();
          retval && (it1 != end1);
          ++it1) {
       retval = false;
-      for (QList<node*>::const_iterator
+      for (node_map::const_iterator
              it2 = n._parents.begin(),
              end2 = n._parents.end();
            it2 != end2;
@@ -198,8 +204,8 @@ bool node::operator!=(node const& n) const {
  *  @param[in,out] n New child.
  */
 void node::add_child(node* n) {
-  _children.push_back(n);
-  n->_parents.push_back(this);
+  _children.insert(n->get_id(), n);
+  n->_parents.insert(get_id(), this);
   return ;
 }
 
@@ -209,8 +215,8 @@ void node::add_child(node* n) {
  *  @param[in,out] n New node depending on this node.
  */
 void node::add_depended(node* n) {
-  _depended_by.push_back(n);
-  n->_depends_on.push_back(this);
+  _depended_by.insert(n->get_id(), n);
+  n->_depends_on.insert(get_id(), this);
   return ;
 }
 
@@ -220,8 +226,8 @@ void node::add_depended(node* n) {
  *  @param[in,out] n New dependency.
  */
 void node::add_dependency(node* n) {
-  _depends_on.push_back(n);
-  n->_depended_by.push_back(this);
+  _depends_on.insert(n->get_id(), n);
+  n->_depended_by.insert(get_id(), this);
   return ;
 }
 
@@ -231,45 +237,9 @@ void node::add_dependency(node* n) {
  *  @param[in,out] n New parent.
  */
 void node::add_parent(node* n) {
-  _parents.push_back(n);
-  n->_children.push_back(this);
+  _parents.insert(n->get_id(), n);
+  n->_children.insert(get_id(), this);
   return ;
-}
-
-/**
- *  Get children list.
- *
- *  @return Children list.
- */
-QList<node*> const& node::children() const throw () {
-  return (_children);
-}
-
-/**
- *  Get the list of node which depends on this node.
- *
- *  @return List of node which depends on this node.
- */
-QList<node*> const& node::depended_by() const throw () {
-  return (_depended_by);
-}
-
-/**
- *  Get the list of node on which this node depends.
- *
- *  @return List of node on which this node depends.
- */
-QList<node*> const& node::depends_on() const throw () {
-  return (_depends_on);
-}
-
-/**
- *  Get the list of parent nodes.
- *
- *  @return List of parent nodes.
- */
-QList<node*> const& node::parents() const throw () {
-  return (_parents);
 }
 
 /**
@@ -278,8 +248,8 @@ QList<node*> const& node::parents() const throw () {
  *  @param[in,out] n Child node.
  */
 void node::remove_child(node* n) {
-  _children.removeAll(n);
-  n->_parents.removeAll(this);
+  _children.remove(n->get_id());
+  n->_parents.remove(this->get_id());
   return ;
 }
 
@@ -289,8 +259,8 @@ void node::remove_child(node* n) {
  *  @param[in,out] n Node which depends on this node.
  */
 void node::remove_depended(node* n) {
-  _depended_by.removeAll(n);
-  n->_depends_on.removeAll(this);
+  _depended_by.remove(n->get_id());
+  n->_depends_on.remove(this->get_id());
   return ;
 }
 
@@ -300,8 +270,8 @@ void node::remove_depended(node* n) {
  *  @param[in,out] n Node of which this node depends.
  */
 void node::remove_dependency(node* n) {
-  _depends_on.removeAll(n);
-  n->_depended_by.removeAll(this);
+  _depends_on.remove(n->get_id());
+  n->_depended_by.remove(this->get_id());
   return ;
 }
 
@@ -311,9 +281,193 @@ void node::remove_dependency(node* n) {
  *  @param[in,out] n Parent node.
  */
 void node::remove_parent(node* n) {
-  _parents.removeAll(n);
-  n->_children.removeAll(this);
+  _parents.remove(n->get_id());
+  n->_children.remove(this->get_id());
   return ;
+}
+
+/**
+ *  Get the id of the node.
+ *
+ *  @return  A pair of host_id, service_id.
+ */
+QPair<unsigned int, unsigned int> node::get_id() const {
+  return (qMakePair(host_id, service_id));
+}
+
+/**
+ *  Do all the children have issues ?
+ *
+ *  @return  True if all the children have issues.
+ */
+bool node::all_children_with_issues() const {
+  for (node_map::const_iterator it = _children.begin(), end = _children.end();
+       it != end;
+       ++it)
+    if (!(*it)->my_issue.get())
+      return (false);
+  return (true);
+}
+
+/**
+ *  Manage a status event.
+ *
+ *  @param[in] status            The status.
+ *  @param[in] last_state_change The time of the last state change.
+ *  @param[out] stream           A stream to write the events to.
+ */
+void node::manage_status(
+       short status,
+       timestamp last_state_change,
+       io::stream* stream) {
+
+  // No status change, nothing to do.
+  if (status == state)
+    return ;
+
+  // Recovery
+  if (state != 1 && status == 1) {
+    my_issue->end_time = last_state_change;
+    if (stream)
+      stream->write(misc::make_shared(new issue(*my_issue)));
+    my_issue.reset();
+  }
+  // Problem
+  else if (state == 1 && status != 1) {
+    my_issue.reset(new issue);
+    my_issue->start_time = last_state_change;
+    my_issue->host_id = host_id;
+    my_issue->service_id = service_id;
+    my_issue->instance_id = instance_id;
+    if (stream)
+      stream->write(misc::make_shared(new issue(*my_issue)));
+  }
+
+  state = status;
+
+  // Generate the state event.
+  _generate_state_event(last_state_change, stream);
+
+  // Visits the parents, children, and dependencies.
+  for (node_map::iterator it = _parents.begin(), end = _parents.end();
+       it != end;
+       ++it)
+    (*it)->linked_node_updated(*this, last_state_change, children, stream);
+  for (node_map::iterator it = _children.begin(), end = _children.end();
+       it != end;
+       ++it)
+    (*it)->linked_node_updated(*this, last_state_change, parent, stream);
+  for (node_map::iterator it = _depends_on.begin(), end = _depends_on.end();
+       it != end;
+       ++it)
+    (*it)->linked_node_updated(*this, last_state_change, depended_by, stream);
+  for (node_map::iterator it = _depended_by.begin(), end = _depended_by.end();
+       it != end;
+       ++it)
+    (*it)->linked_node_updated(*this, last_state_change, depends_on, stream);
+}
+
+/**
+ *  Manage an ack.
+ *
+ *  @param[in] entry_time  The time of the entry.
+ *  @param[out] stream     A stream to write the events to.
+ */
+void node::manage_ack(timestamp entry_time, io::stream* stream) {
+  if (my_issue.get() && !my_issue->ack_time.is_null()) {
+    my_issue->ack_time = entry_time;
+    _generate_state_event(entry_time, stream);
+  }
+}
+
+/**
+ *  Manage a downtime.
+ *
+ *  @param[in] start_time  The start time of the downtime.
+ *  @param[out] stream     A stream to write the events to.
+ */
+void node::manage_downtime(
+       timestamp start_time,
+       io::stream* stream) {
+  if (!in_downtime) {
+    in_downtime = true;
+    downtime_start_time = start_time;
+    _generate_state_event(start_time, stream);
+  }
+}
+
+/**
+ *  Manage a log.
+ *
+ *  @param[in] entry    The log.
+ *  @param[out] stream  A stream to write the events to.
+ */
+void node::manage_log(
+       neb::log_entry const& entry,
+       io::stream* stream) {
+  if (my_issue.get() && stream) {
+    misc::shared_ptr<log_issue> log(new log_issue);
+    log->host_id = host_id;
+    log->service_id = service_id;
+    log->issue_start_time = my_issue->start_time;
+    log->log_ctime = entry.c_time;
+    stream->write(log);
+  }
+}
+
+/**
+ *  Notify this node that a linked node has been updated.
+ *
+ *  @param[in] node        The linked node.
+ *  @param[in] start_time  The start time of the update.
+ *  @param[in] type        What is the linked node from our viewpoint?
+ *  @param[out] stream     A stream to write the events to.
+ */
+void node::linked_node_updated(
+       node& n,
+       timestamp start_time,
+       link_type type,
+       io::stream* stream) {
+  // Dependencies.
+  if ((type == depended_by || type == depends_on)
+        && my_issue.get() && n.my_issue.get()) {
+    misc::shared_ptr<issue_parent> ip(new issue_parent);
+    node& child_node = (type == depends_on ? n : *this);
+    node& parent_node = (type == depends_on ? *this : n);
+    ip->child_host_id = child_node.host_id;
+    ip->child_service_id = child_node.service_id;
+    ip->child_instance_id = child_node.instance_id;
+    ip->child_start_time = child_node.my_issue->start_time;
+    ip->parent_host_id = parent_node.host_id;
+    ip->parent_service_id = parent_node.service_id;
+    ip->parent_instance_id = parent_node.instance_id;
+    ip->parent_start_time = parent_node.my_issue->start_time;
+    ip->start_time = start_time;
+
+    if (stream)
+      stream->write(ip);
+  }
+  // Parenting.
+  else if ((type == parent || type == children)
+             && my_issue.get() && n.my_issue.get()) {
+    node& child_node = (type == parent ? n : *this);
+    node& parent_node = (type == parent ? *this : n);
+    if (parent_node.all_children_with_issues()) {
+      misc::shared_ptr<issue_parent> ip(new issue_parent);
+      ip->child_host_id = child_node.host_id;
+      ip->child_service_id = child_node.service_id;
+      ip->child_instance_id = child_node.instance_id;
+      ip->child_start_time = child_node.my_issue->start_time;
+      ip->parent_host_id = parent_node.host_id;
+      ip->parent_service_id = parent_node.service_id;
+      ip->parent_instance_id = parent_node.instance_id;
+      ip->parent_start_time = parent_node.my_issue->start_time;
+      ip->start_time = start_time;
+
+      if (stream)
+        stream->write(ip);
+    }
+  }
 }
 
 /**************************************
@@ -331,35 +485,35 @@ void node::remove_parent(node* n) {
  *  @param[in] n Object to copy.
  */
 void node::_internal_copy(node const& n) {
-  QList<node*>::iterator it, end;
+  node_map::iterator it, end;
 
   // Copy childrens.
   _children = n._children;
   for (it = _children.begin(), end = _children.end();
        it != end;
        ++it)
-    (*it)->_parents.push_back(this);
+    (*it)->_parents.insert(get_id(), this);
 
   // Copy nodes depending on copied node.
   _depended_by = n._depended_by;
   for (it = _depended_by.begin(), end = _depended_by.end();
        it != end;
        ++it)
-    (*it)->_depends_on.push_back(this);
+    (*it)->_depends_on.insert(get_id(), this);
 
   // Copy nodes on which the copied node depends.
   _depends_on = n._depends_on;
   for (it = _depends_on.begin(), end = _depends_on.end();
        it != end;
        ++it)
-    (*it)->_depended_by.push_back(this);
+    (*it)->_depended_by.insert(get_id(), this);
 
   // Copy parents.
   _parents = n._parents;
   for (it = _parents.begin(), end = _parents.end();
        it != end;
        ++it)
-    (*it)->_children.push_back(this);
+    (*it)->_children.insert(get_id(), this);
 
   // Copy other members.
   host_id = n.host_id;
@@ -370,8 +524,40 @@ void node::_internal_copy(node const& n) {
   else
     my_issue.reset();
   service_id = n.service_id;
-  since = n.since;
   state = n.state;
+  downtime_start_time = n.downtime_start_time;
+  ack_time = n.ack_time;
 
   return ;
+}
+
+/**
+ *  Generate a state event.
+ *
+ *  @param[in] type        The type of the state event.
+ *  @param[in] start_time  The start time of the new event.
+ *  @param[out] stream     A stream to write the event to.
+ */
+void node::_generate_state_event(
+       timestamp start_time,
+       io::stream* stream) {
+  // Close old state event.
+  if (my_state.get() && stream) {
+    my_state->end_time = start_time;
+    stream->write(misc::make_shared(new correlation::state(*my_state)));
+  }
+
+  // Open new state event.
+  my_state.reset(new correlation::state);
+  my_state->start_time = start_time;
+  my_state->service_id = service_id;
+  my_state->host_id = host_id;
+  my_state->current_state = state;
+  my_state->instance_id = instance_id;
+  my_state->in_downtime
+    = downtime_start_time.is_null() ? false : downtime_start_time <= start_time;
+  my_state->ack_time = ack_time > start_time ? ack_time : start_time;
+
+  if (stream)
+    stream->write(misc::make_shared(new correlation::state(*my_state)));
 }

@@ -31,8 +31,12 @@ namespace correlation {
     de_host_state,
     de_issue,
     de_issue_parent,
-    de_service_state
+    de_service_state,
+    de_state,
+    de_log_issue
   };
+
+  extern unsigned int instance_id;
 }
 
 CCB_END()

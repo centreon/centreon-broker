@@ -90,6 +90,15 @@ public:
     return (_sec);
   }
 
+  /**
+   *  Is this a null timestamp ?
+   *
+   *  @return  True if this is a null timestamp.
+   */
+  bool is_null() const {
+    return (_sec == (time_t)-1);
+  }
+
   // Data.
   std::time_t _sec;
 };

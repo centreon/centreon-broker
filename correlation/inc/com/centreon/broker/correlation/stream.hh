@@ -21,6 +21,9 @@
 #  define CCB_CORRELATION_STREAM_HH
 
 #  include <QString>
+#  include <QMap>
+#  include <QPair>
+#  include "com/centreon/broker/correlation/node.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -61,6 +64,9 @@ namespace        correlation {
                  _cache;
     QString      _correlation_file;
     bool         _process_out;
+
+    QMap<QPair<unsigned int, unsigned int>, node>
+                 _nodes;
   };
 }
 
