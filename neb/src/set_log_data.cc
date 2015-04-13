@@ -146,7 +146,6 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
       le.output = log_extract(&lasts);
     }
     else if (!strcmp(datadup, "EXTERNAL COMMAND")) {
-      log_extract_first(lasts, &lasts);
       le.msg_type = 5;
       le.output = "EXTERNAL COMMAND: ";
       le.output.append(lasts);
