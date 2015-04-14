@@ -36,5 +36,5 @@ int main() {
   }
 
   // Check.
-  return (!n1.depended_by().isEmpty());
+  return (!n1.get_dependeds().isEmpty());
 }

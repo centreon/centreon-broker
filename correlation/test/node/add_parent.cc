@@ -35,8 +35,8 @@ int main() {
   n1.add_parent(&n2);
 
   // Check.
-  return (n1.parents().isEmpty()
-          || (*n1.parents().begin() != &n2)
-          || n2.children().isEmpty()
-          || (*n2.children().begin() != &n1));
+  return (n1.get_parents().isEmpty()
+          || (*n1.get_parents().begin() != &n2)
+          || n2.get_children().isEmpty()
+          || (*n2.get_children().begin() != &n1));
 }

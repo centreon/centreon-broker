@@ -36,7 +36,6 @@ int main() {
   bn.my_issue->end_time = 234;
   bn.my_issue->start_time = 7678353;
   bn.service_id = 765334;
-  bn.since = 3945239074u;
   bn.state = 2;
 
   // Linked objects.
@@ -57,7 +56,6 @@ int main() {
   bn.in_downtime = false;
   bn.my_issue.reset();
   bn.service_id = 2347;
-  bn.since = 553445;
   bn.state = 1;
   bn.remove_child(&n1);
   bn.remove_dependency(&n3);
@@ -67,30 +65,28 @@ int main() {
           || bn.in_downtime
           || bn.my_issue.get()
           || (bn.service_id != 2347)
-          || (bn.since != 553445)
           || (bn.state != 1)
-          || !bn.children().isEmpty()
-          || (bn.depended_by().size() != 1)
-          || !bn.depends_on().isEmpty()
-          || (bn.parents().size() != 1)
+          || !bn.get_children().isEmpty()
+          || (bn.get_dependeds().size() != 1)
+          || !bn.get_dependencies().isEmpty()
+          || (bn.get_parents().size() != 1)
           || (cn.host_id != 42)
           || !cn.in_downtime
           || !cn.my_issue.get()
           || (cn.my_issue->end_time != 234)
           || (cn.my_issue->start_time != 7678353)
           || (cn.service_id != 765334)
-          || (cn.since != static_cast<time_t>(3945239074u))
           || (cn.state != 2)
-          || (cn.children().size() != 1)
-          || (*cn.children().begin() != &n1)
-          || (cn.depended_by().size() != 1)
-          || (*cn.depended_by().begin() != &n2)
-          || (cn.depends_on().size() != 1)
-          || (*cn.depends_on().begin() != &n3)
-          || (cn.parents().size() != 1)
-          || (*cn.parents().begin() != &n4)
-          || (n1.parents().size () != 1)
-          || (n2.depends_on().size() != 2)
-          || (n3.depended_by().size() != 1)
-          || (n4.children().size() != 2));
+          || (cn.get_children().size() != 1)
+          || (*cn.get_children().begin() != &n1)
+          || (cn.get_dependeds().size() != 1)
+          || (*cn.get_dependeds().begin() != &n2)
+          || (cn.get_dependencies().size() != 1)
+          || (*cn.get_dependencies().begin() != &n3)
+          || (cn.get_parents().size() != 1)
+          || (*cn.get_parents().begin() != &n4)
+          || (n1.get_parents().size () != 1)
+          || (n2.get_dependencies().size() != 2)
+          || (n3.get_dependeds().size() != 1)
+          || (n4.get_children().size() != 2));
 }

@@ -36,5 +36,5 @@ int main() {
   }
 
   // Check.
-  return (!n1.children().isEmpty());
+  return (!n1.get_children().isEmpty());
 }

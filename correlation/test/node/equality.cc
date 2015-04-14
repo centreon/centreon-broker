@@ -36,7 +36,6 @@ int main() {
   bn.my_issue->end_time = 234;
   bn.my_issue->start_time = 7678353;
   bn.service_id = 765334;
-  bn.since = 3945239074u;
   bn.state = 2;
 
   // Linked objects.
@@ -58,7 +57,6 @@ int main() {
   dn.in_downtime = false;
   dn.my_issue.reset();
   dn.service_id = 2347;
-  dn.since = 553445;
   dn.state = 1;
   dn.remove_child(&n1);
   dn.remove_dependency(&n3);
