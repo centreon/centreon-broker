@@ -212,9 +212,6 @@ add_library("${CBMOD}" SHARED
   "${INC_DIR}/com/centreon/broker/neb/statistics/total_service_state_change.hh"
   "${INC_DIR}/com/centreon/broker/neb/statistics/total_services.hh"
 )
-
-
-
 get_property(CBMOD_DEFINES
   TARGET "${CBMOD}"
   PROPERTY COMPILE_DEFINITIONS)
@@ -689,6 +686,14 @@ if (WITH_TESTING)
     "${SRC_DIR}/internal.cc"
     "${SRC_DIR}/set_log_data.cc"
     "${TEST_DIR}/set_log_data/current_service_state.cc")
+  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Default logs.
+  set(TEST_NAME "neb_set_log_data_default")
+  add_executable("${TEST_NAME}"
+    "${SRC_DIR}/internal.cc"
+    "${SRC_DIR}/set_log_data.cc"
+    "${TEST_DIR}/set_log_data/default.cc")
   target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()
