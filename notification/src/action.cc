@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2014 Merethis
+** Copyright 2009-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -270,7 +270,7 @@ void action::_spawn_notification_attempts(
     time_t at;
     timeperiod::ptr tp = st.get_timeperiod_by_id((*it)->get_timeperiod_id());
     if (tp)
-      tp->get_next_valid(at);
+      at = tp->get_next_valid(::time(NULL));
     else
       at = ::time(NULL);
     spawned_actions.push_back(std::make_pair(at, a));

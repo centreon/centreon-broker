@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -27,7 +27,6 @@
 #include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/directory_watcher.hh"
-
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -44,7 +43,6 @@ directory_watcher::directory_watcher()
            << "directory_watcher: couldn't create inotify instance: '"
            << ::strerror(err) << "'");
   }
-
 }
 
 /**
@@ -148,7 +146,7 @@ std::vector<directory_event> directory_watcher::get_events() {
   }
 
   // Iterate over all the events.
-  const struct inotify_event *event;
+  struct inotify_event const* event;
   for (char* ev = buf;
        ev < buf + len;
        ev += sizeof(struct inotify_event) + event->len) {
@@ -162,6 +160,8 @@ std::vector<directory_event> directory_watcher::get_events() {
       event_type = directory_event::deleted;
     else if (event->mask & IN_DELETE_SELF)
       event_type = directory_event::directory_deleted;
+    else
+      continue ;
 
     std::map<int, std::string>::const_iterator found_path(
                                                  _id_to_path.find(event->wd));

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -43,10 +43,20 @@ using namespace com::centreon::broker::notification;
  *  @param[in] cache  The persistent cache used by the node cache.
  */
 node_cache::node_cache(misc::shared_ptr<persistent_cache> cache)
-  : _mutex(QMutex::NonRecursive),
-    _cache(cache),
-    _actual_downtime_id(0) {
+  : _actual_downtime_id(0),
+    _mutex(QMutex::NonRecursive),
+    _cache(cache) {
   multiplexing::engine::instance().hook(*this);
+}
+
+/**
+ *  Copy constructor.
+ *
+ *  @param[in] obj  The object to copy.
+ */
+node_cache::node_cache(node_cache const& obj)
+  : multiplexing::hooker(obj) {
+  node_cache::operator=(obj);
 }
 
 /**
@@ -54,16 +64,6 @@ node_cache::node_cache(misc::shared_ptr<persistent_cache> cache)
  */
 node_cache::~node_cache() {
   multiplexing::engine::instance().unhook(*this);
-}
-
-
-/**
- *  Copy constructor.
- *
- *  @param[in] obj  The object to copy.
- */
-node_cache::node_cache(node_cache const& obj) {
-  node_cache::operator=(obj);
 }
 
 /**
@@ -717,12 +717,11 @@ misc::shared_ptr<io::data> node_cache::_parse_remove_ack(
  *
  *  @return             A downtime event.
  */
-misc::shared_ptr<io::data>
-  node_cache::_parse_downtime(
-                down_type type,
-                timestamp t,
-                const char* args,
-                size_t arg_size) {
+misc::shared_ptr<io::data> node_cache::_parse_downtime(
+                                         down_type type,
+                                         timestamp t,
+                                         char const* args,
+                                         size_t arg_size) {
   buffer host_name(arg_size);
   buffer service_description(arg_size);
   unsigned long start_time = 0;
@@ -734,6 +733,7 @@ misc::shared_ptr<io::data>
   buffer comment(arg_size);
   bool ret = false;
 
+  (void)t;
   logging::debug(logging::medium)
     << "notification: parsing downtime command: '" << args << "'";
 

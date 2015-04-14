@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -110,6 +110,7 @@ void stream::statistics(io::properties& tree) const {
  *  @return Number of events acknowledged.
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
+  (void)d;
   throw (exceptions::msg()
          << "command_file: attempt to write to a command file");
   return (1);

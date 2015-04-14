@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -117,7 +117,7 @@ void directory_dumper::read(misc::shared_ptr<io::data>& d) {
 
   // Get an event already in the event list.
   if (!_event_list.empty()) {
-    int type = _event_list.front().second->type();
+    unsigned int type = _event_list.front().second->type();
     if (type == dump::static_type())
       _last_modified_timestamps[
          _event_list.front().second.ref_as<dump>().filename.toStdString()]
@@ -160,6 +160,7 @@ void directory_dumper::read(misc::shared_ptr<io::data>& d) {
  *  @return Always return 1, or throw exceptions.
  */
 unsigned int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
+  (void)d;
   throw (exceptions::msg()
          << "dumper: attempt to write from a directory dumper stream");
   return (1);

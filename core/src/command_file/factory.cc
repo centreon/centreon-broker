@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -107,7 +107,9 @@ io::endpoint* factory::new_endpoint(
                          bool is_output,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
+  (void)is_input;
+  (void)is_output;
   (void)cache;
-
+  is_acceptor = false;
   return (new endpoint(cfg.name.toStdString()));
 }

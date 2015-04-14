@@ -436,7 +436,6 @@ void stream::_process_service_status_event(neb::service_status const& event) {
 
   node_id id(event.host_id, event.service_id);
   short old_hard_state;
-  short old_soft_state;
   time_t when_to_schedule(::time(NULL) + 1);
 
   // Get the node corresponding to this id.
@@ -453,7 +452,6 @@ void stream::_process_service_status_event(neb::service_status const& event) {
 
     // Save the old state and copy the current state.
     old_hard_state = n->get_hard_state();
-    old_soft_state = n->get_soft_state();
     n->set_hard_state(event.last_hard_state);
     n->set_soft_state(event.current_state);
   }
@@ -496,7 +494,6 @@ void stream::_process_host_status_event(neb::host_status const& event) {
 
   node_id id(event.host_id);
   short old_hard_state;
-  short old_soft_state;
   time_t when_to_schedule(::time(NULL) + 1);
 
   // Get the node corresponding to this id.
@@ -513,7 +510,6 @@ void stream::_process_host_status_event(neb::host_status const& event) {
 
     // Save the old state and copy the current state.
     old_hard_state = n->get_hard_state();
-    old_soft_state = n->get_soft_state();
     n->set_hard_state(event.last_hard_state);
     n->set_soft_state(event.current_state);
   }

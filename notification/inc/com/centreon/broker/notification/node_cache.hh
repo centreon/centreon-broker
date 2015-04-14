@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -101,25 +101,6 @@ namespace         notification {
     bool          node_acknowledged(objects::node_id node) const;
 
   private:
-    QHash<objects::node_id, host_node_state>
-                  _host_node_states;
-    QHash<objects::node_id, service_node_state>
-                  _service_node_states;
-    QHash<objects::node_id, neb::acknowledgement>
-                  _acknowledgements;
-    QHash<unsigned int, neb::downtime>
-                  _downtimes;
-    QMultiHash<objects::node_id, unsigned int>
-                  _downtime_id_by_nodes;
-    unsigned int  _actual_downtime_id;
-    QMutex        _mutex;
-
-    misc::shared_ptr<persistent_cache>
-                  _cache;
-
-    std::deque<misc::shared_ptr<io::data> >
-                  _serialized_data;
-
     enum          ack_type {
                   ack_host = 0,
                   ack_service
@@ -132,9 +113,9 @@ namespace         notification {
     };
 
     void          _prepare_serialization();
-
     misc::shared_ptr<io::data>
-                  _parse_ack(ack_type type,
+                  _parse_ack(
+                    ack_type type,
                     timestamp t,
                     const char* args,
                     size_t arg_size);
@@ -154,6 +135,25 @@ namespace         notification {
                     down_type type,
                     const char* args,
                     size_t arg_size);
+
+    QHash<objects::node_id, host_node_state>
+                  _host_node_states;
+    QHash<objects::node_id, service_node_state>
+                  _service_node_states;
+    QHash<objects::node_id, neb::acknowledgement>
+                  _acknowledgements;
+    QHash<unsigned int, neb::downtime>
+                  _downtimes;
+    QMultiHash<objects::node_id, unsigned int>
+                  _downtime_id_by_nodes;
+    unsigned int  _actual_downtime_id;
+    QMutex        _mutex;
+
+    misc::shared_ptr<persistent_cache>
+                  _cache;
+
+    std::deque<misc::shared_ptr<io::data> >
+                  _serialized_data;
   };
 }
 
