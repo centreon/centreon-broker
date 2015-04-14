@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -728,29 +728,53 @@ unsigned int stream::_find_metric_id(
     logging::debug(logging::low) << "storage: found metric "
       << it->second.metric_id << " of (" << index_id << ", "
       << metric_name << ") in cache";
-    logging::info(logging::medium) << "storage: updating metric "
-      << it->second.metric_id << " of (" << index_id << ", "
-      << metric_name << ") (unit: " << unit_name << ", warning: "
-      << warn_low << ":" << warn << ", critical: " << crit_low << ":"
-      << crit << ", min: " << min << ", max: " << max << ")";
-    // Update metrics table.
-    _update_metrics.bind_value(":unit_name", unit_name);
-    _update_metrics.bind_value(":warn", check_double(warn));
-    _update_metrics.bind_value(":warn_low", check_double(warn_low));
-    _update_metrics.bind_value(":warn_threshold_mode", warn_mode);
-    _update_metrics.bind_value(":crit", check_double(crit));
-    _update_metrics.bind_value(":crit_low", check_double(crit_low));
-    _update_metrics.bind_value(":crit_threshold_mode", crit_mode);
-    _update_metrics.bind_value(":min", check_double(min));
-    _update_metrics.bind_value(":max", check_double(max));
-    _update_metrics.bind_value(":current_value", check_double(value));
-    _update_metrics.bind_value(":index_id", index_id);
-    _update_metrics.bind_value(":metric_name", metric_name);
-    try { _update_metrics.run_statement(); }
-    catch (std::exception const& e) {
-      throw (broker::exceptions::msg() << "storage: could not "
-                "update metric (index_id " << index_id
-             << ", metric " << metric_name << "): " << e.what());
+    // Should we update metrics ?
+    if ((check_double(it->second.value) != check_double(value))
+        || (it->second.unit_name != unit_name)
+        || (check_double(it->second.warn) != check_double(warn))
+        || (check_double(it->second.warn_low) != check_double(warn_low))
+        || (it->second.warn_mode != warn_mode)
+        || (check_double(it->second.crit) != check_double(crit))
+        || (check_double(it->second.crit_low) != check_double(crit_low))
+        || (it->second.crit_mode != crit_mode)
+        || (check_double(it->second.min) != check_double(min))
+        || (check_double(it->second.max) != check_double(max))) {
+      logging::info(logging::medium) << "storage: updating metric "
+        << it->second.metric_id << " of (" << index_id << ", "
+        << metric_name << ") (unit: " << unit_name << ", warning: "
+        << warn_low << ":" << warn << ", critical: " << crit_low << ":"
+        << crit << ", min: " << min << ", max: " << max << ")";
+      // Update metrics table.
+      _update_metrics.bind_value(":unit_name", unit_name);
+      _update_metrics.bind_value(":warn", check_double(warn));
+      _update_metrics.bind_value(":warn_low", check_double(warn_low));
+      _update_metrics.bind_value(":warn_threshold_mode", warn_mode);
+      _update_metrics.bind_value(":crit", check_double(crit));
+      _update_metrics.bind_value(":crit_low", check_double(crit_low));
+      _update_metrics.bind_value(":crit_threshold_mode", crit_mode);
+      _update_metrics.bind_value(":min", check_double(min));
+      _update_metrics.bind_value(":max", check_double(max));
+      _update_metrics.bind_value(":current_value", check_double(value));
+      _update_metrics.bind_value(":index_id", index_id);
+      _update_metrics.bind_value(":metric_name", metric_name);
+      try { _update_metrics.run_statement(); }
+      catch (std::exception const& e) {
+        throw (broker::exceptions::msg() << "storage: could not "
+                  "update metric (index_id " << index_id
+               << ", metric " << metric_name << "): " << e.what());
+      }
+
+      // Fill cache.
+      it->second.value = value;
+      it->second.unit_name = unit_name;
+      it->second.warn = warn;
+      it->second.warn_low = warn_low;
+      it->second.warn_mode = warn_mode;
+      it->second.crit = crit;
+      it->second.crit_low = crit_low;
+      it->second.crit_mode = crit_mode;
+      it->second.min = min;
+      it->second.max = max;
     }
 
     // Remember, we found the metric ID.
@@ -843,6 +867,16 @@ unsigned int stream::_find_metric_id(
     info.locked = false;
     info.metric_id = retval;
     info.type = *type;
+    info.value = value;
+    info.unit_name = unit_name;
+    info.warn = warn;
+    info.warn_low = warn_low;
+    info.warn_mode = warn_mode;
+    info.crit = crit;
+    info.crit_low = crit_low;
+    info.crit_mode = crit_mode;
+    info.min = min;
+    info.max = max;
     _metric_cache[std::make_pair(index_id, metric_name)] = info;
     *locked = info.locked;
   }
@@ -976,9 +1010,11 @@ void stream::_rebuild_cache() {
     // Execute query.
     database_query q(_db);
     q.run_query(
-        "SELECT metric_id, index_id, metric_name,"
-        "       data_source_type, locked"
-        " FROM metrics",
+        "SELECT metric_id, index_id, metric_name, data_source_type,"
+        "       locked, current_value, unit_name, warn, warn_low,"
+        "       warn_threshold_mode, crit, crit_low,"
+        "       crit_threshold_mode, min, max"
+        "  FROM metrics",
         "storage: could not fetch metric list from data DB");
 
     // Loop through result set.
@@ -991,6 +1027,16 @@ void stream::_rebuild_cache() {
                    ? static_cast<unsigned int>(perfdata::automatic)
                    : q.value(3).toUInt());
       info.locked = (q.value(4).toUInt() == 1);
+      info.value = (q.value(5).isNull() ? NAN : q.value(5).toDouble());
+      info.unit_name = q.value(6).toString();
+      info.warn = (q.value(7).isNull() ? NAN : q.value(7).toDouble());
+      info.warn_low = (q.value(8).isNull() ? NAN : q.value(8).toDouble());
+      info.warn_mode = q.value(9).toBool();
+      info.crit = (q.value(10).isNull() ? NAN : q.value(10).toDouble());
+      info.crit_low = (q.value(11).isNull() ? NAN : q.value(11).toDouble());
+      info.crit_mode = q.value(12).toBool();
+      info.min = (q.value(13).isNull() ? NAN : q.value(13).toDouble());
+      info.max = (q.value(14).isNull() ? NAN : q.value(14).toDouble());
       logging::debug(logging::high) << "storage: loaded metric "
         << info.metric_id << " of (" << index_id << ", " << name
         << "), type " << info.type;

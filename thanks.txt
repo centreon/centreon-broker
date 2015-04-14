@@ -2,5 +2,6 @@
 | Great thanks to the people below who contributed to Centreon Broker |
 -----------------------------------------------------------------------
 
+Andrzej Augustynowicz
 Kevin Defives
 Raphael Troiano

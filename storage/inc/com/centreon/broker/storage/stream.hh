@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -78,6 +78,16 @@ namespace          storage {
       bool         locked;
       unsigned int metric_id;
       unsigned int type;
+      double       value;
+      QString      unit_name;
+      double       warn;
+      double       warn_low;
+      bool         warn_mode;
+      double       crit;
+      double       crit_low;
+      bool         crit_mode;
+      double       min;
+      double       max;
     };
     struct         metric_value {
       time_t       c_time;
