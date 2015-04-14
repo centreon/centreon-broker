@@ -148,7 +148,6 @@ namespace          sql {
     database_query _host_dependency_update;
     database_query _host_group_insert;
     database_query _host_group_update;
-    database_query _host_parent_select;
     database_query _host_parent_insert;
     database_query _host_parent_select;
     database_query _host_state_insert;
