@@ -103,7 +103,6 @@ namespace                correlation {
     short                state;
     std::map<unsigned int, notification::downtime>
                          downtimes;
-    timestamp            ack_time;
 
    private:
     void                 _internal_copy(node const& n);

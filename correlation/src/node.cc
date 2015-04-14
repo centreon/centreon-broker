@@ -111,7 +111,6 @@ bool node::operator==(node const& n) const {
            && (in_downtime == n.in_downtime)
            && (service_id == n.service_id)
            && (state == n.state)
-           && (ack_time == n.ack_time)
            && (downtimes == n.downtimes)
            && ((!my_issue.get() && !n.my_issue.get())
                || (my_issue.get()
@@ -559,7 +558,6 @@ void node::_internal_copy(node const& n) {
   service_id = n.service_id;
   state = n.state;
   downtimes = n.downtimes;
-  ack_time = n.ack_time;
 
   return ;
 }
@@ -598,7 +596,10 @@ void node::_generate_state_event(
       earliest_downtime = it->second.start_time;
   my_state->in_downtime
     = earliest_downtime.is_null() ? false : earliest_downtime <= start_time;
-  my_state->ack_time = ack_time > start_time ? ack_time : start_time;
+  if (my_issue.get() && !my_issue->ack_time.is_null())
+    my_state->ack_time = my_issue->ack_time > start_time ?
+                           my_issue->ack_time
+                           : start_time;
 
   if (stream)
     stream->write(misc::make_shared(new correlation::state(*my_state)));

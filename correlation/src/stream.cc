@@ -217,6 +217,7 @@ void stream::_load_correlation() {
     _cache->get(d);
     if (d.isNull())
       break ;
+    _load_correlation_event(d);
   }
 }
 
@@ -240,8 +241,10 @@ void stream::_load_correlation_event(misc::shared_ptr<io::data> const& d) {
     state const& st = d.ref_as<state>();
     QMap<QPair<unsigned int, unsigned int>, node>::iterator found
       = _nodes.find(qMakePair(st.host_id, st.service_id));
-    if (found != _nodes.end())
+    if (found != _nodes.end()) {
       found->my_state.reset(new state(st));
+      found->state = st.current_state;
+    }
   }
   else if (d->type() == notification::downtime::static_type()) {
     notification::downtime const& dwn = d.ref_as<notification::downtime>();
