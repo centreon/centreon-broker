@@ -18,6 +18,7 @@
 */
 
 #include <ctime>
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
 #include "com/centreon/broker/correlation/node.hh"
@@ -204,6 +205,12 @@ bool node::operator!=(node const& n) const {
  *  @param[in,out] n New child.
  */
 void node::add_child(node* n) {
+  if (_parents.contains(n->get_id()))
+    throw (exceptions::msg()
+           << "correlation: trying to insert node ("
+           << n->host_id << ", " << n->service_id << ") as children of node ("
+           << n->host_id << ", " << n->service_id
+           << "), but this node is already a parent");
   _children.insert(n->get_id(), n);
   n->_parents.insert(get_id(), this);
   return ;
@@ -215,6 +222,12 @@ void node::add_child(node* n) {
  *  @param[in,out] n New node depending on this node.
  */
 void node::add_depended(node* n) {
+  if (_depends_on.contains(n->get_id()))
+    throw (exceptions::msg()
+           << "correlation: trying to insert node ("
+           << n->host_id << ", " << n->service_id << ") as inverse dependency "
+           " of node (" << n->host_id << ", " << n->service_id
+           << "), but this node is already a dependency");
   _depended_by.insert(n->get_id(), n);
   n->_depends_on.insert(get_id(), this);
   return ;
@@ -226,6 +239,12 @@ void node::add_depended(node* n) {
  *  @param[in,out] n New dependency.
  */
 void node::add_dependency(node* n) {
+  if (_depended_by.contains(n->get_id()))
+    throw (exceptions::msg()
+           << "correlation: trying to insert node ("
+           << n->host_id << ", " << n->service_id << ") as dependency of"
+           " node (" << n->host_id << ", " << n->service_id
+           << "), but this node is already an inverse dependency");
   _depends_on.insert(n->get_id(), n);
   n->_depended_by.insert(get_id(), this);
   return ;
@@ -237,6 +256,12 @@ void node::add_dependency(node* n) {
  *  @param[in,out] n New parent.
  */
 void node::add_parent(node* n) {
+  if (_children.contains(n->get_id()))
+    throw (exceptions::msg()
+           << "correlation: trying to insert node ("
+           << n->host_id << ", " << n->service_id << ") as parent of node ("
+           << n->host_id << ", " << n->service_id
+           << "), but this node is already a children");
   _parents.insert(n->get_id(), n);
   n->_children.insert(get_id(), this);
   return ;
