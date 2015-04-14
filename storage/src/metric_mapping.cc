@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -35,8 +35,7 @@ using namespace com::centreon::broker::storage;
  *  Default constructor.
  */
 metric_mapping::metric_mapping()
-  : metric_id(0),
-    status_id(0) {}
+  : index_id(0), metric_id(0) {}
 
 /**
  *  Copy constructor.
@@ -95,8 +94,8 @@ unsigned int metric_mapping::static_type() {
  *  @param[in] m Object to copy.
  */
 void metric_mapping::_internal_copy(metric_mapping const& m) {
+  index_id = m.index_id;
   metric_id = m.metric_id;
-  status_id = m.status_id;
   return ;
 }
 
@@ -109,15 +108,15 @@ void metric_mapping::_internal_copy(metric_mapping const& m) {
 // Mapping.
 mapping::entry const metric_mapping::entries[] = {
   mapping::entry(
-    &metric_mapping::metric_id,
-    "metric_id",
-    1,
-    mapping::entry::NULL_ON_ZERO),
-  mapping::entry(
-    &metric_mapping::status_id,
-    "status_id",
+    &metric_mapping::index_id,
+    "index_id",
     1,
   mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &metric_mapping::metric_id,
+    "metric_id",
+    2,
+    mapping::entry::NULL_ON_ZERO),
   mapping::entry()
 };
 

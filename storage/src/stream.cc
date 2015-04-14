@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -35,13 +35,13 @@
 #include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
+#include "com/centreon/broker/storage/index_mapping.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/metric_mapping.hh"
 #include "com/centreon/broker/storage/parser.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 #include "com/centreon/broker/storage/remove_graph.hh"
 #include "com/centreon/broker/storage/status.hh"
-#include "com/centreon/broker/storage/status_mapping.hh"
 #include "com/centreon/broker/storage/stream.hh"
 
 using namespace com::centreon::broker;
@@ -670,12 +670,12 @@ unsigned int stream::_find_index_id(
       _index_cache[std::make_pair(host_id, service_id)] = info;
 
       // Create the metric mapping.
-      misc::shared_ptr<status_mapping> mm(new status_mapping);
-      mm->index_id = retval;
-      mm->host_id = host_id;
-      mm->service_id = service_id;
+      misc::shared_ptr<index_mapping> im(new index_mapping);
+      im->index_id = retval;
+      im->host_id = host_id;
+      im->service_id = service_id;
       multiplexing::publisher pblshr;
-      pblshr.write(mm);
+      pblshr.write(im);
 
       // Provide RRD retention.
       if (rrd_len)
@@ -857,8 +857,8 @@ unsigned int stream::_find_metric_id(
 
     // Create the metric mapping.
     misc::shared_ptr<metric_mapping> mm(new metric_mapping);
+    mm->index_id = index_id;
     mm->metric_id = info.metric_id;
-    mm->status_id = index_id;
     multiplexing::publisher pblshr;
     pblshr.write(mm);
 
@@ -991,11 +991,11 @@ void stream::_rebuild_cache() {
       _index_cache[std::make_pair(host_id, service_id)] = info;
 
       // Create the metric mapping.
-      misc::shared_ptr<status_mapping> mm(new status_mapping);
-      mm->index_id = info.index_id;
-      mm->host_id = host_id;
-      mm->service_id = service_id;
-      pblshr.write(mm);
+      misc::shared_ptr<index_mapping> im(new index_mapping);
+      im->index_id = info.index_id;
+      im->host_id = host_id;
+      im->service_id = service_id;
+      pblshr.write(im);
     }
   }
 
@@ -1026,8 +1026,8 @@ void stream::_rebuild_cache() {
 
       // Create the metric mapping.
       misc::shared_ptr<metric_mapping> mm(new metric_mapping);
+      mm->index_id = index_id;
       mm->metric_id = info.metric_id;
-      mm->status_id = index_id;
       pblshr.write(mm);
     }
   }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -31,8 +31,8 @@ namespace storage {
     de_rebuild,
     de_remove_graph,
     de_status,
-    de_metric_mapping,
-    de_status_mapping
+    de_index_mapping,
+    de_metric_mapping
   };
 }
 

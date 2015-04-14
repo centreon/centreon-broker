@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_STORAGE_STATUS_MAPPING_HH
-#  define CCB_STORAGE_STATUS_MAPPING_HH
+#ifndef CCB_STORAGE_INDEX_MAPPING_HH
+#  define CCB_STORAGE_INDEX_MAPPING_HH
 
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
@@ -30,19 +30,18 @@ CCB_BEGIN()
 
 namespace          storage {
   /**
-   *  @class status_mapping status_mapping.hh "com/centreon/broker/storage/status_mapping.hh"
-   *  @brief Information about a status stored in the database.
+   *  @class index_mapping index_mapping.hh "com/centreon/broker/storage/index_mapping.hh"
+   *  @brief Information about an index stored in the database.
    *
-   *  Used to provide more informations about the mapping of
-   *  the status to the services/hosts.
+   *  Used to provide more informations about the mapping of the index
+   *  to its service/host.
    */
-  class            status_mapping : public io::data {
+  class            index_mapping : public io::data {
   public:
-                   status_mapping();
-                   status_mapping(status_mapping const& s);
-                   ~status_mapping();
-    status_mapping&
-                   operator=(status_mapping const& s);
+                   index_mapping();
+                   index_mapping(index_mapping const& other);
+                   ~index_mapping();
+    index_mapping& operator=(index_mapping const& other);
     unsigned int   type() const;
     static unsigned int
                    static_type();
@@ -57,10 +56,10 @@ namespace          storage {
                    operations;
 
   private:
-    void           _internal_copy(status_mapping const& s);
+    void           _internal_copy(index_mapping const& other);
   };
 }
 
 CCB_END()
 
-#endif // !CCB_STORAGE_STATUS_MAPPING_HH
+#endif // !CCB_STORAGE_INDEX_MAPPING_HH

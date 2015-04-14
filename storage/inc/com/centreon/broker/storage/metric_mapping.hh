@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -47,8 +47,8 @@ namespace          storage {
     static unsigned int
                    static_type();
 
+    unsigned int   index_id;
     unsigned int   metric_id;
-    unsigned int   status_id;
 
     static mapping::entry const
                    entries[];
