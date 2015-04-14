@@ -3,6 +3,7 @@
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
   <instance>42</instance>
   <instance_name>MyBroker</instance_name>
+  <!--
   <stats>
     <fifo>/tmp/cbmod.fifo</fifo>
   </stats>
@@ -16,6 +17,7 @@
     <info>1</info>
     <level>3</level>
   </logger>
+  -->
   <output>
     <name><![CDATA[central-broker-master-perfdata]]></name>
     <interval><![CDATA[60]]></interval>
@@ -70,6 +72,14 @@
       <name>service</name>
       <value>$SERVICE$</value>
     </metrics_column>
+    <metrics_column>
+      <name>instanceid</name>
+      <value>$INSTANCEID$</value>
+    </metrics_column>
+    <metrics_column>
+      <name>instance</name>
+      <value>$INSTANCE$</value>
+    </metrics_column>
     <status_timeseries>status</status_timeseries>
     <status_column>
       <name>status_id</name>
@@ -97,6 +107,14 @@
     <status_column>
       <name>service</name>
       <value>$SERVICE$</value>
+    </status_column>
+    <status_column>
+      <name>instanceid</name>
+      <value>$INSTANCEID$</value>
+    </status_column>
+    <status_column>
+      <name>instance</name>
+      <value>$INSTANCE$</value>
     </status_column>
     <queries_per_transaction>2</queries_per_transaction>
   </output>

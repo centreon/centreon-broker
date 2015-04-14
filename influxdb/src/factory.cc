@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -182,7 +182,7 @@ io::endpoint* factory::new_endpoint(
   std::string status_timeseries(find_param(cfg, "status_timeseries"));
   std::vector<column> status_column_list;
   QDomNodeList status_columns = cfg.cfg.elementsByTagName("status_column");
-  for (size_t i = 0; i < status_columns.size(); ++i) {
+  for (int i = 0; i < status_columns.size(); ++i) {
     QDomNode status = status_columns.item(i);
     QDomNode name = status.namedItem("name");
     QDomNode value = status.namedItem("value");
@@ -207,7 +207,7 @@ io::endpoint* factory::new_endpoint(
   std::string metric_timeseries(find_param(cfg, "metrics_timeseries"));
   std::vector<column> metric_column_list;
   QDomNodeList metric_columns = cfg.cfg.elementsByTagName("metrics_column");
-  for (size_t i = 0; i < metric_columns.size(); ++i) {
+  for (int i = 0; i < metric_columns.size(); ++i) {
     QDomNode metric = metric_columns.item(i);
     QDomNode name = metric.namedItem("name");
     QDomNode value = metric.namedItem("value");
