@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -28,8 +28,8 @@ using namespace com::centreon::broker::graphite;
 
 std::ostream& operator<<(std::ostream& in, QString const& string) {
   in << string.toStdString();
+  return (in);
 }
-
 
 /**
  *  Constructor.
@@ -285,6 +285,7 @@ void query::_get_null(io::data const& d, std::ostream& is) {
  *  @param[in]    The stream.
  */
 void query::_get_dollar_sign(io::data const& d, std::ostream& is) {
+  (void)d;
   is << "$";
 }
 
@@ -295,12 +296,12 @@ void query::_get_dollar_sign(io::data const& d, std::ostream& is) {
  *
  *  @return       The index id.
  */
-unsigned int query::_get_status_id(io::data const& d) {
+unsigned int query::_get_index_id(io::data const& d) {
   if (_type == status)
     return (static_cast<storage::status const&>(d).index_id);
   else if (_type == metric)
     return (_cache->get_metric_mapping(
-              static_cast<storage::metric const&>(d).metric_id).status_id);
+              static_cast<storage::metric const&>(d).metric_id).index_id);
   return (0);
 }
 
@@ -311,8 +312,8 @@ unsigned int query::_get_status_id(io::data const& d) {
  *  @param is     The stream.
  */
 void query::_get_host(io::data const& d, std::ostream& is) {
-  unsigned int index_id = _get_status_id(d);
-  is << _cache->get_host_name(_cache->get_status_mapping(index_id).host_id);
+  unsigned int index_id = _get_index_id(d);
+  is << _cache->get_host_name(_cache->get_index_mapping(index_id).host_id);
 }
 
 /**
@@ -322,8 +323,8 @@ void query::_get_host(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void query::_get_host_id(io::data const& d, std::ostream& is) {
-  unsigned int index_id = _get_status_id(d);
-  is << _cache->get_status_mapping(index_id).host_id;
+  unsigned int index_id = _get_index_id(d);
+  is << _cache->get_index_mapping(index_id).host_id;
 }
 
 /**
@@ -333,8 +334,8 @@ void query::_get_host_id(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void query::_get_service(io::data const& d, std::ostream& is) {
-  unsigned int index_id = _get_status_id(d);
-  storage::status_mapping const& stm = _cache->get_status_mapping(index_id);
+  unsigned int index_id = _get_index_id(d);
+  storage::index_mapping const& stm = _cache->get_index_mapping(index_id);
   is << _cache->get_service_description(stm.host_id, stm.service_id);
 }
 
@@ -345,8 +346,8 @@ void query::_get_service(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void query::_get_service_id(io::data const& d, std::ostream& is) {
-  unsigned int index_id = _get_status_id(d);
-  is << _cache->get_status_mapping(index_id).service_id;
+  unsigned int index_id = _get_index_id(d);
+  is << _cache->get_index_mapping(index_id).service_id;
 }
 
 /**
