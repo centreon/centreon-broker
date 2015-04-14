@@ -268,6 +268,42 @@ void node::add_parent(node* n) {
 }
 
 /**
+ *  Get the list of children.
+ *
+ *  @return  The list of children.
+ */
+node::node_map const& node::get_children() const {
+  return (_children);
+}
+
+/**
+ *  Get the list of dependeds.
+ *
+ *  @return  The list of depended.
+ */
+node::node_map const& node::get_dependeds() const {
+  return  (_depends_on);
+}
+
+/**
+ *  Get the list of dependencies.
+ *
+ *  @return  The list of dependencies.
+ */
+node::node_map const& node::get_dependencies() const {
+  return (_depended_by);
+}
+
+/**
+ *  Get the list of parents.
+ *
+ *  @return  The list of parents.
+ */
+node::node_map const& node::get_parents() const {
+  return (_parents);
+}
+
+/**
  *  Remove a child node.
  *
  *  @param[in,out] n Child node.

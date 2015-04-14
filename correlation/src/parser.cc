@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <QtXml>
+#include <QSet>
 #include "com/centreon/broker/correlation/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -90,6 +91,7 @@ void parser::parse(
     reader.parse(&source);
     if (!recursive)
       _auto_services_dependencies();
+    _sanity_circular_check(nodes);
   }
   catch (QXmlParseException const& e) {
     throw (exceptions::msg() << "parsing error on '" << filename
@@ -383,4 +385,75 @@ bool parser::startElement(
     }
   }
   return (true);
+}
+
+/**
+ *  Implementation for the circular check.
+ *
+ *  @param[in] n               The node.
+ *  @param[in] get_method      Method used to get the list of children.
+ *  @param[out] visited_nodes  Set of already visited node.
+ */
+static void circular_check_impl(
+              node& n,
+              node::node_map const& (node::*get_method)() const,
+              QSet<node*>& visited_nodes) {
+  if (visited_nodes.contains(&n))
+    throw (exceptions::msg()
+           << "correlation: circular check failed for node ("
+           << n.host_id << ", " << n.service_id << ")");
+  visited_nodes.insert(&n);
+  node::node_map const& list = (n.*get_method)();
+  for (node::node_map::const_iterator it = list.begin(), end = list.end();
+       it != end;
+       ++it)
+    circular_check_impl(const_cast<node&>(**it), get_method, visited_nodes);
+}
+
+/**
+ *  Check for circular connections between nodes.
+ *
+ *  @param[in] nodes  The nodes.
+ */
+void parser::_sanity_circular_check(
+       QMap<QPair<unsigned int, unsigned int>, node> const& nodes) {
+  QSet<node*> visited_parent_nodes;
+  QSet<node*> visited_child_nodes;
+  QSet<node*> visited_depended_nodes;
+  QSet<node*> visited_depend_nodes;
+
+  for (QMap<QPair<unsigned int, unsigned int>, node>::const_iterator
+         it = nodes.begin(),
+         end = nodes.end();
+       it != end;
+       ++it) {
+    // Check parents.
+    if (!visited_parent_nodes.contains(const_cast<node*>(&*it))) {
+      circular_check_impl(
+        const_cast<node&>(*it),
+        &node::get_parents,
+        visited_parent_nodes);
+    }
+    // Check children.
+    if (!visited_child_nodes.contains(const_cast<node*>(&*it))) {
+      circular_check_impl(
+        const_cast<node&>(*it),
+        &node::get_children,
+        visited_child_nodes);
+    }
+    // Check dependeds.
+    if (!visited_depended_nodes.contains(const_cast<node*>(&*it))) {
+      circular_check_impl(
+        const_cast<node&>(*it),
+        &node::get_dependeds,
+        visited_depended_nodes);
+    }
+    // Check dependencies
+    if (!visited_depend_nodes.contains(const_cast<node*>(&*it))) {
+      circular_check_impl(
+        const_cast<node&>(*it),
+        &node::get_dependencies,
+        visited_depend_nodes);
+    }
+  }
 }

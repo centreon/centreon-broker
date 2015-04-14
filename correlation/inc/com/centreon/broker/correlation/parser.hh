@@ -63,6 +63,8 @@ namespace   correlation {
               QString const& localname,
               QString const& qname,
               QXmlAttributes const& attrs);
+    static void _sanity_circular_check(
+              QMap<QPair<unsigned int, unsigned int>, node> const& nodes);
 
     bool    _in_include;
     bool    _in_root;

@@ -47,6 +47,9 @@ namespace                correlation {
    */
   class                  node {
   public:
+    typedef QHash<QPair<unsigned int, unsigned int>, node*>
+                         node_map;
+
                          node();
                          node(node const& n);
                          ~node();
@@ -57,6 +60,10 @@ namespace                correlation {
     void                 add_depended(node* n);
     void                 add_dependency(node* n);
     void                 add_parent(node* n);
+    node_map const&      get_children() const;
+    node_map const&      get_dependeds() const;
+    node_map const&      get_dependencies() const;
+    node_map const&      get_parents() const;
     void                 remove_child(node* n);
     void                 remove_depended(node* n);
     void                 remove_dependency(node* n);
@@ -106,9 +113,6 @@ namespace                correlation {
 
    private:
     void                 _internal_copy(node const& n);
-
-    typedef QHash<QPair<unsigned int, unsigned int>, node*>
-                         node_map;
 
     node_map             _children;
     node_map             _depended_by;
