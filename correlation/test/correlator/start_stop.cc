@@ -22,8 +22,9 @@
 #include <QList>
 #include <QMap>
 #include <QPair>
+#include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/correlation/correlator.hh"
+#include "com/centreon/broker/correlation/stream.hh"
 #include "test/correlator/common.hh"
 
 using namespace com::centreon::broker;
@@ -40,10 +41,15 @@ int main() {
 
   // Initialization.
   config::applier::init();
+  multiplexing::engine::load();
+  // Start the multiplexing engine.
+  test_stream t;
+  multiplexing::engine::instance().hook(t);
+  multiplexing::engine::instance().start();
 
   try {
     // Create state.
-    QMap<QPair<unsigned int, unsigned int>, node> state;
+    /*QMap<QPair<unsigned int, unsigned int>, node> state;
     node& n1(state[qMakePair(42u, 24u)]);
     n1.host_id = 42;
     n1.service_id = 24;
@@ -60,15 +66,11 @@ int main() {
     n2.my_issue->host_id = 77;
     n2.my_issue->service_id = 56;
     n2.my_issue->start_time = 123456790;
-    n1.add_parent(&n2);
+    n1.add_parent(&n2);*/
 
     // Create correlator.
-    correlator c(0);
-    c.set_state(state);
-
-    // Start correlator then stop it.
-    c.starting();
-    c.stopping();
+    correlation::stream c("", misc::shared_ptr<persistent_cache>(), false);
+    //c.set_state(state);
 
     // Check correlation content.
     QList<misc::shared_ptr<io::data> > content;
@@ -79,7 +81,7 @@ int main() {
     add_engine_state(content, false);
 
     // Check.
-    check_content(c, content);
+    check_content(t, content);
 
     // Success.
     retval = EXIT_SUCCESS;

@@ -19,7 +19,7 @@
 
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/correlation/internal.hh"
-#include "com/centreon/broker/correlation/service_state.hh"
+#include "com/centreon/broker/correlation/state.hh"
 
 using namespace com::centreon::broker;
 
@@ -30,7 +30,7 @@ using namespace com::centreon::broker;
  */
 int main() {
   // Object.
-  correlation::service_state ss;
+  correlation::state ss;
 
   // Check default construction.
   return ((ss.ack_time != -1)
@@ -42,5 +42,5 @@ int main() {
           || (ss.service_id != 0)
           || (ss.start_time != 0)
           || (ss.type()
-              != io::events::data_type<io::events::correlation, correlation::de_service_state>::value));
+              != io::events::data_type<io::events::correlation, correlation::de_state>::value));
 }

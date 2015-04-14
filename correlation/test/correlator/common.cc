@@ -18,11 +18,10 @@
 */
 
 #include "com/centreon/broker/correlation/engine_state.hh"
-#include "com/centreon/broker/correlation/host_state.hh"
+#include "com/centreon/broker/correlation/state.hh"
 #include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
-#include "com/centreon/broker/correlation/service_state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "test/correlator/common.hh"
@@ -131,42 +130,7 @@ void add_issue_parent(
  *  @param[in]  in_downtime   Is in downtime ?
  *  @param[in]  start_time    State start time.
  */
-void add_state_host(
-       QList<misc::shared_ptr<io::data> >& content,
-       time_t ack_time,
-       int current_state,
-       time_t end_time,
-       unsigned int host_id,
-       unsigned int instance_id,
-       bool in_downtime,
-       time_t start_time) {
-  misc::shared_ptr<correlation::host_state>
-    s(new correlation::host_state);
-  s->ack_time = ack_time;
-  s->current_state = current_state;
-  s->end_time = end_time;
-  s->host_id = host_id;
-  s->instance_id = instance_id;
-  s->in_downtime = in_downtime;
-  s->start_time = start_time;
-  content.push_back(s);
-  return ;
-}
-
-/**
- *  Add a service state to a content.
- *
- *  @param[out] content       Content.
- *  @param[in]  ack_time      Acknowledgement time.
- *  @param[in]  current_state Current service state.
- *  @param[in]  end_time      State end time.
- *  @param[in]  host_id       Host ID.
- *  @param[in]  instance_id   Instance ID.
- *  @param[in]  in_downtime   Is in downtime ?
- *  @param[in]  service_id    Service ID.
- *  @param[in]  start_time    State start time.
- */
-void add_state_service(
+void add_state(
        QList<misc::shared_ptr<io::data> >& content,
        time_t ack_time,
        int current_state,
@@ -176,15 +140,15 @@ void add_state_service(
        bool in_downtime,
        unsigned int service_id,
        time_t start_time) {
-  misc::shared_ptr<correlation::service_state>
-    s(new correlation::service_state);
+  misc::shared_ptr<correlation::state>
+    s(new correlation::state);
   s->ack_time = ack_time;
   s->current_state = current_state;
   s->end_time = end_time;
   s->host_id = host_id;
+  s->service_id = service_id;
   s->instance_id = instance_id;
   s->in_downtime = in_downtime;
-  s->service_id = service_id;
   s->start_time = start_time;
   content.push_back(s);
   return ;
@@ -281,36 +245,11 @@ void check_content(
                  << ", " << ip2->start_time << ")");
       }
       else if (d->type()
-               == io::events::data_type<io::events::correlation, correlation::de_host_state>::value) {
-        misc::shared_ptr<correlation::host_state>
-          s1(d.staticCast<correlation::host_state>());
-        misc::shared_ptr<correlation::host_state>
-          s2(it->staticCast<correlation::host_state>());
-        if ((s1->ack_time != s2->ack_time)
-            || (s1->current_state != s2->current_state)
-            || (s1->end_time != s2->end_time)
-            || (s1->host_id != s2->host_id)
-            || (s1->instance_id != s2->instance_id)
-            || (s1->in_downtime != s2->in_downtime)
-            || (s1->start_time != s2->start_time))
-          throw (exceptions::msg() << "entry #" << i
-                 << " (host_state) mismatch: got (ack time "
-                 << s1->ack_time << ", current state "
-                 << s1->current_state << ", end time " << s1->end_time
-                 << ", host " << s1->host_id << ", instance "
-                 << s1->instance_id << ", in downtime "
-                 << s1->in_downtime << ", start time " << s1->start_time
-                 << "), expected (" << s2->ack_time << ", "
-                 << s2->current_state << ", " << s2->end_time << ", "
-                 << s2->host_id << ", " << s2->instance_id << ", "
-                 << ", " << s2->in_downtime << ", " << s2->start_time << ")");
-      }
-      else if (d->type()
-               == io::events::data_type<io::events::correlation, correlation::de_service_state>::value) {
-        misc::shared_ptr<correlation::service_state>
-          s1(d.staticCast<correlation::service_state>());
-        misc::shared_ptr<correlation::service_state>
-          s2(it->staticCast<correlation::service_state>());
+               == io::events::data_type<io::events::correlation, correlation::de_state>::value) {
+        misc::shared_ptr<correlation::state>
+          s1(d.staticCast<correlation::state>());
+        misc::shared_ptr<correlation::state>
+          s2(it->staticCast<correlation::state>());
         if ((s1->ack_time != s2->ack_time)
             || (s1->current_state != s2->current_state)
             || (s1->end_time != s2->end_time)
@@ -337,4 +276,57 @@ void check_content(
     }
   }
   return ;
+}
+
+/**
+ *  Read.
+ *
+ *  @param[out] d
+ */
+void test_stream::read(
+  com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>& d) {
+  d.clear();
+  if (!_events.empty()) {
+    d = _events.front();
+    _events.erase(_events.begin());
+  }
+}
+
+/**
+ *  Write.
+ *
+ *  @param[in] d  The event.
+ *
+ *  @return       1.
+ */
+unsigned int test_stream::write(
+  com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> const& d) {
+  if (!d.isNull())
+    _events.push_back(d);
+
+  return (1);
+}
+
+/**
+ *  Get all the written events.
+ *
+ *  @return  The written events.
+ */
+std::vector<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> > const&
+  test_stream::get_events() const {
+  return (_events);
+}
+
+/**
+ *  Test stream started.
+ */
+void test_stream::starting() {
+
+}
+
+/**
+ *  Test stream stopped.
+ */
+void test_stream::stopping() {
+
 }

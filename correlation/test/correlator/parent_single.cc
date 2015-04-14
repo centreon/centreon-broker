@@ -21,8 +21,9 @@
 #include <iostream>
 #include <QMap>
 #include <QPair>
+#include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/correlation/correlator.hh"
+#include "com/centreon/broker/correlation/stream.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
 #include "com/centreon/broker/correlation/node.hh"
@@ -43,6 +44,11 @@ int main() {
 
   // Initialization.
   config::applier::init();
+  multiplexing::engine::load();
+  // Start the multiplexing engine.
+  test_stream t;
+  multiplexing::engine::instance().hook(t);
+  multiplexing::engine::instance().start();
 
   try {
     // Create state.
@@ -60,7 +66,7 @@ int main() {
     n1.add_parent(&n2);
 
     // Create correlator and apply state.
-    correlator c(0);
+    correlation::stream c("", misc::shared_ptr<persistent_cache>(), false);
     c.set_state(state);
 
     // Send node status.
@@ -136,7 +142,7 @@ int main() {
     add_issue(content, 0, 123456792, 42, 1, 24, 123456789);
 
     // Check.
-    check_content(c, content);
+    check_content(t, content);
 
     // Success.
     retval = EXIT_SUCCESS;

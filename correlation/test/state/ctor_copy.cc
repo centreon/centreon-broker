@@ -17,18 +17,18 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/correlation/service_state.hh"
+#include "com/centreon/broker/correlation/state.hh"
 
 using namespace com::centreon::broker;
 
 /**
- *  Check that service_state can be properly assigned.
+ *  Check that service_state can be properly copy-constructed.
  *
  *  @return 0 on success.
  */
 int main() {
   // First object.
-  correlation::service_state ss1;
+  correlation::state ss1;
   ss1.ack_time = 6762;
   ss1.current_state = 2;
   ss1.end_time = 7456987;
@@ -38,8 +38,7 @@ int main() {
   ss1.start_time = 123456789;
 
   // Second object.
-  correlation::service_state ss2;
-  ss2 = ss1;
+  correlation::state ss2(ss1);
 
   // Reset first object.
   ss1.ack_time = 4787985;

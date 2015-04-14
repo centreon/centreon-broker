@@ -21,8 +21,9 @@
 #include <iostream>
 #include <QMap>
 #include <QPair>
+#include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/correlation/correlator.hh"
+#include "com/centreon/broker/correlation/stream.hh"
 #include "com/centreon/broker/correlation/node.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/notification/acknowledgement.hh"
@@ -46,6 +47,11 @@ int main() {
 
   // Initialization.
   config::applier::init();
+  multiplexing::engine::load();
+  // Start the multiplexing engine.
+  test_stream t;
+  multiplexing::engine::instance().hook(t);
+  multiplexing::engine::instance().start();
 
   try {
     // Create state.
@@ -57,7 +63,7 @@ int main() {
     n.state = 0;
 
     // Create correlator and apply state.
-    correlator c(0);
+    correlation::stream c("", misc::shared_ptr<persistent_cache>(), false);
     c.set_state(state);
 
     // Send node status.
@@ -144,11 +150,11 @@ int main() {
     // Check correlation content.
     QList<misc::shared_ptr<io::data> > content;
     // #1
-    add_state_service(content, -1, 0, 123456789, 42, 1, false, 24, 0);
-    add_state_service(content, -1, 2, 0, 42, 1, false, 24, 123456789);
+    add_state(content, -1, 0, 123456789, 42, 1, false, 24, 0);
+    add_state(content, -1, 2, 0, 42, 1, false, 24, 123456789);
     add_issue(content, 0, 0, 42, 1, 24, 123456789);
     // #2
-    add_state_service(
+    add_state(
       content,
       123456790,
       2,
@@ -160,7 +166,7 @@ int main() {
       123456789);
     add_issue(content, 123456790, 0, 42, 1, 24, 123456789);
     // #3
-    add_state_service(
+    add_state(
       content,
       123456790,
       2,
@@ -170,7 +176,7 @@ int main() {
       false,
       24,
       123456789);
-    add_state_service(
+    add_state(
       content,
       -1,
       1,
@@ -181,7 +187,7 @@ int main() {
       24,
       123456791);
     // #4, #5
-    add_state_service(
+    add_state(
       content,
       123456791,
       1,
@@ -192,7 +198,7 @@ int main() {
       24,
       123456791);
     // #5
-    add_state_service(
+    add_state(
       content,
       123456793,
       2,
@@ -203,7 +209,7 @@ int main() {
       24,
       123456793);
     // #6
-    add_state_service(
+    add_state(
       content,
       123456793,
       2,
@@ -213,11 +219,11 @@ int main() {
       false,
       24,
       123456793);
-    add_state_service(content, -1, 0, 0, 42, 1, false, 24, 123456794);
+    add_state(content, -1, 0, 0, 42, 1, false, 24, 123456794);
     add_issue(content, 123456790, 123456794, 42, 1, 24, 123456789);
     // #7, should not change anything
     // #8
-    add_state_service(
+    add_state(
       content,
       -1,
       0,
@@ -227,11 +233,11 @@ int main() {
       false,
       24,
       123456794);
-    add_state_service(content, -1, 1, 0, 42, 1, false, 24, 123456796);
+    add_state(content, -1, 1, 0, 42, 1, false, 24, 123456796);
     add_issue(content, 0, 0, 42, 1, 24, 123456796);
 
     // Check.
-    check_content(c, content);
+    check_content(t, content);
 
     // Success.
     retval = EXIT_SUCCESS;

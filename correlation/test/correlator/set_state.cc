@@ -22,7 +22,7 @@
 #include <QMap>
 #include <QPair>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/correlation/correlator.hh"
+#include "com/centreon/broker/correlation/stream.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
@@ -66,7 +66,7 @@ int main() {
     n1.add_parent(&n2);
 
     // Set state to correlator.
-    correlator c(0);
+    correlation::stream c("", misc::shared_ptr<persistent_cache>(), false);
     c.set_state(state);
 
     // Compare states.

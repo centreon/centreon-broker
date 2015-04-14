@@ -17,18 +17,18 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/correlation/service_state.hh"
+#include "com/centreon/broker/correlation/state.hh"
 
 using namespace com::centreon::broker;
 
 /**
- *  Check that service_state can be properly copy-constructed.
+ *  Check that service_state can be checked for non-equality.
  *
  *  @return 0 on success.
  */
 int main() {
   // First object.
-  correlation::service_state ss1;
+  correlation::state ss1;
   ss1.ack_time = 6762;
   ss1.current_state = 2;
   ss1.end_time = 7456987;
@@ -38,30 +38,23 @@ int main() {
   ss1.start_time = 123456789;
 
   // Second object.
-  correlation::service_state ss2(ss1);
+  correlation::state ss2(ss1);
 
   // Reset first object.
-  ss1.ack_time = 4787985;
-  ss1.current_state = 1;
-  ss1.end_time = 5478963;
-  ss1.host_id = 983;
-  ss1.in_downtime = false;
-  ss1.service_id = 211;
-  ss1.start_time = 456887;
+  correlation::state ss3;
+  ss3.ack_time = 4787985;
+  ss3.current_state = 1;
+  ss3.end_time = 5478963;
+  ss3.host_id = 983;
+  ss3.in_downtime = false;
+  ss3.service_id = 211;
+  ss3.start_time = 456887;
 
   // Check.
-  return ((ss1.ack_time != 4787985)
-          || (ss1.current_state != 1)
-          || (ss1.end_time != 5478963)
-          || (ss1.host_id != 983)
-          || (ss1.in_downtime != false)
-          || (ss1.service_id != 211)
-          || (ss1.start_time != 456887)
-          || (ss2.ack_time != 6762)
-          || (ss2.current_state != 2)
-          || (ss2.end_time != 7456987)
-          || (ss2.host_id != 21)
-          || (ss2.in_downtime != true)
-          || (ss2.service_id != 42)
-          || (ss2.start_time != 123456789));
+  return ((ss1 != ss2)
+          || !(ss1 != ss3)
+          || !(ss2 != ss3)
+          || (ss1 != ss1)
+          || (ss2 != ss2)
+          || (ss3 != ss3));
 }

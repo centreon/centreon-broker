@@ -47,12 +47,17 @@ namespace        correlation {
                  stream(
                    QString const& correlation_file,
                    misc::shared_ptr<persistent_cache> cache
-                   = misc::shared_ptr<persistent_cache>());
+                   = misc::shared_ptr<persistent_cache>(),
+                   bool load_correlation = true);
                  ~stream();
     void         process(bool in = false, bool out = true);
     void         read(misc::shared_ptr<io::data>& d);
     void         update();
     unsigned int write(misc::shared_ptr<io::data> const& d);
+    void         set_state(
+                   QMap<QPair<unsigned int, unsigned int>, node> const& st);
+    QMap<QPair<unsigned int, unsigned int>, node> const&
+                 get_state() const;
 
   private:
                  stream(stream const& other);

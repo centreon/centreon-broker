@@ -17,18 +17,18 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/correlation/service_state.hh"
+#include "com/centreon/broker/correlation/state.hh"
 
 using namespace com::centreon::broker;
 
 /**
- *  Check that service_state can be checked for non-equality.
+ *  Check that service_state can be checked for equality.
  *
  *  @return 0 on success.
  */
 int main() {
   // First object.
-  correlation::service_state ss1;
+  correlation::state ss1;
   ss1.ack_time = 6762;
   ss1.current_state = 2;
   ss1.end_time = 7456987;
@@ -38,10 +38,10 @@ int main() {
   ss1.start_time = 123456789;
 
   // Second object.
-  correlation::service_state ss2(ss1);
+  correlation::state ss2(ss1);
 
   // Reset first object.
-  correlation::service_state ss3;
+  correlation::state ss3;
   ss3.ack_time = 4787985;
   ss3.current_state = 1;
   ss3.end_time = 5478963;
@@ -51,10 +51,10 @@ int main() {
   ss3.start_time = 456887;
 
   // Check.
-  return ((ss1 != ss2)
-          || !(ss1 != ss3)
-          || !(ss2 != ss3)
-          || (ss1 != ss1)
-          || (ss2 != ss2)
-          || (ss3 != ss3));
+  return (!(ss1 == ss2)
+          || (ss1 == ss3)
+          || (ss2 == ss3)
+          || !(ss1 == ss1)
+          || !(ss2 == ss2)
+          || !(ss3 == ss3));
 }

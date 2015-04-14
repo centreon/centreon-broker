@@ -46,7 +46,8 @@ using namespace com::centreon::broker::correlation;
  */
 stream::stream(
           QString const& correlation_file,
-	  misc::shared_ptr<persistent_cache> cache)
+    misc::shared_ptr<persistent_cache> cache,
+    bool load_correlation)
   : _correlation_file(correlation_file),
     _process_out(true),
     _cache(cache) {
@@ -58,7 +59,8 @@ stream::stream(
   pblsh.write(es);
 
   // Load the correlation.
-  _load_correlation();
+  if (load_correlation)
+    _load_correlation();
 }
 
 /**
@@ -197,6 +199,26 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
     }
   }
   return (1);
+}
+
+/**
+ *  Set the state.
+ *
+ *  @param[in] st  the state.
+ */
+void stream::set_state(
+       QMap<QPair<unsigned int, unsigned int>, node> const& st) {
+  _nodes = st;
+}
+
+/**
+ *  Get the state.
+ *
+ *  @return  The state.
+ */
+QMap<QPair<unsigned int, unsigned int>, node> const&
+  stream::get_state() const {
+  return (_nodes);
 }
 
 /**

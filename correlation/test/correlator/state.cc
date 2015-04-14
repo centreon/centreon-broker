@@ -21,8 +21,9 @@
 #include <iostream>
 #include <QMap>
 #include <QPair>
+#include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/correlation/correlator.hh"
+#include "com/centreon/broker/correlation/stream.hh"
 #include "com/centreon/broker/correlation/node.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "test/correlator/common.hh"
@@ -41,6 +42,11 @@ int main() {
 
   // Initialization.
   config::applier::init();
+  multiplexing::engine::load();
+  // Start the multiplexing engine.
+  test_stream t;
+  multiplexing::engine::instance().hook(t);
+  multiplexing::engine::instance().start();
 
   try {
     // Create state.
@@ -52,7 +58,7 @@ int main() {
     n.state = 0;
 
     // Create correlator and apply state.
-    correlator c(0);
+    correlation::stream c("", misc::shared_ptr<persistent_cache>(), false);
     c.set_state(state);
 
     // Send node status.
@@ -79,9 +85,9 @@ int main() {
 
     // Check correlation content.
     QList<misc::shared_ptr<io::data> > content;
-    add_state_service(content, -1, 0, 123456789, 42, 1, false, 24, 0);
-    add_state_service(content, -1, 2, 0, 42, 1, false, 24, 123456789);
-    add_state_service(
+    add_state(content, -1, 0, 123456789, 42, 1, false, 24, 0);
+    add_state(content, -1, 2, 0, 42, 1, false, 24, 123456789);
+    add_state(
       content,
       -1,
       2,
@@ -91,10 +97,10 @@ int main() {
       false,
       24,
       123456789);
-    add_state_service(content, -1, 0, 0, 42, 1, false, 24, 123456790);
+    add_state(content, -1, 0, 0, 42, 1, false, 24, 123456790);
 
     // Check.
-    check_content(c, content);
+    check_content(t, content);
 
     // Success.
     retval = EXIT_SUCCESS;

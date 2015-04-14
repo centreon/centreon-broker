@@ -72,72 +72,41 @@ set(CORRELATION_MODULE_PATH "${CORRELATION_MODULE_PATH}" PARENT_SCOPE)
 # Testing.
 if (WITH_TESTING)
   include_directories("${PROJECT_SOURCE_DIR}/correlation")
-  set(TEST_LIBRARIES "${CORRELATION}" "${NEB}" "roker")
+  set(TEST_LIBRARIES "${NOTIFICATION}" "${CORRELATION}" "${NEB}" "roker")
 
   # Generate files.
   configure_file("${TEST_DIR}/parser/parse_include.xml.in"
     "${TEST_DIR}/parser/parse_include.xml")
 
-  # host_state tests.
+  # state tests.
   #   Default construction.
-  set(TEST_NAME "correlation_host_state_ctor_default")
+  set(TEST_NAME "correlation_state_ctor_default")
   add_executable("${TEST_NAME}"
-    "${TEST_DIR}/host_state/ctor_default.cc")
+    "${TEST_DIR}/state/ctor_default.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Copy construction.
-  set(TEST_NAME "correlation_host_state_ctor_copy")
+  set(TEST_NAME "correlation_state_ctor_copy")
   add_executable("${TEST_NAME}"
-    "${TEST_DIR}/host_state/ctor_copy.cc")
+    "${TEST_DIR}/state/ctor_copy.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Assignment.
-  set(TEST_NAME "correlation_host_state_assignment")
+  set(TEST_NAME "correlation_state_assignment")
   add_executable("${TEST_NAME}"
-    "${TEST_DIR}/host_state/assignment.cc")
+    "${TEST_DIR}/state/assignment.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Equality.
-  set(TEST_NAME "correlation_host_state_equality")
+  set(TEST_NAME "correlation_state_equality")
   add_executable("${TEST_NAME}"
-    "${TEST_DIR}/host_state/equality.cc")
+    "${TEST_DIR}/state/equality.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Non-equality.
-  set(TEST_NAME "correlation_host_state_non_equality")
+  set(TEST_NAME "correlation_state_non_equality")
   add_executable("${TEST_NAME}"
-    "${TEST_DIR}/host_state/non_equality.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # service_state tests.
-  #   Default construction.
-  set(TEST_NAME "correlation_service_state_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_state/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy construction.
-  set(TEST_NAME "correlation_service_state_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_state/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment.
-  set(TEST_NAME "correlation_service_state_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_state/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Equality.
-  set(TEST_NAME "correlation_service_state_equality")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_state/equality.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Non-equality.
-  set(TEST_NAME "correlation_service_state_non_equality")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_state/non_equality.cc")
+    "${TEST_DIR}/state/non_equality.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # issue tests.
