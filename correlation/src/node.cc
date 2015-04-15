@@ -626,7 +626,6 @@ void node::_internal_copy(node const& n) {
 /**
  *  Generate a state event.
  *
- *  @param[in] type        The type of the state event.
  *  @param[in] start_time  The start time of the new event.
  *  @param[out] stream     A stream to write the event to.
  */

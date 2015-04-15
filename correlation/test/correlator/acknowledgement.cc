@@ -148,6 +148,8 @@ int main() {
     }
 
     // Check correlation content.
+    multiplexing::engine::instance().stop();
+    t.finalize();
     QList<misc::shared_ptr<io::data> > content;
     // #1
     add_state(content, -1, 0, 123456789, 42, 1, false, 24, 0);
