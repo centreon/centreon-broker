@@ -89,6 +89,17 @@ bool state::operator==(state const& s) const {
 }
 
 /**
+ *  Unequal operator.
+ *
+ *  @param[in] s  Object to compare.
+ *
+ *  @return       True if both objects are not equal.
+ */
+bool state::operator!=(state const& s) const {
+  return (!(*this == s));
+}
+
+/**
  *  Get the type of this event.
  *
  *  @return The event type.

@@ -43,6 +43,7 @@ namespace        correlation {
     virtual      ~state();
     state&       operator=(state const& s);
     bool         operator==(state const& s) const;
+    bool         operator!=(state const& s) const;
 
     unsigned int type() const;
     static unsigned int
