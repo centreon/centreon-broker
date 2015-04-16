@@ -66,6 +66,7 @@ void check_content(
        QList<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> > const& content);
 
 class test_stream : public com::centreon::broker::multiplexing::hooker {
+public:
   virtual void             read(
     com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>& d);
   virtual unsigned int     write(
@@ -74,7 +75,9 @@ class test_stream : public com::centreon::broker::multiplexing::hooker {
                            get_events() const;
   virtual void             starting();
   virtual void             stopping();
+  void                     finalize();
 public:
+  bool                     _finalized;
   std::vector<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> >
                            _events;
 };

@@ -30,7 +30,7 @@ set(INC_DIR "${INC_DIR}/com/centreon/broker/correlation")
 unset(QT_WRAPPED_SOURCES)
 
 # Correlation module.
-set(CORRELATION "20-correlation")
+set(CORRELATION "40-correlation")
 set(CORRELATION "${CORRELATION}" PARENT_SCOPE)
 add_library("${CORRELATION}" SHARED
   # Sources.

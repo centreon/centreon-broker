@@ -34,7 +34,7 @@ using namespace com::centreon::broker::correlation;
  *  Constructor.
  */
 issue::issue()
-  : ack_time(0),
+  : ack_time(-1),
     end_time(0),
     host_id(0),
     instance_id(0),

@@ -17,6 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <iostream>
+
 #include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/correlation/state.hh"
 #include "com/centreon/broker/correlation/internal.hh"
@@ -259,7 +261,7 @@ void check_content(
             || (s1->service_id != s2->service_id)
             || (s1->start_time != s2->start_time))
           throw (exceptions::msg() << "entry #" << i
-                 << " (service_state) mismatch: got (ack time "
+                 << " (state) mismatch: got (ack time "
                  << s1->ack_time << ", current state "
                  << s1->current_state << ", end time " << s1->end_time
                  << ", host " << s1->host_id << ", instance "
@@ -286,7 +288,8 @@ void check_content(
 void test_stream::read(
   com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>& d) {
   d.clear();
-  if (!_events.empty()) {
+  if (!_events.empty() && _finalized) {
+    std::cout << "reading a non empty event" << std::endl;
     d = _events.front();
     _events.erase(_events.begin());
   }
@@ -301,6 +304,11 @@ void test_stream::read(
  */
 unsigned int test_stream::write(
   com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> const& d) {
+  std::cout << "writing event " << std::endl;
+  if (d.isNull())
+    std::cout << "event is null" << std::endl;
+  else
+    std::cout << "event of type: " << d->type() << std::endl;
   if (!d.isNull())
     _events.push_back(d);
 
@@ -321,12 +329,18 @@ std::vector<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::d
  *  Test stream started.
  */
 void test_stream::starting() {
-
+  _finalized = false;
 }
 
 /**
  *  Test stream stopped.
  */
 void test_stream::stopping() {
+}
 
+/**
+ *  Finalize the test stream.
+ */
+void test_stream::finalize() {
+  _finalized = true;
 }
