@@ -580,8 +580,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/groups_to_sql.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/groups_to_sql.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/dependencies_to_sql.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/dependencies_to_sql.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_transactions.xml.in"
@@ -676,12 +674,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_monitoring_to_sql")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/monitoring_to_sql.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Groups and membership to SQL.
-  set(TEST_NAME "running_groups_to_sql")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/groups_to_sql.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # Dependencies to SQL.

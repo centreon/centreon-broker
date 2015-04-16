@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -31,10 +31,8 @@ void depends_on(
 void free_commands(std::list<command>& commands);
 void free_hosts(std::list<host>& hosts);
 void free_host_dependencies(std::list<hostdependency>& deps);
-void free_host_groups(std::list<hostgroup>& host_groups);
 void free_services(std::list<service>& services);
 void free_service_dependencies(std::list<servicedependency>& deps);
-void free_service_groups(std::list<servicegroup>& service_groups);
 void generate_commands(
        std::list<command>& commands,
        unsigned int count);
@@ -44,9 +42,6 @@ void generate_hosts(
 void generate_host_dependencies(
        std::list<hostdependency>& deps,
        unsigned int count);
-void generate_host_groups(
-       std::list<hostgroup>& host_groups,
-       unsigned int count);
 void generate_services(
        std::list<service>& services,
        std::list<host>& hosts,
@@ -54,11 +49,6 @@ void generate_services(
 void generate_service_dependencies(
        std::list<servicedependency>& deps,
        unsigned int count);
-void generate_service_groups(
-       std::list<servicegroup>& service_groups,
-       unsigned int count);
-void link(host& h, hostgroup& hg);
-void link(service& s, servicegroup& sg);
 void parent_of(host& parent, host& child);
 void set_custom_variable(
        host& h,

@@ -37,7 +37,6 @@
 #  include "com/centreon/engine/objects/timeperiod.hh"
 #  include "com/centreon/engine/objects/timeperiodexclusion.hh"
 #  include "com/centreon/engine/objects/timerange.hh"
-#  include "find.hh"
 
 /*
 ** Current object revision, Increment when changes are made to data

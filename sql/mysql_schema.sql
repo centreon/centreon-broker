@@ -15,8 +15,6 @@
 -- rt_eventhandlers
 -- rt_flappingstatuses
 -- rt_hosts
--- rt_hostgroups
--- rt_hosts_hostgroups
 -- rt_hosts_hosts_dependencies
 -- rt_hosts_hosts_parents
 -- rt_hoststateevents
@@ -30,8 +28,6 @@
 -- rt_notifications
 -- rt_schemaversion
 -- rt_services
--- rt_servicegroups
--- rt_services_servicegroups
 -- rt_services_services_dependencies
 -- rt_servicestateevents
 
@@ -166,39 +162,6 @@ CREATE TABLE rt_hosts (
 
 
 --
--- Host groups.
---
-CREATE TABLE rt_hostgroups (
-  hostgroup_id int NOT NULL auto_increment,
-  instance_id int NOT NULL,
-  name varchar(255) NOT NULL,
-
-  alias varchar(255) default NULL,
-  enabled bool NOT NULL default true,
-
-  PRIMARY KEY (hostgroup_id),
-  UNIQUE (name, instance_id),
-  FOREIGN KEY (instance_id) REFERENCES rt_instances (instance_id)
-    ON DELETE CASCADE
-) ENGINE=InnoDB;
-
-
---
--- Relationships between hosts and host groups.
---
-CREATE TABLE rt_hosts_hostgroups (
-  host_id int NOT NULL,
-  hostgroup_id int NOT NULL,
-
-  UNIQUE (host_id, hostgroup_id),
-  FOREIGN KEY (host_id) REFERENCES rt_hosts (host_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (hostgroup_id) REFERENCES rt_hostgroups (hostgroup_id)
-    ON DELETE CASCADE
-) ENGINE=InnoDB;
-
-
---
 -- Hosts dependencies.
 --
 CREATE TABLE rt_hosts_hosts_dependencies (
@@ -317,39 +280,6 @@ CREATE TABLE rt_services (
   INDEX (scheduled_downtime_depth),
   INDEX (state),
   INDEX (state_type)
-) ENGINE=InnoDB;
-
-
---
--- Groups of services.
---
-CREATE TABLE rt_servicegroups (
-  servicegroup_id int NOT NULL auto_increment,
-  instance_id int NOT NULL,
-  name varchar(255) NOT NULL,
-
-  alias varchar(255) default NULL,
-  enabled bool NOT NULL default true,
-
-  PRIMARY KEY (servicegroup_id),
-  FOREIGN KEY (instance_id) REFERENCES rt_instances (instance_id)
-    ON DELETE CASCADE
-) ENGINE=InnoDB;
-
-
---
--- Relationships between services and service groups.
---
-CREATE TABLE rt_services_servicegroups (
-  host_id int NOT NULL,
-  service_id int NOT NULL,
-  servicegroup_id int NOT NULL,
-
-  UNIQUE (host_id, service_id, servicegroup_id),
-  FOREIGN KEY (host_id) REFERENCES rt_hosts (host_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (servicegroup_id) REFERENCES rt_servicegroups (servicegroup_id)
-    ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 

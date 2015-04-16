@@ -23,7 +23,6 @@ set(SRC_DIR "${PROJECT_SOURCE_DIR}/sql/src")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
-include_directories("${PROJECT_SOURCE_DIR}/notification/inc")
 
 # SQL module.
 set(SQL "80-sql")

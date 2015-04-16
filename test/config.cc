@@ -530,20 +530,6 @@ void config_remove(char const* path) {
     ::remove(oss.str().c_str());
   }
 
-  // Host groups file.
-  {
-    std::ostringstream oss;
-    oss << path << "/host_groups.cfg";
-    ::remove(oss.str().c_str());
-  }
-
-  // Service groups files.
-  {
-    std::ostringstream oss;
-    oss << path << "/service_groups.cfg";
-    ::remove(oss.str().c_str());
-  }
-
   // Host dependencies file.
   {
     std::ostringstream oss;
@@ -579,8 +565,6 @@ void config_remove(char const* path) {
  *  @param[in] hosts           Host list.
  *  @param[in] services        Service list.
  *  @param[in] commands        Command list.
- *  @param[in] host_groups     Host group list.
- *  @param[in] service_groups  Service group list.
  *  @param[in] host_deps       Host dependencies.
  *  @param[in] service_deps    Service dependencies.
  */
@@ -590,8 +574,6 @@ void config_write(
        std::list<host>* hosts,
        std::list<service>* services,
        std::list<command>* commands,
-       std::list<hostgroup>* host_groups,
-       std::list<servicegroup>* service_groups,
        std::list<hostdependency>* host_deps,
        std::list<servicedependency>* service_deps) {
   // Create base directory.
@@ -640,18 +622,6 @@ void config_write(
     oss << path << "/commands.cfg";
     commands_file = oss.str();
   }
-  std::string host_groups_file;
-  {
-    std::ostringstream oss;
-    oss << path << "/host_groups.cfg";
-    host_groups_file = oss.str();
-  }
-  std::string service_groups_file;
-  {
-    std::ostringstream oss;
-    oss << path << "/service_groups.cfg";
-    service_groups_file = oss.str();
-  }
   std::string host_dependencies_file;
   {
     std::ostringstream oss;
@@ -673,8 +643,6 @@ void config_write(
   ofs << "cfg_file=" << hosts_file << "\n"
       << "cfg_file=" << services_file << "\n"
       << "cfg_file=" << commands_file << "\n"
-      << "cfg_file=" << host_groups_file << "\n"
-      << "cfg_file=" << service_groups_file << "\n"
       << "cfg_file=" << host_dependencies_file << "\n"
       << "cfg_file=" << service_dependencies_file << "\n"
       << "cfg_file=" << misc_file << "\n";
@@ -824,63 +792,6 @@ void config_write(
           << "  command_line "
           << (it->command_line ? it->command_line : MY_PLUGIN_PATH " 0") << "\n"
           << "}\n\n";
-    }
-  ofs.close();
-
-  // Host groups.
-  ofs.open(
-        host_groups_file.c_str(),
-        std::ios_base::out | std::ios_base::trunc);
-  if (ofs.fail())
-    throw (exceptions::msg()
-           << "cannot open host groups configuration file in '"
-           << path << "'");
-  if (host_groups)
-    for (std::list<hostgroup>::iterator
-           it(host_groups->begin()),
-           end(host_groups->end());
-         it != end;
-         ++it) {
-      ofs << "define hostgroup{\n"
-          << "  hostgroup_name " << it->group_name << "\n";
-      if (it->alias)
-        ofs << "  alias " << it->alias << "\n";
-      if (it->members) {
-        ofs << "  members " << it->members->host_name;
-        for (hostsmember* m(it->members->next); m; m = m->next)
-          ofs << "," << m->host_name;
-        ofs << "\n";
-      }
-      ofs << "}\n\n";
-    }
-  ofs.close();
-
-  // Service groups.
-  ofs.open(
-        service_groups_file.c_str(),
-        std::ios_base::out | std::ios_base::trunc);
-  if (ofs.fail())
-    throw (exceptions::msg()
-           << "cannot open service groups configuration file in '"
-           << path << "'");
-  if (service_groups)
-    for (std::list<servicegroup>::iterator
-           it(service_groups->begin()),
-           end(service_groups->end());
-         it != end;
-         ++it) {
-      ofs << "define servicegroup{\n"
-          << "  servicegroup_name " << it->group_name << "\n";
-      if (it->alias)
-        ofs << "  alias " << it->alias << "\n";
-      if (it->members) {
-        ofs << "  members " << it->members->host_name
-            << "," << it->members->service_description;
-        for (servicesmember* m(it->members->next); m; m = m->next)
-          ofs << "," << m->host_name << "," << m->service_description;
-        ofs << "\n";
-      }
-      ofs << "}\n\n";
     }
   ofs.close();
 

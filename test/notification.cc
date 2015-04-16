@@ -340,8 +340,6 @@ int main() {
   // Variables that need cleaning.
   std::list<host> hosts;
   std::list<service> services;
-  std::list<hostgroup> hostgroups;
-  std::list<servicegroup> servicegroups;
   std::list<command> commands;
   std::string engine_config_path(tmpnam(NULL));
   std::string flag_file(tmpnam(NULL));
@@ -368,26 +366,6 @@ int main() {
     db.set_remove_db_on_close(false);
 
     // Prepare monitoring engine configuration parameters.
-    generate_host_groups(hostgroups, 2);
-    unsigned int i = 1;
-    for (std::list<hostgroup>::iterator
-           it(hostgroups.begin()),
-           end(hostgroups.end());
-         it != end;
-         ++it, ++i) {
-      del_and_dup(&it->group_name, "HostGroup%i", i);
-      del_and_dup(&it->alias, "HostGroupAlias%i", i);
-    }
-    generate_service_groups(servicegroups, 2);
-    i = 1;
-    for (std::list<servicegroup>::iterator
-           it(servicegroups.begin()),
-           end(servicegroups.end());
-         it != end;
-         ++it, ++i) {
-      del_and_dup(&it->group_name, "ServiceGroup%i", i);
-      del_and_dup(&it->alias, "ServiceGroupAlias%i", i);
-    }
     generate_commands(commands, 1);
     del_and_dup(&commands.begin()->name, "service_command_%i", 1);
     generate_hosts(hosts, 1);
@@ -395,10 +373,8 @@ int main() {
     // XXX del_and_dup(&hosts.begin()->display_name, "%i", 1);
     del_and_dup(&hosts.begin()->alias, "HostAlias%i", 1);
     hosts.begin()->checks_enabled = 0;
-    link(*hosts.begin(), *hostgroups.begin());
-    link(*hosts.begin(), *(++hostgroups.begin()));
     generate_services(services, hosts, 2);
-    i = 1;
+    int i(1);
     for (std::list<service>::iterator
            it(services.begin()),
            end(services.end());
@@ -410,8 +386,6 @@ int main() {
       // XXX del_and_dup(&it->display_name, "%i", i);
       del_and_dup(&it->service_check_command, "service_command_%i", 1);
       del_and_dup(&it->host_name, "Host%i", 1);
-      link(*it, *servicegroups.begin());
-      link(*it, *(++servicegroups.begin()));
     }
     set_custom_variable(
       services.back(),
@@ -532,9 +506,7 @@ int main() {
       additional_config.c_str(),
       &hosts,
       &services,
-      &commands,
-      &hostgroups,
-      &servicegroups);
+      &commands);
 
     // Start monitoring.
     start = ::time(NULL);
@@ -740,8 +712,6 @@ int main() {
   config_remove(engine_config_path.c_str());
   free_hosts(hosts);
   free_services(services);
-  free_host_groups(hostgroups);
-  free_service_groups(servicegroups);
   free_commands(commands);
 
   return (error ? EXIT_FAILURE : EXIT_SUCCESS);
