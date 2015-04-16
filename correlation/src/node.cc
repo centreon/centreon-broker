@@ -386,23 +386,34 @@ void node::manage_status(
   if (status == state)
     return ;
 
+  // Remove acknowledgement.
+  // We need to cache the old_ack because we change the ack time value
+  // directly in the issue, but it needs to be set again .
+  if (status == 0)
+    acknowledgement.reset();
+  else if (acknowledgement.get()
+             && !acknowledgement->is_sticky)
+    acknowledgement.reset();
+
   // Generate the state event.
   _generate_state_event(last_state_change, status, stream);
 
   // Recovery
-  if (state != 1 && state != 0 && status == 1) {
+  if (state != 0 && status == 0) {
     my_issue->end_time = last_state_change;
     if (stream)
       stream->write(misc::make_shared(new issue(*my_issue)));
     my_issue.reset();
   }
   // Problem
-  else if ((state == 1 || state == 0) && status != 1) {
+  else if (state == 0 && status != 0) {
     my_issue.reset(new issue);
     my_issue->start_time = last_state_change;
     my_issue->host_id = host_id;
     my_issue->service_id = service_id;
     my_issue->instance_id = instance_id;
+    if (acknowledgement.get())
+      my_issue->ack_time = last_state_change;
     if (stream)
       stream->write(misc::make_shared(new issue(*my_issue)));
   }
@@ -431,13 +442,17 @@ void node::manage_status(
 /**
  *  Manage an ack.
  *
- *  @param[in] entry_time  The time of the entry.
+ *  @param[in] ack         The acknowledgement.
  *  @param[out] stream     A stream to write the events to.
  */
-void node::manage_ack(timestamp entry_time, io::stream* stream) {
-  if (my_issue.get() && my_issue->ack_time.is_null()) {
-    my_issue->ack_time = entry_time;
-    _generate_state_event(entry_time, state, stream);
+void node::manage_ack(
+             neb::acknowledgement const& ack,
+             io::stream* stream) {
+  if (my_issue.get() && !acknowledgement.get()) {
+    acknowledgement.reset(new neb::acknowledgement(ack));
+    if (my_issue->ack_time.is_null())
+      my_issue->ack_time = ack.entry_time;
+    _generate_state_event(ack.entry_time, state, stream);
   }
 }
 
@@ -561,6 +576,8 @@ void node::serialize(persistent_cache& cache) const {
        it != end;
        ++it)
     cache.add(misc::make_shared(new neb::downtime(it->second)));
+  if (acknowledgement.get())
+    cache.add(misc::make_shared(new neb::acknowledgement(*acknowledgement)));
 }
 
 /**************************************
@@ -680,9 +697,9 @@ correlation::state* node::_open_state_event(timestamp start_time) const {
       earliest_downtime = it->second.start_time;
   st->in_downtime
     = earliest_downtime.is_null() ? false : earliest_downtime <= start_time;
-  if (my_issue.get() && !my_issue->ack_time.is_null())
-    st->ack_time = my_issue->ack_time > start_time ?
-                           my_issue->ack_time
+  if (acknowledgement.get())
+    st->ack_time = acknowledgement->entry_time > start_time ?
+                           acknowledgement->entry_time
                            : start_time;
   return (st.release());
 }

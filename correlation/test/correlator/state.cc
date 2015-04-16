@@ -68,8 +68,8 @@ int main() {
       ss->instance_id = 1;
       ss->service_id = 24;
       ss->state_type = 1;
-      ss->current_state = 2;
-      ss->last_check = 123456789;
+      ss->last_hard_state = 2;
+      ss->last_hard_state_change = 123456789;
       c.write(ss);
     }
     {
@@ -78,12 +78,14 @@ int main() {
       ss->instance_id = 1;
       ss->service_id = 24;
       ss->state_type = 1;
-      ss->current_state = 0;
-      ss->last_check = 123456790;
+      ss->last_hard_state = 0;
+      ss->last_hard_state_change = 123456790;
       c.write(ss);
     }
 
     // Check correlation content.
+    multiplexing::engine::instance().stop();
+    t.finalize();
     QList<misc::shared_ptr<io::data> > content;
     add_state(content, -1, 0, 123456789, 42, 1, false, 24, 0);
     add_state(content, -1, 2, 0, 42, 1, false, 24, 123456789);
