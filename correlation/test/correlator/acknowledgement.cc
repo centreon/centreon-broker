@@ -73,7 +73,7 @@ int main() {
       ss->instance_id = 1;
       ss->service_id = 24;
       ss->last_hard_state = 2;
-      ss->last_check = 123456789;
+      ss->last_hard_state_change = 123456789;
       c.write(ss);
     }
     { // #2
@@ -86,13 +86,13 @@ int main() {
       ack->is_sticky = false;
       c.write(ack);
     }
-    { // #3
+    /*{ // #3
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->instance_id = 1;
       ss->service_id = 24;
       ss->last_hard_state = 1;
-      ss->last_check = 123456791;
+      ss->last_hard_state_change = 123456791;
       c.write(ss);
     }
     { // #4
@@ -111,7 +111,7 @@ int main() {
       ss->instance_id = 1;
       ss->service_id = 24;
       ss->last_hard_state = 2;
-      ss->last_check = 123456793;
+      ss->last_hard_state_change = 123456793;
       c.write(ss);
     }
     { // #6
@@ -120,7 +120,7 @@ int main() {
       ss->instance_id = 1;
       ss->service_id = 24;
       ss->last_hard_state = 0;
-      ss->last_check = 123456794;
+      ss->last_hard_state_change = 123456794;
       c.write(ss);
     }
     { // #7
@@ -138,9 +138,9 @@ int main() {
       ss->instance_id = 1;
       ss->service_id = 24;
       ss->last_hard_state = 1;
-      ss->last_check = 123456796;
+      ss->last_hard_state_change = 123456796;
       c.write(ss);
-    }
+    }*/
 
     // Check correlation content.
     multiplexing::engine::instance().stop();
@@ -149,7 +149,7 @@ int main() {
     // #1
     add_state(content, -1, 0, 123456789, 42, 1, false, 24, 0);
     add_state(content, -1, 2, 0, 42, 1, false, 24, 123456789);
-    add_issue(content, 0, 0, 42, 1, 24, 123456789);
+    add_issue(content, -1, 0, 42, 1, 24, 123456789);
     // #2
     add_state(
       content,
@@ -163,7 +163,7 @@ int main() {
       123456789);
     add_issue(content, 123456790, 0, 42, 1, 24, 123456789);
     // #3
-    add_state(
+    /*add_state(
       content,
       123456790,
       2,
@@ -231,7 +231,7 @@ int main() {
       24,
       123456794);
     add_state(content, -1, 1, 0, 42, 1, false, 24, 123456796);
-    add_issue(content, 0, 0, 42, 1, 24, 123456796);
+    add_issue(content, 0, 0, 42, 1, 24, 123456796);*/
 
     // Check.
     check_content(t, content);

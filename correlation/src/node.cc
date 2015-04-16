@@ -386,6 +386,9 @@ void node::manage_status(
   if (status == state)
     return ;
 
+  // Generate the state event.
+  _generate_state_event(last_state_change, status, stream);
+
   // Recovery
   if (state != 1 && state != 0 && status == 1) {
     my_issue->end_time = last_state_change;
@@ -404,11 +407,7 @@ void node::manage_status(
       stream->write(misc::make_shared(new issue(*my_issue)));
   }
 
-  // Generate the state event.
-  _generate_state_event(last_state_change, stream);
-
   state = status;
-  my_state->current_state = status;
 
   // Visits the parents, children, and dependencies.
   for (node_map::iterator it = _parents.begin(), end = _parents.end();
@@ -436,9 +435,9 @@ void node::manage_status(
  *  @param[out] stream     A stream to write the events to.
  */
 void node::manage_ack(timestamp entry_time, io::stream* stream) {
-  if (my_issue.get() && !my_issue->ack_time.is_null()) {
+  if (my_issue.get() && my_issue->ack_time.is_null()) {
     my_issue->ack_time = entry_time;
-    _generate_state_event(entry_time, stream);
+    _generate_state_event(entry_time, state, stream);
   }
 }
 
@@ -453,7 +452,7 @@ void node::manage_downtime(
              io::stream* stream) {
   downtimes[dwn.internal_id] = dwn;
   in_downtime = true;
-  _generate_state_event(dwn.start_time, stream);
+  _generate_state_event(dwn.start_time, state, stream);
 }
 
 /**
@@ -468,7 +467,7 @@ void node::manage_downtime_removed(
   downtimes.erase(id);
   if (!downtimes.empty())
     in_downtime = false;
-  _generate_state_event(::time(NULL), stream);
+  _generate_state_event(::time(NULL), state, stream);
 }
 
 
@@ -628,10 +627,12 @@ void node::_internal_copy(node const& n) {
  *  Generate a state event.
  *
  *  @param[in] start_time  The start time of the new event.
+ *  @param[in] new_status  The status of the new event.
  *  @param[out] stream     A stream to write the event to.
  */
 void node::_generate_state_event(
        timestamp start_time,
+       short new_status,
        io::stream* stream) {
   // Close old state event.
   if (my_state.get() && stream) {
@@ -648,6 +649,7 @@ void node::_generate_state_event(
 
   // Open new state event.
   my_state.reset(_open_state_event(start_time));
+  my_state->current_state = new_status;
 
   if (stream)
     stream->write(misc::make_shared(new correlation::state(*my_state)));
