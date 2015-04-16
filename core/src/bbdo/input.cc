@@ -18,6 +18,7 @@
 */
 
 #include <arpa/inet.h>
+#include <cstdlib>
 #include <memory>
 #include <stdint.h>
 #include "com/centreon/broker/bbdo/input.hh"
