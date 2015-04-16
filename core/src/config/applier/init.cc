@@ -57,9 +57,9 @@ void config::applier::deinit() {
   config::applier::temporary::unload();
   config::applier::logger::unload();
   io::temporary::unload();
-  file::unload();
   bbdo::unload();
   command_file::unload();
+  file::unload();
   multiplexing::engine::instance().clear();
   config::applier::modules::unload();
   multiplexing::engine::unload();
@@ -81,8 +81,8 @@ void config::applier::init() {
   io::protocols::load();
   config::applier::modules::load();
   file::load();
-  bbdo::load();
   command_file::load();
+  bbdo::load();
   config::applier::logger::load();
   config::applier::temporary::load();
   config::applier::endpoint::load();

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,7 +18,7 @@
 */
 
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/graphite/macro_cache.hh"
+#include "com/centreon/broker/graphite//macro_cache.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -56,6 +56,24 @@ macro_cache::~macro_cache() {
 }
 
 /**
+ *  Get the mapping of an index.
+ *
+ *  @param[in] index_id   ID of the index.
+ *
+ *  @return               The status mapping.
+ */
+storage::index_mapping const& macro_cache::get_index_mapping(
+                                 unsigned int index_id) const {
+  QHash<unsigned int, storage::index_mapping>::const_iterator
+    found(_index_mappings.find(index_id));
+  if (found == _index_mappings.end())
+    throw (exceptions::msg()
+           << "graphite: could not find host/service of index "
+           << index_id);
+  return (*found);
+}
+
+/**
  *  Get the metric mapping of a metric.
  *
  *  @param[in] metric_id  The id of this metric.
@@ -68,24 +86,7 @@ storage::metric_mapping const& macro_cache::get_metric_mapping(
     found(_metric_mappings.find(metric_id));
   if (found == _metric_mappings.end())
     throw (exceptions::msg()
-           << "graphite: could not find metric mapping for " << metric_id);
-  return (*found);
-}
-
-/**
- *  Get the status mapping of a status.
- *
- *  @param[in] status_id  The id of this status.
- *
- *  @return               The status mapping.
- */
-storage::status_mapping const& macro_cache::get_status_mapping(
-                                 unsigned int status_id) const {
-  QHash<unsigned int, storage::status_mapping>::const_iterator
-    found(_status_mappings.find(status_id));
-  if (found == _status_mappings.end())
-    throw (exceptions::msg()
-           << "graphite: could not find status mapping for " << status_id);
+           << "graphite: could not find index of metric " << metric_id);
   return (*found);
 }
 
@@ -101,7 +102,8 @@ QString const& macro_cache::get_host_name(unsigned int host_id) const {
     found(_hosts.find(host_id));
   if (found == _hosts.end())
     throw (exceptions::msg()
-           << "graphite: could not find host infos for " << host_id);
+           << "graphite: could not find information on host "
+           << host_id);
   return (found->host_name);
 }
 
@@ -120,7 +122,7 @@ QString const& macro_cache::get_service_description(
     found(_services.find(qMakePair(host_id, service_id)));
   if (found == _services.end())
     throw (exceptions::msg()
-           << "graphite: could not find service infos for ("
+           << "graphite: could not find information on service ("
            << host_id << ", " << service_id << ")");
   return (found->service_description);
 }
@@ -137,7 +139,8 @@ QString const& macro_cache::get_instance(unsigned int instance_id) const {
     found(_instances.find(instance_id));
   if (found == _instances.end())
     throw (exceptions::msg()
-           << "graphite: could not find instance infos for " << instance_id);
+           << "graphite: could not find information on instance "
+           << instance_id);
   return (found->name);
 }
 
@@ -156,10 +159,10 @@ void macro_cache::write(misc::shared_ptr<io::data> const& data) {
     _process_host(data.ref_as<neb::host const>());
   else if (data->type() == neb::service::static_type())
     _process_service(data.ref_as<neb::service const>());
+  else if (data->type() == storage::index_mapping::static_type())
+    _process_index_mapping(data.ref_as<storage::index_mapping const>());
   else if (data->type() == storage::metric_mapping::static_type())
     _process_metric_mapping(data.ref_as<storage::metric_mapping const>());
-  else if (data->type() == storage::status_mapping::static_type())
-    _process_status_mapping(data.ref_as<storage::status_mapping const>());
 }
 
 /**
@@ -190,21 +193,22 @@ void macro_cache::_process_service(neb::service const& s) {
 }
 
 /**
+ *  Process an index mapping event.
+ *
+ *  @param im  The event.
+ */
+void macro_cache::_process_index_mapping(storage::index_mapping const& im) {
+  _index_mappings[im.index_id] = im;
+  return ;
+}
+
+/**
  *  Process a metric mapping event.
  *
  *  @param mm  The event.
  */
 void macro_cache::_process_metric_mapping(storage::metric_mapping const& mm) {
   _metric_mappings[mm.metric_id] = mm;
-}
-
-/**
- *  Process a status mapping event.
- *
- *  @param sm  The event.
- */
-void macro_cache::_process_status_mapping(storage::status_mapping const& sm) {
-  _status_mappings[sm.index_id] = sm;
 }
 
 /**
@@ -234,19 +238,19 @@ void macro_cache::_save_to_disk() {
        ++it)
     _cache->add(misc::shared_ptr<io::data>(new neb::service(*it)));
 
+  for (QHash<unsigned int, storage::index_mapping>::const_iterator
+         it(_index_mappings.begin()),
+         end(_index_mappings.end());
+       it != end;
+       ++it)
+    _cache->add(misc::shared_ptr<io::data>(new storage::index_mapping(*it)));
+
   for (QHash<unsigned int, storage::metric_mapping>::const_iterator
          it(_metric_mappings.begin()),
          end(_metric_mappings.end());
        it != end;
        ++it)
     _cache->add(misc::shared_ptr<io::data>(new storage::metric_mapping(*it)));
-
-  for (QHash<unsigned int, storage::status_mapping>::const_iterator
-         it(_status_mappings.begin()),
-         end(_status_mappings.end());
-       it != end;
-       ++it)
-    _cache->add(misc::shared_ptr<io::data>(new storage::status_mapping(*it)));
 
   _cache->commit();
 }

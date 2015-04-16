@@ -33,10 +33,7 @@ using namespace com::centreon::broker::command_file;
  *  Constructor.
  */
 endpoint::endpoint(std::string const& filename)
-  : io::endpoint(false),
-    _filename(filename) {
-
-}
+  : io::endpoint(false), _filename(filename) {}
 
 /**
  *  Copy constructor.
@@ -98,5 +95,6 @@ misc::shared_ptr<io::stream> endpoint::open() {
  *  @return Opened stream.
  */
 misc::shared_ptr<io::stream> endpoint::open(QString const& id) {
-  return (misc::make_shared(new stream(_filename)));
+  (void)id;
+  return (open());
 }

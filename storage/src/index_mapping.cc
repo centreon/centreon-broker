@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,7 +20,7 @@
 #include <cmath>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
-#include "com/centreon/broker/storage/status_mapping.hh"
+#include "com/centreon/broker/storage/index_mapping.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
@@ -34,7 +34,7 @@ using namespace com::centreon::broker::storage;
 /**
  *  Default constructor.
  */
-status_mapping::status_mapping()
+index_mapping::index_mapping()
   : index_id(0),
     host_id(0),
     service_id(0) {}
@@ -42,27 +42,30 @@ status_mapping::status_mapping()
 /**
  *  Copy constructor.
  *
- *  @param[in] m Object to copy.
+ *  @param[in] other  Object to copy.
  */
-status_mapping::status_mapping(status_mapping const& m) : io::data(m) {
-  _internal_copy(m);
+index_mapping::index_mapping(index_mapping const& other)
+  : io::data(other) {
+  _internal_copy(other);
 }
 
 /**
  *  Destructor.
  */
-status_mapping::~status_mapping() {}
+index_mapping::~index_mapping() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] m Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-status_mapping& status_mapping::operator=(status_mapping const& m) {
-  io::data::operator=(m);
-  _internal_copy(m);
+index_mapping& index_mapping::operator=(index_mapping const& other) {
+  if (this != &other) {
+    io::data::operator=(other);
+    _internal_copy(other);
+  }
   return (*this);
 }
 
@@ -71,8 +74,8 @@ status_mapping& status_mapping::operator=(status_mapping const& m) {
  *
  *  @return The event type.
  */
-unsigned int status_mapping::type() const {
-  return (status_mapping::static_type());
+unsigned int index_mapping::type() const {
+  return (index_mapping::static_type());
 }
 
 /**
@@ -80,8 +83,8 @@ unsigned int status_mapping::type() const {
  *
  *  @return  The event type.
  */
-unsigned int status_mapping::static_type() {
-  return (io::events::data_type<io::events::storage, storage::de_status_mapping>::value);
+unsigned int index_mapping::static_type() {
+  return (io::events::data_type<io::events::storage, storage::de_index_mapping>::value);
 }
 
 /**************************************
@@ -93,12 +96,12 @@ unsigned int status_mapping::static_type() {
 /**
  *  Copy internal data members.
  *
- *  @param[in] m Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void status_mapping::_internal_copy(status_mapping const& m) {
-  index_id = m.index_id;
-  host_id = m.host_id;
-  service_id = m.service_id;
+void index_mapping::_internal_copy(index_mapping const& other) {
+  index_id = other.index_id;
+  host_id = other.host_id;
+  service_id = other.service_id;
   return ;
 }
 
@@ -109,19 +112,19 @@ void status_mapping::_internal_copy(status_mapping const& m) {
 **************************************/
 
 // Mapping.
-mapping::entry const status_mapping::entries[] = {
+mapping::entry const index_mapping::entries[] = {
   mapping::entry(
-    &status_mapping::index_id,
+    &index_mapping::index_id,
     "index_id",
     1,
     mapping::entry::NULL_ON_ZERO),
   mapping::entry(
-    &status_mapping::host_id,
+    &index_mapping::host_id,
     "host_id",
     1,
   mapping::entry::NULL_ON_ZERO),
   mapping::entry(
-    &status_mapping::service_id,
+    &index_mapping::service_id,
     "service_id",
     1,
     mapping::entry::NULL_ON_ZERO),
@@ -129,9 +132,9 @@ mapping::entry const status_mapping::entries[] = {
 };
 
 // Operations.
-static io::data* new_status_mapping() {
-  return (new status_mapping);
+static io::data* new_index_mapping() {
+  return (new index_mapping);
 }
-io::event_info::event_operations const status_mapping::operations = {
-  &new_status_mapping
+io::event_info::event_operations const index_mapping::operations = {
+  &new_index_mapping
 };

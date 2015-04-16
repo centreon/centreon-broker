@@ -1682,6 +1682,8 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->freshness_threshold = s->freshness_threshold;
     my_service->has_been_checked = s->has_been_checked;
     my_service->high_flap_threshold = s->high_flap_threshold;
+    if (s->host_name)
+      my_service->host_name = s->host_name;
     my_service->is_flapping = s->is_flapping;
     my_service->is_volatile = s->is_volatile;
     my_service->last_check = s->last_check;

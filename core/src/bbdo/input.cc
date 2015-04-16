@@ -39,40 +39,193 @@ using namespace com::centreon::broker::bbdo;
 **************************************/
 
 /**
+ *  Set a boolean within an object.
+ */
+static unsigned int set_boolean(
+                      io::data& t,
+                      mapping::entry const& member,
+                      void const* data,
+                      unsigned int size) {
+  if (!size)
+    throw (exceptions::msg() << "BBDO: cannot extract boolean value: "
+           << "0 bytes left in packet");
+  member.set_bool(t, *static_cast<char const*>(data));
+  return (1);
+}
+
+/**
+ *  Set a double within an object.
+ */
+static unsigned int set_double(
+                      io::data& t,
+                      mapping::entry const& member,
+                      void const* data,
+                      unsigned int size) {
+  char const* str(static_cast<char const*>(data));
+  unsigned int len(strlen(str));
+  if (len >= size)
+    throw (exceptions::msg() << "BBDO: cannot extract double value: "
+           << "not terminating '\0' in remaining " << size
+           << " bytes of packet");
+  member.set_double(t, strtod(str, NULL));
+  return (len + 1);
+}
+
+/**
+ *  Set an integer within an object.
+ */
+static unsigned int set_integer(
+                      io::data& t,
+                      mapping::entry const& member,
+                      void const* data,
+                      unsigned int size) {
+  if (size < sizeof(uint32_t))
+    throw (exceptions::msg() << "BBDO: cannot extract integer value: "
+           << size << " bytes left in packet");
+  member.set_int(t, ntohl(*static_cast<uint32_t const*>(data)));
+  return (sizeof(uint32_t));
+}
+
+/**
+ *  Set a short within an object.
+ */
+static unsigned int set_short(
+                      io::data& t,
+                      mapping::entry const& member,
+                      void const* data,
+                      unsigned int size) {
+  if (size < sizeof(uint16_t))
+    throw (exceptions::msg() << "BBDO: cannot extract short value: "
+           << size << " bytes left in packet");
+  member.set_short(t, ntohs(*static_cast<uint16_t const*>(data)));
+  return (sizeof(uint16_t));
+}
+
+/**
+ *  Set a string within an object.
+ */
+static unsigned int set_string(
+                      io::data& t,
+                      mapping::entry const& member,
+                      void const* data,
+                      unsigned int size) {
+  char const* str(static_cast<char const*>(data));
+  unsigned int len(strlen(str));
+  if (len >= size)
+    throw (exceptions::msg() << "BBDO: cannot extract string value: "
+           << "no terminating '\0' in remaining " << size
+           << " bytes of packet");
+  member.set_string(t, str);
+  return (len + 1);
+}
+
+/**
+ *  Set a timestamp within an object.
+ */
+static unsigned int set_timestamp(
+                      io::data& t,
+                      mapping::entry const& member,
+                      void const* data,
+                      unsigned int size) {
+  if (size < 2 * sizeof(uint32_t))
+    throw (exceptions::msg()
+           << "BBDO: cannot extract timestamp value: "
+           << size << " bytes left in packet");
+  uint32_t const* ptr(static_cast<uint32_t const*>(data));
+  uint64_t val(ntohl(*ptr));
+  ++ptr;
+  val <<= 32;
+  val |= ntohl(*ptr);
+  member.set_time(t, val);
+  return (2 * sizeof(uint32_t));
+}
+
+/**
+ *  Set an unsigned integer within an object.
+ */
+static unsigned int set_uint(
+                      io::data& t,
+                      mapping::entry const& member,
+                      void const* data,
+                      unsigned int size) {
+  if (size < sizeof(uint32_t))
+    throw (exceptions::msg()
+           << "BBDO: cannot extract unsigned integer value: "
+           << size << " bytes left in packet");
+  member.set_uint(t, ntohl(*static_cast<uint32_t const*>(data)));
+  return (sizeof(uint32_t));
+}
+
+/**
  *  Unserialize an event in the BBDO protocol.
  *
- *  @param[in] buffer Serialized data.
- *  @param[in] size   Buffer size.
- *  @param[in] info   Event informations.
+ *  @param[in] event_type  Event type.
+ *  @param[in] buffer      Serialized data.
+ *  @param[in] size        Buffer size.
  *
  *  @return Event.
  */
 static io::data* unserialize(
+                   unsigned int event_type,
                    char const* buffer,
-                   unsigned int size,
-                   bbdo_mapped_type const& mapping_info) {
-  std::auto_ptr<io::data>
-    t(mapping_info.mapped_type->get_operations().constructor());
-  mapping::entry const*
-    current_entry(mapping_info.mapped_type->get_mapping());
-  for (std::vector<getter_setter>::const_iterator
-         it(mapping_info.bbdo_entries.begin()),
-         end(mapping_info.bbdo_entries.end());
-       it != end;
-       ++it, ++current_entry) {
-    // Skip 0 numbered entries.
-    for (; !current_entry->is_null() && current_entry->get_number() == 0;
-         ++current_entry);
-
-    unsigned int processed((*it->setter)(
-                             *t,
-                             *current_entry,
-                             buffer,
-                             size));
-    size -= processed;
-    buffer += processed;
+                   unsigned int size) {
+  // Get event info (operations and mapping).
+  io::event_info const*
+    info(io::events::instance().get_event_info(event_type));
+  if (info) {
+    // Create object.
+    std::auto_ptr<io::data> t(info->get_operations().constructor());
+    if (t.get()) {
+      // Browse all mapping to unserialize the object.
+      for (mapping::entry const* current_entry(info->get_mapping());
+           current_entry->get_type() != mapping::source::UNKNOWN;
+           ++current_entry)
+        // Skip 0 numbered entries.
+        if (current_entry->get_number()) {
+          unsigned int rb;
+          switch (current_entry->get_type()) {
+          case mapping::source::BOOL:
+            rb = set_boolean(*t, *current_entry, buffer, size);
+            break ;
+          case mapping::source::DOUBLE:
+            rb = set_double(*t, *current_entry, buffer, size);
+            break ;
+          case mapping::source::INT:
+            rb = set_integer(*t, *current_entry, buffer, size);
+            break ;
+          case mapping::source::SHORT:
+            rb = set_short(*t, *current_entry, buffer, size);
+            break ;
+          case mapping::source::STRING:
+            rb = set_string(*t, *current_entry, buffer, size);
+            break ;
+          case mapping::source::TIME:
+            rb = set_timestamp(*t, *current_entry, buffer, size);
+            break ;
+          case mapping::source::UINT:
+            rb = set_uint(*t, *current_entry, buffer, size);
+            break ;
+          default:
+            throw (exceptions::msg() << "BBDO: invalid mapping for "
+                   << "object of type '" << info->get_name() << "': "
+                   << current_entry->get_type()
+                   << " is not a known type ID");
+          }
+          buffer += rb;
+          size -= rb;
+        }
+      return (t.release());
+    }
+    else
+      throw (exceptions::msg() << "BBDO: cannot create object of ID "
+             << event_type << " whereas it has been registered");
   }
-  return (t.release());
+  else
+    logging::info(logging::high)
+      << "BBDO: cannot unserialize event of ID " << event_type
+      << ": event was not registered and will therefore be ignored";
+
+  return (NULL);
 }
 
 /**************************************
@@ -259,31 +412,24 @@ unsigned int input::read_any(
   }
   total_size += packet_size;
 
-  // Find routine.
-  umap<unsigned int, bbdo_mapped_type>::const_iterator
-    mapped_type(bbdo_mapping.find(event_id));
-  if (mapped_type != bbdo_mapping.end()) {
-    d = unserialize(
-          _buffer.c_str() + _processed,
-          total_size,
-          mapped_type->second);
-  }
+  // Unserialize event.
+  d = unserialize(
+        event_id,
+        _buffer.c_str() + _processed,
+        total_size);
+  if (!d.isNull())
+    logging::debug(logging::medium) << "BBDO: unserialized "
+      << total_size + BBDO_HEADER_SIZE << " bytes for event of type "
+      << event_id;
   else {
-    logging::debug(logging::medium)
-      << "BBDO: got unknown event type " << event_id
-      << ": recreating mappings and retrying";
-    create_mappings();
-    mapped_type = bbdo_mapping.find(event_id);
-    if (mapped_type != bbdo_mapping.end())
-      d = unserialize(
-            _buffer.c_str() + _processed,
-            total_size,
-            mapped_type->second);
+    logging::error(logging::medium)
+      << "BBDO: unknown event type " << event_id
+      << ": event cannot be decoded";
+    logging::debug(logging::medium) << "BBDO: discarded "
+      << total_size + BBDO_HEADER_SIZE << " bytes";
   }
 
   // Mark data as processed.
-  logging::debug(logging::medium) << "BBDO: unserialized "
-    << total_size + BBDO_HEADER_SIZE << " bytes";
   _processed += total_size;
 
   return (event_id);

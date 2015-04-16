@@ -33,7 +33,7 @@ namespace        bam {
    *  @class ba_status ba_status.hh "com/centreon/broker/bam/ba_status.hh"
    *  @brief Update status of a BA.
    *
-   *  Update the status of a BA, used to update the mod_bam table.
+   *  Update the status of a BA, used to update the cfg_bam table.
    */
   class          ba_status : public io::data {
   public:

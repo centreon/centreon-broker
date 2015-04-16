@@ -1,5 +1,5 @@
 ##
-## Copyright 2011-2013 Merethis
+## Copyright 2011-2013,2015 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -34,6 +34,7 @@ add_library("${STORAGE}" SHARED
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/exceptions/perfdata.cc"
   "${SRC_DIR}/factory.cc"
+  "${SRC_DIR}/index_mapping.cc"
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/metric.cc"
   "${SRC_DIR}/metric_mapping.cc"
@@ -43,13 +44,13 @@ add_library("${STORAGE}" SHARED
   "${SRC_DIR}/rebuilder.cc"
   "${SRC_DIR}/remove_graph.cc"
   "${SRC_DIR}/status.cc"
-  "${SRC_DIR}/status_mapping.cc"
   "${SRC_DIR}/stream.cc"
   # Headers.
   "${INC_DIR}/connector.hh"
   "${INC_DIR}/events.hh"
   "${INC_DIR}/exceptions/perfdata.hh"
   "${INC_DIR}/factory.hh"
+  "${INC_DIR}/index_mapping.hh"
   "${INC_DIR}/internal.hh"
   "${INC_DIR}/metric.hh"
   "${INC_DIR}/metric_mapping.hh"
@@ -59,7 +60,6 @@ add_library("${STORAGE}" SHARED
   "${INC_DIR}/rebuilder.hh"
   "${INC_DIR}/remove_graph.hh"
   "${INC_DIR}/status.hh"
-  "${INC_DIR}/status_mapping.hh"
   "${INC_DIR}/stream.hh"
 )
 target_link_libraries("${STORAGE}" ${QT_LIBRARIES})

@@ -101,6 +101,41 @@ namespace         notification {
     bool          node_acknowledged(objects::node_id node) const;
 
   private:
+    enum          ack_type {
+                  ack_host = 0,
+                  ack_service
+    };
+
+    enum          down_type {
+                  down_host = 0,
+                  down_service,
+                  down_host_service
+    };
+
+    void          _prepare_serialization();
+    misc::shared_ptr<io::data>
+                  _parse_ack(
+                    ack_type type,
+                    timestamp t,
+                    const char* args,
+                    size_t arg_size);
+    misc::shared_ptr<io::data>
+                  _parse_remove_ack(
+                    ack_type type,
+                    const char* args,
+                    size_t arg_size);
+    misc::shared_ptr<io::data>
+                  _parse_downtime(
+                    down_type type,
+                    timestamp t,
+                    const char* args,
+                    size_t arg_size);
+    misc::shared_ptr<io::data>
+                  _parse_remove_downtime(
+                    down_type type,
+                    const char* args,
+                    size_t arg_size);
+
     QHash<objects::node_id, host_node_state>
                   _host_node_states;
     QHash<objects::node_id, service_node_state>
@@ -119,38 +154,6 @@ namespace         notification {
 
     std::deque<misc::shared_ptr<io::data> >
                   _serialized_data;
-
-    enum          ack_type {
-                  ack_host = 0,
-                  ack_service
-    };
-
-    enum          down_type {
-                  down_host = 0,
-                  down_service,
-                  down_host_service
-    };
-
-    void          _prepare_serialization();
-
-    misc::shared_ptr<io::data>
-                  _parse_ack(
-                    ack_type type,
-                    timestamp t,
-                    std::string const& args);
-    misc::shared_ptr<io::data>
-                  _parse_remove_ack(
-                    ack_type type,
-                    std::string const& args);
-    misc::shared_ptr<io::data>
-                  _parse_downtime(
-                    down_type type,
-                    timestamp t,
-                    std::string const& args);
-    misc::shared_ptr<io::data>
-                  _parse_remove_downtime(
-                    down_type type,
-                    std::string const& args);
   };
 }
 

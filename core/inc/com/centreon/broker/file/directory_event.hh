@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -25,7 +25,7 @@
 
 CCB_BEGIN()
 
-namespace              file {
+namespace        file {
   /**
    *  @class directory_event directory_event.hh "com/centreon/broker/file/directory_event.hh"
    *  @brief Event of a watched directory.
@@ -40,6 +40,7 @@ namespace              file {
                  deleted,
                  directory_deleted
     };
+
                  directory_event();
                  directory_event(
                    std::string const& path,

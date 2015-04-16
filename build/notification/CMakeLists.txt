@@ -35,7 +35,7 @@ qt4_wrap_cpp(QT_WRAPPED_SOURCES
   "${INC_DIR}/process.hh")
 
 # Notification module.
-set(NOTIFICATION "30-notification")
+set(NOTIFICATION "40-notification")
 set(NOTIFICATION "${NOTIFICATION}" PARENT_SCOPE)
 add_library("${NOTIFICATION}" SHARED
   ${QT_WRAPPED_SOURCES}

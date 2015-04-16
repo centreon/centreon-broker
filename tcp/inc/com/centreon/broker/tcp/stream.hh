@@ -44,6 +44,7 @@ namespace        tcp {
     void         process(bool in = false, bool out = true);
     void         read(misc::shared_ptr<io::data>& d);
     void         set_timeout(int msecs);
+    void         set_write_timeout(int msecs);
     unsigned int write(misc::shared_ptr<io::data> const& d);
 
   private:
@@ -57,6 +58,7 @@ namespace        tcp {
     misc::shared_ptr<QTcpSocket>
                  _socket;
     int          _timeout;
+    int          _write_timeout;
   };
 }
 

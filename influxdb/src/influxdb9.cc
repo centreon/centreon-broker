@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -112,7 +112,7 @@ void influxdb9::commit() {
 
   // Send the data to the server.
   if (_socket->write(final_query.c_str(), final_query.size())
-        != final_query.size())
+      != static_cast<int>(final_query.size()))
     throw (exceptions::msg()
       << "influxdb: couldn't commit data to influxdb with address '"
       << _socket->peerAddress().toString()

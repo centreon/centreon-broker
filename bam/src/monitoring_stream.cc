@@ -163,9 +163,8 @@ void monitoring_stream::update() {
     initialize();
   }
   catch (std::exception const& e) {
-    logging::error(logging::high)
-      << "BAM: could not process configuration update: "
-      << e.what();
+    throw (exceptions::msg()
+           << "BAM: could not process configuration update: " << e.what());
   }
   return ;
 }
@@ -378,7 +377,7 @@ void monitoring_stream::_prepare() {
   // BA status.
   {
     std::string query;
-    query = "UPDATE mod_bam"
+    query = "UPDATE cfg_bam"
             "  SET current_level=:level_nominal,"
             "      acknowledged=:level_acknowledgement,"
             "      downtime=:level_downtime,"
@@ -399,8 +398,8 @@ void monitoring_stream::_prepare() {
   // Boolean expression status.
   {
     std::string query;
-    query = "UPDATE mod_bam_boolean AS b"
-            "  LEFT JOIN mod_bam_kpi AS k"
+    query = "UPDATE cfg_bam_boolean AS b"
+            "  LEFT JOIN cfg_bam_kpi AS k"
             "    ON b.boolean_id=k.boolean_id"
             "  SET k.current_status = "
             "      CASE WHEN :state=b.bool_state THEN 2 ELSE 0 END,"
@@ -414,7 +413,7 @@ void monitoring_stream::_prepare() {
   // KPI status.
   {
     std::string query;
-    query = "UPDATE mod_bam_kpi"
+    query = "UPDATE cfg_bam_kpi"
             "  SET acknowledged=:level_acknowledgement,"
             "      current_status=:state,"
             "      downtime=:level_downtime, last_level=:level_nominal,"
@@ -449,7 +448,7 @@ void monitoring_stream::_rebuild() {
   std::vector<unsigned int> bas_to_rebuild;
   {
     std::string query = "SELECT ba_id"
-                        "  FROM mod_bam"
+                        "  FROM cfg_bam"
                         "  WHERE must_be_rebuild='1'";
     database_query q(_db);
     q.run_query(
@@ -483,7 +482,7 @@ void monitoring_stream::_rebuild() {
 
   // Set all the BAs to should not be rebuild.
   {
-    std::string query = "UPDATE mod_bam"
+    std::string query = "UPDATE cfg_bam"
                         "  SET must_be_rebuild='0'";
     database_query q(_db);
     q.run_query(

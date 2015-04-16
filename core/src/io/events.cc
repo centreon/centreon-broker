@@ -174,6 +174,25 @@ events::events_container const& events::get_events_by_category_name(
 }
 
 /**
+ *  Get an event information structure.
+ *
+ *  @param[in] type  Event type ID.
+ *
+ *  @return Event information structure if found, NULL otherwise.
+ */
+event_info const* events::get_event_info(unsigned int type) {
+  umap<unsigned short, category_info>::const_iterator
+    itc(_elements.find(category_of_type(type)));
+  if (itc != _elements.end()) {
+    umap<unsigned int, event_info>::const_iterator
+      ite(itc->second.events.find(type));
+    if (ite != itc->second.events.end())
+      return (&ite->second);
+  }
+  return (NULL);
+}
+
+/**
  *  Get all the events matching this name.
  *
  *  If it's a category name, get the content of the category.

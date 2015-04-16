@@ -47,7 +47,7 @@ void command_file::load() {
   io::protocols::instance().reg(
                               "command_file",
                               command_file::factory(),
-                              7,
+                              1,
                               7);
 
   e.register_category("internal", io::events::internal);

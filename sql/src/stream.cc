@@ -26,15 +26,18 @@
 #include <sstream>
 #include <limits>
 #include "com/centreon/engine/common.hh"
+#include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/sql/internal.hh"
 #include "com/centreon/broker/sql/stream.hh"
+#include "com/centreon/broker/storage/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -299,9 +302,15 @@ void stream::_clean_tables(int instance_id) {
  */
 void stream::_prepare() {
   // Prepare insert queries.
+  _prepare_insert<neb::acknowledgement>(
+                         _acknowledgement_insert,
+                         "rt_acknowledgements");
   _prepare_insert<neb::custom_variable>(
                          _custom_variable_insert,
                          "rt_customvariables");
+  _prepare_insert<neb::downtime>(
+                         _downtime_insert,
+                         "rt_downtimes");
   _prepare_insert<neb::event_handler>(
                          _event_handler_insert,
                          "rt_eventhandlers");
@@ -338,12 +347,6 @@ void stream::_prepare() {
   _prepare_insert<neb::service_group>(
                          _service_group_insert,
                          "rt_servicegroups");
-  _prepare_insert<notification::acknowledgement>(
-                                  _acknowledgement_insert,
-                                  "rt_acknowledgements");
-  _prepare_insert<notification::downtime>(
-                                  _downtime_insert,
-                                  "rt_downtimes");
   _prepare_insert<correlation::state>(
                                  _host_state_insert,
                                  "rt_hoststateevents");
@@ -370,6 +373,15 @@ void stream::_prepare() {
 
   // Prepare update queries.
   std::map<std::string, bool> id;
+
+  id.clear();
+  id["entry_time"] = false;
+  id["host_id"] = false;
+  id["service_id"] = true;
+  _prepare_update<neb::acknowledgement>(
+                         _acknowledgement_update,
+                         "rt_acknowledgements",
+                         id);
 
   id.clear();
   id["host_id"] = false;
@@ -494,15 +506,6 @@ void stream::_prepare() {
                          _service_status_update,
                          "rt_services",
                          id);
-
-  id.clear();
-  id["entry_time"] = false;
-  id["host_id"] = false;
-  id["service_id"] = true;
-  _prepare_update<notification::acknowledgement>(
-                                  _acknowledgement_update,
-                                  "rt_acknowledgements",
-                                  id);
 
   {
     std::ostringstream oss;
@@ -740,8 +743,8 @@ void stream::_prepare_delete(
 void stream::_process_acknowledgement(
                misc::shared_ptr<io::data> const& e) {
   // Cast object.
-  notification::acknowledgement const&
-    ack(*static_cast<notification::acknowledgement const*>(e.data()));
+  neb::acknowledgement const&
+    ack(*static_cast<neb::acknowledgement const*>(e.data()));
 
   // Log message.
   logging::info(logging::medium)
@@ -835,8 +838,8 @@ void stream::_process_custom_variable_status(
 void stream::_process_downtime(
                misc::shared_ptr<io::data> const& e) {
   // Cast object.
-  notification::downtime const&
-    d(*static_cast<notification::downtime const*>(e.data()));
+  neb::downtime const&
+    d(*static_cast<neb::downtime const*>(e.data()));
 
   // Log message.
   logging::info(logging::medium)
