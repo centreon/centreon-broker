@@ -23,8 +23,8 @@
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/service_status.hh"
-#include "com/centreon/broker/notification/downtime.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -526,7 +526,7 @@ void ba::visit(io::stream* visitor) {
 }
 
 /**
- *  @brief Notify BA of a downtime 
+ *  @brief Notify BA of a downtime
  *
  *  Used to watch for downtime.
  *
@@ -534,7 +534,7 @@ void ba::visit(io::stream* visitor) {
  *  @param visitor  Visitor that will receive events.
  */
 void ba::service_update(
-          misc::shared_ptr<notification::downtime> const& dt,
+          misc::shared_ptr<neb::downtime> const& dt,
           io::stream* visitor) {
   (void)visitor;
   if ((dt->host_id == _host_id)

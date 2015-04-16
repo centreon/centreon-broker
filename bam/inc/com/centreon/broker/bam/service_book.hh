@@ -29,11 +29,9 @@ CCB_BEGIN()
 
 // Forward declarations.
 namespace         neb {
-  class           service_status;
-}
-namespace         notification {
   class           acknowledgement;
   class           downtime;
+  class           service_status;
 }
 
 namespace         bam {
@@ -64,10 +62,10 @@ namespace         bam {
                     misc::shared_ptr<neb::service_status> const& ss,
                     io::stream* visitor = NULL);
     void          update(
-                    misc::shared_ptr<notification::acknowledgement> const& ack,
+                    misc::shared_ptr<neb::acknowledgement> const& ack,
                     io::stream* visitor = NULL);
     void          update(
-                    misc::shared_ptr<notification::downtime> const& dt,
+                    misc::shared_ptr<neb::downtime> const& dt,
                     io::stream* visitor = NULL);
 
   private:

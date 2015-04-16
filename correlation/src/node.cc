@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -448,8 +448,8 @@ void node::manage_ack(timestamp entry_time, io::stream* stream) {
  *  @param[out] stream    A stream to write the events to.
  */
 void node::manage_downtime(
-        notification::downtime const& dwn,
-       io::stream* stream) {
+             neb::downtime const& dwn,
+             io::stream* stream) {
   downtimes[dwn.internal_id] = dwn;
   in_downtime = true;
   _generate_state_event(dwn.start_time, stream);
@@ -555,12 +555,12 @@ void node::serialize(persistent_cache& cache) const {
     cache.add(misc::make_shared(new issue(*my_issue)));
   if (my_state.get())
     cache.add(misc::make_shared(new correlation::state(*my_state)));
-  for (std::map<unsigned int, notification::downtime>::const_iterator
+  for (std::map<unsigned int, neb::downtime>::const_iterator
          it = downtimes.begin(),
          end = downtimes.end();
        it != end;
        ++it)
-    cache.add(misc::make_shared(new notification::downtime(it->second)));
+    cache.add(misc::make_shared(new neb::downtime(it->second)));
 }
 
 /**************************************
@@ -647,7 +647,7 @@ void node::_generate_state_event(
   my_state->current_state = state;
   my_state->instance_id = instance_id;
   timestamp earliest_downtime;
-  for (std::map<unsigned int, notification::downtime>::const_iterator
+  for (std::map<unsigned int, neb::downtime>::const_iterator
          it = downtimes.begin(),
          end = downtimes.end();
        it != end;

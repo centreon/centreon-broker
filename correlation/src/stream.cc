@@ -24,12 +24,12 @@
 #include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/correlation/node.hh"
 #include "com/centreon/broker/correlation/parser.hh"
+#include "com/centreon/broker/neb/acknowledgement.hh"
+#include "com/centreon/broker/neb/downtime.hh"
+#include "com/centreon/broker/neb/downtime_removed.hh"
 #include "com/centreon/broker/neb/host_status.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/neb/log_entry.hh"
-#include "com/centreon/broker/notification/acknowledgement.hh"
-#include "com/centreon/broker/notification/downtime.hh"
-#include "com/centreon/broker/notification/downtime_removed.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
@@ -156,9 +156,9 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
         &pblsh);
     }
   }
-  else if (d->type() == notification::acknowledgement::static_type()) {
-    notification::acknowledgement const& ack
-      = d.ref_as<notification::acknowledgement>();
+  else if (d->type() == neb::acknowledgement::static_type()) {
+    neb::acknowledgement const& ack
+      = d.ref_as<neb::acknowledgement>();
     QPair<unsigned int, unsigned int> id(ack.host_id, ack.service_id);
     QMap<QPair<unsigned int, unsigned int>, node>::iterator found
       = _nodes.find(id);
@@ -167,8 +167,8 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
       found->manage_ack(ack.entry_time, &pblsh);
     }
   }
-  else if (d->type() == notification::downtime::static_type()) {
-    notification::downtime const& dwn = d.ref_as<notification::downtime>();
+  else if (d->type() == neb::downtime::static_type()) {
+    neb::downtime const& dwn = d.ref_as<neb::downtime>();
     QPair<unsigned int, unsigned int> id(dwn.host_id, dwn.service_id);
     QMap<QPair<unsigned int, unsigned int>, node>::iterator found
       = _nodes.find(id);
@@ -187,9 +187,9 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
       found->manage_log(entry, &pblsh);
     }
   }
-  else if (d->type() == notification::downtime_removed::static_type()) {
-    notification::downtime_removed const& dr
-      = d.ref_as<notification::downtime_removed>();
+  else if (d->type() == neb::downtime_removed::static_type()) {
+    neb::downtime_removed const& dr
+      = d.ref_as<neb::downtime_removed>();
     QPair<unsigned int, unsigned int> id(dr.host_id, dr.service_id);
     QMap<QPair<unsigned int, unsigned int>, node>::iterator found
       = _nodes.find(id);
@@ -268,8 +268,8 @@ void stream::_load_correlation_event(misc::shared_ptr<io::data> const& d) {
       found->state = st.current_state;
     }
   }
-  else if (d->type() == notification::downtime::static_type()) {
-    notification::downtime const& dwn = d.ref_as<notification::downtime>();
+  else if (d->type() == neb::downtime::static_type()) {
+    neb::downtime const& dwn = d.ref_as<neb::downtime>();
     QMap<QPair<unsigned int, unsigned int>, node>::iterator found
       = _nodes.find(qMakePair(dwn.host_id, dwn.service_id));
     if (found != _nodes.end())

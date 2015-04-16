@@ -24,7 +24,6 @@ set(TEST_DIR "${PROJECT_SOURCE_DIR}/correlation/test")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
-include_directories("${PROJECT_SOURCE_DIR}/notification/inc")
 set(INC_DIR "${INC_DIR}/com/centreon/broker/correlation")
 
 # Some files must be processed by Qt's moc.

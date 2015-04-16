@@ -17,50 +17,60 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NOTIFICATION_DOWNTIME_REMOVED_HH
-#  define CCB_NOTIFICATION_DOWNTIME_REMOVED_HH
+#ifndef CCB_NEB_DOWNTIME_REMOVED_HH
+#  define CCB_NEB_DOWNTIME_REMOVED_HH
 
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/io/events.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/neb/internal.hh"
 #  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace            notification {
+namespace               neb {
   /**
-   *  @class downtime_removed downtime_removed.hh "com/centreon/broker/notification/downtime_removed.hh"
+   *  @class downtime_removed downtime_removed.hh "com/centreon/broker/neb/downtime_removed.hh"
    *  @brief Represents a downtime removed.
    *
    *  Used to notify other modules of the manual removal of downtimes.
    */
-  class              downtime_removed : public io::data {
+  class                 downtime_removed : public io::data {
   public:
-                     downtime_removed();
-                     downtime_removed(downtime_removed const& other);
-                     ~downtime_removed();
-    downtime_removed&
-                     operator=(downtime_removed const& other);
-    unsigned int     type() const;
-    static unsigned int
-                     static_type();
+                        downtime_removed();
+                        downtime_removed(downtime_removed const& other);
+                        ~downtime_removed();
+    downtime_removed&   operator=(downtime_removed const& other);
+    unsigned int        type() const;
 
-    unsigned int     host_id;
-    unsigned int     service_id;
-    unsigned int     downtime_id;
+    /**
+     *  Get the type of this event.
+     *
+     *  @return  The event type.
+     */
+    static unsigned int static_type() {
+      return (io::events::data_type<
+                            io::events::neb,
+                            neb::de_downtime_removed>::value);
+    }
+
+    unsigned int        downtime_id;
+    unsigned int        host_id;
+    unsigned int        service_id;
 
     static mapping::entry const
-                     entries[];
+                        entries[];
     static io::event_info::event_operations const
-                     operations;
+                        operations;
 
   private:
-    void             _internal_copy(downtime_removed const& other);
+    void                _internal_copy(downtime_removed const& other);
   };
 }
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_DOWNTIME_REMOVED_HH
+#endif // !CCB_NEB_DOWNTIME_REMOVED_HH

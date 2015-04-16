@@ -74,7 +74,7 @@ void service_listener::service_update(
  *  @param[out] visitor  Visitor.
  */
 void service_listener::service_update(
-                         misc::shared_ptr<notification::acknowledgement> const& ack,
+                         misc::shared_ptr<neb::acknowledgement> const& ack,
                          io::stream* visitor) {
   (void)ack;
   (void)visitor;
@@ -88,7 +88,7 @@ void service_listener::service_update(
  *  @param[out] visitor  Visitor.
  */
 void service_listener::service_update(
-                         misc::shared_ptr<notification::downtime> const& dt,
+                         misc::shared_ptr<neb::downtime> const& dt,
                          io::stream* visitor) {
   (void)dt;
   (void)visitor;

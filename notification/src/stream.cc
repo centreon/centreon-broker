@@ -262,10 +262,10 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
     _process_service_status_event(*data.staticCast<neb::service_status>());
   else if (data->type() == correlation::issue_parent::static_type())
     _process_issue_parent_event(*data.staticCast<correlation::issue_parent>());
-  else if (data->type() == notification::acknowledgement::static_type())
-    _process_ack(data.ref_as<notification::acknowledgement>());
-  else if (data->type() == notification::downtime::static_type())
-    _process_downtime(data.ref_as<notification::downtime>());
+  else if (data->type() == neb::acknowledgement::static_type())
+    _process_ack(data.ref_as<neb::acknowledgement>());
+  else if (data->type() == neb::downtime::static_type())
+    _process_downtime(data.ref_as<neb::downtime>());
 
   return (retval);
 }
@@ -589,7 +589,7 @@ void stream::_process_issue_parent_event(
  *
  *  @param event  The event to process.
  */
-void stream::_process_ack(notification::acknowledgement const& event) {
+void stream::_process_ack(neb::acknowledgement const& event) {
   objects::node_id id(event.host_id, event.service_id);
 
   // Remove the actions for this node.
@@ -609,7 +609,7 @@ void stream::_process_ack(notification::acknowledgement const& event) {
  *
  *  @param event  The event to process.
  */
-void stream::_process_downtime(notification::downtime const& event) {
+void stream::_process_downtime(neb::downtime const& event) {
   objects::node_id id(event.host_id, event.service_id);
 
   // Remove the actions for this node.

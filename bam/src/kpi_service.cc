@@ -23,9 +23,9 @@
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/neb/acknowledgement.hh"
+#include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/service_status.hh"
-#include "com/centreon/broker/notification/acknowledgement.hh"
-#include "com/centreon/broker/notification/downtime.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -251,7 +251,7 @@ void kpi_service::service_update(
  *  @param[out] visitor  Object that will receive events.
  */
 void kpi_service::service_update(
-                    misc::shared_ptr<notification::acknowledgement> const& ack,
+                    misc::shared_ptr<neb::acknowledgement> const& ack,
                     io::stream* visitor) {
   if (!ack.isNull()
       && (ack->host_id == _host_id)
@@ -280,7 +280,7 @@ void kpi_service::service_update(
  *  @param[out] visitor  Object that will receive events.
  */
 void kpi_service::service_update(
-                    misc::shared_ptr<notification::downtime> const& dt,
+                    misc::shared_ptr<neb::downtime> const& dt,
                     io::stream* visitor) {
   if (!dt.isNull()
       && (dt->host_id == _host_id)

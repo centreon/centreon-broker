@@ -41,10 +41,6 @@ add_library("${NOTIFICATION}" SHARED
   ${QT_WRAPPED_SOURCES}
   # Sources.
   "${SRC_DIR}/action.cc"
-  "${SRC_DIR}/acknowledgement.cc"
-  "${SRC_DIR}/acknowledgement_removed.cc"
-  "${SRC_DIR}/downtime.cc"
-  "${SRC_DIR}/downtime_removed.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/macro_context.cc"
   "${SRC_DIR}/macro_generator.cc"
@@ -99,12 +95,7 @@ add_library("${NOTIFICATION}" SHARED
   "${SRC_DIR}/utilities/get_datetime_string.cc"
   # Headers.
   "${INC_DIR}/action.hh"
-  "${INC_DIR}/acknowledgement.hh"
-  "${INC_DIR}/acknowledgement_removed.hh"
-  "${INC_DIR}/downtime.hh"
-  "${INC_DIR}/downtime_removed.hh"
   "${INC_DIR}/factory.hh"
-  "${INC_DIR}/internal.hh"
   "${INC_DIR}/macro_context.hh"
   "${INC_DIR}/macro_generator.hh"
   "${INC_DIR}/macro_getters.hh"

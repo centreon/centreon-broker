@@ -20,8 +20,12 @@
 #ifndef CCB_NEB_EVENTS_HH
 #  define CCB_NEB_EVENTS_HH
 
+#  include "com/centreon/broker/neb/acknowledgement.hh"
+#  include "com/centreon/broker/neb/acknowledgement_removed.hh"
 #  include "com/centreon/broker/neb/custom_variable.hh"
 #  include "com/centreon/broker/neb/custom_variable_status.hh"
+#  include "com/centreon/broker/neb/downtime.hh"
+#  include "com/centreon/broker/neb/downtime_removed.hh"
 #  include "com/centreon/broker/neb/event_handler.hh"
 #  include "com/centreon/broker/neb/flapping_status.hh"
 #  include "com/centreon/broker/neb/host.hh"

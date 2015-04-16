@@ -19,9 +19,9 @@
 
 #include "com/centreon/broker/bam/service_book.hh"
 #include "com/centreon/broker/bam/service_listener.hh"
+#include "com/centreon/broker/neb/acknowledgement.hh"
+#include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/service_status.hh"
-#include "com/centreon/broker/notification/acknowledgement.hh"
-#include "com/centreon/broker/notification/downtime.hh"
 
 using namespace com::centreon::broker::bam;
 
@@ -124,7 +124,7 @@ void service_book::update(
  *  @param[out] visitor  Object that will receive events.
  */
 void service_book::update(
-                     misc::shared_ptr<notification::acknowledgement> const& ack,
+                     misc::shared_ptr<neb::acknowledgement> const& ack,
                      io::stream* visitor) {
   std::pair<multimap::iterator, multimap::iterator>
     range(_book.equal_range(std::make_pair(
@@ -145,7 +145,7 @@ void service_book::update(
  *  @param[out] visitor  Object that will receive events.
  */
 void service_book::update(
-                     misc::shared_ptr<notification::downtime> const& dt,
+                     misc::shared_ptr<neb::downtime> const& dt,
                      io::stream* visitor) {
   std::pair<multimap::iterator, multimap::iterator>
     range(_book.equal_range(std::make_pair(

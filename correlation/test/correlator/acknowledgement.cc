@@ -25,8 +25,8 @@
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/correlation/stream.hh"
 #include "com/centreon/broker/correlation/node.hh"
+#include "com/centreon/broker/neb/acknowledgement.hh"
 #include "com/centreon/broker/neb/service_status.hh"
-#include "com/centreon/broker/notification/acknowledgement.hh"
 #include "test/correlator/common.hh"
 
 using namespace com::centreon::broker;
@@ -78,8 +78,8 @@ int main() {
       c.write(ss);
     }
     { // #2
-      misc::shared_ptr<notification::acknowledgement>
-        ack(new notification::acknowledgement);
+      misc::shared_ptr<neb::acknowledgement>
+        ack(new neb::acknowledgement);
       ack->host_id = 42;
       ack->instance_id = 1;
       ack->service_id = 24;
@@ -98,8 +98,8 @@ int main() {
       c.write(ss);
     }
     { // #4
-      misc::shared_ptr<notification::acknowledgement>
-        ack(new notification::acknowledgement);
+      misc::shared_ptr<neb::acknowledgement>
+        ack(new neb::acknowledgement);
       ack->host_id = 42;
       ack->instance_id = 1;
       ack->service_id = 24;
@@ -128,8 +128,8 @@ int main() {
       c.write(ss);
     }
     { // #7
-      misc::shared_ptr<notification::acknowledgement>
-        ack(new notification::acknowledgement);
+      misc::shared_ptr<neb::acknowledgement>
+        ack(new neb::acknowledgement);
       ack->host_id = 42;
       ack->instance_id = 1;
       ack->service_id = 24;

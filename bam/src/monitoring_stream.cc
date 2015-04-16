@@ -38,11 +38,11 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/neb/acknowledgement.hh"
+#include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_status.hh"
-#include "com/centreon/broker/notification/acknowledgement.hh"
-#include "com/centreon/broker/notification/downtime.hh"
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/bam/event_cache_visitor.hh"
@@ -201,9 +201,9 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
       _applier.book_service().update(ss, &ev_cache);
       ev_cache.commit_to(pblshr);
     }
-    else if (data->type() == notification::acknowledgement::static_type()) {
-      misc::shared_ptr<notification::acknowledgement>
-	ack(data.staticCast<notification::acknowledgement>());
+    else if (data->type() == neb::acknowledgement::static_type()) {
+      misc::shared_ptr<neb::acknowledgement>
+	ack(data.staticCast<neb::acknowledgement>());
       logging::debug(logging::low)
 	<< "BAM: processing acknowledgement (host "
 	<< ack->host_id << ", service " << ack->service_id << ")";
@@ -212,9 +212,9 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
       _applier.book_service().update(ack, &ev_cache);
       ev_cache.commit_to(pblshr);
     }
-    else if (data->type() == notification::downtime::static_type()) {
-      misc::shared_ptr<notification::downtime>
-	dt(data.staticCast<notification::downtime>());
+    else if (data->type() == neb::downtime::static_type()) {
+      misc::shared_ptr<neb::downtime>
+	dt(data.staticCast<neb::downtime>());
       logging::debug(logging::low)
 	<< "BAM: processing downtime (host " << dt->host_id
 	<< ", service " << dt->service_id << ")";

@@ -81,7 +81,7 @@ namespace        bam {
     void         set_name(std::string const& name);
     void         visit(io::stream* visitor);
     void         service_update(
-                   misc::shared_ptr<notification::downtime> const& dt,
+                   misc::shared_ptr<neb::downtime> const& dt,
                    io::stream* visitor);
 
   private:

@@ -17,12 +17,11 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/notification/internal.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/notification/acknowledgement_removed.hh"
+#include "com/centreon/broker/neb/acknowledgement_removed.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::neb;
 
 /**************************************
 *                                     *
@@ -80,15 +79,6 @@ acknowledgement_removed& acknowledgement_removed::operator=(acknowledgement_remo
  */
 unsigned int acknowledgement_removed::type() const {
   return (acknowledgement_removed::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-unsigned int acknowledgement_removed::static_type() {
-  return (io::events::data_type<io::events::notification, notification::de_acknowledgement_removed>::value);
 }
 
 /**************************************

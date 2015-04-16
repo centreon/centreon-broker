@@ -61,10 +61,10 @@ namespace        bam {
                    misc::shared_ptr<neb::service_status> const& status,
                    io::stream* visitor = NULL);
     void         service_update(
-                   misc::shared_ptr<notification::acknowledgement> const& ack,
+                   misc::shared_ptr<neb::acknowledgement> const& ack,
                    io::stream* visitor = NULL);
     void         service_update(
-                   misc::shared_ptr<notification::downtime> const& dt,
+                   misc::shared_ptr<neb::downtime> const& dt,
                    io::stream* visitor = NULL);
     void         set_acknowledged(bool acknowledged);
     void         set_downtimed(bool downtimed);

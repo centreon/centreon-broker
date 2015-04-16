@@ -17,12 +17,11 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/notification/internal.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/notification/downtime_removed.hh"
+#include "com/centreon/broker/neb/downtime_removed.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::neb;
 
 /**************************************
 *                                     *
@@ -37,9 +36,9 @@ using namespace com::centreon::broker::notification;
  *  default value (0, NULL or equivalent).
  */
 downtime_removed::downtime_removed()
-  : host_id(0),
-    service_id(0),
-    downtime_id(0) {}
+  : downtime_id(0),
+    host_id(0),
+    service_id(0) {}
 
 /**
  *  @brief acknowledgement copy constructor.
@@ -81,15 +80,6 @@ downtime_removed& downtime_removed::operator=(downtime_removed const& other) {
  */
 unsigned int downtime_removed::type() const {
   return (downtime_removed::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-unsigned int downtime_removed::static_type() {
-  return (io::events::data_type<io::events::notification, notification::de_downtime_removed>::value);
 }
 
 /**************************************

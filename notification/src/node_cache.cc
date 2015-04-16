@@ -26,11 +26,11 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/notification/acknowledgement_removed.hh"
-#include "com/centreon/broker/notification/downtime_removed.hh"
-#include "com/centreon/broker/notification/node_cache.hh"
-#include "com/centreon/broker/neb/internal.hh"
+#include "com/centreon/broker/neb/acknowledgement_removed.hh"
 #include "com/centreon/broker/neb/custom_variable.hh"
+#include "com/centreon/broker/neb/downtime_removed.hh"
+#include "com/centreon/broker/neb/internal.hh"
+#include "com/centreon/broker/notification/node_cache.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/misc/string.hh"
 
@@ -245,9 +245,9 @@ unsigned int node_cache::write_downtime_or_ack(
   if (d.isNull())
     return (1);
 
-  if (d->type() == notification::downtime::static_type()) {
-    notification::downtime const&
-      down = d.ref_as<notification::downtime const>();
+  if (d->type() == neb::downtime::static_type()) {
+    neb::downtime const&
+      down = d.ref_as<neb::downtime const>();
     _downtimes[down.internal_id] = down;
     _downtime_id_by_nodes.insert(
       objects::node_id(down.host_id, down.service_id),
@@ -255,8 +255,8 @@ unsigned int node_cache::write_downtime_or_ack(
     if (_actual_downtime_id <= down.internal_id)
       _actual_downtime_id = down.internal_id + 1;
   }
-  else if (d->type() == notification::acknowledgement::static_type()) {
-    notification::acknowledgement const& ack = d.ref_as<notification::acknowledgement const>();
+  else if (d->type() == neb::acknowledgement::static_type()) {
+    neb::acknowledgement const& ack = d.ref_as<neb::acknowledgement const>();
     _acknowledgements[objects::node_id(ack.host_id, ack.service_id)]
       = ack;
   }
@@ -545,19 +545,19 @@ void node_cache::_prepare_serialization() {
        it != end;
        ++it)
     it->serialize(_serialized_data);
-  for (QHash<objects::node_id, notification::acknowledgement>::const_iterator
+  for (QHash<objects::node_id, neb::acknowledgement>::const_iterator
          it = _acknowledgements.begin(),
          end = _acknowledgements.end();
        it != end;
        ++it)
     _serialized_data.push_back(
-      misc::make_shared(new notification::acknowledgement(*it)));
-  for (QHash<unsigned int, notification::downtime>::const_iterator
+      misc::make_shared(new neb::acknowledgement(*it)));
+  for (QHash<unsigned int, neb::downtime>::const_iterator
          it = _downtimes.begin(),
          end = _downtimes.end();
        it != end;
        ++it)
-    _serialized_data.push_back(misc::make_shared(new notification::downtime(*it)));
+    _serialized_data.push_back(misc::make_shared(new neb::downtime(*it)));
 }
 
 /**
@@ -611,8 +611,8 @@ misc::shared_ptr<io::data> node_cache::_parse_ack(
            << "couldn't parse the arguments for the acknowledgement");
 
   objects::node_id id = get_node_by_names(host_name, service_description);
-  misc::shared_ptr<notification::acknowledgement>
-    ack(new notification::acknowledgement);
+  misc::shared_ptr<neb::acknowledgement>
+    ack(new neb::acknowledgement);
   ack->acknowledgement_type = is_host;
   ack->comment = QString::fromStdString(comment);
   ack->author = QString::fromStdString(author);
@@ -661,7 +661,7 @@ misc::shared_ptr<io::data> node_cache::_parse_remove_ack(
   objects::node_id id = get_node_by_names(host_name, service_description);
 
   // Find the ack.
-  QHash<objects::node_id, notification::acknowledgement>::iterator
+  QHash<objects::node_id, neb::acknowledgement>::iterator
     found(_acknowledgements.find(id));
   if (found == _acknowledgements.end())
     throw (exceptions::msg()
@@ -672,7 +672,7 @@ misc::shared_ptr<io::data> node_cache::_parse_remove_ack(
   _acknowledgements.erase(found);
 
   // Send an ack removed event.
-  misc::shared_ptr<acknowledgement_removed> a(new acknowledgement_removed);
+  misc::shared_ptr<neb::acknowledgement_removed> a(new neb::acknowledgement_removed);
   a->host_id = id.get_host_id();
   a->service_id = id.get_service_id();
   return (a);
@@ -738,8 +738,8 @@ misc::shared_ptr<io::data>
 
   objects::node_id id = get_node_by_names(host_name, service_description);
 
-  misc::shared_ptr<notification::downtime>
-    d(new notification::downtime);
+  misc::shared_ptr<neb::downtime>
+    d(new neb::downtime);
   d->author = QString::fromStdString(author);
   d->comment = QString::fromStdString(comment);
   d->start_time = start_time;
@@ -777,7 +777,7 @@ misc::shared_ptr<io::data> node_cache::_parse_remove_downtime(
     throw (exceptions::msg() << "error while parsing remove downtime arguments");
 
   // Find the downtime.
-  QHash<unsigned int, notification::downtime>::iterator
+  QHash<unsigned int, neb::downtime>::iterator
     found(_downtimes.find(downtime_id));
   if (found == _downtimes.end())
     throw (exceptions::msg()
@@ -801,7 +801,7 @@ misc::shared_ptr<io::data> node_cache::_parse_remove_downtime(
 
 
   // Send a downtime removed event.
-  misc::shared_ptr<downtime_removed> d(new downtime_removed);
+  misc::shared_ptr<neb::downtime_removed> d(new neb::downtime_removed);
   d->host_id = found->host_id;
   d->service_id = found->service_id;
   d->downtime_id = downtime_id;

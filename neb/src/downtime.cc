@@ -18,11 +18,10 @@
 */
 
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/notification/downtime.hh"
-#include "com/centreon/broker/notification/internal.hh"
+#include "com/centreon/broker/neb/downtime.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::neb;
 
 /**************************************
 *                                     *
