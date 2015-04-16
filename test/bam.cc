@@ -102,7 +102,7 @@ static bool double_equals(double d1, double d2) {
 }
 
 /**
- *  Check content of the mod_bam table.
+ *  Check content of the cfg_bam table.
  */
 static void check_bas(
               QSqlDatabase& db,
@@ -112,7 +112,7 @@ static void check_bas(
   ++iteration;
   QString query(
             "SELECT ba_id, current_level, downtime, acknowledged"
-            "  FROM mod_bam"
+            "  FROM cfg_bam"
             "  ORDER BY ba_id");
   QSqlQuery q(db);
   if (!q.exec(query))
@@ -140,7 +140,7 @@ static void check_bas(
 }
 
 /**
- *  Check content of the mod_bam_kpi table.
+ *  Check content of the cfg_bam_kpi table.
  */
 static void check_kpis(
               QSqlDatabase& db,
@@ -151,7 +151,7 @@ static void check_kpis(
   QString query(
             "SELECT kpi_id, state_type, current_status, last_level,"
             "       downtime, acknowledged"
-            "  FROM mod_bam_kpi"
+            "  FROM cfg_bam_kpi"
             "  ORDER BY kpi_id");
   QSqlQuery q(db);
   if (!q.exec(query))
@@ -539,7 +539,7 @@ int main() {
     {
       {
         QString query(
-                  "INSERT INTO mod_bam (ba_id, name, level_w, level_c,"
+                  "INSERT INTO cfg_bam (ba_id, name, level_w, level_c,"
                   "            activate, id_reporting_period)"
                   "  VALUES (1, 'BA1', 90, 80, '1', 1),"
                   "         (2, 'BA2', 80, 70, '1', 1),"
@@ -558,7 +558,7 @@ int main() {
       }
       // {
       //   QString query(
-      //             "INSERT INTO mod_bam_ba_tp_rel (ba_id, timeperiod_id,"
+      //             "INSERT INTO cfg_bam_ba_tp_rel (ba_id, timeperiod_id,"
       //             "            is_default)"
       //             "  VALUES (1, 1, 1),"
       //             "         (2, 1, 1),"
@@ -617,7 +617,7 @@ int main() {
     // Create boolean expressions.
     {
       QString query(
-                "INSERT INTO mod_bam_boolean (boolean_id, name,"
+                "INSERT INTO cfg_bam_boolean (boolean_id, name,"
                 "            expression, bool_state, activate)"
                 "  VALUES (1, 'BoolExp1', '{1 1} {is} {OK}', 0, 1),"
                 "         (2, 'BoolExp2', '{1 2} {not} {CRITICAL} {OR} {1 3} {not} {OK}', 1, 1),"
@@ -632,7 +632,7 @@ int main() {
     // Create KPIs.
     {
       QString query(
-                "INSERT INTO mod_bam_kpi (kpi_id, kpi_type, host_id,"
+                "INSERT INTO cfg_bam_kpi (kpi_id, kpi_type, host_id,"
                 "            service_id, id_indicator_ba, id_ba,"
                 "            meta_id, boolean_id, config_type,"
                 "            drop_warning, drop_warning_impact_id,"

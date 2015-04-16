@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NOTIFICATION_ACKNOWLEDGEMENT_HH
-#  define CCB_NOTIFICATION_ACKNOWLEDGEMENT_HH
+#ifndef CCB_NEB_ACKNOWLEDGEMENT_HH
+#  define CCB_NEB_ACKNOWLEDGEMENT_HH
 
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
@@ -26,62 +26,61 @@
 #  include "com/centreon/broker/io/events.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/internal.hh"
+#  include "com/centreon/broker/neb/internal.hh"
 #  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace            notification {
+namespace               neb {
   /**
-   *  @class acknowledgement acknowledgement.hh "com/centreon/broker/notification/acknowledgement.hh"
+   *  @class acknowledgement acknowledgement.hh "com/centreon/broker/neb/acknowledgement.hh"
    *  @brief Represents an acknowledgement inside Nagios.
    *
-   *  When some service or host is critical, Nagios will emit
+   *  When some service or host is critical, Centreon Engine will emit
    *  notifications according to its configuration. To stop the
    *  notification process, a user can acknowledge the problem.
    */
-  class              acknowledgement : public io::data {
+  class                 acknowledgement : public io::data {
   public:
-                     acknowledgement();
-                     acknowledgement(acknowledgement const& other);
-                     ~acknowledgement();
-    acknowledgement& operator=(acknowledgement const& other);
-    unsigned int     type() const;
+                        acknowledgement();
+                        acknowledgement(acknowledgement const& other);
+                        ~acknowledgement();
+    acknowledgement&    operator=(acknowledgement const& other);
+    unsigned int        type() const;
 
     /**
      *  Get the type of this event.
      *
      *  @return  The event type.
      */
-    static unsigned int
-                     static_type() {
+    static unsigned int static_type() {
       return (io::events::data_type<
-                            io::events::notification,
-                            notification::de_acknowledgement>::value);
+                            io::events::neb,
+                            neb::de_acknowledgement>::value);
     }
 
-    short            acknowledgement_type;
-    QString          author;
-    QString          comment;
-    timestamp        deletion_time;
-    timestamp        entry_time;
-    unsigned int     host_id;
-    bool             is_sticky;
-    bool             notify_contacts;
-    bool             persistent_comment;
-    unsigned int     service_id;
-    short            state;
+    short               acknowledgement_type;
+    QString             author;
+    QString             comment;
+    timestamp           deletion_time;
+    timestamp           entry_time;
+    unsigned int        host_id;
+    bool                is_sticky;
+    bool                notify_contacts;
+    bool                persistent_comment;
+    unsigned int        service_id;
+    short               state;
 
     static mapping::entry const
-                     entries[];
+                        entries[];
     static io::event_info::event_operations const
-                     operations;
+                        operations;
 
   private:
-    void             _internal_copy(acknowledgement const& other);
+    void                _internal_copy(acknowledgement const& other);
   };
 }
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_ACKNOWLEDGEMENT_HH
+#endif // !CCB_NEB_ACKNOWLEDGEMENT_HH

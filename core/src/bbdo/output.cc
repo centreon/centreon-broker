@@ -18,6 +18,8 @@
 */
 
 #include <arpa/inet.h>
+#include <cstdio>
+#include <memory>
 #include <stdint.h>
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/output.hh"
@@ -39,70 +41,207 @@ using namespace com::centreon::broker::bbdo;
 **************************************/
 
 /**
+ *  Get a boolean from an object.
+ */
+static void get_boolean(
+              io::data const& t,
+              mapping::entry const& member,
+              QByteArray& buffer) {
+  char c(member.get_bool(t) ? 1 : 0);
+  buffer.append(&c, 1);
+  return ;
+}
+
+/**
+ *  Get a double from an object.
+ */
+static void get_double(
+              io::data const& t,
+              mapping::entry const& member,
+              QByteArray& buffer) {
+  char str[32];
+  size_t strsz(snprintf(str, sizeof(str), "%f", member.get_double(t)) + 1);
+  if (strsz > sizeof(str))
+    strsz = sizeof(str);
+  buffer.append(str, strsz);
+  return ;
+}
+
+/**
+ *  Get an integer from an object.
+ */
+static void get_integer(
+              io::data const& t,
+              mapping::entry const& member,
+              QByteArray& buffer) {
+  uint32_t value(htonl(member.get_int(t)));
+  buffer.append(
+           static_cast<char*>(static_cast<void*>(&value)),
+           sizeof(value));
+  return ;
+}
+
+/**
+ *  Get a short from an object.
+ */
+static void get_short(
+              io::data const& t,
+              mapping::entry const& member,
+              QByteArray& buffer) {
+  uint16_t value(htons(member.get_short(t)));
+  buffer.append(
+           static_cast<char*>(static_cast<void*>(&value)),
+           sizeof(value));
+  return ;
+}
+
+/**
+ *  Get a string from an object.
+ */
+static void get_string(
+              io::data const& t,
+              mapping::entry const& member,
+              QByteArray& buffer) {
+  QByteArray tmp(member.get_string(t).toUtf8());
+  buffer.append(tmp.constData(), tmp.size() + 1);
+  return ;
+}
+
+/**
+ *  Get a timestamp from an object.
+ */
+static void get_timestamp(
+              io::data const& t,
+              mapping::entry const& member,
+              QByteArray& buffer) {
+  uint64_t ts(member.get_time(t).get_time_t());
+  uint32_t high(htonl(ts / (1ll << 32)));
+  uint32_t low(htonl(ts % (1ll << 32)));
+  buffer.append(
+           static_cast<char*>(static_cast<void*>(&high)),
+           sizeof(high));
+  buffer.append(
+           static_cast<char*>(static_cast<void*>(&low)),
+           sizeof(low));
+  return ;
+}
+
+/**
+ *  Get an unsigned integer from an object.
+ */
+static void get_uint(
+              io::data const& t,
+              mapping::entry const& member,
+              QByteArray& buffer) {
+  uint32_t value(htonl(member.get_uint(t)));
+  buffer.append(
+           static_cast<char*>(static_cast<void*>(&value)),
+           sizeof(value));
+  return ;
+}
+
+/**
  *  Serialize an event in the BBDO protocol.
  *
- *  @param[out] data  Serialized event.
- *  @param[in]  e     Event to serialize.
- *  @param[in]  info  Event information.
+ *  @param[in] e  Event to serialize.
+ *
+ *  @return Serialized event.
  */
-static void serialize(
-              QByteArray& data,
-              io::data const& e,
-              bbdo_mapped_type const& mapping_info) {
-  unsigned int beginning(data.size());
-  data.resize(data.size() + BBDO_HEADER_SIZE);
-  *(static_cast<uint32_t*>(static_cast<void*>(data.data() + data.size())) - 1)
-    = htonl(e.type());
-  mapping::entry const*
-    current_entry(mapping_info.mapped_type->get_mapping());
-  for (std::vector<getter_setter>::const_iterator
-         it(mapping_info.bbdo_entries.begin()),
-         end(mapping_info.bbdo_entries.end());
-       it != end;
-       ++it, ++current_entry) {
-    // Skip 0 numbered entries.
-    for (;!current_entry->is_null() && current_entry->get_number() == 0;
-         ++current_entry);
+static io::raw* serialize(io::data const& e) {
+  // Get event info (mapping).
+  io::event_info const*
+    info(io::events::instance().get_event_info(e.type()));
+  if (info) {
+    // Serialization buffer.
+    std::auto_ptr<io::raw> buffer(new io::raw);
+    QByteArray& data(*buffer);
 
-    // Serialization itself.
-    (*it->getter)(e, *current_entry, data);
+    // Reserve space for the BBDO header.
+    unsigned int beginning(data.size());
+    data.resize(data.size() + BBDO_HEADER_SIZE);
+    *(static_cast<uint32_t*>(static_cast<void*>(
+                               data.data() + data.size())) - 1)
+      = htonl(e.type());
+    for (mapping::entry const* current_entry(info->get_mapping());
+         current_entry->get_type() != mapping::source::UNKNOWN;
+         ++current_entry) {
+      // Skip 0 numbered entries.
+      if (current_entry->get_number())
+        switch (current_entry->get_type()) {
+        case mapping::source::BOOL:
+          get_boolean(e, *current_entry, *buffer);
+          break ;
+        case mapping::source::DOUBLE:
+          get_double(e, *current_entry, *buffer);
+          break ;
+        case mapping::source::INT:
+          get_integer(e, *current_entry, *buffer);
+          break ;
+        case mapping::source::SHORT:
+          get_short(e, *current_entry, *buffer);
+          break ;
+        case mapping::source::STRING:
+          get_string(e, *current_entry, *buffer);
+          break ;
+        case mapping::source::TIME:
+          get_timestamp(e, *current_entry, *buffer);
+          break ;
+        case mapping::source::UINT:
+          get_uint(e, *current_entry, *buffer);
+          break ;
+        default:
+          throw (exceptions::msg() << "BBDO: invalid mapping for object"
+                 << " of type '" << info->get_name() << "': "
+                 << current_entry->get_type()
+                 << " is not a known type ID");
+        }
 
-    // Packet splitting.
-    if (static_cast<unsigned int>(data.size())
-        >= (beginning + BBDO_HEADER_SIZE + 0xFFFF)) {
-      // Set size.
-      *(static_cast<uint16_t*>(static_cast<void*>(data.data() + beginning)) + 1)
-        = 0xFFFF;
+      // Packet splitting.
+      if (static_cast<unsigned int>(data.size())
+          >= (beginning + BBDO_HEADER_SIZE + 0xFFFF)) {
+        // Set size.
+        *(static_cast<uint16_t*>(static_cast<void*>(
+                                   data.data() + beginning)) + 1)
+          = 0xFFFF;
 
-      // Set checksum.
-      uint16_t chksum(qChecksum(
-                        data.data() + beginning + 2,
-                        BBDO_HEADER_SIZE - 2));
-      *static_cast<uint16_t*>(static_cast<void*>(data.data() + beginning))
-        = htons(chksum);
+        // Set checksum.
+        uint16_t chksum(qChecksum(
+                          data.data() + beginning + 2,
+                          BBDO_HEADER_SIZE - 2));
+        *static_cast<uint16_t*>(static_cast<void*>(
+                                  data.data() + beginning))
+          = htons(chksum);
 
-      // Create new header.
-      beginning += BBDO_HEADER_SIZE + 0xFFFF;
-      char header[BBDO_HEADER_SIZE];
-      memset(header, 0, sizeof(header));
-      *static_cast<uint32_t*>(static_cast<void*>(header + 4))
-        = htonl(e.type());
-      data.insert(beginning, header, sizeof(header));
+        // Create new header.
+        beginning += BBDO_HEADER_SIZE + 0xFFFF;
+        char header[BBDO_HEADER_SIZE];
+        memset(header, 0, sizeof(header));
+        *static_cast<uint32_t*>(static_cast<void*>(header + 4))
+          = htonl(e.type());
+        data.insert(beginning, header, sizeof(header));
+      }
     }
+
+    // Set (last) packet size.
+    *(static_cast<uint16_t*>(static_cast<void*>(
+                               data.data() + beginning)) + 1)
+      = htons(data.size() - beginning - BBDO_HEADER_SIZE);
+
+    // Checksum.
+    uint16_t chksum(qChecksum(
+                      data.data() + beginning + 2,
+                      BBDO_HEADER_SIZE - 2));
+    *static_cast<uint16_t*>(static_cast<void*>(data.data() + beginning))
+      = htons(chksum);
+
+    return (buffer.release());
   }
+  else
+    logging::info(logging::high)
+      << "BBDO: cannot serialize event of ID " << e.type()
+      << ": event was not registered and will therefore be ignored";
 
-  // Set (last) packet size.
-  *(static_cast<uint16_t*>(static_cast<void*>(data.data() + beginning)) + 1)
-    = htons(data.size() - beginning - BBDO_HEADER_SIZE);
-
-  // Checksum.
-  uint16_t chksum(qChecksum(
-                    data.data() + beginning + 2,
-                    BBDO_HEADER_SIZE - 2));
-  *static_cast<uint16_t*>(static_cast<void*>(data.data() + beginning))
-    = htons(chksum);
-
-  return ;
+  return (NULL);
 }
 
 /**************************************
@@ -194,52 +333,12 @@ unsigned int output::write(misc::shared_ptr<io::data> const& e) {
 
   // Check if data exists.
   if (!e.isNull()) {
-    if (_write_event(e) == false) {
-      unsigned int event_type(e->type());
-      // BBDO doesn't know this event.
-      // Reload all the event mappings and try again.
-      logging::debug(logging::medium)
-        << "BBDO: unknown event type " << event_type
-        << ": reloading mappings and retrying";
-      create_mappings();
-
-      if (_write_event(e) == false)
-        logging::debug(logging::medium)
-          << "BBDO: could not serialize event of type " << event_type
-          << " (category = " << io::events::category_of_type(event_type)
-          << ", element = " << io::events::element_of_type(event_type) << ")"
-          << ": event mapping was not found";
-    }
+    misc::shared_ptr<io::raw> serialized(serialize(*e));
+    if (serialized.data())
+      _to->write(serialized);
   }
   else
     _to->write(e);
 
   return (1);
-}
-
-/**
- *  Attempt to write an event.
- *
- *  @param[in] e  The event.
- *
- *  @return       True if the event is known.
- */
-bool output::_write_event(misc::shared_ptr<io::data> const& e) {
-  unsigned int event_type(e->type());
-  // Find routine.
-  umap<unsigned int, bbdo_mapped_type>::const_iterator
-    mapped_type(bbdo_mapping.find(event_type));
-  if (mapped_type != bbdo_mapping.end()) {
-    logging::debug(logging::medium)
-      << "BBDO: serializing event of type " << event_type;
-    misc::shared_ptr<io::raw> data(new io::raw);
-    serialize(*data, *e, mapped_type->second);
-    logging::debug(logging::medium) << "BBDO: event of type "
-      << event_type << " successfully serialized in "
-      << data->size() << " bytes";
-    _to->write(data);
-    return (true);
-  }
-  else
-    return (false);
 }

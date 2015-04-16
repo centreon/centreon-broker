@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -36,8 +36,12 @@ using namespace com::centreon::broker::command_file;
  *  Default constructor.
  */
 stream::stream(std::string const& filename)
-  try : _filename(filename),
-        _fifo(filename.c_str()) {
+  try :  _process_in(true),
+         _process_out(true),
+         _filename(filename),
+         _fifo(filename.c_str()) {
+  logging::debug(logging::medium)
+    << "command_file: command file '" << filename << "' initialized";
 }
 catch (std::exception const& e) {
   throw (exceptions::msg()
@@ -82,6 +86,9 @@ void stream::read(misc::shared_ptr<io::data>& d) {
     misc::shared_ptr<external_command> exc(new external_command);
     exc->command = QString::fromStdString(line);
     d = exc;
+
+    logging::info(logging::high)
+      << "command_file: received external command: '" << exc->command << "'";
   }
 }
 
@@ -103,117 +110,8 @@ void stream::statistics(io::properties& tree) const {
  *  @return Number of events acknowledged.
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
+  (void)d;
   throw (exceptions::msg()
          << "command_file: attempt to write to a command file");
   return (1);
 }
-
-/**
- *  Parse a command line and generate an event.
- *
- *  @param[in] line  The line to be parsed.
- *
- *  @return          The event.
- */
-/*misc::shared_ptr<io::data>
-  stream::_parse_command_line(std::string const& line) {
-
-  std::string command;
-  std::string args;
-  command.resize(line.size());
-  args.resize(line.size());
-
-  // Parse timestamp.
-  unsigned long timestamp;
-  if (::sscanf(
-        line.c_str(),
-        "[%lu] %[^ ;];%s",
-        &timestamp,
-        &command[0],
-        &args[0]) != 3)
-    throw (exceptions::msg()
-           << "couldn't parse the line");
-
-  if (command == "ACKNOWLEDGE_HOST_PROBLEM")
-    return (_parse_ack(ack_host, timestamp, args));
-  else if (command == "ACKNOWLEDGE_SERVICE_PROBLEM")
-    return (_parse_ack(ack_service, timestamp, args));
-
-  return (misc::shared_ptr<io::data>());
-}
-
-/**
- *  Parse an acknowledgment.
- *
- *  @param[in] is_host  Is this an host acknowledgement.
- *  @param[in] t        The timestamp.
- *  @param[in] args     The args to parse.
- *
- *  @return             An acknowledgement event.
- */
-/*misc::shared_ptr<io::data> stream::_parse_ack(
-                             ack_type is_host,
-                             timestamp t,
-                             std::string const& args) {
-  unsigned int host_id = 0;
-  unsigned int service_id = 0;
-  int sticky = 0;
-  int notify = 0;
-  int persistent_comment = 0;
-  std::string author;
-  std::string comment;
-  author.resize(args.size());
-  comment.resize(args.size());
-  bool ret = false;
-  if (is_host == ack_host)
-    ret = (::sscanf(
-             args.c_str(),
-             "%u;%i;%i;%i;%[^;];%[^;]",
-             &host_id,
-             &sticky,
-             &notify,
-             &persistent_comment,
-             &author[0],
-             &comment[0]) == 6);
-  else
-    ret = (::sscanf(
-             args.c_str(),
-             "%u;%u;%i;%i",
-             &host_id,
-             &service_id,
-             &sticky,
-             &notify,
-             &persistent_comment,
-             &author[0],
-             &comment[0]) == 7);
-  if (!ret)
-    throw (exceptions::msg()
-           << "couldn't parse the arguments for the acknowledgement");
-
-  misc::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement);
-  ack->acknowledgement_type = is_host;
-  ack->comment = comment;
-  ack->author = author;
-  ack->entry_time = t;
-  ack->host_id = host_id;
-  ack->service_id = service_id;
-  ack->is_sticky = (sticky == 2);
-  ack->persistent_comment = (persistent_comment == 1);
-  ack->notify_contacts = (notify == 1);
-
-  return (ack);
-}
-
-/**
- *  Parse a downtime.
- *
- *  @param[in] args     The args to parse.
- *  @param[in] t        The timestamp.
- *
- *  @return             A downtime event.
- */
-/*misc::shared_ptr<io::data> stream::_parse_downtime(
-                             timestamp t,
-                             std::string const& args) {
-
-}*/

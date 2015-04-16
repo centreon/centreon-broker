@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -120,8 +120,8 @@ void fifo_dumper::read(misc::shared_ptr<io::data>& d) {
  *  @return Always return 1, or throw exceptions.
  */
 unsigned int fifo_dumper::write(misc::shared_ptr<io::data> const& d) {
+  (void)d;
   throw (exceptions::msg()
          << "dumper: attempt to write from a fifo dumper stream");
-
   return (1);
 }

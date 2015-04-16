@@ -24,14 +24,13 @@ set(TEST_DIR "${PROJECT_SOURCE_DIR}/correlation/test")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
-include_directories("${PROJECT_SOURCE_DIR}/notification/inc")
 set(INC_DIR "${INC_DIR}/com/centreon/broker/correlation")
 
 # Some files must be processed by Qt's moc.
 unset(QT_WRAPPED_SOURCES)
 
 # Correlation module.
-set(CORRELATION "40-correlation")
+set(CORRELATION "30-correlation")
 set(CORRELATION "${CORRELATION}" PARENT_SCOPE)
 add_library("${CORRELATION}" SHARED
   # Sources.

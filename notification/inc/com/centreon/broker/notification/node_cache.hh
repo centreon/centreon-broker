@@ -32,6 +32,8 @@
 #  include "com/centreon/broker/file/stream.hh"
 #  include "com/centreon/broker/notification/object_cache.hh"
 #  include "com/centreon/broker/notification/objects/node.hh"
+#  include "com/centreon/broker/neb/acknowledgement.hh"
+#  include "com/centreon/broker/neb/downtime.hh"
 #  include "com/centreon/broker/neb/service.hh"
 #  include "com/centreon/broker/neb/service_status.hh"
 #  include "com/centreon/broker/neb/host.hh"
@@ -39,8 +41,6 @@
 #  include "com/centreon/broker/neb/host_group_member.hh"
 #  include "com/centreon/broker/neb/service_group_member.hh"
 #  include "com/centreon/broker/neb/custom_variable_status.hh"
-#  include "com/centreon/broker/notification/acknowledgement.hh"
-#  include "com/centreon/broker/notification/downtime.hh"
 #  include "com/centreon/broker/multiplexing/hooker.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
 
@@ -101,25 +101,6 @@ namespace         notification {
     bool          node_acknowledged(objects::node_id node) const;
 
   private:
-    QHash<objects::node_id, host_node_state>
-                  _host_node_states;
-    QHash<objects::node_id, service_node_state>
-                  _service_node_states;
-    QHash<objects::node_id, notification::acknowledgement>
-                  _acknowledgements;
-    QHash<unsigned int, notification::downtime>
-                  _downtimes;
-    QMultiHash<objects::node_id, unsigned int>
-                  _downtime_id_by_nodes;
-    unsigned int  _actual_downtime_id;
-    QMutex        _mutex;
-
-    misc::shared_ptr<persistent_cache>
-                  _cache;
-
-    std::deque<misc::shared_ptr<io::data> >
-                  _serialized_data;
-
     enum          ack_type {
                   ack_host = 0,
                   ack_service
@@ -132,25 +113,47 @@ namespace         notification {
     };
 
     void          _prepare_serialization();
-
     misc::shared_ptr<io::data>
                   _parse_ack(
                     ack_type type,
                     timestamp t,
-                    std::string const& args);
+                    const char* args,
+                    size_t arg_size);
     misc::shared_ptr<io::data>
                   _parse_remove_ack(
                     ack_type type,
-                    std::string const& args);
+                    const char* args,
+                    size_t arg_size);
     misc::shared_ptr<io::data>
                   _parse_downtime(
                     down_type type,
                     timestamp t,
-                    std::string const& args);
+                    const char* args,
+                    size_t arg_size);
     misc::shared_ptr<io::data>
                   _parse_remove_downtime(
                     down_type type,
-                    std::string const& args);
+                    const char* args,
+                    size_t arg_size);
+
+    QHash<objects::node_id, host_node_state>
+                  _host_node_states;
+    QHash<objects::node_id, service_node_state>
+                  _service_node_states;
+    QHash<objects::node_id, neb::acknowledgement>
+                  _acknowledgements;
+    QHash<unsigned int, neb::downtime>
+                  _downtimes;
+    QMultiHash<objects::node_id, unsigned int>
+                  _downtime_id_by_nodes;
+    unsigned int  _actual_downtime_id;
+    QMutex        _mutex;
+
+    misc::shared_ptr<persistent_cache>
+                  _cache;
+
+    std::deque<misc::shared_ptr<io::data> >
+                  _serialized_data;
   };
 }
 

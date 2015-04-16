@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -30,8 +30,8 @@
 #  include "com/centreon/broker/neb/instance.hh"
 #  include "com/centreon/broker/neb/host.hh"
 #  include "com/centreon/broker/neb/service.hh"
+#  include "com/centreon/broker/storage/index_mapping.hh"
 #  include "com/centreon/broker/storage/metric_mapping.hh"
-#  include "com/centreon/broker/storage/status_mapping.hh"
 
 CCB_BEGIN()
 
@@ -47,10 +47,10 @@ namespace         graphite {
 
     void           write(misc::shared_ptr<io::data> const& data);
 
+    storage::index_mapping const&
+                   get_index_mapping(unsigned int index_id) const;
     storage::metric_mapping const&
                    get_metric_mapping(unsigned int metric_id) const;
-    storage::status_mapping const&
-                   get_status_mapping(unsigned int status_id) const;
     QString const& get_host_name(unsigned int host_id) const;
     QString const& get_service_description(
                      unsigned int host_id,
@@ -58,29 +58,28 @@ namespace         graphite {
     QString const& get_instance(unsigned int instance_id) const;
 
   private:
-    misc::shared_ptr<persistent_cache>
-                   _cache;
-
-    QHash<unsigned int, neb::instance>
-                   _instances;
-    QHash<unsigned int, neb::host>
-                   _hosts;
-    QHash<QPair<unsigned int, unsigned int>, neb::service>
-                   _services;
-    QHash<unsigned int, storage::metric_mapping>
-                   _metric_mappings;
-    QHash<unsigned int, storage::status_mapping>
-                   _status_mappings;
-
                    macro_cache(macro_cache const& f);
     macro_cache&   operator=(macro_cache const& f);
 
     void           _process_instance(neb::instance const& in);
     void           _process_host(neb::host const& h);
     void           _process_service(neb::service const& s);
+    void           _process_index_mapping(storage::index_mapping const& im);
     void           _process_metric_mapping(storage::metric_mapping const& mm);
-    void           _process_status_mapping(storage::status_mapping const& sm);
     void           _save_to_disk();
+
+    misc::shared_ptr<persistent_cache>
+                   _cache;
+    QHash<unsigned int, neb::instance>
+                   _instances;
+    QHash<unsigned int, neb::host>
+                   _hosts;
+    QHash<QPair<unsigned int, unsigned int>, neb::service>
+                   _services;
+    QHash<unsigned int, storage::index_mapping>
+                   _index_mappings;
+    QHash<unsigned int, storage::metric_mapping>
+                   _metric_mappings;
   };
 }
 

@@ -33,7 +33,7 @@ namespace        bam {
    *  @brief Update status of a boolean expression.
    *
    *  Update the status of a boolean expression, used to update the
-   *  mod_bam_boolean table.
+   *  cfg_bam_boolean table.
    */
   class          bool_status : public io::data {
   public:

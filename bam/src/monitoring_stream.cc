@@ -38,11 +38,11 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/neb/acknowledgement.hh"
+#include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_status.hh"
-#include "com/centreon/broker/notification/acknowledgement.hh"
-#include "com/centreon/broker/notification/downtime.hh"
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/bam/event_cache_visitor.hh"
@@ -163,9 +163,8 @@ void monitoring_stream::update() {
     initialize();
   }
   catch (std::exception const& e) {
-    logging::error(logging::high)
-      << "BAM: could not process configuration update: "
-      << e.what();
+    throw (exceptions::msg()
+           << "BAM: could not process configuration update: " << e.what());
   }
   return ;
 }
@@ -201,9 +200,9 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
       _applier.book_service().update(ss, &ev_cache);
       ev_cache.commit_to(pblshr);
     }
-    else if (data->type() == notification::acknowledgement::static_type()) {
-      misc::shared_ptr<notification::acknowledgement>
-	ack(data.staticCast<notification::acknowledgement>());
+    else if (data->type() == neb::acknowledgement::static_type()) {
+      misc::shared_ptr<neb::acknowledgement>
+	ack(data.staticCast<neb::acknowledgement>());
       logging::debug(logging::low)
 	<< "BAM: processing acknowledgement (host "
 	<< ack->host_id << ", service " << ack->service_id << ")";
@@ -212,9 +211,9 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
       _applier.book_service().update(ack, &ev_cache);
       ev_cache.commit_to(pblshr);
     }
-    else if (data->type() == notification::downtime::static_type()) {
-      misc::shared_ptr<notification::downtime>
-	dt(data.staticCast<notification::downtime>());
+    else if (data->type() == neb::downtime::static_type()) {
+      misc::shared_ptr<neb::downtime>
+	dt(data.staticCast<neb::downtime>());
       logging::debug(logging::low)
 	<< "BAM: processing downtime (host " << dt->host_id
 	<< ", service " << dt->service_id << ")";
@@ -378,7 +377,7 @@ void monitoring_stream::_prepare() {
   // BA status.
   {
     std::string query;
-    query = "UPDATE mod_bam"
+    query = "UPDATE cfg_bam"
             "  SET current_level=:level_nominal,"
             "      acknowledged=:level_acknowledgement,"
             "      downtime=:level_downtime,"
@@ -399,8 +398,8 @@ void monitoring_stream::_prepare() {
   // Boolean expression status.
   {
     std::string query;
-    query = "UPDATE mod_bam_boolean AS b"
-            "  LEFT JOIN mod_bam_kpi AS k"
+    query = "UPDATE cfg_bam_boolean AS b"
+            "  LEFT JOIN cfg_bam_kpi AS k"
             "    ON b.boolean_id=k.boolean_id"
             "  SET k.current_status = "
             "      CASE WHEN :state=b.bool_state THEN 2 ELSE 0 END,"
@@ -414,7 +413,7 @@ void monitoring_stream::_prepare() {
   // KPI status.
   {
     std::string query;
-    query = "UPDATE mod_bam_kpi"
+    query = "UPDATE cfg_bam_kpi"
             "  SET acknowledged=:level_acknowledgement,"
             "      current_status=:state,"
             "      downtime=:level_downtime, last_level=:level_nominal,"
@@ -449,7 +448,7 @@ void monitoring_stream::_rebuild() {
   std::vector<unsigned int> bas_to_rebuild;
   {
     std::string query = "SELECT ba_id"
-                        "  FROM mod_bam"
+                        "  FROM cfg_bam"
                         "  WHERE must_be_rebuild='1'";
     database_query q(_db);
     q.run_query(
@@ -483,7 +482,7 @@ void monitoring_stream::_rebuild() {
 
   // Set all the BAs to should not be rebuild.
   {
-    std::string query = "UPDATE mod_bam"
+    std::string query = "UPDATE cfg_bam"
                         "  SET must_be_rebuild='0'";
     database_query q(_db);
     q.run_query(

@@ -17,12 +17,11 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/notification/internal.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/notification/downtime_removed.hh"
+#include "com/centreon/broker/neb/acknowledgement_removed.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::neb;
 
 /**************************************
 *                                     *
@@ -36,10 +35,9 @@ using namespace com::centreon::broker::notification;
  *  acknowledgement default constructor. Set all members to their
  *  default value (0, NULL or equivalent).
  */
-downtime_removed::downtime_removed()
+acknowledgement_removed::acknowledgement_removed()
   : host_id(0),
-    service_id(0),
-    downtime_id(0) {}
+    service_id(0) {}
 
 /**
  *  @brief acknowledgement copy constructor.
@@ -48,7 +46,7 @@ downtime_removed::downtime_removed()
  *
  *  @param[in] other  Object to copy.
  */
-downtime_removed::downtime_removed(downtime_removed const& other)
+acknowledgement_removed::acknowledgement_removed(acknowledgement_removed const& other)
   : io::data(other) {
   _internal_copy(other);
 }
@@ -56,7 +54,7 @@ downtime_removed::downtime_removed(downtime_removed const& other)
 /**
  *  Destructor.
  */
-downtime_removed::~downtime_removed() {}
+acknowledgement_removed::~acknowledgement_removed() {}
 
 /**
  *  Assignment operator.
@@ -65,7 +63,7 @@ downtime_removed::~downtime_removed() {}
  *
  *  @return This object.
  */
-downtime_removed& downtime_removed::operator=(downtime_removed const& other) {
+acknowledgement_removed& acknowledgement_removed::operator=(acknowledgement_removed const& other) {
   io::data::operator=(other);
   _internal_copy(other);
   return (*this);
@@ -79,17 +77,8 @@ downtime_removed& downtime_removed::operator=(downtime_removed const& other) {
  *
  *  @return The event type.
  */
-unsigned int downtime_removed::type() const {
-  return (downtime_removed::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-unsigned int downtime_removed::static_type() {
-  return (io::events::data_type<io::events::notification, notification::de_downtime_removed>::value);
+unsigned int acknowledgement_removed::type() const {
+  return (acknowledgement_removed::static_type());
 }
 
 /**************************************
@@ -102,10 +91,9 @@ unsigned int downtime_removed::static_type() {
  *  @brief Copy internal data of the given object to the current
  *         instance.
  */
-void downtime_removed::_internal_copy(downtime_removed const& other) {
+void acknowledgement_removed::_internal_copy(acknowledgement_removed const& other) {
   host_id = other.host_id;
   service_id = other.service_id;
-  downtime_id = other.downtime_id;
   return ;
 }
 
@@ -116,29 +104,24 @@ void downtime_removed::_internal_copy(downtime_removed const& other) {
 **************************************/
 
 // Mapping.
-mapping::entry const downtime_removed::entries[] = {
+mapping::entry const acknowledgement_removed::entries[] = {
   mapping::entry(
-    &downtime_removed::host_id,
+    &acknowledgement_removed::host_id,
     "host_id",
     1,
     mapping::entry::NULL_ON_ZERO),
   mapping::entry(
-    &downtime_removed::service_id,
+    &acknowledgement_removed::service_id,
     "service_id",
     2,
-    mapping::entry::NULL_ON_ZERO),
-  mapping::entry(
-    &downtime_removed::downtime_id,
-    "downtime_id",
-    3,
     mapping::entry::NULL_ON_ZERO),
   mapping::entry()
 };
 
 // Operations.
-static io::data* new_downtime_removed() {
-  return (new downtime_removed);
+static io::data* new_ack_removed() {
+  return (new acknowledgement_removed);
 }
-io::event_info::event_operations const downtime_removed::operations = {
-  &new_downtime_removed
+io::event_info::event_operations const acknowledgement_removed::operations = {
+  &new_ack_removed
 };

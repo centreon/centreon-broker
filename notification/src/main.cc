@@ -17,16 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/notification/acknowledgement.hh"
-#include "com/centreon/broker/notification/acknowledgement_removed.hh"
-#include "com/centreon/broker/notification/downtime.hh"
-#include "com/centreon/broker/notification/downtime_removed.hh"
 #include "com/centreon/broker/notification/factory.hh"
-#include "com/centreon/broker/notification/internal.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 
@@ -42,9 +36,6 @@ extern "C" {
     if (!--instances) {
       // Deregister notification layer.
       io::protocols::instance().unreg("notification");
-
-      // Deregister events.
-      io::events::instance().unregister_category(io::events::notification);
     }
     return ;
   }
@@ -70,50 +61,6 @@ extern "C" {
         notification::factory(),
         1,
         7);
-
-      // Register category.
-      io::events& e(io::events::instance());
-      int ret(e.register_category(
-                  "notification",
-                  io::events::notification));
-      if (ret != io::events::notification) {
-        e.unregister_category(ret);
-        --instances;
-        throw (exceptions::msg() << "notification: category "
-               << io::events::notification
-               << " is already registered whereas it should be "
-               << "reserved for the notification module");
-      }
-
-      // Register event.
-      e.register_event(
-        io::events::notification,
-        notification::de_acknowledgement,
-        io::event_info(
-              "acknowledgement",
-              &notification::acknowledgement::operations,
-              notification::acknowledgement::entries));
-      e.register_event(
-        io::events::notification,
-        notification::de_acknowledgement_removed,
-        io::event_info(
-              "acknowledgement_removed",
-              &notification::acknowledgement_removed::operations,
-              notification::acknowledgement_removed::entries));
-      e.register_event(
-          io::events::notification,
-          notification::de_acknowledgement,
-          io::event_info(
-                "downtime",
-                &notification::downtime::operations,
-                notification::downtime::entries));
-      e.register_event(
-        io::events::notification,
-        notification::de_acknowledgement_removed,
-        io::event_info(
-              "downtime_removed",
-              &notification::downtime_removed::operations,
-              notification::downtime_removed::entries));
     }
 
     return ;

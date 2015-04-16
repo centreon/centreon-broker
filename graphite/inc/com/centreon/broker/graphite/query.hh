@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -46,6 +46,7 @@ namespace         graphite {
                   metric,
                   status
     };
+
                   query(std::string const& naming_scheme, data_type type, macro_cache const& cache);
                   query(query const& f);
                   ~query();
@@ -79,7 +80,7 @@ namespace         graphite {
     void          _get_string(io::data const& d, std::ostream& is);
     void          _get_null(io::data const& d, std::ostream& is);
     void          _get_dollar_sign(io::data const& d, std::ostream& is);
-    unsigned int  _get_status_id(io::data const& d);
+    unsigned int  _get_index_id(io::data const& d);
     void          _get_host(io::data const& d, std::ostream& is);
     void          _get_host_id(io::data const& d, std::ostream& is);
     void          _get_service(io::data const& d, std::ostream& is);

@@ -26,10 +26,14 @@ include_directories("${INC_DIR}")
 # NEB sources.
 set(NEB_SOURCES
   # Sources.
+  "${SRC_DIR}/acknowledgement.cc"
+  "${SRC_DIR}/acknowledgement_removed.cc"
   "${SRC_DIR}/check.cc"
   "${SRC_DIR}/custom_variable.cc"
   "${SRC_DIR}/custom_variable_status.cc"
   "${SRC_DIR}/dependency.cc"
+  "${SRC_DIR}/downtime.cc"
+  "${SRC_DIR}/downtime_removed.cc"
   "${SRC_DIR}/event_handler.cc"
   "${SRC_DIR}/flapping_status.cc"
   "${SRC_DIR}/group.cc"
@@ -55,10 +59,14 @@ set(NEB_SOURCES
   "${SRC_DIR}/service_status.cc"
   "${SRC_DIR}/status.cc"
   # Headers.
+  "${INC_DIR}/com/centreon/broker/neb/acknowledgement.hh"
+  "${INC_DIR}/com/centreon/broker/neb/acknowledgement_removed.hh"
   "${INC_DIR}/com/centreon/broker/neb/check.hh"
   "${INC_DIR}/com/centreon/broker/neb/custom_variable.hh"
   "${INC_DIR}/com/centreon/broker/neb/custom_variable_status.hh"
   "${INC_DIR}/com/centreon/broker/neb/dependency.hh"
+  "${INC_DIR}/com/centreon/broker/neb/downtime.hh"
+  "${INC_DIR}/com/centreon/broker/neb/downtime_removed.hh"
   "${INC_DIR}/com/centreon/broker/neb/event_handler.hh"
   "${INC_DIR}/com/centreon/broker/neb/events.hh"
   "${INC_DIR}/com/centreon/broker/neb/flapping_status.hh"

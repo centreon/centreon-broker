@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -55,6 +55,11 @@ namespace              dumper {
   private:
                        directory_dumper(directory_dumper const& s);
     directory_dumper&  operator=(directory_dumper const& s);
+    void               _get_last_timestamps_from_cache();
+    void               _save_last_timestamps_to_cache();
+    void               _set_watch_over_directory();
+    std::pair<timestamp, misc::shared_ptr<io::data> >
+                       _dump_a_file(std::string const& path);
 
     QMutex             _mutex;
     std::string        _path;
@@ -63,20 +68,12 @@ namespace              dumper {
     std::string        _tagname;
     misc::shared_ptr<persistent_cache>
                        _cache;
-
     std::list<std::pair<timestamp, misc::shared_ptr<io::data> > >
                        _event_list;
     file::directory_watcher
                        _watcher;
-
     std::map<std::string, timestamp>
-                        _last_modified_timestamps;
-
-    void                _get_last_timestamps_from_cache();
-    void                _save_last_timestamps_to_cache();
-    void               _set_watch_over_directory();
-    std::pair<timestamp, misc::shared_ptr<io::data> >
-                        _dump_a_file(std::string const& path);
+                       _last_modified_timestamps;
   };
 }
 

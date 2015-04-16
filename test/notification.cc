@@ -85,6 +85,12 @@ using namespace com::centreon::broker;
 #define RECOVERY_FILE_CONTENT \
   "\"$NOTIFICATIONTYPE$\n\""
 
+#define DOWNTIME_FILE_CONTENT \
+  "\"$NOTIFICATIONTYPE$\n\""
+
+#define ACK_FILE_CONTENT \
+  "\"$NOTIFICATIONTYPE$\n\""
+
 static const double epsilon = 0.000000001;
 static time_t start;
 static time_t now;
@@ -300,6 +306,29 @@ void validate_macros(
 }
 
 /**
+ *  Get a file.
+ *
+ *  @param[in] filename  The filename.
+ *  @param[out] error    Error flag.
+ *  @param[out] ss       The resulting string stream.
+ */
+void get_file(std::string const& filename, bool& error, std::ostringstream& ss) {
+  ss.str("");
+  std::ifstream filestream(filename.c_str());
+
+  if ((error = !filestream.is_open()))
+    throw (exceptions::msg()
+           << "flag file '" << filename << "' doesn't exist");
+
+  filestream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+  ss << filestream.rdbuf();
+
+  std::cout
+    <<  "content of " << filename << ": "
+    << ss.str();
+}
+
+/**
  *  Check that notification is properly enabled.
  *
  *  @return EXIT_SUCCESS on success.
@@ -317,16 +346,21 @@ int main() {
   std::string engine_config_path(tmpnam(NULL));
   std::string flag_file(tmpnam(NULL));
   std::string flag_file2(tmpnam(NULL));
+  std::string flag_file3(tmpnam(NULL));
+  std::string flag_file4(tmpnam(NULL));
   std::string node_cache_file(tmpnam(NULL));
   external_command commander;
+  external_command broker_commander;
   engine monitoring;
   test_file broker_cfg;
   test_db db;
 
   try {
     // Log some info.
-    std::cout << "flag file: " << flag_file << "\n";
-    std::cout << "flag file2: " << flag_file2 << "\n";
+    std::cout << "flag file 1 (normal notification): " << flag_file << "\n";
+    std::cout << "flag file 2 (up notification): " << flag_file2 << "\n";
+    std::cout << "flag file 3 (downtime notification): " << flag_file3 << "\n";
+    std::cout << "flag file 4 (ack notification): " << flag_file4 << "\n";
     std::cout << "node cache: " << node_cache_file << "\n";
 
     // Prepare database.
@@ -387,6 +421,14 @@ int main() {
       services.back(),
       "FLAGFILE2",
       flag_file2.c_str());
+    set_custom_variable(
+      services.back(),
+      "FLAGFILE3",
+      flag_file3.c_str());
+    set_custom_variable(
+      services.back(),
+      "FLAGFILE4",
+      flag_file4.c_str());
 
     // Populate database.
     db.centreon_run(
@@ -437,7 +479,9 @@ int main() {
          "INSERT INTO cfg_commands (command_id, command_name,"
          "            command_line, organization_id)"
          "  VALUES (1, 'NotificationCommand1', '"UTIL_FILE_WRITER" "MACRO_LIST" $_SERVICEFLAGFILE$', 1),"
-         "         (2, 'NotificationCommand2', '"UTIL_FILE_WRITER" "RECOVERY_FILE_CONTENT" $_SERVICEFLAGFILE2$', 1)",
+         "         (2, 'NotificationCommand2', '"UTIL_FILE_WRITER" "RECOVERY_FILE_CONTENT" $_SERVICEFLAGFILE2$', 1),"
+         "         (3, 'NotificationCommand3', '"UTIL_FILE_WRITER" "DOWNTIME_FILE_CONTENT" $_SERVICEFLAGFILE3$', 1),"
+         "         (4, 'NotificationCommand4', '"UTIL_FILE_WRITER" "ACK_FILE_CONTENT" $_SERVICEFLAGFILE4$', 1)",
          "could not create notification command");
 
     // Create notification rules in DB.
@@ -445,28 +489,36 @@ int main() {
          "INSERT INTO cfg_notification_methods (method_id,"
          "            name, command_id, `interval`, types, status)"
          "  VALUES (1, 'NotificationMethod', 1, 300, 'n', 'w,c,u'),"
-         "         (2, 'NotificationMethod2', 2, 300, 'r', 'o')",
+         "         (2, 'NotificationMethod2', 2, 300, 'r', 'o'),"
+          "        (3, 'NotificationMethod3', 3, 300, 'd', 'o'),"
+          "        (4, 'NotificationMethod4', 4, 300, 'a', 'o')",
          "could not create notification method");
     db.centreon_run(
          "INSERT INTO cfg_notification_rules (rule_id, method_id, "
          "            timeperiod_id, owner_id, contact_id, host_id,"
          "            service_id, enabled)"
          "  VALUES (1, 1, NULL, 1, 1, 1, 2, 1),"
-         "         (2, 2, NULL, 1, 1, 1, 2, 1)",
+         "         (2, 2, NULL, 1, 1, 1, 2, 1),"
+         "         (3, 3, NULL, 1, 1, 1, 2, 1),"
+         "         (4, 4, NULL, 1, 1, 1, 2, 1)",
          "could not create notification rule (cfg)");
     db.centreon_run(
          "INSERT INTO rt_notification_rules (rule_id, method_id,"
          "            timeperiod_id, contact_id, host_id,"
          "            service_id)"
          "  VALUES (1, 1, NULL, 1, 1, 2),"
-         "         (2, 2, NULL, 1, 1, 2)",
-         "could not create notification rule (rt)");
+         "         (2, 2, NULL, 1, 1, 2),"
+         "         (3, 3, NULL, 1, 1, 2),"
+         "         (4, 4, NULL, 1, 1, 2)",
+          "could not create notification rule (rt)");
 
     // Generate configuration.
     broker_cfg.set_template(
       PROJECT_SOURCE_DIR "/test/cfg/notification.xml.in");
     broker_cfg.set("NODE_CACHE_FILE", node_cache_file);
     commander.set_file(tmpnam(NULL));
+    broker_commander.set_file(tmpnam(NULL));
+    broker_cfg.set("BROKER_COMMAND_FILE", broker_commander.get_file());
     std::string additional_config;
     {
       std::ostringstream oss;
@@ -510,19 +562,7 @@ int main() {
 
     // Check file creation.
     std::ostringstream ss;
-    {
-      std::ifstream filestream(flag_file.c_str());
-
-      if ((error = !filestream.is_open()))
-        throw exceptions::msg() << "Flag file doesn't exist";
-
-      filestream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-      ss << filestream.rdbuf();
-    }
-
-    std::cout
-      <<  "content of " << flag_file << ": "
-      << ss.str();
+    get_file(flag_file, error, ss);
 
     now = ::time(NULL);
     {
@@ -638,26 +678,42 @@ int main() {
     sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Check file creation.
-    ss.str("");
-    {
-      std::ifstream filestream(flag_file2.c_str());
-
-      if ((error = !filestream.is_open()))
-        throw exceptions::msg() << "Flag file 2 doesn't exist";
-
-      filestream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-      ss << filestream.rdbuf();
-    }
-
-    now = ::time(NULL);
-
-    std::cout
-      <<  "content of " << flag_file << ": "
-      << ss.str();
-
+    get_file(flag_file2, error, ss);
     {
       macros_struct macros [] = {
         {macros_struct::string, "RECOVERY", 0, NULL, 0, 0, "NOTIFICATIONTYPE"}
+      };
+
+      validate_macros(ss.str(), macros, sizeof(macros) / sizeof(*macros));
+    }
+
+    // Check downtimes
+    time_t start = ::time(NULL);
+    time_t end = start + 5;
+    ss.str("");
+    ss << "SCHEDULE_SVC_DOWNTIME;Host1;Service2;" << start << ";"
+       << end << ";1;0;5;test author;some comments";
+    broker_commander.execute(ss.str());
+
+    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+
+    get_file(flag_file3, error, ss);
+    {
+      macros_struct macros [] = {
+        {macros_struct::string, "DOWNTIME", 0, NULL, 0, 0, "NOTIFICATIONTYPE"}
+      };
+
+      validate_macros(ss.str(), macros, sizeof(macros) / sizeof(*macros));
+    }
+
+    // Check acks
+    broker_commander.execute("ACKNOWLEDGE_SVC_PROBLEM;Host1;Service2;2;1;1;test author;some comments");
+
+    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    get_file(flag_file4, error, ss);
+    {
+      macros_struct macros [] = {
+        {macros_struct::string, "ACKNOWLEDGEMENT", 0, NULL, 0, 0, "NOTIFICATIONTYPE"}
       };
 
       validate_macros(ss.str(), macros, sizeof(macros) / sizeof(*macros));
@@ -678,6 +734,8 @@ int main() {
   sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
   ::remove(flag_file.c_str());
   ::remove(flag_file2.c_str());
+  ::remove(flag_file3.c_str());
+  ::remove(flag_file4.c_str());
   ::remove(node_cache_file.c_str());
   config_remove(engine_config_path.c_str());
   free_hosts(hosts);

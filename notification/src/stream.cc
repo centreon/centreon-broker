@@ -262,10 +262,10 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
     _process_service_status_event(*data.staticCast<neb::service_status>());
   else if (data->type() == correlation::issue_parent::static_type())
     _process_issue_parent_event(*data.staticCast<correlation::issue_parent>());
-  else if (data->type() == notification::acknowledgement::static_type())
-    _process_ack(data.ref_as<notification::acknowledgement>());
-  else if (data->type() == notification::downtime::static_type())
-    _process_downtime(data.ref_as<notification::downtime>());
+  else if (data->type() == neb::acknowledgement::static_type())
+    _process_ack(data.ref_as<neb::acknowledgement>());
+  else if (data->type() == neb::downtime::static_type())
+    _process_downtime(data.ref_as<neb::downtime>());
 
   return (retval);
 }
@@ -436,7 +436,6 @@ void stream::_process_service_status_event(neb::service_status const& event) {
 
   node_id id(event.host_id, event.service_id);
   short old_hard_state;
-  short old_soft_state;
   time_t when_to_schedule(::time(NULL) + 1);
 
   // Get the node corresponding to this id.
@@ -453,7 +452,6 @@ void stream::_process_service_status_event(neb::service_status const& event) {
 
     // Save the old state and copy the current state.
     old_hard_state = n->get_hard_state();
-    old_soft_state = n->get_soft_state();
     n->set_hard_state(event.last_hard_state);
     n->set_soft_state(event.current_state);
   }
@@ -496,7 +494,6 @@ void stream::_process_host_status_event(neb::host_status const& event) {
 
   node_id id(event.host_id);
   short old_hard_state;
-  short old_soft_state;
   time_t when_to_schedule(::time(NULL) + 1);
 
   // Get the node corresponding to this id.
@@ -513,7 +510,6 @@ void stream::_process_host_status_event(neb::host_status const& event) {
 
     // Save the old state and copy the current state.
     old_hard_state = n->get_hard_state();
-    old_soft_state = n->get_soft_state();
     n->set_hard_state(event.last_hard_state);
     n->set_soft_state(event.current_state);
   }
@@ -589,19 +585,22 @@ void stream::_process_issue_parent_event(
  *
  *  @param event  The event to process.
  */
-void stream::_process_ack(notification::acknowledgement const& event) {
+void stream::_process_ack(neb::acknowledgement const& event) {
   objects::node_id id(event.host_id, event.service_id);
 
-  // Remove the actions for this node.
-  _notif_scheduler->remove_actions_of_node(id);
+  logging::debug(logging::medium)
+    << "notification: processing acknowledgement of node ("
+    << event.host_id << ", " << event.service_id << ")";
 
   // Add the ack.
-  time_t when_to_schedule(::time(NULL) + 1);
-  action a;
-  a.set_type(action::notification_processing);
-  a.set_forwarded_type(action::notification_ack);
-  a.set_node_id(id);
-  _notif_scheduler->add_action_to_queue(when_to_schedule, a);
+  if (event.notify_contacts) {
+    time_t when_to_schedule(::time(NULL) + 1);
+    action a;
+    a.set_type(action::notification_processing);
+    a.set_forwarded_type(action::notification_ack);
+    a.set_node_id(id);
+    _notif_scheduler->add_action_to_queue(when_to_schedule, a);
+  }
 }
 
 /**
@@ -609,11 +608,13 @@ void stream::_process_ack(notification::acknowledgement const& event) {
  *
  *  @param event  The event to process.
  */
-void stream::_process_downtime(notification::downtime const& event) {
+void stream::_process_downtime(neb::downtime const& event) {
   objects::node_id id(event.host_id, event.service_id);
 
-  // Remove the actions for this node.
-  _notif_scheduler->remove_actions_of_node(id);
+  logging::debug(logging::medium)
+    << "notification: processing downtime of node ("
+    << event.host_id << ", " << event.service_id << ") starting at "
+    << event.start_time << " and ending at " << event.end_time;
 
   // Add the downtime.
   time_t when_to_schedule(::time(NULL) + 1);

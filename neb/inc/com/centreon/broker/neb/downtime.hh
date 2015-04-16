@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NOTIFICATION_DOWNTIME_HH
-#  define CCB_NOTIFICATION_DOWNTIME_HH
+#ifndef CCB_NEB_DOWNTIME_HH
+#  define CCB_NEB_DOWNTIME_HH
 
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
@@ -26,14 +26,14 @@
 #  include "com/centreon/broker/io/events.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/internal.hh"
+#  include "com/centreon/broker/neb/internal.hh"
 #  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace          notification {
+namespace               neb {
   /**
-   *  @class downtime downtime.hh "com/centreon/broker/notification/downtime.hh"
+   *  @class downtime downtime.hh "com/centreon/broker/neb/downtime.hh"
    *  @brief Represents a downtime inside Nagios.
    *
    *  A user may have the ability to define downtimes, which are
@@ -41,55 +41,54 @@ namespace          notification {
    *  generate any notification. This can occur when a system
    *  administrator perform maintenance on a server for example.
    */
-  class            downtime : public io::data {
+  class                 downtime : public io::data {
   public:
-                   downtime();
-                   downtime(downtime const& other);
-                   ~downtime();
-    downtime&      operator=(downtime const& other);
-    unsigned int   type() const;
-    bool           operator==(downtime const& other) const;
+                        downtime();
+                        downtime(downtime const& other);
+                        ~downtime();
+    downtime&           operator=(downtime const& other);
+    unsigned int        type() const;
+    bool                operator==(downtime const& other) const;
 
     /**
      *  Get the type of this event.
      *
      *  @return  The event type.
      */
-    static unsigned int
-                   static_type() {
+    static unsigned int static_type() {
       return (io::events::data_type<
-                            io::events::notification,
-	                    notification::de_downtime>::value);
+                            io::events::neb,
+                            neb::de_downtime>::value);
     }
 
-    timestamp      actual_end_time;
-    timestamp      actual_start_time;
-    QString        author;
-    QString        comment;
-    timestamp      deletion_time;
-    short          downtime_type;
-    timestamp      duration;
-    timestamp      end_time;
-    timestamp      entry_time;
-    bool           fixed;
-    unsigned int   host_id;
-    unsigned int   internal_id;
-    unsigned int   service_id;
-    timestamp      start_time;
-    unsigned int   triggered_by;
-    bool           was_cancelled;
-    bool           was_started;
+    timestamp           actual_end_time;
+    timestamp           actual_start_time;
+    QString             author;
+    QString             comment;
+    timestamp           deletion_time;
+    short               downtime_type;
+    timestamp           duration;
+    timestamp           end_time;
+    timestamp           entry_time;
+    bool                fixed;
+    unsigned int        host_id;
+    unsigned int        internal_id;
+    unsigned int        service_id;
+    timestamp           start_time;
+    unsigned int        triggered_by;
+    bool                was_cancelled;
+    bool                was_started;
 
     static mapping::entry const
-                   entries[];
+                        entries[];
     static io::event_info::event_operations const
-                   operations;
+                        operations;
 
   private:
-    void           _internal_copy(downtime const& other);
+    void                _internal_copy(downtime const& other);
   };
 }
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_DOWNTIME_HH
+#endif // !CCB_NEB_DOWNTIME_HH

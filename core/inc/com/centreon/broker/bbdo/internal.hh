@@ -20,9 +20,6 @@
 #ifndef CCB_BBDO_INTERNAL_HH
 #  define CCB_BBDO_INTERNAL_HH
 
-#  include <QByteArray>
-#  include <vector>
-#  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 #  define BBDO_HEADER_SIZE 8
@@ -33,45 +30,15 @@
 
 CCB_BEGIN()
 
-// Forward declarations.
-namespace                 io {
-  class                   data;
-  class                   event_info;
-}
-namespace                 mapping {
-  class                   entry;
-}
-
 namespace                 bbdo {
   // Data elements.
   enum {
     de_version_response = 1
   };
 
-  struct                  getter_setter {
-    void (*               getter)(
-                            io::data const&,
-                            mapping::entry const&,
-                            QByteArray&);
-    unsigned int (*       setter)(
-                            io::data&,
-                            mapping::entry const&,
-                            void const*,
-                            unsigned int);
-  };
-
-  // BBDO mapping.
-  struct                       bbdo_mapped_type {
-    io::event_info const*      mapped_type;
-    std::vector<getter_setter> bbdo_entries;
-  };
-  extern umap<unsigned int, bbdo_mapped_type> bbdo_mapping;
-
-  // Create mappings.
-  void create_mappings();
-  // Mapping load/unload routines.
-  void load();
-  void unload();
+  // Load/unload of BBDO protocol.
+  void                    load();
+  void                    unload();
 }
 
 CCB_END()

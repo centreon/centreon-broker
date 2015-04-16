@@ -46,8 +46,6 @@ namespace                bbdo {
 
   private:
     bool                 _process_out;
-
-    bool                 _write_event(misc::shared_ptr<io::data> const& e);
   };
 }
 

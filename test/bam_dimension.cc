@@ -357,7 +357,7 @@ int main() {
     // Create BAs.
     {
       QString query(
-                "INSERT INTO mod_bam (ba_id, name, description,"
+                "INSERT INTO cfg_bam (ba_id, name, description,"
                 "                     sla_month_percent_warn, sla_month_percent_crit,"
                 "                     sla_month_duration_warn, sla_month_duration_crit,"
                 "                     activate)"
@@ -390,7 +390,7 @@ int main() {
     // Create boolean expressions.
     {
       QString query(
-                "INSERT INTO mod_bam_boolean (boolean_id, name,"
+                "INSERT INTO cfg_bam_boolean (boolean_id, name,"
                 "            expression, bool_state, activate)"
                 "  VALUES (1, 'BoolExp1', '{1 1} {is} {OK}', 0, 1),"
                 "         (2, 'BoolExp2', '{1 2} {not} {CRITICAL} {OR} {1 3} {not} {OK}', 1, 1)");
@@ -415,7 +415,7 @@ int main() {
     // Create BVs.
     {
       QString query(
-                "INSERT INTO mod_bam_ba_groups (id_ba_group, ba_group_name,"
+                "INSERT INTO cfg_bam_ba_groups (id_ba_group, ba_group_name,"
                 "                               ba_group_description)"
                 "  VALUES (1, 'BaGroup1', 'BaGroupDescription1'),"
                 "         (2, 'BaGroup2', 'BaGroupDescription2')");
@@ -428,7 +428,7 @@ int main() {
     // Create the BA/BV relations.
     {
       QString query(
-                "INSERT INTO mod_bam_bagroup_ba_relation (id_bgr, id_ba, "
+                "INSERT INTO cfg_bam_bagroup_ba_relation (id_bgr, id_ba, "
                 "                                         id_ba_group)"
                 "  VALUES (1, 2, 1),"
                 "         (2, 1, 2)");
@@ -441,7 +441,7 @@ int main() {
     // Create KPIs.
     {
       QString query(
-                "INSERT INTO mod_bam_kpi (kpi_id, kpi_type, host_id,"
+                "INSERT INTO cfg_bam_kpi (kpi_id, kpi_type, host_id,"
                 "            service_id, id_indicator_ba, id_ba,"
                 "            meta_id, boolean_id, config_type, drop_warning,"
                 "            drop_warning_impact_id, drop_critical,"
@@ -511,22 +511,22 @@ int main() {
 
     // Erase everything.
     {
-      QString query("DELETE FROM mod_bam");
+      QString query("DELETE FROM cfg_bam");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not truncate the table mod_bam: "
+        throw (exceptions::msg() << "could not truncate the table cfg_bam: "
                                  << q.lastError().text());
-      query = "DELETE FROM mod_bam_kpi";
+      query = "DELETE FROM cfg_bam_kpi";
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not truncate the table mod_bam_kpi: "
+        throw (exceptions::msg() << "could not truncate the table cfg_bam_kpi: "
                                  << q.lastError().text());
-      query = "DELETE FROM mod_bam_ba_groups";
+      query = "DELETE FROM cfg_bam_ba_groups";
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not truncate the table mod_bam_ba_groups: "
+        throw (exceptions::msg() << "could not truncate the table cfg_bam_ba_groups: "
                                  << q.lastError().text());
-      query = "DELETE FROM mod_bam_bagroup_ba_relation";
+      query = "DELETE FROM cfg_bam_bagroup_ba_relation";
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not truncate the table mod_bam_bagroup_ba_relation: "
+        throw (exceptions::msg() << "could not truncate the table cfg_bam_bagroup_ba_relation: "
                                  << q.lastError().text());
     }
 

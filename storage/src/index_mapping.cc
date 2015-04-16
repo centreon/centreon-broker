@@ -17,12 +17,13 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/notification/internal.hh"
+#include <cmath>
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/notification/acknowledgement_removed.hh"
+#include "com/centreon/broker/storage/internal.hh"
+#include "com/centreon/broker/storage/index_mapping.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker::storage;
 
 /**************************************
 *                                     *
@@ -31,23 +32,19 @@ using namespace com::centreon::broker::notification;
 **************************************/
 
 /**
- *  @brief acknowledgement default constructor.
- *
- *  acknowledgement default constructor. Set all members to their
- *  default value (0, NULL or equivalent).
+ *  Default constructor.
  */
-acknowledgement_removed::acknowledgement_removed()
-  : host_id(0),
+index_mapping::index_mapping()
+  : index_id(0),
+    host_id(0),
     service_id(0) {}
 
 /**
- *  @brief acknowledgement copy constructor.
- *
- *  Copy data from the acknowledgement object to the current instance.
+ *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-acknowledgement_removed::acknowledgement_removed(acknowledgement_removed const& other)
+index_mapping::index_mapping(index_mapping const& other)
   : io::data(other) {
   _internal_copy(other);
 }
@@ -55,7 +52,7 @@ acknowledgement_removed::acknowledgement_removed(acknowledgement_removed const& 
 /**
  *  Destructor.
  */
-acknowledgement_removed::~acknowledgement_removed() {}
+index_mapping::~index_mapping() {}
 
 /**
  *  Assignment operator.
@@ -64,22 +61,21 @@ acknowledgement_removed::~acknowledgement_removed() {}
  *
  *  @return This object.
  */
-acknowledgement_removed& acknowledgement_removed::operator=(acknowledgement_removed const& other) {
-  io::data::operator=(other);
-  _internal_copy(other);
+index_mapping& index_mapping::operator=(index_mapping const& other) {
+  if (this != &other) {
+    io::data::operator=(other);
+    _internal_copy(other);
+  }
   return (*this);
 }
 
 /**
- *  @brief Get the type of the event.
- *
- *  Return the type of this event. This can be useful for runtime data
- *  type determination.
+ *  Get the event type.
  *
  *  @return The event type.
  */
-unsigned int acknowledgement_removed::type() const {
-  return (acknowledgement_removed::static_type());
+unsigned int index_mapping::type() const {
+  return (index_mapping::static_type());
 }
 
 /**
@@ -87,21 +83,23 @@ unsigned int acknowledgement_removed::type() const {
  *
  *  @return  The event type.
  */
-unsigned int acknowledgement_removed::static_type() {
-  return (io::events::data_type<io::events::notification, notification::de_acknowledgement_removed>::value);
+unsigned int index_mapping::static_type() {
+  return (io::events::data_type<io::events::storage, storage::de_index_mapping>::value);
 }
 
 /**************************************
 *                                     *
-*          Private Methods            *
+*           Private Methods           *
 *                                     *
 **************************************/
 
 /**
- *  @brief Copy internal data of the given object to the current
- *         instance.
+ *  Copy internal data members.
+ *
+ *  @param[in] other  Object to copy.
  */
-void acknowledgement_removed::_internal_copy(acknowledgement_removed const& other) {
+void index_mapping::_internal_copy(index_mapping const& other) {
+  index_id = other.index_id;
   host_id = other.host_id;
   service_id = other.service_id;
   return ;
@@ -114,24 +112,29 @@ void acknowledgement_removed::_internal_copy(acknowledgement_removed const& othe
 **************************************/
 
 // Mapping.
-mapping::entry const acknowledgement_removed::entries[] = {
+mapping::entry const index_mapping::entries[] = {
   mapping::entry(
-    &acknowledgement_removed::host_id,
-    "host_id",
+    &index_mapping::index_id,
+    "index_id",
     1,
     mapping::entry::NULL_ON_ZERO),
   mapping::entry(
-    &acknowledgement_removed::service_id,
+    &index_mapping::host_id,
+    "host_id",
+    1,
+  mapping::entry::NULL_ON_ZERO),
+  mapping::entry(
+    &index_mapping::service_id,
     "service_id",
-    2,
+    1,
     mapping::entry::NULL_ON_ZERO),
   mapping::entry()
 };
 
 // Operations.
-static io::data* new_ack_removed() {
-  return (new acknowledgement_removed);
+static io::data* new_index_mapping() {
+  return (new index_mapping);
 }
-io::event_info::event_operations const acknowledgement_removed::operations = {
-  &new_ack_removed
+io::event_info::event_operations const index_mapping::operations = {
+  &new_index_mapping
 };

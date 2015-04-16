@@ -126,15 +126,15 @@ void reader::_load(state::kpis& kpis) {
       "        COALESCE(COALESCE(k.drop_critical, cc.impact), g.average_impact),"
       "        COALESCE(COALESCE(k.drop_unknown, uu.impact), g.average_impact),"
       "        k.last_state_change, k.in_downtime, k.last_impact"
-      "  FROM  mod_bam_kpi AS k"
-      "  LEFT JOIN mod_bam_impacts AS ww"
+      "  FROM  cfg_bam_kpi AS k"
+      "  LEFT JOIN cfg_bam_impacts AS ww"
       "    ON k.drop_warning_impact_id = ww.id_impact"
-      "  LEFT JOIN mod_bam_impacts AS cc"
+      "  LEFT JOIN cfg_bam_impacts AS cc"
       "    ON k.drop_critical_impact_id = cc.id_impact"
-      "  LEFT JOIN mod_bam_impacts AS uu"
+      "  LEFT JOIN cfg_bam_impacts AS uu"
       "    ON k.drop_unknown_impact_id = uu.id_impact"
       "  LEFT JOIN (SELECT id_ba, 100.0 / COUNT(kpi_id) AS average_impact"
-      "               FROM mod_bam_kpi"
+      "               FROM cfg_bam_kpi"
       "               WHERE activate='1'"
       "               GROUP BY id_ba) AS g"
       "    ON k.id_ba=g.id_ba"
@@ -223,7 +223,7 @@ void reader::_load(state::bas& bas) {
     query.run_query(
       "SELECT ba_id, name, level_w, level_c, last_state_change, "
       "       current_status, in_downtime"
-      "  FROM mod_bam"
+      "  FROM cfg_bam"
       "  WHERE activate='1'");
     while (query.next()) {
       // BA object.
@@ -332,7 +332,7 @@ void reader::_load(state::bool_exps& bool_exps) {
     database_query query(_db);
     query.run_query(
       "SELECT  boolean_id, expression, bool_state"
-      "  FROM  mod_bam_boolean"
+      "  FROM  cfg_bam_boolean"
       "  WHERE activate=1");
     while (query.next()) {
       bool_exps[query.value(0).toUInt()] =
@@ -672,7 +672,7 @@ void reader::_load_dimensions() {
       "       sla_month_percent_warn, sla_month_percent_crit,"
       "       sla_month_duration_warn, sla_month_duration_crit,"
       "       id_reporting_period"
-      "  FROM mod_bam"
+      "  FROM cfg_bam"
       "  WHERE activate='1'",
       "could not retrieve BAs from the database");
     while (q.next()) {
@@ -699,7 +699,7 @@ void reader::_load_dimensions() {
     // Load the BVs.
     q.run_query(
       "SELECT id_ba_group, ba_group_name, ba_group_description"
-      "  FROM mod_bam_ba_groups",
+      "  FROM cfg_bam_ba_groups",
       "could not retrieve BVs from the database");
     while (q.next()) {
       misc::shared_ptr<dimension_bv_event>
@@ -713,7 +713,10 @@ void reader::_load_dimensions() {
     // Load the BA BV relations.
     q.run_query(
       "SELECT id_ba, id_ba_group"
-      "  FROM mod_bam_bagroup_ba_relation",
+      "  FROM cfg_bam_bagroup_ba_relation as r"
+      "  LEFT JOIN cfg_bam as b"
+      "    ON b.ba_id = r.id_ba"
+      "  WHERE b.activate='1'",
       "could not retrieve BV memberships of BAs");
     while (q.next()) {
       misc::shared_ptr<dimension_ba_bv_relation_event>
@@ -735,29 +738,30 @@ void reader::_load_dimensions() {
       "       COALESCE(COALESCE(k.drop_unknown, uu.impact), g.average_impact),"
       "       h.host_name, s.service_description, b.name,"
       "       meta.meta_name, boo.name"
-      "  FROM mod_bam_kpi AS k"
-      "  LEFT JOIN mod_bam_impacts AS ww"
+      "  FROM cfg_bam_kpi AS k"
+      "  LEFT JOIN cfg_bam_impacts AS ww"
       "    ON k.drop_warning_impact_id = ww.id_impact"
-      "  LEFT JOIN mod_bam_impacts AS cc"
+      "  LEFT JOIN cfg_bam_impacts AS cc"
       "    ON k.drop_critical_impact_id = cc.id_impact"
-      "  LEFT JOIN mod_bam_impacts AS uu"
+      "  LEFT JOIN cfg_bam_impacts AS uu"
       "    ON k.drop_unknown_impact_id = uu.id_impact"
       "  LEFT JOIN cfg_hosts AS h"
       "    ON h.host_id = k.host_id"
       "  LEFT JOIN cfg_services AS s"
       "    ON s.service_id = k.service_id"
-      "  INNER JOIN mod_bam AS b"
+      "  INNER JOIN cfg_bam AS b"
       "    ON b.ba_id = k.id_ba"
       "  LEFT JOIN cfg_meta_services AS meta"
       "    ON meta.meta_id = k.meta_id"
-      "  LEFT JOIN mod_bam_boolean as boo"
+      "  LEFT JOIN cfg_bam_boolean as boo"
       "    ON boo.boolean_id = k.boolean_id"
       "  LEFT JOIN (SELECT id_ba, 100.0 / COUNT(kpi_id) AS average_impact"
-      "               FROM mod_bam_kpi"
+      "               FROM cfg_bam_kpi"
       "               WHERE activate='1'"
       "               GROUP BY id_ba) AS g"
       "   ON k.id_ba=g.id_ba"
-      "  WHERE k.activate='1'",
+      "  WHERE k.activate='1'"
+      "    AND b.activate='1'",
       "could not retrieve KPI dimensions");
     while (q.next()) {
       misc::shared_ptr<dimension_kpi_event> k(new dimension_kpi_event);
@@ -793,7 +797,7 @@ void reader::_load_dimensions() {
 
     // Load the ba-timeperiods relations.
     q.run_query(
-      "SELECT ba_id, tp_id FROM mod_bam_relations_ba_timeperiods",
+      "SELECT ba_id, tp_id FROM cfg_bam_relations_ba_timeperiods",
       "could not retrieve the timeperiods associated with the BAs");
     while (q.next()) {
       misc::shared_ptr<dimension_ba_timeperiod_relation>

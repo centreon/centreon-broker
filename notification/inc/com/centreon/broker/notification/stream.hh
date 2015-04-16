@@ -34,10 +34,10 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/state.hh"
 #  include "com/centreon/broker/correlation/issue_parent.hh"
+#  include "com/centreon/broker/neb/acknowledgement.hh"
+#  include "com/centreon/broker/neb/downtime.hh"
 #  include "com/centreon/broker/notification/process_manager.hh"
 #  include "com/centreon/broker/notification/node_cache.hh"
-#  include "com/centreon/broker/notification/acknowledgement_removed.hh"
-#  include "com/centreon/broker/notification/downtime_removed.hh"
 
 CCB_BEGIN()
 
@@ -50,7 +50,8 @@ namespace        notification {
    */
   class          stream : public io::stream {
   public:
-                 stream(QString const& type,
+                 stream(
+                   QString const& type,
                    QString const& host,
                    unsigned short port,
                    QString const& user,
@@ -105,9 +106,9 @@ namespace        notification {
     void         _process_issue_parent_event(
                    correlation::issue_parent const& event);
     void         _process_ack(
-                   notification::acknowledgement const& event);
+                   neb::acknowledgement const& event);
     void         _process_downtime(
-                   notification::downtime const& event);
+                   neb::downtime const& event);
   };
 }
 

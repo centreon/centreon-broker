@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -31,8 +31,8 @@
 #  include "com/centreon/broker/timestamp.hh"
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/neb/downtime.hh"
 #  include "com/centreon/broker/neb/log_entry.hh"
-#  include "com/centreon/broker/notification/downtime.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
 
 CCB_BEGIN()
@@ -78,7 +78,7 @@ namespace                correlation {
                           io::stream* stream);
     void                 manage_ack(timestamp entry_time, io::stream* stream);
     void                 manage_downtime(
-                           notification::downtime const& dwn,
+                           neb::downtime const& dwn,
                            io::stream* stream);
     void                 manage_downtime_removed(
                            unsigned int id,
@@ -108,7 +108,7 @@ namespace                correlation {
                          my_state;
     unsigned int         service_id;
     short                state;
-    std::map<unsigned int, notification::downtime>
+    std::map<unsigned int, neb::downtime>
                          downtimes;
 
    private:
