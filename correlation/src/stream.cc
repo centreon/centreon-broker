@@ -164,7 +164,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
       = _nodes.find(id);
     if (found != _nodes.end()) {
       multiplexing::publisher pblsh;
-      found->manage_ack(ack.entry_time, &pblsh);
+      found->manage_ack(ack, &pblsh);
     }
   }
   else if (d->type() == neb::downtime::static_type()) {
@@ -274,6 +274,13 @@ void stream::_load_correlation_event(misc::shared_ptr<io::data> const& d) {
       = _nodes.find(qMakePair(dwn.host_id, dwn.service_id));
     if (found != _nodes.end())
       found->manage_downtime(dwn, NULL);
+  }
+  else if (d->type() == neb::acknowledgement::static_type()) {
+    neb::acknowledgement const& ack = d.ref_as<neb::acknowledgement>();
+    QMap<QPair<unsigned int, unsigned int>, node>::iterator found
+      = _nodes.find(qMakePair(ack.host_id, ack.service_id));
+    if (found != _nodes.end())
+      found->manage_ack(ack, NULL);
   }
 }
 

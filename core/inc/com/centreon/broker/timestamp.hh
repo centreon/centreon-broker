@@ -99,6 +99,13 @@ public:
     return (_sec == (time_t)-1);
   }
 
+  /**
+   *  Clear the timestamp.
+   */
+  void clear() {
+    _sec = (time_t)-1;
+  }
+
   // Data.
   std::time_t _sec;
 };

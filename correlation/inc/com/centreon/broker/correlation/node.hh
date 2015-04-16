@@ -31,6 +31,7 @@
 #  include "com/centreon/broker/timestamp.hh"
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/neb/acknowledgement.hh"
 #  include "com/centreon/broker/neb/downtime.hh"
 #  include "com/centreon/broker/neb/log_entry.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
@@ -76,7 +77,9 @@ namespace                correlation {
                           short status,
                           timestamp last_state_change,
                           io::stream* stream);
-    void                 manage_ack(timestamp entry_time, io::stream* stream);
+    void                 manage_ack(
+                          neb::acknowledgement const& ack,
+                          io::stream* stream);
     void                 manage_downtime(
                            neb::downtime const& dwn,
                            io::stream* stream);
@@ -108,6 +111,8 @@ namespace                correlation {
                          my_state;
     unsigned int         service_id;
     short                state;
+    std::auto_ptr<neb::acknowledgement>
+                         acknowledgement;
     std::map<unsigned int, neb::downtime>
                          downtimes;
 

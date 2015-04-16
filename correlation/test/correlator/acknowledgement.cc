@@ -86,7 +86,7 @@ int main() {
       ack->is_sticky = false;
       c.write(ack);
     }
-    /*{ // #3
+    { // #3
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->instance_id = 1;
@@ -140,7 +140,7 @@ int main() {
       ss->last_hard_state = 1;
       ss->last_hard_state_change = 123456796;
       c.write(ss);
-    }*/
+    }
 
     // Check correlation content.
     multiplexing::engine::instance().stop();
@@ -151,19 +151,10 @@ int main() {
     add_state(content, -1, 2, 0, 42, 1, false, 24, 123456789);
     add_issue(content, -1, 0, 42, 1, 24, 123456789);
     // #2
-    add_state(
-      content,
-      123456790,
-      2,
-      0,
-      42,
-      1,
-      false,
-      24,
-      123456789);
-    add_issue(content, 123456790, 0, 42, 1, 24, 123456789);
+    add_state(content, -1, 2, 123456790, 42, 1, false, 24, 123456789);
+    add_state(content, 123456790, 2, 0, 42, 1, false, 24, 123456790);
     // #3
-    /*add_state(
+    add_state(
       content,
       123456790,
       2,
@@ -172,7 +163,7 @@ int main() {
       1,
       false,
       24,
-      123456789);
+      123456790);
     add_state(
       content,
       -1,
@@ -183,18 +174,38 @@ int main() {
       false,
       24,
       123456791);
-    // #4, #5
+    // #4
     add_state(
       content,
-      123456791,
+      -1,
+      1,
+      123456792,
+      42,
+      1,
+      false,
+      24,
+      123456791);
+    add_state(
+      content,
+      123456792,
+      1,
+      0,
+      42,
+      1,
+      false,
+      24,
+      123456792);
+    // #5
+    add_state(
+      content,
+      123456792,
       1,
       123456793,
       42,
       1,
       false,
       24,
-      123456791);
-    // #5
+      123456792);
     add_state(
       content,
       123456793,
@@ -231,7 +242,7 @@ int main() {
       24,
       123456794);
     add_state(content, -1, 1, 0, 42, 1, false, 24, 123456796);
-    add_issue(content, 0, 0, 42, 1, 24, 123456796);*/
+    add_issue(content, -1, 0, 42, 1, 24, 123456796);
 
     // Check.
     check_content(t, content);
