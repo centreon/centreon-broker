@@ -27,7 +27,7 @@ include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 set(INC_DIR "${INC_DIR}/com/centreon/broker/bam")
 
 # BAM module.
-set(BAM "80-bam")
+set(BAM "20-bam")
 set(BAM "${BAM}" PARENT_SCOPE)
 add_library("${BAM}" SHARED
   # Sources.
