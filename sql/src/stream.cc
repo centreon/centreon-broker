@@ -52,23 +52,25 @@ using namespace com::centreon::broker::sql;
 void (stream::* const stream::_correlation_processing_table[])(misc::shared_ptr<io::data> const&) = {
   NULL,
   &stream::_process_engine,
-  NULL,
   &stream::_process_issue,
   &stream::_process_issue_parent,
-  NULL,
   &stream::_process_state,
   &stream::_process_log_issue
 };
 void (stream::* const stream::_neb_processing_table[])(misc::shared_ptr<io::data> const&) = {
   NULL,
-  //&stream::_process_acknowledgement,
+  &stream::_process_acknowledgement,
+  NULL,
   &stream::_process_custom_variable,
   &stream::_process_custom_variable_status,
-  //&stream::_process_downtime,
+  &stream::_process_downtime,
+  NULL,
   &stream::_process_event_handler,
   &stream::_process_flapping_status,
   &stream::_process_host_check,
   &stream::_process_host_dependency,
+  NULL,
+  NULL,
   &stream::_process_host,
   &stream::_process_host_parent,
   &stream::_process_host_status,
@@ -79,6 +81,8 @@ void (stream::* const stream::_neb_processing_table[])(misc::shared_ptr<io::data
   //&stream::_process_notification,
   &stream::_process_service_check,
   &stream::_process_service_dependency,
+  NULL,
+  NULL,
   &stream::_process_service,
   &stream::_process_service_status
 };
@@ -227,6 +231,7 @@ void stream::_clean_tables(int instance_id) {
  */
 void stream::_prepare() {
   // Prepare insert queries.
+  std::set<std::string> excluded;
   _prepare_insert<neb::acknowledgement>(
                          _acknowledgement_insert,
                          "rt_acknowledgements");
@@ -266,9 +271,12 @@ void stream::_prepare() {
   _prepare_insert<neb::service_dependency>(
                          _service_dependency_insert,
                          "rt_services_services_dependencies");
+  excluded.clear();
+  excluded.insert("service_id");
   _prepare_insert<correlation::state>(
                                  _host_state_insert,
-                                 "rt_hoststateevents");
+                                 "rt_hoststateevents",
+                                 excluded);
   _prepare_insert<correlation::issue>(
                                   _issue_insert,
                                   "rt_issues");
@@ -430,13 +438,16 @@ void stream::_prepare() {
     _downtime_update.prepare(query, "SQL: could not prepare query");
   }
 
+  excluded.clear();
+  excluded.insert("service_id");
   id.clear();
   id["host_id"] = false;
   id["start_time"] = false;
   _prepare_update<correlation::state>(
                                  _host_state_update,
                                  "rt_hoststateevents",
-                                 id);
+                                 id,
+                                 excluded);
 
   id.clear();
   id["host_id"] = false;
@@ -474,11 +485,13 @@ void stream::_prepare() {
  *
  *  @param[out] st          Query object.
  *  @param[in]  table_name  The name of the table.
+ *  @param[in]  excluded    Fields to exclude from the query.
  */
 template <typename T>
 void stream::_prepare_insert(
                database_query& st,
-               std::string const& table_name) {
+               std::string const& table_name,
+               std::set<std::string> const& excluded) {
   // Build query string.
   std::string query;
   query = "INSERT INTO ";
@@ -486,7 +499,8 @@ void stream::_prepare_insert(
   query.append(" (");
   mapping::entry const* entries = T::entries;
   for (size_t i = 0; !entries[i].is_null(); ++i) {
-    if (entries[i].get_name().empty())
+    if (entries[i].get_name().empty()
+        || (excluded.find(entries[i].get_name()) != excluded.end()))
       continue;
     query.append(entries[i].get_name());
     query.append(", ");
@@ -494,7 +508,8 @@ void stream::_prepare_insert(
   query.resize(query.size() - 2);
   query.append(") VALUES(");
   for (size_t i = 0; !entries[i].is_null(); ++i) {
-    if (entries[i].get_name().empty())
+    if (entries[i].get_name().empty()
+        || (excluded.find(entries[i].get_name()) != excluded.end()))
       continue;
     query.append(":");
     query.append(entries[i].get_name());
@@ -504,7 +519,14 @@ void stream::_prepare_insert(
   query.append(")");
 
   // Prepare statement.
-  st.prepare(query, "SQL: could not prepare insertion query");
+  try {
+    st.prepare(query);
+  }
+  catch (std::exception const& e) {
+    throw (exceptions::msg()
+           << "SQL: could not prepare insertion query in table '"
+           << table_name << "': " << e.what());
+  }
 
   return ;
 }
@@ -536,7 +558,16 @@ void stream::_prepare_select(
   query.resize(query.size() - 5);
 
   // Prepare statement.
-  st.prepare(query, "SQL: could not prepare select query");
+  try {
+    st.prepare(query);
+  }
+  catch (std::exception const& e) {
+    throw (exceptions::msg()
+           << "SQL: could not prepare selection query from table '"
+           << table_name << "': " << e.what());
+  }
+
+  return ;
 }
 
 /**
@@ -545,12 +576,14 @@ void stream::_prepare_select(
  *  @param[out] st          Query object.
  *  @param[in]  table_name  The name of the table.
  *  @param[in]  id          List of fields that form an UNIQUE.
+ *  @param[in]  excluded    Fields to exclude from the query.
  */
 template <typename T>
 void stream::_prepare_update(
                database_query& st,
                std::string const& table_name,
-               std::map<std::string, bool> const& id) {
+               std::map<std::string, bool> const& id,
+               std::set<std::string> const& excluded) {
   // Build query string.
   std::string query;
   query = "UPDATE ";
@@ -558,7 +591,8 @@ void stream::_prepare_update(
   query.append(" SET ");
   mapping::entry const* entries = T::entries;
   for (size_t i = 0; !entries[i].is_null(); ++i) {
-    if (entries[i].get_name().empty())
+    if (entries[i].get_name().empty()
+        || (excluded.find(entries[i].get_name()) != excluded.end()))
       continue;
     bool found(id.find(entries[i].get_name()) != id.end());
     if (!found) {
@@ -592,7 +626,14 @@ void stream::_prepare_update(
   query.resize(query.size() - 5);
 
   // Prepare statement.
-  st.prepare(query, "SQL: could not prepare update query");
+  try {
+    st.prepare(query);
+  }
+  catch (std::exception const& e) {
+    throw (exceptions::msg()
+           << "SQL: could not prepare update query on table '"
+           << table_name << "': " << e.what());
+  }
 
   return ;
 }
@@ -636,7 +677,14 @@ void stream::_prepare_delete(
   query.resize(query.size() - 5);
 
   // Prepare statement.
-  st.prepare(query, "SQL: could not prepare deletion query");
+  try {
+    st.prepare(query);
+  }
+  catch (std::exception const& e) {
+    throw (exceptions::msg()
+           << "SQL: could not prepare deletion query on table '"
+           << table_name << "': " << e.what());
+  }
 
   return ;
 }

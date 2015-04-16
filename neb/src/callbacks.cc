@@ -88,11 +88,6 @@ static struct {
 // Registered callbacks.
 std::list<misc::shared_ptr<neb::callback> > neb::gl_registered_callbacks;
 
-// External function to get program version.
-extern "C" {
-  char const* get_program_version();
-}
-
 // Statistics generator.
 static neb::statistics::generator gl_generator;
 
@@ -1239,16 +1234,13 @@ int neb::callback_process(int callback_type, void *data) {
         return (0);
       }
 
-      if (neb::gl_mod_flags & NEBMODULE_ENGINE)
-        instance->engine = "Centreon Engine";
-      else
-        instance->engine = "Nagios / Centreon Engine (< 1.3.0)";
+      instance->engine = "Centreon Engine";
       instance->id = instance_id;
       instance->is_running = true;
       instance->name = instance_name;
       instance->pid = getpid();
       instance->program_start = time(NULL);
-      instance->version = get_program_version();
+      instance->version = "2.x";
       start_time = instance->program_start;
 
       // Send initial event and then configuration.
@@ -1285,17 +1277,14 @@ int neb::callback_process(int callback_type, void *data) {
       misc::shared_ptr<neb::instance> instance(new neb::instance);
 
       // Fill output var.
-      if (neb::gl_mod_flags & NEBMODULE_ENGINE)
-        instance->engine = "Centreon Engine";
-      else
-        instance->engine = "Nagios / Centreon Engine (< 1.3.0)";
+      instance->engine = "Centreon Engine";
       instance->id = instance_id;
       instance->is_running = false;
       instance->name = instance_name;
       instance->pid = getpid();
       instance->program_end = time(NULL);
       instance->program_start = start_time;
-      instance->version = get_program_version();
+      instance->version = "2.x";
 
       // Send event.
       gl_publisher.write(instance);
