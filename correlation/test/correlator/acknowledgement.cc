@@ -72,8 +72,7 @@ int main() {
       ss->host_id = 42;
       ss->instance_id = 1;
       ss->service_id = 24;
-      ss->state_type = 1;
-      ss->current_state = 2;
+      ss->last_hard_state = 2;
       ss->last_check = 123456789;
       c.write(ss);
     }
@@ -92,8 +91,7 @@ int main() {
       ss->host_id = 42;
       ss->instance_id = 1;
       ss->service_id = 24;
-      ss->state_type = 1;
-      ss->current_state = 1;
+      ss->last_hard_state = 1;
       ss->last_check = 123456791;
       c.write(ss);
     }
@@ -112,8 +110,7 @@ int main() {
       ss->host_id = 42;
       ss->instance_id = 1;
       ss->service_id = 24;
-      ss->state_type = 1;
-      ss->current_state = 2;
+      ss->last_hard_state = 2;
       ss->last_check = 123456793;
       c.write(ss);
     }
@@ -122,8 +119,7 @@ int main() {
       ss->host_id = 42;
       ss->instance_id = 1;
       ss->service_id = 24;
-      ss->state_type = 1;
-      ss->current_state = 0;
+      ss->last_hard_state = 0;
       ss->last_check = 123456794;
       c.write(ss);
     }
@@ -141,8 +137,7 @@ int main() {
       ss->host_id = 42;
       ss->instance_id = 1;
       ss->service_id = 24;
-      ss->state_type = 1;
-      ss->current_state = 1;
+      ss->last_hard_state = 1;
       ss->last_check = 123456796;
       c.write(ss);
     }

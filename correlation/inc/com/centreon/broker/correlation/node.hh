@@ -122,6 +122,9 @@ namespace                correlation {
     void                 _generate_state_event(
                            timestamp start_time,
                            io::stream* stream);
+    correlation::state*  _open_state_event(
+                           timestamp start_time) const;
+
   };
 }
 

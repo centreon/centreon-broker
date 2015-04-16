@@ -387,14 +387,14 @@ void node::manage_status(
     return ;
 
   // Recovery
-  if (state != 1 && status == 1) {
+  if (state != 1 && state != 0 && status == 1) {
     my_issue->end_time = last_state_change;
     if (stream)
       stream->write(misc::make_shared(new issue(*my_issue)));
     my_issue.reset();
   }
   // Problem
-  else if (state == 1 && status != 1) {
+  else if ((state == 1 || state == 0) && status != 1) {
     my_issue.reset(new issue);
     my_issue->start_time = last_state_change;
     my_issue->host_id = host_id;
@@ -404,10 +404,11 @@ void node::manage_status(
       stream->write(misc::make_shared(new issue(*my_issue)));
   }
 
-  state = status;
-
   // Generate the state event.
   _generate_state_event(last_state_change, stream);
+
+  state = status;
+  my_state->current_state = status;
 
   // Visits the parents, children, and dependencies.
   for (node_map::iterator it = _parents.begin(), end = _parents.end();
@@ -637,14 +638,35 @@ void node::_generate_state_event(
     my_state->end_time = start_time;
     stream->write(misc::make_shared(new correlation::state(*my_state)));
   }
+  // We didn't cache any state event beforehand. Gracefully manage this case.
+  else if (stream) {
+    misc::shared_ptr<correlation::state> st(_open_state_event(start_time));
+    st->start_time = 0;
+    st->end_time = start_time;
+    stream->write(st);
+  }
 
   // Open new state event.
-  my_state.reset(new correlation::state);
-  my_state->start_time = start_time;
-  my_state->service_id = service_id;
-  my_state->host_id = host_id;
-  my_state->current_state = state;
-  my_state->instance_id = instance_id;
+  my_state.reset(_open_state_event(start_time));
+
+  if (stream)
+    stream->write(misc::make_shared(new correlation::state(*my_state)));
+}
+
+/**
+ *  Open a new state event.
+ *
+ *  @param[in] start_time  The start time of the event.
+ *
+ *  @return                A new state event.
+ */
+correlation::state* node::_open_state_event(timestamp start_time) const {
+  std::auto_ptr<correlation::state> st(new correlation::state);
+  st->start_time = start_time;
+  st->service_id = service_id;
+  st->host_id = host_id;
+  st->current_state = state;
+  st->instance_id = instance_id;
   timestamp earliest_downtime;
   for (std::map<unsigned int, notification::downtime>::const_iterator
          it = downtimes.begin(),
@@ -654,13 +676,11 @@ void node::_generate_state_event(
     if (earliest_downtime.is_null()
         || earliest_downtime < it->second.start_time)
       earliest_downtime = it->second.start_time;
-  my_state->in_downtime
+  st->in_downtime
     = earliest_downtime.is_null() ? false : earliest_downtime <= start_time;
   if (my_issue.get() && !my_issue->ack_time.is_null())
-    my_state->ack_time = my_issue->ack_time > start_time ?
+    st->ack_time = my_issue->ack_time > start_time ?
                            my_issue->ack_time
                            : start_time;
-
-  if (stream)
-    stream->write(misc::make_shared(new correlation::state(*my_state)));
+  return (st.release());
 }
