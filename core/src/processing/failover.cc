@@ -742,6 +742,9 @@ void failover::set_failover(misc::shared_ptr<failover> fo) {
  *  @param[in] read_timeout Read timeout.
  */
 void failover::set_read_timeout(time_t read_timeout) {
+  // A read_timeout of zero should never exist.
+  if (read_timeout == 0)
+    read_time = (time_t) -1;
   _read_timeout = read_timeout;
   if (_read_timeout != (time_t)-1)
     _next_timeout = time(NULL) + _read_timeout;
