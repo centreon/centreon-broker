@@ -104,7 +104,6 @@ namespace                correlation {
     void                 serialize(persistent_cache& cache) const;
 
     unsigned int         host_id;
-    unsigned int         instance_id;
     bool                 in_downtime;
     std::auto_ptr<issue> my_issue;
     std::auto_ptr<correlation::state>

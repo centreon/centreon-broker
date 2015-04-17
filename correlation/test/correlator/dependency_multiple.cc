@@ -55,22 +55,18 @@ int main() {
     QMap<QPair<unsigned int, unsigned int>, node> state;
     node& n1(state[qMakePair(42u, 24u)]);
     n1.host_id = 42;
-    n1.instance_id = 1;
     n1.service_id = 24;
     n1.state = 0;
     node& n2(state[qMakePair(56u, 13u)]);
     n2.host_id = 56;
-    n2.instance_id = 1;
     n2.service_id = 13u;
     n2.state = 0;
     node& n3(state[qMakePair(90u, 42u)]);
     n3.host_id = 90;
-    n3.instance_id = 1;
     n3.service_id = 42u;
     n3.state = 0;
     node& n4(state[qMakePair(213u, 8u)]);
     n4.host_id = 213;
-    n4.instance_id = 1;
     n4.service_id = 8u;
     n4.state = 0;
     n1.add_dependency(&n2);
@@ -164,87 +160,77 @@ int main() {
     }
 
     // Check correlation content.
+    multiplexing::engine::instance().stop();
+    t.finalize();
     QList<misc::shared_ptr<io::data> > content;
-    add_issue(content, 0, 0, 56, 1, 13, 123456789);
-    add_issue(content, 0, 0, 90, 1, 42, 123456790);
-    add_issue(content, 0, 0, 42, 1, 24, 123456791);
+    add_issue(content, 0, 0, 56, 13, 123456789);
+    add_issue(content, 0, 0, 90, 42, 123456790);
+    add_issue(content, 0, 0, 42, 24, 123456791);
     add_issue_parent(
       content,
       42,
-      1,
       24,
       123456791,
       0,
       56,
-      1,
       13,
       123456789,
       123456791);
     add_issue_parent(
       content,
       42,
-      1,
       24,
       123456791,
       0,
       90,
-      1,
       42,
       123456790,
       123456791);
-    add_issue(content, 0, 0, 213, 1, 8, 123456792);
+    add_issue(content, 0, 0, 213, 8, 123456792);
     add_issue_parent(
       content,
       42,
-      1,
       24,
       123456791,
       0,
       213,
-      1,
       8,
       123456792,
       123456792);
     add_issue_parent(
       content,
       42,
-      1,
       24,
       123456791,
       123456793,
       56,
-      1,
       13,
       123456789,
       123456791);
-    add_issue(content, 0, 123456793, 56, 1, 13, 123456789);
+    add_issue(content, 0, 123456793, 56, 13, 123456789);
     add_issue_parent(
       content,
       42,
-      1,
       24,
       123456791,
       123456794,
       90,
-      1,
       42,
       123456790,
       123456791);
     add_issue_parent(
       content,
       42,
-      1,
       24,
       123456791,
       123456794,
       213,
-      1,
       8,
       123456792,
       123456792);
-    add_issue(content, 0, 123456794, 42, 1, 24, 123456791);
-    add_issue(content, 0, 123456795, 90, 1, 42, 123456790);
-    add_issue(content, 0, 123456796, 213, 1, 8, 123456792);
+    add_issue(content, 0, 123456794, 42, 24, 123456791);
+    add_issue(content, 0, 123456795, 90, 42, 123456790);
+    add_issue(content, 0, 123456796, 213, 8, 123456792);
 
     // Check.
     check_content(t, content);

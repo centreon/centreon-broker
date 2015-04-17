@@ -55,12 +55,10 @@ int main() {
     QMap<QPair<unsigned int, unsigned int>, node> state;
     node& n1(state[qMakePair(42u, 24u)]);
     n1.host_id = 42;
-    n1.instance_id = 1;
     n1.service_id = 24;
     n1.state = 0;
     node& n2(state[qMakePair(56u, 13u)]);
     n2.host_id = 56;
-    n2.instance_id = 1;
     n2.service_id = 13u;
     n2.state = 0;
     n1.add_parent(&n2);
@@ -112,34 +110,33 @@ int main() {
     }
 
     // Check correlation content.
+    multiplexing::engine::instance().stop();
+    t.finalize();
     QList<misc::shared_ptr<io::data> > content;
-    add_issue(content, 0, 0, 42, 1, 24, 123456789);
-    add_issue(content, 0, 0, 56, 1, 13, 123456790);
+    add_issue(content, 0, 0, 42, 24, 123456789);
+    add_issue(content, 0, 0, 56, 13, 123456790);
     add_issue_parent(
       content,
       42,
-      1,
       24,
       123456789,
       0,
       56,
-      1,
       13,
       123456790,
       123456790);
     add_issue_parent(
       content,
-      42, 1,
+      42,
       24,
       123456789,
       123456791,
       56,
-      1,
       13,
       123456790,
       123456790);
-    add_issue(content, 0, 123456791, 56, 1, 13, 123456790);
-    add_issue(content, 0, 123456792, 42, 1, 24, 123456789);
+    add_issue(content, 0, 123456791, 56, 13, 123456790);
+    add_issue(content, 0, 123456792, 42, 24, 123456789);
 
     // Check.
     check_content(t, content);

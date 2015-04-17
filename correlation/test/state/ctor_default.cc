@@ -37,7 +37,6 @@ int main() {
           || (ss.current_state != 3)
           || (ss.end_time != 0)
           || (ss.host_id != 0)
-          || (ss.instance_id != 0)
           || (ss.in_downtime != false)
           || (ss.service_id != 0)
           || (ss.start_time != 0)

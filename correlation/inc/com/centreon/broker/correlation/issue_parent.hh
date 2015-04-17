@@ -48,12 +48,10 @@ namespace          correlation {
                    static_type();
 
     unsigned int   child_host_id;
-    unsigned int   child_instance_id;
     unsigned int   child_service_id;
     timestamp      child_start_time;
     timestamp      end_time;
     unsigned int   parent_host_id;
-    unsigned int   parent_instance_id;
     unsigned int   parent_service_id;
     timestamp      parent_start_time;
     timestamp      start_time;

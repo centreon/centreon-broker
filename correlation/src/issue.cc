@@ -37,7 +37,6 @@ issue::issue()
   : ack_time(-1),
     end_time(0),
     host_id(0),
-    instance_id(0),
     service_id(0),
     start_time(0) {}
 
@@ -79,7 +78,6 @@ bool issue::operator==(issue const& i) const {
   return ((this == &i)
           || ((ack_time == i.ack_time)
               && (end_time == i.end_time)
-              && (instance_id == i.instance_id)
               && (host_id == i.host_id)
               && (service_id == i.service_id)
               && (start_time == i.start_time)));
@@ -132,7 +130,6 @@ void issue::_internal_copy(issue const& i) {
   ack_time = i.ack_time;
   end_time = i.end_time;
   host_id = i.host_id;
-  instance_id = i.instance_id;
   service_id = i.service_id;
   start_time = i.start_time;
   return ;

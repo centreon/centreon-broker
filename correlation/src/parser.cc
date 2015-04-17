@@ -270,11 +270,6 @@ bool parser::startElement(
       logging::config(logging::medium)
         << "correlation: new host " << new_node.host_id;
 
-      // Process optional configuration arguments.
-      i_attr = attrs.value("instance_id");
-      if (!i_attr.isEmpty())
-        n->instance_id = i_attr.toUInt();
-
       // Process optionnal arguments.
       /*i_attr = attrs.value("since");
       if (!i_attr.isEmpty())
@@ -367,11 +362,6 @@ bool parser::startElement(
       *n = new_node;
       logging::config(logging::medium) << "correlation: new service ("
         << new_node.host_id << ", " << new_node.service_id << ")";
-
-      // Process optional configuration arguments.
-      id_attr = attrs.value("instance_id");
-      if (!id_attr.isEmpty())
-        n->instance_id = id_attr.toUInt();
 
       // Process optionnal arguments.
       id_attr = attrs.value("since");

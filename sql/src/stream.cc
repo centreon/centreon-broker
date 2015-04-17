@@ -2034,14 +2034,11 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
                 == correlation::de_issue_parent) {
       correlation::issue_parent const&
         ip(*static_cast<correlation::issue_parent const*>(data.data()));
-      if (_cache_deleted_instance_id.find(ip.child_instance_id)
-          != _cache_deleted_instance_id.end()
-          && _cache_deleted_instance_id.find(ip.parent_instance_id)
+      if (_cache_deleted_instance_id.find(ip.source_id)
           != _cache_deleted_instance_id.end()) {
         logging::info(logging::low)
           << "SQL: discarding some issue parent correlation event related to "
-          << "a deleted instance (child instance: " << ip.child_instance_id
-          << ", parent instance: " << ip.parent_instance_id << ")";
+          << "a deleted instance (" << ip.source_id <<  ")";
         deleted = true;
       }
     }

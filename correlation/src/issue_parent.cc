@@ -35,12 +35,10 @@ using namespace com::centreon::broker::correlation;
  */
 issue_parent::issue_parent()
   : child_host_id(0),
-    child_instance_id(0),
     child_service_id(0),
     child_start_time(0),
     end_time(0),
     parent_host_id(0),
-    parent_instance_id(0),
     parent_service_id(0),
     parent_start_time(0),
     start_time(0) {}
@@ -103,12 +101,10 @@ unsigned int issue_parent::static_type() {
  */
 void issue_parent::_internal_copy(issue_parent const& ip) {
   child_host_id = ip.child_host_id;
-  child_instance_id = ip.child_instance_id;
   child_service_id = ip.child_service_id;
   child_start_time = ip.child_start_time;
   end_time = ip.end_time;
   parent_host_id = ip.parent_host_id;
-  parent_instance_id = ip.parent_instance_id;
   parent_service_id = ip.parent_service_id;
   parent_start_time = ip.parent_start_time;
   start_time = ip.start_time;
@@ -156,14 +152,6 @@ mapping::entry const issue_parent::entries[] = {
   mapping::entry(
     &issue_parent::start_time,
     "start_time",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry(
-    &issue_parent::child_instance_id,
-    "",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &issue_parent::parent_instance_id,
-    "",
     mapping::entry::invalid_on_minus_one),
   mapping::entry()
 };

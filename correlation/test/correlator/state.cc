@@ -53,7 +53,6 @@ int main() {
     QMap<QPair<unsigned int, unsigned int>, node> state;
     node& n(state[qMakePair(42u, 24u)]);
     n.host_id = 42;
-    n.instance_id = 1;
     n.service_id = 24;
     n.state = 0;
 
@@ -87,19 +86,18 @@ int main() {
     multiplexing::engine::instance().stop();
     t.finalize();
     QList<misc::shared_ptr<io::data> > content;
-    add_state(content, -1, 0, 123456789, 42, 1, false, 24, 0);
-    add_state(content, -1, 2, 0, 42, 1, false, 24, 123456789);
+    add_state(content, -1, 0, 123456789, 42, false, 24, 0);
+    add_state(content, -1, 2, 0, 42, false, 24, 123456789);
     add_state(
       content,
       -1,
       2,
       123456790,
       42,
-      1,
       false,
       24,
       123456789);
-    add_state(content, -1, 0, 0, 42, 1, false, 24, 123456790);
+    add_state(content, -1, 0, 0, 42, false, 24, 123456790);
 
     // Check.
     check_content(t, content);

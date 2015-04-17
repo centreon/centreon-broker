@@ -58,7 +58,6 @@ int main() {
     QMap<QPair<unsigned int, unsigned int>, node> state;
     node& n(state[qMakePair(42u, 24u)]);
     n.host_id = 42;
-    n.instance_id = 1;
     n.service_id = 24;
     n.state = 0;
 
@@ -147,12 +146,12 @@ int main() {
     t.finalize();
     QList<misc::shared_ptr<io::data> > content;
     // #1
-    add_state(content, -1, 0, 123456789, 42, 1, false, 24, 0);
-    add_state(content, -1, 2, 0, 42, 1, false, 24, 123456789);
-    add_issue(content, -1, 0, 42, 1, 24, 123456789);
+    add_state(content, -1, 0, 123456789, 42, false, 24, 0);
+    add_state(content, -1, 2, 0, 42, false, 24, 123456789);
+    add_issue(content, -1, 0, 42, 24, 123456789);
     // #2
-    add_state(content, -1, 2, 123456790, 42, 1, false, 24, 123456789);
-    add_state(content, 123456790, 2, 0, 42, 1, false, 24, 123456790);
+    add_state(content, -1, 2, 123456790, 42, false, 24, 123456789);
+    add_state(content, 123456790, 2, 0, 42, false, 24, 123456790);
     // #3
     add_state(
       content,
@@ -160,7 +159,6 @@ int main() {
       2,
       123456791,
       42,
-      1,
       false,
       24,
       123456790);
@@ -170,7 +168,6 @@ int main() {
       1,
       0,
       42,
-      1,
       false,
       24,
       123456791);
@@ -181,7 +178,6 @@ int main() {
       1,
       123456792,
       42,
-      1,
       false,
       24,
       123456791);
@@ -191,7 +187,6 @@ int main() {
       1,
       0,
       42,
-      1,
       false,
       24,
       123456792);
@@ -202,7 +197,6 @@ int main() {
       1,
       123456793,
       42,
-      1,
       false,
       24,
       123456792);
@@ -212,7 +206,6 @@ int main() {
       2,
       0,
       42,
-      1,
       false,
       24,
       123456793);
@@ -223,12 +216,11 @@ int main() {
       2,
       123456794,
       42,
-      1,
       false,
       24,
       123456793);
-    add_state(content, -1, 0, 0, 42, 1, false, 24, 123456794);
-    add_issue(content, 123456790, 123456794, 42, 1, 24, 123456789);
+    add_state(content, -1, 0, 0, 42, false, 24, 123456794);
+    add_issue(content, 123456790, 123456794, 42, 24, 123456789);
     // #7, should not change anything
     // #8
     add_state(
@@ -237,12 +229,11 @@ int main() {
       0,
       123456796,
       42,
-      1,
       false,
       24,
       123456794);
-    add_state(content, -1, 1, 0, 42, 1, false, 24, 123456796);
-    add_issue(content, -1, 0, 42, 1, 24, 123456796);
+    add_state(content, -1, 1, 0, 42, false, 24, 123456796);
+    add_issue(content, -1, 0, 42, 24, 123456796);
 
     // Check.
     check_content(t, content);

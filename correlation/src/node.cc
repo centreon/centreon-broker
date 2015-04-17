@@ -27,6 +27,8 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
 
+extern unsigned int instance_id;
+
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -38,7 +40,6 @@ using namespace com::centreon::broker::correlation;
  */
 node::node()
   : host_id(0),
-    instance_id(0),
     in_downtime(false),
     service_id(0),
     state(0) {}
@@ -108,7 +109,6 @@ bool node::operator==(node const& n) const {
   if (this == &n)
     retval = true;
   else if ((host_id == n.host_id)
-           && (instance_id == n.instance_id)
            && (in_downtime == n.in_downtime)
            && (service_id == n.service_id)
            && (state == n.state)
@@ -413,10 +413,10 @@ void node::manage_status(
   // Problem
   else if (old_state == 0 && new_state != 0) {
     my_issue.reset(new issue);
+    my_issue->source_id = instance_id;
     my_issue->start_time = last_state_change;
     my_issue->host_id = host_id;
     my_issue->service_id = service_id;
-    my_issue->instance_id = instance_id;
     if (acknowledgement.get())
       my_issue->ack_time = last_state_change;
     if (stream)
@@ -512,12 +512,11 @@ void node::linked_node_updated(
     node& parent_node = (type == depended_by ? *this : n);
     ip->child_host_id = child_node.host_id;
     ip->child_service_id = child_node.service_id;
-    ip->child_instance_id = child_node.instance_id;
     ip->child_start_time = child_node.my_issue->start_time;
     ip->parent_host_id = parent_node.host_id;
     ip->parent_service_id = parent_node.service_id;
-    ip->parent_instance_id = parent_node.instance_id;
     ip->parent_start_time = parent_node.my_issue->start_time;
+    ip->source_id = instance_id;
     ip->start_time = my_issue->start_time > n.my_issue->start_time
                        ? my_issue->start_time
                        : n.my_issue->start_time;
@@ -536,15 +535,14 @@ void node::linked_node_updated(
       misc::shared_ptr<issue_parent> ip(new issue_parent);
       ip->child_host_id = child_node.host_id;
       ip->child_service_id = child_node.service_id;
-      ip->child_instance_id = child_node.instance_id;
       ip->child_start_time = child_node.my_issue->start_time;
       ip->parent_host_id = parent_node.host_id;
       ip->parent_service_id = parent_node.service_id;
-      ip->parent_instance_id = parent_node.instance_id;
       ip->parent_start_time = parent_node.my_issue->start_time;
       ip->start_time = my_issue->start_time > n.my_issue->start_time
                          ? my_issue->start_time
                          : n.my_issue->start_time;
+      ip->source_id = instance_id;
       if (n.state == 0)
         ip->end_time = start_time;
 
@@ -621,7 +619,6 @@ void node::_internal_copy(node const& n) {
 
   // Copy other members.
   host_id = n.host_id;
-  instance_id = n.instance_id;
   in_downtime = n.in_downtime;
   if (n.my_issue.get())
     my_issue.reset(new issue(*(n.my_issue)));
@@ -681,7 +678,6 @@ correlation::state* node::_open_state_event(timestamp start_time) const {
   st->service_id = service_id;
   st->host_id = host_id;
   st->current_state = state;
-  st->instance_id = instance_id;
   timestamp earliest_downtime;
   for (std::map<unsigned int, neb::downtime>::const_iterator
          it = downtimes.begin(),

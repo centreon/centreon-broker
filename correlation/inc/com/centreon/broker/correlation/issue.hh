@@ -50,7 +50,6 @@ namespace          correlation {
     timestamp      ack_time;
     timestamp      end_time;
     unsigned int   host_id;
-    unsigned int   instance_id;
     unsigned int   service_id;
     timestamp      start_time;
 
