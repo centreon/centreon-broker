@@ -76,7 +76,7 @@ int main() {
       n1.add_dependency(&n3);
       n1.add_dependency(&n4);
 
-      // Create correlator and apply state.
+      // Apply state.
       c.set_state(state);
     }
 

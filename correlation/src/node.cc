@@ -529,8 +529,8 @@ void node::linked_node_updated(
   // Parenting.
   else if ((type == parent || type == children)
              && my_issue.get() && n.my_issue.get()) {
-    node& child_node = (type == parent ? n : *this);
-    node& parent_node = (type == parent ? *this : n);    
+    node& child_node = (type == parent ? *this : n);
+    node& parent_node = (type == parent ? n : *this);
     if (parent_node.all_children_with_issues()) {
       misc::shared_ptr<issue_parent> ip(new issue_parent);
       ip->child_host_id = child_node.host_id;

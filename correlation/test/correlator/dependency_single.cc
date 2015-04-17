@@ -52,7 +52,7 @@ int main() {
 
   try {
     correlation::stream c("", misc::shared_ptr<persistent_cache>(), false);
-   {
+    {
       // Create state.
       QMap<QPair<unsigned int, unsigned int>, node> state;
       node& n1(state[qMakePair(42u, 24u)]);
@@ -65,7 +65,7 @@ int main() {
       n2.state = 0;
       n1.add_dependency(&n2);
 
-      // Create correlator and apply state.
+      // Apply state.
       c.set_state(state);
     }
 
