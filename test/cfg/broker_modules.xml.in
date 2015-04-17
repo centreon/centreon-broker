@@ -6,12 +6,11 @@
   <module>@CORRELATION_MODULE_PATH@</module>
   <module>@STORAGE_MODULE_PATH@</module>
   <module>@BAM_MODULE_PATH@</module>
+  <module>@NOTIFICATION_MODULE_PATH@</module>
   <module>@TCP_MODULE_PATH@</module>
-  <module>@COMPRESSION_MODULE_PATH@</module>
   <module>@TLS_MODULE_PATH@</module>
   <module>@RRD_MODULE_PATH@</module>
   <module>@SQL_MODULE_PATH@</module>
-  <module>@NOTIFICATION_MODULE_PATH@</module>
   <module>@INFLUXDB_MODULE_PATH@</module>
   <module>@GRAPHITE_MODULE_PATH@</module>
 </centreonbroker>

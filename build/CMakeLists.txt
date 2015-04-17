@@ -121,7 +121,6 @@ if (WITH_TESTING)
   include(CTest)
   enable_testing()
   include_directories("${PROJECT_SOURCE_DIR}/core")
-  include_directories("${PROJECT_SOURCE_DIR}/compression/inc")
   include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 endif ()
 
@@ -278,6 +277,10 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/command_file/factory.cc"
   "${SRC_DIR}/command_file/stream.cc"
   "${SRC_DIR}/command_file/internal.cc"
+  "${SRC_DIR}/compression/factory.cc"
+  "${SRC_DIR}/compression/internal.cc"
+  "${SRC_DIR}/compression/opener.cc"
+  "${SRC_DIR}/compression/stream.cc"
   "${SRC_DIR}/config/applier/endpoint.cc"
   "${SRC_DIR}/config/applier/modules.cc"
   "${SRC_DIR}/config/applier/state.cc"
@@ -358,6 +361,10 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/command_file/factory.hh"
   "${INC_DIR}/command_file/stream.hh"
   "${INC_DIR}/command_file/internal.hh"
+  "${INC_DIR}/compression/factory.hh"
+  "${INC_DIR}/compression/internal.hh"
+  "${INC_DIR}/compression/opener.hh"
+  "${INC_DIR}/compression/stream.hh"
   "${INC_DIR}/config/applier/endpoint.hh"
   "${INC_DIR}/config/applier/init.hh"
   "${INC_DIR}/config/applier/logger.hh"
@@ -491,13 +498,6 @@ option(WITH_MODULE_NOTIFICATION "Build NOTIFICATION module." ON)
 if (WITH_MODULE_NOTIFICATION)
   add_subdirectory("notification")
   list(APPEND MODULE_LIST "notification")
-endif()
-
-# Compression module.
-option(WITH_MODULE_COMPRESSION "Build compression module." ON)
-if (WITH_MODULE_COMPRESSION)
-  add_subdirectory("compression")
-  list(APPEND MODULE_LIST "compression")
 endif()
 
 # Correlation module.
@@ -948,7 +948,7 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/bench_bbdo.cc"
     "${PROJECT_SOURCE_DIR}/test/bench_stream.cc"
     "${PROJECT_SOURCE_DIR}/test/bench_stream.hh")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${COMPRESSION} ${BAM} ${NOTIFICATION} ${CORRELATION} ${NEB} ${STORAGE})
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${BAM} ${NOTIFICATION} ${CORRELATION} ${NEB} ${STORAGE})
 
   # Last file to configure, based on target paths.
   configure_file("${PROJECT_SOURCE_DIR}/test/vars.hh.in"
@@ -1580,6 +1580,22 @@ if (WITH_TESTING)
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/file/stream/process.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+
+  # compression namespace tests.
+  # compression::stream tests.
+  #   Compress/uncompress.
+  set(TEST_NAME "compression_stream_io")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/compression/stream/io.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Buffer is read back.
+  set(TEST_NAME "compression_buffer_is_read_back")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/compression/stream/buffer_is_read_back.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
 

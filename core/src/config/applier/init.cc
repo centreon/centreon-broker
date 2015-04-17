@@ -23,6 +23,7 @@
 #include <QtCore>
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/command_file/internal.hh"
+#include "com/centreon/broker/compression/internal.hh"
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/config/applier/logger.hh"
@@ -58,6 +59,7 @@ void config::applier::deinit() {
   config::applier::logger::unload();
   io::temporary::unload();
   bbdo::unload();
+  compression::unload();
   command_file::unload();
   file::unload();
   multiplexing::engine::instance().clear();
@@ -82,6 +84,7 @@ void config::applier::init() {
   config::applier::modules::load();
   file::load();
   command_file::load();
+  compression::load();
   bbdo::load();
   config::applier::logger::load();
   config::applier::temporary::load();
