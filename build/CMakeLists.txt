@@ -302,9 +302,6 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/file/internal.cc"
   "${SRC_DIR}/file/opener.cc"
   "${SRC_DIR}/file/stream.cc"
-# #	../src/interface/xml/destination.cc
-# #	../src/interface/xml/internal.cc
-# #	../src/interface/xml/source.cc
   "${SRC_DIR}/io/data.cc"
   "${SRC_DIR}/io/endpoint.cc"
   "${SRC_DIR}/io/event_info.cc"
