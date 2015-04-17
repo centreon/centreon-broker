@@ -63,25 +63,25 @@ node::~node() {
   for (it = _children.begin(), end = _children.end();
        it != end;
        ++it)
-    (*it)->_parents.remove(get_id());
+    (*it)->_parents.remove(get_id(), this);
 
   // Remove self from node depending on self.
   for (it = _depended_by.begin(), end = _depended_by.end();
        it != end;
        ++it)
-    (*it)->_depends_on.remove(get_id());
+    (*it)->_depends_on.remove(get_id(), this);
 
   // Remove self from dependencies.
   for (it = _depends_on.begin(), end = _depends_on.end();
        it != end;
        ++it)
-    (*it)->_depended_by.remove(get_id());
+    (*it)->_depended_by.remove(get_id(), this);
 
   // Remove self from parents.
   for (it = _parents.begin(), end = _parents.end();
        it != end;
        ++it)
-    (*it)->_children.remove(get_id());
+    (*it)->_children.remove(get_id(), this);
 }
 
 /**
@@ -373,40 +373,45 @@ bool node::all_children_with_issues() const {
 /**
  *  Manage a status event.
  *
- *  @param[in] status            The status.
+ *  @param[in] new_state         The new status.
  *  @param[in] last_state_change The time of the last state change.
  *  @param[out] stream           A stream to write the events to.
  */
 void node::manage_status(
-       short status,
+       short new_state,
        timestamp last_state_change,
        io::stream* stream) {
 
+  short old_state = state;
+
   // No status change, nothing to do.
-  if (status == state)
+  if (old_state == new_state)
     return ;
 
   // Remove acknowledgement.
   // We need to cache the old_ack because we change the ack time value
   // directly in the issue, but it needs to be set again .
-  if (status == 0)
+  if (new_state == 0)
     acknowledgement.reset();
   else if (acknowledgement.get()
              && !acknowledgement->is_sticky)
     acknowledgement.reset();
 
   // Generate the state event.
-  _generate_state_event(last_state_change, status, stream);
+  _generate_state_event(last_state_change, new_state, stream);
+
+  state = new_state;
 
   // Recovery
-  if (state != 0 && status == 0) {
+  if (old_state != 0 && new_state == 0) {
     my_issue->end_time = last_state_change;
+    _visit_linked_nodes(last_state_change, stream);
     if (stream)
       stream->write(misc::make_shared(new issue(*my_issue)));
     my_issue.reset();
   }
   // Problem
-  else if (state == 0 && status != 0) {
+  else if (old_state == 0 && new_state != 0) {
     my_issue.reset(new issue);
     my_issue->start_time = last_state_change;
     my_issue->host_id = host_id;
@@ -416,27 +421,8 @@ void node::manage_status(
       my_issue->ack_time = last_state_change;
     if (stream)
       stream->write(misc::make_shared(new issue(*my_issue)));
+    _visit_linked_nodes(last_state_change, stream);
   }
-
-  state = status;
-
-  // Visits the parents, children, and dependencies.
-  for (node_map::iterator it = _parents.begin(), end = _parents.end();
-       it != end;
-       ++it)
-    (*it)->linked_node_updated(*this, last_state_change, children, stream);
-  for (node_map::iterator it = _children.begin(), end = _children.end();
-       it != end;
-       ++it)
-    (*it)->linked_node_updated(*this, last_state_change, parent, stream);
-  for (node_map::iterator it = _depends_on.begin(), end = _depends_on.end();
-       it != end;
-       ++it)
-    (*it)->linked_node_updated(*this, last_state_change, depended_by, stream);
-  for (node_map::iterator it = _depended_by.begin(), end = _depended_by.end();
-       it != end;
-       ++it)
-    (*it)->linked_node_updated(*this, last_state_change, depends_on, stream);
 }
 
 /**
@@ -522,8 +508,8 @@ void node::linked_node_updated(
   if ((type == depended_by || type == depends_on)
         && my_issue.get() && n.my_issue.get()) {
     misc::shared_ptr<issue_parent> ip(new issue_parent);
-    node& child_node = (type == depends_on ? n : *this);
-    node& parent_node = (type == depends_on ? *this : n);
+    node& child_node = (type == depended_by ? n : *this);
+    node& parent_node = (type == depended_by ? *this : n);
     ip->child_host_id = child_node.host_id;
     ip->child_service_id = child_node.service_id;
     ip->child_instance_id = child_node.instance_id;
@@ -532,7 +518,11 @@ void node::linked_node_updated(
     ip->parent_service_id = parent_node.service_id;
     ip->parent_instance_id = parent_node.instance_id;
     ip->parent_start_time = parent_node.my_issue->start_time;
-    ip->start_time = start_time;
+    ip->start_time = my_issue->start_time > n.my_issue->start_time
+                       ? my_issue->start_time
+                       : n.my_issue->start_time;
+    if (n.state == 0)
+      ip->end_time = start_time;
 
     if (stream)
       stream->write(ip);
@@ -552,7 +542,11 @@ void node::linked_node_updated(
       ip->parent_service_id = parent_node.service_id;
       ip->parent_instance_id = parent_node.instance_id;
       ip->parent_start_time = parent_node.my_issue->start_time;
-      ip->start_time = start_time;
+      ip->start_time = my_issue->start_time > n.my_issue->start_time
+                         ? my_issue->start_time
+                         : n.my_issue->start_time;
+      if (n.state == 0)
+        ip->end_time = start_time;
 
       if (stream)
         stream->write(ip);
@@ -636,6 +630,8 @@ void node::_internal_copy(node const& n) {
   service_id = n.service_id;
   state = n.state;
   downtimes = n.downtimes;
+  if (n.acknowledgement.get())
+    acknowledgement.reset(new neb::acknowledgement(*n.acknowledgement));
 
   return ;
 }
@@ -702,4 +698,31 @@ correlation::state* node::_open_state_event(timestamp start_time) const {
                            acknowledgement->entry_time
                            : start_time;
   return (st.release());
+}
+
+/**
+ *  Visits the parents, children, and dependencies.
+ *
+ *  @param[in] last_state_change   When was the node last updated.
+ *  @param[in] stream              The stream.
+ */
+void node::_visit_linked_nodes(
+             timestamp last_state_change,
+             io::stream* stream) {
+  for (node_map::iterator it = _parents.begin(), end = _parents.end();
+       it != end;
+       ++it)
+    (*it)->linked_node_updated(*this, last_state_change, children, stream);
+  for (node_map::iterator it = _children.begin(), end = _children.end();
+       it != end;
+       ++it)
+    (*it)->linked_node_updated(*this, last_state_change, parent, stream);
+  for (node_map::iterator it = _depends_on.begin(), end = _depends_on.end();
+       it != end;
+       ++it)
+    (*it)->linked_node_updated(*this, last_state_change, depended_by, stream);
+  for (node_map::iterator it = _depended_by.begin(), end = _depended_by.end();
+       it != end;
+       ++it)
+    (*it)->linked_node_updated(*this, last_state_change, depends_on, stream);
 }

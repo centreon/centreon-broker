@@ -234,7 +234,7 @@ void check_content(
                  << ip1->child_service_id << ", child start time "
                  << ip1->child_start_time << ", end time "
                  << ip1->end_time << ", parent host "
-                 << ip1->parent_host_id << ", parent service "
+                 << ip1->parent_host_id << ", parent instance "
                  << ip1->parent_instance_id << ", parent service "
                  << ip1->parent_service_id << ", parent start time "
                  << ip1->parent_start_time << ", start time "
