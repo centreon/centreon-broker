@@ -73,12 +73,16 @@ namespace          sql {
     template       <typename T>
     void           _prepare_insert(
                      database_query& st,
-                     std::string const& table_name);
+                     std::string const& table_name,
+                     std::set<std::string> const& excluded
+                     = std::set<std::string>());
     template       <typename T>
     void           _prepare_update(
                      database_query& st,
                      std::string const& table_name,
-                     std::map<std::string, bool> const& id);
+                     std::map<std::string, bool> const& id,
+                     std::set<std::string> const& excluded
+                     = std::set<std::string>());
     template       <typename T>
     void           _prepare_delete(
                      database_query& st,

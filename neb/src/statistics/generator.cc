@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Merethis
+** Copyright 2013-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -37,8 +37,6 @@
 #include "com/centreon/broker/neb/statistics/hosts_actively_checked.hh"
 #include "com/centreon/broker/neb/statistics/hosts_checked.hh"
 #include "com/centreon/broker/neb/statistics/hosts_flapping.hh"
-#include "com/centreon/broker/neb/statistics/hosts_in_downtime.hh"
-#include "com/centreon/broker/neb/statistics/hosts_passively_checked.hh"
 #include "com/centreon/broker/neb/statistics/hosts_scheduled.hh"
 #include "com/centreon/broker/neb/statistics/passive_host_latency.hh"
 #include "com/centreon/broker/neb/statistics/passive_host_state_change.hh"
@@ -50,8 +48,6 @@
 #include "com/centreon/broker/neb/statistics/services_actively_checked.hh"
 #include "com/centreon/broker/neb/statistics/services_checked.hh"
 #include "com/centreon/broker/neb/statistics/services_flapping.hh"
-#include "com/centreon/broker/neb/statistics/services_in_downtime.hh"
-#include "com/centreon/broker/neb/statistics/services_passively_checked.hh"
 #include "com/centreon/broker/neb/statistics/services_scheduled.hh"
 #include "com/centreon/broker/neb/statistics/total_host_state_change.hh"
 #include "com/centreon/broker/neb/statistics/total_hosts.hh"
@@ -79,8 +75,6 @@ generator::generator()
   _plugins["hosts_checked"] = misc::shared_ptr<plugin>(new hosts_checked);
   _plugins["hosts_flapping"] = misc::shared_ptr<plugin>(new hosts_flapping);
   _plugins["hosts"] = misc::shared_ptr<plugin>(new hosts);
-  _plugins["hosts_in_downtime"] = misc::shared_ptr<plugin>(new hosts_in_downtime);
-  _plugins["hosts_passively_checked"] = misc::shared_ptr<plugin>(new hosts_passively_checked);
   _plugins["hosts_scheduled"] = misc::shared_ptr<plugin>(new hosts_scheduled);
   _plugins["passive_host_latency"] = misc::shared_ptr<plugin>(new passive_host_latency);
   _plugins["passive_hosts_last"] = misc::shared_ptr<plugin>(new passive_hosts_last);
@@ -92,8 +86,6 @@ generator::generator()
   _plugins["services_checked"] = misc::shared_ptr<plugin>(new services_checked);
   _plugins["services_flapping"] = misc::shared_ptr<plugin>(new services_flapping);
   _plugins["services"] = misc::shared_ptr<plugin>(new services);
-  _plugins["services_in_downtime"] = misc::shared_ptr<plugin>(new services_in_downtime);
-  _plugins["services_passively_checked"] = misc::shared_ptr<plugin>(new services_passively_checked);
   _plugins["services_scheduled"] = misc::shared_ptr<plugin>(new services_scheduled);
   _plugins["total_hosts"] = misc::shared_ptr<plugin>(new total_hosts);
   _plugins["total_host_state_change"] = misc::shared_ptr<plugin>(new total_host_state_change);
