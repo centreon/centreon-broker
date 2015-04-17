@@ -48,7 +48,7 @@ namespace                correlation {
    */
   class                  node {
   public:
-    typedef QHash<QPair<unsigned int, unsigned int>, node*>
+    typedef QMultiHash<QPair<unsigned int, unsigned int>, node*>
                          node_map;
 
                          node();
@@ -130,6 +130,10 @@ namespace                correlation {
                            io::stream* stream);
     correlation::state*  _open_state_event(
                            timestamp start_time) const;
+
+    void                 _visit_linked_nodes(
+                           timestamp last_state_change,
+                           io::stream* stream);
 
   };
 }
