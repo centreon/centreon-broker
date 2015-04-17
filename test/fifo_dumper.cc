@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -57,7 +57,7 @@ int main() {
   std::cout << "sender fifo: " << sender_fifo << std::endl;
 
   try {
-    ::mkdir(fifo_config_path.c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+    ::mkdir(fifo_config_path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
 
     // Create the config influxdb xml file.
     test_file file;
@@ -109,8 +109,6 @@ int main() {
 
   // Cleanup.
   broker.stop();
-  ::remove(receiver_file.c_str());
-  ::remove(sender_fifo.c_str());
-  ::rmdir(fifo_config_path.c_str());
+  recursive_remove(fifo_config_path);
   return (error ? EXIT_FAILURE : EXIT_SUCCESS);
 }
