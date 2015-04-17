@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -130,44 +130,31 @@ mapping::entry const dimension_timeperiod::entries[] = {
   mapping::entry(
     &bam::dimension_timeperiod::id,
     "tp_id",
-    1,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &bam::dimension_timeperiod::name,
-    "name",
-    2),
+    "name"),
   mapping::entry(
     &bam::dimension_timeperiod::monday,
-    "monday",
-    3),
+    "monday"),
   mapping::entry(
     &bam::dimension_timeperiod::tuesday,
-    "tuesday",
-    4),
+    "tuesday"),
   mapping::entry(
     &bam::dimension_timeperiod::wednesday,
-    "wednesday",
-    5),
+    "wednesday"),
   mapping::entry(
     &bam::dimension_timeperiod::thursday,
-    "thursday",
-    6),
+    "thursday"),
   mapping::entry(
     &bam::dimension_timeperiod::friday,
-    "friday",
-    7),
+    "friday"),
   mapping::entry(
     &bam::dimension_timeperiod::saturday,
-    "saturday",
-    8),
+    "saturday"),
   mapping::entry(
     &bam::dimension_timeperiod::sunday,
-    "sunday",
-    9),
-  mapping::entry(
-    &bam::dimension_timeperiod::instance_id,
-    "",
-    10),
+    "sunday"),
   mapping::entry()
 };
 

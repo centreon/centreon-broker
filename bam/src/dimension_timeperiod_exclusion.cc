@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -103,17 +103,11 @@ mapping::entry const dimension_timeperiod_exclusion::entries[] = {
   mapping::entry(
     &bam::dimension_timeperiod_exclusion::timeperiod_id,
     "timeperiod_id",
-    1,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &bam::dimension_timeperiod_exclusion::excluded_timeperiod_id,
     "excluded_timeperiod_id",
-    2,
-    mapping::entry::NULL_ON_ZERO),
-  mapping::entry(
-    &bam::dimension_timeperiod_exclusion::instance_id,
-    "",
-    3),
+    mapping::entry::invalid_on_zero),
   mapping::entry()
 };
 

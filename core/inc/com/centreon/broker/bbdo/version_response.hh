@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,42 +21,53 @@
 #  define CCB_BBDO_VERSION_RESPONSE_HH
 
 #  include <QString>
+#  include "com/centreon/broker/bbdo/internal.hh"
 #  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/io/events.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace             bbdo {
+namespace               bbdo {
   /**
    *  @class version_response version_response.hh "com/centreon/broker/bbdo/version_response.hh"
    *  @brief Send protocol version used by endpoint.
    *
    *  Send protocol version used by endpoint.
    */
-  class               version_response : public io::data {
+  class                 version_response : public io::data {
   public:
-                      version_response();
-                      version_response(version_response const& right);
-                      ~version_response();
-    version_response& operator=(version_response const& right);
-    unsigned int      type() const;
-    static unsigned int
-                      static_type();
+                        version_response();
+                        version_response(version_response const& other);
+                        ~version_response();
+    version_response&   operator=(version_response const& other);
+    unsigned int        type() const;
 
-    short             bbdo_major;
-    short             bbdo_minor;
-    short             bbdo_patch;
-    QString           extensions;
+    /**
+     *  Get the event type.
+     *
+     *  @return The event type.
+     */
+    static unsigned int static_type() {
+      return (io::events::data_type<
+                            io::events::bbdo,
+                            bbdo::de_version_response>::value);
+    }
+
+    short               bbdo_major;
+    short               bbdo_minor;
+    short               bbdo_patch;
+    QString             extensions;
 
     static mapping::entry const
-                      entries[];
+                        entries[];
     static io::event_info::event_operations const
-                      operations;
+                        operations;
 
   private:
-    void              _internal_copy(version_response const& right);
+    void                _internal_copy(version_response const& right);
   };
 }
 

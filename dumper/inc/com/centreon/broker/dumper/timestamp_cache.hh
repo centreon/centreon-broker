@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -29,34 +29,32 @@
 
 CCB_BEGIN()
 
-namespace        dumper {
+namespace               dumper {
   /**
    *  @class timestamp_cache timestamp_cache.hh "com/centreon/broker/dumper/timestamp_cache.hh"
    *  @brief Cache the last modified time of a file.
    *
    *  This is used to cache this information in the persistant cache.
    */
-  class          timestamp_cache : public io::data {
+  class                 timestamp_cache : public io::data {
   public:
-                 timestamp_cache();
-                 timestamp_cache(timestamp_cache const& right);
-                 ~timestamp_cache();
-    timestamp_cache&
-                 operator=(timestamp_cache const& right);
-    unsigned int type() const;
-    static unsigned int
-                 static_type();
+                        timestamp_cache();
+                        timestamp_cache(timestamp_cache const& right);
+                        ~timestamp_cache();
+    timestamp_cache&    operator=(timestamp_cache const& right);
+    unsigned int        type() const;
+    static unsigned int static_type();
 
-    QString      filename;
-    timestamp    last_modified;
+    QString             filename;
+    timestamp           last_modified;
 
     static mapping::entry const
-                    entries[];
+                        entries[];
     static io::event_info::event_operations const
-                    operations;
+                        operations;
 
   private:
-    void         _internal_copy(timestamp_cache const& right);
+    void                _internal_copy(timestamp_cache const& right);
   };
 }
 

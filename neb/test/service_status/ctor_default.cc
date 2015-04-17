@@ -33,7 +33,9 @@ int main() {
   neb::service_status ss;
 
   // Check.
-  return ((ss.active_checks_enabled
+  return (((ss.source_id != 0)
+           || (ss.destination_id != 0)
+           || ss.active_checks_enabled
            || !ss.check_command.isEmpty()
            || (fabs(ss.check_interval) > 0.001)
            || !ss.check_period.isEmpty()
@@ -48,7 +50,6 @@ int main() {
            || ss.has_been_checked
            || (ss.host_id != 0)
            || !ss.host_name.isEmpty()
-           || (ss.instance_id != 0)
            || ss.is_flapping
            || (ss.last_check != 0)
            || (ss.last_hard_state != 4)

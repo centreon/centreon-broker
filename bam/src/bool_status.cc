@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -98,16 +98,13 @@ mapping::entry const bool_status::entries[] = {
   mapping::entry(
     &bam::bool_status::bool_id,
     "bool_id",
-    1,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &bam::bool_status::state,
-    "state",
-    2),
+    "state"),
   mapping::entry(
     &bam::bool_status::state,
-    "",
-    3),
+    ""),
   mapping::entry()
 };
 

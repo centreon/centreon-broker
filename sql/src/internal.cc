@@ -237,10 +237,11 @@ database_query& operator<<(database_query& q, io::data const& d) {
   if (info) {
     for (mapping::entry const* current_entry(info->get_mapping());
          !current_entry->is_null();
-         ++current_entry)
-      if (!current_entry->get_name().empty()) {
+         ++current_entry) {
+      char const* entry_name(current_entry->get_name());
+      if (entry_name && entry_name[0]) {
         QString field(":");
-        field.append(current_entry->get_name().c_str());
+        field.append(entry_name);
         switch (current_entry->get_type()) {
         case mapping::source::BOOL:
           bind_boolean(field, current_entry->get_bool(d), q);
@@ -250,13 +251,13 @@ database_query& operator<<(database_query& q, io::data const& d) {
           break ;
         case mapping::source::INT:
           switch (current_entry->get_attribute()) {
-          case mapping::entry::NULL_ON_ZERO:
+          case mapping::entry::invalid_on_zero:
             bind_integer_null_on_zero(
               field,
               current_entry->get_int(d),
               q);
             break ;
-          case mapping::entry::NULL_ON_MINUS_ONE:
+          case mapping::entry::invalid_on_minus_one:
             bind_integer_null_on_minus_one(
               field,
               current_entry->get_int(d),
@@ -271,7 +272,7 @@ database_query& operator<<(database_query& q, io::data const& d) {
           break ;
         case mapping::source::STRING:
           if (current_entry->get_attribute()
-              == mapping::entry::NULL_ON_ZERO)
+              == mapping::entry::invalid_on_zero)
             bind_string_null_on_empty(
               field,
               current_entry->get_string(d),
@@ -281,13 +282,13 @@ database_query& operator<<(database_query& q, io::data const& d) {
           break ;
         case mapping::source::TIME:
           switch (current_entry->get_attribute()) {
-          case mapping::entry::NULL_ON_ZERO:
+          case mapping::entry::invalid_on_zero:
             bind_timet_null_on_zero(
               field,
               current_entry->get_time(d),
               q);
             break ;
-          case mapping::entry::NULL_ON_MINUS_ONE:
+          case mapping::entry::invalid_on_minus_one:
             bind_timet_null_on_minus_one(
               field,
               current_entry->get_time(d),
@@ -299,13 +300,13 @@ database_query& operator<<(database_query& q, io::data const& d) {
           break ;
         case mapping::source::UINT:
           switch (current_entry->get_attribute()) {
-          case mapping::entry::NULL_ON_ZERO:
+          case mapping::entry::invalid_on_zero:
             bind_uint_null_on_zero(
               field,
               current_entry->get_uint(d),
               q);
             break ;
-          case mapping::entry::NULL_ON_MINUS_ONE:
+          case mapping::entry::invalid_on_minus_one:
             bind_uint_null_on_minus_one(
               field,
               current_entry->get_uint(d),
@@ -322,6 +323,7 @@ database_query& operator<<(database_query& q, io::data const& d) {
                  << " is not a known type ID");
         }
       }
+    }
   }
   else
     throw (exceptions::msg() << "SQL: cannot bind object of type "

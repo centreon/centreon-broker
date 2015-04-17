@@ -131,158 +131,117 @@ void service_status::_internal_copy(service_status const& ss) {
 mapping::entry const service_status::entries[] = {
   mapping::entry(
     &service_status::active_checks_enabled,
-    "active_checks",
-    2),
+    "active_checks"),
   mapping::entry(
     &service_status::check_interval,
-    "check_interval",
-    3),
+    "check_interval"),
   mapping::entry(
     &service_status::check_period,
-    "check_period",
-    4),
+    "check_period"),
   mapping::entry(
     &service_status::check_type,
-    "check_type",
-    5),
+    "check_type"),
   mapping::entry(
     &service_status::current_check_attempt,
-    "check_attempt",
-    6),
+    "check_attempt"),
   mapping::entry(
     &service_status::current_state,
-    "state",
-    8),
+    "state"),
   mapping::entry(
     &service_status::enabled,
-    "enabled",
-    9),
+    "enabled"),
   mapping::entry(
     &service_status::event_handler,
-    "event_handler",
-    10),
+    "event_handler"),
   mapping::entry(
     &service_status::event_handler_enabled,
-    "event_handler_enabled",
-    11),
+    "event_handler_enabled"),
   mapping::entry(
     &service_status::execution_time,
-    "execution_time",
-    12),
+    "execution_time"),
   mapping::entry(
     &service_status::flap_detection_enabled,
-    "flap_detection",
-    14),
+    "flap_detection"),
   mapping::entry(
     &service_status::has_been_checked,
-    "checked",
-    15),
+    "checked"),
   mapping::entry(
     &service_status::host_id,
     "host_id",
-    16,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service_status::host_name,
-    "",
-    17),
+    ""),
   mapping::entry(
     &service_status::is_flapping,
-    "flapping",
-    18),
+    "flapping"),
   mapping::entry(
     &service_status::last_check,
-    "last_check",
-    19),
+    "last_check"),
   mapping::entry(
     &service_status::last_hard_state,
-    "last_hard_state",
-    20),
+    "last_hard_state"),
   mapping::entry(
     &service_status::last_hard_state_change,
-    "last_hard_state_change",
-    21),
+    "last_hard_state_change"),
   mapping::entry(
     &service_status::last_state_change,
-    "last_state_change",
-    23),
+    "last_state_change"),
   mapping::entry(
     &service_status::last_time_critical,
-    "last_time_critical",
-    24),
+    "last_time_critical"),
   mapping::entry(
     &service_status::last_time_ok,
-    "last_time_ok",
-    25),
+    "last_time_ok"),
   mapping::entry(
     &service_status::last_time_unknown,
-    "last_time_unknown",
-    26),
+    "last_time_unknown"),
   mapping::entry(
     &service_status::last_time_warning,
-    "last_time_warning",
-    27),
+    "last_time_warning"),
   mapping::entry(
     &service_status::last_update,
-    "last_update",
-    28),
+    "last_update"),
   mapping::entry(
     &service_status::latency,
-    "latency",
-    29),
+    "latency"),
   mapping::entry(
     &service_status::max_check_attempts,
-    "max_check_attempts",
-    30),
+    "max_check_attempts"),
   mapping::entry(
     &service_status::next_check,
-    "next_check",
-    32),
+    "next_check"),
   mapping::entry(
     &service_status::obsess_over,
-    "obsess_over_service",
-    36),
+    "obsess_over_service"),
   mapping::entry(
     &service_status::percent_state_change,
-    "percent_state_change",
-    38),
+    "percent_state_change"),
   mapping::entry(
     &service_status::retry_interval,
-    "retry_interval",
-    41),
+    "retry_interval"),
   mapping::entry(
     &service_status::service_description,
-    "",
-    43),
+    ""),
   mapping::entry(
     &service_status::service_id,
     "service_id",
-    44,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service_status::should_be_scheduled,
-    "should_be_scheduled",
-    45),
+    "should_be_scheduled"),
   mapping::entry(
     &service_status::state_type,
-    "state_type",
-    46),
+    "state_type"),
   mapping::entry(
     &service_status::check_command,
-    "check_command",
-    47),
+    "check_command"),
   mapping::entry(
     &service_status::output,
-    "output",
-    48),
+    "output"),
   mapping::entry(
     &service_status::perf_data,
-    "perfdata",
-    49),
-  mapping::entry(
-    &service_status::instance_id,
-    "",
-    50),
+    "perfdata"),
   mapping::entry()
 };
 

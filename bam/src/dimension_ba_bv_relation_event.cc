@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -118,17 +118,11 @@ mapping::entry const dimension_ba_bv_relation_event::entries[] = {
   mapping::entry(
     &bam::dimension_ba_bv_relation_event::ba_id,
     "ba_id",
-    1,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &bam::dimension_ba_bv_relation_event::bv_id,
     "bv_id",
-    2,
-    mapping::entry::NULL_ON_ZERO),
-  mapping::entry(
-    &bam::dimension_ba_bv_relation_event::instance_id,
-    "",
-    3),
+    mapping::entry::invalid_on_zero),
   mapping::entry()
 };
 

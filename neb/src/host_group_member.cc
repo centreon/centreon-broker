@@ -89,21 +89,19 @@ unsigned int host_group_member::static_type() {
 mapping::entry const host_group_member::entries[] = {
   mapping::entry(
     &host_group_member::enabled,
-    "",
-    1),
+    ""),
   mapping::entry(
     &host_group_member::group, // XXX : should be replaced by hostgroup_id
-    "group",
-    2),
+    "group"),
   mapping::entry(
-    &host_group_member::instance_id,
+    &host_group_member::source_id,
     "instance_id",
-    3),
+    mapping::entry::invalid_on_zero,
+    false),
   mapping::entry(
     &host_group_member::host_id,
     "host_id",
-    4,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry()
 };
 

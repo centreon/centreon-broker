@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -46,7 +46,6 @@ namespace        dumper {
                  static_type();
 
     QString      content;
-    unsigned int instance_id;
     QString      tag;
     QString      filename;
 

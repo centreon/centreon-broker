@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -151,37 +151,29 @@ mapping::entry const state::entries[] = {
   mapping::entry(
     &state::ack_time,
     "ack_time",
-    1,
-    mapping::entry::NULL_ON_MINUS_ONE),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &state::current_state,
-    "state",
-    2),
+    "state"),
   mapping::entry(
     &state::end_time,
     "end_time",
-    3,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &state::host_id,
     "host_id",
-    4),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &state::in_downtime,
-    "in_downtime",
-    5),
+    "in_downtime"),
   mapping::entry(
     &state::service_id,
     "service_id",
-    6),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &state::start_time,
     "start_time",
-    7),
-  mapping::entry(
-    &state::instance_id,
-    "",
-    8),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry()
 };
 

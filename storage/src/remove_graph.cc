@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -111,11 +111,10 @@ mapping::entry const remove_graph::entries[] = {
   mapping::entry(
     &remove_graph::id,
     "id",
-    1),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &remove_graph::is_index,
-    "is_end",
-    2),
+    "is_end"),
   mapping::entry()
 };
 

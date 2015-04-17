@@ -121,33 +121,24 @@ mapping::entry const custom_variable_status::entries[] = {
   mapping::entry(
     &custom_variable_status::host_id,
     "host_id",
-    1,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &custom_variable_status::modified,
-    "modified",
-    2),
+    "modified"),
   mapping::entry(
     &custom_variable_status::name,
-    "name",
-    3),
+    "name"),
   mapping::entry(
     &custom_variable_status::service_id,
     "service_id",
-    4,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &custom_variable_status::update_time,
     "update_time",
-    5),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &custom_variable_status::value,
-    "value",
-    6),
-  mapping::entry(
-    &custom_variable_status::instance_id,
-    "",
-    7),
+    "value"),
   mapping::entry()
 };
 

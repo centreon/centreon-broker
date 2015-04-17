@@ -127,46 +127,33 @@ void flapping_status::_internal_copy(flapping_status const& other) {
 mapping::entry const flapping_status::entries[] = {
   mapping::entry(
     &flapping_status::event_time,
-    "event_time",
-    1),
+    "event_time"),
   mapping::entry(
     &flapping_status::event_type,
-    "event_type",
-    2),
+    "event_type"),
   mapping::entry(
     &flapping_status::flapping_type,
-    "type",
-    3),
+    "type"),
   mapping::entry(
     &flapping_status::high_threshold,
-    "high_threshold",
-    4),
+    "high_threshold"),
   mapping::entry(
     &flapping_status::host_id,
     "host_id",
-    5,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &flapping_status::low_threshold,
-    "low_threshold",
-    6),
+    "low_threshold"),
   mapping::entry(
     &flapping_status::percent_state_change,
-    "percent_state_change",
-    7),
+    "percent_state_change"),
   mapping::entry(
     &flapping_status::reason_type,
-    "reason_type",
-    8),
+    "reason_type"),
   mapping::entry(
     &flapping_status::service_id,
     "service_id",
-    9,
-    mapping::entry::NULL_ON_ZERO),
-  mapping::entry(
-    &flapping_status::instance_id,
-    "",
-    10),
+    mapping::entry::invalid_on_zero),
   mapping::entry()
 };
 

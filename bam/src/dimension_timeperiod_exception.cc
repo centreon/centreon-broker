@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -104,20 +104,13 @@ mapping::entry const dimension_timeperiod_exception::entries[] = {
   mapping::entry(
     &bam::dimension_timeperiod_exception::timeperiod_id,
     "timeperiod_id",
-    1,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &bam::dimension_timeperiod_exception::daterange,
-    "daterange",
-    2),
+    "daterange"),
   mapping::entry(
     &bam::dimension_timeperiod_exception::timerange,
-    "timerange",
-    3),
-  mapping::entry(
-    &bam::dimension_timeperiod_exception::instance_id,
-    "",
-    4),
+    "timerange"),
   mapping::entry()
 };
 

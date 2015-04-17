@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -28,34 +28,32 @@
 
 CCB_BEGIN()
 
-namespace        dumper {
+namespace               dumper {
   /**
    *  @class remove remove.hh "com/centreon/broker/dumper/remove.hh"
    *  @brief Remove a file.
    *
    *  Remove a file transmitted by some provider.
    */
-  class          remove : public io::data {
+  class                 remove : public io::data {
   public:
-                 remove();
-                 remove(remove const& right);
-                 ~remove();
-    remove&      operator=(remove const& right);
-    unsigned int type() const;
-    static unsigned int
-                 static_type();
+                        remove();
+                        remove(remove const& right);
+                        ~remove();
+    remove&             operator=(remove const& right);
+    unsigned int        type() const;
+    static unsigned int static_type();
 
-    unsigned int instance_id;
-    QString      tag;
-    QString      filename;
+    QString             tag;
+    QString             filename;
 
     static mapping::entry const
-                    entries[];
+                        entries[];
     static io::event_info::event_operations const
-                    operations;
+                        operations;
 
   private:
-    void         _internal_copy(remove const& right);
+    void                _internal_copy(remove const& right);
   };
 }
 

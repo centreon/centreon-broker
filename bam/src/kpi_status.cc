@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -116,52 +116,37 @@ mapping::entry const kpi_status::entries[] = {
   mapping::entry(
     &bam::kpi_status::kpi_id,
     "kpi_id",
-    1,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &bam::kpi_status::level_acknowledgement_hard,
-    "level_acknowledgement_hard",
-    2),
+    "level_acknowledgement_hard"),
   mapping::entry(
     &bam::kpi_status::level_acknowledgement_soft,
-    "level_acknowledgement_soft",
-    3),
+    "level_acknowledgement_soft"),
   mapping::entry(
     &bam::kpi_status::level_downtime_hard,
-    "level_downtime_hard",
-    4),
+    "level_downtime_hard"),
   mapping::entry(
     &bam::kpi_status::level_downtime_soft,
-    "level_downtime_soft",
-    5),
+    "level_downtime_soft"),
   mapping::entry(
     &bam::kpi_status::level_nominal_hard,
-    "level_nominal_hard",
-    6),
+    "level_nominal_hard"),
   mapping::entry(
     &bam::kpi_status::level_nominal_soft,
-    "level_nominal_soft",
-    7),
+    "level_nominal_soft"),
   mapping::entry(
     &bam::kpi_status::state_hard,
-    "state_hard",
-    8),
+    "state_hard"),
   mapping::entry(
     &bam::kpi_status::state_soft,
-    "state_soft",
-    9),
+    "state_soft"),
   mapping::entry(
     &bam::kpi_status::last_state_change,
-    "last_state_change",
-    10),
+    "last_state_change"),
   mapping::entry(
     &bam::kpi_status::last_impact,
-    "last_impact",
-    11),
-  mapping::entry(
-    &bam::kpi_status::instance_id,
-    "",
-    12),
+    "last_impact"),
   mapping::entry()
 };
 

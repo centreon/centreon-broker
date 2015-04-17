@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -27,7 +27,7 @@ using namespace com::centreon::broker::dumper;
 /**
  *  Default constructor.
  */
-dumper::remove::remove() : instance_id(0) {}
+dumper::remove::remove() {}
 
 /**
  *  Copy constructor.
@@ -83,7 +83,6 @@ unsigned int dumper::remove::static_type() {
  *  @param[in] right Object to copy.
  */
 void dumper::remove::_internal_copy(remove const& right) {
-  instance_id = right.instance_id;
   tag = right.tag;
   filename = right.filename;
   return ;
@@ -98,17 +97,11 @@ void dumper::remove::_internal_copy(remove const& right) {
 // Mapping.
 mapping::entry const dumper::remove::entries[] = {
   mapping::entry(
-    &dumper::remove::instance_id,
-    "instance_id",
-    1),
-  mapping::entry(
     &dumper::remove::tag,
-    "tag",
-    2),
+    "tag"),
   mapping::entry(
     &dumper::remove::filename,
-    "filename",
-    3),
+    "filename"),
   mapping::entry()
 };
 

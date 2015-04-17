@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -113,12 +113,7 @@ void rebuild::_internal_copy(
 mapping::entry const rebuild::entries[] = {
   mapping::entry(
     &bam::rebuild::bas_to_rebuild,
-    "bas_to_rebuild",
-    1),
-  mapping::entry(
-    &bam::rebuild::instance_id,
-    "",
-    2),
+    "bas_to_rebuild"),
   mapping::entry()
 };
 

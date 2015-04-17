@@ -148,213 +148,164 @@ void service::_zero_initialize() {
 *                                     *
 **************************************/
 
-//static_cast<double (host::*) >(&host::low_flap_threshold),
-
 // Mapping. Some pointer-to-member are explicitely casted because they
 // are from the host_service class which does not inherit from io::data.
 mapping::entry const service::entries[] = {
   mapping::entry(
     &service::active_checks_enabled,
-    "active_checks",
-    3),
+    "active_checks"),
   mapping::entry(
     static_cast<bool (service::*)>(&service::check_freshness),
-    "check_freshness",
-    4),
+    "check_freshness"),
   mapping::entry(
     &service::check_interval,
-    "check_interval",
-    5),
+    "check_interval"),
   mapping::entry(
     &service::check_period,
-    "check_period",
-    6),
+    "check_period"),
   mapping::entry(
     &service::check_type,
-    "check_type",
-    7),
+    "check_type"),
   mapping::entry(
     &service::current_check_attempt,
-    "check_attempt",
-    8),
+    "check_attempt"),
   mapping::entry(
     &service::current_state,
-    "state",
-    10),
+    "state"),
   mapping::entry(
     static_cast<bool (service::*)>(&service::default_active_checks_enabled),
     "default_active_checks",
-    0),
+    mapping::entry::always_valid,
+    false),
   mapping::entry(
     static_cast<bool (service::*)>(&service::default_event_handler_enabled),
     "default_event_handler_enabled",
-    0),
+    mapping::entry::always_valid,
+    false),
   mapping::entry(
     static_cast<bool (service::*)>(&service::default_flap_detection_enabled),
     "default_flap_detection",
-    0),
+    mapping::entry::always_valid,
+    false),
   mapping::entry(
     &service::enabled,
-    "enabled",
-    12),
+    "enabled"),
   mapping::entry(
     &service::event_handler,
-    "event_handler",
-    13),
+    "event_handler"),
   mapping::entry(
     &service::event_handler_enabled,
-    "event_handler_enabled",
-    14),
+    "event_handler_enabled"),
   mapping::entry(
     &service::execution_time,
-    "execution_time",
-    15),
+    "execution_time"),
   mapping::entry(
     &service::flap_detection_enabled,
-    "flap_detection",
-    19),
+    "flap_detection"),
   mapping::entry(
     &service::flap_detection_on_critical,
-    "flap_detection_on_critical",
-    20),
+    "flap_detection_on_critical"),
   mapping::entry(
     &service::flap_detection_on_ok,
-    "flap_detection_on_ok",
-    21),
+    "flap_detection_on_ok"),
   mapping::entry(
     &service::flap_detection_on_unknown,
-    "flap_detection_on_unknown",
-    22),
+    "flap_detection_on_unknown"),
   mapping::entry(
     &service::flap_detection_on_warning,
-    "flap_detection_on_warning",
-    23),
+    "flap_detection_on_warning"),
   mapping::entry(
     static_cast<double (service::*)>(&service::freshness_threshold),
-    "freshness_threshold",
-    24),
+    "freshness_threshold"),
   mapping::entry(
     &service::has_been_checked,
-    "checked",
-    25),
+    "checked"),
   mapping::entry(
     static_cast<double (service::*)>(&service::high_flap_threshold),
-    "high_flap_threshold",
-    26),
+    "high_flap_threshold"),
   mapping::entry(
     &service::host_id,
     "host_id",
-    27,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service::host_name,
-    "",
-    28),
+    ""),
   mapping::entry(
     &service::service_id,
     "service_id",
-    31,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service::is_flapping,
-    "flapping",
-    32),
+    "flapping"),
   mapping::entry(
     &service::is_volatile,
-    "volatile",
-    33),
+    "volatile"),
   mapping::entry(
     &service::last_check,
-    "last_check",
-    34),
+    "last_check"),
   mapping::entry(
     &service::last_hard_state,
-    "last_hard_state",
-    35),
+    "last_hard_state"),
   mapping::entry(
     &service::last_hard_state_change,
-    "last_hard_state_change",
-    36),
+    "last_hard_state_change"),
   mapping::entry(
     &service::last_state_change,
-    "last_state_change",
-    38),
+    "last_state_change"),
   mapping::entry(
     &service::last_time_critical,
-    "last_time_critical",
-    39),
+    "last_time_critical"),
   mapping::entry(
     &service::last_time_ok,
-    "last_time_ok",
-    40),
+    "last_time_ok"),
   mapping::entry(
     &service::last_time_unknown,
-    "last_time_unknown",
-    41),
+    "last_time_unknown"),
   mapping::entry(
     &service::last_time_warning,
-    "last_time_warning",
-    42),
+    "last_time_warning"),
   mapping::entry(
     &service::last_update,
-    "last_update",
-    43),
+    "last_update"),
   mapping::entry(
     &service::latency,
-    "latency",
-    44),
+    "latency"),
   mapping::entry(
     static_cast<double (service::*)>(&service::low_flap_threshold),
-    "low_flap_threshold",
-    45),
+    "low_flap_threshold"),
   mapping::entry(
     &service::max_check_attempts,
-    "max_check_attempts",
-    46),
+    "max_check_attempts"),
   mapping::entry(
     &service::next_check,
-    "next_check",
-    48),
+    "next_check"),
   mapping::entry(
     &service::obsess_over,
-    "obsess_over_service",
-    62),
+    "obsess_over_service"),
   mapping::entry(
     &service::percent_state_change,
-    "percent_state_change",
-    64),
+    "percent_state_change"),
   mapping::entry(
     &service::retry_interval,
-    "retry_interval",
-    69),
+    "retry_interval"),
   mapping::entry(
     &service::service_description,
-    "description",
-    71),
+    "description"),
   mapping::entry(
     &service::should_be_scheduled,
-    "should_be_scheduled",
-    72),
+    "should_be_scheduled"),
   mapping::entry(
     &service::state_type,
-    "state_type",
-    77),
+    "state_type"),
   mapping::entry(
     &service::check_command,
-    "check_command",
-    78),
+    "check_command"),
   mapping::entry(
     &service::output,
-    "output",
-    79),
+    "output"),
   mapping::entry(
     &service::perf_data,
-    "perfdata",
-    80),
-  mapping::entry(
-    &service::instance_id,
-    "",
-    81),
+    "perfdata"),
   mapping::entry()
 };
 

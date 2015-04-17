@@ -162,11 +162,25 @@ static io::raw* serialize(io::data const& e) {
     *(static_cast<uint32_t*>(static_cast<void*>(
                                data.data() + data.size())) - 1)
       = htonl(e.type());
+
+    // Serialize source and destination.
+    {
+      uint32_t source_id(htonl(e.source_id));
+      uint32_t destination_id(htonl(e.destination_id));
+      data.append(
+               static_cast<char*>(static_cast<void*>(&source_id)),
+               sizeof(source_id));
+      data.append(
+               static_cast<char*>(static_cast<void*>(&destination_id)),
+               sizeof(destination_id));
+    }
+
+    // Serialize properties of the object.
     for (mapping::entry const* current_entry(info->get_mapping());
-         current_entry->get_type() != mapping::source::UNKNOWN;
+         !current_entry->is_null();
          ++current_entry) {
-      // Skip 0 numbered entries.
-      if (current_entry->get_number())
+      // Skip entries that should not be serialized.
+      if (current_entry->get_serialize())
         switch (current_entry->get_type()) {
         case mapping::source::BOOL:
           get_boolean(e, *current_entry, *buffer);

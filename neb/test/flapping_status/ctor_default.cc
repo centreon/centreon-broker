@@ -18,6 +18,7 @@
 */
 
 #include <cmath>
+#include <cstdlib>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/flapping_status.hh"
 #include "com/centreon/broker/neb/internal.hh"
@@ -27,23 +28,28 @@ using namespace com::centreon::broker;
 /**
  *  Check flapping_status's default constructor.
  *
- *  @return 0 on success.
+ *  @return EXIT_SUCCESS on success.
  */
 int main() {
   // Object.
   neb::flapping_status flappy;
 
   // Check.
-  return ((flappy.event_time != 0)
-          || (flappy.event_type != 0)
-          || (flappy.flapping_type != 0)
-          || (fabs(flappy.high_threshold) > 0.000001)
-          || (flappy.host_id != 0)
-          || (flappy.instance_id != 0)
-          || (fabs(flappy.low_threshold) > 0.000001)
-          || (fabs(flappy.percent_state_change) > 0.000001)
-          || (flappy.reason_type != 0)
-          || (flappy.service_id != 0)
-          || (flappy.type()
-              != io::events::data_type<io::events::neb, neb::de_flapping_status>::value));
+  return (((flappy.source_id != 0)
+           || (flappy.destination_id != 0)
+           || (flappy.event_time != 0)
+           || (flappy.event_type != 0)
+           || (flappy.flapping_type != 0)
+           || (fabs(flappy.high_threshold) > 0.000001)
+           || (flappy.host_id != 0)
+           || (fabs(flappy.low_threshold) > 0.000001)
+           || (fabs(flappy.percent_state_change) > 0.000001)
+           || (flappy.reason_type != 0)
+           || (flappy.service_id != 0)
+           || (flappy.type()
+               != io::events::data_type<
+                                io::events::neb,
+                                neb::de_flapping_status>::value))
+          ? EXIT_FAILURE
+          : EXIT_SUCCESS);
 }

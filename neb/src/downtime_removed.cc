@@ -110,18 +110,15 @@ mapping::entry const downtime_removed::entries[] = {
   mapping::entry(
     &downtime_removed::host_id,
     "host_id",
-    1,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &downtime_removed::service_id,
     "service_id",
-    2,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &downtime_removed::downtime_id,
     "downtime_id",
-    3,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry()
 };
 

@@ -33,7 +33,9 @@ int main() {
   neb::service s;
 
   // Check.
-  return ((s.active_checks_enabled
+  return (((s.source_id != 0)
+           || (s.destination_id != 0)
+           || s.active_checks_enabled
            || !s.check_command.isEmpty()
            || s.check_freshness
            || (fabs(s.check_interval) > 0.001)
@@ -58,7 +60,6 @@ int main() {
            || (fabs(s.high_flap_threshold) > 0.001)
            || (s.host_id != 0)
            || !s.host_name.isEmpty()
-           || (s.instance_id != 0)
            || s.is_flapping
            || s.is_volatile
            || (s.last_check != 0)

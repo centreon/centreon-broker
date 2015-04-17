@@ -125,141 +125,104 @@ void host_status::_internal_copy(host_status const& other) {
 mapping::entry const host_status::entries[] = {
   mapping::entry(
     &host_status::active_checks_enabled,
-    "active_checks",
-    2),
+    "active_checks"),
   mapping::entry(
     &host_status::check_interval,
-    "check_interval",
-    3),
+    "check_interval"),
   mapping::entry(
     &host_status::check_period,
-    "check_period",
-    4),
+    "check_period"),
   mapping::entry(
     &host_status::check_type,
-    "check_type",
-    5),
+    "check_type"),
   mapping::entry(
     &host_status::current_check_attempt,
-    "check_attempt",
-    6),
+    "check_attempt"),
   mapping::entry(
     &host_status::current_state,
-    "state",
-    8),
+    "state"),
   mapping::entry(
     &host_status::enabled,
-    "enabled",
-    9),
+    "enabled"),
   mapping::entry(
     &host_status::event_handler,
-    "event_handler",
-    10),
+    "event_handler"),
   mapping::entry(
     &host_status::event_handler_enabled,
-    "event_handler_enabled",
-    11),
+    "event_handler_enabled"),
   mapping::entry(
     &host_status::execution_time,
-    "execution_time",
-    12),
+    "execution_time"),
   mapping::entry(
     &host_status::flap_detection_enabled,
-    "flap_detection",
-    14),
+    "flap_detection"),
   mapping::entry(
     &host_status::has_been_checked,
-    "checked",
-    15),
+    "checked"),
   mapping::entry(
     &host_status::host_id,
     "host_id",
-    16,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host_status::is_flapping,
-    "flapping",
-    17),
+    "flapping"),
   mapping::entry(
     &host_status::last_check,
-    "last_check",
-    18),
+    "last_check"),
   mapping::entry(
     &host_status::last_hard_state,
-    "last_hard_state",
-    19),
+    "last_hard_state"),
   mapping::entry(
     &host_status::last_hard_state_change,
-    "last_hard_state_change",
-    20),
+    "last_hard_state_change"),
   mapping::entry(
     &host_status::last_state_change,
-    "last_state_change",
-    22),
+    "last_state_change"),
   mapping::entry(
     &host_status::last_time_down,
-    "last_time_down",
-    23),
+    "last_time_down"),
   mapping::entry(
     &host_status::last_time_unreachable,
-    "last_time_unreachable",
-    24),
+    "last_time_unreachable"),
   mapping::entry(
     &host_status::last_time_up,
-    "last_time_up",
-    25),
+    "last_time_up"),
   mapping::entry(
     &host_status::last_update,
-    "last_update",
-    26),
+    "last_update"),
   mapping::entry(
     &host_status::latency,
-    "latency",
-    27),
+    "latency"),
   mapping::entry(
     &host_status::max_check_attempts,
-    "max_check_attempts",
-    28),
+    "max_check_attempts"),
   mapping::entry(
     &host_status::next_check,
-    "next_check",
-    30),
+    "next_check"),
   mapping::entry(
     &host_status::obsess_over,
-    "obsess_over_host",
-    34),
+    "obsess_over_host"),
   mapping::entry(
     &host_status::percent_state_change,
-    "percent_state_change",
-    36),
+    "percent_state_change"),
   mapping::entry(
     &host_status::retry_interval,
-    "retry_interval",
-    39),
+    "retry_interval"),
   mapping::entry(
     &host_status::should_be_scheduled,
-    "should_be_scheduled",
-    41),
+    "should_be_scheduled"),
   mapping::entry(
     &host_status::state_type,
-    "state_type",
-    42),
+    "state_type"),
   mapping::entry(
     &host_status::check_command,
-    "check_command",
-    43),
+    "check_command"),
   mapping::entry(
     &host_status::output,
-    "output",
-    44),
+    "output"),
   mapping::entry(
     &host_status::perf_data,
-    "perfdata",
-    45),
-  mapping::entry(
-    &host_status::instance_id,
-    "",
-    46),
+    "perfdata"),
   mapping::entry()
 };
 

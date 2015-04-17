@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -89,34 +89,24 @@ unsigned int service_check::static_type() {
 mapping::entry const service_check::entries[] = {
   mapping::entry(
     &service_check::active_checks_enabled,
-    "",
-    1),
+    ""),
   mapping::entry(
     &service_check::check_type,
-    "",
-    2),
+    ""),
   mapping::entry(
     &service_check::host_id,
     "host_id",
-    3,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service_check::next_check,
-    "",
-    4),
+    ""),
   mapping::entry(
     &service_check::service_id,
     "service_id",
-    5,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service_check::command_line,
-    "command_line",
-    6),
-  mapping::entry(
-    &service_check::instance_id,
-    "",
-    7),
+    "command_line"),
   mapping::entry()
 };
 

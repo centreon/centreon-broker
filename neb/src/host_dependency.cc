@@ -88,34 +88,24 @@ unsigned int host_dependency::static_type() {
 mapping::entry const host_dependency::entries[] = {
   mapping::entry(
     &host_dependency::dependency_period,
-    "dependency_period",
-    1),
+    "dependency_period"),
   mapping::entry(
     &host_dependency::dependent_host_id,
     "dependent_host_id",
-    2,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host_dependency::enabled,
-    "",
-    3),
+    ""),
   mapping::entry(
     &host_dependency::execution_failure_options,
-    "execution_failure_options",
-    4),
+    "execution_failure_options"),
   mapping::entry(
     &host_dependency::inherits_parent,
-    "inherits_parent",
-    5),
+    "inherits_parent"),
   mapping::entry(
     &host_dependency::host_id,
     "host_id",
-    6,
-    mapping::entry::NULL_ON_ZERO),
-  mapping::entry(
-    &host_dependency::instance_id,
-    "",
-    7),
+    mapping::entry::invalid_on_zero),
   mapping::entry()
 };
 

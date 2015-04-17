@@ -108,13 +108,11 @@ mapping::entry const acknowledgement_removed::entries[] = {
   mapping::entry(
     &acknowledgement_removed::host_id,
     "host_id",
-    1,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &acknowledgement_removed::service_id,
     "service_id",
-    2,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry()
 };
 

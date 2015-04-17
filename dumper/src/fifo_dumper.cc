@@ -99,10 +99,10 @@ void fifo_dumper::read(misc::shared_ptr<io::data>& d) {
     std::string line = _fifo.read_line(3000000);
     if (!line.empty()) {
       misc::shared_ptr<dumper::dump> dmp(new dumper::dump);
+      dmp->source_id = instance_id;
       dmp->content = QString::fromStdString(line);
       dmp->filename = QString::fromStdString(_path);
       dmp->tag = QString::fromStdString(_tagname);
-      dmp->instance_id = instance_id;
       d = dmp;
     }
   } catch (std::exception const& e) {

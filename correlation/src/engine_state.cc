@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -92,12 +92,7 @@ unsigned int engine_state::static_type() {
 mapping::entry const engine_state::entries[] = {
   mapping::entry(
     &engine_state::started,
-    "started",
-    1),
-  mapping::entry(
-    &engine_state::instance_id,
-    "",
-    2),
+    "started"),
   mapping::entry()
 };
 

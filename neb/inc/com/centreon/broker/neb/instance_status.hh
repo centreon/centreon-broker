@@ -54,7 +54,6 @@ namespace            neb {
     QString          description;
     QString          global_host_event_handler;
     QString          global_service_event_handler;
-    unsigned int     id;
     timestamp        last_alive;
     timestamp        last_command_check;
     bool             obsess_over_hosts;

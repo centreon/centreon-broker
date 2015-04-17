@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -126,40 +126,28 @@ mapping::entry const kpi_event::entries[] = {
   mapping::entry(
     &bam::kpi_event::kpi_id,
     "kpi_id",
-    1,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &bam::kpi_event::end_time,
-    "end_time",
-    2),
+    "end_time"),
   mapping::entry(
     &bam::kpi_event::impact_level,
-    "impact_level",
-    3),
+    "impact_level"),
   mapping::entry(
     &bam::kpi_event::in_downtime,
-    "in_downtime",
-    4),
+    "in_downtime"),
   mapping::entry(
     &bam::kpi_event::output,
-    "first_output",
-    5),
+    "first_output"),
   mapping::entry(
     &bam::kpi_event::perfdata,
-    "first_perfdata",
-    6),
+    "first_perfdata"),
   mapping::entry(
     &bam::kpi_event::start_time,
-    "start_time",
-    7),
+    "start_time"),
   mapping::entry(
     &bam::kpi_event::status,
-    "status",
-    8),
-  mapping::entry(
-    &bam::kpi_event::instance_id,
-    "",
-    9),
+    "status"),
   mapping::entry()
 };
 

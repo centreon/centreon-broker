@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/host_check.hh"
 #include "com/centreon/broker/neb/internal.hh"
@@ -26,18 +27,23 @@ using namespace com::centreon::broker;
 /**
  *  Check host_check's default constructor.
  *
- *  @return 0 on success.
+ *  @return EXIT_SUCCESS on success.
  */
 int main() {
   // Object.
   neb::host_check hchk;
 
   // Check.
-  return (hchk.active_checks_enabled
-          || (hchk.command_line != "")
-          || (hchk.host_id != 0)
-          || (hchk.instance_id != 0)
-          || (hchk.next_check != 0)
-          || (hchk.type()
-              != io::events::data_type<io::events::neb, neb::de_host_check>::value));
+  return (((hchk.source_id != 0)
+           || (hchk.destination_id != 0)
+           || hchk.active_checks_enabled
+           || (hchk.command_line != "")
+           || (hchk.host_id != 0)
+           || (hchk.next_check != 0)
+           || (hchk.type()
+               != io::events::data_type<
+                                io::events::neb,
+                                neb::de_host_check>::value))
+          ? EXIT_FAILURE
+          : EXIT_SUCCESS);
 }

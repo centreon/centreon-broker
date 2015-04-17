@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -105,20 +105,13 @@ mapping::entry const meta_service_status::entries[] = {
   mapping::entry(
     &bam::meta_service_status::meta_service_id,
     "meta_service_id",
-    1,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &bam::meta_service_status::value,
-    "value",
-    2),
+    "value"),
   mapping::entry(
     &bam::meta_service_status::state_changed,
-    "",
-    3),
-  mapping::entry(
-    &bam::meta_service_status::instance_id,
-    "",
-    4),
+    ""),
   mapping::entry()
 };
 

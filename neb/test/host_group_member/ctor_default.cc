@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/host_group_member.hh"
 #include "com/centreon/broker/neb/internal.hh"
@@ -26,17 +27,22 @@ using namespace com::centreon::broker;
 /**
  *  Check host_group_member's default constructor.
  *
- *  @return 0 on success.
+ *  @return EXIT_SUCCESS on success.
  */
 int main() {
   // Object.
   neb::host_group_member hgrpmmbr;
 
   // Check.
-  return ((hgrpmmbr.enabled != true)
-          || (hgrpmmbr.group != "")
-          || (hgrpmmbr.host_id != 0)
-          || (hgrpmmbr.instance_id != 0)
-          || (hgrpmmbr.type()
-              != io::events::data_type<io::events::neb, neb::de_host_group_member>::value));
+  return (((hgrpmmbr.source_id != 0)
+           || (hgrpmmbr.destination_id != 0)
+           || (hgrpmmbr.enabled != true)
+           || (hgrpmmbr.group != "")
+           || (hgrpmmbr.host_id != 0)
+           || (hgrpmmbr.type()
+               != io::events::data_type<
+                                io::events::neb,
+                                neb::de_host_group_member>::value))
+          ? EXIT_FAILURE
+          : EXIT_SUCCESS);
 }

@@ -99,22 +99,15 @@ unsigned int host_parent::static_type() {
 mapping::entry const host_parent::entries[] = {
   mapping::entry(
     &host_parent::enabled,
-    "",
-    1),
+    ""),
   mapping::entry(
     &host_parent::host_id,
     "child_id",
-    2,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host_parent::parent_id,
     "parent_id",
-    3,
-    mapping::entry::NULL_ON_ZERO),
-  mapping::entry(
-    &host_parent::instance_id,
-    "",
-    4),
+    mapping::entry::invalid_on_zero),
   mapping::entry()
 };
 

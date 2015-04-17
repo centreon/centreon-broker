@@ -140,7 +140,6 @@ void host::_zero_initialize() {
   flap_detection_on_down = 0;
   flap_detection_on_unreachable = 0;
   flap_detection_on_up = 0;
-  instance_id = 0;
   return ;
 }
 
@@ -155,194 +154,154 @@ void host::_zero_initialize() {
 mapping::entry const host::entries[] = {
   mapping::entry(
     &host::active_checks_enabled,
-    "active_checks",
-    3),
+    "active_checks"),
   mapping::entry(
     &host::address,
-    "address",
-    4),
+    "address"),
   mapping::entry(
     &host::alias,
-    "alias",
-    5),
+    "alias"),
   mapping::entry(
     static_cast<bool (host::*) >(&host::check_freshness),
-    "check_freshness",
-    6),
+    "check_freshness"),
   mapping::entry(
     &host::check_interval,
-    "check_interval",
-    7),
+    "check_interval"),
   mapping::entry(
     &host::check_period,
-    "check_period",
-    8),
+    "check_period"),
   mapping::entry(
     &host::check_type,
-    "check_type",
-    9),
+    "check_type"),
   mapping::entry(
     &host::current_check_attempt,
-    "check_attempt",
-    10),
+    "check_attempt"),
   mapping::entry(
     &host::current_state,
-    "state",
-    12),
+    "state"),
   mapping::entry(
     static_cast<bool (host::*) >(&host::default_active_checks_enabled),
     "default_active_checks",
-    0),
+    mapping::entry::always_valid,
+    false),
   mapping::entry(
     static_cast<bool (host::*) >(&host::default_event_handler_enabled),
     "default_event_handler_enabled",
-    0),
+    mapping::entry::always_valid,
+    false),
   mapping::entry(
     static_cast<bool (host::*) >(&host::default_flap_detection_enabled),
     "default_flap_detection",
-    0),
+    mapping::entry::always_valid,
+    false),
   mapping::entry(
     &host::enabled,
-    "enabled",
-    14),
+    "enabled"),
   mapping::entry(
     &host::event_handler,
-    "event_handler",
-    15),
+    "event_handler"),
   mapping::entry(
     &host::event_handler_enabled,
-    "event_handler_enabled",
-    16),
+    "event_handler_enabled"),
   mapping::entry(
     &host::execution_time,
-    "execution_time",
-    17),
+    "execution_time"),
   mapping::entry(
     &host::flap_detection_enabled,
-    "flap_detection",
-    20),
+    "flap_detection"),
   mapping::entry(
     &host::flap_detection_on_down,
-    "flap_detection_on_down",
-    21),
+    "flap_detection_on_down"),
   mapping::entry(
     &host::flap_detection_on_unreachable,
-    "flap_detection_on_unreachable",
-    22),
+    "flap_detection_on_unreachable"),
   mapping::entry(
     &host::flap_detection_on_up,
-    "flap_detection_on_up",
-    23),
+    "flap_detection_on_up"),
   mapping::entry(
     static_cast<double (host::*) >(&host::freshness_threshold),
-    "freshness_threshold",
-    24),
+    "freshness_threshold"),
   mapping::entry(
     &host::has_been_checked,
-    "checked",
-    25),
+    "checked"),
   mapping::entry(
     static_cast<double (host::*) >(&host::high_flap_threshold),
-    "high_flap_threshold",
-    26),
+    "high_flap_threshold"),
   mapping::entry(
     &host::host_name,
-    "name",
-    27),
+    "name"),
   mapping::entry(
     &host::host_id,
     "host_id",
-    30,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
-    &host::instance_id,
+    &host::source_id,
     "instance_id",
-    31,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero,
+    false),
   mapping::entry(
     &host::is_flapping,
-    "flapping",
-    32),
+    "flapping"),
   mapping::entry(
     &host::last_check,
-    "last_check",
-    33),
+    "last_check"),
   mapping::entry(
     &host::last_hard_state,
-    "last_hard_state",
-    34),
+    "last_hard_state"),
   mapping::entry(
     &host::last_hard_state_change,
-    "last_hard_state_change",
-    35),
+    "last_hard_state_change"),
   mapping::entry(
     &host::last_state_change,
-    "last_state_change",
-    37),
+    "last_state_change"),
   mapping::entry(
     &host::last_time_down,
-    "last_time_down",
-    38),
+    "last_time_down"),
   mapping::entry(
     &host::last_time_unreachable,
-    "last_time_unreachable",
-    39),
+    "last_time_unreachable"),
   mapping::entry(
     &host::last_time_up,
-    "last_time_up",
-    40),
+    "last_time_up"),
   mapping::entry(
     &host::last_update,
-    "last_update",
-    41),
+    "last_update"),
   mapping::entry(
     &host::latency,
-    "latency",
-    42),
+    "latency"),
   mapping::entry(
     static_cast<double (host::*) >(&host::low_flap_threshold),
-    "low_flap_threshold",
-    43),
+    "low_flap_threshold"),
   mapping::entry(
     &host::max_check_attempts,
-    "max_check_attempts",
-    44),
+    "max_check_attempts"),
   mapping::entry(
     &host::next_check,
-    "next_check",
-    46),
+    "next_check"),
   mapping::entry(
     &host::obsess_over,
-    "obsess_over_host",
-    59),
+    "obsess_over_host"),
   mapping::entry(
     &host::percent_state_change,
-    "percent_state_change",
-    61),
+    "percent_state_change"),
   mapping::entry(
     &host::retry_interval,
-    "retry_interval",
-    66),
+    "retry_interval"),
   mapping::entry(
     &host::should_be_scheduled,
-    "should_be_scheduled",
-    68),
+    "should_be_scheduled"),
   mapping::entry(
     &host::state_type,
-    "state_type",
-    72),
+    "state_type"),
   mapping::entry(
     &host::check_command,
-    "check_command",
-    74),
+    "check_command"),
   mapping::entry(
     &host::output,
-    "output",
-    75),
+    "output"),
   mapping::entry(
     &host::perf_data,
-    "perfdata",
-    76),
+    "perfdata"),
   mapping::entry()
 };
 

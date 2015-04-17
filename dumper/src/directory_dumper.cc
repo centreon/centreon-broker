@@ -142,8 +142,8 @@ void directory_dumper::read(misc::shared_ptr<io::data>& d) {
              << "dumper: directory '" << _path << "' deleted");
     else if (it->get_type() == file::directory_event::deleted) {
       misc::shared_ptr<dumper::remove> d(new dumper::remove);
+      d->source_id = instance_id;
       d->filename = QFileInfo(it->get_path().c_str()).baseName();
-      d->instance_id = instance_id;
       d->tag = QString::fromStdString(_tagname);
       _event_list.push_back(std::make_pair(timestamp(), d));
     }
@@ -260,10 +260,9 @@ void directory_dumper::_set_watch_over_directory() {
        ++it)
     if (found_files.find(it->first) == found_files.end()) {
       misc::shared_ptr<dumper::remove> d(new dumper::remove);
-
+      d->source_id = instance_id;
       d->filename = QString::fromStdString(it->first);
       d->tag = QString::fromStdString(_tagname);
-      d->instance_id = instance_id;
       _event_list.push_back(std::make_pair(timestamp(), d));
     }
 }
@@ -288,9 +287,9 @@ std::pair<timestamp, misc::shared_ptr<io::data> > directory_dumper::_dump_a_file
   QString content = file.readAll();
 
   misc::shared_ptr<dumper::dump> dump(new dumper::dump);
+  dump->source_id = instance_id;
   dump->filename = QFileInfo(path.c_str()).baseName();
   dump->content = content;
   dump->tag = QString::fromStdString(_tagname);
-  dump->instance_id = instance_id;
   return (std::make_pair(ts, dump));
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -113,29 +113,24 @@ void module::_internal_copy(module const& m) {
 mapping::entry const module::entries[] = {
   mapping::entry(
     &module::args,
-    "args",
-    1),
+    "args"),
   mapping::entry(
     &module::enabled,
-    "",
-    6),
+    ""),
   mapping::entry(
     &module::filename,
-    "filename",
-    2),
+    "filename"),
   mapping::entry(
-    &module::instance_id,
+    &module::source_id,
     "instance_id",
-    3,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero,
+    false),
   mapping::entry(
     &module::loaded,
-    "loaded",
-    4),
+    "loaded"),
   mapping::entry(
     &module::should_be_loaded,
-    "should_be_loaded",
-    5),
+    "should_be_loaded"),
   mapping::entry()
 };
 
@@ -146,4 +141,3 @@ static io::data* new_module() {
 io::event_info::event_operations const module::operations = {
   &new_module
 };
-

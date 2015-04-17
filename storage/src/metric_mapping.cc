@@ -110,13 +110,11 @@ mapping::entry const metric_mapping::entries[] = {
   mapping::entry(
     &metric_mapping::index_id,
     "index_id",
-    1,
-  mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &metric_mapping::metric_id,
     "metric_id",
-    2,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry()
 };
 

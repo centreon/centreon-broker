@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -30,14 +30,16 @@ using namespace com::centreon::broker::io;
 /**
  *  Constructor.
  */
-data::data() : instance_id(0) {}
+data::data() : source_id(0), destination_id(0) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] d Object to copy.
+ *  @param[in] other  Object to copy.
  */
-data::data(data const& d) : instance_id(d.instance_id) {}
+data::data(data const& other)
+  : source_id(other.source_id),
+    destination_id(other.destination_id) {}
 
 /**
  *  Destructor.
@@ -47,11 +49,14 @@ data::~data() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] d Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-data& data::operator=(data const& d) {
-  instance_id = d.instance_id;
+data& data::operator=(data const& other) {
+  if (this != &other) {
+    source_id = other.source_id;
+    destination_id = other.destination_id;
+  }
   return (*this);
 }

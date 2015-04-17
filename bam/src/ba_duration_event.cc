@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -131,41 +131,29 @@ mapping::entry const ba_duration_event::entries[] = {
   mapping::entry(
     &bam::ba_duration_event::ba_id,
     "ba_id",
-    1,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &bam::ba_duration_event::real_start_time,
-    "real_start_time",
-    2),
+    "real_start_time"),
   mapping::entry(
     &bam::ba_duration_event::end_time,
-    "end_time",
-    3),
+    "end_time"),
   mapping::entry(
     &bam::ba_duration_event::start_time,
-    "start_time",
-    4),
+    "start_time"),
   mapping::entry(
     &bam::ba_duration_event::duration,
-    "duration",
-    5),
+    "duration"),
   mapping::entry(
     &bam::ba_duration_event::sla_duration,
-    "sla_duration",
-    6),
+    "sla_duration"),
   mapping::entry(
     &bam::ba_duration_event::timeperiod_id,
     "timeperiod_id",
-    7,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &bam::ba_duration_event::timeperiod_is_default,
-    "timeperiod_is_default",
-    8),
-  mapping::entry(
-    &bam::ba_duration_event::instance_id,
-    "",
-    9),
+    "timeperiod_is_default"),
   mapping::entry()
 };
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -128,47 +128,43 @@ mapping::entry const issue_parent::entries[] = {
   mapping::entry(
     &issue_parent::child_host_id,
     "child_host_id",
-    1,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &issue_parent::child_service_id,
     "child_service_id",
-    2,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &issue_parent::child_start_time,
     "child_start_time",
-    3),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &issue_parent::end_time,
     "end_time",
-    4),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &issue_parent::parent_host_id,
     "parent_host_id",
-    5,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &issue_parent::parent_service_id,
     "parent_service_id",
-    6,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &issue_parent::parent_start_time,
     "parent_start_time",
-    7),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &issue_parent::start_time,
     "start_time",
-    8),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &issue_parent::child_instance_id,
     "",
-    9),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &issue_parent::parent_instance_id,
     "",
-    10),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry()
 };
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,7 +18,6 @@
 */
 
 #include <iostream>
-
 #include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/correlation/state.hh"
 #include "com/centreon/broker/correlation/internal.hh"

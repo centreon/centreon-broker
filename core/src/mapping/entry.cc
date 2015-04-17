@@ -33,9 +33,10 @@ using namespace com::centreon::broker::mapping;
  *  Default constructor.
  */
 entry::entry()
-  : _attribute(NULL_ON_NOTHING),
-    _number(0),
+  : _attribute(always_valid),
+    _name(NULL),
     _ptr(NULL),
+    _serialize(false),
     _type(source::UNKNOWN) {}
 
 /**
@@ -45,8 +46,8 @@ entry::entry()
  */
 entry::entry(entry const& other)
   : _name(other._name),
-    _number(other._number),
     _ptr(other._ptr),
+    _serialize(other._serialize),
     _source(other._source),
     _type(other._type) {}
 
@@ -64,8 +65,8 @@ entry::~entry() {}
  */
 entry& entry::operator=(entry const& other) {
   _name = other._name;
-  _number = other._number;
   _ptr = other._ptr;
+  _serialize = other._serialize;
   _source = other._source;
   _type = other._type;
   return (*this);
@@ -114,12 +115,21 @@ int entry::get_int(io::data const& d) const {
 }
 
 /**
- *  Get entry number.
+ *  Get the name of this entry.
  *
- *  @return Entry number.
+ *  @return  The name of this entry.
  */
-unsigned int entry::get_number() const {
-  return (_number);
+char const* entry::get_name() const {
+  return (_name);
+}
+
+/**
+ *  Check if entry is to be serialized.
+ *
+ *  @return True if entry is to be serialized.
+ */
+bool entry::get_serialize() const {
+  return (_serialize);
 }
 
 /**
@@ -184,6 +194,15 @@ unsigned int entry::get_uint(io::data const& d) const {
  */
 unsigned short entry::get_ushort(io::data const& d) const {
   return (_ptr->get_ushort(d));
+}
+
+/**
+ *  Get if this entry is a null entry.
+ *
+ *  @return  True if this entry is a null entry (last entry).
+ */
+bool entry::is_null() const {
+  return (_type == source::UNKNOWN);
 }
 
 /**
@@ -272,23 +291,4 @@ void entry::set_uint(io::data& d, unsigned int value) const {
 void entry::set_ushort(io::data& d, unsigned short value) const {
   _ptr->set_ushort(d, value);
   return ;
-}
-
-/**
- *  Get if this entry is a null entry.
- *
- *  @return  True if this entry is a null entry (last entry).
- */
-bool entry::is_null() const {
-  return (_type == source::UNKNOWN);
-}
-
-/**
- *  Get the name of this entry.
- *
- *  @return  The name of this entry.
- */
-
-std::string entry::get_name() const {
-  return (_name.toStdString());
 }

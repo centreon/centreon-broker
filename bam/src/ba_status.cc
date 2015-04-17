@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -74,7 +74,6 @@ unsigned int ba_status::type() const {
   return (ba_status::static_type());
 }
 
-
 /**
  *  Get the type of this event.
  *
@@ -112,40 +111,28 @@ mapping::entry const ba_status::entries[] = {
 mapping::entry(
     &bam::ba_status::ba_id,
     "ba_id",
-    1,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
 mapping::entry(
     &bam::ba_status::in_downtime,
-    "in_downtime",
-    2),
+    "in_downtime"),
 mapping::entry(
     &bam::ba_status::last_state_change,
-    "last_state_change",
-    3),
+    "last_state_change"),
 mapping::entry(
     &bam::ba_status::level_acknowledgement,
-    "level_acknowledgement",
-    4),
+    "level_acknowledgement"),
 mapping::entry(
     &bam::ba_status::level_downtime,
-    "level_downtime",
-    5),
+    "level_downtime"),
 mapping::entry(
     &bam::ba_status::level_nominal,
-    "level_nominal",
-    6),
+    "level_nominal"),
 mapping::entry(
     &bam::ba_status::state,
-    "state",
-    7),
+    "state"),
 mapping::entry(
     &bam::ba_status::state_changed,
-    "state_changed",
-    8),
-mapping::entry(
-    &bam::ba_status::instance_id,
-    "",
-    9),
+    "state_changed"),
 mapping::entry()
 };
 

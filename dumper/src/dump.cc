@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -27,7 +27,7 @@ using namespace com::centreon::broker::dumper;
 /**
  *  Default constructor.
  */
-dump::dump() : instance_id(0) {}
+dump::dump() {}
 
 /**
  *  Copy constructor.
@@ -84,7 +84,6 @@ unsigned int dump::static_type() {
  */
 void dump::_internal_copy(dump const& right) {
   content = right.content;
-  instance_id = right.instance_id;
   tag = right.tag;
   filename = right.filename;
   return ;
@@ -100,20 +99,13 @@ void dump::_internal_copy(dump const& right) {
 mapping::entry const dump::entries[] = {
   mapping::entry(
     &dump::content,
-    "content",
-    1),
-  mapping::entry(
-    &dump::instance_id,
-    "instance_id",
-    2),
+    "content"),
   mapping::entry(
     &dump::tag,
-    "tag",
-    3),
+    "tag"),
   mapping::entry(
     &dump::filename,
-    "filename",
-    4),
+    "filename"),
   mapping::entry()
 };
 

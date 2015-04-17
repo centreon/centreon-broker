@@ -499,20 +499,24 @@ void stream::_prepare_insert(
   query.append(" (");
   mapping::entry const* entries = T::entries;
   for (size_t i = 0; !entries[i].is_null(); ++i) {
-    if (entries[i].get_name().empty()
-        || (excluded.find(entries[i].get_name()) != excluded.end()))
+    char const* entry_name(entries[i].get_name());
+    if (!entry_name
+        || !entry_name[0]
+        || (excluded.find(entry_name) != excluded.end()))
       continue;
-    query.append(entries[i].get_name());
+    query.append(entry_name);
     query.append(", ");
   }
   query.resize(query.size() - 2);
   query.append(") VALUES(");
   for (size_t i = 0; !entries[i].is_null(); ++i) {
-    if (entries[i].get_name().empty()
-        || (excluded.find(entries[i].get_name()) != excluded.end()))
+    char const* entry_name(entries[i].get_name());
+    if (!entry_name
+        || !entry_name[0]
+        || (excluded.find(entry_name) != excluded.end()))
       continue;
     query.append(":");
-    query.append(entries[i].get_name());
+    query.append(entry_name);
     query.append(", ");
   }
   query.resize(query.size() - 2);
@@ -547,11 +551,12 @@ void stream::_prepare_select(
   query.append(" WHERE ");
   mapping::entry const* entries = T::entries;
   for (size_t i = 0; !entries[i].is_null(); ++i) {
-    if (entries[i].get_name().empty())
+    char const* entry_name(entries[i].get_name());
+    if (!entry_name || !entry_name[0])
       continue;
-    query.append(entries[i].get_name());
+    query.append(entry_name);
     query.append(" = :");
-    query.append(entries[i].get_name());
+    query.append(entry_name);
     query.append(" AND ");
   }
 
@@ -590,15 +595,17 @@ void stream::_prepare_update(
   query.append(table_name);
   query.append(" SET ");
   mapping::entry const* entries = T::entries;
-  for (size_t i = 0; !entries[i].is_null(); ++i) {
-    if (entries[i].get_name().empty()
-        || (excluded.find(entries[i].get_name()) != excluded.end()))
+  for (size_t i(0); !entries[i].is_null(); ++i) {
+    char const* entry_name(entries[i].get_name());
+    if (!entry_name
+        || !entry_name[0]
+        || (excluded.find(entry_name) != excluded.end()))
       continue;
-    bool found(id.find(entries[i].get_name()) != id.end());
+    bool found(id.find(entry_name) != id.end());
     if (!found) {
-      query.append(entries[i].get_name());
+      query.append(entry_name);
       query.append("=:");
-      query.append(entries[i].get_name());
+      query.append(entry_name);
       query.append(", ");
     }
   }
@@ -703,7 +710,7 @@ void stream::_process_acknowledgement(
   // Log message.
   logging::info(logging::medium)
     << "SQL: processing acknowledgement event (instance: "
-    << ack.instance_id << ", host: " << ack.host_id << ", service: "
+    << ack.source_id << ", host: " << ack.host_id << ", service: "
     << ack.service_id << ", entry time: " << ack.entry_time
     << ", deletion time: " << ack.deletion_time << ")";
 
@@ -797,7 +804,7 @@ void stream::_process_downtime(
 
   // Log message.
   logging::info(logging::medium)
-    << "SQL: processing downtime event (instance: " << d.instance_id
+    << "SQL: processing downtime event (instance: " << d.source_id
     << ", host: " << d.host_id << ", service: " << d.service_id
     << ", start time: " << d.start_time << ", end_time: " << d.end_time
     << ", actual start time: " << d.actual_start_time
@@ -910,7 +917,7 @@ void stream::_process_host(
 
   // Log message.
   logging::info(logging::medium) << "SQL: processing host event"
-       " (instance: " << h.instance_id << ", id: "
+       " (instance: " << h.source_id << ", id: "
     << h.host_id << ", name: " << h.host_name << ")";
 
   // Processing
@@ -918,7 +925,7 @@ void stream::_process_host(
     _update_on_none_insert(_host_insert, _host_update, h);
   else
     logging::error(logging::high) << "SQL: host '" << h.host_name
-      << "' of instance " << h.instance_id << " has no ID";
+      << "' of instance " << h.source_id << " has no ID";
 
   return ;
 }
@@ -945,7 +952,7 @@ void stream::_process_host_check(
     logging::info(logging::medium)
       << "SQL: processing host check event (host: " << hc.host_id
       << ", command: " << hc.command_line
-      << ", from instance: " << hc.instance_id << ")";
+      << ", from instance: " << hc.source_id << ")";
 
     // Processing.
     _host_check_update << hc;
@@ -1114,11 +1121,11 @@ void stream::_process_instance(
 
   // Log message.
   logging::info(logging::medium) << "SQL: processing instance event"
-    << "(id: " << i.id << ", name: " << i.name << ", running: "
+    << "(id: " << i.source_id << ", name: " << i.name << ", running: "
     << (i.is_running ? "yes" : "no") << ")";
 
   // Clean tables.
-  _clean_tables(i.id);
+  _clean_tables(i.source_id);
 
   // Processing.
   _update_on_none_insert(_instance_insert, _instance_update, i);
@@ -1139,7 +1146,7 @@ void stream::_process_instance_status(
 
   // Log message.
   logging::info(logging::medium)
-    << "SQL: processing instance status event (id: " << is.id
+    << "SQL: processing instance status event (id: " << is.source_id
     << ", last alive: " << is.last_alive << ")";
 
   // Processing.
@@ -1147,7 +1154,7 @@ void stream::_process_instance_status(
   _instance_status_update.run_statement("SQL");
   if (_instance_status_update.num_rows_affected() != 1)
     logging::error(logging::medium) << "SQL: instance "
-      << is.id << " was not updated because no matching entry "
+      << is.source_id << " was not updated because no matching entry "
          "was found in database";
   return ;
 }
@@ -1335,7 +1342,7 @@ void stream::_process_module(
 
   // Log message.
   logging::info(logging::medium)
-    << "SQL: processing module event (instance: " << m.instance_id
+    << "SQL: processing module event (instance: " << m.source_id
     << ", filename: " << m.filename << ", loaded: "
     << (m.loaded ? "yes" : "no") << ")";
 
@@ -1351,7 +1358,7 @@ void stream::_process_module(
       "WHERE instance_id=:instance_id"
       "  AND filename=:filename",
       "SQL");
-    q.bind_value(":instance_id", m.instance_id);
+    q.bind_value(":instance_id", m.source_id);
     q.bind_value(":filename", m.filename);
     q.run_statement("SQL");
   }
@@ -1430,7 +1437,7 @@ void stream::_process_service_check(
     logging::info(logging::medium)
       << "SQL: processing service check event (host: " << sc.host_id
       << ", service: " << sc.service_id << ", command: "
-      << sc.command_line << ", from instance: " << sc.instance_id << ")";
+      << sc.command_line << ", from instance: " << sc.source_id << ")";
 
     // Processing.
     _service_check_update << sc;
@@ -2013,12 +2020,12 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
 
     // Check that event does not refer to a deleted instance.
     bool deleted(false);
-    if ((_cache_deleted_instance_id.find(data->instance_id)
+    if ((_cache_deleted_instance_id.find(data->source_id)
         != _cache_deleted_instance_id.end())
         && (data->type() != neb::log_entry::static_type())) {
       logging::info(logging::low)
         << "SQL: discarding some event related to a deleted instance ("
-        << data->instance_id << ")";
+        << data->source_id << ")";
       deleted = true;
     }
     else if (io::events::category_of_type(data->type())
@@ -2040,9 +2047,9 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
     }
     if (!deleted) {
       // Update the timestamp of this instance.
-      _update_timestamp(data->instance_id);
+      _update_timestamp(data->source_id);
       logging::debug(logging::low)
-        << "SQL: updating timestamp of instance " << data->instance_id
+        << "SQL: updating timestamp of instance " << data->source_id
         << " (" << _oldest_timestamp << ")";
 
       // Process event.

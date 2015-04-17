@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -114,12 +114,7 @@ void dimension_truncate_table_signal::_internal_copy(
 mapping::entry const dimension_truncate_table_signal::entries[] = {
   mapping::entry(
     &bam::dimension_truncate_table_signal::update_started,
-    "update_started",
-    1),
-  mapping::entry(
-    &bam::dimension_truncate_table_signal::instance_id,
-    "",
-    2),
+    "update_started"),
   mapping::entry()
 };
 

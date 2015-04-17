@@ -113,41 +113,30 @@ mapping::entry const custom_variable::entries[] = {
   mapping::entry(
     &custom_variable::host_id,
     "host_id",
-    1,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &custom_variable::modified,
-    "modified",
-    2),
+    "modified"),
   mapping::entry(
     &custom_variable::name,
-    "name",
-    3),
+    "name"),
   mapping::entry(
     &custom_variable::service_id,
     "service_id",
-    4,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &custom_variable::update_time,
     "update_time",
-    5),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &custom_variable::var_type,
-    "type",
-    6),
+    "type"),
   mapping::entry(
     &custom_variable::value,
-    "value",
-    7),
+    "value"),
   mapping::entry(
     &custom_variable::value,
-    "default_value",
-    8),
-  mapping::entry(
-    &custom_variable::instance_id,
-    "",
-    9),
+    "default_value"),
   mapping::entry()
 };
 

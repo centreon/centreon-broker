@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -111,8 +111,7 @@ void external_command::_internal_copy(external_command const& right) {
 mapping::entry const external_command::entries[] = {
   mapping::entry(
     &external_command::command,
-    "command",
-    1),
+    "command"),
   mapping::entry()
 };
 

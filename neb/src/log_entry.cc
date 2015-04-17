@@ -135,59 +135,44 @@ void log_entry::_internal_copy(log_entry const& le) {
 mapping::entry const log_entry::entries[] = {
   mapping::entry(
     &log_entry::c_time,
-    "ctime",
-    1),
+    "ctime"),
   mapping::entry(
     &log_entry::host_id,
     "host_id",
-    2,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &log_entry::host_name,
-    "host_name",
-    3),
+    "host_name"),
   mapping::entry(
     &log_entry::instance_name,
-    "instance_name",
-    4),
+    "instance_name"),
   mapping::entry(
     &log_entry::issue_start_time,
     "",
-    5),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &log_entry::log_type,
-    "type",
-    6),
+    "type"),
   mapping::entry(
     &log_entry::msg_type,
-    "msg_type",
-    7),
+    "msg_type"),
   mapping::entry(
     &log_entry::retry,
-    "retry",
-    10),
+    "retry"),
   mapping::entry(
     &log_entry::service_description,
     "service_description",
-    11,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &log_entry::service_id,
     "service_id",
-    12,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &log_entry::status,
-    "status",
-    13),
+    "status"),
   mapping::entry(
     &log_entry::output,
-    "output",
-    14),
-  mapping::entry(
-    &log_entry::instance_id,
-    "",
-    15),
+    "output"),
   mapping::entry()
 };
 

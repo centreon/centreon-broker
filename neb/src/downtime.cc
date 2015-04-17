@@ -169,82 +169,67 @@ mapping::entry const downtime::entries[] = {
   mapping::entry(
     &downtime::actual_end_time,
     "actual_end_time",
-    1,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &downtime::actual_start_time,
     "actual_start_time",
-    2,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &downtime::author,
-    "author",
-    3),
+    "author"),
   mapping::entry(
     &downtime::downtime_type,
-    "type",
-    4),
+    "type"),
   mapping::entry(
     &downtime::deletion_time,
     "deletion_time",
-    5,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &downtime::duration,
-    "duration",
-    6),
+    "duration"),
   mapping::entry(
     &downtime::end_time,
     "end_time",
-    7),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &downtime::entry_time,
     "entry_time",
-    8),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &downtime::fixed,
-    "fixed",
-    9),
+    "fixed"),
   mapping::entry(
     &downtime::host_id,
     "host_id",
-    10,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
-    &downtime::instance_id,
+    &downtime::source_id,
     "instance_id",
-    11,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &downtime::internal_id,
-    "internal_id",
-    12),
+    "internal_id"),
   mapping::entry(
     &downtime::service_id,
     "service_id",
-    13,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &downtime::start_time,
     "start_time",
-    14),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &downtime::triggered_by,
     "triggered_by",
-    15,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &downtime::was_cancelled,
-    "cancelled",
-    16),
+    "cancelled"),
   mapping::entry(
     &downtime::was_started,
-    "started",
-    17),
+    "started"),
   mapping::entry(
     &downtime::comment,
-    "comment_data",
-    18),
+    "comment_data"),
   mapping::entry()
 };
 

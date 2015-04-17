@@ -23,8 +23,8 @@
 #  include "com/centreon/broker/namespace.hh"
 
 #  define BBDO_HEADER_SIZE 8
-#  define BBDO_VERSION_MAJOR 1
-#  define BBDO_VERSION_MINOR 2
+#  define BBDO_VERSION_MAJOR 2
+#  define BBDO_VERSION_MINOR 0
 #  define BBDO_VERSION_PATCH 0
 #  define BBDO_INTERNAL_TYPE 65535u
 

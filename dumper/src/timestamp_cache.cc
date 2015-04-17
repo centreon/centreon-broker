@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -83,7 +83,6 @@ unsigned int timestamp_cache::static_type() {
  *  @param[in] right Object to copy.
  */
 void timestamp_cache::_internal_copy(timestamp_cache const& right) {
-  instance_id = right.instance_id;
   filename = right.filename;
   last_modified = right.last_modified;
   return ;
@@ -99,12 +98,11 @@ void timestamp_cache::_internal_copy(timestamp_cache const& right) {
 mapping::entry const timestamp_cache::entries[] = {
   mapping::entry(
     &timestamp_cache::filename,
-    "filename",
-    1),
+    "filename"),
   mapping::entry(
     &timestamp_cache::last_modified,
     "last_modified",
-    2),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry()
 };
 

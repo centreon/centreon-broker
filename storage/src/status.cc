@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -118,27 +118,23 @@ mapping::entry const status::entries[] = {
   mapping::entry(
     &status::ctime,
     "ctime",
-    1),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &status::index_id,
     "index_id",
-    2),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &status::interval,
-    "interval",
-    3),
+    "interval"),
   mapping::entry(
     &status::rrd_len,
-    "rrd_len",
-    4),
+    "rrd_len"),
   mapping::entry(
     &status::state,
-    "state",
-    5),
+    "state"),
   mapping::entry(
     &status::is_for_rebuild,
-    "is_for_rebuild",
-    6),
+    "is_for_rebuild"),
   mapping::entry()
 };
 

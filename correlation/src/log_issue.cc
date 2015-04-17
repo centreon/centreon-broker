@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -141,21 +141,19 @@ mapping::entry const log_issue::entries[] = {
   mapping::entry(
     &log_issue::log_ctime,
     "log_ctime",
-    1),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &log_issue::host_id,
     "host_id",
-    2,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &log_issue::service_id,
     "service_id",
-    3,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &log_issue::issue_start_time,
     "issue_start_time",
-    4),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry()
 };
 

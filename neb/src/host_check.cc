@@ -87,29 +87,20 @@ unsigned int host_check::static_type() {
 mapping::entry const host_check::entries[] = {
   mapping::entry(
     &host_check::active_checks_enabled,
-    "",
-    1),
+    ""),
   mapping::entry(
     &host_check::check_type,
-    "",
-    2),
+    ""),
   mapping::entry(
     &host_check::host_id,
     "host_id",
-    3,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host_check::next_check,
-    "",
-    4),
+    ""),
   mapping::entry(
     &host_check::command_line,
-    "command_line",
-    5),
-  mapping::entry(
-    &host_check::instance_id,
-    "",
-    6),
+    "command_line"),
   mapping::entry()
 };
 

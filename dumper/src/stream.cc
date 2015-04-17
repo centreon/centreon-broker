@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -52,9 +52,7 @@ stream::stream(
   : _path(path),
     _process_in(true),
     _process_out(true),
-    _tagname(tagname) {
-
-}
+    _tagname(tagname) {}
 
 /**
  *  Destructor.
@@ -115,7 +113,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
 
       // Get instance id.
       std::ostringstream oss;
-      oss << data->instance_id;
+      oss << data->source_id;
 
       // Build path.
       std::string path(_path);
@@ -144,7 +142,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
 
       // Get instance id.
       std::ostringstream oss;
-      oss << data.instance_id;
+      oss << data.source_id;
 
       // Build path.
       std::string path(_path);

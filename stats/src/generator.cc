@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Merethis
+** Copyright 2013-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -105,8 +105,8 @@ void generator::run() {
       // Send dumper events.
       {
         misc::shared_ptr<dumper::dump> d(new dumper::dump);
+        d->source_id = _instance_id;
         d->content = b.data().c_str();
-        d->instance_id = _instance_id;
         d->tag = _tag.c_str();
         multiplexing::publisher p;
         p.write(d);

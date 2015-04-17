@@ -95,21 +95,18 @@ unsigned int service_group::static_type() {
 mapping::entry const service_group::entries[] = {
   mapping::entry(
     &service_group::alias,
-    "alias",
-    1),
+    "alias"),
   mapping::entry(
     &service_group::enabled,
-    "enabled",
-    2),
+    "enabled"),
   mapping::entry(
-    &service_group::instance_id,
+    &service_group::source_id,
     "instance_id",
-    3,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero,
+    false),
   mapping::entry(
     &service_group::name,
-    "name",
-    4),
+    "name"),
   mapping::entry()
 };
 

@@ -171,7 +171,7 @@ void macro_cache::write(misc::shared_ptr<io::data> const& data) {
  *  @param in  The event.
  */
 void macro_cache::_process_instance(neb::instance const& in) {
-  _instances[in.id] = in;
+  _instances[in.source_id] = in;
 }
 
 /**

@@ -69,8 +69,8 @@ int main() {
     // Send node status.
     { // #1
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->source_id = 1;
       ss->host_id = 42;
-      ss->instance_id = 1;
       ss->service_id = 24;
       ss->last_hard_state = 2;
       ss->last_hard_state_change = 123456789;
@@ -79,8 +79,8 @@ int main() {
     { // #2
       misc::shared_ptr<neb::acknowledgement>
         ack(new neb::acknowledgement);
+      ack->source_id = 1;
       ack->host_id = 42;
-      ack->instance_id = 1;
       ack->service_id = 24;
       ack->entry_time = 123456790;
       ack->is_sticky = false;
@@ -88,8 +88,8 @@ int main() {
     }
     { // #3
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->source_id = 1;
       ss->host_id = 42;
-      ss->instance_id = 1;
       ss->service_id = 24;
       ss->last_hard_state = 1;
       ss->last_hard_state_change = 123456791;
@@ -98,8 +98,8 @@ int main() {
     { // #4
       misc::shared_ptr<neb::acknowledgement>
         ack(new neb::acknowledgement);
+      ack->source_id = 1;
       ack->host_id = 42;
-      ack->instance_id = 1;
       ack->service_id = 24;
       ack->entry_time = 123456792;
       ack->is_sticky = true;
@@ -107,8 +107,8 @@ int main() {
     }
     { // #5
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->source_id = 1;
       ss->host_id = 42;
-      ss->instance_id = 1;
       ss->service_id = 24;
       ss->last_hard_state = 2;
       ss->last_hard_state_change = 123456793;
@@ -116,8 +116,8 @@ int main() {
     }
     { // #6
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->source_id = 1;
       ss->host_id = 42;
-      ss->instance_id = 1;
       ss->service_id = 24;
       ss->last_hard_state = 0;
       ss->last_hard_state_change = 123456794;
@@ -126,16 +126,16 @@ int main() {
     { // #7
       misc::shared_ptr<neb::acknowledgement>
         ack(new neb::acknowledgement);
+      ack->source_id = 1;
       ack->host_id = 42;
-      ack->instance_id = 1;
       ack->service_id = 24;
       ack->entry_time = 123456795;
       c.write(ack);
     }
     { // #8
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->source_id = 1;
       ss->host_id = 42;
-      ss->instance_id = 1;
       ss->service_id = 24;
       ss->last_hard_state = 1;
       ss->last_hard_state_change = 123456796;

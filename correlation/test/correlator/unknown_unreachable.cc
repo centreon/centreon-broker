@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -79,8 +79,8 @@ int main() {
     // Send node status.
     { // #1
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->source_id = 1;
       ss->host_id = 56;
-      ss->instance_id = 1;
       ss->service_id = 13;
       ss->state_type = 1;
       ss->current_state = 2;
@@ -89,8 +89,8 @@ int main() {
     }
     { // #2
       misc::shared_ptr<neb::host_status> hs(new neb::host_status);
+      hs->source_id = 1;
       hs->host_id = 90;
-      hs->instance_id = 1;
       hs->state_type = 1;
       hs->current_state = 1;
       hs->last_check = 123456790;
@@ -98,8 +98,8 @@ int main() {
     }
     { // #3
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->source_id = 1;
       ss->host_id = 42;
-      ss->instance_id = 1;
       ss->service_id = 24;
       ss->state_type = 1;
       ss->current_state = 2;
@@ -108,8 +108,8 @@ int main() {
     }
     { // #4
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->source_id = 1;
       ss->host_id = 56;
-      ss->instance_id = 1;
       ss->service_id = 13;
       ss->state_type = 1;
       ss->current_state = 1;
@@ -118,8 +118,8 @@ int main() {
     }
     { // #5
       misc::shared_ptr<neb::host_status> hs(new neb::host_status);
+      hs->source_id = 1;
       hs->host_id = 90;
-      hs->instance_id = 1;
       hs->state_type = 1;
       hs->current_state = 1;
       hs->last_check = 123456793;
@@ -127,8 +127,8 @@ int main() {
     }
     { // #6
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->source_id = 1;
       ss->host_id = 42;
-      ss->instance_id = 1;
       ss->service_id = 24;
       ss->state_type = 1;
       ss->current_state = 0;

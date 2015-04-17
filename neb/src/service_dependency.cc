@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -112,44 +112,32 @@ void service_dependency::_internal_copy(service_dependency const& sd) {
 mapping::entry const service_dependency::entries[] = {
   mapping::entry(
     &service_dependency::dependency_period,
-    "dependency_period",
-    1),
+    "dependency_period"),
   mapping::entry(
     &service_dependency::dependent_host_id,
     "dependent_host_id",
-    2,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service_dependency::dependent_service_id,
     "dependent_service_id",
-    3,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service_dependency::enabled,
-    "",
-    4),
+    ""),
   mapping::entry(
     &service_dependency::execution_failure_options,
-    "execution_failure_options",
-    5),
+    "execution_failure_options"),
   mapping::entry(
     &service_dependency::host_id,
     "host_id",
-    6,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service_dependency::inherits_parent,
-    "inherits_parent",
-    7),
+    "inherits_parent"),
   mapping::entry(
     &service_dependency::service_id,
     "service_id",
-    8,
-    mapping::entry::NULL_ON_ZERO),
-  mapping::entry(
-    &service_dependency::instance_id,
-    "",
-    9),
+    mapping::entry::invalid_on_zero),
   mapping::entry()
 };
 

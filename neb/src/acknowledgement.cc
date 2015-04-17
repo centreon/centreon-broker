@@ -134,56 +134,45 @@ void acknowledgement::_internal_copy(acknowledgement const& other) {
 mapping::entry const acknowledgement::entries[] = {
   mapping::entry(
     &acknowledgement::acknowledgement_type,
-    "type",
-    1),
+    "type"),
   mapping::entry(
     &acknowledgement::author,
-    "author",
-    2),
+    "author"),
   mapping::entry(
     &acknowledgement::comment,
-    "comment_data",
-    3),
+    "comment_data"),
   mapping::entry(
     &acknowledgement::deletion_time,
     "deletion_time",
-    4,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &acknowledgement::entry_time,
     "entry_time",
-    5),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &acknowledgement::host_id,
     "host_id",
-    6,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
-    &acknowledgement::instance_id,
+    &acknowledgement::source_id,
     "instance_id",
-    7,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &acknowledgement::is_sticky,
-    "sticky",
-    8),
+    "sticky"),
   mapping::entry(
     &acknowledgement::notify_contacts,
-    "notify_contacts",
-    9),
+    "notify_contacts"),
   mapping::entry(
     &acknowledgement::persistent_comment,
-    "persistent_comment",
-    10),
+    "persistent_comment"),
   mapping::entry(
     &acknowledgement::service_id,
     "service_id",
-    11,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &acknowledgement::state,
-    "state",
-    12),
+    "state"),
   mapping::entry()
 };
 

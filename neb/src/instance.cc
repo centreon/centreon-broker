@@ -36,8 +36,7 @@ using namespace com::centreon::broker::neb;
  *  Initialize members to 0, NULL or equivalent.
  */
 instance::instance()
-  : id(0),
-    is_running(true),
+  : is_running(true),
     pid(0),
     program_end(0),
     program_start(0) {}
@@ -108,7 +107,6 @@ unsigned int instance::static_type() {
  */
 void instance::_internal_copy(instance const& other) {
   engine = other.engine;
-  id = other.id;
   is_running = other.is_running;
   name = other.name;
   pid = other.pid;
@@ -128,37 +126,30 @@ void instance::_internal_copy(instance const& other) {
 mapping::entry const instance::entries[] = {
   mapping::entry(
     &instance::engine,
-    "engine",
-    1),
+    "engine"),
   mapping::entry(
-    &instance::id,
+    &instance::source_id,
     "instance_id",
-    2,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero,
+    false),
   mapping::entry(
     &instance::name,
-    "name",
-    3),
+    "name"),
   mapping::entry(
     &instance::is_running,
-    "running",
-    4),
+    "running"),
   mapping::entry(
     &instance::pid,
-    "pid",
-    5),
+    "pid"),
   mapping::entry(
     &instance::program_end,
-    "end_time",
-    6),
+    "end_time"),
   mapping::entry(
     &instance::program_start,
-    "start_time",
-    7),
+    "start_time"),
   mapping::entry(
     &instance::version,
-    "version",
-    8),
+    "version"),
   mapping::entry()
 };
 

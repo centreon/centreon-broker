@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/instance_status.hh"
@@ -26,26 +27,31 @@ using namespace com::centreon::broker;
 /**
  *  Check instance_status's default constructor.
  *
- *  @return 0 on success.
+ *  @return EXIT_SUCCESS on success.
  */
 int main() {
   // Object.
   neb::instance_status is;
 
   // Check.
-  return ((is.address != "")
-          || (is.check_hosts_freshness != false)
-          || (is.check_services_freshness != false)
-          || (is.description != "")
-          || (is.event_handler_enabled != false)
-          || (is.flap_detection_enabled != false)
-          || (is.global_host_event_handler != "")
-          || (is.global_service_event_handler != "")
-          || (is.id != 0)
-          || (is.last_alive != 0)
-          || (is.last_command_check != 0)
-          || (is.obsess_over_hosts != false)
-          || (is.obsess_over_services != false)
-          || (is.type()
-              != io::events::data_type<io::events::neb, neb::de_instance_status>::value));
+  return (((is.source_id != 0)
+           || (is.destination_id != 0)
+           || (is.address != "")
+           || (is.check_hosts_freshness != false)
+           || (is.check_services_freshness != false)
+           || (is.description != "")
+           || (is.event_handler_enabled != false)
+           || (is.flap_detection_enabled != false)
+           || (is.global_host_event_handler != "")
+           || (is.global_service_event_handler != "")
+           || (is.last_alive != 0)
+           || (is.last_command_check != 0)
+           || (is.obsess_over_hosts != false)
+           || (is.obsess_over_services != false)
+           || (is.type()
+               != io::events::data_type<
+                                io::events::neb,
+                                neb::de_instance_status>::value))
+          ? EXIT_FAILURE
+          : EXIT_SUCCESS);
 }

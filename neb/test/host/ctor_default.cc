@@ -33,7 +33,9 @@ int main() {
   neb::host h;
 
   // Check.
-  return ((h.active_checks_enabled
+  return (((h.source_id != 0)
+           || (h.destination_id != 0)
+           || h.active_checks_enabled
            || !h.address.isEmpty()
            || !h.alias.isEmpty()
            || !h.check_command.isEmpty()
@@ -59,7 +61,6 @@ int main() {
            || (fabs(h.high_flap_threshold) > 0.0001)
            || (h.host_id != 0)
            || !h.host_name.isEmpty()
-           || (h.instance_id != 0)
            || h.is_flapping
            || (h.last_check != 0)
            || (h.last_hard_state != 4)

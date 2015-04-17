@@ -116,18 +116,15 @@ mapping::entry const index_mapping::entries[] = {
   mapping::entry(
     &index_mapping::index_id,
     "index_id",
-    1,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &index_mapping::host_id,
     "host_id",
-    1,
-  mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &index_mapping::service_id,
     "service_id",
-    1,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry()
 };
 

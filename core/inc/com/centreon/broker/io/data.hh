@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -37,12 +37,13 @@ namespace                  io {
   class                    data {
   public:
                            data();
-                           data(data const& d);
+                           data(data const& other);
     virtual                ~data();
-    data&                  operator=(data const& d);
+    data&                  operator=(data const& other);
     virtual unsigned int   type() const = 0;
 
-    unsigned int           instance_id;
+    unsigned int           source_id;
+    unsigned int           destination_id;
   };
 }
 

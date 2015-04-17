@@ -114,35 +114,29 @@ mapping::entry const metric::entries[] = {
   mapping::entry(
     &metric::ctime,
     "ctime",
-    1),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &metric::interval,
-    "interval",
-    2),
+    "interval"),
   mapping::entry(
     &metric::metric_id,
     "metric_id",
-    3),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &metric::name,
-    "name",
-    4),
+    "name"),
   mapping::entry(
     &metric::rrd_len,
-    "rrd_len",
-    6),
+    "rrd_len"),
   mapping::entry(
     &metric::value,
-    "value",
-    7),
+    "value"),
   mapping::entry(
     &metric::value_type,
-    "value_type",
-    8),
+    "value_type"),
   mapping::entry(
     &metric::is_for_rebuild,
-    "is_for_rebuild",
-    9),
+    "is_for_rebuild"),
   mapping::entry()
 };
 

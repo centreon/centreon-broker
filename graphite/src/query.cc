@@ -194,7 +194,7 @@ void query::_compile_naming_scheme(
         &query::_get_instance);
     else if (macro == "$INSTANCEID$")
       _compiled_getters.push_back(
-        &query::_get_member<unsigned int, io::data, &io::data::instance_id>);
+        &query::_get_member<unsigned int, io::data, &io::data::source_id>);
     else if (macro == "$HOST$")
       _compiled_getters.push_back(&query::_get_host);
     else if (macro == "$HOSTID$")
@@ -357,5 +357,5 @@ void query::_get_service_id(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void query::_get_instance(io::data const& d, std::ostream& is) {
-  _cache->get_instance(d.instance_id);
+  _cache->get_instance(d.source_id);
 }

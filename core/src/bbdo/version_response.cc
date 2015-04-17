@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -26,35 +26,6 @@ using namespace com::centreon::broker::bbdo;
 
 /**************************************
 *                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
-
-// /**
-//  *  Internal protocol objects mappings.
-//  */
-// static mapping::entry const version_response_mapping[] = {
-//   mapping::entry(
-//     &version_response::bbdo_major,
-//     1,
-//     "major"),
-//   mapping::entry(
-//     &version_response::bbdo_minor,
-//     2,
-//     "minor"),
-//   mapping::entry(
-//     &version_response::bbdo_patch,
-//     3,
-//     "patch"),
-//   mapping::entry(
-//     &version_response::extensions,
-//     4,
-//     "extensions"),
-//   mapping::entry()
-// };
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -70,11 +41,11 @@ version_response::version_response()
 /**
  *  Copy constructor.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-version_response::version_response(version_response const& right)
-  : io::data(right) {
-  _internal_copy(right);
+version_response::version_response(version_response const& other)
+  : io::data(other) {
+  _internal_copy(other);
 }
 
 /**
@@ -85,15 +56,15 @@ version_response::~version_response() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
 version_response& version_response::operator=(
-                                      version_response const& right) {
-  if (this != &right) {
-    io::data::operator=(right);
-    _internal_copy(right);
+                                      version_response const& other) {
+  if (this != &other) {
+    io::data::operator=(other);
+    _internal_copy(other);
   }
   return (*this);
 }
@@ -107,16 +78,6 @@ unsigned int version_response::type() const {
   return (version_response::static_type());
 }
 
-/**
- *  Get the event type.
- *
- *  @return The event type.
- */
-unsigned int version_response::static_type() {
-  return (io::events::data_type<io::events::bbdo, bbdo::de_version_response>::value);
-}
-
-
 /**************************************
 *                                     *
 *           Private Methods           *
@@ -126,13 +87,13 @@ unsigned int version_response::static_type() {
 /**
  *  Copy internal data members.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void version_response::_internal_copy(version_response const& right) {
-  bbdo_major = right.bbdo_major;
-  bbdo_minor = right.bbdo_minor;
-  bbdo_patch = right.bbdo_patch;
-  extensions = right.extensions;
+void version_response::_internal_copy(version_response const& other) {
+  bbdo_major = other.bbdo_major;
+  bbdo_minor = other.bbdo_minor;
+  bbdo_patch = other.bbdo_patch;
+  extensions = other.extensions;
   return ;
 }
 
@@ -146,20 +107,16 @@ void version_response::_internal_copy(version_response const& right) {
 mapping::entry const version_response::entries[] = {
   mapping::entry(
     &version_response::bbdo_major,
-    "major",
-    1),
+    "major"),
   mapping::entry(
     &version_response::bbdo_minor,
-    "minor",
-    2),
+    "minor"),
   mapping::entry(
     &version_response::bbdo_patch,
-    "patch",
-    3),
+    "patch"),
   mapping::entry(
     &version_response::extensions,
-    "extensions",
-    4),
+    "extensions"),
   mapping::entry()
 };
 

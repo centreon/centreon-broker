@@ -48,7 +48,6 @@ namespace          neb {
                    static_type();
 
     QString        engine;
-    unsigned int   id;
     bool           is_running;
     QString        name;
     unsigned int   pid;

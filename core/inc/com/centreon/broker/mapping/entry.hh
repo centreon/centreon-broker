@@ -38,9 +38,9 @@ namespace                    mapping {
   class                      entry {
   public:
     enum                     attribute {
-      NULL_ON_NOTHING = 0,
-      NULL_ON_ZERO,
-      NULL_ON_MINUS_ONE
+      always_valid = 0,
+      invalid_on_zero,
+      invalid_on_minus_one
     };
 
     /**
@@ -54,13 +54,13 @@ namespace                    mapping {
     template <typename T, typename U>
                              entry(
                                U (T::* prop),
-                               QString const& name,
-                               unsigned int number,
-                               attribute attr = NULL_ON_NOTHING) {
+                               char const* name,
+                               attribute attr = always_valid,
+                               bool serialize = true) {
       _name = name;
       _source = misc::shared_ptr<source>(new property<T>(prop, &_type));
       _ptr = _source.data();
-      _number = number;
+      _serialize = serialize;
       _attribute = attr;
     }
 
@@ -72,13 +72,15 @@ namespace                    mapping {
     bool                     get_bool(io::data const& d) const;
     double                   get_double(io::data const& d) const;
     int                      get_int(io::data const& d) const;
-    unsigned int             get_number() const;
+    char const*              get_name() const;
+    bool                     get_serialize() const;
     short                    get_short(io::data const& d) const;
     QString const&           get_string(io::data const& d) const;
     timestamp const&         get_time(io::data const& d) const;
     unsigned int             get_type() const;
     unsigned int             get_uint(io::data const& d) const;
     unsigned short           get_ushort(io::data const& d) const;
+    bool                     is_null() const;
     void                     set_bool(io::data& d, bool value) const;
     void                     set_double(
                                io::data& d,
@@ -97,14 +99,12 @@ namespace                    mapping {
     void                     set_ushort(
                                io::data& d,
                                unsigned short value) const;
-    bool                     is_null() const;
-    std::string              get_name() const;
 
   private:
     attribute                _attribute;
-    QString                  _name;
-    unsigned int             _number;
+    char const*              _name;
     source*                  _ptr;
+    bool                     _serialize;
     misc::shared_ptr<source> _source;
     source::source_type      _type;
   };

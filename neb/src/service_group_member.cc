@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -89,26 +89,23 @@ unsigned int service_group_member::static_type() {
 mapping::entry const service_group_member::entries[] = {
   mapping::entry(
     &service_group_member::enabled,
-    "",
-    1),
+    ""),
   mapping::entry(
     &service_group_member::group, // XXX : should be replaced by servicegroup_id
-    "group",
-    2),
+    "group"),
   mapping::entry(
     &service_group_member::host_id,
     "host_id",
-    3,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
-    &service_group_member::instance_id,
+    &service_group_member::source_id,
     "instance_id",
-    4),
+    mapping::entry::invalid_on_zero,
+    false),
   mapping::entry(
     &service_group_member::service_id,
     "service_id",
-    5,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry()
 };
 

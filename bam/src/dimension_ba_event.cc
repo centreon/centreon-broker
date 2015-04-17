@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -122,36 +122,25 @@ mapping::entry const dimension_ba_event::entries[] = {
   mapping::entry(
     &bam::dimension_ba_event::ba_id,
     "ba_id",
-    1,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &bam::dimension_ba_event::ba_name,
-    "ba_name",
-    2),
+    "ba_name"),
   mapping::entry(
     &bam::dimension_ba_event::ba_description,
-    "ba_description",
-    3),
+    "ba_description"),
   mapping::entry(
     &bam::dimension_ba_event::sla_month_percent_crit,
-    "sla_month_percent_crit",
-    4),
+    "sla_month_percent_crit"),
   mapping::entry(
     &bam::dimension_ba_event::sla_month_percent_warn,
-    "sla_month_percent_warn",
-    5),
+    "sla_month_percent_warn"),
   mapping::entry(
     &bam::dimension_ba_event::sla_duration_crit,
-    "sla_month_duration_crit",
-    6),
+    "sla_month_duration_crit"),
   mapping::entry(
     &bam::dimension_ba_event::sla_duration_warn,
-    "sla_month_duration_warn",
-    7),
-  mapping::entry(
-    &bam::dimension_ba_event::instance_id,
-    "",
-    8),
+    "sla_month_duration_warn"),
   mapping::entry()
 };
 

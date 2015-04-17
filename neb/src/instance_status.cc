@@ -38,7 +38,6 @@ using namespace com::centreon::broker::neb;
 instance_status::instance_status()
   : check_hosts_freshness(false),
     check_services_freshness(false),
-    id(0),
     last_alive(0),
     last_command_check(0),
     obsess_over_hosts(false),
@@ -117,7 +116,6 @@ void instance_status::_internal_copy(instance_status const& other) {
   description = other.description;
   global_host_event_handler = other.global_host_event_handler;
   global_service_event_handler = other.global_service_event_handler;
-  id = other.id;
   last_alive = other.last_alive;
   last_command_check = other.last_command_check;
   obsess_over_hosts = other.obsess_over_hosts;
@@ -135,57 +133,45 @@ void instance_status::_internal_copy(instance_status const& other) {
 mapping::entry const instance_status::entries[] = {
   mapping::entry(
     &instance_status::address,
-    "address",
-    1),
+    "address"),
   mapping::entry(
     &instance_status::check_hosts_freshness,
-    "check_hosts_freshness",
-    2),
+    "check_hosts_freshness"),
   mapping::entry(
     &instance_status::check_services_freshness,
-    "check_services_freshness",
-    3),
+    "check_services_freshness"),
   mapping::entry(
     &instance_status::description,
-    "description",
-    4),
+    "description"),
   mapping::entry(
     &instance_status::event_handler_enabled,
-    "event_handlers",
-    5),
+    "event_handlers"),
   mapping::entry(
     &instance_status::flap_detection_enabled,
-    "flap_detection",
-    6),
+    "flap_detection"),
   mapping::entry(
-    &instance_status::id,
+    &instance_status::source_id,
     "instance_id",
-    7,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero,
+    false),
   mapping::entry(
     &instance_status::last_alive,
-    "last_alive",
-    8),
+    "last_alive"),
   mapping::entry(
     &instance_status::last_command_check,
-    "last_command_check",
-    9),
+    "last_command_check"),
   mapping::entry(
     &instance_status::obsess_over_hosts,
-    "obsess_over_hosts",
-    10),
+    "obsess_over_hosts"),
   mapping::entry(
     &instance_status::obsess_over_services,
-    "obsess_over_services",
-    11),
+    "obsess_over_services"),
   mapping::entry(
     &instance_status::global_host_event_handler,
-    "global_host_event_handler",
-    12),
+    "global_host_event_handler"),
   mapping::entry(
     &instance_status::global_service_event_handler,
-    "global_service_event_handler",
-    13),
+    "global_service_event_handler"),
   mapping::entry()
 };
 

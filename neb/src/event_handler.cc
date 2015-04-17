@@ -133,66 +133,50 @@ void event_handler::_internal_copy(event_handler const& other) {
 mapping::entry const event_handler::entries[] = {
   mapping::entry(
     &event_handler::early_timeout,
-    "early_timeout",
-    1),
+    "early_timeout"),
   mapping::entry(
     &event_handler::end_time,
     "end_time",
-    2),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &event_handler::execution_time,
-    "execution_time",
-    3),
+    "execution_time"),
   mapping::entry(
     &event_handler::handler_type,
-    "type",
-    4),
+    "type"),
   mapping::entry(
     &event_handler::host_id,
     "host_id",
-    5,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &event_handler::return_code,
-    "return_code",
-    6),
+    "return_code"),
   mapping::entry(
     &event_handler::service_id,
     "service_id",
-    7,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &event_handler::start_time,
     "start_time",
-    8),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &event_handler::state,
-    "state",
-    9),
+    "state"),
   mapping::entry(
     &event_handler::state_type,
-    "state_type",
-    10),
+    "state_type"),
   mapping::entry(
     &event_handler::timeout,
-    "timeout",
-    11),
+    "timeout"),
   mapping::entry(
     &event_handler::command_args,
-    "command_args",
-    12),
+    "command_args"),
   mapping::entry(
     &event_handler::command_line,
-    "command_line",
-    13),
+    "command_line"),
   mapping::entry(
     &event_handler::output,
-    "output",
-    14),
-  mapping::entry(
-    &event_handler::instance_id,
-    "",
-    15),
+    "output"),
   mapping::entry()
 };
 

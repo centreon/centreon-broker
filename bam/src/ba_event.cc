@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -123,32 +123,22 @@ mapping::entry const ba_event::entries[] = {
   mapping::entry(
     &bam::ba_event::ba_id,
     "ba_id",
-    1,
-    mapping::entry::NULL_ON_ZERO),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &bam::ba_event::first_level,
-    "first_level",
-    2),
+    "first_level"),
   mapping::entry(
     &bam::ba_event::end_time,
-    "end_time",
-    3),
+    "end_time"),
   mapping::entry(
     &bam::ba_event::in_downtime,
-    "in_downtime",
-    4),
+    "in_downtime"),
   mapping::entry(
     &bam::ba_event::start_time,
-    "start_time",
-    5),
+    "start_time"),
   mapping::entry(
     &bam::ba_event::status,
-    "status",
-    6),
-  mapping::entry(
-    &bam::ba_event::instance_id,
-    "",
-    7),
+    "status"),
   mapping::entry()
 };
 
