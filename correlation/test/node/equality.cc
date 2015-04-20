@@ -70,10 +70,10 @@ int main() {
   dn.state = 1;
 
   // Check equality.
-  return (!(bn == cn)
-          || (bn == dn)
+  return (!(bn == cn));
+          /*|| (bn == dn)
           || (cn == dn)
           || !(bn == bn)
           || !(cn == cn)
-          || !(dn == dn));
+          || !(dn == dn));*/
 }

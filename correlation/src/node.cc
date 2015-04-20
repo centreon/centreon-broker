@@ -117,7 +117,7 @@ bool node::operator==(node const& n) const {
                || (my_issue.get()
                    && n.my_issue.get()
                    && (*my_issue == *n.my_issue)))
-           && ((!my_state.get() && n.my_state.get())
+           && ((!my_state.get() && !n.my_state.get())
                || (my_state.get()
                    && n.my_state.get()
                    && (*my_state == *n.my_state)))
