@@ -64,25 +64,25 @@ node::~node() {
   for (it = _children.begin(), end = _children.end();
        it != end;
        ++it)
-    (*it)->_parents.remove(get_id(), this);
+    (*it)->_parents.erase(this);
 
   // Remove self from node depending on self.
   for (it = _depended_by.begin(), end = _depended_by.end();
        it != end;
        ++it)
-    (*it)->_depends_on.remove(get_id(), this);
+    (*it)->_depends_on.erase(this);
 
   // Remove self from dependencies.
   for (it = _depends_on.begin(), end = _depends_on.end();
        it != end;
        ++it)
-    (*it)->_depended_by.remove(get_id(), this);
+    (*it)->_depended_by.erase(this);
 
   // Remove self from parents.
   for (it = _parents.begin(), end = _parents.end();
        it != end;
        ++it)
-    (*it)->_children.remove(get_id(), this);
+    (*it)->_children.erase(this);
 }
 
 /**
@@ -205,14 +205,14 @@ bool node::operator!=(node const& n) const {
  *  @param[in,out] n New child.
  */
 void node::add_child(node* n) {
-  if (_parents.contains(n->get_id()))
+  if (_parents.find(n) != _parents.end())
     throw (exceptions::msg()
            << "correlation: trying to insert node ("
            << n->host_id << ", " << n->service_id << ") as children of node ("
            << n->host_id << ", " << n->service_id
            << "), but this node is already a parent");
-  _children.insert(n->get_id(), n);
-  n->_parents.insert(get_id(), this);
+  _children.insert(n);
+  n->_parents.insert(this);
   return ;
 }
 
@@ -222,14 +222,14 @@ void node::add_child(node* n) {
  *  @param[in,out] n New node depending on this node.
  */
 void node::add_depended(node* n) {
-  if (_depends_on.contains(n->get_id()))
+  if (_depends_on.find(n) != _depends_on.end())
     throw (exceptions::msg()
            << "correlation: trying to insert node ("
            << n->host_id << ", " << n->service_id << ") as inverse dependency "
            " of node (" << n->host_id << ", " << n->service_id
            << "), but this node is already a dependency");
-  _depended_by.insert(n->get_id(), n);
-  n->_depends_on.insert(get_id(), this);
+  _depended_by.insert(n);
+  n->_depends_on.insert(this);
   return ;
 }
 
@@ -239,14 +239,14 @@ void node::add_depended(node* n) {
  *  @param[in,out] n New dependency.
  */
 void node::add_dependency(node* n) {
-  if (_depended_by.contains(n->get_id()))
+  if (_depended_by.find(n) != _depended_by.end())
     throw (exceptions::msg()
            << "correlation: trying to insert node ("
            << n->host_id << ", " << n->service_id << ") as dependency of"
            " node (" << n->host_id << ", " << n->service_id
            << "), but this node is already an inverse dependency");
-  _depends_on.insert(n->get_id(), n);
-  n->_depended_by.insert(get_id(), this);
+  _depends_on.insert(n);
+  n->_depended_by.insert(this);
   return ;
 }
 
@@ -256,14 +256,14 @@ void node::add_dependency(node* n) {
  *  @param[in,out] n New parent.
  */
 void node::add_parent(node* n) {
-  if (_children.contains(n->get_id()))
+  if (_children.find(n) != _children.end())
     throw (exceptions::msg()
            << "correlation: trying to insert node ("
            << n->host_id << ", " << n->service_id << ") as parent of node ("
            << n->host_id << ", " << n->service_id
            << "), but this node is already a children");
-  _parents.insert(n->get_id(), n);
-  n->_children.insert(get_id(), this);
+  _parents.insert(n);
+  n->_children.insert(this);
   return ;
 }
 
@@ -309,8 +309,8 @@ node::node_map const& node::get_parents() const {
  *  @param[in,out] n Child node.
  */
 void node::remove_child(node* n) {
-  _children.remove(n->get_id());
-  n->_parents.remove(this->get_id(), this);
+  _children.erase(n);
+  n->_parents.erase(this);
   return ;
 }
 
@@ -320,8 +320,8 @@ void node::remove_child(node* n) {
  *  @param[in,out] n Node which depends on this node.
  */
 void node::remove_depended(node* n) {
-  _depended_by.remove(n->get_id());
-  n->_depends_on.remove(this->get_id(), this);
+  _depended_by.erase(n);
+  n->_depends_on.erase(this);
   return ;
 }
 
@@ -331,8 +331,8 @@ void node::remove_depended(node* n) {
  *  @param[in,out] n Node of which this node depends.
  */
 void node::remove_dependency(node* n) {
-  _depends_on.remove(n->get_id());
-  n->_depended_by.remove(this->get_id(), this);
+  _depends_on.erase(n);
+  n->_depended_by.erase(this);
   return ;
 }
 
@@ -342,8 +342,8 @@ void node::remove_dependency(node* n) {
  *  @param[in,out] n Parent node.
  */
 void node::remove_parent(node* n) {
-  _parents.remove(n->get_id());
-  n->_children.remove(this->get_id(), this);
+  _parents.erase(n);
+  n->_children.erase(this);
   return ;
 }
 
@@ -394,8 +394,6 @@ void node::manage_status(
     return ;
 
   // Remove acknowledgement.
-  // We need to cache the old_ack because we change the ack time value
-  // directly in the issue, but it needs to be set again .
   if (new_state == 0)
     acknowledgement.reset();
   else if (acknowledgement.get()
@@ -612,6 +610,12 @@ void node::_internal_copy(node const& n) {
   downtimes = n.downtimes;
   if (n.acknowledgement.get())
     acknowledgement.reset(new neb::acknowledgement(*n.acknowledgement));
+  else
+    acknowledgement.reset();
+  if (n.my_state.get())
+    my_state.reset(new correlation::state(*n.my_state));
+  else
+    my_state.reset();
 
   node_map::iterator it, end;
 
@@ -620,28 +624,28 @@ void node::_internal_copy(node const& n) {
   for (it = _children.begin(), end = _children.end();
        it != end;
        ++it)
-    (*it)->_parents.insert(get_id(), this);
+    (*it)->_parents.insert(this);
 
   // Copy nodes depending on copied node.
   _depended_by = n._depended_by;
   for (it = _depended_by.begin(), end = _depended_by.end();
        it != end;
        ++it)
-    (*it)->_depends_on.insert(get_id(), this);
+    (*it)->_depends_on.insert(this);
 
   // Copy nodes on which the copied node depends.
   _depends_on = n._depends_on;
   for (it = _depends_on.begin(), end = _depends_on.end();
        it != end;
        ++it)
-    (*it)->_depended_by.insert(get_id(), this);
+    (*it)->_depended_by.insert(this);
 
   // Copy parents.
   _parents = n._parents;
   for (it = _parents.begin(), end = _parents.end();
        it != end;
        ++it)
-    (*it)->_children.insert(get_id(), this);
+    (*it)->_children.insert(this);
 
   return ;
 }

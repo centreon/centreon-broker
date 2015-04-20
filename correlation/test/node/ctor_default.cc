@@ -31,13 +31,13 @@ int main() {
   correlation::node n;
 
   // Check default construction.
-  return (!n.get_children().isEmpty()
-          || !n.get_dependeds().isEmpty()
-          || !n.get_dependencies().isEmpty()
+  return (!n.get_children().empty()
+          || !n.get_dependeds().empty()
+          || !n.get_dependencies().empty()
           || (n.host_id != 0)
           || n.in_downtime
           || n.my_issue.get()
-          || !n.get_parents().isEmpty()
+          || !n.get_parents().empty()
           || (n.service_id != 0)
           || (n.state != 0));
 }

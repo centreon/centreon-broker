@@ -40,9 +40,17 @@ int main() {
 
   // Linked objects.
   correlation::node n1;
+  n1.host_id = 1;
+  n1.service_id = 1;
   correlation::node n2;
+  n2.host_id = 1;
+  n2.service_id = 2;
   correlation::node n3;
+  n3.host_id = 1;
+  n3.service_id = 3;
   correlation::node n4;
+  n4.host_id = 1;
+  n4.service_id = 4;
   bn.add_child(&n1);
   bn.add_depended(&n2);
   bn.add_dependency(&n3);
@@ -53,13 +61,13 @@ int main() {
 
   // Reset base object.
   correlation::node dn(bn);
+  dn.remove_child(&n1);
+  dn.remove_dependency(&n3);
   dn.host_id = 23;
   dn.in_downtime = false;
   dn.my_issue.reset();
   dn.service_id = 2347;
   dn.state = 1;
-  dn.remove_child(&n1);
-  dn.remove_dependency(&n3);
 
   // Check equality.
   return (!(bn == cn)

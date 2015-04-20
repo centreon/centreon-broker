@@ -76,9 +76,9 @@ int main() {
           || bn.my_issue.get()
           || (bn.service_id != 2347)
           || (bn.state != 1)
-          || !bn.get_children().isEmpty()
+          || !bn.get_children().empty()
           || (bn.get_dependeds().size() != 1)
-          || !bn.get_dependencies().isEmpty()
+          || !bn.get_dependencies().empty()
           || (bn.get_parents().size() != 1)
           || (cn.host_id != 42)
           || !cn.in_downtime

@@ -35,8 +35,8 @@ int main() {
   n1.add_dependency(&n2);
 
   // Check.
-  return (n1.get_dependencies().isEmpty()
+  return (n1.get_dependencies().empty()
           || (*n1.get_dependencies().begin() != &n2)
-          || n2.get_dependeds().isEmpty()
+          || n2.get_dependeds().empty()
           || (*n2.get_dependeds().begin() != &n1));
 }

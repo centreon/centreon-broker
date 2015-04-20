@@ -23,7 +23,7 @@
 #  include <memory>
 #  include <map>
 #  include <QList>
-#  include <QHash>
+#  include <set>
 #  include <QPair>
 #  include "com/centreon/broker/correlation/issue.hh"
 #  include "com/centreon/broker/correlation/state.hh"
@@ -48,7 +48,7 @@ namespace                correlation {
    */
   class                  node {
   public:
-    typedef QMultiHash<QPair<unsigned int, unsigned int>, node*>
+    typedef std::set<node*>
                          node_map;
 
                          node();
