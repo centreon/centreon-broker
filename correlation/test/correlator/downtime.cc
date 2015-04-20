@@ -145,7 +145,7 @@ int main() {
     // #1
     add_state_service(content, -1, 0, 123456789, 42, false, 24, 0);
     add_state_service(content, -1, 2, 0, 42, false, 24, 123456789);
-    add_issue(content, 0, 0, 42, 24, 123456789);
+    add_issue(content, -1, 0, 42, 24, 123456789);
     // #2
     add_state_service(
       content,
@@ -168,7 +168,7 @@ int main() {
       24,
       123456790);
     add_state_service(content, -1, 0, 0, 42, false, 24, 123456791);
-    add_issue(content, 0, 123456791, 42, 24, 123456789);
+    add_issue(content, -1, 123456791, 42, 24, 123456789);
     // #4
     add_state_service(
       content,
@@ -191,7 +191,7 @@ int main() {
       24,
       123456792);
     add_state_service(content, -1, 2, 0, 42, true, 24, 123456793);
-    add_issue(content, 0, 0, 42, 24, 123456793);
+    add_issue(content, -1, 0, 42, 24, 123456793);
     // #6
     add_state_service(
       content,
