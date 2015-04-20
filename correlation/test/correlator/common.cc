@@ -269,7 +269,6 @@ void test_stream::read(
   com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>& d) {
   d.clear();
   if (!_events.empty() && _finalized) {
-    std::cout << "reading a non empty event" << std::endl;
     d = _events.front();
     _events.erase(_events.begin());
   }
@@ -284,11 +283,6 @@ void test_stream::read(
  */
 unsigned int test_stream::write(
   com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> const& d) {
-  std::cout << "writing event " << std::endl;
-  if (d.isNull())
-    std::cout << "event is null" << std::endl;
-  else
-    std::cout << "event of type: " << d->type() << std::endl;
   if (!d.isNull())
     _events.push_back(d);
 
