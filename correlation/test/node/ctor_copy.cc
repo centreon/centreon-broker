@@ -22,6 +22,8 @@
 
 using namespace com::centreon::broker;
 
+#include <iostream>
+
 /**
  *  Check that node is properly copy constructed.
  *
@@ -40,9 +42,17 @@ int main() {
 
   // Linked objects.
   correlation::node n1;
+  n1.host_id = 1;
+  n1.service_id = 1;
   correlation::node n2;
+  n2.host_id = 1;
+  n2.service_id = 2;
   correlation::node n3;
+  n3.host_id = 1;
+  n3.service_id = 3;
   correlation::node n4;
+  n4.host_id = 1;
+  n4.service_id = 4;
   bn.add_child(&n1);
   bn.add_depended(&n2);
   bn.add_dependency(&n3);
@@ -52,13 +62,13 @@ int main() {
   correlation::node cn(bn);
 
   // Reset base object.
+  bn.remove_child(&n1);
+  bn.remove_dependency(&n3);
   bn.host_id = 23;
   bn.in_downtime = false;
   bn.my_issue.reset();
   bn.service_id = 2347;
   bn.state = 1;
-  bn.remove_child(&n1);
-  bn.remove_dependency(&n3);
 
   // Check copy construction.
   return ((bn.host_id != 23)

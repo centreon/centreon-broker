@@ -22,7 +22,7 @@
 #include <QMap>
 #include <QPair>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/correlation/correlator.hh"
+#include "com/centreon/broker/correlation/stream.hh"
 #include "com/centreon/broker/correlation/node.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "test/correlator/common.hh"
@@ -61,9 +61,8 @@ int main() {
       ss->host_id = 42;
       ss->service_id = 24;
       ss->state_type = 1;
-      ss->current_state = 2;
-      ss->last_check = 123456789;
-      ss->last_update = 123456789;
+      ss->last_hard_state = 2;
+      ss->last_hard_state_change = 123456789;
       c.write(ss);
     }
     { // #2
@@ -72,9 +71,8 @@ int main() {
       ss->host_id = 42;
       ss->service_id = 24;
       ss->state_type = 1;
-      ss->current_state = 2;
-      ss->last_check = 123456790;
-      ss->last_update = 123456790;
+      ss->last_hard_state = 2;
+      ss->last_hard_state_change = 123456790;
       ss->scheduled_downtime_depth = 1;
       c.write(ss);
     }
@@ -84,9 +82,8 @@ int main() {
       ss->host_id = 42;
       ss->service_id = 24;
       ss->state_type = 1;
-      ss->current_state = 0;
-      ss->last_check = 123456791;
-      ss->last_update = 123456791;
+      ss->last_hard_state = 0;
+      ss->last_hard_state_change = 123456791;
       c.write(ss);
     }
     { // #4
@@ -95,9 +92,8 @@ int main() {
       ss->host_id = 42;
       ss->service_id = 24;
       ss->state_type = 1;
-      ss->current_state = 0;
-      ss->last_check = 123456792;
-      ss->last_update = 123456792;
+      ss->last_hard_state = 0;
+      ss->last_hard_state_change = 123456792;
       ss->scheduled_downtime_depth = 1;
       c.write(ss);
     }
@@ -107,9 +103,8 @@ int main() {
       ss->host_id = 42;
       ss->service_id = 24;
       ss->state_type = 1;
-      ss->current_state = 2;
-      ss->last_check = 123456793;
-      ss->last_update = 123456793;
+      ss->last_hard_state = 2;
+      ss->last_hard_state_change = 123456793;
       ss->scheduled_downtime_depth = 1;
       c.write(ss);
     }
@@ -119,9 +114,8 @@ int main() {
       ss->host_id = 42;
       ss->service_id = 24;
       ss->state_type = 1;
-      ss->current_state = 0;
-      ss->last_check = 123456794;
-      ss->last_update = 123456794;
+      ss->last_hard_state = 0;
+      ss->last_hard_state_change = 123456794;
       ss->scheduled_downtime_depth = 1;
       c.write(ss);
     }
@@ -131,9 +125,8 @@ int main() {
       ss->host_id = 42;
       ss->service_id = 24;
       ss->state_type = 1;
-      ss->current_state = 0;
-      ss->last_check = 123456795;
-      ss->last_update = 123456795;
+      ss->last_hard_state = 0;
+      ss->last_hard_state_change = 123456795;
       ss->scheduled_downtime_depth = 0;
       c.write(ss);
     }

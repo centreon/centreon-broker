@@ -29,8 +29,6 @@ using namespace com::centreon::broker::correlation;
 
 extern unsigned int instance_id;
 
-#include <iostream>
-
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -284,7 +282,7 @@ node::node_map const& node::get_children() const {
  *  @return  The list of depended.
  */
 node::node_map const& node::get_dependeds() const {
-  return  (_depends_on);
+  return  (_depended_by);
 }
 
 /**
@@ -293,7 +291,7 @@ node::node_map const& node::get_dependeds() const {
  *  @return  The list of dependencies.
  */
 node::node_map const& node::get_dependencies() const {
-  return (_depended_by);
+  return (_depends_on);
 }
 
 /**
@@ -312,7 +310,7 @@ node::node_map const& node::get_parents() const {
  */
 void node::remove_child(node* n) {
   _children.remove(n->get_id());
-  n->_parents.remove(this->get_id());
+  n->_parents.remove(this->get_id(), this);
   return ;
 }
 
@@ -323,7 +321,7 @@ void node::remove_child(node* n) {
  */
 void node::remove_depended(node* n) {
   _depended_by.remove(n->get_id());
-  n->_depends_on.remove(this->get_id());
+  n->_depends_on.remove(this->get_id(), this);
   return ;
 }
 
@@ -334,7 +332,7 @@ void node::remove_depended(node* n) {
  */
 void node::remove_dependency(node* n) {
   _depends_on.remove(n->get_id());
-  n->_depended_by.remove(this->get_id());
+  n->_depended_by.remove(this->get_id(), this);
   return ;
 }
 
@@ -345,7 +343,7 @@ void node::remove_dependency(node* n) {
  */
 void node::remove_parent(node* n) {
   _parents.remove(n->get_id());
-  n->_children.remove(this->get_id());
+  n->_children.remove(this->get_id(), this);
   return ;
 }
 
@@ -602,6 +600,19 @@ void node::serialize(persistent_cache& cache) const {
  *  @param[in] n Object to copy.
  */
 void node::_internal_copy(node const& n) {
+  // Copy other members.
+  host_id = n.host_id;
+  in_downtime = n.in_downtime;
+  if (n.my_issue.get())
+    my_issue.reset(new issue(*(n.my_issue)));
+  else
+    my_issue.reset();
+  service_id = n.service_id;
+  state = n.state;
+  downtimes = n.downtimes;
+  if (n.acknowledgement.get())
+    acknowledgement.reset(new neb::acknowledgement(*n.acknowledgement));
+
   node_map::iterator it, end;
 
   // Copy childrens.
@@ -631,19 +642,6 @@ void node::_internal_copy(node const& n) {
        it != end;
        ++it)
     (*it)->_children.insert(get_id(), this);
-
-  // Copy other members.
-  host_id = n.host_id;
-  in_downtime = n.in_downtime;
-  if (n.my_issue.get())
-    my_issue.reset(new issue(*(n.my_issue)));
-  else
-    my_issue.reset();
-  service_id = n.service_id;
-  state = n.state;
-  downtimes = n.downtimes;
-  if (n.acknowledgement.get())
-    acknowledgement.reset(new neb::acknowledgement(*n.acknowledgement));
 
   return ;
 }

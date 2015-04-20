@@ -33,7 +33,7 @@ int main() {
   correlation::issue i;
 
   // Check default construction.
-  return ((i.ack_time != 0)
+  return ((!i.ack_time.is_null())
           || (i.end_time != 0)
           || (i.host_id != 0)
           || (i.service_id != 0)
