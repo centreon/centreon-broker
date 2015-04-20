@@ -380,24 +380,42 @@ bool parser::startElement(
 /**
  *  Implementation for the circular check.
  *
- *  @param[in] n               The node.
- *  @param[in] get_method      Method used to get the list of children.
- *  @param[out] visited_nodes  Set of already visited node.
+ *  @param[in] n                          The node.
+ *  @param[in] get_method                 Method used to get the list of children.
+ *  @param[in] visited_node               Working set of visited nodes.
+ *  @param[in,out] already_visited_nodes  Set of already visited nodes.
  */
 static void circular_check_impl(
               node& n,
               node::node_map const& (node::*get_method)() const,
-              QSet<node*>& visited_nodes) {
-  if (visited_nodes.contains(&n))
+              QSet<node*>& visited_nodes,
+              QSet<node*>& already_visited_nodes) {
+  if (already_visited_nodes.contains(&n))
+    return ;
+  else if (visited_nodes.contains(&n))
     throw (exceptions::msg()
            << "correlation: circular check failed for node ("
            << n.host_id << ", " << n.service_id << ")");
+
+  // Push the node to the set of nodes being visited.
   visited_nodes.insert(&n);
+
+  // Get the children, do a DFS
   node::node_map const& list = (n.*get_method)();
   for (node::node_map::const_iterator it = list.begin(), end = list.end();
        it != end;
-       ++it)
-    circular_check_impl(const_cast<node&>(**it), get_method, visited_nodes);
+       ++it) {
+    circular_check_impl(
+      const_cast<node&>(**it),
+      get_method,
+      visited_nodes,
+      already_visited_nodes);
+  }
+
+  // Remove the node to the set of nodes being visited, add it to the set
+  // of nodes already visited.
+  visited_nodes.remove(&n);
+  already_visited_nodes.insert(&n);
 }
 
 /**
@@ -412,38 +430,40 @@ void parser::_sanity_circular_check(
   QSet<node*> visited_depended_nodes;
   QSet<node*> visited_depend_nodes;
 
+  QSet<node*> working_set;
+
   for (QMap<QPair<unsigned int, unsigned int>, node>::const_iterator
          it = nodes.begin(),
          end = nodes.end();
        it != end;
        ++it) {
     // Check parents.
-    if (!visited_parent_nodes.contains(const_cast<node*>(&*it))) {
+    if (!visited_parent_nodes.contains(const_cast<node*>(&*it)))
       circular_check_impl(
         const_cast<node&>(*it),
         &node::get_parents,
+        working_set,
         visited_parent_nodes);
-    }
     // Check children.
-    if (!visited_child_nodes.contains(const_cast<node*>(&*it))) {
+    if (!visited_child_nodes.contains(const_cast<node*>(&*it)))
       circular_check_impl(
         const_cast<node&>(*it),
         &node::get_children,
+        working_set,
         visited_child_nodes);
-    }
     // Check dependeds.
-    if (!visited_depended_nodes.contains(const_cast<node*>(&*it))) {
+    if (!visited_depended_nodes.contains(const_cast<node*>(&*it)))
       circular_check_impl(
         const_cast<node&>(*it),
         &node::get_dependeds,
+        working_set,
         visited_depended_nodes);
-    }
     // Check dependencies
-    if (!visited_depend_nodes.contains(const_cast<node*>(&*it))) {
+    if (!visited_depend_nodes.contains(const_cast<node*>(&*it)))
       circular_check_impl(
         const_cast<node&>(*it),
         &node::get_dependencies,
+        working_set,
         visited_depend_nodes);
-    }
   }
 }
