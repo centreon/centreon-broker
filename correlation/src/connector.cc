@@ -97,7 +97,7 @@ void connector::close() {
  */
 misc::shared_ptr<io::stream> connector::open() {
   // XXX : passive stream
-  return (new stream(_correlation_file, _cache));
+  return (new stream(_correlation_file, _cache, true, _passive));
 }
 
 /**

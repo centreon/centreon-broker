@@ -43,20 +43,27 @@ using namespace com::centreon::broker::correlation;
  *
  *  @param[in]      correlation_file  Correlation file.
  *  @param[int,out] cache             Persistent cache.
+ *  @param[in]      passive           Is this stream passive ?
+ *                                    (won't send any event)
  */
 stream::stream(
           QString const& correlation_file,
     misc::shared_ptr<persistent_cache> cache,
-    bool load_correlation)
+    bool load_correlation,
+    bool passive)
   : _correlation_file(correlation_file),
     _process_out(true),
-    _cache(cache) {
+    _cache(cache),
+    _passive(passive) {
   // Create the engine started event.
   multiplexing::publisher pblsh;
   misc::shared_ptr<engine_state> es(new engine_state);
   es->instance_id = instance_id;
   es->started = true;
   pblsh.write(es);
+
+  if (!_passive)
+    _pblsh.reset(new multiplexing::publisher);
 
   // Load the correlation.
   if (load_correlation)
@@ -111,6 +118,8 @@ void stream::read(misc::shared_ptr<io::data>& d) {
  *  Update the stream.
  */
 void stream::update() {
+  if (!_passive)
+    _pblsh.reset(new multiplexing::publisher);
   _save_persistent_cache();
   _load_correlation();
   return ;
@@ -135,26 +144,23 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
     QPair<unsigned int, unsigned int> id(hs.host_id, 0);
     QMap<QPair<unsigned int, unsigned int>, node>::iterator found
       = _nodes.find(id);
-    if (found != _nodes.end()) {
-      multiplexing::publisher pblsh;
+    if (found != _nodes.end())
       found->manage_status(
         hs.last_hard_state,
         hs.last_hard_state_change,
-        &pblsh);
-    }
+        _pblsh.get());
   }
   else if (d->type() == neb::service_status::static_type()) {
     neb::service_status const& ss = d.ref_as<neb::service_status>();
     QPair<unsigned int, unsigned int> id(ss.host_id, ss.service_id);
     QMap<QPair<unsigned int, unsigned int>, node>::iterator found
       = _nodes.find(id);
-    if (found != _nodes.end()) {
+    if (found != _nodes.end())
       multiplexing::publisher pblsh;
       found->manage_status(
         ss.last_hard_state,
         ss.last_hard_state_change,
-        &pblsh);
-    }
+        _pblsh.get());
   }
   else if (d->type() == neb::acknowledgement::static_type()) {
     neb::acknowledgement const& ack
@@ -162,30 +168,24 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
     QPair<unsigned int, unsigned int> id(ack.host_id, ack.service_id);
     QMap<QPair<unsigned int, unsigned int>, node>::iterator found
       = _nodes.find(id);
-    if (found != _nodes.end()) {
-      multiplexing::publisher pblsh;
-      found->manage_ack(ack, &pblsh);
-    }
+    if (found != _nodes.end())
+      found->manage_ack(ack, _pblsh.get());
   }
   else if (d->type() == neb::downtime::static_type()) {
     neb::downtime const& dwn = d.ref_as<neb::downtime>();
     QPair<unsigned int, unsigned int> id(dwn.host_id, dwn.service_id);
     QMap<QPair<unsigned int, unsigned int>, node>::iterator found
       = _nodes.find(id);
-    if (found != _nodes.end()) {
-      multiplexing::publisher pblsh;
-      found->manage_downtime(dwn, &pblsh);
-    }
+    if (found != _nodes.end())
+      found->manage_downtime(dwn, _pblsh.get());
   }
   else if (d->type() == neb::log_entry::static_type()) {
     neb::log_entry const& entry = d.ref_as<neb::log_entry>();
     QPair<unsigned int, unsigned int> id(entry.host_id, entry.service_id);
     QMap<QPair<unsigned int, unsigned int>, node>::iterator found
       = _nodes.find(id);
-    if (found != _nodes.end()) {
-      multiplexing::publisher pblsh;
-      found->manage_log(entry, &pblsh);
-    }
+    if (found != _nodes.end())
+      found->manage_log(entry, _pblsh.get());
   }
   else if (d->type() == neb::downtime_removed::static_type()) {
     neb::downtime_removed const& dr
@@ -193,10 +193,8 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
     QPair<unsigned int, unsigned int> id(dr.host_id, dr.service_id);
     QMap<QPair<unsigned int, unsigned int>, node>::iterator found
       = _nodes.find(id);
-    if (found != _nodes.end()) {
-      multiplexing::publisher pblsh;
-      found->manage_downtime_removed(dr.downtime_id, &pblsh);
-    }
+    if (found != _nodes.end())
+      found->manage_downtime_removed(dr.downtime_id, _pblsh.get());
   }
   return (1);
 }

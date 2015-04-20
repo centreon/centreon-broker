@@ -48,7 +48,8 @@ namespace        correlation {
                    QString const& correlation_file,
                    misc::shared_ptr<persistent_cache> cache
                    = misc::shared_ptr<persistent_cache>(),
-                   bool load_correlation = true);
+                   bool load_correlation = true,
+                   bool passive = false);
                  ~stream();
     void         process(bool in = false, bool out = true);
     void         read(misc::shared_ptr<io::data>& d);
@@ -70,6 +71,10 @@ namespace        correlation {
                  _cache;
     QString      _correlation_file;
     bool         _process_out;
+    bool         _passive;
+
+    std::auto_ptr<io::stream>
+                 _pblsh;
 
     QMap<QPair<unsigned int, unsigned int>, node>
                  _nodes;
