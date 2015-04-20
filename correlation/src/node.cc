@@ -29,6 +29,8 @@ using namespace com::centreon::broker::correlation;
 
 extern unsigned int instance_id;
 
+#include <iostream>
+
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -357,16 +359,21 @@ QPair<unsigned int, unsigned int> node::get_id() const {
 }
 
 /**
- *  Do all the children have issues ?
+ *  Do all the parents have issues ?
  *
- *  @return  True if all the children have issues.
+ *  Additionally, get the maximum start_time of the issue for issue parenting.
+ *
+ *  @return  True if all the parents have issues.
  */
-bool node::all_children_with_issues() const {
-  for (node_map::const_iterator it = _children.begin(), end = _children.end();
+bool node::all_parents_with_issues_and_get_start_time(timestamp& start_time) const {
+  for (node_map::const_iterator it = _parents.begin(), end = _parents.end();
        it != end;
-       ++it)
+       ++it) {
     if (!(*it)->my_issue.get())
       return (false);
+    if (start_time.is_null() || start_time < (*it)->my_issue->start_time)
+      start_time = (*it)->my_issue->start_time;
+  }
   return (true);
 }
 
@@ -405,7 +412,8 @@ void node::manage_status(
   // Recovery
   if (old_state != 0 && new_state == 0) {
     my_issue->end_time = last_state_change;
-    _visit_linked_nodes(last_state_change, stream);
+    _visit_linked_nodes(last_state_change, true, stream);
+    _visit_parent_of_child_nodes(last_state_change, true, stream);
     if (stream)
       stream->write(misc::make_shared(new issue(*my_issue)));
     my_issue.reset();
@@ -421,7 +429,8 @@ void node::manage_status(
       my_issue->ack_time = last_state_change;
     if (stream)
       stream->write(misc::make_shared(new issue(*my_issue)));
-    _visit_linked_nodes(last_state_change, stream);
+    _visit_linked_nodes(last_state_change, false, stream);
+    _visit_parent_of_child_nodes(last_state_change, false, stream);
   }
 }
 
@@ -496,12 +505,14 @@ void node::manage_log(
  *
  *  @param[in] node        The linked node.
  *  @param[in] start_time  The start time of the update.
+ *  @param[in] closed      Is the event closed?
  *  @param[in] type        What is the linked node from our viewpoint?
  *  @param[out] stream     A stream to write the events to.
  */
 void node::linked_node_updated(
        node& n,
        timestamp start_time,
+       bool closed,
        link_type type,
        io::stream* stream) {
   // Dependencies.
@@ -520,18 +531,24 @@ void node::linked_node_updated(
     ip->start_time = my_issue->start_time > n.my_issue->start_time
                        ? my_issue->start_time
                        : n.my_issue->start_time;
-    if (n.state == 0)
+    if (closed)
       ip->end_time = start_time;
 
     if (stream)
       stream->write(ip);
   }
   // Parenting.
+  // We are doing an interesting thing to get the start_time of the issue
+  // parenting. It is the maximum of all the start_time of the issues of
+  // the child and all its parents.
   else if ((type == parent || type == children)
              && my_issue.get() && n.my_issue.get()) {
     node& child_node = (type == parent ? *this : n);
     node& parent_node = (type == parent ? n : *this);
-    if (parent_node.all_children_with_issues()) {
+    timestamp start_time_of_the_issue_parenting
+      = child_node.my_issue->start_time;
+    if (child_node.all_parents_with_issues_and_get_start_time(
+                     start_time_of_the_issue_parenting)) {
       misc::shared_ptr<issue_parent> ip(new issue_parent);
       ip->child_host_id = child_node.host_id;
       ip->child_service_id = child_node.service_id;
@@ -539,11 +556,9 @@ void node::linked_node_updated(
       ip->parent_host_id = parent_node.host_id;
       ip->parent_service_id = parent_node.service_id;
       ip->parent_start_time = parent_node.my_issue->start_time;
-      ip->start_time = my_issue->start_time > n.my_issue->start_time
-                         ? my_issue->start_time
-                         : n.my_issue->start_time;
+      ip->start_time = start_time_of_the_issue_parenting;
       ip->source_id = instance_id;
-      if (n.state == 0)
+      if (closed)
         ip->end_time = start_time;
 
       if (stream)
@@ -700,25 +715,73 @@ correlation::state* node::_open_state_event(timestamp start_time) const {
  *  Visits the parents, children, and dependencies.
  *
  *  @param[in] last_state_change   When was the node last updated.
+ *  @param[in] closed              Is the event closed?
  *  @param[in] stream              The stream.
  */
 void node::_visit_linked_nodes(
              timestamp last_state_change,
+             bool closed,
              io::stream* stream) {
   for (node_map::iterator it = _parents.begin(), end = _parents.end();
        it != end;
        ++it)
-    (*it)->linked_node_updated(*this, last_state_change, children, stream);
+    (*it)->linked_node_updated(
+             *this,
+             last_state_change,
+             closed,
+             children,
+             stream);
   for (node_map::iterator it = _children.begin(), end = _children.end();
        it != end;
        ++it)
-    (*it)->linked_node_updated(*this, last_state_change, parent, stream);
+    (*it)->linked_node_updated(
+             *this,
+             last_state_change,
+             closed,
+             parent,
+             stream);
   for (node_map::iterator it = _depends_on.begin(), end = _depends_on.end();
        it != end;
        ++it)
-    (*it)->linked_node_updated(*this, last_state_change, depended_by, stream);
+    (*it)->linked_node_updated(
+             *this,
+             last_state_change,
+             closed,
+             depended_by,
+             stream);
   for (node_map::iterator it = _depended_by.begin(), end = _depended_by.end();
        it != end;
        ++it)
-    (*it)->linked_node_updated(*this, last_state_change, depends_on, stream);
+    (*it)->linked_node_updated(
+             *this,
+             last_state_change,
+             closed,
+             depends_on,
+             stream);
+}
+
+/**
+ *  Visit the parents of the children to notify that a parenting state
+ *  was changed.
+ *
+ *  @param[in] last_state_change  The change of the last state.
+ *  @param[in] closed             Is the event closed?
+ *  @param[out] stream            The stream.
+ */
+void node::_visit_parent_of_child_nodes(
+             timestamp last_state_change,
+             bool closed,
+             io::stream* stream) {
+  for (node_map::iterator it = _children.begin(), end = _children.end();
+       it != end;
+       ++it) {
+    for (node_map::iterator
+           it2 = (*it)->_parents.begin(),
+           end2 = (*it)->_parents.end();
+         it2 != end2;
+         ++it2) {
+      if (*it2 != this)
+        (*it2)->linked_node_updated(**it, last_state_change, closed, children, stream);
+    }
+  }
 }

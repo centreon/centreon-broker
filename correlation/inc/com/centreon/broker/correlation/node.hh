@@ -71,7 +71,8 @@ namespace                correlation {
     void                 remove_parent(node* n);
     QPair<unsigned int, unsigned int>
                          get_id() const;
-    bool                 all_children_with_issues() const;
+    bool                 all_parents_with_issues_and_get_start_time(
+                           timestamp& start_time) const;
 
     void                 manage_status(
                           short status,
@@ -98,6 +99,7 @@ namespace                correlation {
     void                 linked_node_updated(
                            node& n,
                            timestamp start_time,
+                           bool closed,
                            link_type type,
                            io::stream* stream);
 
@@ -132,6 +134,11 @@ namespace                correlation {
 
     void                 _visit_linked_nodes(
                            timestamp last_state_change,
+                           bool closed,
+                           io::stream* stream);
+    void                 _visit_parent_of_child_nodes(
+                           timestamp last_state_change,
+                           bool closed,
                            io::stream* stream);
 
   };

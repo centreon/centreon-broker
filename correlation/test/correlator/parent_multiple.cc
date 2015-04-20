@@ -51,31 +51,33 @@ int main() {
   multiplexing::engine::instance().start();
 
   try {
-    // Create state.
-    QMap<QPair<unsigned int, unsigned int>, node> state;
-    node& n1(state[qMakePair(42u, 24u)]);
-    n1.host_id = 42;
-    n1.service_id = 24;
-    n1.state = 0;
-    node& n2(state[qMakePair(56u, 13u)]);
-    n2.host_id = 56;
-    n2.service_id = 13u;
-    n2.state = 0;
-    node& n3(state[qMakePair(90u, 42u)]);
-    n3.host_id = 90;
-    n3.service_id = 42u;
-    n3.state = 0;
-    node& n4(state[qMakePair(213u, 8u)]);
-    n4.host_id = 213;
-    n4.service_id = 8u;
-    n4.state = 0;
-    n1.add_parent(&n2);
-    n1.add_parent(&n3);
-    n1.add_parent(&n4);
-
-    // Create correlator and apply state.
     correlation::stream c("", misc::shared_ptr<persistent_cache>(), false);
-    c.set_state(state);
+    {
+      // Create state.
+      QMap<QPair<unsigned int, unsigned int>, node> state;
+      node& n1(state[qMakePair(42u, 24u)]);
+      n1.host_id = 42;
+      n1.service_id = 24;
+      n1.state = 0;
+      node& n2(state[qMakePair(56u, 13u)]);
+      n2.host_id = 56;
+      n2.service_id = 13u;
+      n2.state = 0;
+      node& n3(state[qMakePair(90u, 42u)]);
+      n3.host_id = 90;
+      n3.service_id = 42u;
+      n3.state = 0;
+      node& n4(state[qMakePair(213u, 8u)]);
+      n4.host_id = 213;
+      n4.service_id = 8u;
+      n4.state = 0;
+      n1.add_parent(&n2);
+      n1.add_parent(&n3);
+      n1.add_parent(&n4);
+
+      // Apply state.
+      c.set_state(state);
+    }
 
     // Send node status.
     {
@@ -84,8 +86,8 @@ int main() {
       ss->host_id = 56;
       ss->service_id = 13;
       ss->state_type = 1;
-      ss->current_state = 2;
-      ss->last_check = 123456789;
+      ss->last_hard_state = 2;
+      ss->last_hard_state_change = 123456789;
       c.write(ss);
     }
     {
@@ -94,8 +96,8 @@ int main() {
       ss->host_id = 90;
       ss->service_id = 42;
       ss->state_type = 1;
-      ss->current_state = 2;
-      ss->last_check = 123456790;
+      ss->last_hard_state = 2;
+      ss->last_hard_state_change = 123456790;
       c.write(ss);
     }
     {
@@ -104,8 +106,8 @@ int main() {
       ss->host_id = 42;
       ss->service_id = 24;
       ss->state_type = 1;
-      ss->current_state = 2;
-      ss->last_check = 123456791;
+      ss->last_hard_state = 2;
+      ss->last_hard_state_change = 123456791;
       c.write(ss);
     }
     {
@@ -114,8 +116,8 @@ int main() {
       ss->host_id = 213;
       ss->service_id = 8;
       ss->state_type = 1;
-      ss->current_state = 2;
-      ss->last_check = 123456792;
+      ss->last_hard_state = 2;
+      ss->last_hard_state_change = 123456792;
       c.write(ss);
     }
     {
@@ -124,8 +126,8 @@ int main() {
       ss->host_id = 56;
       ss->service_id = 13;
       ss->state_type = 1;
-      ss->current_state = 0;
-      ss->last_check = 123456793;
+      ss->last_hard_state = 0;
+      ss->last_hard_state_change = 123456793;
       c.write(ss);
     }
     {
@@ -134,8 +136,8 @@ int main() {
       ss->host_id = 42;
       ss->service_id = 24;
       ss->state_type = 1;
-      ss->current_state = 0;
-      ss->last_check = 123456794;
+      ss->last_hard_state = 0;
+      ss->last_hard_state_change = 123456794;
       c.write(ss);
     }
     {
@@ -144,8 +146,8 @@ int main() {
       ss->host_id = 90;
       ss->service_id = 42;
       ss->state_type = 1;
-      ss->current_state = 0;
-      ss->last_check = 123456795;
+      ss->last_hard_state = 0;
+      ss->last_hard_state_change = 123456795;
       c.write(ss);
     }
     {
@@ -154,8 +156,8 @@ int main() {
       ss->host_id = 213;
       ss->service_id = 8;
       ss->state_type = 1;
-      ss->current_state = 0;
-      ss->last_check = 123456796;
+      ss->last_hard_state = 0;
+      ss->last_hard_state_change = 123456796;
       c.write(ss);
     }
 
@@ -163,10 +165,20 @@ int main() {
     multiplexing::engine::instance().stop();
     t.finalize();
     QList<misc::shared_ptr<io::data> > content;
-    add_issue(content, 0, 0, 56, 13, 123456789);
-    add_issue(content, 0, 0, 90, 42, 123456790);
-    add_issue(content, 0, 0, 42, 24, 123456791);
-    add_issue(content, 0, 0, 213, 8, 123456792);
+    add_issue(content, -1, 0, 56, 13, 123456789);
+    add_issue(content, -1, 0, 90, 42, 123456790);
+    add_issue(content, -1, 0, 42, 24, 123456791);
+    add_issue(content, -1, 0, 213, 8, 123456792);
+    add_issue_parent(
+      content,
+      42,
+      24,
+      123456791,
+      0,
+      213,
+      8,
+      123456792,
+      123456792);
     add_issue_parent(
       content,
       42,
@@ -192,16 +204,6 @@ int main() {
       42,
       24,
       123456791,
-      0,
-      213,
-      8,
-      123456792,
-      123456792);
-    add_issue_parent(
-      content,
-      42,
-      24,
-      123456791,
       123456793,
       56,
       13,
@@ -213,9 +215,9 @@ int main() {
       24,
       123456791,
       123456793,
-      90,
-      42,
-      123456790,
+      213,
+      8,
+      123456792,
       123456792);
     add_issue_parent(
       content,
@@ -223,14 +225,14 @@ int main() {
       24,
       123456791,
       123456793,
-      213,
-      8,
-      123456792,
+      90,
+      42,
+      123456790,
       123456792);
-    add_issue(content, 0, 123456793, 56, 13, 123456789);
-    add_issue(content, 0, 123456794, 42, 24, 123456791);
-    add_issue(content, 0, 123456795, 90, 42, 123456790);
-    add_issue(content, 0, 123456796, 213, 8, 123456792);
+    add_issue(content, -1, 123456793, 56, 13, 123456789);
+    add_issue(content, -1, 123456794, 42, 24, 123456791);
+    add_issue(content, -1, 123456795, 90, 42, 123456790);
+    add_issue(content, -1, 123456796, 213, 8, 123456792);
 
     // Check.
     check_content(t, content);
