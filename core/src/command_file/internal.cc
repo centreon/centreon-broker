@@ -55,7 +55,7 @@ void command_file::load() {
   // Register event.
   e.register_event(
     io::events::internal,
-    command_file::de_command,
+    io::events::de_command,
       io::event_info(
             "command",
             &external_command::operations,

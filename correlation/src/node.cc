@@ -364,6 +364,9 @@ QPair<unsigned int, unsigned int> node::get_id() const {
  *  @return  True if all the parents have issues.
  */
 bool node::all_parents_with_issues_and_get_start_time(timestamp& start_time) const {
+  // This is a performance bottleneck as it is O(N) where N is
+  // the number of parents.
+  // A way to gain performance would be to cache this data in all the children.
   for (node_map::const_iterator it = _parents.begin(), end = _parents.end();
        it != end;
        ++it) {

@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,12 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/command_file/internal.hh"
-#include "com/centreon/broker/command_file/external_command.hh"
+#include "com/centreon/broker/instance_broadcast.hh"
 #include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::command_file;
 
 /**************************************
 *                                     *
@@ -33,35 +31,36 @@ using namespace com::centreon::broker::command_file;
 /**
  *  Default constructor.
  */
-external_command::external_command() {}
+instance_broadcast::instance_broadcast()
+  : instance_id(0) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-external_command::external_command(external_command const& right)
-  : io::data(right) {
-  _internal_copy(right);
+instance_broadcast::instance_broadcast(instance_broadcast const& other)
+  : io::data(other) {
+  _internal_copy(other);
 }
 
 /**
  *  Destructor.
  */
-external_command::~external_command() {}
+instance_broadcast::~instance_broadcast() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-external_command& external_command::operator=(
-                                      external_command const& right) {
-  if (this != &right) {
-    io::data::operator=(right);
-    _internal_copy(right);
+instance_broadcast& instance_broadcast::operator=(
+                                          instance_broadcast const& other) {
+  if (this != &other) {
+    io::data::operator=(other);
+    _internal_copy(other);
   }
   return (*this);
 }
@@ -71,19 +70,9 @@ external_command& external_command::operator=(
  *
  *  @return The event type.
  */
-unsigned int external_command::type() const {
-  return (external_command::static_type());
+unsigned int instance_broadcast::type() const {
+  return (instance_broadcast::static_type());
 }
-
-/**
- *  Get the event type.
- *
- *  @return The event type.
- */
-unsigned int external_command::static_type() {
-  return (io::events::data_type<io::events::internal, io::events::de_command>::value);
-}
-
 
 /**************************************
 *                                     *
@@ -94,10 +83,11 @@ unsigned int external_command::static_type() {
 /**
  *  Copy internal data members.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void external_command::_internal_copy(external_command const& right) {
-  command = right.command;
+void instance_broadcast::_internal_copy(instance_broadcast const& other) {
+  instance_id = other.instance_id;
+  instance_name = other.instance_name;
   return ;
 }
 
@@ -108,17 +98,21 @@ void external_command::_internal_copy(external_command const& right) {
 **************************************/
 
 // Mapping.
-mapping::entry const external_command::entries[] = {
+mapping::entry const instance_broadcast::entries[] = {
   mapping::entry(
-    &external_command::command,
-    "command"),
+    &instance_broadcast::instance_id,
+    "instance_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &instance_broadcast::instance_name,
+    "instance_name"),
   mapping::entry()
 };
 
 // Operations.
-static io::data* new_external_command() {
-  return (new external_command);
+static io::data* new_instance_broadcast() {
+  return (new instance_broadcast);
 }
-io::event_info::event_operations const external_command::operations = {
-  &new_external_command
+io::event_info::event_operations const instance_broadcast::operations = {
+  &new_instance_broadcast
 };

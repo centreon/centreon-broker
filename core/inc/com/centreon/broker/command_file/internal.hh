@@ -34,11 +34,6 @@ namespace                 mapping {
 }
 
 namespace     command_file {
-  // Data elements.
-  enum {
-    de_command = 1
-  };
-
   // Load the command file endpoints.
   void        load();
   void        unload();
