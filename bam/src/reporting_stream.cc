@@ -93,7 +93,6 @@ reporting_stream::reporting_stream(database_config const& db_cfg)
   _prepare();
 
   // Load timeperiods.
-  time::timezone_manager::load();
   _load_timeperiods();
 
   // Load last events stored in DB.
@@ -111,9 +110,6 @@ reporting_stream::~reporting_stream() {
   // Terminate the availabilities thread.
   _availabilities->terminate();
   _availabilities->wait();
-
-  // Deinitialize timezone manager.
-  time::timezone_manager::unload();
 }
 
 /**

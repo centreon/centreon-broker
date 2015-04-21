@@ -23,6 +23,7 @@
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/bam/time/timezone_manager.hh"
 
 using namespace com::centreon::broker;
 
@@ -47,6 +48,9 @@ extern "C" {
       // Remove the workaround connection.
       if (QSqlDatabase::contains())
         QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnection);
+
+      // Deinitialize timezone manager.
+      bam::time::timezone_manager::unload();
     }
     return ;
   }
@@ -76,6 +80,10 @@ extern "C" {
                                   bam::factory(),
                                   1,
                                   7);
+
+      // Load timezone manager.
+      bam::time::timezone_manager::load();
+
       // Register bam events.
       std::set<unsigned int> elements;
       elements.insert(
