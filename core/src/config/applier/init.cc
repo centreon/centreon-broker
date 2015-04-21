@@ -36,6 +36,7 @@
 #include "com/centreon/broker/io/temporary.hh"
 #include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/time/timezone_manager.hh"
 
 using namespace com::centreon::broker;
 
@@ -67,6 +68,7 @@ void config::applier::deinit() {
   multiplexing::engine::unload();
   io::protocols::unload();
   io::events::unload();
+  time::timezone_manager::unload();
   logging::manager::unload();
   return ;
 }
@@ -77,6 +79,7 @@ void config::applier::deinit() {
 void config::applier::init() {
   // Load singletons.
   logging::manager::load();
+  time::timezone_manager::load();
   io::temporary::load();
   multiplexing::engine::load();
   io::events::load();
