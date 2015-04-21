@@ -74,6 +74,7 @@ namespace   bam  {
 
       tz_info                  _base;
       static timezone_manager* _instance;
+      static unsigned int      _instance_count;
       std::stack<tz_info>      _tz;
       QMutex                   _timezone_manager_mutex;
     };
