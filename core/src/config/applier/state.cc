@@ -30,7 +30,9 @@
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
+#include "com/centreon/broker/instance_broadcast.hh"
 
 using namespace com::centreon::broker::config::applier;
 
@@ -120,6 +122,13 @@ void state::apply(
                          st.inputs(),
                          st.outputs(),
                          st.cache_directory());
+
+  // Create instance broadcast event.
+  com::centreon::broker::multiplexing::publisher pblsh;
+  misc::shared_ptr<instance_broadcast> ib(new instance_broadcast);
+  ib->instance_id = s.instance_id();
+  ib->instance_name = s.instance_name();
+  pblsh.write(ib);
 
   // Enable multiplexing loop.
   if (run_mux)

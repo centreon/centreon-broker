@@ -23,6 +23,7 @@
 #  include <map>
 #  include <string>
 #  include <QHash>
+#  include "com/centreon/broker/instance_broadcast.hh"
 #  include "com/centreon/broker/io/factory.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
@@ -32,7 +33,6 @@
 #  include "com/centreon/broker/neb/service.hh"
 #  include "com/centreon/broker/storage/index_mapping.hh"
 #  include "com/centreon/broker/storage/metric_mapping.hh"
-
 CCB_BEGIN()
 
 namespace         influxdb {
@@ -61,7 +61,7 @@ namespace         influxdb {
                    macro_cache(macro_cache const& f);
     macro_cache&   operator=(macro_cache const& f);
 
-    void           _process_instance(neb::instance const& in);
+    void           _process_instance(instance_broadcast const& in);
     void           _process_host(neb::host const& h);
     void           _process_service(neb::service const& s);
     void           _process_index_mapping(storage::index_mapping const& im);
@@ -70,7 +70,7 @@ namespace         influxdb {
 
     misc::shared_ptr<persistent_cache>
                    _cache;
-    QHash<unsigned int, neb::instance>
+    QHash<unsigned int, instance_broadcast>
                    _instances;
     QHash<unsigned int, neb::host>
                    _hosts;
