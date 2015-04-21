@@ -31,6 +31,7 @@
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/config/applier/temporary.hh"
 #include "com/centreon/broker/file/internal.hh"
+#include "com/centreon/broker/instance_broadcast.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/io/temporary.hh"
@@ -87,6 +88,7 @@ void config::applier::init() {
   config::applier::modules::load();
   file::load();
   command_file::load();
+  instance_broadcast::load();
   compression::load();
   bbdo::load();
   config::applier::logger::load();

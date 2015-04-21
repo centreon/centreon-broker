@@ -246,9 +246,14 @@ events::events_container events::get_matching_events(
 /**
  *  Default constructor.
  */
-events::events() {}
+events::events() {
+  // Register internal category.
+  register_category("internal", io::events::internal);
+}
 
 /**
  *  Destructor.
  */
-events::~events() {}
+events::~events() {
+  unregister_category(io::events::internal);
+}

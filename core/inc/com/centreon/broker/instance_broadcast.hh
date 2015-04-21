@@ -60,6 +60,8 @@ public:
   static io::event_info::event_operations const
                       operations;
 
+  static void         load();
+
 private:
   void                _internal_copy(instance_broadcast const& right);
 };

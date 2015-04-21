@@ -50,8 +50,6 @@ void command_file::load() {
                               1,
                               7);
 
-  e.register_category("internal", io::events::internal);
-
   // Register event.
   e.register_event(
     io::events::internal,
