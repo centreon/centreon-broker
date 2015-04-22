@@ -3,7 +3,6 @@
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
   <instance>42</instance>
   <instance_name>MyBroker</instance_name>
-  <!--
   <stats>
     <fifo>/tmp/cbmod.fifo</fifo>
   </stats>
@@ -17,7 +16,6 @@
     <info>1</info>
     <level>3</level>
   </logger>
-  -->
   <output>
     <name><![CDATA[central-broker-master-perfdata]]></name>
     <interval><![CDATA[60]]></interval>
@@ -41,6 +39,6 @@
     <db_password>@GRAPHITE_DB_PASSWORD@</db_password>
     <queries_per_transaction>2</queries_per_transaction>
     <metric_naming>centreon.$INSTANCE$.$METRIC$.$HOSTID$.$HOST$.$SERVICEID$.$SERVICE$.$INDEXID$.$METRICID$</metric_naming>
-    <status_naming>centreon.$INSTANCE$.status.$HOSTID$.$HOST$.$SERVICEID$.$SERVICE$.$INDEXID$.0</status_naming>
+    <status_naming>centreon.$INSTANCE$.status.$HOSTID$.$HOST$.$SERVICEID$.$SERVICE$.$INDEXID$</status_naming>
   </output>
 </centreonbroker>
