@@ -1617,7 +1617,7 @@ int neb::callback_service_check(int callback_type, void* data) {
   }
   catch (std::exception const& e) {
     logging::error(logging::medium) << "callbacks: error occurred while"
-      " generating service check event";
+      " generating service check event: " << e.what();
   }
   // Avoid exception propagation in C code.
   catch (...) {}

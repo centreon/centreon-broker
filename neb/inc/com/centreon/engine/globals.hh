@@ -140,7 +140,6 @@ extern unsigned int retention_update_interval;
 extern int additional_freshness_latency;
 extern unsigned int obsess_over_services;
 extern unsigned int obsess_over_hosts;
-extern unsigned int passive_host_checks_are_soft;
 extern unsigned int service_check_timeout;
 extern unsigned int host_check_timeout;
 extern unsigned int event_handler_timeout;
@@ -157,8 +156,6 @@ extern unsigned int execute_host_checks;
 extern unsigned int max_parallel_service_checks;
 extern unsigned int check_reaper_interval;
 extern float sleep_time;
-extern unsigned int interval_length;
-/* command_check_interval_is_seconds; */
 extern int command_check_interval;
 extern unsigned int check_service_freshness;
 extern unsigned int check_host_freshness;
