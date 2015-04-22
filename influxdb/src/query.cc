@@ -211,12 +211,8 @@ void query::_compile_naming_scheme(
         &query::_get_member<QString, storage::metric, &storage::metric::name>);
     }
     else if (macro == "$INDEXID$") {
-      _throw_on_invalid(status);
       _compiled_getters.push_back(
-        &query::_get_member<
-                  unsigned int,
-                  storage::status,
-                  &storage::status::index_id>);
+        &query::_get_index_id);
     }
     else if (macro == "$VALUE$") {
       if (type == metric)
@@ -332,6 +328,16 @@ unsigned int query::_get_index_id(io::data const& d) {
     return (_cache->get_metric_mapping(
               static_cast<storage::metric const&>(d).metric_id).index_id);
   return (0);
+}
+
+/**
+ *  Get the status index id of a data, be it either metric or status.
+ *
+ *  @param[in] d    The data.
+ *  @param[out] is  The stream.
+ */
+void query::_get_index_id(io::data const& d, std::ostream& is) {
+  is << _get_index_id(d);
 }
 
 /**
