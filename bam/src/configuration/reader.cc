@@ -127,7 +127,7 @@ void reader::_load(state::kpis& kpis) {
       "        COALESCE(COALESCE(k.drop_unknown, uu.impact), g.average_impact),"
       "        k.last_state_change, k.in_downtime, k.last_impact"
       "  FROM  cfg_bam_kpi AS k"
-      "  LEFT JOIN cfg_mod_bam AS mb"
+      "  LEFT JOIN cfg_bam AS mb"
       "     ON k.id_ba = mb.ba_id"
       "  LEFT JOIN cfg_bam_impacts AS ww"
       "    ON k.drop_warning_impact_id = ww.id_impact"
