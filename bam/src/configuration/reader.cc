@@ -127,6 +127,8 @@ void reader::_load(state::kpis& kpis) {
       "        COALESCE(COALESCE(k.drop_unknown, uu.impact), g.average_impact),"
       "        k.last_state_change, k.in_downtime, k.last_impact"
       "  FROM  cfg_bam_kpi AS k"
+      "  LEFT JOIN cfg_mod_bam AS mb"
+      "     ON k.id_ba = mb.ba_id"
       "  LEFT JOIN cfg_bam_impacts AS ww"
       "    ON k.drop_warning_impact_id = ww.id_impact"
       "  LEFT JOIN cfg_bam_impacts AS cc"
@@ -138,7 +140,8 @@ void reader::_load(state::kpis& kpis) {
       "               WHERE activate='1'"
       "               GROUP BY id_ba) AS g"
       "    ON k.id_ba=g.id_ba"
-      "  WHERE k.activate='1'");
+      "  WHERE k.activate='1'"
+      "    AND mb.activate='1'");
     while (query.next()) {
       // KPI object.
       unsigned int kpi_id(query.value(0).toUInt());
