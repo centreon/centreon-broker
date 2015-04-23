@@ -117,7 +117,7 @@ int main() {
     monitoring.set_config_file(engine_config_file);
     monitoring.start();
 
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
     time_t first_timestamp_possible = std::time(NULL);
     commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;1;1;0;Submitted by unit test | influxdb_test=0.80");

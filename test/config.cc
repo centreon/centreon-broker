@@ -596,7 +596,6 @@ void config_write(
   ofs << "check_result_reaper_frequency=1\n"
       << "command_file=monitoring_engine.cmd\n"
       << "event_broker_options=-1\n"
-      << "interval_length=" MONITORING_ENGINE_INTERVAL_LENGTH_STR "\n"
       << "log_file=monitoring_engine.log\n"
       << "max_concurrent_checks=200\n"
       << "sleep_time=0.01\n"
@@ -667,11 +666,8 @@ void config_write(
            << path << "'");
   ofs << "define host{\n"
       << "  host_name default_host\n"
-      << "  alias default_host\n"
       << "  address localhost\n"
-      << "  check_command default_command\n"
-      << "  max_check_attempts 3\n"
-      << "  check_period default_timeperiod\n"
+      << "  active_checks_enabled 0\n"
       << "}\n\n";
   if (hosts)
     for (std::list<host>::iterator
@@ -691,6 +687,12 @@ void config_write(
           << "  max_check_attempts " << ((it->max_attempts > 0)
                                          ? it->max_attempts
                                          : 3) << "\n"
+          << "  check_interval "
+          << ((it->check_interval > 0) ? it->check_interval : 5)
+             * MONITORING_ENGINE_INTERVAL_LENGTH << "\n"
+          << "  retry_interval "
+          << ((it->retry_interval > 0) ? it->retry_interval : 3)
+             * MONITORING_ENGINE_INTERVAL_LENGTH << "\n"
           << "  check_period " << (it->check_period
                                    ? it->check_period
                                    : "default_timeperiod") << "\n"
@@ -727,11 +729,7 @@ void config_write(
   ofs << "define service{\n"
       << "  service_description default_service\n"
       << "  host_name default_host\n"
-      << "  check_command default_command\n"
-      << "  max_check_attempts 3\n"
-      << "  check_interval 5\n"
-      << "  retry_interval 3\n"
-      << "  check_period default_timeperiod\n"
+      << "  active_checks_enabled 0\n"
       << "}\n\n";
   if (services)
     for (std::list<service>::iterator
@@ -750,9 +748,11 @@ void config_write(
           << "  max_check_attempts "
           << ((it->max_attempts > 0) ? it->max_attempts : 3) << "\n"
           << "  check_interval "
-          << ((it->check_interval > 0) ? it->check_interval : 5) << "\n"
+          << ((it->check_interval > 0) ? it->check_interval : 5)
+             * MONITORING_ENGINE_INTERVAL_LENGTH << "\n"
           << "  retry_interval "
-          << ((it->retry_interval > 0) ? it->retry_interval : 3) << "\n"
+          << ((it->retry_interval > 0) ? it->retry_interval : 3)
+             * MONITORING_ENGINE_INTERVAL_LENGTH << "\n"
           << "  check_period " << (it->check_period
                                    ? it->check_period
                                    : "default_timeperiod") << "\n"

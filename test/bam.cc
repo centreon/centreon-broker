@@ -678,7 +678,7 @@ int main() {
     monitoring.start();
 
     // Let the daemon initialize.
-    sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(5);
 
     // #0
     time_t t1(time(NULL));
@@ -735,7 +735,7 @@ int main() {
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;11;2;output1 for (1, 11)");
 
     // Sleep a while.
-    sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(5);
 
     // #1
     time_t t2(time(NULL));
@@ -789,12 +789,12 @@ int main() {
     // Modify service states.
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;3;1;output2 for (1, 3)");
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;5;1;output2 for (1, 5)");
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;8;1;output2 for (1, 8)");
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;12;2;output2 for (1, 12)");
 
     // Sleep a while.
-    sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(5);
 
     // #2
     time_t t3(time(NULL));

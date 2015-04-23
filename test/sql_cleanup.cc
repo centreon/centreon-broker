@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -74,7 +74,7 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     monitoring.set_config_file(engine_config_file);
     monitoring.start();
-    sleep_for(8 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(8);
 
     // Flag instance as deleted.
     {
@@ -86,7 +86,7 @@ int main() {
     }
 
     // Let cleanup thread work.
-    sleep_for(8 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(8);
 
     // Check hosts table.
     {

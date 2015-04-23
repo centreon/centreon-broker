@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -112,7 +112,7 @@ int main() {
     daemon.start();
 
     // Let the daemon initialize.
-    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(10);
 
     // Set soon-to-be-in-downtime service as passive.
     {
@@ -121,7 +121,7 @@ int main() {
     }
 
     // Run a little while.
-    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(4);
 
     // Base time.
     time_t now(time(NULL));
@@ -157,7 +157,7 @@ int main() {
     }
 
     // Let the monitoring engine run a while.
-    sleep_for(20 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(20);
 
     // New time.
     time_t t1(now);
@@ -312,7 +312,7 @@ int main() {
     commander.execute("DEL_HOST_DOWNTIME;1");
 
     // Run a while.
-    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(10);
 
     // Update time.
     time_t t2(now);

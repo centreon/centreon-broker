@@ -514,23 +514,21 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     monitoring.set_config_file(engine_config_file);
     monitoring.start();
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
     commander.execute(
       "PROCESS_HOST_CHECK_RESULT;Host1;0;Host Check Ok");
     commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;Host1;Service1;0;Submitted by unit test");
     commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;Host1;Service2;0;Submitted by unit test");
-    sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(5);
 
     // Make service 2 CRITICAL.
     commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;Host1;Service2;2;Critical submitted by unit test");
     commander.execute(
       "PROCESS_HOST_CHECK_RESULT;Host1;0;Host Check Ok");
-    sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
-
-    sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(7);
 
     // Check file creation.
     std::ostringstream ss;
@@ -647,7 +645,7 @@ int main() {
     start = ::time(NULL);
     commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;Host1;Service2;0;Critical submitted by unit test");
-    sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(7);
 
     // Check file creation.
     get_file(flag_file2, error, ss);
@@ -667,7 +665,7 @@ int main() {
        << end << ";1;0;5;test author;some comments";
     broker_commander.execute(ss.str());
 
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
 
     get_file(flag_file3, error, ss);
     {
@@ -681,7 +679,7 @@ int main() {
     // Check acks
     broker_commander.execute("ACKNOWLEDGE_SVC_PROBLEM;Host1;Service2;2;1;1;test author;some comments");
 
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
     get_file(flag_file4, error, ss);
     {
       macros_struct macros [] = {
@@ -703,7 +701,7 @@ int main() {
 
   // Cleanup.
   monitoring.stop();
-  sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+  sleep_for(3);
   ::remove(flag_file.c_str());
   ::remove(flag_file2.c_str());
   ::remove(flag_file3.c_str());

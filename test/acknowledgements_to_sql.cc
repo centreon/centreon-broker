@@ -113,7 +113,7 @@ int main() {
     daemon.start();
 
     // Let the daemon initialize and set checkpoints as non-OK.
-    sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(15);
 
     // Base time.
     time_t now(time(NULL));
@@ -143,7 +143,7 @@ int main() {
     }
 
     // Let the monitoring engine process commands.
-    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(10);
 
     // New time.
     time_t t1(now);
@@ -244,7 +244,7 @@ int main() {
       "PROCESS_SERVICE_CHECK_RESULT;2;2;0;Submitted by unit test");
 
     // Run a while.
-    sleep_for(12 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(12);
 
     // Update time.
     time_t t2(now);

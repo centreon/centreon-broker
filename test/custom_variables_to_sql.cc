@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Merethis
+** Copyright 2013-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -275,7 +275,7 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(10);
 
     // T2.
     time_t t2(time(NULL));
@@ -400,7 +400,7 @@ int main() {
     }
 
     // Apply.
-    sleep_for(6 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(6);
 
     // T2.
     t2 = time(NULL);

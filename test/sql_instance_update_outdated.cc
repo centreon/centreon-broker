@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -87,7 +87,7 @@ int main() {
     cfg_cbd.set("INSTANCE_TIMEOUT", INSTANCE_TIMEOUT_STR);
     broker.set_config_file(cfg_cbd.generate());
     broker.start();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
     broker.update();
 
     // Start engine.
@@ -96,12 +96,12 @@ int main() {
     daemon.set_config_file(engine_config_file);
     daemon.start();
     broker.update();
-    sleep_for((INSTANCE_TIMEOUT + 2) * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(INSTANCE_TIMEOUT + 2);
 
     // Terminate monitoring engine.
     daemon.stop();
 
-    sleep_for((INSTANCE_TIMEOUT + 2) * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(INSTANCE_TIMEOUT + 2);
     broker.update();
 
     // Check for outdated instance
@@ -152,7 +152,7 @@ int main() {
 
     daemon.start();
 
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
 
     // Check for living instance
     {

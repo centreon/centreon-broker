@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -465,11 +465,11 @@ int main() {
     // Start Broker daemon.
     broker.set_config_file(config_file);
     broker.start();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
     broker.update();
 
     // Let the broker do its thing.
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
 
     // Check that the dimensions were correctly copied.
 
@@ -533,7 +533,7 @@ int main() {
     // Update the broker.
     broker.update();
     // Let the broker do its thing.
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
 
     // Check that everything was deleted.
     {
