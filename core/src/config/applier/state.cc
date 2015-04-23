@@ -27,6 +27,7 @@
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/config/applier/temporary.hh"
+#include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -59,6 +60,9 @@ state::~state() {}
 void state::apply(
               com::centreon::broker::config::state const& s,
               bool run_mux) {
+  // Set instance id.
+  io::data::instance_id = s.instance_id();
+
   // Apply logging configuration.
   logger::instance().apply(s.loggers());
 

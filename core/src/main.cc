@@ -34,7 +34,6 @@
 #include "com/centreon/broker/config/logger.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
-#include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/diagnostic.hh"
 
@@ -71,8 +70,6 @@ static void hup_handler(int signum) {
     config::parser parsr;
     config::state conf;
     parsr.parse(gl_mainconfigfiles.front().c_str(), conf);
-    // Set global instance id
-    io::data::instance_id = conf.instance_id();
 
     try {
       // Apply resulting configuration.
