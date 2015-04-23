@@ -27,8 +27,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
 
-extern unsigned int instance_id;
-
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -420,7 +418,6 @@ void node::manage_status(
   // Problem
   else if (old_state == 0 && new_state != 0) {
     my_issue.reset(new issue);
-    my_issue->source_id = instance_id;
     my_issue->start_time = last_state_change;
     my_issue->host_id = host_id;
     my_issue->service_id = service_id;
@@ -526,7 +523,6 @@ void node::linked_node_updated(
     ip->parent_host_id = parent_node.host_id;
     ip->parent_service_id = parent_node.service_id;
     ip->parent_start_time = parent_node.my_issue->start_time;
-    ip->source_id = instance_id;
     ip->start_time = my_issue->start_time > n.my_issue->start_time
                        ? my_issue->start_time
                        : n.my_issue->start_time;
@@ -556,7 +552,6 @@ void node::linked_node_updated(
       ip->parent_service_id = parent_node.service_id;
       ip->parent_start_time = parent_node.my_issue->start_time;
       ip->start_time = start_time_of_the_issue_parenting;
-      ip->source_id = instance_id;
       if (closed)
         ip->end_time = start_time;
 

@@ -21,6 +21,8 @@
 
 using namespace com::centreon::broker::io;
 
+unsigned int data::instance_id(0);
+
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -30,7 +32,7 @@ using namespace com::centreon::broker::io;
 /**
  *  Constructor.
  */
-data::data() : source_id(0), destination_id(0) {}
+data::data() : source_id(instance_id), destination_id(0) {}
 
 /**
  *  Copy constructor.

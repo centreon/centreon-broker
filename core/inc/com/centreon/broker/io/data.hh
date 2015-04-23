@@ -44,6 +44,8 @@ namespace                  io {
 
     unsigned int           source_id;
     unsigned int           destination_id;
+
+    static unsigned int    instance_id;
   };
 }
 

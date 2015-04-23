@@ -37,8 +37,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::dumper;
 
-extern unsigned int instance_id;
-
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -99,7 +97,6 @@ void fifo_dumper::read(misc::shared_ptr<io::data>& d) {
     std::string line = _fifo.read_line(3000000);
     if (!line.empty()) {
       misc::shared_ptr<dumper::dump> dmp(new dumper::dump);
-      dmp->source_id = instance_id;
       dmp->content = QString::fromStdString(line);
       dmp->filename = QString::fromStdString(_path);
       dmp->tag = QString::fromStdString(_tagname);

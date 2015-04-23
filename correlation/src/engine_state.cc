@@ -33,7 +33,7 @@ using namespace com::centreon::broker::correlation;
 /**
  *  Default constructor.
  */
-engine_state::engine_state() : instance_id(0), started(false) {}
+engine_state::engine_state() : started(false) {}
 
 /**
  *  Copy constructor.

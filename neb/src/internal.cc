@@ -31,7 +31,6 @@ using namespace com::centreon::broker;
 QString neb::gl_configuration_file;
 
 // Instance information.
-unsigned int neb::instance_id;
 QString      neb::instance_name;
 
 // List of host IDs.

@@ -66,7 +66,6 @@ namespace neb {
   extern QString gl_configuration_file;
 
   // Instance information.
-  extern unsigned int instance_id;
   extern QString      instance_name;
 
   // List of host IDs.

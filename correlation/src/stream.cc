@@ -33,8 +33,6 @@
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
-extern unsigned int instance_id;
-
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
 
@@ -58,7 +56,7 @@ stream::stream(
   // Create the engine started event.
   multiplexing::publisher pblsh;
   misc::shared_ptr<engine_state> es(new engine_state);
-  es->instance_id = instance_id;
+  es->instance_id = io::data::instance_id;
   es->started = true;
   pblsh.write(es);
 
@@ -77,7 +75,7 @@ stream::~stream() {
   try {
     multiplexing::publisher pblsh;
     misc::shared_ptr<engine_state> es(new engine_state);
-    es->instance_id = instance_id;
+    es->instance_id = io::data::instance_id;
     pblsh.write(es);
   } catch (std::exception const& e) {
     logging::error(logging::medium)

@@ -194,7 +194,6 @@ int neb::callback_custom_variable(int callback_type, void* data) {
             if (it != neb::gl_hosts.end()) {
               misc::shared_ptr<custom_variable>
                 new_cvar(new custom_variable);
-              new_cvar->source_id = instance_id;
               new_cvar->enabled = true;
               new_cvar->host_id = it->second;
               new_cvar->modified = false;
@@ -220,7 +219,6 @@ int neb::callback_custom_variable(int callback_type, void* data) {
           if (it != neb::gl_hosts.end()) {
             misc::shared_ptr<custom_variable>
               old_cvar(new custom_variable);
-            old_cvar->source_id = instance_id;
             old_cvar->enabled = false;
             old_cvar->host_id = it->second;
             old_cvar->name = cvar->var_name;
@@ -319,7 +317,6 @@ int neb::callback_custom_variable(int callback_type, void* data) {
             if (it != neb::gl_services.end()) {
               misc::shared_ptr<custom_variable>
                 new_cvar(new custom_variable);
-              new_cvar->source_id = instance_id;
               new_cvar->enabled = true;
               new_cvar->host_id = it->second.first;
               new_cvar->modified = false;
@@ -353,7 +350,6 @@ int neb::callback_custom_variable(int callback_type, void* data) {
           if (it != neb::gl_services.end()) {
             misc::shared_ptr<custom_variable>
               old_cvar(new custom_variable);
-            old_cvar->source_id = instance_id;
             old_cvar->enabled = false;
             old_cvar->host_id = it->second.first;
             old_cvar->modified = true;
@@ -444,7 +440,6 @@ int neb::callback_dependency(int callback_type, void* data) {
       // Generate service dependency event.
       misc::shared_ptr<host_dependency>
         hst_dep(new host_dependency);
-      hst_dep->source_id = instance_id;
       hst_dep->host_id = host_id;
       hst_dep->dependent_host_id = dep_host_id;
       hst_dep->enabled = (nsadd->type != NEBTYPE_HOSTDEPENDENCY_DELETE);
@@ -521,7 +516,6 @@ int neb::callback_dependency(int callback_type, void* data) {
       // Generate service dependency event.
       misc::shared_ptr<service_dependency>
         svc_dep(new service_dependency);
-      svc_dep->source_id = instance_id;
       svc_dep->host_id = host_id;
       svc_dep->service_id = service_id;
       svc_dep->dependent_host_id = dep_host_id;
@@ -575,7 +569,6 @@ int neb::callback_event_handler(int callback_type, void* data) {
 
     // Fill output var.
     event_handler_data = static_cast<nebstruct_event_handler_data*>(data);
-    event_handler->source_id = instance_id;
     if (event_handler_data->command_args)
       event_handler->command_args = event_handler_data->command_args;
     if (event_handler_data->command_line)
@@ -669,7 +662,6 @@ int neb::callback_external_command(int callback_type, void* data) {
               // Fill custom variable.
               misc::shared_ptr<neb::custom_variable_status>
                 cvs(new neb::custom_variable_status);
-              cvs->source_id = instance_id;
               cvs->host_id = id->second;
               cvs->modified = true;
               cvs->name = var_name;
@@ -709,7 +701,6 @@ int neb::callback_external_command(int callback_type, void* data) {
               // Fill custom variable.
               misc::shared_ptr<neb::custom_variable_status> cvs(
                 new neb::custom_variable_status);
-              cvs->source_id = instance_id;
               cvs->host_id = ids->second.first;
               cvs->modified = true;
               cvs->name = var_name;
@@ -756,7 +747,6 @@ int neb::callback_flapping_status(int callback_type, void* data) {
 
     // Fill output var.
     flapping_data = static_cast<nebstruct_flapping_data*>(data);
-    flapping_status->source_id = instance_id;
     flapping_status->event_time = flapping_data->timestamp.tv_sec;
     flapping_status->event_type = flapping_data->type;
     flapping_status->high_threshold = flapping_data->high_threshold;
@@ -824,7 +814,6 @@ int neb::callback_host(int callback_type, void* data) {
     misc::shared_ptr<neb::host> my_host(new neb::host);
 
     // Set host parameters.
-    my_host->source_id = instance_id;
     my_host->active_checks_enabled = h->checks_enabled;
     if (h->address)
       my_host->address = h->address;
@@ -955,7 +944,6 @@ int neb::callback_host_check(int callback_type, void* data) {
     hcdata = static_cast<nebstruct_host_check_data*>(data);
     ::host* h(static_cast< ::host*>(hcdata->object_ptr));
     if (hcdata->command_line) {
-      host_check->source_id = instance_id;
       host_check->active_checks_enabled = h->checks_enabled;
       host_check->check_type = hcdata->check_type;
       host_check->command_line = hcdata->command_line;
@@ -1008,7 +996,6 @@ int neb::callback_host_status(int callback_type, void* data) {
     // Fill output var.
     h = static_cast< ::host*>(
       static_cast<nebstruct_host_status_data*>(data)->object_ptr);
-    host_status->source_id = instance_id;
     host_status->active_checks_enabled = h->checks_enabled;
     if (h->host_check_command)
       host_status->check_command = h->host_check_command;
@@ -1099,7 +1086,6 @@ int neb::callback_log(int callback_type, void* data) {
 
     // Fill output var.
     log_data = static_cast<nebstruct_log_data*>(data);
-    le->source_id = instance_id;
     le->c_time = log_data->entry_time;
     le->instance_name = instance_name;
     if (log_data->data) {
@@ -1142,7 +1128,6 @@ int neb::callback_module(int callback_type, void* data) {
     // Fill output var.
     module_data = static_cast<nebstruct_module_data*>(data);
     if (module_data->module) {
-      me->source_id = instance_id;
       me->filename = module_data->module;
       if (module_data->args)
         me->args = module_data->args;
@@ -1224,7 +1209,6 @@ int neb::callback_process(int callback_type, void *data) {
         gl_generator.set(conf);
 
         // Set variables.
-        instance_id = conf.instance_id();
         instance_name = conf.instance_name();
         statistics_interval = gl_generator.interval();
       }
@@ -1233,7 +1217,6 @@ int neb::callback_process(int callback_type, void *data) {
         return (0);
       }
 
-      instance->source_id = instance_id;
       instance->engine = "Centreon Engine";
       instance->is_running = true;
       instance->name = instance_name;
@@ -1276,7 +1259,6 @@ int neb::callback_process(int callback_type, void *data) {
       misc::shared_ptr<neb::instance> instance(new neb::instance);
 
       // Fill output var.
-      instance->source_id = instance_id;
       instance->engine = "Centreon Engine";
       instance->is_running = false;
       instance->name = instance_name;
@@ -1323,7 +1305,6 @@ int neb::callback_program_status(int callback_type, void* data) {
 
     // Fill output var.
     program_status_data = static_cast<nebstruct_program_status_data*>(data);
-    is->source_id = instance_id;
     is->event_handler_enabled
       = program_status_data->event_handlers_enabled;
     is->flap_detection_enabled
@@ -1399,7 +1380,6 @@ int neb::callback_relation(int callback_type, void* data) {
         if (host_id && parent_id) {
           // Generate parent event.
           misc::shared_ptr<host_parent> new_host_parent(new host_parent);
-          new_host_parent->source_id = instance_id;
           new_host_parent->enabled
             = (relation->type != NEBTYPE_PARENT_DELETE);
           new_host_parent->host_id = host_id;
@@ -1449,7 +1429,6 @@ int neb::callback_service(int callback_type, void* data) {
     misc::shared_ptr<neb::service> my_service(new neb::service);
 
     // Fill output var.
-    my_service->source_id = instance_id;
     my_service->active_checks_enabled = s->checks_enabled;
     if (s->service_check_command)
       my_service->check_command = s->service_check_command;
@@ -1591,7 +1570,6 @@ int neb::callback_service_check(int callback_type, void* data) {
     scdata = static_cast<nebstruct_service_check_data*>(data);
     ::service* s(static_cast< ::service*>(scdata->object_ptr));
     if (scdata->command_line) {
-      service_check->source_id = instance_id;
       service_check->active_checks_enabled = s->checks_enabled;
       service_check->check_type = scdata->check_type;
       service_check->command_line = scdata->command_line;
@@ -1652,7 +1630,6 @@ int neb::callback_service_status(int callback_type, void* data) {
     // Fill output var.
     s = static_cast< ::service*>(
       static_cast<nebstruct_service_status_data*>(data)->object_ptr);
-    service_status->source_id = instance_id;
     service_status->active_checks_enabled = s->checks_enabled;
     if (s->service_check_command)
       service_status->check_command = s->service_check_command;

@@ -32,7 +32,6 @@ using namespace com::centreon::broker;
 
 // Load count.
 static unsigned int instances(0);
-unsigned int instance_id(0);
 
 extern "C" {
   /**
@@ -59,7 +58,6 @@ extern "C" {
     // Increment instance number.
     if (!instances++) {
       config::state const& cfg(*static_cast<config::state const*>(arg));
-      instance_id = cfg.instance_id();
 
       // Dumper module.
       logging::info(logging::high)
