@@ -49,7 +49,7 @@ using namespace com::centreon::broker;
 static const char* expected_result =
     "Authorization: Basic $auth$\n"
     "centreon.MyBroker.status.1.1.1.1.1 0 $timestamp$\n"
-    "centreon.MyBorker.metrics.1.graphite_test.1.1.1.1 0.8 $timestamp$\n";
+    "centreon.MyBroker.graphite_test.1.1.1.1.1.1 0.8 $timestamp$\n";
 
 /**
  *  Check that the graphite works.
@@ -166,8 +166,7 @@ int main() {
   monitoring.stop();
   free_hosts(hosts);
   free_services(services);
-  std::cout << engine_config_path << std::endl;
-  //config_remove(engine_config_path.c_str());
+  config_remove(engine_config_path.c_str());
 
   return (error ? EXIT_FAILURE : EXIT_SUCCESS);
 }

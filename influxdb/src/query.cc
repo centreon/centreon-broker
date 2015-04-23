@@ -392,5 +392,5 @@ void query::_get_service_id(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void query::_get_instance(io::data const& d, std::ostream& is) {
-  _cache->get_instance(d.source_id);
+  is << _cache->get_instance(d.source_id);
 }

@@ -107,9 +107,9 @@ namespace         notification {
     };
 
     enum          down_type {
-                  down_host = 0,
-                  down_service,
-                  down_host_service
+                  down_service = 1,
+                  down_host = 2,
+                  down_host_service = 3
     };
 
     void          _prepare_serialization();
