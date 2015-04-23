@@ -1194,11 +1194,8 @@ int neb::callback_process(int callback_type, void *data) {
                                            gl_engine_callbacks[i].callback)));
       }
 
-      // Output variable.
-      misc::shared_ptr<neb::instance> instance(new neb::instance);
-      unsigned int statistics_interval(0);
-
       // Parse configuration file.
+      unsigned int statistics_interval(0);
       try {
         config::parser parsr;
         config::state conf;
@@ -1217,6 +1214,8 @@ int neb::callback_process(int callback_type, void *data) {
         return (0);
       }
 
+      // Output variable.
+      misc::shared_ptr<neb::instance> instance(new neb::instance);
       instance->engine = "Centreon Engine";
       instance->is_running = true;
       instance->name = instance_name;

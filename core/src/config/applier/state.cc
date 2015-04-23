@@ -126,8 +126,8 @@ void state::apply(
   // Create instance broadcast event.
   com::centreon::broker::multiplexing::publisher pblsh;
   misc::shared_ptr<instance_broadcast> ib(new instance_broadcast);
-  ib->instance_id = s.instance_id();
   ib->instance_name = s.instance_name();
+  ib->enabled = true;
   pblsh.write(ib);
 
   // Enable multiplexing loop.

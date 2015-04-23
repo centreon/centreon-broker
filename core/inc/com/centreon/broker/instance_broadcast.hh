@@ -52,7 +52,7 @@ public:
                           io::events::de_instance_broadcast>::value);
   }
 
-  unsigned int        instance_id;
+  bool                enabled;
   QString             instance_name;
 
   static mapping::entry const

@@ -31,8 +31,7 @@ using namespace com::centreon::broker;
 /**
  *  Default constructor.
  */
-instance_broadcast::instance_broadcast()
-  : instance_id(0) {}
+instance_broadcast::instance_broadcast() : enabled(true) {}
 
 /**
  *  Copy constructor.
@@ -100,7 +99,7 @@ void instance_broadcast::load() {
  *  @param[in] other  Object to copy.
  */
 void instance_broadcast::_internal_copy(instance_broadcast const& other) {
-  instance_id = other.instance_id;
+  enabled = other.enabled;
   instance_name = other.instance_name;
   return ;
 }
@@ -114,8 +113,8 @@ void instance_broadcast::_internal_copy(instance_broadcast const& other) {
 // Mapping.
 mapping::entry const instance_broadcast::entries[] = {
   mapping::entry(
-    &instance_broadcast::instance_id,
-    "instance_id",
+    &instance_broadcast::enabled,
+    "enabled",
     mapping::entry::invalid_on_zero),
   mapping::entry(
     &instance_broadcast::instance_name,
