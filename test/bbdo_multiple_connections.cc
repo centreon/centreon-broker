@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -88,7 +88,7 @@ int main() {
     broker.set_config_file(
       PROJECT_SOURCE_DIR "/test/cfg/bbdo_multiple_connections_2.xml");
     broker.start();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
     broker.update();
 
     // Start engines.
@@ -97,9 +97,9 @@ int main() {
       engine_config_file.append("/nagios.cfg");
       daemon[i].set_config_file(engine_config_file);
       daemon[i].start();
-      sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+      sleep_for(2);
     }
-    sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(15);
 
     // Terminate monitoring engine.
     for (int i(ENGINE_COUNT - 1); i >= 0; --i)

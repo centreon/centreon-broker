@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Merethis
+** Copyright 2013-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -87,7 +87,7 @@ int main() {
     // Run cbd.
     daemon.set_config_file(cbd_config_path);
     daemon.start();
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
     daemon.update();
 
     // Read data from statistics pipe.

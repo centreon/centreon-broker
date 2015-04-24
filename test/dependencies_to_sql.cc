@@ -147,7 +147,7 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(16 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(16);
 
     // Check the 'hosts_hosts_dependencies' table.
     {
@@ -274,7 +274,7 @@ int main() {
 
     // Stop the monitoring engine.
     daemon.stop();
-    sleep_for(6 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(6);
 
     // Check that host dependencies were deleted.
     {

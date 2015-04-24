@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Merethis
+** Copyright 2013-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -199,7 +199,7 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(30 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(30);
 
     // Get index list.
     std::map<unsigned int, time_t> indexes;
@@ -281,7 +281,7 @@ int main() {
       if (!q.exec("UPDATE rt_index_data SET must_be_rebuild='1'"))
         throw (exceptions::msg() << "cannot launch rebuild from DB: "
                << qPrintable(q.lastError().text()));
-      sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
+      sleep_for(15);
     }
 
     // Check that rebuild successfully executed.

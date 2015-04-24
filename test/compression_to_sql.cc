@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -80,7 +80,7 @@ int main() {
     broker.set_config_file(
       PROJECT_SOURCE_DIR "/test/cfg/compression_to_sql_2.xml");
     broker.start();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
     broker.update();
 
     // Start engine.
@@ -88,7 +88,7 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(28 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(20);
 
     // Terminate monitoring engine.
     daemon.stop();

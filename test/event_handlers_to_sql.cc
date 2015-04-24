@@ -135,7 +135,7 @@ int main() {
     broker.set_config_file(
       PROJECT_SOURCE_DIR "/test/cfg/event_handlers_to_sql_2.xml");
     broker.start();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
     broker.update();
 
     // Start engine.
@@ -147,7 +147,7 @@ int main() {
     }
 
     // T1.
-    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(4);
     time_t t1(time(NULL));
 
     // Host SOFT state #1.
@@ -165,7 +165,7 @@ int main() {
     }
 
     // T2.
-    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(4);
     time_t t2(time(NULL));
 
     // Host SOFT states #2.
@@ -183,7 +183,7 @@ int main() {
     }
 
     // T3.
-    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(4);
     time_t t3(time(NULL));
 
     // Host HARD state.
@@ -201,7 +201,7 @@ int main() {
     }
 
     // T4.
-    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(4);
     time_t t4(time(NULL));
 
     // Check host eventhandlers entries.

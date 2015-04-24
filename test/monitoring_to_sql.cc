@@ -83,7 +83,7 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(30 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(30);
 
     // Check 'instances' table.
     {
@@ -181,7 +181,7 @@ int main() {
     // to generate logs (checked below).
     {
       commander.execute("DISABLE_SVC_CHECK;1;2");
-      sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+      sleep_for(2);
       commander.execute("ENABLE_PASSIVE_SVC_CHECKS;1;2");
       commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;2;2;output1");
       commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;2;2;output2");
@@ -189,7 +189,7 @@ int main() {
     }
 
     // Run a while.
-    sleep_for(6 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(6);
 
     // Check generated logs.
     {

@@ -190,14 +190,14 @@ int main() {
     // Start cbd.
     broker.set_config_file(cbd_config_path);
     broker.start();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
 
     // Start monitoring engine.
     std::string engine_config_file(engine_config_path);
     engine_config_file.append("/nagios.cfg");
     monitoring.set_config_file(engine_config_file);
     monitoring.start();
-    sleep_for(25 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(25);
 
     // Check and get index_data entries.
     std::map<std::pair<unsigned long, unsigned long>, unsigned long>
@@ -275,7 +275,7 @@ int main() {
 
     // Terminate monitoring engine (no more performance data).
     monitoring.stop();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
 
     // Flag an index to delete.
     {
@@ -302,11 +302,11 @@ int main() {
 
     // Signal entries to delete to cbd and wait a little.
     broker.update();
-    sleep_for(7 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(7);
 
     // Terminate cbd.
     broker.stop();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
 
     // Check that only one entry remains in index_data (1, 1).
     {

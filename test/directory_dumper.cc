@@ -75,7 +75,7 @@ int main() {
     broker.set_config_file(config_file);
     broker.start();
 
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
 
     QProcess* process = new QProcess();
     std::string command = "./util_write_into_file \"test\n\" " + sent_file;
@@ -85,7 +85,7 @@ int main() {
              << "can't start the process to write into the sent file "
              << process->errorString());
 
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
 
     // Check for file existence.
     std::ifstream ifs(expected_file.c_str());
@@ -105,7 +105,7 @@ int main() {
 
     // Remove file.
     ::remove(sent_file.c_str());
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
 
     // Check for file removal
     ifs.open(expected_file.c_str());

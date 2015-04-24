@@ -70,7 +70,7 @@ int main() {
     broker.set_config_file(config_file);
     broker.start();
 
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
 
     QProcess* process = new QProcess();
     std::string command = "./util_write_into_file \"test\n\" " + sender_fifo;
@@ -80,7 +80,7 @@ int main() {
              << "can't start the process to write into the sending fifo "
              << process->errorString());
 
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
 
     std::ifstream ifs(receiver_file.c_str());
     if (!ifs.is_open())

@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -154,11 +154,11 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(12 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(12);
 
     // Temporary disable checks.
     commander.execute("STOP_EXECUTING_SVC_CHECKS");
-    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(4);
 
     // Terminate monitoring engine.
     daemon.stop();

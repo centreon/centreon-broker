@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -81,7 +81,7 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(20 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(20);
 
     // cbd start time.
     time_t cbd_start_time(time(NULL));
@@ -90,7 +90,7 @@ int main() {
     broker.set_config_file(
       PROJECT_SOURCE_DIR "/test/cfg/bbdo_one_peer_retention_mode_2.xml");
     broker.start();
-    sleep_for(20 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(20);
     broker.update();
 
     // Terminate monitoring engine.

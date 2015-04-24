@@ -152,21 +152,21 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     monitoring.set_config_file(engine_config_file);
     monitoring.start();
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
     commander.execute(
       "PROCESS_HOST_CHECK_RESULT;1;0;Host Check Ok");
     commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;1;1;0;Submitted by unit test");
     commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;1;2;0;Submitted by unit test");
-    sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(5);
 
     // Make services CRITICAL.
     commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;1;1;2;Submitted by unit test");
     commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;1;2;2;Submitted by unit test");
-    sleep_for(25 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(7);
 
     // Check file creation. No file should be created.
     error = QFile::exists(flag_file.c_str());
@@ -184,7 +184,7 @@ int main() {
 
   // Cleanup.
   monitoring.stop();
-  sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+  sleep_for(3);
   ::remove(flag_file.c_str());
   ::remove(node_cache_file.c_str());
   config_remove(engine_config_path.c_str());

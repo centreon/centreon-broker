@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -277,7 +277,7 @@ int main(int argc, char* argv[]) {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(15);
 
     // Make the metrics table update.
     for (unsigned long i(1); i <= HOST_COUNT; ++i) {
@@ -314,7 +314,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Let engine run a little more.
-    sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(15);
 
     // Check metrics table.
     std::list<unsigned int> metrics;
