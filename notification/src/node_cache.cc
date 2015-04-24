@@ -43,8 +43,7 @@ using namespace com::centreon::broker::notification;
  *  @param[in] cache  The persistent cache used by the node cache.
  */
 node_cache::node_cache(misc::shared_ptr<persistent_cache> cache)
-  : _actual_downtime_id(0),
-    _mutex(QMutex::NonRecursive),
+  : _mutex(QMutex::NonRecursive),
     _cache(cache) {
   multiplexing::engine::instance().hook(*this);
 }
@@ -78,7 +77,6 @@ node_cache& node_cache::operator=(node_cache const& obj) {
     _host_node_states = obj._host_node_states;
     _service_node_states = obj._service_node_states;
     _cache = obj._cache;
-    _actual_downtime_id = obj._actual_downtime_id;
   }
   return (*this);
 }
@@ -101,7 +99,6 @@ void node_cache::starting() {
       if (data.isNull())
         break ;
       write(data);
-      write_downtime_or_ack(data);
     }
   }
   catch (std::exception const& e) {
@@ -218,48 +215,7 @@ unsigned int node_cache::write(misc::shared_ptr<io::data> const& data) {
   else if (type == neb::custom_variable::static_type()
            || type == neb::custom_variable_status::static_type())
     update(*data.staticCast<neb::custom_variable_status>());
-  else if (type == command_file::external_command::static_type()) {
-    try {
-      _serialized_data.push_back(
-        parse_command(data.ref_as<command_file::external_command const>()));
-    } catch (std::exception const& e) {
-      logging::error(logging::medium)
-        << "notification: can't parse command '"
-        << data.ref_as<command_file::external_command>().command
-        << "': " << e.what();
-    }
-  }
 
-  return (1);
-}
-
-/**
- *  Write a downtime or an ack to the node cache.
- *
- *  @param[in] d  Downtime or ack.
- *
- *  @return       The number of events acknowledged.
- */
-unsigned int node_cache::write_downtime_or_ack(
-                            misc::shared_ptr<io::data> const& d) {
-  if (d.isNull())
-    return (1);
-
-  if (d->type() == neb::downtime::static_type()) {
-    neb::downtime const&
-      down = d.ref_as<neb::downtime const>();
-    _downtimes[down.internal_id] = down;
-    _downtime_id_by_nodes.insert(
-      objects::node_id(down.host_id, down.service_id),
-      down.internal_id);
-    if (_actual_downtime_id <= down.internal_id)
-      _actual_downtime_id = down.internal_id + 1;
-  }
-  else if (d->type() == neb::acknowledgement::static_type()) {
-    neb::acknowledgement const& ack = d.ref_as<neb::acknowledgement const>();
-    _acknowledgements[objects::node_id(ack.host_id, ack.service_id)]
-      = ack;
-  }
   return (1);
 }
 
@@ -351,117 +307,24 @@ void node_cache::update(neb::custom_variable_status const& cvs) {
 }
 
 /**
- *  This class holds a RAII buffer for parsing.
- */
-class buffer {
-public:
-  explicit buffer(unsigned int size) {
-    _data = new char[size];
-  }
-  ~buffer() {
-    delete [] _data;
-  }
-  bool operator==(const char* other) const {
-    return (::strcmp(_data, other) == 0);
-  }
-  char* get() {
-    return (_data);
-  }
-  const char* get() const {
-    return (_data);
-  }
-
-private:
-  char* _data;
-};
-
-/**
- *  Parse an external command.
+ *  Update the node cache.
  *
- *  @param[in] exc  External command.
- *
- *  @return         An event.
+ *  @param[in] ack  The data to update.
  */
-misc::shared_ptr<io::data>
-  node_cache::parse_command(command_file::external_command const& exc) {
-  std::string line = exc.command.toStdString();
-  buffer command(line.size());
-  buffer args(line.size());
-
-  logging::debug(logging::low)
-    << "notification: received command: '" << exc.command << "'";
-
-  // Parse timestamp.
-  unsigned long timestamp;
-  if (::sscanf(
-        line.c_str(),
-        "[%lu] %[^ ;];%[^\n]",
-        &timestamp,
-        command.get(),
-        args.get()) != 3)
-    throw (exceptions::msg()
-           << "couldn't parse the line");
-
-  size_t arg_len = ::strlen(args.get());
-
-  if (command == "ACKNOWLEDGE_HOST_PROBLEM")
-    return (_parse_ack(ack_host, timestamp, args.get(), arg_len));
-  else if (command == "ACKNOWLEDGE_SVC_PROBLEM")
-    return (_parse_ack(ack_service, timestamp, args.get(), arg_len));
-  else if (command == "REMOVE_HOST_ACKNOWLEDGEMENT")
-    return (_parse_remove_ack(ack_host, args.get(), arg_len));
-  else if (command == "REMOVE_SVC_ACKNOWLEDGEMENT")
-    return (_parse_remove_ack(ack_service, args.get(), arg_len));
-  else if (command == "SCHEDULE_HOST_DOWNTIME")
-    return (_parse_downtime(down_host, timestamp, args.get(), arg_len));
-  else if (command == "SCHEDULE_HOST_SVC_DOWNTIME")
-    return (_parse_downtime(down_host_service, timestamp, args.get(), arg_len));
-  else if (command == "SCHEDULE_SVC_DOWNTIME")
-    return (_parse_downtime(down_service, timestamp, args.get(), arg_len));
-  else if (command == "DELETE_HOST_DOWNTIME")
-    return (_parse_remove_downtime(down_host, args.get(), arg_len));
-  else if (command == "DELETE_SVC_DOWNTIME")
-    return (_parse_remove_downtime(down_service, args.get(), arg_len));
-
-  return (misc::shared_ptr<io::data>());
+void node_cache::update(neb::acknowledgement const& ack) {
+  _acknowledgements[objects::node_id(ack.host_id, ack.service_id)] = ack;
 }
 
 /**
- *  Get a node by its names.
+ *  Update the node cache.
  *
- *  @param[in] host_name            The host name.
- *  @param[in] service_description  The service description, or empty.
- *
- *  @return  The node id.
+ *  @param[in] dwn  The data to update.
  */
-objects::node_id node_cache::get_node_by_names(
-                   std::string const& host_name,
-                   std::string const& service_description) {
-  // TODO: Faster node lookup.
-
-  if (service_description.empty()) {
-    for (QHash<objects::node_id, host_node_state>::const_iterator
-           it = _host_node_states.begin(),
-           end = _host_node_states.end();
-         it != end;
-         ++it)
-      if (it->get_node().host_name == host_name.c_str())
-        return (objects::node_id(it->get_node().host_id));
-  }
-  else {
-    for (QHash<objects::node_id, service_node_state>::const_iterator
-           it = _service_node_states.begin(),
-           end = _service_node_states.end();
-         it != end;
-         ++it) {
-      if (it->get_node().host_name == host_name.c_str()
-            && it->get_node().service_description == service_description.c_str())
-        return (objects::node_id(
-                  it->get_node().host_id, it->get_node().service_id));
-    }
-  }
-
-  return (objects::node_id());
+void node_cache::update(neb::downtime const& dwn) {
+  _downtimes[dwn.internal_id] = dwn;
+  _downtime_id_by_nodes.insert(
+    objects::node_id(dwn.host_id, dwn.service_id),
+    dwn.internal_id);
 }
 
 /**
@@ -589,259 +452,3 @@ void node_cache::_prepare_serialization() {
     _serialized_data.push_back(misc::make_shared(new neb::downtime(*it)));
 }
 
-/**
- *  Parse an acknowledgment.
- *
- *  @param[in] is_host  Is this a host acknowledgement.
- *  @param[in] t        The timestamp.
- *  @param[in] args     The args to parse.
- *  @param[în] arg_size The size of the arg.
- *
- *  @return             An acknowledgement event.
- */
-misc::shared_ptr<io::data> node_cache::_parse_ack(
-                             ack_type is_host,
-                             timestamp t,
-                             const char* args,
-                             size_t arg_size) {
-  buffer host_name(arg_size);
-  buffer service_description(arg_size);
-  int sticky = 0;
-  int notify = 0;
-  int persistent_comment = 0;
-  buffer author(arg_size);
-  buffer comment(arg_size);
-  bool ret = false;
-  if (is_host == ack_host)
-    ret = (::sscanf(
-             args,
-             "%[^;];%i;%i;%i;%[^;];%[^;]",
-             host_name.get(),
-             &sticky,
-             &notify,
-             &persistent_comment,
-             author.get(),
-             comment.get()) == 6);
-  else
-    ret = (::sscanf(
-             args,
-             "%[^;];%[^;];%i;%i;%i;%[^;];%[^;]",
-             host_name.get(),
-             service_description.get(),
-             &sticky,
-             &notify,
-             &persistent_comment,
-             author.get(),
-             comment.get()) == 7);
-  if (!ret)
-    throw (exceptions::msg()
-           << "couldn't parse the arguments for the acknowledgement");
-
-  objects::node_id id(get_node_by_names(
-                        host_name.get(),
-                        service_description.get()));
-  misc::shared_ptr<neb::acknowledgement>
-    ack(new neb::acknowledgement);
-  ack->acknowledgement_type = is_host;
-  ack->comment = QString(comment.get());
-  ack->author = QString(author.get());
-  ack->entry_time = t;
-  ack->host_id = id.get_host_id();
-  ack->service_id = id.get_service_id();
-  ack->is_sticky = (sticky == 2);
-  ack->persistent_comment = (persistent_comment == 1);
-  ack->notify_contacts = (notify == 1);
-
-  // Save acknowledgements.
-  _acknowledgements[id] = *ack;
-
-  return (ack);
-}
-
-/**
- *  Parse the removal of an acknowledgment.
- *
- *  @param[in] is_host  Is this a host acknowledgement.
- *  @param[in] args     The args to parse.
- *  @param[în] arg_size The size of the arg.
- *
- *  @return             An acknowledgement removal event.
- */
-misc::shared_ptr<io::data> node_cache::_parse_remove_ack(
-                             ack_type type,
-                             const char* args,
-                             size_t arg_size) {
-  buffer host_name(arg_size);
-  buffer service_description(arg_size);
-  bool ret = false;
-  if (type == ack_host)
-    ret = (::sscanf(args, "%[^;]", host_name.get()) == 1);
-  else
-    ret = (::sscanf(
-             args,
-             "%[^;];%[^;]",
-             host_name.get(),
-             service_description.get()) == 2);
-  if (!ret)
-    throw (exceptions::msg()
-           << "couldn't parse the arguments for the acknowledgement removal");
-
-  // Find the node id from the host name / description.
-  objects::node_id id = get_node_by_names(
-                          host_name.get(),
-                          service_description.get());
-
-  // Find the ack.
-  QHash<objects::node_id, neb::acknowledgement>::iterator
-    found(_acknowledgements.find(id));
-  if (found == _acknowledgements.end())
-    throw (exceptions::msg()
-           << "couldn't find an acknowledgement for ("
-           << id.get_host_id() << ", " << id.get_service_id() << ")");
-
-  // Erase the ack.
-  _acknowledgements.erase(found);
-
-  // Send an ack removed event.
-  misc::shared_ptr<neb::acknowledgement_removed> a(new neb::acknowledgement_removed);
-  a->host_id = id.get_host_id();
-  a->service_id = id.get_service_id();
-  return (a);
-}
-
-/**
- *  Parse a downtime.
- *
- *  @param[in] type     The downtime type.
- *  @param[in] t        The timestamp.
- *  @param[in] args     The args to parse.
- *  @param[în] arg_size The size of the arg.
- *
- *  @return             A downtime event.
- */
-misc::shared_ptr<io::data> node_cache::_parse_downtime(
-                                         down_type type,
-                                         timestamp t,
-                                         char const* args,
-                                         size_t arg_size) {
-  buffer host_name(arg_size);
-  buffer service_description(arg_size);
-  unsigned long start_time = 0;
-  unsigned long end_time = 0;
-  int fixed = 0;
-  unsigned int trigger_id = 0;
-  unsigned int duration = 0;
-  buffer author(arg_size);
-  buffer comment(arg_size);
-  bool ret = false;
-
-  (void)t;
-  logging::debug(logging::medium)
-    << "notification: parsing downtime command: '" << args << "'";
-
-  if (type == down_host)
-    ret = (::sscanf(
-             args,
-             "%[^;];%lu;%lu;%i;%u;%u;%[^;];%[^;]",
-             host_name.get(),
-             &start_time,
-             &end_time,
-             &fixed,
-             &trigger_id,
-             &duration,
-             author.get(),
-             comment.get()) == 8);
-  else
-    ret = (::sscanf(
-             args,
-             "%[^;];%[^;];%lu;%lu;%i;%u;%u;%[^;];%[^;]",
-             host_name.get(),
-             service_description.get(),
-             &start_time,
-             &end_time,
-             &fixed,
-             &trigger_id,
-             &duration,
-             author.get(),
-             comment.get()) == 9);
-
-  if (!ret)
-    throw (exceptions::msg() << "error while parsing downtime arguments");
-
-  objects::node_id id = get_node_by_names(
-                          host_name.get(),
-                          service_description.get());
-
-  misc::shared_ptr<neb::downtime>
-    d(new neb::downtime);
-  d->author = QString::fromStdString(author.get());
-  d->comment = QString::fromStdString(comment.get());
-  d->start_time = start_time;
-  d->end_time = end_time;
-  d->duration = duration;
-  d->fixed = (fixed == 1);
-  d->downtime_type = type;
-  d->host_id = id.get_host_id();
-  d->service_id = id.get_service_id();
-  d->was_started = true;
-  d->triggered_by = trigger_id;
-  d->internal_id = ++_actual_downtime_id;
-
-  // Save the downtime.
-  _downtimes[d->internal_id] = *d;
-  _downtime_id_by_nodes.insert(id, d->internal_id);
-
-  return (d);
-}
-
-/**
- *  Parse a downtime removal.
- *
- *  @param[in] type     The downtime type.
- *  @param[in] args     The args to parse.
- *  @param[în] arg_size The size of the arg.
- *
- *  @return             A downtime removal event.
- */
-misc::shared_ptr<io::data> node_cache::_parse_remove_downtime(
-                             down_type type,
-                             const char* args,
-                             size_t arg_size) {
-  (void)type;
-  (void)arg_size;
-  unsigned int downtime_id;
-  if (::sscanf(args, "%u", &downtime_id) != 1)
-    throw (exceptions::msg() << "error while parsing remove downtime arguments");
-
-  // Find the downtime.
-  QHash<unsigned int, neb::downtime>::iterator
-    found(_downtimes.find(downtime_id));
-  if (found == _downtimes.end())
-    throw (exceptions::msg()
-           << "couldn't find a downtime for downtime id " << downtime_id);
-
-  objects::node_id node(found->host_id, found->service_id);
-
-  // Erase the downtime.
-  _downtimes.erase(found);
-  QMultiHash<objects::node_id, unsigned int>::iterator tmp;
-  for (QMultiHash<objects::node_id, unsigned int>::iterator
-         it = _downtime_id_by_nodes.find(node),
-         end = _downtime_id_by_nodes.end();
-       it != end && it.key() == node;
-       it = tmp) {
-    tmp = it;
-    ++tmp;
-    if (*it == downtime_id)
-      _downtime_id_by_nodes.erase(it);
-  }
-
-
-  // Send a downtime removed event.
-  misc::shared_ptr<neb::downtime_removed> d(new neb::downtime_removed);
-  d->host_id = found->host_id;
-  d->service_id = found->service_id;
-  d->downtime_id = downtime_id;
-
-  return (d);
-}

@@ -28,7 +28,6 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/bbdo/stream.hh"
 #  include "com/centreon/broker/compression/stream.hh"
-#  include "com/centreon/broker/command_file/external_command.hh"
 #  include "com/centreon/broker/file/stream.hh"
 #  include "com/centreon/broker/notification/object_cache.hh"
 #  include "com/centreon/broker/notification/objects/node.hh"
@@ -72,7 +71,6 @@ namespace         notification {
     virtual void  read(misc::shared_ptr<io::data>& d);
     virtual unsigned int
                   write(misc::shared_ptr<io::data> const& d);
-    unsigned int  write_downtime_or_ack(misc::shared_ptr<io::data> const& d);
 
     void          update(neb::host const& hst);
     void          update(neb::host_status const& hs);
@@ -81,13 +79,9 @@ namespace         notification {
     void          update(neb::service_status const& ss);
     void          update(neb::service_group_member const& sgm);
     void          update(neb::custom_variable_status const& cvs);
-    misc::shared_ptr<io::data>
-                  parse_command(command_file::external_command const& exc);
+    void          update(neb::acknowledgement const& ack);
+    void          update(neb::downtime const& dwn);
 
-    objects::node_id
-                  get_node_by_names(
-                    std::string const& host_name,
-                    std::string const& service_description);
     host_node_state const&
                   get_host(objects::node_id id) const;
     service_node_state const&
@@ -101,40 +95,7 @@ namespace         notification {
     bool          node_acknowledged(objects::node_id node) const;
 
   private:
-    enum          ack_type {
-                  ack_host = 0,
-                  ack_service
-    };
-
-    enum          down_type {
-                  down_service = 1,
-                  down_host = 2,
-                  down_host_service = 3
-    };
-
     void          _prepare_serialization();
-    misc::shared_ptr<io::data>
-                  _parse_ack(
-                    ack_type type,
-                    timestamp t,
-                    const char* args,
-                    size_t arg_size);
-    misc::shared_ptr<io::data>
-                  _parse_remove_ack(
-                    ack_type type,
-                    const char* args,
-                    size_t arg_size);
-    misc::shared_ptr<io::data>
-                  _parse_downtime(
-                    down_type type,
-                    timestamp t,
-                    const char* args,
-                    size_t arg_size);
-    misc::shared_ptr<io::data>
-                  _parse_remove_downtime(
-                    down_type type,
-                    const char* args,
-                    size_t arg_size);
 
     QHash<objects::node_id, host_node_state>
                   _host_node_states;
@@ -146,7 +107,6 @@ namespace         notification {
                   _downtimes;
     QMultiHash<objects::node_id, unsigned int>
                   _downtime_id_by_nodes;
-    unsigned int  _actual_downtime_id;
     QMutex        _mutex;
 
     misc::shared_ptr<persistent_cache>
