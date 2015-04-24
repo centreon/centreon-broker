@@ -108,7 +108,13 @@ unsigned int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
   if (d.isNull())
     return (1);
 
-  if (d->type() == command_file::external_command::static_type()) {
+  if (d->type() == neb::host::static_type()) {
+    _process_host(d.ref_as<neb::host const>());
+  }
+  else if (d->type() == neb::service::static_type()) {
+    _process_service(d.ref_as<neb::service const>());
+  }
+  else if (d->type() == command_file::external_command::static_type()) {
     try {
       misc::shared_ptr<io::data> d =
         parse_command(d.ref_as<command_file::external_command const>());
@@ -211,9 +217,9 @@ misc::shared_ptr<io::data>
   else if (command == "ACKNOWLEDGE_SVC_PROBLEM")
     return (_parse_ack(ack_service, timestamp, args.get(), arg_len));
   else if (command == "REMOVE_HOST_ACKNOWLEDGEMENT")
-    return (_parse_remove_ack(ack_host, args.get(), arg_len));
+    return (_parse_remove_ack(ack_host, timestamp, args.get(), arg_len));
   else if (command == "REMOVE_SVC_ACKNOWLEDGEMENT")
-    return (_parse_remove_ack(ack_service, args.get(), arg_len));
+    return (_parse_remove_ack(ack_service, timestamp, args.get(), arg_len));
   else if (command == "SCHEDULE_HOST_DOWNTIME")
     return (_parse_downtime(down_host, timestamp, args.get(), arg_len));
   else if (command == "SCHEDULE_HOST_SVC_DOWNTIME")
@@ -221,9 +227,9 @@ misc::shared_ptr<io::data>
   else if (command == "SCHEDULE_SVC_DOWNTIME")
     return (_parse_downtime(down_service, timestamp, args.get(), arg_len));
   else if (command == "DELETE_HOST_DOWNTIME")
-    return (_parse_remove_downtime(down_host, args.get(), arg_len));
+    return (_parse_remove_downtime(down_host, timestamp, args.get(), arg_len));
   else if (command == "DELETE_SVC_DOWNTIME")
-    return (_parse_remove_downtime(down_service, args.get(), arg_len));
+    return (_parse_remove_downtime(down_service, timestamp, args.get(), arg_len));
 
   return (misc::shared_ptr<io::data>());
 }
@@ -239,31 +245,14 @@ misc::shared_ptr<io::data>
 node_id node_events_stream::get_node_by_names(
           std::string const& host_name,
           std::string const& service_description) {
-  // TODO: Faster node lookup.
-
-  /*if (service_description.empty()) {
-    for (QHash<objects::node_id, host_node_state>::const_iterator
-           it = _host_node_states.begin(),
-           end = _host_node_states.end();
-         it != end;
-         ++it)
-      if (it->get_node().host_name == host_name.c_str())
-        return (objects::node_id(it->get_node().host_id));
-  }
-  else {
-    for (QHash<objects::node_id, service_node_state>::const_iterator
-           it = _service_node_states.begin(),
-           end = _service_node_states.end();
-         it != end;
-         ++it) {
-      if (it->get_node().host_name == host_name.c_str()
-            && it->get_node().service_description == service_description.c_str())
-        return (objects::node_id(
-                  it->get_node().host_id, it->get_node().service_id));
-    }
-  }*/
-
-  return (node_id());
+  QHash<QPair<QString, QString>, node_id>::const_iterator
+    found(_names_to_node.find(qMakePair(
+                                QString::fromStdString(host_name),
+                                QString::fromStdString(service_description))));
+  if (found != _names_to_node.end())
+    return (*found);
+  else
+    return (node_id());
 }
 
 /**
@@ -286,6 +275,29 @@ bool node_events_stream::node_in_downtime(node_id node) const {
  */
 bool node_events_stream::node_acknowledged(node_id node) const {
   return (_acknowledgements.contains(node));
+}
+
+/**
+ *  Process a host event.
+ *
+ *  @param[in] hst  The host event.
+ */
+void node_events_stream::_process_host(
+                           neb::host const& hst) {
+  _hosts[node_id(hst.host_id)] = hst;
+  _names_to_node[qMakePair(hst.host_name, QString())] = node_id(hst.host_id);
+}
+
+/**
+ *  Process a service event.
+ *
+ *  @param[in] svc  The service event.
+ */
+void node_events_stream::_process_service(
+                           neb::service const& svc) {
+  _services[node_id(svc.host_id, svc.service_id)] = svc;
+  _names_to_node[qMakePair(svc.host_name, svc.service_description)]
+    = node_id(svc.host_id, svc.service_id);
 }
 
 /**
@@ -361,13 +373,15 @@ misc::shared_ptr<io::data> node_events_stream::_parse_ack(
  *  Parse the removal of an acknowledgment.
  *
  *  @param[in] is_host  Is this a host acknowledgement.
+ *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
- *  @param[în] arg_size The size of the arg.
+ *  @param[in] arg_size The size of the arg.
  *
  *  @return             An acknowledgement removal event.
  */
 misc::shared_ptr<io::data> node_events_stream::_parse_remove_ack(
                              ack_type type,
+                             timestamp t,
                              const char* args,
                              size_t arg_size) {
   buffer host_name(arg_size);
@@ -398,12 +412,15 @@ misc::shared_ptr<io::data> node_events_stream::_parse_remove_ack(
            << "couldn't find an acknowledgement for ("
            << id.get_host_id() << ", " << id.get_service_id() << ")");
 
+  // Close the ack.
+  misc::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement(*found));
+  ack->deletion_time = t;
+
   // Erase the ack.
   _acknowledgements.erase(found);
 
-  // Send an ack removed event.
-  // TODO
-  return (misc::shared_ptr<io::data>());
+  // Return the closed ack.
+  return (ack);
 }
 
 /**
@@ -495,6 +512,7 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
  *  Parse a downtime removal.
  *
  *  @param[in] type     The downtime type.
+ *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
  *  @param[în] arg_size The size of the arg.
  *
@@ -502,6 +520,7 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
  */
 misc::shared_ptr<io::data> node_events_stream::_parse_remove_downtime(
                              down_type type,
+                             timestamp t,
                              const char* args,
                              size_t arg_size) {
   (void)type;
@@ -519,6 +538,12 @@ misc::shared_ptr<io::data> node_events_stream::_parse_remove_downtime(
 
   node_id node(found->host_id, found->service_id);
 
+  // Close the downtime.
+  misc::shared_ptr<neb::downtime> d(new neb::downtime(*found));
+  d->actual_end_time = t;
+  d->deletion_time = t;
+  d->was_cancelled = true;
+
   // Erase the downtime.
   _downtimes.erase(found);
   QMultiHash<node_id, unsigned int>::iterator tmp;
@@ -533,11 +558,8 @@ misc::shared_ptr<io::data> node_events_stream::_parse_remove_downtime(
       _downtime_id_by_nodes.erase(it);
   }
 
-
-  // Send a downtime removed event.
-  // TODO
-
-  return (misc::shared_ptr<io::data>());
+  // Return the closed downtime.
+  return (d);
 }
 
 
@@ -548,6 +570,37 @@ void node_events_stream::_load_cache() {
   // No cache, nothing to do.
   if (_cache.isNull())
     return ;
+
+  misc::shared_ptr<io::data> d;
+  while (true) {
+    _cache->get(d);
+    if (d.isNull())
+      break ;
+    _process_loaded_event(d);
+  }
+}
+
+/**
+ *  Process an event loaded from the cache.
+ *
+ *  @param[in] d  The event.
+ */
+void node_events_stream::_process_loaded_event(
+                           misc::shared_ptr<io::data> const& d) {
+  if (d->type() == neb::host::static_type())
+    _process_host(d.ref_as<neb::host const>());
+  else if (d->type() == neb::service::static_type())
+    _process_service(d.ref_as<neb::service const>());
+  else if (d->type() == neb::acknowledgement::static_type()) {
+    neb::acknowledgement const& ack = d.ref_as<neb::acknowledgement const>();
+    _acknowledgements[node_id(ack.host_id, ack.service_id)] = ack;
+  }
+  else if (d->type() == neb::downtime::static_type()) {
+    neb::downtime const& dwn = d.ref_as<neb::downtime const>();
+    _downtimes[dwn.internal_id] = dwn;
+    if (_actual_downtime_id < dwn.internal_id)
+      _actual_downtime_id = dwn.internal_id + 1;
+  }
 }
 
 /**
@@ -557,4 +610,31 @@ void node_events_stream::_save_cache() {
   // No cache, nothing to do.
   if (_cache.isNull())
     return ;
+
+  _cache->transaction();
+  for (QHash<node_id, neb::host>::const_iterator
+         it = _hosts.begin(),
+         end = _hosts.end();
+       it != end;
+       ++it)
+    _cache->add(misc::make_shared(new neb::host(*it)));
+  for (QHash<node_id, neb::service>::const_iterator
+         it = _services.begin(),
+         end = _services.end();
+       it != end;
+       ++it)
+    _cache->add(misc::make_shared(new neb::service(*it)));
+  for (QHash<node_id, neb::acknowledgement>::const_iterator
+         it = _acknowledgements.begin(),
+         end = _acknowledgements.end();
+       it != end;
+       ++it)
+    _cache->add(misc::make_shared(new neb::acknowledgement(*it)));
+  for (QHash<unsigned int, neb::downtime>::const_iterator
+         it = _downtimes.begin(),
+         end = _downtimes.end();
+       it != end;
+       ++it)
+    _cache->add(misc::make_shared(new neb::downtime(*it)));
+  _cache->commit();
 }

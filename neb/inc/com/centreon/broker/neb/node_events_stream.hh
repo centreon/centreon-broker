@@ -30,6 +30,8 @@
 #  include "com/centreon/broker/command_file/external_command.hh"
 #  include "com/centreon/broker/neb/acknowledgement.hh"
 #  include "com/centreon/broker/neb/downtime.hh"
+#  include "com/centreon/broker/neb/host.hh"
+#  include "com/centreon/broker/neb/service.hh"
 #  include "com/centreon/broker/neb/node_id.hh"
 
 CCB_BEGIN()
@@ -79,6 +81,16 @@ namespace        neb {
                  down_host = 2,
                  down_host_service = 3
     };
+
+    // Used solely for host/service name resolution.
+    QHash<node_id, neb::host>
+                 _hosts;
+    QHash<node_id, neb::service>
+                 _services;
+    QHash<QPair<QString, QString>, node_id>
+                 _names_to_node;
+
+    // Acks and downtimes caches.
     QHash<node_id, neb::acknowledgement>
                  _acknowledgements;
     QHash<unsigned int, neb::downtime>
@@ -86,6 +98,11 @@ namespace        neb {
     QMultiHash<node_id, unsigned int>
                  _downtime_id_by_nodes;
     unsigned int _actual_downtime_id;
+
+    void          _process_host(
+                    neb::host const& hst);
+    void          _process_service(
+                    neb::service const& svc);
 
     misc::shared_ptr<io::data>
                   _parse_ack(
@@ -96,6 +113,7 @@ namespace        neb {
     misc::shared_ptr<io::data>
                   _parse_remove_ack(
                     ack_type type,
+                    timestamp t,
                     const char* args,
                     size_t arg_size);
     misc::shared_ptr<io::data>
@@ -107,10 +125,12 @@ namespace        neb {
     misc::shared_ptr<io::data>
                   _parse_remove_downtime(
                     down_type type,
+                    timestamp t,
                     const char* args,
                     size_t arg_size);
 
     void        _load_cache();
+    void        _process_loaded_event(misc::shared_ptr<io::data> const& d);
     void        _save_cache();
   };
 }
