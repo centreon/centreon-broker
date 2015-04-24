@@ -26,7 +26,6 @@
 #include "com/centreon/broker/correlation/parser.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
 #include "com/centreon/broker/neb/downtime.hh"
-#include "com/centreon/broker/neb/downtime_removed.hh"
 #include "com/centreon/broker/neb/host_status.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/neb/log_entry.hh"
@@ -185,15 +184,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
     if (found != _nodes.end())
       found->manage_log(entry, _pblsh.get());
   }
-  else if (d->type() == neb::downtime_removed::static_type()) {
-    neb::downtime_removed const& dr
-      = d.ref_as<neb::downtime_removed>();
-    QPair<unsigned int, unsigned int> id(dr.host_id, dr.service_id);
-    QMap<QPair<unsigned int, unsigned int>, node>::iterator found
-      = _nodes.find(id);
-    if (found != _nodes.end())
-      found->manage_downtime_removed(dr.downtime_id, _pblsh.get());
-  }
+
   return (1);
 }
 

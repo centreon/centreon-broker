@@ -456,26 +456,18 @@ void node::manage_ack(
 void node::manage_downtime(
              neb::downtime const& dwn,
              io::stream* stream) {
-  downtimes[dwn.internal_id] = dwn;
-  in_downtime = true;
-  _generate_state_event(dwn.start_time, state, stream);
+  if (!dwn.actual_end_time.is_null()) {
+    downtimes[dwn.internal_id] = dwn;
+    in_downtime = true;
+    _generate_state_event(dwn.start_time, state, stream);
+  }
+  else {
+    downtimes.erase(dwn.internal_id);
+    if (!downtimes.empty())
+      in_downtime = false;
+    _generate_state_event(::time(NULL), state, stream);
+  }
 }
-
-/**
- *  Manage a downtime removal.
- *
- *  @param[in] id         The downtime id.
- *  @param[out] stream    A stream to write the events to.
- */
-void node::manage_downtime_removed(
-        unsigned int id,
-        io::stream* stream) {
-  downtimes.erase(id);
-  if (!downtimes.empty())
-    in_downtime = false;
-  _generate_state_event(::time(NULL), state, stream);
-}
-
 
 /**
  *  Manage a log.

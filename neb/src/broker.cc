@@ -75,13 +75,6 @@ extern "C" {
                   neb::acknowledgement::entries));
         e.register_event(
             io::events::neb,
-            neb::de_acknowledgement_removed,
-            io::event_info(
-                  "acknowledgement_removed",
-                  &neb::acknowledgement_removed::operations,
-                  neb::acknowledgement_removed::entries));
-        e.register_event(
-            io::events::neb,
             neb::de_custom_variable,
             io::event_info(
                   "custom_variable",
@@ -101,13 +94,6 @@ extern "C" {
                   "downtime",
                   &neb::downtime::operations,
                   neb::downtime::entries));
-        e.register_event(
-            io::events::neb,
-            neb::de_downtime_removed,
-            io::event_info(
-                  "downtime_removed",
-                  &neb::downtime_removed::operations,
-                  neb::downtime_removed::entries));
         e.register_event(
             io::events::neb,
             neb::de_event_handler,
