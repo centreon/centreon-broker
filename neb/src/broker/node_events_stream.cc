@@ -242,7 +242,7 @@ misc::shared_ptr<io::data>
  *
  *  @return  The node id.
  */
-node_id node_events_stream::get_node_by_names(
+node_id node_events_stream::_get_node_by_names(
           std::string const& host_name,
           std::string const& service_description) {
   QHash<QPair<QString, QString>, node_id>::const_iterator
@@ -253,28 +253,6 @@ node_id node_events_stream::get_node_by_names(
     return (*found);
   else
     return (node_id());
-}
-
-/**
- *  Is this node in downtime ?
- *
- *  @param[in] node  The node.
- *
- *  @return          True if this node is in downtime.
- */
-bool node_events_stream::node_in_downtime(node_id node) const {
-  return (_downtime_id_by_nodes.contains(node));
-}
-
-/**
- *  Is this node acknowledged ?
- *
- *  @param[in] node  The node.
- *
- *  @return          True if this node was acknowledged.
- */
-bool node_events_stream::node_acknowledged(node_id node) const {
-  return (_acknowledgements.contains(node));
 }
 
 /**
@@ -348,7 +326,7 @@ misc::shared_ptr<io::data> node_events_stream::_parse_ack(
     throw (exceptions::msg()
            << "couldn't parse the arguments for the acknowledgement");
 
-  node_id id(get_node_by_names(
+  node_id id(_get_node_by_names(
                host_name.get(),
                service_description.get()));
   misc::shared_ptr<neb::acknowledgement>
@@ -400,7 +378,7 @@ misc::shared_ptr<io::data> node_events_stream::_parse_remove_ack(
            << "couldn't parse the arguments for the acknowledgement removal");
 
   // Find the node id from the host name / description.
-  node_id id = get_node_by_names(
+  node_id id = _get_node_by_names(
                  host_name.get(),
                  service_description.get());
 
@@ -482,7 +460,7 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
   if (!ret)
     throw (exceptions::msg() << "error while parsing downtime arguments");
 
-  node_id id = get_node_by_names(
+  node_id id = _get_node_by_names(
                  host_name.get(),
                  service_description.get());
 
