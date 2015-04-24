@@ -593,14 +593,9 @@ void config_write(
   }
 
   // Base configuration.
-  ofs << "check_result_reaper_frequency=1\n"
+  ofs << "log_file=monitoring_engine.log\n"
       << "command_file=monitoring_engine.cmd\n"
-      << "event_broker_options=-1\n"
-      << "log_file=monitoring_engine.log\n"
-      << "max_concurrent_checks=200\n"
-      << "sleep_time=0.01\n"
-      << "state_retention_file=monitoring_engine_retention.dat\n"
-      << "status_file=monitoring_engine_status.dat\n";
+      << "state_retention_file=\n";
 
   // Subconfiguration files.
   std::string hosts_file;
