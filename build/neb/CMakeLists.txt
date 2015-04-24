@@ -118,6 +118,16 @@ set(NEB "${NEB}" PARENT_SCOPE)
 add_library("${NEB}" SHARED
   # Main source.
   "${SRC_DIR}/broker.cc"
+  "${SRC_DIR}/broker/node_events_connector.cc"
+  "${SRC_DIR}/broker/node_events_factory.cc"
+  "${SRC_DIR}/broker/node_events_stream.cc"
+  "${SRC_DIR}/broker/node_id.cc"
+
+  # Inc
+  "${INC_DIR}/com/centreon/broker/neb/node_events_connector.hh"
+  "${INC_DIR}/com/centreon/broker/neb/node_events_factory.hh"
+  "${INC_DIR}/com/centreon/broker/neb/node_events_stream.hh"
+  "${INC_DIR}/com/centreon/broker/neb/node_id.hh"
 )
 if (CMAKE_COMPILER_IS_GNUCXX)
   # Flags needed to include all symbols in binary.
