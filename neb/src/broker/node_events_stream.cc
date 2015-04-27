@@ -114,6 +114,15 @@ unsigned int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
   else if (d->type() == neb::service::static_type()) {
     _process_service(d.ref_as<neb::service const>());
   }
+  else if (d->type() == neb::host_status::static_type()
+             || d->type() == neb::service_status::static_type()) {
+    node_id id(
+              d.ref_as<neb::host_service_status>().host_id,
+              d->type() == neb::service_status::static_type()
+                ? d.ref_as<neb::service_status>().service_id
+                : 0);
+    _process_status(id, d.ref_as<neb::host_service_status>());
+  }
   else if (d->type() == command_file::external_command::static_type()) {
     try {
       misc::shared_ptr<io::data> d =
@@ -276,6 +285,27 @@ void node_events_stream::_process_service(
   _services[node_id(svc.host_id, svc.service_id)] = svc;
   _names_to_node[qMakePair(svc.host_name, svc.service_description)]
     = node_id(svc.host_id, svc.service_id);
+}
+
+/**
+ *  Process a host/service status event.
+ *
+ *  @param[in] id    The id of the node.
+ *  @param[in] hst   The host/service status.
+ */
+void node_events_stream::_process_status(
+                           node_id id,
+                           neb::host_service_status const& hst) {
+  // Remove expired acknowledgements.
+  QHash<node_id, neb::acknowledgement>::iterator found
+    = _acknowledgements.find(id);
+  if (found != _acknowledgements.end()) {
+    // Close the ack.
+    found->deletion_time = hst.last_hard_state_change;
+    multiplexing::publisher pblsh;
+    pblsh.write(misc::make_shared(new neb::acknowledgement(*found)));
+    _acknowledgements.erase(found);
+  }
 }
 
 /**

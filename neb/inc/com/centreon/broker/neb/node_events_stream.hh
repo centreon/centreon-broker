@@ -76,6 +76,9 @@ namespace        neb {
                    neb::host const& hst);
     void         _process_service(
                    neb::service const& svc);
+    void         _process_status(
+                   node_id id,
+                   neb::host_service_status const& hst);
     node_id      _get_node_by_names(
                    std::string const& host_name,
                    std::string const& service_description);
