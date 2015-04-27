@@ -23,6 +23,7 @@
 #include "com/centreon/broker/correlation/issue_parent.hh"
 #include "com/centreon/broker/correlation/node.hh"
 #include "com/centreon/broker/correlation/log_issue.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
@@ -394,6 +395,10 @@ void node::manage_status(
   if (old_state == new_state)
     return ;
 
+  logging::debug(logging::medium)
+    << "correlation: node (" << host_id << ", " << service_id
+    << ") changing status from " << old_state << " to " << new_state;
+
   // Remove acknowledgement.
   if (new_state == 0)
     acknowledgement.reset();
@@ -408,6 +413,9 @@ void node::manage_status(
 
   // Recovery
   if (old_state != 0 && new_state == 0) {
+    logging::debug(logging::medium)
+      << "correlation: node (" << host_id << ", " << service_id
+      << ") closing issue";
     my_issue->end_time = last_state_change;
     _visit_linked_nodes(last_state_change, true, stream);
     _visit_parent_of_child_nodes(last_state_change, true, stream);
@@ -417,6 +425,9 @@ void node::manage_status(
   }
   // Problem
   else if (old_state == 0 && new_state != 0) {
+    logging::debug(logging::medium)
+      << "correlation: node (" << host_id << ", " << service_id
+      << ") opening issue";
     my_issue.reset(new issue);
     my_issue->start_time = last_state_change;
     my_issue->host_id = host_id;
@@ -653,6 +664,9 @@ void node::_generate_state_event(
        io::stream* stream) {
   // Close old state event.
   if (my_state.get() && stream) {
+    logging::debug(logging::medium)
+      << "correlation: node (" << host_id << ", " << service_id
+      << ") closing state event";
     my_state->end_time = start_time;
     stream->write(misc::make_shared(new correlation::state(*my_state)));
   }
@@ -665,6 +679,9 @@ void node::_generate_state_event(
   }
 
   // Open new state event.
+  logging::debug(logging::medium)
+    << "correlation: node (" << host_id << ", " << service_id
+    << ") opening new state event";
   my_state.reset(_open_state_event(start_time));
   my_state->current_state = new_status;
 
