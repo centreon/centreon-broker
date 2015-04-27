@@ -143,8 +143,8 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
       = _nodes.find(id);
     if (found != _nodes.end()) {
       logging::debug(logging::medium)
-        << "correlation: processing host status for node ("
-        << hs.host_id << ", 0)";
+        << "correlation: processing host status " << hs.last_hard_state
+        << " for node (" << hs.host_id << ", 0)";
       found->manage_status(
         hs.last_hard_state,
         hs.last_hard_state_change,
@@ -158,8 +158,8 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
       = _nodes.find(id);
     if (found != _nodes.end()) {
       logging::debug(logging::medium)
-        << "correlation: processing service status for node ("
-        << ss.host_id << ", " << ss.service_id << ")";
+        << "correlation: processing service status "  << ss.last_hard_state
+        << " for node (" << ss.host_id << ", " << ss.service_id << ")";
       found->manage_status(
         ss.last_hard_state,
         ss.last_hard_state_change,
