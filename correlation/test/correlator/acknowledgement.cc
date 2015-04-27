@@ -147,11 +147,11 @@ int main() {
     QList<misc::shared_ptr<io::data> > content;
     // #1
     add_state(content, -1, 0, 123456789, 42, false, 24, 0);
-    add_state(content, -1, 2, 0, 42, false, 24, 123456789);
-    add_issue(content, -1, 0, 42, 24, 123456789);
+    add_state(content, -1, 2, -1, 42, false, 24, 123456789);
+    add_issue(content, -1, -1, 42, 24, 123456789);
     // #2
     add_state(content, -1, 2, 123456790, 42, false, 24, 123456789);
-    add_state(content, 123456790, 2, 0, 42, false, 24, 123456790);
+    add_state(content, 123456790, 2, -1, 42, false, 24, 123456790);
     // #3
     add_state(
       content,
@@ -166,7 +166,7 @@ int main() {
       content,
       -1,
       1,
-      0,
+      -1,
       42,
       false,
       24,
@@ -185,7 +185,7 @@ int main() {
       content,
       123456792,
       1,
-      0,
+      -1,
       42,
       false,
       24,
@@ -204,7 +204,7 @@ int main() {
       content,
       123456793,
       2,
-      0,
+      -1,
       42,
       false,
       24,
@@ -219,7 +219,7 @@ int main() {
       false,
       24,
       123456793);
-    add_state(content, -1, 0, 0, 42, false, 24, 123456794);
+    add_state(content, -1, 0, -1, 42, false, 24, 123456794);
     add_issue(content, 123456790, 123456794, 42, 24, 123456789);
     // #7, should not change anything
     // #8
@@ -232,8 +232,8 @@ int main() {
       false,
       24,
       123456794);
-    add_state(content, -1, 1, 0, 42, false, 24, 123456796);
-    add_issue(content, -1, 0, 42, 24, 123456796);
+    add_state(content, -1, 1, -1, 42, false, 24, 123456796);
+    add_issue(content, -1, -1, 42, 24, 123456796);
 
     // Check.
     check_content(t, content);

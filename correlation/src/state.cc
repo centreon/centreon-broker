@@ -36,7 +36,7 @@ using namespace com::centreon::broker::correlation;
 state::state()
   : ack_time(-1),
     current_state(3),
-    end_time(0),
+    end_time(-1),
     host_id(0),
     instance_id(0),
     in_downtime(false),

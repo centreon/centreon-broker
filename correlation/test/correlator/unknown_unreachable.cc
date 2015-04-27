@@ -141,22 +141,22 @@ int main() {
     QList<misc::shared_ptr<io::data> > content;
     // #1
     add_state(content, -1, 0, 123456789, 56, false, 13, 0);
-    add_state(content, -1, 2, 0, 56, false, 13, 123456789);
-    add_issue(content, -1, 0, 56, 13, 123456789);
+    add_state(content, -1, 2, -1, 56, false, 13, 123456789);
+    add_issue(content, -1, -1, 56, 13, 123456789);
     // #2
     add_state(content, -1, 0, 123456790, 90, false, 0, 0);
-    add_state(content, -1, 1, 0, 90, false, 0, 123456790);
-    add_issue(content, -1, 0, 90, 0, 123456790);
+    add_state(content, -1, 1, -1, 90, false, 0, 123456790);
+    add_issue(content, -1, -1, 90, 0, 123456790);
     // #3
     add_state(content, -1, 0, 123456791, 42, false, 24, 0);
-    add_state(content, -1, 2, 0, 42, false, 24, 123456791);
-    add_issue(content, -1, 0, 42, 24, 123456791);
+    add_state(content, -1, 2, -1, 42, false, 24, 123456791);
+    add_issue(content, -1, -1, 42, 24, 123456791);
     add_issue_parent(
       content,
       56,
       13,
       123456789,
-      0,
+      -1,
       42,
       24,
       123456791,
@@ -166,7 +166,7 @@ int main() {
       90,
       0,
       123456790,
-      0,
+      -1,
       42,
       24,
       123456791,
@@ -181,10 +181,10 @@ int main() {
       false,
       13,
       123456789);
-    add_state(content, -1, 1, 0, 56, false, 13, 123456792);
+    add_state(content, -1, 1, -1, 56, false, 13, 123456792);
     // #5
     add_state(content, -1, 1, 123456793, 90, false, 0, 123456790);
-    add_state(content, -1, 2, 0, 90, false, 0, 123456793);
+    add_state(content, -1, 2, -1, 90, false, 0, 123456793);
     // #6
     add_state(
       content,
@@ -195,7 +195,7 @@ int main() {
       false,
       24,
       123456791);
-    add_state(content, -1, 0, 0, 42, false, 24, 123456794);
+    add_state(content, -1, 0, -1, 42, false, 24, 123456794);
     add_issue_parent(
       content,
       56,

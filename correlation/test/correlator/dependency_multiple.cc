@@ -166,15 +166,15 @@ int main() {
     multiplexing::engine::instance().stop();
     t.finalize();
     QList<misc::shared_ptr<io::data> > content;
-    add_issue(content, -1, 0, 56, 13, 123456789);
-    add_issue(content, -1, 0, 90, 42, 123456790);
-    add_issue(content, -1, 0, 42, 24, 123456791);
+    add_issue(content, -1, -1, 56, 13, 123456789);
+    add_issue(content, -1, -1, 90, 42, 123456790);
+    add_issue(content, -1, -1, 42, 24, 123456791);
     add_issue_parent(
       content,
       42,
       24,
       123456791,
-      0,
+      -1,
       56,
       13,
       123456789,
@@ -184,18 +184,18 @@ int main() {
       42,
       24,
       123456791,
-      0,
+      -1,
       90,
       42,
       123456790,
       123456791);
-    add_issue(content, -1, 0, 213, 8, 123456792);
+    add_issue(content, -1, -1, 213, 8, 123456792);
     add_issue_parent(
       content,
       42,
       24,
       123456791,
-      0,
+      -1,
       213,
       8,
       123456792,

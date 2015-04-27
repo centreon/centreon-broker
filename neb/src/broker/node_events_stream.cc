@@ -299,7 +299,7 @@ void node_events_stream::_process_status(
   // Remove expired acknowledgements.
   QHash<node_id, neb::acknowledgement>::iterator found
     = _acknowledgements.find(id);
-  if (found != _acknowledgements.end()) {
+  if (found != _acknowledgements.end() && hst.last_hard_state == 0) {
     // Close the ack.
     found->deletion_time = hst.last_hard_state_change;
     multiplexing::publisher pblsh;
