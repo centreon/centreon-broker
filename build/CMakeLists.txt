@@ -1458,6 +1458,12 @@ if (WITH_TESTING)
     "${TEST_DIR}/processing/feeder/simple.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Null event.
+  set(TEST_NAME "core_processing_feeder_null_event")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/feeder/null_event.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   # processing::failover tests.
   #   Simple feeding.
   set(TEST_NAME "core_processing_failover_feed")
