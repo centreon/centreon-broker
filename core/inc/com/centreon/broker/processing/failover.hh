@@ -32,7 +32,6 @@
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
-#  include "com/centreon/broker/processing/feeder.hh"
 
 namespace                com {
   namespace              centreon {

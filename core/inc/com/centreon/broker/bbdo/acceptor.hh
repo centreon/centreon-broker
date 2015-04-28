@@ -79,7 +79,7 @@ namespace               com {
           void          stats(io::properties& tree);
 
         private:
-          void          _negociate_features(
+          unsigned int  _negociate_features(
                            misc::shared_ptr<io::stream> stream,
                            misc::shared_ptr<bbdo::stream> my_bbdo);
           misc::shared_ptr<io::stream>
