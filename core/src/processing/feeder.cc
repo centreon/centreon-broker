@@ -18,7 +18,6 @@
 */
 
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/exceptions/with_pointer.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -82,12 +81,15 @@ void feeder::exit() {
 /**
  *  Prepare the object before running.
  *
- *  @param[in] in  Input object.
- *  @param[in] out Output object.
+ *  @param[in]     name  Feeding process name.
+ *  @param[in]     in    Input object.
+ *  @param[in,out] out   Output object.
  */
 void feeder::prepare(
+               std::string const& name,
                misc::shared_ptr<io::stream> in,
                misc::shared_ptr<io::stream> out) {
+  _name = name;
   _in = in;
   _out = out;
   return ;
@@ -97,63 +99,39 @@ void feeder::prepare(
  *  Thread main routine.
  */
 void feeder::run() {
+  logging::info(logging::medium)
+    << "feeder: thread of '" << _name << "' is starting";
   _should_exit = false;
   try {
     if (_in.isNull())
-      throw (exceptions::msg()
-             << "feeder: could not feed with empty input");
+      throw (exceptions::msg() << "could not process '"
+             << _name << "' with no event source");
     if (_out.isNull())
-      throw (exceptions::msg()
-             << "feeder: could not feed with empty output");
+      throw (exceptions::msg() << "could not process '"
+             << _name << "' with no event receiver");
     while (!_should_exit) {
       misc::shared_ptr<io::data> data;
       _in->read(data);
-      try {
-        _out->write(data);
-      }
-      catch (exceptions::msg const& e) {
-        try {
-          throw (exceptions::with_pointer(e, data));
-        }
-        catch (exceptions::with_pointer const& e) {
-          throw ;
-        }
-        catch (...) {}
-        throw ;
-      }
+      _out->write(data);
     }
   }
   catch (io::exceptions::shutdown const& e) {
+    // Normal termination.
     (void)e;
-    if (!isRunning()) {
-      _in.clear();
-      _out.clear();
-      throw ;
-    }
   }
   catch (std::exception const& e) {
-    if (!isRunning()) {
-      _in.clear();
-      _out.clear();
-      throw ;
-    }
-    else
-      logging::error(logging::medium)
-        << "feeder: error occured while feeding: " << e.what();
+    logging::error(logging::medium)
+      << "feeder: error occured while processing '"
+      << _name << "': " << e.what();
   }
   catch (...) {
-    if (!isRunning()) {
-      _in.clear();
-      _out.clear();
-      throw ;
-    }
-    else
-      logging::error(logging::high)
-        << "feeder: unknown error occured";
+    logging::error(logging::high)
+      << "feeder: unknown error occured while processing '"
+      << _name << "'";
   }
   _in.clear();
   _out.clear();
   logging::info(logging::medium)
-    << "feeder: thread will exit";
+    << "feeder: thread of '" << _name << "' will exit";
   return ;
 }

@@ -293,7 +293,6 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/database_config.cc"
   "${SRC_DIR}/database_query.cc"
   "${SRC_DIR}/exceptions/msg.cc"
-  "${SRC_DIR}/exceptions/with_pointer.cc"
   "${SRC_DIR}/file/cfile.cc"
   "${SRC_DIR}/file/directory_event.cc"
   "${SRC_DIR}/file/directory_watcher.cc"
@@ -377,7 +376,6 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/database_config.hh"
   "${INC_DIR}/database_query.hh"
   "${INC_DIR}/exceptions/msg.hh"
-  "${INC_DIR}/exceptions/with_pointer.hh"
   "${INC_DIR}/file/cfile.hh"
   "${INC_DIR}/file/directory_event.hh"
   "${INC_DIR}/file/directory_watcher.hh"
@@ -1164,43 +1162,6 @@ if (WITH_TESTING)
     "${TEST_DIR}/exceptions/msg/clone.cc")
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
-  # exceptions::with_pointer tests.
-  #   Default constructor.
-  set(TEST_NAME "core_exceptions_with_pointer_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/exceptions/with_pointer/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "core_exceptions_with_pointer_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/exceptions/with_pointer/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "core_exceptions_with_pointer_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/exceptions/with_pointer/assignment.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Throw test.
-  set(TEST_NAME "core_exceptions_with_pointer_throw")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/exceptions/with_pointer/throw.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Rethrow test.
-  set(TEST_NAME "core_exceptions_with_pointer_rethrow")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/exceptions/with_pointer/rethrow.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Clone test.
-  set(TEST_NAME "core_exceptions_with_pointer_clone")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/exceptions/with_pointer/clone.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
 
 
   # config namespace tests.
@@ -1495,12 +1456,6 @@ if (WITH_TESTING)
   set(TEST_NAME "core_processing_feeder_simple")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/processing/feeder/simple.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Feeding with error.
-  set(TEST_NAME "core_processing_feeder_error")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/processing/feeder/error.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # processing::failover tests.

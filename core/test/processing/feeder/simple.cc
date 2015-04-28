@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -53,7 +53,10 @@ int main(int argc, char* argv[]) {
 
   // Feeder object.
   processing::feeder f;
-  f.prepare(ss1.staticCast<io::stream>(), ss2.staticCast<io::stream>());
+  f.prepare(
+      "unit test",
+      ss1.staticCast<io::stream>(),
+      ss2.staticCast<io::stream>());
 
   // Launch feeder.
   QObject::connect(&f, SIGNAL(finished()), &app, SLOT(quit()));

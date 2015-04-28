@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <memory>
 #include <QStringList>
+#include <sstream>
 #include "com/centreon/broker/bbdo/acceptor.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/stream.hh"
@@ -277,15 +278,17 @@ void acceptor::stats(io::properties& tree) {
 /**
  *  Negociate stream features.
  *
- *  @param[in]     stream  Base stream (no BBDO).
- *  @param[in,out] my_bbdo BBDO stream being processed.
+ *  @param[in]     stream   Base stream (no BBDO).
+ *  @param[in,out] my_bbdo  BBDO stream being processed.
+ *
+ *  @return Instance ID of the negociated stream.
  */
-void acceptor::_negociate_features(
-                  misc::shared_ptr<io::stream> stream,
-                  misc::shared_ptr<bbdo::stream> my_bbdo) {
+unsigned int acceptor::_negociate_features(
+                         misc::shared_ptr<io::stream> stream,
+                         misc::shared_ptr<bbdo::stream> my_bbdo) {
   // Coarse peer don't expect any salutation either.
   if (_coarse)
-    return ;
+    return (0);
 
   // Read initial packet.
   misc::shared_ptr<io::data> d;
@@ -356,7 +359,7 @@ void acceptor::_negociate_features(
       }
     }
   }
-  return ;
+  return (d->source_id);
 }
 
 /**
@@ -370,7 +373,9 @@ void acceptor::_on_thread_termination() {
 }
 
 /**
- *  @brief Wait for incoming connection.
+ *  Wait for incoming connection.
+ *
+ *  @param[in] stream  Lower-layer stream.
  *
  *  @return Always return null stream. A new thread will be launched to
  *          process the incoming connection.
@@ -403,8 +408,9 @@ misc::shared_ptr<io::stream> acceptor::_open(
     }
 
     // Negociate features.
+    unsigned int instance_id;
     try {
-      _negociate_features(stream, my_bbdo);
+      instance_id = _negociate_features(stream, my_bbdo);
     }
     catch (exceptions::msg const& e) {
       logging::info(logging::high) << e.what();
@@ -413,7 +419,9 @@ misc::shared_ptr<io::stream> acceptor::_open(
 
     // Feeder thread.
     std::auto_ptr<processing::feeder> feedr(new processing::feeder);
-    feedr->prepare(in, out);
+    std::ostringstream oss;
+    oss << "instance #" << instance_id;
+    feedr->prepare(oss.str(), in, out);
     QObject::connect(
                feedr.get(),
                SIGNAL(finished()),

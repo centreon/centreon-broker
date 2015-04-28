@@ -21,6 +21,7 @@
 #  define CCB_PROCESSING_FEEDER_HH
 
 #  include <QThread>
+#  include <string>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 
@@ -44,6 +45,7 @@ namespace               com {
           feeder&       operator=(feeder const& other);
           void          exit();
           void          prepare(
+                          std::string const& name,
                           misc::shared_ptr<io::stream> in,
                           misc::shared_ptr<io::stream> out);
           void          run();
@@ -51,6 +53,7 @@ namespace               com {
          private:
           misc::shared_ptr<io::stream>
                         _in;
+          std::string   _name;
           misc::shared_ptr<io::stream>
                         _out;
           volatile bool _should_exit;
