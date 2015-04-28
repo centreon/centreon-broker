@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -39,9 +39,9 @@ namespace               com {
 
          public:
                         feeder();
-                        feeder(feeder const& f);
+                        feeder(feeder const& other);
                         ~feeder();
-          feeder&       operator=(feeder const& f);
+          feeder&       operator=(feeder const& other);
           void          exit();
           void          prepare(
                           misc::shared_ptr<io::stream> in,

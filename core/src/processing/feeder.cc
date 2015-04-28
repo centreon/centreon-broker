@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -19,7 +19,9 @@
 
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/with_pointer.hh"
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/processing/feeder.hh"
 
 using namespace com::centreon::broker;
@@ -39,12 +41,12 @@ feeder::feeder() : _should_exit(false) {}
 /**
  *  Copy constructor.
  *
- *  @param[in] f Object to copy.
+ *  @param[in] other  Object to copy.
  */
-feeder::feeder(feeder const& f)
+feeder::feeder(feeder const& other)
   : QThread(),
-    _in(f._in),
-    _out(f._out),
+    _in(other._in),
+    _out(other._out),
     _should_exit(false) {}
 
 /**
@@ -55,13 +57,15 @@ feeder::~feeder() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] f Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-feeder& feeder::operator=(feeder const& f) {
-  _in = f._in;
-  _out = f._out;
+feeder& feeder::operator=(feeder const& other) {
+  if (this != &other) {
+    _in = other._in;
+    _out = other._out;
+  }
   return (*this);
 }
 
@@ -97,15 +101,13 @@ void feeder::run() {
   try {
     if (_in.isNull())
       throw (exceptions::msg()
-               << "feeder: could not feed with empty input");
+             << "feeder: could not feed with empty input");
     if (_out.isNull())
       throw (exceptions::msg()
-               << "feeder: could not feed with empty output");
+             << "feeder: could not feed with empty output");
     while (!_should_exit) {
       misc::shared_ptr<io::data> data;
       _in->read(data);
-      if (data.isNull())
-        break ;
       try {
         _out->write(data);
       }
@@ -121,14 +123,37 @@ void feeder::run() {
       }
     }
   }
-  catch (...) {
+  catch (io::exceptions::shutdown const& e) {
+    (void)e;
     if (!isRunning()) {
       _in.clear();
       _out.clear();
       throw ;
     }
   }
+  catch (std::exception const& e) {
+    if (!isRunning()) {
+      _in.clear();
+      _out.clear();
+      throw ;
+    }
+    else
+      logging::error(logging::medium)
+        << "feeder: error occured while feeding: " << e.what();
+  }
+  catch (...) {
+    if (!isRunning()) {
+      _in.clear();
+      _out.clear();
+      throw ;
+    }
+    else
+      logging::error(logging::high)
+        << "feeder: unknown error occured";
+  }
   _in.clear();
   _out.clear();
+  logging::info(logging::medium)
+    << "feeder: thread will exit";
   return ;
 }
