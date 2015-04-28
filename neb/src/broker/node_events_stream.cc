@@ -279,6 +279,11 @@ void node_events_stream::_process_host_status(
                                 0;
   _host_statuses[id] = hst;
   _remove_expired_acknowledgement(id, prev_state, hst.last_hard_state);
+  _trigger_floating_downtime(
+    id,
+    hst.last_hard_state_change,
+    prev_state,
+    hst.last_hard_state);
 }
 
 /**
@@ -297,6 +302,11 @@ void node_events_stream::_process_service_status(
 
   _service_statuses[id] = sst;
   _remove_expired_acknowledgement(id, prev_state, sst.last_hard_state);
+  _trigger_floating_downtime(
+    id,
+    sst.last_hard_state_change,
+    prev_state,
+    sst.last_hard_state);
 }
 
 /**
