@@ -45,6 +45,9 @@ node_events_stream::node_events_stream(
     _actual_downtime_id(0) {
   // Load the cache.
   _load_cache();
+
+  // Start the downtime scheduler.
+  _downtime_scheduler.start_and_wait();
 }
 
 /**
@@ -52,7 +55,11 @@ node_events_stream::node_events_stream(
  */
 node_events_stream::~node_events_stream() {
   try {
+    // Save the cache.
     _save_cache();
+
+    // Stop the downtime scheduler.
+    _downtime_scheduler.exit();
   } catch (std::exception const& e) {
     logging::error(logging::medium)
       << "neb: node events error while trying to save cache: "
@@ -114,14 +121,14 @@ unsigned int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
   else if (d->type() == neb::service::static_type()) {
     _process_service(d.ref_as<neb::service const>());
   }
-  else if (d->type() == neb::host_status::static_type()
-             || d->type() == neb::service_status::static_type()) {
-    node_id id(
-              d.ref_as<neb::host_service_status>().host_id,
-              d->type() == neb::service_status::static_type()
-                ? d.ref_as<neb::service_status>().service_id
-                : 0);
-    _process_status(id, d.ref_as<neb::host_service_status>());
+  else if (d->type() == neb::host_status::static_type()) {
+    _process_host_status(d.ref_as<neb::host_status const>());
+  }
+  else if (d->type() == neb::service_status::static_type()) {
+    _process_service_status(d.ref_as<neb::service_status const>());
+  }
+  else if (d->type() == neb::downtime::static_type()) {
+    _update_downtime(d.ref_as<neb::downtime const>());
   }
   else if (d->type() == command_file::external_command::static_type()) {
     try {
@@ -136,36 +143,6 @@ unsigned int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
   }
   return (1);
 }
-
-/**
- *  Write a downtime or an ack to the node cache.
- *
- *  @param[in] d  Downtime or ack.
- *
- *  @return       The number of events acknowledged.
- */
-/*unsigned int node_events_stream::write_downtime_or_ack(
-                            misc::shared_ptr<io::data> const& d) {
-  if (d.isNull())
-    return (1);
-
-  if (d->type() == neb::downtime::static_type()) {
-    neb::downtime const&
-      down = d.ref_as<neb::downtime const>();
-    _downtimes[down.internal_id] = down;
-    _downtime_id_by_nodes.insert(
-      node_id(down.host_id, down.service_id),
-      down.internal_id);
-    if (_actual_downtime_id <= down.internal_id)
-      _actual_downtime_id = down.internal_id + 1;
-  }
-  else if (d->type() == neb::acknowledgement::static_type()) {
-    neb::acknowledgement const& ack = d.ref_as<neb::acknowledgement const>();
-    _acknowledgements[objects::node_id(ack.host_id, ack.service_id)]
-      = ack;
-  }
-  return (1);
-}*/
 
 /**
  *  This class holds a RAII buffer for parsing.
@@ -288,23 +265,122 @@ void node_events_stream::_process_service(
 }
 
 /**
- *  Process a host/service status event.
+ *  Process a host status event.
  *
- *  @param[in] id    The id of the node.
- *  @param[in] hst   The host/service status.
+ *  @param[in] hst  Host status event.
  */
-void node_events_stream::_process_status(
-                           node_id id,
-                           neb::host_service_status const& hst) {
-  // Remove expired acknowledgements.
+void node_events_stream::_process_host_status(
+                           neb::host_status const& hst) {
+  node_id id(hst.host_id);
+  QHash<node_id, neb::host_status>::const_iterator found
+    = _host_statuses.find(id);
+  short prev_state = found != _host_statuses.end() ?
+                                found->last_hard_state :
+                                0;
+  _host_statuses[id] = hst;
+  _remove_expired_acknowledgement(id, prev_state, hst.last_hard_state);
+}
+
+/**
+ *  Process a service status event.
+ *
+ *  @param[in] sst  Service status event.
+ */
+void node_events_stream::_process_service_status(
+                           neb::service_status const& sst) {
+  node_id id(sst.host_id);
+  QHash<node_id, neb::service_status>::const_iterator found
+    = _service_statuses.find(id);
+  short prev_state = found != _service_statuses.end() ?
+                                found->last_hard_state
+                                : 0;
+
+  _service_statuses[id] = sst;
+  _remove_expired_acknowledgement(id, prev_state, sst.last_hard_state);
+}
+
+/**
+ *  @brief Update a downtime from information received.
+ *
+ *  The downtime scheduler can send downtime periodically when
+ *  downtimes start or stop. We need to update the downtimes we have.
+ *
+ *  @param[in] dwn  The downtime.
+ */
+void node_events_stream::_update_downtime(
+                           neb::downtime const& dwn) {
+  QHash<unsigned int, neb::downtime>::iterator
+    found(_downtimes.find(dwn.internal_id));
+  if (found == _downtimes.end()) {
+    logging::error(logging::medium)
+      << "neb: node events stream received an unknown downtime update";
+    return ;
+  }
+
+  // Downtime update.
+  downtime& old_downtime = *found;
+  old_downtime = dwn;
+
+  // Downtime removal.
+  if (!dwn.actual_end_time.is_null()) {
+    _downtimes.erase(found);
+    _downtime_id_by_nodes.remove(
+      node_id(dwn.host_id, dwn.service_id),
+      dwn.internal_id);
+  }
+}
+
+/**
+ *  Remove an expired acknowledgement.
+ *
+ *  @param[in] node        A node.
+ *  @param[in] prev_state  Its previous state.
+ *  @param[in] state       Its current state.
+ */
+void node_events_stream::_remove_expired_acknowledgement(
+                           node_id node,
+                           short prev_state,
+                           short state) {
   QHash<node_id, neb::acknowledgement>::iterator found
-    = _acknowledgements.find(id);
-  if (found != _acknowledgements.end() && hst.last_hard_state == 0) {
+    = _acknowledgements.find(node);
+  if (found != _acknowledgements.end()
+        && (state == 0 || (!found->is_sticky && prev_state != state))) {
     // Close the ack.
-    found->deletion_time = hst.last_hard_state_change;
+    found->deletion_time = state;
     multiplexing::publisher pblsh;
     pblsh.write(misc::make_shared(new neb::acknowledgement(*found)));
     _acknowledgements.erase(found);
+  }
+}
+
+/**
+ *  Trigger all the floating downtime of a node.
+ *
+ *  @param[in] node        A node.
+ *  @param[in] check_time  The time of its last check.
+ *  @param[in] prev_state  Its previous state.
+ *  @param[in] state       Its current state.
+ */
+void node_events_stream::_trigger_floating_downtime(
+                           node_id node,
+                           timestamp check_time,
+                           short prev_state,
+                           short state) {
+  if (state == 0 || prev_state == state)
+    return ;
+  for (QMultiHash<node_id, unsigned int>::iterator
+         it = _downtime_id_by_nodes.find(node),
+         tmp = it,
+         end = _downtime_id_by_nodes.end();
+       it != end && it.key() == node;
+       it = tmp) {
+    // Trigger downtimes not already triggered.
+    downtime const& dwn = _downtimes[*it];
+    if (!dwn.fixed
+          && check_time >= dwn.start_time
+          && dwn.actual_start_time.is_null())
+      _downtime_scheduler.add_downtime(dwn);
+    ++tmp;
   }
 }
 
@@ -505,13 +581,19 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
   d->downtime_type = type;
   d->host_id = id.get_host_id();
   d->service_id = id.get_service_id();
-  d->was_started = true;
+  d->was_started = false;
   d->triggered_by = trigger_id;
   d->internal_id = ++_actual_downtime_id;
 
   // Save the downtime.
   _downtimes[d->internal_id] = *d;
   _downtime_id_by_nodes.insert(id, d->internal_id);
+
+  // If this is a fixed downtime, schedule it.
+  // If not, then it will be scheduled at the reception of a
+  // service/host status event.
+  if (d->fixed)
+    _downtime_scheduler.add_downtime(*d);
 
   return (d);
 }
@@ -554,17 +636,7 @@ misc::shared_ptr<io::data> node_events_stream::_parse_remove_downtime(
 
   // Erase the downtime.
   _downtimes.erase(found);
-  QMultiHash<node_id, unsigned int>::iterator tmp;
-  for (QMultiHash<node_id, unsigned int>::iterator
-         it = _downtime_id_by_nodes.find(node),
-         end = _downtime_id_by_nodes.end();
-       it != end && it.key() == node;
-       it = tmp) {
-    tmp = it;
-    ++tmp;
-    if (*it == downtime_id)
-      _downtime_id_by_nodes.erase(it);
-  }
+  _downtime_id_by_nodes.remove(node, downtime_id);
 
   // Return the closed downtime.
   return (d);
@@ -599,6 +671,11 @@ void node_events_stream::_process_loaded_event(
     _process_host(d.ref_as<neb::host const>());
   else if (d->type() == neb::service::static_type())
     _process_service(d.ref_as<neb::service const>());
+  else if (d->type() == neb::host_status::static_type())
+    _process_host_status(d.ref_as<neb::host_status const>());
+  else if (d->type() == neb::service_status::static_type()) {
+    _process_service_status(d.ref_as<neb::service_status const>());
+  }
   else if (d->type() == neb::acknowledgement::static_type()) {
     neb::acknowledgement const& ack = d.ref_as<neb::acknowledgement const>();
     _acknowledgements[node_id(ack.host_id, ack.service_id)] = ack;
@@ -606,8 +683,12 @@ void node_events_stream::_process_loaded_event(
   else if (d->type() == neb::downtime::static_type()) {
     neb::downtime const& dwn = d.ref_as<neb::downtime const>();
     _downtimes[dwn.internal_id] = dwn;
+    _downtime_id_by_nodes.insert(
+      node_id(dwn.host_id, dwn.service_id), dwn.internal_id);
     if (_actual_downtime_id < dwn.internal_id)
       _actual_downtime_id = dwn.internal_id + 1;
+    if (dwn.fixed || !dwn.actual_start_time.is_null())
+      _downtime_scheduler.add_downtime(dwn);
   }
 }
 
@@ -632,6 +713,18 @@ void node_events_stream::_save_cache() {
        it != end;
        ++it)
     _cache->add(misc::make_shared(new neb::service(*it)));
+  for (QHash<node_id, neb::host_status>::const_iterator
+         it = _host_statuses.begin(),
+         end = _host_statuses.end();
+       it != end;
+       ++it)
+    _cache->add(misc::make_shared(new neb::host_status(*it)));
+  for (QHash<node_id, neb::service_status>::const_iterator
+         it = _service_statuses.begin(),
+         end = _service_statuses.end();
+       it != end;
+       ++it)
+    _cache->add(misc::make_shared(new neb::service_status(*it)));
   for (QHash<node_id, neb::acknowledgement>::const_iterator
          it = _acknowledgements.begin(),
          end = _acknowledgements.end();

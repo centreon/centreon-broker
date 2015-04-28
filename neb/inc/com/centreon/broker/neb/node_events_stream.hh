@@ -30,6 +30,7 @@
 #  include "com/centreon/broker/command_file/external_command.hh"
 #  include "com/centreon/broker/neb/acknowledgement.hh"
 #  include "com/centreon/broker/neb/downtime.hh"
+#  include "com/centreon/broker/neb/downtime_scheduler.hh"
 #  include "com/centreon/broker/neb/host.hh"
 #  include "com/centreon/broker/neb/service.hh"
 #  include "com/centreon/broker/neb/node_id.hh"
@@ -64,11 +65,15 @@ namespace        neb {
                  _cache;
     bool         _process_out;
 
-    // Used solely for host/service name resolution.
+    // Host/Service caches.
     QHash<node_id, neb::host>
                  _hosts;
     QHash<node_id, neb::service>
                  _services;
+    QHash<node_id, neb::host_status>
+                 _host_statuses;
+    QHash<node_id, neb::service_status>
+                 _service_statuses;
     QHash<QPair<QString, QString>, node_id>
                  _names_to_node;
 
@@ -76,9 +81,21 @@ namespace        neb {
                    neb::host const& hst);
     void         _process_service(
                    neb::service const& svc);
-    void         _process_status(
-                   node_id id,
-                   neb::host_service_status const& hst);
+    void         _process_host_status(
+                   neb::host_status const& hst);
+    void         _process_service_status(
+                   neb::service_status const& sst);
+    void          _update_downtime(
+                   neb::downtime const& dwn);
+    void         _remove_expired_acknowledgement(
+                   node_id node,
+                   short prev_state,
+                   short state);
+    void         _trigger_floating_downtime(
+                   node_id node,
+                   timestamp check_time,
+                   short prev_state,
+                   short state);
     node_id      _get_node_by_names(
                    std::string const& host_name,
                    std::string const& service_description);
@@ -91,6 +108,8 @@ namespace        neb {
     QMultiHash<node_id, unsigned int>
                  _downtime_id_by_nodes;
     unsigned int _actual_downtime_id;
+    downtime_scheduler
+                 _downtime_scheduler;
 
     enum         ack_type {
                  ack_host = 0,

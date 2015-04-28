@@ -35,8 +35,8 @@ using namespace com::centreon::broker::neb;
  *  Set all members to their default value (0, NULL or equivalent).
  */
 downtime::downtime()
-  : actual_end_time(0),
-    actual_start_time(0),
+  : actual_end_time(-1),
+    actual_start_time(-1),
     deletion_time(0),
     downtime_type(0),
     duration(0),

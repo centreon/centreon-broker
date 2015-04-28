@@ -106,6 +106,22 @@ public:
     _sec = (time_t)-1;
   }
 
+  /**
+   *  Comparison operator.
+   *
+   *  @param[in] right  The object to copy.
+   *
+   *  @return           True if this object is less than the other.
+   */
+  bool operator<(timestamp const& right) {
+    if (is_null() && !right.is_null())
+      return (false);
+    else if (!is_null() && right.is_null())
+      return (true);
+    else
+      return (_sec < right._sec);
+  }
+
   // Data.
   std::time_t _sec;
 };
