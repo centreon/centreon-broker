@@ -37,7 +37,7 @@ issue_parent::issue_parent()
   : child_host_id(0),
     child_service_id(0),
     child_start_time(0),
-    end_time(0),
+    end_time(-1),
     parent_host_id(0),
     parent_service_id(0),
     parent_start_time(0),

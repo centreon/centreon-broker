@@ -114,6 +114,15 @@ unsigned int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
   else if (d->type() == neb::service::static_type()) {
     _process_service(d.ref_as<neb::service const>());
   }
+  else if (d->type() == neb::host_status::static_type()
+             || d->type() == neb::service_status::static_type()) {
+    node_id id(
+              d.ref_as<neb::host_service_status>().host_id,
+              d->type() == neb::service_status::static_type()
+                ? d.ref_as<neb::service_status>().service_id
+                : 0);
+    _process_status(id, d.ref_as<neb::host_service_status>());
+  }
   else if (d->type() == command_file::external_command::static_type()) {
     try {
       misc::shared_ptr<io::data> d =
@@ -242,7 +251,7 @@ misc::shared_ptr<io::data>
  *
  *  @return  The node id.
  */
-node_id node_events_stream::get_node_by_names(
+node_id node_events_stream::_get_node_by_names(
           std::string const& host_name,
           std::string const& service_description) {
   QHash<QPair<QString, QString>, node_id>::const_iterator
@@ -253,28 +262,6 @@ node_id node_events_stream::get_node_by_names(
     return (*found);
   else
     return (node_id());
-}
-
-/**
- *  Is this node in downtime ?
- *
- *  @param[in] node  The node.
- *
- *  @return          True if this node is in downtime.
- */
-bool node_events_stream::node_in_downtime(node_id node) const {
-  return (_downtime_id_by_nodes.contains(node));
-}
-
-/**
- *  Is this node acknowledged ?
- *
- *  @param[in] node  The node.
- *
- *  @return          True if this node was acknowledged.
- */
-bool node_events_stream::node_acknowledged(node_id node) const {
-  return (_acknowledgements.contains(node));
 }
 
 /**
@@ -298,6 +285,27 @@ void node_events_stream::_process_service(
   _services[node_id(svc.host_id, svc.service_id)] = svc;
   _names_to_node[qMakePair(svc.host_name, svc.service_description)]
     = node_id(svc.host_id, svc.service_id);
+}
+
+/**
+ *  Process a host/service status event.
+ *
+ *  @param[in] id    The id of the node.
+ *  @param[in] hst   The host/service status.
+ */
+void node_events_stream::_process_status(
+                           node_id id,
+                           neb::host_service_status const& hst) {
+  // Remove expired acknowledgements.
+  QHash<node_id, neb::acknowledgement>::iterator found
+    = _acknowledgements.find(id);
+  if (found != _acknowledgements.end() && hst.last_hard_state == 0) {
+    // Close the ack.
+    found->deletion_time = hst.last_hard_state_change;
+    multiplexing::publisher pblsh;
+    pblsh.write(misc::make_shared(new neb::acknowledgement(*found)));
+    _acknowledgements.erase(found);
+  }
 }
 
 /**
@@ -348,7 +356,7 @@ misc::shared_ptr<io::data> node_events_stream::_parse_ack(
     throw (exceptions::msg()
            << "couldn't parse the arguments for the acknowledgement");
 
-  node_id id(get_node_by_names(
+  node_id id(_get_node_by_names(
                host_name.get(),
                service_description.get()));
   misc::shared_ptr<neb::acknowledgement>
@@ -400,7 +408,7 @@ misc::shared_ptr<io::data> node_events_stream::_parse_remove_ack(
            << "couldn't parse the arguments for the acknowledgement removal");
 
   // Find the node id from the host name / description.
-  node_id id = get_node_by_names(
+  node_id id = _get_node_by_names(
                  host_name.get(),
                  service_description.get());
 
@@ -482,7 +490,7 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
   if (!ret)
     throw (exceptions::msg() << "error while parsing downtime arguments");
 
-  node_id id = get_node_by_names(
+  node_id id = _get_node_by_names(
                  host_name.get(),
                  service_description.get());
 

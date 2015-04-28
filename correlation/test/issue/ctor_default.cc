@@ -34,7 +34,7 @@ int main() {
 
   // Check default construction.
   return ((!i.ack_time.is_null())
-          || (i.end_time != 0)
+          || (!i.end_time.is_null())
           || (i.host_id != 0)
           || (i.service_id != 0)
           || (i.start_time != 0)

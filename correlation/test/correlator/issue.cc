@@ -88,7 +88,7 @@ int main() {
     multiplexing::engine::instance().stop();
     t.finalize();
     QList<misc::shared_ptr<io::data> > content;
-    add_issue(content, -1, 0, 42, 24, 123456789);
+    add_issue(content, -1, -1, 42, 24, 123456789);
     add_issue(content, -1, 123456790, 42, 24, 123456789);
 
     // Check.

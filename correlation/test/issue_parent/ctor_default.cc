@@ -36,7 +36,7 @@ int main() {
   return ((ip.child_host_id != 0)
           || (ip.child_service_id != 0)
           || (ip.child_start_time != 0)
-          || (ip.end_time != 0)
+          || (ip.end_time != -1)
           || (ip.parent_host_id != 0)
           || (ip.parent_service_id != 0)
           || (ip.parent_start_time != 0)

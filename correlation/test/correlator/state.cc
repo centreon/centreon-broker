@@ -87,7 +87,7 @@ int main() {
     t.finalize();
     QList<misc::shared_ptr<io::data> > content;
     add_state(content, -1, 0, 123456789, 42, false, 24, 0);
-    add_state(content, -1, 2, 0, 42, false, 24, 123456789);
+    add_state(content, -1, 2, -1, 42, false, 24, 123456789);
     add_state(
       content,
       -1,
@@ -97,7 +97,7 @@ int main() {
       false,
       24,
       123456789);
-    add_state(content, -1, 0, 0, 42, false, 24, 123456790);
+    add_state(content, -1, 0, -1, 42, false, 24, 123456790);
 
     // Check.
     check_content(t, content);

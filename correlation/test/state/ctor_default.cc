@@ -35,7 +35,7 @@ int main() {
   // Check default construction.
   return ((ss.ack_time != -1)
           || (ss.current_state != 3)
-          || (ss.end_time != 0)
+          || (ss.end_time != -1)
           || (ss.host_id != 0)
           || (ss.in_downtime != false)
           || (ss.service_id != 0)

@@ -23,6 +23,7 @@
 #include "com/centreon/broker/correlation/issue_parent.hh"
 #include "com/centreon/broker/correlation/node.hh"
 #include "com/centreon/broker/correlation/log_issue.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
@@ -394,6 +395,10 @@ void node::manage_status(
   if (old_state == new_state)
     return ;
 
+  logging::debug(logging::medium)
+    << "correlation: node (" << host_id << ", " << service_id
+    << ") changing status from " << old_state << " to " << new_state;
+
   // Remove acknowledgement.
   if (new_state == 0)
     acknowledgement.reset();
@@ -408,6 +413,9 @@ void node::manage_status(
 
   // Recovery
   if (old_state != 0 && new_state == 0) {
+    logging::debug(logging::medium)
+      << "correlation: node (" << host_id << ", " << service_id
+      << ") closing issue";
     my_issue->end_time = last_state_change;
     _visit_linked_nodes(last_state_change, true, stream);
     _visit_parent_of_child_nodes(last_state_change, true, stream);
@@ -417,6 +425,9 @@ void node::manage_status(
   }
   // Problem
   else if (old_state == 0 && new_state != 0) {
+    logging::debug(logging::medium)
+      << "correlation: node (" << host_id << ", " << service_id
+      << ") opening issue";
     my_issue.reset(new issue);
     my_issue->start_time = last_state_change;
     my_issue->host_id = host_id;
@@ -456,26 +467,18 @@ void node::manage_ack(
 void node::manage_downtime(
              neb::downtime const& dwn,
              io::stream* stream) {
-  downtimes[dwn.internal_id] = dwn;
-  in_downtime = true;
-  _generate_state_event(dwn.start_time, state, stream);
+  if (!dwn.actual_end_time.is_null()) {
+    downtimes[dwn.internal_id] = dwn;
+    in_downtime = true;
+    _generate_state_event(dwn.start_time, state, stream);
+  }
+  else {
+    downtimes.erase(dwn.internal_id);
+    if (!downtimes.empty())
+      in_downtime = false;
+    _generate_state_event(::time(NULL), state, stream);
+  }
 }
-
-/**
- *  Manage a downtime removal.
- *
- *  @param[in] id         The downtime id.
- *  @param[out] stream    A stream to write the events to.
- */
-void node::manage_downtime_removed(
-        unsigned int id,
-        io::stream* stream) {
-  downtimes.erase(id);
-  if (!downtimes.empty())
-    in_downtime = false;
-  _generate_state_event(::time(NULL), state, stream);
-}
-
 
 /**
  *  Manage a log.
@@ -661,6 +664,9 @@ void node::_generate_state_event(
        io::stream* stream) {
   // Close old state event.
   if (my_state.get() && stream) {
+    logging::debug(logging::medium)
+      << "correlation: node (" << host_id << ", " << service_id
+      << ") closing state event";
     my_state->end_time = start_time;
     stream->write(misc::make_shared(new correlation::state(*my_state)));
   }
@@ -673,6 +679,9 @@ void node::_generate_state_event(
   }
 
   // Open new state event.
+  logging::debug(logging::medium)
+    << "correlation: node (" << host_id << ", " << service_id
+    << ") opening new state event";
   my_state.reset(_open_state_event(start_time));
   my_state->current_state = new_status;
 

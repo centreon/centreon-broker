@@ -84,9 +84,6 @@ namespace                correlation {
     void                 manage_downtime(
                            neb::downtime const& dwn,
                            io::stream* stream);
-    void                 manage_downtime_removed(
-                           unsigned int id,
-                           io::stream* stream);
     void                 manage_log(
                            neb::log_entry const& entry,
                            io::stream* stream);
