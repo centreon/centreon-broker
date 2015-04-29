@@ -285,7 +285,7 @@ void node_events_stream::_process_host_status(
   _trigger_floating_downtime(
     id,
     hst.last_hard_state_change,
-    prev_state,
+    //prev_state,
     hst.last_hard_state);
 }
 
@@ -296,7 +296,7 @@ void node_events_stream::_process_host_status(
  */
 void node_events_stream::_process_service_status(
                            neb::service_status const& sst) {
-  node_id id(sst.host_id);
+  node_id id(sst.host_id, sst.service_id);
   QHash<node_id, neb::service_status>::const_iterator found
     = _service_statuses.find(id);
   short prev_state = found != _service_statuses.end() ?
@@ -308,7 +308,7 @@ void node_events_stream::_process_service_status(
   _trigger_floating_downtime(
     id,
     sst.last_hard_state_change,
-    prev_state,
+    //prev_state,
     sst.last_hard_state);
 }
 
@@ -376,9 +376,8 @@ void node_events_stream::_remove_expired_acknowledgement(
 void node_events_stream::_trigger_floating_downtime(
                            node_id node,
                            timestamp check_time,
-                           short prev_state,
                            short state) {
-  if (state == 0 || prev_state == state)
+  if (state == 0)
     return ;
   for (QMultiHash<node_id, unsigned int>::iterator
          it = _downtime_id_by_nodes.find(node),

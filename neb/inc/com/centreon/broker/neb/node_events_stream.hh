@@ -94,7 +94,6 @@ namespace        neb {
     void         _trigger_floating_downtime(
                    node_id node,
                    timestamp check_time,
-                   short prev_state,
                    short state);
     node_id      _get_node_by_names(
                    std::string const& host_name,
