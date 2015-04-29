@@ -46,6 +46,8 @@ namespace             neb {
     void       start_and_wait();
     void       quit() throw ();
     void       add_downtime(
+                 timestamp start_time,
+                 timestamp end_time,
                  downtime const& dwn);
 
   protected:

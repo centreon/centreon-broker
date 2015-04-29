@@ -145,6 +145,8 @@ namespace        neb {
                    timestamp t,
                    const char* args,
                    size_t arg_size);
+    void          _schedule_downtime(
+                    downtime const& dwn);
 
     void         _load_cache();
     void         _process_loaded_event(misc::shared_ptr<io::data> const& d);

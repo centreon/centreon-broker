@@ -60,6 +60,7 @@ node_events_stream::~node_events_stream() {
 
     // Stop the downtime scheduler.
     _downtime_scheduler.quit();
+    _downtime_scheduler.wait();
   } catch (std::exception const& e) {
     logging::error(logging::medium)
       << "neb: node events error while trying to save cache: "
@@ -323,8 +324,10 @@ void node_events_stream::_update_downtime(
                            neb::downtime const& dwn) {
   QHash<unsigned int, neb::downtime>::iterator
     found(_downtimes.find(dwn.internal_id));
+
+  // No downtimes, insert it.
   if (found == _downtimes.end())
-    return ;
+    found = _downtimes.insert(dwn.internal_id, dwn);
 
   // Downtime update.
   downtime& old_downtime = *found;
@@ -383,13 +386,24 @@ void node_events_stream::_trigger_floating_downtime(
          end = _downtime_id_by_nodes.end();
        it != end && it.key() == node;
        it = tmp) {
+    ++tmp;
     // Trigger downtimes not already triggered.
     downtime const& dwn = _downtimes[*it];
     if (!dwn.fixed
           && check_time >= dwn.start_time
+          && check_time < dwn.end_time
           && dwn.actual_start_time.is_null())
-      _downtime_scheduler.add_downtime(dwn);
-    ++tmp;
+      _downtime_scheduler.add_downtime(
+        check_time,
+        check_time + dwn.duration,
+        dwn);
+    // Remove expired non-triggered downtimes.
+    if (!dwn.fixed
+          && check_time >= dwn.end_time
+          && dwn.actual_start_time.is_null()) {
+      _downtimes.remove(dwn.internal_id);
+      _downtime_id_by_nodes.erase(it);
+    }
   }
 }
 
@@ -598,11 +612,8 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
   _downtimes[d->internal_id] = *d;
   _downtime_id_by_nodes.insert(id, d->internal_id);
 
-  // If this is a fixed downtime, schedule it.
-  // If not, then it will be scheduled at the reception of a
-  // service/host status event.
-  if (d->fixed)
-    _downtime_scheduler.add_downtime(*d);
+  // Schedule the downtime.
+  _schedule_downtime(*d);
 
   return (d);
 }
@@ -696,8 +707,7 @@ void node_events_stream::_process_loaded_event(
       node_id(dwn.host_id, dwn.service_id), dwn.internal_id);
     if (_actual_downtime_id < dwn.internal_id)
       _actual_downtime_id = dwn.internal_id + 1;
-    if (dwn.fixed || !dwn.actual_start_time.is_null())
-      _downtime_scheduler.add_downtime(dwn);
+    _schedule_downtime(dwn);
   }
 }
 
@@ -747,4 +757,49 @@ void node_events_stream::_save_cache() {
        ++it)
     _cache->add(misc::make_shared(new neb::downtime(*it)));
   _cache->commit();
+}
+
+/**
+ *  Schedule a downtime, if applicable.
+ *
+ *  @param[in] dwn  The downtime to schedule.
+ */
+void node_events_stream::_schedule_downtime(
+                           downtime const& dwn) {
+  // Don't trigger already triggered downtimes.
+  if (!dwn.actual_start_time.is_null())
+    return ;
+
+  // If this is a fixed downtime or the node is in a non-okay state, schedule it.
+  // If not, then it will be scheduled at the reception of a
+  // service/host status event.
+  if (dwn.fixed)
+    _downtime_scheduler.add_downtime(dwn.start_time, dwn.end_time, dwn);
+  else {
+    node_id id(dwn.host_id, dwn.service_id);
+    if (id.is_host()) {
+      QHash<node_id, neb::host_status>::const_iterator
+        found(_host_statuses.find(id));
+      if (found != _host_statuses.end()
+            && found->last_hard_state != 0
+            && found->last_hard_state_change >= dwn.start_time
+            && found->last_hard_state_change < dwn.end_time)
+        _downtime_scheduler.add_downtime(
+                              found->last_hard_state_change,
+                              found->last_hard_state_change + dwn.duration,
+                              dwn);
+    }
+    else {
+      QHash<node_id, neb::service_status>::const_iterator
+        found(_service_statuses.find(id));
+      if (found != _service_statuses.end()
+            && found->last_hard_state != 0
+            && found->last_hard_state_change >= dwn.start_time
+            && found->last_hard_state_change < dwn.end_time)
+        _downtime_scheduler.add_downtime(
+                              found->last_hard_state_change,
+                              found->last_hard_state_change + dwn.duration,
+                              dwn);
+    }
+  }
 }

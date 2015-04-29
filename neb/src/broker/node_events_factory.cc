@@ -84,7 +84,7 @@ bool node_events_factory::has_endpoint(
                 config::endpoint& cfg,
                 bool is_input,
                 bool is_output) const {
-  return (cfg.type == "nodeevents" && is_input && !is_output);
+  return (cfg.type == "node_events" && is_input && !is_output);
 }
 
 /**

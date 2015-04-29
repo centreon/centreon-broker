@@ -105,9 +105,13 @@ void downtime_scheduler::quit() throw () {
 /**
  *  Add a downtime to the list of managed downtimes.
  *
- *  @param[in] dwn       The downtime.
+ *  @param[in] start_time  The start of the scheduling.
+ *  @param[in] end_time    The end of the scheduling.
+ *  @param[in] dwn         The downtime.
  */
 void downtime_scheduler::add_downtime(
+                           timestamp start_time,
+                           timestamp end_time,
                            downtime const& dwn) {
   if (dwn.start_time >= dwn.end_time) {
     logging::debug(logging::medium)
@@ -122,8 +126,8 @@ void downtime_scheduler::add_downtime(
   timestamp first_starting_timestamp = _get_first_timestamp(_downtime_starts);
   timestamp first_ending_timestamp = _get_first_timestamp(_downtime_ends);
   _downtimes[dwn.internal_id] = dwn;
-  _downtime_starts.insert(std::make_pair(dwn.start_time, dwn.internal_id));
-  _downtime_ends.insert(std::make_pair(dwn.end_time, dwn.internal_id));
+  _downtime_starts.insert(std::make_pair(start_time, dwn.internal_id));
+  _downtime_ends.insert(std::make_pair(end_time, dwn.internal_id));
 
   // If we just added a timestamp < the previous first timestamps,
   // wake the thread up.
