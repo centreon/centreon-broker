@@ -712,6 +712,14 @@ if (WITH_TESTING)
     "${TEST_DIR}/set_log_data/default.cc")
   target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  # Node events.
+  set(TEST_NAME "neb_node_events")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/node_events/node_events.cc"
+    "${TEST_DIR}/node_events/common.hh"
+    "${TEST_DIR}/node_events/common.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()
 
 # Install rules.

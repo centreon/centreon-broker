@@ -48,9 +48,9 @@ stream::stream(
     misc::shared_ptr<persistent_cache> cache,
     bool load_correlation,
     bool passive)
-  : _correlation_file(correlation_file),
+  : _cache(cache),
+    _correlation_file(correlation_file),
     _process_out(true),
-    _cache(cache),
     _passive(passive) {
   // Create the engine started event.
   multiplexing::publisher pblsh;

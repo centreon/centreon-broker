@@ -1558,10 +1558,6 @@ if (WITH_TESTING)
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
-
-  # cbd tests.
-  add_test("cbd_help" "cbd" "-h")
-
 endif ()
 
 #

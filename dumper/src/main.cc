@@ -57,8 +57,6 @@ extern "C" {
 
     // Increment instance number.
     if (!instances++) {
-      config::state const& cfg(*static_cast<config::state const*>(arg));
-
       // Dumper module.
       logging::info(logging::high)
         << "dumper: module for Centreon Broker "

@@ -146,9 +146,6 @@ int main() {
       &hosts,
       &services);
 
-    // T1.
-    time_t t1(time(NULL));
-
     // Start engine.
     std::string engine_config_file(engine_config_path);
     engine_config_file.append("/nagios.cfg");
