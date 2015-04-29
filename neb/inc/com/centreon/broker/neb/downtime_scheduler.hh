@@ -44,7 +44,7 @@ namespace             neb {
                downtime_scheduler();
 
     void       start_and_wait();
-    void       exit() throw ();
+    void       quit() throw ();
     void       add_downtime(
                  downtime const& dwn);
 

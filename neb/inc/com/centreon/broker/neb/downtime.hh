@@ -78,6 +78,7 @@ namespace               neb {
     unsigned int        triggered_by;
     bool                was_cancelled;
     bool                was_started;
+    bool                is_reccuring;
 
     static mapping::entry const
                         entries[];

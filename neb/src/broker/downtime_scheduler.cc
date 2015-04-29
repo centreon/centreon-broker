@@ -40,10 +40,9 @@ downtime_scheduler::downtime_scheduler()
 void downtime_scheduler::run() {
   bool just_started = true;
 
-  while (1) {
-    // Lock the general mutex used by the notification scheduler.
-    _general_mutex.lock();
+  QMutexLocker lock(&_general_mutex);
 
+  while (1) {
     // Signal the thread waiting on us that we have started.
     if (just_started) {
       _started.release();
@@ -54,7 +53,8 @@ void downtime_scheduler::run() {
     // if none.
     time_t first_time = std::min(
                           _get_first_timestamp(_downtime_starts),
-                          _get_first_timestamp(_downtime_ends));
+                          _get_first_timestamp(_downtime_ends),
+                          timestamp::less);
     time_t now = ::time(NULL);
     unsigned long wait_for = first_time == time_t(-1) ?
                                std::numeric_limits<unsigned long>::max()
@@ -92,7 +92,7 @@ void downtime_scheduler::start_and_wait() {
 /**
  *  Ask gracefully for the downtime scheduling thread to exit.
  */
-void downtime_scheduler::exit() throw () {
+void downtime_scheduler::quit() throw () {
   // Set the should exit flag.
   {
     QMutexLocker lock(&_general_mutex);

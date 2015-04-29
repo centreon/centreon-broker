@@ -107,19 +107,20 @@ public:
   }
 
   /**
-   *  Comparison operator.
+   *  Comparison function.
    *
-   *  @param[in] right  The object to copy.
+   *  @param[in] left   The left object.
+   *  @param[in] right  The right object.
    *
    *  @return           True if this object is less than the other.
    */
-  bool operator<(timestamp const& right) {
-    if (is_null() && !right.is_null())
+  static bool less(timestamp const& left, timestamp const& right) {
+    if (left.is_null() && !right.is_null())
       return (false);
-    else if (!is_null() && right.is_null())
+    else if (!left.is_null() && right.is_null())
       return (true);
     else
-      return (_sec < right._sec);
+      return (left._sec < right._sec);
   }
 
   // Data.

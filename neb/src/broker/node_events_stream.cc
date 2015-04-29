@@ -59,7 +59,7 @@ node_events_stream::~node_events_stream() {
     _save_cache();
 
     // Stop the downtime scheduler.
-    _downtime_scheduler.exit();
+    _downtime_scheduler.quit();
   } catch (std::exception const& e) {
     logging::error(logging::medium)
       << "neb: node events error while trying to save cache: "
@@ -132,8 +132,10 @@ unsigned int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
   }
   else if (d->type() == command_file::external_command::static_type()) {
     try {
-      misc::shared_ptr<io::data> d =
+      misc::shared_ptr<io::data> ret =
         parse_command(d.ref_as<command_file::external_command const>());
+      multiplexing::publisher pblsh;
+      pblsh.write(ret);
     } catch (std::exception const& e) {
       logging::error(logging::medium)
         << "neb: node events stream can't parse command '"
@@ -321,11 +323,8 @@ void node_events_stream::_update_downtime(
                            neb::downtime const& dwn) {
   QHash<unsigned int, neb::downtime>::iterator
     found(_downtimes.find(dwn.internal_id));
-  if (found == _downtimes.end()) {
-    logging::error(logging::medium)
-      << "neb: node events stream received an unknown downtime update";
+  if (found == _downtimes.end())
     return ;
-  }
 
   // Downtime update.
   downtime& old_downtime = *found;
@@ -586,7 +585,7 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
   d->comment = QString::fromStdString(comment.get());
   d->start_time = start_time;
   d->end_time = end_time;
-  d->duration = duration;
+  d->duration = fixed ? end_time - start_time : duration;
   d->fixed = (fixed == 1);
   d->downtime_type = type;
   d->host_id = id.get_host_id();

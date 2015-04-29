@@ -49,7 +49,8 @@ downtime::downtime()
     start_time(0),
     triggered_by(0),
     was_cancelled(false),
-    was_started(false) {}
+    was_started(false),
+    is_reccuring(false) {}
 
 /**
  *  @brief Copy constructor.
@@ -115,7 +116,8 @@ bool downtime::operator==(downtime const& o) const {
           && (start_time == o.start_time)
           && (triggered_by == o.triggered_by)
           && (was_cancelled == o.was_cancelled)
-          && (was_started == o.was_started));
+          && (was_started == o.was_started)
+          && (is_reccuring == o.is_reccuring));
 }
 
 /**************************************
@@ -155,6 +157,7 @@ void downtime::_internal_copy(downtime const& other) {
   triggered_by = other.triggered_by;
   was_cancelled = other.was_cancelled;
   was_started = other.was_started;
+  is_reccuring = other.is_reccuring;
   return ;
 }
 
@@ -230,6 +233,9 @@ mapping::entry const downtime::entries[] = {
   mapping::entry(
     &downtime::comment,
     "comment_data"),
+  mapping::entry(
+    &downtime::is_reccuring,
+    "is_reccuring"),
   mapping::entry()
 };
 
