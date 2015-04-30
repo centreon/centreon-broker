@@ -107,6 +107,8 @@ namespace                com {
                          _failover;
           std::vector<misc::shared_ptr<io::endpoint> >
                          _secondary_failovers;
+          std::set<unsigned int>
+                         _filters;
           bool           _initial;
           bool           _is_out;
           time_t         _last_connect_attempt;

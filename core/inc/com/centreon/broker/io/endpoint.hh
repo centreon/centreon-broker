@@ -22,6 +22,7 @@
 
 #  include <QString>
 #  include <string>
+#  include <set>
 #  include "com/centreon/broker/io/properties.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
@@ -57,12 +58,15 @@ namespace                            io {
     virtual misc::shared_ptr<stream> open(
                                        QString const& id) = 0;
     virtual void                     stats(io::properties& tree);
+    void                             set_filter(
+                                       std::set<unsigned int> const& filter);
 
    protected:
     void                             _internal_copy(endpoint const& e);
 
     misc::shared_ptr<endpoint>       _from;
     bool                             _is_acceptor;
+    std::set<unsigned int>           _filter;
   };
 }
 

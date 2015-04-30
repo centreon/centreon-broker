@@ -59,6 +59,7 @@ failover::failover(misc::shared_ptr<io::endpoint> endp,
             std::set<unsigned int> const& filters)
   : _buffering_timeout(0),
     _endpoint(endp),
+    _filters(filters),
     _initial(true),
     _is_out(is_out),
     _last_connect_attempt(0),
@@ -96,6 +97,7 @@ failover::failover(failover const& f)
      _endpoint(f._endpoint),
      _failover(f._failover),
      _secondary_failovers(f._secondary_failovers),
+     _filters(f._filters),
      _initial(true),
      _is_out(f._is_out),
      _last_connect_attempt(f._last_connect_attempt),
@@ -141,6 +143,7 @@ failover& failover::operator=(failover const& f) {
     _endpoint = f._endpoint;
     _failover = f._failover;
     _secondary_failovers = f._secondary_failovers;
+    _filters = f._filters;
     _is_out = f._is_out;
     _name = f._name;
     _next_timeout = f._next_timeout;
@@ -509,6 +512,7 @@ void failover::run() {
         wl.unlock();
         _last_connect_attempt = time(NULL);
         _update = false;
+        _endpoint->set_filter(_filters);
         misc::shared_ptr<io::stream> tmp(_endpoint->open());
         buffering = 0;
         wl.relock();

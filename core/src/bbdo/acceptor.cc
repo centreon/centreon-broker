@@ -398,8 +398,10 @@ misc::shared_ptr<io::stream> acceptor::_open(
       out = misc::shared_ptr<io::stream>(new multiplexing::publisher);
     }
     else {
-      in = misc::shared_ptr<io::stream>(
-                   new multiplexing::subscriber(_name));
+      misc::shared_ptr<multiplexing::subscriber> sbcr(
+        new multiplexing::subscriber(_name));
+      sbcr->set_filters(_filter);
+      in = sbcr;
       my_bbdo = misc::shared_ptr<bbdo::stream>(
                         new bbdo::stream(false, true));
       out = my_bbdo;
