@@ -656,6 +656,7 @@ misc::shared_ptr<io::data> node_events_stream::_parse_remove_downtime(
   // Erase the downtime.
   _downtimes.erase(found);
   _downtime_id_by_nodes.remove(node, downtime_id);
+  _downtime_scheduler.remove_downtime(downtime_id);
 
   // Return the closed downtime.
   return (d);

@@ -49,6 +49,8 @@ namespace             neb {
                  timestamp start_time,
                  timestamp end_time,
                  downtime const& dwn);
+    void       remove_downtime(
+                 unsigned int internal_id);
 
   protected:
     void       run();

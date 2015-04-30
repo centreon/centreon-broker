@@ -114,11 +114,11 @@ set(NEB "${NEB}" PARENT_SCOPE)
 add_library("${NEB}" SHARED
   # Main source.
   "${SRC_DIR}/broker.cc"
-  "${SRC_DIR}/broker/downtime_scheduler.cc"
-  "${SRC_DIR}/broker/node_events_connector.cc"
-  "${SRC_DIR}/broker/node_events_factory.cc"
-  "${SRC_DIR}/broker/node_events_stream.cc"
-  "${SRC_DIR}/broker/node_id.cc"
+  "${SRC_DIR}/downtime_scheduler.cc"
+  "${SRC_DIR}/node_events_connector.cc"
+  "${SRC_DIR}/node_events_factory.cc"
+  "${SRC_DIR}/node_events_stream.cc"
+  "${SRC_DIR}/node_id.cc"
 
   # Inc
   "${INC_DIR}/com/centreon/broker/neb/downtime_scheduler.hh"

@@ -137,6 +137,42 @@ void downtime_scheduler::add_downtime(
 }
 
 /**
+ *  Remove a downtime.
+ *
+ *  @param[in] internal_id  The id of the downtime/
+ */
+void downtime_scheduler::remove_downtime(unsigned int internal_id) {
+  // Lock the mutex.
+  QMutexLocker lock(&_general_mutex);
+
+  std::map<unsigned int, downtime>::iterator
+    found = _downtimes.find(internal_id);
+  if (found != _downtimes.end()) {
+    for (std::multimap<timestamp, unsigned int>::iterator
+           it = _downtime_starts.begin(),
+           tmp = it,
+           end = _downtime_starts.end();
+         it != end;
+         it = tmp) {
+      ++tmp;
+      if (it->second == internal_id)
+        _downtime_starts.erase(it);
+    }
+    for (std::multimap<timestamp, unsigned int>::iterator
+           it = _downtime_ends.begin(),
+           tmp = it,
+           end = _downtime_ends.end();
+         it != end;
+         it = tmp) {
+      ++tmp;
+      if (it->second == internal_id)
+        _downtime_ends.erase(it);
+    }
+    _downtimes.erase(found);
+  }
+}
+
+/**
  *  Get the first timestamp, or a null timestamp.
  *
  *  @return  The first timestamp, or a null timestamp.
