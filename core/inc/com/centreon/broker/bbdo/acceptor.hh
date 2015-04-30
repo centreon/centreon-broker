@@ -77,6 +77,8 @@ namespace               com {
           misc::shared_ptr<io::stream>
                         open(QString const& id);
           void          stats(io::properties& tree);
+          virtual void  set_filter(
+                          std::set<unsigned int> const& filter);
 
         private:
           unsigned int  _negociate_features(
