@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2011,2015 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -16,33 +17,31 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_EVENTS_HH_
-# define CCB_NEB_EVENTS_HH_
+#ifndef CCB_NEB_EVENTS_HH
+#  define CCB_NEB_EVENTS_HH
 
-# include "com/centreon/broker/neb/acknowledgement.hh"
-# include "com/centreon/broker/neb/comment.hh"
-# include "com/centreon/broker/neb/custom_variable.hh"
-# include "com/centreon/broker/neb/custom_variable_status.hh"
-# include "com/centreon/broker/neb/downtime.hh"
-# include "com/centreon/broker/neb/event_handler.hh"
-# include "com/centreon/broker/neb/flapping_status.hh"
-# include "com/centreon/broker/neb/host.hh"
-# include "com/centreon/broker/neb/host_check.hh"
-# include "com/centreon/broker/neb/host_dependency.hh"
-# include "com/centreon/broker/neb/host_group.hh"
-# include "com/centreon/broker/neb/host_group_member.hh"
-# include "com/centreon/broker/neb/host_parent.hh"
-# include "com/centreon/broker/neb/host_status.hh"
-# include "com/centreon/broker/neb/instance.hh"
-# include "com/centreon/broker/neb/instance_status.hh"
-# include "com/centreon/broker/neb/log_entry.hh"
-# include "com/centreon/broker/neb/module.hh"
-# include "com/centreon/broker/neb/notification.hh"
-# include "com/centreon/broker/neb/service.hh"
-# include "com/centreon/broker/neb/service_check.hh"
-# include "com/centreon/broker/neb/service_dependency.hh"
-# include "com/centreon/broker/neb/service_group.hh"
-# include "com/centreon/broker/neb/service_group_member.hh"
-# include "com/centreon/broker/neb/service_status.hh"
+#  include "com/centreon/broker/neb/acknowledgement.hh"
+#  include "com/centreon/broker/neb/custom_variable.hh"
+#  include "com/centreon/broker/neb/custom_variable_status.hh"
+#  include "com/centreon/broker/neb/downtime.hh"
+#  include "com/centreon/broker/neb/event_handler.hh"
+#  include "com/centreon/broker/neb/flapping_status.hh"
+#  include "com/centreon/broker/neb/host.hh"
+#  include "com/centreon/broker/neb/host_check.hh"
+#  include "com/centreon/broker/neb/host_dependency.hh"
+#  include "com/centreon/broker/neb/host_group.hh"
+#  include "com/centreon/broker/neb/host_group_member.hh"
+#  include "com/centreon/broker/neb/host_parent.hh"
+#  include "com/centreon/broker/neb/host_status.hh"
+#  include "com/centreon/broker/neb/instance.hh"
+#  include "com/centreon/broker/neb/instance_status.hh"
+#  include "com/centreon/broker/neb/log_entry.hh"
+#  include "com/centreon/broker/neb/module.hh"
+#  include "com/centreon/broker/neb/service.hh"
+#  include "com/centreon/broker/neb/service_check.hh"
+#  include "com/centreon/broker/neb/service_dependency.hh"
+#  include "com/centreon/broker/neb/service_group.hh"
+#  include "com/centreon/broker/neb/service_group_member.hh"
+#  include "com/centreon/broker/neb/service_status.hh"
 
-#endif /* CCB_NEB_EVENTS_HH_ */
+#endif // CCB_NEB_EVENTS_HH

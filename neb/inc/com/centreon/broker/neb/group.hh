@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -44,12 +44,9 @@ namespace        neb {
     virtual      ~group();
     group&       operator=(group const& g);
 
-    QString      action_url;
     QString      alias;
     bool         enabled;
     QString      name;
-    QString      notes;
-    QString      notes_url;
 
   private:
     void         _internal_copy(group const& g);

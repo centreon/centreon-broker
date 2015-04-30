@@ -55,7 +55,8 @@ stream::stream(
           std::string const& status_ts,
           std::vector<column> const& status_cols,
           std::string const& metric_ts,
-          std::vector<column> const& metric_cols)
+          std::vector<column> const& metric_cols,
+          misc::shared_ptr<persistent_cache> const& cache)
   : _process_out(true),
     _user(user),
     _password(passwd),
@@ -64,7 +65,8 @@ stream::stream(
     _db(db),
     _queries_per_transaction(queries_per_transaction == 0 ?
                                1 : queries_per_transaction),
-    _actual_query(0) {
+    _actual_query(0),
+    _cache(cache) {
   if (version == "0.9")
     _influx_db.reset(new influxdb9(
                            user,
@@ -75,7 +77,8 @@ stream::stream(
                            status_ts,
                            status_cols,
                            metric_ts,
-                           metric_cols));
+                           metric_cols,
+                           _cache));
   else
     throw (exceptions::msg()
            << "influxdb: unrecognized influxdb version '" << version << "'");
@@ -146,6 +149,9 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
              << "influxdb stream is shutdown");
 
   bool commit = false;
+
+  // Give data to cache.
+  _cache.write(data);
 
   // Process metric events.
   if (!data.isNull()) {

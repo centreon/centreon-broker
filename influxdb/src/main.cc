@@ -38,7 +38,6 @@ extern "C" {
     // Decrement instance number.
     if (!--instances) {
       // Deregister storage layer.
-      io::events::instance().unreg("influxdb");
       io::protocols::instance().unreg("influxdb");
 
       // Remove the workaround connection.

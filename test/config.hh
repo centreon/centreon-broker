@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -35,8 +35,17 @@ public:
                 test_db();
                 ~test_db();
   QSqlDatabase* bi_db();
+  void          bi_run(
+                  QString const& query,
+                  QString const& error_msg);
   QSqlDatabase* centreon_db();
+  void          centreon_run(
+                  QString const& query,
+                  QString const& error_msg);
   QSqlDatabase* storage_db();
+  void          storage_run(
+                  QString const& query,
+                  QString const& error_msg);
   void          close();
   void          open(
                   char const* storage_db_name,
@@ -50,6 +59,10 @@ private:
   test_db&      operator=(test_db const& other);
   void          _close(std::auto_ptr<QSqlDatabase>& db);
   void          _open(QSqlDatabase& db, char const* db_name);
+  void          _run_query(
+                   QSqlDatabase* db,
+                   QString const& query,
+                   QString const& error_msg);
   void          _run_script(QSqlDatabase& db, char const* script_name);
 
   std::auto_ptr<QSqlDatabase>
@@ -94,8 +107,6 @@ void            config_write(
                   std::list<host>* hosts = NULL,
                   std::list<service>* services = NULL,
                   std::list<command>* commands = NULL,
-                  std::list<hostgroup>* host_groups = NULL,
-                  std::list<servicegroup>* service_groups = NULL,
                   std::list<hostdependency>* host_deps = NULL,
                   std::list<servicedependency>* service_deps = NULL);
 

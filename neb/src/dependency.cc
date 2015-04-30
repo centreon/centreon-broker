@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -83,6 +83,5 @@ void dependency::_internal_copy(dependency const& dep) {
   execution_failure_options = dep.execution_failure_options;
   host_id = dep.host_id;
   inherits_parent = dep.inherits_parent;
-    notification_failure_options = dep.notification_failure_options;
   return ;
 }

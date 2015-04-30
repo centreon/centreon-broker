@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -80,7 +80,7 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(20 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(20);
 
     // Base time.
     time_t now(time(NULL));
@@ -89,7 +89,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT last_alive, name"
-            << "  FROM instances"
+            << "  FROM rt_instances"
             << "  WHERE instance_id=42";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()) || !q.next())
@@ -114,7 +114,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT host_id, name, last_check"
-            << "  FROM hosts"
+            << "  FROM rt_hosts"
             << "  ORDER BY host_id ASC";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
@@ -147,7 +147,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT host_id, service_id, description, last_check"
-            << "  FROM services"
+            << "  FROM rt_services"
             << "  ORDER BY host_id ASC, service_id ASC";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))

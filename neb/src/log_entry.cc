@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #include "com/centreon/broker/neb/log_entry.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
@@ -37,7 +38,7 @@ using namespace com::centreon::broker::neb;
 log_entry::log_entry()
   : c_time(0),
     host_id(0),
-        issue_start_time(0),
+    issue_start_time(0),
     log_type(0),
     msg_type(0),
     retry(0),
@@ -81,6 +82,15 @@ log_entry& log_entry::operator=(log_entry const& le) {
  *  @return The event_type.
  */
 unsigned int log_entry::type() const {
+  return (log_entry::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int log_entry::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_log_entry>::value);
 }
 
@@ -103,12 +113,10 @@ void log_entry::_internal_copy(log_entry const& le) {
   c_time = le.c_time;
   host_id = le.host_id;
   host_name = le.host_name;
-    instance_name = le.instance_name;
+  instance_name = le.instance_name;
   issue_start_time = le.issue_start_time;
   log_type = le.log_type;
   msg_type = le.msg_type;
-  notification_cmd = le.notification_cmd;
-  notification_contact = le.notification_contact;
   output = le.output;
   retry = le.retry;
   service_description = le.service_description;
@@ -116,3 +124,62 @@ void log_entry::_internal_copy(log_entry const& le) {
   status = le.status;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const log_entry::entries[] = {
+  mapping::entry(
+    &log_entry::c_time,
+    "ctime"),
+  mapping::entry(
+    &log_entry::host_id,
+    "host_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &log_entry::host_name,
+    "host_name"),
+  mapping::entry(
+    &log_entry::instance_name,
+    "instance_name"),
+  mapping::entry(
+    &log_entry::issue_start_time,
+    "",
+    mapping::entry::invalid_on_minus_one),
+  mapping::entry(
+    &log_entry::log_type,
+    "type"),
+  mapping::entry(
+    &log_entry::msg_type,
+    "msg_type"),
+  mapping::entry(
+    &log_entry::retry,
+    "retry"),
+  mapping::entry(
+    &log_entry::service_description,
+    "service_description",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &log_entry::service_id,
+    "service_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &log_entry::status,
+    "status"),
+  mapping::entry(
+    &log_entry::output,
+    "output"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_log_entry() {
+  return (new log_entry);
+}
+io::event_info::event_operations const log_entry::operations = {
+  &new_log_entry
+};

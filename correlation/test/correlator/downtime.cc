@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,7 +22,7 @@
 #include <QMap>
 #include <QPair>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/correlation/correlator.hh"
+#include "com/centreon/broker/correlation/stream.hh"
 #include "com/centreon/broker/correlation/node.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "test/correlator/common.hh"
@@ -47,7 +47,6 @@ int main() {
     QMap<QPair<unsigned int, unsigned int>, node> state;
     node& n(state[qMakePair(42u, 24u)]);
     n.host_id = 42;
-    n.instance_id = 1;
     n.service_id = 24;
     n.state = 0;
 
@@ -58,93 +57,88 @@ int main() {
     // Send node status.
     { // #1
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->source_id = 1;
       ss->host_id = 42;
-      ss->instance_id = 1;
       ss->service_id = 24;
       ss->state_type = 1;
-      ss->current_state = 2;
-      ss->last_check = 123456789;
-      ss->last_update = 123456789;
+      ss->last_hard_state = 2;
+      ss->last_hard_state_change = 123456789;
       c.write(ss);
     }
     { // #2
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->source_id = 1;
       ss->host_id = 42;
-      ss->instance_id = 1;
       ss->service_id = 24;
       ss->state_type = 1;
-      ss->current_state = 2;
-      ss->last_check = 123456790;
-      ss->last_update = 123456790;
+      ss->last_hard_state = 2;
+      ss->last_hard_state_change = 123456790;
       ss->scheduled_downtime_depth = 1;
       c.write(ss);
     }
     { // #3
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->source_id = 1;
       ss->host_id = 42;
-      ss->instance_id = 1;
       ss->service_id = 24;
       ss->state_type = 1;
-      ss->current_state = 0;
-      ss->last_check = 123456791;
-      ss->last_update = 123456791;
+      ss->last_hard_state = 0;
+      ss->last_hard_state_change = 123456791;
       c.write(ss);
     }
     { // #4
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->source_id = 1;
       ss->host_id = 42;
-      ss->instance_id = 1;
       ss->service_id = 24;
       ss->state_type = 1;
-      ss->current_state = 0;
-      ss->last_check = 123456792;
-      ss->last_update = 123456792;
+      ss->last_hard_state = 0;
+      ss->last_hard_state_change = 123456792;
       ss->scheduled_downtime_depth = 1;
       c.write(ss);
     }
     { // #5
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->source_id = 1;
       ss->host_id = 42;
-      ss->instance_id = 1;
       ss->service_id = 24;
       ss->state_type = 1;
-      ss->current_state = 2;
-      ss->last_check = 123456793;
-      ss->last_update = 123456793;
+      ss->last_hard_state = 2;
+      ss->last_hard_state_change = 123456793;
       ss->scheduled_downtime_depth = 1;
       c.write(ss);
     }
     { // #6
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->source_id = 1;
       ss->host_id = 42;
-      ss->instance_id = 1;
       ss->service_id = 24;
       ss->state_type = 1;
-      ss->current_state = 0;
-      ss->last_check = 123456794;
-      ss->last_update = 123456794;
+      ss->last_hard_state = 0;
+      ss->last_hard_state_change = 123456794;
       ss->scheduled_downtime_depth = 1;
       c.write(ss);
     }
     { // #7
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      ss->source_id = 1;
       ss->host_id = 42;
-      ss->instance_id = 1;
       ss->service_id = 24;
       ss->state_type = 1;
-      ss->current_state = 0;
-      ss->last_check = 123456795;
-      ss->last_update = 123456795;
+      ss->last_hard_state = 0;
+      ss->last_hard_state_change = 123456795;
       ss->scheduled_downtime_depth = 0;
       c.write(ss);
     }
 
     // Check correlation content.
+    multiplexing::engine::instance().stop();
+    t.finalize();
     QList<misc::shared_ptr<io::data> > content;
     // #1
-    add_state_service(content, -1, 0, 123456789, 42, 1, false, 24, 0);
-    add_state_service(content, -1, 2, 0, 42, 1, false, 24, 123456789);
-    add_issue(content, 0, 0, 42, 1, 24, 123456789);
+    add_state_service(content, -1, 0, 123456789, 42, false, 24, 0);
+    add_state_service(content, -1, 2, 0, 42, false, 24, 123456789);
+    add_issue(content, -1, 0, 42, 24, 123456789);
     // #2
     add_state_service(
       content,
@@ -152,11 +146,10 @@ int main() {
       2,
       123456790,
       42,
-      1,
       false,
       24,
       123456789);
-    add_state_service(content, -1, 2, 0, 42, 1, true, 24, 123456790);
+    add_state_service(content, -1, 2, 0, 42, true, 24, 123456790);
     // #3
     add_state_service(
       content,
@@ -164,12 +157,11 @@ int main() {
       2,
       123456791,
       42,
-      1,
       true,
       24,
       123456790);
-    add_state_service(content, -1, 0, 0, 42, 1, false, 24, 123456791);
-    add_issue(content, 0, 123456791, 42, 1, 24, 123456789);
+    add_state_service(content, -1, 0, 0, 42, false, 24, 123456791);
+    add_issue(content, -1, 123456791, 42, 24, 123456789);
     // #4
     add_state_service(
       content,
@@ -177,11 +169,10 @@ int main() {
       0,
       123456792,
       42,
-      1,
       false,
       24,
       123456791);
-    add_state_service(content, -1, 0, 0, 42, 1, true, 24, 123456792);
+    add_state_service(content, -1, 0, 0, 42, true, 24, 123456792);
     // #5
     add_state_service(
       content,
@@ -189,12 +180,11 @@ int main() {
       0,
       123456793,
       42,
-      1,
       true,
       24,
       123456792);
-    add_state_service(content, -1, 2, 0, 42, 1, true, 24, 123456793);
-    add_issue(content, 0, 0, 42, 1, 24, 123456793);
+    add_state_service(content, -1, 2, 0, 42, true, 24, 123456793);
+    add_issue(content, -1, 0, 42, 24, 123456793);
     // #6
     add_state_service(
       content,
@@ -202,12 +192,11 @@ int main() {
       2,
       123456794,
       42,
-      1,
       true,
       24,
       123456793);
-    add_state_service(content, -1, 0, 0, 42, 1, true, 24, 123456794);
-    add_issue(content, 0, 123456794, 42, 1, 24, 123456793);
+    add_state_service(content, -1, 0, 0, 42, true, 24, 123456794);
+    add_issue(content, 0, 123456794, 42, 24, 123456793);
     // #7
     add_state_service(
       content,
@@ -215,11 +204,10 @@ int main() {
       0,
       123456795,
       42,
-      1,
       true,
       24,
       123456794);
-    add_state_service(content, -1, 0, 0, 42, 1, false, 24, 123456795);
+    add_state_service(content, -1, 0, 0, 42, false, 24, 123456795);
 
     // Check.
     check_content(c, content);

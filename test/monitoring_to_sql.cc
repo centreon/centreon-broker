@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -83,13 +83,13 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(30 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(30);
 
     // Check 'instances' table.
     {
       std::ostringstream query;
       query << "SELECT last_alive, name"
-            << "  FROM instances"
+            << "  FROM rt_instances"
             << "  WHERE instance_id=42";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()) || !q.next())
@@ -114,7 +114,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT host_id, name, last_check"
-            << "  FROM hosts"
+            << "  FROM rt_hosts"
             << "  ORDER BY host_id ASC";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
@@ -142,7 +142,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT host_id, service_id, description, last_check"
-            << "  FROM services"
+            << "  FROM rt_services"
             << "  ORDER BY host_id ASC, service_id ASC";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
@@ -181,7 +181,7 @@ int main() {
     // to generate logs (checked below).
     {
       commander.execute("DISABLE_SVC_CHECK;1;2");
-      sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+      sleep_for(2);
       commander.execute("ENABLE_PASSIVE_SVC_CHECKS;1;2");
       commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;2;2;output1");
       commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;2;2;output2");
@@ -189,14 +189,14 @@ int main() {
     }
 
     // Run a while.
-    sleep_for(6 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(6);
 
     // Check generated logs.
     {
       std::ostringstream query;
       query << "SELECT ctime, host_name, output, service_description,"
             << "       status, type"
-            << "  FROM logs"
+            << "  FROM log_logs"
             << "  WHERE host_id=1 AND msg_type=0 AND service_id=2";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()) || !q.next())

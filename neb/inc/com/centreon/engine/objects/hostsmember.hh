@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -20,26 +20,39 @@
 #ifndef CCE_OBJECTS_HOSTSMEMBER_HH
 #  define CCE_OBJECTS_HOSTSMEMBER_HH
 
-#  include "com/centreon/engine/objects.hh"
+/* Forward declaration. */
+struct host_struct;
+
+typedef struct               hostsmember_struct {
+  char*                      host_name;
+  host_struct*               host_ptr;
+  struct hostsmember_struct* next;
+}                            hostsmember;
 
 #  ifdef __cplusplus
 extern "C" {
-#  endif // C++
+#  endif /* C++ */
 
-hostsmember const* release_hostsmember(hostsmember const* obj);
+hostsmember* add_child_link_to_host(
+               host_struct* hst,
+               host_struct* child_ptr);
+hostsmember* add_parent_host_to_host(
+               host_struct* hst,
+               char const* host_name);
 
 #  ifdef __cplusplus
 }
 
-namespace                  com {
-  namespace                centreon {
-    namespace              engine {
-      namespace            objects {
-        hostsmember const* release(hostsmember const* obj);
-      }
-    }
-  }
-}
-#  endif // C++
+#    include <ostream>
+
+bool          operator==(
+                hostsmember const& obj1,
+                hostsmember const& obj2) throw ();
+bool          operator!=(
+                hostsmember const& obj1,
+                hostsmember const& obj2) throw ();
+std::ostream& operator<<(std::ostream& os, hostsmember const& obj);
+
+#  endif /* C++ */
 
 #endif // !CCE_OBJECTS_HOSTSMEMBER_HH

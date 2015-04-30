@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,8 +22,12 @@
 
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/io/events.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
+#  include "com/centreon/broker/storage/internal.hh"
 
 CCB_BEGIN()
 
@@ -42,6 +46,19 @@ namespace          storage {
     metric&        operator=(metric const& m);
     unsigned int   type() const;
 
+    /**
+     *  Get the type of this event.
+     *
+     *  @return  The event type.
+     */
+    static unsigned int
+                   static_type() {
+      return (io::events::data_type<
+                            io::events::storage,
+                            storage::de_metric>::value);
+    }
+
+
     timestamp      ctime;
     unsigned int   interval;
     bool           is_for_rebuild;
@@ -50,6 +67,11 @@ namespace          storage {
     int            rrd_len;
     double         value;
     short          value_type;
+
+    static mapping::entry const
+                    entries[];
+    static io::event_info::event_operations const
+                    operations;
 
   private:
     void           _internal_copy(metric const& m);

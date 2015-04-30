@@ -1,5 +1,5 @@
 ##
-## Copyright 2011-2013 Merethis
+## Copyright 2011-2013,2015 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -34,8 +34,10 @@ add_library("${STORAGE}" SHARED
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/exceptions/perfdata.cc"
   "${SRC_DIR}/factory.cc"
+  "${SRC_DIR}/index_mapping.cc"
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/metric.cc"
+  "${SRC_DIR}/metric_mapping.cc"
   "${SRC_DIR}/parser.cc"
   "${SRC_DIR}/perfdata.cc"
   "${SRC_DIR}/rebuild.cc"
@@ -48,8 +50,10 @@ add_library("${STORAGE}" SHARED
   "${INC_DIR}/events.hh"
   "${INC_DIR}/exceptions/perfdata.hh"
   "${INC_DIR}/factory.hh"
+  "${INC_DIR}/index_mapping.hh"
   "${INC_DIR}/internal.hh"
   "${INC_DIR}/metric.hh"
+  "${INC_DIR}/metric_mapping.hh"
   "${INC_DIR}/parser.hh"
   "${INC_DIR}/perfdata.hh"
   "${INC_DIR}/rebuild.hh"
@@ -66,7 +70,7 @@ get_property(STORAGE_MODULE_PATH
 set(STORAGE_MODULE_PATH "${STORAGE_MODULE_PATH}" PARENT_SCOPE)
 
 if (WITH_TESTING)
-  set(TEST_LIBRARIES "${STORAGE}" "roker")
+  set(TEST_LIBRARIES "${STORAGE}" "10-neb" "roker")
 
   # Perfdata exception tests.
   #   Throw.

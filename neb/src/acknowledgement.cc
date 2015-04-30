@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #include "com/centreon/broker/neb/acknowledgement.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
@@ -40,7 +41,7 @@ acknowledgement::acknowledgement()
     deletion_time(0),
     entry_time(0),
     host_id(0),
-        is_sticky(false),
+    is_sticky(false),
     notify_contacts(false),
     persistent_comment(false),
     service_id(0),
@@ -51,11 +52,11 @@ acknowledgement::acknowledgement()
  *
  *  Copy data from the acknowledgement object to the current instance.
  *
- *  @param[in] ack Object to copy.
+ *  @param[in] other  Object to copy.
  */
-acknowledgement::acknowledgement(acknowledgement const& ack)
-  : io::data(ack) {
-  _internal_copy(ack);
+acknowledgement::acknowledgement(acknowledgement const& other)
+  : io::data(other) {
+  _internal_copy(other);
 }
 
 /**
@@ -66,13 +67,13 @@ acknowledgement::~acknowledgement() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] ack Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-acknowledgement& acknowledgement::operator=(acknowledgement const& ack) {
-  io::data::operator=(ack);
-  _internal_copy(ack);
+acknowledgement& acknowledgement::operator=(acknowledgement const& other) {
+  io::data::operator=(other);
+  _internal_copy(other);
   return (*this);
 }
 
@@ -85,7 +86,7 @@ acknowledgement& acknowledgement::operator=(acknowledgement const& ack) {
  *  @return The event type.
  */
 unsigned int acknowledgement::type() const {
-  return (io::events::data_type<io::events::neb, neb::de_acknowledgement>::value);
+  return (acknowledgement::static_type());
 }
 
 /**************************************
@@ -103,22 +104,82 @@ unsigned int acknowledgement::type() const {
  *  means that no superclass data are copied. This method is used in
  *  acknowledgement copy constructor and in the assignment operator.
  *
- *  @param[in] ack Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @see acknowledgement(acknowledgement const&)
  *  @see operator=(acknowledgement const&)
  */
-void acknowledgement::_internal_copy(acknowledgement const& ack) {
-  acknowledgement_type = ack.acknowledgement_type;
-  author = ack.author;
-  comment = ack.comment;
-  deletion_time = ack.deletion_time;
-  entry_time = ack.entry_time;
-  host_id = ack.host_id;
-    is_sticky = ack.is_sticky;
-  notify_contacts = ack.notify_contacts;
-  persistent_comment = ack.persistent_comment;
-  service_id = ack.service_id;
-  state = ack.state;
+void acknowledgement::_internal_copy(acknowledgement const& other) {
+  acknowledgement_type = other.acknowledgement_type;
+  author = other.author;
+  comment = other.comment;
+  deletion_time = other.deletion_time;
+  entry_time = other.entry_time;
+  host_id = other.host_id;
+  is_sticky = other.is_sticky;
+  notify_contacts = other.notify_contacts;
+  persistent_comment = other.persistent_comment;
+  service_id = other.service_id;
+  state = other.state;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const acknowledgement::entries[] = {
+  mapping::entry(
+    &acknowledgement::acknowledgement_type,
+    "type"),
+  mapping::entry(
+    &acknowledgement::author,
+    "author"),
+  mapping::entry(
+    &acknowledgement::comment,
+    "comment_data"),
+  mapping::entry(
+    &acknowledgement::deletion_time,
+    "deletion_time",
+    mapping::entry::invalid_on_minus_one),
+  mapping::entry(
+    &acknowledgement::entry_time,
+    "entry_time",
+    mapping::entry::invalid_on_minus_one),
+  mapping::entry(
+    &acknowledgement::host_id,
+    "host_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &acknowledgement::source_id,
+    "instance_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &acknowledgement::is_sticky,
+    "sticky"),
+  mapping::entry(
+    &acknowledgement::notify_contacts,
+    "notify_contacts"),
+  mapping::entry(
+    &acknowledgement::persistent_comment,
+    "persistent_comment"),
+  mapping::entry(
+    &acknowledgement::service_id,
+    "service_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &acknowledgement::state,
+    "state"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_ack() {
+  return (new acknowledgement);
+}
+io::event_info::event_operations const acknowledgement::operations = {
+  &new_ack
+};

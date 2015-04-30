@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,7 +22,9 @@
 
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 
 CCB_BEGIN()
 
@@ -40,10 +42,17 @@ namespace        dumper {
                  ~dump();
     dump&        operator=(dump const& right);
     unsigned int type() const;
+    static unsigned int
+                 static_type();
 
     QString      content;
-    unsigned int instance_id;
     QString      tag;
+    QString      filename;
+
+    static mapping::entry const
+                    entries[];
+    static io::event_info::event_operations const
+                    operations;
 
   private:
     void         _internal_copy(dump const& right);

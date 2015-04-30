@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -20,33 +20,67 @@
 #ifndef CCE_OBJECTS_CUSTOMVARIABLESMEMBER_HH
 #  define CCE_OBJECTS_CUSTOMVARIABLESMEMBER_HH
 
-#  include "com/centreon/engine/objects.hh"
+/* Forward declarations. */
+struct host_struct;
+struct service_struct;
+
+typedef struct                         customvariablesmember_struct {
+  char*                                variable_name;
+  char*                                variable_value;
+  int                                  has_been_modified;
+  struct customvariablesmember_struct* next;
+}                                      customvariablesmember;
 
 #  ifdef __cplusplus
-#    include <QString>
-#    include <QVector>
 extern "C" {
-#  endif // C++
+#  endif /* C++ */
 
-customvariablesmember const* release_customvariablesmember(
-                               customvariablesmember const* obj);
+customvariablesmember* add_custom_variable_to_host(
+                         host_struct* hst,
+                         char const* varname,
+                         char const* varvalue);
+customvariablesmember* add_custom_variable_to_object(
+                         customvariablesmember** object_ptr,
+                         char const* varname,
+                         char const* varvalue);
+customvariablesmember* add_custom_variable_to_service(
+                         service_struct* svc,
+                         char const* varname,
+                         char const* varvalue);
+void                   remove_all_custom_variables_from_host(
+                         host_struct* hst);
+void                   remove_all_custom_variables_from_service(
+                         service_struct* svc);
 
 #  ifdef __cplusplus
 }
 
-namespace                            com {
-  namespace                          centreon {
-    namespace                        engine {
-      namespace                      objects {
-        bool                         add_custom_variables_to_object(
-                                       QVector<QString> const& custom_vars,
-                                       customvariablesmember** list_customvar);
-        customvariablesmember const* release(
-                                       customvariablesmember const* obj);
-      }
-    }
-  }
-}
-#  endif // C++
+#    include <ostream>
+#    include <string>
+#    include "com/centreon/engine/namespace.hh"
+
+bool          operator==(
+                customvariablesmember const& obj1,
+                customvariablesmember const& obj2) throw ();
+bool          operator!=(
+                customvariablesmember const& obj1,
+                customvariablesmember const& obj2) throw ();
+bool          operator<(
+                customvariablesmember const& obj1,
+                customvariablesmember const& obj2) throw ();
+std::ostream& operator<<(
+                std::ostream& os,
+                customvariablesmember const& obj);
+
+CCE_BEGIN()
+
+bool          update_customvariable(
+                customvariablesmember* lst,
+                std::string const& key,
+                std::string const& value);
+
+CCE_END()
+
+#  endif /* C++ */
 
 #endif // !CCE_OBJECTS_CUSTOMVARIABLESMEMBER_HH

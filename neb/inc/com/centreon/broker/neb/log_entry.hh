@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,6 +22,8 @@
 
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
 
@@ -40,10 +42,12 @@ namespace          neb {
   class            log_entry : public io::data {
   public:
                    log_entry();
-                   log_entry(log_entry const& le);
+                   log_entry(log_entry const& other);
                    ~log_entry();
-    log_entry&     operator=(const log_entry& le);
+    log_entry&     operator=(const log_entry& other);
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
 
     timestamp      c_time;
     unsigned int   host_id;
@@ -52,16 +56,19 @@ namespace          neb {
     timestamp      issue_start_time;
     short          log_type;
     short          msg_type;
-    QString        notification_cmd;
-    QString        notification_contact;
     QString        output;
     int            retry;
     QString        service_description;
     unsigned int   service_id;
     short          status;
 
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
+
   private:
-    void           _internal_copy(log_entry const& le);
+    void           _internal_copy(log_entry const& other);
   };
 }
 

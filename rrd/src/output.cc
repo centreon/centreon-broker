@@ -200,8 +200,7 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
   if (d.isNull())
     return (1);
 
-  if (d->type()
-      == io::events::data_type<io::events::storage, storage::de_metric>::value) {
+  if (d->type() == storage::metric::static_type()) {
     if (_write_metrics) {
       // Debug message.
       misc::shared_ptr<storage::metric>
@@ -250,8 +249,7 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
         it->push_back(d);
     }
   }
-  else if (d->type()
-           == io::events::data_type<io::events::storage, storage::de_status>::value) {
+  else if (d->type() == storage::status::static_type()) {
     if (_write_status) {
       // Debug message.
       misc::shared_ptr<storage::status>
@@ -300,8 +298,7 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
         it->push_back(d);
     }
   }
-  else if (d->type()
-           == io::events::data_type<io::events::storage, storage::de_rebuild>::value) {
+  else if (d->type() == storage::rebuild::static_type()) {
     // Debug message.
     misc::shared_ptr<storage::rebuild>
       e(d.staticCast<storage::rebuild>());
@@ -355,8 +352,7 @@ unsigned int output::write(misc::shared_ptr<io::data> const& d) {
       }
     }
   }
-  else if (d->type()
-           == io::events::data_type<io::events::storage, storage::de_remove_graph>::value) {
+  else if (d->type() == storage::remove_graph::static_type()) {
     // Debug message.
     misc::shared_ptr<storage::remove_graph>
       e(d.staticCast<storage::remove_graph>());

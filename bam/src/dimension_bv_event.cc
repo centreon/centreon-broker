@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -75,13 +75,21 @@ bool dimension_bv_event::operator==(
           && (bv_description == other.bv_description));
 }
 
-
 /**
  *  Get the event type.
  *
  *  @return Event type.
  */
 unsigned int dimension_bv_event::type() const {
+  return (dimension_bv_event::static_type());
+}
+
+/**
+ *  Get the event type.
+ *
+ *  @return Event type.
+ */
+unsigned int dimension_bv_event::static_type() {
   return (io::events::data_type<io::events::bam, bam::de_dimension_bv_event>::value);
 }
 
@@ -96,3 +104,32 @@ void dimension_bv_event::_internal_copy(dimension_bv_event const& other) {
   bv_description = other.bv_description;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const dimension_bv_event::entries[] = {
+  mapping::entry(
+    &bam::dimension_bv_event::bv_id,
+    "bv_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &bam::dimension_bv_event::bv_name,
+    "bv_name"),
+  mapping::entry(
+    &bam::dimension_bv_event::bv_description,
+    "bv_description"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_dimension_bv_event() {
+  return (new dimension_bv_event);
+}
+io::event_info::event_operations const dimension_bv_event::operations = {
+  &new_dimension_bv_event
+};

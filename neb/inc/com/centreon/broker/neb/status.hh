@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -45,10 +45,7 @@ namespace        neb {
     status&      operator=(status const& s);
 
     bool         event_handler_enabled;
-    bool         failure_prediction_enabled;
     bool         flap_detection_enabled;
-    bool         notifications_enabled;
-    bool         process_performance_data;
 
   private:
     void         _internal_copy(status const& s);

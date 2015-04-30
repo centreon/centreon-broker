@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Merethis
+** Copyright 2013-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -92,7 +92,6 @@ int main() {
     {
       host& h(*(++hosts.begin()));
       h.checks_enabled = 0;
-      h.accept_passive_host_checks = 0;
       h.max_attempts = 3;
       h.host_check_command = new char[2];
       strcpy(h.host_check_command, "1");
@@ -104,7 +103,6 @@ int main() {
     {
       service& s(services.front());
       s.checks_enabled = 0;
-      s.accept_passive_service_checks = 0;
       s.max_attempts = 3;
       s.service_check_command = new char[2];
       strcpy(s.service_check_command, "2");
@@ -137,7 +135,7 @@ int main() {
     broker.set_config_file(
       PROJECT_SOURCE_DIR "/test/cfg/event_handlers_to_sql_2.xml");
     broker.start();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
     broker.update();
 
     // Start engine.
@@ -149,7 +147,7 @@ int main() {
     }
 
     // T1.
-    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(4);
     time_t t1(time(NULL));
 
     // Host SOFT state #1.
@@ -167,7 +165,7 @@ int main() {
     }
 
     // T2.
-    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(4);
     time_t t2(time(NULL));
 
     // Host SOFT states #2.
@@ -185,7 +183,7 @@ int main() {
     }
 
     // T3.
-    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(4);
     time_t t3(time(NULL));
 
     // Host HARD state.
@@ -203,7 +201,7 @@ int main() {
     }
 
     // T4.
-    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(4);
     time_t t4(time(NULL));
 
     // Check host eventhandlers entries.
@@ -257,7 +255,7 @@ int main() {
         "SELECT host_id, service_id, start_time, command_args,"
         "       command_line, early_timeout, end_time, execution_time,"
         "       output, return_code, state, state_type, timeout, type"
-        "  FROM eventhandlers"
+        "  FROM rt_eventhandlers"
         "  ORDER BY host_id DESC, COALESCE(service_id, -1) ASC, start_time ASC");
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.c_str()))

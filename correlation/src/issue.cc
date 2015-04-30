@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -34,10 +34,9 @@ using namespace com::centreon::broker::correlation;
  *  Constructor.
  */
 issue::issue()
-  : ack_time(0),
-    end_time(0),
+  : ack_time(-1),
+    end_time(-1),
     host_id(0),
-    instance_id(0),
     service_id(0),
     start_time(0) {}
 
@@ -79,7 +78,6 @@ bool issue::operator==(issue const& i) const {
   return ((this == &i)
           || ((ack_time == i.ack_time)
               && (end_time == i.end_time)
-              && (instance_id == i.instance_id)
               && (host_id == i.host_id)
               && (service_id == i.service_id)
               && (start_time == i.start_time)));
@@ -102,6 +100,15 @@ bool issue::operator!=(issue const& i) const {
  *  @return The event type.
  */
 unsigned int issue::type() const {
+  return (issue::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int issue::static_type() {
   return (io::events::data_type<io::events::correlation, correlation::de_issue>::value);
 }
 
@@ -123,8 +130,46 @@ void issue::_internal_copy(issue const& i) {
   ack_time = i.ack_time;
   end_time = i.end_time;
   host_id = i.host_id;
-  instance_id = i.instance_id;
   service_id = i.service_id;
   start_time = i.start_time;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const issue::entries[] = {
+  mapping::entry(
+    &issue::ack_time,
+    "ack_time",
+    mapping::entry::invalid_on_minus_one),
+  mapping::entry(
+    &issue::end_time,
+    "end_time",
+    mapping::entry::invalid_on_minus_one),
+  mapping::entry(
+    &issue::host_id,
+    "host_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &issue::service_id,
+    "service_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &issue::start_time,
+    "start_time",
+    mapping::entry::invalid_on_minus_one),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_issue() {
+  return (new issue);
+}
+io::event_info::event_operations const issue::operations = {
+  &new_issue
+};

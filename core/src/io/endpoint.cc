@@ -18,6 +18,7 @@
 */
 #include <iostream>
 #include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/persistent_cache.hh"
 
 using namespace com::centreon::broker::io;
 

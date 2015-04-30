@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -33,7 +33,7 @@ using namespace com::centreon::broker::correlation;
 /**
  *  Default constructor.
  */
-engine_state::engine_state() : instance_id(0), started(false) {}
+engine_state::engine_state() : started(false) {}
 
 /**
  *  Copy constructor.
@@ -70,5 +70,36 @@ engine_state& engine_state::operator=(engine_state const& es) {
  *  @return The event type.
  */
 unsigned int engine_state::type() const {
+  return (engine_state::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int engine_state::static_type() {
   return (io::events::data_type<io::events::correlation, correlation::de_engine_state>::value);
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const engine_state::entries[] = {
+  mapping::entry(
+    &engine_state::started,
+    "started"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_engine_state() {
+  return (new engine_state);
+}
+io::event_info::event_operations const engine_state::operations = {
+  &new_engine_state
+};

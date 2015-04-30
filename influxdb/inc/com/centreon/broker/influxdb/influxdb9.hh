@@ -28,6 +28,7 @@
 #  include "com/centreon/broker/influxdb/influxdb.hh"
 #  include "com/centreon/broker/influxdb/column.hh"
 #  include "com/centreon/broker/influxdb/query.hh"
+#  include "com/centreon/broker/influxdb/macro_cache.hh"
 
 CCB_BEGIN()
 
@@ -50,10 +51,9 @@ namespace         influxdb {
                     std::string const& status_ts,
                     std::vector<column> const& status_cols,
                     std::string const& metric_ts,
-                    std::vector<column> const& metric_cols);
-                  influxdb9(influxdb9 const& f);
+                    std::vector<column> const& metric_cols,
+                    macro_cache const& cache);
                   ~influxdb9();
-    influxdb9&    operator=(influxdb9 const& f);
 
     void          clear();
     void          write(storage::metric const& m);
@@ -75,6 +75,9 @@ namespace         influxdb {
     unsigned short
                   _port;
 
+    macro_cache const&
+                  _cache;
+
     void          _connect_socket();
     bool          _check_answer_string(std::string const& ans);
     void          _create_queries(
@@ -85,6 +88,9 @@ namespace         influxdb {
                     std::vector<column> const& status_cols,
                     std::string const& metric_ts,
                     std::vector<column> const& metric_cols);
+
+                  influxdb9(influxdb9 const& f);
+    influxdb9&    operator=(influxdb9 const& f);
   };
 }
 

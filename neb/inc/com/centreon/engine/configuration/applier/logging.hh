@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -20,67 +20,63 @@
 #ifndef CCE_CONFIGURATION_APPLIER_LOGGING_HH
 #  define CCE_CONFIGURATION_APPLIER_LOGGING_HH
 
-#  include <QSharedPointer>
-#  include <QString>
-#  include "com/centreon/engine/configuration/applier/base.hh"
+#  include <string>
 #  include "com/centreon/engine/configuration/state.hh"
-#  include "com/centreon/engine/logging/file.hh"
-#  include "com/centreon/engine/logging/object.hh"
-#  include "com/centreon/engine/logging/standard.hh"
-#  include "com/centreon/engine/logging/syslog.hh"
+#  include "com/centreon/engine/namespace.hh"
+#  include "com/centreon/logging/file.hh"
+#  include "com/centreon/logging/syslogger.hh"
 
-namespace                      com {
-  namespace                    centreon {
-    namespace                  engine {
-      namespace                configuration {
-	namespace              applier {
-	/**
-	 *  @class logging logging.hh
-	 *  @brief Simple configuration applier for logging class.
-	 *
-	 *  Simple configuration applier for logging class.
-	 */
-	  class                logging : public base {
-	  public:
-	    void               apply(state const& config);
-            static logging&    instance();
-            static void        load();
-            static void        unload();
+CCE_BEGIN()
 
-	  private:
-	                       logging();
-	                       logging(state const& config);
-	                       logging(logging& right);
-	                       ~logging() throw();
-	    logging&           operator=(logging& right);
-	    void               _add_stdout();
-	    void               _add_stderr();
-	    void               _add_syslog();
-	    void               _add_log_file(state const& config);
-	    void               _add_debug(state const& config);
-	    void               _del_syslog();
-	    void               _del_log_file();
-	    void               _del_debug();
-	    void               _del_stdout();
-	    void               _del_stderr();
+namespace                configuration {
+  namespace              applier {
+    /**
+     *  @class logging logging.hh
+     *  @brief Simple configuration applier for logging class.
+     *
+     *  Simple configuration applier for logging class.
+     */
+    class                logging {
+    public:
+      void               apply(state& config);
+      static logging&    instance();
+      static void        load();
+      static void        unload();
 
-	    QString            _debug_file;
-	    unsigned long      _debug_id;
-	    unsigned long      _debug_level;
-	    unsigned long      _debug_limit;
-	    unsigned int       _debug_verbosity;
-            static logging*    _instance;
-	    QString            _log_file;
-	    unsigned long      _log_id;
-            unsigned long      _log_limit;
-	    unsigned long      _stderr_id;
-	    unsigned long      _stdout_id;
-	    unsigned long      _syslog_id;
-	  };
-	}
-      }
-    }
+    private:
+                         logging();
+                         logging(state& config);
+                         logging(logging const&);
+                         ~logging() throw ();
+      logging&           operator=(logging const&);
+      void               _add_stdout();
+      void               _add_stderr();
+      void               _add_syslog();
+      void               _add_log_file(state const& config);
+      void               _add_debug(state const& config);
+      void               _del_syslog();
+      void               _del_log_file();
+      void               _del_debug();
+      void               _del_stdout();
+      void               _del_stderr();
+
+      com::centreon::logging::file*
+                         _debug;
+      unsigned long long _debug_level;
+      unsigned long      _debug_max_size;
+      unsigned int       _debug_verbosity;
+      com::centreon::logging::file*
+                         _log;
+      com::centreon::logging::file*
+                         _stderr;
+      com::centreon::logging::file*
+                         _stdout;
+      com::centreon::logging::syslogger*
+                         _syslog;
+    };
   }
 }
+
+CCE_END()
 
 #endif // !CCE_CONFIGURATION_APPLIER_LOGGING_HH

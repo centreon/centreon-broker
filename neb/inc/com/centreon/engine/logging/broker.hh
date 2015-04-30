@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -20,36 +20,44 @@
 #ifndef CCE_LOGGING_BROKER_HH
 #  define CCE_LOGGING_BROKER_HH
 
-#  include <QMutex>
-#  include <QThread>
-#  include "com/centreon/engine/logging/object.hh"
+#  include "com/centreon/concurrency/thread.hh"
+#  include "com/centreon/engine/namespace.hh"
+#  include "com/centreon/logging/backend.hh"
 
-namespace         com {
-  namespace       centreon {
-    namespace     engine {
-      namespace   logging {
-	/**
-	 *  @class broker broker.hh
-	 *  @brief Call broker for all logging message.
-	 *
-	 *  Call broker for all logging message without debug.
-	 */
-	class      broker : public object {
-	public:
-	           broker();
-	           ~broker() throw();
+CCE_BEGIN()
 
-	  void     log(char const* message,
-		       unsigned long long type,
-		       unsigned int verbosity) throw();
+namespace                      logging {
+  /**
+   *  @class broker broker.hh
+   *  @brief Call broker for all logging message.
+   *
+   *  Call broker for all logging message without debug.
+   */
+  class                        broker
+    : public com::centreon::logging::backend {
+  public:
+                               broker();
+                               broker(broker const& right);
+                               ~broker() throw ();
+    broker&                    operator=(broker const& right);
+    void                       close() throw ();
+    void                       log(
+                                 unsigned long long types,
+                                 unsigned int verbose,
+                                 char const* msg,
+                                 unsigned int size) throw ();
+    void                        open();
+    void                        reopen();
+    void                        show_pid(bool enable);
+    void                        show_timestamp(com::centreon::logging::time_precision val);
+    void                        show_thread_id(bool enable);
 
-	private:
-	  QMutex   _mutex;
-	  QThread* _thread;
-	};
-      }
-    }
-  }
+  private:
+    bool                       _enable;
+    concurrency::thread_id     _thread;
+  };
 }
+
+CCE_END()
 
 #endif // !CCE_LOGGING_BROKER_HH

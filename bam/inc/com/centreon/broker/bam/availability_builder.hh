@@ -26,7 +26,7 @@
 #  include <set>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
-#  include "com/centreon/broker/bam/time/timeperiod.hh"
+#  include "com/centreon/broker/time/timeperiod.hh"
 
 CCB_BEGIN()
 

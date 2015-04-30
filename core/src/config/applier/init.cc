@@ -21,17 +21,23 @@
 #include <memory>
 #include <QAbstractSocket>
 #include <QtCore>
+#include "com/centreon/broker/bbdo/internal.hh"
+#include "com/centreon/broker/command_file/internal.hh"
+#include "com/centreon/broker/compression/internal.hh"
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/config/applier/temporary.hh"
+#include "com/centreon/broker/file/internal.hh"
+#include "com/centreon/broker/instance_broadcast.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/io/temporary.hh"
 #include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/time/timezone_manager.hh"
 
 using namespace com::centreon::broker;
 
@@ -54,11 +60,16 @@ void config::applier::deinit() {
   config::applier::temporary::unload();
   config::applier::logger::unload();
   io::temporary::unload();
+  bbdo::unload();
+  compression::unload();
+  command_file::unload();
+  file::unload();
   multiplexing::engine::instance().clear();
   config::applier::modules::unload();
   multiplexing::engine::unload();
   io::protocols::unload();
   io::events::unload();
+  time::timezone_manager::unload();
   logging::manager::unload();
   return ;
 }
@@ -69,11 +80,17 @@ void config::applier::deinit() {
 void config::applier::init() {
   // Load singletons.
   logging::manager::load();
+  time::timezone_manager::load();
   io::temporary::load();
   multiplexing::engine::load();
   io::events::load();
   io::protocols::load();
   config::applier::modules::load();
+  file::load();
+  command_file::load();
+  instance_broadcast::load();
+  compression::load();
+  bbdo::load();
   config::applier::logger::load();
   config::applier::temporary::load();
   config::applier::endpoint::load();

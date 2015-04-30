@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_dependency.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
@@ -72,6 +73,15 @@ service_dependency& service_dependency::operator=(
  *  @return The event_type.
  */
 unsigned int service_dependency::type() const {
+  return (service_dependency::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int service_dependency::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_service_dependency>::value);
 }
 
@@ -91,3 +101,50 @@ void service_dependency::_internal_copy(service_dependency const& sd) {
   service_id = sd.service_id;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const service_dependency::entries[] = {
+  mapping::entry(
+    &service_dependency::dependency_period,
+    "dependency_period"),
+  mapping::entry(
+    &service_dependency::dependent_host_id,
+    "dependent_host_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &service_dependency::dependent_service_id,
+    "dependent_service_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &service_dependency::enabled,
+    ""),
+  mapping::entry(
+    &service_dependency::execution_failure_options,
+    "execution_failure_options"),
+  mapping::entry(
+    &service_dependency::host_id,
+    "host_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &service_dependency::inherits_parent,
+    "inherits_parent"),
+  mapping::entry(
+    &service_dependency::service_id,
+    "service_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_service_dependency() {
+  return (new service_dependency);
+}
+io::event_info::event_operations const service_dependency::operations = {
+  &new_service_dependency
+};

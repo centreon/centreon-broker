@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -138,10 +138,18 @@ void parser::parse(QString const& file, state& s) {
         QString val(elem.text());
         s.log_timestamp((val == "yes") || val.toInt());
       }
+      else if (name == "log_human_readable_timestamp") {
+        QString val(elem.text());
+        s.log_human_readable_timestamp((val == "yes") || val.toInt());
+      }
       else if (name == "event_queue_max_size") {
         unsigned int val(elem.text().toUInt());
         s.event_queue_max_size(val);
       }
+      else if (name == "cache_directory")
+        s.cache_directory(elem.text());
+      else if (name == "command_file")
+        s.command_file(elem.text());
       else if (name == "module")
         s.module_list().push_back(elem.text());
       else if (name == "module_directory")
@@ -219,6 +227,8 @@ void parser::_parse_endpoint(QDomElement& elem, endpoint& e) {
           = static_cast<time_t>(entry.text().toUInt());
       else if (name == "failover")
         e.failover = entry.text();
+      else if (name == "secondary_failover")
+        e.secondary_failovers.insert(entry.text());
       else if (name == "name")
         e.name = entry.text();
       else if (name == "read_timeout")
@@ -236,6 +246,8 @@ void parser::_parse_endpoint(QDomElement& elem, endpoint& e) {
           }
         }
       }
+      else if (name == "cache")
+        e.cache_enabled = parse_boolean(entry.text());
       else if (name == "type")
         e.type = entry.text();
       e.params[name] = entry.text();

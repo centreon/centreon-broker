@@ -71,20 +71,28 @@ namespace          sql {
     void           _clean_tables(int instance_id);
     void           _prepare();
     template       <typename T>
-    void           _prepare_insert(database_query& st);
+    void           _prepare_insert(
+                     database_query& st,
+                     std::string const& table_name,
+                     std::set<std::string> const& excluded
+                     = std::set<std::string>());
     template       <typename T>
     void           _prepare_update(
                      database_query& st,
-                     std::map<std::string, bool> const& id);
+                     std::string const& table_name,
+                     std::map<std::string, bool> const& id,
+                     std::set<std::string> const& excluded
+                     = std::set<std::string>());
     template       <typename T>
     void           _prepare_delete(
                      database_query& st,
+                     std::string const& table_name,
                      std::map<std::string, bool> const& id);
     template <typename T>
     void           _prepare_select(
-                     database_query& st);
+                     database_query& st,
+                     std::string const& table_name);
     void           _process_acknowledgement(misc::shared_ptr<io::data> const& e);
-    void           _process_comment(misc::shared_ptr<io::data> const& e);
     void           _process_custom_variable(misc::shared_ptr<io::data> const& e);
     void           _process_custom_variable_status(misc::shared_ptr<io::data> const& e);
     void           _process_downtime(misc::shared_ptr<io::data> const& e);
@@ -94,8 +102,6 @@ namespace          sql {
     void           _process_host(misc::shared_ptr<io::data> const& e);
     void           _process_host_check(misc::shared_ptr<io::data> const& e);
     void           _process_host_dependency(misc::shared_ptr<io::data> const& e);
-    void           _process_host_group(misc::shared_ptr<io::data> const& e);
-    void           _process_host_group_member(misc::shared_ptr<io::data> const& e);
     void           _process_host_parent(misc::shared_ptr<io::data> const& e);
     void           _process_host_state(misc::shared_ptr<io::data> const& e);
     void           _process_host_status(misc::shared_ptr<io::data> const& e);
@@ -109,10 +115,10 @@ namespace          sql {
     void           _process_service(misc::shared_ptr<io::data> const& e);
     void           _process_service_check(misc::shared_ptr<io::data> const& e);
     void           _process_service_dependency(misc::shared_ptr<io::data> const& e);
-    void           _process_service_group(misc::shared_ptr<io::data> const& e);
-    void           _process_service_group_member(misc::shared_ptr<io::data> const& e);
     void           _process_service_state(misc::shared_ptr<io::data> const& e);
     void           _process_service_status(misc::shared_ptr<io::data> const& e);
+    void           _process_state(misc::shared_ptr<io::data> const& e);
+    void           _process_log_issue(misc::shared_ptr<io::data> const& e);
     template       <typename T>
     void           _update_on_none_insert(
                      database_query& ins,
@@ -129,8 +135,6 @@ namespace          sql {
     database       _db;
     database_query _acknowledgement_insert;
     database_query _acknowledgement_update;
-    database_query _comment_insert;
-    database_query _comment_update;
     database_query _custom_variable_insert;
     database_query _custom_variable_update;
     database_query _custom_variable_delete;
@@ -146,8 +150,6 @@ namespace          sql {
     database_query _host_check_update;
     database_query _host_dependency_insert;
     database_query _host_dependency_update;
-    database_query _host_group_insert;
-    database_query _host_group_update;
     database_query _host_parent_insert;
     database_query _host_parent_select;
     database_query _host_state_insert;
@@ -169,8 +171,6 @@ namespace          sql {
     database_query _service_check_update;
     database_query _service_dependency_insert;
     database_query _service_dependency_update;
-    database_query _service_group_insert;
-    database_query _service_group_update;
     database_query _service_state_insert;
     database_query _service_state_update;
     database_query _service_status_update;

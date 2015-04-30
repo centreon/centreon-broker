@@ -32,7 +32,7 @@
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/bam/availability_thread.hh"
 #  include "com/centreon/broker/bam/timeperiod_map.hh"
-#  include "com/centreon/broker/bam/time/timeperiod.hh"
+#  include "com/centreon/broker/time/timeperiod.hh"
 
 CCB_BEGIN()
 

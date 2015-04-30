@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -75,7 +75,6 @@ int main() {
     for (std::list<host>::iterator it(hosts.begin()), end(hosts.end());
          it != end;
          ++it) {
-      it->accept_passive_host_checks = 1;
       it->host_check_command = new char[2];
       strcpy(it->host_check_command, "1");
     }
@@ -85,7 +84,6 @@ int main() {
            end(services.end());
          it != end;
          ++it) {
-      it->accept_passive_service_checks = 1;
       it->service_check_command = new char[2];
       strcpy(it->service_check_command, "1");
     }
@@ -115,7 +113,7 @@ int main() {
     daemon.start();
 
     // Let the daemon initialize and set checkpoints as non-OK.
-    sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(15);
 
     // Base time.
     time_t now(time(NULL));
@@ -145,7 +143,7 @@ int main() {
     }
 
     // Let the monitoring engine process commands.
-    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(10);
 
     // New time.
     time_t t1(now);
@@ -157,7 +155,7 @@ int main() {
       query << "SELECT host_id, service_id, entry_time, author,"
             << "       comment_data, deletion_time, notify_contacts,"
             << "       persistent_comment, sticky, type"
-            << "  FROM acknowledgements"
+            << "  FROM rt_acknowledgements"
             << "  ORDER BY service_id ASC, host_id ASC";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
@@ -246,7 +244,7 @@ int main() {
       "PROCESS_SERVICE_CHECK_RESULT;2;2;0;Submitted by unit test");
 
     // Run a while.
-    sleep_for(12 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(12);
 
     // Update time.
     time_t t2(now);
@@ -256,7 +254,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT host_id, acknowledged"
-            << "  FROM hosts"
+            << "  FROM rt_hosts"
             << "  ORDER BY host_id";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
@@ -277,7 +275,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT host_id, service_id, acknowledged"
-            << "  FROM services"
+            << "  FROM rt_services"
             << "  ORDER BY host_id ASC, service_id ASC";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
@@ -300,7 +298,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT host_id, service_id, deletion_time"
-            << "  FROM acknowledgements"
+            << "  FROM rt_acknowledgements"
             << "  ORDER BY service_id ASC, host_id ASC";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))

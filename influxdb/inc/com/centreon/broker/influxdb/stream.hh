@@ -31,6 +31,8 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/influxdb/influxdb.hh"
 #  include "com/centreon/broker/influxdb/column.hh"
+#  include "com/centreon/broker/persistent_cache.hh"
+#  include "com/centreon/broker/influxdb/macro_cache.hh"
 
 CCB_BEGIN()
 
@@ -57,7 +59,8 @@ namespace          influxdb {
                      std::string const& status_ts,
                      std::vector<column> const& status_cols,
                      std::string const& metric_ts,
-                     std::vector<column> const& metric_cols);
+                     std::vector<column> const& metric_cols,
+                     misc::shared_ptr<persistent_cache> const& cache);
                    ~stream();
     void           process(bool in = false, bool out = true);
     void           read(misc::shared_ptr<io::data>& d);
@@ -82,6 +85,9 @@ namespace          influxdb {
 
     // Internal working members
     unsigned int _actual_query;
+
+    // Cache
+    macro_cache  _cache;
 
     // Status members
     std::string    _status;

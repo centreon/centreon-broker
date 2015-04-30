@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -33,52 +33,41 @@ int main() {
   neb::host_status hs;
 
   // Check.
-  return ((hs.acknowledgement_type != 0)
-          || hs.active_checks_enabled
-          || !hs.check_command.isEmpty()
-          || (fabs(hs.check_interval) > 0.0001)
-          || !hs.check_period.isEmpty()
-          || (hs.check_type != 0)
-          || (hs.current_check_attempt != 0)
-          || (hs.current_notification_number != 0)
-          || (hs.current_state != 4)
-          || !hs.enabled
-          || !hs.event_handler.isEmpty()
-          || hs.event_handler_enabled
-          || (fabs(hs.execution_time) > 0.0001)
-          || hs.failure_prediction_enabled
-          || hs.flap_detection_enabled
-          || hs.has_been_checked
-          || (hs.host_id != 0)
-          || (hs.instance_id != 0)
-          || hs.is_flapping
-          || (hs.last_check != 0)
-          || (hs.last_hard_state != 4)
-          || (hs.last_hard_state_change != 0)
-          || (hs.last_notification != 0)
-          || (hs.last_state_change != 0)
-          || (hs.last_time_down != 0)
-          || (hs.last_time_unreachable != 0)
-          || (hs.last_time_up != 0)
-          || (hs.last_update != 0)
-          || (fabs(hs.latency) > 0.0001)
-          || (hs.max_check_attempts != 0)
-          || (hs.modified_attributes != 0)
-          || (hs.next_check != 0)
-          || (hs.next_notification != 0)
-          || hs.no_more_notifications
-          || hs.notifications_enabled
-          || hs.obsess_over
-          || !hs.output.isEmpty()
-          || hs.passive_checks_enabled
-          || (fabs(hs.percent_state_change) > 0.0001)
-          || !hs.perf_data.isEmpty()
-          || hs.problem_has_been_acknowledged
-          || hs.process_performance_data
-          || (fabs(hs.retry_interval) > 0.0001)
-          || (hs.scheduled_downtime_depth != 0)
-          || hs.should_be_scheduled
-          || (hs.state_type != 0)
+  return (((hs.source_id != 0)
+           || (hs.destination_id != 0)
+           || hs.active_checks_enabled
+           || !hs.check_command.isEmpty()
+           || (fabs(hs.check_interval) > 0.0001)
+           || !hs.check_period.isEmpty()
+           || (hs.check_type != 0)
+           || (hs.current_check_attempt != 0)
+           || (hs.current_state != 4)
+           || !hs.enabled
+           || !hs.event_handler.isEmpty()
+           || hs.event_handler_enabled
+           || (fabs(hs.execution_time) > 0.0001)
+           || hs.flap_detection_enabled
+           || hs.has_been_checked
+           || (hs.host_id != 0)
+           || hs.is_flapping
+           || (hs.last_check != 0)
+           || (hs.last_hard_state != 4)
+           || (hs.last_hard_state_change != 0)
+           || (hs.last_state_change != 0)
+           || (hs.last_time_down != 0)
+           || (hs.last_time_unreachable != 0)
+           || (hs.last_time_up != 0)
+           || (hs.last_update != 0)
+           || (fabs(hs.latency) > 0.0001)
+           || (hs.max_check_attempts != 0)
+           || (hs.next_check != 0)
+           || hs.obsess_over
+           || !hs.output.isEmpty()
+           || (fabs(hs.percent_state_change) > 0.0001)
+           || !hs.perf_data.isEmpty()
+           || (fabs(hs.retry_interval) > 0.0001)
+           || hs.should_be_scheduled
+           || (hs.state_type != 0))
           ? EXIT_FAILURE
           : EXIT_SUCCESS);
 }

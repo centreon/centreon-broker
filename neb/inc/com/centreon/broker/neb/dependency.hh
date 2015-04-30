@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -49,7 +49,6 @@ namespace        neb {
     QString      execution_failure_options;
     unsigned int host_id;
     bool         inherits_parent;
-    QString      notification_failure_options;
 
   private:
     void         _internal_copy(dependency const& dep);

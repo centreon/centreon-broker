@@ -296,14 +296,12 @@ void subscriber::statistics(io::properties& tree) const {
              end(numcats.end());
            it != end;
            ++it) {
-        std::map<std::string, std::set<unsigned int> >::const_iterator
+        io::events::categories_container::const_iterator
           it2(io::events::instance().begin()),
           end2(io::events::instance().end());
         while (it2 != end2) {
-          if (!it2->second.empty()
-              && (*it == (io::events::category_of_type(
-                                        *it2->second.begin())))) {
-            oss << "\n  " << it2->first;
+          if (!it2->second.events.empty() && (*it == it2->first)) {
+            oss << "\n  " << it2->second.name;
             break ;
           }
           ++it2;

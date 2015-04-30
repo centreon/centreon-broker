@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -99,11 +99,10 @@ misc::shared_ptr<io::stream> temporary_endpoint::open() {
 /**
  *  Open endpoint.
  *
- *  @param[in] id The temporary id.
+ *  @param[in] id     The temporary id.
  *
  *  @return New temporary_stream.
  */
-misc::shared_ptr<io::stream> temporary_endpoint::open(
-                                                   QString const& id) {
+misc::shared_ptr<io::stream> temporary_endpoint::open(QString const& id) {
   return (misc::shared_ptr<io::stream>(new temporary_stream(id)));
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -136,11 +136,11 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(12 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(12);
 
     // Temporary disable checks.
     commander.execute("STOP_EXECUTING_SVC_CHECKS");
-    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(4);
 
     // T2.
     time_t t2(time(NULL));
@@ -149,12 +149,12 @@ int main() {
     broker.set_config_file(
              PROJECT_SOURCE_DIR "/test/cfg/failover_to_file.xml");
     broker.start();
-    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(10);
 
     // Check that retention was successfully replayed.
     {
       std::ostringstream oss;
-      oss << "SELECT last_check FROM services";
+      oss << "SELECT last_check FROM rt_services";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(oss.str().c_str()))
         throw (exceptions::msg()
@@ -173,7 +173,7 @@ int main() {
       }
       if (q.next())
         throw (exceptions::msg()
-               << "invalid entry count in services table");
+               << "invalid entry count in rt_services table");
     }
 
     // Stop Broker daemon.
@@ -184,23 +184,23 @@ int main() {
 
     // Reenable checks.
     commander.execute("START_EXECUTING_SVC_CHECKS");
-    sleep_for(12 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(12);
 
     // Redisable checks.
     commander.execute("STOP_EXECUTING_SVC_CHECKS");
-    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(4);
 
     // T4.
     time_t t4(time(NULL));
 
     // Restart Broker daemon.
     broker.start();
-    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(10);
 
     // Check that retention was successfully replayed.
     {
       std::ostringstream oss;
-      oss << "SELECT last_check FROM services";
+      oss << "SELECT last_check FROM rt_services";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(oss.str().c_str()))
         throw (exceptions::msg()

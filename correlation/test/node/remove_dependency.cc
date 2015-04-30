@@ -38,6 +38,6 @@ int main() {
   n1.remove_dependency(&n2);
 
   // Check.
-  return (!n1.depends_on().isEmpty()
-          || !n2.depended_by().isEmpty());
+  return (!n1.get_dependencies().empty()
+          || !n2.get_dependeds().empty());
 }

@@ -1,5 +1,6 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2009-2011,2015 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -19,6 +20,8 @@
 #ifndef CCB_NEB_SERVICE_GROUP_HH
 #  define CCB_NEB_SERVICE_GROUP_HH
 
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/neb/group.hh"
 
@@ -34,10 +37,17 @@ namespace          neb {
   class            service_group : public group {
   public:
                    service_group();
-                   service_group(service_group const& sg);
+                   service_group(service_group const& other);
                    ~service_group();
-    service_group& operator=(service_group const& sg);
+    service_group& operator=(service_group const& other);
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
+
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
   };
 }
 

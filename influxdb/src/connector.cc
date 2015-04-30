@@ -19,6 +19,7 @@
 
 #include "com/centreon/broker/influxdb/connector.hh"
 #include "com/centreon/broker/influxdb/stream.hh"
+#include "com/centreon/broker/persistent_cache.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
@@ -96,7 +97,8 @@ void connector::connect_to(
                   std::string const& status_ts,
                   std::vector<column> const& status_cols,
                   std::string const& metric_ts,
-                  std::vector<column> const& metric_cols) {
+                  std::vector<column> const& metric_cols,
+                  misc::shared_ptr<persistent_cache> const& cache) {
   _user = user;
   _password = passwd;
   _addr = addr;
@@ -108,6 +110,7 @@ void connector::connect_to(
   _status_cols = status_cols;
   _metric_ts = metric_ts;
   _metric_cols = metric_cols;
+  _cache = cache;
   return ;
 }
 
@@ -129,7 +132,8 @@ misc::shared_ptr<io::stream> connector::open() {
                   _status_ts,
                   _status_cols,
                   _metric_ts,
-                  _metric_cols)));
+                  _metric_cols,
+                  _cache)));
 }
 
 /**
@@ -167,5 +171,6 @@ void connector::_internal_copy(connector const& other) {
   _status_cols = other._status_cols;
   _metric_ts = other._metric_ts;
   _metric_cols = other._metric_cols;
+  _cache = other._cache;
   return ;
 }

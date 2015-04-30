@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -23,6 +23,8 @@
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/neb/acknowledgement.hh"
+#include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 
 using namespace com::centreon::broker;
@@ -219,8 +221,6 @@ void kpi_service::service_update(
       << _service_id << ") update";
 
     // Update information.
-    _acknowledged = status->problem_has_been_acknowledged;
-    _downtimed = status->scheduled_downtime_depth;
     if ((status->last_check == (time_t)-1)
         || (status->last_check == (time_t)0)) {
       if ((_last_check == (time_t)-1)
@@ -234,6 +234,64 @@ void kpi_service::service_update(
     _state_hard = status->last_hard_state;
     _state_soft = status->current_state;
     _state_type = status->state_type;
+
+    // Generate status event.
+    visit(visitor);
+
+    // Propagate change.
+    propagate_update(visitor);
+  }
+  return ;
+}
+
+/**
+ *  Service got an acknowledgement.
+ *
+ *  @param[in]  ack      Acknowledgement.
+ *  @param[out] visitor  Object that will receive events.
+ */
+void kpi_service::service_update(
+                    misc::shared_ptr<neb::acknowledgement> const& ack,
+                    io::stream* visitor) {
+  if (!ack.isNull()
+      && (ack->host_id == _host_id)
+      && (ack->service_id == _service_id)) {
+    // Log message.
+    logging::debug(logging::low) << "BAM: KPI " << _id
+      << " is getting an acknowledgement event for service ("
+      << _host_id << ", " << _service_id << ")";
+
+    // Update information.
+    _acknowledged = (ack->deletion_time != -1);
+
+    // Generate status event.
+    visit(visitor);
+
+    // Propagate change.
+    propagate_update(visitor);
+  }
+  return ;
+}
+
+/**
+ *  Service got a downtime.
+ *
+ *  @param[in]  dt
+ *  @param[out] visitor  Object that will receive events.
+ */
+void kpi_service::service_update(
+                    misc::shared_ptr<neb::downtime> const& dt,
+                    io::stream* visitor) {
+  if (!dt.isNull()
+      && (dt->host_id == _host_id)
+      && (dt->service_id == _service_id)) {
+    // Log message.
+    logging::debug(logging::low) << "BAM: KPI " << _id
+      << " is getting a downtime event for service ("
+      << _host_id << ", " << _service_id << ")";
+
+    // Update information.
+    _downtimed = (dt->was_started && (dt->actual_end_time != -1));
 
     // Generate status event.
     visit(visitor);

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -55,6 +55,8 @@ namespace                bam {
 
       std::string const& get_computation() const;
       unsigned int       get_id() const;
+      unsigned int       get_host_id() const;
+      unsigned int       get_service_id() const;
       double             get_level_critical() const;
       double             get_level_warning() const;
       std::string const& get_metric_name() const;
@@ -66,6 +68,8 @@ namespace                bam {
       void               add_metric(unsigned int metric_id);
       void               set_computation(std::string const& function);
       void               set_id(unsigned int id);
+      void               set_host_id(unsigned int host_id);
+      void               set_service_id(unsigned int service_id);
       void               set_level_critical(double level);
       void               set_level_warning(double level);
       void               set_metric_name(std::string const& metric);
@@ -77,6 +81,8 @@ namespace                bam {
 
       std::string        _computation;
       unsigned int       _id;
+      unsigned int       _host_id;
+      unsigned int       _service_id;
       double             _level_critical;
       double             _level_warning;
       std::string        _metric_name;

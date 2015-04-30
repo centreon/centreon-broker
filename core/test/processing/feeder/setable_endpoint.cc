@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -113,11 +113,12 @@ misc::shared_ptr<io::stream> setable_endpoint::open() {
 /**
  *  Open endpoint.
  *
- *  @param[in] id Unused.
+ *  @param[in] id     Unused.
  *
  *  @return New setable_stream.
  */
-misc::shared_ptr<io::stream> setable_endpoint::open(QString const& id) {
+misc::shared_ptr<io::stream> setable_endpoint::open(
+                                                 QString const& id) {
   (void)id;
   return (open());
 }

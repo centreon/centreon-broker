@@ -90,6 +90,39 @@ public:
     return (_sec);
   }
 
+  /**
+   *  Is this a null timestamp ?
+   *
+   *  @return  True if this is a null timestamp.
+   */
+  bool is_null() const {
+    return (_sec == (time_t)-1);
+  }
+
+  /**
+   *  Clear the timestamp.
+   */
+  void clear() {
+    _sec = (time_t)-1;
+  }
+
+  /**
+   *  Comparison function.
+   *
+   *  @param[in] left   The left object.
+   *  @param[in] right  The right object.
+   *
+   *  @return           True if this object is less than the other.
+   */
+  static bool less(timestamp const& left, timestamp const& right) {
+    if (left.is_null() && !right.is_null())
+      return (false);
+    else if (!left.is_null() && right.is_null())
+      return (true);
+    else
+      return (left._sec < right._sec);
+  }
+
   // Data.
   std::time_t _sec;
 };

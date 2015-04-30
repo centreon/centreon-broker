@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -86,6 +86,15 @@ bool kpi_event::operator==(kpi_event const& other) const {
  *  @return Event type.
  */
 unsigned int kpi_event::type() const {
+  return (kpi_event::static_type());
+}
+
+/**
+ *  Get the event type.
+ *
+ *  @return Event type.
+ */
+unsigned int kpi_event::static_type() {
   return (io::events::data_type<io::events::bam, bam::de_kpi_event>::value);
 }
 
@@ -105,3 +114,47 @@ void kpi_event::_internal_copy(kpi_event const& other) {
   status = other.status;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const kpi_event::entries[] = {
+  mapping::entry(
+    &bam::kpi_event::kpi_id,
+    "kpi_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &bam::kpi_event::end_time,
+    "end_time"),
+  mapping::entry(
+    &bam::kpi_event::impact_level,
+    "impact_level"),
+  mapping::entry(
+    &bam::kpi_event::in_downtime,
+    "in_downtime"),
+  mapping::entry(
+    &bam::kpi_event::output,
+    "first_output"),
+  mapping::entry(
+    &bam::kpi_event::perfdata,
+    "first_perfdata"),
+  mapping::entry(
+    &bam::kpi_event::start_time,
+    "start_time"),
+  mapping::entry(
+    &bam::kpi_event::status,
+    "status"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_kpi_event() {
+  return (new kpi_event);
+}
+io::event_info::event_operations const kpi_event::operations = {
+  &new_kpi_event
+};

@@ -1,5 +1,5 @@
 ##
-## Copyright 2009-2013 Merethis
+## Copyright 2009-2013,2015 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -28,7 +28,6 @@ set(NEB_SOURCES
   # Sources.
   "${SRC_DIR}/acknowledgement.cc"
   "${SRC_DIR}/check.cc"
-  "${SRC_DIR}/comment.cc"
   "${SRC_DIR}/custom_variable.cc"
   "${SRC_DIR}/custom_variable_status.cc"
   "${SRC_DIR}/dependency.cc"
@@ -49,9 +48,7 @@ set(NEB_SOURCES
   "${SRC_DIR}/instance.cc"
   "${SRC_DIR}/instance_status.cc"
   "${SRC_DIR}/log_entry.cc"
-#  "${SRC_DIR}/mapping.cc"
   "${SRC_DIR}/module.cc"
-  "${SRC_DIR}/notification.cc"
   "${SRC_DIR}/service.cc"
   "${SRC_DIR}/service_check.cc"
   "${SRC_DIR}/service_dependency.cc"
@@ -62,7 +59,6 @@ set(NEB_SOURCES
   # Headers.
   "${INC_DIR}/com/centreon/broker/neb/acknowledgement.hh"
   "${INC_DIR}/com/centreon/broker/neb/check.hh"
-  "${INC_DIR}/com/centreon/broker/neb/comment.hh"
   "${INC_DIR}/com/centreon/broker/neb/custom_variable.hh"
   "${INC_DIR}/com/centreon/broker/neb/custom_variable_status.hh"
   "${INC_DIR}/com/centreon/broker/neb/dependency.hh"
@@ -86,7 +82,6 @@ set(NEB_SOURCES
   "${INC_DIR}/com/centreon/broker/neb/internal.hh"
   "${INC_DIR}/com/centreon/broker/neb/log_entry.hh"
   "${INC_DIR}/com/centreon/broker/neb/module.hh"
-  "${INC_DIR}/com/centreon/broker/neb/notification.hh"
   "${INC_DIR}/com/centreon/broker/neb/service.hh"
   "${INC_DIR}/com/centreon/broker/neb/service_check.hh"
   "${INC_DIR}/com/centreon/broker/neb/service_dependency.hh"
@@ -119,6 +114,18 @@ set(NEB "${NEB}" PARENT_SCOPE)
 add_library("${NEB}" SHARED
   # Main source.
   "${SRC_DIR}/broker.cc"
+  "${SRC_DIR}/downtime_scheduler.cc"
+  "${SRC_DIR}/node_events_connector.cc"
+  "${SRC_DIR}/node_events_factory.cc"
+  "${SRC_DIR}/node_events_stream.cc"
+  "${SRC_DIR}/node_id.cc"
+
+  # Inc
+  "${INC_DIR}/com/centreon/broker/neb/downtime_scheduler.hh"
+  "${INC_DIR}/com/centreon/broker/neb/node_events_connector.hh"
+  "${INC_DIR}/com/centreon/broker/neb/node_events_factory.hh"
+  "${INC_DIR}/com/centreon/broker/neb/node_events_stream.hh"
+  "${INC_DIR}/com/centreon/broker/neb/node_id.hh"
 )
 if (CMAKE_COMPILER_IS_GNUCXX)
   # Flags needed to include all symbols in binary.
@@ -164,8 +171,6 @@ add_library("${CBMOD}" SHARED
   "${SRC_DIR}/statistics/hosts_actively_checked.cc"
   "${SRC_DIR}/statistics/hosts_checked.cc"
   "${SRC_DIR}/statistics/hosts_flapping.cc"
-  "${SRC_DIR}/statistics/hosts_in_downtime.cc"
-  "${SRC_DIR}/statistics/hosts_passively_checked.cc"
   "${SRC_DIR}/statistics/hosts_scheduled.cc"
   "${SRC_DIR}/statistics/passive_host_latency.cc"
   "${SRC_DIR}/statistics/passive_host_state_change.cc"
@@ -178,8 +183,6 @@ add_library("${CBMOD}" SHARED
   "${SRC_DIR}/statistics/services_actively_checked.cc"
   "${SRC_DIR}/statistics/services_checked.cc"
   "${SRC_DIR}/statistics/services_flapping.cc"
-  "${SRC_DIR}/statistics/services_in_downtime.cc"
-  "${SRC_DIR}/statistics/services_passively_checked.cc"
   "${SRC_DIR}/statistics/services_scheduled.cc"
   "${SRC_DIR}/statistics/total_host_state_change.cc"
   "${SRC_DIR}/statistics/total_hosts.cc"
@@ -207,8 +210,6 @@ add_library("${CBMOD}" SHARED
   "${INC_DIR}/com/centreon/broker/neb/statistics/hosts_actively_checked.hh"
   "${INC_DIR}/com/centreon/broker/neb/statistics/hosts_checked.hh"
   "${INC_DIR}/com/centreon/broker/neb/statistics/hosts_flapping.hh"
-  "${INC_DIR}/com/centreon/broker/neb/statistics/hosts_in_downtime.hh"
-  "${INC_DIR}/com/centreon/broker/neb/statistics/hosts_passively_checked.hh"
   "${INC_DIR}/com/centreon/broker/neb/statistics/hosts_scheduled.hh"
   "${INC_DIR}/com/centreon/broker/neb/statistics/passive_host_latency.hh"
   "${INC_DIR}/com/centreon/broker/neb/statistics/passive_host_state_change.hh"
@@ -221,17 +222,12 @@ add_library("${CBMOD}" SHARED
   "${INC_DIR}/com/centreon/broker/neb/statistics/services_actively_checked.hh"
   "${INC_DIR}/com/centreon/broker/neb/statistics/services_checked.hh"
   "${INC_DIR}/com/centreon/broker/neb/statistics/services_flapping.hh"
-  "${INC_DIR}/com/centreon/broker/neb/statistics/services_in_downtime.hh"
-  "${INC_DIR}/com/centreon/broker/neb/statistics/services_passively_checked.hh"
   "${INC_DIR}/com/centreon/broker/neb/statistics/services_scheduled.hh"
   "${INC_DIR}/com/centreon/broker/neb/statistics/total_host_state_change.hh"
   "${INC_DIR}/com/centreon/broker/neb/statistics/total_hosts.hh"
   "${INC_DIR}/com/centreon/broker/neb/statistics/total_service_state_change.hh"
   "${INC_DIR}/com/centreon/broker/neb/statistics/total_services.hh"
 )
-
-
-
 get_property(CBMOD_DEFINES
   TARGET "${CBMOD}"
   PROPERTY COMPILE_DEFINITIONS)
@@ -256,47 +252,7 @@ if (WITH_TESTING)
   include_directories("${PROJECT_SOURCE_DIR}/neb")
   include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
   include_directories("${PROJECT_SOURCE_DIR}/dumper/inc")
-  add_library("neb_mapping"
-    "${PROJECT_SOURCE_DIR}/core/src/mapping.cc")
-  set(TEST_LIBRARIES "${NEB}" "neb_mapping" "roker")
-  # Acknowledgement tests.
-  #   Default constructor.
-  set(TEST_NAME "neb_acknowledgement_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/acknowledgement/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "neb_acknowledgement_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/acknowledgement/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "neb_acknowledgement_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/acknowledgement/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Comment tests.
-  #   Default constructor.
-  set(TEST_NAME "neb_comment_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/comment/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "neb_comment_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/comment/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "neb_comment_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/comment/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  set(TEST_LIBRARIES "${NEB}" "roker")
   # Custom Variable tests.
   #   Default constructor.
   set(TEST_NAME "neb_custom_variable_ctor_default")
@@ -333,25 +289,6 @@ if (WITH_TESTING)
   set(TEST_NAME "neb_custom_variable_status_assignment")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/custom_variable_status/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Downtime tests.
-  #   Default constructor.
-  set(TEST_NAME "neb_downtime_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/downtime/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "neb_downtime_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/downtime/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "neb_downtime_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/downtime/assignment.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # Event Handler tests.
@@ -601,25 +538,6 @@ if (WITH_TESTING)
     "${TEST_DIR}/module/assignment.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Notification Tests.
-  #   Default constructor.
-  set(TEST_NAME "neb_notification_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/notification/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "neb_notification_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/notification/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "neb_notification_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/notification/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
   # Service Tests.
   #   Default constructor.
   set(TEST_NAME "neb_service_ctor_default")
@@ -754,22 +672,6 @@ if (WITH_TESTING)
     "${TEST_DIR}/set_log_data/service_alert.cc")
   target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Host notification.
-  set(TEST_NAME "neb_set_log_data_host_notification")
-  add_executable("${TEST_NAME}"
-    "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/set_log_data.cc"
-    "${TEST_DIR}/set_log_data/host_notification.cc")
-  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Service notification.
-  set(TEST_NAME "neb_set_log_data_service_notification")
-  add_executable("${TEST_NAME}"
-    "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/set_log_data.cc"
-    "${TEST_DIR}/set_log_data/service_notification.cc")
-  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Initial host state.
   set(TEST_NAME "neb_set_log_data_initial_host_state")
   add_executable("${TEST_NAME}"
@@ -802,21 +704,28 @@ if (WITH_TESTING)
     "${TEST_DIR}/set_log_data/current_service_state.cc")
   target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Host acknowledgement external command.
-  set(TEST_NAME "neb_set_log_data_external_acknowledge_host")
+  #   Default logs.
+  set(TEST_NAME "neb_set_log_data_default")
   add_executable("${TEST_NAME}"
     "${SRC_DIR}/internal.cc"
     "${SRC_DIR}/set_log_data.cc"
-    "${TEST_DIR}/set_log_data/external_acknowledge_host.cc")
+    "${TEST_DIR}/set_log_data/default.cc")
   target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Service acknowledgement external command.
-  set(TEST_NAME "neb_set_log_data_external_acknowledge_service")
+  # Node events.
+  set(TEST_NAME "neb_downtime_fixed")
   add_executable("${TEST_NAME}"
-    "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/set_log_data.cc"
-    "${TEST_DIR}/set_log_data/external_acknowledge_service.cc")
-  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
+    "${TEST_DIR}/node_events/downtime_fixed.cc"
+    "${TEST_DIR}/node_events/common.hh"
+    "${TEST_DIR}/node_events/common.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  set(TEST_NAME "neb_downtime_floating")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/node_events/downtime_floating.cc"
+    "${TEST_DIR}/node_events/common.hh"
+    "${TEST_DIR}/node_events/common.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()
 

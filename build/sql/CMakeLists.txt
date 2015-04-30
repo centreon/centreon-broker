@@ -1,5 +1,5 @@
 ##
-## Copyright 2011 Merethis
+## Copyright 2011-2015 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -22,7 +22,6 @@ set(INC_DIR "${PROJECT_SOURCE_DIR}/sql/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/sql/src")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
-include_directories("${PROJECT_SOURCE_DIR}/dumper/inc")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 
 # SQL module.
@@ -37,7 +36,6 @@ add_library("${SQL}" SHARED
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/stream.cc"
   "${SRC_DIR}/stored_timestamp.cc"
-  "${PROJECT_SOURCE_DIR}/core/src/mapping.cc"
   # Headers.
   "${INC_DIR}/com/centreon/broker/sql/cleanup.hh"
   "${INC_DIR}/com/centreon/broker/sql/connector.hh"

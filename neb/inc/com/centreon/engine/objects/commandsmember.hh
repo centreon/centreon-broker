@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -20,26 +20,23 @@
 #ifndef CCE_OBJECTS_COMMANDSMEMBER_HH
 #  define CCE_OBJECTS_COMMANDSMEMBER_HH
 
-#  include "com/centreon/engine/objects.hh"
+#  include <ostream>
 
-#  ifdef __cplusplus
-extern "C" {
-#  endif // C++
+/* Forward declaration. */
+struct command_struct;
 
-commandsmember const* release_commandsmember(commandsmember const* obj);
+typedef struct                  commandsmember_struct {
+  char*                         cmd;
+  command_struct*               command_ptr;
+  struct commandsmember_struct* next;
+}                               commandsmember;
 
-#  ifdef __cplusplus
-}
-
-namespace                     com {
-  namespace                   centreon {
-    namespace                 engine {
-      namespace               objects {
-        commandsmember const* release(commandsmember const* obj);
-      }
-    }
-  }
-}
-#  endif // C++
+bool          operator==(
+                commandsmember const& obj1,
+                commandsmember const& obj2) throw ();
+bool          operator!=(
+                commandsmember const& obj1,
+                commandsmember const& obj2) throw ();
+std::ostream& operator<<(std::ostream& os, commandsmember const& obj);
 
 #endif // !CCE_OBJECTS_COMMANDSMEMBER_HH

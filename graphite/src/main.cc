@@ -38,7 +38,6 @@ extern "C" {
     // Decrement instance number.
     if (!--instances) {
       // Deregister storage layer.
-      io::events::instance().unreg("graphite");
       io::protocols::instance().unreg("graphite");
 
       // Remove the workaround connection.

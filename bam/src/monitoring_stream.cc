@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -38,7 +38,10 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/neb/acknowledgement.hh"
+#include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/internal.hh"
+#include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/metric.hh"
@@ -57,15 +60,12 @@ using namespace com::centreon::broker::bam;
  *  Constructor.
  *
  *  @param[in] db_cfg           Database configuration.
- *  @param[in] ext_cmd_file     External command file.
  *  @param[in] storage_db_name  Storage DB name.
  */
 monitoring_stream::monitoring_stream(
                      database_config const& db_cfg,
-                     std::string const& ext_cmd_file,
                      std::string const& storage_db_name)
-  : _ext_cmd_file(ext_cmd_file),
-    _process_out(true),
+  : _process_out(true),
     _storage_cfg(db_cfg),
     _db(db_cfg),
     _ba_update(_db),
@@ -88,8 +88,6 @@ monitoring_stream::monitoring_stream(
 
   // Apply configuration.
   _applier.apply(s);
-  _ba_mapping = s.get_ba_svc_mapping();
-  _meta_mapping = s.get_meta_svc_mapping();
 
   // Check if we need to rebuild something.
   _rebuild();
@@ -161,8 +159,6 @@ void monitoring_stream::update() {
       r.read(s);
     }
     _applier.apply(s);
-    _ba_mapping = s.get_ba_svc_mapping();
-    _meta_mapping = s.get_meta_svc_mapping();
     _rebuild();
     initialize();
   }
@@ -190,10 +186,8 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
     ++_pending_events;
 
     // Process service status events.
-    if ((data->type()
-        == io::events::data_type<io::events::neb, neb::de_service_status>::value)
-        || (data->type()
-            == io::events::data_type<io::events::neb, neb::de_service>::value)) {
+    if ((data->type() == neb::service_status::static_type())
+        || (data->type() == neb::service::static_type())) {
       misc::shared_ptr<neb::service_status>
         ss(data.staticCast<neb::service_status>());
       logging::debug(logging::low)
@@ -206,8 +200,29 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
       _applier.book_service().update(ss, &ev_cache);
       ev_cache.commit_to(pblshr);
     }
-    else if (data->type()
-             == io::events::data_type<io::events::storage, storage::de_metric>::value) {
+    else if (data->type() == neb::acknowledgement::static_type()) {
+      misc::shared_ptr<neb::acknowledgement>
+	ack(data.staticCast<neb::acknowledgement>());
+      logging::debug(logging::low)
+	<< "BAM: processing acknowledgement (host "
+	<< ack->host_id << ", service " << ack->service_id << ")";
+      multiplexing::publisher pblshr;
+      event_cache_visitor ev_cache;
+      _applier.book_service().update(ack, &ev_cache);
+      ev_cache.commit_to(pblshr);
+    }
+    else if (data->type() == neb::downtime::static_type()) {
+      misc::shared_ptr<neb::downtime>
+	dt(data.staticCast<neb::downtime>());
+      logging::debug(logging::low)
+	<< "BAM: processing downtime (host " << dt->host_id
+	<< ", service " << dt->service_id << ")";
+      multiplexing::publisher pblshr;
+      event_cache_visitor ev_cache;
+      _applier.book_service().update(dt, &ev_cache);
+      ev_cache.commit_to(pblshr);
+    }
+    else if (data->type() == storage::metric::static_type()) {
       misc::shared_ptr<storage::metric>
         m(data.staticCast<storage::metric>());
       logging::debug(logging::low)
@@ -218,8 +233,7 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
       _applier.book_metric().update(m, &ev_cache);
       ev_cache.commit_to(pblshr);
     }
-    else if (data->type()
-             == io::events::data_type<io::events::bam, bam::de_ba_status>::value) {
+    else if (data->type() == bam::ba_status::static_type()) {
       ba_status* status(static_cast<ba_status*>(data.data()));
       logging::debug(logging::low) << "BAM: processing BA status (id "
         << status->ba_id << ", level " << status->level_nominal
@@ -244,28 +258,8 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
         throw (exceptions::msg() << "BAM: could not update BA "
                << status->ba_id << ": " << e.what());
       }
-
-      if (status->state_changed) {
-        std::pair<std::string, std::string>
-          ba_svc_name(_ba_mapping.get_service(status->ba_id));
-        if (ba_svc_name.first.empty() || ba_svc_name.second.empty()) {
-          logging::error(logging::high)
-            << "BAM: could not trigger check of virtual service of BA "
-            << status->ba_id
-            << ": host name and service description were not found";
-        }
-        else {
-          std::ostringstream oss;
-          time_t now(time(NULL));
-          oss << "[" << now << "] SCHEDULE_FORCED_SVC_CHECK;"
-              << ba_svc_name.first << ";" << ba_svc_name.second << ";"
-              << now;
-          _write_external_command(oss.str());
-        }
-      }
     }
-    else if (data->type()
-             == io::events::data_type<io::events::bam, bam::de_bool_status>::value) {
+    else if (data->type() == bam::bool_status::static_type()) {
       bool_status* status(static_cast<bool_status*>(data.data()));
       logging::debug(logging::low) << "BAM: processing boolexp status (id "
         << status->bool_id << ", state " << status->state << ")";
@@ -278,8 +272,7 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
                << status->bool_id << ": " << e.what());
       }
     }
-    else if (data->type()
-             == io::events::data_type<io::events::bam, bam::de_kpi_status>::value) {
+    else if (data->type() == bam::kpi_status::static_type()) {
       kpi_status* status(static_cast<kpi_status*>(data.data()));
       logging::debug(logging::low) << "BAM: processing KPI status (id "
         << status->kpi_id << ", level " << status->level_nominal_hard
@@ -310,8 +303,7 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
                << status->kpi_id << ": " << e.what());
       }
     }
-    else if (data->type()
-             == io::events::data_type<io::events::bam, bam::de_meta_service_status>::value) {
+    else if (data->type() == bam::meta_service_status::static_type()) {
       meta_service_status* status(static_cast<meta_service_status*>(data.data()));
       logging::debug(logging::low)
         << "BAM: processing meta-service status (id "
@@ -326,25 +318,6 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
         throw (exceptions::msg()
                << "BAM: could not update meta-service "
                << status->meta_service_id << ": " << e.what());
-      }
-
-      if (status->state_changed) {
-        std::pair<std::string, std::string>
-          meta_svc_name(_meta_mapping.get_service(status->meta_service_id));
-        if (meta_svc_name.first.empty() || meta_svc_name.second.empty()) {
-          logging::error(logging::high)
-            << "BAM: could not trigger check of virtual service of meta-service "
-            << status->meta_service_id
-            << ": host name and service description were not found";
-        }
-        else {
-          std::ostringstream oss;
-          time_t now(time(NULL));
-          oss << "[" << now << "] SCHEDULE_FORCED_SVC_CHECK;"
-              << meta_svc_name.first << ";" << meta_svc_name.second
-              << ";" << now;
-          _write_external_command(oss.str());
-        }
       }
     }
   }
@@ -404,7 +377,7 @@ void monitoring_stream::_prepare() {
   // BA status.
   {
     std::string query;
-    query = "UPDATE mod_bam"
+    query = "UPDATE cfg_bam"
             "  SET current_level=:level_nominal,"
             "      acknowledged=:level_acknowledgement,"
             "      downtime=:level_downtime,"
@@ -425,8 +398,8 @@ void monitoring_stream::_prepare() {
   // Boolean expression status.
   {
     std::string query;
-    query = "UPDATE mod_bam_boolean AS b"
-            "  LEFT JOIN mod_bam_kpi AS k"
+    query = "UPDATE cfg_bam_boolean AS b"
+            "  LEFT JOIN cfg_bam_kpi AS k"
             "    ON b.boolean_id=k.boolean_id"
             "  SET k.current_status = "
             "      CASE WHEN :state=b.bool_state THEN 2 ELSE 0 END,"
@@ -440,7 +413,7 @@ void monitoring_stream::_prepare() {
   // KPI status.
   {
     std::string query;
-    query = "UPDATE mod_bam_kpi"
+    query = "UPDATE cfg_bam_kpi"
             "  SET acknowledged=:level_acknowledgement,"
             "      current_status=:state,"
             "      downtime=:level_downtime, last_level=:level_nominal,"
@@ -456,12 +429,12 @@ void monitoring_stream::_prepare() {
   // Meta-service status.
   {
     std::string query;
-    query = "UPDATE meta_service"
+    query = "UPDATE cfg_meta_services"
             "  SET value=:value"
             "  WHERE meta_id=:meta_service_id";
-    // XXX : _meta_service_update.prepare(
-    //  query,
-    //  "BAM: could not prepare meta-service update query");
+    _meta_service_update.prepare(
+      query,
+      "BAM: could not prepare meta-service update query");
   }
 
   return ;
@@ -475,7 +448,7 @@ void monitoring_stream::_rebuild() {
   std::vector<unsigned int> bas_to_rebuild;
   {
     std::string query = "SELECT ba_id"
-                        "  FROM mod_bam"
+                        "  FROM cfg_bam"
                         "  WHERE must_be_rebuild='1'";
     database_query q(_db);
     q.run_query(
@@ -509,7 +482,7 @@ void monitoring_stream::_rebuild() {
 
   // Set all the BAs to should not be rebuild.
   {
-    std::string query = "UPDATE mod_bam"
+    std::string query = "UPDATE cfg_bam"
                         "  SET must_be_rebuild='0'";
     database_query q(_db);
     q.run_query(
@@ -526,33 +499,5 @@ void monitoring_stream::_rebuild() {
 void monitoring_stream::_update_status(std::string const& status) {
   QMutexLocker lock(&_statusm);
   _status = status;
-  return ;
-}
-
-/**
- *  Write an external command to Engine.
- *
- *  @param[in] cmd  Command to write to the external command pipe.
- */
-void monitoring_stream::_write_external_command(
-                          std::string const& cmd) {
-  std::ofstream ofs;
-  ofs.open(_ext_cmd_file.c_str());
-  if (!ofs.good()) {
-    logging::error(logging::medium)
-      << "BAM: could not write BA check result to command file '"
-      << _ext_cmd_file << "'";
-  }
-  else {
-    ofs.write(cmd.c_str(), cmd.size());
-    if (!ofs.good())
-      logging::error(logging::medium)
-        << "BAM: could not write BA check result to command file '"
-        << _ext_cmd_file << "'";
-    else
-      logging::debug(logging::medium)
-        << "BAM: sent external command '" << cmd << "'";
-    ofs.close();
-  }
   return ;
 }

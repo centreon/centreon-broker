@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -73,13 +73,21 @@ bool rebuild::operator==(
   return (bas_to_rebuild == other.bas_to_rebuild);
 }
 
-
 /**
  *  Get the event type.
  *
  *  @return Event type.
  */
 unsigned int rebuild::type() const {
+  return (rebuild::static_type());
+}
+
+/**
+ *  Get the event type.
+ *
+ *  @return Event type.
+ */
+unsigned int rebuild::static_type() {
   return (io::events::data_type<io::events::bam,
                                 bam::de_rebuild>::value);
 }
@@ -94,3 +102,25 @@ void rebuild::_internal_copy(
   bas_to_rebuild = other.bas_to_rebuild;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const rebuild::entries[] = {
+  mapping::entry(
+    &bam::rebuild::bas_to_rebuild,
+    "bas_to_rebuild"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_rebuild() {
+  return (new rebuild);
+}
+io::event_info::event_operations const rebuild::operations = {
+  &new_rebuild
+};

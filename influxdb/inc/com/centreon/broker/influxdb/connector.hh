@@ -43,8 +43,7 @@ namespace           influxdb {
     connector&      operator=(connector const& other);
     io::endpoint*   clone() const;
     void            close();
-    void            connect_to(
-                      std::string const& user,
+    void            connect_to(std::string const& user,
                       std::string const& passwd,
                       std::string const& addr,
                       unsigned short _port,
@@ -54,7 +53,8 @@ namespace           influxdb {
                       std::string const& status_ts,
                       std::vector<column> const& status_cols,
                       std::string const& metric_ts,
-                      std::vector<column> const& metric_cols);
+                      std::vector<column> const& metric_cols,
+                      misc::shared_ptr<persistent_cache> const& cache);
     misc::shared_ptr<io::stream>
                     open();
     misc::shared_ptr<io::stream>
@@ -74,6 +74,8 @@ namespace           influxdb {
     std::string     _metric_ts;
     std::vector<column>
                     _metric_cols;
+    misc::shared_ptr<persistent_cache>
+                    _cache;
 
     void            _internal_copy(connector const& other);
   };

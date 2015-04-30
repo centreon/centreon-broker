@@ -85,7 +85,9 @@ bool factory::has_endpoint(
   (void)is_input;
   (void)is_output;
   bool retval;
-  if (cfg.type == "dumper") {
+  if (cfg.type == "dumper"
+        || cfg.type == "dump_fifo"
+        || cfg.type == "dump_dir") {
     cfg.params["coarse"] = "yes"; // Dumper won't respond to any salutation.
     retval = true;
   }
@@ -101,6 +103,7 @@ bool factory::has_endpoint(
  *  @param[in]  is_input    true if the dumper should act as input.
  *  @param[in]  is_output   true if the dumper should act as output.
  *  @param[out] is_acceptor Will be set to false.
+ *  @param[in]  cache       Persistent cache.
  *
  *  @return Acceptor matching configuration.
  */
@@ -108,8 +111,18 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool is_input,
                          bool is_output,
-                         bool& is_acceptor) const {
+                         bool& is_acceptor,
+                         misc::shared_ptr<persistent_cache> cache) const {
   (void)is_acceptor;
+
+  // Get the type of this dumper.
+  opener::dumper_type type = opener::dump;
+  if (cfg.type == "dump")
+    type = opener::dump;
+  else if (cfg.type == "dump_fifo")
+    type = opener::dump_fifo;
+  else if (cfg.type == "dump_dir")
+    type = opener::dump_dir;
 
   // Find path to the dumper.
   std::string path;
@@ -133,7 +146,9 @@ io::endpoint* factory::new_endpoint(
 
   // Generate opener.
   std::auto_ptr<opener> openr(new opener(is_input, is_output));
+  openr->set_type(type);
   openr->set_path(path);
   openr->set_tagname(tagname);
+  openr->set_cache(cache);
   return (openr.release());
 }

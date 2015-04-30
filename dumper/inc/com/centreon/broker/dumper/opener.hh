@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -23,6 +23,7 @@
 #  include <string>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/persistent_cache.hh"
 
 CCB_BEGIN()
 
@@ -35,6 +36,11 @@ namespace                        dumper {
    */
   class                          opener : public io::endpoint {
   public:
+    enum                         dumper_type {
+                                 dump,
+                                 dump_dir,
+                                 dump_fifo
+    };
                                  opener(bool is_in, bool is_out);
                                  opener(opener const& o);
                                  ~opener();
@@ -45,15 +51,21 @@ namespace                        dumper {
     misc::shared_ptr<io::stream> open(QString const& id);
     void                         set_path(std::string const& path);
     void                         set_tagname(std::string const& tagname);
+    void                         set_type(dumper_type type);
+    void                         set_cache(
+                                   misc::shared_ptr<persistent_cache> cache);
 
    private:
     std::string                  _path;
     bool                         _is_in;
     bool                         _is_out;
     std::string                  _tagname;
+    dumper_type                  _type;
+    misc::shared_ptr<persistent_cache>
+                                 _cache;
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_DUMPER_OPENER_HH */
+#endif // !CCB_DUMPER_OPENER_HH

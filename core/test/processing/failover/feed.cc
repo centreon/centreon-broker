@@ -29,6 +29,8 @@
 #include "test/processing/feeder/common.hh"
 #include "test/processing/feeder/setable_endpoint.hh"
 
+#include <iostream>
+
 using namespace com::centreon::broker;
 
 /**
@@ -88,6 +90,7 @@ int main(int argc, char* argv[]) {
     misc::shared_ptr<io::data> event;
     s.read(event, 0);
     while (!event.isNull()) {
+      std::cout << "not null event type = " << event->type() << std::endl;
       if (event->type() != io::events::data_type<io::events::internal, 1>::value)
         retval |= 1;
       else {

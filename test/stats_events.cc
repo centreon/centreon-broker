@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -273,7 +273,7 @@ int main(int argc, char* argv[]) {
           << "  <output>\n"
           << "    <type>dumper</type>\n"
           << "    <tagname>CentralBroker</tagname>\n"
-          << "    <path>" << metrics_path << "/$instance_id$.stats" << "</path>\n"
+          << "    <path>" << metrics_path << "/$INSTANCEID$.stats" << "</path>\n"
           << "  </output>\n"
           << "</centreonbroker>\n";
       ofs.close();
@@ -292,7 +292,7 @@ int main(int argc, char* argv[]) {
       QSqlQuery q(*db.storage_db());
       for (unsigned int i(1); i <= 33; ++i) {
         std::ostringstream query;
-        query << "INSERT INTO index_data (host_id, service_id)"
+        query << "INSERT INTO rt_index_data (host_id, service_id)"
               << "  VALUES (" << 1 << ", " << i << ")";
         if (!q.exec(query.str().c_str()))
           throw (exceptions::msg() << "cannot create index of service ("
@@ -304,7 +304,7 @@ int main(int argc, char* argv[]) {
     std::list<unsigned int> indexes;
     {
       QSqlQuery q(*db.storage_db());
-      if (!q.exec("SELECT id FROM index_data ORDER BY service_id ASC"))
+      if (!q.exec("SELECT id FROM rt_index_data ORDER BY service_id ASC"))
         throw (exceptions::msg() << "cannot get index list: "
                << qPrintable(q.lastError().text()));
       while (q.next())
@@ -321,14 +321,14 @@ int main(int argc, char* argv[]) {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(15);
 
     // Check metrics table.
     std::list<unsigned int> metrics;
     {
       std::ostringstream query;
       query << "SELECT metric_id"
-            << "  FROM metrics";
+            << "  FROM rt_metrics";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot get metric list: "
@@ -349,7 +349,7 @@ int main(int argc, char* argv[]) {
            ++it) {
         std::ostringstream query;
         query << "SELECT COUNT(*)"
-              << "  FROM data_bin"
+              << "  FROM log_data_bin"
               << "  WHERE id_metric=" << *it;
         QSqlQuery q(*db.storage_db());
         if (!q.exec(query.str().c_str())

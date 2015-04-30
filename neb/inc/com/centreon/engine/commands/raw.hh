@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -20,66 +20,59 @@
 #ifndef CCE_COMMANDS_RAW_HH
 #  define CCE_COMMANDS_RAW_HH
 
-#  include <QHash>
-#  include <QMutex>
-#  include <QSharedPointer>
-#  include <QString>
-#  include <sys/time.h>
+#  include <list>
+#  include <string>
+#  include "com/centreon/concurrency/mutex.hh"
 #  include "com/centreon/engine/commands/command.hh"
-#  include "com/centreon/engine/commands/process.hh"
+#  include "com/centreon/engine/namespace.hh"
+#  include "com/centreon/process.hh"
+#  include "com/centreon/process_listener.hh"
+#  include "com/centreon/unordered_hash.hh"
 
-namespace                 com {
-  namespace               centreon {
-    namespace             engine {
-      namespace           commands {
-        /**
-         *  @class raw raw.hh
-         *  @brief Raw is a specific implementation of command.
-         *
-         *  Raw is a specific implementation of command.
-         */
-        class             raw : public command {
-          Q_OBJECT
+CCE_BEGIN()
 
-        public:
-                          raw(
-                            QString const& name,
-                            QString const& command_line);
-                          raw(raw const& right);
-                          ~raw() throw ();
-          raw&            operator=(raw const& right);
-          command*        clone() const;
-          unsigned long   run(
-                            QString const& process_cmd,
-                            nagios_macros const& macros,
-                            unsigned int timeout);
-          void            run(
-                            QString const& process_cmd,
-                            nagios_macros const& macros,
-                            unsigned int timeout,
-                            result& res);
+namespace               commands {
+  /**
+   *  @class raw raw.hh
+   *  @brief Raw is a specific implementation of command.
+   *
+   *  Raw is a specific implementation of command.
+   */
+  class                 raw
+    : public command,
+      public process_listener {
+  public:
+                        raw(
+                          std::string const& name,
+                          std::string const& command_line,
+                          command_listener* listener = NULL);
+                        raw(raw const& right);
+                        ~raw() throw ();
+    raw&                operator=(raw const& right);
+    command*            clone() const;
+    unsigned long       run(
+                          std::string const& process_cmd,
+                          nagios_macros& macros,
+                          unsigned int timeout);
+    void                run(
+                          std::string const& process_cmd,
+                          nagios_macros& macros,
+                          unsigned int timeout,
+                          result& res);
 
-        signals:
-          void            _empty_hash();
+  private:
+    void                data_is_available(process& p) throw ();
+    void                data_is_available_err(process& p) throw ();
+    void                finished(process& p) throw ();
+    process*            _get_free_process();
 
-        public slots:
-          void            raw_ended();
-
-        private:
-          struct                    process_info {
-            unsigned long           cmd_id;
-            QSharedPointer<process> proc;
-          };
-
-          static void     _deletelater_process(process* obj);
-
-          QMutex          _mutex;
-          QHash<QObject*, process_info>
-                          _processes;
-        };
-      }
-    }
-  }
+    concurrency::mutex  _lock;
+    umap<process*, unsigned long>
+                        _processes_busy;
+    std::list<process*> _processes_free;
+  };
 }
+
+CCE_END()
 
 #endif // !CCE_COMMANDS_RAW_HH

@@ -49,19 +49,10 @@ void compare_states(
       else if (*it1 != *it2)
         throw (exceptions::msg() << "state mismatch: got node (host id "
                << it1->host_id << ", service id " << it1->service_id
-               << ", in downtime " << it1->in_downtime << ", since "
-               << it1->since << ", state " << it1->state
-               << ", children " << it1->children().size()
-               << ", parents " << it1->parents().size()
-               << ", depended by " << it1->depended_by().size()
-               << ", depends on " << it1->depends_on().size()
+               << ", state " << it1->state
                << ") against (" << it2->host_id << ", "
-               << it2->service_id << ", " << it2->in_downtime << ", "
-               << it2->since << ", " << it2->state << ", "
-               << it2->children().size() << ", "
-               << it2->parents().size() << ", "
-               << it2->depended_by().size() << ", "
-               << it2->depends_on().size() << ")");
+               << it2->service_id << ", "
+               << it2->state << ")");
   }
   return ;
 }

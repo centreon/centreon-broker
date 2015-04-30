@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/remove_graph.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
 /**************************************
@@ -70,6 +71,15 @@ remove_graph& remove_graph::operator=(remove_graph const& right) {
  *  @return The event type.
  */
 unsigned int remove_graph::type() const {
+  return (remove_graph::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int remove_graph::static_type() {
   return (io::events::data_type<io::events::storage, storage::de_remove_graph>::value);
 }
 
@@ -89,3 +99,29 @@ void remove_graph::_internal_copy(remove_graph const& right) {
   is_index = right.is_index;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const remove_graph::entries[] = {
+  mapping::entry(
+    &remove_graph::id,
+    "id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &remove_graph::is_index,
+    "is_end"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_remove_graph() {
+  return (new remove_graph);
+}
+io::event_info::event_operations const remove_graph::operations = {
+  &new_remove_graph
+};

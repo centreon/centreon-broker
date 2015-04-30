@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -76,13 +76,21 @@ bool dimension_ba_bv_relation_event::operator==(
           && (bv_id == other.bv_id));
 }
 
-
 /**
  *  Get the event type.
  *
  *  @return Event type.
  */
 unsigned int dimension_ba_bv_relation_event::type() const {
+  return (dimension_ba_bv_relation_event::static_type());
+}
+
+/**
+ *  Get the event type.
+ *
+ *  @return Event type.
+ */
+unsigned int dimension_ba_bv_relation_event::static_type() {
   return (io::events::data_type<io::events::bam,
                                 bam::de_dimension_ba_bv_relation_event>::value);
 }
@@ -98,3 +106,31 @@ void dimension_ba_bv_relation_event::_internal_copy(
   bv_id = other.bv_id;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const dimension_ba_bv_relation_event::entries[] = {
+  mapping::entry(
+    &bam::dimension_ba_bv_relation_event::ba_id,
+    "ba_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &bam::dimension_ba_bv_relation_event::bv_id,
+    "bv_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_dimension_ba_bv_relation_event() {
+  return (new dimension_ba_bv_relation_event);
+}
+io::event_info::event_operations const
+  dimension_ba_bv_relation_event::operations = {
+  &new_dimension_ba_bv_relation_event
+};

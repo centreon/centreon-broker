@@ -1,5 +1,5 @@
 ##
-## Copyright 2011-2013 Merethis
+## Copyright 2011-2013,2015 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -28,36 +28,36 @@ set(INC_DIR "${INC_DIR}/com/centreon/broker/correlation")
 
 # Some files must be processed by Qt's moc.
 unset(QT_WRAPPED_SOURCES)
-qt4_wrap_cpp(QT_WRAPPED_SOURCES
-  "${INC_DIR}/correlator.hh")
 
 # Correlation module.
-set(CORRELATION "20-correlation")
+set(CORRELATION "30-correlation")
 set(CORRELATION "${CORRELATION}" PARENT_SCOPE)
 add_library("${CORRELATION}" SHARED
   # Sources.
-  "${SRC_DIR}/correlator.cc"
+  "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/engine_state.cc"
-  "${SRC_DIR}/host_state.cc"
+  "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/issue.cc"
   "${SRC_DIR}/issue_parent.cc"
+  "${SRC_DIR}/log_issue.cc"
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/node.cc"
   "${SRC_DIR}/parser.cc"
-  "${SRC_DIR}/service_state.cc"
   "${SRC_DIR}/state.cc"
+  "${SRC_DIR}/stream.cc"
   # Headers.
-  "${INC_DIR}/correlator.hh"
+  "${INC_DIR}/connector.hh"
   "${INC_DIR}/engine_state.hh"
   "${INC_DIR}/events.hh"
-  "${INC_DIR}/host_state.hh"
+  "${INC_DIR}/factory.hh"
   "${INC_DIR}/internal.hh"
   "${INC_DIR}/issue.hh"
   "${INC_DIR}/issue_parent.hh"
+  "${INC_DIR}/log_issue.hh"
   "${INC_DIR}/node.hh"
   "${INC_DIR}/parser.hh"
-  "${INC_DIR}/service_state.hh"
   "${INC_DIR}/state.hh"
+  "${INC_DIR}/stream.hh"
   # Qt-processed files.
   ${QT_WRAPPED_SOURCES}
 )
@@ -71,72 +71,41 @@ set(CORRELATION_MODULE_PATH "${CORRELATION_MODULE_PATH}" PARENT_SCOPE)
 # Testing.
 if (WITH_TESTING)
   include_directories("${PROJECT_SOURCE_DIR}/correlation")
-  set(TEST_LIBRARIES "${CORRELATION}" "${NEB}" "roker")
+  set(TEST_LIBRARIES "${NOTIFICATION}" "${CORRELATION}" "${NEB}" "roker")
 
   # Generate files.
   configure_file("${TEST_DIR}/parser/parse_include.xml.in"
     "${TEST_DIR}/parser/parse_include.xml")
 
-  # host_state tests.
+  # state tests.
   #   Default construction.
-  set(TEST_NAME "correlation_host_state_ctor_default")
+  set(TEST_NAME "correlation_state_ctor_default")
   add_executable("${TEST_NAME}"
-    "${TEST_DIR}/host_state/ctor_default.cc")
+    "${TEST_DIR}/state/ctor_default.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Copy construction.
-  set(TEST_NAME "correlation_host_state_ctor_copy")
+  set(TEST_NAME "correlation_state_ctor_copy")
   add_executable("${TEST_NAME}"
-    "${TEST_DIR}/host_state/ctor_copy.cc")
+    "${TEST_DIR}/state/ctor_copy.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Assignment.
-  set(TEST_NAME "correlation_host_state_assignment")
+  set(TEST_NAME "correlation_state_assignment")
   add_executable("${TEST_NAME}"
-    "${TEST_DIR}/host_state/assignment.cc")
+    "${TEST_DIR}/state/assignment.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Equality.
-  set(TEST_NAME "correlation_host_state_equality")
+  set(TEST_NAME "correlation_state_equality")
   add_executable("${TEST_NAME}"
-    "${TEST_DIR}/host_state/equality.cc")
+    "${TEST_DIR}/state/equality.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Non-equality.
-  set(TEST_NAME "correlation_host_state_non_equality")
+  set(TEST_NAME "correlation_state_non_equality")
   add_executable("${TEST_NAME}"
-    "${TEST_DIR}/host_state/non_equality.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # service_state tests.
-  #   Default construction.
-  set(TEST_NAME "correlation_service_state_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_state/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy construction.
-  set(TEST_NAME "correlation_service_state_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_state/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment.
-  set(TEST_NAME "correlation_service_state_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_state/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Equality.
-  set(TEST_NAME "correlation_service_state_equality")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_state/equality.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Non-equality.
-  set(TEST_NAME "correlation_service_state_non_equality")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_state/non_equality.cc")
+    "${TEST_DIR}/state/non_equality.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # issue tests.
@@ -423,15 +392,15 @@ if (WITH_TESTING)
     "ccb_correlation_correlator"
     ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Downtime handling.
-  set(TEST_NAME "correlation_correlator_downtime")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/correlator/downtime.cc"
-    "${TEST_DIR}/correlator/common.hh")
-  target_link_libraries("${TEST_NAME}"
-    "ccb_correlation_correlator"
-    ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # #   Downtime handling.
+  # set(TEST_NAME "correlation_correlator_downtime")
+  # add_executable("${TEST_NAME}"
+  #   "${TEST_DIR}/correlator/downtime.cc"
+  #   "${TEST_DIR}/correlator/common.hh")
+  # target_link_libraries("${TEST_NAME}"
+  #   "ccb_correlation_correlator"
+  #   ${TEST_LIBRARIES})
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Acknowledgement handling.
   set(TEST_NAME "correlation_correlator_acknowledgement")
   add_executable("${TEST_NAME}"
@@ -439,6 +408,7 @@ if (WITH_TESTING)
     "${TEST_DIR}/correlator/common.hh")
   target_link_libraries("${TEST_NAME}"
     "ccb_correlation_correlator"
+    ${NOTIFICATION}
     ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()

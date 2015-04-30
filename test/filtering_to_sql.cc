@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -83,12 +83,12 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(10);
 
     // Check 'instances' table.
     {
       std::ostringstream query;
-      query << "SELECT * FROM instances";
+      query << "SELECT * FROM rt_instances";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read instances from DB: "
@@ -101,7 +101,7 @@ int main() {
     // Check 'logs' table.
     {
       std::ostringstream query;
-      query << "SELECT * FROM logs";
+      query << "SELECT * FROM log_logs";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read logs from DB: "

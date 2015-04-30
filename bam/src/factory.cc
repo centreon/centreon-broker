@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -130,6 +130,7 @@ bool factory::has_endpoint(
  *  @param[in]  is_input    true if endpoint should act as input.
  *  @param[in]  is_output   true if endpoint should act as output.
  *  @param[out] is_acceptor Will be set to false.
+ *  @param[in]  cache       Unused.
  *
  *  @return Endpoint matching the given configuration.
  */
@@ -137,7 +138,8 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool is_input,
                          bool is_output,
-                         bool& is_acceptor) const {
+                         bool& is_acceptor,
+                         misc::shared_ptr<persistent_cache> cache) const {
   (void)is_input;
   (void)is_output;
 
@@ -176,11 +178,6 @@ io::endpoint* factory::new_endpoint(
   bool is_bam_bi(!cfg.type.compare("bam_bi", Qt::CaseInsensitive)
                  && is_output);
 
-  // External command file.
-  QString ext_cmd_file;
-  if (!is_bam_bi)
-    ext_cmd_file = find_param(cfg, "command_file");
-
   // Storage database.
   QString storage_db_name;
   if (!is_bam_bi) {
@@ -197,7 +194,6 @@ io::endpoint* factory::new_endpoint(
        ? bam::connector::bam_bi_type
        : bam::connector::bam_type,
        db_cfg,
-       ext_cmd_file.toStdString(),
        storage_db_name.toStdString());
   is_acceptor = false;
   return (c.release());

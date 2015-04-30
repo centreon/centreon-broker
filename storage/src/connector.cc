@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -111,6 +111,9 @@ void connector::connect_to(
 /**
  *  Connect to a DB.
  *
+ *  @param[in] cache  Persistent cache is not used by the storage
+ *                    module.
+ *
  *  @return Storage connection object.
  */
 misc::shared_ptr<io::stream> connector::open() {
@@ -127,7 +130,7 @@ misc::shared_ptr<io::stream> connector::open() {
 /**
  *  Connect to a DB.
  *
- *  @param[in] id Unused.
+ *  @param[in] id     Unused.
  *
  *  @return Storage connection object.
  */

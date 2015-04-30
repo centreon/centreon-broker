@@ -52,7 +52,8 @@ stream::stream(
           std::string const& db_password,
           std::string const& db_host,
           unsigned short db_port,
-          unsigned int queries_per_transaction)
+          unsigned int queries_per_transaction,
+          misc::shared_ptr<persistent_cache> const& cache)
   : _process_out(true),
     _metric_naming(metric_naming),
     _status_naming(status_naming),
@@ -63,8 +64,9 @@ stream::stream(
     _queries_per_transaction(queries_per_transaction == 0 ?
                                1 : queries_per_transaction),
     _actual_query(0),
-    _metric_query(_metric_naming, query::metric),
-    _status_query(_status_naming, query::status) {
+    _cache(cache),
+    _metric_query(_metric_naming, query::metric, _cache),
+    _status_query(_status_naming, query::status, _cache) {
   // Create the basic HTTP authentification header.
   if (!_db_user.empty() && !_db_password.empty()) {
     QByteArray auth;
@@ -145,6 +147,9 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
              << "graphite stream is shutdown");
 
   bool commit = false;
+
+  // Give the event to the cache.
+  _cache.write(data);
 
   // Process metric events.
   if (!data.isNull()) {
@@ -233,3 +238,4 @@ void stream::_commit() {
   _query.clear();
   _query.append(_auth_query);
 }
+

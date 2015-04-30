@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -85,6 +85,15 @@ bool ba_event::operator==(ba_event const& other) const {
  *  @return Event type.
  */
 unsigned int ba_event::type() const {
+  return (ba_event::static_type());
+}
+
+/**
+ *  Get the event type.
+ *
+ *  @return Event type.
+ */
+unsigned int ba_event::static_type() {
   return (io::events::data_type<io::events::bam, bam::de_ba_event>::value);
 }
 
@@ -102,3 +111,41 @@ void ba_event::_internal_copy(ba_event const& other) {
   status = other.status;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const ba_event::entries[] = {
+  mapping::entry(
+    &bam::ba_event::ba_id,
+    "ba_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &bam::ba_event::first_level,
+    "first_level"),
+  mapping::entry(
+    &bam::ba_event::end_time,
+    "end_time"),
+  mapping::entry(
+    &bam::ba_event::in_downtime,
+    "in_downtime"),
+  mapping::entry(
+    &bam::ba_event::start_time,
+    "start_time"),
+  mapping::entry(
+    &bam::ba_event::status,
+    "status"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_ba_event() {
+  return (new ba_event);
+}
+io::event_info::event_operations const ba_event::operations = {
+  &new_ba_event
+};

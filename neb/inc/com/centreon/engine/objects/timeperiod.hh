@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -20,35 +20,54 @@
 #ifndef CCE_OBJECTS_TIMEPERIOD_HH
 #  define CCE_OBJECTS_TIMEPERIOD_HH
 
-#  include "com/centreon/engine/objects.hh"
+#  include "com/centreon/engine/common.hh"
+
+/* Forward declaration. */
+struct daterange_struct;
+struct timeperiodexclusion_struct;
+struct timerange_struct;
+
+typedef struct                timeperiod_struct {
+  char*                       name;
+  char*                       alias;
+  timerange_struct*           days[7];
+  daterange_struct*           exceptions[DATERANGE_TYPES];
+  timeperiodexclusion_struct* exclusions;
+  struct timeperiod_struct*   next;
+  struct timeperiod_struct*   nexthash;
+}                             timeperiod;
 
 #  ifdef __cplusplus
 extern "C" {
-#  endif // C++
+#  endif /* C++ */
 
-  // void add_timeperiod(char const* name,
-  //                     char const* alias,
-  //                     char const** range,
-  //                     char const** exclude);
-void release_timeperiod(timeperiod const* obj);
+timeperiod* add_timeperiod(char const* name, char const* alias);
 
 #  ifdef __cplusplus
 }
 
-namespace       com {
-  namespace     centreon {
-    namespace   engine {
-      namespace objects {
-        void    add_timeperiod(
-                  QString const& name,
-                  QString const& alias,
-                  QVector<QString> const& range,
-                  QVector<QString> const& exclude);
-        void    release(timeperiod const* obj);
-      }
-    }
-  }
-}
-#  endif // C++
+#    include <ostream>
+#    include <string>
+#    include "com/centreon/engine/namespace.hh"
+
+bool          operator==(
+                timeperiod const& obj1,
+                timeperiod const& obj2) throw ();
+bool          operator!=(
+                timeperiod const& obj1,
+                timeperiod const& obj2) throw ();
+std::ostream& operator<<(std::ostream& os, timeperiod const& obj);
+
+CCE_BEGIN()
+
+timeperiod&   find_timperiod(std::string const& name);
+bool          is_timeperiod_exist(std::string const& name) throw ();
+bool          timeperiod_exists(timeperiod* tentative_period) throw();
+
+CCE_END()
+
+#  endif /* C++ */
 
 #endif // !CCE_OBJECTS_TIMEPERIOD_HH
+
+

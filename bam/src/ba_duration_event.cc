@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -90,6 +90,15 @@ bool ba_duration_event::operator==(ba_duration_event const& other) const {
  *  @return Event type.
  */
 unsigned int ba_duration_event::type() const {
+  return (ba_duration_event::static_type());
+}
+
+/**
+ *  Get the event type.
+ *
+ *  @return Event type.
+ */
+unsigned int ba_duration_event::static_type() {
   return (io::events::data_type<io::events::bam,
                                 bam::de_ba_duration_event>::value);
 }
@@ -110,3 +119,48 @@ void ba_duration_event::_internal_copy(ba_duration_event const& other) {
   timeperiod_is_default = other.timeperiod_is_default;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const ba_duration_event::entries[] = {
+  mapping::entry(
+    &bam::ba_duration_event::ba_id,
+    "ba_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &bam::ba_duration_event::real_start_time,
+    "real_start_time"),
+  mapping::entry(
+    &bam::ba_duration_event::end_time,
+    "end_time"),
+  mapping::entry(
+    &bam::ba_duration_event::start_time,
+    "start_time"),
+  mapping::entry(
+    &bam::ba_duration_event::duration,
+    "duration"),
+  mapping::entry(
+    &bam::ba_duration_event::sla_duration,
+    "sla_duration"),
+  mapping::entry(
+    &bam::ba_duration_event::timeperiod_id,
+    "timeperiod_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &bam::ba_duration_event::timeperiod_is_default,
+    "timeperiod_is_default"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_ba_duration_event() {
+  return (new ba_duration_event);
+}
+io::event_info::event_operations const ba_duration_event::operations = {
+  &new_ba_duration_event
+};

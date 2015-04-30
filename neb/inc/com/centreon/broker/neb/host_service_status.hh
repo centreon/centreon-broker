@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -45,14 +45,12 @@ namespace                neb {
     virtual              ~host_service_status();
     host_service_status& operator=(host_service_status const& hss);
 
-    short                acknowledgement_type;
     bool                 active_checks_enabled;
     QString              check_command;
     double               check_interval;
     QString              check_period;
     short                check_type;
     short                current_check_attempt;
-    short                current_notification_number;
     short                current_state;
     bool                 enabled;
     QString              event_handler;
@@ -63,23 +61,16 @@ namespace                neb {
     timestamp            last_check;
     short                last_hard_state;
     timestamp            last_hard_state_change;
-    timestamp            last_notification;
     timestamp            last_state_change;
     timestamp            last_update;
     double               latency;
     short                max_check_attempts;
-    unsigned int         modified_attributes;
     timestamp            next_check;
-    timestamp            next_notification;
-    bool                 no_more_notifications;
     bool                 obsess_over;
     QString              output;
-    bool                 passive_checks_enabled;
     double               percent_state_change;
     QString              perf_data;
-    bool                 problem_has_been_acknowledged;
     double               retry_interval;
-    short                scheduled_downtime_depth;
     bool                 should_be_scheduled;
     short                state_type;
 

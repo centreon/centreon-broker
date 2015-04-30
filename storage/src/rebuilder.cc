@@ -141,7 +141,7 @@ void rebuilder::run() {
         database_query index_to_rebuild_query(*db);
         index_to_rebuild_query.run_query(
           "SELECT id, host_id, service_id, rrd_retention"
-          " FROM index_data"
+          " FROM rt_index_data"
           " WHERE must_be_rebuild='1'",
           "storage: rebuilder: could not fetch index to rebuild");
         while (!_should_exit && index_to_rebuild_query.next()) {
@@ -174,11 +174,11 @@ void rebuilder::run() {
           std::ostringstream oss;
           if (!info.service_id)
             oss << "SELECT check_interval"
-                << " FROM hosts"
+                << " FROM rt_hosts"
                 << " WHERE host_id=" << info.host_id;
           else
             oss << "SELECT check_interval"
-                << " FROM services"
+                << " FROM rt_services"
                 << " WHERE host_id=" << info.host_id
                 << "  AND service_id=" << info.service_id;
           database_query query(*db);
@@ -201,7 +201,7 @@ void rebuilder::run() {
           {
             std::ostringstream oss;
             oss << "SELECT metric_id, metric_name, data_source_type"
-                << " FROM metrics"
+                << " FROM rt_metrics"
                 << " WHERE index_id=" << index_id;
             database_query metrics_to_rebuild_query(*db);
             try { metrics_to_rebuild_query.run_query(oss.str()); }
@@ -331,7 +331,7 @@ void rebuilder::_rebuild_metric(
     // Get data.
     std::ostringstream oss;
     oss << "SELECT ctime, value"
-        << " FROM data_bin"
+        << " FROM log_data_bin"
         << " WHERE id_metric=" << metric_id
         << " ORDER BY ctime ASC";
     database_query data_bin_query(db);
@@ -398,8 +398,8 @@ void rebuilder::_rebuild_status(
     // Get data.
     std::ostringstream oss;
     oss << "SELECT d.ctime, d.status"
-        << " FROM metrics AS m"
-        << " JOIN data_bin AS d"
+        << " FROM rt_metrics AS m"
+        << " JOIN log_data_bin AS d"
         << " ON m.metric_id=d.id_metric"
         << " WHERE m.index_id=" << index_id
         << " ORDER BY d.ctime ASC";
@@ -469,7 +469,7 @@ void rebuilder::_set_index_rebuild(
                   unsigned int index_id,
                   short state) {
   std::ostringstream oss;
-  oss << "UPDATE index_data"
+  oss << "UPDATE rt_index_data"
       << " SET must_be_rebuild=" << state + 1
       << " WHERE id=" << index_id;
   database_query update_index_query(db);

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #include "com/centreon/broker/neb/host_group_member.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
@@ -37,10 +38,10 @@ host_group_member::host_group_member() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] hgm Object to copy.
+ *  @param[in] other  Object to copy.
  */
-host_group_member::host_group_member(host_group_member const& hgm)
-  : group_member(hgm) {}
+host_group_member::host_group_member(host_group_member const& other)
+  : group_member(other) {}
 
 /**
  *  Destructor.
@@ -50,12 +51,13 @@ host_group_member::~host_group_member() {}
 /**
  *  Assignement operator.
  *
- *  @param[in] hgm Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-host_group_member& host_group_member::operator=(host_group_member const& hgm) {
-  group_member::operator=(hgm);
+host_group_member& host_group_member::operator=(
+                                        host_group_member const& other) {
+  group_member::operator=(other);
   return (*this);
 }
 
@@ -65,5 +67,48 @@ host_group_member& host_group_member::operator=(host_group_member const& hgm) {
  *  @return The event type.
  */
 unsigned int host_group_member::type() const {
+  return (host_group_member::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int host_group_member::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_host_group_member>::value);
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const host_group_member::entries[] = {
+  mapping::entry(
+    &host_group_member::enabled,
+    ""),
+  mapping::entry(
+    &host_group_member::group, // XXX : should be replaced by hostgroup_id
+    "group"),
+  mapping::entry(
+    &host_group_member::source_id,
+    "instance_id",
+    mapping::entry::invalid_on_zero,
+    false),
+  mapping::entry(
+    &host_group_member::host_id,
+    "host_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_hgm() {
+  return (new host_group_member);
+}
+io::event_info::event_operations const host_group_member::operations = {
+  &new_hgm
+};

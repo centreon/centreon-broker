@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -213,20 +213,31 @@ int main() {
     file.set("COMMAND_FILE", COMMAND_FILE);
     std::string config_file = file.generate();
 
+    // Create organization.
+    {
+      QString query;
+      query = "INSERT INTO cfg_organizations (organization_id, name, shortname)"
+              "  VALUES (1, '42', '42')";
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not create organization: "
+               << q.lastError().text());
+    }
+
     // Create timeperiods
     {
       QString query(
-                "INSERT INTO timeperiod (tp_id, tp_name, tp_sunday, tp_monday,"
+                "INSERT INTO cfg_timeperiods (tp_id, tp_name, tp_sunday, tp_monday,"
                 "                        tp_tuesday, tp_wednesday, tp_thursday,"
-                "                        tp_friday, tp_saturday)"
+                "                        tp_friday, tp_saturday, organization_id)"
                 "  VALUES (1, '24x7', '00:00-24:00', '00:00-24:00', '00:00-24:00',"
-                "          '00:00-24:00', '00:00-24:00', '00:00-24:00', '00:00-24:00'),"
+                "          '00:00-24:00', '00:00-24:00', '00:00-24:00', '00:00-24:00', 1),"
                 "         (2, 'workhours', '', '09:00-17:00', '09:00-17:00',"
-                "          '09:00-17:00', '09:00-17:00', '09:00-17:00', ''),"
+                "          '09:00-17:00', '09:00-17:00', '09:00-17:00', '', 1),"
                 "         (3, 'non-worhours', '', "
                 "          '00:00-09:00,17:00-24:00', '00:00-09:00,17:00-24:00',"
                 "          '00:00-09:00,17:00-24:00', '00:00-09:00,17:00-24:00',"
-                "           '00:00-09:00,17:00-24:00', '')");
+                "           '00:00-09:00,17:00-24:00', '', 1)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create timeperiods: "
@@ -248,7 +259,7 @@ int main() {
     // Create BAs.
     {
       QString query(
-                "INSERT INTO mod_bam (ba_id, name, description,"
+                "INSERT INTO cfg_bam (ba_id, name, description,"
                 "                     sla_month_percent_warn, sla_month_percent_crit,"
                 "                     sla_month_duration_warn, sla_month_duration_crit,"
                 "                     must_be_rebuild, id_reporting_period, activate)"
@@ -264,8 +275,8 @@ int main() {
     }
     {
       QString query(
-                "INSERT INTO host (host_id, host_name)"
-                "  VALUES (1001, 'Virtual BA host')");
+                "INSERT INTO cfg_hosts (host_id, host_name, organization_id)"
+                "  VALUES (1001, 'Virtual BA host', 1)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create virtual BA host: "
@@ -273,12 +284,12 @@ int main() {
     }
     {
       QString query(
-                "INSERT INTO service (service_id, service_description)"
-                "  VALUES (1001, 'ba_1'),"
-                "         (1002, 'ba_2'),"
-                "         (1003, 'ba_3'),"
-                "         (1004, 'ba_4'),"
-                "         (1005, 'ba_5')");
+                "INSERT INTO cfg_services (service_id, service_description, organization_id)"
+                "  VALUES (1001, 'ba_1', 1),"
+                "         (1002, 'ba_2', 1),"
+                "         (1003, 'ba_3', 1),"
+                "         (1004, 'ba_4', 1),"
+                "         (1005, 'ba_5', 1)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg()
@@ -287,7 +298,7 @@ int main() {
     }
     {
       QString query(
-                "INSERT INTO host_service_relation"
+                "INSERT INTO cfg_hosts_services_relations"
                 "            (host_host_id, service_service_id)"
                 "  VALUES (1001, 1001), (1001, 1002), (1001, 1003), (1001, 1004), (1001, 1005)");
       QSqlQuery q(*db.centreon_db());
@@ -346,7 +357,7 @@ int main() {
     // Create BA-Timeperiods relations
     {
       QString query(
-                "INSERT INTO mod_bam_relations_ba_timeperiods (ba_id, tp_id)"
+                "INSERT INTO cfg_bam_relations_ba_timeperiods (ba_id, tp_id)"
                 "  VALUES (2, 1), (5, 3)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
@@ -358,10 +369,10 @@ int main() {
     // Start Broker daemon.
     broker.set_config_file(config_file);
     broker.start();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
 
     // Let the broker do its things.
-    sleep_for(6 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(6);
 
     // See if the ba events durations were created.
     {
@@ -410,7 +421,7 @@ int main() {
     // See if the ba were marked as rebuilt.
     {
       QString query(
-                "SELECT * FROM mod_bam WHERE must_be_rebuild = '1'");
+                "SELECT * FROM cfg_bam WHERE must_be_rebuild = '1'");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not get the number of BA: "

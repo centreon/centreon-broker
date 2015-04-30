@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -19,6 +19,8 @@
 
 #include "com/centreon/broker/bam/service_book.hh"
 #include "com/centreon/broker/bam/service_listener.hh"
+#include "com/centreon/broker/neb/acknowledgement.hh"
+#include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 
 using namespace com::centreon::broker::bam;
@@ -109,6 +111,48 @@ void service_book::update(
                                    ss->service_id)));
   while (range.first != range.second) {
     range.first->second->service_update(ss, visitor);
+    ++range.first;
+  }
+  return ;
+}
+
+/**
+ *  Update all service listeners related to the service on which the
+ *  acknowledgement applies.
+ *
+ *  @param[in]  ack      Acknowledgement.
+ *  @param[out] visitor  Object that will receive events.
+ */
+void service_book::update(
+                     misc::shared_ptr<neb::acknowledgement> const& ack,
+                     io::stream* visitor) {
+  std::pair<multimap::iterator, multimap::iterator>
+    range(_book.equal_range(std::make_pair(
+                                   ack->host_id,
+                                   ack->service_id)));
+  while (range.first != range.second) {
+    range.first->second->service_update(ack, visitor);
+    ++range.first;
+  }
+  return ;
+}
+
+/**
+ *  Update all service listeners related to the service on which the
+ *  downtime applies.
+ *
+ *  @param[in]  dt       Downtime.
+ *  @param[out] visitor  Object that will receive events.
+ */
+void service_book::update(
+                     misc::shared_ptr<neb::downtime> const& dt,
+                     io::stream* visitor) {
+  std::pair<multimap::iterator, multimap::iterator>
+    range(_book.equal_range(std::make_pair(
+                                   dt->host_id,
+                                   dt->service_id)));
+  while (range.first != range.second) {
+    range.first->second->service_update(dt, visitor);
     ++range.first;
   }
   return ;

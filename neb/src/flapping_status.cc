@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #include "com/centreon/broker/neb/flapping_status.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
@@ -33,13 +34,11 @@ using namespace com::centreon::broker::neb;
  *  Default constructor.
  */
 flapping_status::flapping_status()
-  : comment_time(0),
-    event_time(0),
+  : event_time(0),
     event_type(0),
     flapping_type(0),
     high_threshold(0),
     host_id(0),
-        internal_comment_id(0),
     low_threshold(0),
     percent_state_change(0),
     reason_type(0),
@@ -48,11 +47,11 @@ flapping_status::flapping_status()
 /**
  *  Copy constructor.
  *
- *  @param[in] fs Object to copy.
+ *  @param[in] other  Object to copy.
  */
-flapping_status::flapping_status(flapping_status const& fs)
-  : io::data(fs) {
-  _internal_copy(fs);
+flapping_status::flapping_status(flapping_status const& other)
+  : io::data(other) {
+  _internal_copy(other);
 }
 
 /**
@@ -63,13 +62,16 @@ flapping_status::~flapping_status() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] fs Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-flapping_status& flapping_status::operator=(flapping_status const& fs) {
-  io::data::operator=(fs);
-  _internal_copy(fs);
+flapping_status& flapping_status::operator=(
+                                    flapping_status const& other) {
+  if (this != &other) {
+    io::data::operator=(other);
+    _internal_copy(other);
+  }
   return (*this);
 }
 
@@ -79,6 +81,15 @@ flapping_status& flapping_status::operator=(flapping_status const& fs) {
  *  @return The event type.
  */
 unsigned int flapping_status::type() const {
+  return (flapping_status::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int flapping_status::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_flapping_status>::value);
 }
 
@@ -91,19 +102,65 @@ unsigned int flapping_status::type() const {
 /**
  *  Copy internal data members.
  *
- *  @param[in] fs Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void flapping_status::_internal_copy(flapping_status const& fs) {
-  comment_time = fs.comment_time;
-  event_time = fs.event_time;
-  event_type = fs.event_type;
-  flapping_type = fs.flapping_type;
-  high_threshold = fs.high_threshold;
-  host_id = fs.host_id;
-    internal_comment_id = fs.internal_comment_id;
-  low_threshold = fs.low_threshold;
-  percent_state_change = fs.percent_state_change;
-  reason_type = fs.reason_type;
-  service_id = fs.service_id;
+void flapping_status::_internal_copy(flapping_status const& other) {
+  event_time = other.event_time;
+  event_type = other.event_type;
+  flapping_type = other.flapping_type;
+  high_threshold = other.high_threshold;
+  host_id = other.host_id;
+  low_threshold = other.low_threshold;
+  percent_state_change = other.percent_state_change;
+  reason_type = other.reason_type;
+  service_id = other.service_id;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const flapping_status::entries[] = {
+  mapping::entry(
+    &flapping_status::event_time,
+    "event_time"),
+  mapping::entry(
+    &flapping_status::event_type,
+    "event_type"),
+  mapping::entry(
+    &flapping_status::flapping_type,
+    "type"),
+  mapping::entry(
+    &flapping_status::high_threshold,
+    "high_threshold"),
+  mapping::entry(
+    &flapping_status::host_id,
+    "host_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &flapping_status::low_threshold,
+    "low_threshold"),
+  mapping::entry(
+    &flapping_status::percent_state_change,
+    "percent_state_change"),
+  mapping::entry(
+    &flapping_status::reason_type,
+    "reason_type"),
+  mapping::entry(
+    &flapping_status::service_id,
+    "service_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_flapping() {
+  return (new flapping_status);
+}
+io::event_info::event_operations const flapping_status::operations = {
+  &new_flapping
+};

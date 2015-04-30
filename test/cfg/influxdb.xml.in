@@ -3,6 +3,7 @@
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
   <instance>42</instance>
   <instance_name>MyBroker</instance_name>
+  <!--
   <stats>
     <fifo>/tmp/cbmod.fifo</fifo>
   </stats>
@@ -16,6 +17,7 @@
     <info>1</info>
     <level>3</level>
   </logger>
+  -->
   <output>
     <name><![CDATA[central-broker-master-perfdata]]></name>
     <interval><![CDATA[60]]></interval>
@@ -50,6 +52,34 @@
       <value>$VALUE$</value>
       <type>number</type>
     </metrics_column>
+    <metrics_column>
+      <name>metric</name>
+      <value>$METRIC$</value>
+    </metrics_column>
+    <metrics_column>
+      <name>hostid</name>
+      <value>$HOSTID$</value>
+    </metrics_column>
+    <metrics_column>
+      <name>host</name>
+      <value>$HOST$</value>
+    </metrics_column>
+    <metrics_column>
+      <name>serviceid</name>
+      <value>$SERVICEID$</value>
+    </metrics_column>
+    <metrics_column>
+      <name>service</name>
+      <value>$SERVICE$</value>
+    </metrics_column>
+    <metrics_column>
+      <name>instanceid</name>
+      <value>$INSTANCEID$</value>
+    </metrics_column>
+    <metrics_column>
+      <name>instance</name>
+      <value>$INSTANCE$</value>
+    </metrics_column>
     <status_timeseries>status</status_timeseries>
     <status_column>
       <name>status_id</name>
@@ -61,6 +91,30 @@
       <name>value</name>
       <value>$VALUE$</value>
       <type>number</type>
+    </status_column>
+    <status_column>
+      <name>hostid</name>
+      <value>$HOSTID$</value>
+    </status_column>
+    <status_column>
+      <name>host</name>
+      <value>$HOST$</value>
+    </status_column>
+    <status_column>
+      <name>serviceid</name>
+      <value>$SERVICEID$</value>
+    </status_column>
+    <status_column>
+      <name>service</name>
+      <value>$SERVICE$</value>
+    </status_column>
+    <status_column>
+      <name>instanceid</name>
+      <value>$INSTANCEID$</value>
+    </status_column>
+    <status_column>
+      <name>instance</name>
+      <value>$INSTANCE$</value>
     </status_column>
     <queries_per_transaction>2</queries_per_transaction>
   </output>

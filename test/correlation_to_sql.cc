@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Merethis
+** Copyright 2013-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -183,7 +183,6 @@ int main() {
     for (std::list<host>::iterator it(hosts.begin()), end(hosts.end());
          it != end;
          ++it) {
-      it->accept_passive_host_checks = 1;
       it->checks_enabled = 0;
       it->max_attempts = 1;
     }
@@ -193,7 +192,6 @@ int main() {
            end(services.end());
          it != end;
          ++it) {
-      it->accept_passive_service_checks = 1;
       it->checks_enabled = 0;
       it->max_attempts = 1;
     }
@@ -217,7 +215,7 @@ int main() {
     // Start broker daemon.
     broker.set_config_file(broker_config_path);
     broker.start();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
 
     // T0.
     time_t t0(time(NULL));
@@ -228,11 +226,11 @@ int main() {
     daemon.set_config_file(engine_config_file);
     daemon.start();
 
+    // Let the daemon initialize.
+    sleep_for(10);
+
     // T1.
     time_t t1(time(NULL));
-
-    // Let the daemon initialize.
-    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     /* Test cases
     ** ----------
@@ -265,7 +263,7 @@ int main() {
         commander.execute(cmd.str());
       }
     }
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
 
     // T2.
     time_t t2(time(NULL));
@@ -284,7 +282,7 @@ int main() {
       commander.execute("PROCESS_SERVICE_CHECK_RESULT;2;3;2;output2-2-3");
       commander.execute("PROCESS_SERVICE_CHECK_RESULT;2;4;1;output2-2-4");
     }
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
 
     // T3.
     time_t t3(time(NULL));
@@ -302,7 +300,7 @@ int main() {
       commander.execute("ACKNOWLEDGE_SVC_PROBLEM;2;3;2;0;1;Engine;Ack SVC2-3");
       commander.execute("ACKNOWLEDGE_SVC_PROBLEM;2;4;0;0;1;foo;Ack SVC2-4");
     }
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
 
     // T4.
     time_t t4(time(NULL));
@@ -318,7 +316,7 @@ int main() {
         commander.execute(oss.str());
       }
     }
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
 
     // T5.
     time_t t5(time(NULL));
@@ -327,7 +325,7 @@ int main() {
     {
       commander.execute("PROCESS_HOST_CHECK_RESULT;2;2;output5-2");
     }
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
 
     // Check host state events.
     {
@@ -390,7 +388,7 @@ int main() {
       QSqlQuery q(*db.storage_db());
       if (!q.exec("SELECT host_id, start_time, end_time, state,"
                   "       ack_time, in_downtime"
-                  " FROM hoststateevents"
+                  " FROM rt_hoststateevents"
                   " ORDER BY host_id, start_time"))
         throw (exceptions::msg() << "cannot get host state events: "
                << q.lastError().text());
@@ -571,7 +569,7 @@ int main() {
       QSqlQuery q(*db.storage_db());
       if (!q.exec("SELECT host_id, service_id, start_time, end_time,"
                   "       state, ack_time, in_downtime"
-                  " FROM servicestateevents"
+                  " FROM rt_servicestateevents"
                   " ORDER BY host_id, service_id, start_time"))
         throw (exceptions::msg() << "cannot get service state events: "
                << q.lastError().text());
@@ -645,9 +643,9 @@ int main() {
 
     // Stop daemons.
     daemon.stop();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
     broker.stop();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
 
     // Check passive correlation.
     std::ifstream active_correlation(cbmod_correlation_path.c_str());

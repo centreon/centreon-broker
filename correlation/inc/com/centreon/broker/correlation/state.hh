@@ -21,8 +21,10 @@
 #  define CCB_CORRELATION_STATE_HH
 
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 
 CCB_BEGIN()
 
@@ -40,6 +42,12 @@ namespace        correlation {
                  state(state const& s);
     virtual      ~state();
     state&       operator=(state const& s);
+    bool         operator==(state const& s) const;
+    bool         operator!=(state const& s) const;
+
+    unsigned int type() const;
+    static unsigned int
+                 static_type();
 
     timestamp    ack_time;
     int          current_state;
@@ -49,6 +57,11 @@ namespace        correlation {
     bool         in_downtime;
     unsigned int service_id;
     timestamp    start_time;
+
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
 
   private:
     void         _internal_copy(state const& s);

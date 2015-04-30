@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -74,9 +74,17 @@ kpi_status& kpi_status::operator=(kpi_status const& other) {
  *  @return Event type.
  */
 unsigned int kpi_status::type() const {
-  return (io::events::data_type<io::events::bam, bam::de_kpi_status>::value);
+  return (kpi_status::static_type());
 }
 
+/**
+ *  Get the event type.
+ *
+ *  @return Event type.
+ */
+unsigned int kpi_status::static_type() {
+  return (io::events::data_type<io::events::bam, bam::de_kpi_status>::value);
+}
 /**
  *  Copy internal data members.
  *
@@ -96,3 +104,56 @@ void kpi_status::_internal_copy(kpi_status const& other) {
   last_impact = other.last_impact;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const kpi_status::entries[] = {
+  mapping::entry(
+    &bam::kpi_status::kpi_id,
+    "kpi_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &bam::kpi_status::level_acknowledgement_hard,
+    "level_acknowledgement_hard"),
+  mapping::entry(
+    &bam::kpi_status::level_acknowledgement_soft,
+    "level_acknowledgement_soft"),
+  mapping::entry(
+    &bam::kpi_status::level_downtime_hard,
+    "level_downtime_hard"),
+  mapping::entry(
+    &bam::kpi_status::level_downtime_soft,
+    "level_downtime_soft"),
+  mapping::entry(
+    &bam::kpi_status::level_nominal_hard,
+    "level_nominal_hard"),
+  mapping::entry(
+    &bam::kpi_status::level_nominal_soft,
+    "level_nominal_soft"),
+  mapping::entry(
+    &bam::kpi_status::state_hard,
+    "state_hard"),
+  mapping::entry(
+    &bam::kpi_status::state_soft,
+    "state_soft"),
+  mapping::entry(
+    &bam::kpi_status::last_state_change,
+    "last_state_change"),
+  mapping::entry(
+    &bam::kpi_status::last_impact,
+    "last_impact"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_kpi_status() {
+  return (new kpi_status);
+}
+io::event_info::event_operations const kpi_status::operations = {
+  &new_kpi_status
+};

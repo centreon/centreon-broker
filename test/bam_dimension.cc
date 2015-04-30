@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -303,14 +303,25 @@ int main() {
     generate_hosts(hosts, HOST_COUNT);
     generate_services(services, hosts, SERVICES_BY_HOST);
 
+    // Create organization.
+    {
+      QString query;
+      query = "INSERT INTO cfg_organizations (organization_id, name, shortname)"
+              "  VALUES (1, '42', '42')";
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not create organization: "
+               << q.lastError().text());
+    }
+
     // Create host/service entries.
     {
 
       for (int i(1); i <= HOST_COUNT; ++i) {
         {
           std::ostringstream oss;
-          oss << "INSERT INTO host (host_id, host_name)"
-              << "  VALUES (" << i << ", '" << i << "')";
+          oss << "INSERT INTO cfg_hosts (host_id, host_name, organization_id)"
+              << "  VALUES (" << i << ", '" << i << "', 1)";
           QSqlQuery q(*db.centreon_db());
           if (!q.exec(oss.str().c_str()))
             throw (exceptions::msg() << "could not create host "
@@ -321,8 +332,8 @@ int main() {
              ++j) {
           {
             std::ostringstream oss;
-            oss << "INSERT INTO service (service_id, service_description)"
-                << "  VALUES (" << j << ", '" << j << "')";
+            oss << "INSERT INTO cfg_services (service_id, service_description, organization_id)"
+                << "  VALUES (" << j << ", '" << j << "', 1)";
             QSqlQuery q(*db.centreon_db());
             if (!q.exec(oss.str().c_str()))
               throw (exceptions::msg() << "could not create service ("
@@ -331,7 +342,7 @@ int main() {
           }
           {
             std::ostringstream oss;
-            oss << "INSERT INTO host_service_relation (host_host_id, service_service_id)"
+            oss << "INSERT INTO cfg_hosts_services_relations (host_host_id, service_service_id)"
                 << "  VALUES (" << i << ", " << j << ")";
             QSqlQuery q(*db.centreon_db());
             if (!q.exec(oss.str().c_str()))
@@ -346,7 +357,7 @@ int main() {
     // Create BAs.
     {
       QString query(
-                "INSERT INTO mod_bam (ba_id, name, description,"
+                "INSERT INTO cfg_bam (ba_id, name, description,"
                 "                     sla_month_percent_warn, sla_month_percent_crit,"
                 "                     sla_month_duration_warn, sla_month_duration_crit,"
                 "                     activate)"
@@ -359,11 +370,11 @@ int main() {
     }
     {
       QString queries[] = {
-        "INSERT INTO host (host_id, host_name)"
-        "  VALUES (1001, 'Virtual BA host')",
-        "INSERT INTO service (service_id, service_description)"
-        "  VALUES (1001, 'ba_1'), (1002, 'ba_2'), (1003, 'meta_1'), (1004, 'meta_2')",
-        "INSERT INTO host_service_relation (host_host_id, service_service_id)"
+        "INSERT INTO cfg_hosts (host_id, host_name, organization_id)"
+        "  VALUES (1001, 'Virtual BA host', 1)",
+        "INSERT INTO cfg_services (service_id, service_description, organization_id)"
+        "  VALUES (1001, 'ba_1', 1), (1002, 'ba_2', 1), (1003, 'meta_1', 1), (1004, 'meta_2', 1)",
+        "INSERT INTO cfg_hosts_services_relations (host_host_id, service_service_id)"
         "  VALUES (1001, 1001), (1001, 1002), (1001, 1003), (1001, 1004)"
       };
       for (size_t i(0); i < sizeof(queries) / sizeof(*queries); ++i) {
@@ -379,7 +390,7 @@ int main() {
     // Create boolean expressions.
     {
       QString query(
-                "INSERT INTO mod_bam_boolean (boolean_id, name,"
+                "INSERT INTO cfg_bam_boolean (boolean_id, name,"
                 "            expression, bool_state, activate)"
                 "  VALUES (1, 'BoolExp1', '{1 1} {is} {OK}', 0, 1),"
                 "         (2, 'BoolExp2', '{1 2} {not} {CRITICAL} {OR} {1 3} {not} {OK}', 1, 1)");
@@ -392,9 +403,9 @@ int main() {
     // Create meta-services.
     {
       QString query(
-                "INSERT INTO meta_service (meta_id, meta_name, meta_activate)"
-                "  VALUES (1, 'Meta1', '1'),"
-                "         (2, 'Meta2', '1')");
+                "INSERT INTO cfg_meta_services (meta_id, meta_name, meta_activate, organization_id)"
+                "  VALUES (1, 'Meta1', '1', 1),"
+                "         (2, 'Meta2', '1', 1)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create the meta services: "
@@ -404,7 +415,7 @@ int main() {
     // Create BVs.
     {
       QString query(
-                "INSERT INTO mod_bam_ba_groups (id_ba_group, ba_group_name,"
+                "INSERT INTO cfg_bam_ba_groups (id_ba_group, ba_group_name,"
                 "                               ba_group_description)"
                 "  VALUES (1, 'BaGroup1', 'BaGroupDescription1'),"
                 "         (2, 'BaGroup2', 'BaGroupDescription2')");
@@ -417,7 +428,7 @@ int main() {
     // Create the BA/BV relations.
     {
       QString query(
-                "INSERT INTO mod_bam_bagroup_ba_relation (id_bgr, id_ba, "
+                "INSERT INTO cfg_bam_bagroup_ba_relation (id_bgr, id_ba, "
                 "                                         id_ba_group)"
                 "  VALUES (1, 2, 1),"
                 "         (2, 1, 2)");
@@ -430,7 +441,7 @@ int main() {
     // Create KPIs.
     {
       QString query(
-                "INSERT INTO mod_bam_kpi (kpi_id, kpi_type, host_id,"
+                "INSERT INTO cfg_bam_kpi (kpi_id, kpi_type, host_id,"
                 "            service_id, id_indicator_ba, id_ba,"
                 "            meta_id, boolean_id, config_type, drop_warning,"
                 "            drop_warning_impact_id, drop_critical,"
@@ -454,11 +465,11 @@ int main() {
     // Start Broker daemon.
     broker.set_config_file(config_file);
     broker.start();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
     broker.update();
 
     // Let the broker do its thing.
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
 
     // Check that the dimensions were correctly copied.
 
@@ -500,29 +511,29 @@ int main() {
 
     // Erase everything.
     {
-      QString query("DELETE FROM mod_bam");
+      QString query("DELETE FROM cfg_bam");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not truncate the table mod_bam: "
+        throw (exceptions::msg() << "could not truncate the table cfg_bam: "
                                  << q.lastError().text());
-      query = "DELETE FROM mod_bam_kpi";
+      query = "DELETE FROM cfg_bam_kpi";
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not truncate the table mod_bam_kpi: "
+        throw (exceptions::msg() << "could not truncate the table cfg_bam_kpi: "
                                  << q.lastError().text());
-      query = "DELETE FROM mod_bam_ba_groups";
+      query = "DELETE FROM cfg_bam_ba_groups";
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not truncate the table mod_bam_ba_groups: "
+        throw (exceptions::msg() << "could not truncate the table cfg_bam_ba_groups: "
                                  << q.lastError().text());
-      query = "DELETE FROM mod_bam_bagroup_ba_relation";
+      query = "DELETE FROM cfg_bam_bagroup_ba_relation";
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not truncate the table mod_bam_bagroup_ba_relation: "
+        throw (exceptions::msg() << "could not truncate the table cfg_bam_bagroup_ba_relation: "
                                  << q.lastError().text());
     }
 
     // Update the broker.
     broker.update();
     // Let the broker do its thing.
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
 
     // Check that everything was deleted.
     {

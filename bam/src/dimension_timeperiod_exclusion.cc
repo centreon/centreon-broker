@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -68,6 +68,15 @@ dimension_timeperiod_exclusion& dimension_timeperiod_exclusion::operator=(
  *  @return Event type.
  */
 unsigned int dimension_timeperiod_exclusion::type() const {
+  return (dimension_timeperiod_exclusion::static_type());
+}
+
+/**
+ *  Get the event type.
+ *
+ *  @return Event type.
+ */
+unsigned int dimension_timeperiod_exclusion::static_type() {
   return (io::events::data_type<io::events::bam, bam::de_dimension_timeperiod_exclusion>::value);
 }
 
@@ -82,3 +91,30 @@ void dimension_timeperiod_exclusion::_internal_copy(
   timeperiod_id = other.timeperiod_id;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const dimension_timeperiod_exclusion::entries[] = {
+  mapping::entry(
+    &bam::dimension_timeperiod_exclusion::timeperiod_id,
+    "timeperiod_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &bam::dimension_timeperiod_exclusion::excluded_timeperiod_id,
+    "excluded_timeperiod_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_dimension_timeperiod_exclusion() {
+  return (new dimension_timeperiod_exclusion);
+}
+io::event_info::event_operations const dimension_timeperiod_exclusion::operations = {
+  &new_dimension_timeperiod_exclusion
+};

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/status.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
 /**************************************
@@ -73,6 +74,15 @@ status& status::operator=(status const& s) {
  *  @return The event type.
  */
 unsigned int status::type() const {
+  return (status::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int status::static_type() {
   return (io::events::data_type<io::events::storage, storage::de_status>::value);
 }
 
@@ -96,3 +106,42 @@ void status::_internal_copy(status const& s) {
   state = s.state;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const status::entries[] = {
+  mapping::entry(
+    &status::ctime,
+    "ctime",
+    mapping::entry::invalid_on_minus_one),
+  mapping::entry(
+    &status::index_id,
+    "index_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &status::interval,
+    "interval"),
+  mapping::entry(
+    &status::rrd_len,
+    "rrd_len"),
+  mapping::entry(
+    &status::state,
+    "state"),
+  mapping::entry(
+    &status::is_for_rebuild,
+    "is_for_rebuild"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_status() {
+  return (new status);
+}
+io::event_info::event_operations const status::operations = {
+  &new_status
+};

@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/module.hh"
@@ -26,19 +27,24 @@ using namespace com::centreon::broker;
 /**
  *  Check module's default constructor.
  *
- *  @return 0 on success.
+ *  @return EXIT_SUCCESS on success.
  */
 int main() {
   // Object.
   neb::module mod;
 
   // Check.
-  return ((mod.args != "")
-          || (mod.enabled != true)
-          || (mod.filename != "")
-          || (mod.instance_id != 0)
-          || (mod.loaded != false)
-          || (mod.should_be_loaded != false)
-          || (mod.type()
-              != io::events::data_type<io::events::neb, neb::de_module>::value));
+  return (((mod.source_id != 0)
+           || (mod.destination_id != 0)
+           || (mod.args != "")
+           || (mod.enabled != true)
+           || (mod.filename != "")
+           || (mod.loaded != false)
+           || (mod.should_be_loaded != false)
+           || (mod.type()
+               != io::events::data_type<
+                                io::events::neb,
+                                neb::de_module>::value))
+          ? EXIT_FAILURE
+          : EXIT_SUCCESS);
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -43,31 +43,13 @@ namespace         neb {
     virtual       ~host_service();
     host_service& operator=(host_service const& hs);
 
-    QString       action_url;
     bool          check_freshness;
     bool          default_active_checks_enabled;
     bool          default_event_handler_enabled;
-    bool          default_failure_prediction;
     bool          default_flap_detection_enabled;
-    bool          default_notifications_enabled;
-    bool          default_passive_checks_enabled;
-    bool          default_process_perf_data;
-    QString       display_name;
-    double        first_notification_delay;
     double        freshness_threshold;
     double        high_flap_threshold;
-    QString       icon_image;
-    QString       icon_image_alt;
     double        low_flap_threshold;
-    QString       notes;
-    QString       notes_url;
-    double        notification_interval;
-    QString       notification_period;
-    bool          notify_on_downtime;
-    bool          notify_on_flapping;
-    bool          notify_on_recovery;
-    bool          retain_nonstatus_information;
-    bool          retain_status_information;
 
   private:
     void          _internal_copy(host_service const& hs);

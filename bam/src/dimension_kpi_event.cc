@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -131,3 +131,79 @@ void dimension_kpi_event::_internal_copy(dimension_kpi_event const& other) {
   impact_unknown = other.impact_unknown;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const dimension_kpi_event::entries[] = {
+  mapping::entry(
+    &bam::dimension_kpi_event::kpi_id,
+    "kpi_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &bam::dimension_kpi_event::ba_id,
+    "ba_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &bam::dimension_kpi_event::ba_name,
+    "ba_name"),
+  mapping::entry(
+    &bam::dimension_kpi_event::host_id,
+    "host_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &bam::dimension_kpi_event::host_name,
+    "host_name"),
+  mapping::entry(
+    &bam::dimension_kpi_event::service_id,
+    "service_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &bam::dimension_kpi_event::service_description,
+    "service_description"),
+  mapping::entry(
+    &bam::dimension_kpi_event::kpi_ba_id,
+    "kpi_ba_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &bam::dimension_kpi_event::kpi_ba_name,
+    "kpi_ba_name"),
+  mapping::entry(
+    &bam::dimension_kpi_event::meta_service_id,
+    "meta_service_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &bam::dimension_kpi_event::meta_service_name,
+    "meta_service_name",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &bam::dimension_kpi_event::boolean_id,
+    "boolean_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &bam::dimension_kpi_event::boolean_name,
+    "boolean_name",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &bam::dimension_kpi_event::impact_warning,
+    "impact_warning"),
+  mapping::entry(
+    &bam::dimension_kpi_event::impact_critical,
+    "impact_critical"),
+  mapping::entry(
+    &bam::dimension_kpi_event::impact_unknown,
+    "impact_unknown"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_dimension_kpi_event() {
+  return (new dimension_kpi_event);
+}
+io::event_info::event_operations const dimension_kpi_event::operations = {
+  &new_dimension_kpi_event
+};

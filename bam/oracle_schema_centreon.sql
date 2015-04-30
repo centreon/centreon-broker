@@ -8,19 +8,19 @@
 
 -- meta_service
 -- meta_service_relation
--- mod_bam
--- mod_bam_ba_groups
--- mod_bam_bagroup_ba_relation
--- mod_bam_impacts
--- mod_bam_boolean
--- mod_bam_kpi
--- mod_bam_relations_ba_timeperiods
+-- cfg_bam
+-- cfg_bam_ba_groups
+-- cfg_bam_bagroup_ba_relation
+-- cfg_bam_impacts
+-- cfg_bam_boolean
+-- cfg_bam_kpi
+-- cfg_bam_relations_ba_timeperiods
 
 
 --
 -- Business Activities.
 --
-CREATE TABLE mod_bam (
+CREATE TABLE cfg_bam (
   ba_id int NOT NULL,
   name varchar(254) default NULL,
 
@@ -46,41 +46,41 @@ CREATE TABLE mod_bam (
   FOREIGN KEY (id_reporting_period) REFERENCES timeperiod (tp_id)
     ON DELETE SET NULL
 );
-CREATE SEQUENCE mod_bam_seq
+CREATE SEQUENCE cfg_bam_seq
 START WITH 1
 INCREMENT BY 1;
-CREATE TRIGGER mod_bam_trigger
-BEFORE INSERT ON mod_bam
+CREATE TRIGGER cfg_bam_trigger
+BEFORE INSERT ON cfg_bam
 FOR EACH ROW
 BEGIN
-  SELECT mod_bam_seq.nextval INTO :NEW.ba_id FROM dual;
+  SELECT cfg_bam_seq.nextval INTO :NEW.ba_id FROM dual;
 END;
 /
 
 --
 -- Impacts of KPI / boolean expressions.
 --
-CREATE TABLE mod_bam_impacts (
+CREATE TABLE cfg_bam_impacts (
   id_impact int NOT NULL,
   impact float NOT NULL,
 
   PRIMARY KEY (id_impact)
 );
-CREATE SEQUENCE mod_bam_impacts_seq
+CREATE SEQUENCE cfg_bam_impacts_seq
 START WITH 1
 INCREMENT BY 1;
-CREATE TRIGGER mod_bam_impacts_trigger
-BEFORE INSERT ON mod_bam_impacts
+CREATE TRIGGER cfg_bam_impacts_trigger
+BEFORE INSERT ON cfg_bam_impacts
 FOR EACH ROW
 BEGIN
-  SELECT mod_bam_impacts_seq.nextval INTO :NEW.id_impact FROM dual;
+  SELECT cfg_bam_impacts_seq.nextval INTO :NEW.id_impact FROM dual;
 END;
 /
 
 --
 -- BAM boolean expressions.
 --
-CREATE TABLE mod_bam_boolean (
+CREATE TABLE cfg_bam_boolean (
   boolean_id int NOT NULL,
   name varchar(255) NOT NULL,
 
@@ -90,21 +90,21 @@ CREATE TABLE mod_bam_boolean (
 
   PRIMARY KEY (boolean_id)
 );
-CREATE SEQUENCE mod_bam_boolean_seq
+CREATE SEQUENCE cfg_bam_boolean_seq
 START WITH 1
 INCREMENT BY 1;
-CREATE TRIGGER mod_bam_boolean_trigger
-BEFORE INSERT ON mod_bam_boolean
+CREATE TRIGGER cfg_bam_boolean_trigger
+BEFORE INSERT ON cfg_bam_boolean
 FOR EACH ROW
 BEGIN
-  SELECT mod_bam_boolean_seq.nextval INTO :NEW.boolean_id FROM dual;
+  SELECT cfg_bam_boolean_seq.nextval INTO :NEW.boolean_id FROM dual;
 END;
 /
 
 --
 -- Key Performance Indicators.
 --
-CREATE TABLE mod_bam_kpi (
+CREATE TABLE cfg_bam_kpi (
   kpi_id int NOT NULL,
 
   state_type enum('0','1') default NULL,
@@ -134,36 +134,36 @@ CREATE TABLE mod_bam_kpi (
   last_impact float default NULL,
 
   PRIMARY KEY (kpi_id),
-  FOREIGN KEY (id_indicator_ba) REFERENCES mod_bam (ba_id)
+  FOREIGN KEY (id_indicator_ba) REFERENCES cfg_bam (ba_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (id_ba) REFERENCES mod_bam (ba_id)
+  FOREIGN KEY (id_ba) REFERENCES cfg_bam (ba_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (drop_warning_impact_id) REFERENCES mod_bam_impacts (id_impact)
+  FOREIGN KEY (drop_warning_impact_id) REFERENCES cfg_bam_impacts (id_impact)
     ON DELETE RESTRICT,
-  FOREIGN KEY (drop_critical_impact_id) REFERENCES mod_bam_impacts (id_impact)
+  FOREIGN KEY (drop_critical_impact_id) REFERENCES cfg_bam_impacts (id_impact)
     ON DELETE RESTRICT,
-  FOREIGN KEY (drop_unknown_impact_id) REFERENCES mod_bam_impacts (id_impact)
+  FOREIGN KEY (drop_unknown_impact_id) REFERENCES cfg_bam_impacts (id_impact)
     ON DELETE RESTRICT
 );
-CREATE SEQUENCE mod_bam_kpi_seq
+CREATE SEQUENCE cfg_bam_kpi_seq
 START WITH 1
 INCREMENT BY 1;
-CREATE TRIGGER mod_bam_kpi_trigger
-BEFORE INSERT ON mod_bam_kpi
+CREATE TRIGGER cfg_bam_kpi_trigger
+BEFORE INSERT ON cfg_bam_kpi
 FOR EACH ROW
 BEGIN
-  SELECT mod_bam_kpi_seq.nextval INTO :NEW.kpi_id FROM dual;
+  SELECT cfg_bam_kpi_seq.nextval INTO :NEW.kpi_id FROM dual;
 END;
 /
 
 --
 -- BA / Timeperiod relations.
 --
-CREATE TABLE mod_bam_relations_ba_timeperiods (
+CREATE TABLE cfg_bam_relations_ba_timeperiods (
   ba_id int NOT NULL,
   tp_id int NOT NULL,
 
-  FOREIGN KEY (ba_id) REFERENCES mod_bam (ba_id)
+  FOREIGN KEY (ba_id) REFERENCES cfg_bam (ba_id)
     ON DELETE CASCADE,
   FOREIGN KEY (tp_id) REFERENCES timeperiod (tp_id)
     ON DELETE CASCADE
@@ -172,7 +172,7 @@ CREATE TABLE mod_bam_relations_ba_timeperiods (
 --
 -- BA Groups (aka BV).
 --
-CREATE TABLE mod_bam_ba_groups (
+CREATE TABLE cfg_bam_ba_groups (
   id_ba_group int NOT NULL,
 
   ba_group_name varchar(255) default NULL,
@@ -181,46 +181,46 @@ CREATE TABLE mod_bam_ba_groups (
 
   PRIMARY KEY (id_ba_group)
 );
-CREATE SEQUENCE mod_bam_ba_groups_seq
+CREATE SEQUENCE cfg_bam_ba_groups_seq
 START WITH 1
 INCREMENT BY 1;
-CREATE TRIGGER mod_bam_ba_groups_trigger
-BEFORE INSERT ON mod_bam_ba_groups
+CREATE TRIGGER cfg_bam_ba_groups_trigger
+BEFORE INSERT ON cfg_bam_ba_groups
 FOR EACH ROW
 BEGIN
-  SELECT mod_bam_ba_groups_seq.nextval INTO :NEW.id_ba_group FROM dual;
+  SELECT cfg_bam_ba_groups_seq.nextval INTO :NEW.id_ba_group FROM dual;
 END;
 /
 
 --
 -- BA / Group relations.
 --
-CREATE TABLE mod_bam_bagroup_ba_relation (
+CREATE TABLE cfg_bam_bagroup_ba_relation (
   id_bgr int NOT NULL,
   id_ba int NOT NULL,
   id_ba_group int NOT NULL,
 
   PRIMARY KEY (id_bgr),
-  FOREIGN KEY (id_ba) REFERENCES mod_bam (ba_id)
+  FOREIGN KEY (id_ba) REFERENCES cfg_bam (ba_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (id_ba_group) REFERENCES mod_bam_ba_groups (id_ba_group)
+  FOREIGN KEY (id_ba_group) REFERENCES cfg_bam_ba_groups (id_ba_group)
     ON DELETE CASCADE
 );
-CREATE SEQUENCE mod_bam_bagroup_ba_relation_seq
+CREATE SEQUENCE cfg_bam_bagroup_ba_relation_seq
 START WITH 1
 INCREMENT BY 1;
-CREATE TRIGGER mod_bam_bagroup_ba_relation_trigger
-BEFORE INSERT ON mod_bam_bagroup_ba_relation
+CREATE TRIGGER cfg_bam_bagroup_ba_relation_trigger
+BEFORE INSERT ON cfg_bam_bagroup_ba_relation
 FOR EACH ROW
 BEGIN
-  SELECT mod_bam_bagroup_ba_relation_seq.nextval INTO :NEW.id_bgr FROM dual;
+  SELECT cfg_bam_bagroup_ba_relation_seq.nextval INTO :NEW.id_bgr FROM dual;
 END;
 /
 
 --
 -- Meta Services.
 --
-CREATE TABLE meta_service (
+CREATE TABLE cfg_meta_services (
   meta_id int NOT NULL,
 
   meta_name varchar(254) default NULL,
@@ -261,7 +261,7 @@ END;
 --
 -- Meta Services Relationships.
 --
-CREATE TABLE meta_service_relation (
+CREATE TABLE cfg_meta_services_relations (
   msr_id int NOT NULL,
 
   meta_id int default NULL,
@@ -271,13 +271,13 @@ CREATE TABLE meta_service_relation (
   activate enum('0','1') default NULL,
 
   PRIMARY KEY (msr_id),
-  FOREIGN KEY (meta_id) REFERENCES meta_service (meta_id) ON DELETE CASCADE
+  FOREIGN KEY (meta_id) REFERENCES cfg_meta_services (meta_id) ON DELETE CASCADE
 );
 CREATE SEQUENCE meta_service_relation_seq
 START WITH 1
 INCREMENT BY 1;
 CREATE TRIGGER meta_service_relation_trigger
-BEFORE INSERT ON meta_service_relation
+BEFORE INSERT ON cfg_meta_services_relations
 FOR EACH ROW
 BEGIN
   SELECT meta_service_relation_seq.nextval INTO :NEW.msr_id FROM dual;

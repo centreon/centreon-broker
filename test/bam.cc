@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -102,7 +102,7 @@ static bool double_equals(double d1, double d2) {
 }
 
 /**
- *  Check content of the mod_bam table.
+ *  Check content of the cfg_bam table.
  */
 static void check_bas(
               QSqlDatabase& db,
@@ -112,7 +112,7 @@ static void check_bas(
   ++iteration;
   QString query(
             "SELECT ba_id, current_level, downtime, acknowledged"
-            "  FROM mod_bam"
+            "  FROM cfg_bam"
             "  ORDER BY ba_id");
   QSqlQuery q(db);
   if (!q.exec(query))
@@ -140,7 +140,7 @@ static void check_bas(
 }
 
 /**
- *  Check content of the mod_bam_kpi table.
+ *  Check content of the cfg_bam_kpi table.
  */
 static void check_kpis(
               QSqlDatabase& db,
@@ -151,7 +151,7 @@ static void check_kpis(
   QString query(
             "SELECT kpi_id, state_type, current_status, last_level,"
             "       downtime, acknowledged"
-            "  FROM mod_bam_kpi"
+            "  FROM cfg_bam_kpi"
             "  ORDER BY kpi_id");
   QSqlQuery q(db);
   if (!q.exec(query))
@@ -377,31 +377,22 @@ int main() {
   try {
     // Prepare database.
     db.open(NULL, BI_DB_NAME, CENTREON_DB_NAME);
+    db.set_remove_db_on_close(false);
 
-    // Prepare monitoring engine configuration parameters.
+    // Generate standard hosts and services.
     generate_hosts(hosts, HOST_COUNT);
+    generate_services(services, hosts, SERVICES_BY_HOST);
+
+    // Generate virtual BA host and services.
     {
       host h;
       memset(&h, 0, sizeof(h));
       char const* str("virtual_ba_host");
       h.name = new char[strlen(str) + 1];
       strcpy(h.name, str);
-      str = "1001";
-      h.display_name = new char[strlen(str) + 1];
-      strcpy(h.display_name, str);
-      h.accept_passive_host_checks = 0;
+      set_custom_variable(h, "HOST_ID", "1001");
       h.checks_enabled = 0;
       hosts.push_back(h);
-    }
-    generate_services(services, hosts, SERVICES_BY_HOST);
-    for (std::list<service>::iterator
-           it(services.begin()),
-           end(services.end());
-         it != end;
-         ++it) {
-      it->accept_passive_service_checks = 1;
-      it->checks_enabled = 0;
-      it->max_attempts = 1;
     }
     for (int i(1); i <= BA_COUNT; ++i) {
       service s;
@@ -421,9 +412,7 @@ int main() {
       {
         std::ostringstream oss;
         oss << i + 1000;
-        std::string str(oss.str());
-        s.display_name = new char[str.size() + 1];
-        strcpy(s.display_name, str.c_str());
+	set_custom_variable(s, "SERVICE_ID", oss.str().c_str());
       }
       {
         std::ostringstream oss;
@@ -432,11 +421,22 @@ int main() {
         s.service_check_command = new char[str.size() + 1];
         strcpy(s.service_check_command, str.c_str());
       }
-      s.accept_passive_service_checks = 1;
       s.checks_enabled = 0;
       s.max_attempts = 1;
       services.push_back(s);
     }
+
+    // Update properties of all services.
+    for (std::list<service>::iterator
+           it(services.begin()),
+           end(services.end());
+         it != end;
+         ++it) {
+      it->checks_enabled = 0;
+      it->max_attempts = 1;
+    }
+
+    // Generate commands.
     generate_commands(commands, 1);
     {
       char const* cmdline;
@@ -468,16 +468,27 @@ int main() {
       &services,
       &commands);
 
+    // Create organization.
+    {
+      QString query;
+      query = "INSERT INTO cfg_organizations (organization_id, name, shortname)"
+              "  VALUES (1, '42', '42')";
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not create organization: "
+               << q.lastError().text());
+    }
+
     // Create timeperiods.
     {
       QString query;
-      query = "INSERT INTO timeperiod (tp_id, tp_name, tp_alias, "
+      query = "INSERT INTO cfg_timeperiods (tp_id, tp_name, tp_alias, "
               "            tp_sunday, tp_monday, tp_tuesday,"
               "            tp_wednesday, tp_thursday, tp_friday, "
-              "            tp_saturday)"
+              "            tp_saturday, organization_id)"
               "  VALUES (1, '24x7', '24x7', '00:00-24:00',"
               "          '00:00-24:00', '00:00-24:00', '00:00-24:00',"
-              "          '00:00-24:00', '00:00-24:00', '00:00-24:00')";
+              "          '00:00-24:00', '00:00-24:00', '00:00-24:00', 1)";
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create timeperiods: "
@@ -490,8 +501,8 @@ int main() {
       for (int i(1); i <= HOST_COUNT; ++i) {
         {
           std::ostringstream oss;
-          oss << "INSERT INTO host (host_id, host_name)"
-              << "  VALUES (" << i << ", '" << i << "')";
+          oss << "INSERT INTO cfg_hosts (host_id, host_name, organization_id)"
+              << "  VALUES (" << i << ", '" << i << "', 1)";
           QSqlQuery q(*db.centreon_db());
           if (!q.exec(oss.str().c_str()))
             throw (exceptions::msg() << "could not create host "
@@ -502,8 +513,8 @@ int main() {
              ++j) {
           {
             std::ostringstream oss;
-            oss << "INSERT INTO service (service_id, service_description)"
-                << "  VALUES (" << j << ", '" << j << "')";
+            oss << "INSERT INTO cfg_services (service_id, service_description, organization_id)"
+                << "  VALUES (" << j << ", '" << j << "', 1)";
             QSqlQuery q(*db.centreon_db());
             if (!q.exec(oss.str().c_str()))
               throw (exceptions::msg() << "could not create service ("
@@ -512,7 +523,7 @@ int main() {
           }
           {
             std::ostringstream oss;
-            oss << "INSERT INTO host_service_relation (host_host_id, service_service_id)"
+            oss << "INSERT INTO cfg_hosts_services_relations (host_host_id, service_service_id)"
                 << "  VALUES (" << i << ", " << j << ")";
             QSqlQuery q(*db.centreon_db());
             if (!q.exec(oss.str().c_str()))
@@ -528,7 +539,7 @@ int main() {
     {
       {
         QString query(
-                  "INSERT INTO mod_bam (ba_id, name, level_w, level_c,"
+                  "INSERT INTO cfg_bam (ba_id, name, level_w, level_c,"
                   "            activate, id_reporting_period)"
                   "  VALUES (1, 'BA1', 90, 80, '1', 1),"
                   "         (2, 'BA2', 80, 70, '1', 1),"
@@ -547,7 +558,7 @@ int main() {
       }
       // {
       //   QString query(
-      //             "INSERT INTO mod_bam_ba_tp_rel (ba_id, timeperiod_id,"
+      //             "INSERT INTO cfg_bam_ba_tp_rel (ba_id, timeperiod_id,"
       //             "            is_default)"
       //             "  VALUES (1, 1, 1),"
       //             "         (2, 1, 1),"
@@ -569,8 +580,8 @@ int main() {
       // Create associated services.
       {
         QString query(
-                  "INSERT INTO host (host_id, host_name)"
-                  "  VALUES (1001, 'virtual_ba_host')");
+                  "INSERT INTO cfg_hosts (host_id, host_name, organization_id)"
+                  "  VALUES (1001, 'virtual_ba_host', 1)");
         QSqlQuery q(*db.centreon_db());
         if (!q.exec(query))
           throw (exceptions::msg()
@@ -580,8 +591,8 @@ int main() {
       for (int i(1); i <= BA_COUNT; ++i) {
         {
           std::ostringstream oss;
-          oss << "INSERT INTO service (service_id, service_description)"
-              << "  VALUES (" << 1000 + i << ", 'ba_" << i << "')";
+          oss << "INSERT INTO cfg_services (service_id, service_description, organization_id)"
+              << "  VALUES (" << 1000 + i << ", 'ba_" << i << "', 1)";
           QSqlQuery q(*db.centreon_db());
           if (!q.exec(oss.str().c_str()))
             throw (exceptions::msg()
@@ -590,7 +601,7 @@ int main() {
         }
         {
           std::ostringstream oss;
-          oss << "INSERT INTO host_service_relation (host_host_id, "
+          oss << "INSERT INTO cfg_hosts_services_relations (host_host_id, "
               << "            service_service_id)"
               << "  VALUES (1001, " << 1000 + i << ")";
           QSqlQuery q(*db.centreon_db());
@@ -606,7 +617,7 @@ int main() {
     // Create boolean expressions.
     {
       QString query(
-                "INSERT INTO mod_bam_boolean (boolean_id, name,"
+                "INSERT INTO cfg_bam_boolean (boolean_id, name,"
                 "            expression, bool_state, activate)"
                 "  VALUES (1, 'BoolExp1', '{1 1} {is} {OK}', 0, 1),"
                 "         (2, 'BoolExp2', '{1 2} {not} {CRITICAL} {OR} {1 3} {not} {OK}', 1, 1),"
@@ -621,7 +632,7 @@ int main() {
     // Create KPIs.
     {
       QString query(
-                "INSERT INTO mod_bam_kpi (kpi_id, kpi_type, host_id,"
+                "INSERT INTO cfg_bam_kpi (kpi_id, kpi_type, host_id,"
                 "            service_id, id_indicator_ba, id_ba,"
                 "            meta_id, boolean_id, config_type,"
                 "            drop_warning, drop_warning_impact_id,"
@@ -667,7 +678,7 @@ int main() {
     monitoring.start();
 
     // Let the daemon initialize.
-    sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(5);
 
     // #0
     time_t t1(time(NULL));
@@ -724,7 +735,7 @@ int main() {
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;11;2;output1 for (1, 11)");
 
     // Sleep a while.
-    sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(5);
 
     // #1
     time_t t2(time(NULL));
@@ -778,12 +789,12 @@ int main() {
     // Modify service states.
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;3;1;output2 for (1, 3)");
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;5;1;output2 for (1, 5)");
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;8;1;output2 for (1, 8)");
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;12;2;output2 for (1, 12)");
 
     // Sleep a while.
-    sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(5);
 
     // #2
     time_t t3(time(NULL));

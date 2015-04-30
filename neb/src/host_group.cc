@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #include "com/centreon/broker/neb/host_group.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
@@ -41,9 +42,9 @@ host_group::host_group() {}
  *
  *  Copy internal data of the host group object to the current instance.
  *
- *  @param[in] hg Object to copy.
+ *  @param[in] other  Object to copy.
  */
-host_group::host_group(host_group const& hg) : group(hg) {}
+host_group::host_group(host_group const& other) : group(other) {}
 
 /**
  *  Destructor.
@@ -55,12 +56,12 @@ host_group::~host_group() {}
  *
  *  Copy internal data of the host group object to the current instance.
  *
- *  @param[in] hg Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-host_group& host_group::operator=(host_group const& hg) {
-  group::operator=(hg);
+host_group& host_group::operator=(host_group const& other) {
+  group::operator=(other);
   return (*this);
 }
 
@@ -70,5 +71,47 @@ host_group& host_group::operator=(host_group const& hg) {
  *  @return The event type.
  */
 unsigned int host_group::type() const {
+  return (host_group::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int host_group::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_host_group>::value);
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const host_group::entries[] = {
+  mapping::entry(
+    &host_group::alias,
+    "alias"),
+  mapping::entry(
+    &host_group::enabled,
+    "enabled"),
+  mapping::entry(
+    &host_group::source_id,
+    "instance_id",
+    mapping::entry::invalid_on_zero,
+    false),
+  mapping::entry(
+    &host_group::name,
+    "name"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_host_group() {
+  return (new host_group);
+}
+io::event_info::event_operations const host_group::operations = {
+  &new_host_group
+};

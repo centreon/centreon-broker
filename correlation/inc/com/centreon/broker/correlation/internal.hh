@@ -28,10 +28,10 @@ namespace correlation {
   // Data elements.
   enum data_element {
     de_engine_state = 1,
-    de_host_state,
     de_issue,
     de_issue_parent,
-    de_service_state
+    de_state,
+    de_log_issue
   };
 }
 

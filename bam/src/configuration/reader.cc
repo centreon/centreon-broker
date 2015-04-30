@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,7 +21,6 @@
 #include <cstdlib>
 #include <sstream>
 #include <memory>
-#include "com/centreon/broker/bam/ba_svc_mapping.hh"
 #include "com/centreon/broker/bam/configuration/state.hh"
 #include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/reader_exception.hh"
@@ -34,7 +33,7 @@
 #include "com/centreon/broker/bam/dimension_timeperiod_exception.hh"
 #include "com/centreon/broker/bam/dimension_timeperiod_exclusion.hh"
 #include "com/centreon/broker/bam/dimension_ba_timeperiod_relation.hh"
-#include "com/centreon/broker/bam/time/timeperiod.hh"
+#include "com/centreon/broker/time/timeperiod.hh"
 #include "com/centreon/broker/database.hh"
 #include "com/centreon/broker/database_query.hh"
 #include "com/centreon/broker/io/stream.hh"
@@ -69,10 +68,10 @@ reader::~reader() {}
 void reader::read(state& st) {
   try {
     _load_dimensions();
-    _load(st.get_bas(), st.get_ba_svc_mapping());
+    _load(st.get_bas());
     _load(st.get_kpis());
     _load(st.get_bool_exps());
-    // XXX : _load(st.get_meta_services(), st.get_meta_svc_mapping());
+    _load(st.get_meta_services());
     _load(st.get_hst_svc_mapping());
   }
   catch (std::exception const& e) {
@@ -127,17 +126,17 @@ void reader::_load(state::kpis& kpis) {
       "        COALESCE(COALESCE(k.drop_critical, cc.impact), g.average_impact),"
       "        COALESCE(COALESCE(k.drop_unknown, uu.impact), g.average_impact),"
       "        k.last_state_change, k.in_downtime, k.last_impact"
-      "  FROM  mod_bam_kpi AS k"
-      "  LEFT JOIN mod_bam AS mb"
+      "  FROM  cfg_bam_kpi AS k"
+      "  LEFT JOIN cfg_bam AS mb"
       "     ON k.id_ba = mb.ba_id"
-      "  LEFT JOIN mod_bam_impacts AS ww"
+      "  LEFT JOIN cfg_bam_impacts AS ww"
       "    ON k.drop_warning_impact_id = ww.id_impact"
-      "  LEFT JOIN mod_bam_impacts AS cc"
+      "  LEFT JOIN cfg_bam_impacts AS cc"
       "    ON k.drop_critical_impact_id = cc.id_impact"
-      "  LEFT JOIN mod_bam_impacts AS uu"
+      "  LEFT JOIN cfg_bam_impacts AS uu"
       "    ON k.drop_unknown_impact_id = uu.id_impact"
       "  LEFT JOIN (SELECT id_ba, 100.0 / COUNT(kpi_id) AS average_impact"
-      "               FROM mod_bam_kpi"
+      "               FROM cfg_bam_kpi"
       "               WHERE activate='1'"
       "               GROUP BY id_ba) AS g"
       "    ON k.id_ba=g.id_ba"
@@ -188,8 +187,8 @@ void reader::_load(state::kpis& kpis) {
       if (it->second.is_meta()) {
         std::ostringstream oss;
         oss << "SELECT hsr.host_host_id, hsr.service_service_id"
-               "  FROM service AS s"
-               "  LEFT JOIN host_service_relation AS hsr"
+               "  FROM cfg_services AS s"
+               "  LEFT JOIN cfg_hosts_services_relations AS hsr"
                "    ON s.service_id=hsr.service_service_id"
                "  WHERE s.service_description='meta_" << it->second.get_meta_id()
             << "'";
@@ -219,16 +218,15 @@ void reader::_load(state::kpis& kpis) {
 /**
  *  Load BAs from the DB.
  *
- *  @param[out] bas      The list of BAs in database.
- *  @param[out] mapping  The mapping of BA ID to host/service IDs.
+ *  @param[out] bas  The list of BAs in database.
  */
-void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
+void reader::_load(state::bas& bas) {
   try {
     database_query query(_db);
     query.run_query(
       "SELECT ba_id, name, level_w, level_c, last_state_change, "
       "       current_status, in_downtime"
-      "  FROM mod_bam"
+      "  FROM cfg_bam"
       "  WHERE activate='1'");
     while (query.next()) {
       // BA object.
@@ -268,10 +266,10 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
     query.run_query(
             "SELECT h.host_name, s.service_description,"
             "       hsr.host_host_id, hsr.service_service_id"
-            "  FROM service AS s"
-            "  INNER JOIN host_service_relation AS hsr"
+            "  FROM cfg_services AS s"
+            "  INNER JOIN cfg_hosts_services_relations AS hsr"
             "    ON s.service_id=hsr.service_service_id"
-            "  INNER JOIN host AS h"
+            "  INNER JOIN cfg_hosts AS h"
             "    ON hsr.host_host_id=h.host_id"
             "  WHERE s.service_description LIKE 'ba_%'");
     while (query.next()) {
@@ -300,10 +298,6 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
         }
         found->second.set_host_id(host_id);
         found->second.set_service_id(service_id);
-        mapping.set(
-                  ba_id,
-                  query.value(0).toString().toStdString(),
-                  query.value(1).toString().toStdString());
       }
     }
   }
@@ -318,13 +312,14 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
   }
 
   // Test for BA without service ID.
-  for (state::bas::const_iterator it(bas.begin()),
-                                  end(bas.end());
+  for (state::bas::const_iterator
+         it(bas.begin()),
+         end(bas.end());
        it != end;
        ++it)
-    if (it->second.get_service_id() == 0)
-      throw (reader_exception() << "BAM: BA " << it->second.get_id()
-             << " has no associated service");
+    if (!it->second.get_host_id() || !it->second.get_service_id())
+      throw (reader_exception() << "BAM: BA " << it->first
+             << " has no associated virtual service");
 
   return ;
 }
@@ -340,7 +335,7 @@ void reader::_load(state::bool_exps& bool_exps) {
     database_query query(_db);
     query.run_query(
       "SELECT  boolean_id, expression, bool_state"
-      "  FROM  mod_bam_boolean"
+      "  FROM  cfg_bam_boolean"
       "  WHERE activate=1");
     while (query.next()) {
       bool_exps[query.value(0).toUInt()] =
@@ -367,19 +362,15 @@ void reader::_load(state::bool_exps& bool_exps) {
  *  Load meta-services from the DB.
  *
  *  @param[out] meta_services  Meta-services.
- *  @param[out] mapping        The mapping of meta-service ID to
- *                             host/service IDs.
  */
-void reader::_load(
-               state::meta_services& meta_services,
-               bam::ba_svc_mapping& mapping) {
+void reader::_load(state::meta_services& meta_services) {
   // Load meta-services.
   try {
     database_query q(_db);
     q.run_query(
       "SELECT meta_id, meta_name, calcul_type, warning, critical,"
       "       meta_select_mode, regexp_str, metric"
-      "  FROM meta_service"
+      "  FROM cfg_meta_services"
       "  WHERE meta_activate='1'");
     while (q.next()) {
       unsigned int meta_id(q.value(0).toUInt());
@@ -413,14 +404,17 @@ void reader::_load(
   try {
     database_query q(_db);
     q.run_query(
-      "SELECT h.host_name, s.service_description"
-      "  FROM service AS s"
-      "  INNER JOIN host_service_relation AS hsr"
+      "SELECT h.host_name, s.service_description,"
+      "       hsr.host_host_id, hsr.service_service_id"
+      "  FROM cfg_services AS s"
+      "  INNER JOIN cfg_hosts_services_relations AS hsr"
       "    ON s.service_id=hsr.service_service_id"
-      "  INNER JOIN host AS h"
+      "  INNER JOIN cfg_hosts AS h"
       "    ON hsr.host_host_id=h.host_id"
       "  WHERE s.service_description LIKE 'meta_%'");
     while (q.next()) {
+      unsigned int host_id(q.value(2).toUInt());
+      unsigned int service_id(q.value(3).toUInt());
       std::string service_description(q.value(1).toString().toStdString());
       service_description.erase(0, strlen("meta_"));
       bool ok(false);
@@ -441,10 +435,8 @@ void reader::_load(
           << "' references an unknown meta-service (" << meta_id << ")";
         continue ;
       }
-      mapping.set(
-                meta_id,
-                q.value(0).toString().toStdString(),
-                q.value(1).toString().toStdString());
+      found->second.set_host_id(host_id);
+      found->second.set_service_id(service_id);
     }
   }
   catch (reader_exception const& e) {
@@ -462,13 +454,10 @@ void reader::_load(
          it(meta_services.begin()),
          end(meta_services.end());
        it != end;
-       ++it) {
-    std::pair<std::string, std::string>
-      svc(mapping.get_service(it->first));
-    if (svc.first.empty() || svc.second.empty())
+       ++it)
+    if (!it->second.get_host_id() || !it->second.get_service_id())
       throw (reader_exception() << "BAM: meta-service "
-             << it->first << " has no associated service");
-  }
+             << it->first << " has no associated virtual service");
 
   // Load metrics of meta-services.
   std::auto_ptr<database> storage_db;
@@ -482,10 +471,10 @@ void reader::_load(
         && !it->second.get_metric_name().empty()) {
       std::ostringstream query;
       query << "SELECT m.metric_id"
-            << "  FROM metrics AS m"
-            << "    INNER JOIN index_data AS i"
+            << "  FROM rt_metrics AS m"
+            << "    INNER JOIN rt_index_data AS i"
             << "    ON m.index_id=i.id"
-            << "    INNER JOIN services AS s"
+            << "    INNER JOIN rt_services AS s"
             << "    ON i.host_id=s.host_id AND i.service_id=s.service_id"
             << "  WHERE s.description LIKE '"
             << it->second.get_service_filter() << "'"
@@ -514,7 +503,7 @@ void reader::_load(
       try {
         std::ostringstream query;
         query << "SELECT metric_id"
-              << "  FROM meta_service_relation"
+              << "  FROM cfg_meta_services_relations"
               << "  WHERE meta_id=" << it->second.get_id()
               << "    AND activate='1'";
         database_query q(_db);
@@ -541,18 +530,17 @@ void reader::_load(
  *
  *  @param[out] mapping  Host/service mapping.
  */
-void reader::_load(
-               bam::hst_svc_mapping& mapping) {
+void reader::_load(bam::hst_svc_mapping& mapping) {
   try {
     // XXX : expand hostgroups and servicegroups
     database_query q(_db);
     q.run_query(
       "SELECT h.host_id, s.service_id, h.host_name, s.service_description,"
           "   service_activate"
-      "  FROM service AS s"
-      "  LEFT JOIN host_service_relation AS hsr"
+      "  FROM cfg_services AS s"
+      "  LEFT JOIN cfg_hosts_services_relations AS hsr"
       "    ON s.service_id=hsr.service_service_id"
-      "  LEFT JOIN host AS h"
+      "  LEFT JOIN cfg_hosts AS h"
       "    ON hsr.host_host_id=h.host_id");
     while (q.next())
       mapping.set_service(
@@ -599,7 +587,7 @@ void reader::_load_dimensions() {
     q.run_query(
       "SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday, tp_tuesday, "
       "tp_wednesday, tp_thursday, tp_friday, tp_saturday"
-      "  FROM timeperiod",
+      "  FROM cfg_timeperiods",
       "could not load timeperiods from the database");
     while (q.next()) {
       timeperiods[q.value(0).toUInt()] = time::timeperiod::ptr(
@@ -630,7 +618,7 @@ void reader::_load_dimensions() {
     // Load the timeperiod exceptions.
     q.run_query(
       "SELECT timeperiod_id, days, timerange"
-      "  FROM timeperiod_exceptions",
+      "  FROM cfg_timeperiods_exceptions",
       "could not retrieve timeperiod exceptions from the database");
     while (q.next()) {
       unsigned int timeperiod_id = q.value(0).toUInt();
@@ -655,7 +643,7 @@ void reader::_load_dimensions() {
     // Load the excluded timeperiods.
     q.run_query(
       "SELECT timeperiod_id, timeperiod_exclude_id"
-      "  FROM timeperiod_exclude_relations",
+      "  FROM cfg_timeperiods_exclude_relations",
       "could not retrieve timeperiod exclusions from the database");
     while (q.next()) {
       unsigned int timeperiod_id = q.value(0).toUInt();
@@ -687,7 +675,7 @@ void reader::_load_dimensions() {
       "       sla_month_percent_warn, sla_month_percent_crit,"
       "       sla_month_duration_warn, sla_month_duration_crit,"
       "       id_reporting_period"
-      "  FROM mod_bam"
+      "  FROM cfg_bam"
       "  WHERE activate='1'",
       "could not retrieve BAs from the database");
     while (q.next()) {
@@ -714,7 +702,7 @@ void reader::_load_dimensions() {
     // Load the BVs.
     q.run_query(
       "SELECT id_ba_group, ba_group_name, ba_group_description"
-      "  FROM mod_bam_ba_groups",
+      "  FROM cfg_bam_ba_groups",
       "could not retrieve BVs from the database");
     while (q.next()) {
       misc::shared_ptr<dimension_bv_event>
@@ -728,8 +716,8 @@ void reader::_load_dimensions() {
     // Load the BA BV relations.
     q.run_query(
       "SELECT id_ba, id_ba_group"
-      "  FROM mod_bam_bagroup_ba_relation as r"
-      "  LEFT JOIN mod_bam as b"
+      "  FROM cfg_bam_bagroup_ba_relation as r"
+      "  LEFT JOIN cfg_bam as b"
       "    ON b.ba_id = r.id_ba"
       "  WHERE b.activate='1'",
       "could not retrieve BV memberships of BAs");
@@ -753,25 +741,25 @@ void reader::_load_dimensions() {
       "       COALESCE(COALESCE(k.drop_unknown, uu.impact), g.average_impact),"
       "       h.host_name, s.service_description, b.name,"
       "       meta.meta_name, boo.name"
-      "  FROM mod_bam_kpi AS k"
-      "  LEFT JOIN mod_bam_impacts AS ww"
+      "  FROM cfg_bam_kpi AS k"
+      "  LEFT JOIN cfg_bam_impacts AS ww"
       "    ON k.drop_warning_impact_id = ww.id_impact"
-      "  LEFT JOIN mod_bam_impacts AS cc"
+      "  LEFT JOIN cfg_bam_impacts AS cc"
       "    ON k.drop_critical_impact_id = cc.id_impact"
-      "  LEFT JOIN mod_bam_impacts AS uu"
+      "  LEFT JOIN cfg_bam_impacts AS uu"
       "    ON k.drop_unknown_impact_id = uu.id_impact"
-      "  LEFT JOIN host AS h"
+      "  LEFT JOIN cfg_hosts AS h"
       "    ON h.host_id = k.host_id"
-      "  LEFT JOIN service AS s"
+      "  LEFT JOIN cfg_services AS s"
       "    ON s.service_id = k.service_id"
-      "  INNER JOIN mod_bam AS b"
+      "  INNER JOIN cfg_bam AS b"
       "    ON b.ba_id = k.id_ba"
-      "  LEFT JOIN meta_service AS meta"
+      "  LEFT JOIN cfg_meta_services AS meta"
       "    ON meta.meta_id = k.meta_id"
-      "  LEFT JOIN mod_bam_boolean as boo"
+      "  LEFT JOIN cfg_bam_boolean as boo"
       "    ON boo.boolean_id = k.boolean_id"
       "  LEFT JOIN (SELECT id_ba, 100.0 / COUNT(kpi_id) AS average_impact"
-      "               FROM mod_bam_kpi"
+      "               FROM cfg_bam_kpi"
       "               WHERE activate='1'"
       "               GROUP BY id_ba) AS g"
       "   ON k.id_ba=g.id_ba"
@@ -812,7 +800,7 @@ void reader::_load_dimensions() {
 
     // Load the ba-timeperiods relations.
     q.run_query(
-      "SELECT ba_id, tp_id FROM mod_bam_relations_ba_timeperiods",
+      "SELECT ba_id, tp_id FROM cfg_bam_relations_ba_timeperiods",
       "could not retrieve the timeperiods associated with the BAs");
     while (q.next()) {
       misc::shared_ptr<dimension_ba_timeperiod_relation>

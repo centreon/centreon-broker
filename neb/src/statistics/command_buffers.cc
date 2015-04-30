@@ -68,28 +68,29 @@ command_buffers& command_buffers::operator=(command_buffers const& right) {
 void command_buffers::run(
               std::string& output,
 	      std::string& perfdata) {
-  unsigned int high(0);
-  unsigned int total(::external_command_buffer_slots);
-  unsigned int used(0);
+  // XXX
+  // unsigned int high(0);
+  // unsigned int total(::external_command_buffer_slots);
+  // unsigned int used(0);
 
-  // get number of items in the command buffer
-  if (::check_external_commands) {
-    pthread_mutex_lock(&external_command_buffer.buffer_lock);
-    used = external_command_buffer.items;
-    high = external_command_buffer.high;
-    pthread_mutex_unlock(&external_command_buffer.buffer_lock);
-  }
+  // // get number of items in the command buffer
+  // if (::check_external_commands) {
+  //   pthread_mutex_lock(&external_command_buffer.buffer_lock);
+  //   used = external_command_buffer.items;
+  //   high = external_command_buffer.high;
+  //   pthread_mutex_unlock(&external_command_buffer.buffer_lock);
+  // }
 
-  // Output.
-  std::ostringstream oss;
-  oss << "Engine " << instance_name.toStdString()
-      << " has " << used << "/" << total << " command";
-  output = oss.str();
+  // // Output.
+  // std::ostringstream oss;
+  // oss << "Engine " << instance_name.toStdString()
+  //     << " has " << used << "/" << total << " command";
+  // output = oss.str();
 
-  // Perfdata.
-  oss.str("");
-  oss << "used=" << used << " high=" << high << " total=" << total;
-  perfdata = oss.str();
+  // // Perfdata.
+  // oss.str("");
+  // oss << "used=" << used << " high=" << high << " total=" << total;
+  // perfdata = oss.str();
 
   return ;
 }

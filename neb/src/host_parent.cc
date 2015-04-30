@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #include "com/centreon/broker/neb/host_parent.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
@@ -40,13 +41,13 @@ host_parent::host_parent()
 /**
  *  Copy constructor.
  *
- *  @param[in] hp Object to copy.
+ *  @param[in] other  Object to copy.
  */
-host_parent::host_parent(host_parent const& hp)
-  : io::data(hp),
-    enabled(hp.enabled),
-    host_id(hp.host_id),
-    parent_id(hp.parent_id) {}
+host_parent::host_parent(host_parent const& other)
+  : io::data(other),
+    enabled(other.enabled),
+    host_id(other.host_id),
+    parent_id(other.parent_id) {}
 
 /**
  *  Destructor.
@@ -56,15 +57,17 @@ host_parent::~host_parent() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] hp Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-host_parent& host_parent::operator=(host_parent const& hp) {
-  io::data::operator=(hp);
-  enabled = hp.enabled;
-  host_id = hp.host_id;
-    parent_id = hp.parent_id;
+host_parent& host_parent::operator=(host_parent const& other) {
+  if (this != &other) {
+    io::data::operator=(other);
+    enabled = other.enabled;
+    host_id = other.host_id;
+    parent_id = other.parent_id;
+  }
   return (*this);
 }
 
@@ -74,5 +77,44 @@ host_parent& host_parent::operator=(host_parent const& hp) {
  *  @return The event_type.
  */
 unsigned int host_parent::type() const {
+  return (host_parent::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int host_parent::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_host_parent>::value);
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const host_parent::entries[] = {
+  mapping::entry(
+    &host_parent::enabled,
+    ""),
+  mapping::entry(
+    &host_parent::host_id,
+    "child_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &host_parent::parent_id,
+    "parent_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_host_parent() {
+  return (new host_parent);
+}
+io::event_info::event_operations const host_parent::operations = {
+  &new_host_parent
+};

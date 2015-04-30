@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -74,13 +74,21 @@ bool dimension_truncate_table_signal::operator==(
   return (update_started == other.update_started);
 }
 
-
 /**
  *  Get the event type.
  *
  *  @return Event type.
  */
 unsigned int dimension_truncate_table_signal::type() const {
+  return (dimension_truncate_table_signal::static_type());
+}
+
+/**
+ *  Get the event type.
+ *
+ *  @return Event type.
+ */
+unsigned int dimension_truncate_table_signal::static_type() {
   return (io::events::data_type<io::events::bam,
                                 bam::de_dimension_truncate_table_signal>::value);
 }
@@ -95,3 +103,25 @@ void dimension_truncate_table_signal::_internal_copy(
   update_started = other.update_started;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const dimension_truncate_table_signal::entries[] = {
+  mapping::entry(
+    &bam::dimension_truncate_table_signal::update_started,
+    "update_started"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_dimension_truncate_table_signal() {
+  return (new dimension_truncate_table_signal);
+}
+io::event_info::event_operations const dimension_truncate_table_signal::operations = {
+  &new_dimension_truncate_table_signal
+};

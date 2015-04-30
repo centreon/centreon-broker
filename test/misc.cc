@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -24,6 +24,7 @@
 #include <sstream>
 #include <unistd.h>
 #include "test/misc.hh"
+#include "test/vars.hh"
 
 /**
  *  Recursively remove a directory.
@@ -48,11 +49,11 @@ void recursive_remove(std::string const& dir_path) {
 /**
  *  Sleep for some seconds.
  *
- *  @param[in] seconds Number of seconds to sleep.
+ *  @param[in] units  Number of time units to sleep.
  */
-void sleep_for(unsigned int seconds) {
+void sleep_for(unsigned int units) {
   time_t now(time(NULL));
-  time_t target(now + seconds);
+  time_t target(now + units * MONITORING_ENGINE_INTERVAL_LENGTH);
   while (now < target) {
     sleep(target - now);
     now = time(NULL);

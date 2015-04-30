@@ -38,6 +38,6 @@ int main() {
   n1.remove_parent(&n2);
 
   // Check.
-  return (!n1.parents().isEmpty()
-          || !n2.children().isEmpty());
+  return (!n1.get_parents().empty()
+          || !n2.get_children().empty());
 }

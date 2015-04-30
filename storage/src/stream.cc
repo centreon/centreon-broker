@@ -35,7 +35,9 @@
 #include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
+#include "com/centreon/broker/storage/index_mapping.hh"
 #include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/storage/metric_mapping.hh"
 #include "com/centreon/broker/storage/parser.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 #include "com/centreon/broker/storage/remove_graph.hh"
@@ -224,7 +226,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   // Process service status events.
   if (!data.isNull()) {
     ++_pending_events;
-    if (data->type() == io::events::data_type<io::events::neb, neb::de_service_status>::value) {
+    if (data->type() == neb::service_status::static_type()) {
       misc::shared_ptr<neb::service_status>
         ss(data.staticCast<neb::service_status>());
       logging::debug(logging::high)
@@ -378,7 +380,7 @@ void stream::_check_deleted_index() {
     {
       database_query q(_db);
       q.run_query(
-          "SELECT id FROM index_data WHERE to_delete=1 LIMIT 1",
+          "SELECT id FROM rt_index_data WHERE to_delete=1 LIMIT 1",
           "storage: could not query index_data to get index to delete");
       if (!q.next())
         break ;
@@ -389,7 +391,7 @@ void stream::_check_deleted_index() {
     std::list<unsigned long long> metrics_to_delete;
     {
       std::ostringstream oss;
-      oss << "SELECT metric_id FROM metrics WHERE index_id=" << index_id;
+      oss << "SELECT metric_id FROM rt_metrics WHERE index_id=" << index_id;
       database_query q(_db);
       try { q.run_query(oss.str()); }
       catch (std::exception const& e) {
@@ -408,7 +410,7 @@ void stream::_check_deleted_index() {
     // Delete index from DB.
     {
       std::ostringstream oss;
-      oss << "DELETE FROM index_data WHERE id=" << index_id;
+      oss << "DELETE FROM rt_index_data WHERE id=" << index_id;
       database_query q(_db);
       try { q.run_query(oss.str()); }
       catch (std::exception const& e) {
@@ -430,7 +432,7 @@ void stream::_check_deleted_index() {
   {
     database_query q(_db);
     q.run_query(
-        "SELECT metric_id FROM metrics WHERE to_delete=1",
+        "SELECT metric_id FROM rt_metrics WHERE to_delete=1",
         "storage: could not get the list of metrics to delete");
     while (q.next())
       metrics_to_delete.push_back(q.value(0).toULongLong());
@@ -482,7 +484,7 @@ void stream::_delete_metrics(
     // Delete from DB.
     {
       std::ostringstream oss;
-      oss << "DELETE FROM metrics WHERE metric_id=" << metric_id;
+      oss << "DELETE FROM rt_metrics WHERE metric_id=" << metric_id;
       database_query q(_db);
       try { q.run_query(oss.str()); }
       catch (std::exception const& e) {
@@ -553,7 +555,7 @@ unsigned int stream::_find_index_id(
         << service_desc << ", special: " << special << ")";
       // Update index_data table.
       std::string query(
-        "UPDATE index_data"
+        "UPDATE rt_index_data"
         " SET host_name=:host_name,"
         "     service_description=:service_description,"
         "     special=:special"
@@ -571,7 +573,7 @@ unsigned int stream::_find_index_id(
       }
       catch (std::exception const& e) {
         throw (broker::exceptions::msg() << "storage: could not update "
-                  "service information in index_data (host_id "
+                  "service information in rt_index_data (host_id "
                << host_id << ", service_id " << service_id
                << ", host_name " << host_name
                << ", service_description " << service_desc
@@ -605,7 +607,7 @@ unsigned int stream::_find_index_id(
         << service_id << ")";
       // Build query.
       std::ostringstream oss;
-      oss << "INSERT INTO index_data ("
+      oss << "INSERT INTO rt_index_data ("
              "  host_id, host_name,"
              "  service_id, service_description, "
              "  must_be_rebuild, special)"
@@ -633,7 +635,7 @@ unsigned int stream::_find_index_id(
         q.finish();
         std::ostringstream oss2;
         oss2 << "SELECT id"
-                " FROM index_data"
+                " FROM rt_index_data"
                 " WHERE host_id=" << host_id
              << " AND service_id=" << service_id;
         database_query q(_db);
@@ -666,6 +668,14 @@ unsigned int stream::_find_index_id(
       info.special = special;
       info.rrd_retention = _rrd_len;
       _index_cache[std::make_pair(host_id, service_id)] = info;
+
+      // Create the metric mapping.
+      misc::shared_ptr<index_mapping> im(new index_mapping);
+      im->index_id = retval;
+      im->host_id = host_id;
+      im->service_id = service_id;
+      multiplexing::publisher pblshr;
+      pblshr.write(im);
 
       // Provide RRD retention.
       if (rrd_len)
@@ -793,7 +803,7 @@ unsigned int stream::_find_metric_id(
     if (*type == perfdata::automatic)
       *type = perfdata::gauge;
     std::string query(
-      "INSERT INTO metrics "
+      "INSERT INTO rt_metrics "
       "  (index_id, metric_name, unit_name, warn, warn_low, "
       "   warn_threshold_mode, crit, crit_low, "
       "   crit_threshold_mode, min, max, current_value,"
@@ -834,7 +844,7 @@ unsigned int stream::_find_metric_id(
       q.finish();
       std::string query(
         "SELECT metric_id"
-        " FROM metrics"
+        " FROM rt_metrics"
         " WHERE index_id=:index_id"
         " AND metric_name=:metric_name");
       database_query q2(_db);
@@ -878,6 +888,14 @@ unsigned int stream::_find_metric_id(
     info.min = min;
     info.max = max;
     _metric_cache[std::make_pair(index_id, metric_name)] = info;
+
+    // Create the metric mapping.
+    misc::shared_ptr<metric_mapping> mm(new metric_mapping);
+    mm->index_id = index_id;
+    mm->metric_id = info.metric_id;
+    multiplexing::publisher pblshr;
+    pblshr.write(mm);
+
     *locked = info.locked;
   }
 
@@ -898,7 +916,7 @@ void stream::_insert_perfdatas() {
       metric_value& mv(_perfdata_queue.front());
       query.precision(10);
       query << std::scientific
-            << "INSERT INTO data_bin (id_metric, ctime, status, value)"
+            << "INSERT INTO log_data_bin (id_metric, ctime, status, value)"
                " VALUES (" << mv.metric_id << ", " << mv.c_time << ", "
             << mv.status << ", '";
       if (isinf(mv.value))
@@ -930,7 +948,7 @@ void stream::_insert_perfdatas() {
     database_query q(_db);
     q.run_query(
         query.str(),
-        "storage: could not insert data in data_bin");
+        "storage: could not insert data in log_data_bin");
     _update_status("");
   }
 
@@ -946,7 +964,7 @@ void stream::_prepare() {
 
   // Prepare metrics update query.
   _update_metrics.prepare(
-    "UPDATE metrics"
+    "UPDATE rt_metrics"
     " SET unit_name=:unit_name,"
     " warn=:warn,"
     " warn_low=:warn_low,"
@@ -971,6 +989,9 @@ void stream::_rebuild_cache() {
   // Status.
   _update_status("status=rebuilding index and metrics cache\n");
 
+  // Create multiplexing publisher for metric and status mappings.
+  multiplexing::publisher pblshr;
+
   // Delete old cache.
   _index_cache.clear();
   _metric_cache.clear();
@@ -982,7 +1003,7 @@ void stream::_rebuild_cache() {
     q.run_query(
         "SELECT id, host_id, service_id, host_name, rrd_retention,"
         "       service_description, special, locked"
-        " FROM index_data",
+        " FROM rt_index_data",
         "storage: could not fetch index list from data DB");
 
     // Loop through result set.
@@ -1002,6 +1023,13 @@ void stream::_rebuild_cache() {
         << info.index_id << " of (" << host_id << ", "
         << service_id << ")";
       _index_cache[std::make_pair(host_id, service_id)] = info;
+
+      // Create the metric mapping.
+      misc::shared_ptr<index_mapping> im(new index_mapping);
+      im->index_id = info.index_id;
+      im->host_id = host_id;
+      im->service_id = service_id;
+      pblshr.write(im);
     }
   }
 
@@ -1014,7 +1042,7 @@ void stream::_rebuild_cache() {
         "       locked, current_value, unit_name, warn, warn_low,"
         "       warn_threshold_mode, crit, crit_low,"
         "       crit_threshold_mode, min, max"
-        "  FROM metrics",
+        "  FROM rt_metrics",
         "storage: could not fetch metric list from data DB");
 
     // Loop through result set.
@@ -1041,6 +1069,12 @@ void stream::_rebuild_cache() {
         << info.metric_id << " of (" << index_id << ", " << name
         << "), type " << info.type;
       _metric_cache[std::make_pair(index_id, name)] = info;
+
+      // Create the metric mapping.
+      misc::shared_ptr<metric_mapping> mm(new metric_mapping);
+      mm->index_id = index_id;
+      mm->metric_id = info.metric_id;
+      pblshr.write(mm);
     }
   }
 

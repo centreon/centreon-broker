@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -66,6 +66,8 @@ state& state::operator=(state const& s) {
  *  Reset state to default values.
  */
 void state::clear() {
+  _cache_directory.clear();
+  _command_file.clear();
   _event_queue_max_size = 0;
   _flush_logs = true;
   _inputs.clear();
@@ -74,6 +76,8 @@ void state::clear() {
   _log_thread_id = false;
   _log_timestamp
     = com::centreon::broker::logging::file::with_timestamp();
+  _log_human_readable_timestamp
+    = com::centreon::broker::logging::file::with_human_redable_timestamp();
   _loggers.clear();
   _module_dir.clear();
   _module_list.clear();
@@ -81,6 +85,45 @@ void state::clear() {
   _params.clear();
   _temporary = endpoint();
   return ;
+}
+
+/**
+ *  Set the cache directory.
+ *
+ *  @param[in] dir  Cache directory.
+ */
+void state::cache_directory(QString const& dir) {
+  _cache_directory = dir;
+  if (_cache_directory[_cache_directory.size() - 1] != '/')
+    _cache_directory.append("/");
+  return ;
+}
+
+/**
+ *  Get the cache directory.
+ *
+ *  @return Cache directory.
+ */
+QString const& state::cache_directory() const throw () {
+  return (_cache_directory);
+}
+
+/**
+ *  Set the command file.
+ *
+ *  @param[in] file  The command file.
+ */
+void state::command_file(QString const& file) {
+  _command_file = file;
+}
+
+/**
+ *  Get the command file.
+ *
+ *  @return  The command file.
+ */
+const QString& state::command_file() const throw() {
+  return (_command_file);
 }
 
 /**
@@ -222,6 +265,26 @@ bool state::log_timestamp() const throw () {
 }
 
 /**
+ *  Set whether or not a human readable timestamp logging should be enabled.
+ *
+ *  @param[in] human_log_time true to log a human readable timestamp.
+ */
+void state::log_human_readable_timestamp(bool human_log_time) throw () {
+  _log_human_readable_timestamp = human_log_time;
+  return ;
+}
+
+
+/**
+ *  Get whether or not to log a human readable timestamp.
+ *
+ *  @return true if a human redable timestamp must be logged.
+ */
+bool state::log_human_readable_timestamp() const throw() {
+  return (_log_human_readable_timestamp);
+}
+
+/**
  *  Get the logger list.
  *
  *  @return Logger list.
@@ -333,12 +396,15 @@ endpoint const& state::temporary() const throw () {
  *  @param[in] s Object to copy.
  */
 void state::_internal_copy(state const& s) {
+  _cache_directory = s._cache_directory;
+  _command_file = s._command_file;
   _event_queue_max_size = s._event_queue_max_size;
   _inputs = s._inputs;
   _instance_id = s._instance_id;
   _instance_name = s._instance_name;
   _log_thread_id = s._log_thread_id;
   _log_timestamp = s._log_timestamp;
+  _log_human_readable_timestamp = s._log_human_readable_timestamp;
   _loggers = s._loggers;
   _module_dir = s._module_dir;
   _module_list = s._module_list;

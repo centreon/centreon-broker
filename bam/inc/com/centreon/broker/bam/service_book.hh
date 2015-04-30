@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -27,8 +27,10 @@
 
 CCB_BEGIN()
 
-// Forward declaration.
+// Forward declarations.
 namespace         neb {
+  class           acknowledgement;
+  class           downtime;
   class           service_status;
 }
 
@@ -58,6 +60,12 @@ namespace         bam {
                     service_listener* listnr);
     void          update(
                     misc::shared_ptr<neb::service_status> const& ss,
+                    io::stream* visitor = NULL);
+    void          update(
+                    misc::shared_ptr<neb::acknowledgement> const& ack,
+                    io::stream* visitor = NULL);
+    void          update(
+                    misc::shared_ptr<neb::downtime> const& dt,
                     io::stream* visitor = NULL);
 
   private:

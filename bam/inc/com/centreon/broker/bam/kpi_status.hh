@@ -23,6 +23,8 @@
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 
 CCB_BEGIN()
 
@@ -31,7 +33,7 @@ namespace        bam {
    *  @class kpi_status kpi_status.hh "com/centreon/broker/bam/kpi_status.hh"
    *  @brief Update status of a KPI.
    *
-   *  Update the status of a KPI, used to update the mod_bam_kpi table.
+   *  Update the status of a KPI, used to update the cfg_bam_kpi table.
    */
   class          kpi_status : public io::data {
   public:
@@ -40,6 +42,8 @@ namespace        bam {
                  ~kpi_status();
     kpi_status&  operator=(kpi_status const& other);
     unsigned int type() const;
+    static unsigned int
+                 static_type();
 
     unsigned int kpi_id;
     double       level_acknowledgement_hard;
@@ -52,6 +56,11 @@ namespace        bam {
     short        state_soft;
     timestamp    last_state_change;
     double       last_impact;
+
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
 
   private:
     void         _internal_copy(kpi_status const& other);

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -29,6 +29,9 @@
 
 CCB_BEGIN()
 
+// Forward declaration.
+class                                persistent_cache;
+
 namespace                            io {
   /**
    *  @class endpoint endpoint.hh "com/centreon/broker/io/endpoint.hh"
@@ -51,7 +54,8 @@ namespace                            io {
     bool                             is_acceptor() const throw ();
     bool                             is_connector() const throw ();
     virtual misc::shared_ptr<stream> open() = 0;
-    virtual misc::shared_ptr<stream> open(QString const& id) = 0;
+    virtual misc::shared_ptr<stream> open(
+                                       QString const& id) = 0;
     virtual void                     stats(io::properties& tree);
 
    protected:

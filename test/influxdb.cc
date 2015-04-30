@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -49,10 +49,10 @@ using namespace com::centreon::broker;
 
 static const char* expected_result =
     "POST /write?u=" INFLUXDB_DB_USER "&p="INFLUXDB_DB_PASSWORD" HTTP/1.0\n"
-    "Content-Length: 229\n\n"
+    "Content-Length: 442\n\n"
     "{\"database\":\""INFLUXDB_DB_NAME"\",\"points\":["
-    "{\"name\":\"status\",\"tags\":{\"status_id\":1 },\"timestamp\":$timestamp$,\"fields\":{\"value\":0 } },"
-    "{\"name\":\"influxdb_test\",\"tags\":{\"metric_id\":1 },\"timestamp\":$timestamp$,\"fields\":{\"value\":0.8 } } ]}";
+    "{\"name\":\"status\",\"tags\":{\"status_id\":1 },\"timestamp\":$timestamp$,\"fields\":{\"value\":0,\"hostid\":\"1\",\"host\":\"1\",\"serviceid\":\"1\",\"service\":\"1\",\"instanceid\":\"42\",\"instance\":\"MyBroker\" } },"
+    "{\"name\":\"influxdb_test\",\"tags\":{\"metric_id\":1 },\"timestamp\":$timestamp$,\"fields\":{\"value\":0.8,\"metric\":\"influxdb_test\",\"hostid\":\"1\",\"host\":\"1\",\"serviceid\":\"1\",\"service\":\"1\",\"instanceid\":\"42\",\"instance\":\"MyBroker\" } } ]}";
 
 /**
  *  Check that the influxdb works.
@@ -96,7 +96,6 @@ int main() {
     generate_hosts(hosts, 1);
     generate_services(services, hosts, 1);
     services.back().checks_enabled = 0;
-    services.back().accept_passive_service_checks = 1;
     services.back().max_attempts = 1;
     commander.set_file(tmpnam(NULL));
     std::string additional_config;
@@ -118,7 +117,7 @@ int main() {
     monitoring.set_config_file(engine_config_file);
     monitoring.start();
 
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
     time_t first_timestamp_possible = std::time(NULL);
     commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;1;1;0;Submitted by unit test | influxdb_test=0.80");

@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -19,8 +19,9 @@
 
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/monitoring_logger.hh"
-#include "com/centreon/engine/logging.hh"
+#include "com/centreon/engine/logging/logger.hh"
 
+using namespace com::centreon;
 using namespace com::centreon::broker::neb;
 
 /**************************************
@@ -79,36 +80,40 @@ void monitoring_logger::log_msg(
                           logging::level l) throw () {
   (void)len;
   if (log_type == logging::debug_type) {
-    int verbosity;
+    engine::logging::verbosity_level verbosity;
     switch (l) {
     case logging::low:
-      verbosity = DEBUGV_MOST;
+      verbosity = engine::logging::most;
       break ;
     case logging::medium:
-      verbosity = DEBUGV_MORE;
+      verbosity = engine::logging::more;
       break ;
     default:
-      verbosity = DEBUGV_BASIC;
+      verbosity = engine::logging::basic;
     };
-    log_debug_info(DEBUGL_EVENTBROKER, verbosity, "Centreon Broker: %s", msg);
+    logger(engine::logging::dbg_all, verbosity)
+      << "Centreon Broker: " << msg;
   }
   else {
-    int display;
-    int data_type;
+    bool display;
+    engine::logging::type_value data_type;
     switch (log_type) {
     case logging::config_type:
-      display = FALSE;
-      data_type = NSLOG_CONFIG_WARNING;
+      display = false;
+      data_type = engine::logging::log_config_warning;
       break ;
     case logging::info_type:
-      display = FALSE;
-      data_type = NSLOG_INFO_MESSAGE;
+      display = false;
+      data_type = engine::logging::log_process_info;
       break ;
     default:
-      display = TRUE;
-      data_type = NSLOG_RUNTIME_ERROR;
+      display = true;
+      data_type = engine::logging::log_runtime_error;
     };
-    logit(data_type, display, "Centreon Broker: %s", msg);
+    logger(
+      data_type,
+      (display ? engine::logging::basic : engine::logging::more))
+      << "Centreon Broker: " << msg;
   }
   return ;
 }

@@ -23,6 +23,8 @@
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 
 CCB_BEGIN()
 
@@ -31,7 +33,7 @@ namespace        bam {
    *  @class ba_status ba_status.hh "com/centreon/broker/bam/ba_status.hh"
    *  @brief Update status of a BA.
    *
-   *  Update the status of a BA, used to update the mod_bam table.
+   *  Update the status of a BA, used to update the cfg_bam table.
    */
   class          ba_status : public io::data {
   public:
@@ -40,6 +42,8 @@ namespace        bam {
                  ~ba_status();
     ba_status&   operator=(ba_status const& other);
     unsigned int type() const;
+    static unsigned int
+                 static_type();
 
     unsigned int ba_id;
     bool         in_downtime;
@@ -49,6 +53,11 @@ namespace        bam {
     double       level_nominal;
     short        state;
     bool         state_changed;
+
+    static mapping::entry const
+                 entries[];
+    static io::event_info::event_operations const
+                 operations;
 
   private:
     void         _internal_copy(ba_status const& other);

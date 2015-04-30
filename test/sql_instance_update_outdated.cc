@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -87,7 +87,7 @@ int main() {
     cfg_cbd.set("INSTANCE_TIMEOUT", INSTANCE_TIMEOUT_STR);
     broker.set_config_file(cfg_cbd.generate());
     broker.start();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
     broker.update();
 
     // Start engine.
@@ -96,18 +96,18 @@ int main() {
     daemon.set_config_file(engine_config_file);
     daemon.start();
     broker.update();
-    sleep_for((INSTANCE_TIMEOUT + 2) * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(INSTANCE_TIMEOUT + 2);
 
     // Terminate monitoring engine.
     daemon.stop();
 
-    sleep_for((INSTANCE_TIMEOUT + 2) * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(INSTANCE_TIMEOUT + 2);
     broker.update();
 
     // Check for outdated instance
     {
       std::ostringstream query;
-      query << "SELECT COUNT(instance_id) from instances where outdated = TRUE";
+      query << "SELECT COUNT(instance_id) from rt_instances where outdated = TRUE";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check outdated instances from DB: "
@@ -122,7 +122,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(service_id)"
-            << "  FROM services WHERE state = " << STATE_UNKNOWN;
+            << "  FROM rt_services WHERE state = " << STATE_UNKNOWN;
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check outdated services from DB: "
@@ -138,7 +138,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(host_id)"
-            << "  FROM hosts WHERE state = " << HOST_UNREACHABLE;
+            << "  FROM rt_hosts WHERE state = " << HOST_UNREACHABLE;
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check outdated hosts from DB: "
@@ -152,13 +152,13 @@ int main() {
 
     daemon.start();
 
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
 
     // Check for living instance
     {
       std::ostringstream query;
       query
-        << "SELECT COUNT(instance_id) FROM instances WHERE outdated=0";
+        << "SELECT COUNT(instance_id) FROM rt_instances WHERE outdated=0";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check living instances from DB: "
@@ -173,7 +173,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(service_id)"
-            << "  FROM services WHERE state != " << STATE_UNKNOWN;
+            << "  FROM rt_services WHERE state != " << STATE_UNKNOWN;
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check living services from DB: "
@@ -189,7 +189,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(host_id)"
-            << "  FROM hosts WHERE state != " << HOST_UNREACHABLE;
+            << "  FROM rt_hosts WHERE state != " << HOST_UNREACHABLE;
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot check living hosts from DB: "

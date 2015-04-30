@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Merethis
+** Copyright 2013-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -23,9 +23,9 @@
 #include <iostream>
 #include <QString>
 #include <vector>
-#include "com/centreon/broker/bam/time/timeperiod.hh"
-#include "com/centreon/broker/bam/time/timezone_locker.hh"
-#include "com/centreon/broker/bam/time/timezone_manager.hh"
+#include "com/centreon/broker/time/timeperiod.hh"
+#include "com/centreon/broker/time/timezone_locker.hh"
+#include "com/centreon/broker/time/timezone_manager.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/misc/shared_ptr.hh"
@@ -48,7 +48,7 @@ using namespace com::centreon::broker;
 struct    options {
           options()
   : preferred_time(0), ref_time(0) {}
-  std::vector<misc::shared_ptr<bam::time::timeperiod> >
+  std::vector<misc::shared_ptr<time::timeperiod> >
           period;
   time_t  current_time;
   time_t  preferred_time;
@@ -62,7 +62,7 @@ static time_t string_to_time_t(std::string const& data) {
   if (!ptr)
     throw (exceptions::msg() << "invalid date format");
   t.tm_isdst = -1; // Not set by strptime().
-  bam::time::timezone_locker tzlock((*ptr == ' ') ? ptr + 1 : NULL);
+  time::timezone_locker tzlock((*ptr == ' ') ? ptr + 1 : NULL);
   return (mktime(&t));
 }
 
@@ -81,8 +81,8 @@ static void parse_file(char const* filename, options& opt) {
            << filename << "'");
   std::vector<std::string> range;
   std::vector<std::string> exclude;
-  misc::shared_ptr<bam::time::timeperiod>
-    current_tp(new bam::time::timeperiod);
+  misc::shared_ptr<time::timeperiod>
+    current_tp(new time::timeperiod);
   while (stream.good()) {
     std::string line;
     std::getline(stream, line, '\n');
@@ -128,7 +128,7 @@ static void parse_file(char const* filename, options& opt) {
                     QString(value.substr(pos).c_str()).trimmed().toStdString());
     }
     else if (key == "exclusion") {
-      for (std::vector<misc::shared_ptr<bam::time::timeperiod> >::iterator
+      for (std::vector<misc::shared_ptr<time::timeperiod> >::iterator
              it(opt.period.begin()),
              end(opt.period.end());
            it != end;
@@ -143,8 +143,8 @@ static void parse_file(char const* filename, options& opt) {
     else if (key == "timeperiod") {
       current_tp->set_name(value);
       opt.period.push_back(current_tp);
-      current_tp = misc::shared_ptr<bam::time::timeperiod>(
-                     new bam::time::timeperiod);
+      current_tp = misc::shared_ptr<time::timeperiod>(
+                     new time::timeperiod);
     }
     else
       throw (exceptions::msg() << "parsing of file '" << filename
@@ -171,7 +171,7 @@ int main(int argc, char* argv[]) {
   try {
     // Initialization.
     config::applier::init();
-    bam::time::timezone_manager::load();
+    time::timezone_manager::load();
 
     // Usage.
     if (argc != 2)
@@ -210,7 +210,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Deinitialization.
-  bam::time::timezone_manager::unload();
+  time::timezone_manager::unload();
   config::applier::deinit();
 
   // Return exit code.

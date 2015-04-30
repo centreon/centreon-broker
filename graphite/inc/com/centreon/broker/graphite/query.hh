@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -26,6 +26,7 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/storage/metric.hh"
 #  include "com/centreon/broker/storage/status.hh"
+#  include "com/centreon/broker/graphite/macro_cache.hh"
 
 std::ostream& operator<<(std::ostream& in, QString const& string);
 
@@ -45,7 +46,8 @@ namespace         graphite {
                   metric,
                   status
     };
-                  query(std::string const& naming_scheme, data_type type);
+
+                  query(std::string const& naming_scheme, data_type type, macro_cache const& cache);
                   query(query const& f);
                   ~query();
     query&        operator=(query const& f);
@@ -64,19 +66,27 @@ namespace         graphite {
     size_t        _naming_scheme_index;
     data_type     _type;
 
+    // Macro cache
+    macro_cache const*
+                  _cache;
+
     void          _compile_naming_scheme(
                     std::string const& naming_scheme,
                     data_type type);
     void          _throw_on_invalid(data_type macro_type);
 
     template <typename T, typename U, T (U::*member)>
-    void          _get_member(io::data const& d, std::ostream& is) {
-      is << static_cast<U const&>(d).*member;
-    }
-
+    void          _get_member(io::data const& d, std::ostream& is);
     void          _get_string(io::data const& d, std::ostream& is);
     void          _get_null(io::data const& d, std::ostream& is);
     void          _get_dollar_sign(io::data const& d, std::ostream& is);
+    unsigned int  _get_index_id(io::data const& d);
+    void          _get_index_id(io::data const& d, std::ostream& is);
+    void          _get_host(io::data const& d, std::ostream& is);
+    void          _get_host_id(io::data const& d, std::ostream& is);
+    void          _get_service(io::data const& d, std::ostream& is);
+    void          _get_service_id(io::data const& d, std::ostream& is);
+    void          _get_instance(io::data const& d, std::ostream& is);
   };
 }
 

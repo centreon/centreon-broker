@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,10 +21,20 @@
 #  define CCB_CORRELATION_NODE_HH
 
 #  include <memory>
+#  include <map>
 #  include <QList>
+#  include <set>
+#  include <QPair>
 #  include "com/centreon/broker/correlation/issue.hh"
+#  include "com/centreon/broker/correlation/state.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/neb/acknowledgement.hh"
+#  include "com/centreon/broker/neb/downtime.hh"
+#  include "com/centreon/broker/neb/log_entry.hh"
+#  include "com/centreon/broker/persistent_cache.hh"
 
 CCB_BEGIN()
 
@@ -38,6 +48,9 @@ namespace                correlation {
    */
   class                  node {
   public:
+    typedef std::set<node*>
+                         node_map;
+
                          node();
                          node(node const& n);
                          ~node();
@@ -48,30 +61,83 @@ namespace                correlation {
     void                 add_depended(node* n);
     void                 add_dependency(node* n);
     void                 add_parent(node* n);
-    QList<node*> const&  children() const throw ();
-    QList<node*> const&  depended_by() const throw ();
-    QList<node*> const&  depends_on() const throw ();
-    QList<node*> const&  parents() const throw ();
+    node_map const&      get_children() const;
+    node_map const&      get_dependeds() const;
+    node_map const&      get_dependencies() const;
+    node_map const&      get_parents() const;
     void                 remove_child(node* n);
     void                 remove_depended(node* n);
     void                 remove_dependency(node* n);
     void                 remove_parent(node* n);
+    QPair<unsigned int, unsigned int>
+                         get_id() const;
+    bool                 all_parents_with_issues_and_get_start_time(
+                           timestamp& start_time) const;
+
+    void                 manage_status(
+                          short status,
+                          timestamp last_state_change,
+                          io::stream* stream);
+    void                 manage_ack(
+                          neb::acknowledgement const& ack,
+                          io::stream* stream);
+    void                 manage_downtime(
+                           neb::downtime const& dwn,
+                           io::stream* stream);
+    void                 manage_log(
+                           neb::log_entry const& entry,
+                           io::stream* stream);
+    enum                 link_type {
+                         parent,
+                         children,
+                         depended_by,
+                         depends_on
+    };
+    void                 linked_node_updated(
+                           node& n,
+                           timestamp start_time,
+                           bool closed,
+                           link_type type,
+                           io::stream* stream);
+
+    void                 serialize(persistent_cache& cache) const;
 
     unsigned int         host_id;
-    unsigned int         instance_id;
     bool                 in_downtime;
     std::auto_ptr<issue> my_issue;
+    std::auto_ptr<correlation::state>
+                         my_state;
     unsigned int         service_id;
-    timestamp            since;
     short                state;
+    std::auto_ptr<neb::acknowledgement>
+                         acknowledgement;
+    std::map<unsigned int, neb::downtime>
+                         downtimes;
 
    private:
     void                 _internal_copy(node const& n);
 
-    QList<node*>         _children;
-    QList<node*>         _depended_by;
-    QList<node*>         _depends_on;
-    QList<node*>         _parents;
+    node_map             _children;
+    node_map             _depended_by;
+    node_map             _depends_on;
+    node_map             _parents;
+
+    void                 _generate_state_event(
+                           timestamp start_time,
+                           short new_status,
+                           io::stream* stream);
+    correlation::state*  _open_state_event(
+                           timestamp start_time) const;
+
+    void                 _visit_linked_nodes(
+                           timestamp last_state_change,
+                           bool closed,
+                           io::stream* stream);
+    void                 _visit_parent_of_child_nodes(
+                           timestamp last_state_change,
+                           bool closed,
+                           io::stream* stream);
+
   };
 }
 

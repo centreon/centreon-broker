@@ -92,7 +92,8 @@ void connector::connect_to(
                   std::string const& db_passwd,
                   std::string const& db_addr,
                   unsigned short db_port,
-                  unsigned int queries_per_transaction) {
+                  unsigned int queries_per_transaction,
+                  misc::shared_ptr<persistent_cache> const& cache) {
   _metric_naming = metric_naming;
   _status_naming = status_naming;
   _user = db_user;
@@ -100,6 +101,7 @@ void connector::connect_to(
   _addr = db_addr;
   _port = db_port,
   _queries_per_transaction = queries_per_transaction;
+  _persistent_cache = cache;
   return ;
 }
 
@@ -117,7 +119,8 @@ misc::shared_ptr<io::stream> connector::open() {
                   _password,
                   _addr,
                   _port,
-                  _queries_per_transaction)));
+                  _queries_per_transaction,
+                  _persistent_cache)));
 }
 
 /**
@@ -151,5 +154,6 @@ void connector::_internal_copy(connector const& other) {
   _addr = other._addr;
   _port = other._port;
   _queries_per_transaction = other._queries_per_transaction;
+  _persistent_cache = other._persistent_cache;
   return ;
 }

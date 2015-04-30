@@ -100,6 +100,7 @@ bool factory::has_endpoint(
  *  @param[in]  is_input    Unused.
  *  @param[in]  is_output   Unused.
  *  @param[out] is_acceptor Set to true if the endpoint is an acceptor.
+ *  @param[in]  cache       Unused.
  *
  *  @return Endpoint matching configuration.
  */
@@ -107,7 +108,10 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool is_input,
                          bool is_output,
-                         bool& is_acceptor) const {
+                         bool& is_acceptor,
+                         misc::shared_ptr<persistent_cache> cache) const {
+  (void)cache;
+
   // Find host (if exist).
   QString host;
   {

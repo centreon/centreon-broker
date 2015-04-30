@@ -6,21 +6,21 @@
 --    Business Activity Monitoring   --
 -- ------------------------------------
 
--- meta_service
--- meta_service_relation
--- mod_bam
--- mod_bam_ba_groups
--- mod_bam_bagroup_ba_relation
--- mod_bam_impacts
--- mod_bam_boolean
--- mod_bam_kpi
--- mod_bam_relations_ba_timeperiods
+-- cfg_meta_services
+-- cfg_meta_services_relations
+-- cfg_bam
+-- cfg_bam_ba_groups
+-- cfg_bam_bagroup_ba_relation
+-- cfg_bam_impacts
+-- cfg_bam_boolean
+-- cfg_bam_kpi
+-- cfg_bam_relations_ba_timeperiods
 
 
 --
 -- Business Activities.
 --
-CREATE TABLE mod_bam (
+CREATE TABLE cfg_bam (
   ba_id serial,
   name varchar(254) default NULL,
 
@@ -50,7 +50,7 @@ CREATE TABLE mod_bam (
 --
 -- Impacts of KPI / boolean expressions.
 --
-CREATE TABLE mod_bam_impacts (
+CREATE TABLE cfg_bam_impacts (
   id_impact serial,
   impact float NOT NULL,
 
@@ -60,7 +60,7 @@ CREATE TABLE mod_bam_impacts (
 --
 -- BAM boolean expressions.
 --
-CREATE TABLE mod_bam_boolean (
+CREATE TABLE cfg_bam_boolean (
   boolean_id serial,
   name varchar(255) NOT NULL,
 
@@ -74,7 +74,7 @@ CREATE TABLE mod_bam_boolean (
 --
 -- Key Performance Indicators.
 --
-CREATE TABLE mod_bam_kpi (
+CREATE TABLE cfg_bam_kpi (
   kpi_id serial,
 
   state_type enum('0','1') default NULL,
@@ -104,26 +104,26 @@ CREATE TABLE mod_bam_kpi (
   last_impact float default NULL,
 
   PRIMARY KEY (kpi_id),
-  FOREIGN KEY (id_indicator_ba) REFERENCES mod_bam (ba_id)
+  FOREIGN KEY (id_indicator_ba) REFERENCES cfg_bam (ba_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (id_ba) REFERENCES mod_bam (ba_id)
+  FOREIGN KEY (id_ba) REFERENCES cfg_bam (ba_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (drop_warning_impact_id) REFERENCES mod_bam_impacts (id_impact)
+  FOREIGN KEY (drop_warning_impact_id) REFERENCES cfg_bam_impacts (id_impact)
     ON DELETE RESTRICT,
-  FOREIGN KEY (drop_critical_impact_id) REFERENCES mod_bam_impacts (id_impact)
+  FOREIGN KEY (drop_critical_impact_id) REFERENCES cfg_bam_impacts (id_impact)
     ON DELETE RESTRICT,
-  FOREIGN KEY (drop_unknown_impact_id) REFERENCES mod_bam_impacts (id_impact)
+  FOREIGN KEY (drop_unknown_impact_id) REFERENCES cfg_bam_impacts (id_impact)
     ON DELETE RESTRICT
 );
 
 --
 -- BA / Timeperiod relations.
 --
-CREATE TABLE mod_bam_relations_ba_timeperiods (
+CREATE TABLE cfg_bam_relations_ba_timeperiods (
   ba_id int NOT NULL,
   timeperiod_id int NOT NULL,
 
-  FOREIGN KEY (ba_id) REFERENCES mod_bam (ba_id)
+  FOREIGN KEY (ba_id) REFERENCES cfg_bam (ba_id)
     ON DELETE CASCADE,
   FOREIGN KEY (tp_id) REFERENCES timeperiod (tp_id)
     ON DELETE CASCADE
@@ -132,7 +132,7 @@ CREATE TABLE mod_bam_relations_ba_timeperiods (
 --
 -- BA Groups (aka BV).
 --
-CREATE TABLE mod_bam_ba_groups (
+CREATE TABLE cfg_bam_ba_groups (
   id_ba_group serial,
 
   ba_group_name varchar(255) default NULL,
@@ -145,22 +145,22 @@ CREATE TABLE mod_bam_ba_groups (
 --
 -- BA / Group relations.
 --
-CREATE TABLE mod_bam_bagroup_ba_relation (
+CREATE TABLE cfg_bam_bagroup_ba_relation (
   id_bgr serial,
   id_ba int NOT NULL,
   id_ba_group int NOT NULL,
 
   PRIMARY KEY (id_bgr),
-  FOREIGN KEY (id_ba) REFERENCES mod_bam (ba_id)
+  FOREIGN KEY (id_ba) REFERENCES cfg_bam (ba_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (id_ba_group) REFERENCES mod_bam_ba_groups (id_ba_group)
+  FOREIGN KEY (id_ba_group) REFERENCES cfg_bam_ba_groups (id_ba_group)
     ON DELETE CASCADE
 );
 
 --
 -- Meta Services.
 --
-CREATE TABLE meta_service (
+CREATE TABLE cfg_meta_services (
   meta_id serial,
 
   meta_name varchar(254) default NULL,
@@ -191,7 +191,7 @@ CREATE TABLE meta_service (
 --
 -- Meta Services Relationships.
 --
-CREATE TABLE meta_service_relation (
+CREATE TABLE cfg_meta_services_relations (
   msr_id serial,
 
   meta_id int default NULL,
@@ -201,5 +201,5 @@ CREATE TABLE meta_service_relation (
   activate enum('0','1') default NULL,
 
   PRIMARY KEY (msr_id),
-  FOREIGN KEY (meta_id) REFERENCES meta_service (meta_id) ON DELETE CASCADE
+  FOREIGN KEY (meta_id) REFERENCES cfg_meta_services (meta_id) ON DELETE CASCADE
 );

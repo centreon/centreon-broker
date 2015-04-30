@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -112,7 +112,7 @@ int main() {
     daemon.start();
 
     // Let the daemon initialize.
-    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(10);
 
     // Set soon-to-be-in-downtime service as passive.
     {
@@ -121,7 +121,7 @@ int main() {
     }
 
     // Run a little while.
-    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(4);
 
     // Base time.
     time_t now(time(NULL));
@@ -157,7 +157,7 @@ int main() {
     }
 
     // Let the monitoring engine run a while.
-    sleep_for(20 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(20);
 
     // New time.
     time_t t1(now);
@@ -171,7 +171,7 @@ int main() {
             << "       cancelled, comment_data, deletion_time,"
             << "       duration, end_time, fixed, start_time, started,"
             << "       triggered_by, type"
-            << "  FROM downtimes"
+            << "  FROM rt_downtimes"
             << "  ORDER BY internal_id ASC";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
@@ -271,7 +271,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(*)"
-            << "  FROM hosts"
+            << "  FROM rt_hosts"
             << "  WHERE scheduled_downtime_depth=0";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
@@ -290,7 +290,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(*)"
-            << "  FROM services"
+            << "  FROM rt_services"
             << "  WHERE scheduled_downtime_depth=0";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
@@ -312,7 +312,7 @@ int main() {
     commander.execute("DEL_HOST_DOWNTIME;1");
 
     // Run a while.
-    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(10);
 
     // Update time.
     time_t t2(now);
@@ -322,7 +322,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT internal_id, actual_end_time, cancelled, deletion_time"
-            << "  FROM downtimes"
+            << "  FROM rt_downtimes"
             << "  ORDER BY internal_id";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -86,11 +86,8 @@ group& group::operator=(group const& g) {
  *  @see operator=(group const&)
  */
 void group::_internal_copy(group const& g) {
-  action_url = g.action_url;
   alias = g.alias;
   enabled = g.enabled;
-    name = g.name;
-  notes = g.notes;
-  notes_url = g.notes_url;
+  name = g.name;
   return ;
 }

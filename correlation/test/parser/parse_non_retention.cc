@@ -43,12 +43,12 @@ int main() {
   char const* file_content =
     "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
     "<centreonbroker>\n"
-    "  <host id=\"13\" since=\"789\" state=\"1\" />\n"
-    "  <host id=\"42\" since=\"0\" />\n"
-    "  <service id=\"21\" host=\"13\" since=\"456\" />\n"
-    "  <service id=\"66\" host=\"42\" since=\"0\" state=\"3\" />\n"
-    "  <service id=\"33\" host=\"13\" since=\"0\" />\n"
-    "  <service id=\"12\" host=\"42\" since=\"666\" state=\"2\" />\n"
+    "  <host id=\"13\" state=\"1\" />\n"
+    "  <host id=\"42\" />\n"
+    "  <service id=\"21\" host=\"13\" />\n"
+    "  <service id=\"66\" host=\"42\" state=\"3\" />\n"
+    "  <service id=\"33\" host=\"13\" />\n"
+    "  <service id=\"12\" host=\"42\" state=\"2\" />\n"
     "  <parent host=\"13\" parent=\"42\" />\n"
     "  <dependency dependent_host=\"13\" dependent_service=\"21\"\n"
     "              host=\"13\" service=\"33\" />\n"
@@ -75,35 +75,29 @@ int main() {
     // Parse file.
     QMap<QPair<unsigned int, unsigned int>, node> parsed;
     correlation::parser p;
-    p.parse(file_path, false, parsed);
+    p.parse(file_path, parsed);
     ::remove(file_path.toStdString().c_str());
 
     // Expected result.
     QMap<QPair<unsigned int, unsigned int>, node> expected;
     node& h1(expected[qMakePair(13u, 0u)]);
     h1.host_id = 13;
-    h1.since = 789;
     h1.state = 1;
     node& h2(expected[qMakePair(42u, 0u)]);
     h2.host_id = 42;
-    h2.since = 0;
     node& s1(expected[qMakePair(13u, 21u)]);
     s1.host_id = 13;
     s1.service_id = 21;
-    s1.since = 456;
     node& s2(expected[qMakePair(42u, 66u)]);
     s2.host_id = 42;
     s2.service_id = 66;
-    s2.since = 0;
     s2.state = 3;
     node& s3(expected[qMakePair(13u, 33u)]);
     s3.host_id = 13;
     s3.service_id = 33;
-    s3.since = 0;
     node& s4(expected[qMakePair(42u, 12u)]);
     s4.host_id = 42;
     s4.service_id = 12;
-    s4.since = 666;
     s4.state = 2;
     h1.add_parent(&h2);
     s1.add_dependency(&h1);

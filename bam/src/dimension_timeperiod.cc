@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -81,13 +81,21 @@ bool dimension_timeperiod::operator==(
           && (sunday == other.sunday));
 }
 
-
 /**
  *  Get the event type.
  *
  *  @return Event type.
  */
 unsigned int dimension_timeperiod::type() const {
+  return (dimension_timeperiod::static_type());
+}
+
+/**
+ *  Get the event type.
+ *
+ *  @return Event type.
+ */
+unsigned int dimension_timeperiod::static_type() {
   return (io::events::data_type<io::events::bam,
                                 bam::de_dimension_timeperiod>::value);
 }
@@ -110,3 +118,50 @@ void dimension_timeperiod::_internal_copy(
   sunday = other.sunday;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const dimension_timeperiod::entries[] = {
+  mapping::entry(
+    &bam::dimension_timeperiod::id,
+    "tp_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &bam::dimension_timeperiod::name,
+    "name"),
+  mapping::entry(
+    &bam::dimension_timeperiod::monday,
+    "monday"),
+  mapping::entry(
+    &bam::dimension_timeperiod::tuesday,
+    "tuesday"),
+  mapping::entry(
+    &bam::dimension_timeperiod::wednesday,
+    "wednesday"),
+  mapping::entry(
+    &bam::dimension_timeperiod::thursday,
+    "thursday"),
+  mapping::entry(
+    &bam::dimension_timeperiod::friday,
+    "friday"),
+  mapping::entry(
+    &bam::dimension_timeperiod::saturday,
+    "saturday"),
+  mapping::entry(
+    &bam::dimension_timeperiod::sunday,
+    "sunday"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_dimension_timeperiod() {
+  return (new dimension_timeperiod);
+}
+io::event_info::event_operations const dimension_timeperiod::operations = {
+  &new_dimension_timeperiod
+};

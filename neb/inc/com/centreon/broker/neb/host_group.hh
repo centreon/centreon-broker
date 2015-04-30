@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,6 +20,8 @@
 #ifndef CCB_NEB_HOST_GROUP_HH
 #  define CCB_NEB_HOST_GROUP_HH
 
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/neb/group.hh"
 
@@ -35,10 +37,17 @@ namespace          neb {
   class            host_group : public group {
   public:
                    host_group();
-                   host_group(host_group const& hg);
+                   host_group(host_group const& other);
                    ~host_group();
-    host_group&    operator=(host_group const& hg);
+    host_group&    operator=(host_group const& other);
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
+
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
   };
 }
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -48,8 +48,8 @@ using namespace com::centreon::broker;
 
 static const char* expected_result =
     "Authorization: Basic $auth$\n"
-    "centreon.statuses.1 0 $timestamp$\n"
-    "centreon.metrics.1 0.8 $timestamp$\n";
+    "centreon.MyBroker.status.1.1.1.1.1 0 $timestamp$\n"
+    "centreon.MyBroker.graphite_test.1.1.1.1.1.1 0.8 $timestamp$\n";
 
 /**
  *  Check that the graphite works.
@@ -92,7 +92,6 @@ int main() {
     generate_hosts(hosts, 1);
     generate_services(services, hosts, 1);
     services.back().checks_enabled = 0;
-    services.back().accept_passive_service_checks = 1;
     services.back().max_attempts = 1;
     commander.set_file(tmpnam(NULL));
     std::string additional_config;
@@ -114,7 +113,7 @@ int main() {
     monitoring.set_config_file(engine_config_file);
     monitoring.start();
 
-    sleep_for(3 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(3);
     time_t first_timestamp_possible = std::time(NULL);
     commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;1;1;0;Submitted by unit test | graphite_test=0.80");

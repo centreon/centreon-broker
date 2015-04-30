@@ -96,7 +96,7 @@ endif ()
 target_link_libraries("${RRD}" ${LIBRRD_LDFLAGS})
 
 if (WITH_TESTING)
-  set(TEST_LIBRARIES "${RRD}" "roker")
+  set(TEST_LIBRARIES "${RRD}" "10-neb" "20-storage" "roker")
 
   # Open exception tests.
   #   Throw.

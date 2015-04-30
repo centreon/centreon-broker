@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -59,6 +59,12 @@ namespace        bam {
     bool         is_acknowledged() const;
     void         service_update(
                    misc::shared_ptr<neb::service_status> const& status,
+                   io::stream* visitor = NULL);
+    void         service_update(
+                   misc::shared_ptr<neb::acknowledgement> const& ack,
+                   io::stream* visitor = NULL);
+    void         service_update(
+                   misc::shared_ptr<neb::downtime> const& dt,
                    io::stream* visitor = NULL);
     void         set_acknowledged(bool acknowledged);
     void         set_downtimed(bool downtimed);

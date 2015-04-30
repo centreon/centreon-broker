@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -31,10 +31,6 @@ CCB_BEGIN()
 class                   database;
 
 namespace               bam {
-  // Forward declarations.
-  class                 ba_svc_mapping;
-  class                 hst_svc_mapping;
-
   namespace             configuration {
     /**
      *  @class reader reader.hh "com/centreon/broker/bam/configuration/reader.hh"
@@ -56,13 +52,9 @@ namespace               bam {
                         reader(reader const& other);
       reader&           operator=(reader const& other);
       void              _load(state::kpis& kpis);
-      void              _load(
-                          state::bas& bas,
-                          bam::ba_svc_mapping& mapping);
+      void              _load(state::bas& bas);
       void              _load(state::bool_exps& bool_exps);
-      void              _load(
-                          state::meta_services& meta_services,
-                          bam::ba_svc_mapping& mapping);
+      void              _load(state::meta_services& meta_services);
       void              _load(bam::hst_svc_mapping& mapping);
       void              _load_dimensions();
 

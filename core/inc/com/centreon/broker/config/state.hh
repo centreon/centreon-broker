@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -44,6 +44,10 @@ namespace                         config {
                                   state(state const& s);
                                   ~state();
     state&                        operator=(state const& s);
+    void                          cache_directory(QString const& dir);
+    QString const&                cache_directory() const throw ();
+    void                          command_file(QString const& file);
+    QString const&                command_file() const throw();
     void                          clear();
     void                          event_queue_max_size(
                                     unsigned int val) throw ();
@@ -60,6 +64,9 @@ namespace                         config {
     bool                          log_thread_id() const throw ();
     void                          log_timestamp(bool log_time) throw ();
     bool                          log_timestamp() const throw ();
+    void                          log_human_readable_timestamp(
+                                    bool human_log_time) throw ();
+    bool                          log_human_readable_timestamp() const throw();
     QList<logger>&                loggers() throw ();
     QList<logger> const&          loggers() const throw ();
     QString const&                module_directory() const throw ();
@@ -76,6 +83,8 @@ namespace                         config {
   private:
     void                          _internal_copy(state const& s);
 
+    QString                       _cache_directory;
+    QString                       _command_file;
     unsigned int                  _event_queue_max_size;
     bool                          _flush_logs;
     QList<endpoint>               _inputs;
@@ -83,6 +92,7 @@ namespace                         config {
     QString                       _instance_name;
     bool                          _log_thread_id;
     bool                          _log_timestamp;
+    bool                          _log_human_readable_timestamp;
     QList<logger>                 _loggers;
     QString                       _module_dir;
     QList<QString>                _module_list;

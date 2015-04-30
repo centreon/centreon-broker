@@ -171,7 +171,7 @@ int main() {
       for (unsigned int i(1); i <= HOST_COUNT * SERVICES_BY_HOST; ++i) {
         unsigned int host_id((i - 1) / SERVICES_BY_HOST + 1);
         std::ostringstream query;
-        query << "INSERT INTO index_data (host_id, service_id)"
+        query << "INSERT INTO rt_index_data (host_id, service_id)"
               << "  VALUES(" << host_id << ", " << i << ")";
         if (!q.exec(query.str().c_str()))
           throw (exceptions::msg() << "cannot create index of service ("
@@ -190,14 +190,14 @@ int main() {
     // Start cbd.
     broker.set_config_file(cbd_config_path);
     broker.start();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
 
     // Start monitoring engine.
     std::string engine_config_file(engine_config_path);
     engine_config_file.append("/nagios.cfg");
     monitoring.set_config_file(engine_config_file);
     monitoring.start();
-    sleep_for(25 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(25);
 
     // Check and get index_data entries.
     std::map<std::pair<unsigned long, unsigned long>, unsigned long>
@@ -205,7 +205,7 @@ int main() {
     {
       QSqlQuery q(*db.storage_db());
       std::string query("SELECT host_id, service_id, id"
-                        "  FROM index_data"
+                        "  FROM rt_index_data"
                         "  ORDER BY host_id, service_id");
       if (!q.exec(query.c_str()))
         throw (exceptions::msg() << "cannot get index list: "
@@ -231,7 +231,7 @@ int main() {
     std::map<unsigned long, std::list<unsigned long> > metrics;
     {
       QSqlQuery q(*db.storage_db());
-      std::string query("SELECT index_id, metric_id FROM metrics");
+      std::string query("SELECT index_id, metric_id FROM rt_metrics");
       if (!q.exec(query.c_str()))
         throw (exceptions::msg() << "cannot get metrics list: "
                << qPrintable(q.lastError().text()));
@@ -275,12 +275,12 @@ int main() {
 
     // Terminate monitoring engine (no more performance data).
     monitoring.stop();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
 
     // Flag an index to delete.
     {
       QSqlQuery q(*db.storage_db());
-      std::string query("UPDATE index_data"
+      std::string query("UPDATE rt_index_data"
                         "  SET to_delete=1"
                         "  WHERE host_id=2");
       if (!q.exec(query.c_str()))
@@ -291,7 +291,7 @@ int main() {
     // Flag metrics to delete.
     {
       QSqlQuery q(*db.storage_db());
-      std::string query("UPDATE metrics AS m JOIN index_data AS i"
+      std::string query("UPDATE rt_metrics AS m JOIN rt_index_data AS i"
                         "  ON m.index_id=i.id"
                         "  SET m.to_delete=1"
                         "  WHERE i.host_id=1 AND i.service_id<>1");
@@ -302,16 +302,16 @@ int main() {
 
     // Signal entries to delete to cbd and wait a little.
     broker.update();
-    sleep_for(7 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(7);
 
     // Terminate cbd.
     broker.stop();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
 
     // Check that only one entry remains in index_data (1, 1).
     {
       QSqlQuery q(*db.storage_db());
-      std::string query("SELECT host_id, service_id FROM index_data");
+      std::string query("SELECT host_id, service_id FROM rt_index_data");
       if (!q.exec(query.c_str()))
         throw (exceptions::msg() << "cannot read index_data: "
                << qPrintable(q.lastError().text()));
@@ -336,7 +336,7 @@ int main() {
     {
       QSqlQuery q(*db.storage_db());
       std::string query("SELECT i.host_id, i.service_id"
-                        "  FROM metrics AS m JOIN index_data AS i"
+                        "  FROM rt_metrics AS m JOIN rt_index_data AS i"
                         "  ON m.index_id=i.id");
       if (!q.exec(query.c_str()))
         throw (exceptions::msg() << "cannot read metrics: "

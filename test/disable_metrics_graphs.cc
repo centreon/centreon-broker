@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -175,7 +175,7 @@ int main() {
       // Host does not have status graph (yet).
       // for (unsigned int i(0); i < HOST_COUNT; ++i) {
       //   std::ostringstream query;
-      //   query << "INSERT INTO index_data (host_id, service_id)"
+      //   query << "INSERT INTO rt_index_data (host_id, service_id)"
       //         << "  VALUES (" << i + 1 << ", NULL)";
       //   if (!q.exec(query.str().c_str()))
       //     throw (exceptions::msg() << "cannot create index of host "
@@ -183,7 +183,7 @@ int main() {
       // }
       for (unsigned int i(1); i <= HOST_COUNT * SERVICES_BY_HOST; ++i) {
         std::ostringstream query;
-        query << "INSERT INTO index_data (host_id, service_id)"
+        query << "INSERT INTO rt_index_data (host_id, service_id)"
               << "  VALUES (" << (i - 1) / SERVICES_BY_HOST + 1
               << ", " << i << ")";
         if (!q.exec(query.str().c_str()))
@@ -205,7 +205,7 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(25 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(25);
 
     // Stop monitoring engine.
     daemon.stop();

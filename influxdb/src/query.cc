@@ -28,23 +28,29 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
 
 std::ostream& operator<<(std::ostream& in, QString const& string) {
-  return (in << string.toStdString());
+  in << string.toStdString();
+  return (in);
 }
 
 /**
  *  Create an empty query.
  */
 query::query()
-  : _type(query::unknown) {}
+  : _type(query::unknown),
+    _cache(NULL) {}
 
 /**
  *  Constructor.
  *
  *  @param[in] naming_scheme  The naming scheme to use.
  */
-query::query(std::string const& naming_scheme, data_type type) :
+query::query(
+        std::string const& naming_scheme,
+        data_type type,
+        macro_cache const& cache) :
   _naming_scheme_index(0),
-  _type(type) {
+  _type(type),
+  _cache(&cache) {
   _compile_naming_scheme(naming_scheme, type);
 }
 
@@ -56,7 +62,8 @@ query::query(std::string const& naming_scheme, data_type type) :
 query::query(query const& q)
   : _compiled_naming_scheme(q._compiled_naming_scheme),
     _compiled_getters(q._compiled_getters),
-    _type(q._type) {}
+    _type(q._type),
+    _cache(q._cache) {}
 
 /**
  *  Destructor
@@ -75,6 +82,7 @@ query& query::operator=(query const& q) {
     _compiled_naming_scheme = q._compiled_naming_scheme;
     _compiled_getters = q._compiled_getters;
     _type = q._type;
+    _cache = q._cache;
   }
   return (*this);
 }
@@ -89,16 +97,24 @@ query& query::operator=(query const& q) {
 std::string query::generate_metric(storage::metric const& me) {
   if (_type != metric)
     throw (exceptions::msg()
-           << "graphite: attempt to generate metric"
+           << "influxdb: attempt to generate metric"
               " with a query of the bad type");
   _naming_scheme_index = 0;
   std::ostringstream iss;
-  for (std::vector<void (query::*)(io::data const&, std::ostream&)>::const_iterator
-         it(_compiled_getters.begin()),
-         end(_compiled_getters.end());
-       it != end;
-       ++it)
-    (this->**it)(me, iss);
+  try {
+    for (std::vector<void (query::*)(io::data const&, std::ostream&)>::const_iterator
+           it(_compiled_getters.begin()),
+           end(_compiled_getters.end());
+         it != end;
+         ++it)
+      (this->**it)(me, iss);
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium)
+      << "influxdb: couldn't generate query for metric "
+      << me.metric_id << ": " << e.what();
+    return ("");
+  }
 
   return (iss.str());
 }
@@ -113,16 +129,23 @@ std::string query::generate_metric(storage::metric const& me) {
 std::string query::generate_status(storage::status const& st) {
   if (_type != status)
     throw (exceptions::msg()
-           << "graphite: attempt to generate status"
+           << "influxdb: attempt to generate status"
               " with a query of the bad type");
   _naming_scheme_index = 0;
   std::ostringstream iss;
-  for (std::vector<void (query::*)(io::data const&, std::ostream&)>::const_iterator
-         it(_compiled_getters.begin()),
-         end(_compiled_getters.end());
-       it != end;
-       ++it)
-    (this->**it)(st, iss);
+  try {
+    for (std::vector<void (query::*)(io::data const&, std::ostream&)>::const_iterator
+           it(_compiled_getters.begin()),
+           end(_compiled_getters.end());
+         it != end;
+         ++it)
+      (this->**it)(st, iss);
+  } catch (std::exception const& e) {
+    logging::error(logging::medium)
+      << "influxdb: couldn't generate query for status "
+      << st.index_id << ": " << e.what();
+    return ("");
+  }
 
   return (iss.str());
 }
@@ -170,30 +193,26 @@ void query::_compile_naming_scheme(
     }
     else if (macro == "$INSTANCE$")
       _compiled_getters.push_back(
-        &query::_get_null);
+        &query::_get_instance);
     else if (macro == "$INSTANCEID$")
       _compiled_getters.push_back(
-        &query::_get_member<unsigned int, io::data, &io::data::instance_id>);
+        &query::_get_member<unsigned int, io::data, &io::data::source_id>);
     else if (macro == "$HOST$")
-      _compiled_getters.push_back(&query::_get_null);
+      _compiled_getters.push_back(&query::_get_host);
     else if (macro == "$HOSTID$")
-      _compiled_getters.push_back(&query::_get_null);
+      _compiled_getters.push_back(&query::_get_host_id);
     else if (macro == "$SERVICE$")
-      _compiled_getters.push_back(&query::_get_null);
+      _compiled_getters.push_back(&query::_get_service);
     else if (macro == "$SERVICEID$")
-      _compiled_getters.push_back(&query::_get_null);
+      _compiled_getters.push_back(&query::_get_service_id);
     else if (macro == "$METRIC$") {
       _throw_on_invalid(metric);
       _compiled_getters.push_back(
         &query::_get_member<QString, storage::metric, &storage::metric::name>);
     }
     else if (macro == "$INDEXID$") {
-      _throw_on_invalid(status);
       _compiled_getters.push_back(
-        &query::_get_member<
-                  unsigned int,
-                  storage::status,
-                  &storage::status::index_id>);
+        &query::_get_index_id);
     }
     else if (macro == "$VALUE$") {
       if (type == metric)
@@ -253,6 +272,17 @@ void query::_throw_on_invalid(data_type macro_type) {
  */
 
 /**
+ *  Get a member of the data.
+ *
+ *  @param[in] d    The data.
+ *  @param[out] is  The stream.
+ */
+template <typename T, typename U, T (U::*member)>
+void query::_get_member(io::data const& d, std::ostream& is) {
+  is << static_cast<U const&>(d).*member;
+}
+
+/**
  *  Get a string in the compiled naming scheme.
  *
  *  @param[in] d     The data, unused.
@@ -284,4 +314,84 @@ void query::_get_dollar_sign(io::data const& d, std::ostream& is) {
   (void)d;
   is << "$";
   return ;
+}
+/**
+ *  Get the status index id of a data, be it either metric or status.
+ *
+ *  @param[in] d  The data.
+ *
+ *  @return       The index id.
+ */
+unsigned int query::_get_index_id(io::data const& d) {
+  if (_type == status)
+    return (static_cast<storage::status const&>(d).index_id);
+  else if (_type == metric)
+    return (_cache->get_metric_mapping(
+              static_cast<storage::metric const&>(d).metric_id).index_id);
+  return (0);
+}
+
+/**
+ *  Get the status index id of a data, be it either metric or status.
+ *
+ *  @param[in] d    The data.
+ *  @param[out] is  The stream.
+ */
+void query::_get_index_id(io::data const& d, std::ostream& is) {
+  is << _get_index_id(d);
+}
+
+/**
+ *  Get the name of a host.
+ *
+ *  @param[in] d  The data.
+ *  @param is     The stream.
+ */
+void query::_get_host(io::data const& d, std::ostream& is) {
+  unsigned int index_id = _get_index_id(d);
+  is << _cache->get_host_name(_cache->get_index_mapping(index_id).host_id);
+}
+
+/**
+ *  Get the id of a host.
+ *
+ *  @param[in] d  The data.
+ *  @param is     The stream.
+ */
+void query::_get_host_id(io::data const& d, std::ostream& is) {
+  unsigned int index_id = _get_index_id(d);
+  is << _cache->get_index_mapping(index_id).host_id;
+}
+
+/**
+ *  Get the name of a service.
+ *
+ *  @param[in] d  The data.
+ *  @param is     The stream.
+ */
+void query::_get_service(io::data const& d, std::ostream& is) {
+  unsigned int index_id = _get_index_id(d);
+  storage::index_mapping const& stm = _cache->get_index_mapping(index_id);
+  is << _cache->get_service_description(stm.host_id, stm.service_id);
+}
+
+/**
+ *  Get the id of a service.
+ *
+ *  @param[in] d  The data.
+ *  @param is     The stream.
+ */
+void query::_get_service_id(io::data const& d, std::ostream& is) {
+  unsigned int index_id = _get_index_id(d);
+  is << _cache->get_index_mapping(index_id).service_id;
+}
+
+/**
+ *  Get the name of an instance.
+ *
+ *  @param[in] d  The data.
+ *  @param is     The stream.
+ */
+void query::_get_instance(io::data const& d, std::ostream& is) {
+  is << _cache->get_instance(d.source_id);
 }

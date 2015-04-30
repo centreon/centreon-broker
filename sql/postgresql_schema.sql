@@ -8,79 +8,65 @@
 --         Performance data          --
 -- ------------------------------------
 
--- acknowledgements
--- comments
--- customvariables
--- data_bin
--- downtimes
--- eventhandlers
--- flappingstatuses
--- hosts
--- hostgroups
--- hosts_hostgroups
--- hosts_hosts_dependencies
--- hosts_hosts_parents
--- hoststateevents
--- index_data
--- instances
--- issues
--- issues_issues_parents
--- logs
--- metrics
--- notifications
--- schemaversion
--- services
--- servicegroups
--- services_servicegroups
--- services_services_dependencies
--- servicestateevents
+-- rt_acknowledgements
+-- rt_customvariables
+-- log_data_bin
+-- rt_downtimes
+-- rt_eventhandlers
+-- rt_flappingstatuses
+-- rt_hosts
+-- rt_hosts_hosts_dependencies
+-- rt_hosts_hosts_parents
+-- rt_hoststateevents
+-- rt_index_data
+-- rt_instances
+-- rt_issues
+-- rt_issues_issues_parents
+-- log_logs
+-- rt_metrics
+-- rt_modules
+-- rt_notifications
+-- rt_schemaversion
+-- rt_services
+-- rt_services_services_dependencies
+-- rt_servicestateevents
 
 
 --
 -- Holds the current version of the database schema.
 --
-CREATE TABLE schemaversion (
+CREATE TABLE rt_schemaversion (
   software varchar(128) NOT NULL,
   version int NOT NULL
 );
-INSERT INTO schemaversion (software, version) VALUES ('centreon-broker', 2);
+INSERT INTO rt_schemaversion (software, version) VALUES ('centreon-broker', 3);
 
 
 --
 -- Store information about Nagios instances.
 --
-CREATE TABLE instances (
+CREATE TABLE rt_instances (
   instance_id int NOT NULL,
   name varchar(255) NOT NULL default 'localhost',
 
-  active_host_checks boolean default NULL,
-  active_service_checks boolean default NULL,
   address varchar(128) default NULL,
   check_hosts_freshness boolean default NULL,
   check_services_freshness boolean default NULL,
-  daemon_mode boolean default NULL,
   deleted boolean NOT NULL default false,
   description varchar(128) default NULL,
   end_time int default NULL,
   engine varchar(64) default NULL,
   event_handlers boolean default NULL,
-  failure_prediction boolean default NULL,
   flap_detection boolean default NULL,
   global_host_event_handler text default NULL,
   global_service_event_handler text default NULL,
   last_alive int default NULL,
   last_command_check int default NULL,
-  last_log_rotation int default NULL,
-  modified_host_attributes int default NULL,
-  modified_service_attributes int default NULL,
   notifications boolean default NULL,
   obsess_over_hosts boolean default NULL,
   obsess_over_services boolean default NULL,
   outdated boolean default NULL,
-  passive_host_checks boolean default NULL,
-  passive_service_checks boolean default NULL,
   pid int default NULL,
-  process_perfdata boolean default NULL,
   running boolean default NULL,
   start_time int default NULL,
   version varchar(16) default NULL,
@@ -92,14 +78,13 @@ CREATE TABLE instances (
 --
 -- Monitored hosts.
 --
-CREATE TABLE hosts (
+CREATE TABLE rt_hosts (
   host_id int NOT NULL,
   name varchar(255) NOT NULL,
   instance_id int NOT NULL,
 
   acknowledged boolean default NULL,
   acknowledgement_type smallint default NULL,
-  action_url varchar(255) default NULL,
   active_checks boolean default NULL,
   address varchar(75) default NULL,
   alias varchar(100) default NULL,
@@ -113,17 +98,12 @@ CREATE TABLE hosts (
   command_line text default NULL,
   default_active_checks boolean default NULL,
   default_event_handler_enabled boolean default NULL,
-  default_failure_prediction boolean default NULL,
   default_flap_detection boolean default NULL,
   default_notify boolean default NULL,
-  default_passive_checks boolean default NULL,
-  default_process_perfdata boolean default NULL,
-  display_name varchar(100) default NULL,
   enabled bool NOT NULL default true,
   event_handler varchar(255) default NULL,
   event_handler_enabled boolean default NULL,
   execution_time double precision default NULL,
-  failure_prediction boolean default NULL,
   first_notification_delay double precision default NULL,
   flap_detection boolean default NULL,
   flap_detection_on_down boolean default NULL,
@@ -132,8 +112,6 @@ CREATE TABLE hosts (
   flapping boolean default NULL,
   freshness_threshold double precision default NULL,
   high_flap_threshold double precision default NULL,
-  icon_image varchar(255) default NULL,
-  icon_image_alt varchar(255) default NULL,
   last_check int default NULL,
   last_hard_state smallint default NULL,
   last_hard_state_change int default NULL,
@@ -146,12 +124,9 @@ CREATE TABLE hosts (
   latency double precision default NULL,
   low_flap_threshold double precision default NULL,
   max_check_attempts smallint default NULL,
-  modified_attributes int default NULL,
   next_check int default NULL,
   next_host_notification int default NULL,
   no_more_notifications boolean default NULL,
-  notes varchar(255) default NULL,
-  notes_url varchar(255) default NULL,
   notification_interval double precision default NULL,
   notification_number smallint default NULL,
   notification_period varchar(75) default NULL,
@@ -163,13 +138,9 @@ CREATE TABLE hosts (
   notify_on_unreachable boolean default NULL,
   obsess_over_host boolean default NULL,
   output text default NULL,
-  passive_checks boolean default NULL,
   percent_state_change double precision default NULL,
   perfdata text default NULL,
-  process_perfdata boolean default NULL,
   real_state smallint default NULL,
-  retain_nonstatus_information boolean default NULL,
-  retain_status_information boolean default NULL,
   retry_interval double precision default NULL,
   scheduled_downtime_depth smallint default NULL,
   should_be_scheduled boolean default NULL,
@@ -178,10 +149,9 @@ CREATE TABLE hosts (
   stalk_on_up boolean default NULL,
   state smallint default NULL,
   state_type smallint default NULL,
-  statusmap_image varchar(255) default NULL,
 
   UNIQUE (host_id),
-  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
+  FOREIGN KEY (instance_id) REFERENCES rt_instances (instance_id)
     ON DELETE CASCADE,
   INDEX (address),
   INDEX (alias),
@@ -195,45 +165,9 @@ CREATE TABLE hosts (
 
 
 --
--- Host groups.
---
-CREATE TABLE hostgroups (
-  hostgroup_id serial,
-  instance_id int NOT NULL,
-  name varchar(255) NOT NULL,
-
-  action_url varchar(160) default NULL,
-  alias varchar(255) default NULL,
-  notes varchar(160) default NULL,
-  notes_url varchar(160) default NULL,
-  enabled bool NOT NULL default true,
-
-  PRIMARY KEY (hostgroup_id),
-  UNIQUE (instance_id, name),
-  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
-    ON DELETE CASCADE
-);
-
-
---
--- Relationships between hosts and host groups.
---
-CREATE TABLE hosts_hostgroups (
-  host_id int NOT NULL,
-  hostgroup_id int NOT NULL,
-
-  UNIQUE (host_id, hostgroup_id),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (hostgroup_id) REFERENCES hostgroups (hostgroup_id)
-    ON DELETE CASCADE
-);
-
-
---
 -- Hosts dependencies.
 --
-CREATE TABLE hosts_hosts_dependencies (
+CREATE TABLE rt_hosts_hosts_dependencies (
   dependent_host_id int NOT NULL,
   host_id int NOT NULL,
 
@@ -242,9 +176,9 @@ CREATE TABLE hosts_hosts_dependencies (
   inherits_parent boolean default NULL,
   notification_failure_options varchar(15) default NULL,
 
-  FOREIGN KEY (dependent_host_id) REFERENCES hosts (host_id)
+  FOREIGN KEY (dependent_host_id) REFERENCES rt_hosts (host_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+  FOREIGN KEY (host_id) REFERENCES rt_hosts (host_id)
     ON DELETE CASCADE
 );
 
@@ -252,14 +186,14 @@ CREATE TABLE hosts_hosts_dependencies (
 --
 -- Hosts parenting relationships.
 --
-CREATE TABLE hosts_hosts_parents (
+CREATE TABLE rt_hosts_hosts_parents (
   child_id int NOT NULL,
   parent_id int NOT NULL,
 
   UNIQUE (child_id, parent_id),
-  FOREIGN KEY (child_id) REFERENCES hosts (host_id)
+  FOREIGN KEY (child_id) REFERENCES rt_hosts (host_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (parent_id) REFERENCES hosts (host_id)
+  FOREIGN KEY (parent_id) REFERENCES rt_hosts (host_id)
     ON DELETE CASCADE
 );
 
@@ -267,14 +201,13 @@ CREATE TABLE hosts_hosts_parents (
 --
 -- Monitored services.
 --
-CREATE TABLE services (
+CREATE TABLE rt_services (
   host_id int NOT NULL,
   description varchar(255) NOT NULL,
   service_id int NOT NULL,
 
   acknowledged boolean default NULL,
   acknowledgement_type smallint default NULL,
-  action_url varchar(255) default NULL,
   active_checks boolean default NULL,
   check_attempt smallint default NULL,
   check_command text default NULL,
@@ -286,18 +219,12 @@ CREATE TABLE services (
   command_line text default NULL,
   default_active_checks boolean default NULL,
   default_event_handler_enabled boolean default NULL,
-  default_failure_prediction boolean default NULL,
   default_flap_detection boolean default NULL,
   default_notify boolean default NULL,
-  default_passive_checks boolean default NULL,
-  default_process_perfdata boolean default NULL,
-  display_name varchar(160) default NULL,
   enabled bool NOT NULL default true,
   event_handler varchar(255) default NULL,
   event_handler_enabled boolean default NULL,
   execution_time double precision default NULL,
-  failure_prediction boolean default NULL,
-  failure_prediction_options varchar(64) default NULL,
   first_notification_delay double precision default NULL,
   flap_detection boolean default NULL,
   flap_detection_on_critical boolean default NULL,
@@ -307,8 +234,6 @@ CREATE TABLE services (
   flapping boolean default NULL,
   freshness_threshold double precision default NULL,
   high_flap_threshold double precision default NULL,
-  icon_image varchar(255) default NULL,
-  icon_image_alt varchar(255) default NULL,
   last_check int default NULL,
   last_hard_state smallint default NULL,
   last_hard_state_change int default NULL,
@@ -322,12 +247,9 @@ CREATE TABLE services (
   latency double precision default NULL,
   low_flap_threshold double precision default NULL,
   max_check_attempts smallint default NULL,
-  modified_attributes int default NULL,
   next_check int default NULL,
   next_notification int default NULL,
   no_more_notifications boolean default NULL,
-  notes varchar(255) default NULL,
-  notes_url varchar(255) default NULL,
   notification_interval double precision default NULL,
   notification_number smallint default NULL,
   notification_period varchar(75) default NULL,
@@ -340,13 +262,9 @@ CREATE TABLE services (
   notify_on_warning boolean default NULL,
   obsess_over_service boolean default NULL,
   output text default NULL,
-  passive_checks boolean default NULL,
   percent_state_change double precision default NULL,
   perfdata text default NULL,
-  process_perfdata boolean default NULL,
   real_state smallint default NULL,
-  retain_nonstatus_information boolean default NULL,
-  retain_status_information boolean default NULL,
   retry_interval double precision default NULL,
   scheduled_downtime_depth smallint default NULL,
   should_be_scheduled boolean default NULL,
@@ -359,7 +277,7 @@ CREATE TABLE services (
   volatile boolean default NULL,
 
   UNIQUE (host_id, service_id),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+  FOREIGN KEY (host_id) REFERENCES rt_hosts (host_id)
     ON DELETE CASCADE,
   INDEX (acknowledged),
   INDEX (enabled),
@@ -373,45 +291,9 @@ CREATE TABLE services (
 
 
 --
--- Groups of services.
---
-CREATE TABLE servicegroups (
-  servicegroup_id serial,
-  instance_id int NOT NULL,
-  name varchar(255) NOT NULL,
-
-  action_url varchar(160) default NULL,
-  alias varchar(255) default NULL,
-  notes varchar(160) default NULL,
-  notes_url varchar(160) default NULL,
-  enabled bool NOT NULL default true,
-
-  PRIMARY KEY (servicegroup_id),
-  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
-    ON DELETE CASCADE
-);
-
-
---
--- Relationships between services and service groups.
---
-CREATE TABLE services_servicegroups (
-  host_id int NOT NULL,
-  service_id int NOT NULL,
-  servicegroup_id int NOT NULL,
-
-  UNIQUE (host_id, service_id, servicegroup_id),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (servicegroup_id) REFERENCES servicegroups (servicegroup_id)
-    ON DELETE CASCADE
-);
-
-
---
 -- Services dependencies.
 --
-CREATE TABLE services_services_dependencies (
+CREATE TABLE rt_services_services_dependencies (
   dependent_host_id int NOT NULL,
   dependent_service_id int NOT NULL,
   host_id int NOT NULL,
@@ -422,9 +304,9 @@ CREATE TABLE services_services_dependencies (
   inherits_parent boolean default NULL,
   notification_failure_options varchar(15) default NULL,
 
-  FOREIGN KEY (dependent_host_id, dependent_service_id) REFERENCES services (host_id, service_id)
+  FOREIGN KEY (dependent_host_id, dependent_service_id) REFERENCES rt_services (host_id, service_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (host_id, service_id) REFERENCES services (host_id, service_id)
+  FOREIGN KEY (host_id, service_id) REFERENCES rt_services (host_id, service_id)
     ON DELETE CASCADE
 );
 
@@ -432,7 +314,7 @@ CREATE TABLE services_services_dependencies (
 --
 -- Holds acknowledgedments information.
 --
-CREATE TABLE acknowledgements (
+CREATE TABLE rt_acknowledgements (
   acknowledgement_id serial,
   entry_time int NOT NULL,
   host_id int NOT NULL,
@@ -450,39 +332,9 @@ CREATE TABLE acknowledgements (
 
   PRIMARY KEY (acknowledgement_id),
   UNIQUE (entry_time, host_id, service_id),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+  FOREIGN KEY (host_id) REFERENCES rt_hosts (host_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
-    ON DELETE SET NULL
-);
-
-
---
--- Holds comments information.
---
-CREATE TABLE comments (
-  comment_id serial,
-  entry_time int NOT NULL,
-  host_id int NOT NULL,
-  service_id int default NULL,
-
-  author varchar(64) default NULL,
-  data text default NULL,
-  deletion_time int default NULL,
-  entry_type smallint default NULL,
-  expire_time int default NULL,
-  expires boolean default NULL,
-  instance_id int default NULL,
-  internal_id int NOT NULL,
-  persistent boolean default NULL,
-  source smallint default NULL,
-  type smallint default NULL,
-
-  PRIMARY KEY (comment_id),
-  UNIQUE (host_id, service_id, entry_time),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
+  FOREIGN KEY (instance_id) REFERENCES rt_instances (instance_id)
     ON DELETE SET NULL
 );
 
@@ -490,7 +342,7 @@ CREATE TABLE comments (
 --
 -- Custom variables.
 --
-CREATE TABLE customvariables (
+CREATE TABLE rt_customvariables (
   customvariable_id serial,
   host_id int default NULL,
   name varchar(255) default NULL,
@@ -510,7 +362,7 @@ CREATE TABLE customvariables (
 --
 -- Downtimes.
 --
-CREATE TABLE downtimes (
+CREATE TABLE rt_downtimes (
   downtime_id serial,
   entry_time int NOT NULL,
   host_id int NOT NULL,
@@ -535,9 +387,9 @@ CREATE TABLE downtimes (
   PRIMARY KEY (downtime_id),
   UNIQUE (entry_time, host_id, service_id),
   UNIQUE (entry_time, host_id, internal_id),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+  FOREIGN KEY (host_id) REFERENCES rt_hosts (host_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
+  FOREIGN KEY (instance_id) REFERENCES rt_instances (instance_id)
     ON DELETE SET NULL
 );
 
@@ -545,7 +397,7 @@ CREATE TABLE downtimes (
 --
 -- Event handlers.
 --
-CREATE TABLE eventhandlers (
+CREATE TABLE rt_eventhandlers (
   host_id int default NULL,
   service_id int default NULL,
   start_time int default NULL,
@@ -563,7 +415,7 @@ CREATE TABLE eventhandlers (
   type smallint default NULL,
 
   UNIQUE (host_id, service_id, start_time),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+  FOREIGN KEY (host_id) REFERENCES rt_hosts (host_id)
     ON DELETE CASCADE
 );
 
@@ -571,7 +423,7 @@ CREATE TABLE eventhandlers (
 --
 -- Historization of flapping statuses.
 --
-CREATE TABLE flappingstatuses (
+CREATE TABLE rt_flappingstatuses (
   flappingstatus_id serial,
   host_id int default NULL,
   service_id int default NULL,
@@ -588,7 +440,7 @@ CREATE TABLE flappingstatuses (
 
   PRIMARY KEY (flappingstatus_id),
   UNIQUE (host_id, service_id, event_time),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+  FOREIGN KEY (host_id) REFERENCES rt_hosts (host_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -596,7 +448,7 @@ CREATE TABLE flappingstatuses (
 --
 -- Correlated issues.
 --
-CREATE TABLE issues (
+CREATE TABLE rt_issues (
   issue_id serial,
   host_id int default NULL,
   service_id int default NULL,
@@ -607,7 +459,7 @@ CREATE TABLE issues (
 
   PRIMARY KEY (issue_id),
   UNIQUE (host_id, service_id, start_time),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+  FOREIGN KEY (host_id) REFERENCES rt_hosts (host_id)
     ON DELETE CASCADE
 );
 
@@ -615,15 +467,15 @@ CREATE TABLE issues (
 --
 -- Issues parenting.
 --
-CREATE TABLE issues_issues_parents (
+CREATE TABLE rt_issues_issues_parents (
   child_id int NOT NULL,
   end_time int default NULL,
   start_time int NOT NULL,
   parent_id int NOT NULL,
 
-  FOREIGN KEY (child_id) REFERENCES issues (issue_id)
+  FOREIGN KEY (child_id) REFERENCES rt_issues (issue_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (parent_id) REFERENCES issues (issue_id)
+  FOREIGN KEY (parent_id) REFERENCES rt_issues (issue_id)
     ON DELETE CASCADE
 );
 
@@ -631,7 +483,7 @@ CREATE TABLE issues_issues_parents (
 --
 -- Nagios logs.
 --
-CREATE TABLE logs (
+CREATE TABLE log_logs (
   log_id serial,
 
   ctime int default NULL,
@@ -650,7 +502,7 @@ CREATE TABLE logs (
   type smallint default NULL,
 
   PRIMARY KEY (log_id),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+  FOREIGN KEY (host_id) REFERENCES rt_hosts (host_id)
     ON DELETE SET NULL
 );
 
@@ -658,7 +510,7 @@ CREATE TABLE logs (
 --
 -- Nagios modules.
 --
-CREATE TABLE modules (
+CREATE TABLE rt_modules (
   module_id serial,
   instance_id int NOT NULL,
 
@@ -668,7 +520,7 @@ CREATE TABLE modules (
   should_be_loaded boolean default NULL,
 
   PRIMARY KEY (module_id),
-  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
+  FOREIGN KEY (instance_id) REFERENCES rt_instances (instance_id)
     ON DELETE CASCADE
 );
 
@@ -676,7 +528,7 @@ CREATE TABLE modules (
 --
 --  Notifications.
 --
-CREATE TABLE notifications (
+CREATE TABLE rt_notifications (
   notification_id serial,
   host_id int default NULL,
   service_id int default NULL,
@@ -696,7 +548,7 @@ CREATE TABLE notifications (
 
   PRIMARY KEY (notification_id),
   UNIQUE (host_id, service_id, start_time),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+  FOREIGN KEY (host_id) REFERENCES rt_hosts (host_id)
     ON DELETE CASCADE
 );
 
@@ -704,7 +556,7 @@ CREATE TABLE notifications (
 --
 --  Host states.
 --
-CREATE TABLE hoststateevents (
+CREATE TABLE rt_hoststateevents (
   host_id int NOT NULL,
   start_time int NOT NULL,
 
@@ -714,7 +566,7 @@ CREATE TABLE hoststateevents (
   state int default NULL,
 
   UNIQUE (host_id, start_time),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+  FOREIGN KEY (host_id) REFERENCES rt_hosts (host_id)
     ON DELETE CASCADE
 );
 
@@ -722,7 +574,7 @@ CREATE TABLE hoststateevents (
 --
 --  Service states.
 --
-CREATE TABLE servicestateevents (
+CREATE TABLE rt_servicestateevents (
   host_id int NOT NULL,
   service_id int NOT NULL,
   start_time int NOT NULL,
@@ -733,14 +585,14 @@ CREATE TABLE servicestateevents (
   state int default NULL,
 
   UNIQUE (host_id, service_id, start_time),
-  FOREIGN KEY (host_id, service_id) REFERENCES services (host_id, service_id)
+  FOREIGN KEY (host_id, service_id) REFERENCES rt_services (host_id, service_id)
     ON DELETE CASCADE
 );
 
 --
 --  Base performance data index.
 --
-CREATE TABLE index_data (
+CREATE TABLE rt_index_data (
   id serial,
   host_id int NOT NULL,
   service_id int default NULL,
@@ -770,7 +622,7 @@ CREATE TABLE index_data (
 --
 --  Metrics.
 --
-CREATE TABLE metrics (
+CREATE TABLE rt_metrics (
   metric_id serial,
   index_id int NOT NULL,
   metric_name varchar(255) NOT NULL,
@@ -792,7 +644,7 @@ CREATE TABLE metrics (
 
   PRIMARY KEY (metric_id),
   UNIQUE KEY (index_id, metric_name),
-  FOREIGN KEY (index_id) REFERENCES index_data (id)
+  FOREIGN KEY (index_id) REFERENCES rt_index_data (id)
     ON DELETE CASCADE,
   INDEX (index_id)
 );
@@ -800,13 +652,13 @@ CREATE TABLE metrics (
 --
 --  Performance data.
 --
-CREATE TABLE data_bin (
+CREATE TABLE log_data_bin (
   id_metric int NOT NULL,
   ctime int NOT NULL,
   status enum('0', '1', '2', '3', '4') NOT NULL default '3',
   value float default NULL,
 
-  FOREIGN KEY (id_metric) REFERENCES metrics (metric_id)
+  FOREIGN KEY (id_metric) REFERENCES rt_metrics (metric_id)
     ON DELETE CASCADE,
   INDEX (id_metric)
 );

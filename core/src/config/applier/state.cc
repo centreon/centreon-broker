@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -27,10 +27,13 @@
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/config/applier/temporary.hh"
+#include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
+#include "com/centreon/broker/instance_broadcast.hh"
 
 using namespace com::centreon::broker::config::applier;
 
@@ -57,6 +60,9 @@ state::~state() {}
 void state::apply(
               com::centreon::broker::config::state const& s,
               bool run_mux) {
+  // Set instance id.
+  io::data::instance_id = s.instance_id();
+
   // Apply logging configuration.
   logger::instance().apply(s.loggers());
 
@@ -71,6 +77,10 @@ void state::apply(
   // Enable or not timestamp logging.
   com::centreon::broker::logging::file::with_timestamp(
     s.log_timestamp());
+
+  // Enable or not human readable timstamp logging.
+  com::centreon::broker::logging::file::with_human_redable_timestamp(
+    s.log_human_readable_timestamp());
 
   // Apply modules configuration.
   modules::instance().apply(
@@ -101,8 +111,28 @@ void state::apply(
   // Apply temporary configuration.
   temporary::instance().apply(s.temporary());
 
+  com::centreon::broker::config::state st = s;
+
+  // Create command file input.
+  if (!s.command_file().isEmpty()) {
+    config::endpoint ept;
+    ept.name = s.command_file();
+    ept.type = "command_file";
+    st.inputs().push_back(ept);
+  }
+
   // Apply input and output configuration.
-  endpoint::instance().apply(s.inputs(), s.outputs());
+  endpoint::instance().apply(
+                         st.inputs(),
+                         st.outputs(),
+                         st.cache_directory());
+
+  // Create instance broadcast event.
+  com::centreon::broker::multiplexing::publisher pblsh;
+  misc::shared_ptr<instance_broadcast> ib(new instance_broadcast);
+  ib->instance_name = s.instance_name();
+  ib->enabled = true;
+  pblsh.write(ib);
 
   // Enable multiplexing loop.
   if (run_mux)

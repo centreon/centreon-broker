@@ -23,125 +23,203 @@
 
 using namespace com::centreon::broker::misc;
 
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Perform a checked numeric conversion.
- *
- *  @param[in] t Numeric value to append to the internal buffer.
- *
- *  @return Current instance.
- */
-template <typename T>
-stringifier& stringifier::_numeric_conversion(char const* format, T t) {
-  int length(max_len - _current);
-  int retval(snprintf(_buffer + _current, length, format, t));
-  if (retval > 0)
-    _current += ((retval > length) ? length : retval);
-  _buffer[_current] = '\0';
-  return (*this);
-}
-
-/**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+#ifdef _WIN32
+// Standards ? Like C99 ? What for ?
+#  define snprintf _snprintf
+#endif // Win32
 
 /**
  *  Default constructor.
+ *
+ *  @param[in] buffer  Default buffer.
  */
-stringifier::stringifier() throw () {
+stringifier::stringifier(char const* buffer) throw ()
+  : _buffer(_static_buffer),
+    _current(0),
+    _precision(-1),
+    _size(_static_buffer_size) {
   reset();
+  if (buffer)
+    *this << buffer;
 }
 
 /**
  *  Copy constructor.
  *
- *  @param[in] s Object to build from.
+ *  @param[in] right  Object to copy.
  */
-stringifier::stringifier(stringifier const& s) throw () {
-  operator=(s);
+stringifier::stringifier(stringifier const& right)
+  : _buffer(_static_buffer),
+    _current(0),
+    _precision(-1),
+    _size(_static_buffer_size) {
+  _internal_copy(right);
 }
 
 /**
- *  Destructor.
+ *  Default destructor.
  */
-stringifier::~stringifier() {}
-
-/**
- *  Assignment operator overload.
- *
- *  @param[in] s Object to copy from.
- *
- *  @return Current instance.
- */
-stringifier& stringifier::operator=(stringifier const& s) {
-  if (this != &s) {
-    memcpy(_buffer, s._buffer, (s._current + 1) * sizeof(*_buffer));
-    _current = s._current;
-  }
-  return (*this);
+stringifier::~stringifier() {
+  if (_static_buffer != _buffer)
+    delete[] _buffer;
 }
 
 /**
- *  Append a boolean to the internal buffer.
+ *  Default copy operator.
  *
- *  @param[in] b Boolean to append, will be expanded to "true" or "false".
+ *  @param[in] right  The Object to copy.
  *
- *  @return Current instance.
+ *  @return This object.
+ */
+stringifier& stringifier::operator=(stringifier const& right) {
+  return (_internal_copy(right));
+}
+
+/**
+ *  Insertion operator.
+ *
+ *  @param[in] b  Boolean to concatenate to basic message.
+ *
+ *  @return This object.
  */
 stringifier& stringifier::operator<<(bool b) throw () {
-  operator<<(b ? "true" : "false");
-  return (*this);
+  return (_insert("%s", b ? "true" : "false"));
 }
 
 /**
- *  Append a double to the internal buffer.
+ *  Insertion operator.
  *
- *  @param[in] d Double to append.
+ *  @param[in] str  String to concatenate to basic message.
  *
- *  @return Current instance.
+ *  @return This object.
+ */
+stringifier& stringifier::operator<<(char const* str) throw () {
+  if (!str)
+    str = "(null)";
+  return (_insert("%s", str));
+}
+
+/**
+ *  Insertion operator.
+ *
+ *  @param[in] c  Char to concatenate to basic message.
+ *
+ *  @return This object.
+ */
+stringifier& stringifier::operator<<(char c) throw () {
+  return (_insert("%c", c));
+}
+
+/**
+ *  Insertion operator.
+ *
+ *  @param[in] d  Double to concatenate to basic message.
+ *
+ *  @return This object.
  */
 stringifier& stringifier::operator<<(double d) throw () {
-  return (_numeric_conversion("%lf", d));
+  if (_precision < 0)
+    return (_insert("%f", d));
+  return (_insert("%.*f", _precision, d));
 }
 
 /**
- *  Append an integer to the internal buffer.
+ *  Insertion operator.
  *
- *  @param[in] i Integer to append.
+ *  @param[in] i  Integer to concatenate to basic message.
  *
- *  @return Current instance.
+ *  @return This object.
  */
 stringifier& stringifier::operator<<(int i) throw () {
-  return (_numeric_conversion("%d", i));
+  return (_insert("%d", i));
 }
 
 /**
- *  Append a long integer to the internal buffer.
+ *  Insertion operator.
  *
- *  @param[in] l Long integer to append.
+ *  @param[in] ll Long long to concatenate to basic message.
  *
- *  @return Current instance.
- */
-stringifier& stringifier::operator<<(long l) throw () {
-  return (_numeric_conversion("%ld", l));
-}
-
-/**
- *  Append a long long integer to the internal buffer.
- *
- *  @param[in] ll Long long integer to append.
- *
- *  @return Current instance.
+ *  @return This object.
  */
 stringifier& stringifier::operator<<(long long ll) throw () {
-  return (_numeric_conversion("%lld", ll));
+  return (_insert("%lld", ll));
+}
+
+/**
+ *  Insertion operator.
+ *
+ *  @param[in] l  Long to concatenate to basic message.
+ *
+ *  @return This object.
+ */
+stringifier& stringifier::operator<<(long l) throw () {
+  return (_insert("%ld", l));
+}
+
+/**
+ *  Insertion operator.
+ *
+ *  @param[in] str  String to concatenate to basic message.
+ *
+ *  @return This object.
+ */
+stringifier& stringifier::operator<<(std::string const& str) throw () {
+  return (_insert("%s", str.c_str()));
+}
+
+/**
+ *  Insertion operator.
+ *
+ *  @param[in] str  Stringifier to concatenate to basic message.
+ *
+ *  @return This object.
+ */
+stringifier& stringifier::operator<<(stringifier const& str) throw () {
+  return (_insert("%.*s", str.size(), str.data()));
+}
+
+/**
+ *  Insertion operator.
+ *
+ *  @param[in] u  Unsigned integer to concatenate to basic message.
+ *
+ *  @return This object.
+ */
+stringifier& stringifier::operator<<(unsigned int u) throw () {
+  return (_insert("%u", u));
+}
+
+/**
+ *  Insertion operator.
+ *
+ *  @param[in] ull  Unsigned long long to concatenate to basic message.
+ *
+ *  @return This object.
+ */
+stringifier& stringifier::operator<<(unsigned long long ull) throw () {
+  return (_insert("%llu", ull));
+}
+
+/**
+ *  Insertion operator.
+ *
+ *  @param[in] ul  Unsigned long to concatenate to basic message.
+ *
+ *  @return This object.
+ */
+stringifier& stringifier::operator<<(unsigned long ul) throw () {
+  return (_insert("%lu", ul));
+}
+
+/**
+ *  Insertion operator.
+ *
+ *  @param[in] p  Pointer address to concatenate to basic message.
+ *
+ *  @return This object.
+ */
+stringifier& stringifier::operator<<(void const* p) throw () {
+  return (_insert("%p", p));
 }
 
 /**
@@ -167,104 +245,177 @@ stringifier& stringifier::operator<<(QString const& q) throw () {
   return (*this);
 }
 
+
 /**
- *  Append a std string to the internal buffer.
+ *  Adding an additional string at its end.
  *
- *  @param[in] q std::string to append.
+ *  @param[in] str   The string to add.
+ *  @param[in] size  The size to add.
  *
- *  @return Current instance.
+ *  @return This object
  */
-stringifier& stringifier::operator<<(std::string const& s) throw () {
-  return (operator<<(s.c_str()));
+stringifier& stringifier::append(
+                            char const* str,
+                            unsigned int size) throw () {
+  return (_insert("%.*s", size, str));
 }
 
 /**
- *  Append an unsigned integer to the internal buffer.
+ *  Get C-String style data.
  *
- *  @param[in] i Unsigned integer to append.
- *
- *  @return Current instance.
- */
-stringifier& stringifier::operator<<(unsigned int i) throw () {
-  return (_numeric_conversion("%u", i));
-}
-
-/**
- *  Append an unsigned long to the internal buffer.
- *
- *  @param[in] l Unsigned long to append.
- *
- *  @return Current instance.
- */
-stringifier& stringifier::operator<<(unsigned long l) throw () {
-  return (_numeric_conversion("%lu", l));
-}
-
-/**
- *  Append an unsigned long long to the internal buffer.
- *
- *  @param[in] l Unsigned long long to append.
- *
- *  @return Current instance.
- */
-stringifier& stringifier::operator<<(unsigned long long l) throw () {
-  return (_numeric_conversion("%llu", l));
-}
-
-/**
- *  Append a string to the internal buffer.
- *
- *  @param[in] str String to append.
- *
- *  @return Current instance.
- */
-stringifier& stringifier::operator<<(char const* str) throw () {
-  size_t len;
-  unsigned int remaining;
-
-  // Beware the NULL string.
-  if (!str)
-    str = "(null)";
-
-  // Check that we won't overlap.
-  len = strlen(str);
-  remaining = max_len - _current;
-  if (remaining < len)
-    len = remaining;
-
-  // Append string.
-  memcpy(_buffer + _current, str, len * sizeof(*_buffer));
-  _current += len;
-  _buffer[_current] = '\0';
-
-  return (*this);
-}
-
-/**
- *  Append a pointer to the internal buffer.
- *
- *  @param[in] p Pointer to append.
- *
- *  @return Current instance.
- */
-stringifier& stringifier::operator<<(void const* p) throw () {
-  return (_numeric_conversion("%p", p));
-}
-
-/**
- *  Get the string buffer.
- *
- *  @return String buffer.
+ *  @return The pointer on data.
  */
 char const* stringifier::data() const throw () {
   return (_buffer);
 }
 
 /**
- *  Reset internal buffer to the empty string.
+ *  Get precision.
+ *
+ *  @return The precision.
+ */
+int stringifier::precision() const throw () {
+  return (_precision);
+}
+
+/**
+ *  Set precision.
+ *
+ *  @param[in] val  The precision.
+ */
+void stringifier::precision(int val) throw () {
+  _precision = val;
+}
+
+/**
+ *  Reset the internal buffer to the empty string.
  */
 void stringifier::reset() throw () {
+  _buffer[0] = 0;
   _current = 0;
-  _buffer[_current] = '\0';
-  return ;
+}
+
+/**
+ *  Get the current string size.
+ *
+ *  @return The size of the buffer.
+ */
+unsigned int stringifier::size() const throw () {
+  return (_current);
+}
+
+/**
+ *  Insert data into the current buffer.
+ *
+ *  @param[in] format  Specifies how the next arguments is converted
+ *                     for output.
+ *  @param[in] val     The object to convert.
+ *
+ *  @return This object.
+ */
+template <typename T>
+stringifier& stringifier::_insert(
+                            char const* format,
+                            T val) throw () {
+  int ret(snprintf(_buffer + _current,
+                   _size - _current,
+                   format,
+                   val));
+  if (ret < 0)
+    return (*this);
+
+  unsigned int size(static_cast<unsigned int>(ret + 1));
+  if (size + _current > _size) {
+    if (!_realloc(size))
+      return (*this);
+    if ((ret = snprintf(_buffer + _current,
+                        _size - _current,
+                        format,
+                        val)) < 0)
+      return (*this);
+  }
+  _current += ret;
+  return (*this);
+}
+
+/**
+ *  Insert data into the current buffer with size limit.
+ *
+ *  @param[in] format  Specifies how the next arguments is converted
+ *                     for output.
+ *  @param[in] limit   The size limit.
+ *  @param[in] val     The object to convert.
+ *
+ *  @return This object.
+ */
+template <typename T>
+stringifier& stringifier::_insert(
+                            char const* format,
+                            unsigned int limit,
+                            T val) throw () {
+  int ret(snprintf(_buffer + _current,
+                   _size - _current,
+                   format,
+                   limit,
+                   val));
+  if (ret < 0)
+    return (*this);
+
+  unsigned int size(static_cast<unsigned int>(ret + 1));
+  if (size + _current > _size) {
+    if (!_realloc(size + _current))
+      return (*this);
+    if ((ret = snprintf(_buffer + _current,
+                        _size - _current,
+                        format,
+                        limit,
+                        val)) < 0)
+      return (*this);
+  }
+  _current += ret;
+  return (*this);
+}
+
+/**
+ *  Internal copy.
+ *
+ *  @param[in] right  The object to copy.
+ *
+ *  @return This object.
+ */
+stringifier& stringifier::_internal_copy(stringifier const& right) {
+  if (this != &right) {
+    if (right._size > _size) {
+      if (_static_buffer != _buffer)
+        delete[] _buffer;
+      _buffer = new char[right._size];
+    }
+    _precision = right._precision;
+    _size = right._size;
+    _current = right._current;
+    memcpy(_buffer, right._buffer, (_current + 1) * sizeof(*_buffer));
+  }
+  return (*this);
+}
+
+/**
+ *  Memory reallocation.
+ *
+ *  @param[in] new_size  The new memory size.
+ *
+ *  @return True on success, otherwise false.
+ */
+bool stringifier::_realloc(unsigned int new_size) throw () {
+  try {
+    _size = (new_size > _size * 2 ? new_size : _size * 2);
+    char* new_buffer(new char[_size]);
+    memcpy(new_buffer, _buffer, (_current + 1) * sizeof(*new_buffer));
+    if (_static_buffer != _buffer)
+      delete[] _buffer;
+    _buffer = new_buffer;
+  }
+  catch (...) {
+    return (false);
+  }
+  return (true);
 }

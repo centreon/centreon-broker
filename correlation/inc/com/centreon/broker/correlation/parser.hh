@@ -45,7 +45,6 @@ namespace   correlation {
     parser& operator=(parser const& p);
     void    parse(
               QString const& filename,
-              bool is_retention,
               QMap<QPair<unsigned int, unsigned int>, node>& nodes,
               bool recursive = false);
 
@@ -64,11 +63,12 @@ namespace   correlation {
               QString const& localname,
               QString const& qname,
               QXmlAttributes const& attrs);
+    static void _sanity_circular_check(
+              QMap<QPair<unsigned int, unsigned int>, node> const& nodes);
 
     bool    _in_include;
     bool    _in_root;
     QString _include_file;
-    bool    _is_retention;
     QMap<QPair<unsigned int, unsigned int>, node>*
             _nodes;
   };

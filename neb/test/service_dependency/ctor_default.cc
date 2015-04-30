@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_dependency.hh"
@@ -26,22 +27,26 @@ using namespace com::centreon::broker;
 /**
  *  Check service_dependency's default constructor.
  *
- *  @return 0 on success.
+ *  @return EXIT_SUCCESS on success.
  */
 int main() {
   // Object.
   neb::service_dependency sdep;
 
   // Check.
-  return ((sdep.dependency_period != "")
-          || (sdep.dependent_host_id != 0)
-          || (sdep.enabled != true)
-          || (sdep.execution_failure_options != "")
-          || (sdep.host_id != 0)
-          || (sdep.inherits_parent != false)
-          || (sdep.instance_id != 0)
-          || (sdep.notification_failure_options != "")
-          || (sdep.service_id != 0)
-          || (sdep.type()
-              != io::events::data_type<io::events::neb, neb::de_service_dependency>::value));
+  return (((sdep.source_id != 0)
+           || (sdep.destination_id != 0)
+           || (sdep.dependency_period != "")
+           || (sdep.dependent_host_id != 0)
+           || (sdep.enabled != true)
+           || (sdep.execution_failure_options != "")
+           || (sdep.host_id != 0)
+           || (sdep.inherits_parent != false)
+           || (sdep.service_id != 0)
+           || (sdep.type()
+               != io::events::data_type<
+                                io::events::neb,
+                                neb::de_service_dependency>::value))
+          ? EXIT_FAILURE
+          : EXIT_SUCCESS);
 }

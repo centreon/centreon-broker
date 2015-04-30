@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
     broker.set_config_file(
              PROJECT_SOURCE_DIR "/test/cfg/bbdo_protocol_version.xml");
     broker.start();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
 
     // Server connection.
     {
@@ -149,7 +149,7 @@ int main(int argc, char* argv[]) {
       sockt->waitForBytesWritten(-1);
 
       // Peer should close connection.
-      sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+      sleep_for(2);
       if (sockt->waitForReadyRead(2 * MONITORING_ENGINE_INTERVAL_LENGTH * 1000)
           || ((sockt->state() != QAbstractSocket::ClosingState)
               && (sockt->state() != QAbstractSocket::UnconnectedState)))
@@ -182,7 +182,7 @@ int main(int argc, char* argv[]) {
       sockt.waitForBytesWritten(-1);
 
       // Peer should close connection.
-      sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+      sleep_for(2);
       if (sockt.waitForReadyRead(2 * MONITORING_ENGINE_INTERVAL_LENGTH * 1000)
           || ((sockt.state() != QAbstractSocket::ClosingState)
               && (sockt.state() != QAbstractSocket::UnconnectedState)))

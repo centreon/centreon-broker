@@ -51,6 +51,8 @@ namespace              logging {
     static void        with_thread_id(bool enable) throw ();
     static bool        with_timestamp() throw ();
     static void        with_timestamp(bool enable) throw ();
+    static bool        with_human_redable_timestamp() throw();
+    static void        with_human_redable_timestamp(bool enable) throw();
 
   private:
                        file(file const& f);
@@ -63,6 +65,7 @@ namespace              logging {
     bool               _special;
     static bool        _with_flush;
     static bool        _with_timestamp;
+    static bool        _with_human_readable_timestamp;
     static bool        _with_thread_id;
     unsigned long long _written;
   };

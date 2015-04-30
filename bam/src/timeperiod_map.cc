@@ -74,11 +74,14 @@ bool timeperiod_map::operator==(timeperiod_map const& other) const {
  *
  *  @return  A timeperiod ptr toward the timeperiod, or a null ptr.
  */
-bam::time::timeperiod::ptr timeperiod_map::get_timeperiod(unsigned int id) const {
-  std::map<unsigned int, bam::time::timeperiod::ptr>::const_iterator
+com::centreon::broker::time::timeperiod::ptr
+  timeperiod_map::get_timeperiod(unsigned int id) const {
+  std::map<
+      unsigned int,
+      com::centreon::broker::time::timeperiod::ptr>::const_iterator
       found = _map.find(id);
   if (found == _map.end())
-    return (bam::time::timeperiod::ptr());
+    return (com::centreon::broker::time::timeperiod::ptr());
   else
     return (found->second);
 }
@@ -91,7 +94,7 @@ bam::time::timeperiod::ptr timeperiod_map::get_timeperiod(unsigned int id) const
  */
 void timeperiod_map::add_timeperiod(
                        unsigned int id,
-                       bam::time::timeperiod::ptr ptr) {
+                       time::timeperiod::ptr ptr) {
   _map[id] = ptr;
 }
 
@@ -127,11 +130,11 @@ void timeperiod_map::add_relation(
  *  @return                 A vector of timeperiods and optional boolean set to true if the timeperiod is default.
  */
 std::vector<std::pair<
-                   com::centreon::broker::bam::time::timeperiod::ptr,
+                   com::centreon::broker::time::timeperiod::ptr,
                    bool> > timeperiod_map::get_timeperiods_by_ba_id(
                                              unsigned int ba_id) const {
   std::vector<std::pair<
-                     com::centreon::broker::bam::time::timeperiod::ptr,
+                     com::centreon::broker::time::timeperiod::ptr,
                      bool> > res;
   std::pair<timeperiod_relation_map::const_iterator,
             timeperiod_relation_map::const_iterator> found

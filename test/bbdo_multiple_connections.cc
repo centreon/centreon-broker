@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -60,6 +60,7 @@ int main() {
   try {
     // Prepare database.
     db.open(DB_NAME);
+    db.set_remove_db_on_close(false);
 
     // Prepare monitoring engine configuration parameters.
     for (unsigned int i(0); i < 3; ++i) {
@@ -87,7 +88,7 @@ int main() {
     broker.set_config_file(
       PROJECT_SOURCE_DIR "/test/cfg/bbdo_multiple_connections_2.xml");
     broker.start();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
     broker.update();
 
     // Start engines.
@@ -96,9 +97,9 @@ int main() {
       engine_config_file.append("/nagios.cfg");
       daemon[i].set_config_file(engine_config_file);
       daemon[i].start();
-      sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+      sleep_for(2);
     }
-    sleep_for(15 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(15);
 
     // Terminate monitoring engine.
     for (int i(ENGINE_COUNT - 1); i >= 0; --i)
@@ -110,32 +111,32 @@ int main() {
     // Check host count.
     {
       std::ostringstream query;
-      query << "SELECT COUNT(host_id) FROM hosts";
+      query << "SELECT COUNT(host_id) FROM rt_hosts";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read host count from DB: "
                << q.lastError().text().toStdString().c_str());
       if (!q.next()
-          || (q.value(0).toUInt() != 2)
+          || (q.value(0).toUInt() != 3)
           || q.next())
         throw (exceptions::msg() << "invalid host count: got "
-               << q.value(0).toUInt() << ", expected 2");
+               << q.value(0).toUInt() << ", expected 3");
     }
 
     // Check service count.
     {
       std::ostringstream query;
-      query << "SELECT COUNT(service_id) FROM services";
+      query << "SELECT COUNT(service_id) FROM rt_services";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()
                << "cannot read service count from DB: "
                << q.lastError().text().toStdString().c_str());
       if (!q.next()
-          || (q.value(0).toUInt() != 5)
+          || (q.value(0).toUInt() != 6)
           || q.next())
         throw (exceptions::msg() << "invalid service count: got "
-               << q.value(0).toUInt() << ", expected 5");
+               << q.value(0).toUInt() << ", expected 6");
     }
 
     // Success.

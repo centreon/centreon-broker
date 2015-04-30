@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Merethis
+** Copyright 2013-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -72,7 +72,7 @@ static void check_host_custom_variables(
   // Execute query.
   char const* query("SELECT host_id, name, default_value, modified,"
                     "       type, update_time, value"
-                    "  FROM customvariables"
+                    "  FROM rt_customvariables"
                     "  WHERE service_id IS NULL"
                     "  ORDER BY host_id");
   QSqlQuery q(db);
@@ -140,7 +140,7 @@ static void check_service_custom_variables(
   char const* query("SELECT host_id, service_id, name,"
                     "       default_value, modified, type, "
                     "       update_time, value"
-                    "  FROM customvariables"
+                    "  FROM rt_customvariables"
                     "  WHERE service_id IS NOT NULL"
                     "  ORDER BY host_id, service_id");
   QSqlQuery q(db);
@@ -275,7 +275,7 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(10);
 
     // T2.
     time_t t2(time(NULL));
@@ -400,7 +400,7 @@ int main() {
     }
 
     // Apply.
-    sleep_for(6 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(6);
 
     // T2.
     t2 = time(NULL);

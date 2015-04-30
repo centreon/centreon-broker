@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -89,7 +89,7 @@ int main() {
     cbd broker;
     broker.set_config_file(cfg.generate());
     broker.start();
-    sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(5);
     broker.stop();
 
     // Check database.

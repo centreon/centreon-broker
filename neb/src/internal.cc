@@ -1,5 +1,6 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011,2015 Merethis
+**
 ** This file is part of Centreon Broker.
 **
 ** Centreon Broker is free software: you can redistribute it and/or
@@ -30,7 +31,6 @@ using namespace com::centreon::broker;
 QString neb::gl_configuration_file;
 
 // Instance information.
-unsigned int neb::instance_id;
 QString      neb::instance_name;
 
 // List of host IDs.

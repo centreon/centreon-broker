@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -71,6 +71,15 @@ ba_status& ba_status::operator=(ba_status const& other) {
  *  @return Event type.
  */
 unsigned int ba_status::type() const {
+  return (ba_status::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int ba_status::static_type() {
   return (io::events::data_type<io::events::bam, bam::de_ba_status>::value);
 }
 
@@ -90,3 +99,47 @@ void ba_status::_internal_copy(ba_status const& other) {
   state_changed = other.state_changed;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const ba_status::entries[] = {
+mapping::entry(
+    &bam::ba_status::ba_id,
+    "ba_id",
+    mapping::entry::invalid_on_zero),
+mapping::entry(
+    &bam::ba_status::in_downtime,
+    "in_downtime"),
+mapping::entry(
+    &bam::ba_status::last_state_change,
+    "last_state_change"),
+mapping::entry(
+    &bam::ba_status::level_acknowledgement,
+    "level_acknowledgement"),
+mapping::entry(
+    &bam::ba_status::level_downtime,
+    "level_downtime"),
+mapping::entry(
+    &bam::ba_status::level_nominal,
+    "level_nominal"),
+mapping::entry(
+    &bam::ba_status::state,
+    "state"),
+mapping::entry(
+    &bam::ba_status::state_changed,
+    "state_changed"),
+mapping::entry()
+};
+
+// Operations.
+static io::data* new_ba_status() {
+  return (new ba_status);
+}
+io::event_info::event_operations const ba_status::operations = {
+  &new_ba_status
+};

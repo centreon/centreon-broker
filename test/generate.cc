@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -19,6 +19,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 #include <sstream>
 #include "test/generate.hh"
 
@@ -89,7 +90,6 @@ void free_hosts(std::list<host>& hosts) {
        it != end;
        ++it) {
     delete [] it->name;
-    delete [] it->display_name;
     delete [] it->alias;
     delete [] it->host_check_command;
     for (hostsmember* child(it->child_hosts); child; ) {
@@ -136,33 +136,6 @@ void free_host_dependencies(std::list<hostdependency>& deps) {
 }
 
 /**
- *  Free the host group list.
- *
- *  @param[in,out] host_groups Host groups to free.
- */
-void free_host_groups(std::list<hostgroup>& host_groups) {
-  for (std::list<hostgroup>::iterator
-         it(host_groups.begin()),
-         end(host_groups.end());
-       it != end;
-       ++it) {
-    delete [] it->group_name;
-    delete [] it->alias;
-    delete [] it->notes;
-    delete [] it->notes_url;
-    delete [] it->action_url;
-    for (hostsmember* m(it->members); m; ) {
-      hostsmember* to_delete(m);
-      m = m->next;
-      delete [] to_delete->host_name;
-      delete to_delete;
-    }
-  }
-  host_groups.clear();
-  return ;
-}
-
-/**
  *  Free the service list.
  *
  *  @param[in,out] services Services to free.
@@ -174,7 +147,6 @@ void free_services(std::list<service>& services) {
        it != end;
        ++it) {
     delete [] it->description;
-    delete [] it->display_name;
     delete [] it->host_name;
     delete [] it->service_check_command;
     for (customvariablesmember* cvar(it->custom_variables); cvar; ) {
@@ -207,34 +179,6 @@ void free_service_dependencies(std::list<servicedependency>& deps) {
     delete [] it->service_description;
   }
   deps.clear();
-  return ;
-}
-
-/**
- *  Free the service group list.
- *
- *  @param[in,out] service_groups Service groups to free.
- */
-void free_service_groups(std::list<servicegroup>& service_groups) {
-  for (std::list<servicegroup>::iterator
-         it(service_groups.begin()),
-         end(service_groups.end());
-       it != end;
-       ++it) {
-    delete [] it->group_name;
-    delete [] it->alias;
-    delete [] it->notes;
-    delete [] it->notes_url;
-    delete [] it->action_url;
-    for (servicesmember* m(it->members); m; ) {
-      servicesmember* to_delete(m);
-      m = m->next;
-      delete [] to_delete->host_name;
-      delete [] to_delete->service_description;
-      delete to_delete;
-    }
-  }
-  service_groups.clear();
   return ;
 }
 
@@ -301,6 +245,9 @@ void generate_hosts(
     new_host.name = new char[name.size() + 1];
     strcpy(new_host.name, name.c_str());
 
+    // Set host ID.
+    set_custom_variable(new_host, "HOST_ID", name.c_str());
+
     // Set some default properties.
     new_host.checks_enabled = 1;
 
@@ -325,41 +272,6 @@ void generate_host_dependencies(
     memset(&dep, 0, sizeof(dep));
     deps.push_back(dep);
   }
-  return ;
-}
-
-/**
- *  Generate a host group list.
- *
- *  @param[out] host_groups Generated host group list.
- *  @param[in]  count       Number of groups to generate.
- */
-void generate_host_groups(
-       std::list<hostgroup>& host_groups,
-       unsigned int count) {
-  static unsigned int id(0);
-
-  for (unsigned int i(0); i < count; ++i) {
-    // Create new host group.
-    hostgroup new_group;
-    memset(&new_group, 0, sizeof(new_group));
-
-    // Generate name.
-    std::string name;
-    {
-      std::ostringstream oss;
-      oss << ++id;
-      name = oss.str();
-    }
-
-    // Set group name.
-    new_group.group_name = new char[name.size() + 1];
-    strcpy(new_group.group_name, name.c_str());
-
-    // Add to list.
-    host_groups.push_back(new_group);
-  }
-
   return ;
 }
 
@@ -401,6 +313,18 @@ void generate_services(
       new_service.host_name = new char[strlen(it->name) + 1];
       strcpy(new_service.host_name, it->name);
 
+      // Set service ID.
+      set_custom_variable(
+        new_service,
+        "SERVICE_ID",
+        description.c_str());
+
+      // Set host ID.
+      set_custom_variable(
+        new_service,
+        "HOST_ID",
+        it->name);
+
       // Set some default properties.
       new_service.checks_enabled = 1;
 
@@ -426,91 +350,6 @@ void generate_service_dependencies(
     memset(&dep, 0, sizeof(dep));
     deps.push_back(dep);
   }
-  return ;
-}
-
-/**
- *  Generate a service group list.
- *
- *  @param[out] service_groups Generated service group list.
- *  @param[in]  count          Number of groups to generate.
- */
-void generate_service_groups(
-       std::list<servicegroup>& service_groups,
-       unsigned int count) {
-  static unsigned int id(0);
-
-  for (unsigned int i(0); i < count; ++i) {
-    // Create new service group.
-    servicegroup new_group;
-    memset(&new_group, 0, sizeof(new_group));
-
-    // Generate name.
-    std::string name;
-    {
-      std::ostringstream oss;
-      oss << ++id;
-      name = oss.str();
-    }
-
-    // Set group name.
-    new_group.group_name = new char[name.size() + 1];
-    strcpy(new_group.group_name, name.c_str());
-
-    // Add to list.
-    service_groups.push_back(new_group);
-  }
-
-  return ;
-}
-
-/**
- *  Link a host to a host group.
- *
- *  @param[in,out] h  Host.
- *  @param[in,out] hg Host group.
- */
-void link(host& h, hostgroup& hg) {
-  // Find insertion point.
-  hostsmember** m;
-  for (m = &hg.members; *m; m = &((*m)->next))
-    ;
-
-  // Create link.
-  *m = new hostsmember;
-  memset(*m, 0, sizeof(**m));
-
-  // Set host name.
-  (*m)->host_name = new char[strlen(h.name) + 1];
-  strcpy((*m)->host_name, h.name);
-
-  return ;
-}
-
-/**
- *  Link a service to a service group.
- *
- *  @param[in,out] s  Service.
- *  @param[in,out] sg Service group.
- */
-void link(service& s, servicegroup& sg) {
-  // Find insertion point.
-  servicesmember** m;
-  for (m = &sg.members; *m; m = &((*m)->next))
-    ;
-
-  // Create link.
-  *m = new servicesmember;
-  memset(*m, 0, sizeof(**m));
-
-  // Set host name.
-  (*m)->host_name = new char[strlen(s.host_name) + 1];
-  strcpy((*m)->host_name, s.host_name);
-
-  // Set service description.
-  (*m)->service_description = new char[strlen(s.description) + 1];
-  strcpy((*m)->service_description, s.description);
-
   return ;
 }
 

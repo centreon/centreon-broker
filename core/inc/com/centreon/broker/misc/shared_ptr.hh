@@ -25,7 +25,7 @@
 
 CCB_BEGIN()
 
-namespace             misc {
+namespace             misc {  
   /**
    *  @class shared_ptr shared_ptr.hh "com/centreon/broker/misc/shared_ptr.hh"
    *  @brief Shared pointer.
@@ -271,6 +271,16 @@ namespace             misc {
     T*                _ptr;
     unsigned int*     _refs;
   };
+
+  /**
+   *  Create a shared pointer from an object.
+   *
+   *  @param[in] obj  The object.
+   */
+  template <typename T>
+  misc::shared_ptr<T> make_shared(T* obj) {
+    return (misc::shared_ptr<T>(obj));
+  }
 }
 
 CCB_END()

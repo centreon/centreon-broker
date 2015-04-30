@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,7 +20,10 @@
 #include <QMutexLocker>
 #include <fstream>
 #include <sstream>
+#include <errno.h>
+#include <cstdio>
 #include "com/centreon/broker/dumper/dump.hh"
+#include "com/centreon/broker/dumper/remove.hh"
 #include "com/centreon/broker/dumper/internal.hh"
 #include "com/centreon/broker/dumper/stream.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -49,9 +52,7 @@ stream::stream(
   : _path(path),
     _process_in(true),
     _process_out(true),
-    _tagname(tagname) {
-
-}
+    _tagname(tagname) {}
 
 /**
  *  Destructor.
@@ -99,7 +100,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
     return (1);
 
   // Check if the event is a dumper event.
-  if (d->type() == io::events::data_type<io::events::dumper, dumper::de_dump>::value) {
+  if (d->type() == dump::static_type()) {
     dump* data(static_cast<dump*>(d.data()));
 
     // Check if this output dump this event.
@@ -107,13 +108,17 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
       // Lock mutex.
       QMutexLocker lock(&_mutex);
 
+      logging::debug(logging::medium)
+        << "dumper: dumping content of file " << data->filename;
+
       // Get instance id.
       std::ostringstream oss;
-      oss << data->instance_id;
+      oss << data->source_id;
 
       // Build path.
       std::string path(_path);
-      misc::string::replace(path, "$instance_id$", oss.str());
+      misc::string::replace(path, "$INSTANCEID$", oss.str());
+      misc::string::replace(path, "$FILENAME$", data->filename.toStdString());
 
       // Open file.
       std::ofstream file(path.c_str());
@@ -124,6 +129,32 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
 
       // Write data.
       file << data->content.toStdString();
+    }
+  }
+  else if (d->type() == dumper::remove::static_type()) {
+    remove const& data = d.ref_as<dumper::remove const>();
+    if (data.tag.toStdString() == _tagname) {
+      // Lock mutex.
+      QMutexLocker lock(&_mutex);
+
+      logging::debug(logging::medium)
+        << "dumper: removing file " << data.filename;
+
+      // Get instance id.
+      std::ostringstream oss;
+      oss << data.source_id;
+
+      // Build path.
+      std::string path(_path);
+      misc::string::replace(path, "$INSTANCEID$", oss.str());
+      misc::string::replace(path, "$FILENAME$", data.filename.toStdString());
+
+      // Remove file.
+      if (::remove(path.c_str()) == -1) {
+        const char* msg = ::strerror(errno);
+        logging::error(logging::medium)
+          << "dumper: can't erase file '" << path << "': " << msg;
+      }
     }
   }
   else

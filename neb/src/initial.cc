@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -37,10 +37,8 @@
 extern "C" {
   extern host* host_list;
   extern hostdependency* hostdependency_list;
-  extern hostgroup* hostgroup_list;
   extern service* service_list;
   extern servicedependency* servicedependency_list;
-  extern servicegroup* servicegroup_list;
 }
 
 using namespace com::centreon::broker;
@@ -152,46 +150,6 @@ static void send_host_dependencies_list() {
   // End log message.
   logging::info(logging::medium)
     << "init: end of host dependencies dump";
-
-  return ;
-}
-
-/**
- *  Send to the global publisher the list of host groups within Engine.
- */
-static void send_host_group_list() {
-  // Start log message.
-  logging::info(logging::medium)
-    << "init: beginning host group dump";
-
-  // Loop through all host groups.
-  for (hostgroup* hg(hostgroup_list); hg; hg = hg->next) {
-    // Fill callback struct.
-    nebstruct_group_data nsgd;
-    memset(&nsgd, 0, sizeof(nsgd));
-    nsgd.type = NEBTYPE_HOSTGROUP_ADD;
-    nsgd.object_ptr = hg;
-
-    // Callback.
-    neb::callback_group(NEBCALLBACK_GROUP_DATA, &nsgd);
-
-    // Dump host group members.
-    for (hostsmember* hgm(hg->members); hgm; hgm = hgm->next) {
-      // Fill callback struct.
-      nebstruct_group_member_data nsgmd;
-      memset(&nsgmd, 0, sizeof(nsgmd));
-      nsgmd.type = NEBTYPE_HOSTGROUPMEMBER_ADD;
-      nsgmd.object_ptr = hgm->host_ptr;
-      nsgmd.group_ptr = hg;
-
-      // Callback.
-      neb::callback_group_member(NEBCALLBACK_GROUP_MEMBER_DATA, &nsgmd);
-    }
-  }
-
-  // End log message.
-  logging::info(logging::medium)
-    << "init: end of host group dump";
 
   return ;
 }
@@ -343,45 +301,6 @@ static void send_service_dependencies_list() {
 }
 
 /**
- *  Send to the global publisher the list of service groups within Engine.
- */
-static void send_service_group_list() {
-  // Start log message.
-  logging::info(logging::medium)
-    << "init: beginning service group dump";
-
-  // Loop through all service groups.
-  for (servicegroup* sg(servicegroup_list); sg; sg = sg->next) {
-    // Fill callback struct.
-    nebstruct_group_data nsgd;
-    memset(&nsgd, 0, sizeof(nsgd));
-    nsgd.type = NEBTYPE_SERVICEGROUP_ADD;
-    nsgd.object_ptr = sg;
-
-    // Callback.
-    neb::callback_group(NEBCALLBACK_GROUP_DATA, &nsgd);
-
-    // Dump service group members.
-    for (servicesmember* sgm(sg->members); sgm; sgm = sgm->next) {
-      // Fill callback struct.
-      nebstruct_group_member_data nsgmd;
-      memset(&nsgmd, 0, sizeof(nsgmd));
-      nsgmd.type = NEBTYPE_SERVICEGROUPMEMBER_ADD;
-      nsgmd.object_ptr = sgm->service_ptr;
-      nsgmd.group_ptr = sg;
-
-      // Callback.
-      neb::callback_group_member(NEBCALLBACK_GROUP_MEMBER_DATA, &nsgmd);
-    }
-  }
-
-  // End log message.
-  logging::info(logging::medium) << "init: end of service groups dump";
-
-  return ;
-}
-
-/**
  *  Send to the global publisher the list of services within Nagios.
  */
 static void send_service_list() {
@@ -423,8 +342,6 @@ void neb::send_initial_configuration() {
   send_service_list();
   send_custom_variables_list();
   send_host_parents_list();
-  send_host_group_list();
-  send_service_group_list();
   send_host_dependencies_list();
   send_service_dependencies_list();
   send_module_list();

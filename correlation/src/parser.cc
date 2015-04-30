@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <QtXml>
+#include <QSet>
 #include "com/centreon/broker/correlation/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -68,21 +69,17 @@ parser& parser::operator=(parser const& p) {
  *  Parse a configuration file.
  *
  *  @param[in]  filename     Path to the correlation file.
- *  @param[in]  is_retention Set to true if filename is a retention
- *                           file (non-authoritative content).
  *  @param[out] nodes        Node set.
  *  @param[in]  recursive    Recursion flag.
  */
 void parser::parse(
                QString const& filename,
-               bool is_retention,
                QMap<QPair<unsigned int, unsigned int>, node>& nodes,
                bool recursive) {
   _in_include = false;
   _in_root = false;
   _include_file.clear();
   QXmlSimpleReader reader;
-  _is_retention = is_retention;
   _nodes = &nodes;
   try {
     reader.setContentHandler(this);
@@ -92,8 +89,9 @@ void parser::parse(
       throw (exceptions::msg() << qf.errorString());
     QXmlInputSource source(&qf);
     reader.parse(&source);
-    if (!_is_retention && !recursive)
+    if (!recursive)
       _auto_services_dependencies();
+    _sanity_circular_check(nodes);
   }
   catch (QXmlParseException const& e) {
     throw (exceptions::msg() << "parsing error on '" << filename
@@ -192,7 +190,7 @@ bool parser::endElement(
   (void)qname;
   if (_in_include) {
     parser p;
-    p.parse(_include_file, _is_retention, *_nodes, true);
+    p.parse(_include_file, *_nodes, true);
     _in_include = false;
     _include_file.clear();
   }
@@ -222,37 +220,35 @@ bool parser::startElement(
     std::string localname_str(localname.toStdString());
     char const* value(localname_str.c_str());
     if (!strcmp(value, "dependency")) {
-      if (!_is_retention) {
-        QString hi1;
-        QString hi2;
-        node* n1 = NULL;
-        node* n2 = NULL;
-        QString si1;
-        QString si2;
+      QString hi1;
+      QString hi2;
+      node* n1 = NULL;
+      node* n2 = NULL;
+      QString si1;
+      QString si2;
 
-        // Fetch attributes of the XML node.
-        hi1 = attrs.value("dependent_host");
-        hi2 = attrs.value("host");
-        si1 = attrs.value("dependent_service");
-        si2 = attrs.value("service");
-        if (!hi1.size() || !hi2.size())
-          throw (exceptions::msg() << "missing an host id for an " \
-                   "element of a dependency definition");
+      // Fetch attributes of the XML node.
+      hi1 = attrs.value("dependent_host");
+      hi2 = attrs.value("host");
+      si1 = attrs.value("dependent_service");
+      si2 = attrs.value("service");
+      if (!hi1.size() || !hi2.size())
+        throw (exceptions::msg() << "missing an host id for an " \
+                 "element of a dependency definition");
 
-        // Process these attributes.
-        n1 = _find_node(
-          qPrintable(hi1),
-          (si1.size() ? qPrintable(si1) : NULL));
-        n2 = _find_node(
-          qPrintable(hi2),
-          (si2.size() ? qPrintable(si2) : NULL));
-        if (n1 && n2) {
-          logging::config(logging::medium) << "correlation: node ("
-            << n1->host_id << ", " << n1->service_id
-            << ") depends on node (" << n2->host_id << ", "
-            << n2->service_id << ")";
-          n1->add_dependency(n2);
-        }
+      // Process these attributes.
+      n1 = _find_node(
+        qPrintable(hi1),
+        (si1.size() ? qPrintable(si1) : NULL));
+      n2 = _find_node(
+        qPrintable(hi2),
+        (si2.size() ? qPrintable(si2) : NULL));
+      if (n1 && n2) {
+        logging::config(logging::medium) << "correlation: node ("
+          << n1->host_id << ", " << n1->service_id
+          << ") depends on node (" << n2->host_id << ", "
+          << n2->service_id << ")";
+        n1->add_dependency(n2);
       }
     }
     else if (!strcmp(value, "host")) {
@@ -266,38 +262,20 @@ bool parser::startElement(
       node* n;
 
       // Create new node.
-      if (!_is_retention) {
-        // Process attribute.
-        node new_node;
-        new_node.host_id = i_attr.toUInt();
-        n = &(*_nodes)[qMakePair(new_node.host_id, 0u)];
-        *n = new_node;
-        logging::config(logging::medium)
-          << "correlation: new host " << new_node.host_id;
-
-        // Process optional configuration arguments.
-        i_attr = attrs.value("instance_id");
-        if (!i_attr.isEmpty())
-          n->instance_id = i_attr.toUInt();
-      }
-      // Get node.
-      else {
-        QMap<QPair<unsigned int, unsigned int>, node>::iterator
-          it(_nodes->find(qMakePair(i_attr.toUInt(), 0u)));
-        if (it == _nodes->end()) {
-          logging::config(logging::medium)
-            << "correlation: could not find host " << i_attr.toUInt();
-          return (true);
-        }
-        n = &*it;
-      }
+      // Process attribute.
+      node new_node;
+      new_node.host_id = i_attr.toUInt();
+      n = &(*_nodes)[qMakePair(new_node.host_id, 0u)];
+      *n = new_node;
+      logging::config(logging::medium)
+        << "correlation: new host " << new_node.host_id;
 
       // Process optionnal arguments.
-      i_attr = attrs.value("since");
+      /*i_attr = attrs.value("since");
       if (!i_attr.isEmpty())
         n->since = i_attr.toULongLong();
       else
-        n->since = time(NULL);
+        n->since = time(NULL);*/
       i_attr = attrs.value("state");
       if (!i_attr.isEmpty())
         n->state = i_attr.toUInt();
@@ -340,28 +318,26 @@ bool parser::startElement(
       }
     }
     else if (!strcmp(value, "parent")) {
-      if (!_is_retention) {
-        QString host_attr;
-        QString parent_attr;
-        QMap<QPair<unsigned int, unsigned int>, node>::iterator it1;
-        QMap<QPair<unsigned int, unsigned int>, node>::iterator it2;
+      QString host_attr;
+      QString parent_attr;
+      QMap<QPair<unsigned int, unsigned int>, node>::iterator it1;
+      QMap<QPair<unsigned int, unsigned int>, node>::iterator it2;
 
-        // Get XML node attributes.
-        host_attr = attrs.value("host");
-        parent_attr = attrs.value("parent");
-        if (!host_attr.size() || !parent_attr.size())
-          throw (exceptions::msg() << "could not find 'host' or " \
-                   "'parent' attribute of a parenting definition");
+      // Get XML node attributes.
+      host_attr = attrs.value("host");
+      parent_attr = attrs.value("parent");
+      if (!host_attr.size() || !parent_attr.size())
+        throw (exceptions::msg() << "could not find 'host' or " \
+                 "'parent' attribute of a parenting definition");
 
-        // Process attributes.
-        it1 = (*_nodes).find(qMakePair(host_attr.toUInt(), 0u));
-        it2 = (*_nodes).find(qMakePair(parent_attr.toUInt(), 0u));
-        if ((it1 != (*_nodes).end()) && (it2 != (*_nodes).end())) {
-          logging::config(logging::medium) << "correlation: host "
-            << it2->host_id << " is parent of host "
-            << it1->host_id;
-          it1->add_parent(&*it2);
-        }
+      // Process attributes.
+      it1 = (*_nodes).find(qMakePair(host_attr.toUInt(), 0u));
+      it2 = (*_nodes).find(qMakePair(parent_attr.toUInt(), 0u));
+      if ((it1 != (*_nodes).end()) && (it2 != (*_nodes).end())) {
+        logging::config(logging::medium) << "correlation: host "
+          << it2->host_id << " is parent of host "
+          << it1->host_id;
+        it1->add_parent(&*it2);
       }
     }
     else if (!strcmp(value, "service")) {
@@ -376,46 +352,118 @@ bool parser::startElement(
       node* n;
 
       // Create new node.
-      if (!_is_retention) {
-        // Process attributes.
-        node new_node;
-        new_node.host_id = host_attr.toUInt();
-        new_node.service_id = id_attr.toUInt();
-        (*_nodes)[qMakePair(new_node.host_id, new_node.service_id)]
-          = new_node;
-        n = &(*_nodes)[qMakePair(new_node.host_id, new_node.service_id)];
-        *n = new_node;
-        logging::config(logging::medium) << "correlation: new service ("
-          << new_node.host_id << ", " << new_node.service_id << ")";
-
-        // Process optional configuration arguments.
-        id_attr = attrs.value("instance_id");
-        if (!id_attr.isEmpty())
-          n->instance_id = id_attr.toUInt();
-      }
-      // Get node.
-      else {
-        QMap<QPair<unsigned int, unsigned int>, node>::iterator
-          it(_nodes->find(
-               qMakePair(host_attr.toUInt(), id_attr.toUInt())));
-        if (it == _nodes->end()) {
-          logging::config(logging::medium) << "could not find service ("
-            << host_attr.toUInt() << ", " << id_attr.toUInt() << ")";
-          return (true);
-        }
-        n = &*it;
-      }
+      // Process attributes.
+      node new_node;
+      new_node.host_id = host_attr.toUInt();
+      new_node.service_id = id_attr.toUInt();
+      (*_nodes)[qMakePair(new_node.host_id, new_node.service_id)]
+        = new_node;
+      n = &(*_nodes)[qMakePair(new_node.host_id, new_node.service_id)];
+      *n = new_node;
+      logging::config(logging::medium) << "correlation: new service ("
+        << new_node.host_id << ", " << new_node.service_id << ")";
 
       // Process optionnal arguments.
       id_attr = attrs.value("since");
-      if (!id_attr.isEmpty())
+      /*if (!id_attr.isEmpty())
         n->since = id_attr.toULongLong();
       else
-        n->since = time(NULL);
+        n->since = time(NULL);*/
       id_attr = attrs.value("state");
       if (!id_attr.isEmpty())
         n->state = id_attr.toUInt();
     }
   }
   return (true);
+}
+
+/**
+ *  Implementation for the circular check.
+ *
+ *  @param[in] n                          The node.
+ *  @param[in] get_method                 Method used to get the list of children.
+ *  @param[in] visited_node               Working set of visited nodes.
+ *  @param[in,out] already_visited_nodes  Set of already visited nodes.
+ */
+static void circular_check_impl(
+              node& n,
+              node::node_map const& (node::*get_method)() const,
+              QSet<node*>& visited_nodes,
+              QSet<node*>& already_visited_nodes) {
+  if (already_visited_nodes.contains(&n))
+    return ;
+  else if (visited_nodes.contains(&n))
+    throw (exceptions::msg()
+           << "correlation: circular check failed for node ("
+           << n.host_id << ", " << n.service_id << ")");
+
+  // Push the node to the set of nodes being visited.
+  visited_nodes.insert(&n);
+
+  // Get the children, do a DFS
+  node::node_map const& list = (n.*get_method)();
+  for (node::node_map::const_iterator it = list.begin(), end = list.end();
+       it != end;
+       ++it) {
+    circular_check_impl(
+      const_cast<node&>(**it),
+      get_method,
+      visited_nodes,
+      already_visited_nodes);
+  }
+
+  // Remove the node to the set of nodes being visited, add it to the set
+  // of nodes already visited.
+  visited_nodes.remove(&n);
+  already_visited_nodes.insert(&n);
+}
+
+/**
+ *  Check for circular connections between nodes.
+ *
+ *  @param[in] nodes  The nodes.
+ */
+void parser::_sanity_circular_check(
+       QMap<QPair<unsigned int, unsigned int>, node> const& nodes) {
+  QSet<node*> visited_parent_nodes;
+  QSet<node*> visited_child_nodes;
+  QSet<node*> visited_depended_nodes;
+  QSet<node*> visited_depend_nodes;
+
+  QSet<node*> working_set;
+
+  for (QMap<QPair<unsigned int, unsigned int>, node>::const_iterator
+         it = nodes.begin(),
+         end = nodes.end();
+       it != end;
+       ++it) {
+    // Check parents.
+    if (!visited_parent_nodes.contains(const_cast<node*>(&*it)))
+      circular_check_impl(
+        const_cast<node&>(*it),
+        &node::get_parents,
+        working_set,
+        visited_parent_nodes);
+    // Check children.
+    if (!visited_child_nodes.contains(const_cast<node*>(&*it)))
+      circular_check_impl(
+        const_cast<node&>(*it),
+        &node::get_children,
+        working_set,
+        visited_child_nodes);
+    // Check dependeds.
+    if (!visited_depended_nodes.contains(const_cast<node*>(&*it)))
+      circular_check_impl(
+        const_cast<node&>(*it),
+        &node::get_dependeds,
+        working_set,
+        visited_depended_nodes);
+    // Check dependencies
+    if (!visited_depend_nodes.contains(const_cast<node*>(&*it)))
+      circular_check_impl(
+        const_cast<node&>(*it),
+        &node::get_dependencies,
+        working_set,
+        visited_depend_nodes);
+  }
 }

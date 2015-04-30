@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -27,7 +27,7 @@ using namespace com::centreon::broker::dumper;
 /**
  *  Default constructor.
  */
-dump::dump() : instance_id(0) {}
+dump::dump() {}
 
 /**
  *  Copy constructor.
@@ -64,8 +64,18 @@ dump& dump::operator=(dump const& right) {
  *  @return Event type.
  */
 unsigned int dump::type() const {
+  return (dump::static_type());
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return  The event type.
+ */
+unsigned int dump::static_type() {
   return (io::events::data_type<io::events::dumper, dumper::de_dump>::value);
 }
+
 
 /**
  *  Copy internal data members.
@@ -74,7 +84,35 @@ unsigned int dump::type() const {
  */
 void dump::_internal_copy(dump const& right) {
   content = right.content;
-  instance_id = right.instance_id;
   tag = right.tag;
+  filename = right.filename;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const dump::entries[] = {
+  mapping::entry(
+    &dump::content,
+    "content"),
+  mapping::entry(
+    &dump::tag,
+    "tag"),
+  mapping::entry(
+    &dump::filename,
+    "filename"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_dump() {
+  return (new dump);
+}
+io::event_info::event_operations const dump::operations = {
+  &new_dump
+};

@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -141,7 +141,7 @@ int main() {
     // Lock tables.
     {
       QSqlQuery q(*db.storage_db());
-      std::string query("LOCK TABLES logs WRITE, instances WRITE");
+      std::string query("LOCK TABLES log_logs WRITE, rt_instances WRITE");
       if (!q.exec(query.c_str()))
         throw (exceptions::msg() << "cannot lock tables: "
                << q.lastError().text());
@@ -150,7 +150,7 @@ int main() {
     // Start Broker daemon.
     broker.set_config_file(cbd_config_path);
     broker.start();
-    sleep_for(2 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(2);
     broker.update();
 
     // Start engine.
@@ -158,13 +158,13 @@ int main() {
     engine_config_file.append("/nagios.cfg");
     daemon.set_config_file(engine_config_file);
     daemon.start();
-    sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(5);
 
     // Send SIGHUP to Broker daemon.
     broker.update();
-    sleep_for(1 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(1);
     broker.update();
-    sleep_for(1 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(1);
 
     // Check that temporary file exists.
     std::string real_file_path;
@@ -209,15 +209,15 @@ int main() {
         throw (exceptions::msg() << "cannot unlock tables: "
                << q.lastError().text());
     }
-    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(4);
 
     // Terminate monitoring engine.
     daemon.stop();
 
     // Terminate Broker daemon.
-    sleep_for(16 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(16);
     broker.stop();
-    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(4);
 
     // Check that temporary file got removed.
     if (!access(real_file_path.c_str(), F_OK))
@@ -228,7 +228,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(host_id)"
-            << "  FROM hosts";
+            << "  FROM rt_hosts";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read host count from DB: "
@@ -243,7 +243,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(service_id)"
-            << "  FROM services";
+            << "  FROM rt_services";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()

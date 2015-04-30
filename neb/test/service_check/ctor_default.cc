@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_check.hh"
@@ -26,19 +27,24 @@ using namespace com::centreon::broker;
 /**
  *  Check service_check's default constructor.
  *
- *  @return 0 on success.
+ *  @return EXIT_SUCCESS on success.
  */
 int main() {
   // Object.
   neb::service_check schk;
 
   // Check.
-  return (schk.active_checks_enabled
-          || (schk.command_line != "")
-          || (schk.host_id != 0)
-          || (schk.instance_id != 0)
-          || (schk.next_check != 0)
-          || (schk.service_id != 0)
-          || (schk.type()
-              != io::events::data_type<io::events::neb, neb::de_service_check>::value));
+  return (((schk.source_id != 0)
+           || (schk.destination_id != 0)
+           || schk.active_checks_enabled
+           || (schk.command_line != "")
+           || (schk.host_id != 0)
+           || (schk.next_check != 0)
+           || (schk.service_id != 0)
+           || (schk.type()
+              != io::events::data_type<
+                               io::events::neb,
+                               neb::de_service_check>::value))
+          ? EXIT_FAILURE
+          : EXIT_SUCCESS);
 }

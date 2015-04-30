@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -21,9 +21,9 @@
 #  define CCE_VERSION_HH
 
 // Compile-time values.
-#  define CENTREON_ENGINE_VERSION_MAJOR  1
-#  define CENTREON_ENGINE_VERSION_MINOR  2
+#  define CENTREON_ENGINE_VERSION_MAJOR  2
+#  define CENTREON_ENGINE_VERSION_MINOR  0
 #  define CENTREON_ENGINE_VERSION_PATCH  0
-#  define CENTREON_ENGINE_VERSION_STRING "1.2.0"
+#  define CENTREON_ENGINE_VERSION_STRING "2.0.0"
 
 #endif // !CCE_VERSION_HH

@@ -21,8 +21,10 @@
 #  define CCB_CORRELATION_ISSUE_HH
 
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 
 CCB_BEGIN()
 
@@ -42,13 +44,19 @@ namespace          correlation {
     bool           operator==(issue const& i) const;
     bool           operator!=(issue const& i) const;
     unsigned int   type() const;
+    static unsigned int
+                   static_type();
 
     timestamp      ack_time;
     timestamp      end_time;
     unsigned int   host_id;
-    unsigned int   instance_id;
     unsigned int   service_id;
     timestamp      start_time;
+
+    static mapping::entry const
+                   entries[];
+    static io::event_info::event_operations const
+                   operations;
 
   private:
     void           _internal_copy(issue const& i);
