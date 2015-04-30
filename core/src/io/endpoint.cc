@@ -69,6 +69,8 @@ endpoint& endpoint::operator=(endpoint const& e) {
  */
 void endpoint::from(misc::shared_ptr<endpoint> endp) {
   _from = endp;
+  if (!_from.isNull())
+    _from->set_filter(_filter);
   return ;
 }
 
@@ -112,6 +114,8 @@ void endpoint::stats(io::properties& tree) {
  */
 void endpoint::set_filter(std::set<unsigned int> const& filter) {
   _filter = filter;
+  if (!_from.isNull())
+    _from->set_filter(filter);
 }
 
 

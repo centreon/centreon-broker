@@ -58,7 +58,7 @@ namespace                            io {
     virtual misc::shared_ptr<stream> open(
                                        QString const& id) = 0;
     virtual void                     stats(io::properties& tree);
-    virtual void                     set_filter(
+    void                             set_filter(
                                        std::set<unsigned int> const& filter);
 
    protected:
