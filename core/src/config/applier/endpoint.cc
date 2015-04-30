@@ -476,8 +476,11 @@ processing::failover* endpoint::_create_endpoint(
            it(tmp_elements.begin()),
            end(tmp_elements.end());
          it != end;
-         ++it)
+         ++it) {
+      logging::config(logging::medium)
+        << "endpoint applier: new filtering element: " << it->first;
       elements.insert(it->first);
+    }
   }
 
   // Check that failover is configured.
