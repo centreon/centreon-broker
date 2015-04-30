@@ -105,7 +105,6 @@ void stream::process(bool in, bool out) {
  */
 void stream::read(misc::shared_ptr<io::data>& d) {
   QMutexLocker lock(&_mutex);
-  // Check that data exists and should be processed.
   if (!_process_in) {
     _stop();
     throw (io::exceptions::shutdown(!_process_in, !_process_out)

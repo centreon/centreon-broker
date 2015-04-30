@@ -100,6 +100,20 @@ void endpoint::stats(io::properties& tree) {
   return ;
 }
 
+/**
+ *  Set the filter used by this endpoint.
+ *
+ *  For connector endpoints, the filters are already set by the failover.
+ *  Acceptor manage subscribers manually and needs to apply
+ *  the filters themselves.
+ *
+ *  @param[in] filter  The filter.
+ */
+void endpoint::set_filter(std::set<unsigned int> const& filter) {
+  _filter = filter;
+}
+
+
 /**************************************
 *                                     *
 *           Private Methods           *

@@ -100,6 +100,8 @@ namespace                com {
           unsigned int   _events[event_window_length];
           misc::shared_ptr<failover>
                          _failover;
+          std::set<unsigned int>
+                         _filters;
           bool           _initial;
           bool           _is_out;
           time_t         _last_connect_attempt;
