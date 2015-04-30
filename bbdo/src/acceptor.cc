@@ -268,18 +268,6 @@ void acceptor::stats(io::properties& tree) {
   return ;
 }
 
-/**
- *  Set filter. Propagate to from.
- *
- *  @param[in] filter  The filter.
- */
-void acceptor::set_filter(
-                 std::set<unsigned int> const& filter) {
-  endpoint::set_filter(filter);
-  if (!_from.isNull())
-    _from->set_filter(filter);
-}
-
 /**************************************
 *                                     *
 *           Private Methods           *
