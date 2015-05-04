@@ -238,9 +238,13 @@ void stream::_prepare() {
   _prepare_insert<neb::custom_variable>(
                          _custom_variable_insert,
                          "rt_customvariables");
+  excluded.clear();
+  excluded.insert("recurring_timeperiod");
+  excluded.insert("recurring_interval");
   _prepare_insert<neb::downtime>(
                          _downtime_insert,
-                         "rt_downtimes");
+                         "rt_downtimes",
+                         excluded);
   _prepare_insert<neb::event_handler>(
                          _event_handler_insert,
                          "rt_eventhandlers");
