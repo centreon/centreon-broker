@@ -639,7 +639,7 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
   d->service_id = id.get_service_id();
   d->was_started = false;
   d->internal_id = ++_actual_downtime_id;
-  d->is_reccuring = recurring_interval != 0;
+  d->is_recurring = recurring_interval != 0;
   d->triggered_by = trigger_id;
   d->recurring_interval = recurring_interval;
   d->recurring_timeperiod = QString::fromStdString(recurring_timeperiod.get());
@@ -649,7 +649,7 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
   _downtime_id_by_nodes.insert(id, d->internal_id);
 
   // Schedule the downtime.
-  if (!d->is_reccuring)
+  if (!d->is_recurring)
     _schedule_downtime(*d);
   else
     _spawn_recurring_downtime(timestamp(), *d);
@@ -789,7 +789,7 @@ void node_events_stream::_process_loaded_event(
       node_id(dwn.host_id, dwn.service_id), dwn.internal_id);
     if (_actual_downtime_id < dwn.internal_id)
       _actual_downtime_id = dwn.internal_id + 1;
-    if (!dwn.is_reccuring)
+    if (!dwn.is_recurring)
       _schedule_downtime(dwn);
     else
       _spawn_recurring_downtime(
@@ -915,7 +915,7 @@ void node_events_stream::_spawn_recurring_downtime(
   // Spawn a new downtime.
   downtime spawned(dwn);
   spawned.triggered_by = dwn.internal_id;
-  spawned.is_reccuring = false;
+  spawned.is_recurring = false;
 
   // Get the timeperiod.
   QHash<QString, time::timeperiod::ptr>::const_iterator
