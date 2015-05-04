@@ -79,6 +79,8 @@ namespace               neb {
     bool                was_cancelled;
     bool                was_started;
     bool                is_reccuring;
+    QString             recurring_timeperiod;
+    unsigned int        recurring_interval;
 
     static mapping::entry const
                         entries[];

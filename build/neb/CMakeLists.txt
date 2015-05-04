@@ -119,6 +119,10 @@ add_library("${NEB}" SHARED
   "${SRC_DIR}/node_events_factory.cc"
   "${SRC_DIR}/node_events_stream.cc"
   "${SRC_DIR}/node_id.cc"
+  "${SRC_DIR}/timeperiod_loader.cc"
+  "${SRC_DIR}/composed_timeperiod_builder.cc"
+  "${SRC_DIR}/timeperiod_by_name_builder.cc"
+  "${SRC_DIR}/timeperiod_linker.cc"
 
   # Inc
   "${INC_DIR}/com/centreon/broker/neb/downtime_scheduler.hh"
@@ -126,6 +130,13 @@ add_library("${NEB}" SHARED
   "${INC_DIR}/com/centreon/broker/neb/node_events_factory.hh"
   "${INC_DIR}/com/centreon/broker/neb/node_events_stream.hh"
   "${INC_DIR}/com/centreon/broker/neb/node_id.hh"
+  "${INC_DIR}/com/centreon/broker/neb/timeperiod_builder.hh"
+  "${INC_DIR}/com/centreon/broker/neb/timeperiod_loader.hh"
+  "${INC_DIR}/com/centreon/broker/neb/timeperiod_by_name_builder.hh"
+  "${INC_DIR}/com/centreon/broker/neb/composed_builder.hh"
+  "${INC_DIR}/com/centreon/broker/neb/composed_timeperiod_builder.hh"
+  "${INC_DIR}/com/centreon/broker/neb/timeperiod_linker.hh"
+
 )
 if (CMAKE_COMPILER_IS_GNUCXX)
   # Flags needed to include all symbols in binary.

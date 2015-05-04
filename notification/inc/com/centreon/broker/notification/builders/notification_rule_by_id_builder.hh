@@ -23,7 +23,6 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
 #  include "com/centreon/broker/notification/objects/notification_rule.hh"
-#  include "com/centreon/broker/notification/builders/composed_builder.hh"
 #  include "com/centreon/broker/notification/builders/notification_rule_builder.hh"
 
 CCB_BEGIN()
@@ -34,7 +33,7 @@ namespace       notification {
    *  @brief Notification rule by id builder.
    */
   class         notification_rule_by_id_builder
-                  : public composed_builder<notification_rule_builder> {
+                  : public notification_rule_builder {
   public:
     notification_rule_by_id_builder(
       QHash<unsigned int, objects::notification_rule::ptr>& table);

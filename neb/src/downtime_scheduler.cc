@@ -126,8 +126,12 @@ void downtime_scheduler::add_downtime(
   timestamp first_starting_timestamp = _get_first_timestamp(_downtime_starts);
   timestamp first_ending_timestamp = _get_first_timestamp(_downtime_ends);
   _downtimes[dwn.internal_id] = dwn;
-  _downtime_starts.insert(std::make_pair(start_time, dwn.internal_id));
-  _downtime_ends.insert(std::make_pair(end_time, dwn.internal_id));
+  // Don't start already started downtimes.
+  if (dwn.actual_start_time.is_null())
+    _downtime_starts.insert(std::make_pair(start_time, dwn.internal_id));
+  // Don't end already ended diowntimes.
+  if (dwn.actual_end_time.is_null())
+    _downtime_ends.insert(std::make_pair(end_time, dwn.internal_id));
 
   // If we just added a timestamp < the previous first timestamps,
   // wake the thread up.

@@ -34,6 +34,8 @@
 #  include "com/centreon/broker/neb/host.hh"
 #  include "com/centreon/broker/neb/service.hh"
 #  include "com/centreon/broker/neb/node_id.hh"
+#  include "com/centreon/broker/database_config.hh"
+#  include "com/centreon/broker/time/timeperiod.hh"
 
 CCB_BEGIN()
 
@@ -47,7 +49,8 @@ namespace        neb {
   class          node_events_stream : public io::stream {
   public:
                  node_events_stream(
-                   misc::shared_ptr<persistent_cache> cache);
+                   misc::shared_ptr<persistent_cache> cache,
+                   database_config const& conf);
                  ~node_events_stream();
     void         process(bool in = false, bool out = true);
     void         read(misc::shared_ptr<io::data>& d);
@@ -63,7 +66,13 @@ namespace        neb {
 
     misc::shared_ptr<persistent_cache>
                  _cache;
+    database_config
+                 _conf;
     bool         _process_out;
+
+    // Timeperiods.
+    QHash<QString, time::timeperiod::ptr>
+                 _timeperiods;
 
     // Host/Service caches.
     QHash<node_id, neb::host>
@@ -109,6 +118,8 @@ namespace        neb {
     unsigned int _actual_downtime_id;
     downtime_scheduler
                  _downtime_scheduler;
+    QHash<unsigned int, neb::downtime>
+                 _recurring_downtimes;
 
     enum         ack_type {
                  ack_host = 0,
@@ -146,7 +157,11 @@ namespace        neb {
                    size_t arg_size);
     void          _schedule_downtime(
                     downtime const& dwn);
+    void          _spawn_recurring_downtime(
+                    downtime const& dwn);
 
+    void         _load_timeperiods();
+    void         _check_downtime_timeperiod_consistency();
     void         _load_cache();
     void         _process_loaded_event(misc::shared_ptr<io::data> const& d);
     void         _save_cache();

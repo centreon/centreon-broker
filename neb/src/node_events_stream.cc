@@ -29,6 +29,12 @@
 #include "com/centreon/broker/command_file/external_command.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
 #include "com/centreon/broker/neb/downtime.hh"
+#include "com/centreon/broker/database.hh"
+#include "com/centreon/broker/database_query.hh"
+#include "com/centreon/broker/neb/timeperiod_loader.hh"
+#include "com/centreon/broker/neb/composed_timeperiod_builder.hh"
+#include "com/centreon/broker/neb/timeperiod_by_name_builder.hh"
+#include "com/centreon/broker/neb/timeperiod_linker.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -37,12 +43,18 @@ using namespace com::centreon::broker::neb;
  *  Constructor.
  *
  *  @param[int,out] cache             Persistent cache.
+ *  @param[in]      conf              Database configuration.
  */
 node_events_stream::node_events_stream(
-    misc::shared_ptr<persistent_cache> cache)
+    misc::shared_ptr<persistent_cache> cache,
+    database_config const& conf)
   : _cache(cache),
+    _conf(conf),
     _process_out(true),
     _actual_downtime_id(0) {
+  // Load the timeperiods.
+  _load_timeperiods();
+
   // Load the cache.
   _load_cache();
 
@@ -99,6 +111,13 @@ void node_events_stream::read(misc::shared_ptr<io::data>& d) {
  */
 void node_events_stream::update() {
   _save_cache();
+
+  // Load the timeperiods.
+  _load_timeperiods();
+
+  // Check that each recurring downtime has its timeperiod.
+  _check_downtime_timeperiod_consistency();
+
   return ;
 }
 
@@ -553,6 +572,8 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
   unsigned int duration = 0;
   buffer author(arg_size);
   buffer comment(arg_size);
+  buffer recurring_timeperiod(arg_size);
+  unsigned int recurring_interval = 0;
   bool ret = false;
 
   (void)t;
@@ -562,7 +583,7 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
   if (type == down_host)
     ret = (::sscanf(
              args,
-             "%[^;];%lu;%lu;%i;%u;%u;%[^;];%[^;]",
+             "%[^;];%lu;%lu;%i;%u;%u;%[^;];%[^;];%[^;];%u",
              host_name.get(),
              &start_time,
              &end_time,
@@ -570,11 +591,13 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
              &trigger_id,
              &duration,
              author.get(),
-             comment.get()) == 8);
+             comment.get(),
+             recurring_timeperiod.get(),
+             &recurring_interval) == 10);
   else
     ret = (::sscanf(
              args,
-             "%[^;];%[^;];%lu;%lu;%i;%u;%u;%[^;];%[^;]",
+             "%[^;];%[^;];%lu;%lu;%i;%u;%u;%[^;];%[^;];%[^;];%u",
              host_name.get(),
              service_description.get(),
              &start_time,
@@ -583,7 +606,9 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
              &trigger_id,
              &duration,
              author.get(),
-             comment.get()) == 9);
+             comment.get(),
+             recurring_timeperiod.get(),
+             &recurring_interval) == 11);
 
   if (!ret)
     throw (exceptions::msg() << "error while parsing downtime arguments");
@@ -604,15 +629,21 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
   d->host_id = id.get_host_id();
   d->service_id = id.get_service_id();
   d->was_started = false;
-  d->triggered_by = trigger_id;
   d->internal_id = ++_actual_downtime_id;
+  d->is_reccuring = recurring_interval != 0;
+  d->triggered_by = trigger_id;
+  d->recurring_interval = recurring_interval;
+  d->recurring_timeperiod = QString::fromStdString(recurring_timeperiod.get());
 
   // Save the downtime.
   _downtimes[d->internal_id] = *d;
   _downtime_id_by_nodes.insert(id, d->internal_id);
 
   // Schedule the downtime.
-  _schedule_downtime(*d);
+  if (!d->is_reccuring)
+    _schedule_downtime(*d);
+  else
+    _spawn_recurring_downtime(*d);
 
   return (d);
 }
@@ -662,6 +693,48 @@ misc::shared_ptr<io::data> node_events_stream::_parse_remove_downtime(
   return (d);
 }
 
+/**
+ *  Load the timeperiods from the database.
+ */
+void node_events_stream::_load_timeperiods() {
+  database db(_conf);
+
+  try {
+    timeperiod_loader loader;
+    composed_timeperiod_builder builder;
+    timeperiod_by_name_builder by_name(_timeperiods);
+    timeperiod_linker linker;
+    builder.push_back(by_name);
+    builder.push_back(linker);
+    loader.load(&db.get_qt_db(), &builder);
+  }
+  catch (std::exception const& e) {
+    throw (exceptions::msg()
+           << "neb: node event streams:"
+           " error while trying to load timeperiods: " << e.what());
+  }
+}
+
+/**
+ *  Check that each recurring timeperiod has its downtime.
+ */
+void node_events_stream::_check_downtime_timeperiod_consistency() {
+  for (QHash<unsigned int, neb::downtime>::iterator
+         it = _recurring_downtimes.begin(),
+         tmp = it,
+         end = _recurring_downtimes.end();
+       it != end;
+       it = tmp) {
+    if (!_timeperiods.contains(it->recurring_timeperiod)) {
+      ++tmp;
+      logging::error(logging::medium)
+        << "core: node events stream: recurring timeperiod '"
+        << it->recurring_timeperiod << "' deleted,"
+           " deleting associated downtime " << it->internal_id;
+      _recurring_downtimes.erase(it);
+    }
+  }
+}
 
 /**
  *  Load the cache.
@@ -707,7 +780,10 @@ void node_events_stream::_process_loaded_event(
       node_id(dwn.host_id, dwn.service_id), dwn.internal_id);
     if (_actual_downtime_id < dwn.internal_id)
       _actual_downtime_id = dwn.internal_id + 1;
-    _schedule_downtime(dwn);
+    if (!dwn.is_reccuring)
+      _schedule_downtime(dwn);
+    else
+    _spawn_recurring_downtime(dwn);
   }
 }
 
@@ -756,6 +832,12 @@ void node_events_stream::_save_cache() {
        it != end;
        ++it)
     _cache->add(misc::make_shared(new neb::downtime(*it)));
+  for (QHash<unsigned int, neb::downtime>::const_iterator
+         it = _recurring_downtimes.begin(),
+         end = _recurring_downtimes.end();
+       it != end;
+       ++it)
+    _cache->add(misc::make_shared(new neb::downtime(*it)));
   _cache->commit();
 }
 
@@ -765,11 +847,7 @@ void node_events_stream::_save_cache() {
  *  @param[in] dwn  The downtime to schedule.
  */
 void node_events_stream::_schedule_downtime(
-                           downtime const& dwn) {
-  // Don't trigger already triggered downtimes.
-  if (!dwn.actual_start_time.is_null())
-    return ;
-
+                           downtime const& dwn) {  
   // If this is a fixed downtime or the node is in a non-okay state, schedule it.
   // If not, then it will be scheduled at the reception of a
   // service/host status event.
@@ -802,4 +880,23 @@ void node_events_stream::_schedule_downtime(
                               dwn);
     }
   }
+}
+
+/**
+ *  Spawn a recurring downtime.
+ *
+ *  @param[in] dwn  The downtime.
+ */
+void node_events_stream::_spawn_recurring_downtime(
+                           downtime const& dwn) {
+  // Only spawn if no other downtimes exist.
+  for (QHash<unsigned int, neb::downtime>::const_iterator
+         it = _downtimes.begin(),
+         end = _downtimes.end();
+       it != end;
+       ++it)
+    if (it->triggered_by == dwn.internal_id)
+      return ;
+
+
 }
