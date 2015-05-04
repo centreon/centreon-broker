@@ -158,6 +158,7 @@ namespace        neb {
     void          _schedule_downtime(
                     downtime const& dwn);
     void          _spawn_recurring_downtime(
+                    timestamp when,
                     downtime const& dwn);
 
     void         _load_timeperiods();

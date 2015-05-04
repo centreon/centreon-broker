@@ -55,6 +55,9 @@ node_events_stream::node_events_stream(
   // Load the timeperiods.
   _load_timeperiods();
 
+  // Check tp coherency.
+  _check_downtime_timeperiod_consistency();
+
   // Load the cache.
   _load_cache();
 
@@ -353,11 +356,17 @@ void node_events_stream::_update_downtime(
   old_downtime = dwn;
 
   // Downtime removal.
-  if (!dwn.actual_end_time.is_null()) {
+  if (!dwn.actual_end_time.is_null()) {      
     _downtimes.erase(found);
     _downtime_id_by_nodes.remove(
       node_id(dwn.host_id, dwn.service_id),
       dwn.internal_id);
+    // Recurring downtimes.
+    if (dwn.triggered_by != 0
+          && _recurring_downtimes.contains(dwn.triggered_by))
+      _spawn_recurring_downtime(
+        dwn.start_time + dwn.recurring_interval,
+        _recurring_downtimes[dwn.triggered_by]);
   }
 }
 
@@ -643,7 +652,7 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
   if (!d->is_reccuring)
     _schedule_downtime(*d);
   else
-    _spawn_recurring_downtime(*d);
+    _spawn_recurring_downtime(timestamp(), *d);
 
   return (d);
 }
@@ -783,7 +792,9 @@ void node_events_stream::_process_loaded_event(
     if (!dwn.is_reccuring)
       _schedule_downtime(dwn);
     else
-    _spawn_recurring_downtime(dwn);
+      _spawn_recurring_downtime(
+        timestamp(),
+        dwn);
   }
 }
 
@@ -885,9 +896,12 @@ void node_events_stream::_schedule_downtime(
 /**
  *  Spawn a recurring downtime.
  *
- *  @param[in] dwn  The downtime.
+ *  @param[in] when  When we should spawn the downtime,
+ *                   null for as soon as possible.
+ *  @param[in] dwn   The downtime.
  */
 void node_events_stream::_spawn_recurring_downtime(
+                           timestamp when,
                            downtime const& dwn) {
   // Only spawn if no other downtimes exist.
   for (QHash<unsigned int, neb::downtime>::const_iterator
@@ -898,5 +912,25 @@ void node_events_stream::_spawn_recurring_downtime(
     if (it->triggered_by == dwn.internal_id)
       return ;
 
+  // Spawn a new downtime.
+  downtime spawned(dwn);
+  spawned.triggered_by = dwn.internal_id;
+  spawned.is_reccuring = false;
 
+  // Get the timeperiod.
+  QHash<QString, time::timeperiod::ptr>::const_iterator
+    tp = _timeperiods.find(dwn.recurring_timeperiod);
+
+  // Ignore no timeperiods, it will be checked later.
+  if (tp == _timeperiods.end())
+    return ;
+
+  // Get the new start and end time.
+  if (when.is_null())
+    when = ::time(NULL);
+  spawned.start_time = (*tp)->get_next_valid(when);
+  spawned.end_time = spawned.start_time + (dwn.end_time - dwn.start_time);
+
+  // Schedule the downtime.
+  _schedule_downtime(dwn);
 }
