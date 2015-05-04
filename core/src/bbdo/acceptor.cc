@@ -401,8 +401,6 @@ misc::shared_ptr<io::stream> acceptor::_open(
       misc::shared_ptr<multiplexing::subscriber> sbcr(
         new multiplexing::subscriber(_name));
       sbcr->set_filters(_filter);
-      logging::error(logging::high)
-        << "TEST: setting multiplexing filter for " <<_filter.size();
       in = sbcr;
       my_bbdo = misc::shared_ptr<bbdo::stream>(
                         new bbdo::stream(false, true));
