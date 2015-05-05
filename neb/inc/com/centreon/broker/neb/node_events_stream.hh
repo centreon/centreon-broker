@@ -36,6 +36,7 @@
 #  include "com/centreon/broker/neb/node_id.hh"
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/time/timeperiod.hh"
+#  include "com/centreon/broker/neb/node_cache.hh"
 
 CCB_BEGIN()
 
@@ -50,6 +51,7 @@ namespace        neb {
   public:
                  node_events_stream(
                    misc::shared_ptr<persistent_cache> cache,
+                   bool with_timeperiods,
                    database_config const& conf);
                  ~node_events_stream();
     void         process(bool in = false, bool out = true);
@@ -58,6 +60,8 @@ namespace        neb {
     unsigned int write(misc::shared_ptr<io::data> const& d);
     misc::shared_ptr<io::data>
                  parse_command(command_file::external_command const& exc);
+    void         set_timeperiods(
+                   QHash<QString, time::timeperiod::ptr> const& tps);
 
   private:
                  node_events_stream(node_events_stream const& other);
@@ -73,23 +77,11 @@ namespace        neb {
     // Timeperiods.
     QHash<QString, time::timeperiod::ptr>
                  _timeperiods;
+    bool         _with_timeperiods;
 
     // Host/Service caches.
-    QHash<node_id, neb::host>
-                 _hosts;
-    QHash<node_id, neb::service>
-                 _services;
-    QHash<node_id, neb::host_status>
-                 _host_statuses;
-    QHash<node_id, neb::service_status>
-                 _service_statuses;
-    QHash<QPair<QString, QString>, node_id>
-                 _names_to_node;
+    node_cache   _node_cache;
 
-    void         _process_host(
-                   neb::host const& hst);
-    void         _process_service(
-                   neb::service const& svc);
     void         _process_host_status(
                    neb::host_status const& hst);
     void         _process_service_status(
@@ -104,9 +96,6 @@ namespace        neb {
                    node_id node,
                    timestamp check_time,
                    short state);
-    node_id      _get_node_by_names(
-                   std::string const& host_name,
-                   std::string const& service_description);
 
     // Acks and downtimes caches.
     QHash<node_id, neb::acknowledgement>

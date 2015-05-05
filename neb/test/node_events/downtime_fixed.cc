@@ -58,7 +58,10 @@ int main() {
     time_t now = ::time(NULL);
 
     // Create node event stream.
-    node_events_stream test(misc::shared_ptr<persistent_cache>(NULL));
+    node_events_stream test(
+      misc::shared_ptr<persistent_cache>(NULL),
+      false,
+      database_config());
 
     // Send initial service status.
     {
@@ -87,7 +90,7 @@ int main() {
       misc::shared_ptr<command_file::external_command> cmd(
         new command_file::external_command);
       cmd->command = format_command(
-        "SCHEDULE_SVC_DOWNTIME;42;24;$TIMESTAMP$;$TIMESTAMP2$;1;0;1;TEST;A test for you",
+        "SCHEDULE_SVC_DOWNTIME;42;24;$TIMESTAMP$;$TIMESTAMP2$;1;0;1;TEST;A test for you;0;",
         now,
         now + 3);
       test.write(cmd);

@@ -90,7 +90,7 @@ void node_events_connector::close() {
  *  @return A newly opened stream.
  */
 misc::shared_ptr<io::stream> node_events_connector::open() {
-  return (new node_events_stream(_cache, _conf));
+  return (new node_events_stream(_cache, true, _conf));
 }
 
 /**
