@@ -156,10 +156,8 @@ unsigned int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
   }
   else if (d->type() == command_file::external_command::static_type()) {
     try {
-      misc::shared_ptr<io::data> ret =
-        parse_command(d.ref_as<command_file::external_command const>());
       multiplexing::publisher pblsh;
-      pblsh.write(ret);
+      parse_command(d.ref_as<command_file::external_command const>(), pblsh);
     } catch (std::exception const& e) {
       logging::error(logging::medium)
         << "neb: node events stream can't parse command '"
@@ -202,12 +200,14 @@ private:
 /**
  *  Parse an external command.
  *
- *  @param[in] exc  External command.
+ *  @param[in] exc     External command.
+ *  @param[in] stream  Output stream.
  *
  *  @return         An event.
  */
-misc::shared_ptr<io::data>
-  node_events_stream::parse_command(command_file::external_command const& exc) {
+void node_events_stream::parse_command(
+                          command_file::external_command const& exc,
+                          io::stream& stream) {
   std::string line = exc.command.toStdString();
   buffer command(line.size());
   buffer args(line.size());
@@ -229,25 +229,23 @@ misc::shared_ptr<io::data>
   size_t arg_len = ::strlen(args.get());
 
   if (command == "ACKNOWLEDGE_HOST_PROBLEM")
-    return (_parse_ack(ack_host, timestamp, args.get(), arg_len));
+    _parse_ack(ack_host, timestamp, args.get(), arg_len, stream);
   else if (command == "ACKNOWLEDGE_SVC_PROBLEM")
-    return (_parse_ack(ack_service, timestamp, args.get(), arg_len));
+    _parse_ack(ack_service, timestamp, args.get(), arg_len, stream);
   else if (command == "REMOVE_HOST_ACKNOWLEDGEMENT")
-    return (_parse_remove_ack(ack_host, timestamp, args.get(), arg_len));
+    _parse_remove_ack(ack_host, timestamp, args.get(), arg_len, stream);
   else if (command == "REMOVE_SVC_ACKNOWLEDGEMENT")
-    return (_parse_remove_ack(ack_service, timestamp, args.get(), arg_len));
+    _parse_remove_ack(ack_service, timestamp, args.get(), arg_len, stream);
   else if (command == "SCHEDULE_HOST_DOWNTIME")
-    return (_parse_downtime(down_host, timestamp, args.get(), arg_len));
+    _parse_downtime(down_host, timestamp, args.get(), arg_len, stream);
   else if (command == "SCHEDULE_HOST_SVC_DOWNTIME")
-    return (_parse_downtime(down_host_service, timestamp, args.get(), arg_len));
+    _parse_downtime(down_host_service, timestamp, args.get(), arg_len, stream);
   else if (command == "SCHEDULE_SVC_DOWNTIME")
-    return (_parse_downtime(down_service, timestamp, args.get(), arg_len));
+    _parse_downtime(down_service, timestamp, args.get(), arg_len, stream);
   else if (command == "DELETE_HOST_DOWNTIME")
-    return (_parse_remove_downtime(down_host, timestamp, args.get(), arg_len));
+    _parse_remove_downtime(down_host, timestamp, args.get(), arg_len, stream);
   else if (command == "DELETE_SVC_DOWNTIME")
-    return (_parse_remove_downtime(down_service, timestamp, args.get(), arg_len));
-
-  return (misc::shared_ptr<io::data>());
+    _parse_remove_downtime(down_service, timestamp, args.get(), arg_len, stream);
 }
 
 /**
@@ -400,15 +398,17 @@ void node_events_stream::_trigger_floating_downtime(
  *  @param[in] is_host  Is this a host acknowledgement.
  *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
- *  @param[în] arg_size The size of the arg.
+ *  @param[in] arg_size The size of the arg.
+ *  @param[in] stream   The output stream.
  *
  *  @return             An acknowledgement event.
  */
-misc::shared_ptr<io::data> node_events_stream::_parse_ack(
-                             ack_type is_host,
-                             timestamp t,
-                             const char* args,
-                             size_t arg_size) {
+void node_events_stream::_parse_ack(
+                           ack_type is_host,
+                           timestamp t,
+                           const char* args,
+                           size_t arg_size,
+                           io::stream& stream) {
   buffer host_name(arg_size);
   buffer service_description(arg_size);
   int sticky = 0;
@@ -460,7 +460,8 @@ misc::shared_ptr<io::data> node_events_stream::_parse_ack(
   // Save acknowledgements.
   _acknowledgements[id] = *ack;
 
-  return (ack);
+  // Send the acknowledgement.
+  stream.write(ack);
 }
 
 /**
@@ -470,14 +471,16 @@ misc::shared_ptr<io::data> node_events_stream::_parse_ack(
  *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
  *  @param[in] arg_size The size of the arg.
+ *  @param[in] stream   The output stream.
  *
  *  @return             An acknowledgement removal event.
  */
-misc::shared_ptr<io::data> node_events_stream::_parse_remove_ack(
-                             ack_type type,
-                             timestamp t,
-                             const char* args,
-                             size_t arg_size) {
+void node_events_stream::_parse_remove_ack(
+                           ack_type type,
+                           timestamp t,
+                           const char* args,
+                           size_t arg_size,
+                           io::stream& stream) {
   buffer host_name(arg_size);
   buffer service_description(arg_size);
   bool ret = false;
@@ -513,8 +516,8 @@ misc::shared_ptr<io::data> node_events_stream::_parse_remove_ack(
   // Erase the ack.
   _acknowledgements.erase(found);
 
-  // Return the closed ack.
-  return (ack);
+  // Send the closed ack.
+  stream.write(ack);
 }
 
 /**
@@ -524,14 +527,16 @@ misc::shared_ptr<io::data> node_events_stream::_parse_remove_ack(
  *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
  *  @param[în] arg_size The size of the arg.
+ *  @param[in] stream   The output stream.
  *
  *  @return             A downtime event.
  */
-misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
-                             down_type type,
-                             timestamp t,
-                             char const* args,
-                             size_t arg_size) {
+void node_events_stream::_parse_downtime(
+                           down_type type,
+                           timestamp t,
+                           char const* args,
+                           size_t arg_size,
+                           io::stream& stream) {
   buffer host_name(arg_size);
   buffer service_description(arg_size);
   unsigned long start_time = 0;
@@ -605,16 +610,22 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
   d->recurring_timeperiod = QString::fromStdString(recurring_timeperiod.get());
 
   // Save the downtime.
-  _downtimes[d->internal_id] = *d;
-  _downtime_id_by_nodes.insert(id, d->internal_id);
+  if (!d->is_recurring) {
+    _downtimes[d->internal_id] = *d;
+    _downtime_id_by_nodes.insert(id, d->internal_id);
+  }
+  else {
+    _recurring_downtimes[d->internal_id] = *d;
+  }
+
+  // Write the downtime.
+  stream.write(d);
 
   // Schedule the downtime.
   if (!d->is_recurring)
     _schedule_downtime(*d);
   else
     _spawn_recurring_downtime(timestamp(), *d);
-
-  return (d);
 }
 
 /**
@@ -623,15 +634,17 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
  *  @param[in] type     The downtime type.
  *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
- *  @param[în] arg_size The size of the arg.
+ *  @param[in] arg_size The size of the arg.
+ *  @param[in] stream   The output stream.
  *
  *  @return             A downtime removal event.
  */
-misc::shared_ptr<io::data> node_events_stream::_parse_remove_downtime(
-                             down_type type,
-                             timestamp t,
-                             const char* args,
-                             size_t arg_size) {
+void node_events_stream::_parse_remove_downtime(
+                           down_type type,
+                           timestamp t,
+                           const char* args,
+                           size_t arg_size,
+                           io::stream& stream) {
   (void)type;
   (void)arg_size;
   unsigned int downtime_id;
@@ -641,9 +654,15 @@ misc::shared_ptr<io::data> node_events_stream::_parse_remove_downtime(
   // Find the downtime.
   QHash<unsigned int, neb::downtime>::iterator
     found(_downtimes.find(downtime_id));
-  if (found == _downtimes.end())
+  QHash<unsigned int, neb::downtime>::iterator
+    recurring_found(_recurring_downtimes.find(downtime_id));
+  if (found == _downtimes.end()
+        && recurring_found == _recurring_downtimes.end())
     throw (exceptions::msg()
            << "couldn't find a downtime for downtime id " << downtime_id);
+
+  if (found == _downtimes.end())
+    found = recurring_found;
 
   node_id node(found->host_id, found->service_id);
 
@@ -654,12 +673,13 @@ misc::shared_ptr<io::data> node_events_stream::_parse_remove_downtime(
   d->was_cancelled = true;
 
   // Erase the downtime.
-  _downtimes.erase(found);
+  _downtimes.remove(downtime_id);
+  _recurring_downtimes.remove(downtime_id);
   _downtime_id_by_nodes.remove(node, downtime_id);
   _downtime_scheduler.remove_downtime(downtime_id);
 
-  // Return the closed downtime.
-  return (d);
+  // Send the closed downtime.
+  stream.write(d);
 }
 
 /**
@@ -848,6 +868,7 @@ void node_events_stream::_spawn_recurring_downtime(
   downtime spawned(dwn);
   spawned.triggered_by = dwn.internal_id;
   spawned.is_recurring = false;
+  spawned.internal_id = ++_actual_downtime_id;
 
   // Get the timeperiod.
   QHash<QString, time::timeperiod::ptr>::const_iterator
@@ -867,6 +888,16 @@ void node_events_stream::_spawn_recurring_downtime(
   spawned.start_time = (*tp)->get_next_valid(when);
   spawned.end_time = spawned.start_time + (dwn.end_time - dwn.start_time);
 
+  // Save the downtime.
+  _downtimes[spawned.internal_id] = spawned;
+  _downtime_id_by_nodes.insert(
+    node_id(spawned.host_id, spawned.service_id),
+    spawned.internal_id);
+
+  // Send the downtime.
+  multiplexing::publisher pblsh;
+  pblsh.write(misc::make_shared(new neb::downtime(spawned)));
+
   // Schedule the downtime.
-  _schedule_downtime(dwn);
+  _schedule_downtime(spawned);
 }

@@ -58,8 +58,9 @@ namespace        neb {
     void         read(misc::shared_ptr<io::data>& d);
     void         update();
     unsigned int write(misc::shared_ptr<io::data> const& d);
-    misc::shared_ptr<io::data>
-                 parse_command(command_file::external_command const& exc);
+    void         parse_command(
+                   command_file::external_command const& exc,
+                   io::stream& stream);
     void         set_timeperiods(
                    QHash<QString, time::timeperiod::ptr> const& tps);
 
@@ -120,30 +121,30 @@ namespace        neb {
                  down_host = 2,
                  down_host_service = 3
     };
-    misc::shared_ptr<io::data>
-                 _parse_ack(
+    void         _parse_ack(
                    ack_type type,
                    timestamp t,
                    const char* args,
-                   size_t arg_size);
-    misc::shared_ptr<io::data>
-                 _parse_remove_ack(
+                   size_t arg_size,
+                   io::stream& stream);
+    void         _parse_remove_ack(
                    ack_type type,
                    timestamp t,
                    const char* args,
-                   size_t arg_size);
-    misc::shared_ptr<io::data>
-                 _parse_downtime(
+                   size_t arg_size,
+                   io::stream& stream);
+    void         _parse_downtime(
                    down_type type,
                    timestamp t,
                    const char* args,
-                   size_t arg_size);
-    misc::shared_ptr<io::data>
-                 _parse_remove_downtime(
+                   size_t arg_size,
+                   io::stream& stream);
+    void         _parse_remove_downtime(
                    down_type type,
                    timestamp t,
                    const char* args,
-                   size_t arg_size);
+                   size_t arg_size,
+                   io::stream& stream);
     void          _schedule_downtime(
                     downtime const& dwn);
     void          _spawn_recurring_downtime(

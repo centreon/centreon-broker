@@ -32,6 +32,7 @@
 #include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/persistent_cache.hh"
 #include "common.hh"
+#include "com/centreon/broker/multiplexing/subscriber.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -57,13 +58,29 @@ int main() {
     // Get time.
     time_t now = ::time(NULL);
 
+    // Create subscriber.
+    multiplexing::subscriber sbc("test_recurring_downtime");
+
     // Create node event stream.
     node_events_stream test(
       misc::shared_ptr<persistent_cache>(NULL),
       false,
       database_config());
 
-    test.set_timeperiods();
+    time::timeperiod::ptr tp(new time::timeperiod(
+                                1,
+                                "24x7",
+                                "",
+                                "00:00-24:00",
+                                "00:00-24:00",
+                                "00:00-24:00",
+                                "00:00-24:00",
+                                "00:00-24:00",
+                                "00:00-24:00",
+                                "00:00-24:00"));
+    QHash<QString, time::timeperiod::ptr> tps;
+    tps["24x7"] = tp;
+    test.set_timeperiods(tps);
 
     // Send initial service status.
     {
@@ -71,7 +88,7 @@ int main() {
       sst->host_id = 42;
       sst->service_id = 24;
       sst->source_id = 1;
-      sst->last_hard_state = 0;
+      sst->last_hard_state = 1;
       sst->last_hard_state_change = 123456789;
       sst->host_name = "42";
       sst->service_description = "24";
@@ -82,7 +99,7 @@ int main() {
       ss->source_id = 1;
       ss->host_id = 42;
       ss->service_id = 24;
-      ss->last_hard_state = 0;
+      ss->last_hard_state = 1;
       ss->last_hard_state_change = 123456789;
       test.write(ss);
     }
@@ -92,42 +109,43 @@ int main() {
       misc::shared_ptr<command_file::external_command> cmd(
         new command_file::external_command);
       cmd->command = format_command(
-        "SCHEDULE_SVC_DOWNTIME;42;24;$TIMESTAMP$;$TIMESTAMP2$;0;0;3;TEST;A test for you;0;",
+        "SCHEDULE_SVC_DOWNTIME;42;24;$TIMESTAMP$;$TIMESTAMP2$;1;0;3;TEST;A test for you;24x7;2",
         now,
         now + 3);
       test.write(cmd);
     }
 
-    // Send error service status.
-    {
-      misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-      ss->source_id = 1;
-      ss->host_id = 42;
-      ss->service_id = 24;
-      ss->last_hard_state = 1;
-      ss->last_hard_state_change = now - 1;
-      test.write(ss);
+    // Fake event loop.
+    for (unsigned int i = 0; i < 10; ++i) {
+      ::sleep(1);
+      misc::shared_ptr<io::data> d;
+      sbc.read(d);
+      test.write(d);
     }
-    {
-      misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-      ss->source_id = 1;
-      ss->host_id = 42;
-      ss->service_id = 24;
-      ss->last_hard_state = 1;
-      ss->last_hard_state_change = now + 1;
-      test.write(ss);
-    }
-
-    ::sleep(5);
 
     // Check content.
     multiplexing::engine::instance().stop();
     t.finalize();
 
     QList<misc::shared_ptr<io::data> > content;
-    add_downtime(content, now, now + 3, 3, false, 42, 24, 1, 1, -1, -1);
-    add_downtime(content, now, now + 3, 3, false, 42, 24, 1, 1, now + 1, -1);
-    add_downtime(content, now, now + 3, 3, false, 42, 24, 1, 1, now + 1, now + 4);
+    add_downtime(content, now, now + 3, 3, true, 42, 24, 1, 1, -1, -1);
+    add_downtime(content, now, now + 3, 3, true, 42, 24, 2, 1, -1, -1);
+    add_downtime(content, now, now + 3, 3, true, 42, 24, 2, 1, now, -1);
+    add_downtime(content, now, now + 3, 3, true, 42, 24, 2, 1, now, now + 3);
+    add_downtime(content, now + 5, now + 8, 3, true, 42, 24, 3, 1, -1, -1);
+    add_downtime(content, now + 5, now + 8, 3, true, 42, 24, 3, 1, now + 5, -1);
+    add_downtime(
+      content,
+      now + 5,
+      now + 8,
+      3,
+      true,
+      42,
+      24,
+      3,
+      1,
+      now + 5,
+      now + 8);
 
     // Check.
     check_content(t, content);
