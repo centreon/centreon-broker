@@ -190,7 +190,8 @@ void endpoint::apply(
                                                  *it,
                                                  false,
                                                  true,
-                                                 out_to_create));
+                                                 out_to_create,
+                                                 it->filters));
       connect(endp.get(), SIGNAL(finished()), this, SLOT(terminated_output()));
       connect(endp.get(), SIGNAL(terminated()), this, SLOT(terminated_output()));
       connect(endp.get(), SIGNAL(finished()), endp.get(), SLOT(deleteLater()));
@@ -221,7 +222,8 @@ void endpoint::apply(
                                                  *it,
                                                  true,
                                                  false,
-                                                 in_to_create));
+                                                 in_to_create,
+                                                 it->filters));
       connect(endp.get(), SIGNAL(finished()), this, SLOT(terminated_input()));
       connect(endp.get(), SIGNAL(terminated()), this, SLOT(terminated_input()));
       connect(endp.get(), SIGNAL(finished()), endp.get(), SLOT(deleteLater()));
@@ -456,12 +458,14 @@ endpoint::endpoint() : QObject(), _outputsm(QMutex::Recursive) {}
  *  @param[in] is_input  true if the endpoint will act as input.
  *  @param[in] is_output true if the endpoint will act as output.
  *  @param[in] l         List of endpoints.
+ *  @param[in] filters   The filters.
  */
 processing::failover* endpoint::_create_endpoint(
                                   config::endpoint& cfg,
                                   bool is_input,
                                   bool is_output,
-                                  QList<config::endpoint>& l) {
+                                  QList<config::endpoint>& l,
+                                  std::set<std::string> const& filters) {
   // Debug message.
   logging::config(logging::medium)
     << "endpoint applier: creating new endpoint '" << cfg.name << "'";
@@ -469,7 +473,7 @@ processing::failover* endpoint::_create_endpoint(
   // Build filtering elements.
   std::set<unsigned int> elements;
   for (std::set<std::string>::const_iterator
-         it(cfg.filters.begin()), end(cfg.filters.end());
+         it(filters.begin()), end(filters.end());
        it != end;
        ++it) {
     std::set<unsigned int> const&
@@ -491,7 +495,8 @@ processing::failover* endpoint::_create_endpoint(
                         *it,
                         is_input || is_output,
                         is_output,
-                        l));
+                        l,
+                        filters));
   }
 
   // Create endpoint object.

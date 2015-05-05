@@ -73,7 +73,8 @@ namespace                    com {
                                config::endpoint& cfg,
                                bool is_input,
                                bool is_output,
-                               QList<config::endpoint>& l);
+                               QList<config::endpoint>& l,
+                               std::set<std::string> const& filters);
             void             _diff_endpoints(
                                QMap<config::endpoint,
                                processing::failover*>& current,
