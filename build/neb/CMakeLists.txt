@@ -742,7 +742,7 @@ if (WITH_TESTING)
   add_test("${TEST_NAME}" "${TEST_NAME}")
   set(TEST_NAME "neb_downtime_recurring")
   add_executable("${TEST_NAME}"
-    "${TEST_DIR}/node_events/downtime_recurring.cc"
+    "${TEST_DIR}/node_events/recurring_downtime.cc"
     "${TEST_DIR}/node_events/common.hh"
     "${TEST_DIR}/node_events/common.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
