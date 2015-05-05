@@ -325,7 +325,7 @@ void node_events_stream::_update_downtime(
     if (dwn.triggered_by != 0
           && _recurring_downtimes.contains(dwn.triggered_by))
       _spawn_recurring_downtime(
-        dwn.start_time + dwn.recurring_interval,
+        dwn.actual_end_time + dwn.recurring_interval,
         _recurring_downtimes[dwn.triggered_by]);
   }
 }

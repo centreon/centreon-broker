@@ -63,6 +63,8 @@ int main() {
       false,
       database_config());
 
+    test.set_timeperiods();
+
     // Send initial service status.
     {
       misc::shared_ptr<neb::service> sst(new neb::service);
