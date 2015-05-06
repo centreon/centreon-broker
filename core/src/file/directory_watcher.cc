@@ -194,7 +194,7 @@ std::vector<directory_event> directory_watcher::get_events() {
                << "directory_watcher: couldn't check the file type: '"
                << error << "'");
       }
-      directory_event::file_type ft = directory_event::other;
+      ft = directory_event::other;
       if (S_ISDIR(st.st_mode))
         ft = directory_event::directory;
       else if (S_ISREG(st.st_mode))
