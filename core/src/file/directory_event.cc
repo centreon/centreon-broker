@@ -32,12 +32,14 @@ directory_event::directory_event() {
 /**
  *  Constructor.
  *
- *  @param[in] path  The path of this directory event.
- *  @param[in] type  The type of this directory event.
+ *  @param[in] path       The path of this directory event.
+ *  @param[in] type       The type of this directory event.
+ *  @param[in] file_type  The type of the file of this directory event.
  */
-directory_event::directory_event(std::string const& path, type type)
+directory_event::directory_event(std::string const& path, type type, file_type ftp)
   : _path(path),
-    _type(type) {
+    _type(type),
+    _file_type(ftp) {
 
 }
 
@@ -48,7 +50,8 @@ directory_event::directory_event(std::string const& path, type type)
  */
 directory_event::directory_event(directory_event const& o)
   : _path(o._path),
-    _type(o._type) {
+    _type(o._type),
+    _file_type(o._file_type) {
 }
 
 /**
@@ -62,6 +65,7 @@ directory_event& directory_event::operator=(directory_event const& o) {
   if (this != &o) {
     _path = o._path;
     _type = o._type;
+    _file_type = o._file_type;
   }
   return (*this);
 }
@@ -89,4 +93,13 @@ std::string const& directory_event::get_path() const {
  */
 directory_event::type directory_event::get_type() const {
   return (_type);
+}
+
+/**
+ *  Get the file type of this event.
+ *
+ *  @return  The file type of this event.
+ */
+directory_event::file_type directory_event::get_file_type() const {
+  return (_file_type);
 }

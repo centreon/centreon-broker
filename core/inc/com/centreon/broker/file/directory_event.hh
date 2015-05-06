@@ -40,11 +40,17 @@ namespace        file {
                  deleted,
                  directory_deleted
     };
+    enum         file_type {
+                 directory,
+                 file,
+                 other
+    };
 
                  directory_event();
                  directory_event(
                    std::string const& path,
-                   type type);
+                   type type,
+                   file_type ft);
                  directory_event(directory_event const& o);
     directory_event&
                  operator=(directory_event const& o);
@@ -53,10 +59,12 @@ namespace        file {
     std::string const&
                  get_path() const;
     type         get_type() const;
+    file_type    get_file_type() const;
 
   private:
     std::string  _path;
     type         _type;
+    file_type    _file_type;
   };
 }
 

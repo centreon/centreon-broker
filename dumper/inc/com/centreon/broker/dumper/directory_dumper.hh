@@ -21,6 +21,7 @@
 #  define CCB_DUMPER_DIRECTORY_DUMPER_HH
 
 #  include <QMutex>
+#  include <set>
 #  include <list>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
@@ -57,9 +58,14 @@ namespace              dumper {
     directory_dumper&  operator=(directory_dumper const& s);
     void               _get_last_timestamps_from_cache();
     void               _save_last_timestamps_to_cache();
-    void               _set_watch_over_directory();
+    std::set<std::string>
+                       _set_watch_over_directory(
+                         std::string const& path);
+    void               _remove_deleted_files(
+                         std::set<std::string> const& found_files);
     std::pair<timestamp, misc::shared_ptr<io::data> >
                        _dump_a_file(std::string const& path);
+    std::string        _get_relative_filename(std::string const& path);
 
     QMutex             _mutex;
     std::string        _path;
