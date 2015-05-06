@@ -115,17 +115,30 @@ add_library("${NEB}" SHARED
   # Main source.
   "${SRC_DIR}/broker.cc"
   "${SRC_DIR}/downtime_scheduler.cc"
+  "${SRC_DIR}/node_cache.cc"
   "${SRC_DIR}/node_events_connector.cc"
   "${SRC_DIR}/node_events_factory.cc"
   "${SRC_DIR}/node_events_stream.cc"
   "${SRC_DIR}/node_id.cc"
+  "${SRC_DIR}/timeperiod_loader.cc"
+  "${SRC_DIR}/composed_timeperiod_builder.cc"
+  "${SRC_DIR}/timeperiod_by_name_builder.cc"
+  "${SRC_DIR}/timeperiod_linker.cc"
 
   # Inc
   "${INC_DIR}/com/centreon/broker/neb/downtime_scheduler.hh"
+  "${INC_DIR}/com/centreon/broker/neb/node_cache.hh"
   "${INC_DIR}/com/centreon/broker/neb/node_events_connector.hh"
   "${INC_DIR}/com/centreon/broker/neb/node_events_factory.hh"
   "${INC_DIR}/com/centreon/broker/neb/node_events_stream.hh"
   "${INC_DIR}/com/centreon/broker/neb/node_id.hh"
+  "${INC_DIR}/com/centreon/broker/neb/timeperiod_builder.hh"
+  "${INC_DIR}/com/centreon/broker/neb/timeperiod_loader.hh"
+  "${INC_DIR}/com/centreon/broker/neb/timeperiod_by_name_builder.hh"
+  "${INC_DIR}/com/centreon/broker/neb/composed_builder.hh"
+  "${INC_DIR}/com/centreon/broker/neb/composed_timeperiod_builder.hh"
+  "${INC_DIR}/com/centreon/broker/neb/timeperiod_linker.hh"
+
 )
 if (CMAKE_COMPILER_IS_GNUCXX)
   # Flags needed to include all symbols in binary.
@@ -723,6 +736,13 @@ if (WITH_TESTING)
   set(TEST_NAME "neb_downtime_floating")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/node_events/downtime_floating.cc"
+    "${TEST_DIR}/node_events/common.hh"
+    "${TEST_DIR}/node_events/common.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  set(TEST_NAME "neb_downtime_recurring")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/node_events/recurring_downtime.cc"
     "${TEST_DIR}/node_events/common.hh"
     "${TEST_DIR}/node_events/common.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})

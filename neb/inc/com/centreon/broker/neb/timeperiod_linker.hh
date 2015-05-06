@@ -17,33 +17,45 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NOTIFICATION_BUILDERS_TIMEPERIOD_BY_ID_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_TIMEPERIOD_BY_ID_BUILDER_HH
+#ifndef CCB_NEB_TIMEPERIOD_LINKER_HH
+#  define CCB_NEB_TIMEPERIOD_LINKER_HH
 
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/node_id.hh"
+#  include "com/centreon/broker/neb/node_id.hh"
 #  include "com/centreon/broker/time/timeperiod.hh"
-#  include "com/centreon/broker/notification/builders/timeperiod_builder.hh"
+#  include "com/centreon/broker/neb/timeperiod_builder.hh"
 
 CCB_BEGIN()
 
-namespace       notification {
+namespace       neb {
   /**
-   *  @class timeperiod_by_id_builder timeperiod_by_id_builder.hh "com/centreon/broker/notification/builders/timeperiod_by_id_builder.hh"
-   *  @brief Timeperiod by id builder.
+   *  @class timeperiod_linker timeperiod_linker.hh "com/centreon/broker/neb/timeperiod_linker.hh"
+   *  @brief Timeperiod linker.
+   *
+   *  Links the timeperiod together.
    */
-  class         timeperiod_by_id_builder
+  class         timeperiod_linker
                   : public timeperiod_builder {
   public:
-    timeperiod_by_id_builder(
-      QHash<unsigned int, time::timeperiod::ptr>& table);
+    timeperiod_linker();
 
     void        add_timeperiod(
                   unsigned int id,
                   time::timeperiod::ptr con);
 
+    void        add_timeperiod_exception(
+                  unsigned int timeperiod_id,
+                  std::string const& days,
+                  std::string const& timerange);
+    void        add_timeperiod_exclude_relation(
+                  unsigned int timeperiod_id,
+                  unsigned int exclude_id);
+    void        add_timeperiod_include_relation(
+                  unsigned int timeperiod_id,
+                  unsigned int include_id);
+
   private:
-    QHash<unsigned int, time::timeperiod::ptr>&
+    QHash<unsigned int, time::timeperiod::ptr>
                   _table;
   };
 
@@ -51,4 +63,4 @@ namespace       notification {
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_TIMEPERIOD_BY_ID_BUILDER_HH
+#endif // !CCB_NEB_TIMEPERIOD_LINKER_HH

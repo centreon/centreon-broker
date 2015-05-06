@@ -76,7 +76,8 @@ namespace                    com {
                                config::endpoint& cfg,
                                bool is_input,
                                bool is_output,
-                               QList<config::endpoint>& l);
+                               QList<config::endpoint>& l,
+                               std::set<std::string>& filters);
             misc::shared_ptr<io::endpoint>
                               _create_new_endpoint(
                                config::endpoint& cfg,

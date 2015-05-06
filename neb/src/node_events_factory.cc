@@ -18,12 +18,25 @@
 */
 
 #include <memory>
+#include <QVariant>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/neb/node_events_factory.hh"
 #include "com/centreon/broker/neb/node_events_connector.hh"
+#include "com/centreon/broker/database_config.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
+
+template <typename T>
+static T get(T def, config::endpoint& cfg, QString const& name) {
+  T ret = def;
+
+  QMap<QString, QString>::const_iterator found = cfg.params.find(name);
+  if (found != cfg.params.end())
+    ret = QVariant(*found).value<T>();
+
+  return (ret);
+}
 
 /**************************************
 *                                     *
@@ -108,5 +121,20 @@ io::endpoint* node_events_factory::new_endpoint(
   (void)is_input;
   (void)is_output;
 
-  return (new node_events_connector(cache));
+  // Need db for timeperiods.
+  database_config conf;
+
+  QString host = get<QString>("", cfg, "db_host");
+  unsigned short port = get<unsigned short>(88, cfg, "db_port");
+  QString user = get<QString>("", cfg, "db_user");
+  QString password = get<QString>("", cfg, "db_password");
+  QString name = get<QString>("", cfg, "db_name");
+
+  conf.set_host(host.toStdString());
+  conf.set_port(port);
+  conf.set_user(user.toStdString());
+  conf.set_password(password.toStdString());
+  conf.set_name(name.toStdString());
+
+  return (new node_events_connector(cache, conf));
 }

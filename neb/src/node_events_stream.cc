@@ -29,6 +29,12 @@
 #include "com/centreon/broker/command_file/external_command.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
 #include "com/centreon/broker/neb/downtime.hh"
+#include "com/centreon/broker/database.hh"
+#include "com/centreon/broker/database_query.hh"
+#include "com/centreon/broker/neb/timeperiod_loader.hh"
+#include "com/centreon/broker/neb/composed_timeperiod_builder.hh"
+#include "com/centreon/broker/neb/timeperiod_by_name_builder.hh"
+#include "com/centreon/broker/neb/timeperiod_linker.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -37,12 +43,26 @@ using namespace com::centreon::broker::neb;
  *  Constructor.
  *
  *  @param[int,out] cache             Persistent cache.
+ *  @param[in]      with_timeperiods  Should the stream try to load timeperiods?
+ *  @param[in]      conf              Database configuration.
  */
 node_events_stream::node_events_stream(
-    misc::shared_ptr<persistent_cache> cache)
+    misc::shared_ptr<persistent_cache> cache,
+    bool with_timeperiods,
+    database_config const& conf)
   : _cache(cache),
+    _conf(conf),
     _process_out(true),
+    _with_timeperiods(with_timeperiods),
     _actual_downtime_id(0) {
+
+  if (_with_timeperiods) {
+    // Load the timeperiods.
+    _load_timeperiods();
+    // Check tp coherency.
+    _check_downtime_timeperiod_consistency();
+  }
+
   // Load the cache.
   _load_cache();
 
@@ -99,6 +119,14 @@ void node_events_stream::read(misc::shared_ptr<io::data>& d) {
  */
 void node_events_stream::update() {
   _save_cache();
+
+  if (_with_timeperiods) {
+    // Load the timeperiods.
+    _load_timeperiods();
+    // Check tp coherency.
+    _check_downtime_timeperiod_consistency();
+  }
+
   return ;
 }
 
@@ -116,13 +144,8 @@ unsigned int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
   if (d.isNull())
     return (1);
 
-  if (d->type() == neb::host::static_type()) {
-    _process_host(d.ref_as<neb::host const>());
-  }
-  else if (d->type() == neb::service::static_type()) {
-    _process_service(d.ref_as<neb::service const>());
-  }
-  else if (d->type() == neb::host_status::static_type()) {
+  // Manage data.
+  if (d->type() == neb::host_status::static_type()) {
     _process_host_status(d.ref_as<neb::host_status const>());
   }
   else if (d->type() == neb::service_status::static_type()) {
@@ -133,10 +156,8 @@ unsigned int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
   }
   else if (d->type() == command_file::external_command::static_type()) {
     try {
-      misc::shared_ptr<io::data> ret =
-        parse_command(d.ref_as<command_file::external_command const>());
       multiplexing::publisher pblsh;
-      pblsh.write(ret);
+      parse_command(d.ref_as<command_file::external_command const>(), pblsh);
     } catch (std::exception const& e) {
       logging::error(logging::medium)
         << "neb: node events stream can't parse command '"
@@ -144,6 +165,10 @@ unsigned int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
         << "': " << e.what();
     }
   }
+
+  // Write to the node cache.
+  _node_cache.write(d);
+
   return (1);
 }
 
@@ -175,12 +200,14 @@ private:
 /**
  *  Parse an external command.
  *
- *  @param[in] exc  External command.
+ *  @param[in] exc     External command.
+ *  @param[in] stream  Output stream.
  *
  *  @return         An event.
  */
-misc::shared_ptr<io::data>
-  node_events_stream::parse_command(command_file::external_command const& exc) {
+void node_events_stream::parse_command(
+                          command_file::external_command const& exc,
+                          io::stream& stream) {
   std::string line = exc.command.toStdString();
   buffer command(line.size());
   buffer args(line.size());
@@ -202,69 +229,35 @@ misc::shared_ptr<io::data>
   size_t arg_len = ::strlen(args.get());
 
   if (command == "ACKNOWLEDGE_HOST_PROBLEM")
-    return (_parse_ack(ack_host, timestamp, args.get(), arg_len));
+    _parse_ack(ack_host, timestamp, args.get(), arg_len, stream);
   else if (command == "ACKNOWLEDGE_SVC_PROBLEM")
-    return (_parse_ack(ack_service, timestamp, args.get(), arg_len));
+    _parse_ack(ack_service, timestamp, args.get(), arg_len, stream);
   else if (command == "REMOVE_HOST_ACKNOWLEDGEMENT")
-    return (_parse_remove_ack(ack_host, timestamp, args.get(), arg_len));
+    _parse_remove_ack(ack_host, timestamp, args.get(), arg_len, stream);
   else if (command == "REMOVE_SVC_ACKNOWLEDGEMENT")
-    return (_parse_remove_ack(ack_service, timestamp, args.get(), arg_len));
+    _parse_remove_ack(ack_service, timestamp, args.get(), arg_len, stream);
   else if (command == "SCHEDULE_HOST_DOWNTIME")
-    return (_parse_downtime(down_host, timestamp, args.get(), arg_len));
+    _parse_downtime(down_host, timestamp, args.get(), arg_len, stream);
   else if (command == "SCHEDULE_HOST_SVC_DOWNTIME")
-    return (_parse_downtime(down_host_service, timestamp, args.get(), arg_len));
+    _parse_downtime(down_host_service, timestamp, args.get(), arg_len, stream);
   else if (command == "SCHEDULE_SVC_DOWNTIME")
-    return (_parse_downtime(down_service, timestamp, args.get(), arg_len));
+    _parse_downtime(down_service, timestamp, args.get(), arg_len, stream);
   else if (command == "DELETE_HOST_DOWNTIME")
-    return (_parse_remove_downtime(down_host, timestamp, args.get(), arg_len));
+    _parse_remove_downtime(down_host, timestamp, args.get(), arg_len, stream);
   else if (command == "DELETE_SVC_DOWNTIME")
-    return (_parse_remove_downtime(down_service, timestamp, args.get(), arg_len));
-
-  return (misc::shared_ptr<io::data>());
+    _parse_remove_downtime(down_service, timestamp, args.get(), arg_len, stream);
 }
 
 /**
- *  Get a node by its names.
+ *  Set the timeperiods.
  *
- *  @param[in] host_name            The host name.
- *  @param[in] service_description  The service description, or empty.
+ *  Used for testing purpos.
  *
- *  @return  The node id.
+ *  @param[in] tps  The timeperiods.
  */
-node_id node_events_stream::_get_node_by_names(
-          std::string const& host_name,
-          std::string const& service_description) {
-  QHash<QPair<QString, QString>, node_id>::const_iterator
-    found(_names_to_node.find(qMakePair(
-                                QString::fromStdString(host_name),
-                                QString::fromStdString(service_description))));
-  if (found != _names_to_node.end())
-    return (*found);
-  else
-    return (node_id());
-}
-
-/**
- *  Process a host event.
- *
- *  @param[in] hst  The host event.
- */
-void node_events_stream::_process_host(
-                           neb::host const& hst) {
-  _hosts[node_id(hst.host_id)] = hst;
-  _names_to_node[qMakePair(hst.host_name, QString())] = node_id(hst.host_id);
-}
-
-/**
- *  Process a service event.
- *
- *  @param[in] svc  The service event.
- */
-void node_events_stream::_process_service(
-                           neb::service const& svc) {
-  _services[node_id(svc.host_id, svc.service_id)] = svc;
-  _names_to_node[qMakePair(svc.host_name, svc.service_description)]
-    = node_id(svc.host_id, svc.service_id);
+void node_events_stream::set_timeperiods(
+        QHash<QString, time::timeperiod::ptr> const& tps) {
+  _timeperiods = tps;
 }
 
 /**
@@ -275,17 +268,11 @@ void node_events_stream::_process_service(
 void node_events_stream::_process_host_status(
                            neb::host_status const& hst) {
   node_id id(hst.host_id);
-  QHash<node_id, neb::host_status>::const_iterator found
-    = _host_statuses.find(id);
-  short prev_state = found != _host_statuses.end() ?
-                                found->last_hard_state :
-                                0;
-  _host_statuses[id] = hst;
+  short prev_state = _node_cache.get_current_state(id);
   _remove_expired_acknowledgement(id, prev_state, hst.last_hard_state);
   _trigger_floating_downtime(
     id,
     hst.last_hard_state_change,
-    //prev_state,
     hst.last_hard_state);
 }
 
@@ -297,18 +284,11 @@ void node_events_stream::_process_host_status(
 void node_events_stream::_process_service_status(
                            neb::service_status const& sst) {
   node_id id(sst.host_id, sst.service_id);
-  QHash<node_id, neb::service_status>::const_iterator found
-    = _service_statuses.find(id);
-  short prev_state = found != _service_statuses.end() ?
-                                found->last_hard_state
-                                : 0;
-
-  _service_statuses[id] = sst;
+  short prev_state = _node_cache.get_current_state(id);
   _remove_expired_acknowledgement(id, prev_state, sst.last_hard_state);
   _trigger_floating_downtime(
     id,
     sst.last_hard_state_change,
-    //prev_state,
     sst.last_hard_state);
 }
 
@@ -334,11 +314,17 @@ void node_events_stream::_update_downtime(
   old_downtime = dwn;
 
   // Downtime removal.
-  if (!dwn.actual_end_time.is_null()) {
+  if (!dwn.actual_end_time.is_null()) {      
     _downtimes.erase(found);
     _downtime_id_by_nodes.remove(
       node_id(dwn.host_id, dwn.service_id),
       dwn.internal_id);
+    // Recurring downtimes.
+    if (dwn.triggered_by != 0
+          && _recurring_downtimes.contains(dwn.triggered_by))
+      _spawn_recurring_downtime(
+        dwn.actual_end_time + dwn.recurring_interval,
+        _recurring_downtimes[dwn.triggered_by]);
   }
 }
 
@@ -412,15 +398,17 @@ void node_events_stream::_trigger_floating_downtime(
  *  @param[in] is_host  Is this a host acknowledgement.
  *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
- *  @param[în] arg_size The size of the arg.
+ *  @param[in] arg_size The size of the arg.
+ *  @param[in] stream   The output stream.
  *
  *  @return             An acknowledgement event.
  */
-misc::shared_ptr<io::data> node_events_stream::_parse_ack(
-                             ack_type is_host,
-                             timestamp t,
-                             const char* args,
-                             size_t arg_size) {
+void node_events_stream::_parse_ack(
+                           ack_type is_host,
+                           timestamp t,
+                           const char* args,
+                           size_t arg_size,
+                           io::stream& stream) {
   buffer host_name(arg_size);
   buffer service_description(arg_size);
   int sticky = 0;
@@ -454,7 +442,7 @@ misc::shared_ptr<io::data> node_events_stream::_parse_ack(
     throw (exceptions::msg()
            << "couldn't parse the arguments for the acknowledgement");
 
-  node_id id(_get_node_by_names(
+  node_id id(_node_cache.get_node_by_names(
                host_name.get(),
                service_description.get()));
   misc::shared_ptr<neb::acknowledgement>
@@ -472,7 +460,8 @@ misc::shared_ptr<io::data> node_events_stream::_parse_ack(
   // Save acknowledgements.
   _acknowledgements[id] = *ack;
 
-  return (ack);
+  // Send the acknowledgement.
+  stream.write(ack);
 }
 
 /**
@@ -482,14 +471,16 @@ misc::shared_ptr<io::data> node_events_stream::_parse_ack(
  *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
  *  @param[in] arg_size The size of the arg.
+ *  @param[in] stream   The output stream.
  *
  *  @return             An acknowledgement removal event.
  */
-misc::shared_ptr<io::data> node_events_stream::_parse_remove_ack(
-                             ack_type type,
-                             timestamp t,
-                             const char* args,
-                             size_t arg_size) {
+void node_events_stream::_parse_remove_ack(
+                           ack_type type,
+                           timestamp t,
+                           const char* args,
+                           size_t arg_size,
+                           io::stream& stream) {
   buffer host_name(arg_size);
   buffer service_description(arg_size);
   bool ret = false;
@@ -506,7 +497,7 @@ misc::shared_ptr<io::data> node_events_stream::_parse_remove_ack(
            << "couldn't parse the arguments for the acknowledgement removal");
 
   // Find the node id from the host name / description.
-  node_id id = _get_node_by_names(
+  node_id id = _node_cache.get_node_by_names(
                  host_name.get(),
                  service_description.get());
 
@@ -525,8 +516,8 @@ misc::shared_ptr<io::data> node_events_stream::_parse_remove_ack(
   // Erase the ack.
   _acknowledgements.erase(found);
 
-  // Return the closed ack.
-  return (ack);
+  // Send the closed ack.
+  stream.write(ack);
 }
 
 /**
@@ -536,14 +527,16 @@ misc::shared_ptr<io::data> node_events_stream::_parse_remove_ack(
  *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
  *  @param[în] arg_size The size of the arg.
+ *  @param[in] stream   The output stream.
  *
  *  @return             A downtime event.
  */
-misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
-                             down_type type,
-                             timestamp t,
-                             char const* args,
-                             size_t arg_size) {
+void node_events_stream::_parse_downtime(
+                           down_type type,
+                           timestamp t,
+                           char const* args,
+                           size_t arg_size,
+                           io::stream& stream) {
   buffer host_name(arg_size);
   buffer service_description(arg_size);
   unsigned long start_time = 0;
@@ -553,6 +546,8 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
   unsigned int duration = 0;
   buffer author(arg_size);
   buffer comment(arg_size);
+  buffer recurring_timeperiod(arg_size);
+  unsigned int recurring_interval = 0;
   bool ret = false;
 
   (void)t;
@@ -562,7 +557,7 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
   if (type == down_host)
     ret = (::sscanf(
              args,
-             "%[^;];%lu;%lu;%i;%u;%u;%[^;];%[^;]",
+             "%[^;];%lu;%lu;%i;%u;%u;%[^;];%[^;];%[^;];%u",
              host_name.get(),
              &start_time,
              &end_time,
@@ -570,11 +565,13 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
              &trigger_id,
              &duration,
              author.get(),
-             comment.get()) == 8);
+             comment.get(),
+             recurring_timeperiod.get(),
+             &recurring_interval) == 10);
   else
     ret = (::sscanf(
              args,
-             "%[^;];%[^;];%lu;%lu;%i;%u;%u;%[^;];%[^;]",
+             "%[^;];%[^;];%lu;%lu;%i;%u;%u;%[^;];%[^;];%[^;];%u",
              host_name.get(),
              service_description.get(),
              &start_time,
@@ -583,12 +580,14 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
              &trigger_id,
              &duration,
              author.get(),
-             comment.get()) == 9);
+             comment.get(),
+             recurring_timeperiod.get(),
+             &recurring_interval) == 11);
 
   if (!ret)
     throw (exceptions::msg() << "error while parsing downtime arguments");
 
-  node_id id = _get_node_by_names(
+  node_id id = _node_cache.get_node_by_names(
                  host_name.get(),
                  service_description.get());
 
@@ -604,17 +603,29 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
   d->host_id = id.get_host_id();
   d->service_id = id.get_service_id();
   d->was_started = false;
-  d->triggered_by = trigger_id;
   d->internal_id = ++_actual_downtime_id;
+  d->is_recurring = recurring_interval != 0;
+  d->triggered_by = trigger_id;
+  d->recurring_interval = recurring_interval;
+  d->recurring_timeperiod = QString::fromStdString(recurring_timeperiod.get());
 
   // Save the downtime.
-  _downtimes[d->internal_id] = *d;
-  _downtime_id_by_nodes.insert(id, d->internal_id);
+  if (!d->is_recurring) {
+    _downtimes[d->internal_id] = *d;
+    _downtime_id_by_nodes.insert(id, d->internal_id);
+  }
+  else {
+    _recurring_downtimes[d->internal_id] = *d;
+  }
+
+  // Write the downtime.
+  stream.write(d);
 
   // Schedule the downtime.
-  _schedule_downtime(*d);
-
-  return (d);
+  if (!d->is_recurring)
+    _schedule_downtime(*d);
+  else
+    _spawn_recurring_downtime(timestamp(), *d);
 }
 
 /**
@@ -623,15 +634,17 @@ misc::shared_ptr<io::data> node_events_stream::_parse_downtime(
  *  @param[in] type     The downtime type.
  *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
- *  @param[în] arg_size The size of the arg.
+ *  @param[in] arg_size The size of the arg.
+ *  @param[in] stream   The output stream.
  *
  *  @return             A downtime removal event.
  */
-misc::shared_ptr<io::data> node_events_stream::_parse_remove_downtime(
-                             down_type type,
-                             timestamp t,
-                             const char* args,
-                             size_t arg_size) {
+void node_events_stream::_parse_remove_downtime(
+                           down_type type,
+                           timestamp t,
+                           const char* args,
+                           size_t arg_size,
+                           io::stream& stream) {
   (void)type;
   (void)arg_size;
   unsigned int downtime_id;
@@ -641,9 +654,15 @@ misc::shared_ptr<io::data> node_events_stream::_parse_remove_downtime(
   // Find the downtime.
   QHash<unsigned int, neb::downtime>::iterator
     found(_downtimes.find(downtime_id));
-  if (found == _downtimes.end())
+  QHash<unsigned int, neb::downtime>::iterator
+    recurring_found(_recurring_downtimes.find(downtime_id));
+  if (found == _downtimes.end()
+        && recurring_found == _recurring_downtimes.end())
     throw (exceptions::msg()
            << "couldn't find a downtime for downtime id " << downtime_id);
+
+  if (found == _downtimes.end())
+    found = recurring_found;
 
   node_id node(found->host_id, found->service_id);
 
@@ -654,14 +673,57 @@ misc::shared_ptr<io::data> node_events_stream::_parse_remove_downtime(
   d->was_cancelled = true;
 
   // Erase the downtime.
-  _downtimes.erase(found);
+  _downtimes.remove(downtime_id);
+  _recurring_downtimes.remove(downtime_id);
   _downtime_id_by_nodes.remove(node, downtime_id);
   _downtime_scheduler.remove_downtime(downtime_id);
 
-  // Return the closed downtime.
-  return (d);
+  // Send the closed downtime.
+  stream.write(d);
 }
 
+/**
+ *  Load the timeperiods from the database.
+ */
+void node_events_stream::_load_timeperiods() {
+  database db(_conf);
+
+  try {
+    timeperiod_loader loader;
+    composed_timeperiod_builder builder;
+    timeperiod_by_name_builder by_name(_timeperiods);
+    timeperiod_linker linker;
+    builder.push_back(by_name);
+    builder.push_back(linker);
+    loader.load(&db.get_qt_db(), &builder);
+  }
+  catch (std::exception const& e) {
+    throw (exceptions::msg()
+           << "neb: node event streams:"
+           " error while trying to load timeperiods: " << e.what());
+  }
+}
+
+/**
+ *  Check that each recurring timeperiod has its downtime.
+ */
+void node_events_stream::_check_downtime_timeperiod_consistency() {
+  for (QHash<unsigned int, neb::downtime>::iterator
+         it = _recurring_downtimes.begin(),
+         tmp = it,
+         end = _recurring_downtimes.end();
+       it != end;
+       it = tmp) {
+    if (!_timeperiods.contains(it->recurring_timeperiod)) {
+      ++tmp;
+      logging::error(logging::medium)
+        << "core: node events stream: recurring timeperiod '"
+        << it->recurring_timeperiod << "' deleted,"
+           " deleting associated downtime " << it->internal_id;
+      _recurring_downtimes.erase(it);
+    }
+  }
+}
 
 /**
  *  Load the cache.
@@ -687,16 +749,11 @@ void node_events_stream::_load_cache() {
  */
 void node_events_stream::_process_loaded_event(
                            misc::shared_ptr<io::data> const& d) {
-  if (d->type() == neb::host::static_type())
-    _process_host(d.ref_as<neb::host const>());
-  else if (d->type() == neb::service::static_type())
-    _process_service(d.ref_as<neb::service const>());
-  else if (d->type() == neb::host_status::static_type())
-    _process_host_status(d.ref_as<neb::host_status const>());
-  else if (d->type() == neb::service_status::static_type()) {
-    _process_service_status(d.ref_as<neb::service_status const>());
-  }
-  else if (d->type() == neb::acknowledgement::static_type()) {
+  // Write to the node cache.
+  _node_cache.write(d);
+
+  // Managed internally.
+  if (d->type() == neb::acknowledgement::static_type()) {
     neb::acknowledgement const& ack = d.ref_as<neb::acknowledgement const>();
     _acknowledgements[node_id(ack.host_id, ack.service_id)] = ack;
   }
@@ -707,7 +764,12 @@ void node_events_stream::_process_loaded_event(
       node_id(dwn.host_id, dwn.service_id), dwn.internal_id);
     if (_actual_downtime_id < dwn.internal_id)
       _actual_downtime_id = dwn.internal_id + 1;
-    _schedule_downtime(dwn);
+    if (!dwn.is_recurring)
+      _schedule_downtime(dwn);
+    else
+      _spawn_recurring_downtime(
+        timestamp(),
+        dwn);
   }
 }
 
@@ -720,30 +782,9 @@ void node_events_stream::_save_cache() {
     return ;
 
   _cache->transaction();
-  for (QHash<node_id, neb::host>::const_iterator
-         it = _hosts.begin(),
-         end = _hosts.end();
-       it != end;
-       ++it)
-    _cache->add(misc::make_shared(new neb::host(*it)));
-  for (QHash<node_id, neb::service>::const_iterator
-         it = _services.begin(),
-         end = _services.end();
-       it != end;
-       ++it)
-    _cache->add(misc::make_shared(new neb::service(*it)));
-  for (QHash<node_id, neb::host_status>::const_iterator
-         it = _host_statuses.begin(),
-         end = _host_statuses.end();
-       it != end;
-       ++it)
-    _cache->add(misc::make_shared(new neb::host_status(*it)));
-  for (QHash<node_id, neb::service_status>::const_iterator
-         it = _service_statuses.begin(),
-         end = _service_statuses.end();
-       it != end;
-       ++it)
-    _cache->add(misc::make_shared(new neb::service_status(*it)));
+  // Serialize the node cache.
+  _node_cache.serialize(_cache);
+  // Managed internally.
   for (QHash<node_id, neb::acknowledgement>::const_iterator
          it = _acknowledgements.begin(),
          end = _acknowledgements.end();
@@ -756,6 +797,12 @@ void node_events_stream::_save_cache() {
        it != end;
        ++it)
     _cache->add(misc::make_shared(new neb::downtime(*it)));
+  for (QHash<unsigned int, neb::downtime>::const_iterator
+         it = _recurring_downtimes.begin(),
+         end = _recurring_downtimes.end();
+       it != end;
+       ++it)
+    _cache->add(misc::make_shared(new neb::downtime(*it)));
   _cache->commit();
 }
 
@@ -765,11 +812,7 @@ void node_events_stream::_save_cache() {
  *  @param[in] dwn  The downtime to schedule.
  */
 void node_events_stream::_schedule_downtime(
-                           downtime const& dwn) {
-  // Don't trigger already triggered downtimes.
-  if (!dwn.actual_start_time.is_null())
-    return ;
-
+                           downtime const& dwn) {  
   // If this is a fixed downtime or the node is in a non-okay state, schedule it.
   // If not, then it will be scheduled at the reception of a
   // service/host status event.
@@ -778,28 +821,83 @@ void node_events_stream::_schedule_downtime(
   else {
     node_id id(dwn.host_id, dwn.service_id);
     if (id.is_host()) {
-      QHash<node_id, neb::host_status>::const_iterator
-        found(_host_statuses.find(id));
-      if (found != _host_statuses.end()
-            && found->last_hard_state != 0
-            && found->last_hard_state_change >= dwn.start_time
-            && found->last_hard_state_change < dwn.end_time)
+      neb::host_status* hst = _node_cache.get_host_status(id);
+      if (hst != NULL
+            && hst->last_hard_state != 0
+            && hst->last_hard_state_change >= dwn.start_time
+            && hst->last_hard_state_change < dwn.end_time)
         _downtime_scheduler.add_downtime(
-                              found->last_hard_state_change,
-                              found->last_hard_state_change + dwn.duration,
+                              hst->last_hard_state_change,
+                              hst->last_hard_state_change + dwn.duration,
                               dwn);
     }
     else {
-      QHash<node_id, neb::service_status>::const_iterator
-        found(_service_statuses.find(id));
-      if (found != _service_statuses.end()
-            && found->last_hard_state != 0
-            && found->last_hard_state_change >= dwn.start_time
-            && found->last_hard_state_change < dwn.end_time)
+      neb::service_status* sst = _node_cache.get_service_status(id);
+      if (sst != NULL
+            && sst->last_hard_state != 0
+            && sst->last_hard_state_change >= dwn.start_time
+            && sst->last_hard_state_change < dwn.end_time)
         _downtime_scheduler.add_downtime(
-                              found->last_hard_state_change,
-                              found->last_hard_state_change + dwn.duration,
+                              sst->last_hard_state_change,
+                              sst->last_hard_state_change + dwn.duration,
                               dwn);
     }
   }
+}
+
+/**
+ *  Spawn a recurring downtime.
+ *
+ *  @param[in] when  When we should spawn the downtime,
+ *                   null for as soon as possible.
+ *  @param[in] dwn   The downtime.
+ */
+void node_events_stream::_spawn_recurring_downtime(
+                           timestamp when,
+                           downtime const& dwn) {
+  // Only spawn if no other downtimes exist.
+  for (QHash<unsigned int, neb::downtime>::const_iterator
+         it = _downtimes.begin(),
+         end = _downtimes.end();
+       it != end;
+       ++it)
+    if (it->triggered_by == dwn.internal_id)
+      return ;
+
+  // Spawn a new downtime.
+  downtime spawned(dwn);
+  spawned.triggered_by = dwn.internal_id;
+  spawned.is_recurring = false;
+  spawned.internal_id = ++_actual_downtime_id;
+
+  // Get the timeperiod.
+  QHash<QString, time::timeperiod::ptr>::const_iterator
+    tp = _timeperiods.find(dwn.recurring_timeperiod);
+
+  if (tp == _timeperiods.end()) {
+    logging::error(logging::medium)
+      << "neb: node events stream: ignoring recurring downtime "
+      << dwn.internal_id << ", timeperiod '" << dwn.recurring_timeperiod
+      << "' does not exist";
+    return ;
+  }
+
+  // Get the new start and end time.
+  if (when.is_null())
+    when = ::time(NULL);
+  spawned.start_time = (*tp)->get_next_valid(when);
+  spawned.end_time = spawned.start_time + (dwn.end_time - dwn.start_time);
+
+  // Save the downtime.
+  _downtimes[spawned.internal_id] = spawned;
+  _downtime_id_by_nodes.insert(
+    node_id(spawned.host_id, spawned.service_id),
+    spawned.internal_id);
+
+  // Send the downtime.
+  multiplexing::publisher pblsh;
+  pblsh.write(misc::make_shared(new neb::downtime(spawned)));
+
+  // Schedule the downtime.
+  _schedule_downtime(spawned);
 }

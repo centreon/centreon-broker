@@ -67,7 +67,10 @@ directory_dumper::directory_dumper(
   _get_last_timestamps_from_cache();
 
   // Set the watch and the initial events.
-  _set_watch_over_directory();
+  std::set<std::string> files_found = _set_watch_over_directory(path);
+
+  // Remove deleted files.
+  _remove_deleted_files(files_found);
 }
 catch (std::exception const& e) {
   throw (exceptions::msg()
@@ -135,16 +138,22 @@ void directory_dumper::read(misc::shared_ptr<io::data>& d) {
          end(events.end());
        it != end;
        ++it) {
-    if (it->get_type() == file::directory_event::directory_deleted)
+    if (it->get_type() == file::directory_event::directory_deleted
+          && it->get_path() == _path)
       throw (exceptions::msg()
              << "dumper: directory '" << _path << "' deleted");
     else if (it->get_type() == file::directory_event::deleted) {
       misc::shared_ptr<dumper::remove> d(new dumper::remove);
-      d->filename = QFileInfo(it->get_path().c_str()).fileName();
+      d->filename = QString::fromStdString(
+                      _get_relative_filename(it->get_path()));
       d->tag = QString::fromStdString(_tagname);
       _event_list.push_back(std::make_pair(timestamp(), d));
     }
-    else
+    else if (it->get_type() == file::directory_event::created
+               && it->get_file_type() == file::directory_event::directory) {
+      _set_watch_over_directory(it->get_path());
+    }
+    else if (it->get_file_type() == file::directory_event::file)
       _event_list.push_back(_dump_a_file(it->get_path()));
   }
 }
@@ -207,25 +216,29 @@ void directory_dumper::_save_last_timestamps_to_cache() {
 
 /**
  *  Set the watch over the directory.
+ *
+ *  @param[in] path  The directory path.
+ *
+ *  @return  All the files which were found and dumper.
  */
-void directory_dumper::_set_watch_over_directory() {
+std::set<std::string> directory_dumper::_set_watch_over_directory(std::string const& path) {
   // Basic checks.
-  QFileInfo directory_info(QString::fromStdString(_path));
+  QFileInfo directory_info(QString::fromStdString(path));
   if (!directory_info.exists())
     throw (exceptions::msg()
-           << "dumper: directory dumper path '" << _path << "' doesn't exist");
+           << "dumper: directory dumper path '" << path << "' doesn't exist");
   if (!directory_info.isDir())
     throw (exceptions::msg()
-           << "dumper: directory dumper path '" << _path
+           << "dumper: directory dumper path '" << path
            << "' is not a directory");
   if (!directory_info.isReadable())
     throw (exceptions::msg()
-           << "dumper: directory dumper path '" << _path
+           << "dumper: directory dumper path '" << path
            << "' can not be accessed");
 
   // Add the directory to the directory watcher.
   try {
-    _watcher.add_directory(_path);
+    _watcher.add_directory(path);
   } catch (std::exception const& e) {
     throw (exceptions::msg()
            << "dumper: " << e.what());
@@ -234,21 +247,47 @@ void directory_dumper::_set_watch_over_directory() {
   // Dump all the files that weren't already dumped at last once
   // using last modified cached timestamp.
   std::set<std::string> found_files;
-  QDirIterator dir(
-    QDir(QString::fromStdString(_path),
-    QString(),
-    QDir::Name | QDir::IgnoreCase,
-    QDir::Files));
-  while (dir.hasNext()) {
-    QString filepath = dir.next();
-    std::map<std::string, timestamp>::const_iterator found_timestamp(
-        _last_modified_timestamps.find(filepath.toStdString()));
-    if (found_timestamp == _last_modified_timestamps.end()
-          || found_timestamp->second < QFileInfo(filepath).lastModified().toTime_t())
-      _event_list.push_back(_dump_a_file(filepath.toStdString()));
-    found_files.insert(filepath.toStdString());
+  {
+    QDirIterator dir(
+      QDir(QString::fromStdString(path),
+      QString(),
+      QDir::Name | QDir::IgnoreCase,
+      QDir::Files));
+    while (dir.hasNext()) {
+      QString filepath = dir.next();
+      std::map<std::string, timestamp>::const_iterator found_timestamp(
+          _last_modified_timestamps.find(filepath.toStdString()));
+      if (found_timestamp == _last_modified_timestamps.end()
+            || found_timestamp->second < QFileInfo(filepath).lastModified().toTime_t())
+        _event_list.push_back(_dump_a_file(filepath.toStdString()));
+      found_files.insert(filepath.toStdString());
+    }
   }
 
+  // Iterate over directories.
+  {
+    QDirIterator dir(
+      QDir(QString::fromStdString(path),
+      QString(),
+      QDir::Name | QDir::IgnoreCase,
+      QDir::Dirs | QDir::NoDotAndDotDot));
+    while (dir.hasNext()) {
+      QString filepath = dir.next();
+      std::set<std::string> ret = _set_watch_over_directory(
+                                    filepath.toStdString());
+      found_files.insert(ret.begin(), ret.end());
+    }
+  }
+  return (found_files);
+}
+
+/**
+ *  Remove all the files which were deleted.
+ *
+ *  @param[in] found_files  List of files found.
+ */
+void directory_dumper::_remove_deleted_files(
+       std::set<std::string> const& found_files) {
   // Every file that wasn't found has been deleted
   for (std::map<std::string, timestamp>::const_iterator
          it(_last_modified_timestamps.begin()),
@@ -283,8 +322,21 @@ std::pair<timestamp, misc::shared_ptr<io::data> > directory_dumper::_dump_a_file
   QString content = file.readAll();
 
   misc::shared_ptr<dumper::dump> dump(new dumper::dump);
-  dump->filename = QFileInfo(path.c_str()).fileName();
+  dump->filename = QString::fromStdString(_get_relative_filename(path));
   dump->content = content;
   dump->tag = QString::fromStdString(_tagname);
   return (std::make_pair(ts, dump));
+}
+
+/**
+ *  Get a filename relative to the path being watched.
+ *
+ *  @param[in] path  The path being watched.
+ *
+ *  @return  The filename.
+ */
+std::string directory_dumper::_get_relative_filename(std::string const& path) {
+  std::string ret = path;
+  ret.replace(0, _path.size(), "");
+  return (ret);
 }

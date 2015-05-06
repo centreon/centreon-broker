@@ -35,6 +35,7 @@
 #include "com/centreon/broker/notification/builders/node_set_builder.hh"
 #include "com/centreon/broker/notification/builders/node_by_node_id_builder.hh"
 #include "com/centreon/broker/notification/builders/timeperiod_by_id_builder.hh"
+#include "com/centreon/broker/notification/builders/timeperiod_linker.hh"
 #include "com/centreon/broker/notification/builders/notification_method_by_id_builder.hh"
 #include "com/centreon/broker/notification/builders/notification_rule_by_node_builder.hh"
 #include "com/centreon/broker/notification/builders/notification_rule_by_id_builder.hh"
@@ -149,7 +150,9 @@ void state::update_objects_from_db(QSqlDatabase& centreon_db) {
     timeperiod_loader timeperiod;
     composed_timeperiod_builder composed;
     timeperiod_by_id_builder by_id_builder(_timeperiod_by_id);
+    timeperiod_linker linker;
     composed.push_back(by_id_builder);
+    composed.push_back(linker);
     timeperiod.load(&centreon_db, &composed);
   }
   {

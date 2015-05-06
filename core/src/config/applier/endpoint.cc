@@ -194,7 +194,8 @@ void endpoint::apply(
                                                  *it,
                                                  false,
                                                  true,
-                                                 out_to_create));
+                                                 out_to_create,
+                                                 it->filters));
       connect(endp.get(), SIGNAL(finished()), this, SLOT(terminated_output()));
       connect(endp.get(), SIGNAL(terminated()), this, SLOT(terminated_output()));
       connect(endp.get(), SIGNAL(finished()), endp.get(), SLOT(deleteLater()));
@@ -225,7 +226,8 @@ void endpoint::apply(
                                                  *it,
                                                  true,
                                                  false,
-                                                 in_to_create));
+                                                 in_to_create,
+                                                 it->filters));
       connect(endp.get(), SIGNAL(finished()), this, SLOT(terminated_input()));
       connect(endp.get(), SIGNAL(terminated()), this, SLOT(terminated_input()));
       connect(endp.get(), SIGNAL(finished()), endp.get(), SLOT(deleteLater()));
@@ -459,7 +461,8 @@ processing::failover* endpoint::_create_endpoint(
                                   config::endpoint& cfg,
                                   bool is_input,
                                   bool is_output,
-                                  QList<config::endpoint>& l) {
+                                  QList<config::endpoint>& l,
+                                  std::set<std::string>& filters) {
   // Debug message.
   logging::config(logging::medium)
     << "endpoint applier: creating new endpoint '" << cfg.name << "'";
@@ -467,7 +470,7 @@ processing::failover* endpoint::_create_endpoint(
   // Build filtering elements.
   std::set<unsigned int> elements;
   for (std::set<std::string>::const_iterator
-         it(cfg.filters.begin()), end(cfg.filters.end());
+         it(filters.begin()), end(filters.end());
        it != end;
        ++it) {
     io::events::events_container const&
@@ -496,7 +499,8 @@ processing::failover* endpoint::_create_endpoint(
                   *it,
                   is_input || is_output,
                   is_output,
-                  l));
+                  l,
+                  filters));
   }
 
   // Check secondary failovers

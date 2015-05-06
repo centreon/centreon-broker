@@ -39,7 +39,29 @@ using namespace com::centreon::broker;
 
 #define RECEIVER_DIRECTORY "dir_dumper_receiver"
 #define SENDER_DIRECTORY "dir_dumper_sender"
+#define SUB_DIRECTORY "dir_dumper_subdirectory"
 #define SENT_FILENAME "dir_sent_file"
+#define SENT_SUBDIR_FILENAME "dir_sent_subdir_file"
+
+void check_file_content(
+       std::string const& filename,
+       std::string const& content) {
+  // Check for file existence.
+  std::ifstream ifs(filename.c_str());
+  if (!ifs.is_open())
+    throw (exceptions::msg()
+           << "can't open the file: " << filename);
+  char buf[4096];
+  ifs.getline(buf, 4096);
+  if (ifs.fail())
+    throw (exceptions::msg()
+           << "can't read the file: " << filename);
+  ifs.close();
+  std::string got = buf;
+  if (got != content)
+    throw (exceptions::msg()
+           << "unexpected string received, got: " << got);
+}
 
 /**
  *  Check that the fifo dumper works.
@@ -52,8 +74,12 @@ int main() {
   std::string fifo_config_path(tmpnam(NULL));
   std::string receiver_dir = fifo_config_path + "/" + RECEIVER_DIRECTORY;
   std::string expected_file = receiver_dir + "/" + SENT_FILENAME;
+  std::string expected_subdir_file =
+    receiver_dir + "/" + SUB_DIRECTORY + "/" + SENT_SUBDIR_FILENAME;
   std::string sender_dir = fifo_config_path + "/" + SENDER_DIRECTORY;
+  std::string subdirectory = sender_dir + "/" + SUB_DIRECTORY;
   std::string sent_file = sender_dir + "/" + SENT_FILENAME;
+  std::string sent_subdir_file = subdirectory + "/" + SENT_SUBDIR_FILENAME;
   cbd broker;
 
   std::cout << "receiver directory: " << receiver_dir << std::endl;
@@ -63,6 +89,7 @@ int main() {
     ::mkdir(fifo_config_path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
     ::mkdir(receiver_dir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
     ::mkdir(sender_dir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+    ::mkdir(subdirectory.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
 
     // Create the config influxdb xml file.
     test_file file;
@@ -84,30 +111,25 @@ int main() {
       throw (exceptions::msg()
              << "can't start the process to write into the sent file "
              << process->errorString());
+    QProcess* process2 = new QProcess();
+    command = "./util_write_into_file \"test2\n\" " + sent_subdir_file;
+    process2->start(QString::fromStdString(command));
+    if (process2->waitForStarted() == false)
+      throw (exceptions::msg()
+             << "can't start the process to write into the sent subdir file "
+             << process2->errorString());
 
     sleep_for(3);
 
-    // Check for file existence.
-    std::ifstream ifs(expected_file.c_str());
-    if (!ifs.is_open())
-      throw (exceptions::msg()
-             << "can't open the expected file");
-    char buf[4096];
-    ifs.getline(buf, 4096);
-    if (ifs.fail())
-      throw (exceptions::msg()
-             << "can't read the expected file");
-    ifs.close();
-    std::string got = buf;
-    if (got != "test")
-      throw (exceptions::msg()
-             << "unexpected string received, got: " << got);
+    check_file_content(expected_file, "test");
+    check_file_content(expected_subdir_file, "test2");
 
     // Remove file.
     ::remove(sent_file.c_str());
     sleep_for(3);
 
     // Check for file removal
+    std::ifstream ifs;
     ifs.open(expected_file.c_str());
     if (ifs.is_open())
       throw (exceptions::msg()

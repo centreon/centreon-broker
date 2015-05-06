@@ -23,7 +23,6 @@
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/objects/node_id.hh"
 #  include "com/centreon/broker/notification/objects/contact.hh"
-#  include "com/centreon/broker/notification/builders/composed_builder.hh"
 #  include "com/centreon/broker/notification/builders/contact_builder.hh"
 
 CCB_BEGIN()
@@ -34,7 +33,7 @@ namespace       notification {
    *  @brief Contact by id builder.
    */
   class         contact_by_id_builder
-                  : public composed_builder<contact_builder> {
+                  : public contact_builder {
   public:
                 contact_by_id_builder(
                   QHash<unsigned int, objects::contact::ptr>& table,

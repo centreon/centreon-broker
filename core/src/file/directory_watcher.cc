@@ -20,6 +20,8 @@
 #include <sys/select.h>
 #include <sys/inotify.h>
 #include <sys/ioctl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
@@ -101,6 +103,17 @@ void directory_watcher::remove_directory(std::string const& directory) {
 }
 
 /**
+ *  Is this directory watched?
+ *
+ *  @param[in] directory  The directory.
+ *
+ *  @return  True if this directory is watched.
+ */
+bool directory_watcher::is_watched(std::string const& directory) {
+  return (_path_to_id.find(directory) != _path_to_id.end());
+}
+
+/**
  *  @brief Get the events of the watched directories.
  *
  *  This will blocks until new events are available.
@@ -169,7 +182,26 @@ std::vector<directory_event> directory_watcher::get_events() {
       break ;
 
     std::string name = found_path->second + "/" + event->name;
-    ret.push_back(directory_event(name, event_type));
+
+    // Check if it's a file or a directory.
+    directory_event::file_type ft = directory_event::other;
+    if (event_type != directory_event::deleted
+          && event_type != directory_event::directory_deleted) {
+      struct stat st;
+      if (::lstat(name.c_str(), &st) == -1) {
+        const char* error = ::strerror(errno);
+        throw (exceptions::msg()
+               << "directory_watcher: couldn't check the file type: '"
+               << error << "'");
+      }
+      ft = directory_event::other;
+      if (S_ISDIR(st.st_mode))
+        ft = directory_event::directory;
+      else if (S_ISREG(st.st_mode))
+        ft = directory_event::file;
+    }
+
+    ret.push_back(directory_event(name, event_type, ft));
     logging::debug(logging::medium)
       << "file: directory watcher getting an event for path '"
       << name << "' and type " << event_type;

@@ -18,6 +18,8 @@
 */
 
 #include <QMutexLocker>
+#include <QDir>
+#include <QFileInfo>
 #include <fstream>
 #include <sstream>
 #include <errno.h>
@@ -119,6 +121,14 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
       std::string path(_path);
       misc::string::replace(path, "$INSTANCEID$", oss.str());
       misc::string::replace(path, "$FILENAME$", data->filename.toStdString());
+
+      // Get sub directory, if any. Create it if needed.
+      QDir dir = QFileInfo(QString::fromStdString(path)).dir();
+      if (!dir.exists()) {
+        if (!dir.mkpath(dir.path()))
+          throw (exceptions::msg()
+            << "dumper: can't create the directory: " << dir.path());
+      }
 
       // Open file.
       std::ofstream file(path.c_str());

@@ -26,7 +26,6 @@
 #  include "com/centreon/broker/notification/objects/node_id.hh"
 #  include "com/centreon/broker/notification/objects/command.hh"
 #  include "com/centreon/broker/notification/builders/command_builder.hh"
-#  include "com/centreon/broker/notification/builders/composed_builder.hh"
 
 CCB_BEGIN()
 
@@ -38,7 +37,7 @@ namespace         notification {
    *  This class build a map of commands by their id.
    */
   class           command_by_id_builder
-                    : public composed_builder<command_builder> {
+                    : public command_builder {
   public:
                   command_by_id_builder(
                     QHash<unsigned int, objects::command::ptr>& table);

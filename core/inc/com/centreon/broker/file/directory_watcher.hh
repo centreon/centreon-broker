@@ -31,7 +31,7 @@ CCB_BEGIN()
 namespace       file {
   /**
    *  @class directory_watcher directory_watcher.hh "com/centreon/broker/file/directory_watcher.hh"
-   *  @brief Directory dumper stream.
+   *  @brief Directory watcher.
    *
    *  Watch over directories for files modifications.
    */
@@ -42,6 +42,7 @@ namespace       file {
 
     void        add_directory(std::string const& directory);
     void        remove_directory(std::string const& directory);
+    bool        is_watched(std::string const& directory);
 
     std::vector<directory_event>
                 get_events();

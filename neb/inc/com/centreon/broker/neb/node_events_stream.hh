@@ -34,6 +34,9 @@
 #  include "com/centreon/broker/neb/host.hh"
 #  include "com/centreon/broker/neb/service.hh"
 #  include "com/centreon/broker/neb/node_id.hh"
+#  include "com/centreon/broker/database_config.hh"
+#  include "com/centreon/broker/time/timeperiod.hh"
+#  include "com/centreon/broker/neb/node_cache.hh"
 
 CCB_BEGIN()
 
@@ -47,14 +50,19 @@ namespace        neb {
   class          node_events_stream : public io::stream {
   public:
                  node_events_stream(
-                   misc::shared_ptr<persistent_cache> cache);
+                   misc::shared_ptr<persistent_cache> cache,
+                   bool with_timeperiods,
+                   database_config const& conf);
                  ~node_events_stream();
     void         process(bool in = false, bool out = true);
     void         read(misc::shared_ptr<io::data>& d);
     void         update();
     unsigned int write(misc::shared_ptr<io::data> const& d);
-    misc::shared_ptr<io::data>
-                 parse_command(command_file::external_command const& exc);
+    void         parse_command(
+                   command_file::external_command const& exc,
+                   io::stream& stream);
+    void         set_timeperiods(
+                   QHash<QString, time::timeperiod::ptr> const& tps);
 
   private:
                  node_events_stream(node_events_stream const& other);
@@ -63,24 +71,18 @@ namespace        neb {
 
     misc::shared_ptr<persistent_cache>
                  _cache;
+    database_config
+                 _conf;
     bool         _process_out;
 
-    // Host/Service caches.
-    QHash<node_id, neb::host>
-                 _hosts;
-    QHash<node_id, neb::service>
-                 _services;
-    QHash<node_id, neb::host_status>
-                 _host_statuses;
-    QHash<node_id, neb::service_status>
-                 _service_statuses;
-    QHash<QPair<QString, QString>, node_id>
-                 _names_to_node;
+    // Timeperiods.
+    QHash<QString, time::timeperiod::ptr>
+                 _timeperiods;
+    bool         _with_timeperiods;
 
-    void         _process_host(
-                   neb::host const& hst);
-    void         _process_service(
-                   neb::service const& svc);
+    // Host/Service caches.
+    node_cache   _node_cache;
+
     void         _process_host_status(
                    neb::host_status const& hst);
     void         _process_service_status(
@@ -95,9 +97,6 @@ namespace        neb {
                    node_id node,
                    timestamp check_time,
                    short state);
-    node_id      _get_node_by_names(
-                   std::string const& host_name,
-                   std::string const& service_description);
 
     // Acks and downtimes caches.
     QHash<node_id, neb::acknowledgement>
@@ -109,6 +108,8 @@ namespace        neb {
     unsigned int _actual_downtime_id;
     downtime_scheduler
                  _downtime_scheduler;
+    QHash<unsigned int, neb::downtime>
+                 _recurring_downtimes;
 
     enum         ack_type {
                  ack_host = 0,
@@ -120,33 +121,38 @@ namespace        neb {
                  down_host = 2,
                  down_host_service = 3
     };
-    misc::shared_ptr<io::data>
-                 _parse_ack(
+    void         _parse_ack(
                    ack_type type,
                    timestamp t,
                    const char* args,
-                   size_t arg_size);
-    misc::shared_ptr<io::data>
-                 _parse_remove_ack(
+                   size_t arg_size,
+                   io::stream& stream);
+    void         _parse_remove_ack(
                    ack_type type,
                    timestamp t,
                    const char* args,
-                   size_t arg_size);
-    misc::shared_ptr<io::data>
-                 _parse_downtime(
+                   size_t arg_size,
+                   io::stream& stream);
+    void         _parse_downtime(
                    down_type type,
                    timestamp t,
                    const char* args,
-                   size_t arg_size);
-    misc::shared_ptr<io::data>
-                 _parse_remove_downtime(
+                   size_t arg_size,
+                   io::stream& stream);
+    void         _parse_remove_downtime(
                    down_type type,
                    timestamp t,
                    const char* args,
-                   size_t arg_size);
+                   size_t arg_size,
+                   io::stream& stream);
     void          _schedule_downtime(
                     downtime const& dwn);
+    void          _spawn_recurring_downtime(
+                    timestamp when,
+                    downtime const& dwn);
 
+    void         _load_timeperiods();
+    void         _check_downtime_timeperiod_consistency();
     void         _load_cache();
     void         _process_loaded_event(misc::shared_ptr<io::data> const& d);
     void         _save_cache();

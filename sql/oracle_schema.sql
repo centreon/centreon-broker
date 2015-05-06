@@ -403,6 +403,9 @@ CREATE TABLE rt_downtimes (
   started char(1) default NULL,
   triggered_by int default NULL,
   type smallint default NULL,
+  is_recurring char(1) default NULL,
+  recurring_interval int default NULL,
+  recurring_timeperiod varchar(200) default NULL,
 
   PRIMARY KEY (downtime_id),
   UNIQUE (entry_time, host_id, service_id),
