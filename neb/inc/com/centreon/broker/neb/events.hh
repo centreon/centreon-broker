@@ -29,8 +29,6 @@
 #  include "com/centreon/broker/neb/host.hh"
 #  include "com/centreon/broker/neb/host_check.hh"
 #  include "com/centreon/broker/neb/host_dependency.hh"
-#  include "com/centreon/broker/neb/host_group.hh"
-#  include "com/centreon/broker/neb/host_group_member.hh"
 #  include "com/centreon/broker/neb/host_parent.hh"
 #  include "com/centreon/broker/neb/host_status.hh"
 #  include "com/centreon/broker/neb/instance.hh"
@@ -40,8 +38,6 @@
 #  include "com/centreon/broker/neb/service.hh"
 #  include "com/centreon/broker/neb/service_check.hh"
 #  include "com/centreon/broker/neb/service_dependency.hh"
-#  include "com/centreon/broker/neb/service_group.hh"
-#  include "com/centreon/broker/neb/service_group_member.hh"
 #  include "com/centreon/broker/neb/service_status.hh"
 
 #endif // CCB_NEB_EVENTS_HH

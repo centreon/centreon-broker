@@ -532,7 +532,6 @@ void reader::_load(state::meta_services& meta_services) {
  */
 void reader::_load(bam::hst_svc_mapping& mapping) {
   try {
-    // XXX : expand hostgroups and servicegroups
     database_query q(_db);
     q.run_query(
       "SELECT h.host_id, s.service_id, h.host_name, s.service_description,"

@@ -202,14 +202,10 @@ unsigned int node_cache::write(misc::shared_ptr<io::data> const& data) {
     update(*data.staticCast<neb::host>());
   else if (type == neb::host_status::static_type())
     update(*data.staticCast<neb::host_status>());
-  else if (type == neb::host_group_member::static_type())
-    update(*data.staticCast<neb::host_group_member>());
   else if (type == neb::service::static_type())
     update(*data.staticCast<neb::service>());
   else if (type == neb::service_status::static_type())
     update(*data.staticCast<neb::service_status>());
-  else if (type == neb::service_group_member::static_type())
-    update(*data.staticCast<neb::service_group_member>());
   else if (type == neb::custom_variable::static_type()
            || type == neb::custom_variable_status::static_type())
     update(*data.staticCast<neb::custom_variable_status>());
@@ -244,18 +240,6 @@ void node_cache::update(neb::host_status const& hst) {
 /**
  *  Update the node cache.
  *
- *  @param[in] hgm  The data to update.
- */
-void node_cache::update(neb::host_group_member const& hgm) {
-  if (hgm.host_id == 0)
-    return ;
-  QMutexLocker lock(&_mutex);
-  _host_node_states[objects::node_id(hgm.host_id)].update(hgm);
-}
-
-/**
- *  Update the node cache.
- *
  *  @param[in] s  The data to update.
  */
 void node_cache::update(neb::service const& s) {
@@ -275,18 +259,6 @@ void node_cache::update(neb::service_status const& sst) {
     return ;
   QMutexLocker lock(&_mutex);
   _service_node_states[objects::node_id(sst.host_id, sst.service_id)].update(sst);
-}
-
-/**
- *  Update the node cache.
- *
- *  @param[in] sgm  The data to update.
- */
-void node_cache::update(neb::service_group_member const& sgm) {
-  if (sgm.service_id == 0)
-    return ;
-  QMutexLocker lock(&_mutex);
-  _service_node_states[objects::node_id(sgm.host_id, sgm.service_id)].update(sgm);
 }
 
 /**
@@ -359,41 +331,6 @@ node_cache::service_node_state const& node_cache::get_service(
            << "notification: service (" << id.get_host_id() << ", "
            << id.get_service_id() << " was not found in cache");
   return (*found);
-}
-
-/**
- *  Get all the node contained in a group.
- *
- *  @param[in] group_name     The name of the group.
- *  @param[in] is_host_group  Is this a host group or a service group?
- *
- *  @return  A list of the name of the node contained in a group.
- */
-std::vector<std::string> node_cache::get_all_node_contained_in(
-                                       std::string const& group_name,
-                                       bool is_host_group) const {
-  std::vector<std::string> res;
-
-  if (is_host_group) {
-    for (QHash<objects::node_id, host_node_state>::const_iterator
-           it(_host_node_states.begin()),
-           end(_host_node_states.end());
-        it != end;
-        ++it)
-      if (it->get_groups().count(group_name) != 0)
-        res.push_back(it->get_node().host_name.toStdString());
-  }
-  else {
-    for (QHash<objects::node_id, service_node_state>::const_iterator
-           it(_service_node_states.begin()),
-           end(_service_node_states.end());
-        it != end;
-        ++it)
-      if (it->get_groups().count(group_name) != 0)
-        res.push_back(it->get_node().service_description.toStdString());
-  }
-
-  return (res);
 }
 
 /**

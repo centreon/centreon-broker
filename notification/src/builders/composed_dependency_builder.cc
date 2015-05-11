@@ -57,46 +57,6 @@ void composed_dependency_builder::dependency_node_id_child_relation(
     (*it)->dependency_node_id_child_relation(dep_id, id);
 }
 
-void composed_dependency_builder::dependency_hostgroup_parent_relation(
-                                    unsigned int dep_id,
-                                    unsigned int hostgroup_id) {
-  for (composed_builder<dependency_builder>::iterator it(begin()),
-                                                      it_end(end());
-       it != it_end;
-       ++it)
-    (*it)->dependency_hostgroup_parent_relation(dep_id, hostgroup_id);
-}
-
-void composed_dependency_builder::dependency_hostgroup_child_relation(
-                                    unsigned int dep_id,
-                                    unsigned int hostgroup_id) {
-  for (composed_builder<dependency_builder>::iterator it(begin()),
-                                                      it_end(end());
-       it != it_end;
-       ++it)
-    (*it)->dependency_hostgroup_child_relation(dep_id, hostgroup_id);
-}
-
-void composed_dependency_builder::dependency_servicegroup_child_relation(
-                                    unsigned int dep_id,
-                                    unsigned int servicegroup_id) {
-  for (composed_builder<dependency_builder>::iterator it(begin()),
-                                                      it_end(end());
-       it != it_end;
-       ++it)
-    (*it)->dependency_servicegroup_child_relation(dep_id, servicegroup_id);
-}
-
-void composed_dependency_builder::dependency_servicegroup_parent_relation(
-                                    unsigned int dep_id,
-                                    unsigned int servicegroup_id) {
-  for (composed_builder<dependency_builder>::iterator it(begin()),
-                                                      it_end(end());
-       it != it_end;
-       ++it)
-    (*it)->dependency_servicegroup_parent_relation(dep_id, servicegroup_id);
-}
-
 void composed_dependency_builder::set_notification_failure_options(
                                     unsigned int dep_id,
                                     std::string const& line) {

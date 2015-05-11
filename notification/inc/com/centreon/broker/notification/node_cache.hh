@@ -37,8 +37,6 @@
 #  include "com/centreon/broker/neb/service_status.hh"
 #  include "com/centreon/broker/neb/host.hh"
 #  include "com/centreon/broker/neb/host_status.hh"
-#  include "com/centreon/broker/neb/host_group_member.hh"
-#  include "com/centreon/broker/neb/service_group_member.hh"
 #  include "com/centreon/broker/neb/custom_variable_status.hh"
 #  include "com/centreon/broker/multiplexing/hooker.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
@@ -56,9 +54,9 @@ namespace         notification {
    */
   class           node_cache : public multiplexing::hooker {
   public:
-    typedef object_cache<neb::host, neb::host_status, neb::host_group_member>
+    typedef object_cache<neb::host, neb::host_status>
                   host_node_state;
-    typedef object_cache<neb::service, neb::service_status, neb::service_group_member>
+    typedef object_cache<neb::service, neb::service_status>
                   service_node_state;
 
                   node_cache(misc::shared_ptr<persistent_cache> cache);
@@ -74,10 +72,8 @@ namespace         notification {
 
     void          update(neb::host const& hst);
     void          update(neb::host_status const& hs);
-    void          update(neb::host_group_member const& hgm);
     void          update(neb::service const& svc);
     void          update(neb::service_status const& ss);
-    void          update(neb::service_group_member const& sgm);
     void          update(neb::custom_variable_status const& cvs);
     void          update(neb::acknowledgement const& ack);
     void          update(neb::downtime const& dwn);
@@ -86,10 +82,6 @@ namespace         notification {
                   get_host(objects::node_id id) const;
     service_node_state const&
                   get_service(objects::node_id id) const;
-    std::vector<std::string>
-                  get_all_node_contained_in(
-                    std::string const& group_name,
-                    bool is_host_group) const;
 
     bool          node_in_downtime(objects::node_id node) const;
     bool          node_acknowledged(objects::node_id node) const;

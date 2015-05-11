@@ -38,7 +38,6 @@
 #  include "com/centreon/broker/notification/loaders/macro_loader.hh"
 #  include "com/centreon/broker/notification/loaders/notification_method_loader.hh"
 #  include "com/centreon/broker/notification/loaders/notification_rule_loader.hh"
-#  include "com/centreon/broker/notification/loaders/nodegroup_loader.hh"
 #  include "com/centreon/broker/notification/builders/node_set_builder.hh"
 #  include "com/centreon/broker/notification/notification_scheduler.hh"
 
@@ -86,9 +85,6 @@ namespace             notification {
                       get_all_hosts_in_state(short state) const;
     QList<objects::node::ptr>
                       get_all_services_in_state(short state) const;
-    objects::nodegroup::ptr
-                      get_nodegroup_by_name(std::string const& name) const;
-
     int               get_date_format() const;
 
   private:
@@ -114,8 +110,6 @@ namespace             notification {
                       _notification_rules_by_node;
     QHash<unsigned int, objects::notification_rule::ptr>
                       _notification_rule_by_id;
-    QHash<std::string, objects::nodegroup::ptr>
-                      _nodegroups_by_name;
 
     int               _date_format;
     QHash<std::string, std::string>
