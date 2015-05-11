@@ -424,16 +424,6 @@ int main() {
          "            service_service_id)"
          "  VALUES (1, 1), (1, 2)",
          "could not link host and services");
-    db.centreon_run(
-         "INSERT INTO cfg_hostgroups (hg_name, hg_alias, organization_id)"
-          "           VALUES ('HostGroup1', 'HostGroupAlias1', 1),"
-          "                  ('HostGroup2', 'HostGroupAlias2', 1)",
-         "could not create the host group");
-    db.centreon_run(
-         "INSERT INTO cfg_servicegroups (sg_name, sg_alias, organization_id)"
-          "           VALUES ('ServiceGroup1', 'ServiceGroupAlias1', 1),"
-          "                  ('ServiceGroup2', 'ServiceGroupAlias2', 1)",
-         "could not create the service group");
 
     // Create contact in DB.
     db.centreon_run(
@@ -557,8 +547,8 @@ int main() {
         {macros_struct::between, NULL, 0, NULL, 1, ::difftime(now, start), "HOSTDURATIONSEC"},
         {macros_struct::integer, NULL, 0, NULL, 0, 0, "HOSTDOWNTIME"},
         {macros_struct::between, NULL, 0, NULL, 0, 0, "HOSTPERCENTCHANGE"},
-        {macros_struct::string, "HostGroup1", 0, NULL, 0, 0, "HOSTGROUPNAME"},
-        {macros_struct::string, "HostGroup1, HostGroup2", 0, NULL, 0, 0, "HOSTGROUPNAMES"},
+        {macros_struct::string, "", 0, NULL, 0, 0, "HOSTGROUPNAME"},
+        {macros_struct::string, "", 0, NULL, 0, 0, "HOSTGROUPNAMES"},
         {macros_struct::between, NULL, 0, NULL, start, now, "LASTHOSTCHECK"},
         {macros_struct::between, NULL, 0, NULL, start, now, "LASTHOSTSTATECHANGE"},
         {macros_struct::between, NULL, 0, NULL, start, now, "LASTHOSTUP"},
@@ -588,8 +578,8 @@ int main() {
         {macros_struct::between, NULL, 0, NULL, 1, ::difftime(now, start), "SERVICEDURATIONSEC"},
         {macros_struct::integer, NULL, 0, NULL, 0, 0, "SERVICEDOWNTIME"},
         {macros_struct::between, NULL, 0, NULL, 6.25, 6.25, "SERVICEPERCENTCHANGE"},
-        {macros_struct::string, "ServiceGroup1", 0, NULL, 0, 0, "SERVICEGROUPNAME"},
-        {macros_struct::string, "ServiceGroup1, ServiceGroup2", 0, NULL, 0, 0, "SERVICEGROUPNAMES"},
+        {macros_struct::string, "", 0, NULL, 0, 0, "SERVICEGROUPNAME"},
+        {macros_struct::string, "", 0, NULL, 0, 0, "SERVICEGROUPNAMES"},
         {macros_struct::between, NULL, 0, NULL, start, now, "LASTSERVICECHECK"},
         {macros_struct::between, NULL, 0, NULL, start, now, "LASTSERVICESTATECHANGE"},
         {macros_struct::between, NULL, 0, NULL, start, now, "LASTSERVICEOK"},
@@ -620,10 +610,10 @@ int main() {
         {macros_struct::string, "Contact1", 0, NULL, 0, 0, "NOTIFICATIONRECIPIENT"},
         {macros_struct::integer, NULL, 1, NULL, 0, 0, "HOSTNOTIFICATIONNUMBER"},
         {macros_struct::integer, NULL, 1, NULL, 0, 0, "SERVICENOTIFICATIONNUMBER"},
-        {macros_struct::string, "HostGroupAlias1", 0, NULL, 0, 0, "HOSTGROUPALIAS"},
-        {macros_struct::string, "Host1", 0, NULL, 0, 0, "HOSTGROUPMEMBERS"},
-        {macros_struct::string, "ServiceGroupAlias1", 0, NULL, 0, 0, "SERVICEGROUPALIAS"},
-        {macros_struct::string, "Service1, Service2", 0, NULL, 0, 0, "SERVICEGROUPMEMBERS"},
+        {macros_struct::string, "", 0, NULL, 0, 0, "HOSTGROUPALIAS"},
+        {macros_struct::string, "", 0, NULL, 0, 0, "HOSTGROUPMEMBERS"},
+        {macros_struct::string, "", 0, NULL, 0, 0, "SERVICEGROUPALIAS"},
+        {macros_struct::string, "", 0, NULL, 0, 0, "SERVICEGROUPMEMBERS"},
         {macros_struct::string, "Contact1", 0, NULL, 0, 0, "CONTACTNAME"},
         {macros_struct::string, "Contact1", 0, NULL, 0, 0, "CONTACTALIAS"},
         {macros_struct::string, "ContactEmail1", 0, NULL, 0, 0, "CONTACTEMAIL"},
