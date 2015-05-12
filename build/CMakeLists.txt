@@ -204,8 +204,8 @@ if (WITH_DAEMONS)
 endif ()
 
 if (WITH_CONFIGURE_FILE)
-  configure_file("${PROJECT_SOURCE_DIR}/config/cbmod.xml.in"
-    "${PROJECT_SOURCE_DIR}/config/cbmod.xml"
+  configure_file("${PROJECT_SOURCE_DIR}/config/central-cbmod.xml.in"
+    "${PROJECT_SOURCE_DIR}/config/central-cbmod.xml"
     @ONLY)
   configure_file("${PROJECT_SOURCE_DIR}/config/central-rrd.xml.in"
     "${PROJECT_SOURCE_DIR}/config/central-rrd.xml"

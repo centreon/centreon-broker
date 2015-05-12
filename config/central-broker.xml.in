@@ -9,40 +9,28 @@
  <log_timestamp>yes</log_timestamp>
  <name>central-broker</name>
  <input>
-  <name>extcommand-Central</name>
+  <name>central-broker-external-command-input</name>
   <type>dump_fifo</type>
   <path>/var/lib/centreon-broker/extcommand-1.fifo</path>
-  <tagname>extcommand-Central</tagname>
+  <tagname>central-broker-external-command</tagname>
  </input>
  <input>
-  <name>extcommand-Poller-1</name>
+  <name>central-engine-external-command-input</name>
   <type>dump_fifo</type>
   <path>/var/lib/centreon-broker/extcommand-2.fifo</path>
-  <tagname>extcommand-Poller-1</tagname>
+  <tagname>central-engine-external-command</tagname>
  </input>
  <input>
-  <name>cfg-engine-Central</name>
+  <name>central-cfg-engine</name>
   <type>dump_dir</type>
   <path>/tmp/engine/apply/1</path>
-  <tagname>cfg-engine-Central</tagname>
+  <tagname>cfg-engine-central</tagname>
  </input>
  <input>
-  <name>cfg-engine-Poller-1</name>
-  <type>dump_dir</type>
-  <path>/tmp/engine/apply/2</path>
-  <tagname>cfg-engine-Poller-1</tagname>
- </input>
- <input>
-  <name>cfg-broker-Central</name>
+  <name>central-cfg-broker</name>
   <type>dump_dir</type>
   <path>/tmp/broker/apply/1</path>
-  <tagname>cfg-broker-Central</tagname>
- </input>
- <input>
-  <name>cfg-broker-Poller-1</name>
-  <type>dump_dir</type>
-  <path>/tmp/broker/apply/2</path>
-  <tagname>cfg-broker-Poller-1</tagname>
+  <tagname>cfg-broker-central</tagname>
  </input>
  <input>
   <buffering_timeout>10</buffering_timeout>
