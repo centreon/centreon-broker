@@ -203,6 +203,25 @@ if (WITH_DAEMONS)
     RENAME "cbd")
 endif ()
 
+if (WITH_CONFIGURE_FILE)
+  configure_file("${PROJECT_SOURCE_DIR}/config/cbmod.xml.in"
+    "${PROJECT_SOURCE_DIR}/config/cbmod.xml"
+    @ONLY)
+  configure_file("${PROJECT_SOURCE_DIR}/config/central-rrd.xml.in"
+    "${PROJECT_SOURCE_DIR}/config/central-rrd.xml"
+    @ONLY)
+  configure_file("${PROJECT_SOURCE_DIR}/config/central-broker.xml.in"
+    "${PROJECT_SOURCE_DIR}/config/central-broker.xml"
+    @ONLY)
+
+  install(FILES "${PROJECT_SOURCE_DIR}/config/cbmod.xml"
+    DESTINATION "${PREFIX_CONF}")
+  install(FILES "${PROJECT_SOURCE_DIR}/config/central-rrd.xml"
+    DESTINATION "${PREFIX_CONF}")
+  install(FILES "${PROJECT_SOURCE_DIR}/config/central-broker.xml"
+    DESTINATION "${PREFIX_CONF}")
+endif ()
+
 # Monitoring engine (for testing).
 if (WITH_MONITORING_ENGINE)
   set(MONITORING_ENGINE_ADDITIONAL "")
