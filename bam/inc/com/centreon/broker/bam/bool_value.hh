@@ -43,6 +43,7 @@ namespace        bam {
     bool_value&  operator=(bool_value const& right);
     virtual bool value_hard() = 0;
     virtual bool value_soft() = 0;
+    virtual bool state_known() const = 0;
   };
 }
 

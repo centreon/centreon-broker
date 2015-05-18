@@ -113,3 +113,12 @@ void bool_not::_internal_copy(bool_not const& right) {
   _value = right._value;
   return ;
 }
+
+/**
+ *  Get if the state is known, i.e has been computed at least once.
+ *
+ *  @return  True if the state is known.
+ */
+bool bool_not::state_known() const {
+  return (!_value.isNull() && _value->state_known());
+}
