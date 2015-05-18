@@ -783,7 +783,11 @@ int main() {
     commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;12;2;output2 for (1, 12)");
 
     // Sleep a while.
+<<<<<<< HEAD
     sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
+=======
+    sleep_for(7);
+>>>>>>> c6b3809... Bam: working boolean exp retention unit test.
 
     // #2
     time_t t3(time(NULL));
