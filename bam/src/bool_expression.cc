@@ -101,6 +101,15 @@ short bool_expression::get_state() const {
 }
 
 /**
+ *  Get if the state is known, i.e has been computed at least once.
+ *
+ *  @return  True if the state is known.
+ */
+bool bool_expression::state_known() const {
+  return (_expression->state_known());
+}
+
+/**
  *  Set evaluable boolean expression.
  *
  *  @param[in] expression Boolean expression.

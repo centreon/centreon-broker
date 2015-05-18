@@ -32,7 +32,8 @@ bool_service::bool_service()
     _state_expected(0),
     _state_hard(0),
     _state_soft(0),
-    _value_if_state_match(true) {}
+    _value_if_state_match(true),
+    _state_known(false) {}
 
 /**
  *  Copy constructor.
@@ -157,6 +158,7 @@ void bool_service::service_update(
       && (status->service_id == _service_id)) {
     _state_hard = status->last_hard_state;
     _state_soft = status->current_state;
+    _state_known = true;
     propagate_update(visitor);
   }
   return ;
@@ -185,6 +187,15 @@ bool bool_service::value_soft() {
 }
 
 /**
+ *  Get if the state is known, i.e has been computed at least once.
+ *
+ *  @return  True if the state is known.
+ */
+bool bool_service::state_known() const {
+  return (_state_known);
+}
+
+/**
  *  Copy internal data members.
  *
  *  @param[in] right Object to copy.
@@ -196,5 +207,6 @@ void bool_service::_internal_copy(bool_service const& right) {
   _state_hard = right._state_hard;
   _state_soft = right._state_soft;
   _value_if_state_match = right._value_if_state_match;
+  _state_known = right._state_known;
   return ;
 }

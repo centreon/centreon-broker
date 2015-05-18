@@ -59,6 +59,7 @@ namespace         bam {
                     io::stream* visitor = NULL);
     bool          value_hard();
     bool          value_soft();
+    bool          state_known() const;
 
   private:
     void          _internal_copy(bool_service const& right);
@@ -69,6 +70,7 @@ namespace         bam {
     short         _state_hard;
     short         _state_soft;
     bool          _value_if_state_match;
+    bool          _state_known;
   };
 }
 

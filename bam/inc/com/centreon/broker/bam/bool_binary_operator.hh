@@ -48,6 +48,7 @@ namespace                 bam {
                             io::stream* visitor = NULL);
     void                  set_left(misc::shared_ptr<bool_value>& left);
     void                  set_right(misc::shared_ptr<bool_value>& right);
+    bool                  state_known() const;
 
   protected:
     misc::shared_ptr<bool_value>
