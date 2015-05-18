@@ -260,7 +260,8 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
       }
     }
     else if (data->type() == bam::bool_status::static_type()) {
-      bool_status* status(static_cast<bool_status*>(data.data()));
+      // XXX: bool status should be deleted. Talk to Mathieu about it.
+      /*bool_status* status(static_cast<bool_status*>(data.data()));
       logging::debug(logging::low) << "BAM: processing boolexp status (id "
         << status->bool_id << ", state " << status->state << ")";
       _bool_exp_update.bind_value(":state", status->state);
@@ -270,7 +271,7 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
         throw (exceptions::msg()
                << "BAM: could not update boolean expression "
                << status->bool_id << ": " << e.what());
-      }
+      }*/
     }
     else if (data->type() == bam::kpi_status::static_type()) {
       kpi_status* status(static_cast<kpi_status*>(data.data()));

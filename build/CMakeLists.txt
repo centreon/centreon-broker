@@ -882,6 +882,13 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
+  # BAM Boolexp retention.
+  set(TEST_NAME "running_bam_boolexp_retention")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/bam_boolexp_retention.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
   # Meta-services.
   set(TEST_NAME "running_meta_service")
   add_executable("${TEST_NAME}"
