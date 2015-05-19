@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <QPair>
 #include <QHash>
+#include "com/centreon/broker/neb/tokenizer.hh"
 #include "com/centreon/broker/neb/node_id.hh"
 #include "com/centreon/broker/neb/node_events_stream.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -546,95 +547,74 @@ void node_events_stream::_parse_downtime(
                            char const* args,
                            size_t arg_size,
                            io::stream& stream) {
-  buffer host_name(arg_size);
-  buffer service_description(arg_size);
-  unsigned long start_time = 0;
-  unsigned long end_time = 0;
-  int fixed = 0;
-  unsigned int trigger_id = 0;
-  unsigned int duration = 0;
-  buffer author(arg_size);
-  buffer comment(arg_size);
-  buffer recurring_timeperiod(arg_size);
-  unsigned int recurring_interval = 0;
-  bool ret = false;
+  tokenizer tok(args);
 
   (void)t;
   logging::debug(logging::medium)
     << "notification: parsing downtime command: '" << args << "'";
 
-  if (type == down_host)
-    ret = (::sscanf(
-             args,
-             "%[^;];%lu;%lu;%i;%u;%u;%[^;];%[^;];%[^;];%u",
-             host_name.get(),
-             &start_time,
-             &end_time,
-             &fixed,
-             &trigger_id,
-             &duration,
-             author.get(),
-             comment.get(),
-             recurring_timeperiod.get(),
-             &recurring_interval) == 10);
-  else
-    ret = (::sscanf(
-             args,
-             "%[^;];%[^;];%lu;%lu;%i;%u;%u;%[^;];%[^;];%[^;];%u",
-             host_name.get(),
-             service_description.get(),
-             &start_time,
-             &end_time,
-             &fixed,
-             &trigger_id,
-             &duration,
-             author.get(),
-             comment.get(),
-             recurring_timeperiod.get(),
-             &recurring_interval) == 11);
+  try {
+    tok.begin();
+    std::string host_name =     tok.get_next_token<std::string>();
+    std::string service_description =
+      (type == down_host ? "" : tok.get_next_token<std::string>());
+    unsigned long start_time =  tok.get_next_token<unsigned long>();
+    unsigned long end_time =    tok.get_next_token<unsigned long>();
+    int fixed =                 tok.get_next_token<int>();
+    unsigned int trigger_id =   tok.get_next_token<unsigned int>();
+    unsigned int duration =     tok.get_next_token<unsigned int>();
+    std::string author =        tok.get_next_token<std::string>(true);
+    std::string comment =       tok.get_next_token<std::string>(true);
+    std::string recurring_timeperiod =
+                                tok.get_next_token<std::string>(true);
+    unsigned int recurring_interval =
+                                tok.get_next_token<unsigned int>(true);
+    tok.end();
 
-  if (!ret)
-    throw (exceptions::msg() << "error while parsing downtime arguments");
+    node_id id = _node_cache.get_node_by_names(
+                   host_name,
+                   service_description);
 
-  node_id id = _node_cache.get_node_by_names(
-                 host_name.get(),
-                 service_description.get());
+    misc::shared_ptr<neb::downtime>
+      d(new neb::downtime);
+    d->author = QString::fromStdString(author);
+    d->comment = QString::fromStdString(comment);
+    d->start_time = start_time;
+    d->end_time = end_time;
+    d->duration = fixed ? end_time - start_time : duration;
+    d->fixed = (fixed == 1);
+    d->downtime_type = type;
+    d->host_id = id.get_host_id();
+    d->service_id = id.get_service_id();
+    d->was_started = false;
+    d->internal_id = ++_actual_downtime_id;
+    d->is_recurring = recurring_interval != 0;
+    d->triggered_by = trigger_id;
+    d->recurring_interval = recurring_interval;
+    d->recurring_timeperiod = QString::fromStdString(recurring_timeperiod);
 
-  misc::shared_ptr<neb::downtime>
-    d(new neb::downtime);
-  d->author = QString::fromStdString(author.get());
-  d->comment = QString::fromStdString(comment.get());
-  d->start_time = start_time;
-  d->end_time = end_time;
-  d->duration = fixed ? end_time - start_time : duration;
-  d->fixed = (fixed == 1);
-  d->downtime_type = type;
-  d->host_id = id.get_host_id();
-  d->service_id = id.get_service_id();
-  d->was_started = false;
-  d->internal_id = ++_actual_downtime_id;
-  d->is_recurring = recurring_interval != 0;
-  d->triggered_by = trigger_id;
-  d->recurring_interval = recurring_interval;
-  d->recurring_timeperiod = QString::fromStdString(recurring_timeperiod.get());
+    // Save the downtime.
+    if (!d->is_recurring) {
+      _downtimes[d->internal_id] = *d;
+      _downtime_id_by_nodes.insert(id, d->internal_id);
+    }
+    else {
+      _recurring_downtimes[d->internal_id] = *d;
+    }
 
-  // Save the downtime.
-  if (!d->is_recurring) {
-    _downtimes[d->internal_id] = *d;
-    _downtime_id_by_nodes.insert(id, d->internal_id);
+    // Write the downtime.
+    stream.write(d);
+
+    // Schedule the downtime.
+    if (!d->is_recurring)
+      _schedule_downtime(*d);
+    else
+      _spawn_recurring_downtime(timestamp(), *d);
+
+  } catch (std::exception const& e) {
+    throw (exceptions::msg()
+           << "error while parsing downtime arguments: " << e.what());
   }
-  else {
-    _recurring_downtimes[d->internal_id] = *d;
-  }
-
-  // Write the downtime.
-  stream.write(d);
-
-  // Schedule the downtime.
-  if (!d->is_recurring)
-    _schedule_downtime(*d);
-  else
-    _spawn_recurring_downtime(timestamp(), *d);
 }
 
 /**
