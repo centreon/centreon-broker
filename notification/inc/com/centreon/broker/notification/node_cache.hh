@@ -84,6 +84,7 @@ namespace         notification {
                   get_service(objects::node_id id) const;
 
     bool          node_in_downtime(objects::node_id node) const;
+    unsigned int  node_downtimes(objects::node_id node) const;
     bool          node_acknowledged(objects::node_id node) const;
 
   private:

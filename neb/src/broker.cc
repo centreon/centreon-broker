@@ -206,7 +206,7 @@ extern "C" {
 
       // Register neb layer.
       io::protocols::instance().reg(
-                                  "nodeevents",
+                                  "node_events",
                                   neb::node_events_factory(),
                                   1,
                                   7);

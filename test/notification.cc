@@ -635,7 +635,7 @@ int main() {
     start = ::time(NULL);
     commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;Host1;Service2;0;Critical submitted by unit test");
-    sleep_for(7);
+    sleep_for(10);
 
     // Check file creation.
     get_file(flag_file2, error, ss);
@@ -652,10 +652,10 @@ int main() {
     time_t end = start + 5;
     ss.str("");
     ss << "SCHEDULE_SVC_DOWNTIME;Host1;Service2;" << start << ";"
-       << end << ";1;0;5;test author;some comments";
+       << end << ";1;0;5;test author;some comments;test;0";
     broker_commander.execute(ss.str());
 
-    sleep_for(3);
+    sleep_for(10);
 
     get_file(flag_file3, error, ss);
     {

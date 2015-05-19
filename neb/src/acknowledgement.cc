@@ -43,6 +43,7 @@ acknowledgement::acknowledgement()
     host_id(0),
     is_sticky(false),
     notify_contacts(false),
+    notify_only_if_not_already_acknowledged(false),
     persistent_comment(false),
     service_id(0),
     state(0) {}
@@ -118,6 +119,8 @@ void acknowledgement::_internal_copy(acknowledgement const& other) {
   host_id = other.host_id;
   is_sticky = other.is_sticky;
   notify_contacts = other.notify_contacts;
+  notify_only_if_not_already_acknowledged
+    = other.notify_only_if_not_already_acknowledged;
   persistent_comment = other.persistent_comment;
   service_id = other.service_id;
   state = other.state;
@@ -173,6 +176,9 @@ mapping::entry const acknowledgement::entries[] = {
   mapping::entry(
     &acknowledgement::state,
     "state"),
+  mapping::entry(
+    &acknowledgement::notify_only_if_not_already_acknowledged,
+    "notify_only_if_not_already_acknowledged"),
   mapping::entry()
 };
 

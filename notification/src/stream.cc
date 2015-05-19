@@ -593,7 +593,10 @@ void stream::_process_ack(neb::acknowledgement const& event) {
     << event.host_id << ", " << event.service_id << ")";
 
   // Add the ack.
-  if (event.notify_contacts) {
+  if (event.notify_contacts &&
+        (!event.notify_only_if_not_already_acknowledged
+           || (event.notify_only_if_not_already_acknowledged
+                 && !_node_cache.node_acknowledged(id)))) {
     time_t when_to_schedule(::time(NULL) + 1);
     action a;
     a.set_type(action::notification_processing);

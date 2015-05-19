@@ -67,6 +67,7 @@ namespace               neb {
     unsigned int        host_id;
     bool                is_sticky;
     bool                notify_contacts;
+    bool                notify_only_if_not_already_acknowledged;
     bool                persistent_comment;
     unsigned int        service_id;
     short               state;

@@ -506,6 +506,9 @@ namespace        notification {
   std::string  get_service_duration_sec(
                  macro_context const& context);
 
+  std::string  get_node_downtime_number(
+                 macro_context const& context);
+
   std::string  get_timet_string(
                  macro_context const& context);
 

@@ -345,6 +345,17 @@ bool node_cache::node_in_downtime(objects::node_id node) const {
 }
 
 /**
+ *  Return the number of active downtimes associated to a node.
+ *
+ *  @param[in] node  The node.
+ *
+ *  @return          Number of active downtimes associated to a node.
+ */
+unsigned int node_cache::node_downtimes(objects::node_id node) const {
+  return (_downtime_id_by_nodes.count(node));
+}
+
+/**
  *  Is this node acknowledged ?
  *
  *  @param[in] node  The node.

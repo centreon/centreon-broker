@@ -276,13 +276,9 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
   map.insert(
     "HOSTDURATIONSEC",
     get_host_duration_sec);
-  // XXX map.insert(
-  //   "HOSTDOWNTIME",
-  //   &get_host_status_member_as_string<
-  //     neb::host_service_status,
-  //     short,
-  //     &neb::host_service_status::scheduled_downtime_depth,
-  //     0>);
+  map.insert(
+    "HOSTDOWNTIME",
+     &get_node_downtime_number);
   map.insert(
     "HOSTPERCENTCHANGE",
     &get_host_status_member_as_string<

@@ -308,6 +308,19 @@ std::string com::centreon::broker::notification::get_host_duration_sec(
 }
 
 /**
+ *  Get the number of downtime associated with a node.
+ *
+ *  @param[in] context  The context from where the macro is being executed.
+ *
+ *  @return  The value of the macro.
+ */
+std::string com::centreon::broker::notification::get_node_downtime_number(
+              macro_context const& context) {
+  unsigned long num = context.get_cache().node_downtimes(context.get_id());
+  return (to_string<unsigned long, 0>(num));
+}
+
+/**
  *  Get the duration of a service state change in seconds.
  *
  *  @param[in] context  The context from where the macro is being executed.
