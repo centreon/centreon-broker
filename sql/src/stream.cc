@@ -232,9 +232,12 @@ void stream::_clean_tables(int instance_id) {
 void stream::_prepare() {
   // Prepare insert queries.
   std::set<std::string> excluded;
+  excluded.clear();
+  excluded.insert("notify_only_if_not_already_acknowledged");
   _prepare_insert<neb::acknowledgement>(
                          _acknowledgement_insert,
-                         "rt_acknowledgements");
+                         "rt_acknowledgements",
+                         excluded);
   _prepare_insert<neb::custom_variable>(
                          _custom_variable_insert,
                          "rt_customvariables");
@@ -305,11 +308,13 @@ void stream::_prepare() {
   id["entry_time"] = false;
   id["host_id"] = false;
   id["service_id"] = true;
+  excluded.clear();
+  excluded.insert("notify_only_if_not_already_acknowledged");
   _prepare_update<neb::acknowledgement>(
                          _acknowledgement_update,
                          "rt_acknowledgements",
-                         id);
-
+                         id,
+                         excluded);
   id.clear();
   id["host_id"] = false;
   id["name"] = false;
