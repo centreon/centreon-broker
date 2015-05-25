@@ -68,7 +68,6 @@ namespace           bam {
     database_config _storage_cfg;
     database        _db;
     database_query  _ba_update;
-    database_query  _bool_exp_update;
     database_query  _kpi_update;
     database_query  _meta_service_update;
     int             _pending_events;

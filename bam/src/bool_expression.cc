@@ -20,7 +20,6 @@
 
 #include <ctime>
 #include "com/centreon/broker/bam/bool_expression.hh"
-#include "com/centreon/broker/bam/bool_status.hh"
 #include "com/centreon/broker/bam/bool_value.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -82,9 +81,6 @@ bool bool_expression::child_has_update(
     // Logging.
     logging::debug(logging::low) << "BAM: boolean expression " << _id
       << " is getting notified of child update";
-
-    // Generate status event.
-    visit(visitor);
   }
   return (true);
 }
@@ -138,28 +134,6 @@ void bool_expression::set_id(unsigned int id) {
  */
 void bool_expression::set_impact_if(bool impact_if) {
   _impact_if = impact_if;
-  return ;
-}
-
-/**
- *  Visit boolean expression.
- *
- *  @param[out] visitor  Object that will receive status.
- */
-void bool_expression::visit(io::stream* visitor) {
-  if (visitor) {
-    // Generate status events.
-    bool hard_value(_expression->value_hard());
-    {
-      misc::shared_ptr<bool_status> b(new bool_status);
-      b->bool_id = _id;
-      b->state = hard_value;
-      logging::debug(logging::low)
-        << "BAM: generating status of boolean expression " << b->bool_id
-        << " (state " << b->state << ")";
-      visitor->write(b.staticCast<io::data>());
-    }
-  }
   return ;
 }
 

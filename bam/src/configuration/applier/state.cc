@@ -106,7 +106,6 @@ bam::service_book& applier::state::book_service() {
 void applier::state::visit(io::stream* visitor) {
   _ba_applier.visit(visitor);
   _kpi_applier.visit(visitor);
-  _bool_exp_applier.visit(visitor);
   return ;
 }
 

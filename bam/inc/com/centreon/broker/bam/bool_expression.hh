@@ -52,7 +52,6 @@ namespace            bam {
                        misc::shared_ptr<bool_value> const& expression);
     void             set_id(unsigned int id);
     void             set_impact_if(bool impact_if);
-    void             visit(io::stream* visitor);
 
   private:
     void             _internal_copy(bool_expression const& right);
