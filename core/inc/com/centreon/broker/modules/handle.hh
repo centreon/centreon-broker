@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #  define CCB_MODULES_HANDLE_HH
 
 #  include <QLibrary>
+#  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -36,13 +37,13 @@ namespace              modules {
   class                handle {
   public:
                        handle();
-                       handle(handle const& h);
+                       handle(handle const& other);
                        ~handle();
-    handle&            operator=(handle const& h);
+    handle&            operator=(handle const& other);
     void               close();
     bool               is_open() const;
     void               open(
-                         QString const& filename,
+                         std::string const& filename,
                          void const* arg = NULL);
     void               update(void const* arg = NULL);
 

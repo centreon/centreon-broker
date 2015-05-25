@@ -20,9 +20,9 @@
 #ifndef CCB_CONFIG_STATE_HH
 #  define CCB_CONFIG_STATE_HH
 
-#  include <QList>
-#  include <QMap>
-#  include <QString>
+#  include <list>
+#  include <map>
+#  include <string>
 #  include "com/centreon/broker/config/endpoint.hh"
 #  include "com/centreon/broker/config/logger.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -44,22 +44,23 @@ namespace                         config {
                                   state(state const& s);
                                   ~state();
     state&                        operator=(state const& s);
-    void                          cache_directory(QString const& dir);
-    QString const&                cache_directory() const throw ();
-    void                          command_file(QString const& file);
-    QString const&                command_file() const throw();
+    void                          cache_directory(std::string const& dir);
+    std::string const&            cache_directory() const throw ();
+    void                          command_file(std::string const& file);
+    std::string const&            command_file() const throw();
     void                          clear();
     void                          event_queue_max_size(
                                     unsigned int val) throw ();
     unsigned int                  event_queue_max_size() const throw ();
     void                          flush_logs(bool flush) throw ();
     bool                          flush_logs() const throw ();
-    QList<endpoint>&              inputs() throw ();
-    QList<endpoint> const&        inputs() const throw ();
+    std::list<endpoint>&          inputs() throw ();
+    std::list<endpoint> const&    inputs() const throw ();
     void                          instance_id(unsigned int id) throw ();
     unsigned int                  instance_id() const throw ();
-    void                          instance_name(QString const& name) throw ();
-    QString const&                instance_name() const throw ();
+    void                          instance_name(
+                                    std::string const& name) throw ();
+    std::string const&            instance_name() const throw ();
     void                          log_thread_id(bool log_id) throw ();
     bool                          log_thread_id() const throw ();
     void                          log_timestamp(bool log_time) throw ();
@@ -67,37 +68,41 @@ namespace                         config {
     void                          log_human_readable_timestamp(
                                     bool human_log_time) throw ();
     bool                          log_human_readable_timestamp() const throw();
-    QList<logger>&                loggers() throw ();
-    QList<logger> const&          loggers() const throw ();
-    QString const&                module_directory() const throw ();
-    void                          module_directory(QString const& dir);
-    QList<QString>&               module_list() throw ();
-    QList<QString> const&         module_list() const throw ();
-    QList<endpoint>&              outputs() throw ();
-    QList<endpoint> const&        outputs() const throw ();
-    QMap<QString, QString>&       params() throw ();
-    QMap<QString, QString> const& params() const throw ();
+    std::list<logger>&            loggers() throw ();
+    std::list<logger> const&      loggers() const throw ();
+    std::string const&            module_directory() const throw ();
+    void                          module_directory(
+                                    std::string const& dir);
+    std::list<std::string>&       module_list() throw ();
+    std::list<std::string> const& module_list() const throw ();
+    std::list<endpoint>&          outputs() throw ();
+    std::list<endpoint> const&    outputs() const throw ();
+    std::map<std::string, std::string>&
+                                  params() throw ();
+    std::map<std::string, std::string> const&
+                                  params() const throw ();
     endpoint&                     temporary() throw ();
     endpoint const&               temporary() const throw ();
 
   private:
     void                          _internal_copy(state const& s);
 
-    QString                       _cache_directory;
-    QString                       _command_file;
+    std::string                   _cache_directory;
+    std::string                   _command_file;
     unsigned int                  _event_queue_max_size;
     bool                          _flush_logs;
-    QList<endpoint>               _inputs;
+    std::list<endpoint>           _inputs;
     unsigned int                  _instance_id;
-    QString                       _instance_name;
+    std::string                   _instance_name;
     bool                          _log_thread_id;
     bool                          _log_timestamp;
     bool                          _log_human_readable_timestamp;
-    QList<logger>                 _loggers;
-    QString                       _module_dir;
-    QList<QString>                _module_list;
-    QList<endpoint>               _outputs;
-    QMap<QString, QString>        _params;
+    std::list<logger>             _loggers;
+    std::string                   _module_dir;
+    std::list<std::string>        _module_list;
+    std::list<endpoint>           _outputs;
+    std::map<std::string, std::string>
+                                  _params;
     endpoint                      _temporary;
   };
 }

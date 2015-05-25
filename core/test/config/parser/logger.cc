@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -93,7 +93,7 @@ int main() {
              << " loggers, expected 2");
 
     // Check logger #1.
-    QList<config::logger>::iterator it(s.loggers().begin());
+    std::list<config::logger>::iterator it(s.loggers().begin());
     config::logger l1(*(it++));
     if ((l1.type() != config::logger::file)
         || (l1.name() != "my_log_file")

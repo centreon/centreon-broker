@@ -1206,7 +1206,7 @@ int neb::callback_process(int callback_type, void *data) {
         gl_generator.set(conf);
 
         // Set variables.
-        instance_name = conf.instance_name();
+        instance_name = conf.instance_name().c_str();
         statistics_interval = gl_generator.interval();
       }
       catch (exceptions::msg const& e) {

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -285,7 +285,7 @@ int main(int argc, char* argv[]) {
         // Verification modifications.
         if (check) {
           // Loggers.
-          for (QList<config::logger>::iterator
+          for (std::list<config::logger>::iterator
                  it(conf.loggers().begin()),
                  end(conf.loggers().end());
                it != end;
@@ -296,7 +296,10 @@ int main(int argc, char* argv[]) {
 
         // Add debug output if in debug mode.
         if (debug)
-          conf.loggers() << default_state.loggers();
+          conf.loggers().insert(
+                           conf.loggers().end(),
+                           default_state.loggers().begin(),
+                           default_state.loggers().end());
 
         // Apply resulting configuration totally or partially.
         config::applier::state::instance().apply(conf, !check);

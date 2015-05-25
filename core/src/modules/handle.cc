@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -49,10 +49,10 @@ handle::handle() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] h Object to copy.
+ *  @param[in] other  Object to copy.
  */
-handle::handle(handle const& h) {
-  this->open(h._handle.fileName());
+handle::handle(handle const& other) {
+  this->open(other._handle.fileName().toStdString());
 }
 
 /**
@@ -74,13 +74,13 @@ handle::~handle() {
 /**
  *  Assignment operator.
  *
- *  @param[in] h Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-handle& handle::operator=(handle const& h) {
+handle& handle::operator=(handle const& other) {
   this->close();
-  this->open(h._handle.fileName());
+  this->open(other._handle.fileName().toStdString());
   return (*this);
 }
 
@@ -155,14 +155,14 @@ bool handle::is_open() const {
  *  @param[in] filename Library filename.
  *  @param[in] arg      Library argument.
  */
-void handle::open(QString const& filename, void const* arg) {
+void handle::open(std::string const& filename, void const* arg) {
   // Close library if previously open.
   this->close();
 
   // Load library.
   logging::debug(logging::medium) << "modules: loading library '"
     << filename << "'";
-  _handle.setFileName(filename);
+  _handle.setFileName(filename.c_str());
   _handle.setLoadHints(QLibrary::ResolveAllSymbolsHint
     | QLibrary::ExportExternalSymbolsHint);
 

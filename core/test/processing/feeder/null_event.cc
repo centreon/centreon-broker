@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
   app.exec();
 
   // Thread must be running.
-  int retval(f.isRunning() ? EXIT_SUCCESS : EXIT_FAILURE);
+  int retval(f.wait(0) ? EXIT_FAILURE : EXIT_SUCCESS);
 
   // Quit feeder thread.
   f.exit();

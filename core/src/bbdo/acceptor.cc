@@ -105,7 +105,7 @@ acceptor::~acceptor() {
     (*it)->wait();
     delete *it;
   }
-  for (QList<QThread*>::iterator
+  for (QList<processing::thread*>::iterator
          it(_threads.begin()),
          end(_threads.end());
        it != end;
@@ -366,7 +366,8 @@ unsigned int acceptor::_negociate_features(
  *  Called when a thread terminates.
  */
 void acceptor::_on_thread_termination() {
-  QThread* th(static_cast<QThread*>(QObject::sender()));
+  processing::thread*
+    th(static_cast<processing::thread*>(static_cast<void*>(QObject::sender())));
   QMutexLocker lock(&_threadsm);
   _threads.removeAll(th);
   return ;
@@ -424,20 +425,20 @@ misc::shared_ptr<io::stream> acceptor::_open(
     std::ostringstream oss;
     oss << "instance #" << instance_id;
     feedr->prepare(oss.str(), in, out);
-    QObject::connect(
-               feedr.get(),
-               SIGNAL(finished()),
-               this,
-               SLOT(_on_thread_termination()));
+    // QObject::connect(
+    //            feedr.get(),
+    //            SIGNAL(finished()),
+    //            this,
+    //            SLOT(_on_thread_termination()));
     {
       QMutexLocker lock(&_threadsm);
       _threads.push_back(feedr.get());
     }
-    QObject::connect(
-               feedr.get(),
-               SIGNAL(finished()),
-               feedr.get(),
-               SLOT(deleteLater()));
+    // QObject::connect(
+    //            feedr.get(),
+    //            SIGNAL(finished()),
+    //            feedr.get(),
+    //            SLOT(deleteLater()));
     feedr.release()->start();
   }
 

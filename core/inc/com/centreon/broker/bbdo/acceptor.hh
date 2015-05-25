@@ -29,6 +29,11 @@
 namespace               com {
   namespace             centreon {
     namespace           broker {
+      // Forward declaration.
+      namespace         processing {
+        class           thread;
+      }
+
       namespace         bbdo {
         // Forward declaration.
         class           stream;
@@ -93,7 +98,7 @@ namespace               com {
           QString       _name;
           bool          _negociate;
           bool          _one_peer_retention_mode;
-          QList<QThread*>
+          QList<processing::thread*>
                         _threads;
           QMutex        _threadsm;
           time_t        _timeout;

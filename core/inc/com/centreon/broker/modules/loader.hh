@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,9 +20,9 @@
 #ifndef CCB_MODULES_LOADER_HH
 #  define CCB_MODULES_LOADER_HH
 
-#  include <QHash>
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/modules/handle.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -38,7 +38,7 @@ namespace    modules {
    */
   class      loader {
   public:
-    typedef QHash<QString, misc::shared_ptr<handle> >::iterator
+    typedef  umap<std::string, misc::shared_ptr<handle> >::iterator
              iterator;
 
              loader();
@@ -48,15 +48,15 @@ namespace    modules {
     iterator begin();
     iterator end();
     void     load_dir(
-               QString const& dirname,
+               std::string const& dirname,
                void const* arg = NULL);
     void     load_file(
-               QString const& filename,
+               std::string const& filename,
                void const* arg = NULL);
     void     unload();
 
   private:
-    QHash<QString, misc::shared_ptr<handle> >
+    umap<std::string, misc::shared_ptr<handle> >
              _handles;
   };
 }

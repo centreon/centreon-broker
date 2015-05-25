@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Merethis
+** Copyright 2013-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
+#include "com/centreon/broker/config/endpoint.hh"
 #include "com/centreon/broker/stats/builder.hh"
 
 using namespace com::centreon::broker;
@@ -39,9 +40,7 @@ using namespace com::centreon::broker::stats;
 /**
  *  Default constructor.
  */
-builder::builder() {
-
-}
+builder::builder() {}
 
 /**
  *  Copy constructor.
@@ -55,9 +54,7 @@ builder::builder(builder const& right) {
 /**
  *  Destructor.
  */
-builder::~builder() throw () {
-
-}
+builder::~builder() throw () {}
 
 /**
  *  Copy operator.
@@ -104,8 +101,8 @@ void builder::build() {
        it != end;
        ++it) {
     std::ostringstream oss;
-    QFileInfo fi(it.key());
-    oss << "module " << it.key().toStdString() << "\n"
+    QFileInfo fi(it->first.c_str());
+    oss << "module " << it->first << "\n"
       "state=loaded\n"
       "size=" << fi.size() << "B\n"
       "\n";
@@ -127,7 +124,7 @@ void builder::build() {
              it != end;
              ++it) {
           io::properties p;
-          _generate_stats_for_endpoint(*it, _data, p, false);
+          _generate_stats_for_endpoint(it->second, _data, p, false);
           _root.children().push_back(p);
           _data.append("\n");
         }
@@ -155,7 +152,7 @@ void builder::build() {
              it != end;
              ++it) {
           io::properties p;
-          _generate_stats_for_endpoint(*it, _data, p, true);
+          _generate_stats_for_endpoint(it->second, _data, p, true);
           _root.children().push_back(p);
           _data.append("\n");
         }
@@ -208,150 +205,150 @@ io::properties const& builder::root() const throw () {
  *  @param[in]  is_out true if fo manage an output endpoint.
  */
 void builder::_generate_stats_for_endpoint(
-                processing::failover* fo,
+                processing::thread* fo,
                 std::string& buffer,
                 io::properties& tree,
                 bool is_out) {
-  // Header.
-  buffer.append(is_out ? "output " : "input ");
-  buffer.append(fo->_name.toStdString());
-  buffer.append("\n");
+  // // Header.
+  // buffer.append(is_out ? "output " : "input ");
+  // buffer.append(fo->_name.toStdString());
+  // buffer.append("\n");
 
-  // Choose stream we will work on.
-  QReadWriteLock* first_rwl;
-  misc::shared_ptr<io::stream>* first_s;
-  QReadWriteLock* second_rwl;
-  misc::shared_ptr<io::stream>* second_s;
-  if (is_out) {
-    first_rwl = &fo->_tom;
-    first_s = &fo->_to;
-    second_rwl = &fo->_fromm;
-    second_s = &fo->_from;
-  }
-  else {
-    first_rwl = &fo->_fromm;
-    first_s = &fo->_from;
-    second_rwl = &fo->_tom;
-    second_s = &fo->_to;
-  }
+  // // Choose stream we will work on.
+  // QReadWriteLock* first_rwl;
+  // misc::shared_ptr<io::stream>* first_s;
+  // QReadWriteLock* second_rwl;
+  // misc::shared_ptr<io::stream>* second_s;
+  // if (is_out) {
+  //   first_rwl = &fo->_tom;
+  //   first_s = &fo->_to;
+  //   second_rwl = &fo->_fromm;
+  //   second_s = &fo->_from;
+  // }
+  // else {
+  //   first_rwl = &fo->_fromm;
+  //   first_s = &fo->_from;
+  //   second_rwl = &fo->_tom;
+  //   second_s = &fo->_to;
+  // }
 
-  // Should we generate more stats ?
-  bool more_stats(true);
-  {
-    // Get primary state.
-    buffer.append("state=");
-    bool locked(first_rwl->tryLockForRead(10));
-    try {
-      // Could lock RWL.
-      if (locked) {
-        if (first_s->isNull()) {
-          if (!fo->_last_error.isEmpty()) {
-            buffer.append("disconnected");
-            buffer.append(" (");
-            buffer.append(fo->_last_error.toStdString());
-            buffer.append(")\n");
-          }
-          else if (!fo->isRunning()) {
-            buffer.append("unused\n");
-            more_stats = false;
-          }
-          else if (!fo->_endpoint.isNull()
-                   && !fo->_endpoint->is_acceptor()) {
-            buffer.append("connecting\n");
-          }
-          else {
-            buffer.append("listening\n");
-          }
-        }
-        else if (!fo->_failover.isNull() && fo->_failover->isRunning()) {
-          buffer.append("replaying\n");
-          io::properties p;
-          (*first_s)->statistics(p);
-          tree.merge(p);
-          _serialize(buffer, p);
-        }
-        else {
-          buffer.append("connected\n");
-          io::properties p;
-          (*first_s)->statistics(p);
-          tree.merge(p);
-          _serialize(buffer, p);
-        }
-      }
-      // Could not lock RWL.
-      else
-        buffer.append("blocked\n");
-    }
-    catch (...) {
-      if (locked)
-        first_rwl->unlock();
-      throw ;
-    }
-    if (locked)
-      first_rwl->unlock();
-  }
+  // // Should we generate more stats ?
+  // bool more_stats(true);
+  // {
+  //   // Get primary state.
+  //   buffer.append("state=");
+  //   bool locked(first_rwl->tryLockForRead(10));
+  //   try {
+  //     // Could lock RWL.
+  //     if (locked) {
+  //       if (first_s->isNull()) {
+  //         if (!fo->_last_error.isEmpty()) {
+  //           buffer.append("disconnected");
+  //           buffer.append(" (");
+  //           buffer.append(fo->_last_error.toStdString());
+  //           buffer.append(")\n");
+  //         }
+  //         else if (!fo->isRunning()) {
+  //           buffer.append("unused\n");
+  //           more_stats = false;
+  //         }
+  //         else if (!fo->_endpoint.isNull()
+  //                  && !fo->_endpoint->is_acceptor()) {
+  //           buffer.append("connecting\n");
+  //         }
+  //         else {
+  //           buffer.append("listening\n");
+  //         }
+  //       }
+  //       else if (!fo->_failover.isNull() && fo->_failover->isRunning()) {
+  //         buffer.append("replaying\n");
+  //         io::properties p;
+  //         (*first_s)->statistics(p);
+  //         tree.merge(p);
+  //         _serialize(buffer, p);
+  //       }
+  //       else {
+  //         buffer.append("connected\n");
+  //         io::properties p;
+  //         (*first_s)->statistics(p);
+  //         tree.merge(p);
+  //         _serialize(buffer, p);
+  //       }
+  //     }
+  //     // Could not lock RWL.
+  //     else
+  //       buffer.append("blocked\n");
+  //   }
+  //   catch (...) {
+  //     if (locked)
+  //       first_rwl->unlock();
+  //     throw ;
+  //   }
+  //   if (locked)
+  //     first_rwl->unlock();
+  // }
 
-  // More statistics.
-  if (more_stats) {
-    {
-      // Get secondary state.
-      QReadLocker rl(second_rwl);
-      if (!second_s->isNull()) {
-        io::properties p;
-        (*second_s)->statistics(p);
-        tree.merge(p);
-        _serialize(buffer, p);
-      }
-    }
+  // // More statistics.
+  // if (more_stats) {
+  //   {
+  //     // Get secondary state.
+  //     QReadLocker rl(second_rwl);
+  //     if (!second_s->isNull()) {
+  //       io::properties p;
+  //       (*second_s)->statistics(p);
+  //       tree.merge(p);
+  //       _serialize(buffer, p);
+  //     }
+  //   }
 
-    {
-      // Event processing stats.
-      std::ostringstream oss;
-      oss << "last event at=" << fo->get_last_event() << "\n"
-        "event processing speed=" << std::fixed
-          << std::setprecision(1) << fo->get_event_processing_speed()
-          << " events/s\n";
-      buffer.append(oss.str());
-    }
+  //   {
+  //     // Event processing stats.
+  //     std::ostringstream oss;
+  //     oss << "last event at=" << fo->get_last_event() << "\n"
+  //       "event processing speed=" << std::fixed
+  //         << std::setprecision(1) << fo->get_event_processing_speed()
+  //         << " events/s\n";
+  //     buffer.append(oss.str());
+  //   }
 
-    // Endpoint stats.
-    if (!fo->_endpoint.isNull()) {
-      io::properties p;
-      fo->_endpoint->stats(p);
-      tree.merge(p);
-      _serialize(buffer, p);
-    }
+  //   // Endpoint stats.
+  //   if (!fo->_endpoint.isNull()) {
+  //     io::properties p;
+  //     fo->_endpoint->stats(p);
+  //     tree.merge(p);
+  //     _serialize(buffer, p);
+  //   }
 
-    {
-      // Last connection times.
-      std::ostringstream oss;
-      oss << "last connection attempt=" << fo->_last_connect_attempt
-          << "\n" << "last connection success="
-          << fo->_last_connect_success << "\n";
-      buffer.append(oss.str());
-    }
-  }
+  //   {
+  //     // Last connection times.
+  //     std::ostringstream oss;
+  //     oss << "last connection attempt=" << fo->_last_connect_attempt
+  //         << "\n" << "last connection success="
+  //         << fo->_last_connect_success << "\n";
+  //     buffer.append(oss.str());
+  //   }
+  // }
 
-  // Failover.
-  if (!fo->_failover.isNull()) {
-    buffer.append("failover\n");
-    std::string subbuffer;
-    io::properties p;
-    _generate_stats_for_endpoint(
-      fo->_failover.data(),
-      subbuffer,
-      p,
-      is_out);
-    tree.children().push_back(p);
-    subbuffer.insert(0, "  ");
-    size_t pos(subbuffer.find('\n'));
-    while ((pos != subbuffer.size() - 1)
-           && (pos != std::string::npos)) {
-      subbuffer.replace(pos, 1, "\n  ");
-      pos = subbuffer.find('\n', pos + 3);
-    }
-    buffer.append(subbuffer);
-  }
+  // // Failover.
+  // if (!fo->_failover.isNull()) {
+  //   buffer.append("failover\n");
+  //   std::string subbuffer;
+  //   io::properties p;
+  //   _generate_stats_for_endpoint(
+  //     fo->_failover.data(),
+  //     subbuffer,
+  //     p,
+  //     is_out);
+  //   tree.children().push_back(p);
+  //   subbuffer.insert(0, "  ");
+  //   size_t pos(subbuffer.find('\n'));
+  //   while ((pos != subbuffer.size() - 1)
+  //          && (pos != std::string::npos)) {
+  //     subbuffer.replace(pos, 1, "\n  ");
+  //     pos = subbuffer.find('\n', pos + 3);
+  //   }
+  //   buffer.append(subbuffer);
+  // }
 
   return ;
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -28,7 +28,7 @@ CCB_BEGIN()
 
 // Forward declarations.
 namespace                 processing {
-  class                   failover;
+  class                   thread;
 }
 
 namespace                 stats {
@@ -48,7 +48,7 @@ namespace                 stats {
 
   private:
     static void           _generate_stats_for_endpoint(
-                            processing::failover* fo,
+                            processing::thread* fo,
                             std::string& buffer,
                             io::properties& tree,
                             bool is_out);

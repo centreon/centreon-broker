@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -50,15 +50,15 @@ modules::~modules() {
  *  @param[in] arg         Module argument.
  */
 void modules::apply(
-                QList<QString> const& module_list,
-                QString const& module_dir,
+                std::list<std::string> const& module_list,
+                std::string const& module_dir,
                 void const* arg) {
   // Lock multiplexing engine in case modules register hooks.
   QMutexLocker
     lock(&com::centreon::broker::multiplexing::engine::instance());
 
   // Load modules.
-  for (QList<QString>::const_iterator
+  for (std::list<std::string>::const_iterator
          it(module_list.begin()),
          end(module_list.end());
        it != end;
@@ -67,7 +67,7 @@ void modules::apply(
       << "module applier: loading module '" << *it << "'";
     _loader.load_file(*it, arg);
   }
-  if (!module_dir.isEmpty()) {
+  if (!module_dir.empty()) {
     logging::config(logging::high)
       << "module applier: loading directory '" << module_dir << "'";
     _loader.load_dir(module_dir, arg);

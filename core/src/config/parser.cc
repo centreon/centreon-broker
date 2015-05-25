@@ -110,7 +110,7 @@ void parser::parse(QString const& file, state& s) {
         has_instance_id = true;
       }
       else if (name == "instance_name") {
-        s.instance_name(elem.text());
+        s.instance_name(elem.text().toStdString());
       }
       else if (name == "flush_logs") {
         QString val(elem.text());
@@ -147,13 +147,13 @@ void parser::parse(QString const& file, state& s) {
         s.event_queue_max_size(val);
       }
       else if (name == "cache_directory")
-        s.cache_directory(elem.text());
+        s.cache_directory(elem.text().toStdString());
       else if (name == "command_file")
-        s.command_file(elem.text());
+        s.command_file(elem.text().toStdString());
       else if (name == "module")
-        s.module_list().push_back(elem.text());
+        s.module_list().push_back(elem.text().toStdString());
       else if (name == "module_directory")
-        s.module_directory(elem.text());
+        s.module_directory(elem.text().toStdString());
       else if (name == "output") {
         endpoint out;
         _parse_endpoint(elem, out);
@@ -181,7 +181,7 @@ void parser::parse(QString const& file, state& s) {
       else {
         QDomDocument subdoc;
         subdoc.appendChild(subdoc.importNode(elem, true));
-        s.params()[name] = subdoc.toString();
+        s.params()[name.toStdString()] = subdoc.toString().toStdString();
       }
     }
   }

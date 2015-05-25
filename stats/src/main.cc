@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -85,7 +85,7 @@ extern "C" {
       // Check that stats are enabled.
       config::state const& base_cfg(*static_cast<config::state const*>(arg));
       bool loaded(false);
-      QMap<QString, QString>::const_iterator
+      std::map<std::string, std::string>::const_iterator
         it(base_cfg.params().find("stats"));
       if (it != base_cfg.params().end()) {
         try {
@@ -93,7 +93,7 @@ extern "C" {
           stats::config stats_cfg;
           {
             stats::parser p;
-            p.parse(stats_cfg, it.value().toStdString());
+            p.parse(stats_cfg, it->second);
           }
 
           // Load stats engine.

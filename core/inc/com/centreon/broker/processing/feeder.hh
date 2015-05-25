@@ -20,47 +20,47 @@
 #ifndef CCB_PROCESSING_FEEDER_HH
 #  define CCB_PROCESSING_FEEDER_HH
 
-#  include <QThread>
 #  include <string>
-#  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/processing/thread.hh"
 
-namespace               com {
-  namespace             centreon {
-    namespace           broker {
-      namespace         processing {
-        /**
-         *  @class feeder feeder.hh "com/centreon/broker/processing/feeder.hh"
-         *  @brief Feed events from a source to a destination.
-         *
-         *  Take events from a source and send them to a destination.
-         */
-        class           feeder : public QThread {
-          Q_OBJECT
+CCB_BEGIN()
 
-         public:
-                        feeder();
-                        feeder(feeder const& other);
-                        ~feeder();
-          feeder&       operator=(feeder const& other);
-          void          exit();
-          void          prepare(
-                          std::string const& name,
-                          misc::shared_ptr<io::stream> in,
-                          misc::shared_ptr<io::stream> out);
-          void          run();
-
-         private:
-          misc::shared_ptr<io::stream>
-                        _in;
-          std::string   _name;
-          misc::shared_ptr<io::stream>
-                        _out;
-          volatile bool _should_exit;
-        };
-      }
-    }
-  }
+// Forward declaration.
+namespace         io {
+  class           stream;
 }
+
+namespace         processing {
+  /**
+   *  @class feeder feeder.hh "com/centreon/broker/processing/feeder.hh"
+   *  @brief Feed events from a source to a destination.
+   *
+   *  Take events from a source and send them to a destination.
+   */
+  class           feeder : public thread {
+  public:
+                  feeder();
+                  ~feeder();
+    void          prepare(
+                    std::string const& name,
+                    misc::shared_ptr<io::stream> in,
+                    misc::shared_ptr<io::stream> out);
+    void          run();
+
+  private:
+                  feeder(feeder const& other);
+    feeder&       operator=(feeder const& other);
+
+    misc::shared_ptr<io::stream>
+                  _in;
+    std::string   _name;
+    misc::shared_ptr<io::stream>
+                  _out;
+  };
+}
+
+CCB_END()
 
 #endif // !CCB_PROCESSING_FEEDER_HH

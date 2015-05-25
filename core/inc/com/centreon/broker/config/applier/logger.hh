@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,8 +20,8 @@
 #ifndef CCB_CONFIG_APPLIER_LOGGER_HH
 #  define CCB_CONFIG_APPLIER_LOGGER_HH
 
-#  include <QList>
-#  include <QMap>
+#  include <list>
+#  include <map>
 #  include "com/centreon/broker/config/logger.hh"
 #  include "com/centreon/broker/logging/backend.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
@@ -41,7 +41,7 @@ namespace            config {
     class            logger {
     public:
                      ~logger();
-      void           apply(QList<config::logger> const& loggers);
+      void           apply(std::list<config::logger> const& loggers);
       static logger& instance();
       static void    load();
       static void    unload();
@@ -53,7 +53,7 @@ namespace            config {
       misc::shared_ptr<logging::backend>
                      _new_backend(config::logger const& cfg);
 
-      QMap<config::logger, misc::shared_ptr<logging::backend> >
+      std::map<config::logger, misc::shared_ptr<logging::backend> >
                      _backends;
     };
   }

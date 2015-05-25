@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -86,13 +86,13 @@ loader::iterator loader::end() {
  *  @param[in] dirname Directory name.
  *  @param[in] arg     Module argument.
  */
-void loader::load_dir(QString const& dirname, void const* arg) {
+void loader::load_dir(std::string const& dirname, void const* arg) {
   // Debug message.
   logging::debug(logging::medium)
     << "modules: loading directory '" << dirname << "'";
 
   // Set directory browsing parameters.
-  QDir dir(dirname);
+  QDir dir(dirname.c_str());
   QStringList l;
 #ifdef Q_OS_WIN32
   l.push_back("*.dll");
@@ -103,12 +103,12 @@ void loader::load_dir(QString const& dirname, void const* arg) {
 
   // Iterate through all modules in directory.
   l = dir.entryList();
-  for (QStringList::iterator it = l.begin(), end = l.end();
+  for (QStringList::iterator it(l.begin()), end(l.end());
        it != end;
        ++it) {
-    QString file(dirname);
+    std::string file(dirname);
     file.append("/");
-    file.append(*it);
+    file.append(it->toStdString());
     try {
       load_file(file, arg);
     }
@@ -130,8 +130,8 @@ void loader::load_dir(QString const& dirname, void const* arg) {
  *  @param[in] filename File name.
  *  @param[in] arg      Module argument.
  */
-void loader::load_file(QString const& filename, void const* arg) {
-  QHash<QString, misc::shared_ptr<handle> >::iterator
+void loader::load_file(std::string const& filename, void const* arg) {
+  umap<std::string, misc::shared_ptr<handle> >::iterator
     it(_handles.find(filename));
   if (it == _handles.end()) {
     misc::shared_ptr<handle> handl(new handle);
@@ -141,7 +141,7 @@ void loader::load_file(QString const& filename, void const* arg) {
   else {
     logging::info(logging::low) << "modules: attempt to load '"
       << filename << "' which is already loaded";
-    (*it)->update(arg);
+    it->second->update(arg);
   }
   return ;
 }
@@ -150,17 +150,17 @@ void loader::load_file(QString const& filename, void const* arg) {
  *  Unload modules.
  */
 void loader::unload() {
-  QString key;
+  std::string key;
   while (!_handles.empty()) {
-    QHash<QString, misc::shared_ptr<handle> >::iterator
+    umap<std::string, misc::shared_ptr<handle> >::iterator
       it(_handles.begin());
-    key = it.key();
-    QHash<QString, misc::shared_ptr<handle> >::iterator
+    key = it->first;
+    umap<std::string, misc::shared_ptr<handle> >::iterator
       end(_handles.end());
     while (++it != end)
-      if (it.key() > key)
-        key = it.key();
-    _handles.remove(key);
+      if (it->first > key)
+        key = it->first;
+    _handles.erase(key);
   }
   return ;
 }

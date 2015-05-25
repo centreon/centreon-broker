@@ -20,6 +20,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/processing/feeder.hh"
 
@@ -35,48 +36,12 @@ using namespace com::centreon::broker::processing;
 /**
  *  Default constructor.
  */
-feeder::feeder() : _should_exit(false) {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-feeder::feeder(feeder const& other)
-  : QThread(),
-    _in(other._in),
-    _out(other._out),
-    _should_exit(false) {}
+feeder::feeder() {}
 
 /**
  *  Destructor.
  */
 feeder::~feeder() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-feeder& feeder::operator=(feeder const& other) {
-  if (this != &other) {
-    _in = other._in;
-    _out = other._out;
-  }
-  return (*this);
-}
-
-/**
- *  Request thread termination.
- */
-void feeder::exit() {
-  _should_exit = true;
-  if (!_in.isNull())
-    _in->process(false, true);
-  return ;
-}
 
 /**
  *  Prepare the object before running.
@@ -101,7 +66,6 @@ void feeder::prepare(
 void feeder::run() {
   logging::info(logging::medium)
     << "feeder: thread of '" << _name << "' is starting";
-  _should_exit = false;
   try {
     if (_in.isNull())
       throw (exceptions::msg() << "could not process '"
@@ -109,7 +73,7 @@ void feeder::run() {
     if (_out.isNull())
       throw (exceptions::msg() << "could not process '"
              << _name << "' with no event receiver");
-    while (!_should_exit) {
+    while (!should_exit()) {
       misc::shared_ptr<io::data> data;
       _in->read(data);
       _out->write(data);

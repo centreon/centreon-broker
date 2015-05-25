@@ -59,14 +59,10 @@ int main(int argc, char* argv[]) {
       ss2.staticCast<io::stream>());
 
   // Launch feeder.
-  QObject::connect(&f, SIGNAL(finished()), &app, SLOT(quit()));
-  QObject::connect(&f, SIGNAL(started()), &app, SLOT(quit()));
-  QObject::connect(&f, SIGNAL(terminated()), &app, SLOT(quit()));
   f.start();
 
   // Wait some time.
-  app.exec();
-  QTimer::singleShot(200, &app, SLOT(quit()));
+  QTimer::singleShot(4000, &app, SLOT(quit()));
   app.exec();
 
   // Quit feeder thread.

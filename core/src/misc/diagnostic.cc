@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -301,13 +301,13 @@ void diagnostic::generate(
       to_remove.push_back(ls_log_path);
       QStringList args;
       args.push_back("-la");
-      args.push_back(conf.module_directory());
-      for (QList<QString>::const_iterator
+      args.push_back(conf.module_directory().c_str());
+      for (std::list<std::string>::const_iterator
              it(conf.module_list().begin()),
              end(conf.module_list().end());
            it != end;
            ++it)
-        args.push_back(*it);
+        args.push_back(it->c_str());
       QProcess p;
       p.setStandardOutputFile(ls_log_path.c_str());
       p.start("ls", args);
@@ -316,7 +316,7 @@ void diagnostic::generate(
 
     // Log files.
     logging::info(logging::high) << "diagnostic:     getting log files";
-    for (QList<config::logger>::const_iterator
+    for (std::list<config::logger>::const_iterator
            it(conf.loggers().begin()),
            end(conf.loggers().end());
          it != end;

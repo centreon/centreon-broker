@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -54,7 +54,7 @@ logger::~logger() {
  *
  *  @param[in] loggers List of loggers that should exist.
  */
-void logger::apply(QList<config::logger> const& loggers) {
+void logger::apply(std::list<config::logger> const& loggers) {
   // Log message.
   logging::config(logging::high) << "log applier: applying "
     << loggers.size() << " logging objects";
@@ -62,16 +62,19 @@ void logger::apply(QList<config::logger> const& loggers) {
   // Find which loggers are already created,
   // which should be created
   // and which should be deleted.
-  QList<config::logger> to_create;
-  QMap<config::logger, misc::shared_ptr<logging::backend> > to_delete(_backends);
-  QMap<config::logger, misc::shared_ptr<logging::backend> > to_keep;
-  for (QList<config::logger>::const_iterator it = loggers.begin(),
+  std::list<config::logger> to_create;
+  std::map<config::logger, misc::shared_ptr<logging::backend> >
+    to_delete(_backends);
+  std::map<config::logger, misc::shared_ptr<logging::backend> >
+    to_keep;
+  for (std::list<config::logger>::const_iterator it = loggers.begin(),
          end = loggers.end();
        it != end;
        ++it) {
-    QMap<config::logger, misc::shared_ptr<logging::backend> >::iterator backend(to_delete.find(*it));
+    std::map<config::logger, misc::shared_ptr<logging::backend> >::iterator
+      backend(to_delete.find(*it));
     if (backend != to_delete.end()) {
-      to_keep.insert(backend.key(), backend.value());
+      to_keep.insert(*backend);
       to_delete.erase(backend);
     }
     else
@@ -82,19 +85,21 @@ void logger::apply(QList<config::logger> const& loggers) {
   _backends = to_keep;
 
   // Remove loggers that do not exist anymore.
-  for (QMap<config::logger, misc::shared_ptr<logging::backend> >::const_iterator it = to_delete.begin(),
-         end = to_delete.end();
+  for (std::map<config::logger, misc::shared_ptr<logging::backend> >::const_iterator
+         it(to_delete.begin()),
+         end(to_delete.end());
        it != end;
        ++it)
-    logging::manager::instance().log_on(*it.value(), 0, logging::none);
+    logging::manager::instance().log_on(*it->second, 0, logging::none);
 
   // Free some memory.
   to_delete.clear();
   to_keep.clear();
 
   // Create new backends.
-  for (QList<config::logger>::const_iterator it = to_create.begin(),
-         end = to_create.end();
+  for (std::list<config::logger>::const_iterator
+         it(to_create.begin()),
+         end(to_create.end());
        it != end;
        ++it) {
     logging::config(logging::medium)

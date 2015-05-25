@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -49,9 +49,6 @@ namespace                    io {
                              stream(stream const& s);
     virtual                  ~stream();
     stream&                  operator=(stream const& s);
-    virtual void             process(
-                               bool in = false,
-                               bool out = true) = 0;
     virtual void             read(misc::shared_ptr<io::data>& d) = 0;
     virtual void             read(
                                misc::shared_ptr<io::data>& d,

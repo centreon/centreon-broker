@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,8 +20,8 @@
 #ifndef CCB_CONFIG_APPLIER_MODULES_HH
 #  define CCB_CONFIG_APPLIER_MODULES_HH
 
-#  include <QList>
-#  include <QString>
+#  include <list>
+#  include <string>
 #  include "com/centreon/broker/modules/loader.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -42,8 +42,8 @@ namespace                     config {
 
                               ~modules();
       void                    apply(
-                                QList<QString> const& module_list,
-                                QString const& module_dir,
+                                std::list<std::string> const& module_list,
+                                std::string const& module_dir,
                                 void const* arg = NULL);
       iterator                begin();
       iterator                end();

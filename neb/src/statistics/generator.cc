@@ -249,14 +249,14 @@ void generator::run() {
  *  @param[in] config The configuration to set.
  */
 void generator::set(config::state const& config) {
-  QMap<QString, QString>::const_iterator
+  std::map<std::string, std::string>::const_iterator
     it(config.params().find("stats"));
   if (it == config.params().end())
     return ;
 
   // Parse XML.
   QDomDocument d;
-  if (d.setContent(it.value())) {
+  if (d.setContent(static_cast<QString>(it->second.c_str()))) {
     QDomElement root(d.documentElement());
 
     QDomElement remote(root.lastChildElement("remote"));

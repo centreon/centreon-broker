@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -38,7 +38,7 @@ void log_on_stderr() {
   log_obj.level(logging::low);
   log_obj.type(config::logger::standard);
   log_obj.name("stderr");
-  QList<config::logger> loggers;
+  std::list<config::logger> loggers;
   loggers.push_back(log_obj);
   config::applier::logger::instance().apply(loggers);
   return ;

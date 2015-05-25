@@ -92,7 +92,7 @@ void state::clear() {
  *
  *  @param[in] dir  Cache directory.
  */
-void state::cache_directory(QString const& dir) {
+void state::cache_directory(std::string const& dir) {
   _cache_directory = dir;
   if (_cache_directory[_cache_directory.size() - 1] != '/')
     _cache_directory.append("/");
@@ -104,7 +104,7 @@ void state::cache_directory(QString const& dir) {
  *
  *  @return Cache directory.
  */
-QString const& state::cache_directory() const throw () {
+std::string const& state::cache_directory() const throw () {
   return (_cache_directory);
 }
 
@@ -113,8 +113,9 @@ QString const& state::cache_directory() const throw () {
  *
  *  @param[in] file  The command file.
  */
-void state::command_file(QString const& file) {
+void state::command_file(std::string const& file) {
   _command_file = file;
+  return ;
 }
 
 /**
@@ -122,7 +123,7 @@ void state::command_file(QString const& file) {
  *
  *  @return  The command file.
  */
-const QString& state::command_file() const throw() {
+std::string const& state::command_file() const throw() {
   return (_command_file);
 }
 
@@ -168,7 +169,7 @@ bool state::flush_logs() const throw () {
  *
  *  @return Input list.
  */
-QList<endpoint>& state::inputs() throw () {
+std::list<endpoint>& state::inputs() throw () {
   return (_inputs);
 }
 
@@ -177,7 +178,7 @@ QList<endpoint>& state::inputs() throw () {
  *
  *  @return Input list.
  */
-QList<endpoint> const& state::inputs() const throw () {
+std::list<endpoint> const& state::inputs() const throw () {
   return (_inputs);
 }
 
@@ -204,7 +205,7 @@ unsigned int state::instance_id() const throw () {
  *
  *  @param[in] name Instance name.
  */
-void state::instance_name(QString const& name) throw () {
+void state::instance_name(std::string const& name) throw () {
   _instance_name = name;
 }
 
@@ -213,7 +214,7 @@ void state::instance_name(QString const& name) throw () {
  *
  *  @return Instance name.
  */
-QString const& state::instance_name() const throw () {
+std::string const& state::instance_name() const throw () {
   return (_instance_name);
 }
 
@@ -222,7 +223,7 @@ QString const& state::instance_name() const throw () {
  *
  *  @return Logger list.
  */
-QList<logger>& state::loggers() throw () {
+std::list<logger>& state::loggers() throw () {
   return (_loggers);
 }
 
@@ -289,7 +290,7 @@ bool state::log_human_readable_timestamp() const throw() {
  *
  *  @return Logger list.
  */
-QList<logger> const& state::loggers() const throw () {
+std::list<logger> const& state::loggers() const throw () {
   return (_loggers);
 }
 
@@ -298,7 +299,7 @@ QList<logger> const& state::loggers() const throw () {
  *
  *  @return Module directory.
  */
-QString const& state::module_directory() const throw () {
+std::string const& state::module_directory() const throw () {
   return (_module_dir);
 }
 
@@ -307,7 +308,7 @@ QString const& state::module_directory() const throw () {
  *
  *  @param[in] dir Module directory.
  */
-void state::module_directory(QString const& dir) {
+void state::module_directory(std::string const& dir) {
   _module_dir = dir;
   return ;
 }
@@ -317,7 +318,7 @@ void state::module_directory(QString const& dir) {
  *
  *  @return Modifiable module list.
  */
-QList<QString>& state::module_list() throw () {
+std::list<std::string>& state::module_list() throw () {
   return (_module_list);
 }
 
@@ -326,7 +327,7 @@ QList<QString>& state::module_list() throw () {
  *
  *  @return Const module list.
  */
-QList<QString> const& state::module_list() const throw () {
+std::list<std::string> const& state::module_list() const throw () {
   return (_module_list);
 }
 
@@ -335,7 +336,7 @@ QList<QString> const& state::module_list() const throw () {
  *
  *  @return Output list.
  */
-QList<endpoint>& state::outputs() throw () {
+std::list<endpoint>& state::outputs() throw () {
   return (_outputs);
 }
 
@@ -344,7 +345,7 @@ QList<endpoint>& state::outputs() throw () {
  *
  *  @return Output list.
  */
-QList<endpoint> const& state::outputs() const throw () {
+std::list<endpoint> const& state::outputs() const throw () {
   return (_outputs);
 }
 
@@ -353,7 +354,7 @@ QList<endpoint> const& state::outputs() const throw () {
  *
  *  @return Additional parameters list.
  */
-QMap<QString, QString>& state::params() throw () {
+std::map<std::string, std::string>& state::params() throw () {
   return (_params);
 }
 
@@ -362,7 +363,7 @@ QMap<QString, QString>& state::params() throw () {
  *
  *  @return Additional parameters list.
  */
-QMap<QString, QString> const& state::params() const throw () {
+std::map<std::string, std::string> const& state::params() const throw () {
   return (_params);
 }
 

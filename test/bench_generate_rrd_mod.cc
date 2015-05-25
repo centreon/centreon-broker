@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -31,10 +31,10 @@ static benchmark* thread(NULL);
  *
  *  @return The value.
  */
-static unsigned int _get_param(QString const& param) {
+static unsigned int _get_param(std::string const& param) {
   // Parse XML.
   QDomDocument d;
-  if (d.setContent(param)) {
+  if (d.setContent(static_cast<QString>(param.c_str()))) {
     // Browse first-level elements.
     QDomElement elem(d.documentElement());
     if (!elem.isNull())
@@ -59,12 +59,12 @@ extern "C" {
    *  @param[in] arg Configuration object.
    */
   void broker_module_init(config::state const* cfg) {
-    QMap<QString, QString>::const_iterator it1, it2;
+    std::map<std::string, std::string>::const_iterator it1, it2;
     it1 = cfg->params().find("bench_services");
     it2 = cfg->params().find("bench_requests_per_service");
     if (it1 != cfg->params().end() && it2 != cfg->params().end()) {
-      unsigned int services(_get_param(it1.value()));
-      unsigned int requests_per_service(_get_param(it2.value()));
+      unsigned int services(_get_param(it1->second));
+      unsigned int requests_per_service(_get_param(it2->second));
       thread = new benchmark(services, requests_per_service);
       thread->start();
     }

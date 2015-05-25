@@ -114,9 +114,9 @@ void state::apply(
   com::centreon::broker::config::state st = s;
 
   // Create command file input.
-  if (!s.command_file().isEmpty()) {
+  if (!s.command_file().empty()) {
     config::endpoint ept;
-    ept.name = s.command_file();
+    ept.name = s.command_file().c_str();
     ept.type = "command_file";
     st.inputs().push_back(ept);
   }
@@ -130,7 +130,7 @@ void state::apply(
   // Create instance broadcast event.
   com::centreon::broker::multiplexing::publisher pblsh;
   misc::shared_ptr<instance_broadcast> ib(new instance_broadcast);
-  ib->instance_name = s.instance_name();
+  ib->instance_name = s.instance_name().c_str();
   ib->enabled = true;
   pblsh.write(ib);
 

@@ -24,100 +24,100 @@
 #  include <ctime>
 #  include <QMutex>
 #  include <QString>
-#  include <QThread>
 #  include <QVector>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/multiplexing/subscriber.hh"
+#  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/processing/thread.hh"
 
-namespace                 com {
-  namespace               centreon {
-    namespace             broker {
-      // Forward declarations.
-      namespace           io {
-        class             properties;
-      }
-      namespace           stats {
-        class             builder;
-      }
+CCB_BEGIN()
 
-      namespace           processing {
-        /**
-         *  @class failover failover.hh "com/centreon/broker/processing/failover.hh"
-         *  @brief Failover thread.
-         *
-         *  Thread that provide failover on inputs or outputs.
-         *
-         *  Multiple failover can be forwarded.
-         */
-        class             failover : public QThread, public io::stream {
-          Q_OBJECT
-          friend class    stats::builder;
-
-         public:
-                          failover(
-                            misc::shared_ptr<io::endpoint> endp,
-                            misc::shared_ptr<multiplexing::subscriber> sbscrbr,
-                            QString const& name = "(unknown)");
-                          ~failover();
-          void            add_secondary_endpoint(
-                            misc::shared_ptr<io::endpoint> endp);
-          time_t          get_buffering_timeout() const throw ();
-          time_t          get_read_timeout() const throw ();
-          time_t          get_retry_interval() const throw ();
-          void            read(misc::shared_ptr<io::data>& d);
-          void            read(
-                            misc::shared_ptr<io::data>& d,
-                            time_t timeout,
-                            bool* timed_out = NULL);
-          void            run();
-          void            set_buffering_timeout(time_t secs);
-          void            set_failover(
-                            misc::shared_ptr<processing::failover> fo);
-          void            set_read_timeout(time_t read_timeout);
-          void            set_retry_interval(time_t retry_interval);
-          void            statistics(io::properties& tree) const;
-          void            update();
-          bool            wait(unsigned long time = ULONG_MAX);
-          unsigned int    write(misc::shared_ptr<io::data> const& d);
-
-         private:
-                          failover(failover const& other);
-          failover&       operator=(failover const& other);
-          void            _update_status(std::string const& status);
-
-          // Data that doesn't require locking.
-          volatile time_t _buffering_timeout;
-          misc::shared_ptr<io::endpoint>
-                          _endpoint;
-          std::vector<misc::shared_ptr<io::endpoint> >
-                          _secondary_endpoints;
-          misc::shared_ptr<failover>
-                          _failover;
-          QString         _name;
-          time_t          _next_timeout;
-          time_t          _read_timeout;
-          volatile time_t _retry_interval;
-          misc::shared_ptr<multiplexing::subscriber>
-                          _subscriber;
-          volatile bool   _update;
-
-          // Exit flag.
-          volatile bool   _should_exit;
-          mutable QMutex  _should_exitm;
-
-          // Status.
-          std::string     _status;
-          mutable QMutex  _statusm;
-
-          // Stream.
-          misc::shared_ptr<io::stream>
-                          _stream;
-          mutable QMutex  _streamm;
-        };
-      }
-    }
-  }
+// Forward declarations.
+namespace           io {
+  class             properties;
 }
+namespace           stats {
+  class             builder;
+}
+
+namespace           processing {
+  /**
+   *  @class failover failover.hh "com/centreon/broker/processing/failover.hh"
+   *  @brief Failover thread.
+   *
+   *  Thread that provide failover on output endpoints.
+   *
+   *  Multiple failover can be forwarded.
+   */
+  class             failover : public thread, public io::stream {
+    friend class    stats::builder;
+
+  public:
+                    failover(
+                      misc::shared_ptr<io::endpoint> endp,
+                      misc::shared_ptr<multiplexing::subscriber> sbscrbr,
+                      QString const& name = "(unknown)");
+                    ~failover();
+    void            add_secondary_endpoint(
+                      misc::shared_ptr<io::endpoint> endp);
+    time_t          get_buffering_timeout() const throw ();
+    time_t          get_read_timeout() const throw ();
+    time_t          get_retry_interval() const throw ();
+    void            read(misc::shared_ptr<io::data>& d);
+    void            read(
+                      misc::shared_ptr<io::data>& d,
+                      time_t timeout,
+                      bool* timed_out = NULL);
+    void            run();
+    void            set_buffering_timeout(time_t secs);
+    void            set_failover(
+                      misc::shared_ptr<processing::failover> fo);
+    void            set_read_timeout(time_t read_timeout);
+    void            set_retry_interval(time_t retry_interval);
+    void            statistics(io::properties& tree) const;
+    void            update();
+    bool            wait(unsigned long time = ULONG_MAX);
+    unsigned int    write(misc::shared_ptr<io::data> const& d);
+
+  private:
+                    failover(failover const& other);
+    failover&       operator=(failover const& other);
+    void            _get_next_event(
+                      misc::shared_ptr<io::data>& d,
+                      time_t timeout,
+                      bool* timed_out = NULL);
+    void            _launch_failover();
+    void            _update_status(std::string const& status);
+
+    // Data that doesn't require locking.
+    volatile time_t _buffering_timeout;
+    misc::shared_ptr<io::endpoint>
+                    _endpoint;
+    std::vector<misc::shared_ptr<io::endpoint> >
+                    _secondary_endpoints;
+    misc::shared_ptr<failover>
+                    _failover;
+    bool            _failover_launched;
+    QString         _name;
+    time_t          _next_timeout;
+    time_t          _read_timeout;
+    volatile time_t _retry_interval;
+    misc::shared_ptr<multiplexing::subscriber>
+                    _subscriber;
+    volatile bool   _update;
+
+    // Status.
+    std::string     _status;
+    mutable QMutex  _statusm;
+
+    // Stream.
+    misc::shared_ptr<io::stream>
+                    _stream;
+    mutable QMutex  _streamm;
+  };
+}
+
+CCB_END()
 
 #endif // !CCB_PROCESSING_FAILOVER_HH

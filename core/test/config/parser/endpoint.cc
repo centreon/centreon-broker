@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -120,7 +120,7 @@ int main() {
              << " outputs (expected 0, 1, 4 respectively)");
 
     // Check input #1.
-    config::endpoint input1(s.inputs().first());
+    config::endpoint input1(s.inputs().front());
     if ((input1.name != "CentreonInput")
         || (input1.type != "tcp")
         || (input1.params["port"] != "5668")
@@ -129,7 +129,7 @@ int main() {
       throw (exceptions::msg() << "invalid input #1");
 
     // Check output #1.
-    QList<config::endpoint>::iterator it(s.outputs().begin());
+    std::list<config::endpoint>::iterator it(s.outputs().begin());
     config::endpoint output1(*(it++));
     if ((output1.name != "CentreonDatabase")
         || (output1.type != "sql")

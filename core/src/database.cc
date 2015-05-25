@@ -116,6 +116,7 @@ database::database(database_config const& db_cfg)
     _new_transaction();
   }
   catch (...) {
+    _db.reset();
     QSqlDatabase::removeDatabase(_connection_id);
     throw ;
   }
