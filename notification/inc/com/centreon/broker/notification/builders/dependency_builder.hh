@@ -64,30 +64,6 @@ namespace         notification {
       (void)dep_id;
       (void)id;
     }
-    virtual void  dependency_hostgroup_parent_relation(
-                    unsigned int dep_id,
-                    unsigned int hostgroup_id) {
-      (void)dep_id;
-      (void)hostgroup_id;
-    }
-    virtual void  dependency_hostgroup_child_relation(
-                    unsigned int dep_id,
-                    unsigned int hostgroup_id) {
-      (void)dep_id;
-      (void)hostgroup_id;
-    }
-    virtual void  dependency_servicegroup_child_relation(
-                    unsigned int dep_id,
-                    unsigned int servicegroup_id) {
-      (void)dep_id;
-      (void)servicegroup_id;
-    }
-    virtual void  dependency_servicegroup_parent_relation(
-                    unsigned int dep_id,
-                    unsigned int servicegroup_id) {
-      (void)dep_id;
-      (void)servicegroup_id;
-    }
 
     virtual void  set_notification_failure_options(
                     unsigned int dep_id,

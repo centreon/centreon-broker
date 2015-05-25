@@ -229,44 +229,6 @@ namespace        notification {
   }
 
   /**
-   *  Get the groups of a host.
-   *
-   *  @tparam get_all     True if we want all the groups, false if only one.
-   *
-   *  @param[in] context  The context from where the macro is being executed.
-   *
-   *  @return  The value of the macro.
-   */
-  template <bool get_all>
-  std::string get_host_groups(
-                 macro_context const& context) {return ("");}
-
-  template <> std::string get_host_groups<true>(
-                            macro_context const& context);
-
-  template <> std::string get_host_groups<false>(
-                            macro_context const& context);
-
-  /**
-   *  Get the groups of a service.
-   *
-   *  @tparam get_all     True if we want all the groups, false if only one.
-   *
-   *  @param[in] context  The context from where the macro is being executed.
-   *
-   *  @return  The value of the macro.
-   */
-  template <bool get_all>
-  std::string get_service_groups(
-                 macro_context const& context) {return ("");}
-
-  template <> std::string get_service_groups<true>(
-                            macro_context const& context);
-
-  template <> std::string get_service_groups<false>(
-                            macro_context const& context);
-
-  /**
    *  Get the output of a host.
    *
    *  @tparam get_long_output  True if we want the long output, false if we want the short one.
@@ -436,81 +398,6 @@ namespace        notification {
     return (to_string<size_t, 0>(count));
   }
 
-  /**
-   *  Get the group alias of a node.
-   *
-   *  @tparam is_host     Is the node an host ?
-   *
-   *  @param[in] context  The context from where the macro is being executed.
-   *
-   *  @return  The value of the macro.
-   */
-  template <bool is_host>
-  std::string get_group_alias(
-                macro_context const& context) {
-    objects::nodegroup::ptr ngr;
-    state const& st = context.get_state();
-    node_cache const& cache = context.get_cache();
-    if (is_host) {
-      std::map<std::string, neb::host_group_member> map =
-        cache.get_host(context.get_id()).get_groups();
-      if (map.empty())
-        return ("");
-      ngr = st.get_nodegroup_by_name(map.begin()->first);
-    }
-    else {
-      std::map<std::string, neb::service_group_member> map =
-        cache.get_service(context.get_id()).get_groups();
-      if (map.empty())
-        return ("");
-      ngr = st.get_nodegroup_by_name(map.begin()->first);
-    }
-
-    if (!ngr)
-      throw (exceptions::msg()
-             << "notification: macro: could not get a group");
-    return (ngr->get_alias());
-  }
-
-  /**
-   *  Get the group members of a node.
-   *
-   *  @tparam is_host     Is the node an host ?
-   *
-   *  @param[in] context  The context from where the macro is being executed.
-   *
-   *  @return  The value of the macro.
-   */
-  template <bool is_host>
-  std::string get_group_members(
-                macro_context const& context) {
-    std::vector<std::string> members;
-    node_cache const& cache = context.get_cache();
-    if (is_host) {
-      std::map<std::string, neb::host_group_member> map =
-        cache.get_host(context.get_id()).get_groups();
-      if (map.empty())
-        return ("");
-      members = cache.get_all_node_contained_in(map.begin()->first, true);
-    }
-    else {
-      std::map<std::string, neb::service_group_member> map =
-        cache.get_service(context.get_id()).get_groups();
-      if (map.empty())
-        return ("");
-      members = cache.get_all_node_contained_in(map.begin()->first, false);
-    }
-    std::string res;
-    for (std::vector<std::string>::const_iterator it(members.begin()),
-                                                  end(members.end());
-         it != end;
-         ++it) {
-      if (!res.empty())
-        res.append(", ");
-      res.append(*it);
-    }
-    return (res);
-  }
 
   /**
    *  Get the member of a contact as a string.
@@ -617,6 +504,9 @@ namespace        notification {
                   macro_context const& context);
 
   std::string  get_service_duration_sec(
+                 macro_context const& context);
+
+  std::string  get_node_downtime_number(
                  macro_context const& context);
 
   std::string  get_timet_string(

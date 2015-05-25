@@ -156,7 +156,7 @@ void kpi_boolexp::visit(io::stream* visitor) {
     // Get information (HARD and SOFT values are the same).
     impact_values values;
     impact_hard(values);
-    short state(_boolexp->get_state());
+    short state(_get_state());
 
     // Generate BI events.
     {
@@ -199,7 +199,7 @@ void kpi_boolexp::visit(io::stream* visitor) {
  */
 void kpi_boolexp::_fill_impact(impact_values& impact) {
   // Get nominal impact from state.
-  short state(_boolexp->get_state());
+  short state(_get_state());
   double nominal;
   if (0 == state)
     nominal = 0.0;
@@ -247,4 +247,24 @@ void kpi_boolexp::_open_new_event(
     visitor->write(ke);
   }
   return ;
+}
+
+/**
+ *  @brief Get the current state of the boolexp.
+ *
+ *  A boolean expression can be uninitialized yet, if a service status
+ *  has yet to come. If this is the case, the status is the one of the
+ *  opened event.
+ *
+ *  @return  The current state of the boolexp.
+ */
+short kpi_boolexp::_get_state() const {
+  if (_boolexp->state_known())
+    return (_boolexp->get_state());
+  else {
+    if (!_event.isNull())
+      return (_event->status);
+    else
+      _boolexp->get_state();
+  }
 }

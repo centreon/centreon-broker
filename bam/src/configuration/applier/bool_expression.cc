@@ -191,21 +191,6 @@ misc::shared_ptr<bam::bool_expression> applier::bool_expression::find_boolexp(
 }
 
 /**
- *  Visit each applied boolean expression.
- *
- *  @param[out] visitor  Visitor that will receive status.
- */
-void applier::bool_expression::visit(io::stream* visitor) {
-  for (std::map<unsigned int, applied>::iterator
-         it(_applied.begin()),
-         end(_applied.end());
-       it != end;
-       ++it)
-    it->second.obj->visit(visitor);
-  return ;
-}
-
-/**
  *  Copy internal data members.
  *
  *  @param[in] other Object to copy.

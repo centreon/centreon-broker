@@ -276,13 +276,9 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
   map.insert(
     "HOSTDURATIONSEC",
     get_host_duration_sec);
-  // XXX map.insert(
-  //   "HOSTDOWNTIME",
-  //   &get_host_status_member_as_string<
-  //     neb::host_service_status,
-  //     short,
-  //     &neb::host_service_status::scheduled_downtime_depth,
-  //     0>);
+  map.insert(
+    "HOSTDOWNTIME",
+     &get_node_downtime_number);
   map.insert(
     "HOSTPERCENTCHANGE",
     &get_host_status_member_as_string<
@@ -292,10 +288,10 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
       2>);
   map.insert(
     "HOSTGROUPNAME",
-    &get_host_groups<false>);
+    &null_getter);
   map.insert(
     "HOSTGROUPNAMES",
-    &get_host_groups<true>);
+    &null_getter);
   map.insert(
     "LASTHOSTCHECK",
     &get_host_status_member_as_string<
@@ -465,10 +461,10 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
       2>);
   map.insert(
     "SERVICEGROUPNAME",
-    &get_service_groups<false>);
+    &null_getter);
   map.insert(
     "SERVICEGROUPNAMES",
-    &get_service_groups<true>);
+    &null_getter);
   map.insert(
     "LASTSERVICECHECK",
     &get_service_status_member_as_string<
@@ -590,16 +586,16 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
   // Groups macros.
   map.insert(
     "HOSTGROUPALIAS",
-    &get_group_alias<true>);
+    &null_getter);
   map.insert(
     "HOSTGROUPMEMBERS",
-    &get_group_members<true>);
+    &null_getter);
   map.insert(
     "SERVICEGROUPALIAS",
-    &get_group_alias<false>);
+    &null_getter);
   map.insert(
     "SERVICEGROUPMEMBERS",
-    &get_group_members<false>);
+    &null_getter);
 
   // Contact macros.
   map.insert(

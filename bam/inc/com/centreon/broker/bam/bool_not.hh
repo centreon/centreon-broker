@@ -50,6 +50,7 @@ namespace     bam {
     void      set_value(misc::shared_ptr<bool_value>& value);
     bool      value_hard();
     bool      value_soft();
+    bool      state_known() const;
 
   private:
     void      _internal_copy(bool_not const& right);

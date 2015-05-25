@@ -38,7 +38,7 @@ namespace             notification {
    *  @tparam T  The type of the object cached.
    *  @brief Contain a fixed size cache of a particular object.
    */
-  template <typename FullType, typename StatusType, typename GroupType>
+  template <typename FullType, typename StatusType>
   class               object_cache {
   public:
     /**
@@ -50,8 +50,8 @@ namespace             notification {
      * @param[in] obj  The object to copy.
      */
                       object_cache(
-                        object_cache<FullType, StatusType, GroupType> const& obj) {
-      object_cache<FullType, StatusType, GroupType>::operator=(obj);
+                        object_cache<FullType, StatusType> const& obj) {
+      object_cache<FullType, StatusType>::operator=(obj);
     }
 
     /**
@@ -61,13 +61,12 @@ namespace             notification {
      *
      *  @return  A reference this object.
      */
-    object_cache<FullType, StatusType, GroupType>&  operator=(
-      object_cache<FullType, StatusType, GroupType> const& obj) {
+    object_cache<FullType, StatusType>&  operator=(
+      object_cache<FullType, StatusType> const& obj) {
       if (this != &obj) {
         _node = obj._node;
         _current_status = obj._current_status;
         _prev_status = obj._prev_status;
-        _groups = obj._groups;
         _custom_variables = obj._custom_variables;
       }
       return (*this);
@@ -84,12 +83,6 @@ namespace             notification {
                       new StatusType(_prev_status)));
       out.push_back(misc::shared_ptr<io::data>(
                       new StatusType(_current_status)));
-      for (typename std::map<std::string, GroupType>::const_iterator
-             it(_groups.begin()),
-             end(_groups.end());
-           it != end;
-           ++it)
-        out.push_back(misc::shared_ptr<io::data>(new GroupType(it->second)));
       for (QHash<std::string, neb::custom_variable_status>::const_iterator
              it(_custom_variables.begin()),
              end(_custom_variables.end());
@@ -116,15 +109,6 @@ namespace             notification {
     void update(StatusType const& status) {
       _prev_status = _current_status;
       _current_status = status;
-    }
-
-    /**
-     *  Update the object cache.
-     *
-     *  @param[in] group  The data to update.
-     */
-    void update(GroupType const& group) {
-      _groups[group.group.toStdString()] = group;
     }
 
     /**
@@ -181,15 +165,6 @@ namespace             notification {
     }
 
     /**
-     *  Get the groups this node belongs to.
-     *
-     *  @return  The groups.
-     */
-    std::map<std::string, GroupType> const& get_groups() const {
-      return (_groups);
-    }
-
-    /**
      *  Get the custom vars of this node.
      *
      *  @return  The custome vars of this node.
@@ -203,8 +178,6 @@ namespace             notification {
     StatusType  _current_status;
     StatusType  _prev_status;
 
-    std::map<std::string, GroupType>
-                _groups;
     QHash<std::string, neb::custom_variable_status>
                 _custom_variables;
   };

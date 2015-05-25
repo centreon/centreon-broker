@@ -143,30 +143,6 @@ void dependency_loader::_load_relations(
              query.value(0).toUInt(),
              node_id(query.value(2).toUInt(),
              query.value(1).toUInt()));
-  _load_relation(
-    query,
-    output,
-    "servicegroup_sg_id",
-    "cfg_dependencies_servicegroupparents_relations",
-    &dependency_builder::dependency_servicegroup_parent_relation);
-  _load_relation(
-    query,
-    output,
-    "servicegroup_sg_id",
-    "cfg_dependencies_servicegroupchildren_relations",
-    &dependency_builder::dependency_servicegroup_child_relation);
-  _load_relation(
-    query,
-    output,
-    "hostgroup_hg_id",
-    "cfg_dependencies_hostgroupparents_relations",
-    &dependency_builder::dependency_hostgroup_parent_relation);
-  _load_relation(
-    query,
-    output,
-    "hostgroup_hg_id",
-    "cfg_dependencies_hostgroupchildren_relations",
-    &dependency_builder::dependency_hostgroup_child_relation);
 }
 
 /**

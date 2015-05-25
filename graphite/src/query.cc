@@ -277,13 +277,8 @@ void query::_get_null(io::data const& d, std::ostream& is) {
 /**
  *  Get a dollar sign (for escape).
  *
-<<<<<<< HEAD
  *  @param[in] d   Unused.
  *  @param[in] is  The stream.
-=======
- *  @param[in] d  unused.
- *  @param[out]   The stream.
->>>>>>> 3.0
  */
 void query::_get_dollar_sign(io::data const& d, std::ostream& is) {
   (void)d;

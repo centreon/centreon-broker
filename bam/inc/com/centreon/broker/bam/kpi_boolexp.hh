@@ -64,6 +64,7 @@ namespace        bam {
                    io::stream* visitor,
                    int impact,
                    short state);
+    short        _get_state() const;
 
     misc::shared_ptr<bool_expression>
                  _boolexp;

@@ -130,3 +130,15 @@ void bool_binary_operator::_internal_copy(
   _right_soft = right._right_soft;
   return ;
 }
+
+/**
+ *  Get if the state is known, i.e has been computed at least once.
+ *
+ *  @return  True if the state is known.
+ */
+bool bool_binary_operator::state_known() const {
+  return (!_left.isNull()
+            && !_right.isNull()
+            && _left->state_known()
+            && _right->state_known());
+}

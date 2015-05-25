@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <QPair>
 #include <QHash>
+#include "com/centreon/broker/neb/tokenizer.hh"
 #include "com/centreon/broker/neb/node_id.hh"
 #include "com/centreon/broker/neb/node_events_stream.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -180,6 +181,14 @@ public:
   explicit buffer(unsigned int size) {
     _data = new char[size];
   }
+  buffer(buffer const& buf) {
+    _data = ::strdup(buf._data);
+  }
+  buffer& operator=(buffer const& buf) {
+    if (this != &buf)
+      _data = ::strdup(buf._data);
+    return (*this);
+  }
   ~buffer() {
     delete [] _data;
   }
@@ -226,26 +235,24 @@ void node_events_stream::parse_command(
     throw (exceptions::msg()
            << "couldn't parse the line");
 
-  size_t arg_len = ::strlen(args.get());
-
   if (command == "ACKNOWLEDGE_HOST_PROBLEM")
-    _parse_ack(ack_host, timestamp, args.get(), arg_len, stream);
+    _parse_ack(ack_host, timestamp, args.get(), stream);
   else if (command == "ACKNOWLEDGE_SVC_PROBLEM")
-    _parse_ack(ack_service, timestamp, args.get(), arg_len, stream);
+    _parse_ack(ack_service, timestamp, args.get(), stream);
   else if (command == "REMOVE_HOST_ACKNOWLEDGEMENT")
-    _parse_remove_ack(ack_host, timestamp, args.get(), arg_len, stream);
+    _parse_remove_ack(ack_host, timestamp, args.get(), stream);
   else if (command == "REMOVE_SVC_ACKNOWLEDGEMENT")
-    _parse_remove_ack(ack_service, timestamp, args.get(), arg_len, stream);
+    _parse_remove_ack(ack_service, timestamp, args.get(), stream);
   else if (command == "SCHEDULE_HOST_DOWNTIME")
-    _parse_downtime(down_host, timestamp, args.get(), arg_len, stream);
+    _parse_downtime(down_host, timestamp, args.get(), stream);
   else if (command == "SCHEDULE_HOST_SVC_DOWNTIME")
-    _parse_downtime(down_host_service, timestamp, args.get(), arg_len, stream);
+    _parse_downtime(down_host_service, timestamp, args.get(), stream);
   else if (command == "SCHEDULE_SVC_DOWNTIME")
-    _parse_downtime(down_service, timestamp, args.get(), arg_len, stream);
+    _parse_downtime(down_service, timestamp, args.get(), stream);
   else if (command == "DELETE_HOST_DOWNTIME")
-    _parse_remove_downtime(down_host, timestamp, args.get(), arg_len, stream);
+    _parse_remove_downtime(down_host, timestamp, args.get(), stream);
   else if (command == "DELETE_SVC_DOWNTIME")
-    _parse_remove_downtime(down_service, timestamp, args.get(), arg_len, stream);
+    _parse_remove_downtime(down_service, timestamp, args.get(), stream);
 }
 
 /**
@@ -398,7 +405,6 @@ void node_events_stream::_trigger_floating_downtime(
  *  @param[in] is_host  Is this a host acknowledgement.
  *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
- *  @param[in] arg_size The size of the arg.
  *  @param[in] stream   The output stream.
  *
  *  @return             An acknowledgement event.
@@ -407,61 +413,49 @@ void node_events_stream::_parse_ack(
                            ack_type is_host,
                            timestamp t,
                            const char* args,
-                           size_t arg_size,
                            io::stream& stream) {
-  buffer host_name(arg_size);
-  buffer service_description(arg_size);
-  int sticky = 0;
-  int notify = 0;
-  int persistent_comment = 0;
-  buffer author(arg_size);
-  buffer comment(arg_size);
-  bool ret = false;
-  if (is_host == ack_host)
-    ret = (::sscanf(
-             args,
-             "%[^;];%i;%i;%i;%[^;];%[^;]",
-             host_name.get(),
-             &sticky,
-             &notify,
-             &persistent_comment,
-             author.get(),
-             comment.get()) == 6);
-  else
-    ret = (::sscanf(
-             args,
-             "%[^;];%[^;];%i;%i;%i;%[^;];%[^;]",
-             host_name.get(),
-             service_description.get(),
-             &sticky,
-             &notify,
-             &persistent_comment,
-             author.get(),
-             comment.get()) == 7);
-  if (!ret)
+  tokenizer tok(args);
+
+  try {
+    // Parse.
+    tok.begin();
+    std::string host_name = tok.get_next_token<std::string>();
+    std::string service_description =
+      (is_host == ack_host ? "" : tok.get_next_token<std::string>());
+    int sticky = tok.get_next_token<int>();
+    int notify = tok.get_next_token<int>();
+    int persistent_comment = tok.get_next_token<int>();
+    std::string author = tok.get_next_token<std::string>(true);
+    std::string comment = tok.get_next_token<std::string>(true);
+    tok.end();
+
+    node_id id(_node_cache.get_node_by_names(
+                 host_name,
+                 service_description));
+    misc::shared_ptr<neb::acknowledgement>
+      ack(new neb::acknowledgement);
+    ack->acknowledgement_type = is_host;
+    ack->comment = QString::fromStdString(comment);
+    ack->author = QString::fromStdString(author);
+    ack->entry_time = t;
+    ack->host_id = id.get_host_id();
+    ack->service_id = id.get_service_id();
+    ack->is_sticky = (sticky == 2);
+    ack->persistent_comment = (persistent_comment == 1);
+    ack->notify_contacts = (notify == 1 || notify == 2);
+    ack->notify_only_if_not_already_acknowledged = (notify == 2);
+
+    // Save acknowledgements.
+    _acknowledgements[id] = *ack;
+
+    // Send the acknowledgement.
+    stream.write(ack);
+
+  } catch (std::exception const& e) {
     throw (exceptions::msg()
-           << "couldn't parse the arguments for the acknowledgement");
-
-  node_id id(_node_cache.get_node_by_names(
-               host_name.get(),
-               service_description.get()));
-  misc::shared_ptr<neb::acknowledgement>
-    ack(new neb::acknowledgement);
-  ack->acknowledgement_type = is_host;
-  ack->comment = QString(comment.get());
-  ack->author = QString(author.get());
-  ack->entry_time = t;
-  ack->host_id = id.get_host_id();
-  ack->service_id = id.get_service_id();
-  ack->is_sticky = (sticky == 2);
-  ack->persistent_comment = (persistent_comment == 1);
-  ack->notify_contacts = (notify == 1);
-
-  // Save acknowledgements.
-  _acknowledgements[id] = *ack;
-
-  // Send the acknowledgement.
-  stream.write(ack);
+           << "couldn't parse the arguments for the acknowledgement: "
+           <<  e.what());
+  }
 }
 
 /**
@@ -470,7 +464,6 @@ void node_events_stream::_parse_ack(
  *  @param[in] is_host  Is this a host acknowledgement.
  *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
- *  @param[in] arg_size The size of the arg.
  *  @param[in] stream   The output stream.
  *
  *  @return             An acknowledgement removal event.
@@ -479,45 +472,43 @@ void node_events_stream::_parse_remove_ack(
                            ack_type type,
                            timestamp t,
                            const char* args,
-                           size_t arg_size,
                            io::stream& stream) {
-  buffer host_name(arg_size);
-  buffer service_description(arg_size);
-  bool ret = false;
-  if (type == ack_host)
-    ret = (::sscanf(args, "%[^;]", host_name.get()) == 1);
-  else
-    ret = (::sscanf(
-             args,
-             "%[^;];%[^;]",
-             host_name.get(),
-             service_description.get()) == 2);
-  if (!ret)
+  tokenizer tok(args);
+  try {
+    // Parse.
+    tok.begin();
+    std::string host_name = tok.get_next_token<std::string>();
+    std::string service_description =
+      (type == ack_host ? "" : tok.get_next_token<std::string>());
+    tok.end();
+
+    // Find the node id from the host name / description.
+    node_id id = _node_cache.get_node_by_names(
+                   host_name,
+                   service_description);
+
+    // Find the ack.
+    QHash<node_id, neb::acknowledgement>::iterator
+      found(_acknowledgements.find(id));
+    if (found == _acknowledgements.end())
+      throw (exceptions::msg()
+             << "couldn't find an acknowledgement for ("
+             << id.get_host_id() << ", " << id.get_service_id() << ")");
+
+    // Close the ack.
+    misc::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement(*found));
+    ack->deletion_time = t;
+
+    // Erase the ack.
+    _acknowledgements.erase(found);
+
+    // Send the closed ack.
+    stream.write(ack);
+  } catch (std::exception const& e) {
     throw (exceptions::msg()
-           << "couldn't parse the arguments for the acknowledgement removal");
-
-  // Find the node id from the host name / description.
-  node_id id = _node_cache.get_node_by_names(
-                 host_name.get(),
-                 service_description.get());
-
-  // Find the ack.
-  QHash<node_id, neb::acknowledgement>::iterator
-    found(_acknowledgements.find(id));
-  if (found == _acknowledgements.end())
-    throw (exceptions::msg()
-           << "couldn't find an acknowledgement for ("
-           << id.get_host_id() << ", " << id.get_service_id() << ")");
-
-  // Close the ack.
-  misc::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement(*found));
-  ack->deletion_time = t;
-
-  // Erase the ack.
-  _acknowledgements.erase(found);
-
-  // Send the closed ack.
-  stream.write(ack);
+           << "couldn't parse the arguments for the acknowledgement removal: "
+           << e.what());
+  }
 }
 
 /**
@@ -526,7 +517,6 @@ void node_events_stream::_parse_remove_ack(
  *  @param[in] type     The downtime type.
  *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
- *  @param[în] arg_size The size of the arg.
  *  @param[in] stream   The output stream.
  *
  *  @return             A downtime event.
@@ -535,97 +525,76 @@ void node_events_stream::_parse_downtime(
                            down_type type,
                            timestamp t,
                            char const* args,
-                           size_t arg_size,
                            io::stream& stream) {
-  buffer host_name(arg_size);
-  buffer service_description(arg_size);
-  unsigned long start_time = 0;
-  unsigned long end_time = 0;
-  int fixed = 0;
-  unsigned int trigger_id = 0;
-  unsigned int duration = 0;
-  buffer author(arg_size);
-  buffer comment(arg_size);
-  buffer recurring_timeperiod(arg_size);
-  unsigned int recurring_interval = 0;
-  bool ret = false;
+  tokenizer tok(args);
 
   (void)t;
   logging::debug(logging::medium)
     << "notification: parsing downtime command: '" << args << "'";
 
-  if (type == down_host)
-    ret = (::sscanf(
-             args,
-             "%[^;];%lu;%lu;%i;%u;%u;%[^;];%[^;];%[^;];%u",
-             host_name.get(),
-             &start_time,
-             &end_time,
-             &fixed,
-             &trigger_id,
-             &duration,
-             author.get(),
-             comment.get(),
-             recurring_timeperiod.get(),
-             &recurring_interval) == 10);
-  else
-    ret = (::sscanf(
-             args,
-             "%[^;];%[^;];%lu;%lu;%i;%u;%u;%[^;];%[^;];%[^;];%u",
-             host_name.get(),
-             service_description.get(),
-             &start_time,
-             &end_time,
-             &fixed,
-             &trigger_id,
-             &duration,
-             author.get(),
-             comment.get(),
-             recurring_timeperiod.get(),
-             &recurring_interval) == 11);
+  try {
+    // Parse.
+    tok.begin();
+    std::string host_name =     tok.get_next_token<std::string>();
+    std::string service_description =
+      (type == down_host ? "" : tok.get_next_token<std::string>());
+    unsigned long start_time =  tok.get_next_token<unsigned long>();
+    unsigned long end_time =    tok.get_next_token<unsigned long>();
+    int fixed =                 tok.get_next_token<int>();
+    unsigned int trigger_id =   tok.get_next_token<unsigned int>();
+    unsigned int duration =     tok.get_next_token<unsigned int>();
+    std::string author =        tok.get_next_token<std::string>(true);
+    std::string comment =       tok.get_next_token<std::string>(true);
+    std::string recurring_timeperiod =
+                                tok.get_next_token<std::string>(true);
+    unsigned int recurring_interval =
+                                tok.get_next_token<unsigned int>(true);
+    tok.end();
 
-  if (!ret)
-    throw (exceptions::msg() << "error while parsing downtime arguments");
+    node_id id = _node_cache.get_node_by_names(
+                   host_name,
+                   service_description);
 
-  node_id id = _node_cache.get_node_by_names(
-                 host_name.get(),
-                 service_description.get());
+    misc::shared_ptr<neb::downtime>
+      d(new neb::downtime);
+    d->author = QString::fromStdString(author);
+    d->comment = QString::fromStdString(comment);
+    d->start_time = start_time;
+    d->end_time = end_time;
+    d->duration = fixed ? end_time - start_time : duration;
+    d->fixed = (fixed == 1);
+    d->downtime_type = type;
+    d->host_id = id.get_host_id();
+    d->service_id = id.get_service_id();
+    d->was_started = false;
+    d->internal_id = ++_actual_downtime_id;
+    d->is_recurring = recurring_interval != 0;
+    d->triggered_by = trigger_id;
+    d->recurring_interval = recurring_interval;
+    d->recurring_timeperiod = QString::fromStdString(recurring_timeperiod);
 
-  misc::shared_ptr<neb::downtime>
-    d(new neb::downtime);
-  d->author = QString::fromStdString(author.get());
-  d->comment = QString::fromStdString(comment.get());
-  d->start_time = start_time;
-  d->end_time = end_time;
-  d->duration = fixed ? end_time - start_time : duration;
-  d->fixed = (fixed == 1);
-  d->downtime_type = type;
-  d->host_id = id.get_host_id();
-  d->service_id = id.get_service_id();
-  d->was_started = false;
-  d->internal_id = ++_actual_downtime_id;
-  d->is_recurring = recurring_interval != 0;
-  d->triggered_by = trigger_id;
-  d->recurring_interval = recurring_interval;
-  d->recurring_timeperiod = QString::fromStdString(recurring_timeperiod.get());
+    // Save the downtime.
+    if (!d->is_recurring) {
+      _downtimes[d->internal_id] = *d;
+      _downtime_id_by_nodes.insert(id, d->internal_id);
+    }
+    else {
+      _recurring_downtimes[d->internal_id] = *d;
+    }
 
-  // Save the downtime.
-  if (!d->is_recurring) {
-    _downtimes[d->internal_id] = *d;
-    _downtime_id_by_nodes.insert(id, d->internal_id);
+    // Write the downtime.
+    stream.write(d);
+
+    // Schedule the downtime.
+    if (!d->is_recurring)
+      _schedule_downtime(*d);
+    else
+      _spawn_recurring_downtime(timestamp(), *d);
+
+  } catch (std::exception const& e) {
+    throw (exceptions::msg()
+           << "error while parsing downtime arguments: " << e.what());
   }
-  else {
-    _recurring_downtimes[d->internal_id] = *d;
-  }
-
-  // Write the downtime.
-  stream.write(d);
-
-  // Schedule the downtime.
-  if (!d->is_recurring)
-    _schedule_downtime(*d);
-  else
-    _spawn_recurring_downtime(timestamp(), *d);
 }
 
 /**
@@ -634,7 +603,6 @@ void node_events_stream::_parse_downtime(
  *  @param[in] type     The downtime type.
  *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
- *  @param[in] arg_size The size of the arg.
  *  @param[in] stream   The output stream.
  *
  *  @return             A downtime removal event.
@@ -643,10 +611,8 @@ void node_events_stream::_parse_remove_downtime(
                            down_type type,
                            timestamp t,
                            const char* args,
-                           size_t arg_size,
                            io::stream& stream) {
   (void)type;
-  (void)arg_size;
   unsigned int downtime_id;
   if (::sscanf(args, "%u", &downtime_id) != 1)
     throw (exceptions::msg() << "error while parsing remove downtime arguments");

@@ -24,7 +24,6 @@
 #include <sstream>
 #include <QMutexLocker>
 #include "com/centreon/broker/bam/ba_status.hh"
-#include "com/centreon/broker/bam/bool_status.hh"
 #include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/state.hh"
 #include "com/centreon/broker/bam/internal.hh"
@@ -69,7 +68,6 @@ monitoring_stream::monitoring_stream(
     _storage_cfg(db_cfg),
     _db(db_cfg),
     _ba_update(_db),
-    _bool_exp_update(_db),
     _kpi_update(_db),
     _meta_service_update(_db),
     _pending_events(0) {
@@ -259,19 +257,6 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
                << status->ba_id << ": " << e.what());
       }
     }
-    else if (data->type() == bam::bool_status::static_type()) {
-      bool_status* status(static_cast<bool_status*>(data.data()));
-      logging::debug(logging::low) << "BAM: processing boolexp status (id "
-        << status->bool_id << ", state " << status->state << ")";
-      _bool_exp_update.bind_value(":state", status->state);
-      _bool_exp_update.bind_value(":bool_id", status->bool_id);
-      try { _bool_exp_update.run_statement(); }
-      catch (std::exception const& e) {
-        throw (exceptions::msg()
-               << "BAM: could not update boolean expression "
-               << status->bool_id << ": " << e.what());
-      }
-    }
     else if (data->type() == bam::kpi_status::static_type()) {
       kpi_status* status(static_cast<kpi_status*>(data.data()));
       logging::debug(logging::low) << "BAM: processing KPI status (id "
@@ -349,7 +334,6 @@ monitoring_stream::monitoring_stream(monitoring_stream const& other)
   : io::stream(other),
     _db(database_config()),
     _ba_update(_db),
-    _bool_exp_update(_db),
     _kpi_update(_db),
     _meta_service_update(_db) {
   assert(!"BAM monitoring stream is not copyable");
@@ -393,21 +377,6 @@ void monitoring_stream::_prepare() {
              << "BAM: could not prepare BA update query: "
              << e.what());
     }
-  }
-
-  // Boolean expression status.
-  {
-    std::string query;
-    query = "UPDATE cfg_bam_boolean AS b"
-            "  LEFT JOIN cfg_bam_kpi AS k"
-            "    ON b.boolean_id=k.boolean_id"
-            "  SET k.current_status = "
-            "      CASE WHEN :state=b.bool_state THEN 2 ELSE 0 END,"
-            "      k.state_type='1'"
-            "  WHERE b.boolean_id=:bool_id";
-    _bool_exp_update.prepare(
-      query,
-      "BAM: could not prepare boolean expression update query");
   }
 
   // KPI status.

@@ -47,11 +47,11 @@ namespace            bam {
                        computable* child,
                        io::stream* visitor = NULL);
     short            get_state() const;
+    bool             state_known() const;
     void             set_expression(
                        misc::shared_ptr<bool_value> const& expression);
     void             set_id(unsigned int id);
     void             set_impact_if(bool impact_if);
-    void             visit(io::stream* visitor);
 
   private:
     void             _internal_copy(bool_expression const& right);

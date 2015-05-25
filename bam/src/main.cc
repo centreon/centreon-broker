@@ -25,7 +25,6 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/bam/ba_status.hh"
-#include "com/centreon/broker/bam/bool_status.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/bam/ba_event.hh"
@@ -121,10 +120,6 @@ extern "C" {
       // Register bam events.
       {
         register_bam_event<bam::ba_status>(e, bam::de_ba_status, "ba_status");
-        register_bam_event<bam::bool_status>(
-                                  e,
-                                  bam::de_bool_status,
-                                  "bool_status");
         register_bam_event<bam::kpi_status>(
                                   e,
                                   bam::de_kpi_status,

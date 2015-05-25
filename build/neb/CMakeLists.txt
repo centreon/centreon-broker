@@ -34,13 +34,9 @@ set(NEB_SOURCES
   "${SRC_DIR}/downtime.cc"
   "${SRC_DIR}/event_handler.cc"
   "${SRC_DIR}/flapping_status.cc"
-  "${SRC_DIR}/group.cc"
-  "${SRC_DIR}/group_member.cc"
   "${SRC_DIR}/host.cc"
   "${SRC_DIR}/host_check.cc"
   "${SRC_DIR}/host_dependency.cc"
-  "${SRC_DIR}/host_group.cc"
-  "${SRC_DIR}/host_group_member.cc"
   "${SRC_DIR}/host_parent.cc"
   "${SRC_DIR}/host_service.cc"
   "${SRC_DIR}/host_service_status.cc"
@@ -52,8 +48,6 @@ set(NEB_SOURCES
   "${SRC_DIR}/service.cc"
   "${SRC_DIR}/service_check.cc"
   "${SRC_DIR}/service_dependency.cc"
-  "${SRC_DIR}/service_group.cc"
-  "${SRC_DIR}/service_group_member.cc"
   "${SRC_DIR}/service_status.cc"
   "${SRC_DIR}/status.cc"
   # Headers.
@@ -66,13 +60,9 @@ set(NEB_SOURCES
   "${INC_DIR}/com/centreon/broker/neb/event_handler.hh"
   "${INC_DIR}/com/centreon/broker/neb/events.hh"
   "${INC_DIR}/com/centreon/broker/neb/flapping_status.hh"
-  "${INC_DIR}/com/centreon/broker/neb/group.hh"
-  "${INC_DIR}/com/centreon/broker/neb/group_member.hh"
   "${INC_DIR}/com/centreon/broker/neb/host.hh"
   "${INC_DIR}/com/centreon/broker/neb/host_check.hh"
   "${INC_DIR}/com/centreon/broker/neb/host_dependency.hh"
-  "${INC_DIR}/com/centreon/broker/neb/host_group.hh"
-  "${INC_DIR}/com/centreon/broker/neb/host_group_member.hh"
   "${INC_DIR}/com/centreon/broker/neb/host_parent.hh"
   "${INC_DIR}/com/centreon/broker/neb/host_service.hh"
   "${INC_DIR}/com/centreon/broker/neb/host_service_status.hh"
@@ -85,8 +75,6 @@ set(NEB_SOURCES
   "${INC_DIR}/com/centreon/broker/neb/service.hh"
   "${INC_DIR}/com/centreon/broker/neb/service_check.hh"
   "${INC_DIR}/com/centreon/broker/neb/service_dependency.hh"
-  "${INC_DIR}/com/centreon/broker/neb/service_group.hh"
-  "${INC_DIR}/com/centreon/broker/neb/service_group_member.hh"
   "${INC_DIR}/com/centreon/broker/neb/service_status.hh"
   "${INC_DIR}/com/centreon/broker/neb/status.hh"
 )
@@ -120,6 +108,7 @@ add_library("${NEB}" SHARED
   "${SRC_DIR}/node_events_factory.cc"
   "${SRC_DIR}/node_events_stream.cc"
   "${SRC_DIR}/node_id.cc"
+  "${SRC_DIR}/tokenizer.cc"
   "${SRC_DIR}/timeperiod_loader.cc"
   "${SRC_DIR}/composed_timeperiod_builder.cc"
   "${SRC_DIR}/timeperiod_by_name_builder.cc"
@@ -132,6 +121,7 @@ add_library("${NEB}" SHARED
   "${INC_DIR}/com/centreon/broker/neb/node_events_factory.hh"
   "${INC_DIR}/com/centreon/broker/neb/node_events_stream.hh"
   "${INC_DIR}/com/centreon/broker/neb/node_id.hh"
+  "${INC_DIR}/com/centreon/broker/neb/tokenizer.hh"
   "${INC_DIR}/com/centreon/broker/neb/timeperiod_builder.hh"
   "${INC_DIR}/com/centreon/broker/neb/timeperiod_loader.hh"
   "${INC_DIR}/com/centreon/broker/neb/timeperiod_by_name_builder.hh"
@@ -399,44 +389,6 @@ if (WITH_TESTING)
     "${TEST_DIR}/host_dependency/assignment.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Host Group Tests.
-  #   Default constructor.
-  set(TEST_NAME "neb_host_group_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/host_group/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "neb_host_group_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/host_group/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "neb_host_group_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/host_group/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Host Group Member Tests.
-  #   Default constructor.
-  set(TEST_NAME "neb_host_group_member_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/host_group_member/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "neb_host_group_member_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/host_group_member/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "neb_host_group_member_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/host_group_member/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
   # Host Parent Tests.
   #   Default constructor.
   set(TEST_NAME "neb_host_parent_ctor_default")
@@ -606,44 +558,6 @@ if (WITH_TESTING)
   set(TEST_NAME "neb_service_dependency_assignment")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/service_dependency/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Service Group Tests.
-  #   Default constructor.
-  set(TEST_NAME "neb_service_group_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_group/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "neb_service_group_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_group/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "neb_service_group_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_group/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Service Group Member Tests.
-  #   Default constructor.
-  set(TEST_NAME "neb_service_group_member_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_group_member/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "neb_service_group_member_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_group_member/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "neb_service_group_member_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_group_member/assignment.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # Service Status Tests.

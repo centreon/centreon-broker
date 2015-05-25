@@ -21,7 +21,6 @@
 #  define CCB_BAM_EVENTS_HH
 
 #  include "com/centreon/broker/bam/ba_status.hh"
-#  include "com/centreon/broker/bam/bool_status.hh"
 #  include "com/centreon/broker/bam/kpi_status.hh"
 #  include "com/centreon/broker/bam/meta_service_status.hh"
 #  include "com/centreon/broker/bam/ba_event.hh"

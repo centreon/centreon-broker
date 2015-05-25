@@ -58,7 +58,6 @@ namespace                bam {
                            service_book& book);
         misc::shared_ptr<bam::bool_expression>
                          find_boolexp(unsigned int id);
-        void             visit(io::stream* visitor);
 
       private:
         struct applied {
