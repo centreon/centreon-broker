@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <centreonbroker>
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
+  <instance>36</instance>
+  <instance_name>MyBroker2</instance_name>
+  <!--
   <stats>
     <fifo>/tmp/cbd.fifo</fifo>
   </stats>
@@ -13,6 +16,7 @@
     <info>1</info>
     <level>3</level>
   </logger>
+  -->
   <input>
     <name>InputInstanceUpdateTest</name>
     <type>tcp</type>
