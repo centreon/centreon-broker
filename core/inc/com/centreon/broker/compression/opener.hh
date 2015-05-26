@@ -41,7 +41,6 @@ namespace                        compression {
     io::endpoint*                clone() const;
     void                         close();
     misc::shared_ptr<io::stream> open();
-    misc::shared_ptr<io::stream> open(QString const& id);
     void                         set_level(int level = -1);
     void                         set_size(unsigned int size = 0);
 

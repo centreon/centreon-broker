@@ -219,16 +219,6 @@ misc::shared_ptr<io::stream> acceptor::open() {
 }
 
 /**
- *  Start connection acception.
- *
- *  @param[in] id     Unused.
- */
-misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
-  (void)id;
-  return (open());
-}
-
-/**
  *  Get statistics about this TCP acceptor.
  *
  *  @param[out] tree Buffer in which statistics will be written.

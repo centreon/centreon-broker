@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -96,18 +96,6 @@ misc::shared_ptr<io::stream> opener::open() {
   misc::shared_ptr<io::stream> retval;
   if (!_from.isNull())
     retval = _open(_from->open());
-  return (retval);
-}
-
-/**
- *  Open a compression stream.
- *
- *  @return New compression object.
- */
-misc::shared_ptr<io::stream> opener::open(QString const& id) {
-  misc::shared_ptr<io::stream> retval;
-  if (!_from.isNull())
-    retval = _open(_from->open(id));
   return (retval);
 }
 

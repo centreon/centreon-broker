@@ -161,17 +161,6 @@ misc::shared_ptr<io::stream> connector::open() {
 }
 
 /**
- *  Connect to the remote host.
- *
- *  @param[in] id     Unused.
- *  @param[in] cache  TCP module does not use the persistent cache.
- */
-misc::shared_ptr<io::stream> connector::open(QString const& id) {
-  (void)id;
-  return (open());
-}
-
-/**
  *  Set connection timeout.
  *
  *  @param[in] msecs Timeout in ms.

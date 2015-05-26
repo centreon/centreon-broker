@@ -55,7 +55,6 @@ namespace                        notification {
                                    bool check_replication = true,
                                    bool with_state_events = false);
     misc::shared_ptr<io::stream> open();
-    misc::shared_ptr<io::stream> open(QString const& id);
 
   private:
     bool                         _check_replication;

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -121,18 +121,6 @@ misc::shared_ptr<io::stream> connector::open() {
                   _port,
                   _queries_per_transaction,
                   _persistent_cache)));
-}
-
-/**
- *  Connect to an graphite DB.
- *
- *  @param[in] id Unused.
- *
- *  @return Graphite connection object.
- */
-misc::shared_ptr<io::stream> connector::open(QString const& id) {
-  (void)id;
-  return (open());
 }
 
 /**************************************

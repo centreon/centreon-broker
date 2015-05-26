@@ -92,15 +92,3 @@ void node_events_connector::close() {
 misc::shared_ptr<io::stream> node_events_connector::open() {
   return (new node_events_stream(_cache, true, _conf));
 }
-
-/**
- *  Open a stream.
- *
- *  @param[in] id  Unused.
- *
- *  @return A newly opened stream.
- */
-misc::shared_ptr<io::stream> node_events_connector::open(QString const& id) {
-  (void)id;
-  return (open());
-}

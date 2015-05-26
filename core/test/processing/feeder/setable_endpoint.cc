@@ -111,19 +111,6 @@ misc::shared_ptr<io::stream> setable_endpoint::open() {
 }
 
 /**
- *  Open endpoint.
- *
- *  @param[in] id     Unused.
- *
- *  @return New setable_stream.
- */
-misc::shared_ptr<io::stream> setable_endpoint::open(
-                                                 QString const& id) {
-  (void)id;
-  return (open());
-}
-
-/**
  *  Get the number of open attempts.
  *
  *  @return Number of times open() was called.

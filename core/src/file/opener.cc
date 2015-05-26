@@ -102,19 +102,6 @@ misc::shared_ptr<io::stream> opener::open() {
 }
 
 /**
- *  Open a new stream.
- *
- *  @param[in] id     The identifier.
- *
- *  @return Opened stream.
- */
-misc::shared_ptr<io::stream> opener::open(
-                                       QString const& id) {
-  return (misc::shared_ptr<io::stream>(
-                  new stream(qPrintable(_filename + "-" + id), _max_size)));
-}
-
-/**
  *  Set the filename.
  *
  *  @param[in] filename Filename.

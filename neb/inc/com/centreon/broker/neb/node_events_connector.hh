@@ -45,7 +45,6 @@ namespace                        neb {
     io::endpoint*                clone() const;
     void                         close();
     misc::shared_ptr<io::stream> open();
-    misc::shared_ptr<io::stream> open(QString const& id);
 
   private:
     misc::shared_ptr<persistent_cache>

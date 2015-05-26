@@ -99,15 +99,3 @@ misc::shared_ptr<io::stream> connector::open() {
   // XXX : passive stream
   return (new stream(_correlation_file, _cache, true, _passive));
 }
-
-/**
- *  Open a stream.
- *
- *  @param[in] id  Unused.
- *
- *  @return A newly opened stream.
- */
-misc::shared_ptr<io::stream> connector::open(QString const& id) {
-  (void)id;
-  return (open());
-}

@@ -41,8 +41,6 @@ public:
   void                close();
   misc::shared_ptr<io::stream>
                       open();
-  misc::shared_ptr<io::stream>
-                      open(QString const& id);
 
 private:
   QString             _id;

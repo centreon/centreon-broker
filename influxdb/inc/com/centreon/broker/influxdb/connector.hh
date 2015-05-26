@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -57,8 +57,6 @@ namespace           influxdb {
                       misc::shared_ptr<persistent_cache> const& cache);
     misc::shared_ptr<io::stream>
                     open();
-    misc::shared_ptr<io::stream>
-                    open(QString const& id);
 
    private:
     std::string     _user;

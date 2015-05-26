@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,33 +20,51 @@
 #ifndef CCB_BBDO_STREAM_HH
 #  define CCB_BBDO_STREAM_HH
 
+#  include <QString>
 #  include "com/centreon/broker/bbdo/input.hh"
 #  include "com/centreon/broker/bbdo/output.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace           bbdo {
+namespace            bbdo {
   /**
    *  @class stream stream.hh "com/centreon/broker/bbdo/stream.hh"
    *  @brief BBDO stream.
    *
    *  The class converts data to NEB events back and forth.
    */
-  class             stream : public input, public output {
+  class              stream : public input, public output {
   public:
-                    stream(bool is_in, bool is_out);
-                    stream(stream const& right);
-                    ~stream();
-    stream&         operator=(stream const& right);
-    void            process(bool in = false, bool out = true);
-    void            read(misc::shared_ptr<io::data>& d);
-    void            statistics(io::properties& tree) const;
-    unsigned int    write(misc::shared_ptr<io::data> const& d);
+    enum             negociation_type {
+      negociate_first = 1,
+      negociate_second,
+      negociated
+    };
+
+                     stream(bool is_in, bool is_out);
+                     stream(stream const& other);
+                     ~stream();
+    stream&          operator=(stream const& other);
+    void             negociate(negociation_type neg);
+    void             process(bool in = false, bool out = true);
+    void             read(misc::shared_ptr<io::data>& d);
+    void             set_coarse(bool coarse);
+    void             set_negociate(
+                       bool negociate,
+                       QString const& extensions = QString());
+    void             set_timeout(int timeout);
+    void             statistics(io::properties& tree) const;
+    unsigned int     write(misc::shared_ptr<io::data> const& d);
 
   private:
-    bool            _input_read;
-    bool            _output_write;
+    bool             _coarse;
+    QString          _extensions;
+    bool             _input_read;
+    bool             _negociate;
+    bool             _negociated;
+    bool             _output_write;
+    int              _timeout;
   };
 }
 

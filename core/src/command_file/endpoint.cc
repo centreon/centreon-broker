@@ -86,15 +86,3 @@ void endpoint::close() {
 misc::shared_ptr<io::stream> endpoint::open() {
   return (misc::make_shared(new stream(_filename)));
 }
-
-/**
- *  Open a new stream.
- *
- *  @param[in] id     The identifier.
- *
- *  @return Opened stream.
- */
-misc::shared_ptr<io::stream> endpoint::open(QString const& id) {
-  (void)id;
-  return (open());
-}

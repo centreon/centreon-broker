@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -36,7 +36,7 @@ misc::shared_ptr<io::stream> temporary::create(QString const& name) {
   QMutexLocker guard(&_lock);
   if (!_endp)
     return (NULL);
-  return (_endp->open(name));
+  // XXX return (_endp->open(name));
 }
 
 /**

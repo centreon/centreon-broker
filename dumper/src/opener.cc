@@ -112,26 +112,6 @@ misc::shared_ptr<io::stream> opener::open() {
 }
 
 /**
- *  Open a new stream.
- *
- *  @param[in] id     The identifier.
- *
- *  @return Opened stream.
- */
-misc::shared_ptr<io::stream> opener::open(QString const& id) {
-  switch (_type) {
-  case dump:
-    return (new stream(_path + "-" + qPrintable(id), _tagname));
-  case dump_dir:
-    return (new directory_dumper(_path, _tagname, _cache));
-  case dump_fifo:
-    return (new fifo_dumper(_path, _tagname));
-  default:
-    return (new stream(_path + "-" + qPrintable(id), _tagname));
-  }
-}
-
-/**
  *  Set the path.
  *
  *  @param[in] path Path.

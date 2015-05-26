@@ -48,8 +48,6 @@ namespace         tls {
                   open();
     misc::shared_ptr<io::stream>
                   open(misc::shared_ptr<io::stream> lower);
-    misc::shared_ptr<io::stream>
-                  open(QString const& id);
 
   private:
     void          _internal_copy(connector const& right);

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -107,7 +107,7 @@ void stream::read(misc::shared_ptr<io::data>& d) {
       if (!(ret = _socket->waitForReadyRead(
                              (_timeout == -1)
                              ? 200
-                             : _timeout))
+                             : _timeout * 1000))
           // Standalone socket.
           && ((_timeout != -1)
               // Disconnected socket with no data.
@@ -147,15 +147,21 @@ void stream::read(misc::shared_ptr<io::data>& d) {
 /**
  *  Set connection timeout.
  *
- *  @param[in] msecs Timeout in ms.
+ *  @param[in] secs  Timeout in seconds.
  */
-void stream::set_timeout(int msecs) {
-  _timeout = msecs;
+void stream::set_timeout(int secs) {
+  _timeout = secs;
   return ;
 }
 
-void stream::set_write_timeout(int msecs) {
-  _write_timeout = msecs;
+/**
+ *  Set write timeout.
+ *
+ *  @param[in] secs  Write timeout in seconds.
+ */
+void stream::set_write_timeout(int secs) {
+  _write_timeout = secs;
+  return ;
 }
 
 /**
@@ -183,7 +189,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
     if ((wb < 0) || (_socket->state() == QAbstractSocket::UnconnectedState))
       throw (exceptions::msg() << "TCP: error while writing: "
              << _socket->errorString());
-    if (_socket->waitForBytesWritten(_write_timeout) == false)
+    if (_socket->waitForBytesWritten(_write_timeout * 1000) == false)
       throw (exceptions::msg() << "TCP: error while sending data: "
              << _socket->errorString());
   }

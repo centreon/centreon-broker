@@ -127,18 +127,6 @@ misc::shared_ptr<io::stream> connector::open() {
 }
 
 /**
- *  Connect.
- *
- *  @param[in] id     Unused.
- *
- *  @return Stream object.
- */
-misc::shared_ptr<io::stream> connector::open(QString const& id) {
-  (void)id;
-  return (open());
-}
-
-/**
  *  Set the rrd creator cache size.
  *
  *  @param[in] cache_size The rrd creator cache size.

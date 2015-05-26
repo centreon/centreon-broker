@@ -48,7 +48,6 @@ namespace                        dumper {
     io::endpoint*                clone() const;
     void                         close();
     misc::shared_ptr<io::stream> open();
-    misc::shared_ptr<io::stream> open(QString const& id);
     void                         set_path(std::string const& path);
     void                         set_tagname(std::string const& tagname);
     void                         set_type(dumper_type type);

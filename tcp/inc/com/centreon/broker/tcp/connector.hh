@@ -46,8 +46,6 @@ namespace          tcp {
     void           connect_to(QString const& host, unsigned short port);
     misc::shared_ptr<io::stream>
                    open();
-    misc::shared_ptr<io::stream>
-                   open(QString const& id);
     void           set_timeout(int msecs);
     void           set_write_timeout(int msecs);
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -43,8 +43,8 @@ namespace        tcp {
                  ~stream();
     void         process(bool in = false, bool out = true);
     void         read(misc::shared_ptr<io::data>& d);
-    void         set_timeout(int msecs);
-    void         set_write_timeout(int msecs);
+    void         set_timeout(int secs);
+    void         set_write_timeout(int secs);
     unsigned int write(misc::shared_ptr<io::data> const& d);
 
   private:

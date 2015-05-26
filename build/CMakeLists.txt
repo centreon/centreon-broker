@@ -270,7 +270,6 @@ endif ()
 
 # Some files must be processed by Qt's moc.
 qt4_wrap_cpp(QT_WRAPPED_SOURCES
-  "${INC_DIR}/bbdo/acceptor.hh"
   "${INC_DIR}/logging/backend.hh"
   "${INC_DIR}/logging/manager.hh"
   "${INC_DIR}/multiplexing/engine.hh"

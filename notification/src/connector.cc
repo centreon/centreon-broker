@@ -155,15 +155,3 @@ misc::shared_ptr<io::stream> connector::open() {
                                              _with_state_events,
                                              _node_cache)));
 }
-
-/**
- *  Connect to a notification cache DB and return a notification stream.
- *
- *  @param[in]     id     Unused.
- *
- *  @return Notification connection object.
- */
-misc::shared_ptr<io::stream> connector::open(QString const& id) {
-  (void)id;
-  return (open());
-}

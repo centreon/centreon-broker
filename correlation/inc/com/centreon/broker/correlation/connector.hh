@@ -47,10 +47,9 @@ namespace                        correlation {
     io::endpoint*                clone() const;
     void                         close();
     misc::shared_ptr<io::stream> open();
-    misc::shared_ptr<io::stream> open(QString const& id);
 
   private:
-    misc::shared_ptr<persistent_cache> 
+    misc::shared_ptr<persistent_cache>
                                  _cache;
     QString                      _correlation_file;
     bool                         _passive;

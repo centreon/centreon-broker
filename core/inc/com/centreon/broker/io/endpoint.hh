@@ -55,8 +55,6 @@ namespace                            io {
     bool                             is_acceptor() const throw ();
     bool                             is_connector() const throw ();
     virtual misc::shared_ptr<stream> open() = 0;
-    virtual misc::shared_ptr<stream> open(
-                                       QString const& id) = 0;
     virtual void                     stats(io::properties& tree);
     void                             set_filter(
                                        std::set<unsigned int> const& filter);

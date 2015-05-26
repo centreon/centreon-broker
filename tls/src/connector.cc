@@ -173,22 +173,6 @@ misc::shared_ptr<io::stream> connector::open(
   return (s);
 }
 
-/**
- *  Overwite method open.
- *
- *  @param[in] id     Connection ID.
- *
- *  @return New connected stream.
- */
-misc::shared_ptr<io::stream> connector::open(QString const& id) {
-  // First connect the lower layer.
-  misc::shared_ptr<io::stream> lower(_from->open(id));
-  misc::shared_ptr<io::stream> new_stream;
-  if (!lower.isNull())
-    new_stream = open(lower);
-  return (new_stream);
-}
-
 /**************************************
 *                                     *
 *           Private Methods           *

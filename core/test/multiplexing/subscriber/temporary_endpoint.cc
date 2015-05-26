@@ -95,14 +95,3 @@ void temporary_endpoint::close() {
 misc::shared_ptr<io::stream> temporary_endpoint::open() {
   return (misc::shared_ptr<io::stream>(new temporary_stream));
 }
-
-/**
- *  Open endpoint.
- *
- *  @param[in] id     The temporary id.
- *
- *  @return New temporary_stream.
- */
-misc::shared_ptr<io::stream> temporary_endpoint::open(QString const& id) {
-  return (misc::shared_ptr<io::stream>(new temporary_stream(id)));
-}

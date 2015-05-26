@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -134,18 +134,6 @@ misc::shared_ptr<io::stream> connector::open() {
                   _metric_ts,
                   _metric_cols,
                   _cache)));
-}
-
-/**
- *  Connect to an influxdb DB.
- *
- *  @param[in] id Unused.
- *
- *  @return Influxdb connection object.
- */
-misc::shared_ptr<io::stream> connector::open(QString const& id) {
-  (void)id;
-  return (open());
 }
 
 /**************************************
