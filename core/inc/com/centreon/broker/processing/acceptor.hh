@@ -56,6 +56,7 @@ namespace       processing {
                   in_out in_or_out,
                   std::string const& name);
                 ~acceptor();
+    void        accept();
     void        exit();
     void        run();
     void        set_filters(std::set<unsigned int> const& filters);
@@ -64,6 +65,7 @@ namespace       processing {
   private:
                 acceptor(acceptor const& other);
     acceptor&   operator=(acceptor const& other);
+    void        _wait_feeders();
 
     misc::shared_ptr<io::endpoint>
                 _endp;

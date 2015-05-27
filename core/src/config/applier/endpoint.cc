@@ -223,11 +223,15 @@ void endpoint::apply(
                                           false,
                                           is_acceptor));
     std::auto_ptr<processing::thread> th;
-    if (is_acceptor)
-      th.reset(new processing::acceptor(
-                                 endp,
-                                 processing::acceptor::in,
-                                 it->name.toStdString()));
+    if (is_acceptor) {
+      std::auto_ptr<processing::acceptor>
+        acceptr(new processing::acceptor(
+                                  endp,
+                                  processing::acceptor::in,
+                                  it->name.toStdString()));
+      acceptr->set_filters(_filters(*it));
+      th.reset(acceptr.release());
+    }
     else
       th.reset(new processing::input(endp, it->name.toStdString()));
     {
@@ -449,23 +453,7 @@ endpoint::endpoint() : _outputsm(QMutex::Recursive) {}
 multiplexing::subscriber* endpoint::_create_subscriber(
                                       config::endpoint& cfg) {
   // Build filtering elements.
-  std::set<unsigned int> elements;
-  for (std::set<std::string>::const_iterator
-         it(cfg.filters.begin()), end(cfg.filters.end());
-       it != end;
-       ++it) {
-    io::events::events_container const&
-      tmp_elements(io::events::instance().get_matching_events(*it));
-    for (io::events::events_container::const_iterator
-           it(tmp_elements.begin()),
-           end(tmp_elements.end());
-         it != end;
-         ++it) {
-      logging::config(logging::medium)
-        << "endpoint applier: new filtering element: " << it->first;
-      elements.insert(it->first);
-    }
-  }
+  std::set<unsigned int> elements(_filters(cfg));
 
   // Create subscriber.
   std::auto_ptr<multiplexing::subscriber>
@@ -477,9 +465,9 @@ multiplexing::subscriber* endpoint::_create_subscriber(
 /**
  *  Create and register an endpoint according to configuration.
  *
- *  @param[in] cfg       Endpoint configuration.
- *  @param[in] sbscrbr   Subscriber.
- *  @param[in] l         List of endpoints.
+ *  @param[in]  cfg          Endpoint configuration.
+ *  @param[in]  sbscrbr      Subscriber.
+ *  @param[in]  l            List of endpoints.
  */
 processing::failover* endpoint::_create_failover(
                                   config::endpoint& cfg,
@@ -729,4 +717,32 @@ void endpoint::_diff_endpoints(
   }
 
   return ;
+}
+
+/**
+ *  Create filters from a configuration object.
+ *
+ *  @param[in] cfg  Endpoint configuration.
+ *
+ *  @return Filters.
+ */
+std::set<unsigned int> endpoint::_filters(config::endpoint& cfg) {
+  std::set<unsigned int> elements;
+  for (std::set<std::string>::const_iterator
+         it(cfg.filters.begin()), end(cfg.filters.end());
+       it != end;
+       ++it) {
+    io::events::events_container const&
+      tmp_elements(io::events::instance().get_matching_events(*it));
+    for (io::events::events_container::const_iterator
+           it(tmp_elements.begin()),
+           end(tmp_elements.end());
+         it != end;
+         ++it) {
+      logging::config(logging::medium)
+        << "endpoint applier: new filtering element: " << it->first;
+      elements.insert(it->first);
+    }
+  }
+  return (elements);
 }

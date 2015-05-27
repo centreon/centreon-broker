@@ -96,6 +96,8 @@ namespace              config {
                          std::map<config::endpoint, processing::thread*> const& current,
                          std::list<config::endpoint> const& new_endpoints,
                          std::list<config::endpoint>& to_create);
+      std::set<unsigned int>
+                       _filters(config::endpoint& cfg);
 
       std::string      _cache_directory;
       std::map<config::endpoint, processing::thread*>

@@ -29,6 +29,7 @@
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/multiplexing/subscriber.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/processing/acceptor.hh"
 #  include "com/centreon/broker/processing/thread.hh"
 
 CCB_BEGIN()
@@ -61,6 +62,7 @@ namespace           processing {
                     ~failover();
     void            add_secondary_endpoint(
                       misc::shared_ptr<io::endpoint> endp);
+    void            exit();
     time_t          get_buffering_timeout() const throw ();
     time_t          get_read_timeout() const throw ();
     time_t          get_retry_interval() const throw ();
@@ -106,6 +108,11 @@ namespace           processing {
     misc::shared_ptr<multiplexing::subscriber>
                     _subscriber;
     volatile bool   _update;
+
+    // Acceptor.
+    std::auto_ptr<processing::acceptor>
+                    _acceptor;
+    mutable QMutex  _acceptorm;
 
     // Status.
     std::string     _status;

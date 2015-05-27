@@ -72,6 +72,17 @@ void failover::add_secondary_endpoint(
 }
 
 /**
+ *  Exit failover thread.
+ */
+void failover::exit() {
+  thread::exit();
+  QMutexLocker acceptor_lock(&_acceptorm);
+  if (_acceptor.get())
+    _acceptor->exit();
+  return ;
+}
+
+/**
  *  Get buffering timeout.
  *
  *  @return Failover thread buffering timeout.
@@ -198,99 +209,142 @@ void failover::run() {
     // objects. In case of an exception, it is responsible to launch
     // failovers of this failover.
     try {
-      // Attempt to open endpoint.
-      _update_status("opening endpoint");
-      {
-        misc::shared_ptr<io::stream> s(_endpoint->open());
-        {
-          QMutexLocker stream_lock(&_streamm);
-          _stream = s;
-        }
-      }
-      _update_status("");
-
-      // Buffering.
-      if (_buffering_timeout > 0) {
-        // Status.
-        logging::debug(logging::medium)
-          << "failover: buffering data for endpoint '" << _name
-          << "' (" << _buffering_timeout << "s)";
-        _update_status("buffering data");
-
-        // Wait loop.
-        time_t valid_time(time(NULL) + _buffering_timeout);
-        do {
-          QTimer::singleShot(1000, this, SLOT(quit()));
-          exec();
-        } while (!should_exit() && (time(NULL) < valid_time));
-        _update_status("");
-      }
-
-      // Open secondaries.
-      _update_status("initializing secondaries");
-      std::vector<misc::shared_ptr<io::stream> > secondaries;
-      for (std::vector<misc::shared_ptr<io::endpoint> >::iterator
-             it(_secondary_endpoints.begin()),
-             end(_secondary_endpoints.end());
-           it != end;
-           ++it)
-        try {
-          misc::shared_ptr<io::stream> s((*it)->open());
-          if (!s.isNull())
-            secondaries.push_back(s);
-          else
-            logging::error(logging::medium)
-              << "failover: could not open a secondary of endpoint '"
-              << _name << ": secondary returned a null stream";
-        }
-        catch (std::exception const& e) {
-          logging::error(logging::medium)
-            << "failover: error occured while opening a secondary "
-            << "of endpoint '" << _name << "': " << e.what();
-        }
-      _update_status("");
-
-      // Event processing loop.
-      logging::debug(logging::medium)
-        << "failover: launching event loop of endpoint '"
-        << _name << "'";
-      while (!should_exit()) {
-        // Read next event that should be processed by the stream.
-        bool timed_out(false);
-        misc::shared_ptr<io::data> d;
-        _get_next_event(d, _next_timeout, &timed_out);
-
-        // If timeout occured, set next timeout.
-        if (timed_out && (_read_timeout != (time_t)-1))
-          _next_timeout = time(NULL) + _read_timeout;
-
-        // Write data to the stream and secondaries,
-        // and acknowledge processed events.
-        _update_status("writing event");
-        unsigned int written(0);
-        {
-          // Here we need to check the exit flag to avoid writing in a
-          // stream that could be wished to be terminated (normal exit
-          // or by read(). It is very important to lock the stream first
-          // and then the exit flag. It prevents deadlock that could
-          // occur with the read() method.
-          QMutexLocker stream_lock(&_streamm);
-          if (!should_exit())
-            written = _stream->write(d);
-        }
-        for (std::vector<misc::shared_ptr<io::stream> >::iterator
-               it(secondaries.begin()),
-               end(secondaries.end());
-             it != end;) {
+      // Acceptor.
+      if (_endpoint->is_acceptor()) {
+        // First discard all events of the failover (if necessary).
+        if (_failover_launched) {
           try {
-            (*it)->write(d);
-            ++it;
+            while (true) {
+              misc::shared_ptr<io::data> d;
+              _failover->read(d, (time_t)-1, NULL);
+            }
+          }
+          catch (...) { // Silently discard errors, they're of no use.
+            _failover->exit();
+            _failover->wait();
+            _failover_launched = false;
+          }
+        }
+
+        // Create and run acceptor loop.
+        {
+          QMutexLocker acceptor_lock(&_acceptorm);
+          _acceptor.reset(new processing::acceptor(
+                                            _endpoint,
+                                            processing::acceptor::out,
+                                            _name.toStdString()));
+        }
+        try {
+          while (!should_exit())
+            _acceptor->accept();
+        }
+        catch (...) {
+          QMutexLocker acceptor_lock(&_acceptorm);
+          _acceptor.reset();
+          throw ;
+        }
+        {
+          QMutexLocker acceptor_lock(&_acceptorm);
+          _acceptor.reset();
+        }
+      }
+      // Connector.
+      else {
+        // Attempt to open endpoint.
+        _update_status("opening endpoint");
+        {
+          misc::shared_ptr<io::stream> s(_endpoint->open());
+          {
+            QMutexLocker stream_lock(&_streamm);
+            _stream = s;
+          }
+        }
+        _update_status("");
+
+        // Buffering.
+        if (_buffering_timeout > 0) {
+          // Status.
+          logging::debug(logging::medium)
+            << "failover: buffering data for endpoint '" << _name
+            << "' (" << _buffering_timeout << "s)";
+          _update_status("buffering data");
+
+          // Wait loop.
+          time_t valid_time(time(NULL) + _buffering_timeout);
+          do {
+            QTimer::singleShot(1000, this, SLOT(quit()));
+            exec();
+          } while (!should_exit() && (time(NULL) < valid_time));
+          _update_status("");
+        }
+
+        // Open secondaries.
+        _update_status("initializing secondaries");
+        std::vector<misc::shared_ptr<io::stream> > secondaries;
+        for (std::vector<misc::shared_ptr<io::endpoint> >::iterator
+               it(_secondary_endpoints.begin()),
+               end(_secondary_endpoints.end());
+             it != end;
+             ++it)
+          try {
+            misc::shared_ptr<io::stream> s((*it)->open());
+            if (!s.isNull())
+              secondaries.push_back(s);
+            else
+              logging::error(logging::medium)
+                << "failover: could not open a secondary of endpoint '"
+                << _name << ": secondary returned a null stream";
           }
           catch (std::exception const& e) {
-            logging::error(logging::medium) << "failover: error occured"
-              << " while writing to a secondary of endpoint '" << _name
-              << "' (secondary will be removed): " << e.what();
-            it = secondaries.erase(it);
+            logging::error(logging::medium)
+              << "failover: error occured while opening a secondary "
+              << "of endpoint '" << _name << "': " << e.what();
+          }
+        _update_status("");
+
+        // Event processing loop.
+        logging::debug(logging::medium)
+          << "failover: launching event loop of endpoint '"
+          << _name << "'";
+        while (!should_exit()) {
+          // Read next event that should be processed by the stream.
+          bool timed_out(false);
+          misc::shared_ptr<io::data> d;
+          _get_next_event(d, _next_timeout, &timed_out);
+
+          // If timeout occured, set next timeout.
+          if (timed_out && (_read_timeout != (time_t)-1))
+            _next_timeout = time(NULL) + _read_timeout;
+
+          // Write data to the stream and secondaries,
+          // and acknowledge processed events.
+          _update_status("writing event");
+          unsigned int written(0);
+          {
+            // Here we need to check the exit flag to avoid writing in a
+            // stream that could be wished to be terminated (normal exit
+            // or by read(). It is very important to lock the stream
+            // first and then the exit flag. It prevents deadlock that
+            // could occur with the read() method.
+            QMutexLocker stream_lock(&_streamm);
+            if (!_stream.isNull() && !should_exit())
+              written = _stream->write(d);
+          }
+          for (std::vector<misc::shared_ptr<io::stream> >::iterator
+                 it(secondaries.begin()),
+                 end(secondaries.end());
+               it != end;) {
+            try {
+              (*it)->write(d);
+              ++it;
+            }
+            catch (std::exception const& e) {
+              logging::error(logging::medium) << "failover: error "
+                << "occurred while writing to a secondary of endpoint '"
+                << _name << "' (secondary will be removed): "
+                << e.what();
+              it = secondaries.erase(it);
+            }
           }
         }
       }

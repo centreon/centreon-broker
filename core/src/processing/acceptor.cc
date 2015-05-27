@@ -48,7 +48,40 @@ acceptor::acceptor(
 /**
  *  Destructor.
  */
-acceptor::~acceptor() {}
+acceptor::~acceptor() {
+  _wait_feeders();
+}
+
+/**
+ *  Accept a new incoming connection.
+ */
+void acceptor::accept() {
+  // Try to accept connection.
+  misc::shared_ptr<io::stream> s(_endp->open());
+  if (!s.isNull()) {
+    // Create feeder thread.
+    misc::shared_ptr<processing::feeder>
+      f(new processing::feeder);
+    std::ostringstream name;
+    name << _name << "-" << f.data();
+    if (_in_out == out) {
+      misc::shared_ptr<multiplexing::subscriber>
+        sbscrbr(new multiplexing::subscriber(name.str().c_str()));
+      sbscrbr->set_filters(_filters);
+      f->prepare(name.str(), sbscrbr, s);
+    }
+    else {
+      misc::shared_ptr<multiplexing::publisher>
+        pblshr(new multiplexing::publisher);
+      f->prepare(name.str(), s, pblshr);
+    }
+
+    // Run feeder thread.
+    f->start();
+    _feeders.push_back(f);
+  }
+  return ;
+}
 
 /**
  *  Exit this thread.
@@ -69,28 +102,7 @@ void acceptor::run() {
   while (!should_exit()) {
     try {
       // Try to accept connection.
-      misc::shared_ptr<io::stream> s(_endp->open());
-      if (!s.isNull()) {
-        // Create feeder thread.
-        misc::shared_ptr<processing::feeder>
-          f(new processing::feeder);
-        std::ostringstream name;
-        name << _name << "-" << f.data();
-        if (_in_out == out) {
-          misc::shared_ptr<multiplexing::subscriber>
-            sbscrbr(new multiplexing::subscriber(name.str().c_str()));
-          f->prepare(name.str(), sbscrbr, s);
-        }
-        else {
-          misc::shared_ptr<multiplexing::publisher>
-            pblshr(new multiplexing::publisher);
-          f->prepare(name.str(), s, pblshr);
-        }
-
-        // Run feeder thread.
-        f->start();
-        _feeders.push_back(f);
-      }
+      accept();
     }
     catch (std::exception const& e) {
       // Log error.
@@ -112,20 +124,8 @@ void acceptor::run() {
         ++it;
   }
 
-  // Wait for all launched feeders.
-  for (std::list<misc::shared_ptr<processing::feeder> >::iterator
-         it(_feeders.begin()),
-         end(_feeders.end());
-       it != end;
-       ++it)
-    (*it)->exit();
-  for (std::list<misc::shared_ptr<processing::feeder> >::iterator
-         it(_feeders.begin()),
-         end(_feeders.end());
-       it != end;
-       ++it)
-    (*it)->wait();
-  _feeders.clear();
+  // Cleanup.
+  _wait_feeders();
 
   return ;
 }
@@ -154,5 +154,26 @@ void acceptor::set_filters(std::set<unsigned int> const& filters) {
  */
 void acceptor::set_retry_interval(time_t retry_interval) {
   _retry_interval = retry_interval;
+  return ;
+}
+
+/**
+ *  Wait for launched feeders.
+ */
+void acceptor::_wait_feeders() {
+  // Wait for all launched feeders.
+  for (std::list<misc::shared_ptr<processing::feeder> >::iterator
+         it(_feeders.begin()),
+         end(_feeders.end());
+       it != end;
+       ++it)
+    (*it)->exit();
+  for (std::list<misc::shared_ptr<processing::feeder> >::iterator
+         it(_feeders.begin()),
+         end(_feeders.end());
+       it != end;
+       ++it)
+    (*it)->wait();
+  _feeders.clear();
   return ;
 }
