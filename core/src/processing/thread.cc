@@ -64,6 +64,14 @@ void thread::start() {
 }
 
 /**
+ *  Notify thread of a configuration update request.
+ */
+void thread::update() {
+  // Do nothing.
+  return ;
+}
+
+/**
  *  Wait for thread termination.
  *
  *  @param[in] timeout_ms  Maximum wait time in ms.

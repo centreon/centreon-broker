@@ -47,6 +47,7 @@ namespace                com {
           virtual void   exit();
           bool           should_exit() const;
           void           start();
+          virtual void   update();
           virtual bool   wait(unsigned long timeout_ms = ULONG_MAX);
 
         protected:

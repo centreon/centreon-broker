@@ -307,6 +307,13 @@ void failover::run() {
           << "failover: launching event loop of endpoint '"
           << _name << "'";
         while (!should_exit()) {
+          // Check for update.
+          if (_update) {
+            QMutexLocker stream_lock(&_streamm);
+            _stream->update();
+            _update = false;
+          }
+
           // Read next event that should be processed by the stream.
           bool timed_out(false);
           misc::shared_ptr<io::data> d;
@@ -327,7 +334,7 @@ void failover::run() {
             // first and then the exit flag. It prevents deadlock that
             // could occur with the read() method.
             QMutexLocker stream_lock(&_streamm);
-            if (!_stream.isNull() && !should_exit())
+            if (!should_exit())
               written = _stream->write(d);
           }
           for (std::vector<misc::shared_ptr<io::stream> >::iterator

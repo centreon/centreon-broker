@@ -169,13 +169,11 @@ void endpoint::apply(
   for (iterator it(_outputs.begin()), end(_outputs.end());
        it != end;
        ++it)
-    ; // XXX it->second->update();
-
-
+    it->second->update();
   for (iterator it(_inputs.begin()), end(_inputs.end());
        it != end;
        ++it)
-    ; // XXX it->second->update();
+    it->second->update();
 
   // Debug message.
   logging::debug(logging::high) << "endpoint applier: "
