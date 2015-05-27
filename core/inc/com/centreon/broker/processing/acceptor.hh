@@ -54,7 +54,8 @@ namespace       processing {
                 acceptor(
                   misc::shared_ptr<io::endpoint> endp,
                   in_out in_or_out,
-                  std::string const& name);
+                  std::string const& name,
+                  std::string const& temp_dir);
                 ~acceptor();
     void        accept();
     void        exit();
@@ -76,6 +77,7 @@ namespace       processing {
     in_out      _in_out;
     std::string _name;
     time_t      _retry_interval;
+    std::string _temp_dir;
   };
 }
 

@@ -205,7 +205,8 @@ void endpoint::apply(
 
       // Run thread.
       logging::debug(logging::medium) << "endpoint applier: output " \
-        "thread " << endp.get() << " is registered and ready to run";
+           "thread " << endp.get() << " of '" << it->name
+        << "' is registered and ready to run";
       endp.release()->start();
     }
 
@@ -226,7 +227,8 @@ void endpoint::apply(
         acceptr(new processing::acceptor(
                                   endp,
                                   processing::acceptor::in,
-                                  it->name.toStdString()));
+                                  it->name.toStdString(),
+                                  cache_directory));
       acceptr->set_filters(_filters(*it));
       th.reset(acceptr.release());
     }
@@ -239,8 +241,8 @@ void endpoint::apply(
 
     // Run thread.
     logging::debug(logging::medium)
-      << "endpoint applier: input thread '" << it->name
-      << " is registered and ready to run";
+      << "endpoint applier: input thread " << th.get() << " of '"
+      << it->name << "' is registered and ready to run";
     th.release()->start();
   }
 
@@ -455,7 +457,10 @@ multiplexing::subscriber* endpoint::_create_subscriber(
 
   // Create subscriber.
   std::auto_ptr<multiplexing::subscriber>
-    s(new multiplexing::subscriber(cfg.name));
+    s(new multiplexing::subscriber(
+                          cfg.name.toStdString(),
+                          _cache_directory,
+                          true));
   s->set_filters(elements);
   return (s.release());
 }
@@ -525,7 +530,11 @@ processing::failover* endpoint::_create_failover(
 
   // Return failover thread.
   std::auto_ptr<processing::failover>
-    fo(new processing::failover(endp, sbscrbr, cfg.name));
+    fo(new processing::failover(
+                         endp,
+                         sbscrbr,
+                         cfg.name,
+                         _cache_directory));
   fo->set_buffering_timeout(cfg.buffering_timeout);
   fo->set_read_timeout(cfg.read_timeout);
   fo->set_retry_interval(cfg.retry_interval);

@@ -26,7 +26,6 @@
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/config/applier/temporary.hh"
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -107,9 +106,6 @@ void state::apply(
   }
 
   com::centreon::broker::multiplexing::subscriber::event_queue_max_size(s.event_queue_max_size());
-
-  // Apply temporary configuration.
-  temporary::instance().apply(s.temporary());
 
   com::centreon::broker::config::state st = s;
 

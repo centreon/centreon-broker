@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
 
   // Streams.
   misc::shared_ptr<multiplexing::subscriber>
-    in(new multiplexing::subscriber("unittest"));
+    in(new multiplexing::subscriber("unittest", "/tmp/"));
   misc::shared_ptr<setable_stream>
     out(new setable_stream);
   out->process(true, true);

@@ -24,7 +24,6 @@
 #  include <memory>
 #  include <QMutex>
 #  include <QQueue>
-#  include <QString>
 #  include <QWaitCondition>
 #  include <set>
 #  include <string>
@@ -49,11 +48,13 @@ namespace               multiplexing {
    */
   class                 subscriber : public io::stream {
   public:
-                        subscriber(QString const& temporary_name);
+                        subscriber(
+                          std::string const& name,
+                          std::string const& temp_dir,
+                          bool persistent = false);
                         ~subscriber();
     static void         event_queue_max_size(unsigned int max) throw ();
     static unsigned int event_queue_max_size() throw ();
-    void                process(bool in = false, bool out = true);
     void                read(misc::shared_ptr<io::data>& d);
     void                read(
                           misc::shared_ptr<io::data>& d,
@@ -72,6 +73,8 @@ namespace               multiplexing {
                           misc::shared_ptr<io::data>& event);
     void                _get_last_event(
                           misc::shared_ptr<io::data>& event);
+    std::string         _memory_file() const;
+    std::string         _queue_file() const;
 
     QWaitCondition      _cv;
     QQueue<misc::shared_ptr<io::data> >
@@ -80,12 +83,14 @@ namespace               multiplexing {
     std::set<unsigned int>
                         _filters;
     mutable QMutex      _mutex;
+    std::string         _name;
+    bool                _persistent;
     bool                _process_in;
     bool                _process_out;
     bool                _recovery_temporary;
     misc::shared_ptr<io::stream>
                         _temporary;
-    QString             _temporary_name;
+    std::string         _temp_dir;
     unsigned int        _total_events;
   };
 }

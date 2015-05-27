@@ -35,16 +35,17 @@ using namespace com::centreon::broker::processing;
 /**
  *  Constructor.
  *
- *  @param[in]     endp     Failover thread endpoint.
- *  @param[in]     is_out   true if the failover thread is an output
- *                          thread.
- *  @param[in]     name     The failover name.
- *  @param[in]     filters  Event filters.
+ *  @param[in] endp      Failover thread endpoint.
+ *  @param[in] is_out    True if the failover thread is an output
+ *                       thread.
+ *  @param[in] name      The failover name.
+ *  @param[in] temp_dir  Temporary directory.
  */
 failover::failover(
             misc::shared_ptr<io::endpoint> endp,
             misc::shared_ptr<multiplexing::subscriber> sbscrbr,
-            QString const& name)
+            QString const& name,
+            std::string const& temp_dir)
   : _buffering_timeout(0),
     _endpoint(endp),
     _failover_launched(false),
@@ -53,7 +54,8 @@ failover::failover(
     _read_timeout((time_t)-1),
     _retry_interval(30),
     _subscriber(sbscrbr),
-    _update(false) {}
+    _update(false),
+    _temp_dir(temp_dir) {}
 
 /**
  *  Destructor.
@@ -232,7 +234,8 @@ void failover::run() {
           _acceptor.reset(new processing::acceptor(
                                             _endpoint,
                                             processing::acceptor::out,
-                                            _name.toStdString()));
+                                            _name.toStdString(),
+                                            _temp_dir));
         }
         try {
           while (!should_exit())

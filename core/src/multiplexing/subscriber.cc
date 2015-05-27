@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -24,10 +24,10 @@
 #include <sstream>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
-#include "com/centreon/broker/io/temporary.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/internal.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
+#include "com/centreon/broker/persistent_file.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::multiplexing;
@@ -43,16 +43,24 @@ unsigned int subscriber::_event_queue_max_size = std::numeric_limits<unsigned in
 /**
  *  Constructor.
  *
- *  @param[in] temporary_name Temporary name to build temporary.
+ *  @param[in] name        Name associated to this subscriber. It is
+ *                         used to create on-disk files.
+ *  @param[in] temp_dir    Directory in which temporary files will be
+ *                         created.
+ *  @param[in] persistent  Whether or not this subscriber should backup
+ *                         unprocessed events in a persistent storage.
  */
-subscriber::subscriber(QString const& temporary_name)
-  : _process_in(true),
+subscriber::subscriber(
+              std::string const& name,
+              std::string const& temp_dir,
+              bool persistent)
+  : _name(name),
+    _persistent(persistent),
+    _process_in(true),
     _process_out(true),
     _recovery_temporary(false),
-    _temporary_name(temporary_name),
+    _temp_dir(temp_dir),
     _total_events(0) {
-  unsigned int size(0);
-
   {
     QMutexLocker lock2(&_mutex);
 
@@ -60,36 +68,50 @@ subscriber::subscriber(QString const& temporary_name)
     {
       QMutexLocker lock1(&gl_subscribersm);
       gl_subscribers.push_back(this);
-      size = gl_subscribers.size();
     }
 
-    // if necessary load last temporary for recovery.
-    _temporary = io::temporary::instance().create(_temporary_name);
-    if (_temporary) {
+    // Load head queue file back in memory.
+    if (_persistent) {
+      try {
+        misc::shared_ptr<io::stream>
+          mf(new persistent_file(_memory_file()));
+        misc::shared_ptr<io::data> e;
+        while (true) {
+          mf->read(e);
+          _events.enqueue(e);
+          ++_total_events;
+        }
+      }
+      catch (io::exceptions::shutdown const& e) {
+        // Queue file was properly read back in memory.
+        (void)e;
+      }
+    }
+
+    // Load temporary file back in memory.
+    {
+      _temporary = new persistent_file(_queue_file());
       misc::shared_ptr<io::data> event;
-      while (_total_events < event_queue_max_size()) {
+      do {
         _recovery_temporary = _get_event_from_temporary(event);
         if (!_recovery_temporary) {
           // All temporary event was loaded into the memory event queue.
           // The recovery mode is disable.
-          break;
+          break ;
         }
         else {
           // Push temporary event to the memory event queue.
           _events.enqueue(event);
           ++_total_events;
         }
-      }
+      } while (_total_events < event_queue_max_size());
     }
   }
 
-  logging::debug(logging::low)
-    << "multiplexing: " << size << " subscribers are registered after "
-    "insertion";
-
+  // Log messages.
   logging::info(logging::low)
-    << "multiplexing: start with " << _total_events << " in queue and "
-    "the recovery temporary file is "
+    << "multiplexing: '" << _name << "' start with " << _total_events
+    << " in queue and the queue file is "
     << (_recovery_temporary ? "enable" : "disable");
 }
 
@@ -125,43 +147,6 @@ void subscriber::event_queue_max_size(unsigned int max) throw () {
  */
 unsigned int subscriber::event_queue_max_size() throw () {
   return (_event_queue_max_size);
-}
-
-/**
- *  Unregister or re-register from event publishing notifications.
- *
- *  @param[in] in  Process input events.
- *  @param[in] out Process output events.
- */
-void subscriber::process(bool in, bool out) {
-  // Debug message.
-  logging::debug(logging::low) << "multiplexing: subscriber "
-    "processing request in=" << in << ", out=" << out;
-
-  // Lock mutex.
-  QMutexLocker lock(&_mutex);
-
-  // Set data.
-  _process_in = in;
-  _process_out = (_process_out && out);
-
-  // Unregister.
-  if (!in || !out) {
-    _cv.wakeAll();
-    // Log message.
-    logging::debug(logging::low) << "multiplexing: "
-      << gl_subscribers.size()
-      << " subscribers are registered after deletion";
-  }
-  // Re-register.
-  else if (in && out) {
-    // Log message.
-    logging::debug(logging::low) << "multiplexing: "
-      << gl_subscribers.size()
-      << " subscribers are registered after reregistration";
-  }
-
-  return ;
 }
 
 /**
@@ -339,7 +324,7 @@ unsigned int subscriber::write(misc::shared_ptr<io::data> const& event) {
     if (_total_events >= event_queue_max_size()) {
       // Try to create temporary if is necessary.
       if (!_temporary)
-        _temporary = io::temporary::instance().create(_temporary_name);
+        _temporary = new persistent_file(_queue_file());
 
       // Check if we have temporary.
       if (_temporary)
@@ -371,6 +356,19 @@ void subscriber::clean() {
   QMutexLocker lock(&_mutex);
   if (_temporary)
     _temporary = misc::shared_ptr<io::stream>();
+  if (_persistent) {
+    try {
+      misc::shared_ptr<io::stream>
+        mf(new persistent_file(_memory_file()));
+      while (!_events.empty())
+        mf->write(_events.dequeue());
+    }
+    catch (std::exception const& e) {
+      logging::error(logging::high)
+        << "multiplexing: could not backup memory queue of '" << _name
+        << "': " << e.what();
+    }
+  }
   _events.clear();
   _recovery_temporary = false;
   _total_events = 0;
@@ -424,4 +422,28 @@ void subscriber::_get_last_event(misc::shared_ptr<io::data>& event) {
   // Get the last avaiable event.
   event = _events.dequeue();
   return ;
+}
+
+/**
+ *  Get memory file path.
+ *
+ *  @return Path to the memory file.
+ */
+std::string subscriber::_memory_file() const {
+  std::string retval(_temp_dir);
+  retval.append("memory-");
+  retval.append(_name);
+  return (retval);
+}
+
+/**
+ *  Get queue file path.
+ *
+ *  @return Path to the queue file.
+ */
+std::string subscriber::_queue_file() const {
+  std::string retval(_temp_dir);
+  retval.append("queue-");
+  retval.append(_name);
+  return (retval);
 }

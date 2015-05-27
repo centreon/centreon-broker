@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -43,7 +43,7 @@ int main() {
   multiplexing::publisher p;
 
   // Subscriber.
-  multiplexing::subscriber s("temporary_prefix_name");
+  multiplexing::subscriber s("temporary_prefix_name", "/tmp/");
 
   // Publish event.
   {

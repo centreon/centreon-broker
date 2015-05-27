@@ -300,7 +300,6 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/config/applier/endpoint.cc"
   "${SRC_DIR}/config/applier/modules.cc"
   "${SRC_DIR}/config/applier/state.cc"
-  "${SRC_DIR}/config/applier/temporary.cc"
   "${SRC_DIR}/config/endpoint.cc"
   "${SRC_DIR}/config/logger.cc"
   "${SRC_DIR}/config/parser.cc"
@@ -329,7 +328,6 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/io/protocols.cc"
   "${SRC_DIR}/io/raw.cc"
   "${SRC_DIR}/io/stream.cc"
-  "${SRC_DIR}/io/temporary.cc"
   "${SRC_DIR}/logging/backend.cc"
   "${SRC_DIR}/logging/file.cc"
   "${SRC_DIR}/logging/logger.cc"
@@ -351,6 +349,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/multiplexing/publisher.cc"
   "${SRC_DIR}/multiplexing/subscriber.cc"
   "${SRC_DIR}/persistent_cache.cc"
+  "${SRC_DIR}/persistent_file.cc"
   "${SRC_DIR}/processing/acceptor.cc"
   "${SRC_DIR}/processing/failover.cc"
   "${SRC_DIR}/processing/feeder.cc"
@@ -386,7 +385,6 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/config/applier/logger.hh"
   "${INC_DIR}/config/applier/modules.hh"
   "${INC_DIR}/config/applier/state.hh"
-  "${INC_DIR}/config/applier/temporary.hh"
   "${INC_DIR}/config/endpoint.hh"
   "${INC_DIR}/config/logger.hh"
   "${INC_DIR}/config/parser.hh"
@@ -415,7 +413,6 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/io/protocols.hh"
   "${INC_DIR}/io/raw.hh"
   "${INC_DIR}/io/stream.hh"
-  "${INC_DIR}/io/temporary.hh"
   "${INC_DIR}/logging/backend.hh"
   "${INC_DIR}/logging/defines.hh"
   "${INC_DIR}/logging/file.hh"
@@ -440,6 +437,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/multiplexing/publisher.hh"
   "${INC_DIR}/multiplexing/subscriber.hh"
   "${INC_DIR}/persistent_cache.hh"
+  "${INC_DIR}/persistent_file.hh"
   "${INC_DIR}/processing/acceptor.hh"
   "${INC_DIR}/processing/failover.hh"
   "${INC_DIR}/processing/feeder.hh"
@@ -1421,18 +1419,6 @@ if (WITH_TESTING)
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/multiplexing/subscriber/ctor_default.cc")
   target_link_libraries("${TEST_NAME}" "roker")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Process.
-  set(TEST_NAME "core_multiplexing_subscriber_process")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/multiplexing/subscriber/process.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Process with temporary.
-  set(TEST_NAME "core_multiplexing_subscriber_process_with_temporary")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/multiplexing/subscriber/process_with_temporary.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # multiplexing::engine tests.
   add_library("ccb_core_multiplexing_engine" STATIC

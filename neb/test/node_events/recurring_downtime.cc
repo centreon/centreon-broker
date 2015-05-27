@@ -59,7 +59,7 @@ int main() {
     time_t now = ::time(NULL);
 
     // Create subscriber.
-    multiplexing::subscriber sbc("test_recurring_downtime");
+    multiplexing::subscriber sbc("test_recurring_downtime", "/tmp/");
 
     // Create node event stream.
     node_events_stream test(

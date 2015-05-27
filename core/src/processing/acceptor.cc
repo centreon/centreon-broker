@@ -35,15 +35,18 @@ using namespace com::centreon::broker::processing;
  *  @param[in] in_or_out  Either in or out to determine how the clients
  *                        should be constructed.
  *  @param[in] name       Name of the endpoint.
+ *  @param[in] temp_dir   Temporary directory.
  */
 acceptor::acceptor(
             misc::shared_ptr<io::endpoint> endp,
             acceptor::in_out in_or_out,
-            std::string const& name)
+            std::string const& name,
+            std::string const& temp_dir)
   : _endp(endp),
     _in_out(in_or_out),
     _name(name),
-    _retry_interval(30) {}
+    _retry_interval(30),
+    _temp_dir(temp_dir) {}
 
 /**
  *  Destructor.
@@ -66,7 +69,10 @@ void acceptor::accept() {
     name << _name << "-" << f.data();
     if (_in_out == out) {
       misc::shared_ptr<multiplexing::subscriber>
-        sbscrbr(new multiplexing::subscriber(name.str().c_str()));
+        sbscrbr(new multiplexing::subscriber(
+                                    name.str().c_str(),
+                                    _temp_dir,
+                                    false));
       sbscrbr->set_filters(_filters);
       f->prepare(name.str(), sbscrbr, s);
     }

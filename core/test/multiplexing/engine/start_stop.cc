@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -40,7 +40,7 @@ int main() {
   config::applier::init();
 
   // Subscriber.
-  multiplexing::subscriber s("temporary_prefix_name");
+  multiplexing::subscriber s("temporary_prefix_name", "/tmp/");
 
   // Send events through engine.
   char const* messages[] = { MSG1, MSG2, NULL };
