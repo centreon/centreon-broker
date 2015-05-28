@@ -54,8 +54,8 @@ failover::failover(
     _read_timeout((time_t)-1),
     _retry_interval(30),
     _subscriber(sbscrbr),
-    _update(false),
-    _temp_dir(temp_dir) {}
+    _temp_dir(temp_dir),
+    _update(false) {}
 
 /**
  *  Destructor.
@@ -78,9 +78,13 @@ void failover::add_secondary_endpoint(
  */
 void failover::exit() {
   thread::exit();
-  QMutexLocker acceptor_lock(&_acceptorm);
-  if (_acceptor.get())
-    _acceptor->exit();
+  {
+    QMutexLocker lock(&_acceptorm);
+    if (_acceptor.get())
+      _acceptor->exit();
+  }
+  if (!_subscriber.isNull())
+    _subscriber->wake();
   return ;
 }
 

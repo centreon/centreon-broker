@@ -63,6 +63,7 @@ namespace               multiplexing {
     void                set_filters(
                           std::set<unsigned int> const& filters);
     void                statistics(io::properties& tree) const;
+    void                wake();
     unsigned int        write(misc::shared_ptr<io::data> const& d);
 
   private:

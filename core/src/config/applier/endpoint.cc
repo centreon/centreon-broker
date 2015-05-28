@@ -532,7 +532,9 @@ processing::failover* endpoint::_create_failover(
   std::auto_ptr<processing::failover>
     fo(new processing::failover(
                          endp,
-                         sbscrbr,
+                         (endp->is_acceptor()
+                          ? misc::shared_ptr<multiplexing::subscriber>()
+                          : sbscrbr),
                          cfg.name,
                          _cache_directory));
   fo->set_buffering_timeout(cfg.buffering_timeout);

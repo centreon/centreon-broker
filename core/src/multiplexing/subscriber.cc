@@ -343,6 +343,15 @@ unsigned int subscriber::write(misc::shared_ptr<io::data> const& event) {
   return (1);
 }
 
+/**
+ *  Wake all threads waiting on this subscriber.
+ */
+void subscriber::wake() {
+  QMutexLocker lock(&_mutex);
+  _cv.wakeAll();
+  return ;
+}
+
 /**************************************
 *                                     *
 *           Private Methods           *

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -98,6 +98,9 @@ void protocols::reg(
   p.osi_to = osi_to;
 
   // Register protocol in protocol list.
+  logging::info(logging::low)
+    << "protocols: registering protocol '" << name << "' (layers "
+    << osi_from << "-" << osi_to << ")";
   _protocols[name] = p;
 
   return ;
@@ -118,6 +121,8 @@ void protocols::unload() {
  *  @param[in] name Protocol name.
  */
 void protocols::unreg(QString const& name) {
+  logging::info(logging::low)
+    << "protocols: unregistering protocol '" << name << "'";
   _protocols.remove(name);
   return ;
 }

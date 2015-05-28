@@ -36,7 +36,7 @@ extern "C" {
   void broker_module_deinit() {
     if (!--neb_instances) {
       // Remove factory.
-      io::protocols::instance().unreg("nodeevents");
+      io::protocols::instance().unreg("node_events");
 
       // Remove events.
       io::events::instance().unregister_category(io::events::neb);
