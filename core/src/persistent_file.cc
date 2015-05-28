@@ -47,7 +47,7 @@ persistent_file::persistent_file(std::string const& path) {
   bs->set_coarse(true);
   bs->set_negociate(false);
   bs->read_from(cs);
-  cs->write_to(cs);
+  bs->write_to(cs);
 
   // Set stream.
   _file = bs;

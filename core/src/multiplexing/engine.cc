@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -146,11 +146,17 @@ void engine::start() {
       it->first->starting();
 
       // Read events from hook.
-      misc::shared_ptr<io::data> d;
-      it->first->read(d);
-      while (!d.isNull()) {
-        _kiew.enqueue(d);
+      try {
+        misc::shared_ptr<io::data> d;
         it->first->read(d);
+        while (!d.isNull()) {
+          _kiew.enqueue(d);
+          it->first->read(d);
+        }
+      }
+      catch (std::exception const& e) {
+        logging::error(logging::low)
+          << "multiplexing: cannot read from hook: " << e.what();
       }
     }
 
