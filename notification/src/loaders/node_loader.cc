@@ -76,9 +76,12 @@ void node_loader::load(QSqlDatabase* db, node_builder* output) {
           opts.add_option(node_notification_opt::not_correlated);
       }
     }
+    unsigned int host_id = query.value(0).toUInt();
     node::ptr n(new node);
-    n->set_node_id(node_id(query.value(0).toUInt()));
+    n->set_node_id(node_id(host_id));
     n->set_notification_options(opts);
+    logging::config(logging::low)
+      << "notification: loading host " << host_id << " from database";
     output->add_node(n);
   }
 
@@ -121,6 +124,8 @@ void node_loader::load(QSqlDatabase* db, node_builder* output) {
     node::ptr n(new node);
     n->set_node_id(node_id(host_id, service_id));
     n->set_notification_options(opts);
+    logging::config(logging::low) << "notification: loading service ("
+      << host_id << ", " << service_id << ") from database";
     output->add_node(n);
   }
 }

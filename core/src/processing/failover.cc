@@ -267,6 +267,7 @@ void failover::run() {
           }
         }
         _update_status("");
+        _update = true;
 
         // Buffering.
         if (_buffering_timeout > 0) {
