@@ -214,7 +214,7 @@ if (WITH_CONFIG_FILES)
     "${PROJECT_SOURCE_DIR}/config/central-rrd.xml"
     @ONLY)
 
-  install(FILES "${PROJECT_SOURCE_DIR}/config/central-cbmod.xml"
+  install(FILES "${PROJECT_SOURCE_DIR}/config/central-module.xml"
     DESTINATION "${PREFIX_CONF}")
   install(FILES "${PROJECT_SOURCE_DIR}/config/central-rrd.xml"
     DESTINATION "${PREFIX_CONF}")
