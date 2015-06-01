@@ -241,6 +241,14 @@ GnuTLS **(>= 2.0)**         libgnutls-devel   Development files for gnutls.
 
      $ zypper install libgnutls-devel
 
+
+Raspberry Pi (Raspbian)
+-----------------------
+
+The recommended distribution for the Raspberry Pi is Raspbian, a derivative
+of Debian. See the Debian section.
+
+
 Build
 =====
 
