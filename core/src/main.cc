@@ -232,7 +232,7 @@ int main(int argc, char* argv[]) {
         << "  -v  Print Centreon Broker version.";
       logging::info(logging::high) << "Centreon Broker "
         << CENTREON_BROKER_VERSION;
-      logging::info(logging::high) << "Copyright 2009-2013 Merethis";
+      logging::info(logging::high) << "Copyright 2009-2015 Merethis/Centreon";
       logging::info(logging::high) << "License GNU GPL " \
         "version 2 <http://gnu.org/licenses/gpl.html>";
       retval = 0;
@@ -256,7 +256,7 @@ int main(int argc, char* argv[]) {
       app.setOrganizationName("Merethis");
       logging::info(logging::medium)
         << "Centreon Broker " << CENTREON_BROKER_VERSION;
-      logging::info(logging::medium) << "Copyright 2009-2013 Merethis";
+      logging::info(logging::medium) << "Copyright 2009-2015 Merethis/Centreon";
       logging::info(logging::medium) << "License GNU GPL " \
         "version 2 <http://gnu.org/licenses/gpl.html>";
 #if QT_VERSION >= 0x040400
