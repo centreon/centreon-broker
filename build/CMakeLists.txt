@@ -203,7 +203,7 @@ if (WITH_DAEMONS)
     RENAME "cbd")
 endif ()
 
-if (WITH_CONFIGURE_FILE)
+if (WITH_CONFIG_FILES)
   configure_file("${PROJECT_SOURCE_DIR}/config/central-module.xml.in"
     "${PROJECT_SOURCE_DIR}/config/central-module.xml"
     @ONLY)
