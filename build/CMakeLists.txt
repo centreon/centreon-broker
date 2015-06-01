@@ -204,14 +204,14 @@ if (WITH_DAEMONS)
 endif ()
 
 if (WITH_CONFIGURE_FILE)
-  configure_file("${PROJECT_SOURCE_DIR}/config/central-cbmod.xml.in"
-    "${PROJECT_SOURCE_DIR}/config/central-cbmod.xml"
-    @ONLY)
-  configure_file("${PROJECT_SOURCE_DIR}/config/central-rrd.xml.in"
-    "${PROJECT_SOURCE_DIR}/config/central-rrd.xml"
+  configure_file("${PROJECT_SOURCE_DIR}/config/central-module.xml.in"
+    "${PROJECT_SOURCE_DIR}/config/central-module.xml"
     @ONLY)
   configure_file("${PROJECT_SOURCE_DIR}/config/central-broker.xml.in"
     "${PROJECT_SOURCE_DIR}/config/central-broker.xml"
+    @ONLY)
+  configure_file("${PROJECT_SOURCE_DIR}/config/central-rrd.xml.in"
+    "${PROJECT_SOURCE_DIR}/config/central-rrd.xml"
     @ONLY)
 
   install(FILES "${PROJECT_SOURCE_DIR}/config/central-cbmod.xml"

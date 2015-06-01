@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <conf>
+
+ <!-- Global configuration options. -->
  <module_directory>@PREFIX_MODULES@</module_directory>
- <instance>1</instance>
+ <instance>3</instance>
  <instance_name>central-rrd</instance_name>
  <event_queue_max_size>50000</event_queue_max_size>
  <flush_logs>no</flush_logs>
  <log_thread_id>no</log_thread_id>
  <log_timestamp>yes</log_timestamp>
+ <command_file>/var/lib/centreon-broker/central-rrd.cmd</command_file>
  <name>central-rrd</name>
+
+ <!-- Read performance data. -->
  <input>
   <buffering_timeout>10</buffering_timeout>
   <read_timeout>10</read_timeout>
@@ -20,6 +25,8 @@
   <negociation>yes</negociation>
   <compression>auto</compression>
  </input>
+
+ <!-- Write RRD files. -->
  <output>
   <buffering_timeout>10</buffering_timeout>
   <read_timeout>10</read_timeout>
@@ -32,31 +39,24 @@
   <write_status>yes</write_status>
   <type>rrd</type>
   <name>storage-rrd</name>
-  <failover>failover-storage-rrd</failover>
  </output>
- <output>
-  <buffering_timeout>10</buffering_timeout>
-  <read_timeout>10</read_timeout>
-  <retry_interval>60</retry_interval>
-  <max_size>5000000</max_size>
-  <protocol>bbdo</protocol>
-  <type>file</type>
-  <name>failover-storage-rrd</name>
-  <path>/var/lib/centreon-broker/storage-rrd.failover</path>
-  <compression>yes</compression>
- </output>
+
+ <!-- Log file. -->
  <logger>
   <config>no</config>
   <debug>no</debug>
   <error>yes</error>
-  <info>no</info>
-  <level>2</level>
+  <info>yes</info>
+  <level>low</level>
   <type>file</type>
   <name>/var/log/centreon-broker/central-rrd.log</name>
-</logger>
+ </logger>
+
+ <!-- Statistics. -->
  <stats>
   <type>stats</type>
   <name>stats-central-rrd</name>
   <fifo>/var/lib/centreon-broker/stats-central-rrd.fifo</fifo>
  </stats>
+
 </conf>
