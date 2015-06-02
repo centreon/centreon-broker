@@ -62,6 +62,11 @@ void register_bam_event(io::events& e, bam::data_element de, const char* name) {
 
 extern "C" {
   /**
+   *  Module version symbol. Used to check for version mismatch.
+   */
+  const char* boker_module_version = CENTREON_BROKER_VERSION;
+
+  /**
    *  Module deinitialization routine.
    */
   void broker_module_deinit() {
