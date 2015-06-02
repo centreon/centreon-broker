@@ -113,6 +113,11 @@ add_library("${NEB}" SHARED
   "${SRC_DIR}/composed_timeperiod_builder.cc"
   "${SRC_DIR}/timeperiod_by_name_builder.cc"
   "${SRC_DIR}/timeperiod_linker.cc"
+  "${SRC_DIR}/ceof_writer.cc"
+  "${SRC_DIR}/ceof_parser.cc"
+  "${SRC_DIR}/ceof_serializable.cc"
+  "${SRC_DIR}/ceof_iterator.cc"
+  "${SRC_DIR}/ceof_token.cc"
 
   # Inc
   "${INC_DIR}/com/centreon/broker/neb/downtime_scheduler.hh"
@@ -128,6 +133,11 @@ add_library("${NEB}" SHARED
   "${INC_DIR}/com/centreon/broker/neb/composed_builder.hh"
   "${INC_DIR}/com/centreon/broker/neb/composed_timeperiod_builder.hh"
   "${INC_DIR}/com/centreon/broker/neb/timeperiod_linker.hh"
+  "${INC_DIR}/com/centreon/broker/neb/ceof_writer.hh"
+  "${INC_DIR}/com/centreon/broker/neb/ceof_parser.hh"
+  "${INC_DIR}/com/centreon/broker/neb/ceof_serializable.hh"
+  "${INC_DIR}/com/centreon/broker/neb/ceof_iterator.hh"
+  "${INC_DIR}/com/centreon/broker/neb/ceof_token.hh"
 
 )
 if (CMAKE_COMPILER_IS_GNUCXX)
