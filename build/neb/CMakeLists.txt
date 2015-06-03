@@ -116,6 +116,7 @@ add_library("${NEB}" SHARED
   "${SRC_DIR}/ceof_writer.cc"
   "${SRC_DIR}/ceof_parser.cc"
   "${SRC_DIR}/ceof_serializable.cc"
+  "${SRC_DIR}/ceof_serializable_member.cc"
   "${SRC_DIR}/ceof_iterator.cc"
   "${SRC_DIR}/ceof_token.cc"
 
@@ -136,6 +137,7 @@ add_library("${NEB}" SHARED
   "${INC_DIR}/com/centreon/broker/neb/ceof_writer.hh"
   "${INC_DIR}/com/centreon/broker/neb/ceof_parser.hh"
   "${INC_DIR}/com/centreon/broker/neb/ceof_serializable.hh"
+  "${INC_DIR}/com/centreon/broker/neb/ceof_serializable_member.hh"
   "${INC_DIR}/com/centreon/broker/neb/ceof_iterator.hh"
   "${INC_DIR}/com/centreon/broker/neb/ceof_token.hh"
 

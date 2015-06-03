@@ -68,15 +68,21 @@ void ceof_writer::open_object(std::string const& object_type) {
 }
 
 /**
- *  Add an attribute to the actual object.
+ *  Add a key of an attribute.
  *
- *  @param[in] attribute_name   The name of the attribute.
- *  @param[in] attribute_value  The value of the attribute.
+ *  @param[in] key  The key to add.
  */
-void ceof_writer::add_attribute(
-                    std::string const& attribute_name,
-                    std::string const& attribute_value) {
-  ((_str += attribute_name) += " ") += attribute_value;
+void ceof_writer::add_key(std::string const& key) {
+  (_str += key) += " ";
+}
+
+/**
+ *  Add the value of an attribute.
+ *
+ *  @param[in] value  The value to add.
+ */
+void ceof_writer::add_value(std::string const& value) {
+  (_str += value) += "\n";
 }
 
 /**

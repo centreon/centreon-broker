@@ -38,9 +38,8 @@ namespace   neb {
                  ~ceof_writer() throw();
 
    void          open_object(std::string const& object_type);
-   void          add_attribute(
-                   std::string const& attribute_name,
-                   std::string const& attribute_value);
+   void          add_key(std::string const& key);
+   void          add_value(std::string const& value);
    void          close_object();
 
    std::string const&

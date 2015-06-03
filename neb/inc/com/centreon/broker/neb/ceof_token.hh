@@ -44,27 +44,25 @@ namespace   neb {
                  ceof_token(
                    token_type type,
                    std::string const& val,
-                   unsigned int parent);
+                   unsigned int token_number,
+                   int parent);
                  ceof_token(ceof_token const& other);
     ceof_token&  operator=(ceof_token const& other);
                  ~ceof_token() throw();
 
-    token_type  get_token_type() const throw();
-    void        set_token_type(token_type type) throw();
-
+    token_type  get_type() const throw();
     std::string const&
                 get_value() const throw();
-    void        set_value(std::string const& val);
-
     unsigned int
-                get_parent_token() const throw();
-    void        set_parent_token(unsigned int parent) throw();
+                get_token_number() const throw();
+    int         get_parent_token() const throw();
 
   private:
     token_type  _type;
     std::string _value;
     unsigned int
-                _parent_token;
+                _token_number;
+    int         _parent_token;
   };
 }
 

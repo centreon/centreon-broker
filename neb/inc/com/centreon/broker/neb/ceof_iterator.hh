@@ -34,7 +34,9 @@ namespace   neb {
   class          ceof_iterator {
   public:
                  ceof_iterator();
-                 ceof_iterator(const ceof_token* tokens, size_t token_number);
+                 ceof_iterator(
+                   std::vector<ceof_token>::const_iterator const& begin,
+                   std::vector<ceof_token>::const_iterator const& end);
                  ceof_iterator(ceof_iterator const& other);
    ceof_iterator&
                  operator=(ceof_iterator const& other);
@@ -54,10 +56,10 @@ namespace   neb {
    bool          end() const throw();
 
   private:
-   const ceof_token*
-                 _tokens;
-   size_t        _token_number;
-   size_t        _index;
+   std::vector<ceof_token>::const_iterator
+                 _token_it;
+   std::vector<ceof_token>::const_iterator
+                 _token_end;
   };
 }
 

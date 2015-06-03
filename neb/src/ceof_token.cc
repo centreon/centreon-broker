@@ -31,16 +31,19 @@ ceof_token::ceof_token() {
 /**
  *  Constructor.
  *
- *  @param[in] type    Type of the token.
- *  @param[in] val     Value of the token.
- *  @param[in] parent  The index of the parent token.
+ *  @param[in] type          Type of the token.
+ *  @param[in] val           Value of the token.
+ *  @param[in] token_number  The number of the token.
+ *  @param[in] parent        The index of the parent token.
  */
 ceof_token::ceof_token(
               token_type type,
               std::string const& val,
-              unsigned int parent)
+              unsigned int token_number,
+              int parent)
   : _type(type),
     _value(val),
+    _token_number(token_number),
     _parent_token(parent) {
 
 }
@@ -53,6 +56,7 @@ ceof_token::ceof_token(
 ceof_token::ceof_token(ceof_token const& other) {
   _type = other._type;
   _value = other._value;
+  _token_number = other._token_number;
   _parent_token = other._parent_token;
 }
 
@@ -67,6 +71,7 @@ ceof_token& ceof_token::operator=(ceof_token const& other) {
   if (this != &other) {
     _type = other._type;
     _value = other._value;
+    _token_number = other._token_number;
     _parent_token = other._parent_token;
   }
   return (*this);
@@ -84,17 +89,8 @@ ceof_token::~ceof_token() throw() {
  *
  *  @return  The type of this token.
  */
-ceof_token::token_type  ceof_token::get_token_type() const throw() {
+ceof_token::token_type  ceof_token::get_type() const throw() {
   return (_type);
-}
-
-/**
- *  Set the type of this token.
- *
- *  @param[in] type  The type of this token.
- */
-void ceof_token::set_token_type(token_type type) throw() {
-  _type = type;
 }
 
 /**
@@ -107,12 +103,12 @@ std::string const& ceof_token::get_value() const throw() {
 }
 
 /**
- *  Set the value of this token.
+ *  Get the token number.
  *
- *  @param[in] val  The value of this token.
+ *  @return  Get the token number.
  */
-void ceof_token::set_value(std::string const& val) {
-  _value = val;
+unsigned int ceof_token::get_token_number() const throw() {
+  return (_token_number);
 }
 
 /**
@@ -120,15 +116,6 @@ void ceof_token::set_value(std::string const& val) {
  *
  *  @return  Parent token number.
  */
-unsigned int ceof_token::get_parent_token() const throw() {
+int ceof_token::get_parent_token() const throw() {
   return (_parent_token);
-}
-
-/**
- *  Set the parent token number.
- *
- *  @param[in] parent  The parent token number.
- */
-void ceof_token::set_parent_token(unsigned int parent) throw() {
-  _parent_token = parent;
 }

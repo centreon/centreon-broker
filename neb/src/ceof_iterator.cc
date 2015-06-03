@@ -24,10 +24,7 @@ using namespace com::centreon::broker::neb;
 /**
  *  Default constructor.
  */
-ceof_iterator::ceof_iterator()
-  : _tokens(NULL),
-    _token_number(0),
-    _index(0) {
+ceof_iterator::ceof_iterator() {
 
 }
 
@@ -37,10 +34,11 @@ ceof_iterator::ceof_iterator()
  *  @param[in] tokens        A vector of tokens.
  *  @param[in] token_number  The number of tokens.
  */
-ceof_iterator::ceof_iterator(const ceof_token* tokens, size_t token_number)
-  : _tokens(tokens),
-    _token_number(token_number),
-    _index(0) {
+ceof_iterator::ceof_iterator(
+                 std::vector<ceof_token>::const_iterator const& begin,
+                 std::vector<ceof_token>::const_iterator const& end)
+  : _token_it(begin),
+    _token_end(end) {
 }
 
 /**
@@ -49,9 +47,8 @@ ceof_iterator::ceof_iterator(const ceof_token* tokens, size_t token_number)
  *  @param[in] other  The object to copy.
  */
 ceof_iterator::ceof_iterator(ceof_iterator const& other) {
-  _tokens = other._tokens;
-  _token_number = other._token_number;
-  _index = other._index;
+  _token_it = other._token_it;
+  _token_end = other._token_end;
 }
 
 /**
@@ -63,9 +60,8 @@ ceof_iterator::ceof_iterator(ceof_iterator const& other) {
  */
 ceof_iterator& ceof_iterator::operator=(ceof_iterator const& other) {
   if (this != &other) {
-    _tokens = other._tokens;
-    _token_number = other._token_number;
-    _index = other._index;
+    _token_it = other._token_it;
+    _token_end = other._token_end;
   }
   return (*this);
 }
@@ -85,9 +81,7 @@ ceof_iterator::~ceof_iterator() throw() {
  *  @return           True if both objects are equal.
  */
 bool ceof_iterator::operator==(ceof_iterator const& other) const throw() {
-  return (_tokens == other._tokens
-            && _token_number
-            && other._token_number && _index == other._index);
+  return (_token_it == other._token_it && _token_end == other._token_end);
 }
 
 /**
@@ -109,11 +103,11 @@ bool ceof_iterator::operator!=(ceof_iterator const& other) const throw() {
  *  @return  Reference to this object.
  */
 ceof_iterator& ceof_iterator::operator++() throw() {
-  unsigned int parent_token = _tokens[_index].get_parent_token();
-  for (++_index;
-       _index < _token_number
-         && _tokens[_index].get_parent_token() != parent_token;
-       ++_index);
+  unsigned int parent_token = _token_it->get_parent_token();
+  for (++_token_it;
+       _token_it != _token_end
+         && _token_it->get_parent_token() != parent_token;
+       ++_token_it);
 }
 
 /**
@@ -122,7 +116,7 @@ ceof_iterator& ceof_iterator::operator++() throw() {
  *  @return  The type of the current token.
  */
 ceof_token::token_type ceof_iterator::get_type() const throw() {
-  return (_tokens[_index].get_token_type());
+  return (_token_it->get_type());
 }
 
 /**
@@ -131,7 +125,7 @@ ceof_token::token_type ceof_iterator::get_type() const throw() {
  *  @return  The value of the current token.
  */
 std::string const& ceof_iterator::get_value() const throw() {
-  return (_tokens[_index].get_value());
+  return (_token_it->get_value());
 }
 
 /**
@@ -140,9 +134,11 @@ std::string const& ceof_iterator::get_value() const throw() {
  *  @return  True if this iterator has children.
  */
 bool ceof_iterator::has_children() const throw() {
-  size_t next_index = _index + 1;
-  return (next_index < _token_number
-            && _tokens[next_index].get_parent_token() == _index);
+  unsigned int token_number = _token_it->get_token_number();
+  std::vector<ceof_token>::const_iterator it = _token_it;
+  ++it;
+  return (it != _token_end
+            && it->get_parent_token() == token_number);
 }
 
 /**
@@ -152,7 +148,7 @@ bool ceof_iterator::has_children() const throw() {
  */
 ceof_iterator ceof_iterator::enter_children() const throw() {
   return (has_children() ?
-            ceof_iterator(_tokens + _index + 1, _token_number - _index - 1)
+            ceof_iterator(_token_it + 1, _token_end)
               : ceof_iterator());
 }
 
@@ -162,5 +158,5 @@ ceof_iterator ceof_iterator::enter_children() const throw() {
  *  @return  True if this an end iterator.
  */
 bool ceof_iterator::end() const throw() {
-  return (!_tokens || _token_number == _index);
+  return (_token_it == _token_end);
 }

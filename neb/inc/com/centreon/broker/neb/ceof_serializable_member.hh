@@ -17,46 +17,45 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_CEOF_SERIALIZABLE_HH
-#  define CCB_NEB_CEOF_SERIALIZABLE_HH
+#ifndef CCB_NEB_CEOF_SERIALIZABLE_MEMBER_HH
+#  define CCB_NEB_CEOF_SERIALIZABLE_MEMBER_HH
 
 #  include <string>
 #  include <map>
 #  include "com/centreon/broker/neb/ceof_iterator.hh"
 #  include "com/centreon/broker/neb/ceof_writer.hh"
-#  include "com/centreon/broker/neb/ceof_serializable_member.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace   neb {
   /**
-   *  @class ceof_serializable ceof_serializable.hh "com/centreon/broker/neb/ceof_serializable.hh"
-   *  @brief Represent a serializable Centreon Engine Object File class.
+   *  @class ceof_serializable_member ceof_serializable_member.hh "com/centreon/broker/neb/ceof_serializable_member.hh"
+   *  @brief Represent a serializable Centreon Engine Object File member.
    */
   template <typename T>
-  class            ceof_serializable {
+  class            ceof_serializable_member {
   public:
-                   ceof_serializable();
-                   ceof_serializable(ceof_serializable const& other);
-    ceof_serializable&
-                   operator=(ceof_serializable const& other);
-   virtual         ~ceof_serializable();
-
-    void           add_member(
-                     std::string const& name,
+                   ceof_serializable_member(
                      std::string const& (T::*serialize)(),
                      void(T::*unserialize)(std::string const&));
-    void            serialize(T const& object, ceof_writer& writer);
-    void            unserialize(T& object, ceof_iterator& iterator);
+                   ~ceof_serializable_member();
+
+    virtual void   serialize(T const& object, ceof_writer& writer) const;
+    virtual void   unserialize(T& object, ceof_iterator& iterator) const;
 
   private:
-    std::map<std::string, misc::shared_ptr<ceof_serializable_member<T> > >
-                   _members;
+    std::string const& (T::*_serialize)();
+    void           (T::*_unserialize)(std::string const&);
+
+                   ceof_serializable_member();
+                   ceof_serializable_member(
+                     ceof_serializable_member const&);
+    ceof_serializable_member&
+                   operator=(ceof_serializable_member const&);
   };
 }
 
 CCB_END()
 
-#endif // !CCB_NEB_CEOF_SERIALIZABLE_HH
+#endif // !CCB_NEB_CEOF_SERIALIZABLE_MEMBER_HH
