@@ -20,6 +20,7 @@
 #ifndef CCB_NEB_NODE_EVENTS_CONNECTOR_HH
 #  define CCB_NEB_NODE_EVENTS_CONNECTOR_HH
 
+#  include <string>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/database_config.hh"
@@ -38,7 +39,7 @@ namespace                        neb {
   public:
                                  node_events_connector(
                                    misc::shared_ptr<persistent_cache> cache,
-                                   database_config const& conf);
+                                   std::string const& config_file);
                                  node_events_connector(node_events_connector const& other);
                                  ~node_events_connector();
     node_events_connector&       operator=(node_events_connector const& other);
@@ -49,7 +50,7 @@ namespace                        neb {
   private:
     misc::shared_ptr<persistent_cache>
                                  _cache;
-    database_config              _conf;
+    std::string                  _config_file;
   };
 }
 

@@ -46,13 +46,15 @@ namespace   neb {
 
     void           add_member(
                      std::string const& name,
-                     std::string const& (T::*serialize)(),
+                     std::string (T::*serialize)() const,
                      void(T::*unserialize)(std::string const&));
     void            serialize(T const& object, ceof_writer& writer);
     void            unserialize(T& object, ceof_iterator& iterator);
 
+    virtual void    init_bindings() = 0;
+
   private:
-    std::map<std::string, misc::shared_ptr<ceof_serializable_member<T> > >
+    static std::map<std::string, misc::shared_ptr<ceof_serializable_member<T> > >
                    _members;
   };
 }

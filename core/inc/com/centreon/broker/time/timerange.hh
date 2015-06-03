@@ -63,6 +63,11 @@ namespace         time {
                     std::string const& line,
                     std::list<timerange>& timeranges);
 
+    std::string   to_string() const;
+    static std::string
+                  build_string_from_timeranges(
+                    std::list<timerange> const& timeranges);
+
   private:
     unsigned long _end;
     unsigned long _start;

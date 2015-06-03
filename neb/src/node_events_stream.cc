@@ -18,6 +18,8 @@
 */
 
 #include <cstdio>
+#include <fstream>
+#include <sstream>
 #include <QPair>
 #include <QHash>
 #include "com/centreon/broker/neb/tokenizer.hh"
@@ -29,13 +31,9 @@
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/command_file/external_command.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
+#include "com/centreon/broker/neb/ceof_parser.hh"
+#include "com/centreon/broker/neb/ceof_writer.hh"
 #include "com/centreon/broker/neb/downtime.hh"
-#include "com/centreon/broker/database.hh"
-#include "com/centreon/broker/database_query.hh"
-#include "com/centreon/broker/neb/timeperiod_loader.hh"
-#include "com/centreon/broker/neb/composed_timeperiod_builder.hh"
-#include "com/centreon/broker/neb/timeperiod_by_name_builder.hh"
-#include "com/centreon/broker/neb/timeperiod_linker.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -44,25 +42,18 @@ using namespace com::centreon::broker::neb;
  *  Constructor.
  *
  *  @param[int,out] cache             Persistent cache.
- *  @param[in]      with_timeperiods  Should the stream try to load timeperiods?
- *  @param[in]      conf              Database configuration.
+ *  @param[in]      config_file       The path of the config file.
  */
 node_events_stream::node_events_stream(
     misc::shared_ptr<persistent_cache> cache,
-    bool with_timeperiods,
-    database_config const& conf)
+    std::string const& config_file)
   : _cache(cache),
-    _conf(conf),
+    _config_file(config_file),
     _process_out(true),
-    _with_timeperiods(with_timeperiods),
     _actual_downtime_id(0) {
 
-  if (_with_timeperiods) {
-    // Load the timeperiods.
-    _load_timeperiods();
-    // Check tp coherency.
-    _check_downtime_timeperiod_consistency();
-  }
+  // Check tp coherency.
+  _check_downtime_timeperiod_consistency();
 
   // Load the cache.
   _load_cache();
@@ -120,13 +111,6 @@ void node_events_stream::read(misc::shared_ptr<io::data>& d) {
  */
 void node_events_stream::update() {
   _save_cache();
-
-  if (_with_timeperiods) {
-    // Load the timeperiods.
-    _load_timeperiods();
-    // Check tp coherency.
-    _check_downtime_timeperiod_consistency();
-  }
 
   return ;
 }
@@ -330,7 +314,7 @@ void node_events_stream::_update_downtime(
     if (dwn.triggered_by != 0
           && _recurring_downtimes.contains(dwn.triggered_by))
       _spawn_recurring_downtime(
-        dwn.actual_end_time + dwn.recurring_interval,
+        dwn.actual_end_time,
         _recurring_downtimes[dwn.triggered_by]);
   }
 }
@@ -547,8 +531,6 @@ void node_events_stream::_parse_downtime(
     std::string comment =       tok.get_next_token<std::string>(true);
     std::string recurring_timeperiod =
                                 tok.get_next_token<std::string>(true);
-    unsigned int recurring_interval =
-                                tok.get_next_token<unsigned int>(true);
     tok.end();
 
     node_id id = _node_cache.get_node_by_names(
@@ -568,9 +550,7 @@ void node_events_stream::_parse_downtime(
     d->service_id = id.get_service_id();
     d->was_started = false;
     d->internal_id = ++_actual_downtime_id;
-    d->is_recurring = recurring_interval != 0;
     d->triggered_by = trigger_id;
-    d->recurring_interval = recurring_interval;
     d->recurring_timeperiod = QString::fromStdString(recurring_timeperiod);
 
     // Save the downtime.
@@ -649,28 +629,6 @@ void node_events_stream::_parse_remove_downtime(
 }
 
 /**
- *  Load the timeperiods from the database.
- */
-void node_events_stream::_load_timeperiods() {
-  database db(_conf);
-
-  try {
-    timeperiod_loader loader;
-    composed_timeperiod_builder builder;
-    timeperiod_by_name_builder by_name(_timeperiods);
-    timeperiod_linker linker;
-    builder.push_back(by_name);
-    builder.push_back(linker);
-    loader.load(&db.get_qt_db(), &builder);
-  }
-  catch (std::exception const& e) {
-    throw (exceptions::msg()
-           << "neb: node event streams:"
-           " error while trying to load timeperiods: " << e.what());
-  }
-}
-
-/**
  *  Check that each recurring timeperiod has its downtime.
  */
 void node_events_stream::_check_downtime_timeperiod_consistency() {
@@ -688,6 +646,37 @@ void node_events_stream::_check_downtime_timeperiod_consistency() {
            " deleting associated downtime " << it->internal_id;
       _recurring_downtimes.erase(it);
     }
+  }
+}
+
+/**
+ *  Load the config file.
+ */
+void node_events_stream::_load_config_file() {
+  // Open and get the file in memory.
+  std::stringstream ss;
+  std::ofstream ofs;
+  try {
+    ofs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+    ofs.open(_config_file.c_str());
+    ss << ofs.rdbuf();
+  } catch (std::exception const& e) {
+    throw (exceptions::msg()
+           << "node_events: couldn't load file '"
+           << _config_file << "': " << e.what());
+  }
+
+  std::string document = ss.str();
+  try  {
+    ceof_parser parser(document);
+    for (ceof_iterator iterator = parser.parse();
+         !iterator.end();
+         ++iterator) {
+    }
+  } catch (std::exception const& e) {
+    throw (exceptions::msg()
+           << "node_events: couldn't parse file '"
+           << _config_file << "': " << e.what());
   }
 }
 
@@ -852,7 +841,7 @@ void node_events_stream::_spawn_recurring_downtime(
   if (when.is_null())
     when = ::time(NULL);
   spawned.start_time = (*tp)->get_next_valid(when);
-  spawned.end_time = spawned.start_time + (dwn.end_time - dwn.start_time);
+  spawned.end_time = (*tp)->get_next_invalid(spawned.start_time);
 
   // Save the downtime.
   _downtimes[spawned.internal_id] = spawned;

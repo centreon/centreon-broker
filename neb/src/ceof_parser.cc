@@ -40,6 +40,21 @@ ceof_parser::~ceof_parser() throw() {
 }
 
 /**
+ *  Skip comments and whitespaces.
+ *
+ *  @param[in,out] actual  The actual index.
+ */
+static void skip(size_t& actual, std::string const& string) {
+  actual = string.find_first_not_of(" \t\n", actual);
+  if (actual != std::string::npos)
+    return ;
+  while (string[actual] == '#') {
+    ++actual;
+    skip(actual, string);
+  }
+}
+
+/**
  *  @brief Parse the string given to the parser.
  *
  *  This tokenize the document and returns an iterator to iterate over it.
@@ -61,10 +76,10 @@ ceof_iterator ceof_parser::parse() {
   } state = waiting_for_define;
 
   // Parse the string.
-  size_t actual = _string.find_first_not_of(" \t\n");
-  size_t end = _string.size();
+  size_t actual = 0;
+  skip(actual, _string);
   int parent_token = -1;
-  while (actual != end) {
+  while (actual != std::string::npos) {
     // Get the token.
     size_t end_of_token = _string.find_first_of(" \t\n", actual);
     std::string substr = _string.substr(actual, end_of_token - actual);
@@ -106,7 +121,7 @@ ceof_iterator ceof_parser::parse() {
       state = in_object_waiting_for_key;
     }
     // Skip to the next token.
-    actual = _string.find_first_not_of(" \t\n");
+    skip(actual, _string);
   }
 
   return (ceof_iterator(_tokens.begin(), _tokens.end()));

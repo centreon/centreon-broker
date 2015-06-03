@@ -37,7 +37,7 @@ namespace   neb {
   class            ceof_serializable_member {
   public:
                    ceof_serializable_member(
-                     std::string const& (T::*serialize)(),
+                     std::string (T::*serialize)() const,
                      void(T::*unserialize)(std::string const&));
                    ~ceof_serializable_member();
 
@@ -45,7 +45,7 @@ namespace   neb {
     virtual void   unserialize(T& object, ceof_iterator& iterator) const;
 
   private:
-    std::string const& (T::*_serialize)();
+    std::string    (T::*_serialize)() const;
     void           (T::*_unserialize)(std::string const&);
 
                    ceof_serializable_member();

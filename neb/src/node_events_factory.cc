@@ -22,7 +22,6 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/neb/node_events_factory.hh"
 #include "com/centreon/broker/neb/node_events_connector.hh"
-#include "com/centreon/broker/database_config.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -122,22 +121,10 @@ io::endpoint* node_events_factory::new_endpoint(
   (void)is_input;
   (void)is_output;
 
-  // Need db for timeperiods.
-  database_config conf;
+  QString name = get(QString(), cfg, "cfg_file");
+  if (name.isEmpty())
+    throw (exceptions::msg()
+           << "node_events: couldn't get the name of the configuration file");
 
-  QString type = get<QString>("", cfg, "db_type");
-  QString host = get<QString>("", cfg, "db_host");
-  unsigned short port = get<unsigned short>(88, cfg, "db_port");
-  QString user = get<QString>("", cfg, "db_user");
-  QString password = get<QString>("", cfg, "db_password");
-  QString name = get<QString>("", cfg, "db_name");
-
-  conf.set_type(type.toStdString());
-  conf.set_host(host.toStdString());
-  conf.set_port(port);
-  conf.set_user(user.toStdString());
-  conf.set_password(password.toStdString());
-  conf.set_name(name.toStdString());
-
-  return (new node_events_connector(cache, conf));
+  return (new node_events_connector(cache, name.toStdString()));
 }

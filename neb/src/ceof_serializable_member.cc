@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/neb/ceof_serializable_member.hh"
 
 using namespace com::centreon::broker::neb;
@@ -30,7 +29,7 @@ template <typename T>
  *  @param[in] unserialize  The unserialize member.
  */
 ceof_serializable_member<T>::ceof_serializable_member(
-                               std::string const& (T::*serialize)(),
+                               std::string (T::*serialize)() const,
                                void(T::*unserialize)(std::string const&))
   : _serialize(serialize),
     _unserialize(unserialize) {

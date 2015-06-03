@@ -27,7 +27,8 @@ using namespace com::centreon::broker::neb;
  */
 template <typename T>
 ceof_serializable<T>::ceof_serializable() {
-
+  if (_members.empty())
+    init_bindings();
 }
 
 /**
@@ -37,7 +38,6 @@ ceof_serializable<T>::ceof_serializable() {
  */
 template <typename T>
 ceof_serializable<T>::ceof_serializable(ceof_serializable const& other) {
-  _members = other._members;
 }
 
 /**
@@ -51,7 +51,6 @@ template <typename T>
 ceof_serializable<T>& ceof_serializable<T>::operator=(
                         ceof_serializable const& other) {
   if (this != &other) {
-    _members = other._members;
   }
   return (*this);
 }
@@ -74,7 +73,7 @@ template <typename T>
  */
 void ceof_serializable<T>::add_member(
   std::string const& name,
-  std::string const& (T::*serialize)(),
+  std::string (T::*serialize)() const,
   void(T::*unserialize)(std::string const&)) {
   _members[name] = misc::make_shared(
     new ceof_serializable_member<T>(serialize, unserialize));

@@ -30,6 +30,8 @@ namespace   neb {
   /**
    *  @class ceof_iterator ceof_iterator.hh "com/centreon/broker/neb/ceof_iterator.hh"
    *  @brief Centreon Engine Object File iterator.
+   *
+   *  This iterates over the parsed tokens of a ceof document.
    */
   class          ceof_iterator {
   public:
