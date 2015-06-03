@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,59 +17,58 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_MULTIPLEXING_SUBSCRIBER_HH
-#  define CCB_MULTIPLEXING_SUBSCRIBER_HH
+#ifndef CCB_MULTIPLEXING_MUXER_HH
+#  define CCB_MULTIPLEXING_MUXER_HH
 
-#  include <ctime>
-#  include <memory>
-#  include <QMutex>
-#  include <QQueue>
+#  include <queue>
 #  include <QWaitCondition>
-#  include <set>
 #  include <string>
-#  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace               multiplexing {
   /**
-   *  @class subscriber subscriber.hh "com/centreon/broker/multiplexing/subscriber.hh"
-   *  @brief Receive events from publishers and make them
-   *         available through the interface::source interface.
+   *  @class muxer muxer.hh "com/centreon/broker/multiplexing/muxer.hh"
+   *  @brief Receive and send events from/to the multiplexing engine.
    *
-   *  This class is used as a cornerstone in event multiplexing.
-   *  Each output willing to receive events will request a
-   *  subscriber object. All publisher objects broadcast events
-   *  they receive to every subscriber objects.
+   *  This class is a cornerstone in event multiplexing. Each endpoint
+   *  willing to communicate with the multiplexing engine will create a
+   *  new muxer object. This objects broadcast events sent to it to all
+   *  other muxer objects.
    *
-   *  @see publisher
+   *  @see engine
    */
-  class                 subscriber : public io::stream {
+  class                 muxer : public io::stream {
   public:
-                        subscriber(
+    typedef             uset<unsigned int>
+                        filters;
+
+                        muxer(
                           std::string const& name,
                           std::string const& temp_dir,
                           bool persistent = false);
-                        ~subscriber();
+                        ~muxer();
     static void         event_queue_max_size(unsigned int max) throw ();
     static unsigned int event_queue_max_size() throw ();
+    void                publish(misc::shared_ptr<io::data> const& d);
     void                read(misc::shared_ptr<io::data>& d);
     void                read(
                           misc::shared_ptr<io::data>& d,
                           time_t timeout,
                           bool* timed_out = NULL);
-    void                set_filters(
-                          std::set<unsigned int> const& filters);
+    void                set_read_filters(filters const& fltrs);
+    void                set_write_filters(filters const& fltrs);
     void                statistics(io::properties& tree) const;
     void                wake();
     unsigned int        write(misc::shared_ptr<io::data> const& d);
 
   private:
-                        subscriber(subscriber const& s);
-    subscriber&         operator=(subscriber const& s);
-    void                clean();
+                        muxer(muxer const& other);
+    muxer&              operator=(muxer const& other);
+    void                _clean();
     bool                _get_event_from_temporary(
                           misc::shared_ptr<io::data>& event);
     void                _get_last_event(
@@ -78,24 +77,22 @@ namespace               multiplexing {
     std::string         _queue_file() const;
 
     QWaitCondition      _cv;
-    QQueue<misc::shared_ptr<io::data> >
+    std::queue<misc::shared_ptr<io::data> >
                         _events;
     static unsigned int _event_queue_max_size;
-    std::set<unsigned int>
-                        _filters;
     mutable QMutex      _mutex;
     std::string         _name;
     bool                _persistent;
-    bool                _process_in;
-    bool                _process_out;
+    filters             _read_filters;
     bool                _recovery_temporary;
     misc::shared_ptr<io::stream>
                         _temporary;
     std::string         _temp_dir;
     unsigned int        _total_events;
+    filters             _write_filters;
   };
 }
 
 CCB_END()
 
-#endif // !CCB_MULTIPLEXING_SUBSCRIBER_HH
+#endif // !CCB_MULTIPLEXING_MUXER_HH

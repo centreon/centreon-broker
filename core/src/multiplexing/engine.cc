@@ -17,18 +17,17 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <algorithm>
 #include <cstdlib>
-#include <memory>
+#include <queue>
 #include <QMutexLocker>
-#include <QQueue>
-#include <QVector>
 #include <unistd.h>
+#include <vector>
 #include <utility>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
-#include "com/centreon/broker/multiplexing/internal.hh"
-#include "com/centreon/broker/multiplexing/subscriber.hh"
+#include "com/centreon/broker/multiplexing/muxer.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::multiplexing;
@@ -40,18 +39,22 @@ using namespace com::centreon::broker::multiplexing;
 **************************************/
 
 // Hooks.
-static QVector<std::pair<hooker*, bool> >           _hooks;
-static QVector<std::pair<hooker*, bool> >::iterator _hooks_begin;
-static QVector<std::pair<hooker*, bool> >::iterator _hooks_end;
+static std::vector<std::pair<hooker*, bool> >           _hooks;
+static std::vector<std::pair<hooker*, bool> >::iterator _hooks_begin;
+static std::vector<std::pair<hooker*, bool> >::iterator _hooks_end;
 
-// Pointer.
-std::auto_ptr<engine> engine::_instance;
+// Subscriber.
+static std::vector<muxer*> _muxers;
+static QMutex              _muxersm;
+
+// Class instance.
+engine* engine::_instance(NULL);
 
 // Data queue.
-static QQueue<misc::shared_ptr<io::data> > _kiew;
+static std::queue<misc::shared_ptr<io::data> > _kiew;
 
 // Processing flag.
-static bool _processing;
+static bool _processing(false);
 
 /**************************************
 *                                     *
@@ -68,19 +71,20 @@ engine::~engine() {}
  *  Clear events stored in the multiplexing engine.
  */
 void engine::clear() {
-  _kiew.clear();
+  while (!_kiew.empty())
+    _kiew.pop();
   return ;
 }
 
 /**
  *  Set a hook.
  *
- *  @param[in] h    Hook.
- *  @param[in] data Write data to hook.
+ *  @param[in] h          Hook.
+ *  @param[in] with_data  Write data to hook.
  */
-void engine::hook(hooker& h, bool data) {
+void engine::hook(hooker& h, bool with_data) {
   QMutexLocker lock(this);
-  _hooks.push_back(std::make_pair(&h, data));
+  _hooks.push_back(std::make_pair(&h, with_data));
   _hooks_begin = _hooks.begin();
   _hooks_end = _hooks.end();
   return ;
@@ -99,26 +103,25 @@ engine& engine::instance() {
  *  Load engine instance.
  */
 void engine::load() {
-  _instance.reset(new engine);
+  if (!_instance)
+    _instance = new engine;
   return ;
 }
 
 /**
  *  Send an event to all subscribers.
  *
- *  @param[in] e Event to publish.
+ *  @param[in] e  Event to publish.
  */
 void engine::publish(misc::shared_ptr<io::data> const& e) {
   // Lock mutex.
   QMutexLocker lock(this);
 
-  if (!_stopped) {
-    // Store object for further processing.
-    _kiew.enqueue(e);
+  // Store object for further processing.
+  _kiew.push(e);
 
-    // Processing function.
-    (this->*_write_func)(e);
-  }
+  // Processing function.
+  (this->*_write_func)(e);
 
   return ;
 }
@@ -134,11 +137,12 @@ void engine::start() {
 
     // Copy event queue.
     QMutexLocker lock(this);
-    QQueue<misc::shared_ptr<io::data> > kiew(_kiew);
-    _kiew.clear();
+    std::queue<misc::shared_ptr<io::data> > kiew(_kiew);
+    while (!_kiew.empty())
+      _kiew.pop();
 
     // Notify hooks of multiplexing loop start.
-    for (QVector<std::pair<hooker*, bool> >::iterator
+    for (std::vector<std::pair<hooker*, bool> >::iterator
            it(_hooks_begin),
            end(_hooks_end);
          it != end;
@@ -150,7 +154,7 @@ void engine::start() {
         misc::shared_ptr<io::data> d;
         it->first->read(d);
         while (!d.isNull()) {
-          _kiew.enqueue(d);
+          _kiew.push(d);
           it->first->read(d);
         }
       }
@@ -164,9 +168,9 @@ void engine::start() {
     _send_to_subscribers();
 
     // Send events queued while multiplexing was stopped.
-    while (!kiew.isEmpty()) {
-      publish(kiew.head());
-      kiew.dequeue();
+    while (!kiew.empty()) {
+      publish(kiew.front());
+      kiew.pop();
     }
   }
   return ;
@@ -180,7 +184,7 @@ void engine::stop() {
     // Notify hooks of multiplexing loop end.
     logging::debug(logging::high) << "multiplexing: stopping";
     QMutexLocker lock(this);
-    for (QVector<std::pair<hooker*, bool> >::iterator
+    for (std::vector<std::pair<hooker*, bool> >::iterator
            it(_hooks_begin),
            end(_hooks_end);
          it != end;
@@ -192,7 +196,7 @@ void engine::stop() {
         misc::shared_ptr<io::data> d;
         it->first->read(d);
         while (!d.isNull()) {
-          _kiew.enqueue(d);
+          _kiew.push(d);
           it->first->read(d);
         }
       }
@@ -211,30 +215,29 @@ void engine::stop() {
 
     // Set writing method.
     _write_func = &engine::_nop;
-
-    // Mark engine as stopped.
-    _stopped = true;
   }
   return ;
 }
 
 /**
- *  Check if multiplexing engine is stopped.
+ *  Subscribe to the multiplexing engine.
  *
- *  @return True if the multiplexing engine is stopped.
+ *  @param[in] subscriber  Subscriber.
  */
-bool engine::stopped() const throw () {
-  return (_stopped);
+void engine::subscribe(muxer* subscriber) {
+  QMutexLocker lock(&_muxersm);
+  _muxers.push_back(subscriber);
+  return ;
 }
 
 /**
  *  Remove a hook.
  *
- *  @param[in] h Hook.
+ *  @param[in] h  Hook.
  */
 void engine::unhook(hooker& h) {
   QMutexLocker lock(this);
-  for (QVector<std::pair<hooker*, bool> >::iterator
+  for (std::vector<std::pair<hooker*, bool> >::iterator
          it(_hooks_begin);
        it != _hooks.end();)
     if (it->first == &h)
@@ -250,7 +253,19 @@ void engine::unhook(hooker& h) {
  *  Unload class instance.
  */
 void engine::unload() {
-  _instance.reset();
+  delete _instance;
+  _instance = NULL;
+  return ;
+}
+
+/**
+ *  Unsubscribe from the multiplexing engine.
+ *
+ *  @param[in] subscriber  Subscriber.
+ */
+void engine::unsubscribe(muxer* subscriber) {
+  QMutexLocker lock(&_muxersm);
+  std::remove(_muxers.begin(), _muxers.end(), subscriber);
   return ;
 }
 
@@ -265,7 +280,6 @@ void engine::unload() {
  */
 engine::engine()
   : QMutex(QMutex::Recursive),
-    _stopped(false),
     _write_func(&engine::_nop) {
   // Initialize hook iterators.
   _hooks_begin = _hooks.begin();
@@ -275,27 +289,10 @@ engine::engine()
 /**
  *  Do nothing.
  *
- *  @param[in] d Unused.
+ *  @param[in] d  Unused.
  */
 void engine::_nop(misc::shared_ptr<io::data> const& d) {
   (void)d;
-  return ;
-}
-
-/**
- *  On hook object destruction.
- *
- *  @param[in] obj Destroyed object.
- */
-void engine::_on_hook_destroy(QObject* obj) {
-  QMutexLocker lock(this);
-  for (QVector<std::pair<hooker*, bool> >::iterator
-         it = _hooks.begin();
-       it != _hooks.end();)
-    if (it->first == obj)
-      it = _hooks.erase(it);
-    else
-      ++it;
   return ;
 }
 
@@ -304,16 +301,16 @@ void engine::_on_hook_destroy(QObject* obj) {
  */
 void engine::_send_to_subscribers() {
   // Process all queued events.
-  QMutexLocker lock(&gl_subscribersm);
-  while (!_kiew.isEmpty()) {
+  QMutexLocker lock(&_muxersm);
+  while (!_kiew.empty()) {
     // Send object to every subscriber.
-    for (QVector<subscriber*>::iterator
-           it = gl_subscribers.begin(),
-           end = gl_subscribers.end();
+    for (std::vector<muxer*>::iterator
+           it(_muxers.begin()),
+           end(_muxers.end());
          it != end;
          ++it)
-      (*it)->write(_kiew.head());
-    _kiew.dequeue();
+      (*it)->publish(_kiew.front());
+    _kiew.pop();
   }
   return ;
 }
@@ -321,7 +318,7 @@ void engine::_send_to_subscribers() {
 /**
  *  Publish event.
  *
- *  @param[in] d Data to publish.
+ *  @param[in] d  Data to publish.
  */
 void engine::_write(misc::shared_ptr<io::data> const& e) {
   if (!_processing) {
@@ -330,7 +327,7 @@ void engine::_write(misc::shared_ptr<io::data> const& e) {
 
     try {
       // Send object to every hook.
-      for (QVector<std::pair<hooker*, bool> >::iterator
+      for (std::vector<std::pair<hooker*, bool> >::iterator
              it(_hooks_begin),
              end(_hooks_end);
            it != end;
@@ -340,7 +337,7 @@ void engine::_write(misc::shared_ptr<io::data> const& e) {
           misc::shared_ptr<io::data> d;
           it->first->read(d);
           while (!d.isNull()) {
-            _kiew.enqueue(d);
+            _kiew.push(d);
             it->first->read(d);
           }
         }

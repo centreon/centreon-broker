@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,40 +17,36 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_MULTIPLEXING_HOOKER_HH_
-# define CCB_MULTIPLEXING_HOOKER_HH_
+#ifndef CCB_MULTIPLEXING_HOOKER_HH
+#  define CCB_MULTIPLEXING_HOOKER_HH
 
-# include <QObject>
-# include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace              com {
-  namespace            centreon {
-    namespace          broker {
-      namespace        multiplexing {
-        /**
-         *  @class hooker hooker.hh "com/centreon/broker/multiplexing/hooker.hh"
-         *  @brief Hook object.
-         *
-         *  Place a hook on the multiplexing engine.
-         */
-        class          hooker : public QObject, public io::stream {
-          Q_OBJECT
+CCB_BEGIN()
 
-         protected:
-          bool         _registered;
+namespace        multiplexing {
+  /**
+   *  @class hooker hooker.hh "com/centreon/broker/multiplexing/hooker.hh"
+   *  @brief Hook object.
+   *
+   *  Place a hook on the multiplexing engine.
+   */
+  class          hooker : public io::stream {
+  public:
+                 hooker();
+                 hooker(hooker const& other);
+    virtual      ~hooker();
+    hooker&      operator=(hooker const& other);
+    void         hook(bool should_hook);
+    virtual void starting() = 0;
+    virtual void stopping() = 0;
 
-         public:
-                       hooker();
-                       hooker(hooker const& h);
-          virtual      ~hooker();
-          hooker&      operator=(hooker const &h);
-          virtual void process(bool in = false, bool out = true);
-          virtual void starting() = 0;
-          virtual void stopping() = 0;
-        };
-      }
-    }
-  }
+  protected:
+    bool         _registered;
+  };
 }
 
-#endif /* !CCB_MULTIPLEXING_HOOKER_HH_ */
+CCB_END()
+
+#endif // !CCB_MULTIPLEXING_HOOKER_HH

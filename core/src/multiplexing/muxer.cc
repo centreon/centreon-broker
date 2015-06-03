@@ -17,22 +17,19 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cstdlib>
-#include <ctime>
 #include <limits>
-#include <QMutexLocker>
 #include <sstream>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/multiplexing/internal.hh"
-#include "com/centreon/broker/multiplexing/subscriber.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/persistent_file.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::multiplexing;
 
-unsigned int subscriber::_event_queue_max_size = std::numeric_limits<unsigned int>::max();
+unsigned int muxer::_event_queue_max_size = std::numeric_limits<unsigned int>::max();
 
 /**************************************
 *                                     *
@@ -43,69 +40,57 @@ unsigned int subscriber::_event_queue_max_size = std::numeric_limits<unsigned in
 /**
  *  Constructor.
  *
- *  @param[in] name        Name associated to this subscriber. It is
- *                         used to create on-disk files.
+ *  @param[in] name        Name associated to this muxer. It is used to
+ *                         create on-disk files.
  *  @param[in] temp_dir    Directory in which temporary files will be
  *                         created.
- *  @param[in] persistent  Whether or not this subscriber should backup
+ *  @param[in] persistent  Whether or not this muxer should backup
  *                         unprocessed events in a persistent storage.
  */
-subscriber::subscriber(
-              std::string const& name,
-              std::string const& temp_dir,
-              bool persistent)
+muxer::muxer(
+         std::string const& name,
+         std::string const& temp_dir,
+         bool persistent)
   : _name(name),
     _persistent(persistent),
-    _process_in(true),
-    _process_out(true),
     _recovery_temporary(false),
     _temp_dir(temp_dir),
     _total_events(0) {
+  // Load head queue file back in memory.
+  if (_persistent) {
+    try {
+      misc::shared_ptr<io::stream>
+        mf(new persistent_file(_memory_file()));
+      misc::shared_ptr<io::data> e;
+      while (true) {
+        mf->read(e);
+        _events.push(e);
+        ++_total_events;
+      }
+    }
+    catch (io::exceptions::shutdown const& e) {
+      // Queue file was properly read back in memory.
+      (void)e;
+    }
+  }
+
+  // Load temporary file back in memory.
   {
-    QMutexLocker lock2(&_mutex);
-
-    // Register self in subscriber list.
-    {
-      QMutexLocker lock1(&gl_subscribersm);
-      gl_subscribers.push_back(this);
-    }
-
-    // Load head queue file back in memory.
-    if (_persistent) {
-      try {
-        misc::shared_ptr<io::stream>
-          mf(new persistent_file(_memory_file()));
-        misc::shared_ptr<io::data> e;
-        while (true) {
-          mf->read(e);
-          _events.enqueue(e);
-          ++_total_events;
-        }
+    _temporary = new persistent_file(_queue_file());
+    misc::shared_ptr<io::data> event;
+    do {
+      _recovery_temporary = _get_event_from_temporary(event);
+      if (!_recovery_temporary) {
+        // All temporary event was loaded into the memory event queue.
+        // The recovery mode is disable.
+        break ;
       }
-      catch (io::exceptions::shutdown const& e) {
-        // Queue file was properly read back in memory.
-        (void)e;
+      else {
+        // Push temporary event to the memory event queue.
+        _events.push(event);
+        ++_total_events;
       }
-    }
-
-    // Load temporary file back in memory.
-    {
-      _temporary = new persistent_file(_queue_file());
-      misc::shared_ptr<io::data> event;
-      do {
-        _recovery_temporary = _get_event_from_temporary(event);
-        if (!_recovery_temporary) {
-          // All temporary event was loaded into the memory event queue.
-          // The recovery mode is disable.
-          break ;
-        }
-        else {
-          // Push temporary event to the memory event queue.
-          _events.enqueue(event);
-          ++_total_events;
-        }
-      } while (_total_events < event_queue_max_size());
-    }
+    } while (_total_events < event_queue_max_size());
   }
 
   // Log messages.
@@ -118,23 +103,16 @@ subscriber::subscriber(
 /**
  *  Destructor.
  */
-subscriber::~subscriber() {
-  clean();
-  QMutexLocker lock(&gl_subscribersm);
-  for (QVector<subscriber*>::iterator it(gl_subscribers.begin());
-       it != gl_subscribers.end();)
-    if (*it == this)
-      it = gl_subscribers.erase(it);
-    else
-      ++it;
+muxer::~muxer() {
+  _clean();
 }
 
 /**
  *  Set the maximume event queue size.
  *
- *  @param[in] max The size limit.
+ *  @param[in] max  The size limit.
  */
-void subscriber::event_queue_max_size(unsigned int max) throw () {
+void muxer::event_queue_max_size(unsigned int max) throw () {
   if (!max)
     max = std::numeric_limits<unsigned int>::max();
   _event_queue_max_size = max;
@@ -145,16 +123,51 @@ void subscriber::event_queue_max_size(unsigned int max) throw () {
  *
  *  @return The size limit.
  */
-unsigned int subscriber::event_queue_max_size() throw () {
+unsigned int muxer::event_queue_max_size() throw () {
   return (_event_queue_max_size);
+}
+
+/**
+ *  Add a new event to the internal event list.
+ *
+ *  @param[in] event Event to add.
+ */
+void muxer::publish(misc::shared_ptr<io::data> const& event) {
+  {
+    QMutexLocker lock(&_mutex);
+    // Check if we should process this event.
+    if (!event.isNull()
+        && (_read_filters.find(event->type()) == _read_filters.end()))
+      return ;
+    // Check if the event queue limit is reach.
+    if (_total_events >= event_queue_max_size()) {
+      // Try to create temporary if is necessary.
+      if (!_temporary)
+        _temporary = new persistent_file(_queue_file());
+
+      // Check if we have temporary.
+      if (_temporary)
+        _temporary->write(event);
+      else
+        _events.push(event);
+    }
+    else
+      _events.push(event);
+
+    // If the recovery mode is disable increase total events.
+    if (!_recovery_temporary)
+      ++_total_events;
+  }
+  _cv.wakeOne();
+  return ;
 }
 
 /**
  *  Get the next available event.
  *
- *  @param[out] d Next available event.
+ *  @param[out] d  Next available event.
  */
-void subscriber::read(misc::shared_ptr<io::data>& d) {
+void muxer::read(misc::shared_ptr<io::data>& d) {
   this->read(d, (time_t)-1);
   return ;
 }
@@ -162,51 +175,44 @@ void subscriber::read(misc::shared_ptr<io::data>& d) {
 /**
  *  Get the next available event without waiting more than timeout.
  *
- *  @param[out] event     Next available event.
- *  @param[in]  timeout   Date limit.
- *  @param[out] timed_out Set to true if read timed out.
+ *  @param[out] event      Next available event.
+ *  @param[in]  timeout    Date limit.
+ *  @param[out] timed_out  Set to true if read timed out.
  */
-void subscriber::read(
-                   misc::shared_ptr<io::data>& event,
-                   time_t timeout,
-                   bool* timed_out) {
+void muxer::read(
+              misc::shared_ptr<io::data>& event,
+              time_t timeout,
+              bool* timed_out) {
+  if (timed_out)
+    *timed_out = false;
   QMutexLocker lock(&_mutex);
 
   // No data is directly available.
   if (!_total_events) {
     // Wait a while if subscriber was not shutdown.
-    if (_process_in && _process_out) {
-      if ((time_t)-1 == timeout)
-        _cv.wait(&_mutex);
-      else {
-        time_t now(time(NULL));
-        if (now < timeout) {
-          bool timedout(!_cv.wait(&_mutex, (timeout - now) * 1000));
-          if (timed_out)
-            *timed_out = timedout;
-        }
-        else if (timed_out)
-          *timed_out = true;
+    if ((time_t)-1 == timeout)
+      _cv.wait(&_mutex);
+    else {
+      time_t now(time(NULL));
+      if (now < timeout) {
+        bool timedout(!_cv.wait(&_mutex, (timeout - now) * 1000));
+        if (timed_out)
+          *timed_out = timedout;
       }
-      if (_total_events) {
-        _get_last_event(event);
-        lock.unlock();
-        logging::debug(logging::low) << "multiplexing: "
-          << _total_events << " events remaining in subcriber";
-      }
-      else
-        event.clear();
+      else if (timed_out)
+        *timed_out = true;
     }
-    // If subscriber is shutdown, notify caller.
+    if (_total_events) {
+      _get_last_event(event);
+      lock.unlock();
+      logging::debug(logging::low) << "multiplexing: "
+        << _total_events << " events remaining in subcriber";
+    }
     else
-      throw (io::exceptions::shutdown(true, true)
-             << "thread is shutdown, cannot get any further event");
+      event.clear();
   }
   // Data is available, no need to wait.
   else {
-    if (!_process_in && _process_out)
-      throw (io::exceptions::shutdown(true, false)
-             << "thread is shutdown, cannot get any further event");
     _get_last_event(event);
     lock.unlock();
     logging::debug(logging::low) << "multiplexing: " << _total_events
@@ -216,12 +222,25 @@ void subscriber::read(
 }
 
 /**
- *  Set the filters.
+ *  Set the read filters.
  *
- *  @param[in] filters Content filters.
+ *  @param[in] fltrs  Read filters. That is read() will return only
+ *                    events which type() is available in this set.
  */
-void subscriber::set_filters(std::set<unsigned int> const& filters) {
-  _filters = filters;
+void muxer::set_read_filters(muxer::filters const& fltrs) {
+  _read_filters = fltrs;
+  return ;
+}
+
+/**
+ *  Set the write filters.
+ *
+ *  @param[in] fltrs  Write filters. That is any submitted through
+ *                    write() must be in this set otherwise it won't be
+ *                    multiplexed.
+ */
+void muxer::set_write_filters(muxer::filters const& fltrs) {
+  _write_filters = fltrs;
   return ;
 }
 
@@ -230,7 +249,7 @@ void subscriber::set_filters(std::set<unsigned int> const& filters) {
  *
  *  @param[out] buffer Output buffer.
  */
-void subscriber::statistics(io::properties& tree) const {
+void muxer::statistics(io::properties& tree) const {
   // Lock object.
   QMutexLocker lock(&_mutex);
 
@@ -261,10 +280,10 @@ void subscriber::statistics(io::properties& tree) const {
     oss.str("");
 
     // Get numeric event categories.
-    std::set<unsigned short> numcats;
-    for (std::set<unsigned int>::const_iterator
-           it(_filters.begin()),
-           end(_filters.end());
+    uset<unsigned short> numcats;
+    for (uset<unsigned int>::const_iterator
+           it(_read_filters.begin()),
+           end(_read_filters.end());
          it != end;
          ++it)
       numcats.insert(io::events::category_of_type(*it));
@@ -276,7 +295,7 @@ void subscriber::statistics(io::properties& tree) const {
     }
     else {
       // Convert numeric categories to strings.
-      for (std::set<unsigned short>::const_iterator
+      for (uset<unsigned short>::const_iterator
              it(numcats.begin()),
              end(numcats.end());
            it != end;
@@ -306,50 +325,24 @@ void subscriber::statistics(io::properties& tree) const {
 }
 
 /**
- *  Add a new event to the internal event list.
- *
- *  @param[in] event Event to add.
- *
- *  @return Number of elements acknowledged (1).
- */
-unsigned int subscriber::write(misc::shared_ptr<io::data> const& event) {
-  {
-    QMutexLocker lock(&_mutex);
-    // Check if we should process this event.
-    if (!_filters.empty()
-        && !event.isNull()
-        && (_filters.find(event->type()) == _filters.end()))
-      return (1);
-    // Check if the event queue limit is reach.
-    if (_total_events >= event_queue_max_size()) {
-      // Try to create temporary if is necessary.
-      if (!_temporary)
-        _temporary = new persistent_file(_queue_file());
-
-      // Check if we have temporary.
-      if (_temporary)
-        _temporary->write(event);
-      else
-        _events.enqueue(event);
-    }
-    else
-      _events.enqueue(event);
-
-    // If the recovery mode is disable increase total events.
-    if (!_recovery_temporary)
-      ++_total_events;
-  }
-  _cv.wakeOne();
-  return (1);
-}
-
-/**
  *  Wake all threads waiting on this subscriber.
  */
-void subscriber::wake() {
+void muxer::wake() {
   QMutexLocker lock(&_mutex);
   _cv.wakeAll();
   return ;
+}
+
+/**
+ *  Send an event to multiplexing.
+ *
+ *  @param[in] d  Event to multiplex.
+ */
+unsigned int muxer::write(misc::shared_ptr<io::data> const& d) {
+  if (d.isNull()
+      || (_write_filters.find(d->type()) != _write_filters.end()))
+    engine::instance().publish(d);
+  return (1);
 }
 
 /**************************************
@@ -361,16 +354,18 @@ void subscriber::wake() {
 /**
  *  Release all events stored within the internal list.
  */
-void subscriber::clean() {
+void muxer::_clean() {
   QMutexLocker lock(&_mutex);
   if (_temporary)
     _temporary = misc::shared_ptr<io::stream>();
-  if (_persistent) {
+  if (_persistent && !_events.empty()) {
     try {
       misc::shared_ptr<io::stream>
         mf(new persistent_file(_memory_file()));
-      while (!_events.empty())
-        mf->write(_events.dequeue());
+      while (!_events.empty()) {
+        mf->write(_events.front());
+        _events.pop();
+      }
     }
     catch (std::exception const& e) {
       logging::error(logging::high)
@@ -378,7 +373,8 @@ void subscriber::clean() {
         << "': " << e.what();
     }
   }
-  _events.clear();
+  while (!_events.empty())
+    _events.pop();
   _recovery_temporary = false;
   _total_events = 0;
   return ;
@@ -392,8 +388,8 @@ void subscriber::clean() {
  *
  *  @return True if have event into the temporary.
  */
-bool subscriber::_get_event_from_temporary(
-                   misc::shared_ptr<io::data>& event) {
+bool muxer::_get_event_from_temporary(
+              misc::shared_ptr<io::data>& event) {
   bool ret(false);
   // If temporary exist, try to get the last event.
   if (_temporary) {
@@ -419,17 +415,18 @@ bool subscriber::_get_event_from_temporary(
  *
  *  @param[out] event Last event available.
  */
-void subscriber::_get_last_event(misc::shared_ptr<io::data>& event) {
+void muxer::_get_last_event(misc::shared_ptr<io::data>& event) {
   // Try to get the last temporary event.
   if (_get_event_from_temporary(event))
-    _events.enqueue(event);
+    _events.push(event);
 
   // If the recovery mode is disable decrease total events.
   if (!_recovery_temporary)
     --_total_events;
 
   // Get the last avaiable event.
-  event = _events.dequeue();
+  event = _events.front();
+  _events.pop();
   return ;
 }
 
@@ -438,7 +435,7 @@ void subscriber::_get_last_event(misc::shared_ptr<io::data>& event) {
  *
  *  @return Path to the memory file.
  */
-std::string subscriber::_memory_file() const {
+std::string muxer::_memory_file() const {
   std::string retval(_temp_dir);
   retval.append("memory-");
   retval.append(_name);
@@ -450,7 +447,7 @@ std::string subscriber::_memory_file() const {
  *
  *  @return Path to the queue file.
  */
-std::string subscriber::_queue_file() const {
+std::string muxer::_queue_file() const {
   std::string retval(_temp_dir);
   retval.append("queue-");
   retval.append(_name);
