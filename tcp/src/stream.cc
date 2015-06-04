@@ -43,10 +43,8 @@ using namespace com::centreon::broker::tcp;
  */
 stream::stream(misc::shared_ptr<QTcpSocket> sock)
   : _mutex(new QMutex),
-    _process_in(true),
-    _process_out(true),
+    _read_timeout(-1),
     _socket(sock),
-    _timeout(-1),
     _write_timeout(-1) {}
 
 /**
@@ -59,10 +57,8 @@ stream::stream(
           misc::shared_ptr<QTcpSocket> sock,
           misc::shared_ptr<QMutex> mutex)
   : _mutex(mutex),
-    _process_in(true),
-    _process_out(true),
+    _read_timeout(-1),
     _socket(sock),
-    _timeout(-1),
     _write_timeout(-1) {}
 
 /**
@@ -75,45 +71,32 @@ stream::~stream() {
 }
 
 /**
- *  Enable or disable event processing.
+ *  Read data with timeout.
  *
- *  @param[in] in  Set to true to enable input event processing.
- *  @param[in] out Set to true to enable output event processing.
- */
-void stream::process(bool in, bool out) {
-  _process_in = in;
-  _process_out = out;
-  return ;
-}
-
-/**
- *  Read data from the socket.
+ *  @param[out] d         Received event if any.
+ *  @param[in]  deadline  Timeout in seconds.
  *
- *  @param[out] d Data read.
+ *  @return Respects io::stream::read()'s return value.
  */
-void stream::read(misc::shared_ptr<io::data>& d) {
+bool stream::read(
+               misc::shared_ptr<io::data>& d,
+               time_t deadline) {
   d.clear();
   QMutexLocker lock(&*_mutex);
-
-  // Check processing flags.
-  if (!_process_in)
-    throw (io::exceptions::shutdown(!_process_in, !_process_out)
-           << "TCP stream is shutdown");
 
   // If data is already available, skip the waitForReadyRead() loop.
   if (_socket->bytesAvailable() <= 0) {
     while (1) {
+      if ((deadline != (time_t)-1)
+          && (time(NULL) >= deadline)) {
+        return (false);
+      }
       bool ret;
-      if (!(ret = _socket->waitForReadyRead(
-                             (_timeout == -1)
-                             ? 200
-                             : _timeout * 1000))
-          // Standalone socket.
-          && ((_timeout != -1)
-              // Disconnected socket with no data.
-              || ((_socket->state()
-                   == QAbstractSocket::UnconnectedState)
-                  && (_socket->bytesAvailable() <= 0))))
+      if (!(ret = _socket->waitForReadyRead(200))
+          // Disconnected socket with no data.
+          && (_socket->state()
+              == QAbstractSocket::UnconnectedState)
+          && (_socket->bytesAvailable() <= 0))
         throw (exceptions::msg() << "TCP stream is disconnected");
       if (ret
           || (_socket->error() != QAbstractSocket::SocketTimeoutError)
@@ -123,9 +106,6 @@ void stream::read(misc::shared_ptr<io::data>& d) {
         QWaitCondition cv;
         cv.wait(&*_mutex, 1);
       }
-      if (!_process_in)
-        throw (io::exceptions::shutdown(!_process_in, !_process_out)
-               << "TCP stream is shutdown");
     }
   }
 
@@ -141,16 +121,16 @@ void stream::read(misc::shared_ptr<io::data>& d) {
   data->append(QByteArray(buffer, rb));
 #endif // Qt version
   d = data;
-  return ;
+  return (true);
 }
 
 /**
- *  Set connection timeout.
+ *  Set read timeout.
  *
  *  @param[in] secs  Timeout in seconds.
  */
-void stream::set_timeout(int secs) {
-  _timeout = secs;
+void stream::set_read_timeout(int secs) {
+  _read_timeout = secs;
   return ;
 }
 
@@ -173,9 +153,6 @@ void stream::set_write_timeout(int secs) {
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
   // Check that data exists and should be processed.
-  if (!_process_out)
-    throw (io::exceptions::shutdown(!_process_in, !_process_out)
-             << "TCP stream is shutdown");
   if (d.isNull())
     return (1);
 
