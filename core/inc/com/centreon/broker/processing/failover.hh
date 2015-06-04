@@ -65,7 +65,6 @@ namespace           processing {
                       misc::shared_ptr<io::endpoint> endp);
     void            exit();
     time_t          get_buffering_timeout() const throw ();
-    time_t          get_read_timeout() const throw ();
     time_t          get_retry_interval() const throw ();
     void            read(misc::shared_ptr<io::data>& d);
     void            read(
@@ -76,7 +75,6 @@ namespace           processing {
     void            set_buffering_timeout(time_t secs);
     void            set_failover(
                       misc::shared_ptr<processing::failover> fo);
-    void            set_read_timeout(time_t read_timeout);
     void            set_retry_interval(time_t retry_interval);
     void            statistics(io::properties& tree) const;
     void            update();
@@ -86,10 +84,6 @@ namespace           processing {
   private:
                     failover(failover const& other);
     failover&       operator=(failover const& other);
-    void            _get_next_event(
-                      misc::shared_ptr<io::data>& d,
-                      time_t timeout,
-                      bool* timed_out = NULL);
     void            _launch_failover();
     void            _update_status(std::string const& status);
 
@@ -103,18 +97,11 @@ namespace           processing {
                     _failover;
     bool            _failover_launched;
     QString         _name;
-    time_t          _next_timeout;
-    time_t          _read_timeout;
     volatile time_t _retry_interval;
     misc::shared_ptr<multiplexing::subscriber>
                     _subscriber;
     std::string     _temp_dir;
     volatile bool   _update;
-
-    // Acceptor.
-    std::auto_ptr<processing::acceptor>
-                    _acceptor;
-    mutable QMutex  _acceptorm;
 
     // Status.
     std::string     _status;
