@@ -57,8 +57,7 @@ namespace          storage {
                      bool store_in_db = true,
                      bool insert_in_index_data = false);
                    ~stream();
-    void           process(bool in = false, bool out = true);
-    void           read(misc::shared_ptr<io::data>& d);
+    bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
     void           starting();
     void           statistics(io::properties& tree) const;
     void           stopping();
@@ -137,7 +136,6 @@ namespace          storage {
     unsigned int   _pending_events;
     std::deque<metric_value>
                    _perfdata_queue;
-    bool           _process_out;
     rebuilder      _rebuild_thread;
     unsigned int   _rrd_len;
     std::string    _status;
