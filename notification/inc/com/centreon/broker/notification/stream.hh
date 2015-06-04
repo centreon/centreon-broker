@@ -64,7 +64,6 @@ namespace        notification {
                  stream(stream const& s);
                  ~stream();
     static void  initialize();
-    void         process(bool in = false, bool out = false);
     bool         read(
                    misc::shared_ptr<io::data>& d,
                    time_t deadline);
@@ -103,7 +102,6 @@ namespace        notification {
                  _centreon_db;
     std::auto_ptr<notification_scheduler>
                  _notif_scheduler;
-    bool         _process_out;
     unsigned int _queries_per_transaction;
     unsigned int _transaction_queries;
     bool         _with_state_events;
