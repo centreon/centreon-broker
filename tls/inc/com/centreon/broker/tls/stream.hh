@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -41,8 +41,9 @@ namespace             tls {
   public:
                       stream(gnutls_session_t* session);
                       ~stream();
-    void              process(bool in = false, bool out = false);
-    void              read(misc::shared_ptr<io::data>& d);
+    bool              read(
+                        misc::shared_ptr<io::data>& d,
+                        time_t deadline);
     unsigned int      read_encrypted(void* buffer, unsigned int size);
     unsigned int      write(misc::shared_ptr<io::data> const& d);
     unsigned int      write_encrypted(
@@ -50,12 +51,10 @@ namespace             tls {
                         unsigned int size);
 
   private:
-                      stream(stream const& s);
-    stream&           operator=(stream const& s);
+                      stream(stream const& other);
+    stream&           operator=(stream const& other);
 
     QByteArray        _buffer;
-    bool              _process_in;
-    bool              _process_out;
     gnutls_session_t* _session;
   };
 }

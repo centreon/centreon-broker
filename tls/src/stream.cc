@@ -43,8 +43,7 @@ using namespace com::centreon::broker::tls;
  *  @param[in] sess  TLS session, providing informations on the
  *                   encryption that should be used.
  */
-stream::stream(gnutls_session_t* sess)
-  : _process_in(true), _process_out(true), _session(sess) {}
+stream::stream(gnutls_session_t* sess) : _session(sess) {}
 
 /**
  *  @brief Destructor.
@@ -62,35 +61,21 @@ stream::~stream() {
 }
 
 /**
- *  Set which data to process.
- *
- *  @param[in] in  Set to true to process input events.
- *  @param[in] out Set to true to process output events.
- */
-void stream::process(bool in, bool out) {
-  _process_in = in;
-  _process_out = out;
-  return ;
-}
-
-/**
  *  @brief Receive data from the TLS session.
  *
  *  Receive at most size bytes from the network stream and store them in
  *  buffer. The number of bytes read is then returned. This number can
  *  be less than size.
  *
- *  @param[out] d  Object that will be returned containing a chunk of
- *                 data.
+ *  @param[out] d         Object that will be returned containing a
+ *                        chunk of data.
+ *  @param[in]  deadline  Timeout.
+ *
+ *  @return Respect io::stream::read()'s return value.
  */
-void stream::read(misc::shared_ptr<io::data>& d) {
+bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   // Clear existing content.
   d.clear();
-
-  // Check that data should be processed.
-  if (!_process_in)
-    throw (io::exceptions::shutdown(!_process_in, !_process_out)
-           << "TLS stream is shutdown");
 
   // Read data.
   misc::shared_ptr<io::raw> buffer(new io::raw);
@@ -108,7 +93,7 @@ void stream::read(misc::shared_ptr<io::data>& d) {
   buffer->resize(ret);
   d = buffer;
 
-  return ;
+  return (true);
 }
 
 /**
@@ -123,7 +108,7 @@ unsigned int stream::read_encrypted(void* buffer, unsigned int size) {
   // Read some data.
   while (_buffer.isEmpty()) {
     misc::shared_ptr<io::data> d;
-    _from->read(d);
+    _substream->read(d);
     if (!d.isNull() && (d->type() == io::raw::static_type())) {
       io::raw* r(static_cast<io::raw*>(d.data()));
       _buffer.append(r->QByteArray::data(), r->size());
@@ -154,11 +139,6 @@ unsigned int stream::read_encrypted(void* buffer, unsigned int size) {
  *  @return Number of events acknowledged.
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
-  // Check that data should be processed.
-  if (!_process_out)
-    throw (io::exceptions::shutdown(!_process_in, !_process_out)
-           << "TLS stream is shutdown");
-
   // Send data.
   if (!d.isNull() && d->type() == io::raw::static_type()) {
     io::raw const* packet(static_cast<io::raw const*>(d.data()));
@@ -193,7 +173,7 @@ unsigned int stream::write_encrypted(
                        unsigned int size) {
   misc::shared_ptr<io::raw> r(new io::raw);
   r->append(static_cast<char const*>(buffer), size);
-  _from->write(r);
-  _from->write(misc::shared_ptr<io::data>());
+  _substream->write(r);
+  _substream->write(misc::shared_ptr<io::data>());
   return (size);
 }

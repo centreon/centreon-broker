@@ -159,8 +159,7 @@ misc::shared_ptr<io::stream> acceptor::open(
       delete (session);
       throw ;
     }
-    s->read_from(lower);
-    s->write_to(lower);
+    s->set_substream(lower);
 
     // Bind the TLS session with the stream from the lower layer.
 #if GNUTLS_VERSION_NUMBER < 0x020C00
