@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -56,8 +56,7 @@ namespace          bam {
   public:
                    reporting_stream(database_config const& db_cfg);
                    ~reporting_stream();
-    void           process(bool in = false, bool out = true);
-    void           read(misc::shared_ptr<io::data>& d);
+    bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
     void           statistics(io::properties& tree) const;
     unsigned int   write(misc::shared_ptr<io::data> const& d);
 
@@ -102,7 +101,6 @@ namespace          bam {
     std::map<unsigned int, std::list<kpi_event> >
                    _kpi_event_cache;
     unsigned int   _pending_events;
-    bool           _process_out;
     unsigned int   _queries_per_transaction;
     std::string    _status;
     mutable QMutex _statusm;

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -86,9 +86,6 @@ reporting_stream::reporting_stream(database_config const& db_cfg)
     _dimension_timeperiod_exclusion_insert(_db),
     _dimension_ba_timeperiod_insert(_db),
     _dimension_kpi_insert(_db) {
-  // Process events.
-  _process_out = true;
-
   // Prepare queries.
   _prepare();
 
@@ -113,28 +110,20 @@ reporting_stream::~reporting_stream() {
 }
 
 /**
- *  Enable or disable output event processing.
- *
- *  @param[in] in  Unused.
- *  @param[in] out Set to true to enable output event processing.
- */
-void reporting_stream::process(bool in, bool out) {
-  _process_out = in || !out; // Only for immediate shutdown.
-  return ;
-}
-
-/**
  *  Read from the database.
  *  Get the next available bam event.
  *
- *  @param[out] d Cleared.
- *  @param[out] d The next available bam event.
+ *  @param[out] d         Cleared.
+ *  @param[in]  deadline  Timeout.
+ *
+ *  @return This method will throw.
  */
-void reporting_stream::read(misc::shared_ptr<io::data>& d) {
+bool reporting_stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+  (void)deadline;
   d.clear();
-  throw (exceptions::msg()
-         << "BAM-BI: attempt to read from a BAM reporting stream (not supported)");
-  return ;
+  throw (io::exceptions::shutdown(true, false)
+         << "cannot read from BAM reporting stream");
+  return (true);
 }
 /**
  *  Get endpoint statistics.
@@ -159,11 +148,6 @@ void reporting_stream::statistics(io::properties& tree) const {
  *  @return Number of events acknowledged.
  */
 unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
-  // Check that processing is enabled.
-  if (!_process_out)
-    throw (io::exceptions::shutdown(true, true)
-           << "BAM reporting stream is shutdown");
-
   if (!data.isNull()) {
     ++_pending_events;
     if (data->type()

@@ -45,8 +45,9 @@ namespace           bam {
                       std::string const& storage_db_name);
                     ~monitoring_stream();
     void            initialize();
-    void            process(bool in = false, bool out = true);
-    void            read(misc::shared_ptr<io::data>& d);
+    bool            read(
+                      misc::shared_ptr<io::data>& d,
+                      time_t deadline);
     void            statistics(io::properties& tree) const;
     void            update();
     unsigned int    write(misc::shared_ptr<io::data> const& d);
@@ -62,7 +63,6 @@ namespace           bam {
 
     configuration::applier::state
                     _applier;
-    bool            _process_out;
     std::string     _status;
     mutable QMutex  _statusm;
     database_config _storage_cfg;

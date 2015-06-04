@@ -64,8 +64,7 @@ using namespace com::centreon::broker::bam;
 monitoring_stream::monitoring_stream(
                      database_config const& db_cfg,
                      std::string const& storage_db_name)
-  : _process_out(true),
-    _storage_cfg(db_cfg),
+  : _storage_cfg(db_cfg),
     _db(db_cfg),
     _ba_update(_db),
     _kpi_update(_db),
@@ -108,28 +107,22 @@ void monitoring_stream::initialize() {
 }
 
 /**
- *  Enable or disable output event processing.
- *
- *  @param[in] in  Unused.
- *  @param[in] out Set to true to enable output event processing.
- */
-void monitoring_stream::process(bool in, bool out) {
-  _process_out = in || !out; // Only for immediate shutdown.
-  return ;
-}
-
-/**
  *  Read from the datbase.
  *  Get the next available bam event.
  *
- *  @param[out] d Cleared.
- *  @param[out] d The next available bam event.
+ *  @param[out] d         Cleared.
+ *  @param[in]  deadline  Timeout.
+ *
+ *  @return This method will throw.
  */
-void monitoring_stream::read(misc::shared_ptr<io::data>& d) {
+bool monitoring_stream::read(
+                          misc::shared_ptr<io::data>& d,
+                          time_t deadline) {
+  (void)deadline;
   d.clear();
-  throw (exceptions::msg()
-         << "BAM: attempt to read from a BAM monitoring stream (not supported)");
-  return ;
+  throw (io::exceptions::shutdown(true, false)
+         << "cannot read from BAM monitoring stream");
+  return (true);
 }
 /**
  *  Get endpoint statistics.
@@ -175,11 +168,6 @@ void monitoring_stream::update() {
  *  @return Number of events acknowledged.
  */
 unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
-  // Check that processing is enabled.
-  if (!_process_out)
-    throw (io::exceptions::shutdown(true, true)
-           << "BAM monitoring stream is shutdown");
-
   if (!data.isNull()) {
     ++_pending_events;
 

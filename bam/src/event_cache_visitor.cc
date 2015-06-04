@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -30,49 +30,9 @@ using namespace com::centreon::broker::bam;
 event_cache_visitor::event_cache_visitor() {}
 
 /**
- *  Flags ignored.
- *
- *  @param[in] in  Ignored.
- *  @param[in] out Ignored.
+ *  Destructor.
  */
-void event_cache_visitor::process(bool in, bool out) {
-  (void)in;
-  (void)out;
-}
-
-/**
- *  Read an event from the stream.
- *
- *  @param[out] d  The event read. Ignored.
- */
-void event_cache_visitor::read(misc::shared_ptr<io::data>& d) {
-  d.clear();
-}
-
-/**
- *  Write an event to the stream.
- *
- *  @param[in] d  The event writen.
- *
- *  @return       Number of event acknowledged.
- */
-unsigned int event_cache_visitor::write(misc::shared_ptr<io::data> const& d) {
-  if (d.isNull())
-    return (1);
-
-  if (d->type()
-      == io::events::data_type<io::events::bam,
-                               bam::de_ba_event>::value)
-    _ba_events.push_back(d);
-  else if (d->type()
-           == io::events::data_type<io::events::bam,
-                                    bam::de_kpi_event>::value)
-    _kpi_events.push_back(d);
-  else
-    _others.push_back(d);
-
-  return (1);
-}
+event_cache_visitor::~event_cache_visitor() {}
 
 /**
  *  Commit all the event cache to another stream.
@@ -101,4 +61,45 @@ void event_cache_visitor::commit_to(io::stream& to) {
   _others.clear();
   _ba_events.clear();
   _kpi_events.clear();
+}
+
+/**
+ *  Read an event from the stream.
+ *
+ *  @param[out] d         Cleared.
+ *  @param[in]  deadline  Unused.
+ *
+ *  @return This method will throw.
+ */
+bool event_cache_visitor::read(
+                            misc::shared_ptr<io::data>& d,
+                            time_t deadline) {
+  (void)deadline;
+  d.clear();
+  return (true);
+}
+
+/**
+ *  Write an event to the stream.
+ *
+ *  @param[in] d  The event writen.
+ *
+ *  @return       Number of event acknowledged.
+ */
+unsigned int event_cache_visitor::write(misc::shared_ptr<io::data> const& d) {
+  if (d.isNull())
+    return (1);
+
+  if (d->type()
+      == io::events::data_type<io::events::bam,
+                               bam::de_ba_event>::value)
+    _ba_events.push_back(d);
+  else if (d->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_kpi_event>::value)
+    _kpi_events.push_back(d);
+  else
+    _others.push_back(d);
+
+  return (1);
 }
