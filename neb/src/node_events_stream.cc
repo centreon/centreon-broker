@@ -53,7 +53,6 @@ node_events_stream::node_events_stream(
     database_config const& conf)
   : _cache(cache),
     _conf(conf),
-    _process_out(true),
     _with_timeperiods(with_timeperiods),
     _actual_downtime_id(0) {
 
@@ -87,18 +86,6 @@ node_events_stream::~node_events_stream() {
       << "neb: node events error while trying to save cache: "
       << e.what();
   }
-}
-
-/**
- *  Set which data to process.
- *
- *  @param[in] in   Process in.
- *  @param[in] out  Process out.
- */
-void node_events_stream::process(bool in, bool out) {
-  (void)in;
-  _process_out = out;
-  return ;
 }
 
 /**
@@ -142,10 +129,6 @@ void node_events_stream::update() {
  */
 unsigned int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
   // Check that data can be processed.
-  if (!_process_out)
-    throw (io::exceptions::shutdown(true, true)
-     << "correlation stream is shutdown");
-
   if (d.isNull())
     return (1);
 
