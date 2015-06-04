@@ -25,6 +25,8 @@
 #include <QPair>
 #include <QThread>
 #include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/multiplexing/muxer.hh"
+#include "com/centreon/broker/multiplexing/subscriber.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/neb/node_events_stream.hh"
 #include "com/centreon/broker/neb/service_status.hh"
@@ -32,7 +34,6 @@
 #include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/persistent_cache.hh"
 #include "common.hh"
-#include "com/centreon/broker/multiplexing/subscriber.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -119,7 +120,7 @@ int main() {
     for (unsigned int i = 0; i < 10; ++i) {
       ::sleep(1);
       misc::shared_ptr<io::data> d;
-      sbc.read(d);
+      sbc.get_muxer().read(d, (time_t)-1);
       test.write(d);
     }
 

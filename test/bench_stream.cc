@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -52,27 +52,21 @@ unsigned long bench_stream::get_write_size() const {
 }
 
 /**
- *  Unused.
- *
- *  @param[in] in   Unused.
- *  @param[in] out  Unused.
- */
-void bench_stream::process(bool in, bool out) {
-  (void)in;
-  (void)out;
-  return ;
-}
-
-/**
  *  @brief Read event.
  *
  *  In this class it does nothing.
  *
- *  @param[out] d  Unused.
+ *  @param[out] d         Unused.
+ *  @param[in]  deadline  Timeout.
+ *
+ *  @return True.
  */
-void bench_stream::read(misc::shared_ptr<io::data>& d) {
+bool bench_stream::read(
+                     misc::shared_ptr<io::data>& d,
+                     time_t deadline) {
+  (void)deadline;
   d.clear();
-  return ;
+  return (true);
 }
 
 /**

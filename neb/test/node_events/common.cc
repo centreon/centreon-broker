@@ -207,15 +207,21 @@ void check_content(
 /**
  *  Read.
  *
- *  @param[out] d
+ *  @param[out] d         Next available event.
+ *  @param[in]  deadline  Unused.
+ *
+ *  @return True.
  */
-void test_stream::read(
-  com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>& d) {
+bool test_stream::read(
+       com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>& d,
+       time_t deadline){
+  (void)deadline;
   d.clear();
   if (!_events.empty() && _finalized) {
     d = _events.front();
     _events.erase(_events.begin());
   }
+  return (true);
 }
 
 /**
