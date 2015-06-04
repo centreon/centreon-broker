@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -75,13 +75,12 @@ int main(int argc, char* argv[]) {
   app.exec();
 
   // Quit feeder thread.
-  f.process(false, false);
+  f.exit();
 
   // Wait for thread termination.
   f.wait();
 
   // Check output content.
-  s.process(false, false);
   int retval(se->streams().isEmpty());
   if (!retval) {
     misc::shared_ptr<setable_stream> ss(*se->streams().begin());

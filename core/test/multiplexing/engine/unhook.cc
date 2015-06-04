@@ -44,7 +44,7 @@ int main() {
 
   // Hook.
   hooker h;
-  h.process(true, true);
+  h.hook(true);
 
   // Should read no events from subscriber.
   int retval(0);
@@ -66,7 +66,7 @@ int main() {
   }
 
   // Unhook.
-  h.process(false, false);
+  h.hook(false);
 
   // Publish a new event.
   {

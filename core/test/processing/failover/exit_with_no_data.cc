@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
   app.exec();
 
   // Quit failover thread.
-  f1.process(false, false);
+  f1.exit();
 
   // Wait for thread termination.
   f1.wait();
@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
   app.exec();
 
   // Exit threads.
-  f1.process(false, false);
+  f1.exit();
   f1.wait();
 
   // Cleanup.

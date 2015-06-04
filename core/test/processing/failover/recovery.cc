@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
   if (endp1->opened_streams() != 1)
     retval = 1;
   else {
-    (*endp1->streams().begin())->process(true, false);
+    (*endp1->streams().begin())->exit();
     QTimer::singleShot(1500, &app, SLOT(quit()));
     app.exec();
   }
@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
   retval |= !fo2.isRunning();
 
   // Exit threads.
-  fo2.process(false, false);
+  fo2.exit();
   fo2.wait();
 
   // Only one open stream means success.

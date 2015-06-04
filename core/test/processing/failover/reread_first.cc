@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
   app.exec();
 
   // Exit threads.
-  fo2->process(false, false);
+  fo2->exit();
   fo2->wait();
 
   // Check stream content.

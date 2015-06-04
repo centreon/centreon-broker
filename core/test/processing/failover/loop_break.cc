@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
 
   // Thread should be in Qt event loop, waiting its timeout to elapse.
   // This should break it.
-  f.process(false, false);
+  f.exit();
 
   // Wait for quick thread termination.
   int retval;

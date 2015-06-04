@@ -45,7 +45,7 @@ int main() {
 
   // Hook.
   hooker h;
-  h.process(true, true);
+  h.hook(true);
 
   // Send events through engine.
   {
