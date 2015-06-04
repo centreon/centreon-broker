@@ -30,8 +30,7 @@
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
-#include "com/centreon/broker/multiplexing/publisher.hh"
-#include "com/centreon/broker/multiplexing/subscriber.hh"
+#include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/instance_broadcast.hh"
 
 using namespace com::centreon::broker::config::applier;
@@ -105,7 +104,7 @@ void state::apply(
         "you might want to check the 'module_directory' directive";
   }
 
-  com::centreon::broker::multiplexing::subscriber::event_queue_max_size(s.event_queue_max_size());
+  com::centreon::broker::multiplexing::muxer::event_queue_max_size(s.event_queue_max_size());
 
   com::centreon::broker::config::state st = s;
 
@@ -124,11 +123,10 @@ void state::apply(
                          st.cache_directory());
 
   // Create instance broadcast event.
-  com::centreon::broker::multiplexing::publisher pblsh;
   misc::shared_ptr<instance_broadcast> ib(new instance_broadcast);
   ib->instance_name = s.instance_name().c_str();
   ib->enabled = true;
-  pblsh.write(ib);
+  com::centreon::broker::multiplexing::engine::instance().publish(ib);
 
   // Enable multiplexing loop.
   if (run_mux)
