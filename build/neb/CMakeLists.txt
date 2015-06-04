@@ -126,7 +126,6 @@ add_library("${NEB}" SHARED
   "${INC_DIR}/com/centreon/broker/neb/node_events_stream.hh"
   "${INC_DIR}/com/centreon/broker/neb/node_id.hh"
   "${INC_DIR}/com/centreon/broker/neb/tokenizer.hh"
-  "${INC_DIR}/com/centreon/broker/neb/composed_builder.hh"
   "${INC_DIR}/com/centreon/broker/neb/ceof_writer.hh"
   "${INC_DIR}/com/centreon/broker/neb/ceof_parser.hh"
   "${INC_DIR}/com/centreon/broker/neb/ceof_serializable.hh"
