@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -36,11 +36,10 @@ stream::stream() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] other  Object to copy.
  */
-stream::stream(stream const& s) {
-  _from = s._from;
-  _to = s._to;
+stream::stream(stream const& other) {
+  _substream = other._substream;
 }
 
 /**
@@ -51,47 +50,24 @@ stream::~stream() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-stream& stream::operator=(stream const& s) {
-  if (&s != this) {
-    _from = s._from;
-    _to = s._to;
-  }
+stream& stream::operator=(stream const& other) {
+  if (this != &other)
+    _substream = other._substream;
   return (*this);
 }
 
 /**
- *  @brief Read with timeout.
+ *  Set sub-stream.
  *
- *  Default implementation calls read with no timeout.
- *
- *  @param[out] d         Data.
- *  @param[in]  deadline  Read timeout (unused in default
- *                        implementation).
- *  @param[out] timed_out Set to true if reading timed out, false
- *                        otherwise.
+ *  @param[in,out] substream  Stream on which this stream will read and
+ *                            write.
  */
-void stream::read(
-               misc::shared_ptr<data>& d,
-               time_t deadline,
-               bool* timed_out) {
-  (void)deadline;
-  if (timed_out)
-    *timed_out = false;
-  this->read(d);
-  return ;
-}
-
-/**
- *  Read from another stream.
- *
- *  @param[in] from Stream to read from.
- */
-void stream::read_from(misc::shared_ptr<stream> from) {
-  _from = from;
+void stream::set_substream(misc::shared_ptr<stream> substream) {
+  _substream = substream;
   return ;
 }
 
@@ -109,15 +85,5 @@ void stream::statistics(io::properties& tree) const {
  *  Configuration update.
  */
 void stream::update() {
-  return ;
-}
-
-/**
- *  Write to another stream.
- *
- *  @param[in] to Stream to write to.
- */
-void stream::write_to(misc::shared_ptr<stream> to) {
-  _to = to;
   return ;
 }
