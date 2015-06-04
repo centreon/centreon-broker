@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -54,8 +54,7 @@ stream::stream(
           unsigned short db_port,
           unsigned int queries_per_transaction,
           misc::shared_ptr<persistent_cache> const& cache)
-  : _process_out(true),
-    _metric_naming(metric_naming),
+  : _metric_naming(metric_naming),
     _status_naming(status_naming),
     _db_user(db_user),
     _db_password(db_password),
@@ -89,26 +88,19 @@ stream::~stream() {
 }
 
 /**
- *  Enable or disable output event processing.
- *
- *  @param[in] in  Unused.
- *  @param[in] out Set to true to enable output event processing.
- */
-void stream::process(bool in, bool out) {
-  _process_out = in || !out; // Only for immediate shutdown.
-  return ;
-}
-
-/**
  *  Read from the database.
  *
- *  @param[out] d Cleared.
+ *  @param[out] d         Cleared.
+ *  @param[in]  deadline  Timeout.
+ *
+ *  @return This method will throw.
  */
-void stream::read(misc::shared_ptr<io::data>& d) {
+bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+  (void)deadline;
   d.clear();
-  throw (com::centreon::broker::exceptions::msg()
-         << "graphite: attempt to read from a graphite stream (not supported yet)");
-  return ;
+  throw (com::centreon::broker::io::exceptions::shutdown(true, false)
+         << "cannot read from Graphite database");
+  return (true);
 }
 
 /**
@@ -141,11 +133,6 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
-  // Check that processing is enabled.
-  if (!_process_out)
-    throw (io::exceptions::shutdown(true, true)
-             << "graphite stream is shutdown");
-
   bool commit = false;
 
   // Give the event to the cache.
@@ -238,4 +225,3 @@ void stream::_commit() {
   _query.clear();
   _query.append(_auth_query);
 }
-
