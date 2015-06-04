@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -69,10 +69,9 @@ namespace                    rrd {
                                  bool write_metrics = true,
                                  bool write_status = true);
                                ~output();
-    void                       process(
-                                 bool in = false,
-                                 bool out = true);
-    void                       read(misc::shared_ptr<io::data>& d);
+    bool                       read(
+                                 misc::shared_ptr<io::data>& d,
+                                 time_t deadline);
     void                       update();
     unsigned int               write(
                                  misc::shared_ptr<io::data> const& d);
@@ -85,7 +84,6 @@ namespace                    rrd {
     bool                       _ignore_update_errors;
     std::string                _metrics_path;
     rebuild_cache              _metrics_rebuild;
-    bool                       _process_out;
     std::string                _status_path;
     rebuild_cache              _status_rebuild;
     bool                       _write_metrics;
