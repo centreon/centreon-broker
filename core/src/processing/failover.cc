@@ -104,24 +104,12 @@ time_t failover::get_retry_interval() const throw () {
 /**
  *  Read data.
  *
- *  @param[out] d Data.
- */
-void failover::read(misc::shared_ptr<io::data>& d) {
-  this->read(d, (time_t)-1);
-  return ;
-}
-
-/**
- *  Read data.
- *
  *  @param[out] data      Data.
- *  @param[in]  timeout   Read timeout.
- *  @param[out] timed_out Set to true if read timed out.
+ *  @param[in]  deadline  Timeout.
  */
-void failover::read(
+bool failover::read(
                  misc::shared_ptr<io::data>& data,
-                 time_t timeout,
-                 bool* timed_out) {
+                 time_t deadline) {
   // The read() method is used by external objects to read from the main
   // stream contained in this object. Typically this method is called
   // by another failover object that uses this object as its failover
@@ -131,7 +119,7 @@ void failover::read(
   QMutexLocker stream_lock(&_streamm);
   if (!_stream.isNull()) {
     try {
-      _stream->read(data, timeout, timed_out);
+      return (_stream->read(data, deadline));
     }
     catch (std::exception const& e) {
       // In the run() method, it is guaranteed that no more write will
@@ -154,7 +142,7 @@ void failover::read(
 
       // Now that the stream is cleared and mutex released, try to read
       // from failover.
-      read(data, timeout, timed_out);
+      return (read(data, deadline));
     }
   }
   // If the main stream was not ready to provide events, try the
@@ -162,13 +150,12 @@ void failover::read(
   else {
     stream_lock.unlock();
     if (!_failover.isNull())
-      _failover->read(data, timeout, timed_out);
+      return (_failover->read(data, deadline));
     else
       throw (io::exceptions::shutdown(true, true)
              << "failover: endpoint '" << _name
              << "' does not have further events");
   }
-  return ;
 }
 
 /**

@@ -66,11 +66,9 @@ namespace           processing {
     void            exit();
     time_t          get_buffering_timeout() const throw ();
     time_t          get_retry_interval() const throw ();
-    void            read(misc::shared_ptr<io::data>& d);
-    void            read(
+    bool            read(
                       misc::shared_ptr<io::data>& d,
-                      time_t timeout,
-                      bool* timed_out = NULL);
+                      time_t deadline);
     void            run();
     void            set_buffering_timeout(time_t secs);
     void            set_failover(
