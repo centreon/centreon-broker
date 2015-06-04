@@ -272,8 +272,6 @@ endif ()
 qt4_wrap_cpp(QT_WRAPPED_SOURCES
   "${INC_DIR}/logging/backend.hh"
   "${INC_DIR}/logging/manager.hh"
-  "${INC_DIR}/multiplexing/engine.hh"
-  "${INC_DIR}/multiplexing/hooker.hh"
   "${INC_DIR}/processing/thread.hh"
 )
 
@@ -308,6 +306,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/database_config.cc"
   "${SRC_DIR}/database_query.cc"
   "${SRC_DIR}/exceptions/msg.cc"
+  "${SRC_DIR}/exceptions/timeout.cc"
   "${SRC_DIR}/file/cfile.cc"
   "${SRC_DIR}/file/directory_event.cc"
   "${SRC_DIR}/file/directory_watcher.cc"
@@ -345,7 +344,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/modules/loader.cc"
   "${SRC_DIR}/multiplexing/engine.cc"
   "${SRC_DIR}/multiplexing/hooker.cc"
-  "${SRC_DIR}/multiplexing/internal.cc"
+  "${SRC_DIR}/multiplexing/muxer.cc"
   "${SRC_DIR}/multiplexing/publisher.cc"
   "${SRC_DIR}/multiplexing/subscriber.cc"
   "${SRC_DIR}/persistent_cache.cc"
@@ -354,7 +353,6 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/processing/failover.cc"
   "${SRC_DIR}/processing/feeder.cc"
   "${SRC_DIR}/processing/input.cc"
-  "${SRC_DIR}/processing/multiple_writer.cc"
   "${SRC_DIR}/processing/thread.cc"
   "${SRC_DIR}/time/timezone_manager.cc"
   "${SRC_DIR}/time/timezone_locker.cc"
@@ -393,6 +391,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/database_config.hh"
   "${INC_DIR}/database_query.hh"
   "${INC_DIR}/exceptions/msg.hh"
+  "${INC_DIR}/exceptions/timeout.hh"
   "${INC_DIR}/file/cfile.hh"
   "${INC_DIR}/file/directory_event.hh"
   "${INC_DIR}/file/directory_watcher.hh"
@@ -433,7 +432,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/modules/loader.hh"
   "${INC_DIR}/multiplexing/engine.hh"
   "${INC_DIR}/multiplexing/hooker.hh"
-  "${INC_DIR}/multiplexing/internal.hh"
+  "${INC_DIR}/multiplexing/muxer.hh"
   "${INC_DIR}/multiplexing/publisher.hh"
   "${INC_DIR}/multiplexing/subscriber.hh"
   "${INC_DIR}/persistent_cache.hh"
@@ -442,7 +441,6 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/processing/failover.hh"
   "${INC_DIR}/processing/feeder.hh"
   "${INC_DIR}/processing/input.hh"
-  "${INC_DIR}/processing/multiple_writer.hh"
   "${INC_DIR}/processing/thread.hh"
   "${INC_DIR}/timestamp.hh"
   "${INC_DIR}/time/timezone_manager.hh"
@@ -1414,71 +1412,71 @@ if (WITH_TESTING)
     "${TEST_DIR}/multiplexing/subscriber/temporary_stream.cc")
   set(TEST_LIBRARIES "ccb_core_multiplexing_subscriber" "roker")
 
-  #   Default constructor.
-  set(TEST_NAME "core_multiplexing_subscriber_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/multiplexing/subscriber/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # #   Default constructor.
+  # set(TEST_NAME "core_multiplexing_subscriber_ctor_default")
+  # add_executable("${TEST_NAME}"
+  #   "${TEST_DIR}/multiplexing/subscriber/ctor_default.cc")
+  # target_link_libraries("${TEST_NAME}" "roker")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
   # multiplexing::engine tests.
-  add_library("ccb_core_multiplexing_engine" STATIC
-    "${TEST_DIR}/multiplexing/engine/hooker.cc")
-  #   Start and stop.
-  set(TEST_NAME "core_multiplexing_engine_start_stop")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/multiplexing/engine/start_stop.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Hook.
-  set(TEST_NAME "core_multiplexing_engine_hook")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/multiplexing/engine/hook.cc")
-  target_link_libraries("${TEST_NAME}"
-    "ccb_core_multiplexing_engine"
-    "roker")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Unhook.
-  set(TEST_NAME "core_multiplexing_engine_unhook")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/multiplexing/engine/unhook.cc")
-  target_link_libraries("${TEST_NAME}"
-    "ccb_core_multiplexing_engine"
-    "roker")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # multiplexing::publisher tests.
-  #   Read.
-  set(TEST_NAME "core_multiplexing_engine_read")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/multiplexing/publisher/read.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Write.
-  set(TEST_NAME "core_multiplexing_engine_write")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/multiplexing/publisher/write.cc")
-  target_link_libraries("${TEST_NAME}" "roker")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # add_library("ccb_core_multiplexing_engine" STATIC
+  #   "${TEST_DIR}/multiplexing/engine/hooker.cc")
+  # #   Start and stop.
+  # set(TEST_NAME "core_multiplexing_engine_start_stop")
+  # add_executable("${TEST_NAME}"
+  #   "${TEST_DIR}/multiplexing/engine/start_stop.cc")
+  # target_link_libraries("${TEST_NAME}" "roker")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # #   Hook.
+  # set(TEST_NAME "core_multiplexing_engine_hook")
+  # add_executable("${TEST_NAME}"
+  #   "${TEST_DIR}/multiplexing/engine/hook.cc")
+  # target_link_libraries("${TEST_NAME}"
+  #   "ccb_core_multiplexing_engine"
+  #   "roker")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # #   Unhook.
+  # set(TEST_NAME "core_multiplexing_engine_unhook")
+  # add_executable("${TEST_NAME}"
+  #   "${TEST_DIR}/multiplexing/engine/unhook.cc")
+  # target_link_libraries("${TEST_NAME}"
+  #   "ccb_core_multiplexing_engine"
+  #   "roker")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # multiplexing::publisher tests.
+  # #   Read.
+  # set(TEST_NAME "core_multiplexing_engine_read")
+  # add_executable("${TEST_NAME}"
+  #   "${TEST_DIR}/multiplexing/publisher/read.cc")
+  # target_link_libraries("${TEST_NAME}" "roker")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # #   Write.
+  # set(TEST_NAME "core_multiplexing_engine_write")
+  # add_executable("${TEST_NAME}"
+  #   "${TEST_DIR}/multiplexing/publisher/write.cc")
+  # target_link_libraries("${TEST_NAME}" "roker")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
 
-  # processing namespace tests.
-  # processing::feeder tests.
-  add_library("ccb_core_processing_feeder" STATIC
-    "${TEST_DIR}/processing/feeder/common.cc"
-    "${TEST_DIR}/processing/feeder/setable_endpoint.cc"
-    "${TEST_DIR}/processing/feeder/setable_stream.cc")
-  set(TEST_LIBRARIES "ccb_core_processing_feeder" "roker")
-  #   Simple feeding.
-  set(TEST_NAME "core_processing_feeder_simple")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/processing/feeder/simple.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Null event.
-  set(TEST_NAME "core_processing_feeder_null_event")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/processing/feeder/null_event.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # processing namespace tests.
+  # # processing::feeder tests.
+  # add_library("ccb_core_processing_feeder" STATIC
+  #   "${TEST_DIR}/processing/feeder/common.cc"
+  #   "${TEST_DIR}/processing/feeder/setable_endpoint.cc"
+  #   "${TEST_DIR}/processing/feeder/setable_stream.cc")
+  # set(TEST_LIBRARIES "ccb_core_processing_feeder" "roker")
+  # #   Simple feeding.
+  # set(TEST_NAME "core_processing_feeder_simple")
+  # add_executable("${TEST_NAME}"
+  #   "${TEST_DIR}/processing/feeder/simple.cc")
+  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # #   Null event.
+  # set(TEST_NAME "core_processing_feeder_null_event")
+  # add_executable("${TEST_NAME}"
+  #   "${TEST_DIR}/processing/feeder/null_event.cc")
+  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
   # processing::failover tests.
   # #   Simple feeding.
   # set(TEST_NAME "core_processing_failover_feed")
