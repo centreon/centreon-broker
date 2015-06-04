@@ -250,8 +250,7 @@ void failover::run() {
           misc::shared_ptr<io::data> d;
           while (!should_exit()) {
             // XXX : event acknowledgement
-            bool timed_out(false);
-            _failover->read(d, 0, &timed_out);
+            bool timed_out(!_failover->read(d, 0));
             if (timed_out)
               break ;
             _stream->write(d);
@@ -298,7 +297,7 @@ void failover::run() {
           _update_status("reading event from stream");
           try {
             QMutexLocker stream_lock(&_streamm);
-            _stream->read(d, 0, &timed_out_stream);
+            timed_out_stream = !_stream->read(d, 0);
           }
           catch (io::exceptions::shutdown const& e) {
             logging::debug(logging::medium)
@@ -316,7 +315,7 @@ void failover::run() {
         bool timed_out_muxer(true);
         if (muxer_can_read) {
           try {
-            _subscriber->get_muxer().read(d, 0, &timed_out_muxer);
+            timed_out_muxer = !_subscriber->get_muxer().read(d, 0);
           }
           catch (io::exceptions::shutdown const& e) {
             logging::debug(logging::medium)

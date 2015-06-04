@@ -1548,12 +1548,6 @@ if (WITH_TESTING)
     "${TEST_DIR}/file/stream/mixed.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   I/O processing.
-  set(TEST_NAME "file_stream_process")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/file/stream/process.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
 
 
   # compression namespace tests.
