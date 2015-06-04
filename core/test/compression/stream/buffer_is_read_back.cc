@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -38,17 +38,12 @@ using namespace com::centreon::broker;
  */
 class          fake_stream : public io::stream {
 public:
-  void         process(bool in, bool out) {
-    (void)in;
-    (void)out;
-    return ;
-  }
-
-  void         read(misc::shared_ptr<io::data>& d) {
+  bool         read(misc::shared_ptr<io::data>& d, time_t deadline) {
     (void)d;
+    (void)deadline;
     throw (io::exceptions::shutdown(true, true)
            << "fake stream never reads");
-    return ;
+    return (true);
   }
 
   unsigned int write(misc::shared_ptr<io::data> const& d) {
@@ -82,8 +77,7 @@ int main() {
   // Compression stream.
   misc::shared_ptr<fake_stream> fs(new fake_stream);
   compression::stream cs(-1, 40000);
-  cs.read_from(fs);
-  cs.write_to(fs);
+  cs.set_substream(fs);
 
   // Write data to compression stream.
   {

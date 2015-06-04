@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -73,7 +73,7 @@ int main() {
     misc::shared_ptr<file::stream>
       fs(new file::stream(filename.toStdString()));
     compression::stream cs(-1, 40000);
-    cs.write_to(fs);
+    cs.set_substream(fs);
 
     // Write data in file.
     for (unsigned int i(0); i < 1000000; ++i)
@@ -95,7 +95,7 @@ int main() {
     misc::shared_ptr<file::stream>
       fs(new file::stream(filename.toStdString()));
     compression::stream cs(-1);
-    cs.read_from(fs);
+    cs.set_substream(fs);
 
     // Compare data read with data written.
     unsigned int bufferc(0);
