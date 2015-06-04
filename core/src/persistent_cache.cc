@@ -128,9 +128,8 @@ void persistent_cache::transaction() {
     throw (exceptions::msg() << "core: cache file '"
            << _cache_file << "' is already open for writing");
   misc::shared_ptr<file::stream> fs(new file::stream(_new_file()));
-  misc::shared_ptr<bbdo::stream> bs(new bbdo::stream(false, true));
-  bs->read_from(fs);
-  bs->write_to(fs);
+  misc::shared_ptr<bbdo::stream> bs(new bbdo::stream);
+  bs->set_substream(fs);
   _write_file = bs.staticCast<io::stream>();
   return ;
 }
@@ -182,9 +181,8 @@ void persistent_cache::_open() {
   fs->reset();
 
   // Create BBDO layer.
-  misc::shared_ptr<bbdo::stream> bs(new bbdo::stream(true, false));
-  bs->read_from(fs);
-  bs->write_to(fs);
+  misc::shared_ptr<bbdo::stream> bs(new bbdo::stream);
+  bs->set_substream(fs);
 
   // We will access only the BBDO layer.
   _read_file = bs.staticCast<io::stream>();

@@ -36,7 +36,9 @@ class              persistent_file : public io::stream {
 public:
                    persistent_file(std::string const& path);
                    ~persistent_file();
-  void             read(misc::shared_ptr<io::data>& d);
+  bool             read(
+                     misc::shared_ptr<io::data>& d,
+                     time_t deadline);
   unsigned int     write(misc::shared_ptr<io::data> const& d);
 
 private:
