@@ -51,8 +51,9 @@ namespace        correlation {
                    bool load_correlation = true,
                    bool passive = false);
                  ~stream();
-    void         process(bool in = false, bool out = true);
-    void         read(misc::shared_ptr<io::data>& d);
+    bool         read(
+                   misc::shared_ptr<io::data>& d,
+                   time_t deadline);
     void         update();
     unsigned int write(misc::shared_ptr<io::data> const& d);
     void         set_state(
@@ -70,7 +71,6 @@ namespace        correlation {
     misc::shared_ptr<persistent_cache>
                  _cache;
     QString      _correlation_file;
-    bool         _process_out;
     bool         _passive;
 
     std::auto_ptr<io::stream>
