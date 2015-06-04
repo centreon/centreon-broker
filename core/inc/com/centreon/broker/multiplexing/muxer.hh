@@ -54,11 +54,9 @@ namespace               multiplexing {
     static void         event_queue_max_size(unsigned int max) throw ();
     static unsigned int event_queue_max_size() throw ();
     void                publish(misc::shared_ptr<io::data> const& d);
-    void                read(misc::shared_ptr<io::data>& d);
-    void                read(
+    bool                read(
                           misc::shared_ptr<io::data>& d,
-                          time_t timeout,
-                          bool* timed_out = NULL);
+                          time_t deadline);
     void                set_read_filters(filters const& fltrs);
     void                set_write_filters(filters const& fltrs);
     void                statistics(io::properties& tree) const;

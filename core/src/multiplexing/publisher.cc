@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -34,15 +34,14 @@ using namespace com::centreon::broker::multiplexing;
 /**
  *  Default constructor.
  */
-publisher::publisher() : _process(true) {}
+publisher::publisher() {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] p Object to copy.
+ *  @param[in] other  Object to copy.
  */
-publisher::publisher(publisher const& p)
-  : io::stream(p), _process(p._process) {}
+publisher::publisher(publisher const& other) : io::stream(other) {}
 
 /**
  *  Destructor.
@@ -52,26 +51,13 @@ publisher::~publisher() throw () {}
 /**
  *  Assignment operator.
  *
- *  @param[in] p Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-publisher& publisher::operator=(publisher const& p) {
-  io::stream::operator=(p);
-  _process = p._process;
+publisher& publisher::operator=(publisher const& other) {
+  io::stream::operator=(other);
   return (*this);
-}
-
-/**
- *  Set whether or not to process inputs and outputs.
- *
- *  @param[in] in  Unused.
- *  @param[in] out Set to true to enable publisher.
- */
-void publisher::process(bool in, bool out) {
-  (void)in;
-  _process = out;
-  return ;
 }
 
 /**
@@ -80,14 +66,15 @@ void publisher::process(bool in, bool out) {
  *  Reading is not available from publisher. Therefore this method will
  *  throw an exception.
  *
- *  @param[out] d Unused.
+ *  @param[out] d         Unused.
+ *  @param[in]  deadline  Timeout.
  */
-void publisher::read(misc::shared_ptr<io::data>& d) {
+bool publisher::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+  (void)deadline;
   d.clear();
-  // XXX : use io::exceptions::read_error
-  throw (exceptions::msg()
-           << "multiplexing: attempt to read from publisher");
-  return ;
+  throw (io::exceptions::shutdown(true, false)
+         << "cannot read from publisher");
+  return (true);
 }
 
 /**
@@ -100,10 +87,6 @@ void publisher::read(misc::shared_ptr<io::data>& d) {
  *  @return Number of elements acknowledged (1).
  */
 unsigned int publisher::write(misc::shared_ptr<io::data> const& d) {
-  if (_process)
-    engine::instance().publish(d);
-  else
-    throw (io::exceptions::shutdown(true, true) << "publisher "
-             << this << " is shutdown");
+  engine::instance().publish(d);
   return (1);
 }

@@ -63,7 +63,7 @@ muxer::muxer(
         mf(new persistent_file(_memory_file()));
       misc::shared_ptr<io::data> e;
       while (true) {
-        mf->read(e);
+        mf->read(e, 0);
         _events.push(e);
         ++_total_events;
       }
@@ -163,44 +163,28 @@ void muxer::publish(misc::shared_ptr<io::data> const& event) {
 }
 
 /**
- *  Get the next available event.
- *
- *  @param[out] d  Next available event.
- */
-void muxer::read(misc::shared_ptr<io::data>& d) {
-  this->read(d, (time_t)-1);
-  return ;
-}
-
-/**
  *  Get the next available event without waiting more than timeout.
  *
  *  @param[out] event      Next available event.
- *  @param[in]  timeout    Date limit.
- *  @param[out] timed_out  Set to true if read timed out.
+ *  @param[in]  deadline   Date limit.
+ *
+ *  @return Respect io::stream::read()'s return value.
  */
-void muxer::read(
+bool muxer::read(
               misc::shared_ptr<io::data>& event,
-              time_t timeout,
-              bool* timed_out) {
-  if (timed_out)
-    *timed_out = false;
+              time_t deadline) {
+  bool timed_out(false);
   QMutexLocker lock(&_mutex);
 
   // No data is directly available.
   if (!_total_events) {
     // Wait a while if subscriber was not shutdown.
-    if ((time_t)-1 == timeout)
+    if ((time_t)-1 == deadline)
       _cv.wait(&_mutex);
     else {
       time_t now(time(NULL));
-      if (now < timeout) {
-        bool timedout(!_cv.wait(&_mutex, (timeout - now) * 1000));
-        if (timed_out)
-          *timed_out = timedout;
-      }
-      else if (timed_out)
-        *timed_out = true;
+      if (now < deadline)
+        timed_out = !_cv.wait(&_mutex, (deadline - now) * 1000);
     }
     if (_total_events) {
       _get_last_event(event);
@@ -218,7 +202,7 @@ void muxer::read(
     logging::debug(logging::low) << "multiplexing: " << _total_events
       << " events remaining in subscriber";
   }
-  return ;
+  return (!timed_out);
 }
 
 /**
