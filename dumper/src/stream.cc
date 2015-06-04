@@ -51,10 +51,7 @@ using namespace com::centreon::broker::dumper;
 stream::stream(
           std::string const& path,
           std::string const& tagname)
-  : _path(path),
-    _process_in(true),
-    _process_out(true),
-    _tagname(tagname) {}
+  : _path(path), _tagname(tagname) {}
 
 /**
  *  Destructor.
@@ -62,28 +59,19 @@ stream::stream(
 stream::~stream() {}
 
 /**
- *  Set processing flags.
- *
- *  @param[in] in  Set to true to process input events.
- *  @param[in] out Set to true to process output events.
- */
-void stream::process(bool in, bool out) {
-  QMutexLocker lock(&_mutex);
-  _process_in = in;
-  _process_out = in || !out;
-  return ;
-}
-
-/**
  *  Read data from the dumper.
  *
- *  @param[out] d Bunch of data.
+ *  @param[out] d         Cleared.
+ *  @param[in]  deadline  Timeout.
+ *
+ *  @return This method will throw.
  */
-void stream::read(misc::shared_ptr<io::data>& d) {
+bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+  (void)deadline;
   d.clear();
-  throw (exceptions::msg()
-         << "dumper: attempt to read from a dumper stream");
-  return ;
+  throw (io::exceptions::shutdown(true, false)
+         << "attempt to read from a dumper stream");
+  return (true);
 }
 
 /**
@@ -94,10 +82,7 @@ void stream::read(misc::shared_ptr<io::data>& d) {
  *  @return Always return 1, or throw exceptions.
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
-  // Check that data exists and should be processed.
-  if (!_process_out)
-    throw (io::exceptions::shutdown(!_process_in, !_process_out)
-             << "dumper stream is shutdown");
+  // Check that data exists.
   if (d.isNull())
     return (1);
 

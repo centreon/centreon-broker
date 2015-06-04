@@ -47,10 +47,9 @@ namespace              dumper {
                          std::string const& tagname,
                          misc::shared_ptr<persistent_cache> cache);
                        ~directory_dumper();
-    void               process(
-                         bool in = false,
-                         bool out = false);
-    void               read(misc::shared_ptr<io::data>& d);
+    bool               read(
+                         misc::shared_ptr<io::data>& d,
+                         time_t deadline);
     unsigned int       write(misc::shared_ptr<io::data> const& d);
 
   private:
@@ -69,8 +68,6 @@ namespace              dumper {
 
     QMutex             _mutex;
     std::string        _path;
-    bool               _process_in;
-    bool               _process_out;
     std::string        _tagname;
     misc::shared_ptr<persistent_cache>
                        _cache;

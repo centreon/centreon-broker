@@ -54,8 +54,6 @@ fifo_dumper::fifo_dumper(
           std::string const& tagname)
   try :
     _path(path),
-    _process_in(true),
-    _process_out(true),
     _tagname(tagname),
     _fifo(_path) {}
 catch (std::exception const& e) {
@@ -66,35 +64,29 @@ catch (std::exception const& e) {
 /**
  *  Destructor.
  */
-fifo_dumper::~fifo_dumper() {
-}
-
-/**
- *  Set processing flags.
- *
- *  @param[in] in  Set to true to process input events.
- *  @param[in] out Set to true to process output events.
- */
-void fifo_dumper::process(bool in, bool out) {
-  _process_in = in;
-  _process_out = out;
-  return ;
-}
+fifo_dumper::~fifo_dumper() {}
 
 /**
  *  Read data from the dumper.
  *
- *  @param[out] d Bunch of data.
+ *  @param[out] d Next available event.
+ *  @param[in]  deadline  Timeout.
+ *
+ *  @return Respect io::stream::read()'s return value.
  */
-void fifo_dumper::read(misc::shared_ptr<io::data>& d) {
+bool fifo_dumper::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   d.clear();
-
-  if (!_process_out)
-    throw (io::exceptions::shutdown(!_process_in, !_process_out)
-           << "directory dumper stream is shutdown");
-
+  std::string line;
   try {
-    std::string line = _fifo.read_line(3000000);
+    time_t now(time(NULL));
+    int timeout;
+    if (deadline == (time_t)-1)
+      timeout = -1;
+    else if (now >= deadline)
+      timeout = 0;
+    else
+      timeout = (deadline - now) * 1000000;
+    line = _fifo.read_line(timeout);
     if (!line.empty()) {
       misc::shared_ptr<dumper::dump> dmp(new dumper::dump);
       dmp->content = QString::fromStdString(line);
@@ -102,11 +94,12 @@ void fifo_dumper::read(misc::shared_ptr<io::data>& d) {
       dmp->tag = QString::fromStdString(_tagname);
       d = dmp;
     }
-  } catch (std::exception const& e) {
+  }
+  catch (std::exception const& e) {
     throw (exceptions::msg()
            << "dumper: error while trying to read fifo: " << e.what());
   }
-  return ;
+  return (!line.empty());
 }
 
 /**
@@ -118,7 +111,7 @@ void fifo_dumper::read(misc::shared_ptr<io::data>& d) {
  */
 unsigned int fifo_dumper::write(misc::shared_ptr<io::data> const& d) {
   (void)d;
-  throw (exceptions::msg()
-         << "dumper: attempt to write from a fifo dumper stream");
+  throw (io::exceptions::shutdown(false, true)
+         << "cannot write to a FIFO dumper");
   return (1);
 }
