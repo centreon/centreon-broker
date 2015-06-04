@@ -21,6 +21,7 @@
 #  define CCB_TIMESTAMP_HH
 
 #  include <ctime>
+#  include <istream>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -126,6 +127,21 @@ public:
   // Data.
   std::time_t _sec;
 };
+
+/**
+ *  Stream operator for timestamp.
+ *
+ *  @param[in] stream  The stream.
+ *  @param[in] ts      The timestamp.
+ *
+ *  @return            Reference to the stream.
+ */
+inline std::istream& operator>>(std::istream& stream, timestamp& ts) {
+  std::time_t s;
+  stream >> s;
+  ts = timestamp(ts);
+  return (stream);
+}
 
 CCB_END()
 
