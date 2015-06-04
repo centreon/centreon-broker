@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,44 +17,40 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/exceptions/timeout.hh"
 
 using namespace com::centreon::broker::exceptions;
-
-/**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
 
 /**
  *  Default constructor.
  */
-msg::msg()  {}
+timeout::timeout() {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] b Object to build from.
+ *  @param[in] other  Object to build from.
  */
-msg::msg(msg const& b)
-  : misc::stringifier(b), std::exception(b) {}
+timeout::timeout(timeout const& other)
+  : misc::stringifier(other), std::exception(other) {}
 
 /**
  *  Destructor.
  */
-msg::~msg() throw () {}
+timeout::~timeout() throw () {}
 
 /**
  *  Assignment operator overload.
  *
- *  @param[in] b Object to copy from.
+ *  @param[in] other  Object to copy from.
  *
  *  @return This instance.
  */
-msg& msg::operator=(msg const& b)  {
-  misc::stringifier::operator=(b);
-  std::exception::operator=(b);
+timeout& timeout::operator=(timeout const& other) {
+  if (this != &other) {
+    misc::stringifier::operator=(other);
+    std::exception::operator=(other);
+  }
   return (*this);
 }
 
@@ -63,14 +59,14 @@ msg& msg::operator=(msg const& b)  {
  *
  *  @return Copy of this exception object.
  */
-msg* msg::clone() const {
-  return (new msg(*this));
+timeout* timeout::clone() const {
+  return (new timeout(*this));
 }
 
 /**
  *  Rethrow the exception.
  */
-void msg::rethrow() const {
+void timeout::rethrow() const {
   throw (*this);
   return ;
 }
@@ -80,6 +76,6 @@ void msg::rethrow() const {
  *
  *  @return Nul-terminated message.
  */
-char const* msg::what() const throw () {
+char const* timeout::what() const throw () {
   return (misc::stringifier::data());
 }

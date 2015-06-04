@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,41 +17,40 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_EXCEPTIONS_MSG_HH_
-# define CCB_EXCEPTIONS_MSG_HH_
+#ifndef CCB_EXCEPTIONS_TIMEOUT_HH
+#  define CCB_EXCEPTIONS_TIMEOUT_HH
 
-# include <exception>
-# include "com/centreon/broker/misc/stringifier.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include <exception>
+#  include "com/centreon/broker/misc/stringifier.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace               exceptions {
   /**
-   *  @class msg msg.hh "com/centreon/broker/exceptions/msg.hh"
-   *  @brief Base class of exceptions thrown in Centreon Broker.
+   *  @class timeout timeout.hh "com/centreon/broker/exceptions/timeout.hh"
+   *  @brief Timeout exception.
    *
-   *  msg is a simple exception class that is only associated with a
-   *  message. msg accepts multiple types on input.
+   *  Exception that is thrown upon timeout.
    */
-  class                 msg : private misc::stringifier,
-			      public std::exception {
-   public:
-                        msg() ;
-                        msg(msg const& b) ;
-    virtual             ~msg() throw() ;
-    msg&                operator=(msg const& b) ;
-    virtual msg*        clone() const;
+  class                 timeout : private misc::stringifier,
+                                  public std::exception {
+  public:
+                        timeout();
+                        timeout(timeout const& other);
+    virtual             ~timeout() throw ();
+    timeout&            operator=(timeout const& other);
+    virtual timeout*    clone() const;
     virtual void        rethrow() const;
     virtual char const* what() const throw ();
 
     /**
      *  Insert data in message.
      *
-     *  @param[in] t Data to insert.
+     *  @param[in] t  Data to insert.
      */
     template            <typename T>
-    msg&                operator<<(T t) {
+    timeout&            operator<<(T t) {
       misc::stringifier::operator<<(t);
       return (*this);
     }
@@ -60,4 +59,4 @@ namespace               exceptions {
 
 CCB_END()
 
-#endif /* !CCB_EXCEPTIONS_MSG_HH_ */
+#endif // !CCB_EXCEPTIONS_TIMEOUT_HH
