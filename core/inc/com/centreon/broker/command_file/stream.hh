@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -39,20 +39,18 @@ namespace           command_file {
   public:
                     stream(std::string const& filename);
                     ~stream();
-    void            process(bool in = false, bool out = true);
-    void            read(misc::shared_ptr<io::data>& d);
+    bool            read(
+                      misc::shared_ptr<io::data>& d,
+                      time_t deadline = (time_t)-1);
     void            statistics(io::properties& tree) const;
     unsigned int    write(misc::shared_ptr<io::data> const& d);
 
   private:
-    bool            _process_in;
-    bool            _process_out;
+                    stream(stream const& other);
+    stream&         operator=(stream const& other);
 
     std::string     _filename;
     file::fifo      _fifo;
-
-                    stream(stream const& right);
-    stream&         operator=(stream const& right);
   };
 }
 
