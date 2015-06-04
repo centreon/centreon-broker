@@ -49,7 +49,6 @@ namespace         bbdo {
   public:
                   acceptor(
                     QString const& name,
-                    bool is_out,
                     bool negociate,
                     QString const& extensions,
                     time_t timeout,
@@ -72,7 +71,6 @@ namespace         bbdo {
 
     bool          _coarse;
     QString       _extensions;
-    bool          _is_out;
     QString       _name;
     bool          _negociate;
     bool          _one_peer_retention_mode;

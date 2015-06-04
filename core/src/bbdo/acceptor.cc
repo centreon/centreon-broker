@@ -43,8 +43,6 @@ using namespace com::centreon::broker::bbdo;
  *  Constructor.
  *
  *  @param[in] name                    The name to build temporary.
- *  @param[in] is_out                  true if the acceptor is an output
- *                                     acceptor.
  *  @param[in] negociate               true if feature negociation is
  *                                     allowed.
  *  @param[in] extensions              List of extensions allowed by
@@ -56,7 +54,6 @@ using namespace com::centreon::broker::bbdo;
  */
 acceptor::acceptor(
             QString const& name,
-            bool is_out,
             bool negociate,
             QString const& extensions,
             time_t timeout,
@@ -65,7 +62,6 @@ acceptor::acceptor(
   : io::endpoint(!one_peer_retention_mode),
     _coarse(coarse),
     _extensions(extensions),
-    _is_out(is_out),
     _name(name),
     _negociate(negociate),
     _one_peer_retention_mode(one_peer_retention_mode),
@@ -83,7 +79,6 @@ acceptor::acceptor(acceptor const& other)
   : io::endpoint(other),
     _coarse(other._coarse),
     _extensions(other._extensions),
-    _is_out(other._is_out),
     _name(other._name),
     _negociate(other._negociate),
     _one_peer_retention_mode(other._one_peer_retention_mode),
@@ -108,7 +103,6 @@ acceptor& acceptor::operator=(acceptor const& other) {
     io::endpoint::operator=(other);
     _coarse = other._coarse;
     _extensions = other._extensions;
-    _is_out = other._is_out;
     _name = other._name;
     _negociate = other._negociate;
     _one_peer_retention_mode = other._one_peer_retention_mode;
@@ -151,15 +145,11 @@ misc::shared_ptr<io::stream> acceptor::open() {
 
     // Add BBDO layer.
     if (!s.isNull()) {
-      misc::shared_ptr<bbdo::stream>
-        my_bbdo(_is_out
-                ? new bbdo::stream(false, true)
-                : new bbdo::stream(true, false));
+      misc::shared_ptr<bbdo::stream> my_bbdo(new bbdo::stream);
+      my_bbdo->set_substream(s);
       my_bbdo->set_coarse(_coarse);
       my_bbdo->set_negociate(_negociate, _extensions);
       my_bbdo->set_timeout(_timeout);
-      my_bbdo->read_from(s);
-      my_bbdo->write_to(s);
       if (_one_peer_retention_mode)
         my_bbdo->negociate(bbdo::stream::negociate_second);
       return (my_bbdo);

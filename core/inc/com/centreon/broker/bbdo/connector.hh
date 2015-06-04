@@ -36,15 +36,13 @@ namespace         bbdo {
   class           connector : public io::endpoint {
   public:
                   connector(
-                    bool is_in,
-                    bool is_out,
                     bool negociate,
                     QString const& extensions,
                     time_t timeout,
                     bool coarse = false);
-                  connector(connector const& right);
+                  connector(connector const& other);
                   ~connector();
-    connector&    operator=(connector const& right);
+    connector&    operator=(connector const& other);
     io::endpoint* clone() const;
     void          close();
     misc::shared_ptr<io::stream>
@@ -56,8 +54,6 @@ namespace         bbdo {
 
     bool          _coarse;
     QString       _extensions;
-    bool          _is_in;
-    bool          _is_out;
     bool          _negociate;
     time_t        _timeout;
   };

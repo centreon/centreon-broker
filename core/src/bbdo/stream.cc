@@ -37,16 +37,11 @@ using namespace com::centreon::broker::bbdo;
 
 /**
  *  Default constructor.
- *
- *  @param[in] is_in  Is input ?
- *  @param[in] is_out Is output ?
  */
-stream::stream(bool is_in, bool is_out)
+stream::stream()
   : _coarse(false),
-    _input_read(is_in),
     _negociate(true),
     _negociated(false),
-    _output_write(is_out),
     _timeout(3) {}
 
 /**
@@ -60,10 +55,8 @@ stream::stream(stream const& other)
     output(other),
     _coarse(other._coarse),
     _extensions(other._extensions),
-    _input_read(other._input_read),
     _negociate(other._negociate),
     _negociated(other._negociated),
-    _output_write(other._output_write),
     _timeout(other._timeout) {}
 
 /**
@@ -84,10 +77,8 @@ stream& stream::operator=(stream const& other) {
     output::operator=(other);
     _coarse = other._coarse;
     _extensions = other._extensions;
-    _input_read = other._input_read;
     _negociate = other._negociate;
     _negociated = other._negociated;
-    _output_write = other._output_write;
     _timeout = other._timeout;
   }
   return (*this);
@@ -124,7 +115,7 @@ void stream::negociate(stream::negociation_type neg) {
   logging::debug(logging::medium)
     << "BBDO: retrieving welcome packet of peer";
   misc::shared_ptr<io::data> d;
-  read_any(d, time(NULL) + _timeout);
+  read_any(d, _timeout);
   if (d.isNull() || (d->type() != version_response::static_type()))
     throw (exceptions::msg()
            << "BBDO: invalid protocol header, aborting connection");
@@ -186,11 +177,10 @@ void stream::negociate(stream::negociation_type neg) {
           if (proto_it.key() == *it) {
             misc::shared_ptr<io::stream>
               s(proto_it->endpntfactry->new_stream(
-                                          _from,
+                                          _substream,
                                           neg == negociate_second,
                                           *it));
-            read_from(s);
-            write_to(s);
+            set_substream(s);
             break ;
           }
       }
@@ -203,32 +193,19 @@ void stream::negociate(stream::negociation_type neg) {
 }
 
 /**
- *  Set which data should be processed.
- *
- *  @param[in] in  Set to true to process input events.
- *  @param[in] out Set to true to process output events.
- */
-void stream::process(bool in, bool out) {
-  input::process(in, false);
-  output::process(false, out);
-  return ;
-}
-
-/**
  *  Read data from stream.
  *
- *  @param[out] d Next available event.
+ *  @param[out] d         Next available event.
+ *  @param[in]  deadline  Deadline.
+ *
+ *  @return Respect io::stream::read() return value.
  *
  *  @see input::read()
  */
-void stream::read(misc::shared_ptr<io::data>& d) {
+bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   if (!_negociated)
     negociate(negociate_second);
-  if (_input_read)
-    input::read(d);
-  else
-    output::read(d);
-  return ;
+  return (input::read(d, deadline));
 }
 
 /**
@@ -283,9 +260,5 @@ void stream::statistics(io::properties& tree) const {
 unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
   if (!_negociated)
     negociate(negociate_second);
-  if (_output_write)
-    output::write(d);
-  else
-    input::write(d);
-  return (1);
+  return (output::write(d));
 }

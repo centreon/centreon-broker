@@ -42,13 +42,14 @@ namespace            bbdo {
       negociated
     };
 
-                     stream(bool is_in, bool is_out);
+                     stream();
                      stream(stream const& other);
                      ~stream();
     stream&          operator=(stream const& other);
     void             negociate(negociation_type neg);
-    void             process(bool in = false, bool out = true);
-    void             read(misc::shared_ptr<io::data>& d);
+    bool             read(
+                       misc::shared_ptr<io::data>& d,
+                       time_t deadline = (time_t)-1);
     void             set_coarse(bool coarse);
     void             set_negociate(
                        bool negociate,
@@ -60,10 +61,8 @@ namespace            bbdo {
   private:
     bool             _coarse;
     QString          _extensions;
-    bool             _input_read;
     bool             _negociate;
     bool             _negociated;
-    bool             _output_write;
     int              _timeout;
   };
 }
