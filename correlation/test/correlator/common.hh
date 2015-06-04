@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -63,8 +63,9 @@ void check_content(
 
 class test_stream : public com::centreon::broker::multiplexing::hooker {
 public:
-  virtual void             read(
-    com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>& d);
+  virtual bool             read(
+    com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>& d,
+    time_t deadline);
   virtual unsigned int     write(
     com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> const& d);
   std::vector<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> > const&
