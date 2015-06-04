@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -58,9 +58,7 @@ stream::stream(
     _last_time(0),
     _last_write_offset(0),
     _max_size(max_size),
-    _path(path),
-    _process_in(true),
-    _process_out(true) {
+    _path(path) {
   if ((max_size <= 2 * sizeof(uint32_t))
       || (max_size > static_cast<unsigned long long>(
                        std::numeric_limits<long>::max())))
@@ -88,32 +86,26 @@ unsigned long long stream::get_max_size() const throw () {
 }
 
 /**
- *  Set processing flags.
- *
- *  @param[in] in  Set to true to process input events.
- *  @param[in] out Set to true to process output events.
- */
-void stream::process(bool in, bool out) {
-  QMutexLocker lock(&_mutex);
-  _process_in = in;
-  _process_out = in || !out;
-  return ;
-}
-
-/**
  *  Read data from the file.
  *
- *  @param[out] d Bunch of data.
+ *  @param[out] d         Bunch of data.
+ *  @param[in]  deadline  Timeout.
+ *
+ *  @return Always true as file never times out.
  */
-void stream::read(misc::shared_ptr<io::data>& d) {
+bool stream::read(
+               misc::shared_ptr<io::data>& d,
+               time_t deadline) {
+  (void)deadline;
+
   // Lock mutex.
   d.clear();
   QMutexLocker lock(&_mutex);
 
   // Check that read should be done.
-  if (!_process_in || !_rfile.data())
-    throw (io::exceptions::shutdown(!_process_in, !_process_out)
-             << "file stream is shutdown");
+  if (!_rfile.data())
+    throw (io::exceptions::shutdown(true, false)
+           << "file stream is shutdown");
 
   // Seek to position.
   _rfile->seek(_roffset);
@@ -168,7 +160,7 @@ void stream::read(misc::shared_ptr<io::data>& d) {
     written += _rfile->write(
                          header.bytes + written,
                          sizeof(header.bytes) - written);
-  return ;
+return (true);
 }
 
 /**
@@ -311,10 +303,7 @@ void stream::statistics(io::properties& tree) const {
  *  @return Number of events acknowledged (1).
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
-  // Check that data exists and should be processed.
-  if (!_process_out)
-    throw (io::exceptions::shutdown(!_process_in, !_process_out)
-             << "file stream is shutdown");
+  // Check that data exists.
   if (d.isNull())
     return (1);
 
