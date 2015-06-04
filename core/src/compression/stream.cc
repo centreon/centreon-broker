@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,6 +18,7 @@
 */
 
 #include "com/centreon/broker/compression/stream.hh"
+#include "com/centreon/broker/exceptions/timeout.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -39,15 +40,15 @@ using namespace com::centreon::broker::compression;
  *  @param[in] size  Compression buffer size.
  */
 stream::stream(int level, unsigned int size)
-  : _level(level), _process_in(true), _process_out(true), _size(size) {}
+  : _level(level), _size(size) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] other  Object to copy.
  */
-stream::stream(stream const& s) : io::stream(s) {
-  _internal_copy(s);
+stream::stream(stream const& other) : io::stream(other) {
+  _internal_copy(other);
 }
 
 /**
@@ -60,45 +61,35 @@ stream::~stream() {
 /**
  *  Assignment operator.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-stream& stream::operator=(stream const& s) {
-  io::stream::operator=(s);
-  _internal_copy(s);
+stream& stream::operator=(stream const& other) {
+  if (this != &other) {
+    io::stream::operator=(other);
+    _internal_copy(other);
+  }
   return (*this);
-}
-
-/**
- *  Set which data to process.
- *
- *  @param[in] in  Set to true to process input events.
- *  @param[in] out Set to true to process output events.
- */
-void stream::process(bool in, bool out) {
-  _process_in = in;
-  _process_out = out;
-  return ;
 }
 
 /**
  *  Read data.
  *
- *  @param[out] data Data packet.
+ *  @param[out] data      Data packet.
+ *  @param[in]  deadline  Timeout.
+ *
+ *  @return Respect io::stream::read()'s return value.
  */
-void stream::read(misc::shared_ptr<io::data>& data) {
+bool stream::read(
+               misc::shared_ptr<io::data>& data,
+               time_t deadline) {
   // Clear existing content.
   data.clear();
 
-  // Check that data should be processed.
-  if (!_process_in)
-    throw (io::exceptions::shutdown(!_process_in, !_process_out)
-             << "compression stream is shutdown");
-
   try {
     // Compute compressed data length.
-    if (_get_data(sizeof(qint32))) {
+    if (_get_data(sizeof(qint32), deadline)) {
       int size;
       {
         unsigned char* buff((unsigned char*)_rbuffer.data());
@@ -109,7 +100,7 @@ void stream::read(misc::shared_ptr<io::data>& data) {
       }
 
       // Get compressed data.
-      if (_get_data(size + 4)) {
+      if (_get_data(size + 4, deadline)) {
         misc::shared_ptr<io::raw> r(new io::raw);
         r->QByteArray::operator=(qUncompress(static_cast<uchar*>(
                                    static_cast<void*>((_rbuffer.data()
@@ -127,6 +118,10 @@ void stream::read(misc::shared_ptr<io::data>& data) {
     else
       _rbuffer.clear();
   }
+  catch (exceptions::timeout const& e) {
+    (void)e;
+    return (false);
+  }
   catch (io::exceptions::shutdown const& e) {
     if (!_wbuffer.isEmpty()) {
       misc::shared_ptr<io::raw> r(new io::raw);
@@ -138,7 +133,7 @@ void stream::read(misc::shared_ptr<io::data>& data) {
       throw ;
   }
 
-  return ;
+  return (true);
 }
 
 /**
@@ -147,8 +142,8 @@ void stream::read(misc::shared_ptr<io::data>& data) {
  *  @param[out] buffer Output buffer.
  */
 void stream::statistics(io::properties& tree) const {
-  if (!_to.isNull())
-    _to->statistics(tree);
+  if (!_substream.isNull())
+    _substream->statistics(tree);
   return ;
 }
 
@@ -162,11 +157,6 @@ void stream::statistics(io::properties& tree) const {
  *  @return Number of events acknowledged (1).
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
-  // Check that data exists and should be processed.
-  if (!_process_out)
-    throw (io::exceptions::shutdown(!_process_in, !_process_out)
-             << "compression stream is shutdown");
-
   // Forced commit.
   if (d.isNull())
     _flush();
@@ -216,7 +206,7 @@ void stream::_flush() {
       compressed->prepend(buffer[i]);
 
     // Send compressed data.
-    _to->write(compressed);
+    _substream->write(compressed);
   }
 
   return ;
@@ -225,13 +215,17 @@ void stream::_flush() {
 /**
  *  Get data with a fixed size.
  *
- *  @param[in] size Data size to get.
+ *  @param[in]  size       Data size to get.
+ *  @param[in]  deadline   Timeout.
  */
-bool stream::_get_data(unsigned int size) {
+bool stream::_get_data(
+               unsigned int size,
+               time_t deadline) {
   bool retval;
   if (static_cast<unsigned int>(_rbuffer.size()) < size) {
     misc::shared_ptr<io::data> d;
-    _from->read(d);
+    if (!_substream->read(d, deadline))
+      throw (exceptions::timeout());
     if (d.isNull())
       retval = false;
     else {
@@ -239,7 +233,7 @@ bool stream::_get_data(unsigned int size) {
         misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
         _rbuffer.append(*r);
       }
-      retval = _get_data(size);
+      retval = _get_data(size, deadline);
     }
   }
   else
@@ -254,8 +248,6 @@ bool stream::_get_data(unsigned int size) {
  */
 void stream::_internal_copy(stream const& s) {
   _level = s._level;
-  _process_in = s._process_in;
-  _process_out = s._process_out;
   _rbuffer = s._rbuffer;
   _size = s._size;
   _wbuffer = s._wbuffer;

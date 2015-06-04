@@ -136,8 +136,7 @@ misc::shared_ptr<io::stream> opener::_open(
   misc::shared_ptr<io::stream> retval;
   if (!base.isNull()) {
     retval = misc::shared_ptr<io::stream>(new stream(_level, _size));
-    retval->read_from(base);
-    retval->write_to(base);
+    retval->set_substream(base);
   }
   return (retval);
 }
