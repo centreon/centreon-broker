@@ -217,13 +217,17 @@ void stream::process(bool in, bool out) {
 /**
  *  Read from the database.
  *
- *  @param[out] d Cleared.
+ *  @param[out] d         Cleared.
+ *  @param[in]  deadline  Unused.
+ *
+ *  @return This method will throw.
  */
-void stream::read(misc::shared_ptr<io::data>& d) {
+bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+  (void)deadline;
   d.clear();
-  throw (exceptions::msg()
-         << "notification: attempt to read from a notification stream");
-  return ;
+  throw (io::exceptions::shutdown(true, false)
+         << "attempt to read from a notification stream");
+  return (true);
 }
 
 /**

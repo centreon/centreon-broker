@@ -66,7 +66,9 @@ namespace         notification {
 
     virtual void  starting();
     virtual void  stopping();
-    virtual void  read(misc::shared_ptr<io::data>& d);
+    virtual bool  read(
+                    misc::shared_ptr<io::data>& d,
+                    time_t deadline);
     virtual unsigned int
                   write(misc::shared_ptr<io::data> const& d);
 

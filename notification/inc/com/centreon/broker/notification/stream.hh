@@ -65,25 +65,14 @@ namespace        notification {
                  ~stream();
     static void  initialize();
     void         process(bool in = false, bool out = false);
-    void         read(misc::shared_ptr<io::data>& d);
+    bool         read(
+                   misc::shared_ptr<io::data>& d,
+                   time_t deadline);
     void         update();
     unsigned int write(misc::shared_ptr<io::data> const& d);
 
   private:
     stream&      operator=(stream const& s);
-    std::auto_ptr<QSqlDatabase>
-                 _centreon_db;
-    std::auto_ptr<notification_scheduler>
-                 _notif_scheduler;
-    bool         _process_out;
-    unsigned int _queries_per_transaction;
-    unsigned int _transaction_queries;
-    bool         _with_state_events;
-    unsigned int _instance_timeout;
-
-    state        _state;
-    node_cache&  _node_cache;
-
     void         _open_db(
                    std::auto_ptr<QSqlDatabase>& db,
                    QString const& t,
@@ -109,6 +98,19 @@ namespace        notification {
                    neb::acknowledgement const& event);
     void         _process_downtime(
                    neb::downtime const& event);
+
+    std::auto_ptr<QSqlDatabase>
+                 _centreon_db;
+    std::auto_ptr<notification_scheduler>
+                 _notif_scheduler;
+    bool         _process_out;
+    unsigned int _queries_per_transaction;
+    unsigned int _transaction_queries;
+    bool         _with_state_events;
+    unsigned int _instance_timeout;
+
+    state        _state;
+    node_cache&  _node_cache;
   };
 }
 
