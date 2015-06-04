@@ -217,9 +217,6 @@ extern "C" {
       // Reset locale.
       setlocale(LC_NUMERIC, "C");
 
-      // Disable timestamp printing in logs (cause starvation when forking).
-      logging::file::with_timestamp(false);
-
       // Default logging object.
       neb::monitoring_logger monlog;
 
