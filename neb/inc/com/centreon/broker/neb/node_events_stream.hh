@@ -55,7 +55,7 @@ namespace        neb {
                    database_config const& conf);
                  ~node_events_stream();
     void         process(bool in = false, bool out = true);
-    void         read(misc::shared_ptr<io::data>& d);
+    bool         read(misc::shared_ptr<io::data>& d, time_t deadline);
     void         update();
     unsigned int write(misc::shared_ptr<io::data> const& d);
     void         parse_command(

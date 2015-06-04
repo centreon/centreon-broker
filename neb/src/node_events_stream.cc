@@ -104,15 +104,19 @@ void node_events_stream::process(bool in, bool out) {
 /**
  *  Read data from the stream.
  *
- *  @param[out] d  Unused.
+ *  @param[out] d         Unused.
+ *  @param[in]  deadline  Timeout.
+ *
+ *  @return Always throw.
  */
-void node_events_stream::read(misc::shared_ptr<io::data>& d) {
+bool node_events_stream::read(
+                           misc::shared_ptr<io::data>& d,
+                           time_t deadline) {
+  (void)deadline;
   d.clear();
-  throw (exceptions::msg()
-   << "neb: cannot read from a node events stream. This is likely a "
-   << "software bug that you should report to Centreon Broker "
-   << "developers");
-  return ;
+  throw (io::exceptions::shutdown(true, false)
+         << "cannot read from a node events stream");
+  return (true);
 }
 
 /**
@@ -321,7 +325,7 @@ void node_events_stream::_update_downtime(
   old_downtime = dwn;
 
   // Downtime removal.
-  if (!dwn.actual_end_time.is_null()) {      
+  if (!dwn.actual_end_time.is_null()) {
     _downtimes.erase(found);
     _downtime_id_by_nodes.remove(
       node_id(dwn.host_id, dwn.service_id),
@@ -778,7 +782,7 @@ void node_events_stream::_save_cache() {
  *  @param[in] dwn  The downtime to schedule.
  */
 void node_events_stream::_schedule_downtime(
-                           downtime const& dwn) {  
+                           downtime const& dwn) {
   // If this is a fixed downtime or the node is in a non-okay state, schedule it.
   // If not, then it will be scheduled at the reception of a
   // service/host status event.
