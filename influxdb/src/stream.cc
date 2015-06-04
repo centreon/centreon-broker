@@ -100,7 +100,7 @@ bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.clear();
   throw (com::centreon::broker::io::exceptions::shutdown(true, false)
-         << "cannot read from InfluxDB stream");
+         << "cannot read from InfluxDB database");
   return (true);
 }
 
