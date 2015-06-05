@@ -44,17 +44,18 @@ namespace             tls {
     bool              read(
                         misc::shared_ptr<io::data>& d,
                         time_t deadline);
-    unsigned int      read_encrypted(void* buffer, unsigned int size);
+    long long         read_encrypted(void* buffer, long long size);
     unsigned int      write(misc::shared_ptr<io::data> const& d);
-    unsigned int      write_encrypted(
+    long long         write_encrypted(
                         void const* buffer,
-                        unsigned int size);
+                        long long size);
 
   private:
                       stream(stream const& other);
     stream&           operator=(stream const& other);
 
     QByteArray        _buffer;
+    time_t            _deadline;
     gnutls_session_t* _session;
   };
 }

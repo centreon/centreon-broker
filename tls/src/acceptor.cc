@@ -143,7 +143,7 @@ misc::shared_ptr<io::stream> acceptor::open(
     try {
       // Initialize the TLS session
       logging::debug(logging::low) << "TLS: initializing session";
-      ret = gnutls_init(session, GNUTLS_SERVER);
+      ret = gnutls_init(session, GNUTLS_SERVER | GNUTLS_NONBLOCK);
       if (ret != GNUTLS_E_SUCCESS)
 	throw (exceptions::msg() << "TLS: cannot initialize session: "
                << gnutls_strerror(ret));
