@@ -80,6 +80,7 @@ namespace               neb {
     bool                was_started;
     bool                is_recurring;
     QString             recurring_timeperiod;
+    short               come_from;
 
     static mapping::entry const
                         entries[];

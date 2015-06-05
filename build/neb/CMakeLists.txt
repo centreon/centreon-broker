@@ -117,6 +117,7 @@ add_library("${NEB}" SHARED
   "${SRC_DIR}/ceof_token.cc"
   "${SRC_DIR}/timeperiod_serializable.cc"
   "${SRC_DIR}/downtime_serializable.cc"
+  "${SRC_DIR}/downtime_map.cc"
 
   # Inc
   "${INC_DIR}/com/centreon/broker/neb/downtime_scheduler.hh"
@@ -134,7 +135,7 @@ add_library("${NEB}" SHARED
   "${INC_DIR}/com/centreon/broker/neb/ceof_token.hh"
   "${INC_DIR}/com/centreon/broker/neb/timeperiod_serializable.hh"
   "${INC_DIR}/com/centreon/broker/neb/downtime_serializable.hh"
-
+  "${INC_DIR}/com/centreon/broker/neb/downtime_map.hh"
 )
 if (CMAKE_COMPILER_IS_GNUCXX)
   # Flags needed to include all symbols in binary.

@@ -105,7 +105,7 @@ void ceof_serializable<T>::serialize(T const& object, ceof_writer& writer) {
  *  @param[in] iterator  The token iterator.
  */
 template <typename T>
-void ceof_serializable<T>::unserialize(T& object, ceof_iterator& iterator) {
+void ceof_serializable<T>::unserialize(T& object, ceof_iterator iterator) {
   for (; !iterator.end(); ++iterator) {
     std::string key = iterator.get_value();
     ++iterator;

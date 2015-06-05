@@ -241,6 +241,8 @@ void stream::_prepare() {
   _prepare_insert<neb::custom_variable>(
                          _custom_variable_insert,
                          "rt_customvariables");
+  excluded.clear();
+  excluded.insert("come_from");
   _prepare_insert<neb::downtime>(
                          _downtime_insert,
                          "rt_downtimes");

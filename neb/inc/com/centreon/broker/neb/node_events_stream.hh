@@ -20,6 +20,7 @@
 #ifndef CCB_NEB_NODE_EVENTS_STREAM_HH
 #  define CCB_NEB_NODE_EVENTS_STREAM_HH
 
+#  include <vector>
 #  include <QString>
 #  include <QHash>
 #  include <QPair>
@@ -36,6 +37,7 @@
 #  include "com/centreon/broker/neb/node_id.hh"
 #  include "com/centreon/broker/time/timeperiod.hh"
 #  include "com/centreon/broker/neb/node_cache.hh"
+#  include "com/centreon/broker/neb/downtime_map.hh"
 
 CCB_BEGIN()
 
@@ -97,16 +99,13 @@ namespace        neb {
     // Acks and downtimes caches.
     QHash<node_id, neb::acknowledgement>
                  _acknowledgements;
-    QHash<unsigned int, neb::downtime>
-                 _downtimes;
-    QMultiHash<node_id, unsigned int>
-                 _downtime_id_by_nodes;
-    unsigned int _actual_downtime_id;
+    std::vector<neb::downtime>
+                 _incomplete_downtime;
+    downtime_map _downtimes;
     downtime_scheduler
                  _downtime_scheduler;
-    QHash<unsigned int, neb::downtime>
-                 _recurring_downtimes;
 
+    // Parsing methods.
     enum         ack_type {
                  ack_host = 0,
                  ack_service
@@ -143,10 +142,16 @@ namespace        neb {
                     timestamp when,
                     downtime const& dwn);
 
+    // Downtime utility methods.
+    void         _register_downtime(downtime const& d, io::stream* stream);
+    void         _delete_downtime(downtime const& d, timestamp ts, io::stream* stream);
+
+    // Cache and config loading.
     void         _check_downtime_timeperiod_consistency();
     void         _load_config_file();
     void         _load_cache();
     void         _process_loaded_event(misc::shared_ptr<io::data> const& d);
+    void         _apply_config_downtimes();
     void         _save_cache();
   };
 }

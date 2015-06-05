@@ -49,7 +49,7 @@ namespace   neb {
                      std::string (T::*serialize)() const,
                      void(T::*unserialize)(std::string const&));
     void            serialize(T const& object, ceof_writer& writer);
-    void            unserialize(T& object, ceof_iterator& iterator);
+    void            unserialize(T& object, ceof_iterator iterator);
 
     virtual void    init_bindings() = 0;
 

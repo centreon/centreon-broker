@@ -59,7 +59,7 @@ std::ostream& com::centreon::broker::neb::operator<<(
  */
 downtime_serializable::downtime_serializable()
   : _downtime(new downtime){
-
+  _downtime->come_from = 1;
 }
 
 /**

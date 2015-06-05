@@ -50,7 +50,8 @@ downtime::downtime()
     triggered_by(0),
     was_cancelled(false),
     was_started(false),
-    is_recurring(false) {}
+    is_recurring(false),
+    come_from(0) {}
 
 /**
  *  @brief Copy constructor.
@@ -118,7 +119,8 @@ bool downtime::operator==(downtime const& o) const {
           && (was_cancelled == o.was_cancelled)
           && (was_started == o.was_started)
           && (is_recurring == o.is_recurring)
-          && (recurring_timeperiod == o.recurring_timeperiod));
+          && (recurring_timeperiod == o.recurring_timeperiod)
+          && (come_from == o.come_from));
 }
 
 /**************************************
@@ -160,6 +162,7 @@ void downtime::_internal_copy(downtime const& other) {
   was_started = other.was_started;
   is_recurring = other.is_recurring;
   recurring_timeperiod = other.recurring_timeperiod;
+  come_from = other.come_from;
   return ;
 }
 
@@ -241,6 +244,9 @@ mapping::entry const downtime::entries[] = {
   mapping::entry(
     &downtime::recurring_timeperiod,
     "recurring_timeperiod"),
+  mapping::entry(
+    &downtime::come_from,
+    "come_from"),
   mapping::entry()
 };
 
