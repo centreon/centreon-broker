@@ -38,24 +38,56 @@ namespace   neb {
   template <typename T>
   class            ceof_serializable {
   public:
-                   ceof_serializable();
-                   ceof_serializable(ceof_serializable const& other);
+                   ceof_serializable() {
+                     init_bindings();
+                   }
+
+                   ceof_serializable(ceof_serializable const&) {
+                     init_bindings();
+                   }
     ceof_serializable&
-                   operator=(ceof_serializable const& other);
-   virtual         ~ceof_serializable();
+                   operator=(ceof_serializable const&) {}
+   virtual         ~ceof_serializable() {}
 
-    void           add_member(
-                     std::string const& name,
-                     std::string (T::*serialize)() const,
-                     void(T::*unserialize)(std::string const&));
-    void            serialize(T const& object, ceof_writer& writer);
-    void            unserialize(T& object, ceof_iterator iterator);
+    void add_member(
+           std::string const& name,
+           std::string (T::*serialize)() const,
+           void(T::*unserialize)(std::string const&)) {
+      _members[name] = misc::make_shared(
+        new ceof_serializable_member<T>(serialize, unserialize));
+    }
 
-    virtual void    init_bindings() = 0;
+    void serialize(T const& object, ceof_writer& writer) {
+      for (typename std::map<std::string,
+                    misc::shared_ptr<ceof_serializable_member<T> > >::const_iterator
+             it = _members.begin(),
+             end = _members.end();
+           it != end;
+           ++it) {
+        writer.add_key(it->first);
+        it->second->serialize(object, writer);
+      }
+    }
+
+    void unserialize(T& object, ceof_iterator iterator) {
+      for (; !iterator.end(); ++iterator) {
+        std::string key = iterator.get_value();
+        ++iterator;
+        typename std::map<std::string,
+                 misc::shared_ptr<ceof_serializable_member<T> > >::const_iterator
+          found = _members.find(key);
+        if (found == _members.end())
+          throw (exceptions::msg()
+                 << "couldn't find the member named '" << key << "'");
+        found->second->unserialize(object, iterator);
+      }
+    }
+
+    virtual void    init_bindings() {}
 
   private:
-    static std::map<std::string, misc::shared_ptr<ceof_serializable_member<T> > >
-                   _members;
+    std::map<std::string, misc::shared_ptr<ceof_serializable_member<T> > >
+                    _members;
   };
 }
 

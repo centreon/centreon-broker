@@ -111,8 +111,6 @@ add_library("${NEB}" SHARED
   "${SRC_DIR}/tokenizer.cc"
   "${SRC_DIR}/ceof_writer.cc"
   "${SRC_DIR}/ceof_parser.cc"
-  "${SRC_DIR}/ceof_serializable.cc"
-  "${SRC_DIR}/ceof_serializable_member.cc"
   "${SRC_DIR}/ceof_iterator.cc"
   "${SRC_DIR}/ceof_token.cc"
   "${SRC_DIR}/timeperiod_serializable.cc"

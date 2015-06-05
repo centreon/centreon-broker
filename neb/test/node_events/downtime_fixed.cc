@@ -60,8 +60,7 @@ int main() {
     // Create node event stream.
     node_events_stream test(
       misc::shared_ptr<persistent_cache>(NULL),
-      false,
-      database_config());
+      "");
 
     // Send initial service status.
     {

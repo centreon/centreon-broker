@@ -38,11 +38,17 @@ namespace   neb {
   public:
                    ceof_serializable_member(
                      std::string (T::*serialize)() const,
-                     void(T::*unserialize)(std::string const&));
-                   ~ceof_serializable_member();
+                     void(T::*unserialize)(std::string const&))
+                     : _serialize(serialize),
+                       _unserialize(unserialize) {}
+                   ~ceof_serializable_member() {}
 
-    virtual void   serialize(T const& object, ceof_writer& writer) const;
-    virtual void   unserialize(T& object, ceof_iterator& iterator) const;
+    void serialize(T const& object, ceof_writer& writer) const {
+      writer.add_value((object.*_serialize)());
+    }
+    void unserialize(T& object, ceof_iterator& iterator) const {
+      (object.*_unserialize)(iterator.get_value());
+    }
 
   private:
     std::string    (T::*_serialize)() const;
