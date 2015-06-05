@@ -86,26 +86,31 @@ bool stream::read(
 
   // If data is already available, skip the waitForReadyRead() loop.
   if (_socket->bytesAvailable() <= 0) {
-    while (1) {
+    bool ret(_socket->waitForReadyRead(0));
+    while (_socket->bytesAvailable() <= 0) {
+      // Request timeout.
       if ((deadline != (time_t)-1)
           && (time(NULL) >= deadline)) {
         return (false);
       }
-      bool ret;
-      if (!(ret = _socket->waitForReadyRead(200))
-          // Disconnected socket with no data.
-          && (_socket->state()
-              == QAbstractSocket::UnconnectedState)
+      // Disconnected socket with no data.
+      else if (!ret
+          && (_socket->state() == QAbstractSocket::UnconnectedState)
           && (_socket->bytesAvailable() <= 0))
         throw (exceptions::msg() << "TCP stream is disconnected");
-      if (ret
+      // Got data.
+      else if (ret
           || (_socket->error() != QAbstractSocket::SocketTimeoutError)
           || (_socket->bytesAvailable() > 0))
         break ;
+      // Wait very little on mutex to allow socket shutdown.
       else {
         QWaitCondition cv;
         cv.wait(&*_mutex, 1);
       }
+
+      // Wait for data.
+      _socket->waitForReadyRead(200);
     }
   }
 
