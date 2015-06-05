@@ -185,10 +185,14 @@ bool muxer::read(
       time_t now(time(NULL));
       if (now < deadline)
         timed_out = !_cv.wait(&_mutex, (deadline - now) * 1000);
+      else
+        timed_out = true;
     }
     if (_total_events) {
       _get_last_event(event);
       lock.unlock();
+      if (!event.isNull())
+        timed_out = false;
       logging::debug(logging::low) << "multiplexing: "
         << _total_events << " events remaining in subcriber";
     }

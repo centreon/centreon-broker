@@ -434,11 +434,11 @@ bool input::read_any(
     // Mark data as processed.
     _processed += total_size;
 
-    return (false);
+    return (true);
   }
   catch (exceptions::timeout const& e) {
     (void)e;
-    return (true);
+    return (false);
   }
 }
 

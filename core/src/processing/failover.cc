@@ -321,6 +321,7 @@ void failover::run() {
         }
 
         // Read from muxer stream.
+        d.clear();
         bool timed_out_muxer(true);
         if (muxer_can_read) {
           logging::debug(logging::low)
