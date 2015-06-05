@@ -115,7 +115,7 @@ void stream::negociate(stream::negociation_type neg) {
   logging::debug(logging::medium)
     << "BBDO: retrieving welcome packet of peer";
   misc::shared_ptr<io::data> d;
-  read_any(d, _timeout);
+  read_any(d, time(NULL) + _timeout);
   if (d.isNull() || (d->type() != version_response::static_type()))
     throw (exceptions::msg()
            << "BBDO: invalid protocol header, aborting connection");

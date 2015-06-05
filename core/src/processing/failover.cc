@@ -294,6 +294,9 @@ void failover::run() {
         bool timed_out_stream(true);
         if (stream_can_read) {
           // XXX : event acknowledgement
+          logging::debug(logging::low)
+            << "failover: reading event from endpoint '"
+            << _name << "'";
           _update_status("reading event from stream");
           try {
             QMutexLocker stream_lock(&_streamm);
@@ -306,14 +309,24 @@ void failover::run() {
             stream_can_read = false;
           }
           if (!d.isNull()) {
+            logging::debug(logging::low)
+              << "failover: writing event of endpoint '" << _name
+              << "' to multiplexing engine";
+            _update_status("writing event to multiplexing engine");
             _subscriber->get_muxer().write(d);
+            _update_status("");
             continue ; // Stream read bias.
           }
+          _update_status("");
         }
 
         // Read from muxer stream.
         bool timed_out_muxer(true);
         if (muxer_can_read) {
+          logging::debug(logging::low)
+            << "failover: reading event from multiplexing engine for endpoint '"
+            << _name << "'";
+          _update_status("reading event from multiplexing engine");
           try {
             timed_out_muxer = !_subscriber->get_muxer().read(d, 0);
           }
@@ -325,6 +338,9 @@ void failover::run() {
           }
           if (!d.isNull()) {
             // XXX : event acknowledgement
+            logging::debug(logging::low)
+              << "failover: writing event of multiplexing engine to endpoint '"
+              << _name << "'";
             _update_status("writing event to stream");
             {
               QMutexLocker stream_lock(&_streamm);
@@ -346,6 +362,7 @@ void failover::run() {
                 it = secondaries.erase(it);
               }
             }
+            _update_status("");
           }
         }
 
