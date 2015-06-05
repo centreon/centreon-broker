@@ -32,6 +32,7 @@
 #include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/persistent_cache.hh"
 #include "common.hh"
+#include "vars.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
 
 using namespace com::centreon::broker;
@@ -64,7 +65,7 @@ int main() {
     // Create node event stream.
     node_events_stream test(
       misc::shared_ptr<persistent_cache>(NULL),
-      "");
+      PROJECT_SOURCE_DIR "/neb/test/node_events/cfg/downtime.cfg");
 
     time::timeperiod::ptr tp(new time::timeperiod(
                                 1,
@@ -118,7 +119,7 @@ int main() {
     for (unsigned int i = 0; i < 10; ++i) {
       ::sleep(1);
       misc::shared_ptr<io::data> d;
-      sbc.read(d);
+      sbc.read(d, ::time(NULL) + 1);
       test.write(d);
     }
 

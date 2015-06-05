@@ -26,7 +26,7 @@ using namespace com::centreon::broker::neb;
  *  Default constructor.
  */
 downtime_map::downtime_map()
-  : _actual_downtime_id(0) {
+  : _actual_downtime_id(1) {
 
 }
 

@@ -32,6 +32,7 @@
 #include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/persistent_cache.hh"
 #include "common.hh"
+#include "vars.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -60,7 +61,7 @@ int main() {
     // Create node event stream.
     node_events_stream test(
       misc::shared_ptr<persistent_cache>(NULL),
-      "");
+      PROJECT_SOURCE_DIR "/neb/test/node_events/cfg/downtime.cfg");
 
     // Send initial service status.
     {
