@@ -109,7 +109,7 @@ int main() {
       misc::shared_ptr<command_file::external_command> cmd(
         new command_file::external_command);
       cmd->command = format_command(
-        "SCHEDULE_SVC_DOWNTIME;42;24;$TIMESTAMP$;$TIMESTAMP2$;1;0;3;TEST;A test for you;24x7;2",
+        "SCHEDULE_SVC_DOWNTIME;42;24;$TIMESTAMP$;$TIMESTAMP2$;1;0;3;TEST;A test for you;24x7",
         now,
         now + 3);
       test.write(cmd);
