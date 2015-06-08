@@ -132,20 +132,6 @@ int main() {
     add_downtime(content, now, now + 3, 3, true, 42, 24, 2, 1, -1, -1);
     add_downtime(content, now, now + 3, 3, true, 42, 24, 2, 1, now, -1);
     add_downtime(content, now, now + 3, 3, true, 42, 24, 2, 1, now, now + 3);
-    add_downtime(content, now + 5, now + 8, 3, true, 42, 24, 3, 1, -1, -1);
-    add_downtime(content, now + 5, now + 8, 3, true, 42, 24, 3, 1, now + 5, -1);
-    add_downtime(
-      content,
-      now + 5,
-      now + 8,
-      3,
-      true,
-      42,
-      24,
-      3,
-      1,
-      now + 5,
-      now + 8);
 
     // Check.
     check_content(t, content);

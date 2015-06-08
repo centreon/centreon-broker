@@ -914,7 +914,7 @@ void node_events_stream::_spawn_recurring_downtime(
   if (when.is_null())
     when = ::time(NULL);
   // Downtime expired, my friend.
-  if (when > dwn.end_time) {
+  if (when >= dwn.end_time) {
     _delete_downtime(dwn, ::time(NULL), NULL);
     return ;
   }
