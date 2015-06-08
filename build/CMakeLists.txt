@@ -637,8 +637,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/failover_to_file.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/temporary.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/temporary.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_cleanup.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/sql_cleanup.xml")
 
@@ -832,10 +830,10 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_rrd_as_failover")
   add_test("${TEST_NAME}" "cbd" "-c" "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
 
-  # Temporary.
-  set(TEST_NAME "running_temporary")
+  # Automatic retention.
+  set(TEST_NAME "running_automatic_retention")
   add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/temporary.cc")
+    "${PROJECT_SOURCE_DIR}/test/automatic_retention.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
