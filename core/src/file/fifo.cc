@@ -73,14 +73,18 @@ std::string fifo::read_line(int usecs_timeout) {
   fd_set polled_fd;
   struct timeval tv;
   FD_ZERO(&polled_fd);
-  FD_SET(_fd,  &polled_fd);
+  FD_SET(_fd, &polled_fd);
   tv.tv_sec = usecs_timeout / 1000000;
   tv.tv_usec = usecs_timeout % 1000000;
-  if (::select(_fd + 1, &polled_fd, NULL, NULL, &tv) == -1) {
-    const char* msg = ::strerror(errno);
+  if (::select(
+          _fd + 1,
+          &polled_fd,
+          NULL,
+          NULL,
+          ((usecs_timeout == -1) ? NULL : &tv)) == -1) {
+    char const* msg = ::strerror(errno);
     throw (exceptions::msg()
-           << "fifo: can't poll file '" << _path
-           << "' for the fifo: " << msg);
+           << "fifo: can't poll file '" << _path << "': " << msg);
   }
 
   // Read everything.
@@ -91,8 +95,7 @@ std::string fifo::read_line(int usecs_timeout) {
   if (ret == -1) {
     const char* msg = ::strerror(errno);
     throw (exceptions::msg()
-           << "fifo: can't read file '" << _path
-           << "' for the fifo dumper: " << msg);
+           << "fifo: can't read file '" << _path << "': " << msg);
   }
   buf[ret] = '\0';
   _polled_line.append(buf);

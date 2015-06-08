@@ -20,11 +20,13 @@
   -->
   <input>
     <type>dump_fifo</type>
+    <name>fifo_dumper_input</name>
     <tagname>engine-extcmd-1</tagname>
     <path>@SENDER_FIFO@</path>
   </input>
   <output>
     <type>dumper</type>
+    <name>fifo_dumper_output</name>
     <tagname>engine-extcmd-1</tagname>
     <path>@RECEIVER_FILE@</path>
   </output>

@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <algorithm>
 #include <cstdlib>
 #include <queue>
 #include <QMutexLocker>
@@ -265,7 +264,14 @@ void engine::unload() {
  */
 void engine::unsubscribe(muxer* subscriber) {
   QMutexLocker lock(&_muxersm);
-  std::remove(_muxers.begin(), _muxers.end(), subscriber);
+  for (std::vector<muxer*>::iterator
+         it(_muxers.begin()), end(_muxers.end());
+       it != end;
+       ++it)
+    if (*it == subscriber) {
+      _muxers.erase(it);
+      break ;
+    }
   return ;
 }
 
