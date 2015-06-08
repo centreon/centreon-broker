@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <centreonbroker>
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
-  <instance>42</instance>
-  <instance_name>MyBroker</instance_name>
+  <instance>@INSTANCE_ID@</instance>
+  <instance_name>@INSTANCE_NAME@</instance_name>
   <!--
   <stats>
     <fifo>/tmp/cbd.fifo</fifo>
@@ -18,20 +18,20 @@
   </logger>
   -->
   <input>
-    <name>InputFailoverToFileUnitTest</name>
+    <name>InputFailoverToTCP@INSTANCE_ID@UnitTest</name>
     <type>tcp</type>
-    <port>5680</port>
+    <port>@PORT@</port>
     <protocol>bbdo</protocol>
   </input>
   <output>
-    <name>OutputFailoverToFileUnitTest</name>
+    <name>OutputFailoverToTCP@INSTANCE_ID@UnitTest</name>
     <type>sql</type>
     <db_type>@DB_TYPE@</db_type>
     <db_host>@DB_HOST@</db_host>
     <db_port>@DB_PORT@</db_port>
     <db_user>@DB_USER@</db_user>
     <db_password>@DB_PASSWORD@</db_password>
-    <db_name>broker_failover_to_file</db_name>
+    <db_name>broker_failover_to_tcp</db_name>
     <queries_per_transaction>0</queries_per_transaction>
   </output>
 </centreonbroker>

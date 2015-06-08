@@ -633,8 +633,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_2.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/delete_graphs.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/delete_graphs.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/failover_to_file.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/failover_to_file.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_cleanup.xml.in"
@@ -812,10 +810,10 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Failover to file.
-  set(TEST_NAME "running_failover_to_file")
+  # Failover to TCP.
+  set(TEST_NAME "running_failover_to_tcp")
   add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/failover_to_file.cc")
+    "${PROJECT_SOURCE_DIR}/test/failover_to_tcp.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 

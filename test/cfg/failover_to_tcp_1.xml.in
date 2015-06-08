@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<centreonbroker>
+  <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
+  <instance>42</instance>
+  <instance_name>my_cbmod</instance_name>
+  <stats>
+    <fifo>/tmp/cbmod.fifo</fifo>
+  </stats>
+  <logger>
+    <type>file</type>
+    <name>cbmod.log</name>
+    <config>1</config>
+    <debug>1</debug>
+    <error>1</error>
+    <info>1</info>
+    <level>3</level>
+  </logger>
+  <output>
+    <name>FailoverToTCP1</name>
+    <failover>FailoverToTCP2</failover>
+    <type>tcp</type>
+    <host>localhost</host>
+    <port>5680</port>
+    <protocol>bbdo</protocol>
+    <retry_interval>1</retry_interval>
+  </output>
+  <output>
+    <name>FailoverToTCP2</name>
+    <type>tcp</type>
+    <host>localhost</host>
+    <port>5690</port>
+    <protocol>bbdo</protocol>
+    <retry_interval>1</retry_interval>
+  </output>
+</centreonbroker>

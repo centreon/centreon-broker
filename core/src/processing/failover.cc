@@ -78,6 +78,8 @@ void failover::add_secondary_endpoint(
  *  Exit failover thread.
  */
 void failover::exit() {
+  if (_failover.data())
+    _failover->exit();
   thread::exit();
   _subscriber->get_muxer().wake();
   return ;
