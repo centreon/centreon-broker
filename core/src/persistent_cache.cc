@@ -131,6 +131,7 @@ void persistent_cache::transaction() {
   misc::shared_ptr<bbdo::stream> bs(new bbdo::stream(false, true));
   bs->read_from(fs);
   bs->write_to(fs);
+  bs->set_coarse(true);
   _write_file = bs.staticCast<io::stream>();
   return ;
 }
@@ -185,6 +186,7 @@ void persistent_cache::_open() {
   misc::shared_ptr<bbdo::stream> bs(new bbdo::stream(true, false));
   bs->read_from(fs);
   bs->write_to(fs);
+  bs->set_coarse(true);
 
   // We will access only the BBDO layer.
   _read_file = bs.staticCast<io::stream>();

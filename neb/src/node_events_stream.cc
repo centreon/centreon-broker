@@ -60,6 +60,9 @@ node_events_stream::node_events_stream(
   // Load the cache.
   _load_cache();
 
+  // Apply the config downtimes.
+  _apply_config_downtimes();
+
   // Check downtime consistency.
   _check_downtime_timeperiod_consistency();
 
@@ -72,12 +75,12 @@ node_events_stream::node_events_stream(
  */
 node_events_stream::~node_events_stream() {
   try {
-    // Save the cache.
-    _save_cache();
-
     // Stop the downtime scheduler.
     _downtime_scheduler.quit();
     _downtime_scheduler.wait();
+
+    // Save the cache.
+    _save_cache();
   } catch (std::exception const& e) {
     logging::error(logging::medium)
       << "neb: node events error while trying to save cache: "
@@ -116,6 +119,7 @@ void node_events_stream::read(misc::shared_ptr<io::data>& d) {
  */
 void node_events_stream::update() {
   _load_config_file();
+  _apply_config_downtimes();
   _check_downtime_timeperiod_consistency();
   _save_cache();
   return ;
@@ -677,11 +681,11 @@ void node_events_stream::_check_downtime_timeperiod_consistency() {
 void node_events_stream::_load_config_file() {
   // Open and get the file in memory.
   std::stringstream ss;
-  std::ofstream ofs;
+  std::ifstream ifs;
   try {
-    ofs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
-    ofs.open(_config_file.c_str());
-    ss << ofs.rdbuf();
+    ifs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+    ifs.open(_config_file.c_str());
+    ss << ifs.rdbuf();
   } catch (std::exception const& e) {
     throw (exceptions::msg()
            << "node_events: couldn't load file '"
@@ -794,6 +798,8 @@ void node_events_stream::_apply_config_downtimes() {
     // No matching loaded downtime found, create one.
     if (!found_matching_downtime) {
       it->internal_id = _downtimes.get_new_downtime_id();
+      it->downtime_type = it->service_id != 0
+        ? down_service : down_host;
       found_downtime_ids.insert(it->internal_id);
       _register_downtime(*it, &pblsh);
     }

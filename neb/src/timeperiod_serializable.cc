@@ -28,6 +28,7 @@ using namespace com::centreon::broker::neb;
  */
 timeperiod_serializable::timeperiod_serializable()
   : _tp(new time::timeperiod()){
+  init_bindings();
 }
 
 /**
@@ -37,7 +38,8 @@ timeperiod_serializable::timeperiod_serializable()
  */
 timeperiod_serializable::timeperiod_serializable(
                            timeperiod_serializable const& other)
-  : _tp(new time::timeperiod(*other._tp)){
+  : ceof_serializable<timeperiod_serializable>(other),
+    _tp(new time::timeperiod(*other._tp)){
 }
 
 /**

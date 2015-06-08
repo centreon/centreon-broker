@@ -58,8 +58,10 @@ std::ostream& com::centreon::broker::neb::operator<<(
  *  Default constructor.
  */
 downtime_serializable::downtime_serializable()
-  : _downtime(new downtime){
+  : ceof_serializable<downtime_serializable>(),
+    _downtime(new downtime){
   _downtime->come_from = 1;
+  init_bindings();
 }
 
 /**
@@ -68,8 +70,8 @@ downtime_serializable::downtime_serializable()
  *  @param[in] other  The object to copy.
  */
 downtime_serializable::downtime_serializable(downtime_serializable const& other)
-  : _downtime(new downtime(*other._downtime)) {
-
+  : ceof_serializable<downtime_serializable>(other),
+    _downtime(new downtime(*other._downtime)) {
 }
 
 /**

@@ -38,13 +38,10 @@ namespace   neb {
   template <typename T>
   class            ceof_serializable {
   public:
-                   ceof_serializable() {
-                     init_bindings();
-                   }
+                   ceof_serializable() {}
 
-                   ceof_serializable(ceof_serializable const&) {
-                     init_bindings();
-                   }
+                   ceof_serializable(ceof_serializable const& other)
+                    : _members(other._members){}
     ceof_serializable&
                    operator=(ceof_serializable const&) {}
    virtual         ~ceof_serializable() {}
@@ -83,7 +80,7 @@ namespace   neb {
       }
     }
 
-    virtual void    init_bindings() {}
+    virtual void init_bindings() = 0;
 
   private:
     std::map<std::string, misc::shared_ptr<ceof_serializable_member<T> > >

@@ -200,7 +200,10 @@ QList<downtime> downtime_map::get_all_recurring_downtimes() const {
  *  @return  The downtimes.
  */
 QList<downtime> downtime_map::get_all_downtimes() const {
-  return (_recurring_downtimes.values() + _downtimes.values());
+  QList<downtime> ret = _recurring_downtimes.values();
+  ret += _downtimes.values();
+  return (ret);
+  //return (_recurring_downtimes.values() + _downtimes.values());
 }
 
 /**

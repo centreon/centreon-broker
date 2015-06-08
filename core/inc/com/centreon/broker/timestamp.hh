@@ -139,7 +139,7 @@ public:
 inline std::istream& operator>>(std::istream& stream, timestamp& ts) {
   std::time_t s;
   stream >> s;
-  ts = timestamp(ts);
+  ts = timestamp(s);
   return (stream);
 }
 

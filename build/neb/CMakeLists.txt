@@ -666,6 +666,13 @@ if (WITH_TESTING)
     "${TEST_DIR}/node_events/common.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  set(TEST_NAME "neb_downtime_file")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/node_events/file_downtime.cc"
+    "${TEST_DIR}/node_events/common.hh"
+    "${TEST_DIR}/node_events/common.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   configure_file("${TEST_DIR}/node_events/vars.hh.in"
     "${TEST_DIR}/node_events/vars.hh")
 endif ()

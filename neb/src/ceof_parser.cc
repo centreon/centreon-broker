@@ -49,9 +49,12 @@ static void skip(
               std::string const& string,
               const char* characters) {
   actual = string.find_first_not_of(characters, actual);
-  if (actual != std::string::npos)
+  if (actual == std::string::npos)
     return ;
-  while (string[actual] == '#') {
+  if (string[actual] == '#') {
+    actual = string.find_first_of('\n', actual);
+    if (actual == std::string::npos)
+      return ;
     ++actual;
     skip(actual, string, characters);
   }
@@ -85,6 +88,8 @@ ceof_iterator ceof_parser::parse() {
   while (actual != std::string::npos) {
     // Get the token.
     size_t end_of_token = _string.find_first_of(" \t\n", actual);
+    if (end_of_token == std::string::npos)
+      end_of_token = _string.size();
     std::string substr = _string.substr(actual, end_of_token - actual);
 
     switch (state) {
@@ -96,7 +101,7 @@ ceof_iterator ceof_parser::parse() {
     case waiting_for_object_name:
       _tokens.push_back(
         ceof_token(ceof_token::object, substr, _tokens.size(), parent_token));
-      parent_token = _tokens.size();
+      ++parent_token;
       state = waiting_for_object_opening;
       break;
     case waiting_for_object_opening:
@@ -124,6 +129,7 @@ ceof_iterator ceof_parser::parse() {
       state = in_object_waiting_for_key;
     }
     // Skip to the next token.
+    actual = end_of_token;
     skip(
       actual,
       _string,
