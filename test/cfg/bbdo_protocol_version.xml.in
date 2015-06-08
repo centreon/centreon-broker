@@ -29,6 +29,6 @@
     <host>localhost</host>
     <port>5685</port>
     <protocol>bbdo</protocol>
-    <read_timeout>1</read_timeout>
+    <read_timeout>5</read_timeout>
   </output>
 </centreonbroker>

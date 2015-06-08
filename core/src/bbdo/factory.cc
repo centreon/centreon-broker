@@ -146,6 +146,8 @@ io::endpoint* factory::new_endpoint(
       it(cfg.params.find("one_peer_retention_mode"));
     if (it != cfg.params.end())
       one_peer_retention_mode = config::parser::parse_boolean(*it);
+    if (one_peer_retention_mode)
+      is_acceptor = false;
     retval = new bbdo::acceptor(
                          cfg.name,
                          negociate,

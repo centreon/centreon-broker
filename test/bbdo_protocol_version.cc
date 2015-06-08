@@ -142,7 +142,8 @@ int main(int argc, char* argv[]) {
         qint64 wb(sockt->write(ptr, size));
         if (wb == -1)
           throw (exceptions::msg()
-                 << "cannot write BBDO packet to incoming peer");
+                 << "cannot write BBDO packet to incoming peer: "
+                 << sockt->errorString());
         ptr += wb;
         size -= wb;
       }

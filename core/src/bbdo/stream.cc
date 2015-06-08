@@ -42,7 +42,7 @@ stream::stream()
   : _coarse(false),
     _negociate(true),
     _negociated(false),
-    _timeout(3) {}
+    _timeout(5) {}
 
 /**
  *  Copy constructor.
@@ -115,7 +115,12 @@ void stream::negociate(stream::negociation_type neg) {
   logging::debug(logging::medium)
     << "BBDO: retrieving welcome packet of peer";
   misc::shared_ptr<io::data> d;
-  read_any(d, time(NULL) + _timeout);
+  time_t deadline;
+  if (_timeout == (time_t)-1)
+    deadline = (time_t)-1;
+  else
+    deadline = time(NULL) + _timeout;
+  read_any(d, deadline);
   if (d.isNull() || (d->type() != version_response::static_type()))
     throw (exceptions::msg()
            << "BBDO: invalid protocol header, aborting connection");
