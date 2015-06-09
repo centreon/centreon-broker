@@ -28,7 +28,7 @@
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/processing/failover.hh"
 #include "test/processing/feeder/common.hh"
-#include "test/processing/feeder/setable_endpoint.hh"
+#include "test/processing/failover/setable_endpoint.hh"
 
 using namespace com::centreon::broker;
 
@@ -54,6 +54,12 @@ int main(int argc, char* argv[]) {
   if (argc > 1)
     log_on_stderr();
 
+  // Subscriber.
+  misc::shared_ptr<multiplexing::subscriber>
+    s(new multiplexing::subscriber(
+                          "processing_failover_reread_first",
+                          ""));
+
   // First failover.
   misc::shared_ptr<setable_endpoint> endp1(new setable_endpoint);
   endp1->set_succeed(true);
@@ -61,8 +67,9 @@ int main(int argc, char* argv[]) {
   misc::shared_ptr<processing::failover>
     fo1(new processing::failover(
                           endp1.staticCast<io::endpoint>(),
-                          true,
-                          "failover1"));
+                          s,
+                          "processing_failover_reread_first_1",
+                          ""));
 
   // Second failover.
   misc::shared_ptr<setable_endpoint> endp2(new setable_endpoint);
@@ -71,8 +78,9 @@ int main(int argc, char* argv[]) {
   misc::shared_ptr<processing::failover>
     fo2(new processing::failover(
                           endp2.staticCast<io::endpoint>(),
-                          true,
-                          "failover2"));
+                          s,
+                          "processing_failover_reread_first_2",
+                          ""));
   fo2->set_failover(fo1);
 
   // Publish an event that should be the last event processed by fo1.
@@ -83,14 +91,10 @@ int main(int argc, char* argv[]) {
   }
 
   // Launch processing.
-  QObject::connect(fo2.data(), SIGNAL(finished()), &app, SLOT(quit()));
-  QObject::connect(fo2.data(), SIGNAL(started()), &app, SLOT(quit()));
-  QObject::connect(fo2.data(), SIGNAL(terminated()), &app, SLOT(quit()));
   fo2->start();
-  app.exec();
 
   // Some processing.
-  QTimer::singleShot(1000, &app, SLOT(quit()));
+  QTimer::singleShot(3000, &app, SLOT(quit()));
   app.exec();
 
   // Failover thread #1 has finished processing.

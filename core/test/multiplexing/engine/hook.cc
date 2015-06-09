@@ -21,6 +21,7 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
 #include "test/multiplexing/engine/hooker.hh"
 
@@ -62,7 +63,7 @@ int main() {
   int retval(0);
   {
     misc::shared_ptr<io::data> data;
-    s.read(data, 0);
+    s.get_muxer().read(data, 0);
     retval |= !data.isNull();
   }
 
@@ -94,7 +95,7 @@ int main() {
       { HOOKMSG1, MSG1, HOOKMSG2, MSG2, HOOKMSG2, MSG3, HOOKMSG2, HOOKMSG3, NULL };
     for (unsigned int i = 0; messages[i]; ++i) {
       misc::shared_ptr<io::data> d;
-      s.read(d, 0);
+      s.get_muxer().read(d, 0);
       if (d.isNull()
           || (d->type() != io::events::data_type<io::events::internal, 1>::value))
         retval |= 1;
@@ -107,7 +108,7 @@ int main() {
       }
     }
     misc::shared_ptr<io::data> d;
-    s.read(d, 0);
+    s.get_muxer().read(d, 0);
     retval |= !d.isNull();
   }
 

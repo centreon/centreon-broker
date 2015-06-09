@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -22,7 +22,7 @@
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "test/processing/feeder/setable_stream.hh"
+#include "test/processing/failover/setable_stream.hh"
 
 using namespace com::centreon::broker;
 
@@ -46,11 +46,11 @@ setable_stream::setable_stream()
 /**
  *  Copy constructor.
  *
- *  @param[in] ss Object to copy.
+ *  @param[in] other  Object to copy.
  */
-setable_stream::setable_stream(setable_stream const& ss)
-  : com::centreon::broker::io::stream(ss) {
-  _internal_copy(ss);
+setable_stream::setable_stream(setable_stream const& other)
+  : com::centreon::broker::io::stream(other) {
+  _internal_copy(other);
 }
 
 /**
@@ -61,14 +61,14 @@ setable_stream::~setable_stream() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] ss Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-setable_stream& setable_stream::operator=(setable_stream const& ss) {
-  if (this != &ss) {
-    com::centreon::broker::io::stream::operator=(ss);
-    _internal_copy(ss);
+setable_stream& setable_stream::operator=(setable_stream const& other) {
+  if (this != &other) {
+    com::centreon::broker::io::stream::operator=(other);
+    _internal_copy(other);
   }
   return (*this);
 }
@@ -106,9 +106,16 @@ void setable_stream::process(bool in, bool out) {
 /**
  *  Read some data.
  *
- *  @param[out] data Some data.
+ *  @param[out] data      Some data.
+ *  @param[in]  deadline  Unused.
+ *
+ *  @return Respect io::stream::read()'s return value.
  */
-void setable_stream::read(misc::shared_ptr<io::data>& data) {
+bool setable_stream::read(
+                       misc::shared_ptr<io::data>& data,
+                       time_t deadline) {
+  (void)deadline;
+
   // Reset pointer.
   data.clear();
 
@@ -141,7 +148,7 @@ void setable_stream::read(misc::shared_ptr<io::data>& data) {
   else
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
            << "setable stream " << this << " is shutdown");
-  return ;
+  return (true);
 }
 
 /**
@@ -223,16 +230,16 @@ unsigned int setable_stream::write(misc::shared_ptr<io::data> const& d) {
 /**
  *  Copy internal data members.
  *
- *  @param[in] ss Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void setable_stream::_internal_copy(setable_stream const& ss) {
-  _count = ss._count;
-  _process_in = ss._process_in;
-  _process_out = ss._process_out;
-  _replay_events = ss._replay_events;
-  _replay = ss._replay;
-  _sleep_time = ss._sleep_time;
-  _store_events = ss._store_events;
-  _stored_events = ss._stored_events;
+void setable_stream::_internal_copy(setable_stream const& other) {
+  _count = other._count;
+  _process_in = other._process_in;
+  _process_out = other._process_out;
+  _replay_events = other._replay_events;
+  _replay = other._replay;
+  _sleep_time = other._sleep_time;
+  _store_events = other._store_events;
+  _stored_events = other._stored_events;
   return ;
 }

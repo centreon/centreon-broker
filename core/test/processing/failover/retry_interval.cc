@@ -23,7 +23,7 @@
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/processing/failover.hh"
 #include "test/processing/feeder/common.hh"
-#include "test/processing/feeder/setable_endpoint.hh"
+#include "test/processing/failover/setable_endpoint.hh"
 
 using namespace com::centreon::broker;
 
@@ -46,23 +46,29 @@ int main(int argc, char* argv[]) {
   if (argc > 1)
     log_on_stderr();
 
+  // Subscriber.
+  misc::shared_ptr<multiplexing::subscriber>
+    s(new multiplexing::subscriber(
+                          "processing_failover_retry_interval",
+                          ""));
+
   // Endpoint.
   misc::shared_ptr<setable_endpoint> se(new setable_endpoint);
   se->set_succeed(false);
 
   // Failover object.
-  processing::failover f(se.staticCast<io::endpoint>(), false);
+  processing::failover f(
+                         se.staticCast<io::endpoint>(),
+                         s,
+                         "processing_failover_retry_interval",
+                         "");
   f.set_retry_interval(1);
 
   // Launch thread.
-  QObject::connect(&f, SIGNAL(finished()), &app, SLOT(quit()));
-  QObject::connect(&f, SIGNAL(started()), &app, SLOT(quit()));
-  QObject::connect(&f, SIGNAL(terminated()), &app, SLOT(quit()));
   f.start();
-  app.exec();
 
   // Wait some time.
-  QTimer::singleShot(3400, &app, SLOT(quit()));
+  QTimer::singleShot(6000, &app, SLOT(quit()));
   app.exec();
 
   // Quit feeder thread.

@@ -1408,114 +1408,114 @@ if (WITH_TESTING)
     "${TEST_DIR}/multiplexing/subscriber/temporary_stream.cc")
   set(TEST_LIBRARIES "ccb_core_multiplexing_subscriber" "roker")
 
-  # #   Default constructor.
-  # set(TEST_NAME "core_multiplexing_subscriber_ctor_default")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/multiplexing/subscriber/ctor_default.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Default constructor.
+  set(TEST_NAME "core_multiplexing_subscriber_ctor_default")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/multiplexing/subscriber/ctor_default.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   # multiplexing::engine tests.
-  # add_library("ccb_core_multiplexing_engine" STATIC
-  #   "${TEST_DIR}/multiplexing/engine/hooker.cc")
-  # #   Start and stop.
-  # set(TEST_NAME "core_multiplexing_engine_start_stop")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/multiplexing/engine/start_stop.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Hook.
-  # set(TEST_NAME "core_multiplexing_engine_hook")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/multiplexing/engine/hook.cc")
-  # target_link_libraries("${TEST_NAME}"
-  #   "ccb_core_multiplexing_engine"
-  #   "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Unhook.
-  # set(TEST_NAME "core_multiplexing_engine_unhook")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/multiplexing/engine/unhook.cc")
-  # target_link_libraries("${TEST_NAME}"
-  #   "ccb_core_multiplexing_engine"
-  #   "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # multiplexing::publisher tests.
-  # #   Read.
-  # set(TEST_NAME "core_multiplexing_engine_read")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/multiplexing/publisher/read.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Write.
-  # set(TEST_NAME "core_multiplexing_engine_write")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/multiplexing/publisher/write.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  add_library("ccb_core_multiplexing_engine" STATIC
+    "${TEST_DIR}/multiplexing/engine/hooker.cc")
+  #   Start and stop.
+  set(TEST_NAME "core_multiplexing_engine_start_stop")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/multiplexing/engine/start_stop.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Hook.
+  set(TEST_NAME "core_multiplexing_engine_hook")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/multiplexing/engine/hook.cc")
+  target_link_libraries("${TEST_NAME}"
+    "ccb_core_multiplexing_engine"
+    "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Unhook.
+  set(TEST_NAME "core_multiplexing_engine_unhook")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/multiplexing/engine/unhook.cc")
+  target_link_libraries("${TEST_NAME}"
+    "ccb_core_multiplexing_engine"
+    "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # multiplexing::publisher tests.
+  #   Read.
+  set(TEST_NAME "core_multiplexing_engine_read")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/multiplexing/publisher/read.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Write.
+  set(TEST_NAME "core_multiplexing_engine_write")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/multiplexing/publisher/write.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 
 
-  # # processing namespace tests.
-  # # processing::feeder tests.
-  # add_library("ccb_core_processing_feeder" STATIC
-  #   "${TEST_DIR}/processing/feeder/common.cc"
-  #   "${TEST_DIR}/processing/feeder/setable_endpoint.cc"
-  #   "${TEST_DIR}/processing/feeder/setable_stream.cc")
-  # set(TEST_LIBRARIES "ccb_core_processing_feeder" "roker")
+  # processing namespace tests.
+  add_library("ccb_core_processing_feeder" STATIC
+    "${TEST_DIR}/processing/failover/setable_endpoint.cc"
+    "${TEST_DIR}/processing/failover/setable_stream.cc"
+    "${TEST_DIR}/processing/feeder/common.cc")
+  set(TEST_LIBRARIES "ccb_core_processing_feeder" "roker")
+  # processing::feeder tests.
   # #   Simple feeding.
   # set(TEST_NAME "core_processing_feeder_simple")
   # add_executable("${TEST_NAME}"
   #   "${TEST_DIR}/processing/feeder/simple.cc")
   # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Null event.
-  # set(TEST_NAME "core_processing_feeder_null_event")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/feeder/null_event.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Null event.
+  set(TEST_NAME "core_processing_feeder_null_event")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/feeder/null_event.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
   # processing::failover tests.
-  # #   Simple feeding.
-  # set(TEST_NAME "core_processing_failover_feed")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/failover/feed.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Retry interval.
-  # set(TEST_NAME "core_processing_failover_retry_interval")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/failover/retry_interval.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Failing intermediate.
-  # set(TEST_NAME "core_processing_failover_failed_intermediate")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/failover/failed_intermediate.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Event loop break.
-  # set(TEST_NAME "core_processing_failover_loop_break")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/failover/loop_break.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Exit while no data is available.
-  # set(TEST_NAME "core_processing_failover_exit_with_no_data")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/failover/exit_with_no_data.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Reread events from failover first.
-  # set(TEST_NAME "core_processing_failover_reread_first")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/failover/reread_first.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Recovery.
-  # set(TEST_NAME "core_processing_failover_recovery")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/failover/recovery.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Simple feeding.
+  set(TEST_NAME "core_processing_failover_feed")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/failover/feed.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Retry interval.
+  set(TEST_NAME "core_processing_failover_retry_interval")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/failover/retry_interval.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Failing intermediate.
+  set(TEST_NAME "core_processing_failover_failed_intermediate")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/failover/failed_intermediate.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Event loop break.
+  set(TEST_NAME "core_processing_failover_loop_break")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/failover/loop_break.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Exit while no data is available.
+  set(TEST_NAME "core_processing_failover_exit_with_no_data")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/failover/exit_with_no_data.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Reread events from failover first.
+  set(TEST_NAME "core_processing_failover_reread_first")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/failover/reread_first.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+  #   Recovery.
+  set(TEST_NAME "core_processing_failover_recovery")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/processing/failover/recovery.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 
 
   # file namespace tests.

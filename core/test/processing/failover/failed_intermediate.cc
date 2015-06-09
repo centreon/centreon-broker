@@ -24,7 +24,7 @@
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/processing/failover.hh"
 #include "test/processing/feeder/common.hh"
-#include "test/processing/feeder/setable_endpoint.hh"
+#include "test/processing/failover/setable_endpoint.hh"
 
 using namespace com::centreon::broker;
 
@@ -48,13 +48,21 @@ int main(int argc, char* argv[]) {
   if (argc > 1)
     log_on_stderr();
 
+  // Subscriber.
+  misc::shared_ptr<multiplexing::subscriber>
+    s(new multiplexing::subscriber(
+                          "processing_failover_failed_intermediate",
+                          ""));
+
   // First failover.
   misc::shared_ptr<setable_endpoint> endp1(new setable_endpoint);
   endp1->set_succeed(true);
   misc::shared_ptr<processing::failover>
     fo1(new processing::failover(
                           endp1.staticCast<io::endpoint>(),
-                          true));
+                          s,
+                          "processing_failover_failed_intermediate_1",
+                          ""));
 
   // Second failover (intermediate).
   misc::shared_ptr<setable_endpoint> endp2(new setable_endpoint);
@@ -62,7 +70,9 @@ int main(int argc, char* argv[]) {
   misc::shared_ptr<processing::failover>
     fo2(new processing::failover(
                           endp2.staticCast<io::endpoint>(),
-                          true));
+                          s,
+                          "processing_failover_failed_intermediate_2",
+                          ""));
   fo2->set_failover(fo1);
   fo2->set_retry_interval(1);
 
@@ -72,27 +82,25 @@ int main(int argc, char* argv[]) {
   misc::shared_ptr<processing::failover>
     fo3(new processing::failover(
                           endp3.staticCast<io::endpoint>(),
-                          true));
+                          s,
+                          "processing_failover_failed_intermediate_3",
+                          ""));
   fo3->set_failover(fo2);
   fo3->set_retry_interval(1);
 
   // Launch processing.
-  QObject::connect(fo3.data(), SIGNAL(finished()), &app, SLOT(quit()));
-  QObject::connect(fo3.data(), SIGNAL(started()), &app, SLOT(quit()));
-  QObject::connect(fo3.data(), SIGNAL(terminated()), &app, SLOT(quit()));
   fo3->start();
-  app.exec();
 
   // Wait a while to get fo1 and fo2 launched because of failing
   // endpoints #2 and #3.
-  QTimer::singleShot(2000, &app, SLOT(quit()));
+  QTimer::singleShot(5000, &app, SLOT(quit()));
   app.exec();
 
   // Enable endpoint #3.
   endp3->set_succeed(true);
 
   // Wait fo3 to reenable endpoint #3 and cancel fo2.
-  QTimer::singleShot(2000, &app, SLOT(quit()));
+  QTimer::singleShot(5000, &app, SLOT(quit()));
 
   // Exit threads.
   fo3->exit();

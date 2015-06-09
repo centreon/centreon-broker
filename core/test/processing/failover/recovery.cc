@@ -22,7 +22,7 @@
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/processing/failover.hh"
 #include "test/processing/feeder/common.hh"
-#include "test/processing/feeder/setable_endpoint.hh"
+#include "test/processing/failover/setable_endpoint.hh"
 
 using namespace com::centreon::broker;
 
@@ -44,22 +44,28 @@ int main(int argc, char* argv[]) {
   if (argc > 1)
     log_on_stderr();
 
+  // Subscriber.
+  misc::shared_ptr<multiplexing::subscriber>
+    s(new multiplexing::subscriber("processing_failover_recovery", ""));
+
   // First failover.
   misc::shared_ptr<setable_endpoint> endp1(new setable_endpoint);
   endp1->set_succeed(true);
   misc::shared_ptr<processing::failover>
     fo1(new processing::failover(
                           endp1.staticCast<io::endpoint>(),
-                          true,
-                          "failover1"));
+                          s,
+                          "processing_failover_recovery_1",
+                          ""));
 
   // Second failover.
   misc::shared_ptr<setable_endpoint> endp2(new setable_endpoint);
   endp2->set_succeed(true);
   processing::failover fo2(
                          endp2.staticCast<io::endpoint>(),
-                         true,
-                         "failover2");
+                         s,
+                         "processing_failover_recovery_2",
+                         "");
   fo2.set_failover(fo1);
   fo2.set_retry_interval(1);
 
@@ -73,13 +79,13 @@ int main(int argc, char* argv[]) {
   if (endp1->opened_streams() != 1)
     retval = 1;
   else {
-    (*endp1->streams().begin())->exit();
+    (*endp1->streams().begin())->process(false, false);
     QTimer::singleShot(1500, &app, SLOT(quit()));
     app.exec();
   }
 
   // Thread must be running.
-  retval |= !fo2.isRunning();
+  retval |= !fo2.wait(0);
 
   // Exit threads.
   fo2.exit();

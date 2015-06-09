@@ -21,6 +21,7 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
 
 using namespace com::centreon::broker;
@@ -55,7 +56,7 @@ int main() {
   int retval(0);
   {
     misc::shared_ptr<io::data> data;
-    s.read(data, 0);
+    s.get_muxer().read(data, 0);
     retval |= !data.isNull();
   }
 
@@ -65,7 +66,7 @@ int main() {
   // Read retained events.
   for (unsigned int i = 0; messages[i]; ++i) {
     misc::shared_ptr<io::data> data;
-    s.read(data, 0);
+    s.get_muxer().read(data, 0);
     if (data.isNull()
         || (data->type() != io::events::data_type<io::events::internal, 1>::value))
       retval |= 1;
@@ -89,7 +90,7 @@ int main() {
   // Read event.
   {
     misc::shared_ptr<io::data> data;
-    s.read(data, 0);
+    s.get_muxer().read(data, 0);
     if (data.isNull()
         || (data->type() != io::events::data_type<io::events::internal, 1>::value))
       retval |= 1;
@@ -116,7 +117,7 @@ int main() {
   // Read no event.
   {
     misc::shared_ptr<io::data> data;
-    s.read(data, 0);
+    s.get_muxer().read(data, 0);
     retval |= !data.isNull();
   }
 

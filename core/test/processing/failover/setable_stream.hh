@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -32,15 +32,16 @@
 class             setable_stream : public com::centreon::broker::io::stream {
 public:
                   setable_stream();
-                  setable_stream(setable_stream const& ss);
+                  setable_stream(setable_stream const& other);
                   ~setable_stream();
-  setable_stream& operator=(setable_stream const& ss);
+  setable_stream& operator=(setable_stream const& other);
   unsigned int    get_count() const;
   QList<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> > const&
                   get_stored_events() const;
   void            process(bool in = false, bool out = true);
-  void            read(
-                    com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>& d);
+  bool            read(
+                    com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>& d,
+                    time_t deadline);
   void            set_count(unsigned int cnt);
   void            set_replay_events(bool replay);
   void            set_sleep_time(unsigned int ms);
@@ -49,7 +50,7 @@ public:
                     com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> const& d);
 
 private:
-  void            _internal_copy(setable_stream const& ss);
+  void            _internal_copy(setable_stream const& other);
 
   unsigned int    _count;
   bool            _process_in;

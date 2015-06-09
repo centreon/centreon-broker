@@ -22,7 +22,7 @@
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/processing/failover.hh"
 #include "test/processing/feeder/common.hh"
-#include "test/processing/feeder/setable_endpoint.hh"
+#include "test/processing/failover/setable_endpoint.hh"
 
 using namespace com::centreon::broker;
 
@@ -49,8 +49,16 @@ int main(int argc, char* argv[]) {
   misc::shared_ptr<setable_endpoint> se1(new setable_endpoint);
   se1->set_succeed(true);
 
+  // Subscriber.
+  misc::shared_ptr<multiplexing::subscriber>
+    s(new multiplexing::subscriber("failover_exit_with_no_data", ""));
+
   // Failover object.
-  processing::failover f1(se1.staticCast<io::endpoint>(), true);
+  processing::failover f1(
+                         se1.staticCast<io::endpoint>(),
+                         s,
+                         "failover_exit_with_no_data_1",
+                         "");
 
   // Launch thread.
   f1.start();
@@ -69,7 +77,11 @@ int main(int argc, char* argv[]) {
   misc::shared_ptr<setable_endpoint> se2(new setable_endpoint);
   se2->set_succeed(true);
   misc::shared_ptr<processing::failover>
-    f2(new processing::failover(se2.staticCast<io::endpoint>(), true));
+    f2(new processing::failover(
+                         se2.staticCast<io::endpoint>(),
+                         s,
+                         "failover_exit_with_no_data_2",
+                         ""));
   se1->set_succeed(true);
   f1.set_failover(f2);
   f1.start();

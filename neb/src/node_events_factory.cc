@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -117,7 +117,6 @@ io::endpoint* node_events_factory::new_endpoint(
                          bool is_output,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
-  (void)is_acceptor;
   (void)is_input;
   (void)is_output;
 
@@ -125,6 +124,6 @@ io::endpoint* node_events_factory::new_endpoint(
   if (name.isEmpty())
     throw (exceptions::msg()
            << "node_events: couldn't get the name of the configuration file");
-
+  is_acceptor = false;
   return (new node_events_connector(cache, name.toStdString()));
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -38,10 +38,12 @@ using namespace com::centreon::broker;
 class          hooker : public multiplexing::hooker {
 public:
                hooker();
-               hooker(hooker const& h);
+               hooker(hooker const& other);
                ~hooker();
-  hooker&      operator=(hooker const& h);
-  void         read(misc::shared_ptr<io::data>& d);
+  hooker&      operator=(hooker const& other);
+  bool         read(
+                 misc::shared_ptr<io::data>& d,
+                 time_t deadline = (time_t)-1);
   void         starting();
   void         stopping();
   unsigned int write(misc::shared_ptr<io::data> const& d);

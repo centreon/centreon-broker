@@ -25,7 +25,7 @@
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
 #include "com/centreon/broker/processing/feeder.hh"
-#include "test/processing/feeder/setable_stream.hh"
+#include "test/processing/failover/setable_stream.hh"
 
 using namespace com::centreon::broker;
 
@@ -43,15 +43,17 @@ int main(int argc, char* argv[]) {
   multiplexing::engine::instance().start();
 
   // Streams.
-  misc::shared_ptr<multiplexing::subscriber>
-    in(new multiplexing::subscriber("unittest", "/tmp/"));
   misc::shared_ptr<setable_stream>
     out(new setable_stream);
   out->process(true, true);
 
   // Feeder object.
-  processing::feeder f;
-  f.prepare("unit test", in, out);
+  processing::feeder f(
+                       "processing_feeder_null_event",
+                       out,
+                       uset<unsigned int>(),
+                       uset<unsigned int>(),
+                       "");
 
   // Launch feeder.
   f.start();

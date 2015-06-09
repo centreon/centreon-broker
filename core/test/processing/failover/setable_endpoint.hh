@@ -22,7 +22,7 @@
 
 #  include <QList>
 #  include "com/centreon/broker/io/endpoint.hh"
-#  include "test/processing/feeder/setable_stream.hh"
+#  include "test/processing/failover/setable_stream.hh"
 
 /**
  *  @class setable_endpoint setable_endpoint.hh

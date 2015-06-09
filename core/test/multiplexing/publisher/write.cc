@@ -22,6 +22,7 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
 
@@ -67,7 +68,7 @@ int main() {
   char const* messages[] = { MSG1, MSG2, NULL };
   for (unsigned int i = 0; messages[i]; ++i) {
     misc::shared_ptr<io::data> data;
-    s.read(data, 0);
+    s.get_muxer().read(data, 0);
     if (data.isNull()
         || (data->type() != io::events::data_type<io::events::internal, 1>::value))
       retval |= 1;
