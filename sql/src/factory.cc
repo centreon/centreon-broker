@@ -112,9 +112,16 @@ bool factory::has_endpoint(
               && is_output);
   if (is_sql) {
     // Default transaction timeout.
-    if (cfg.params.find("read_timeout") == cfg.params.end()) {
-      cfg.params["read_timeout"] = "2";
-      cfg.read_timeout = 2;
+    QMap<QString, QString>::const_iterator
+      instance_timeout_it(cfg.params.find("instance_timeout"));
+    if (instance_timeout_it != cfg.params.end()) {
+      if (cfg.params.find("read_timeout") == cfg.params.end()) {
+        int timeout(instance_timeout_it->toInt());
+        QString timeout_str;
+        timeout_str.setNum(timeout);
+        cfg.params["read_timeout"] = timeout_str;
+        cfg.read_timeout = timeout;
+      }
     }
   }
   return (is_sql);

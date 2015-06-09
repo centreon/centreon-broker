@@ -53,6 +53,8 @@ failover::failover(
     _endpoint(endp),
     _failover_launched(false),
     _name(name),
+    _next_timeout((time_t)-1),
+    _read_timeout((time_t)-1),
     _retry_interval(30),
     _subscriber(sbscrbr),
     _temp_dir(temp_dir),
@@ -371,8 +373,16 @@ void failover::run() {
 
         // If both timed out, sleep a while.
         d.clear();
-        if (timed_out_stream && timed_out_muxer)
+        if (timed_out_stream && timed_out_muxer) {
+          time_t now(time(NULL));
+          if ((_next_timeout != (time_t)-1)
+              && (now >= _next_timeout)) {
+            _next_timeout = now + _read_timeout;
+            QMutexLocker stream_lock(&_streamm);
+            _stream->write(misc::shared_ptr<io::data>());
+          }
           ::usleep(100000);
+        }
       }
     }
     // Some real error occured.
@@ -442,6 +452,20 @@ void failover::set_buffering_timeout(time_t secs) {
  */
 void failover::set_failover(misc::shared_ptr<failover> fo) {
   _failover = fo;
+  return ;
+}
+
+/**
+ *  Set read timeout.
+ *
+ *  @param[in] read_timeout  Read timeout.
+ */
+void failover::set_read_timeout(time_t read_timeout) {
+  _read_timeout = read_timeout;
+  if (_read_timeout != (time_t)-1)
+    _next_timeout = time(NULL) + _read_timeout;
+  else
+    _next_timeout = (time_t)-1;
   return ;
 }
 

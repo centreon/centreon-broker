@@ -559,7 +559,7 @@ processing::failover* endpoint::_create_failover(
                          cfg.name,
                          _cache_directory));
   fo->set_buffering_timeout(cfg.buffering_timeout);
-  // XXX fo->set_read_timeout(cfg.read_timeout);
+  fo->set_read_timeout(cfg.read_timeout);
   fo->set_retry_interval(cfg.retry_interval);
   fo->set_failover(failovr);
   for (std::vector<misc::shared_ptr<io::endpoint> >::iterator
