@@ -18,7 +18,9 @@
 */
 
 #include <QMutexLocker>
+#include <QCoreApplication>
 #include <sstream>
+#include <unistd.h>
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
@@ -113,7 +115,15 @@ void acceptor::run() {
         << _name << "' could not accept client: " << e.what();
 
       // Sleep a while before reconnection.
-      // XXX
+      logging::info(logging::medium)
+        << "acceptor: endpoint '" << _name << "' will wait "
+        << _retry_interval
+        << "s before attempting to accept a new client";
+      time_t limit(time(NULL) + _retry_interval);
+      while (!should_exit() && (time(NULL) < limit)) {
+        QCoreApplication::processEvents();
+        ::sleep(1);
+      }
     }
 
     // Check for terminated feeders.
