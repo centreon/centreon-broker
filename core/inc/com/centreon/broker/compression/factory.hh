@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -35,24 +35,17 @@ namespace         compression {
   class           factory : public io::factory {
   public:
                   factory();
-                  factory(factory const& f);
+                  factory(factory const& other);
                   ~factory();
-    factory&      operator=(factory const& f);
+    factory&      operator=(factory const& other);
     io::factory*  clone() const;
-    bool          has_endpoint(
-                    config::endpoint& cfg,
-                    bool is_input,
-                    bool is_output) const;
-    bool          has_not_endpoint(
-                    config::endpoint& cfg,
-                    bool is_input,
-                    bool is_output) const;
+    bool          has_endpoint(config::endpoint& cfg) const;
+    bool          has_not_endpoint(config::endpoint& cfg) const;
     io::endpoint* new_endpoint(
                     config::endpoint& cfg,
-                    bool is_input,
-                    bool is_output,
                     bool& is_acceptor,
-                    misc::shared_ptr<persistent_cache> cache = misc::shared_ptr<persistent_cache>()) const;
+                    misc::shared_ptr<persistent_cache> cache
+                    = misc::shared_ptr<persistent_cache>()) const;
     misc::shared_ptr<io::stream>
                   new_stream(
                     misc::shared_ptr<io::stream> to,

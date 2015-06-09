@@ -38,10 +38,10 @@ state::state() {
 /**
  *  Copy constructor.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] other  Object to copy.
  */
-state::state(state const& s) {
-  _internal_copy(s);
+state::state(state const& other) {
+  _internal_copy(other);
 }
 
 /**
@@ -52,13 +52,13 @@ state::~state() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-state& state::operator=(state const& s) {
-  if (this != &s)
-    _internal_copy(s);
+state& state::operator=(state const& other) {
+  if (this != &other)
+    _internal_copy(other);
   return (*this);
 }
 
@@ -68,9 +68,9 @@ state& state::operator=(state const& s) {
 void state::clear() {
   _cache_directory.clear();
   _command_file.clear();
+  _endpoints.clear();
   _event_queue_max_size = 0;
   _flush_logs = true;
-  _inputs.clear();
   _instance_id = 0;
   _instance_name.clear();
   _log_thread_id = false;
@@ -81,9 +81,7 @@ void state::clear() {
   _loggers.clear();
   _module_dir.clear();
   _module_list.clear();
-  _outputs.clear();
   _params.clear();
-  _temporary = endpoint();
   return ;
 }
 
@@ -128,6 +126,24 @@ std::string const& state::command_file() const throw() {
 }
 
 /**
+ *  Get the list of endpoints.
+ *
+ *  @return Endpoint list.
+ */
+std::list<endpoint>& state::endpoints() throw () {
+  return (_endpoints);
+}
+
+/**
+ *  Get the list of endpoints.
+ *
+ *  @return Endpoint list.
+ */
+std::list<endpoint> const& state::endpoints() const throw () {
+  return (_endpoints);
+}
+
+/**
  *  Set the maximum limit size of the event queue.
  *
  *  @param[in] val Size limit.
@@ -162,24 +178,6 @@ void state::flush_logs(bool flush) throw () {
  */
 bool state::flush_logs() const throw () {
   return (_flush_logs);
-}
-
-/**
- *  Get the list of inputs.
- *
- *  @return Input list.
- */
-std::list<endpoint>& state::inputs() throw () {
-  return (_inputs);
-}
-
-/**
- *  Get the list of inputs.
- *
- *  @return Input list.
- */
-std::list<endpoint> const& state::inputs() const throw () {
-  return (_inputs);
 }
 
 /**
@@ -332,24 +330,6 @@ std::list<std::string> const& state::module_list() const throw () {
 }
 
 /**
- *  Get the list of outputs.
- *
- *  @return Output list.
- */
-std::list<endpoint>& state::outputs() throw () {
-  return (_outputs);
-}
-
-/**
- *  Get the list of outputs.
- *
- *  @return Output list.
- */
-std::list<endpoint> const& state::outputs() const throw () {
-  return (_outputs);
-}
-
-/**
  *  Get the additional parameters.
  *
  *  @return Additional parameters list.
@@ -367,24 +347,6 @@ std::map<std::string, std::string> const& state::params() const throw () {
   return (_params);
 }
 
-/**
- *  Get temporary.
- *
- *  @return Temporary object.
- */
-endpoint& state::temporary() throw () {
-  return (_temporary);
-}
-
-/**
- *  Get temporary.
- *
- *  @return Temporary object.
- */
-endpoint const& state::temporary() const throw () {
-  return (_temporary);
-}
-
 /**************************************
 *                                     *
 *           Private Methods           *
@@ -394,23 +356,21 @@ endpoint const& state::temporary() const throw () {
 /**
  *  Copy internal data members.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void state::_internal_copy(state const& s) {
-  _cache_directory = s._cache_directory;
-  _command_file = s._command_file;
-  _event_queue_max_size = s._event_queue_max_size;
-  _inputs = s._inputs;
-  _instance_id = s._instance_id;
-  _instance_name = s._instance_name;
-  _log_thread_id = s._log_thread_id;
-  _log_timestamp = s._log_timestamp;
-  _log_human_readable_timestamp = s._log_human_readable_timestamp;
-  _loggers = s._loggers;
-  _module_dir = s._module_dir;
-  _module_list = s._module_list;
-  _outputs = s._outputs;
-  _params = s._params;
-  _temporary = s._temporary;
+void state::_internal_copy(state const& other) {
+  _cache_directory = other._cache_directory;
+  _command_file = other._command_file;
+  _endpoints = other._endpoints;
+  _event_queue_max_size = other._event_queue_max_size;
+  _instance_id = other._instance_id;
+  _instance_name = other._instance_name;
+  _log_thread_id = other._log_thread_id;
+  _log_timestamp = other._log_timestamp;
+  _log_human_readable_timestamp = other._log_human_readable_timestamp;
+  _loggers = other._loggers;
+  _module_dir = other._module_dir;
+  _module_list = other._module_list;
+  _params = other._params;
   return ;
 }

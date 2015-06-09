@@ -42,9 +42,9 @@ factory::factory() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] f Object to copy.
+ *  @param[in] other  Object to copy.
  */
-factory::factory(factory const& f) : io::factory(f) {}
+factory::factory(factory const& other) : io::factory(other) {}
 
 /**
  *  Destructor.
@@ -54,12 +54,12 @@ factory::~factory() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] f Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-factory& factory::operator=(factory const& f) {
-  io::factory::operator=(f);
+factory& factory::operator=(factory const& other) {
+  io::factory::operator=(other);
   return (*this);
 }
 
@@ -75,18 +75,11 @@ io::factory* factory::clone() const {
 /**
  *  Check if a configuration supports this protocol.
  *
- *  @param[in] cfg       Object configuration.
- *  @param[in] is_input  Unused.
- *  @param[in] is_output Unused.
+ *  @param[in] cfg  Object configuration.
  *
- *  @return true if the configuration has this protocol.
+ *  @return True if the configuration has this protocol.
  */
-bool factory::has_endpoint(
-                config::endpoint& cfg,
-                bool is_input,
-                bool is_output) const {
-  (void)is_input;
-  (void)is_output;
+bool factory::has_endpoint(config::endpoint& cfg) const {
   return ((cfg.type == "ip")
           || (cfg.type == "tcp")
           || (cfg.type == "ipv4")
@@ -97,8 +90,6 @@ bool factory::has_endpoint(
  *  Create a new endpoint from a configuration.
  *
  *  @param[in]  cfg         Endpoint configuration.
- *  @param[in]  is_input    Unused.
- *  @param[in]  is_output   Unused.
  *  @param[out] is_acceptor Set to true if the endpoint is an acceptor.
  *  @param[in]  cache       Unused.
  *
@@ -106,8 +97,6 @@ bool factory::has_endpoint(
  */
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
-                         bool is_input,
-                         bool is_output,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
   (void)cache;
@@ -153,7 +142,6 @@ io::endpoint* factory::new_endpoint(
     std::auto_ptr<tcp::connector> c(new tcp::connector);
     c->connect_to(host, port);
     c->set_write_timeout(socket_timeout);
-    c->set_timeout(is_input && is_output ? 30 : -1);
     endp.reset(c.release());
   }
   return (endp.release());

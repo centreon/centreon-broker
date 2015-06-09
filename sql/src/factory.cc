@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -64,9 +64,9 @@ factory::factory() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] f Object to copy.
+ *  @param[in] other  Object to copy.
  */
-factory::factory(factory const& f) : io::factory(f) {}
+factory::factory(factory const& other) : io::factory(other) {}
 
 /**
  *  Destructor.
@@ -76,12 +76,12 @@ factory::~factory() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] f Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-factory& factory::operator=(factory const& f) {
-  io::factory::operator=(f);
+factory& factory::operator=(factory const& other) {
+  io::factory::operator=(other);
   return (*this);
 }
 
@@ -97,19 +97,12 @@ io::factory* factory::clone() const {
 /**
  *  Check if an endpoint match a configuration.
  *
- *  @param[in] cfg       Endpoint configuration.
- *  @param[in] is_input  true if the endpoint should be an input.
- *  @param[in] is_output true if the endpoint should be an output.
+ *  @param[in] cfg  Endpoint configuration.
  *
- *  @return true if the endpoint match the configuration.
+ *  @return True if the endpoint match the configuration.
  */
-bool factory::has_endpoint(
-                config::endpoint& cfg,
-                bool is_input,
-                bool is_output) const {
-  (void)is_input;
-  bool is_sql(!cfg.type.compare("sql", Qt::CaseInsensitive)
-              && is_output);
+bool factory::has_endpoint(config::endpoint& cfg) const {
+  bool is_sql(!cfg.type.compare("sql", Qt::CaseInsensitive));
   if (is_sql) {
     // Default transaction timeout.
     QMap<QString, QString>::const_iterator
@@ -131,8 +124,6 @@ bool factory::has_endpoint(
  *  Create an endpoint.
  *
  *  @param[in]  cfg         Endpoint configuration.
- *  @param[in]  is_input    true if the endpoint should be an input.
- *  @param[in]  is_output   true if the endpoint should be an output.
  *  @param[out] is_acceptor Will be set to false.
  *  @param[in]  cache       Unused.
  *
@@ -140,12 +131,8 @@ bool factory::has_endpoint(
  */
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
-                         bool is_input,
-                         bool is_output,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
-  (void)is_input;
-  (void)is_output;
   (void)cache;
 
   // Find DB type.

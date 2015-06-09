@@ -37,7 +37,6 @@
 #include "com/centreon/broker/persistent_cache.hh"
 #include "com/centreon/broker/processing/acceptor.hh"
 #include "com/centreon/broker/processing/failover.hh"
-#include "com/centreon/broker/processing/input.hh"
 #include "com/centreon/broker/processing/thread.hh"
 
 using namespace com::centreon::broker;
@@ -110,101 +109,77 @@ endpoint::~endpoint() {
 /**
  *  Apply the endpoint configuration.
  *
- *  @param[in] inputs           Inputs configuration.
- *  @param[in] outputs          Outputs configuration.
+ *  @param[in] endpoints        Endpoints configuration objects.
  *  @param[in] cache_directory  Endpoint cache directory.
  */
 void endpoint::apply(
-                 std::list<config::endpoint> const& inputs,
-                 std::list<config::endpoint> const& outputs,
+                 std::list<config::endpoint> const& endpoints,
                  std::string const& cache_directory) {
   // Log messages.
   logging::config(logging::medium)
     << "endpoint applier: loading configuration";
-  logging::debug(logging::high) << "endpoint applier: " << inputs.size()
-    << " inputs and " << outputs.size() << " outputs to apply";
+  logging::debug(logging::high) << "endpoint applier: "
+    << endpoints.size() << " endpoints to apply";
 
   // Copy endpoint configurations and apply eventual modifications.
   _cache_directory = cache_directory;
-  std::list<config::endpoint> tmp_inputs(inputs);
-  std::list<config::endpoint> tmp_outputs(outputs);
+  std::list<config::endpoint> tmp_endpoints(endpoints);
   for (QMap<QString, io::protocols::protocol>::const_iterator
          it1(io::protocols::instance().begin()),
          end1(io::protocols::instance().end());
        it1 != end1;
        ++it1) {
     for (std::list<config::endpoint>::iterator
-           it2(tmp_inputs.begin()),
-           end2(tmp_inputs.end());
+           it2(tmp_endpoints.begin()),
+           end2(tmp_endpoints.end());
          it2 != end2;
          ++it2)
-      it1->endpntfactry->has_endpoint(*it2, true, false);
-    for (std::list<config::endpoint>::iterator
-           it3(tmp_outputs.begin()),
-           end3(tmp_outputs.end());
-         it3 != end3;
-         ++it3)
-      it1->endpntfactry->has_endpoint(*it3, false, true);
+      it1->endpntfactry->has_endpoint(*it2);
   }
 
   // Remove old inputs and generate inputs to create.
-  std::list<config::endpoint> in_to_create;
+  std::list<config::endpoint> endp_to_create;
   {
-    QMutexLocker lock(&_inputsm);
+    QMutexLocker lock(&_endpointsm);
     _diff_endpoints(
-      _inputs,
-      tmp_inputs,
-      in_to_create);
-  }
-
-  // Remove old outputs and generate outputs to create.
-  std::list<config::endpoint> out_to_create;
-  {
-    QMutexLocker lock(&_outputsm);
-    _diff_endpoints(
-      _outputs,
-      tmp_outputs,
-      out_to_create);
+      _endpoints,
+      tmp_endpoints,
+      endp_to_create);
   }
 
   // Update existing endpoints.
-  for (iterator it(_outputs.begin()), end(_outputs.end());
-       it != end;
-       ++it)
-    it->second->update();
-  for (iterator it(_inputs.begin()), end(_inputs.end());
+  for (iterator it(_endpoints.begin()), end(_endpoints.end());
        it != end;
        ++it)
     it->second->update();
 
   // Debug message.
   logging::debug(logging::high) << "endpoint applier: "
-    << in_to_create.size() << " inputs to create, "
-    << out_to_create.size() << " outputs to create";
+    << endp_to_create.size() << " endpoints to create";
 
-  // Create new outputs.
-  for (std::list<config::endpoint>::iterator it(out_to_create.begin()),
-         end(out_to_create.end());
+  // Create new endpoints.
+  for (std::list<config::endpoint>::iterator
+         it(endp_to_create.begin()),
+         end(endp_to_create.end());
        it != end;
        ++it) {
     // Check that output is not a failover.
     if (it->name.isEmpty()
-        || (std::find_if(out_to_create.begin(),
-              out_to_create.end(),
+        || (std::find_if(endp_to_create.begin(),
+              endp_to_create.end(),
               name_match_failover(it->name))
-            == out_to_create.end())) {
+            == endp_to_create.end())) {
       // Create subscriber and endpoint.
       misc::shared_ptr<multiplexing::subscriber>
         s(_create_subscriber(*it));
       bool is_acceptor;
       misc::shared_ptr<io::endpoint>
-        e(_create_endpoint(*it, true, true, is_acceptor));
+        e(_create_endpoint(*it, is_acceptor));
       std::auto_ptr<processing::thread> endp;
       if (is_acceptor) {
         std::auto_ptr<processing::acceptor>
           acceptr(new processing::acceptor(
                                     e,
-                                    processing::acceptor::out,
                                     it->name.toStdString(),
                                     cache_directory));
         acceptr->set_read_filters(_filters(it->read_filters));
@@ -212,55 +187,18 @@ void endpoint::apply(
         endp.reset(acceptr.release());
       }
       else
-        endp.reset(_create_failover(*it, s, e, out_to_create));
+        endp.reset(_create_failover(*it, s, e, endp_to_create));
       {
-        QMutexLocker lock(&_outputsm);
-        _outputs[*it] = endp.get();
+        QMutexLocker lock(&_endpointsm);
+        _endpoints[*it] = endp.get();
       }
 
       // Run thread.
-      logging::debug(logging::medium) << "endpoint applier: output " \
+      logging::debug(logging::medium) << "endpoint applier: endpoint "
            "thread " << endp.get() << " of '" << it->name
         << "' is registered and ready to run";
       endp.release()->start();
     }
-  }
-
-  // Create new inputs.
-  for (std::list<config::endpoint>::iterator it = in_to_create.begin(),
-         end = in_to_create.end();
-       it != end;
-       ++it) {
-    bool is_acceptor(false);
-    misc::shared_ptr<io::endpoint> endp(_create_endpoint(
-                                          *it,
-                                          true,
-                                          false,
-                                          is_acceptor));
-    std::auto_ptr<processing::thread> th;
-    if (is_acceptor) {
-      std::auto_ptr<processing::acceptor>
-        acceptr(new processing::acceptor(
-                                  endp,
-                                  processing::acceptor::in,
-                                  it->name.toStdString(),
-                                  cache_directory));
-      acceptr->set_read_filters(_filters(it->read_filters));
-      acceptr->set_write_filters(_filters(it->write_filters));
-      th.reset(acceptr.release());
-    }
-    else
-      th.reset(new processing::input(endp, it->name.toStdString()));
-    {
-      QMutexLocker lock(&_inputsm);
-      _inputs[*it] = th.get();
-    }
-
-    // Run thread.
-    logging::debug(logging::medium)
-      << "endpoint applier: input thread " << th.get() << " of '"
-      << it->name << "' is registered and ready to run";
-    th.release()->start();
   }
 
   return ;
@@ -272,125 +210,77 @@ void endpoint::apply(
 void endpoint::discard() {
   logging::debug(logging::high) << "endpoint applier: destruction";
 
-  // Exit input threads.
-  {
-    logging::debug(logging::medium) << "endpoint applier: " \
-      "requesting input threads termination";
-    QMutexLocker lock(&_inputsm);
-
-    // Send termination requests.
-    for (iterator it = _inputs.begin(), end = _inputs.end();
-         it != end;
-         ++it)
-      it->second->exit();
-
-    // Wait for threads.
-    while (!_inputs.empty()) {
-      // Print remaining thread count.
-      logging::debug(logging::low) << "endpoint applier: "
-        << _inputs.size() << " input threads remaining";
-      lock.unlock();
-      time_t now(time(NULL));
-      do {
-        QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-      } while (time(NULL) <= now);
-
-      // Expect threads to terminate.
-      lock.relock();
-      // With a map valid iterator are not invalidated by erase().
-      for (iterator it(_inputs.begin()), end(_inputs.end()); it != end;)
-        if (it->second->wait(0)) {
-          delete it->second;
-          iterator to_delete(it);
-          ++it;
-          _inputs.erase(to_delete);
-        }
-        else
-          ++it;
-    }
-    logging::debug(logging::medium) << "endpoint applier: all " \
-      "input threads are terminated";
-    _inputs.clear();
-  }
-
   // Stop multiplexing.
   multiplexing::engine::instance().stop();
 
-  // Exit output threads.
+  // Exit threads.
   {
-    logging::debug(logging::medium) << "endpoint applier: " \
-      "requesting output threads termination";
-    QMutexLocker lock(&_outputsm);
+    logging::debug(logging::medium)
+      << "endpoint applier: requesting threads termination";
+    QMutexLocker lock(&_endpointsm);
 
     // Send termination requests.
-    for (iterator it = _outputs.begin(), end = _outputs.end();
+    for (iterator it(_endpoints.begin()), end(_endpoints.end());
          it != end;
          ++it)
       it->second->exit();
 
     // Wait for threads.
-    while (!_outputs.empty()) {
-      // Print remaining thread list.
-      misc::stringifier thread_list;
-      thread_list << _outputs.begin()->second;
-      for (iterator it = ++_outputs.begin(), end = _outputs.end();
-           it != end;
-           ++it)
-        thread_list << ", " << it->second;
+    while (!_endpoints.empty()) {
+      // Print remaining thread count.
       logging::debug(logging::low) << "endpoint applier: "
-        << _outputs.size() << " output threads remaining: "
-        << thread_list.data();
+        << _endpoints.size() << " endpoint threads remaining";
       lock.unlock();
       time_t now(time(NULL));
       do {
         QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-      } while (time(NULL) <= now);
+      } while (time(NULL) <= now); // Maximum one second delay.
 
       // Expect threads to terminate.
       lock.relock();
       // With a map valid iterator are not invalidated by erase().
-      for (iterator it(_outputs.begin()), end(_outputs.end());
+      for (iterator it(_endpoints.begin()), end(_endpoints.end());
            it != end;)
         if (it->second->wait(0)) {
           delete it->second;
           iterator to_delete(it);
           ++it;
-          _outputs.erase(to_delete);
+          _endpoints.erase(to_delete);
         }
         else
           ++it;
     }
-    logging::debug(logging::medium) << "endpoint applier: all output " \
-      "threads are terminated";
-    _outputs.clear();
+    logging::debug(logging::medium)
+      << "endpoint applier: all threads are terminated";
+    _endpoints.clear();
   }
 }
 
 /**
- *  Get iterator to the beginning of input endpoints.
+ *  Get iterator to the beginning of endpoints.
  *
- *  @return Iterator to the first input endpoint.
+ *  @return Iterator to the first endpoint.
  */
-endpoint::iterator endpoint::input_begin() {
-  return (_inputs.begin());
+endpoint::iterator endpoint::endpoints_begin() {
+  return (_endpoints.begin());
 }
 
 /**
- *  Get last iterator of input endpoints.
+ *  Get last iterator of endpoints.
  *
- *  @return Last iterator of input endpoints.
+ *  @return Last iterator of endpoints.
  */
-endpoint::iterator endpoint::input_end() {
-  return (_inputs.end());
+endpoint::iterator endpoint::endpoints_end() {
+  return (_endpoints.end());
 }
 
 /**
- *  Get input endpoints mutex.
+ *  Get endpoints mutex.
  *
- *  @return Input endpoints mutex.
+ *  @return Endpoints mutex.
  */
-QMutex& endpoint::input_mutex() {
-  return (_inputsm);
+QMutex& endpoint::endpoints_mutex() {
+  return (_endpointsm);
 }
 
 /**
@@ -412,33 +302,6 @@ void endpoint::load() {
 }
 
 /**
- *  Get iterator to the beginning of output endpoints.
- *
- *  @return Iterator to the first output endpoint.
- */
-endpoint::iterator endpoint::output_begin() {
-  return (_outputs.begin());
-}
-
-/**
- *  Get last iterator of output endpoints.
- *
- *  @return Last iterator of output endpoints.
- */
-endpoint::iterator endpoint::output_end() {
-  return (_outputs.end());
-}
-
-/**
- *  Get output endpoints mutex.
- *
- *  @return Output endpoints mutex.
- */
-QMutex& endpoint::output_mutex() {
-  return (_outputsm);
-}
-
-/**
  *  Unload singleton.
  */
 void endpoint::unload() {
@@ -456,7 +319,7 @@ void endpoint::unload() {
 /**
  *  Default constructor.
  */
-endpoint::endpoint() : _outputsm(QMutex::Recursive) {}
+endpoint::endpoint() : _endpointsm(QMutex::Recursive) {}
 
 /**
  *  Create a muxer for a chain of failovers / endpoints. This method
@@ -509,7 +372,7 @@ processing::failover* endpoint::_create_failover(
                << cfg.name << "'");
     bool is_acceptor;
     misc::shared_ptr<io::endpoint>
-      e(_create_endpoint(*it, true, true, is_acceptor));
+      e(_create_endpoint(*it, is_acceptor));
     if (is_acceptor)
       throw (exceptions::msg()
              << "endpoint applier: cannot allow acceptor '"
@@ -539,8 +402,6 @@ processing::failover* endpoint::_create_failover(
     secondary_failovrs.push_back(misc::shared_ptr<io::endpoint>(
                          _create_endpoint(
                            *it,
-                           true,
-                           true,
                            is_acceptor)));
     if (is_acceptor) {
       logging::error(logging::high)
@@ -575,16 +436,12 @@ processing::failover* endpoint::_create_failover(
  *  Create a new endpoint object.
  *
  *  @param[in]  cfg          The config.
- *  @param[in]  is_input     true if the endpoint will act as input.
- *  @param[in]  is_output    true if the endpoint will act as output.
  *  @param[out] is_acceptor  Set to true if endpoint is an acceptor.
  *
  *  @return A new endpoint.
  */
 misc::shared_ptr<io::endpoint> endpoint::_create_endpoint(
                                            config::endpoint& cfg,
-                                           bool is_input,
-                                           bool is_output,
                                            bool& is_acceptor) {
   // Create endpoint object.
   misc::shared_ptr<io::endpoint> endp;
@@ -595,7 +452,7 @@ misc::shared_ptr<io::endpoint> endpoint::_create_endpoint(
        it != end;
        ++it) {
     if ((it.value().osi_from == 1)
-        && it.value().endpntfactry->has_endpoint(cfg, !is_output, is_output)) {
+        && it.value().endpntfactry->has_endpoint(cfg)) {
       misc::shared_ptr<persistent_cache> cache;
       if (cfg.cache_enabled) {
         std::string cache_path(_cache_directory);
@@ -607,8 +464,6 @@ misc::shared_ptr<io::endpoint> endpoint::_create_endpoint(
       endp = misc::shared_ptr<io::endpoint>(
                      it.value().endpntfactry->new_endpoint(
                                                 cfg,
-                                                is_input,
-                                                is_output,
                                                 is_acceptor,
                                                 cache));
       level = it.value().osi_to + 1;
@@ -626,12 +481,10 @@ misc::shared_ptr<io::endpoint> endpoint::_create_endpoint(
     QMap<QString, io::protocols::protocol>::const_iterator end(io::protocols::instance().end());
     while (it != end) {
       if ((it.value().osi_from == level)
-          && (it.value().endpntfactry->has_endpoint(cfg, !is_output, is_output))) {
+          && (it.value().endpntfactry->has_endpoint(cfg))) {
         misc::shared_ptr<io::endpoint>
           current(it.value().endpntfactry->new_endpoint(
                                              cfg,
-                                             is_input,
-                                             is_output,
                                              is_acceptor));
         current->from(endp);
         endp = current;

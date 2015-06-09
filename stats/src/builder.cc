@@ -113,14 +113,14 @@ void builder::build() {
   config::applier::endpoint&
     endp_applier(config::applier::endpoint::instance());
 
-  // Print input endpoints.
+  // Print endpoints.
   {
-    bool locked(endp_applier.input_mutex().tryLock(100));
+    bool locked(endp_applier.endpoints_mutex().tryLock(100));
     try {
       if (locked)
         for (config::applier::endpoint::iterator
-               it = endp_applier.input_begin(),
-               end = endp_applier.input_end();
+               it(endp_applier.endpoints_begin()),
+               end(endp_applier.endpoints_end());
              it != end;
              ++it) {
           io::properties p;
@@ -134,39 +134,11 @@ void builder::build() {
     }
     catch (...) {
       if (locked)
-        endp_applier.input_mutex().unlock();
+        endp_applier.endpoints_mutex().unlock();
       throw ;
     }
     if (locked)
-      endp_applier.input_mutex().unlock();
-  }
-
-  // Print output endpoints.
-  {
-    bool locked(endp_applier.output_mutex().tryLock(100));
-    try {
-      if (locked)
-        for (config::applier::endpoint::iterator
-               it(endp_applier.output_begin()),
-               end(endp_applier.output_end());
-             it != end;
-             ++it) {
-          io::properties p;
-          _generate_stats_for_endpoint(it->second, _data, p, true);
-          _root.children().push_back(p);
-          _data.append("\n");
-        }
-      else
-        _data.append(
-          "outputs=could not fetch list, configuration update in progress ?\n");
-    }
-    catch (...) {
-      if (locked)
-        endp_applier.output_mutex().unlock();
-      throw ;
-    }
-    if (locked)
-      endp_applier.output_mutex().unlock();
+      endp_applier.endpoints_mutex().unlock();
   }
 
   return ;

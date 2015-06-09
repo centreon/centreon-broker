@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -39,9 +39,9 @@ namespace       config {
   class         parser {
   public:
                 parser();
-                parser(parser const& p);
+                parser(parser const& other);
                 ~parser();
-    parser&     operator=(parser const& p);
+    parser&     operator=(parser const& other);
     void        parse(QString const& file, state& s);
     static bool parse_boolean(QString const& value);
 

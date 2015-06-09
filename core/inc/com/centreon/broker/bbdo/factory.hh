@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -35,27 +35,20 @@ namespace         bbdo {
   class           factory : public io::factory {
   public:
                   factory();
-                  factory(factory const& right);
+                  factory(factory const& other);
                   ~factory();
-    factory&      operator=(factory const& right);
+    factory&      operator=(factory const& other);
     io::factory*  clone() const;
     bool          has_endpoint(
-                    config::endpoint& cfg,
-                    bool is_input,
-                    bool is_output) const;
+                    config::endpoint& cfg) const;
     io::endpoint* new_endpoint(
                     config::endpoint& cfg,
-                    bool is_input,
-                    bool is_output,
                     bool& is_acceptor,
                     misc::shared_ptr<persistent_cache> cache
-                      = misc::shared_ptr<persistent_cache>()) const;
+                    = misc::shared_ptr<persistent_cache>()) const;
 
   private:
-    QString       _extensions(
-                    config::endpoint& cfg,
-                    bool is_input,
-                    bool is_output) const;
+    QString       _extensions(config::endpoint& cfg) const;
   };
 }
 

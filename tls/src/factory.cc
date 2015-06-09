@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -40,9 +40,9 @@ factory::factory() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-factory::factory(factory const& right) : io::factory(right) {}
+factory::factory(factory const& other) : io::factory(other) {}
 
 /**
  *  Destructor.
@@ -52,12 +52,12 @@ factory::~factory() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-factory& factory::operator=(factory const& right) {
-  io::factory::operator=(right);
+factory& factory::operator=(factory const& other) {
+  io::factory::operator=(other);
   return (*this);
 }
 
@@ -73,18 +73,11 @@ io::factory* factory::clone() const {
 /**
  *  Check if endpoint configuration match the TLS layer.
  *
- *  @param[in] cfg       Configuration object.
- *  @param[in] is_input  Unused.
- *  @param[in] is_output Unused.
+ *  @param[in] cfg  Configuration object.
  *
- *  @return true if the configuration matches the TLS layer.
+ *  @return True if the configuration matches the TLS layer.
  */
-bool factory::has_endpoint(
-                config::endpoint& cfg,
-                bool is_input,
-                bool is_output) const {
-  (void)is_input;
-  (void)is_output;
+bool factory::has_endpoint(config::endpoint& cfg) const {
   QMap<QString, QString>::const_iterator
     it(cfg.params.find("tls"));
   return ((cfg.params.end() != it)
@@ -95,21 +88,16 @@ bool factory::has_endpoint(
 /**
  *  Check if endpoint configuration do not match the TLS layer.
  *
- *  @param[in] cfg       Configuration object.
- *  @param[in] is_input  Unused.
- *  @param[in] is_output Unused.
+ *  @param[in] cfg  Configuration object.
  *
- *  @return true if the configuration does not match the TLS layer.
+ *  @return True if the configuration does not match the TLS layer.
  */
-bool factory::has_not_endpoint(
-                config::endpoint& cfg,
-                bool is_input,
-                bool is_output) const {
+bool factory::has_not_endpoint(config::endpoint& cfg) const {
   QMap<QString, QString>::const_iterator
     it(cfg.params.find("tls"));
   return (((it != cfg.params.end())
            && it->compare("auto", Qt::CaseInsensitive))
-          ? !has_endpoint(cfg, is_input, is_output)
+          ? !has_endpoint(cfg)
           : false);
 }
 
@@ -117,10 +105,6 @@ bool factory::has_not_endpoint(
  *  Create an endpoint matching the configuration object.
  *
  *  @param[in] cfg         Configuration object.
- *  @param[in] is_input    true if the endpoint should be an input
- *                         object.
- *  @param[in] is_output   true if the endpoint should be an output
- *                         object.
  *  @param[in] is_acceptor Is true if endpoint is an acceptor, false
  *                         otherwise.
  *  @param[in] cache       Unused.
@@ -129,12 +113,8 @@ bool factory::has_not_endpoint(
  */
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
-                         bool is_input,
-                         bool is_output,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
-  (void)is_input;
-  (void)is_output;
   (void)cache;
 
   // Find TLS parameters (optional).

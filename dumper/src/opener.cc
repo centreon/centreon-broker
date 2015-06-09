@@ -34,25 +34,19 @@ using namespace com::centreon::broker::dumper;
 /**
  *  Constructor.
  */
-opener::opener(bool is_in, bool is_out)
-  : endpoint(false),
-    _is_in(is_in),
-    _is_out(is_out),
-    _type(opener::dump) {}
+opener::opener() : endpoint(false), _type(opener::dump) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] o Object to copy.
+ *  @param[in] other  Object to copy.
  */
-opener::opener(opener const& o)
-  : io::endpoint(o),
-    _path(o._path),
-    _is_in(o._is_in),
-    _is_out(o._is_out),
-    _tagname(o._tagname),
-    _type(o._type),
-    _cache(o._cache) {}
+opener::opener(opener const& other)
+  : io::endpoint(other),
+    _path(other._path),
+    _tagname(other._tagname),
+    _type(other._type),
+    _cache(other._cache) {}
 
 /**
  *  Destructor.
@@ -62,18 +56,18 @@ opener::~opener() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] o Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-opener& opener::operator=(opener const& o) {
-  io::endpoint::operator=(o);
-  _path = o._path;
-  _is_in = o._is_in;
-  _is_out = o._is_out;
-  _tagname = o._tagname;
-  _type = o._type;
-  _cache = o._cache;
+opener& opener::operator=(opener const& other) {
+  if (this != &other) {
+    io::endpoint::operator=(other);
+    _path = other._path;
+    _tagname = other._tagname;
+    _type = other._type;
+    _cache = other._cache;
+  }
   return (*this);
 }
 

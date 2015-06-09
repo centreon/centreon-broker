@@ -46,14 +46,8 @@ namespace       processing {
    */
   class         acceptor : public thread {
   public:
-    enum        in_out {
-      in = 0,
-      out
-    };
-
                 acceptor(
                   misc::shared_ptr<io::endpoint> endp,
-                  in_out in_or_out,
                   std::string const& name,
                   std::string const& temp_dir);
                 ~acceptor();
@@ -73,7 +67,6 @@ namespace       processing {
                 _endp;
     std::list<misc::shared_ptr<processing::feeder> >
                 _feeders;
-    in_out      _in_out;
     std::string _name;
     uset<unsigned int>
                 _read_filters;

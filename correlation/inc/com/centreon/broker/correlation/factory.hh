@@ -39,17 +39,12 @@ namespace         correlation {
                   ~factory();
     factory&      operator=(factory const& other);
     io::factory*  clone() const;
-    bool          has_endpoint(
-                    config::endpoint& cfg,
-                    bool is_input,
-                    bool is_output) const;
+    bool          has_endpoint(config::endpoint& cfg) const;
     io::endpoint* new_endpoint(
                     config::endpoint& cfg,
-                    bool is_input,
-                    bool is_output,
                     bool& is_acceptor,
                     misc::shared_ptr<persistent_cache> cache
-                      = misc::shared_ptr<persistent_cache>()) const;
+                    = misc::shared_ptr<persistent_cache>()) const;
   };
 }
 

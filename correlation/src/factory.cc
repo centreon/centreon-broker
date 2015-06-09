@@ -67,21 +67,14 @@ io::factory* factory::clone() const {
  *  Check if an endpoint configuration matches streams build by this
  *  factory.
  *
- *  @param[in,out] cfg        Endpoint configuration.
- *  @param[in]     is_input   True if endpoint is an input.
- *  @param[in]     is_output  True if endpoint is an output.
+ *  @param[in,out] cfg  Endpoint configuration.
  *
  *  @return True if configuration matches streams build by this factory.
  */
-bool factory::has_endpoint(
-                config::endpoint& cfg,
-		bool is_input,
-		bool is_output) const {
-  (void)is_input;
+bool factory::has_endpoint(config::endpoint& cfg) const {
   bool is_correlation(!cfg.type.compare(
                                   "correlation",
-                                  Qt::CaseInsensitive)
-                      && is_output);
+                                  Qt::CaseInsensitive));
   return (is_correlation);
 }
 
@@ -89,8 +82,6 @@ bool factory::has_endpoint(
  *  Create a new endpoint matching configuration.
  *
  *  @param[in,out] cfg          Endpoint configuration.
- *  @param[in]     is_input     True if endpoint is an input.
- *  @param[in]     is_output    True if endpoint is an output.
  *  @param[out]    is_acceptor  Set to false.
  *  @param[in,out] cache        Persistent cache for this endpoint.
  *
@@ -98,13 +89,8 @@ bool factory::has_endpoint(
  */
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
-			 bool is_input,
-			 bool is_output,
 			 bool& is_acceptor,
 			 misc::shared_ptr<persistent_cache> cache) const {
-  (void)is_input;
-  (void)is_output;
-
   // Find correlation file.
   QString correlation_file;
   {

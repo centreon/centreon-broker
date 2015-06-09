@@ -52,10 +52,11 @@ node_events_factory::node_events_factory() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] f Object to copy.
+ *  @param[in] other  Object to copy.
  */
-node_events_factory::node_events_factory(node_events_factory const& f)
-  : io::factory(f) {}
+node_events_factory::node_events_factory(
+                       node_events_factory const& other)
+  : io::factory(other) {}
 
 /**
  *  Destructor.
@@ -65,13 +66,13 @@ node_events_factory::~node_events_factory() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] f Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
 node_events_factory& node_events_factory::operator=(
-  node_events_factory const& f) {
-  io::factory::operator=(f);
+                       node_events_factory const& other) {
+  io::factory::operator=(other);
   return (*this);
 }
 
@@ -87,25 +88,18 @@ io::factory* node_events_factory::clone() const {
 /**
  *  Check if a configuration match the node event layer layer.
  *
- *  @param[in] cfg       Endpoint configuration.
- *  @param[in] is_input  true if the node event layer should act as input.
- *  @param[in] is_output true if the node event layer should act as output.
+ *  @param[in] cfg  Endpoint configuration.
  *
- *  @return true if configuration matches the node event layer.
+ *  @return True if configuration matches the node event layer.
  */
-bool node_events_factory::has_endpoint(
-                config::endpoint& cfg,
-                bool is_input,
-                bool is_output) const {
-  return (cfg.type == "node_events" && !is_input && is_output);
+bool node_events_factory::has_endpoint(config::endpoint& cfg) const {
+  return (cfg.type == "node_events");
 }
 
 /**
  *  Generate an endpoint matching a configuration.
  *
  *  @param[in]  cfg         Endpoint configuration.
- *  @param[in]  is_input    true if the node event layer should act as input.
- *  @param[in]  is_output   true if the node event layer should act as output.
  *  @param[out] is_acceptor Will be set to false.
  *  @param[in]  cache       Persistent cache.
  *
@@ -113,13 +107,8 @@ bool node_events_factory::has_endpoint(
  */
 io::endpoint* node_events_factory::new_endpoint(
                          config::endpoint& cfg,
-                         bool is_input,
-                         bool is_output,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
-  (void)is_input;
-  (void)is_output;
-
   QString name = get(QString(), cfg, "cfg_file");
   if (name.isEmpty())
     throw (exceptions::msg()

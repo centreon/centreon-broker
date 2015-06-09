@@ -35,23 +35,17 @@ using namespace com::centreon::broker::file;
 /**
  *  Constructor.
  */
-opener::opener(bool is_in, bool is_out)
-  : endpoint(false),
-    _is_in(is_in),
-    _is_out(is_out),
-    _max_size(0) {}
+opener::opener() : io::endpoint(false), _max_size(0) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] o Object to copy.
+ *  @param[in] other  Object to copy.
  */
-opener::opener(opener const& o)
-  : io::endpoint(o),
-    _filename(o._filename),
-    _is_in(o._is_in),
-    _is_out(o._is_out),
-    _max_size(o._max_size) {}
+opener::opener(opener const& other)
+  : io::endpoint(other),
+    _filename(other._filename),
+    _max_size(other._max_size) {}
 
 /**
  *  Destructor.
@@ -61,16 +55,16 @@ opener::~opener() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] o Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-opener& opener::operator=(opener const& o) {
-  io::endpoint::operator=(o);
-  _filename = o._filename;
-  _is_in = o._is_in;
-  _is_out = o._is_out;
-  _max_size = o._max_size;
+opener& opener::operator=(opener const& other) {
+  if (this != &other) {
+    io::endpoint::operator=(other);
+    _filename = other._filename;
+    _max_size = other._max_size;
+  }
   return (*this);
 }
 

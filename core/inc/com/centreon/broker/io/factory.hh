@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -38,27 +38,21 @@ namespace             io {
   class               factory {
   public:
                       factory();
-                      factory(factory const& f);
+                      factory(factory const& other);
     virtual           ~factory();
-    factory&          operator=(factory const& f);
+    factory&          operator=(factory const& other);
     virtual factory*  clone() const = 0;
     virtual bool      has_endpoint(
-                        com::centreon::broker::config::endpoint& cfg,
-                        bool is_input,
-                        bool is_output) const = 0;
+                        com::centreon::broker::config::endpoint& cfg) const = 0;
     virtual bool      has_not_endpoint(
-                        com::centreon::broker::config::endpoint& cfg,
-                        bool is_input,
-                        bool is_output) const;
+                        com::centreon::broker::config::endpoint& cfg) const;
     virtual endpoint* new_endpoint(
                         com::centreon::broker::config::endpoint& cfg,
-                        bool is_input,
-                        bool is_output,
                         bool& is_acceptor,
                         misc::shared_ptr<persistent_cache> cache = misc::shared_ptr<persistent_cache>()) const = 0;
     virtual misc::shared_ptr<stream>
                       new_stream(
-                        misc::shared_ptr<stream> to,
+                        misc::shared_ptr<stream> substream,
                         bool is_acceptor,
                         QString const& proto_name);
   };

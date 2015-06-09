@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -37,10 +37,10 @@ factory::factory() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] f Object to copy.
+ *  @param[in] other  Object to copy.
  */
-factory::factory(factory const& f) {
-  (void)f;
+factory::factory(factory const& other) {
+  (void)other;
 }
 
 /**
@@ -51,12 +51,12 @@ factory::~factory() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] f Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-factory& factory::operator=(factory const& f) {
-  (void)f;
+factory& factory::operator=(factory const& other) {
+  (void)other;
   return (*this);
 }
 
@@ -64,16 +64,11 @@ factory& factory::operator=(factory const& f) {
  *  Check if configuration do not have endpoint.
  *
  *  @param[in] cfg       Configuration object.
- *  @param[in] is_input  Input endpoint ?
- *  @param[in] is_output Output endpoint ?
  *
- *  @return true if configuration do not have endpoint.
+ *  @return True if configuration do not have endpoint.
  */
-bool factory::has_not_endpoint(
-                config::endpoint& cfg,
-                bool is_input,
-                bool is_output) const {
-  return (!has_endpoint(cfg, is_input, is_output));
+bool factory::has_not_endpoint(config::endpoint& cfg) const {
+  return (!has_endpoint(cfg));
 }
 
 /**

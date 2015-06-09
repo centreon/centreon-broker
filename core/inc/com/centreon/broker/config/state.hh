@@ -41,21 +41,21 @@ namespace                         config {
   class                           state {
   public:
                                   state();
-                                  state(state const& s);
+                                  state(state const& other);
                                   ~state();
-    state&                        operator=(state const& s);
+    state&                        operator=(state const& other);
     void                          cache_directory(std::string const& dir);
     std::string const&            cache_directory() const throw ();
     void                          command_file(std::string const& file);
     std::string const&            command_file() const throw();
     void                          clear();
+    std::list<endpoint>&          endpoints() throw ();
+    std::list<endpoint> const&    endpoints() const throw ();
     void                          event_queue_max_size(
                                     unsigned int val) throw ();
     unsigned int                  event_queue_max_size() const throw ();
     void                          flush_logs(bool flush) throw ();
     bool                          flush_logs() const throw ();
-    std::list<endpoint>&          inputs() throw ();
-    std::list<endpoint> const&    inputs() const throw ();
     void                          instance_id(unsigned int id) throw ();
     unsigned int                  instance_id() const throw ();
     void                          instance_name(
@@ -75,23 +75,19 @@ namespace                         config {
                                     std::string const& dir);
     std::list<std::string>&       module_list() throw ();
     std::list<std::string> const& module_list() const throw ();
-    std::list<endpoint>&          outputs() throw ();
-    std::list<endpoint> const&    outputs() const throw ();
     std::map<std::string, std::string>&
                                   params() throw ();
     std::map<std::string, std::string> const&
                                   params() const throw ();
-    endpoint&                     temporary() throw ();
-    endpoint const&               temporary() const throw ();
 
   private:
-    void                          _internal_copy(state const& s);
+    void                          _internal_copy(state const& other);
 
     std::string                   _cache_directory;
     std::string                   _command_file;
+    std::list<endpoint>           _endpoints;
     unsigned int                  _event_queue_max_size;
     bool                          _flush_logs;
-    std::list<endpoint>           _inputs;
     unsigned int                  _instance_id;
     std::string                   _instance_name;
     bool                          _log_thread_id;
@@ -100,10 +96,8 @@ namespace                         config {
     std::list<logger>             _loggers;
     std::string                   _module_dir;
     std::list<std::string>        _module_list;
-    std::list<endpoint>           _outputs;
     std::map<std::string, std::string>
                                   _params;
-    endpoint                      _temporary;
   };
 }
 

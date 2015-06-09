@@ -34,10 +34,10 @@ namespace                        file {
    */
   class                          opener : public io::endpoint {
   public:
-                                 opener(bool is_in, bool is_out);
-                                 opener(opener const& o);
+                                 opener();
+                                 opener(opener const& other);
                                  ~opener();
-    opener&                      operator=(opener const& o);
+    opener&                      operator=(opener const& other);
     io::endpoint*                clone() const;
     void                         close();
     misc::shared_ptr<io::stream> open();
@@ -46,8 +46,6 @@ namespace                        file {
 
    private:
     QString                      _filename;
-    bool                         _is_in;
-    bool                         _is_out;
     unsigned long long           _max_size;
   };
 }

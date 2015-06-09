@@ -65,9 +65,9 @@ factory::factory() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] f Object to copy.
+ *  @param[in] other  Object to copy.
  */
-factory::factory(factory const& f) : io::factory(f) {}
+factory::factory(factory const& other) : io::factory(other) {}
 
 /**
  *  Destructor.
@@ -77,12 +77,12 @@ factory::~factory() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] f Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-factory& factory::operator=(factory const& f) {
-  io::factory::operator=(f);
+factory& factory::operator=(factory const& other) {
+  io::factory::operator=(other);
   return (*this);
 }
 
@@ -98,21 +98,13 @@ io::factory* factory::clone() const {
 /**
  *  Check if a configuration match the BAM layer.
  *
- *  @param[in] cfg       Endpoint configuration.
- *  @param[in] is_input  true if endpoint should act as input.
- *  @param[in] is_output true if endpoint should act as output.
+ *  @param[in] cfg  Endpoint configuration.
  *
- *  @return true if the configuration matches the BAM layer.
+ *  @return True if the configuration matches the BAM layer.
  */
-bool factory::has_endpoint(
-                config::endpoint& cfg,
-                bool is_input,
-                bool is_output) const {
-  (void)is_input;
-  bool is_bam(!cfg.type.compare("bam", Qt::CaseInsensitive)
-              && is_output);
-  bool is_bam_bi(!cfg.type.compare("bam_bi", Qt::CaseInsensitive)
-                 && is_output);
+bool factory::has_endpoint(config::endpoint& cfg) const {
+  bool is_bam(!cfg.type.compare("bam", Qt::CaseInsensitive));
+  bool is_bam_bi(!cfg.type.compare("bam_bi", Qt::CaseInsensitive));
   if (is_bam || is_bam_bi) {
     // Transaction timeout.
     if (cfg.params.find("read_timeout") == cfg.params.end()) {
@@ -127,8 +119,6 @@ bool factory::has_endpoint(
  *  Build a BAM endpoint from a configuration.
  *
  *  @param[in]  cfg         Endpoint configuration.
- *  @param[in]  is_input    true if endpoint should act as input.
- *  @param[in]  is_output   true if endpoint should act as output.
  *  @param[out] is_acceptor Will be set to false.
  *  @param[in]  cache       Unused.
  *
@@ -136,13 +126,8 @@ bool factory::has_endpoint(
  */
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
-                         bool is_input,
-                         bool is_output,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
-  (void)is_input;
-  (void)is_output;
-
   // Find DB parameters.
   database_config db_cfg;
   db_cfg.set_type(find_param(cfg, "db_type").toStdString());
@@ -175,8 +160,7 @@ io::endpoint* factory::new_endpoint(
   db_cfg.set_check_replication(check_replication);
 
   // Is it a BAM or BAM-BI output ?
-  bool is_bam_bi(!cfg.type.compare("bam_bi", Qt::CaseInsensitive)
-                 && is_output);
+  bool is_bam_bi(!cfg.type.compare("bam_bi", Qt::CaseInsensitive));
 
   // Storage database.
   QString storage_db_name;

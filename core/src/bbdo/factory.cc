@@ -40,9 +40,9 @@ factory::factory() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-factory::factory(factory const& right) : io::factory(right) {}
+factory::factory(factory const& other) : io::factory(other) {}
 
 /**
  *  Destructor.
@@ -52,12 +52,12 @@ factory::~factory() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-factory& factory::operator=(factory const& right) {
-  io::factory::operator=(right);
+factory& factory::operator=(factory const& other) {
+  io::factory::operator=(other);
   return (*this);
 }
 
@@ -76,18 +76,12 @@ io::factory* factory::clone() const {
  *  The endpoint 'protocol' tag must have the 'bbdo' value.
  *
  *  @param[in] cfg       Object configuration.
- *  @param[in] is_input  true if endpoint must act as event source.
- *  @param[in] is_output true if endpoint must act as event destination.
  *
- *  @return true if the configuration has this protocol.
+ *  @return True if the configuration has this protocol.
  */
-bool factory::has_endpoint(
-                config::endpoint& cfg,
-                bool is_input,
-                bool is_output) const {
-  (void)is_input;
-  (void)is_output;
-  QMap<QString, QString>::const_iterator it(cfg.params.find("protocol"));
+bool factory::has_endpoint(config::endpoint& cfg) const {
+  QMap<QString, QString>::const_iterator
+    it(cfg.params.find("protocol"));
   return ((it != cfg.params.end()) && (it.value() == "bbdo"));
 }
 
@@ -95,9 +89,6 @@ bool factory::has_endpoint(
  *  Create a new endpoint from a configuration.
  *
  *  @param[in]  cfg         Endpoint configuration.
- *  @param[in]  is_input    true if endpoint must act as event source.
- *  @param[in]  is_output   true if endpoint must act as event
- *                          destination.
  *  @param[out] is_acceptor Set to true if the endpoint is an acceptor.
  *  @param[in]  cache       Unused.
  *
@@ -105,8 +96,6 @@ bool factory::has_endpoint(
  */
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
-                         bool is_input,
-                         bool is_output,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
   (void)cache;
@@ -134,7 +123,7 @@ io::endpoint* factory::new_endpoint(
       negociate = false;
     else {
       negociate = true;
-      extensions = _extensions(cfg, is_input, is_output);
+      extensions = _extensions(cfg);
     }
   }
 
@@ -174,14 +163,9 @@ io::endpoint* factory::new_endpoint(
 /**
  *  Get available extensions for an endpoint.
  *
- *  @param[in] cfg       Endpoint configuration.
- *  @param[in] is_input  Input flag.
- *  @param[in] is_output Output flag.
+ *  @param[in] cfg  Endpoint configuration.
  */
-QString factory::_extensions(
-                   config::endpoint& cfg,
-                   bool is_input,
-                   bool is_output) const {
+QString factory::_extensions(config::endpoint& cfg) const {
   QString extensions;
   for (QMap<QString, io::protocols::protocol>::const_iterator
          it(io::protocols::instance().begin()),
@@ -190,14 +174,8 @@ QString factory::_extensions(
        ++it) {
     if ((it->osi_from > 1)
         && (it->osi_to < 7)
-        && !it->endpntfactry->has_endpoint(
-                                cfg,
-                                is_input,
-                                is_output)
-        && !it->endpntfactry->has_not_endpoint(
-                                cfg,
-                                is_input,
-                                is_output)) {
+        && !it->endpntfactry->has_endpoint(cfg)
+        && !it->endpntfactry->has_not_endpoint(cfg)) {
       if (!extensions.isEmpty())
         extensions.append(" ");
       extensions.append(it.key());

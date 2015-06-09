@@ -39,9 +39,9 @@ factory::factory() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-factory::factory(factory const& right) : io::factory(right) {}
+factory::factory(factory const& other) : io::factory(other) {}
 
 /**
  *  Destructor.
@@ -51,12 +51,12 @@ factory::~factory() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-factory& factory::operator=(factory const& right) {
-  io::factory::operator=(right);
+factory& factory::operator=(factory const& other) {
+  io::factory::operator=(other);
   return (*this);
 }
 
@@ -74,18 +74,11 @@ io::factory* factory::clone() const {
  *
  *  The endpoint 'protocol' tag must have the 'bbdo' value.
  *
- *  @param[in] cfg       Object configuration.
- *  @param[in] is_input  true if endpoint must act as event source.
- *  @param[in] is_output true if endpoint must act as event destination.
+ *  @param[in] cfg  Object configuration.
  *
- *  @return true if the configuration has this protocol.
+ *  @return True if the configuration has this protocol.
  */
-bool factory::has_endpoint(
-                config::endpoint& cfg,
-                bool is_input,
-                bool is_output) const {
-  (void)is_input;
-  (void)is_output;
+bool factory::has_endpoint(config::endpoint& cfg) const {
   return (cfg.type == "command_file");
 }
 
@@ -93,9 +86,6 @@ bool factory::has_endpoint(
  *  Create a new endpoint from a configuration.
  *
  *  @param[in]  cfg         Endpoint configuration.
- *  @param[in]  is_input    true if endpoint must act as event source.
- *  @param[in]  is_output   true if endpoint must act as event
- *                          destination.
  *  @param[out] is_acceptor Set to true if the endpoint is an acceptor.
  *  @param[in]  cache       Unused.
  *
@@ -103,12 +93,8 @@ bool factory::has_endpoint(
  */
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
-                         bool is_input,
-                         bool is_output,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
-  (void)is_input;
-  (void)is_output;
   (void)cache;
   is_acceptor = false;
   return (new endpoint(cfg.name.toStdString()));

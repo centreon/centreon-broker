@@ -64,9 +64,9 @@ factory::factory() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] f Object to copy.
+ *  @param[in] other  Object to copy.
  */
-factory::factory(factory const& f) : io::factory(f) {}
+factory::factory(factory const& other) : io::factory(other) {}
 
 /**
  *  Destructor.
@@ -76,12 +76,12 @@ factory::~factory() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] f Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-factory& factory::operator=(factory const& f) {
-  io::factory::operator=(f);
+factory& factory::operator=(factory const& other) {
+  io::factory::operator=(other);
   return (*this);
 }
 
@@ -97,35 +97,26 @@ io::factory* factory::clone() const {
 /**
  *  Check if an endpoint match a configuration.
  *
- *  @param[in] cfg       Endpoint configuration.
- *  @param[in] is_input  true if the endpoint should be an input.
- *  @param[in] is_output true if the endpoint should be an output.
+ *  @param[in] cfg  Endpoint configuration.
  *
- *  @return true if the endpoint match the configuration.
+ *  @return True if the endpoint match the configuration.
  */
-bool factory::has_endpoint(
-                config::endpoint& cfg,
-                bool is_input,
-                bool is_output) const {
-  (void)is_input;
-  bool is_sql(!cfg.type.compare("notification", Qt::CaseInsensitive)
-              && is_output);
-  if (is_sql) {
+bool factory::has_endpoint(config::endpoint& cfg) const {
+  bool is_notif(!cfg.type.compare("notification", Qt::CaseInsensitive));
+  if (is_notif) {
     // Default transaction timeout.
     if (cfg.params.find("read_timeout") == cfg.params.end()) {
       cfg.params["read_timeout"] = "2";
       cfg.read_timeout = 2;
     }
   }
-  return (is_sql);
+  return (is_notif);
 }
 
 /**
  *  Create an endpoint.
  *
  *  @param[in]  cfg         Endpoint configuration.
- *  @param[in]  is_input    true if the endpoint should be an input.
- *  @param[in]  is_output   true if the endpoint should be an output.
  *  @param[out] is_acceptor Will be set to false.
  *  @param[in]  cache       The persistent cache for this module.
  *
@@ -133,13 +124,8 @@ bool factory::has_endpoint(
  */
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
-                         bool is_input,
-                         bool is_output,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
-  (void)is_input;
-  (void)is_output;
-
   // Find DB type.
   QString type(find_param(cfg, "db_type"));
 

@@ -41,7 +41,8 @@ namespace                        dumper {
                                  dump_dir,
                                  dump_fifo
     };
-                                 opener(bool is_in, bool is_out);
+
+                                 opener();
                                  opener(opener const& o);
                                  ~opener();
     opener&                      operator=(opener const& o);
@@ -56,8 +57,6 @@ namespace                        dumper {
 
    private:
     std::string                  _path;
-    bool                         _is_in;
-    bool                         _is_out;
     std::string                  _tagname;
     dumper_type                  _type;
     misc::shared_ptr<persistent_cache>

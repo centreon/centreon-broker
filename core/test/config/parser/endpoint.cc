@@ -112,15 +112,14 @@ int main() {
 
     // Check against expected result.
     if ((s.loggers().size() != 0)
-        || (s.inputs().size() != 1)
-        || (s.outputs().size() != 4))
+        || (s.endpoints().size() != 5))
       throw (exceptions::msg() << "invalid parsing: "
-             << s.loggers().size() << " loggers, " << s.inputs().size()
-             << " inputs, " << s.outputs().size()
-             << " outputs (expected 0, 1, 4 respectively)");
+             << s.loggers().size() << " loggers, "
+             << s.endpoints().size() << " endpoints (expected 0, 5)");
 
     // Check input #1.
-    config::endpoint input1(s.inputs().front());
+    std::list<config::endpoint>::iterator it(s.endpoints().begin());
+    config::endpoint input1(*(it++));
     if ((input1.name != "CentreonInput")
         || (input1.type != "tcp")
         || (input1.params["port"] != "5668")
@@ -129,7 +128,6 @@ int main() {
       throw (exceptions::msg() << "invalid input #1");
 
     // Check output #1.
-    std::list<config::endpoint>::iterator it(s.outputs().begin());
     config::endpoint output1(*(it++));
     if ((output1.name != "CentreonDatabase")
         || (output1.type != "sql")

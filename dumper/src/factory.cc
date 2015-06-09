@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -39,9 +39,9 @@ factory::factory() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] f Object to copy.
+ *  @param[in] other  Object to copy.
  */
-factory::factory(factory const& f) : io::factory(f) {}
+factory::factory(factory const& other) : io::factory(other) {}
 
 /**
  *  Destructor.
@@ -51,12 +51,12 @@ factory::~factory() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] f Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-factory& factory::operator=(factory const& f) {
-  io::factory::operator=(f);
+factory& factory::operator=(factory const& other) {
+  io::factory::operator=(other);
   return (*this);
 }
 
@@ -72,36 +72,20 @@ io::factory* factory::clone() const {
 /**
  *  Check if a configuration match the dumper layer.
  *
- *  @param[in] cfg       Endpoint configuration.
- *  @param[in] is_input  true if the dumper should act as input.
- *  @param[in] is_output true if the dumper should act as output.
+ *  @param[in] cfg  Endpoint configuration.
  *
- *  @return true if configuration matches the dumper layer.
+ *  @return True if configuration matches the dumper layer.
  */
-bool factory::has_endpoint(
-                config::endpoint& cfg,
-                bool is_input,
-                bool is_output) const {
-  (void)is_input;
-  (void)is_output;
-  bool retval;
-  if (cfg.type == "dumper"
-        || cfg.type == "dump_fifo"
-        || cfg.type == "dump_dir") {
-    cfg.params["coarse"] = "yes"; // Dumper won't respond to any salutation.
-    retval = true;
-  }
-  else
-    retval = false;
-  return (retval);
+bool factory::has_endpoint(config::endpoint& cfg) const {
+  return (cfg.type == "dumper"
+          || cfg.type == "dump_fifo"
+          || cfg.type == "dump_dir");
 }
 
 /**
  *  Generate an endpoint matching a configuration.
  *
  *  @param[in]  cfg         Endpoint configuration.
- *  @param[in]  is_input    true if the dumper should act as input.
- *  @param[in]  is_output   true if the dumper should act as output.
  *  @param[out] is_acceptor Will be set to false.
  *  @param[in]  cache       Persistent cache.
  *
@@ -109,8 +93,6 @@ bool factory::has_endpoint(
  */
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
-                         bool is_input,
-                         bool is_output,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
   // Set acceptor flag.
@@ -146,7 +128,7 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Generate opener.
-  std::auto_ptr<opener> openr(new opener(is_input, is_output));
+  std::auto_ptr<opener> openr(new opener);
   openr->set_type(type);
   openr->set_path(path);
   openr->set_tagname(tagname);

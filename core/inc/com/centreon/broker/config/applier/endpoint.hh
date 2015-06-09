@@ -51,9 +51,9 @@ namespace              config {
   namespace            applier {
     /**
      *  @class endpoint endpoint.hh "com/centreon/broker/config/applier/endpoint.hh"
-     *  @brief Apply the configuration of input and output endpoints.
+     *  @brief Apply the configuration of endpoints.
      *
-     *  Apply the configuration of the input and output endpoints.
+     *  Apply the configuration of the configured endpoints.
      */
     class              endpoint {
     public:
@@ -62,23 +62,19 @@ namespace              config {
 
                        ~endpoint();
       void             apply(
-                         std::list<config::endpoint> const& inputs,
-                         std::list<config::endpoint> const& outputs,
+                         std::list<config::endpoint> const& endpoints,
                          std::string const& cache_directory);
       void             discard();
-      iterator         input_begin();
-      iterator         input_end();
-      QMutex&          input_mutex();
+      iterator         endpoints_begin();
+      iterator         endpoints_end();
+      QMutex&          endpoints_mutex();
       static endpoint& instance();
       static void      load();
-      iterator         output_begin();
-      iterator         output_end();
-      QMutex&          output_mutex();
       static void      unload();
 
     private:
                        endpoint();
-      endpoint(endpoint const& other);
+                       endpoint(endpoint const& other);
       endpoint&        operator=(endpoint const& other);
       processing::failover*
                        _create_failover(
@@ -89,8 +85,6 @@ namespace              config {
       misc::shared_ptr<io::endpoint>
                        _create_endpoint(
                          config::endpoint& cfg,
-                         bool is_input,
-                         bool is_output,
                          bool& is_acceptor);
       multiplexing::subscriber*
                        _create_subscriber(config::endpoint& cfg);
@@ -103,11 +97,8 @@ namespace              config {
 
       std::string      _cache_directory;
       std::map<config::endpoint, processing::thread*>
-                       _inputs;
-      QMutex           _inputsm;
-      std::map<config::endpoint, processing::thread*>
-                       _outputs;
-      QMutex           _outputsm;
+                       _endpoints;
+      QMutex           _endpointsm;
     };
   }
 }

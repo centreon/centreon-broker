@@ -104,7 +104,9 @@ void state::apply(
         "you might want to check the 'module_directory' directive";
   }
 
-  com::centreon::broker::multiplexing::muxer::event_queue_max_size(s.event_queue_max_size());
+  // Event queue max size (used to limit memory consumption).
+  com::centreon::broker::multiplexing::muxer::event_queue_max_size(
+    s.event_queue_max_size());
 
   com::centreon::broker::config::state st = s;
 
@@ -113,13 +115,13 @@ void state::apply(
     config::endpoint ept;
     ept.name = s.command_file().c_str();
     ept.type = "command_file";
-    st.inputs().push_back(ept);
+    ept.read_filters.insert("all");
+    st.endpoints().push_back(ept);
   }
 
   // Apply input and output configuration.
   endpoint::instance().apply(
-                         st.inputs(),
-                         st.outputs(),
+                         st.endpoints(),
                          st.cache_directory());
 
   // Create instance broadcast event.

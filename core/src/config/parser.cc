@@ -42,10 +42,10 @@ parser::parser() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] p Object to copy.
+ *  @param[in] other  Object to copy.
  */
-parser::parser(parser const& p) {
-  (void)p;
+parser::parser(parser const& other) {
+  (void)other;
 }
 
 /**
@@ -56,12 +56,12 @@ parser::~parser() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] p Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-parser& parser::operator=(parser const& p) {
-  (void)p;
+parser& parser::operator=(parser const& other) {
+  (void)other;
   return (*this);
 }
 
@@ -91,12 +91,6 @@ void parser::parse(QString const& file, state& s) {
   // Clear state.
   s.clear();
 
-  // Check if temporary object is already define.
-  bool has_temprorary(false);
-
-  // Check if instance id is already define.
-  bool has_instance_id(false);
-
   // Browse first-level elements.
   QDomElement root(d.documentElement());
   QDomNodeList level1(root.childNodes());
@@ -107,7 +101,6 @@ void parser::parse(QString const& file, state& s) {
       QString name(elem.tagName());
       if (name == "instance") {
         s.instance_id(elem.text().toUInt());
-        has_instance_id = true;
       }
       else if (name == "instance_name") {
         s.instance_name(elem.text().toStdString());
@@ -120,11 +113,18 @@ void parser::parse(QString const& file, state& s) {
         QString included_file(elem.text());
         parse(included_file, s);
       }
+      else if ((name == "endpoint") || (name == "output")) {
+        endpoint out;
+        out.read_filters.insert("all");
+        out.write_filters.insert("all");
+        _parse_endpoint(elem, out);
+        s.endpoints().push_back(out);
+      }
       else if (name == "input") {
         endpoint in;
         in.write_filters.insert("all");
         _parse_endpoint(elem, in);
-        s.inputs().push_back(in);
+        s.endpoints().push_back(in);
       }
       else if (name == "logger") {
         logger logr;
@@ -155,32 +155,6 @@ void parser::parse(QString const& file, state& s) {
         s.module_list().push_back(elem.text().toStdString());
       else if (name == "module_directory")
         s.module_directory(elem.text().toStdString());
-      else if (name == "output") {
-        endpoint out;
-        out.read_filters.insert("all");
-        out.write_filters.insert("all");
-        _parse_endpoint(elem, out);
-        s.outputs().push_back(out);
-      }
-      else if (name == "temporary") {
-        if (has_temprorary)
-          throw (exceptions::msg() << "config parser: one temporary "
-                 "object is already define");
-        if (!has_instance_id)
-          throw (exceptions::msg()
-                 << "config parser: missing instance before temporary");
-        _parse_endpoint(elem, s.temporary());
-        if (s.temporary().type != "file")
-          throw (exceptions::msg()
-                 << "config parser: bad temporary type");
-        QMap<QString, QString>::iterator
-          it(s.temporary().params.find("path"));
-        if (it == s.temporary().params.end())
-          throw (exceptions::msg()
-                 << "config params: bad temporary path");
-        it.value() += "-" + QString().setNum(s.instance_id());
-        has_temprorary = true;
-      }
       else {
         QDomDocument subdoc;
         subdoc.appendChild(subdoc.importNode(elem, true));

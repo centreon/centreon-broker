@@ -34,18 +34,14 @@ using namespace com::centreon::broker::processing;
  *  Constructor.
  *
  *  @param[in] endp       Endpoint.
- *  @param[in] in_or_out  Either in or out to determine how the clients
- *                        should be constructed.
  *  @param[in] name       Name of the endpoint.
  *  @param[in] temp_dir   Temporary directory.
  */
 acceptor::acceptor(
             misc::shared_ptr<io::endpoint> endp,
-            acceptor::in_out in_or_out,
             std::string const& name,
             std::string const& temp_dir)
   : _endp(endp),
-    _in_out(in_or_out),
     _name(name),
     _retry_interval(30),
     _temp_dir(temp_dir) {}
