@@ -153,8 +153,8 @@ bool directory_dumper::read(
  */
 unsigned int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
   (void)d;
-  throw (exceptions::msg()
-         << "dumper: attempt to write from a directory dumper stream");
+  throw (io::exceptions::shutdown(false, true)
+         << "cannot write to a dumper directory");
   return (1);
 }
 
