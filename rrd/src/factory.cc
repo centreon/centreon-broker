@@ -135,7 +135,6 @@ io::endpoint* factory::new_endpoint(
                          bool is_output,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
-  (void)is_acceptor;
   (void)is_input;
   (void)cache;
 
