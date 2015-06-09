@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -30,7 +30,7 @@ extern "C" {
   /**
    *  Module version symbol. Used to check for version mismatch.
    */
-  const char* boker_module_version = CENTREON_BROKER_VERSION;
+  char const* broker_module_version = CENTREON_BROKER_VERSION;
 
   /**
    *  Module deinitialization routine.
