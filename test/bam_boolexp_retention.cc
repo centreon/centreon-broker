@@ -226,6 +226,7 @@ int main() {
          ++it) {
       it->checks_enabled = 0;
       it->max_attempts = 1;
+      it->accept_passive_service_checks = 1;
     }
 
     // Generate commands.
@@ -510,8 +511,7 @@ int main() {
 
   // Cleanup.
   monitoring.stop();
-  std::cout << engine_config_path << std::endl;
-  //config_remove(engine_config_path.c_str());
+  config_remove(engine_config_path.c_str());
   free_hosts(hosts);
   free_services(services);
   free_commands(commands);
