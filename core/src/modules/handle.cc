@@ -251,7 +251,7 @@ void handle::_check_version() {
     throw (exceptions::msg()
            << "modules: version mismatch in '" << _handle.fileName()
            << "': expected '" << CENTREON_BROKER_VERSION
-           <<  "', found '" << version << "'");
+           <<  "', found '" << *version << "'");
 }
 
 /**

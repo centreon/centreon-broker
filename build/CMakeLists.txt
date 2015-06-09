@@ -1495,6 +1495,19 @@ if (WITH_TESTING)
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
+  # module namespace tests.
+  # module::loader tests.
+  #   module versioning.
+  set(TEST_NAME "modules_versioning")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/modules/module.cc")
+  add_library("null_module" SHARED
+    "${TEST_DIR}/modules/null_module.cc")
+  add_library("bad_version_module" SHARED
+    "${TEST_DIR}/modules/bad_version_module.cc")
+  target_link_libraries("${TEST_NAME}" "roker")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
 endif ()
 
 #
