@@ -272,8 +272,6 @@ endif ()
 qt4_wrap_cpp(QT_WRAPPED_SOURCES
   "${INC_DIR}/logging/backend.hh"
   "${INC_DIR}/logging/manager.hh"
-  "${INC_DIR}/multiplexing/engine.hh"
-  "${INC_DIR}/multiplexing/hooker.hh"
   "${INC_DIR}/processing/thread.hh"
 )
 
@@ -308,6 +306,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/database_config.cc"
   "${SRC_DIR}/database_query.cc"
   "${SRC_DIR}/exceptions/msg.cc"
+  "${SRC_DIR}/exceptions/timeout.cc"
   "${SRC_DIR}/file/cfile.cc"
   "${SRC_DIR}/file/directory_event.cc"
   "${SRC_DIR}/file/directory_watcher.cc"
@@ -345,7 +344,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/modules/loader.cc"
   "${SRC_DIR}/multiplexing/engine.cc"
   "${SRC_DIR}/multiplexing/hooker.cc"
-  "${SRC_DIR}/multiplexing/internal.cc"
+  "${SRC_DIR}/multiplexing/muxer.cc"
   "${SRC_DIR}/multiplexing/publisher.cc"
   "${SRC_DIR}/multiplexing/subscriber.cc"
   "${SRC_DIR}/persistent_cache.cc"
@@ -354,7 +353,6 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/processing/failover.cc"
   "${SRC_DIR}/processing/feeder.cc"
   "${SRC_DIR}/processing/input.cc"
-  "${SRC_DIR}/processing/multiple_writer.cc"
   "${SRC_DIR}/processing/thread.cc"
   "${SRC_DIR}/time/timezone_manager.cc"
   "${SRC_DIR}/time/timezone_locker.cc"
@@ -393,6 +391,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/database_config.hh"
   "${INC_DIR}/database_query.hh"
   "${INC_DIR}/exceptions/msg.hh"
+  "${INC_DIR}/exceptions/timeout.hh"
   "${INC_DIR}/file/cfile.hh"
   "${INC_DIR}/file/directory_event.hh"
   "${INC_DIR}/file/directory_watcher.hh"
@@ -433,7 +432,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/modules/loader.hh"
   "${INC_DIR}/multiplexing/engine.hh"
   "${INC_DIR}/multiplexing/hooker.hh"
-  "${INC_DIR}/multiplexing/internal.hh"
+  "${INC_DIR}/multiplexing/muxer.hh"
   "${INC_DIR}/multiplexing/publisher.hh"
   "${INC_DIR}/multiplexing/subscriber.hh"
   "${INC_DIR}/persistent_cache.hh"
@@ -442,7 +441,6 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/processing/failover.hh"
   "${INC_DIR}/processing/feeder.hh"
   "${INC_DIR}/processing/input.hh"
-  "${INC_DIR}/processing/multiple_writer.hh"
   "${INC_DIR}/processing/thread.hh"
   "${INC_DIR}/timestamp.hh"
   "${INC_DIR}/time/timezone_manager.hh"
@@ -635,12 +633,8 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_2.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/delete_graphs.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/delete_graphs.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/failover_to_file.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/failover_to_file.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/temporary.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/temporary.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_cleanup.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/sql_cleanup.xml")
 
@@ -816,10 +810,10 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Failover to file.
-  set(TEST_NAME "running_failover_to_file")
+  # Failover to TCP.
+  set(TEST_NAME "running_failover_to_tcp")
   add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/failover_to_file.cc")
+    "${PROJECT_SOURCE_DIR}/test/failover_to_tcp.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
@@ -834,10 +828,10 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_rrd_as_failover")
   add_test("${TEST_NAME}" "cbd" "-c" "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
 
-  # Temporary.
-  set(TEST_NAME "running_temporary")
+  # Automatic retention.
+  set(TEST_NAME "running_automatic_retention")
   add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/temporary.cc")
+    "${PROJECT_SOURCE_DIR}/test/automatic_retention.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
@@ -1460,70 +1454,6 @@ if (WITH_TESTING)
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
 
-  # processing namespace tests.
-  # processing::feeder tests.
-  add_library("ccb_core_processing_feeder" STATIC
-    "${TEST_DIR}/processing/feeder/common.cc"
-    "${TEST_DIR}/processing/feeder/setable_endpoint.cc"
-    "${TEST_DIR}/processing/feeder/setable_stream.cc")
-  set(TEST_LIBRARIES "ccb_core_processing_feeder" "roker")
-  #   Simple feeding.
-  set(TEST_NAME "core_processing_feeder_simple")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/processing/feeder/simple.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Null event.
-  set(TEST_NAME "core_processing_feeder_null_event")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/processing/feeder/null_event.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # processing::failover tests.
-  # #   Simple feeding.
-  # set(TEST_NAME "core_processing_failover_feed")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/failover/feed.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Retry interval.
-  # set(TEST_NAME "core_processing_failover_retry_interval")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/failover/retry_interval.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Failing intermediate.
-  # set(TEST_NAME "core_processing_failover_failed_intermediate")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/failover/failed_intermediate.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Event loop break.
-  # set(TEST_NAME "core_processing_failover_loop_break")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/failover/loop_break.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Exit while no data is available.
-  # set(TEST_NAME "core_processing_failover_exit_with_no_data")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/failover/exit_with_no_data.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Reread events from failover first.
-  # set(TEST_NAME "core_processing_failover_reread_first")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/failover/reread_first.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Recovery.
-  # set(TEST_NAME "core_processing_failover_recovery")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/processing/failover/recovery.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-
   # file namespace tests.
   # file::stream tests.
   #   Writing.
@@ -1548,12 +1478,6 @@ if (WITH_TESTING)
   set(TEST_NAME "file_stream_mixed")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/file/stream/mixed.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   I/O processing.
-  set(TEST_NAME "file_stream_process")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/file/stream/process.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
 

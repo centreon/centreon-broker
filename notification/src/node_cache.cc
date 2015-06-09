@@ -136,7 +136,7 @@ void node_cache::stopping() {
 
   try {
     while (true) {
-      read(data);
+      read(data, (time_t)-1);
       _cache->add(data);
     }
   }
@@ -175,14 +175,19 @@ void node_cache::stopping() {
 /**
  *  Read events from the node cache.
  *
- *  @param[out] d  An output data event.
+ *  @param[out] d         An output data event.
+ *  @param[in]  deadline  Unused.
+ *
+ *  @return Always return true.
  */
-void node_cache::read(misc::shared_ptr<io::data>& d) {
+bool node_cache::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+  (void)deadline;
   d.clear();
   if (!_serialized_data.empty()) {
     d = _serialized_data.front();
     _serialized_data.pop_front();
   }
+  return (true);
 }
 
 /**
@@ -397,4 +402,3 @@ void node_cache::_prepare_serialization() {
        ++it)
     _serialized_data.push_back(misc::make_shared(new neb::downtime(*it)));
 }
-

@@ -116,7 +116,6 @@ stream::stream(
   : _insert_in_index_data(insert_in_index_data),
     _interval_length(interval_length),
     _pending_events(0),
-    _process_out(true),
     _rebuild_thread(
       db_cfg,
       rebuild_check_interval,
@@ -149,26 +148,19 @@ stream::~stream() {
 }
 
 /**
- *  Enable or disable output event processing.
- *
- *  @param[in] in  Unused.
- *  @param[in] out Set to true to enable output event processing.
- */
-void stream::process(bool in, bool out) {
-  _process_out = in || !out; // Only for immediate shutdown.
-  return ;
-}
-
-/**
  *  Read from the datbase.
  *
- *  @param[out] d Cleared.
+ *  @param[out] d         Cleared.
+ *  @param[in]  deadline  Timeout.
+ *
+ *  @return This method will throw.
  */
-void stream::read(misc::shared_ptr<io::data>& d) {
+bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+  (void)deadline;
   d.clear();
-  throw (com::centreon::broker::exceptions::msg()
-         << "storage: attempt to read from a storage stream (not supported yet)");
-  return ;
+  throw (com::centreon::broker::io::exceptions::shutdown(true, false)
+         << "cannot read from a storage stream");
+  return (true);
 }
 
 /**
@@ -197,7 +189,6 @@ void stream::statistics(io::properties& tree) const {
  *  Multiplexing stopped.
  */
 void stream::stopping() {
-  _process_out = false;
   return ;
 }
 
@@ -218,11 +209,6 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
-  // Check that processing is enabled.
-  if (!_process_out)
-    throw (io::exceptions::shutdown(true, true)
-             << "storage stream is shutdown");
-
   // Process service status events.
   if (!data.isNull()) {
     ++_pending_events;

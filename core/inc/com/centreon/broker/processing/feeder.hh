@@ -22,42 +22,43 @@
 
 #  include <string>
 #  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/misc/unordered_hash.hh"
+#  include "com/centreon/broker/multiplexing/subscriber.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/processing/thread.hh"
 
 CCB_BEGIN()
 
 // Forward declaration.
-namespace         io {
-  class           stream;
+namespace                        io {
+  class                          stream;
 }
 
-namespace         processing {
+namespace                        processing {
   /**
    *  @class feeder feeder.hh "com/centreon/broker/processing/feeder.hh"
    *  @brief Feed events from a source to a destination.
    *
    *  Take events from a source and send them to a destination.
    */
-  class           feeder : public thread {
+  class                          feeder : public thread {
   public:
-                  feeder();
-                  ~feeder();
-    void          prepare(
-                    std::string const& name,
-                    misc::shared_ptr<io::stream> in,
-                    misc::shared_ptr<io::stream> out);
-    void          run();
+                                 feeder(
+                                   std::string const& name,
+                                   misc::shared_ptr<io::stream> client,
+                                   uset<unsigned int> const& read_filters,
+                                   uset<unsigned int> const& write_filters,
+                                   std::string const& temp_dir);
+                                 ~feeder();
+    void                         run();
 
   private:
-                  feeder(feeder const& other);
-    feeder&       operator=(feeder const& other);
+                                 feeder(feeder const& other);
+    feeder&                      operator=(feeder const& other);
 
-    misc::shared_ptr<io::stream>
-                  _in;
-    std::string   _name;
-    misc::shared_ptr<io::stream>
-                  _out;
+    misc::shared_ptr<io::stream> _client;
+    std::string                  _name;
+    multiplexing::subscriber     _subscriber;
   };
 }
 

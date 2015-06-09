@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -42,30 +42,31 @@ namespace                    config {
   class                      endpoint {
   public:
                              endpoint();
-                             endpoint(endpoint const& e);
+                             endpoint(endpoint const& other);
                              ~endpoint();
-    endpoint&                operator=(endpoint const& e);
-    bool                     operator==(endpoint const& e) const;
-    bool                     operator!=(endpoint const& e) const;
-    bool                     operator<(endpoint const& e) const;
+    endpoint&                operator=(endpoint const& other);
+    bool                     operator==(endpoint const& other) const;
+    bool                     operator!=(endpoint const& other) const;
+    bool                     operator<(endpoint const& other) const;
 
     time_t                   buffering_timeout;
     QString                  failover;
     std::set<QString>        secondary_failovers;
     QString                  name;
     QMap<QString, QString>   params;
+    std::set<std::string>    read_filters;
     time_t                   read_timeout;
     time_t                   retry_interval;
-    std::set<std::string>    filters;
     QString                  type;
+    std::set<std::string>    write_filters;
     bool                     cache_enabled;
     QDomElement              cfg;
 
   private:
-    void                     _internal_copy(endpoint const& e);
+    void                     _internal_copy(endpoint const& other);
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_CONFIG_ENDPOINT_HH */
+#endif // !CCB_CONFIG_ENDPOINT_HH

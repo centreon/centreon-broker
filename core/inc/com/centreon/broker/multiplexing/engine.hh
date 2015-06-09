@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,60 +20,55 @@
 #ifndef CCB_MULTIPLEXING_ENGINE_HH
 #  define CCB_MULTIPLEXING_ENGINE_HH
 
-#  include <memory>
 #  include <QMutex>
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/multiplexing/hooker.hh"
+#  include "com/centreon/broker/namespace.hh"
 
-namespace                 com {
-  namespace               centreon {
-    namespace             broker {
-      namespace           multiplexing {
-        /**
-         *  @class engine engine.hh "com/centreon/broker/multiplexing/engine.hh"
-         *  @brief Multiplexing engine.
-         *
-         *  Send events from publishers to subscribers.
-         *
-         *  @see publisher
-         *  @see subscriber
-         */
-        class             engine : public QObject, public QMutex {
-          Q_OBJECT
+CCB_BEGIN()
 
-         public:
-                          ~engine();
-          void            clear();
-          void            hook(hooker& h, bool data = true);
-          static engine&  instance();
-          static void     load();
-          void            publish(misc::shared_ptr<io::data> const& d);
-          void            start();
-          void            stop();
-          bool            stopped() const throw ();
-          void            unhook(hooker& h);
-          static void     unload();
+namespace           multiplexing {
+  // Forward declaration.
+  class             muxer;
 
-         private:
-                          engine();
-                          engine(engine const& e);
-          engine&         operator=(engine const& e);
-          void            _nop(misc::shared_ptr<io::data> const& d);
-          void            _send_to_subscribers();
-          void            _write(misc::shared_ptr<io::data> const& d);
+  /**
+   *  @class engine engine.hh "com/centreon/broker/multiplexing/engine.hh"
+   *  @brief Multiplexing engine.
+   *
+   *  Core multiplexing engine. Send events to and receive events from
+   *  muxer objects.
+   *
+   *  @see muxer
+   */
+  class             engine : public QMutex {
+  public:
+                    ~engine();
+    void            clear();
+    void            hook(hooker& h, bool with_data = true);
+    static engine&  instance();
+    static void     load();
+    void            publish(misc::shared_ptr<io::data> const& d);
+    void            start();
+    void            stop();
+    void            subscribe(muxer* subscriber);
+    void            unhook(hooker& h);
+    static void     unload();
+    void            unsubscribe(muxer* subscriber);
 
-          static std::auto_ptr<engine>
-                          _instance;
-          bool            _stopped;
-          void (engine::* _write_func)(
-                            misc::shared_ptr<io::data> const&);
+  private:
+                    engine();
+                    engine(engine const& other);
+    engine&         operator=(engine const& other);
+    void            _nop(misc::shared_ptr<io::data> const& d);
+    void            _send_to_subscribers();
+    void            _write(misc::shared_ptr<io::data> const& d);
 
-         private slots:
-          void            _on_hook_destroy(QObject* obj);
-        };
-      }
-    }
-  }
+    static engine*  _instance;
+    void (engine::* _write_func)(
+                      misc::shared_ptr<io::data> const&);
+  };
 }
+
+CCB_END()
 
 #endif // !CCB_MULTIPLEXING_ENGINE_HH

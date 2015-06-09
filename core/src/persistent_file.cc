@@ -36,18 +36,14 @@ persistent_file::persistent_file(std::string const& path) {
     fs(new file::stream(path, 100000000ll));
 
   // Compression layer.
-  misc::shared_ptr<compression::stream>
-    cs(new compression::stream);
-  cs->read_from(fs);
-  cs->write_to(fs);
+  misc::shared_ptr<compression::stream> cs(new compression::stream);
+  cs->set_substream(fs);
 
   // BBDO layer.
-  misc::shared_ptr<bbdo::stream>
-    bs(new bbdo::stream(true, true));
+  misc::shared_ptr<bbdo::stream> bs(new bbdo::stream);
   bs->set_coarse(true);
   bs->set_negociate(false);
-  bs->read_from(cs);
-  bs->write_to(cs);
+  bs->set_substream(cs);
 
   // Set stream.
   _file = bs;
@@ -61,11 +57,15 @@ persistent_file::~persistent_file() {}
 /**
  *  Read data from file.
  *
- *  @param[out] d  Output data.
+ *  @param[out] d         Output data.
+ *  @param[in]  deadline  Timeout.
+ *
+ *  @return Always return true, as file never times out.
  */
-void persistent_file::read(misc::shared_ptr<io::data>& d) {
-  _file->read(d);
-  return ;
+bool persistent_file::read(
+                        misc::shared_ptr<io::data>& d,
+                        time_t deadline) {
+  return (_file->read(d, deadline));
 }
 
 /**

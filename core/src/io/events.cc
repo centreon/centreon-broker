@@ -159,15 +159,32 @@ events::categories_container::const_iterator events::end() const {
  *
  *  @return Category elements.
  */
-events::events_container const& events::get_events_by_category_name(
-                                          std::string const& name) const {
-  for (categories_container::const_iterator
-         it(_elements.begin()),
-         end(_elements.end());
-       it != end;
-       ++it) {
-    if (it->second.name == name)
-      return (it->second.events);
+events::events_container events::get_events_by_category_name(
+                                   std::string const& name) const {
+  // Special category matching all registered events.
+  if (name == "all") {
+    events::events_container all;
+    for (categories_container::const_iterator
+           it1(_elements.begin()), end1(_elements.end());
+         it1 != end1;
+         ++it1)
+      for (events_container::const_iterator
+             it2(it1->second.events.begin()),
+             end2(it1->second.events.end());
+           it2 != end2;
+           ++it2)
+        all.insert(*it2);
+    return (all);
+  }
+  // Category name.
+  else {
+    for (categories_container::const_iterator
+           it(_elements.begin()), end(_elements.end());
+         it != end;
+         ++it) {
+      if (it->second.name == name)
+        return (it->second.events);
+    }
   }
   throw (exceptions::msg() << "core: cannot find event category '"
          << name << "'");

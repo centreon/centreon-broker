@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <centreonbroker>
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
-  <instance>42</instance>
-  <instance_name>MyBroker</instance_name>
+  <instance>43</instance>
+  <instance_name>my_cbd</instance_name>
+  <cache_directory>@CACHE_DIRECTORY@</cache_directory>
+  <event_queue_max_size>100</event_queue_max_size>
   <!--
   <stats>
     <fifo>/tmp/cbd.fifo</fifo>
@@ -18,20 +20,20 @@
   </logger>
   -->
   <input>
-    <name>InputFailoverToFileUnitTest</name>
+    <name>AutomaticRetentionInput</name>
     <type>tcp</type>
-    <port>5680</port>
+    <port>5683</port>
     <protocol>bbdo</protocol>
   </input>
   <output>
-    <name>OutputFailoverToFileUnitTest</name>
+    <name>AutomaticRetentionOutput</name>
     <type>sql</type>
     <db_type>@DB_TYPE@</db_type>
     <db_host>@DB_HOST@</db_host>
     <db_port>@DB_PORT@</db_port>
     <db_user>@DB_USER@</db_user>
     <db_password>@DB_PASSWORD@</db_password>
-    <db_name>broker_failover_to_file</db_name>
+    <db_name>@DB_NAME@</db_name>
     <queries_per_transaction>0</queries_per_transaction>
   </output>
 </centreonbroker>

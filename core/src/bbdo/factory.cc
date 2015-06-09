@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -146,9 +146,10 @@ io::endpoint* factory::new_endpoint(
       it(cfg.params.find("one_peer_retention_mode"));
     if (it != cfg.params.end())
       one_peer_retention_mode = config::parser::parse_boolean(*it);
+    if (one_peer_retention_mode)
+      is_acceptor = false;
     retval = new bbdo::acceptor(
                          cfg.name,
-                         is_output,
                          negociate,
                          extensions,
                          cfg.read_timeout,
@@ -157,8 +158,6 @@ io::endpoint* factory::new_endpoint(
   }
   else
     retval = new bbdo::connector(
-                         is_input,
-                         is_output,
                          negociate,
                          extensions,
                          cfg.read_timeout,

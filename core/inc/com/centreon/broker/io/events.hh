@@ -102,8 +102,7 @@ namespace               io {
                         begin() const;
     categories_container::const_iterator
                         end() const;
-    events_container const&
-                        get_events_by_category_name(
+    events_container    get_events_by_category_name(
                           std::string const& name) const;
     event_info const*   get_event_info(unsigned int type);
     events_container    get_matching_events(

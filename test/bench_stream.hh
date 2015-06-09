@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -31,9 +31,9 @@ public:
                 ~bench_stream();
   unsigned long get_write_events() const;
   unsigned long get_write_size() const;
-  void          process(bool in = false, bool out = true);
-  void          read(
-                  com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>& d);
+  bool          read(
+                  com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>& d,
+                  time_t deadline);
   void          reset_bench();
   unsigned int  write(
                   com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> const& d);

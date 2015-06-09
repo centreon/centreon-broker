@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -100,7 +100,7 @@ int main(int argc, char* argv[]) {
     // Read data.
     if (raw.isNull()) {
       misc::shared_ptr<io::data> d;
-      fs.read(d);
+      fs.read(d, (time_t)-1);
       if (d.isNull() || (io::events::data_type<io::events::internal, 1>::value != d->type()))
         retval |= 1;
       else {
@@ -133,7 +133,7 @@ int main(int argc, char* argv[]) {
   // EOF must be reached.
   try {
     misc::shared_ptr<io::data> d;
-    fs.read(d);
+    fs.read(d, (time_t)-1);
     retval |= 1;
   }
   catch (io::exceptions::shutdown const& s) {

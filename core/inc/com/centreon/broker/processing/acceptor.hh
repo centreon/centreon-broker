@@ -21,9 +21,9 @@
 #  define CCB_PROCESSING_ACCEPTOR_HH
 
 #  include <ctime>
-#  include <set>
 #  include <string>
 #  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/processing/thread.hh"
 
@@ -60,8 +60,9 @@ namespace       processing {
     void        accept();
     void        exit();
     void        run();
-    void        set_filters(std::set<unsigned int> const& filters);
+    void        set_read_filters(uset<unsigned int> const& filters);
     void        set_retry_interval(time_t retry_interval);
+    void        set_write_filters(uset<unsigned int> const& filters);
 
   private:
                 acceptor(acceptor const& other);
@@ -72,12 +73,14 @@ namespace       processing {
                 _endp;
     std::list<misc::shared_ptr<processing::feeder> >
                 _feeders;
-    std::set<unsigned int>
-                _filters;
     in_out      _in_out;
     std::string _name;
+    uset<unsigned int>
+                _read_filters;
     time_t      _retry_interval;
     std::string _temp_dir;
+    uset<unsigned int>
+                _write_filters;
   };
 }
 

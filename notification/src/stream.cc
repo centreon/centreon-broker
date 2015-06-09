@@ -77,8 +77,7 @@ stream::stream(
           bool check_replication,
           bool wse,
           node_cache& cache)
-  : _process_out(true),
-    _queries_per_transaction((qpt >= 2) ? qpt : 1),
+  : _queries_per_transaction((qpt >= 2) ? qpt : 1),
     _transaction_queries(0),
     _with_state_events(wse),
     _instance_timeout(15),
@@ -135,32 +134,30 @@ stream::stream(
 /**
  *  Copy constructor.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] other  Object to copy.
  */
-stream::stream(stream const& s) : io::stream(s),
-  _node_cache(s._node_cache) {
-  // Output processing.
-  _process_out = s._process_out;
-
+stream::stream(stream const& other) : io::stream(other),
+  _node_cache(other._node_cache) {
   // Queries per transaction.
-  _queries_per_transaction = s._queries_per_transaction;
+  _queries_per_transaction = other._queries_per_transaction;
   _transaction_queries = 0;
 
   // Process state events.
-  _with_state_events = s._with_state_events;
+  _with_state_events = other._with_state_events;
 
   // Connection ID.
   QString id;
   id.setNum((qulonglong)this, 16);
 
   // Clone centreon database.
-  _clone_db(_centreon_db, s._centreon_db, id);
+  _clone_db(_centreon_db, other._centreon_db, id);
 
   // Create the process manager.
   process_manager::instance();
 
   // Move the notification scheduler thread from the first stream.
-  _notif_scheduler.reset(const_cast<stream&>(s)._notif_scheduler.release());
+  _notif_scheduler.reset(
+    const_cast<stream&>(other)._notif_scheduler.release());
   _notif_scheduler->start();
 }
 
@@ -168,7 +165,6 @@ stream::stream(stream const& s) : io::stream(s),
  *  Destructor.
  */
 stream::~stream() {
-
   // Connection ID.
   QString id;
   id.setNum((qulonglong)this, 16);
@@ -204,26 +200,19 @@ void stream::initialize() {
 }
 
 /**
- *  Enable or disable output event processing.
- *
- *  @param[in] in  Unused.
- *  @param[in] out Set to true to enable output event processing.
- */
-void stream::process(bool in, bool out) {
-  _process_out = in || !out; // Only for immediate shutdown.
-  return ;
-}
-
-/**
  *  Read from the database.
  *
- *  @param[out] d Cleared.
+ *  @param[out] d         Cleared.
+ *  @param[in]  deadline  Unused.
+ *
+ *  @return This method will throw.
  */
-void stream::read(misc::shared_ptr<io::data>& d) {
+bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+  (void)deadline;
   d.clear();
-  throw (exceptions::msg()
-         << "notification: attempt to read from a notification stream");
-  return ;
+  throw (io::exceptions::shutdown(true, false)
+         << "attempt to read from a notification stream");
+  return (true);
 }
 
 /**
@@ -242,11 +231,6 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
-  // Check that data can be processed.
-  if (!_process_out)
-    throw (io::exceptions::shutdown(true, true)
-           << "notification stream is shutdown");
-
   // Check that data exists.
   unsigned int retval(1);
   if (data.isNull())

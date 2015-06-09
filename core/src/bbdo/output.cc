@@ -267,15 +267,14 @@ static io::raw* serialize(io::data const& e) {
 /**
  *  Default constructor.
  */
-output::output() : _process_out(true) {}
+output::output() {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-output::output(output const& other)
-  : io::stream(other), _process_out(other._process_out) {}
+output::output(output const& other) : io::stream(other) {}
 
 /**
  *  Destructor.
@@ -290,35 +289,8 @@ output::~output() {}
  *  @return This object.
  */
 output& output::operator=(output const& other) {
-  if (this != &other) {
-    io::stream::operator=(other);
-    _process_out = other._process_out;
-  }
+  (void)other;
   return (*this);
-}
-
-/**
- *  Enable or disable output processing.
- *
- *  @param[in] in  Unused.
- *  @param[in] out Set to true to enable output processing.
- */
-void output::process(bool in, bool out) {
-  (void)in;
-  _process_out = out;
-  return ;
-}
-
-/**
- *  Read data.
- *
- *  @param[out] d Cleared.
- */
-void output::read(misc::shared_ptr<io::data>& d) {
-  d.clear();
-  throw (exceptions::msg()
-         << "BBDO: attempt to read from an output object");
-  return ;
 }
 
 /**
@@ -327,8 +299,8 @@ void output::read(misc::shared_ptr<io::data>& d) {
  *  @param[out] tree Output tree.
  */
 void output::statistics(io::properties& tree) const {
-  if (!_to.isNull())
-    _to->statistics(tree);
+  if (!_substream.isNull())
+    _substream->statistics(tree);
   return ;
 }
 
@@ -340,19 +312,14 @@ void output::statistics(io::properties& tree) const {
  *  @return Number of events acknowledged.
  */
 unsigned int output::write(misc::shared_ptr<io::data> const& e) {
-  // Check if data should be processed.
-  if (!_process_out)
-    throw (io::exceptions::shutdown(true, !_process_out)
-           << "BBDO: output stream is shutdown");
-
   // Check if data exists.
   if (!e.isNull()) {
     misc::shared_ptr<io::raw> serialized(serialize(*e));
     if (serialized.data())
-      _to->write(serialized);
+      _substream->write(serialized);
   }
   else
-    _to->write(e);
+    _substream->write(e);
 
   return (1);
 }

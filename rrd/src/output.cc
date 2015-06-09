@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -70,7 +70,6 @@ output::output(
                    cache_size)),
     _ignore_update_errors(ignore_update_errors),
     _metrics_path(metrics_path.toStdString()),
-    _process_out(true),
     _status_path(status_path.toStdString()),
     _write_metrics(write_metrics),
     _write_status(write_status) {}
@@ -98,7 +97,6 @@ output::output(
           bool write_status)
   : _ignore_update_errors(ignore_update_errors),
     _metrics_path(metrics_path.toStdString()),
-    _process_out(true),
     _status_path(status_path.toStdString()),
     _write_metrics(write_metrics),
     _write_status(write_status) {
@@ -137,7 +135,6 @@ output::output(
           bool write_status)
   : _ignore_update_errors(ignore_update_errors),
     _metrics_path(metrics_path.toStdString()),
-    _process_out(true),
     _status_path(status_path.toStdString()),
     _write_metrics(write_metrics),
     _write_status(write_status) {
@@ -153,27 +150,19 @@ output::output(
 output::~output() {}
 
 /**
- *  Set if output should be processed or not.
- *
- *  @param[in] in  Unused.
- *  @param[in] out Set to true to process output events.
- */
-void output::process(bool in, bool out) {
-  (void)in;
-  _process_out = out;
-  return ;
-}
-
-/**
  *  Read data.
  *
- *  @param[out] d Cleared.
+ *  @param[out] d         Cleared.
+ *  @param[in]  deadline  Timeout.
+ *
+ *  @return This method throws.
  */
-void output::read(misc::shared_ptr<io::data>& d) {
+bool output::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+  (void)deadline;
   d.clear();
-  throw (broker::exceptions::msg()
-         << "RRD: attempt to read from endpoint (not supported yet)");
-  return ;
+  throw (broker::io::exceptions::shutdown(true, false)
+         << "cannot read from RRD stream");
+  return (true);
 }
 
 /**
@@ -193,10 +182,7 @@ void output::update() {
  *  @return Number of events acknowledged.
  */
 unsigned int output::write(misc::shared_ptr<io::data> const& d) {
-  // Check that data exists and should be processed.
-  if (!_process_out)
-    throw (io::exceptions::shutdown(true, true)
-             << "RRD output is shutdown");
+  // Check that data exists.
   if (d.isNull())
     return (1);
 

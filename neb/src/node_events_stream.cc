@@ -51,9 +51,7 @@ node_events_stream::node_events_stream(
     misc::shared_ptr<persistent_cache> cache,
     std::string const& config_file)
   : _cache(cache),
-    _config_file(config_file),
-    _process_out(true) {
-
+    _config_file(config_file) {
   // Load the config file.
   _load_config_file();
 
@@ -89,29 +87,21 @@ node_events_stream::~node_events_stream() {
 }
 
 /**
- *  Set which data to process.
- *
- *  @param[in] in   Process in.
- *  @param[in] out  Process out.
- */
-void node_events_stream::process(bool in, bool out) {
-  (void)in;
-  _process_out = out;
-  return ;
-}
-
-/**
  *  Read data from the stream.
  *
- *  @param[out] d  Unused.
+ *  @param[out] d         Unused.
+ *  @param[in]  deadline  Timeout.
+ *
+ *  @return Always throw.
  */
-void node_events_stream::read(misc::shared_ptr<io::data>& d) {
+bool node_events_stream::read(
+                           misc::shared_ptr<io::data>& d,
+                           time_t deadline) {
+  (void)deadline;
   d.clear();
-  throw (exceptions::msg()
-   << "neb: cannot read from a node events stream. This is likely a "
-   << "software bug that you should report to Centreon Broker "
-   << "developers");
-  return ;
+  throw (io::exceptions::shutdown(true, false)
+         << "cannot read from a node events stream");
+  return (true);
 }
 
 /**
@@ -132,10 +122,6 @@ void node_events_stream::update() {
  */
 unsigned int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
   // Check that data can be processed.
-  if (!_process_out)
-    throw (io::exceptions::shutdown(true, true)
-     << "correlation stream is shutdown");
-
   if (d.isNull())
     return (1);
 
@@ -320,7 +306,7 @@ void node_events_stream::_update_downtime(
     _downtimes.delete_downtime(dwn);
     // Recurring downtimes.
     if (dwn.triggered_by != 0
-          && _downtimes.is_recurring(dwn.triggered_by))
+        && _downtimes.is_recurring(dwn.triggered_by))
       _spawn_recurring_downtime(
         dwn.actual_end_time,
         *_downtimes.get_downtime(dwn.triggered_by));
@@ -851,7 +837,7 @@ void node_events_stream::_save_cache() {
  *  @param[in] dwn  The downtime to schedule.
  */
 void node_events_stream::_schedule_downtime(
-                           downtime const& dwn) {  
+                           downtime const& dwn) {
   // If this is a fixed downtime or the node is in a non-okay state, schedule it.
   // If not, then it will be scheduled at the reception of a
   // service/host status event.

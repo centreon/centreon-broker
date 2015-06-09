@@ -2,33 +2,34 @@
 <centreonbroker>
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
   <instance>42</instance>
-  <instance_name>MyBroker</instance_name>
-  <!--
+  <instance_name>my_cbmod</instance_name>
   <stats>
-    <fifo>/tmp/cbd.fifo</fifo>
+    <fifo>/tmp/cbmod.fifo</fifo>
   </stats>
   <logger>
     <type>file</type>
-    <name>cbd.log</name>
+    <name>cbmod.log</name>
     <config>1</config>
     <debug>1</debug>
     <error>1</error>
     <info>1</info>
     <level>3</level>
   </logger>
-  -->
-  <input>
-    <name>InputFromBBDOProtocolVersionUnitTest</name>
-    <type>tcp</type>
-    <port>5686</port>
-    <protocol>bbdo</protocol>
-  </input>
   <output>
-    <name>OutputToBBDOProtocolVersionUnitTest</name>
+    <name>FailoverToTCP1</name>
+    <failover>FailoverToTCP2</failover>
     <type>tcp</type>
     <host>localhost</host>
-    <port>5685</port>
+    <port>5680</port>
     <protocol>bbdo</protocol>
-    <read_timeout>5</read_timeout>
+    <retry_interval>1</retry_interval>
+  </output>
+  <output>
+    <name>FailoverToTCP2</name>
+    <type>tcp</type>
+    <host>localhost</host>
+    <port>5690</port>
+    <protocol>bbdo</protocol>
+    <retry_interval>1</retry_interval>
   </output>
 </centreonbroker>

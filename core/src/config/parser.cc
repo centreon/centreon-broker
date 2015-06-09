@@ -122,6 +122,7 @@ void parser::parse(QString const& file, state& s) {
       }
       else if (name == "input") {
         endpoint in;
+        in.write_filters.insert("all");
         _parse_endpoint(elem, in);
         s.inputs().push_back(in);
       }
@@ -156,6 +157,8 @@ void parser::parse(QString const& file, state& s) {
         s.module_directory(elem.text().toStdString());
       else if (name == "output") {
         endpoint out;
+        out.read_filters.insert("all");
+        out.write_filters.insert("all");
         _parse_endpoint(elem, out);
         s.outputs().push_back(out);
       }
@@ -235,14 +238,31 @@ void parser::_parse_endpoint(QDomElement& elem, endpoint& e) {
         e.read_timeout = static_cast<time_t>(entry.text().toInt());
       else if (name == "retry_interval")
         e.retry_interval = static_cast<time_t>(entry.text().toUInt());
-      else if (name == "filters") {
+      else if ((name == "filters") || (name == "read_filters")) {
+        e.read_filters.clear();
         QDomNodeList nlist(entry.childNodes());
         for (int i(0), len(nlist.size()); i < len; ++i) {
           QDomElement entry(nlist.item(i).toElement());
           if (!entry.isNull()) {
             QString name(entry.tagName());
             if (name == "category")
-              e.filters.insert(entry.text().toStdString());
+              e.read_filters.insert(entry.text().toStdString());
+            else if (name == "all")
+              e.read_filters.insert("all");
+          }
+        }
+      }
+      else if (name == "write_filters") {
+        e.write_filters.clear();
+        QDomNodeList nlist(entry.childNodes());
+        for (int i(0), len(nlist.size()); i < len; ++i) {
+          QDomElement entry(nlist.item(i).toElement());
+          if (!entry.isNull()) {
+            QString name(entry.tagName());
+            if (name == "category")
+              e.write_filters.insert(entry.text().toStdString());
+            else if (name == "all")
+              e.write_filters.insert("all");
           }
         }
       }

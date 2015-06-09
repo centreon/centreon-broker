@@ -42,10 +42,9 @@ namespace              file {
                          unsigned long long max_size = 0);
                        ~stream();
     unsigned long long get_max_size() const throw ();
-    void               process(
-                         bool in = false,
-                         bool out = false);
-    void               read(misc::shared_ptr<io::data>& d);
+    bool               read(
+                         misc::shared_ptr<io::data>& d,
+                         time_t deadline);
     void               reset();
     void               set_auto_delete(bool auto_delete);
     void               statistics(io::properties& tree) const;
@@ -69,8 +68,6 @@ namespace              file {
     long               _max_size;
     QMutex             _mutex;
     std::string        _path;
-    bool               _process_in;
-    bool               _process_out;
     misc::shared_ptr<cfile>
                        _rfile;
     unsigned int       _rid;

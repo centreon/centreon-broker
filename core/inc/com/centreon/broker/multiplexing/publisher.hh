@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -38,15 +38,13 @@ namespace        multiplexing {
   class          publisher : public io::stream {
   public:
                  publisher();
-                 publisher(publisher const& p);
+                 publisher(publisher const& other);
                  ~publisher() throw ();
-    publisher&   operator=(publisher const& p);
-    void         process(bool in = false, bool out = true);
-    void         read(misc::shared_ptr<io::data>& d);
+    publisher&   operator=(publisher const& other);
+    bool         read(
+                   misc::shared_ptr<io::data>& d,
+                   time_t deadline = (time_t)-1);
     unsigned int write(misc::shared_ptr<io::data> const& d);
-
-  private:
-    bool         _process;
   };
 }
 

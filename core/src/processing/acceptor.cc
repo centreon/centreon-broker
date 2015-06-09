@@ -19,9 +19,9 @@
 
 #include <QMutexLocker>
 #include <sstream>
+#include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/multiplexing/publisher.hh"
-#include "com/centreon/broker/multiplexing/subscriber.hh"
+#include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/processing/acceptor.hh"
 #include "com/centreon/broker/processing/feeder.hh"
 
@@ -59,28 +59,25 @@ acceptor::~acceptor() {
  *  Accept a new incoming connection.
  */
 void acceptor::accept() {
+  static unsigned int connection_id(0);
+
   // Try to accept connection.
   misc::shared_ptr<io::stream> s(_endp->open());
   if (!s.isNull()) {
     // Create feeder thread.
+    std::string name;
+    {
+      std::ostringstream oss;
+      oss << _name << "-" << ++connection_id;
+      name = oss.str();
+    }
     misc::shared_ptr<processing::feeder>
-      f(new processing::feeder);
-    std::ostringstream name;
-    name << _name << "-" << f.data();
-    if (_in_out == out) {
-      misc::shared_ptr<multiplexing::subscriber>
-        sbscrbr(new multiplexing::subscriber(
-                                    name.str().c_str(),
-                                    _temp_dir,
-                                    false));
-      sbscrbr->set_filters(_filters);
-      f->prepare(name.str(), sbscrbr, s);
-    }
-    else {
-      misc::shared_ptr<multiplexing::publisher>
-        pblshr(new multiplexing::publisher);
-      f->prepare(name.str(), s, pblshr);
-    }
+      f(new processing::feeder(
+                          name,
+                          s,
+                          _read_filters,
+                          _write_filters,
+                          _temp_dir));
 
     // Run feeder thread.
     f->start();
@@ -137,14 +134,14 @@ void acceptor::run() {
 }
 
 /**
- *  @brief Set event filters.
+ *  @brief Set read filters.
  *
  *  This is only useful in input mode.
  *
  *  @param[in] filters  Set of accepted event IDs.
  */
-void acceptor::set_filters(std::set<unsigned int> const& filters) {
-  _filters = filters;
+void acceptor::set_read_filters(uset<unsigned int> const& filters) {
+  _read_filters = filters;
   return ;
 }
 
@@ -160,6 +157,17 @@ void acceptor::set_filters(std::set<unsigned int> const& filters) {
  */
 void acceptor::set_retry_interval(time_t retry_interval) {
   _retry_interval = retry_interval;
+  return ;
+}
+
+/**
+ *  @brief Set write filters.
+ *
+ *  This is useful to prevent endpoints of generating some kind of
+ *  events.
+ */
+void acceptor::set_write_filters(uset<unsigned int> const& filters) {
+  _write_filters = filters;
   return ;
 }
 

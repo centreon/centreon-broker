@@ -20,13 +20,15 @@
 #ifndef CCB_BBDO_INPUT_HH
 #  define CCB_BBDO_INPUT_HH
 
-#  include <ctime>
+#  include <string>
+#  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                bbdo {
+namespace        bbdo {
   /**
    *  @class input input.hh "com/centreon/broker/bbdo/input.hh"
    *  @brief BBDO input source.
@@ -34,28 +36,27 @@ namespace                bbdo {
    *  The class converts an input stream into events using the BBDO
    *  (Broker Binary Data Objects) protocol.
    */
-  class                  input : virtual public io::stream {
+  class          input : virtual public io::stream {
   public:
-                         input();
-                         input(input const& other);
-    virtual              ~input();
-    input&               operator=(input const& other);
-    void                 process(bool in = false, bool out = false);
-    virtual void         read(misc::shared_ptr<io::data>& d);
-    virtual unsigned int read_any(
-                           misc::shared_ptr<io::data>& d,
-                           time_t timeout = (time_t)-1);
-    virtual unsigned int write(misc::shared_ptr<io::data> const& d);
+                 input();
+                 input(input const& other);
+    virtual      ~input();
+    input&       operator=(input const& other);
+    bool         read(
+                   misc::shared_ptr<io::data>& d,
+                   time_t deadline = (time_t)-1);
+    bool         read_any(
+                   misc::shared_ptr<io::data>& d,
+                   time_t deadline = (time_t)-1);
 
   private:
-    void                 _buffer_must_have_unprocessed(
-                           unsigned int bytes,
-                           time_t timeout = (time_t)-1);
-    void                 _internal_copy(input const& right);
+    void         _buffer_must_have_unprocessed(
+                   unsigned int bytes,
+                   time_t deadline = (time_t)-1);
+    void         _internal_copy(input const& other);
 
-    std::string          _buffer;
-    bool                 _process_in;
-    unsigned int         _processed;
+    std::string  _buffer;
+    unsigned int _processed;
   };
 }
 

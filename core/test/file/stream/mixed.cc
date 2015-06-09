@@ -50,7 +50,7 @@ static int read_some(file::stream& f, unsigned int count) {
     int index(buffer.indexOf('\n'));
     while (-1 == index) {
       misc::shared_ptr<io::data> d;
-      f.read(d);
+      f.read(d, (time_t)-1);
       if (d->type() != io::events::data_type<io::events::internal, 1>::value)
         return (1);
       misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
   // No more data is available.
   try {
     misc::shared_ptr<io::data> d;
-    fs.read(d);
+    fs.read(d, (time_t)-1);
     retval |= 1;
   }
   catch (io::exceptions::shutdown const& s) {

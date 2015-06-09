@@ -20,12 +20,14 @@
 #ifndef CCB_BBDO_OUTPUT_HH
 #  define CCB_BBDO_OUTPUT_HH
 
+#  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                bbdo {
+namespace        bbdo {
   /**
    *  @class output output.hh "com/centreon/broker/bbdo/output.hh"
    *  @brief BBDO output destination.
@@ -33,19 +35,14 @@ namespace                bbdo {
    *  The class converts events to an output stream using the BBDO
    *  (Broker Binary Data Objects) protocol.
    */
-  class                  output : virtual public io::stream {
+  class          output : virtual public io::stream {
   public:
-                         output();
-                         output(output const& other);
-    virtual              ~output();
-    output&              operator=(output const& other);
-    void                 process(bool in = false, bool out = false);
-    virtual void         read(misc::shared_ptr<io::data>& e);
-    virtual void         statistics(io::properties& tree) const;
-    virtual unsigned int write(misc::shared_ptr<io::data> const& e);
-
-  private:
-    bool                 _process_out;
+                 output();
+                 output(output const& other);
+    virtual      ~output();
+    output&      operator=(output const& other);
+    void         statistics(io::properties& tree) const;
+    unsigned int write(misc::shared_ptr<io::data> const& e);
   };
 }
 

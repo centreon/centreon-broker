@@ -56,8 +56,6 @@ directory_dumper::directory_dumper(
           misc::shared_ptr<persistent_cache> cache)
   try :
     _path(path),
-    _process_in(true),
-    _process_out(true),
     _tagname(tagname),
     _cache(cache) {
   // Set watcher timeout.
@@ -92,29 +90,17 @@ directory_dumper::~directory_dumper() {
 }
 
 /**
- *  Set processing flags.
- *
- *  @param[in] in  Set to true to process input events.
- *  @param[in] out Set to true to process output events.
- */
-void directory_dumper::process(bool in, bool out) {
-  _process_in = in;
-  _process_out = out;
-  return ;
-}
-
-/**
  *  Read data from the dumper.
  *
- *  @param[out] d Bunch of data.
+ *  @param[out] d         Next available event.
+ *  @param[in]  deadline  Timeout.
+ *
+ *  @return Respect io::stream::read()'s return value.
  */
-void directory_dumper::read(misc::shared_ptr<io::data>& d) {
+bool directory_dumper::read(
+                         misc::shared_ptr<io::data>& d,
+                         time_t deadline) {
   d.clear();
-
-  // If closed, do nothing.
-  if (!_process_out)
-    throw (io::exceptions::shutdown(!_process_in, !_process_out)
-           << "directory dumper stream is shutdown");
 
   // Get an event already in the event list.
   if (!_event_list.empty()) {
@@ -128,7 +114,7 @@ void directory_dumper::read(misc::shared_ptr<io::data>& d) {
         _event_list.front().second.ref_as<dumper::remove>().filename.toStdString());
     d = _event_list.front().second;
     _event_list.pop_front();
-    return ;
+    return (true);
   }
 
   // If no events, watch the directory for new events.
@@ -167,8 +153,8 @@ void directory_dumper::read(misc::shared_ptr<io::data>& d) {
  */
 unsigned int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
   (void)d;
-  throw (exceptions::msg()
-         << "dumper: attempt to write from a directory dumper stream");
+  throw (io::exceptions::shutdown(false, true)
+         << "cannot write to a dumper directory");
   return (1);
 }
 

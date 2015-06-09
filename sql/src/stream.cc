@@ -1946,7 +1946,6 @@ stream::stream(
       db,
       cleanup_check_interval),
     _pending_events(0),
-    _process_out(true),
     _with_state_events(wse),
     _instance_timeout(instance_timeout),
     _oldest_timestamp(std::numeric_limits<time_t>::max()) {
@@ -1978,26 +1977,19 @@ void stream::initialize() {
 }
 
 /**
- *  Enable or disable output event processing.
- *
- *  @param[in] in  Unused.
- *  @param[in] out Set to true to enable output event processing.
- */
-void stream::process(bool in, bool out) {
-  _process_out = in || !out; // Only for immediate shutdown.
-  return ;
-}
-
-/**
  *  Read from the database.
  *
- *  @param[out] d Cleared.
+ *  @param[out] d         Cleared.
+ *  @param[in]  deadline  Timeout.
+ *
+ *  @return This method will throw.
  */
-void stream::read(misc::shared_ptr<io::data>& d) {
+bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+  (void)deadline;
   d.clear();
-  throw (exceptions::msg()
-         << "SQL: attempt to read from a SQL stream (not supported yet)");
-  return ;
+  throw (io::exceptions::shutdown(true, false)
+         << "cannot read from SQL database");
+  return (true);
 }
 
 /**
@@ -2017,11 +2009,6 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
-  // Check that data can be processed.
-  if (!_process_out)
-    throw (io::exceptions::shutdown(true, true)
-           << "SQL stream is shutdown");
-
   // Check that data exists.
   if (!data.isNull()) {
     ++_pending_events;

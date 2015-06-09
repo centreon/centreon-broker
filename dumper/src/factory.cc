@@ -113,7 +113,8 @@ io::endpoint* factory::new_endpoint(
                          bool is_output,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
-  (void)is_acceptor;
+  // Set acceptor flag.
+  is_acceptor = false;
 
   // Get the type of this dumper.
   opener::dumper_type type = opener::dump;

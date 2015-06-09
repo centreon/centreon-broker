@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -59,26 +59,23 @@ namespace          graphite {
                      unsigned int queries_per_transaction,
                      misc::shared_ptr<persistent_cache> const& cache);
                    ~stream();
-    void           process(bool in = false, bool out = true);
-    void           read(misc::shared_ptr<io::data>& d);
+    bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
     void           statistics(io::properties& tree) const;
     void           update();
     unsigned int   write(misc::shared_ptr<io::data> const& d);
 
   private:
-    bool          _process_out;
-
     // Database parameters
-    std::string   _metric_naming;
-    std::string   _status_naming;
-    std::string   _db_user;
-    std::string   _db_password;
-    std::string   _db_host;
+    std::string    _metric_naming;
+    std::string    _status_naming;
+    std::string    _db_user;
+    std::string    _db_password;
+    std::string    _db_host;
     unsigned short _db_port;
-    unsigned int  _queries_per_transaction;
+    unsigned int   _queries_per_transaction;
 
     // Internal working members
-    unsigned int _actual_query;
+    unsigned int   _actual_query;
 
     // Status members
     std::string    _status;

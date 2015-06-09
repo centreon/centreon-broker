@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -174,7 +174,6 @@ misc::shared_ptr<io::stream> factory::new_stream(
   (void)is_acceptor;
   (void)proto_name;
   misc::shared_ptr<io::stream> s(new stream);
-  s->read_from(to);
-  s->write_to(to);
+  s->set_substream(to);
   return (s);
 }

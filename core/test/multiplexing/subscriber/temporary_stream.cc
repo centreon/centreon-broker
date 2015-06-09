@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 2012-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -71,30 +71,24 @@ temporary_stream& temporary_stream::operator=(temporary_stream const& ss) {
 }
 
 /**
- *  Enable or disable event processing.
- *
- *  @param[in] in  Unused.
- *  @param[in] out Unused.
- */
-void temporary_stream::process(bool in, bool out) {
-  (void)in;
-  (void)out;
-  return ;
-}
-
-/**
  *  Read some data.
  *
- *  @param[out] data Some data.
+ *  @param[out] data      Some data.
+ *  @param[in]  deadline  Unused.
+ *
+ *  @return Always return true.
  */
-void temporary_stream::read(misc::shared_ptr<io::data>& data) {
+bool temporary_stream::read(
+                         misc::shared_ptr<io::data>& data,
+                         time_t deadline) {
+  (void)deadline;
   QMutexLocker lock(&_eventsm);
   if (_events.empty())
     throw (io::exceptions::shutdown(false, false)
            << "temporary stream does not have any more event");
   else
     data = _events.dequeue();
-  return ;
+  return (true);
 }
 
 /**

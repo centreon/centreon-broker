@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -57,8 +57,7 @@ stream::stream(
           std::string const& metric_ts,
           std::vector<column> const& metric_cols,
           misc::shared_ptr<persistent_cache> const& cache)
-  : _process_out(true),
-    _user(user),
+  : _user(user),
     _password(passwd),
     _address(addr),
     _port(port),
@@ -87,30 +86,22 @@ stream::stream(
 /**
  *  Destructor.
  */
-stream::~stream() {
-}
-
-/**
- *  Enable or disable output event processing.
- *
- *  @param[in] in  Unused.
- *  @param[in] out Set to true to enable output event processing.
- */
-void stream::process(bool in, bool out) {
-  _process_out = in || !out; // Only for immediate shutdown.
-  return ;
-}
+stream::~stream() {}
 
 /**
  *  Read from the datbase.
  *
- *  @param[out] d Cleared.
+ *  @param[out] d         Cleared.
+ *  @param[in]  deadline  Timeout.
+ *
+ *  @return This method will throw.
  */
-void stream::read(misc::shared_ptr<io::data>& d) {
+bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+  (void)deadline;
   d.clear();
-  throw (com::centreon::broker::exceptions::msg()
-         << "influxdb: attempt to read from an influxdb stream (not supported yet)");
-  return ;
+  throw (com::centreon::broker::io::exceptions::shutdown(true, false)
+         << "cannot read from InfluxDB database");
+  return (true);
 }
 
 /**
@@ -143,11 +134,6 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
-  // Check that processing is enabled.
-  if (!_process_out)
-    throw (io::exceptions::shutdown(true, true)
-             << "influxdb stream is shutdown");
-
   bool commit = false;
 
   // Give data to cache.
@@ -184,9 +170,3 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   else
     return (0);
 }
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/

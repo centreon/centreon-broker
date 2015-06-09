@@ -41,23 +41,22 @@ namespace        tcp {
                    misc::shared_ptr<QTcpSocket> sock,
                    misc::shared_ptr<QMutex> mutex);
                  ~stream();
-    void         process(bool in = false, bool out = true);
-    void         read(misc::shared_ptr<io::data>& d);
-    void         set_timeout(int secs);
+    bool         read(
+                   misc::shared_ptr<io::data>& d,
+                   time_t deadline);
+    void         set_read_timeout(int secs);
     void         set_write_timeout(int secs);
     unsigned int write(misc::shared_ptr<io::data> const& d);
 
   private:
-                 stream(stream const& s);
-    stream&      operator=(stream const& s);
+                 stream(stream const& other);
+    stream&      operator=(stream const& other);
 
     misc::shared_ptr<QMutex>
                  _mutex;
-    bool         _process_in;
-    bool         _process_out;
+    int          _read_timeout;
     misc::shared_ptr<QTcpSocket>
                  _socket;
-    int          _timeout;
     int          _write_timeout;
   };
 }

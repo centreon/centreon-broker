@@ -129,7 +129,7 @@ misc::shared_ptr<io::stream> connector::open(
     try {
       // Initialize the TLS session
       logging::debug(logging::low) << "TLS: initializing session";
-      if ((ret = gnutls_init(session, GNUTLS_CLIENT))
+      if ((ret = gnutls_init(session, GNUTLS_CLIENT | GNUTLS_NONBLOCK))
           != GNUTLS_E_SUCCESS)
         throw (exceptions::msg() << "TLS: cannot initialize session: "
                << gnutls_strerror(ret));
@@ -145,8 +145,7 @@ misc::shared_ptr<io::stream> connector::open(
       delete (session);
       throw ;
     }
-    s->read_from(lower);
-    s->write_to(lower);
+    s->set_substream(lower);
 
     // Bind the TLS session with the stream from the lower layer.
 #if GNUTLS_VERSION_NUMBER < 0x020C00

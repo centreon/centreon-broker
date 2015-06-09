@@ -45,12 +45,11 @@ using namespace com::centreon::broker::correlation;
  */
 stream::stream(
           QString const& correlation_file,
-    misc::shared_ptr<persistent_cache> cache,
-    bool load_correlation,
-    bool passive)
+          misc::shared_ptr<persistent_cache> cache,
+          bool load_correlation,
+          bool passive)
   : _cache(cache),
     _correlation_file(correlation_file),
-    _process_out(true),
     _passive(passive) {
   // Create the engine started event.
   multiplexing::publisher pblsh;
@@ -84,31 +83,19 @@ stream::~stream() {
 }
 
 /**
- *  Set which data to process.
- *
- *  @param[in] in   Process in.
- *  @param[in] out  Process out.
- */
-void stream::process(bool in, bool out) {
-  bool was_processing(_process_out);
-  _process_out = in || !out; // Only for immediate shutdown.
-  if (was_processing && !_process_out)
-    _save_persistent_cache();
-  return ;
-}
-
-/**
  *  Read data from the stream.
  *
- *  @param[out] d  Unused.
+ *  @param[out] d         Unused.
+ *  @param[in]  deadline  Timeout.
+ *
+ *  @return This method throws.
  */
-void stream::read(misc::shared_ptr<io::data>& d) {
+bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+  (void)deadline;
   d.clear();
-  throw (exceptions::msg()
-	 << "correlation: cannot read from a stream. This is likely a "
-	 << "software bug that you should report to Centreon Broker "
-	 << "developers");
-  return ;
+  throw (io::exceptions::shutdown(true, false)
+	 << "cannot read from correlation stream");
+  return (true);;
 }
 
 /**
@@ -129,10 +116,6 @@ void stream::update() {
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
   // Check that data can be processed.
-  if (!_process_out)
-    throw (io::exceptions::shutdown(true, true)
-	   << "correlation stream is shutdown");
-
   if (d.isNull())
     return (1);
 

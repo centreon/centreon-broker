@@ -36,9 +36,7 @@ using namespace com::centreon::broker::command_file;
  *  Default constructor.
  */
 stream::stream(std::string const& filename)
-  try :  _process_in(true),
-         _process_out(true),
-         _filename(filename),
+  try :  _filename(filename),
          _fifo(filename.c_str()) {
   logging::debug(logging::medium)
     << "command_file: command file '" << filename << "' initialized";
@@ -55,41 +53,32 @@ catch (std::exception const& e) {
 stream::~stream() {}
 
 /**
- *  Set which data should be processed.
- *
- *  @param[in] in  Set to true to process input events.
- *  @param[in] out Set to true to process output events.
- */
-void stream::process(bool in, bool out) {
-  _process_in = in;
-  _process_out = out;
-  return ;
-}
-
-/**
  *  Read data from stream.
  *
- *  @param[out] d Next available event.
+ *  @param[out] d         Next available event.
+ *  @param[in]  deadline  Timeout.
  *
- *  @see input::read()
+ *  @return Respect io::stream::read()'s return value.
  */
-void stream::read(misc::shared_ptr<io::data>& d) {
+bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   d.clear();
-
-  if (!_process_out)
-    throw (io::exceptions::shutdown(!_process_in, !_process_out)
-           << "command file stream is shutdown");
-
-  std::string line = _fifo.read_line();
+  time_t now(time(NULL));
+  int timeout;
+  if (now >= deadline)
+    timeout = 0;
+  else
+    timeout = (deadline - now) * 1000000; // Microseconds timeout.
+  std::string line = _fifo.read_line(timeout);
   if (!line.empty()) {
-    line.erase(line.size() - 1);
+    line.erase(line.size() - 1); // Remove \n.
     misc::shared_ptr<external_command> exc(new external_command);
     exc->command = QString::fromStdString(line);
     d = exc;
-
     logging::info(logging::high)
-      << "command_file: received external command: '" << exc->command << "'";
+      << "command_file: received external command: '"
+      << exc->command << "'";
   }
+  return (!line.empty());
 }
 
 /**
@@ -111,7 +100,7 @@ void stream::statistics(io::properties& tree) const {
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
   (void)d;
-  throw (exceptions::msg()
-         << "command_file: attempt to write to a command file");
+  throw (io::exceptions::shutdown(false, true)
+         << "command_file: cannot write to a command file");
   return (1);
 }

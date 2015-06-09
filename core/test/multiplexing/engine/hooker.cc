@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -37,10 +37,10 @@ hooker::hooker() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] h Object to copy.
+ *  @param[in] other  Object to copy.
  */
-hooker::hooker(hooker const& h)
-  : multiplexing::hooker(h), _queue(h._queue) {}
+hooker::hooker(hooker const& other)
+  : multiplexing::hooker(other), _queue(other._queue) {}
 
 /**
  *  Destructor.
@@ -50,14 +50,14 @@ hooker::~hooker() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] h Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-hooker& hooker::operator=(hooker const& h) {
-  if (this != &h) {
-    multiplexing::hooker::operator=(h);
-    _queue = h._queue;
+hooker& hooker::operator=(hooker const& other) {
+  if (this != &other) {
+    multiplexing::hooker::operator=(other);
+    _queue = other._queue;
   }
   return (*this);
 }
@@ -65,9 +65,15 @@ hooker& hooker::operator=(hooker const& h) {
 /**
  *  Read events from the hook.
  *
- *  @param[out] d Event.
+ *  @param[out] d         Event.
+ *  @param[in]  deadline  Unused.
+ *
+ *  @return Respect io::stream::read()'s return value.
  */
-void hooker::read(misc::shared_ptr<io::data>& d) {
+bool hooker::read(
+               misc::shared_ptr<io::data>& d,
+               time_t deadline) {
+  (void)deadline;
   d.clear();
   if (!_queue.isEmpty()) {
     d = _queue.head();
@@ -76,7 +82,7 @@ void hooker::read(misc::shared_ptr<io::data>& d) {
   else if (!_registered)
     throw (io::exceptions::shutdown(true, true)
              << "hooker test object is shutdown");
-  return ;
+  return (true);
 }
 
 /**

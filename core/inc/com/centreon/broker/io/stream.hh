@@ -38,31 +38,29 @@ namespace                    io {
    *
    *  The read() method is used to get data while waiting for it. It
    *  should work as follow :
-   *    - has data :        shared pointer is properly set
-   *    - spurious wake :   null shared pointer
+   *    - has data :        shared pointer is properly set, true returned
+   *    - spurious wake :   null shared pointer, true returned
+   *    - timeout :         null shared pointer, false returned
    *    - known shutdown :  throw io::exceptions::shutdown
    *    - error :           any exception
    */
   class                      stream {
   public:
                              stream();
-                             stream(stream const& s);
+                             stream(stream const& other);
     virtual                  ~stream();
-    stream&                  operator=(stream const& s);
-    virtual void             read(misc::shared_ptr<io::data>& d) = 0;
-    virtual void             read(
+    stream&                  operator=(stream const& other);
+    virtual bool             read(
                                misc::shared_ptr<io::data>& d,
-                               time_t timeout,
-                               bool* timed_out = NULL);
-    virtual void             read_from(misc::shared_ptr<stream> from);
+                               time_t deadline = (time_t)-1) = 0;
+    virtual void             set_substream(
+                               misc::shared_ptr<stream> substream);
     virtual void             statistics(io::properties& tree) const;
     virtual void             update();
     virtual unsigned int     write(misc::shared_ptr<data> const& d) = 0;
-    virtual void             write_to(misc::shared_ptr<stream> to);
 
   protected:
-    misc::shared_ptr<stream> _from;
-    misc::shared_ptr<stream> _to;
+    misc::shared_ptr<stream> _substream;
   };
 }
 

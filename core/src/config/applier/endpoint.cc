@@ -32,6 +32,8 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/stringifier.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/multiplexing/muxer.hh"
+#include "com/centreon/broker/multiplexing/subscriber.hh"
 #include "com/centreon/broker/persistent_cache.hh"
 #include "com/centreon/broker/processing/acceptor.hh"
 #include "com/centreon/broker/processing/failover.hh"
@@ -181,10 +183,10 @@ void endpoint::apply(
     << out_to_create.size() << " outputs to create";
 
   // Create new outputs.
-  for (std::list<config::endpoint>::iterator it = out_to_create.begin(),
-         end = out_to_create.end();
+  for (std::list<config::endpoint>::iterator it(out_to_create.begin()),
+         end(out_to_create.end());
        it != end;
-       ++it)
+       ++it) {
     // Check that output is not a failover.
     if (it->name.isEmpty()
         || (std::find_if(out_to_create.begin(),
@@ -194,10 +196,23 @@ void endpoint::apply(
       // Create subscriber and endpoint.
       misc::shared_ptr<multiplexing::subscriber>
         s(_create_subscriber(*it));
-      std::auto_ptr<processing::failover> endp(_create_failover(
-                                                 *it,
-                                                 s,
-                                                 out_to_create));
+      bool is_acceptor;
+      misc::shared_ptr<io::endpoint>
+        e(_create_endpoint(*it, true, true, is_acceptor));
+      std::auto_ptr<processing::thread> endp;
+      if (is_acceptor) {
+        std::auto_ptr<processing::acceptor>
+          acceptr(new processing::acceptor(
+                                    e,
+                                    processing::acceptor::out,
+                                    it->name.toStdString(),
+                                    cache_directory));
+        acceptr->set_read_filters(_filters(it->read_filters));
+        acceptr->set_write_filters(_filters(it->write_filters));
+        endp.reset(acceptr.release());
+      }
+      else
+        endp.reset(_create_failover(*it, s, e, out_to_create));
       {
         QMutexLocker lock(&_outputsm);
         _outputs[*it] = endp.get();
@@ -209,6 +224,7 @@ void endpoint::apply(
         << "' is registered and ready to run";
       endp.release()->start();
     }
+  }
 
   // Create new inputs.
   for (std::list<config::endpoint>::iterator it = in_to_create.begin(),
@@ -229,7 +245,8 @@ void endpoint::apply(
                                   processing::acceptor::in,
                                   it->name.toStdString(),
                                   cache_directory));
-      acceptr->set_filters(_filters(*it));
+      acceptr->set_read_filters(_filters(it->read_filters));
+      acceptr->set_write_filters(_filters(it->write_filters));
       th.reset(acceptr.release());
     }
     else
@@ -442,18 +459,17 @@ void endpoint::unload() {
 endpoint::endpoint() : _outputsm(QMutex::Recursive) {}
 
 /**
- *  Create a subscriber for a chain of failovers / endpoints. This
- *  method will create the subscriber of the chain and set appropriate
- *  filters.
+ *  Create a muxer for a chain of failovers / endpoints. This method
+ *  will create the subscriber of the chain and set appropriate filters.
  *
  *  @param[in] cfg  Configuration of the root endpoint.
  *
  *  @return The subscriber of the chain.
  */
-multiplexing::subscriber* endpoint::_create_subscriber(
-                                      config::endpoint& cfg) {
+multiplexing::subscriber* endpoint::_create_subscriber(config::endpoint& cfg) {
   // Build filtering elements.
-  std::set<unsigned int> elements(_filters(cfg));
+  uset<unsigned int> read_elements(_filters(cfg.read_filters));
+  uset<unsigned int> write_elements(_filters(cfg.write_filters));
 
   // Create subscriber.
   std::auto_ptr<multiplexing::subscriber>
@@ -461,20 +477,23 @@ multiplexing::subscriber* endpoint::_create_subscriber(
                           cfg.name.toStdString(),
                           _cache_directory,
                           true));
-  s->set_filters(elements);
+  s->get_muxer().set_read_filters(read_elements);
+  s->get_muxer().set_write_filters(write_elements);
   return (s.release());
 }
 
 /**
  *  Create and register an endpoint according to configuration.
  *
- *  @param[in]  cfg          Endpoint configuration.
- *  @param[in]  sbscrbr      Subscriber.
- *  @param[in]  l            List of endpoints.
+ *  @param[in]  cfg      Endpoint configuration.
+ *  @param[in]  sbscrbr  Subscriber.
+ *  @param[in]  endp     Endpoint.
+ *  @param[in]  l        List of endpoints.
  */
 processing::failover* endpoint::_create_failover(
                                   config::endpoint& cfg,
                                   misc::shared_ptr<multiplexing::subscriber> sbscrbr,
+                                  misc::shared_ptr<io::endpoint> endp,
                                   std::list<config::endpoint>& l) {
   // Debug message.
   logging::config(logging::medium)
@@ -488,10 +507,19 @@ processing::failover* endpoint::_create_failover(
       throw (exceptions::msg() << "endpoint applier: could not find " \
                   "failover '" << cfg.failover << "' for endpoint '"
                << cfg.name << "'");
+    bool is_acceptor;
+    misc::shared_ptr<io::endpoint>
+      e(_create_endpoint(*it, true, true, is_acceptor));
+    if (is_acceptor)
+      throw (exceptions::msg()
+             << "endpoint applier: cannot allow acceptor '"
+             << cfg.failover << "' as failover for endpoint '"
+             << cfg.name << "'");
     failovr = misc::shared_ptr<processing::failover>(
                 _create_failover(
                   *it,
                   sbscrbr,
+                  e,
                   l));
   }
 
@@ -523,18 +551,11 @@ processing::failover* endpoint::_create_failover(
     }
   }
 
-  // Create endpoint object.
-  bool is_acceptor(false);
-  misc::shared_ptr<io::endpoint>
-    endp(_create_endpoint(cfg, true, true, is_acceptor));
-
   // Return failover thread.
   std::auto_ptr<processing::failover>
     fo(new processing::failover(
                          endp,
-                         (endp->is_acceptor()
-                          ? misc::shared_ptr<multiplexing::subscriber>()
-                          : sbscrbr),
+                         sbscrbr,
                          cfg.name,
                          _cache_directory));
   fo->set_buffering_timeout(cfg.buffering_timeout);
@@ -729,16 +750,16 @@ void endpoint::_diff_endpoints(
 }
 
 /**
- *  Create filters from a configuration object.
+ *  Create filters from a set of category.
  *
  *  @param[in] cfg  Endpoint configuration.
  *
  *  @return Filters.
  */
-std::set<unsigned int> endpoint::_filters(config::endpoint& cfg) {
-  std::set<unsigned int> elements;
+uset<unsigned int> endpoint::_filters(std::set<std::string> const& str_filters) {
+  uset<unsigned int> elements;
   for (std::set<std::string>::const_iterator
-         it(cfg.filters.begin()), end(cfg.filters.end());
+         it(str_filters.begin()), end(str_filters.end());
        it != end;
        ++it) {
     io::events::events_container const&

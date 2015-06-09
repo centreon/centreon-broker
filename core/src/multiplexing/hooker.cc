@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -36,9 +36,12 @@ hooker::hooker() : _registered(false) {}
 /**
  *  Copy constructor.
  *
- *  @param[in] h Object to copy.
+ *  @param[in] other  Object to copy.
  */
-hooker::hooker(hooker const& h) : QObject(), io::stream(h) {}
+hooker::hooker(hooker const& other)
+  : io::stream(other), _registered(false) {
+  hook(other._registered);
+}
 
 /**
  *  Destructor.
@@ -48,27 +51,29 @@ hooker::~hooker() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] h Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-hooker& hooker::operator=(hooker const& h) {
-  io::stream::operator=(h);
+hooker& hooker::operator=(hooker const& other) {
+  if (this != &other) {
+    io::stream::operator=(other);
+    hook(other._registered);
+  }
   return (*this);
 }
 
 /**
  *  Enable or disable hooking.
  *
- *  @param[in] in  Set to false will disable hooking.
- *  @param[in] out Set to false will isable hooking.
+ *  @param[in] should_hook  Set to true if hooker should hook.
  */
-void hooker::process(bool in, bool out) {
-  if (_registered && (!in || !out)) {
+void hooker::hook(bool should_hook) {
+  if (_registered && !should_hook) {
     engine::instance().unhook(*this);
     _registered = false;
   }
-  else if (!_registered && (in || out)) {
+  else if (!_registered && should_hook) {
     engine::instance().hook(*this);
     _registered = true;
   }

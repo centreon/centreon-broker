@@ -65,13 +65,10 @@ namespace           processing {
                       misc::shared_ptr<io::endpoint> endp);
     void            exit();
     time_t          get_buffering_timeout() const throw ();
-    time_t          get_read_timeout() const throw ();
     time_t          get_retry_interval() const throw ();
-    void            read(misc::shared_ptr<io::data>& d);
-    void            read(
+    bool            read(
                       misc::shared_ptr<io::data>& d,
-                      time_t timeout,
-                      bool* timed_out = NULL);
+                      time_t deadline);
     void            run();
     void            set_buffering_timeout(time_t secs);
     void            set_failover(
@@ -86,10 +83,6 @@ namespace           processing {
   private:
                     failover(failover const& other);
     failover&       operator=(failover const& other);
-    void            _get_next_event(
-                      misc::shared_ptr<io::data>& d,
-                      time_t timeout,
-                      bool* timed_out = NULL);
     void            _launch_failover();
     void            _update_status(std::string const& status);
 
@@ -110,11 +103,6 @@ namespace           processing {
                     _subscriber;
     std::string     _temp_dir;
     volatile bool   _update;
-
-    // Acceptor.
-    std::auto_ptr<processing::acceptor>
-                    _acceptor;
-    mutable QMutex  _acceptorm;
 
     // Status.
     std::string     _status;

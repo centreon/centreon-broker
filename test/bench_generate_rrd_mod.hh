@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Merethis
+** Copyright 2013-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -44,8 +44,9 @@ public:
        ~benchmark() {}
   void run() {
     // Wait for multiplexing engine to come online.
-    while (multiplexing::engine::instance().stopped())
-      yieldCurrentThread();
+    // XXX
+    // while (multiplexing::engine::instance().stopped())
+    //   yieldCurrentThread();
 
     // Publisher.
     multiplexing::publisher publicheur;

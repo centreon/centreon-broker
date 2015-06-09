@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -37,18 +37,16 @@ namespace                bam {
   class                  event_cache_visitor : public io::stream {
   public:
                          event_cache_visitor();
-
-    virtual void         process(
-                           bool in = false,
-                           bool out = true);
-    virtual void         read(misc::shared_ptr<io::data>& d);
+                         ~event_cache_visitor();
+    void                 commit_to(io::stream& to);
+    virtual bool         read(
+                           misc::shared_ptr<io::data>& d,
+                           time_t deadline);
     virtual unsigned int write(misc::shared_ptr<io::data> const& d);
 
-    void                 commit_to(io::stream& to);
-
   private:
-                         event_cache_visitor(event_cache_visitor const&);
-    event_cache_visitor& operator=(event_cache_visitor const&);
+                         event_cache_visitor(event_cache_visitor const& other);
+    event_cache_visitor& operator=(event_cache_visitor const& other);
 
     std::vector<misc::shared_ptr<io::data> >
                          _others;

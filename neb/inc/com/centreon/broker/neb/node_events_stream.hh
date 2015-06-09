@@ -54,8 +54,7 @@ namespace        neb {
                    misc::shared_ptr<persistent_cache> cache,
                    std::string const& config_file);
                  ~node_events_stream();
-    void         process(bool in = false, bool out = true);
-    void         read(misc::shared_ptr<io::data>& d);
+    bool         read(misc::shared_ptr<io::data>& d, time_t deadline);
     void         update();
     unsigned int write(misc::shared_ptr<io::data> const& d);
     void         parse_command(
@@ -72,7 +71,6 @@ namespace        neb {
     misc::shared_ptr<persistent_cache>
                  _cache;
     std::string  _config_file;
-    bool         _process_out;
 
     // Timeperiods.
     QHash<QString, time::timeperiod::ptr>

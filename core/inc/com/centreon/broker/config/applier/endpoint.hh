@@ -27,6 +27,7 @@
 #  include <set>
 #  include <string>
 #  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -83,6 +84,7 @@ namespace              config {
                        _create_failover(
                          config::endpoint& cfg,
                          misc::shared_ptr<multiplexing::subscriber> sbscrbr,
+                         misc::shared_ptr<io::endpoint> endp,
                          std::list<config::endpoint>& l);
       misc::shared_ptr<io::endpoint>
                        _create_endpoint(
@@ -96,8 +98,8 @@ namespace              config {
                          std::map<config::endpoint, processing::thread*> const& current,
                          std::list<config::endpoint> const& new_endpoints,
                          std::list<config::endpoint>& to_create);
-      std::set<unsigned int>
-                       _filters(config::endpoint& cfg);
+      uset<unsigned int>
+                       _filters(std::set<std::string> const& str_filters);
 
       std::string      _cache_directory;
       std::map<config::endpoint, processing::thread*>

@@ -58,8 +58,7 @@ namespace          sql {
                      bool with_state_events);
                    ~stream();
     static void    initialize();
-    void           process(bool in = false, bool out = false);
-    void           read(misc::shared_ptr<io::data>& d);
+    bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
     void           update();
     unsigned int   write(misc::shared_ptr<io::data> const& d);
 
@@ -179,7 +178,6 @@ namespace          sql {
     std::deque<misc::shared_ptr<io::data> >
                                 _log_queue;
     int                         _pending_events;
-    bool                        _process_out;
     bool                        _with_state_events;
     unsigned int                _instance_timeout;
 

@@ -25,6 +25,7 @@
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/exceptions/timeout.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -184,7 +185,7 @@ static io::data* unserialize(
         t->source_id = ntohl(addresses[0]);
         t->destination_id = ntohl(addresses[1]);
         buffer += 2 * sizeof(*addresses);
-        size += 2 * sizeof(*addresses);
+        size -= 2 * sizeof(*addresses);
 
         // Browse all mapping to unserialize the object.
         for (mapping::entry const* current_entry(info->get_mapping());
@@ -253,7 +254,7 @@ static io::data* unserialize(
 /**
  *  Default constructor.
  */
-input::input() : _process_in(true), _processed(0) {}
+input::input() : _processed(0) {}
 
 /**
  *  Copy constructor.
@@ -277,25 +278,10 @@ input::~input() {}
  *  @return This object.
  */
 input& input::operator=(input const& other) {
-  if (this != &other) {
-    io::stream::operator=(other);
+  if (this != &other)
     _internal_copy(other);
-  }
   return (*this);
 }
-
-/**
- *  Enable or disable input processing.
- *
- *  @param[in] in  Set to true to enable input processing.
- *  @param[in] out Unused.
- */
-void input::process(bool in, bool out) {
-  (void)out;
-  _process_in = in;
-  return ;
-}
-
 
 /**
  *  @brief Get the next available event.
@@ -303,13 +289,16 @@ void input::process(bool in, bool out) {
  *  Extract the next available event on the input stream, NULL if the
  *  stream is closed.
  *
- *  @param[out] d Next available event, NULL if stream is closed.
+ *  @param[out] d         Next available event.
+ *  @param[in]  deadline  Timeout in seconds.
+ *
+ *  @return Respect io::stream::read()'s return value.
  */
-void input::read(misc::shared_ptr<io::data>& d) {
+bool input::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   // Read event.
-  unsigned int event_id(read_any(d));
-  while (event_id
-         && !d.isNull()
+  bool timed_out(!read_any(d, deadline));
+  unsigned int event_id(d.isNull() ? 0 : d->type());
+  while (!timed_out
          && ((event_id >> 16) == BBDO_INTERNAL_TYPE)) {
     // Version response.
     if ((event_id & 0xFFFF) == 1) {
@@ -333,9 +322,10 @@ void input::read(misc::shared_ptr<io::data>& d) {
     // Control messages.
     logging::debug(logging::medium) << "BBDO: event with ID "
       << event_id << " was a control message, launching recursive read";
-    event_id = this->read_any(d);
+    timed_out = !read_any(d, deadline);
+    event_id = d.isNull() ? 0 : d->type();
   }
-  return ;
+  return (!timed_out);
 }
 
 /**
@@ -344,125 +334,112 @@ void input::read(misc::shared_ptr<io::data>& d) {
  *  Extract the next available event on the input stream, NULL if the
  *  stream is closed.
  *
- *  @param[out] d       Next available event, NULL if stream is closed.
- *  @param[in]  timeout Timeout.
+ *  @param[out] d         Next available event.
+ *  @param[in]  deadline  Timeout.
  *
- *  @return Event ID.
+ *  @return Respect io::stream::read()'s return value.
  */
-unsigned int input::read_any(
-                      misc::shared_ptr<io::data>& d,
-                      time_t timeout) {
-  // Return value.
-  std::auto_ptr<io::data> e;
-  d.clear();
+bool input::read_any(
+              misc::shared_ptr<io::data>& d,
+              time_t deadline) {
+  try {
+    // Return value.
+    std::auto_ptr<io::data> e;
+    d.clear();
 
-  // Get header informations.
-  unsigned int event_id;
-  unsigned int packet_size;
-  while (1) {
-    // Read next packet header.
-    _buffer_must_have_unprocessed(BBDO_HEADER_SIZE, timeout);
+    // Get header informations.
+    unsigned int event_id;
+    unsigned int packet_size;
+    while (1) {
+      // Read next packet header.
+      _buffer_must_have_unprocessed(BBDO_HEADER_SIZE, deadline);
 
-    // Packet size.
-    packet_size = ntohs(*static_cast<uint16_t const*>(
-                           static_cast<void const*>(
-                             _buffer.c_str() + _processed + 2)));
-
-    // Get event ID.
-    event_id = ntohl(*static_cast<uint32_t const*>(
-                        static_cast<void const*>(
-                          _buffer.c_str() + _processed + 4)));
-
-    // Get checksum.
-    unsigned chksum(ntohs(*static_cast<uint16_t const*>(
+      // Packet size.
+      packet_size = ntohs(*static_cast<uint16_t const*>(
                              static_cast<void const*>(
-                               _buffer.c_str() + _processed))));
+                               _buffer.c_str() + _processed + 2)));
 
-    // Check header integrity.
-    uint16_t expected(qChecksum(_buffer.c_str() + _processed + 2, 6));
-    if (chksum == expected)
-      break ;
+      // Get event ID.
+      event_id = ntohl(*static_cast<uint32_t const*>(
+                          static_cast<void const*>(
+                            _buffer.c_str() + _processed + 4)));
 
-    // Mark data as processed.
-    logging::debug(logging::low)
-      << "BBDO: header integrity check failed (got " << chksum
-      << ", computed " << expected << ")";
-    ++_processed;
+      // Get checksum.
+      unsigned chksum(ntohs(*static_cast<uint16_t const*>(
+                               static_cast<void const*>(
+                                 _buffer.c_str() + _processed))));
 
-    // Timeout check.
-    if ((timeout != (time_t)-1) && (time(NULL) > timeout))
-      throw (exceptions::msg() << "BBDO: connection timeout");
-  }
+      // Check header integrity.
+      uint16_t expected(qChecksum(_buffer.c_str() + _processed + 2, 6));
+      if (chksum == expected)
+        break ;
 
-  // Log.
-  logging::debug(logging::high)
-    << "BBDO: got new header with a size of " << packet_size
-    << " and an ID of " << event_id;
+      // Mark data as processed.
+      logging::debug(logging::low)
+        << "BBDO: header integrity check failed (got " << chksum
+        << ", computed " << expected << ")";
+      ++_processed;
+    }
 
-  // Read data payload.
-  _processed += BBDO_HEADER_SIZE;
-  _buffer_must_have_unprocessed(packet_size, timeout);
+    // Log.
+    logging::debug(logging::high)
+      << "BBDO: got new header with a size of " << packet_size
+      << " and an ID of " << event_id;
 
-  // Regroup packets.
-  unsigned int total_size(0);
-  while (packet_size == 0xFFFF) {
-    // Previous packet has been processed.
+    // Read data payload.
+    _processed += BBDO_HEADER_SIZE;
+    _buffer_must_have_unprocessed(packet_size, deadline);
+
+    // Regroup packets.
+    unsigned int total_size(0);
+    while (packet_size == 0xFFFF) {
+      // Previous packet has been processed.
+      total_size += packet_size;
+
+      // Expect new BBDO header.
+      _buffer_must_have_unprocessed(
+        total_size + BBDO_HEADER_SIZE,
+        deadline);
+
+      // Next packet size.
+      packet_size = ntohs(*static_cast<uint16_t const*>(
+                      static_cast<void const*>(
+                        _buffer.c_str() + _processed + total_size + 2)));
+
+      // Remove header to regroup data payloads.
+      _buffer.erase(_processed + total_size, BBDO_HEADER_SIZE);
+
+      // Expect data payload.
+      _buffer_must_have_unprocessed(total_size + packet_size, deadline);
+    }
     total_size += packet_size;
 
-    // Expect new BBDO header.
-    _buffer_must_have_unprocessed(
-      total_size + BBDO_HEADER_SIZE,
-      timeout);
+    // Unserialize event.
+    d = unserialize(
+          event_id,
+          _buffer.c_str() + _processed,
+          total_size);
+    if (!d.isNull())
+      logging::debug(logging::medium) << "BBDO: unserialized "
+        << total_size + BBDO_HEADER_SIZE << " bytes for event of type "
+        << event_id;
+    else {
+      logging::error(logging::medium)
+        << "BBDO: unknown event type " << event_id
+        << ": event cannot be decoded";
+      logging::debug(logging::medium) << "BBDO: discarded "
+        << total_size + BBDO_HEADER_SIZE << " bytes";
+    }
 
-    // Next packet size.
-    packet_size
-      = ntohs(*static_cast<uint16_t const*>(
-                 static_cast<void const*>(
-                   _buffer.c_str() + _processed + total_size + 2)));
+    // Mark data as processed.
+    _processed += total_size;
 
-    // Remove header to regroup data payloads.
-    _buffer.erase(_processed + total_size, BBDO_HEADER_SIZE);
-
-    // Expect data payload.
-    _buffer_must_have_unprocessed(total_size + packet_size, timeout);
+    return (true);
   }
-  total_size += packet_size;
-
-  // Unserialize event.
-  d = unserialize(
-        event_id,
-        _buffer.c_str() + _processed,
-        total_size);
-  if (!d.isNull())
-    logging::debug(logging::medium) << "BBDO: unserialized "
-      << total_size + BBDO_HEADER_SIZE << " bytes for event of type "
-      << event_id;
-  else {
-    logging::error(logging::medium)
-      << "BBDO: unknown event type " << event_id
-      << ": event cannot be decoded";
-    logging::debug(logging::medium) << "BBDO: discarded "
-      << total_size + BBDO_HEADER_SIZE << " bytes";
+  catch (exceptions::timeout const& e) {
+    (void)e;
+    return (false);
   }
-
-  // Mark data as processed.
-  _processed += total_size;
-
-  return (event_id);
-}
-
-/**
- *  Write data.
- *
- *  @param[in] d Object to copy.
- *
- *  @return Does not return, throw an exception.
- */
-unsigned int input::write(misc::shared_ptr<io::data> const& d) {
-  (void)d;
-  throw (exceptions::msg()
-         << "BBDO: attempt to write to an input object");
-  return (1);
 }
 
 /**************************************
@@ -474,38 +451,40 @@ unsigned int input::write(misc::shared_ptr<io::data> const& d) {
 /**
  *  Expect buffer to have a minimal size.
  *
- *  @param[in] bytes Number of minimal buffer size.
+ *  @param[in] bytes     Number of minimal buffer size.
+ *  @param[in] deadline  Timeout in seconds.
  */
 void input::_buffer_must_have_unprocessed(
               unsigned int bytes,
-              time_t timeout) {
+              time_t deadline) {
+  // Erase processed data.
   if (_buffer.size() < (_processed + bytes)) {
     _buffer.erase(0, _processed);
     _processed = 0;
   }
-  while (_buffer.size() < (_processed + bytes)) {
+
+  // Read as much data as requested.
+  bool timed_out(false);
+  while (!timed_out && _buffer.size() < (_processed + bytes)) {
     misc::shared_ptr<io::data> d;
-    _from->read(d);
+    timed_out = !_substream->read(d, deadline);
     if (!d.isNull() && d->type() == io::raw::static_type()) {
       misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
       _buffer.append(r->QByteArray::data(), r->size());
     }
-    if ((_buffer.size() < (_processed + bytes))
-        && (timeout != (time_t)-1)
-        && (time(NULL) > timeout))
-      throw (exceptions::msg() << "BBDO: connection timeout");
   }
+  if (timed_out)
+    throw (exceptions::timeout());
   return ;
 }
 
 /**
  *  Copy internal data members.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other Object to copy.
  */
-void input::_internal_copy(input const& right) {
-  _buffer = right._buffer;
-  _process_in = right._process_in;
-  _processed = right._processed;
+void input::_internal_copy(input const& other) {
+  _buffer = other._buffer;
+  _processed = other._processed;
   return ;
 }

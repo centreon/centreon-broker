@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Merethis
+** Copyright 2009-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -39,10 +39,10 @@ endpoint::endpoint()
 /**
  *  Copy constructor.
  *
- *  @param[in] e Object to copy.
+ *  @param[in] other  Object to copy.
  */
-endpoint::endpoint(endpoint const& e) {
-  _internal_copy(e);
+endpoint::endpoint(endpoint const& other) {
+  _internal_copy(other);
 }
 
 /**
@@ -53,82 +53,86 @@ endpoint::~endpoint() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] e Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-endpoint& endpoint::operator=(endpoint const& e) {
-  _internal_copy(e);
+endpoint& endpoint::operator=(endpoint const& other) {
+  if (this != &other)
+    _internal_copy(other);
   return (*this);
 }
 
 /**
  *  Check that two endpoint configurations are equal.
  *
- *  @param[in] e Object to compare to.
+ *  @param[in] other  Object to compare to.
  *
- *  @return true if both objects are equal, false otherwise.
+ *  @return True if both objects are equal, false otherwise.
  */
-bool endpoint::operator==(endpoint const& e) const {
-  return ((type == e.type)
-          && (buffering_timeout == e.buffering_timeout)
-          && (read_timeout == e.read_timeout)
-          && (retry_interval == e.retry_interval)
-          && (name == e.name)
-          && (failover == e.failover)
-          && (secondary_failovers == e.secondary_failovers)
-          && (filters == e.filters)
-          && (params == e.params)
-          && (cache_enabled == e.cache_enabled)
-          && (cfg == e.cfg));
+bool endpoint::operator==(endpoint const& other) const {
+  return ((type == other.type)
+          && (buffering_timeout == other.buffering_timeout)
+          && (read_timeout == other.read_timeout)
+          && (retry_interval == other.retry_interval)
+          && (name == other.name)
+          && (failover == other.failover)
+          && (secondary_failovers == other.secondary_failovers)
+          && (read_filters == other.read_filters)
+          && (write_filters == other.write_filters)
+          && (params == other.params)
+          && (cache_enabled == other.cache_enabled)
+          && (cfg == other.cfg));
 }
 
 /**
  *  Check that two endpoint configurations are inequal.
  *
- *  @param[in] e Object to compare to.
+ *  @param[in] other  Object to compare to.
  *
- *  @return true if both objects are not equal, false otherwise.
+ *  @return True if both objects are not equal, false otherwise.
  */
-bool endpoint::operator!=(endpoint const& e) const {
-  return (!operator==(e));
+bool endpoint::operator!=(endpoint const& other) const {
+  return (!operator==(other));
 }
 
 /**
  *  Inequality operator.
  *
- *  @param[in] e Object to compare to.
+ *  @param[in] other  Object to compare to.
  *
- *  @return true if this object is strictly less than the object e.
+ *  @return True if this object is strictly less than the object e.
  */
-bool endpoint::operator<(endpoint const& e) const {
+bool endpoint::operator<(endpoint const& other) const {
   // Check properties that can directly be checked.
-  if (type != e.type)
-    return (type < e.type);
-  else if (buffering_timeout != e.buffering_timeout)
-    return (buffering_timeout < e.buffering_timeout);
-  else if (read_timeout != e.read_timeout)
-    return (read_timeout < e.read_timeout);
-  else if (retry_interval != e.retry_interval)
-    return (retry_interval < e.retry_interval);
-  else if (name != e.name)
-    return (name < e.name);
-  else if (failover != e.failover)
-    return (failover < e.failover);
-  else if (secondary_failovers != e.secondary_failovers)
-    return (secondary_failovers < e.secondary_failovers);
-  else if (filters != e.filters)
-    return (filters < e.filters);
-  else if (cache_enabled != e.cache_enabled)
-    return (cache_enabled < e.cache_enabled);
-  else if (cfg != e.cfg)
-    return (cfg.toText().data() < e.cfg.toText().data());
+  if (type != other.type)
+    return (type < other.type);
+  else if (buffering_timeout != other.buffering_timeout)
+    return (buffering_timeout < other.buffering_timeout);
+  else if (read_timeout != other.read_timeout)
+    return (read_timeout < other.read_timeout);
+  else if (retry_interval != other.retry_interval)
+    return (retry_interval < other.retry_interval);
+  else if (name != other.name)
+    return (name < other.name);
+  else if (failover != other.failover)
+    return (failover < other.failover);
+  else if (secondary_failovers != other.secondary_failovers)
+    return (secondary_failovers < other.secondary_failovers);
+  else if (read_filters != other.read_filters)
+    return (read_filters < other.read_filters);
+  else if (write_filters != other.write_filters)
+    return (write_filters < other.write_filters);
+  else if (cache_enabled != other.cache_enabled)
+    return (cache_enabled < other.cache_enabled);
+  else if (cfg != other.cfg)
+    return (cfg.toText().data() < other.cfg.toText().data());
 
   // Need to check all parameters one by one.
   QMap<QString, QString>::const_iterator it1(params.begin()),
-    it2(e.params.begin()),
+    it2(other.params.begin()),
     end1(params.end()),
-    end2(e.params.end());
+    end2(other.params.end());
   while ((it1 != end1) && (it2 != end2)) {
     if (it1.key() != it2.key())
       return (it1.key() < it2.key());
@@ -153,19 +157,20 @@ bool endpoint::operator<(endpoint const& e) const {
  *  This method is used by the copy constructor and the assignment
  *  operator.
  *
- *  @param[in] e Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void endpoint::_internal_copy(endpoint const& e) {
-  buffering_timeout = e.buffering_timeout;
-  failover = e.failover;
-  secondary_failovers = e.secondary_failovers;
-  name = e.name;
-  params = e.params;
-  read_timeout = e.read_timeout;
-  retry_interval = e.retry_interval;
-  filters = e.filters;
-  type = e.type;
-  cache_enabled = e.cache_enabled;
-  cfg = e.cfg;
+void endpoint::_internal_copy(endpoint const& other) {
+  buffering_timeout = other.buffering_timeout;
+  failover = other.failover;
+  secondary_failovers = other.secondary_failovers;
+  name = other.name;
+  params = other.params;
+  read_filters = other.read_filters;
+  read_timeout = other.read_timeout;
+  retry_interval = other.retry_interval;
+  type = other.type;
+  write_filters = other.write_filters;
+  cache_enabled = other.cache_enabled;
+  cfg = other.cfg;
   return ;
 }

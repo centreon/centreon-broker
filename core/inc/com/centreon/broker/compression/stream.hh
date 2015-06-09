@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -38,22 +38,23 @@ namespace        compression {
                  stream(
                    int level = -1,
                    unsigned int size = 0);
-                 stream(stream const& s);
+                 stream(stream const& other);
                  ~stream();
-    stream&      operator=(stream const& s);
-    void         process(bool in = false, bool out = false);
-    void         read(misc::shared_ptr<io::data>& d);
+    stream&      operator=(stream const& other);
+    bool         read(
+                   misc::shared_ptr<io::data>& d,
+                   time_t deadline = (time_t)-1);
     void         statistics(io::properties& tree) const;
     unsigned int write(misc::shared_ptr<io::data> const& d);
 
   private:
     void         _flush();
-    bool         _get_data(unsigned int size);
-    void         _internal_copy(stream const& s);
+    bool         _get_data(
+                   unsigned int size,
+                   time_t timeout);
+    void         _internal_copy(stream const& other);
 
     int          _level;
-    bool         _process_in;
-    bool         _process_out;
     QByteArray   _rbuffer;
     unsigned int _size;
     QByteArray   _wbuffer;

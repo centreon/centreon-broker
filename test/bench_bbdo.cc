@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -94,32 +94,32 @@ int main(int argc, char* argv[]) {
   // #1 Default streams.
   std::cout << "Bench #1 (default streams)\n";
   {
-    bbdo::stream bbdos(true, true);
+    bbdo::stream bbdos;
     misc::shared_ptr<bench_stream> bbdob(new bench_stream);
-    bbdos.write_to(bbdob);
+    bbdos.set_substream(bbdob);
     benchmark_stream(bbdos, *bbdob);
   }
 
   // #2 Default compression.
   std::cout << "\nBench #2 (default compression)\n";
   {
-    bbdo::stream bbdos(true, true);
+    bbdo::stream bbdos;
     misc::shared_ptr<compression::stream> bbdoc(new compression::stream);
     misc::shared_ptr<bench_stream> bbdob(new bench_stream);
-    bbdos.write_to(bbdoc);
-    bbdoc->write_to(bbdob);
+    bbdos.set_substream(bbdoc);
+    bbdoc->set_substream(bbdob);
     benchmark_stream(bbdos, *bbdob);
   }
 
   // #3 Optimized compression.
   std::cout << "\nBench #3 (optimized compression)\n";
   {
-    bbdo::stream bbdos(true, true);
+    bbdo::stream bbdos;
     misc::shared_ptr<compression::stream>
       bbdoc(new compression::stream(9, 1000000));
     misc::shared_ptr<bench_stream> bbdob(new bench_stream);
-    bbdos.write_to(bbdoc);
-    bbdoc->write_to(bbdob);
+    bbdos.set_substream(bbdoc);
+    bbdoc->set_substream(bbdob);
     benchmark_stream(bbdos, *bbdob);
   }
 
