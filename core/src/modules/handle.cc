@@ -232,7 +232,7 @@ void handle::_check_version() {
        "version (symbol " << versionning
     << ") in '" << _handle.fileName() << "'";
 
-  const char* version = (const char*)_handle.resolve(versionning);
+  char const** version = (char const**)_handle.resolve(versionning);
 
   // Could not find version symbol.
   if (!version) {
@@ -241,9 +241,13 @@ void handle::_check_version() {
                 "version in '" << _handle.fileName()
              << "' (not a Centreon Broker module ?): " << error_str);
   }
+  if (!*version)
+    throw (exceptions::msg() << "modules: version symbol of module '"
+           << _handle.fileName()
+           << "' is empty (not a Centreon Broker module ?)");
 
   // Check version.
-  if (::strcmp(CENTREON_BROKER_VERSION, version) != 0)
+  if (::strcmp(CENTREON_BROKER_VERSION, *version) != 0)
     throw (exceptions::msg()
            << "modules: version mismatch in '" << _handle.fileName()
            << "': expected '" << CENTREON_BROKER_VERSION
