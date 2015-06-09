@@ -245,7 +245,8 @@ void stream::_prepare() {
   excluded.insert("come_from");
   _prepare_insert<neb::downtime>(
                          _downtime_insert,
-                         "rt_downtimes");
+                         "rt_downtimes",
+                         excluded);
   _prepare_insert<neb::event_handler>(
                          _event_handler_insert,
                          "rt_eventhandlers");
