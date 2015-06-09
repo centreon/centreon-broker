@@ -60,6 +60,11 @@ static void unload_workers() {
 
 extern "C" {
   /**
+   *  Module version symbol. Used to check for version mismatch.
+   */
+  const char* boker_module_version = CENTREON_BROKER_VERSION;
+
+  /**
    *  Module deinitialization routine.
    */
   void broker_module_deinit() {

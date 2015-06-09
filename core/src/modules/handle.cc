@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstring>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/modules/handle.hh"
@@ -34,6 +35,7 @@ using namespace com::centreon::broker::modules;
 char const* handle::deinitialization("broker_module_deinit");
 char const* handle::initialization("broker_module_init");
 char const* handle::updatization("broker_module_update");
+char const* handle::versionning("broker_module_version");
 
 /**************************************
 *                                     *
@@ -174,6 +176,7 @@ void handle::open(std::string const& filename, void const* arg) {
     << filename << "' loaded";
 
   // Initialize module.
+  _check_version();
   _init(arg);
 
   return ;
@@ -219,6 +222,33 @@ void handle::update(void const* arg) {
 *           Private Methods           *
 *                                     *
 **************************************/
+
+/**
+ *  Check that the module has the correct version.
+ */
+void handle::_check_version() {
+  // Find version symbol.
+  logging::debug(logging::low) << "modules: searching "
+       "version (symbol " << versionning
+    << ") in '" << _handle.fileName() << "'";
+
+  const char* version = (const char*)_handle.resolve(versionning);
+
+  // Could not find version symbol.
+  if (!version) {
+    QString error_str(_handle.errorString());
+    throw (exceptions::msg() << "modules: could not find " \
+                "version in '" << _handle.fileName()
+             << "' (not a Centreon Broker module ?): " << error_str);
+  }
+
+  // Check version.
+  if (::strcmp(CENTREON_BROKER_VERSION, version) != 0)
+    throw (exceptions::msg()
+           << "modules: version mismatch in '" << _handle.fileName()
+           << "': expected '" << CENTREON_BROKER_VERSION
+           <<  "', found '" << version << "'");
+}
 
 /**
  *  Call the module's initialization routine.

@@ -50,9 +50,11 @@ namespace              modules {
     static char const* deinitialization;
     static char const* initialization;
     static char const* updatization;
+    static char const* versionning;
 
   private:
     void               _init(void const* arg = NULL);
+    void               _check_version();
 
     QLibrary           _handle;
   };

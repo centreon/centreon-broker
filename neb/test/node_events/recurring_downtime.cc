@@ -34,6 +34,7 @@
 #include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/persistent_cache.hh"
 #include "common.hh"
+#include "vars.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -65,8 +66,7 @@ int main() {
     // Create node event stream.
     node_events_stream test(
       misc::shared_ptr<persistent_cache>(NULL),
-      false,
-      database_config());
+      PROJECT_SOURCE_DIR "/neb/test/node_events/cfg/downtime.cfg");
 
     time::timeperiod::ptr tp(new time::timeperiod(
                                 1,
@@ -110,7 +110,7 @@ int main() {
       misc::shared_ptr<command_file::external_command> cmd(
         new command_file::external_command);
       cmd->command = format_command(
-        "SCHEDULE_SVC_DOWNTIME;42;24;$TIMESTAMP$;$TIMESTAMP2$;1;0;3;TEST;A test for you;24x7;2",
+        "SCHEDULE_SVC_DOWNTIME;42;24;$TIMESTAMP$;$TIMESTAMP2$;1;0;3;TEST;A test for you;24x7",
         now,
         now + 3);
       test.write(cmd);
@@ -120,7 +120,7 @@ int main() {
     for (unsigned int i = 0; i < 10; ++i) {
       ::sleep(1);
       misc::shared_ptr<io::data> d;
-      sbc.get_muxer().read(d, (time_t)-1);
+      sbc.get_muxer().read(d, ::time(NULL) + 1);
       test.write(d);
     }
 
@@ -133,20 +133,6 @@ int main() {
     add_downtime(content, now, now + 3, 3, true, 42, 24, 2, 1, -1, -1);
     add_downtime(content, now, now + 3, 3, true, 42, 24, 2, 1, now, -1);
     add_downtime(content, now, now + 3, 3, true, 42, 24, 2, 1, now, now + 3);
-    add_downtime(content, now + 5, now + 8, 3, true, 42, 24, 3, 1, -1, -1);
-    add_downtime(content, now + 5, now + 8, 3, true, 42, 24, 3, 1, now + 5, -1);
-    add_downtime(
-      content,
-      now + 5,
-      now + 8,
-      3,
-      true,
-      42,
-      24,
-      3,
-      1,
-      now + 5,
-      now + 8);
 
     // Check.
     check_content(t, content);

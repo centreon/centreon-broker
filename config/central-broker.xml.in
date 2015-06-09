@@ -2,7 +2,7 @@
 <conf>
 
  <!-- Global configuration options. -->
- <module_directory>@PREFIX_MODULE@</module_directory>
+ <module_directory>@PREFIX_MODULES@</module_directory>
  <instance>2</instance>
  <instance_name>central-broker</instance_name>
  <event_queue_max_size>50000</event_queue_max_size>

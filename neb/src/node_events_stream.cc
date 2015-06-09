@@ -17,7 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <set>
 #include <cstdio>
+#include <fstream>
+#include <sstream>
 #include <QPair>
 #include <QHash>
 #include "com/centreon/broker/neb/tokenizer.hh"
@@ -29,13 +32,11 @@
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/command_file/external_command.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
+#include "com/centreon/broker/neb/ceof_parser.hh"
+#include "com/centreon/broker/neb/ceof_writer.hh"
+#include "com/centreon/broker/neb/timeperiod_serializable.hh"
 #include "com/centreon/broker/neb/downtime.hh"
-#include "com/centreon/broker/database.hh"
-#include "com/centreon/broker/database_query.hh"
-#include "com/centreon/broker/neb/timeperiod_loader.hh"
-#include "com/centreon/broker/neb/composed_timeperiod_builder.hh"
-#include "com/centreon/broker/neb/timeperiod_by_name_builder.hh"
-#include "com/centreon/broker/neb/timeperiod_linker.hh"
+#include "com/centreon/broker/neb/downtime_serializable.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -44,27 +45,24 @@ using namespace com::centreon::broker::neb;
  *  Constructor.
  *
  *  @param[int,out] cache             Persistent cache.
- *  @param[in]      with_timeperiods  Should the stream try to load timeperiods?
- *  @param[in]      conf              Database configuration.
+ *  @param[in]      config_file       The path of the config file.
  */
 node_events_stream::node_events_stream(
     misc::shared_ptr<persistent_cache> cache,
-    bool with_timeperiods,
-    database_config const& conf)
+    std::string const& config_file)
   : _cache(cache),
-    _conf(conf),
-    _with_timeperiods(with_timeperiods),
-    _actual_downtime_id(0) {
-
-  if (_with_timeperiods) {
-    // Load the timeperiods.
-    _load_timeperiods();
-    // Check tp coherency.
-    _check_downtime_timeperiod_consistency();
-  }
+    _config_file(config_file) {
+  // Load the config file.
+  _load_config_file();
 
   // Load the cache.
   _load_cache();
+
+  // Apply the config downtimes.
+  _apply_config_downtimes();
+
+  // Check downtime consistency.
+  _check_downtime_timeperiod_consistency();
 
   // Start the downtime scheduler.
   _downtime_scheduler.start_and_wait();
@@ -75,12 +73,12 @@ node_events_stream::node_events_stream(
  */
 node_events_stream::~node_events_stream() {
   try {
-    // Save the cache.
-    _save_cache();
-
     // Stop the downtime scheduler.
     _downtime_scheduler.quit();
     _downtime_scheduler.wait();
+
+    // Save the cache.
+    _save_cache();
   } catch (std::exception const& e) {
     logging::error(logging::medium)
       << "neb: node events error while trying to save cache: "
@@ -110,15 +108,10 @@ bool node_events_stream::read(
  *  Update the stream.
  */
 void node_events_stream::update() {
+  _load_config_file();
+  _apply_config_downtimes();
+  _check_downtime_timeperiod_consistency();
   _save_cache();
-
-  if (_with_timeperiods) {
-    // Load the timeperiods.
-    _load_timeperiods();
-    // Check tp coherency.
-    _check_downtime_timeperiod_consistency();
-  }
-
   return ;
 }
 
@@ -296,12 +289,13 @@ void node_events_stream::_process_service_status(
  */
 void node_events_stream::_update_downtime(
                            neb::downtime const& dwn) {
-  QHash<unsigned int, neb::downtime>::iterator
-    found(_downtimes.find(dwn.internal_id));
+  downtime* found = _downtimes.get_downtime(dwn.internal_id);
 
   // No downtimes, insert it.
-  if (found == _downtimes.end())
-    found = _downtimes.insert(dwn.internal_id, dwn);
+  if (!found) {
+    _downtimes.add_downtime(dwn);
+    found = _downtimes.get_downtime(dwn.internal_id);
+  }
 
   // Downtime update.
   downtime& old_downtime = *found;
@@ -309,16 +303,13 @@ void node_events_stream::_update_downtime(
 
   // Downtime removal.
   if (!dwn.actual_end_time.is_null()) {
-    _downtimes.erase(found);
-    _downtime_id_by_nodes.remove(
-      node_id(dwn.host_id, dwn.service_id),
-      dwn.internal_id);
+    _downtimes.delete_downtime(dwn);
     // Recurring downtimes.
     if (dwn.triggered_by != 0
-          && _recurring_downtimes.contains(dwn.triggered_by))
+        && _downtimes.is_recurring(dwn.triggered_by))
       _spawn_recurring_downtime(
-        dwn.actual_end_time + dwn.recurring_interval,
-        _recurring_downtimes[dwn.triggered_by]);
+        dwn.actual_end_time,
+        *_downtimes.get_downtime(dwn.triggered_by));
   }
 }
 
@@ -359,15 +350,14 @@ void node_events_stream::_trigger_floating_downtime(
                            short state) {
   if (state == 0)
     return ;
-  for (QMultiHash<node_id, unsigned int>::iterator
-         it = _downtime_id_by_nodes.find(node),
-         tmp = it,
-         end = _downtime_id_by_nodes.end();
-       it != end && it.key() == node;
-       it = tmp) {
-    ++tmp;
+  QList<downtime> downtimes = _downtimes.get_all_downtimes_of_node(node);
+  for (QList<downtime>::const_iterator
+         it = downtimes.begin(),
+         end = downtimes.end();
+       it != end;
+       ++it) {
+    downtime const& dwn = *it;
     // Trigger downtimes not already triggered.
-    downtime const& dwn = _downtimes[*it];
     if (!dwn.fixed
           && check_time >= dwn.start_time
           && check_time < dwn.end_time
@@ -380,8 +370,7 @@ void node_events_stream::_trigger_floating_downtime(
     if (!dwn.fixed
           && check_time >= dwn.end_time
           && dwn.actual_start_time.is_null()) {
-      _downtimes.remove(dwn.internal_id);
-      _downtime_id_by_nodes.erase(it);
+      _downtimes.delete_downtime(dwn);
     }
   }
 }
@@ -534,8 +523,6 @@ void node_events_stream::_parse_downtime(
     std::string comment =       tok.get_next_token<std::string>(true);
     std::string recurring_timeperiod =
                                 tok.get_next_token<std::string>(true);
-    unsigned int recurring_interval =
-                                tok.get_next_token<unsigned int>(true);
     tok.end();
 
     node_id id = _node_cache.get_node_by_names(
@@ -554,29 +541,12 @@ void node_events_stream::_parse_downtime(
     d->host_id = id.get_host_id();
     d->service_id = id.get_service_id();
     d->was_started = false;
-    d->internal_id = ++_actual_downtime_id;
-    d->is_recurring = recurring_interval != 0;
+    d->internal_id = _downtimes.get_new_downtime_id();
     d->triggered_by = trigger_id;
-    d->recurring_interval = recurring_interval;
     d->recurring_timeperiod = QString::fromStdString(recurring_timeperiod);
+    d->is_recurring = !d->recurring_timeperiod.isEmpty();
 
-    // Save the downtime.
-    if (!d->is_recurring) {
-      _downtimes[d->internal_id] = *d;
-      _downtime_id_by_nodes.insert(id, d->internal_id);
-    }
-    else {
-      _recurring_downtimes[d->internal_id] = *d;
-    }
-
-    // Write the downtime.
-    stream.write(d);
-
-    // Schedule the downtime.
-    if (!d->is_recurring)
-      _schedule_downtime(*d);
-    else
-      _spawn_recurring_downtime(timestamp(), *d);
+    _register_downtime(*d, &stream);
 
   } catch (std::exception const& e) {
     throw (exceptions::msg()
@@ -605,76 +575,135 @@ void node_events_stream::_parse_remove_downtime(
     throw (exceptions::msg() << "error while parsing remove downtime arguments");
 
   // Find the downtime.
-  QHash<unsigned int, neb::downtime>::iterator
-    found(_downtimes.find(downtime_id));
-  QHash<unsigned int, neb::downtime>::iterator
-    recurring_found(_recurring_downtimes.find(downtime_id));
-  if (found == _downtimes.end()
-        && recurring_found == _recurring_downtimes.end())
+  downtime* found = _downtimes.get_downtime(downtime_id);
+  if (!found)
     throw (exceptions::msg()
            << "couldn't find a downtime for downtime id " << downtime_id);
 
-  if (found == _downtimes.end())
-    found = recurring_found;
-
-  node_id node(found->host_id, found->service_id);
-
-  // Close the downtime.
-  misc::shared_ptr<neb::downtime> d(new neb::downtime(*found));
-  d->actual_end_time = t;
-  d->deletion_time = t;
-  d->was_cancelled = true;
-
-  // Erase the downtime.
-  _downtimes.remove(downtime_id);
-  _recurring_downtimes.remove(downtime_id);
-  _downtime_id_by_nodes.remove(node, downtime_id);
-  _downtime_scheduler.remove_downtime(downtime_id);
-
-  // Send the closed downtime.
-  stream.write(d);
+  _delete_downtime(*found, t, &stream);
 }
 
 /**
- *  Load the timeperiods from the database.
+ *  Register a downtime.
+ *
+ *  @param[in] dwn     The downtime.
+ *  @param[in] stream  The stream to send the downtime.
  */
-void node_events_stream::_load_timeperiods() {
-  database db(_conf);
+void node_events_stream::_register_downtime(downtime const& dwn, io::stream* stream) {
 
-  try {
-    timeperiod_loader loader;
-    composed_timeperiod_builder builder;
-    timeperiod_by_name_builder by_name(_timeperiods);
-    timeperiod_linker linker;
-    builder.push_back(by_name);
-    builder.push_back(linker);
-    loader.load(&db.get_qt_db(), &builder);
-  }
-  catch (std::exception const& e) {
-    throw (exceptions::msg()
-           << "neb: node event streams:"
-           " error while trying to load timeperiods: " << e.what());
-  }
+  // Save the downtime.
+  _downtimes.add_downtime(dwn);
+
+  // Write the downtime.
+  if (stream)
+    stream->write(misc::make_shared(new downtime(dwn)));
+
+  // Schedule the downtime.
+  if (!dwn.is_recurring)
+    _schedule_downtime(dwn);
+  else
+    _spawn_recurring_downtime(timestamp(), dwn);
+}
+
+/**
+ *  Delete a registered a downtime.
+ *
+ *  @param[in] dwn     The downtime.
+ *  @param[in] ts      When the downtime was deleted.
+ *  @param[in] stream  The stream to send the deleted downtime event.
+ */
+void node_events_stream::_delete_downtime(
+                           downtime const& dwn,
+                           timestamp ts,
+                           io::stream* stream) {
+  unsigned int downtime_id = dwn.internal_id;
+  node_id node(dwn.host_id, dwn.service_id);
+
+  // Close the downtime.
+  misc::shared_ptr<neb::downtime> d(new neb::downtime(dwn));
+  d->actual_end_time = ts;
+  d->deletion_time = ts;
+  d->was_cancelled = true;
+
+  // Erase the downtime.
+  _downtimes.delete_downtime(dwn);
+  _downtime_scheduler.remove_downtime(downtime_id);
+
+  // Send the closed downtime.
+  if (stream)
+    stream->write(d);
+
+  // If we erased a spawned downtime, respawn it.
+    if (_downtimes.is_recurring(dwn.triggered_by))
+      _spawn_recurring_downtime(
+        dwn.deletion_time,
+        *_downtimes.get_downtime(dwn.triggered_by));
 }
 
 /**
  *  Check that each recurring timeperiod has its downtime.
  */
 void node_events_stream::_check_downtime_timeperiod_consistency() {
-  for (QHash<unsigned int, neb::downtime>::iterator
-         it = _recurring_downtimes.begin(),
-         tmp = it,
-         end = _recurring_downtimes.end();
+  QList<downtime> recurring_downtimes
+    = _downtimes.get_all_recurring_downtimes();
+  for (QList<downtime>::const_iterator
+         it = recurring_downtimes.begin(),
+         end = recurring_downtimes.end();
        it != end;
-       it = tmp) {
+       ++it) {
     if (!_timeperiods.contains(it->recurring_timeperiod)) {
-      ++tmp;
       logging::error(logging::medium)
         << "core: node events stream: recurring timeperiod '"
         << it->recurring_timeperiod << "' deleted,"
            " deleting associated downtime " << it->internal_id;
-      _recurring_downtimes.erase(it);
+      _downtimes.delete_downtime(*it);
     }
+  }
+}
+
+/**
+ *  Load the config file.
+ */
+void node_events_stream::_load_config_file() {
+  // Open and get the file in memory.
+  std::stringstream ss;
+  std::ifstream ifs;
+  try {
+    ifs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+    ifs.open(_config_file.c_str());
+    ss << ifs.rdbuf();
+  } catch (std::exception const& e) {
+    throw (exceptions::msg()
+           << "node_events: couldn't load file '"
+           << _config_file << "': " << e.what());
+  }
+
+  // Load timeperiods and downtimes.
+  _incomplete_downtime.clear();
+  _timeperiods.clear();
+  std::string document = ss.str();
+  try  {
+    ceof_parser parser(document);
+    for (ceof_iterator iterator = parser.parse();
+         !iterator.end();
+         ++iterator) {
+      std::string const& object_name = iterator.get_value();
+      if (object_name == "downtime") {
+        downtime_serializable ds;
+        ds.unserialize(ds, iterator.enter_children());
+        _incomplete_downtime.push_back(*ds.get_downtime());
+      }
+      else if (object_name == "timeperiod") {
+        timeperiod_serializable ts;
+        ts.unserialize(ts, iterator.enter_children());
+        _timeperiods.insert(
+          QString::fromStdString(ts.get_name()), ts.get_timeperiod());
+      }
+    }
+  } catch (std::exception const& e) {
+    throw (exceptions::msg()
+           << "node_events: couldn't parse file '"
+           << _config_file << "': " << e.what());
   }
 }
 
@@ -710,20 +739,68 @@ void node_events_stream::_process_loaded_event(
     neb::acknowledgement const& ack = d.ref_as<neb::acknowledgement const>();
     _acknowledgements[node_id(ack.host_id, ack.service_id)] = ack;
   }
-  else if (d->type() == neb::downtime::static_type()) {
-    neb::downtime const& dwn = d.ref_as<neb::downtime const>();
-    _downtimes[dwn.internal_id] = dwn;
-    _downtime_id_by_nodes.insert(
-      node_id(dwn.host_id, dwn.service_id), dwn.internal_id);
-    if (_actual_downtime_id < dwn.internal_id)
-      _actual_downtime_id = dwn.internal_id + 1;
-    if (!dwn.is_recurring)
-      _schedule_downtime(dwn);
-    else
-      _spawn_recurring_downtime(
-        timestamp(),
-        dwn);
+  else if (d->type() == neb::downtime::static_type())
+    _register_downtime(d.ref_as<downtime const>(), NULL);
+}
+
+/**
+ *  Apply the downtimes configured.
+ */
+void node_events_stream::_apply_config_downtimes() {
+  // Working set of found downtimes.
+  std::set<unsigned int> found_downtime_ids;
+  // Publisher.
+  multiplexing::publisher pblsh;
+
+  // For each downtimes loaded from the config.
+  for (std::vector<neb::downtime>::iterator
+         it = _incomplete_downtime.begin(),
+         end = _incomplete_downtime.end();
+       it != end;
+       ++it) {
+    // Try to find a matching loaded downtime.
+    bool found_matching_downtime = false;
+    bool is_recurring = !it->recurring_timeperiod.isEmpty();
+    node_id id(it->host_id, it->service_id);
+
+    QList<downtime> downtimes = !is_recurring
+      ? _downtimes.get_all_downtimes_of_node(id)
+      : _downtimes.get_all_recurring_downtimes_of_node(id);
+
+    for (QList<downtime>::const_iterator
+           it_set = downtimes.begin(),
+           end_set = downtimes.end();
+         it_set != end_set;
+         ++it_set)
+      if (it_set->start_time == it->start_time
+            && it_set->end_time == it->end_time
+            && it_set->come_from == 1
+            && it_set->recurring_timeperiod == it->recurring_timeperiod) {
+        found_downtime_ids.insert(it_set->internal_id);
+        found_matching_downtime = true;
+        break ;
+      }
+
+    // No matching loaded downtime found, create one.
+    if (!found_matching_downtime) {
+      it->internal_id = _downtimes.get_new_downtime_id();
+      it->downtime_type = it->service_id != 0
+        ? down_service : down_host;
+      found_downtime_ids.insert(it->internal_id);
+      _register_downtime(*it, &pblsh);
+    }
   }
+
+  // Saved downtimes coming from configuration that wasn't in the config file
+  // have been deleted.
+  QList<downtime> downtimes = _downtimes.get_all_downtimes();
+  for (QList<downtime>::const_iterator
+         it = downtimes.begin(),
+         end = downtimes.end();
+       it != end;
+       ++it)
+    if (found_downtime_ids.find(it->internal_id) == found_downtime_ids.end())
+      _delete_downtime(*it, ::time(NULL), &pblsh);
 }
 
 /**
@@ -744,15 +821,10 @@ void node_events_stream::_save_cache() {
        it != end;
        ++it)
     _cache->add(misc::make_shared(new neb::acknowledgement(*it)));
-  for (QHash<unsigned int, neb::downtime>::const_iterator
-         it = _downtimes.begin(),
-         end = _downtimes.end();
-       it != end;
-       ++it)
-    _cache->add(misc::make_shared(new neb::downtime(*it)));
-  for (QHash<unsigned int, neb::downtime>::const_iterator
-         it = _recurring_downtimes.begin(),
-         end = _recurring_downtimes.end();
+  QList<downtime> downtimes = _downtimes.get_all_downtimes();
+  for (QList<downtime>::const_iterator
+         it = downtimes.begin(),
+         end = downtimes.end();
        it != end;
        ++it)
     _cache->add(misc::make_shared(new neb::downtime(*it)));
@@ -809,19 +881,14 @@ void node_events_stream::_spawn_recurring_downtime(
                            timestamp when,
                            downtime const& dwn) {
   // Only spawn if no other downtimes exist.
-  for (QHash<unsigned int, neb::downtime>::const_iterator
-         it = _downtimes.begin(),
-         end = _downtimes.end();
-       it != end;
-       ++it)
-    if (it->triggered_by == dwn.internal_id)
-      return ;
+  if (_downtimes.spawned_downtime_exist(dwn.internal_id))
+    return ;
 
   // Spawn a new downtime.
   downtime spawned(dwn);
   spawned.triggered_by = dwn.internal_id;
   spawned.is_recurring = false;
-  spawned.internal_id = ++_actual_downtime_id;
+  spawned.internal_id = _downtimes.get_new_downtime_id();
 
   // Get the timeperiod.
   QHash<QString, time::timeperiod::ptr>::const_iterator
@@ -838,14 +905,19 @@ void node_events_stream::_spawn_recurring_downtime(
   // Get the new start and end time.
   if (when.is_null())
     when = ::time(NULL);
-  spawned.start_time = (*tp)->get_next_valid(when);
-  spawned.end_time = spawned.start_time + (dwn.end_time - dwn.start_time);
+  // Downtime expired, my friend.
+  if (when >= dwn.end_time) {
+    _delete_downtime(dwn, ::time(NULL), NULL);
+    return ;
+  }
+
+  spawned.start_time = (*tp)->get_next_valid(dwn.start_time < when ? when : dwn.start_time);
+  spawned.end_time = (*tp)->get_next_invalid(spawned.start_time);
+  if (spawned.end_time > dwn.end_time)
+    spawned.end_time = dwn.end_time;
 
   // Save the downtime.
-  _downtimes[spawned.internal_id] = spawned;
-  _downtime_id_by_nodes.insert(
-    node_id(spawned.host_id, spawned.service_id),
-    spawned.internal_id);
+  _downtimes.add_downtime(spawned);
 
   // Send the downtime.
   multiplexing::publisher pblsh;

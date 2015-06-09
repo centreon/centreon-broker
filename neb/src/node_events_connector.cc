@@ -28,14 +28,13 @@ using namespace com::centreon::broker::neb;
  *  Constructor.
  *
  *  @param[in,out] cache             Endpoint persistent cache.
- *  @param[in]     conf              The database config.
  */
 node_events_connector::node_events_connector(
              misc::shared_ptr<persistent_cache> cache,
-             database_config const& conf)
+             std::string const& config_file)
   : io::endpoint(false),
     _cache(cache),
-    _conf(conf) {}
+    _config_file(config_file) {}
 
 /**
  *  Copy constructor.
@@ -44,7 +43,8 @@ node_events_connector::node_events_connector(
  */
 node_events_connector::node_events_connector(node_events_connector const& other)
   : io::endpoint(other),
-    _cache(other._cache) {}
+    _cache(other._cache),
+    _config_file(other._config_file) {}
 
 /**
  *  Destructor.
@@ -63,7 +63,7 @@ node_events_connector& node_events_connector::operator=(
   if (this != &other) {
     io::endpoint::operator=(other);
     _cache = other._cache;
-    _conf = other._conf;
+    _config_file = other._config_file;
   }
   return (*this);
 }
@@ -90,5 +90,5 @@ void node_events_connector::close() {
  *  @return A newly opened stream.
  */
 misc::shared_ptr<io::stream> node_events_connector::open() {
-  return (new node_events_stream(_cache, true, _conf));
+  return (new node_events_stream(_cache, _config_file));
 }

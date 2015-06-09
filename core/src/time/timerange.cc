@@ -18,6 +18,7 @@
 */
 
 #include <cstring>
+#include <sstream>
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/time/timerange.hh"
 
@@ -233,4 +234,27 @@ bool timerange::build_timeranges_from_string(std::string const& line,
     timeranges.push_front(timerange(start_time, end_time));
   }
   return (true);
+}
+
+std::string timerange::to_string() const {
+  std::ostringstream oss;
+  oss << (_start / 3600) << ":" << (_start % 3600) / 60
+      << "-"
+      << (_end / 3600) << ":" << (_end % 3600) / 60;
+  return (oss.str());
+}
+
+std::string timerange::build_string_from_timeranges(
+                         std::list<timerange> const& timeranges) {
+  std::ostringstream oss;
+  for (std::list<time::timerange>::const_iterator
+         it = timeranges.begin(),
+         end = timeranges.end();
+       it != end;
+       ++it) {
+    if (!oss.str().empty())
+      oss << ",";
+    oss << it->to_string();
+  }
+  return (oss.str());
 }
