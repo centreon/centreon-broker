@@ -80,8 +80,6 @@ void failover::add_secondary_endpoint(
  *  Exit failover thread.
  */
 void failover::exit() {
-  if (_failover.data())
-    _failover->exit();
   thread::exit();
   _subscriber->get_muxer().wake();
   return ;
@@ -426,6 +424,14 @@ void failover::run() {
   {
     QMutexLocker stream_lock(&_streamm);
     _stream.clear();
+  }
+
+  // Exit failover thread if necessary.
+  if (_failover.data()) {
+    logging::info(logging::medium)
+      << "failover: requesting termination of failover of endpoint '"
+      << _name << "'";
+    _failover->exit();
   }
 
   // Exit log.
