@@ -97,5 +97,5 @@ io::endpoint* factory::new_endpoint(
                          misc::shared_ptr<persistent_cache> cache) const {
   (void)cache;
   is_acceptor = false;
-  return (new endpoint(cfg.name.toStdString()));
+  return (new endpoint(cfg.params.value("command_file").toStdString()));
 }

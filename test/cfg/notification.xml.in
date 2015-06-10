@@ -37,11 +37,5 @@
   <output>
     <type>node_events</type>
     <name>NotificationUnitTestNodeEvents</name>
-    <db_type>@DB_TYPE@</db_type>
-    <db_host>@DB_HOST@</db_host>
-    <db_port>@DB_PORT@</db_port>
-    <db_user>@DB_USER@</db_user>
-    <db_password>@DB_PASSWORD@</db_password>
-    <db_name>broker_notification</db_name>
   </output>
 </centreonbroker>

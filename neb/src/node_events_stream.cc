@@ -53,7 +53,8 @@ node_events_stream::node_events_stream(
   : _cache(cache),
     _config_file(config_file) {
   // Load the config file.
-  _load_config_file();
+  if (!_config_file.empty())
+    _load_config_file();
 
   // Load the cache.
   _load_cache();
@@ -108,7 +109,8 @@ bool node_events_stream::read(
  *  Update the stream.
  */
 void node_events_stream::update() {
-  _load_config_file();
+  if (!_config_file.empty())
+    _load_config_file();
   _apply_config_downtimes();
   _check_downtime_timeperiod_consistency();
   _save_cache();
