@@ -21,10 +21,11 @@
 #  define CCB_CONFIG_ENDPOINT_HH
 
 #  include <ctime>
+#  include <list>
+#  include <QDomElement>
 #  include <QMap>
 #  include <QString>
 #  include <set>
-#  include <QDomElement>
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
@@ -50,8 +51,7 @@ namespace                    config {
     bool                     operator<(endpoint const& other) const;
 
     time_t                   buffering_timeout;
-    QString                  failover;
-    std::set<QString>        secondary_failovers;
+    std::list<QString>       failovers;
     QString                  name;
     QMap<QString, QString>   params;
     std::set<std::string>    read_filters;

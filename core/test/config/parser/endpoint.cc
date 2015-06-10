@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -131,10 +132,19 @@ int main() {
     config::endpoint output1(*(it++));
     if ((output1.name != "CentreonDatabase")
         || (output1.type != "sql")
-        || (output1.failover != "CentreonRetention")
-        || (output1.secondary_failovers.size() != 2)
-        || (output1.secondary_failovers.count("CentreonSecondaryFailover1") != 1)
-        || (output1.secondary_failovers.count("CentreonSecondaryFailover2") != 1)
+        || (output1.failovers.size() != 3)
+        || (std::count(
+                   output1.failovers.begin(),
+                   output1.failovers.end(),
+                   "CentreonRetention") != 1)
+        || (std::count(
+                   output1.failovers.begin(),
+                   output1.failovers.end(),
+                   "CentreonSecondaryFailover1") != 1)
+        || (std::count(
+                   output1.failovers.begin(),
+                   output1.failovers.end(),
+                   "CentreonSecondaryFailover2") != 1)
         || (output1.buffering_timeout != 10)
         || (output1.read_timeout != 5)
         || (output1.retry_interval != 300)

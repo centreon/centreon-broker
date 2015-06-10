@@ -202,10 +202,8 @@ void parser::_parse_endpoint(QDomElement& elem, endpoint& e) {
       if (name == "buffering_timeout")
         e.buffering_timeout
           = static_cast<time_t>(entry.text().toUInt());
-      else if (name == "failover")
-        e.failover = entry.text();
-      else if (name == "secondary_failover")
-        e.secondary_failovers.insert(entry.text());
+      else if ((name == "failover") || (name == "secondary_failover"))
+        e.failovers.push_back(entry.text());
       else if (name == "name")
         e.name = entry.text();
       else if (name == "read_timeout")

@@ -76,8 +76,7 @@ bool endpoint::operator==(endpoint const& other) const {
           && (read_timeout == other.read_timeout)
           && (retry_interval == other.retry_interval)
           && (name == other.name)
-          && (failover == other.failover)
-          && (secondary_failovers == other.secondary_failovers)
+          && (failovers == other.failovers)
           && (read_filters == other.read_filters)
           && (write_filters == other.write_filters)
           && (params == other.params)
@@ -115,10 +114,8 @@ bool endpoint::operator<(endpoint const& other) const {
     return (retry_interval < other.retry_interval);
   else if (name != other.name)
     return (name < other.name);
-  else if (failover != other.failover)
-    return (failover < other.failover);
-  else if (secondary_failovers != other.secondary_failovers)
-    return (secondary_failovers < other.secondary_failovers);
+  else if (failovers != other.failovers)
+    return (failovers < other.failovers);
   else if (read_filters != other.read_filters)
     return (read_filters < other.read_filters);
   else if (write_filters != other.write_filters)
@@ -161,8 +158,7 @@ bool endpoint::operator<(endpoint const& other) const {
  */
 void endpoint::_internal_copy(endpoint const& other) {
   buffering_timeout = other.buffering_timeout;
-  failover = other.failover;
-  secondary_failovers = other.secondary_failovers;
+  failovers = other.failovers;
   name = other.name;
   params = other.params;
   read_filters = other.read_filters;
