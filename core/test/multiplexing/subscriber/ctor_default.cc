@@ -22,6 +22,7 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/misc/shared_ptr.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
 
@@ -37,9 +38,15 @@ using namespace com::centreon::broker;
 int main() {
   // Initialization.
   config::applier::init();
+  multiplexing::engine::instance().start();
 
   // Subscriber.
-  multiplexing::subscriber s("temporary_prefix_name", "/tmp/");
+  uset<unsigned int> filters;
+  filters.insert(io::events::data_type<io::events::internal, 1>::value);
+  multiplexing::subscriber
+    s("core_multiplexing_subscriber_ctor_default", "");
+  s.get_muxer().set_read_filters(filters);
+  s.get_muxer().set_write_filters(filters);
 
   // Return value.
   int retval(0);

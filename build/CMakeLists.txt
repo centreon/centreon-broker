@@ -1439,13 +1439,13 @@ if (WITH_TESTING)
   add_test("${TEST_NAME}" "${TEST_NAME}")
   # multiplexing::publisher tests.
   #   Read.
-  set(TEST_NAME "core_multiplexing_engine_read")
+  set(TEST_NAME "core_multiplexing_publisher_read")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/multiplexing/publisher/read.cc")
   target_link_libraries("${TEST_NAME}" "roker")
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Write.
-  set(TEST_NAME "core_multiplexing_engine_write")
+  set(TEST_NAME "core_multiplexing_publisher_write")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/multiplexing/publisher/write.cc")
   target_link_libraries("${TEST_NAME}" "roker")

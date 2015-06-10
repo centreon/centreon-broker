@@ -154,7 +154,7 @@ void engine::start() {
         it->first->read(d);
         while (!d.isNull()) {
           _kiew.push(d);
-          it->first->read(d);
+          it->first->read(d, 0);
         }
       }
       catch (std::exception const& e) {

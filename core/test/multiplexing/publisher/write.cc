@@ -44,7 +44,12 @@ int main() {
   multiplexing::publisher p;
 
   // Subscriber.
-  multiplexing::subscriber s("temporary_prefix_name", "/tmp/");
+  uset<unsigned int> filters;
+  filters.insert(io::events::data_type<io::events::internal, 1>::value);
+  multiplexing::subscriber
+    s("core_multiplexing_publisher_write", "");
+  s.get_muxer().set_read_filters(filters);
+  s.get_muxer().set_write_filters(filters);
 
   // Publish event.
   {

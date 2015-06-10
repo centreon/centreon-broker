@@ -17,7 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
 #include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 
 using namespace com::centreon::broker;
@@ -31,8 +33,8 @@ int main() {
   // Initialization.
   config::applier::init();
 
-  // Return value.
-  int retval(0);
+  // Error flag.
+  bool error(true);
 
   // Publisher.
   multiplexing::publisher p;
@@ -41,13 +43,18 @@ int main() {
   try {
     misc::shared_ptr<io::data> d;
     p.read(d);
-    retval = 1;
+    error = true;
   }
-  catch (...) {}
+  catch (io::exceptions::shutdown const& e) {
+    error = false;
+  }
+  catch (...) {
+    error = true;
+  }
 
   // Cleanup.
   config::applier::deinit();
 
   // Return.
-  return (retval);
+  return (error ? EXIT_FAILURE : EXIT_SUCCESS);
 }

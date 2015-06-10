@@ -41,7 +41,12 @@ int main() {
   config::applier::init();
 
   // Subscriber.
-  multiplexing::subscriber s("temporary_prefix_name", "/tmp/");
+  uset<unsigned int> filters;
+  filters.insert(io::events::data_type<io::events::internal, 1>::value);
+  multiplexing::subscriber
+    s("core_multiplexing_engine_start_stop", "");
+  s.get_muxer().set_read_filters(filters);
+  s.get_muxer().set_write_filters(filters);
 
   // Send events through engine.
   char const* messages[] = { MSG1, MSG2, NULL };
@@ -64,7 +69,7 @@ int main() {
   multiplexing::engine::instance().start();
 
   // Read retained events.
-  for (unsigned int i = 0; messages[i]; ++i) {
+  for (unsigned int i(0); messages[i]; ++i) {
     misc::shared_ptr<io::data> data;
     s.get_muxer().read(data, 0);
     if (data.isNull()
