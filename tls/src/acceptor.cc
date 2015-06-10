@@ -134,7 +134,12 @@ misc::shared_ptr<io::stream> acceptor::open(
     try {
       // Initialize the TLS session
       logging::debug(logging::low) << "TLS: initializing session";
+      // GNUTLS_NONBLOCK was introduced in gnutls 2.99.3.
+#ifdef GNUTLS_NONBLOCK
       ret = gnutls_init(session, GNUTLS_SERVER | GNUTLS_NONBLOCK);
+#else
+      ret = gnutls_init(session, GNUTLS_SERVER);
+#endif
       if (ret != GNUTLS_E_SUCCESS)
 	throw (exceptions::msg() << "TLS: cannot initialize session: "
                << gnutls_strerror(ret));

@@ -109,10 +109,7 @@ io::endpoint* node_events_factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
-  QString name = get(QString(), cfg, "cfg_file");
-  if (name.isEmpty())
-    throw (exceptions::msg()
-           << "node_events: couldn't get the name of the configuration file");
+  QString name = get(QString(), cfg, "");
   is_acceptor = false;
   return (new node_events_connector(cache, name.toStdString()));
 }

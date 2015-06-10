@@ -100,7 +100,8 @@ void stream::statistics(io::properties& tree) const {
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
   (void)d;
-  throw (io::exceptions::shutdown(false, true)
-         << "command_file: cannot write to a command file");
+  // XXX: todo.
+  /*throw (io::exceptions::shutdown(false, true)
+         << "command_file: cannot write to a command file");*/
   return (1);
 }

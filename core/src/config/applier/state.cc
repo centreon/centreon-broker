@@ -113,9 +113,12 @@ void state::apply(
   // Create command file input.
   if (!s.command_file().empty()) {
     config::endpoint ept;
-    ept.name = s.command_file().c_str();
+    ept.name = "(command_file)";
     ept.type = "command_file";
-    ept.read_filters.insert("all");
+    ept.params.insert(
+      "command_file",
+      QString::fromStdString(s.command_file()));
+    ept.write_filters.insert("all");
     st.endpoints().push_back(ept);
   }
 
