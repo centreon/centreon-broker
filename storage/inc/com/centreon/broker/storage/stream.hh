@@ -30,7 +30,6 @@
 #  include "com/centreon/broker/database.hh"
 #  include "com/centreon/broker/database_query.hh"
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/multiplexing/hooker.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/storage/rebuilder.hh"
 
@@ -47,7 +46,7 @@ namespace          storage {
    *  Handle perfdata and insert proper informations in index_data and
    *  metrics table of a centstorage DB.
    */
-  class            stream : public multiplexing::hooker {
+  class            stream : public io::stream {
   public:
                    stream(
                      database_config const& db_cfg,
@@ -58,9 +57,7 @@ namespace          storage {
                      bool insert_in_index_data = false);
                    ~stream();
     bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
-    void           starting();
     void           statistics(io::properties& tree) const;
-    void           stopping();
     void           update();
     unsigned int   write(misc::shared_ptr<io::data> const& d);
 

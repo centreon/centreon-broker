@@ -29,7 +29,6 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service.hh"
@@ -130,9 +129,6 @@ stream::stream(
 
   // Run rebuild thread.
   _rebuild_thread.start();
-
-  // Register with multiplexer.
-  multiplexing::engine::instance().hook(*this, false);
 }
 
 /**
@@ -142,9 +138,6 @@ stream::~stream() {
   // Stop rebuild thread.
   _rebuild_thread.exit();
   _rebuild_thread.wait(-1);
-
-  // Unregister from multiplexer.
-  multiplexing::engine::instance().unhook(*this);
 }
 
 /**
@@ -164,13 +157,6 @@ bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
 }
 
 /**
- *  Multiplexing starts.
- */
-void stream::starting() {
-  return ;
-}
-
-/**
  *  Get endpoint statistics.
  *
  *  @param[out] tree Output tree.
@@ -182,13 +168,6 @@ void stream::statistics(io::properties& tree) const {
     p.set_perfdata(_status);
     p.set_graphable(false);
   }
-  return ;
-}
-
-/**
- *  Multiplexing stopped.
- */
-void stream::stopping() {
   return ;
 }
 
