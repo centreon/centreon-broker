@@ -112,18 +112,6 @@ acceptor& acceptor::operator=(acceptor const& other) {
 }
 
 /**
- *  Clone the acceptor.
- *
- *  @return This object.
- */
-io::endpoint* acceptor::clone() const {
-  std::auto_ptr<acceptor> copy(new acceptor(*this));
-  if (_from.isNull())
-    copy->_from = _from->clone();
-  return (copy.release());
-}
-
-/**
  *  Close the acceptor.
  */
 void acceptor::close() {

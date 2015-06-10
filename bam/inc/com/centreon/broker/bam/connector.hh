@@ -45,7 +45,6 @@ namespace           bam {
                     connector(connector const& other);
                     ~connector();
     connector&      operator=(connector const& other);
-    io::endpoint*   clone() const;
     void            close();
     void            connect_to(
                       stream_type type,

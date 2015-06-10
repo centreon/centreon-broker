@@ -69,15 +69,6 @@ node_events_connector& node_events_connector::operator=(
 }
 
 /**
- *  Clone this connector.
- *
- *  @return A new exact copy of this connector.
- */
-io::endpoint* node_events_connector::clone() const {
-  return (new node_events_connector(*this));
-}
-
-/**
  *  Close.
  */
 void node_events_connector::close() {

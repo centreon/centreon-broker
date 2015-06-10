@@ -63,15 +63,6 @@ endpoint& endpoint::operator=(endpoint const& o) {
 }
 
 /**
- *  Clone the opener.
- *
- *  @return This object.
- */
-io::endpoint* endpoint::clone() const {
-  return (new endpoint(*this));
-}
-
-/**
  *  Close the opener.
  */
 void endpoint::close() {

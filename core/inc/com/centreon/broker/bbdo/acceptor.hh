@@ -57,7 +57,6 @@ namespace         bbdo {
                   acceptor(acceptor const& other);
                   ~acceptor();
     acceptor&     operator=(acceptor const& other);
-    io::endpoint* clone() const;
     void          close();
     misc::shared_ptr<io::stream>
                   open();

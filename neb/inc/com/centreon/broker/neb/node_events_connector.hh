@@ -43,7 +43,6 @@ namespace                        neb {
                                  node_events_connector(node_events_connector const& other);
                                  ~node_events_connector();
     node_events_connector&       operator=(node_events_connector const& other);
-    io::endpoint*                clone() const;
     void                         close();
     misc::shared_ptr<io::stream> open();
 
