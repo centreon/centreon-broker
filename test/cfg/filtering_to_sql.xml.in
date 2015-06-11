@@ -15,7 +15,7 @@
   </logger>
   -->
   <output>
-    <name>FilteringToSQLUnitTest</name>
+    <name>FilteringToSQL</name>
     <type>sql</type>
     <db_type>@DB_TYPE@</db_type>
     <db_host>@DB_HOST@</db_host>
