@@ -21,6 +21,8 @@
 #  define CCB_NEB_TIMEPERIOD_SERIALIZABLE_HH
 
 #  include <string>
+#  include <QHash>
+#  include <QString>
 #  include "com/centreon/broker/time/timeperiod.hh"
 #  include "com/centreon/broker/neb/ceof_serializable.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -35,7 +37,8 @@ namespace   neb {
   class          timeperiod_serializable
                    : public ceof_serializable<timeperiod_serializable> {
   public:
-                 timeperiod_serializable();
+                 timeperiod_serializable(
+                   QHash<QString, time::timeperiod::ptr> const& tps);
                  timeperiod_serializable(
                  timeperiod_serializable const& other);
     timeperiod_serializable&
@@ -51,6 +54,9 @@ namespace   neb {
     std::string  get_thursday() const;
     std::string  get_friday() const;
     std::string  get_saturday() const;
+    std::string  get_exceptions() const;
+    std::string  get_excluded() const;
+    std::string  get_included() const;
 
     void         set_name(std::string const& name);
     void         set_alias(std::string const& val);
@@ -61,6 +67,9 @@ namespace   neb {
     void         set_thursday(std::string const& val);
     void         set_friday(std::string const& val);
     void         set_saturday(std::string const& val);
+    void         set_exceptions(std::string const& val);
+    void         set_excluded(std::string const& val);
+    void         set_included(std::string const& val);
 
     time::timeperiod::ptr
                  get_timeperiod() const;
@@ -68,8 +77,11 @@ namespace   neb {
     virtual void init_bindings();
 
   private:
+    QHash<QString, time::timeperiod::ptr> const*
+                 _tps;
     time::timeperiod::ptr
-                 _tp;  };
+                 _tp;
+  };
 }
 
 CCB_END()
