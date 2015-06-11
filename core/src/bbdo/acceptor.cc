@@ -120,7 +120,10 @@ acceptor& acceptor::operator=(acceptor const& other) {
 misc::shared_ptr<io::stream> acceptor::open() {
   // Wait for client from the lower layer.
   if (!_from.isNull()) {
-    misc::shared_ptr<io::stream> s(_from->open());
+    misc::shared_ptr<io::stream> s;
+    do {
+      s = _from->open();
+    } while (_one_peer_retention_mode && s.isNull());
 
     // Add BBDO layer.
     if (!s.isNull()) {
