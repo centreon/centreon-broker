@@ -696,7 +696,7 @@ void node_events_stream::_load_config_file() {
         _incomplete_downtime.push_back(*ds.get_downtime());
       }
       else if (object_name == "timeperiod") {
-        timeperiod_serializable ts;
+        timeperiod_serializable ts(_timeperiods);
         ts.unserialize(ts, iterator.enter_children());
         _timeperiods.insert(
           QString::fromStdString(ts.get_name()), ts.get_timeperiod());

@@ -20,14 +20,17 @@
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/neb/timeperiod_serializable.hh"
+#include "com/centreon/broker/misc/string.hh"
 
 using namespace com::centreon::broker::neb;
 
 /**
  *  Default constructor.
  */
-timeperiod_serializable::timeperiod_serializable()
-  : _tp(new time::timeperiod()){
+timeperiod_serializable::timeperiod_serializable(
+  QHash<QString, time::timeperiod::ptr> const& tps)
+  : _tps(&tps),
+    _tp(new time::timeperiod()){
   init_bindings();
 }
 
@@ -39,6 +42,7 @@ timeperiod_serializable::timeperiod_serializable()
 timeperiod_serializable::timeperiod_serializable(
                            timeperiod_serializable const& other)
   : ceof_serializable<timeperiod_serializable>(other),
+    _tps(other._tps),
     _tp(new time::timeperiod(*other._tp)){
 }
 
@@ -52,6 +56,7 @@ timeperiod_serializable::timeperiod_serializable(
 timeperiod_serializable& timeperiod_serializable::operator=(
                            timeperiod_serializable const& other) {
   if (this != &other) {
+    _tps = other._tps;
     _tp = misc::make_shared(new time::timeperiod(*other._tp));
   }
   return (*this);
@@ -153,6 +158,56 @@ std::string timeperiod_serializable::get_saturday() const {
 }
 
 /**
+ *  Get the exceptions of this timeperiod.
+ *
+ *  @return  The exceptions of this timeperiod.
+ */
+std::string timeperiod_serializable::get_exceptions() const {
+  // TODO: when it will be actually needed.
+  return ("");
+}
+
+/**
+ *  Get the excluded timeperiods of this timeperiod.
+ *
+ *  @return  The excluded timeperiods of this timeperiod.
+ */
+std::string timeperiod_serializable::get_excluded() const {
+  std::string ret;
+  std::vector<time::timeperiod::ptr> const& excluded = _tp->get_excluded();
+  for (std::vector<time::timeperiod::ptr> ::const_iterator
+         it = excluded.begin(),
+         end = excluded.end();
+       it != end;
+       ++it) {
+    if (!ret.empty())
+      ret.append(",");
+    ret += (*it)->get_name();
+  }
+  return (ret);
+}
+
+/**
+ *  Get the included timeperiods of this timeperiod.
+ *
+ *  @return  The included timeperiods of this timeperiod.
+ */
+std::string timeperiod_serializable::get_included() const {
+  std::string ret;
+  std::vector<time::timeperiod::ptr> const& included = _tp->get_included();
+  for (std::vector<time::timeperiod::ptr> ::const_iterator
+         it = included.begin(),
+         end = included.end();
+       it != end;
+       ++it) {
+    if (!ret.empty())
+      ret.append(",");
+    ret += (*it)->get_name();
+  }
+  return (ret);
+}
+
+/**
  *  Set the name of this timeperiod.
  *
  *  @param[in] name  The new name of this timeperiod.
@@ -248,6 +303,66 @@ void timeperiod_serializable::set_saturday(std::string const& val) {
 }
 
 /**
+ *  Set the exceptions of this timeperiod.
+ *
+ *  @param[in] val  The exceptions of this timeperiod.
+ */
+void timeperiod_serializable::set_exceptions(std::string const& val) {
+  std::vector<std::list<time::daterange> > dateranges;
+  if (time::daterange::build_dateranges_from_string(val, dateranges))
+    throw (exceptions::msg()
+           << "couldn't parse exceptions timeranges '" << val << "'");
+  for (std::vector<std::list<time::daterange> >::const_iterator
+         it = dateranges.begin(),
+         end = dateranges.end();
+       it != end;
+       ++it)
+    _tp->add_exceptions(*it);
+}
+
+/**
+ *  Set the excluded timeperiods of this timeperiod.
+ *
+ *  @param[in] val  The excluded timeperiods.
+ */
+void timeperiod_serializable::set_excluded(std::string const& val) {
+  std::vector<std::string> excluded;
+  misc::string::split(val, excluded, ',');
+  for (std::vector<std::string>::const_iterator
+         it = excluded.begin(),
+         end = excluded.end();
+       it != end;
+       ++it) {
+    time::timeperiod::ptr tp = _tps->value(QString::fromStdString(*it));
+    if (tp.isNull())
+      throw (exceptions::msg()
+             << "couldn't find the excluded timeperiod '" << *it << "'");
+    _tp->add_excluded(tp);
+  }
+}
+
+/**
+ *  Set the included timeperiods of this timeperiod.
+ *
+ *  @param[in] val  The included timeperiods.
+ */
+void timeperiod_serializable::set_included(std::string const& val) {
+  std::vector<std::string> included;
+  misc::string::split(val, included, ',');
+  for (std::vector<std::string>::const_iterator
+         it = included.begin(),
+         end = included.end();
+       it != end;
+       ++it) {
+    time::timeperiod::ptr tp = _tps->value(QString::fromStdString(*it));
+    if (tp.isNull())
+      throw (exceptions::msg()
+             << "couldn't find the included timeperiod '" << *it << "'");
+    _tp->add_included(tp);
+  }
+}
+
+/**
  *  Get the underlying timeperiod.
  *
  *  @return  The underlying timeperiod.
@@ -297,4 +412,16 @@ void timeperiod_serializable::init_bindings() {
      "saturday",
      &timeperiod_serializable::get_saturday,
      &timeperiod_serializable::set_saturday);
+  add_member(
+     "exceptions",
+     &timeperiod_serializable::get_exceptions,
+     &timeperiod_serializable::set_exceptions);
+  add_member(
+     "exclude",
+     &timeperiod_serializable::get_excluded,
+     &timeperiod_serializable::set_excluded);
+  add_member(
+     "include",
+     &timeperiod_serializable::get_included,
+     &timeperiod_serializable::set_included);
 }
