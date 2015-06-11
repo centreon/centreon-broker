@@ -95,18 +95,6 @@ connector& connector::operator=(connector const& other) {
 }
 
 /**
- *  Clone the connector.
- *
- *  @return A copy of this object.
- */
-io::endpoint* connector::clone() const {
-  std::auto_ptr<connector> copy(new connector(*this));
-  if (!_from.isNull())
-    copy->_from = _from->clone();
-  return (copy.release());
-}
-
-/**
  *  Close the connector.
  */
 void connector::close() {

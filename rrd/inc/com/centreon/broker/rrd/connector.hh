@@ -39,7 +39,6 @@ namespace          rrd {
                    connector(connector const& right);
                    ~connector();
     connector&     operator=(connector const& right);
-    io::endpoint*  clone() const;
     void           close();
     misc::shared_ptr<io::stream>
                    open();

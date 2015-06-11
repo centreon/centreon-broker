@@ -41,7 +41,6 @@ namespace           storage {
                     connector(connector const& other);
                     ~connector();
     connector&      operator=(connector const& other);
-    io::endpoint*   clone() const;
     void            close();
     void            connect_to(
                       database_config const& db_cfg,

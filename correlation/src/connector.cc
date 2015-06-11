@@ -75,15 +75,6 @@ connector& connector::operator=(connector const& other) {
 }
 
 /**
- *  Clone this connector.
- *
- *  @return A new exact copy of this connector.
- */
-io::endpoint* connector::clone() const {
-  return (new connector(*this));
-}
-
-/**
  *  Close.
  */
 void connector::close() {

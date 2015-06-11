@@ -46,7 +46,6 @@ namespace                        dumper {
                                  opener(opener const& o);
                                  ~opener();
     opener&                      operator=(opener const& o);
-    io::endpoint*                clone() const;
     void                         close();
     misc::shared_ptr<io::stream> open();
     void                         set_path(std::string const& path);

@@ -41,7 +41,6 @@ namespace           influxdb {
                     connector(connector const& other);
                     ~connector();
     connector&      operator=(connector const& other);
-    io::endpoint*   clone() const;
     void            close();
     void            connect_to(std::string const& user,
                       std::string const& passwd,

@@ -47,7 +47,6 @@ namespace         tls {
                   acceptor(acceptor const& right);
                   ~acceptor();
     acceptor&     operator=(acceptor const& right);
-    io::endpoint* clone() const;
     void          close();
     misc::shared_ptr<io::stream>
                   open();

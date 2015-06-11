@@ -69,15 +69,6 @@ opener& opener::operator=(opener const& other) {
 }
 
 /**
- *  Clone the opener.
- *
- *  @return This object.
- */
-io::endpoint* opener::clone() const {
-  return (new opener(*this));
-}
-
-/**
  *  Close the opener.
  */
 void opener::close() {

@@ -48,7 +48,6 @@ namespace                            io {
                                      endpoint(endpoint const& e);
     virtual                          ~endpoint();
     endpoint&                        operator=(endpoint const& e);
-    virtual endpoint*                clone() const = 0;
     virtual void                     close() = 0;
     void                             from(
                                        misc::shared_ptr<endpoint> endp);

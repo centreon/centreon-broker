@@ -39,7 +39,6 @@ namespace           graphite {
                     connector(connector const& other);
                     ~connector();
     connector&      operator=(connector const& other);
-    io::endpoint*   clone() const;
     void            close();
     void            connect_to(std::string const& metric_naming,
                       std::string const& status_naming,
