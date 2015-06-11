@@ -115,6 +115,7 @@ int main() {
       &services);
 
     // STEP #1.
+    std::cout << "step #1\n";
 
     // Launch broker1.
     broker1.set_config_file(cbd_cfg1.generate());
@@ -134,6 +135,7 @@ int main() {
              << "instance is not up to date at step #1");
 
     // STEP #2.
+    std::cout << "step #2\n";
 
     // Stop broker1.
     broker1.stop();
@@ -149,6 +151,7 @@ int main() {
              << "instance is not up to date at step #2");
 
     // STEP #3.
+    std::cout << "step #3\n";
 
     // Start broker1.
     broker1.start();
