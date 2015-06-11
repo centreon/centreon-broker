@@ -46,7 +46,6 @@ namespace                        dumper {
                                  opener(opener const& o);
                                  ~opener();
     opener&                      operator=(opener const& o);
-    void                         close();
     misc::shared_ptr<io::stream> open();
     void                         set_path(std::string const& path);
     void                         set_tagname(std::string const& tagname);

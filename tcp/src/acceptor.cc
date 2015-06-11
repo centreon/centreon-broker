@@ -40,7 +40,6 @@ using namespace com::centreon::broker::tcp;
  */
 acceptor::acceptor()
   : io::endpoint(true),
-    _closed(false),
     _port(0),
     _read_timeout(-1),
     _write_timeout(-1) {}
@@ -48,9 +47,7 @@ acceptor::acceptor()
 /**
  *  Destructor.
  */
-acceptor::~acceptor() {
-  this->close();
-}
+acceptor::~acceptor() {}
 
 /**
  *  Add a child to this acceptor.
@@ -60,17 +57,6 @@ acceptor::~acceptor() {
 void acceptor::add_child(std::string const& child) {
   QMutexLocker lock(&_childrenm);
   _children.push_back(child);
-  return ;
-}
-
-/**
- *  Close the acceptor.
- */
-void acceptor::close() {
-  _closed = true;
-  QMutexLocker lock(&_mutex);
-  if (_socket.get())
-    _socket->close();
   return ;
 }
 
@@ -96,22 +82,15 @@ misc::shared_ptr<io::stream> acceptor::open() {
 
   // Wait for incoming connections.
   logging::debug(logging::medium) << "TCP: waiting for new connection";
-  while (!_closed && !_socket->has_pending_connections()) {
+  if (!_socket->has_pending_connections()) {
     bool timedout(false);
-    bool ret(_socket->wait_for_new_connection(200, &timedout));
-    while (!ret && timedout) {
-      QWaitCondition cv;
-      cv.wait(&_mutex, 100);
-      timedout = false;
-      ret = _socket->wait_for_new_connection(200, &timedout);
-    }
-    if (!ret) {
-      if (_closed)
-        throw (io::exceptions::shutdown(true, true)
-               << "TCP: socket listening on port " << _port
-               << " is closed");
+    _socket->wait_for_new_connection(1000, &timedout);
+    if (!_socket->has_pending_connections()) {
+      if (timedout)
+        return (misc::shared_ptr<io::stream>());
       else
-        throw (exceptions::msg() << "TCP: error while waiting client: "
+        throw (exceptions::msg()
+               << "TCP: error while waiting client on port: " << _port
                << _socket->error_string());
     }
   }

@@ -112,15 +112,6 @@ acceptor& acceptor::operator=(acceptor const& other) {
 }
 
 /**
- *  Close the acceptor.
- */
-void acceptor::close() {
-  if (!_from.isNull())
-    _from->close();
-  return ;
-}
-
-/**
  *  Wait for incoming connection.
  *
  *  @return Always return null stream. A new thread will be launched to

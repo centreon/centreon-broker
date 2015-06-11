@@ -72,13 +72,6 @@ connector& connector::operator=(connector const& other) {
 }
 
 /**
- *  Close the connector socket.
- */
-void connector::close() {
-  return ;
-}
-
-/**
  *  Set connection parameters.
  *
  *  @param[in] host  Host to connect to.

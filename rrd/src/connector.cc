@@ -75,13 +75,6 @@ connector& connector::operator=(connector const& right) {
 }
 
 /**
- *  Close the connector.
- */
-void connector::close() {
-  return ;
-}
-
-/**
  *  Connect.
  *
  *  @return Stream object.

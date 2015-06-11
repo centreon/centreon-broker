@@ -89,7 +89,6 @@ void acceptor::accept() {
  */
 void acceptor::exit() {
   thread::exit();
-  _endp->close();
   return ;
 }
 

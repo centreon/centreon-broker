@@ -45,10 +45,9 @@ namespace                            io {
   class                              endpoint {
    public:
                                      endpoint(bool is_accptr);
-                                     endpoint(endpoint const& e);
+                                     endpoint(endpoint const& other);
     virtual                          ~endpoint();
-    endpoint&                        operator=(endpoint const& e);
-    virtual void                     close() = 0;
+    endpoint&                        operator=(endpoint const& other);
     void                             from(
                                        misc::shared_ptr<endpoint> endp);
     bool                             is_acceptor() const throw ();
@@ -59,7 +58,8 @@ namespace                            io {
                                        std::set<unsigned int> const& filter);
 
    protected:
-    void                             _internal_copy(endpoint const& e);
+    void                             _internal_copy(
+                                       endpoint const& other);
 
     misc::shared_ptr<endpoint>       _from;
     bool                             _is_acceptor;

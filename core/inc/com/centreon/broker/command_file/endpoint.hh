@@ -40,7 +40,6 @@ namespace                        command_file {
                                  endpoint(endpoint const& o);
                                  ~endpoint();
     endpoint&                    operator=(endpoint const& o);
-    void                         close();
     misc::shared_ptr<io::stream> open();
 
    private:

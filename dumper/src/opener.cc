@@ -72,13 +72,6 @@ opener& opener::operator=(opener const& other) {
 }
 
 /**
- *  Close the opener.
- */
-void opener::close() {
-  return ;
-}
-
-/**
  *  Open a new stream.
  *
  *  @return Opened stream.

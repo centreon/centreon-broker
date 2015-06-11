@@ -42,7 +42,6 @@ namespace                        notification {
                                  connector(connector const& c);
                                  ~connector();
     connector&                   operator=(connector const& c);
-    void                         close();
     void                         connect_to(
                                    QString const& type,
                                    QString const& host,

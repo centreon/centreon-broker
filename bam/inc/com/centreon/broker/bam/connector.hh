@@ -45,7 +45,6 @@ namespace           bam {
                     connector(connector const& other);
                     ~connector();
     connector&      operator=(connector const& other);
-    void            close();
     void            connect_to(
                       stream_type type,
                       database_config const& db_cfg,

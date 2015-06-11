@@ -38,7 +38,6 @@ namespace                        file {
                                  opener(opener const& other);
                                  ~opener();
     opener&                      operator=(opener const& other);
-    void                         close();
     misc::shared_ptr<io::stream> open();
     void                         set_filename(QString const& filename);
     void                         set_max_size(unsigned long long max);

@@ -42,7 +42,6 @@ namespace         tls {
                   connector(connector const& right);
                   ~connector();
     connector&    operator=(connector const& right);
-    void          close();
     misc::shared_ptr<io::stream>
                   open();
     misc::shared_ptr<io::stream>

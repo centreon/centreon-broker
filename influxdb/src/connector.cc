@@ -67,13 +67,6 @@ connector& connector::operator=(connector const& other) {
 }
 
 /**
- *  Close the connector.
- */
-void connector::close() {
-  return ;
-}
-
-/**
  *  Set connection parameters.
  *
  */

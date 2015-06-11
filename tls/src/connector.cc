@@ -76,15 +76,6 @@ connector& connector::operator=(connector const& right) {
 }
 
 /**
- *  Close the connector.
- */
-void connector::close() {
-  if (!_from.isNull())
-    _from->close();
-  return ;
-}
-
-/**
  *  Connect to the remote TLS peer.
  *
  *  @return New connected stream.

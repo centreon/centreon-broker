@@ -69,13 +69,6 @@ node_events_connector& node_events_connector::operator=(
 }
 
 /**
- *  Close.
- */
-void node_events_connector::close() {
-  return ;
-}
-
-/**
  *  Open a stream.
  *
  *  @return A newly opened stream.

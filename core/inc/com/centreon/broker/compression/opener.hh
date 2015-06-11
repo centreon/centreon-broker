@@ -38,7 +38,6 @@ namespace                        compression {
                                  opener(opener const& o);
                                  ~opener();
     opener&                      operator=(opener const& o);
-    void                         close();
     misc::shared_ptr<io::stream> open();
     void                         set_level(int level = -1);
     void                         set_size(unsigned int size = 0);

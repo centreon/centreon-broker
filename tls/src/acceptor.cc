@@ -77,15 +77,6 @@ acceptor& acceptor::operator=(acceptor const& right) {
 }
 
 /**
- *  Close the acceptor.
- */
-void acceptor::close() {
-  if (!_from.isNull())
-    _from->close();
-  return ;
-}
-
-/**
  *  @brief Try to accept a new connection.
  *
  *  Wait for an incoming client through the underlying acceptor, perform

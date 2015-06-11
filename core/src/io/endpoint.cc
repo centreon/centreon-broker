@@ -31,17 +31,17 @@ using namespace com::centreon::broker::io;
 /**
  *  Default constructor.
  *
- *  @param[in] is_accptr true if endpoint is an acceptor.
+ *  @param[in] is_accptr  True if endpoint is an acceptor.
  */
 endpoint::endpoint(bool is_accptr) : _is_acceptor(is_accptr) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] e Object to copy.
+ *  @param[in] other  Object to copy.
  */
-endpoint::endpoint(endpoint const& e) {
-  _internal_copy(e);
+endpoint::endpoint(endpoint const& other) {
+  _internal_copy(other);
 }
 
 /**
@@ -52,13 +52,13 @@ endpoint::~endpoint() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] e Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-endpoint& endpoint::operator=(endpoint const& e) {
-  if (this != &e)
-    _internal_copy(e);
+endpoint& endpoint::operator=(endpoint const& other) {
+  if (this != &other)
+    _internal_copy(other);
   return (*this);
 }
 
@@ -128,10 +128,10 @@ void endpoint::set_filter(std::set<unsigned int> const& filter) {
 /**
  *  Copy internal data members.
  *
- *  @param[in] e Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void endpoint::_internal_copy(endpoint const& e) {
-  _from = e._from;
-  _is_acceptor = e._is_acceptor;
+void endpoint::_internal_copy(endpoint const& other) {
+  _from = other._from;
+  _is_acceptor = other._is_acceptor;
   return ;
 }

@@ -1,5 +1,5 @@
 ##
-## Copyright 2011 Merethis
+## Copyright 2011,2015 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -54,34 +54,6 @@ get_property(TCP_MODULE_PATH
   TARGET "${TCP}"
   PROPERTY LOCATION)
 set(TCP_MODULE_PATH "${TCP_MODULE_PATH}" PARENT_SCOPE)
-
-# Testing.
-if (WITH_TESTING)
-  include_directories("${PROJECT_SOURCE_DIR}/tcp")
-  add_library("ccb_tcp" STATIC "${TEST_DIR}/common.cc")
-  set(TEST_LIBRARIES "ccb_tcp" "${TCP}" "roker")
-
-  # Acceptor tests.
-  #   Concurrent close.
-  set(TEST_NAME "tcp_acceptor_close_concurrent")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/acceptor/close_concurrent.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Close with open stream.
-  set(TEST_NAME "tcp_acceptor_close_with_open_stream")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/acceptor/close_with_open_stream.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Connector tests.
-  #   Concurrent close.
-  set(TEST_NAME "tcp_connector_close_concurrent")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/connector/close_concurrent.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-endif ()
 
 # Install rule.
 install(TARGETS "${TCP}"

@@ -43,7 +43,6 @@ namespace         bbdo {
                   connector(connector const& other);
                   ~connector();
     connector&    operator=(connector const& other);
-    void          close();
     misc::shared_ptr<io::stream>
                   open();
 

@@ -41,7 +41,6 @@ namespace           storage {
                     connector(connector const& other);
                     ~connector();
     connector&      operator=(connector const& other);
-    void            close();
     void            connect_to(
                       database_config const& db_cfg,
                       unsigned int rrd_len,

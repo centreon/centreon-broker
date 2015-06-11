@@ -95,13 +95,6 @@ connector& connector::operator=(connector const& other) {
 }
 
 /**
- *  Close the connector.
- */
-void connector::close() {
-  return ;
-}
-
-/**
  *  Open the connector.
  *
  *  @return Open stream.

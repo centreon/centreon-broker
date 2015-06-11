@@ -63,13 +63,6 @@ endpoint& endpoint::operator=(endpoint const& o) {
 }
 
 /**
- *  Close the opener.
- */
-void endpoint::close() {
-  return ;
-}
-
-/**
  *  Open a new stream.
  *
  *  @return Opened stream.

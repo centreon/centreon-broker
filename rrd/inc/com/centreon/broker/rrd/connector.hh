@@ -39,7 +39,6 @@ namespace          rrd {
                    connector(connector const& right);
                    ~connector();
     connector&     operator=(connector const& right);
-    void           close();
     misc::shared_ptr<io::stream>
                    open();
     void           set_cache_size(unsigned int cache_size);

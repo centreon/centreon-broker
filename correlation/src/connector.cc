@@ -75,13 +75,6 @@ connector& connector::operator=(connector const& other) {
 }
 
 /**
- *  Close.
- */
-void connector::close() {
-  return ;
-}
-
-/**
  *  Open a stream.
  *
  *  @return A newly opened stream.

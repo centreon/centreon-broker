@@ -41,7 +41,6 @@ namespace          tcp {
                    connector(connector const& other);
                    ~connector();
     connector&     operator=(connector const& other);
-    void           close();
     void           connect_to(QString const& host, unsigned short port);
     misc::shared_ptr<io::stream>
                    open();

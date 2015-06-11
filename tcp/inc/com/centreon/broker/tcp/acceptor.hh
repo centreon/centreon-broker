@@ -41,7 +41,6 @@ namespace          tcp {
                    acceptor();
                    ~acceptor();
     void           add_child(std::string const& child);
-    void           close();
     void           listen_on(unsigned short port);
     misc::shared_ptr<io::stream>
                    open();
@@ -57,7 +56,6 @@ namespace          tcp {
     std::list<std::string>
                    _children;
     QMutex         _childrenm;
-    volatile bool  _closed;
     QMutex         _mutex;
     unsigned short _port;
     int            _read_timeout;

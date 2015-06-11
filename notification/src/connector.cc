@@ -87,13 +87,6 @@ connector& connector::operator=(connector const& c) {
 }
 
 /**
- *  Close the connector.
- */
-void connector::close() {
-  return ;
-}
-
-/**
  *  Set connection parameters.
  *
  *  @param[in] type                    Database type.
