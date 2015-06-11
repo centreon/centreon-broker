@@ -20,14 +20,18 @@
 #ifndef CCB_TCP_STREAM_HH
 #  define CCB_TCP_STREAM_HH
 
+#  include <memory>
 #  include <QTcpSocket>
-#  include <QMutex>
+#  include <string>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace        tcp {
+  // Forward declaration.
+  class          acceptor;
+
   /**
    *  @class stream stream.hh "com/centreon/broker/tcp/stream.hh"
    *  @brief TCP stream.
@@ -36,14 +40,13 @@ namespace        tcp {
    */
   class          stream : public io::stream {
   public:
-                 stream(misc::shared_ptr<QTcpSocket> sock);
-                 stream(
-                   misc::shared_ptr<QTcpSocket> sock,
-                   misc::shared_ptr<QMutex> mutex);
+                 stream(QTcpSocket* sock, std::string const& name);
+                 stream(int socket_descriptor);
                  ~stream();
     bool         read(
                    misc::shared_ptr<io::data>& d,
                    time_t deadline);
+    void         set_parent(acceptor* parent);
     void         set_read_timeout(int secs);
     void         set_write_timeout(int secs);
     unsigned int write(misc::shared_ptr<io::data> const& d);
@@ -51,12 +54,15 @@ namespace        tcp {
   private:
                  stream(stream const& other);
     stream&      operator=(stream const& other);
+    void         _initialize_socket();
+    void         _set_socket_options();
 
-    misc::shared_ptr<QMutex>
-                 _mutex;
+    std::string  _name;
+    acceptor*    _parent;
     int          _read_timeout;
-    misc::shared_ptr<QTcpSocket>
+    std::auto_ptr<QTcpSocket>
                  _socket;
+    int          _socket_descriptor;
     int          _write_timeout;
   };
 }

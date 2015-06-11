@@ -23,22 +23,13 @@ set(SRC_DIR "${PROJECT_SOURCE_DIR}/tcp/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/tcp/test")
 include_directories("${PROJECT_SOURCE_DIR}/tcp/inc")
 
-# Some files must be processed by Qt's moc.
-unset(QT_WRAPPED_SOURCES)
-if ("${QT_VERSION}" VERSION_GREATER "4.3.0")
-  qt4_wrap_cpp(QT_WRAPPED_SOURCES
-    "${INC_DIR}/acceptor.hh")
-else ()
-  qt4_wrap_cpp(QT_WRAPPED_SOURCES
-    "${INC_DIR}/acceptor.hh")
-endif ()
-
 # Sources.
 set(SOURCES
   "${SRC_DIR}/acceptor.cc"
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
+  "${SRC_DIR}/server_socket.cc"
   "${SRC_DIR}/stream.cc"
 )
 # Headers.
@@ -46,6 +37,7 @@ set(HEADERS
   "${INC_DIR}/acceptor.hh"
   "${INC_DIR}/connector.hh"
   "${INC_DIR}/factory.hh"
+  "${INC_DIR}/server_socket.hh"
   "${INC_DIR}/stream.hh"
 )
 
@@ -55,7 +47,6 @@ set(TCP "${TCP}" PARENT_SCOPE)
 add_library("${TCP}" SHARED
   ${SOURCES}
   ${HEADERS}
-  ${QT_WRAPPED_SOURCES}
 )
 target_link_libraries("${TCP}" ${QT_LIBRARIES})
 set_target_properties("${TCP}" PROPERTIES PREFIX "")

@@ -121,10 +121,10 @@ misc::shared_ptr<io::stream> connector::open(
       // Initialize the TLS session
       logging::debug(logging::low) << "TLS: initializing session";
 #ifdef GNUTLS_NONBLOCK
-      ret = gnutls_init(session, GNUTLS_SERVER | GNUTLS_NONBLOCK);
+      ret = gnutls_init(session, GNUTLS_CLIENT | GNUTLS_NONBLOCK);
 #else
-      ret = gnutls_init(session, GNUTLS_SERVER);
-#endif
+      ret = gnutls_init(session, GNUTLS_CLIENT);
+#endif // GNUTLS_NONBLOCK
       if (ret
           != GNUTLS_E_SUCCESS)
         throw (exceptions::msg() << "TLS: cannot initialize session: "

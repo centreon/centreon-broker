@@ -17,14 +17,13 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cstdlib>
-#include <QMutexLocker>
 #include <QWaitCondition>
+#include <sstream>
+#include <sys/socket.h>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/tcp/acceptor.hh"
 #include "com/centreon/broker/tcp/stream.hh"
 
 using namespace com::centreon::broker;
@@ -39,35 +38,43 @@ using namespace com::centreon::broker::tcp;
 /**
  *  Constructor.
  *
- *  @param[in] sock Socket used by this stream.
+ *  @param[in] sock  Socket used by this stream.
+ *  @param[in] name  Name of this connection.
  */
-stream::stream(misc::shared_ptr<QTcpSocket> sock)
-  : _mutex(new QMutex),
+stream::stream(QTcpSocket* sock, std::string const& name)
+  : _name(name),
+    _parent(NULL),
     _read_timeout(-1),
     _socket(sock),
-    _write_timeout(-1) {}
+    _socket_descriptor(-1),
+    _write_timeout(-1) {
+  _set_socket_options();
+}
 
 /**
  *  Constructor.
  *
- *  @param[in] sock  Socket used by this stream.
- *  @param[in] mutex Mutex used by this stream.
+ *  @param[in] socket_descriptor  Native socket descriptor.
  */
-stream::stream(
-          misc::shared_ptr<QTcpSocket> sock,
-          misc::shared_ptr<QMutex> mutex)
-  : _mutex(mutex),
+stream::stream(int socket_descriptor)
+  : _parent(NULL),
     _read_timeout(-1),
-    _socket(sock),
+    _socket_descriptor(socket_descriptor),
     _write_timeout(-1) {}
 
 /**
  *  Destructor.
  */
 stream::~stream() {
-  QMutexLocker lock(&*_mutex);
-  if (!_socket.isNull())
+  if (_socket.get()) {
     _socket->close();
+    if (_parent)
+      _parent->remove_child(_name);
+  }
+  else if (_socket_descriptor != -1) {
+    // Destructor of socket will properly shutdown connection.
+    _initialize_socket();
+  }
 }
 
 /**
@@ -81,10 +88,12 @@ stream::~stream() {
 bool stream::read(
                misc::shared_ptr<io::data>& d,
                time_t deadline) {
-  d.clear();
-  QMutexLocker lock(&*_mutex);
+  // Check that socket exist.
+  if (!_socket.get())
+    _initialize_socket();
 
   // If data is already available, skip the waitForReadyRead() loop.
+  d.clear();
   if (_socket->bytesAvailable() <= 0) {
     bool ret(_socket->waitForReadyRead(0));
     while (_socket->bytesAvailable() <= 0) {
@@ -97,17 +106,13 @@ bool stream::read(
       else if (!ret
           && (_socket->state() == QAbstractSocket::UnconnectedState)
           && (_socket->bytesAvailable() <= 0))
-        throw (exceptions::msg() << "TCP stream is disconnected");
+        throw (exceptions::msg() << "TCP peer '"
+               << _name << "' is disconnected");
       // Got data.
       else if (ret
           || (_socket->error() != QAbstractSocket::SocketTimeoutError)
           || (_socket->bytesAvailable() > 0))
         break ;
-      // Wait very little on mutex to allow socket shutdown.
-      else {
-        QWaitCondition cv;
-        cv.wait(&*_mutex, 1);
-      }
 
       // Wait for data.
       _socket->waitForReadyRead(200);
@@ -117,8 +122,9 @@ bool stream::read(
   char buffer[2048];
   qint64 rb(_socket->read(buffer, sizeof(buffer)));
   if (rb < 0)
-    throw (exceptions::msg() << "TCP: error while reading: "
-           << _socket->errorString());
+    throw (exceptions::msg()
+           << "error while reading from TCP peer '"
+           << _name << "': " << _socket->errorString());
   misc::shared_ptr<io::raw> data(new io::raw);
 #if QT_VERSION >= 0x040500
   data->append(buffer, rb);
@@ -130,12 +136,25 @@ bool stream::read(
 }
 
 /**
+ *  Set parent socket.
+ *
+ *  @param[in,out] parent  Parent socket.
+ */
+void stream::set_parent(acceptor* parent) {
+  _parent = parent;
+  return ;
+}
+
+/**
  *  Set read timeout.
  *
  *  @param[in] secs  Timeout in seconds.
  */
 void stream::set_read_timeout(int secs) {
-  _read_timeout = secs;
+  if (secs == -1)
+    _read_timeout = -1;
+  else
+    _read_timeout = secs * 1000;
   return ;
 }
 
@@ -145,7 +164,10 @@ void stream::set_read_timeout(int secs) {
  *  @param[in] secs  Write timeout in seconds.
  */
 void stream::set_write_timeout(int secs) {
-  _write_timeout = secs;
+  if (secs == -1)
+    _write_timeout = -1;
+  else
+    _write_timeout = secs * 1000;
   return ;
 }
 
@@ -157,6 +179,10 @@ void stream::set_write_timeout(int secs) {
  *  @return Number of events acknowledged.
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
+  // Check that socket exist.
+  if (!_socket.get())
+    _initialize_socket();
+
   // Check that data exists and should be processed.
   if (d.isNull())
     return (1);
@@ -164,16 +190,65 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
   if (d->type() == io::raw::static_type()) {
     misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
     logging::debug(logging::low) << "TCP: write request of "
-      << r->size() << " bytes";
-    QMutexLocker lock(&*_mutex);
+      << r->size() << " bytes to peer '" << _name << "'";
     qint64 wb(_socket->write(static_cast<char*>(r->QByteArray::data()),
                              r->size()));
     if ((wb < 0) || (_socket->state() == QAbstractSocket::UnconnectedState))
-      throw (exceptions::msg() << "TCP: error while writing: "
-             << _socket->errorString());
-    if (_socket->waitForBytesWritten(_write_timeout * 1000) == false)
-      throw (exceptions::msg() << "TCP: error while sending data: "
-             << _socket->errorString());
+      throw (exceptions::msg() << "TCP: error while writing to peer '"
+             << _name << "': " << _socket->errorString());
+    if (_socket->waitForBytesWritten(_write_timeout) == false)
+      throw (exceptions::msg()
+             << "TCP: error while sending data to peer '" << _name
+             << "': " << _socket->errorString());
   }
   return (1);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Initialize socket if it was not already initialized.
+ */
+void stream::_initialize_socket() {
+  _socket.reset(new QTcpSocket);
+  _socket->setSocketDescriptor(_socket_descriptor);
+  _socket_descriptor = -1;
+  {
+    std::ostringstream oss;
+    oss << _socket->peerAddress().toString().toStdString()
+        << ":" << _socket->peerPort();
+    _name = oss.str();
+  }
+  if (_parent)
+    _parent->add_child(_name);
+  _set_socket_options();
+  return ;
+}
+
+/**
+ *  Set various socket options.
+ */
+void stream::_set_socket_options() {
+  // Set the SO_KEEPALIVE option.
+  _socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+
+  // Set the write timeout option.
+  if (_write_timeout >= 0) {
+#ifndef _WIN32
+    struct timeval t;
+    t.tv_sec = _write_timeout / 1000;
+    t.tv_usec = _write_timeout % 1000;
+    ::setsockopt(
+        _socket->socketDescriptor(),
+        SOL_SOCKET,
+        SO_SNDTIMEO,
+        &t,
+        sizeof(t));
+#endif //!_WIN32
+  }
+  return ;
 }

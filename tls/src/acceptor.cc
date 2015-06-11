@@ -139,7 +139,7 @@ misc::shared_ptr<io::stream> acceptor::open(
       ret = gnutls_init(session, GNUTLS_SERVER | GNUTLS_NONBLOCK);
 #else
       ret = gnutls_init(session, GNUTLS_SERVER);
-#endif
+#endif // GNUTLS_NONBLOCK
       if (ret != GNUTLS_E_SUCCESS)
 	throw (exceptions::msg() << "TLS: cannot initialize session: "
                << gnutls_strerror(ret));

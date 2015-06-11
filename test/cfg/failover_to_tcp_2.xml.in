@@ -3,7 +3,6 @@
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
   <instance>@INSTANCE_ID@</instance>
   <instance_name>@INSTANCE_NAME@</instance_name>
-  <!--
   <stats>
     <fifo>/tmp/cbd.fifo</fifo>
   </stats>
@@ -16,7 +15,6 @@
     <info>1</info>
     <level>3</level>
   </logger>
-  -->
   <input>
     <name>InputFailoverToTCP@INSTANCE_ID@UnitTest</name>
     <type>tcp</type>
