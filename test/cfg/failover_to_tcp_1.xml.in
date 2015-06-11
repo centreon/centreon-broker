@@ -3,6 +3,7 @@
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
   <instance>42</instance>
   <instance_name>my_cbmod</instance_name>
+  <!--
   <stats>
     <fifo>/tmp/cbmod.fifo</fifo>
   </stats>
@@ -15,6 +16,7 @@
     <info>1</info>
     <level>3</level>
   </logger>
+  -->
   <output>
     <name>FailoverToTCP1</name>
     <failover>FailoverToTCP2</failover>
