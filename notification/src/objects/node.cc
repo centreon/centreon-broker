@@ -30,8 +30,7 @@ node::node() :
   _notification_interval(0),
   _last_notification_time(0),
   _hard_state(),
-  _soft_state(),
-  _notification_options(node_notification_opt::none)
+  _soft_state()
   {}
 
 /**
@@ -55,7 +54,6 @@ node& node::operator=(node const& obj) {
     _notification_number = obj._notification_number;
     _notifications_enabled = obj._notifications_enabled;
     _notification_interval = obj._notification_interval;
-    _notification_options = obj._notification_options;
     _last_notification_time = obj._last_notification_time;
     _hard_state = obj._hard_state;
     _soft_state = obj._soft_state;
@@ -251,51 +249,3 @@ void node::set_notification_interval(double val) throw() {
   _notification_interval = val;
 }
 
-/**
- *  Get the notification options.
- *
- *  @return  The notification options.
- */
-node_notification_opt node::get_notification_options() const throw() {
-  return (_notification_options);
-}
-
-/**
- *  Set the notification options.
- *
- *  @param[in] val  The notification options of this node.
- */
-void node::set_notification_options(node_notification_opt val) throw() {
-  _notification_options = val;
-}
-
-/**
- *  Should this node be notified based on options and current state?
- *
- *  @return  True if the node should be notified.
- */
-bool node::should_be_notified() const throw() {
-  if (_hard_state == node_state::ok)
-    return (false);
-
-  if (_id.is_host()) {
-    if(_hard_state == node_state::host_down &&
-        _notification_options.check_for(node_notification_opt::host_down))
-      return (true);
-    else if(_hard_state == node_state::host_unreachable &&
-              _notification_options.check_for(node_notification_opt::host_unreachable))
-      return (true);
-  }
-  else if (_id.is_service()) {
-    if (_hard_state == node_state::service_warning &&
-          _notification_options.check_for(node_notification_opt::service_warning))
-      return (true);
-    else if (_hard_state == node_state::service_critical &&
-               _notification_options.check_for(node_notification_opt::service_critical))
-      return (true);
-    else if (_hard_state == node_state::service_unknown &&
-               _notification_options.check_for(node_notification_opt::service_unknown))
-      return (true);
-  }
-  return (false);
-}

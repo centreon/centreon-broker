@@ -279,48 +279,6 @@ void action::_spawn_notification_attempts(
 }
 
 /**
- *  Generic checks of action viability.
- *
- *  @param[in] st  The notification state of the engine.
- *
- *  @return        True if the checks were successful.
- */
-bool action::_check_action_viability(
-               ::com::centreon::broker::notification::state& st) const {
-  logging::debug(logging::low)
-      << "notification: checking action viability for node ("
-      << _id.get_host_id() << ", " << _id.get_service_id() << ")";
-
-  // Check the node's existence.
-  node::ptr n(st.get_node_by_id(_id));
-  if (!n) {
-    logging::debug(logging::low)
-      << "notification: node (" << _id.get_host_id () << ", "
-      << _id.get_service_id()
-      << ") was not declared, notification attempt is not viable";
-    return (false);
-  }
-
-  // Check the existence of correlated parent.
-  if (n->has_parent()
-      && !(n->get_notification_options()
-           & objects::node_notification_opt::not_correlated)) {
-    logging::debug(logging::low)
-      << "notification: node (" << _id.get_host_id() << ", "
-      << _id.get_service_id()
-      << ") has parent issue, notification attempt is not viable";
-    return (false);
-  }
-
-  // Notification is viable.
-  logging::debug(logging::low)
-    << "notification: notification attempt on node ("
-    << _id.get_host_id() << ", " << _id.get_service_id()
-    << ") is viable";
-  return (true);
-}
-
-/**
  *  Process a notification attempt.
  *
  *  @param[in] st                 The notification state of the engine.
@@ -338,8 +296,19 @@ void action::_process_notification(
     << _id.get_host_id() << ", " << _id.get_service_id() << ")";
 
   // Check action viability.
-  if (!_check_action_viability(st))
+  logging::debug(logging::low)
+      << "notification: checking action viability for node ("
+      << _id.get_host_id() << ", " << _id.get_service_id() << ")";
+
+  // Check the node's existence.
+  node::ptr n(st.get_node_by_id(_id));
+  if (!n) {
+    logging::debug(logging::low)
+      << "notification: node (" << _id.get_host_id () << ", "
+      << _id.get_service_id()
+      << ") was not declared, notification attempt is not viable";
     return ;
+  }
 
   // Get all the necessary data.
   notification_rule::ptr rule =
@@ -388,7 +357,15 @@ void action::_process_notification(
     return ;
   }
 
-  node::ptr n = st.get_node_by_id(_id);
+  // Check the existence of correlated parent.
+  if (n->has_parent()
+      && !method->should_be_notified_when_correlated()) {
+    logging::debug(logging::low)
+      << "notification: node (" << _id.get_host_id() << ", "
+      << _id.get_service_id()
+      << ") has parent issue, notification attempt is not viable";
+    return ;
+  }
 
   // Check if the state is valid.
   if (!method->should_be_notified_for(

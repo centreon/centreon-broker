@@ -53,41 +53,6 @@ namespace               notification {
 
       state_type        value;
     };
-
-    class               node_notification_opt {
-    public:
-      enum              notification_type {
-        none = 0,
-        service_unknown = (1 << 1),
-        service_warning = (1 << 2),
-        service_critical = (1 << 3),
-        service_pending = (1 << 4),
-        service_recovery = (1 << 5),
-        host_down = (1 << 6),
-        host_unreachable = (1 << 7),
-        host_recovery = (1 << 8),
-        not_correlated = (1 << 9)
-      };
-
-                        node_notification_opt();
-                        node_notification_opt(notification_type type);
-                        node_notification_opt(int);
-                        node_notification_opt(node_notification_opt const&);
-      node_notification_opt&
-                        operator=(node_notification_opt const&);
-      bool              operator==(
-                          node_notification_opt const& opt) const throw();
-      bool              operator==(
-                          node_notification_opt::notification_type type) const throw();
-
-
-      operator          int() const throw();
-
-      bool              check_for(notification_type opt) const throw();
-      void              add_option(notification_type opt) throw();
-
-      notification_type value;
-    };
   }
 }
 
