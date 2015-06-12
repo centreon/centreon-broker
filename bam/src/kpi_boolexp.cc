@@ -265,6 +265,6 @@ short kpi_boolexp::_get_state() const {
     if (!_event.isNull())
       return (_event->status);
     else
-      _boolexp->get_state();
+      return (_boolexp->get_state());
   }
 }
