@@ -69,7 +69,7 @@ void state::clear() {
   _cache_directory.clear();
   _command_file.clear();
   _endpoints.clear();
-  _event_queue_max_size = 0;
+  _event_queue_max_size = 10000;
   _flush_logs = true;
   _instance_id = 0;
   _instance_name.clear();
