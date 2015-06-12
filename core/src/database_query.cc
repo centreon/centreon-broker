@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdlib>
 #include <QSqlError>
 #include "com/centreon/broker/database.hh"
@@ -170,33 +169,4 @@ void database_query::prepare(
  */
 QVariant database_query::value(int index) {
   return (_q.value(index));
-}
-
-/**
- *  @brief Copy constructor.
- *
- *  This method will abort the program.
- *
- *  @param[in] other  Unused.
- */
-database_query::database_query(database_query const& other)
-  : _db(other._db) {
-  assert(!"database query objects are not copyable");
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  This method will abort the program.
- *
- *  @param[in] other  Unused.
- *
- *  @return This object.
- */
-database_query& database_query::operator=(database_query const& other) {
-  (void)other;
-  assert(!"database query objects are not copyable");
-  abort();
-  return (*this);
 }

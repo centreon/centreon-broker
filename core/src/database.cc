@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdlib>
 #include <QMutexLocker>
 #include <QSqlError>
@@ -138,35 +137,6 @@ void database::commit() {
   _commit();
   _new_transaction();
   return ;
-}
-
-/**
- *  @brief Copy constructor.
- *
- *  This method will abort the program.
- *
- *  @param[in] other  Unused.
- */
-database::database(database const& other) {
-  (void)other;
-  assert(!"database objects are not copyable");
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  This method will abort the program.
- *
- *  @param[in] other  Unused.
- *
- *  @return This method will call abort() and won't return.
- */
-database& database::operator=(database const& other) {
-  (void)other;
-  assert(!"database objects are not copyable");
-  abort();
-  return (*this);
 }
 
 /**

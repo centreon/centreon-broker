@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
@@ -312,35 +311,6 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
 *           Private Methods           *
 *                                     *
 **************************************/
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other Unused.
- */
-monitoring_stream::monitoring_stream(monitoring_stream const& other)
-  : io::stream(other),
-    _db(database_config()),
-    _ba_update(_db),
-    _kpi_update(_db),
-    _meta_service_update(_db) {
-  assert(!"BAM monitoring stream is not copyable");
-  abort();
-}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other Unused.
- *
- *  @return This object.
- */
-monitoring_stream& monitoring_stream::operator=(monitoring_stream const& other) {
-  (void)other;
-  assert(!"BAM monitoring stream is not copyable");
-  abort();
-  return (*this);
-}
 
 /**
  *  Prepare queries.

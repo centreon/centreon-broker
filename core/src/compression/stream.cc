@@ -172,7 +172,6 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
         _flush();
     }
   }
-
   return (1);
 }
 

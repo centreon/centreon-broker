@@ -99,9 +99,8 @@ void stream::statistics(io::properties& tree) const {
  *  @return Number of events acknowledged.
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
-  (void)d;
-  // XXX: todo.
-  /*throw (io::exceptions::shutdown(false, true)
-         << "command_file: cannot write to a command file");*/
+  if (!d.isNull())
+    throw (io::exceptions::shutdown(false, true)
+           << "cannot write to command file '" << _filename << "'");
   return (1);
 }

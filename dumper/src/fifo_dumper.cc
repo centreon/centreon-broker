@@ -110,8 +110,8 @@ bool fifo_dumper::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *  @return Always return 1, or throw exceptions.
  */
 unsigned int fifo_dumper::write(misc::shared_ptr<io::data> const& d) {
-  (void)d;
-  throw (io::exceptions::shutdown(false, true)
-         << "cannot write to a FIFO dumper");
+  if (!d.isNull())
+    throw (io::exceptions::shutdown(false, true)
+           << "cannot write to FIFO dumper '" << _path << "'");
   return (1);
 }

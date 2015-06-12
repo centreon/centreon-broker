@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdlib>
 #include <sstream>
 #include <QMutexLocker>
@@ -213,50 +212,6 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
 *           Private Methods           *
 *                                     *
 **************************************/
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other Unused.
- */
-reporting_stream::reporting_stream(reporting_stream const& other)
-  : io::stream(other),
-    _db(database_config("", "", 0, "", "", "")),
-    _ba_event_insert(_db),
-    _ba_full_event_insert(_db),
-    _ba_event_update(_db),
-    _ba_event_delete(_db),
-    _ba_duration_event_insert(_db),
-    _kpi_event_insert(_db),
-    _kpi_full_event_insert(_db),
-    _kpi_event_update(_db),
-    _kpi_event_delete(_db),
-    _kpi_event_link(_db),
-    _dimension_ba_insert(_db),
-    _dimension_bv_insert(_db),
-    _dimension_ba_bv_relation_insert(_db),
-    _dimension_timeperiod_insert(_db),
-    _dimension_timeperiod_exception_insert(_db),
-    _dimension_timeperiod_exclusion_insert(_db),
-    _dimension_ba_timeperiod_insert(_db),
-    _dimension_kpi_insert(_db) {
-  assert(!"BAM reporting stream is not copyable");
-  abort();
-}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other Unused.
- *
- *  @return This object.
- */
-reporting_stream& reporting_stream::operator=(reporting_stream const& other) {
-  (void)other;
-  assert(!"BAM reporting stream is not copyable");
-  abort();
-  return (*this);
-}
 
 /**
  *  Apply a timeperiod declaration.

@@ -70,7 +70,7 @@ bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.clear();
   throw (io::exceptions::shutdown(true, false)
-         << "attempt to read from a dumper stream");
+         << "attempt to read from dumper '" << _path << "'");
   return (true);
 }
 

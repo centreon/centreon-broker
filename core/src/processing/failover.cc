@@ -116,6 +116,7 @@ bool failover::read(
   // stream contained in this object. Typically this method is called
   // by another failover object that uses this object as its failover
   // endpoint.
+  data.clear();
 
   // First we try to read from the main stream.
   QMutexLocker stream_lock(&_streamm);
@@ -538,9 +539,10 @@ bool failover::wait(unsigned long time) {
  */
 unsigned int failover::write(misc::shared_ptr<io::data> const& d) {
   (void)d;
-  throw (exceptions::msg() << "cannot write to endpoint '"
-         << _name << "'");
-  return (0);
+  if (!d.isNull())
+    throw (exceptions::msg() << "cannot write to endpoint '"
+           << _name << "'");
+  return (1);
 }
 
 /**************************************

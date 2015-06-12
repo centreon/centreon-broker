@@ -320,6 +320,5 @@ unsigned int output::write(misc::shared_ptr<io::data> const& e) {
   }
   else
     _substream->write(e);
-
   return (1);
 }

@@ -17,7 +17,6 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cassert>
 #include <cstdlib>
 #include <sstream>
 #include <memory>
@@ -79,33 +78,6 @@ void reader::read(state& st) {
     throw ;
   }
   return ;
-}
-
-/**
- *  @brief Copy constructor
- *
- *  Hidden implementation, never called.
- */
-reader::reader(reader const& other) : _db(other._db) {
-  (void)other;
-  assert(!"BAM configuration reader is not copyable");
-  abort();
-}
-
-/**
- *  @brief Assignment operator.
- *
- *  Hidden implementation, never called.
- *
- *  @param[in] other Unused.
- *
- *  @return This object.
- */
-reader& reader::operator=(reader const& other) {
-  (void)other;
-  assert(!"BAM configuration reader is not copyable");
-  abort();
-  return (*this);
 }
 
 /**

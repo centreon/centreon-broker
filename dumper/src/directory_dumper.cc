@@ -152,9 +152,9 @@ bool directory_dumper::read(
  *  @return Always return 1, or throw exceptions.
  */
 unsigned int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
-  (void)d;
-  throw (io::exceptions::shutdown(false, true)
-         << "cannot write to a dumper directory");
+  if (!d.isNull())
+    throw (io::exceptions::shutdown(false, true)
+           << "cannot write to dumper directory '" << _path << "'");
   return (1);
 }
 

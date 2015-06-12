@@ -296,6 +296,7 @@ input& input::operator=(input const& other) {
  */
 bool input::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   // Read event.
+  d.clear();
   bool timed_out(!read_any(d, deadline));
   unsigned int event_id(d.isNull() ? 0 : d->type());
   while (!timed_out

@@ -209,6 +209,7 @@ void stream::negociate(stream::negociation_type neg) {
  *  @see input::read()
  */
 bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+  d.clear();
   if (!_negociated)
     negociate(negociate_second);
   return (input::read(d, deadline));
