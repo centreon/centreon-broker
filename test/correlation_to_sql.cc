@@ -57,126 +57,29 @@ int main() {
   std::list<host> hosts;
   std::list<service> services;
   std::string engine_config_path(tmpnam(NULL));
-  std::string broker_config_path(tmpnam(NULL));
   std::string broker_correlation_path(tmpnam(NULL));
-  std::string cbmod_config_path(tmpnam(NULL));
   std::string cbmod_correlation_path(tmpnam(NULL));
   external_command commander;
   engine daemon;
   cbd broker;
   test_db db;
+  test_file cbmod_cfg;
+  test_file cbd_cfg;
 
   // Information.
   std::cout << "base retention: " << cbmod_correlation_path << "\n"
             << "passive retention: " << broker_correlation_path << "\n";
 
   try {
-    // Write cbmod configuration file.
-    {
-      std::ofstream ofs;
-      ofs.open(
-            cbmod_config_path.c_str(),
-            std::ios_base::out | std::ios_base::trunc);
-      if (ofs.fail())
-        throw (exceptions::msg()
-               << "cannot open cbmod configuration file '"
-               << cbmod_config_path.c_str() << "'");
-      ofs << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
-        "<centreonbroker>\n"
-        "  <include>" PROJECT_SOURCE_DIR "/test/cfg/broker_modules.xml</include>\n"
-        "  <instance>42</instance>\n"
-        "  <instance_name>MyBroker</instance_name>\n"
-        "  <!--\n"
-        "  <stats>\n"
-        "    <fifo>/tmp/cbmod.fifo</fifo>\n"
-        "  </stats>\n"
-        "  <logger>\n"
-        "    <type>file</type>\n"
-        "    <name>cbmod.log</name>\n"
-        "    <config>1</config>\n"
-        "    <debug>1</debug>\n"
-        "    <error>1</error>\n"
-        "    <info>1</info>\n"
-        "    <level>3</level>\n"
-        "  </logger>\n"
-        "  -->\n"
-        "  <correlation>\n"
-        "    <file>" PROJECT_SOURCE_DIR "/test/cfg/correlation_file.xml</file>\n"
-        "    <retention>" << cbmod_correlation_path << "</retention>\n"
-        "  </correlation>\n"
-        "  <output>\n"
-        "    <name>EngineToSQLUnitTest</name>\n"
-        "    <type>sql</type>\n"
-        "    <db_type>" DB_TYPE "</db_type>\n"
-        "    <db_host>" DB_HOST "</db_host>\n"
-        "    <db_port>" DB_PORT "</db_port>\n"
-        "    <db_user>" DB_USER "</db_user>\n"
-        "    <db_password>" DB_PASSWORD "</db_password>\n"
-        "    <db_name>broker_correlation_to_sql</db_name>\n"
-        "    <queries_per_transaction>0</queries_per_transaction>\n"
-        "    <with_state_events>1</with_state_events>\n"
-        "  </output>\n"
-        "  <output>\n"
-        "    <name>PassiveCorrelation</name>\n"
-        "    <type>tcp</type>\n"
-        "    <protocol>bbdo</protocol>\n"
-        "    <read_timeout>1</read_timeout>\n"
-        "    <port>5688</port>\n"
-        "    <host>localhost</host>\n"
-        "    <filters>\n"
-        "      <category>correlation</category>\n"
-        "    </filters>\n"
-        "  </output>\n"
-        "</centreonbroker>\n";
-      ofs.close();
-    }
-
-    // Write cbd configuration file.
-    {
-      std::ofstream ofs;
-      ofs.open(
-            broker_config_path.c_str(),
-            std::ios_base::out | std::ios_base::trunc);
-      if (ofs.fail())
-        throw (exceptions::msg()
-               << "cannot open cbd configuration file '"
-               << broker_config_path.c_str() << "'");
-      ofs << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
-        "<centreonbroker>\n"
-        "  <include>" PROJECT_SOURCE_DIR "/test/cfg/broker_modules.xml</include>\n"
-        "  <instance>24</instance>\n"
-        "  <instance_name>MyBrokerPassive</instance_name>\n"
-        "  <!--\n"
-        "  <stats>\n"
-        "    <fifo>/tmp/cbd.fifo</fifo>\n"
-        "  </stats>\n"
-        "  <logger>\n"
-        "    <type>file</type>\n"
-        "    <name>cbd.log</name>\n"
-        "    <config>1</config>\n"
-        "    <debug>1</debug>\n"
-        "    <error>1</error>\n"
-        "    <info>1</info>\n"
-        "    <level>3</level>\n"
-        "  </logger>\n"
-        "  -->\n"
-        "  <correlation>\n"
-        "    <file>" PROJECT_SOURCE_DIR "/test/cfg/correlation_file.xml</file>\n"
-        "    <retention>" << broker_correlation_path << "</retention>\n"
-        "    <passive>1</passive>\n"
-        "  </correlation>\n"
-        "  <input>\n"
-        "    <name>InputCorrelationPassiveModeUnitTest</name>\n"
-        "    <type>tcp</type>\n"
-        "    <port>5688</port>\n"
-        "    <protocol>bbdo</protocol>\n"
-        "  </input>\n"
-        "</centreonbroker>\n";
-      ofs.close();
-    }
-
     // Prepare database.
     db.open(DB_NAME);
+
+    // Configuration files templates.
+    cbmod_cfg.set_template(
+      PROJECT_SOURCE_DIR "/test/cfg/correlation_to_sql_1.xml.in");
+    cbmod_cfg.set("DB_NAME", DB_NAME);
+    cbd_cfg.set_template(
+      PROJECT_SOURCE_DIR "/test/cfg/correlation_to_sql_2.xml.in");
 
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, HOST_COUNT);
@@ -201,7 +104,7 @@ int main() {
       std::ostringstream oss;
       oss << commander.get_engine_config()
           << "broker_module=" << CBMOD_PATH << " "
-          << cbmod_config_path << "\n";
+          << cbmod_cfg.generate() << "\n";
       additional_config = oss.str();
     }
 
@@ -213,7 +116,7 @@ int main() {
       &services);
 
     // Start broker daemon.
-    broker.set_config_file(broker_config_path);
+    broker.set_config_file(cbd_cfg.generate());
     broker.start();
     sleep_for(2);
 
@@ -253,7 +156,7 @@ int main() {
       }
 
       // Set services as OK.
-      for (unsigned int i(0); i <= HOST_COUNT * SERVICES_BY_HOST; ++i) {
+      for (unsigned int i(0); i < HOST_COUNT * SERVICES_BY_HOST; ++i) {
         unsigned int host_id((i / SERVICES_BY_HOST) + 1);
         unsigned int service_id(i + 1);
         std::ostringstream cmd;
@@ -686,9 +589,7 @@ int main() {
   daemon.stop();
   broker.stop();
   config_remove(engine_config_path.c_str());
-  ::remove(broker_config_path.c_str());
   ::remove(broker_correlation_path.c_str());
-  ::remove(cbmod_config_path.c_str());
   ::remove(cbmod_correlation_path.c_str());
   free_hosts(hosts);
   free_services(services);

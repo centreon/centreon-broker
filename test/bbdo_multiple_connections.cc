@@ -60,7 +60,6 @@ int main() {
   try {
     // Prepare database.
     db.open(DB_NAME);
-    db.set_remove_db_on_close(false);
 
     // Prepare monitoring engine configuration parameters.
     for (unsigned int i(0); i < 3; ++i) {

@@ -363,7 +363,6 @@ int main() {
 
     // Prepare database.
     db.open(DB_NAME, NULL, true);
-    db.set_remove_db_on_close(false);
 
     // Prepare monitoring engine configuration parameters.
     generate_commands(commands, 1);

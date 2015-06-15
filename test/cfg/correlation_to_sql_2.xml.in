@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<centreonbroker>
+  <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
+  <instance>24</instance>
+  <instance_name>MyBrokerPassive</instance_name>
+  <!--
+  <stats>
+    <fifo>/tmp/cbd.fifo</fifo>
+  </stats>
+  <logger>
+    <type>file</type>
+    <name>cbd.log</name>
+    <config>1</config>
+    <debug>1</debug>
+    <error>1</error>
+    <info>1</info>
+    <level>3</level>
+  </logger>
+  -->
+  <input>
+    <name>CorrelationToSQL-TCPInput</name>
+    <type>tcp</type>
+    <protocol>bbdo</protocol>
+    <port>5688</port>
+  </input>
+  <output>
+    <name>CorrelationToSQL-PassiveCorrelation</name>
+    <type>correlation</type>
+    <file>@PROJECT_SOURCE_DIR@/test/cfg/correlation_file.xml</file>
+    <passive>1</passive>
+  </output>
+</centreonbroker>

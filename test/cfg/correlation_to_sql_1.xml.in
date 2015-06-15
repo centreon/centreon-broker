@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<centreonbroker>
+  <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
+  <instance>42</instance>
+  <instance_name>MyBrokerActive</instance_name>
+  <!--
+  <stats>
+    <fifo>/tmp/cbmod.fifo</fifo>
+  </stats>
+  <logger>
+    <type>file</type>
+    <name>cbmod.log</name>
+    <config>1</config>
+    <debug>1</debug>
+    <error>1</error>
+    <info>1</info>
+    <level>3</level>
+  </logger>
+  -->
+  <output>
+    <name>CorrelationToSQL-Correlation</name>
+    <type>correlation</type>
+    <file>@PROJECT_SOURCE_DIR@/test/cfg/correlation_file.xml</file>
+  </output>
+  <output>
+    <name>CorrelationToSQL-SQL</name>
+    <type>sql</type>
+    <db_type>@DB_TYPE@</db_type>
+    <db_host>@DB_HOST@</db_host>
+    <db_port>@DB_PORT@</db_port>
+    <db_user>@DB_USER@</db_user>
+    <db_password>@DB_PASSWORD@</db_password>
+    <db_name>@DB_NAME@</db_name>
+    <queries_per_transaction>0</queries_per_transaction>
+    <with_state_events>1</with_state_events>
+  </output>
+  <output>
+    <name>CorrelationToSQL-TCPOutput</name>
+    <type>tcp</type>
+    <protocol>bbdo</protocol>
+    <host>localhost</host>
+    <port>5688</port>
+    <filters>
+      <category>correlation</category>
+    </filters>
+  </output>
+</centreonbroker>

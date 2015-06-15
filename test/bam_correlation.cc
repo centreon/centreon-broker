@@ -63,7 +63,6 @@ int main() {
   try {
     // Prepare database.
     db.open(DB_NAME, NULL, true);
-    db.set_remove_db_on_close(false);
 
     // Create organization.
     {
