@@ -35,7 +35,7 @@
 
 using namespace com::centreon::broker;
 
-#define DB_NAME "broker_bam_correlation_to_sql"
+#define DB_NAME "broker_bam_correlation"
 #define HOST_COUNT 1
 #define SERVICES_BY_HOST 8
 
@@ -63,6 +63,7 @@ int main() {
   try {
     // Prepare database.
     db.open(DB_NAME, NULL, true);
+    db.set_remove_db_on_close(false);
 
     // Create organization.
     {
@@ -145,6 +146,40 @@ int main() {
       if (!q.exec(query))
         throw (exceptions::msg()
                << "could not create BAs: " << q.lastError().text());
+    }
+    {
+      QString query;
+      query = "INSERT INTO rt_instances (instance_id, name)"
+              "  VALUES (42, 'MyBroker')";
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg()
+               << "could not create RT instance: "
+               << q.lastError().text());
+    }
+    {
+      QString query;
+      query = "INSERT INTO rt_hosts (host_id, name, instance_id)"
+              "  VALUES (1001, 'Virtual BA host', 42)";
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg()
+               << "could not create RT host: "
+               << q.lastError().text());
+    }
+    {
+      QString query;
+      query = "INSERT INTO rt_services (host_id, service_id,"
+              "            description)"
+              "  VALUES (1001, 1001, 'ba_1'),"
+              "         (1001, 1002, 'ba_2'),"
+              "         (1001, 1003, 'ba_3'),"
+              "         (1001, 1004, 'ba_4')";
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg()
+               << "could not create RT services: "
+               << q.lastError().text());
     }
 
     // Create KPIs.
@@ -285,9 +320,12 @@ int main() {
       query = "SELECT host_id, service_id, start_time, end_time, ack_time"
               "  FROM rt_issues";
       QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg() << "cannot get issues from DB: "
+               << q.lastError().text());
       size_t i(0);
       while (q.next()) {
-        if (i >= (sizeof(expected) / sizeof(*expected)))
+        if (i >= sizeof(expected) / sizeof(*expected))
           throw (exceptions::msg() << "too much issues, got "
                  << i << ", expected "
                  << sizeof(expected) / sizeof(*expected));
@@ -309,7 +347,6 @@ int main() {
                  << expected[i].start_time_high << ", NULL, NULL)");
         ++i;
       }
-
       if (i != sizeof(expected) / sizeof(*expected))
         throw (exceptions::msg() << "got " << i << " issues, expected "
                << sizeof(expected) / sizeof(*expected));
@@ -317,8 +354,61 @@ int main() {
 
     // Check issues parents.
     {
+      struct {
+        time_t start_time_low;
+        time_t start_time_high;
+        unsigned int child_service_id;
+        unsigned int parent_service_id;
+      } expected[] = {
+        { t3, t4, 1001, 1002 },
+        { t6, t7, 1002, 1003 },
+        { t6, t7, 1002, 1004 }
+      };
       QString query;
-      // XXX
+      query = "SELECT ip.start_time, ip.end_time, i1.host_id,"
+              "       i1.service_id, i2.host_id, i2.service_id"
+              "  FROM rt_issues_issues_parents AS ip"
+              "  LEFT JOIN rt_issues AS i1"
+              "    ON ip.child_id = i1.issue_id"
+              "  LEFT JOIN rt_issues AS i2"
+              "    ON ip.parent_id = i2.issue_id"
+              "  ORDER BY i1.service_id ASC, i2.service_id ASC";
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg()
+               << "cannot get issues parents from DB: "
+               << q.lastError().text());
+      size_t i(0);
+      while (q.next()) {
+        if (i >= sizeof(expected) / sizeof(*expected))
+          throw (exceptions::msg() << "too much issues parents, got "
+                 << i << ", expected "
+                 << sizeof(expected) / sizeof(*expected));
+        if ((q.value(0).toLongLong() < expected[i].start_time_low)
+            || (q.value(0).toLongLong() > expected[i].start_time_high)
+            || !q.value(1).isNull()
+            || (q.value(2).toUInt() != 1001)
+            || (q.value(3).toUInt() != expected[i].child_service_id)
+            || (q.value(4).toUInt() != 1001)
+            || (q.value(5).toUInt() != expected[i].parent_service_id))
+          throw (exceptions::msg()
+                 << "invalid issue parent: got (start time "
+                 << q.value(0).toLongLong() << ", end time "
+                 << (q.value(1).isNull() ? "NULL" : "non-NULL")
+                 << ", child host " << q.value(2).toUInt()
+                 << ", child service " << q.value(3).toUInt()
+                 << ", parent host " << q.value(4).toUInt()
+                 << ", parent service " << q.value(5).toUInt()
+                 << "), expected (" << expected[i].start_time_low << ":"
+                 << expected[i].start_time_high << ", NULL, 1001, "
+                 << expected[i].child_service_id << ", 1001, "
+                 << expected[i].parent_service_id << ")");
+        ++i;
+      }
+      if (i != sizeof(expected) / sizeof(*expected))
+        throw (exceptions::msg() << "got " << i
+               << " issues parents, expected "
+               << sizeof(expected) / sizeof(*expected));
     }
 
     // Success.

@@ -1273,10 +1273,10 @@ void stream::_process_issue_parent(
   }
 
   // End of parenting.
-  if (ip.end_time)
+  if (ip.end_time != (time_t)-1)
     _issue_parent_update.bind_value(
       ":end_time",
-      static_cast<unsigned int>(ip.end_time));
+      static_cast<long long>(ip.end_time));
   else
     _issue_parent_update.bind_value(
       ":end_time",
@@ -1284,7 +1284,7 @@ void stream::_process_issue_parent(
   _issue_parent_update.bind_value(":child_id", child_id);
   _issue_parent_update.bind_value(
     ":start_time",
-    static_cast<unsigned int>(ip.start_time));
+    static_cast<long long>(ip.start_time));
   _issue_parent_update.bind_value(":parent_id", parent_id);
   logging::debug(logging::low)
     << "SQL: updating issue parenting between child " << child_id
@@ -1293,10 +1293,10 @@ void stream::_process_issue_parent(
   _issue_parent_update.run_statement(
                          "SQL: issue parent update query failed");
   if (_issue_parent_update.num_rows_affected() <= 0) {
-    if (ip.end_time)
+    if (ip.end_time != (time_t)-1)
       _issue_parent_insert.bind_value(
         ":end_time",
-        static_cast<unsigned int>(ip.end_time));
+        static_cast<long long>(ip.end_time));
     else
       _issue_parent_insert.bind_value(
         ":end_time",
@@ -1304,7 +1304,7 @@ void stream::_process_issue_parent(
     _issue_parent_insert.bind_value(":child_id", child_id);
     _issue_parent_insert.bind_value(
       ":start_time",
-      static_cast<unsigned int>(ip.start_time));
+      static_cast<long long>(ip.start_time));
     _issue_parent_insert.bind_value(":parent_id", parent_id);
     logging::debug(logging::low)
       << "SQL: inserting issue parenting between child " << child_id
