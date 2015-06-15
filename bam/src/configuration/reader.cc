@@ -46,12 +46,8 @@ using namespace com::centreon::broker::bam::configuration;
  *  Constructor.
  *
  *  @param[in] centreon_db  Centreon database connection.
- *  @param[in] storage_cfg  Storage database configuration.
  */
-reader::reader(
-          database& centreon_db,
-          database_config const& storage_cfg)
-  : _db(centreon_db), _storage_cfg(storage_cfg) {}
+reader::reader(database& centreon_db) : _db(centreon_db) {}
 
 /**
  *  Destructor.
@@ -432,7 +428,6 @@ void reader::_load(state::meta_services& meta_services) {
              << it->first << " has no associated virtual service");
 
   // Load metrics of meta-services.
-  std::auto_ptr<database> storage_db;
   for (state::meta_services::iterator
          it(meta_services.begin()),
          end(meta_services.end());
@@ -452,15 +447,7 @@ void reader::_load(state::meta_services& meta_services) {
             << it->second.get_service_filter() << "'"
             << "    AND m.metric_name='"
             << it->second.get_metric_name() << "'";
-      if (!storage_db.get())
-        try { storage_db.reset(new database(_storage_cfg)); }
-        catch (std::exception const& e) {
-          throw (reader_exception()
-                 << "BAM: could not initialize storage database to "
-                    "retrieve metrics associated with some "
-                    "meta-service: " << e.what());
-        }
-      database_query q(*storage_db);
+      database_query q(_db);
       try { q.run_query(query.str()); }
       catch (std::exception const& e) {
         throw (reader_exception()

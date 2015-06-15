@@ -47,8 +47,7 @@ namespace           bam {
     connector&      operator=(connector const& other);
     void            connect_to(
                       stream_type type,
-                      database_config const& db_cfg,
-                      std::string const& storage_db_name);
+                      database_config const& db_cfg);
     misc::shared_ptr<io::stream>
                     open();
 
@@ -56,7 +55,6 @@ namespace           bam {
     void            _internal_copy(connector const& other);
 
     database_config _db_cfg;
-    std::string     _storage_db_name;
     stream_type     _type;
   };
 }

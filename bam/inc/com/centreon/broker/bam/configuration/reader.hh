@@ -42,9 +42,7 @@ namespace               bam {
      */
     class               reader {
     public:
-                        reader(
-                          database& centreon_db,
-                          database_config const& storage_cfg);
+                        reader(database& centreon_db);
                         ~reader();
       void              read(state& state_obj);
 
@@ -59,7 +57,6 @@ namespace               bam {
       void              _load_dimensions();
 
       database&         _db;
-      database_config   _storage_cfg;
     };
   }
 }

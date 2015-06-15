@@ -40,9 +40,7 @@ namespace           bam {
    */
   class             monitoring_stream : public io::stream {
   public:
-                    monitoring_stream(
-                      database_config const& db_cfg,
-                      std::string const& storage_db_name);
+                    monitoring_stream(database_config const& db_cfg);
                     ~monitoring_stream();
     void            initialize();
     bool            read(
@@ -65,7 +63,6 @@ namespace           bam {
                     _applier;
     std::string     _status;
     mutable QMutex  _statusm;
-    database_config _storage_cfg;
     database        _db;
     database_query  _ba_update;
     database_query  _kpi_update;
