@@ -119,7 +119,7 @@ bool process::exec(
                 this,
                 SIGNAL(finished(process&)),
                 manager,
-                SIGNAL(process_finished(process&)));
+                SLOT(process_finished(process&)));
     if (_timeout != 0) {
       QTimer* timer(new QTimer(this));
       timer->setSingleShot(true);
@@ -150,12 +150,12 @@ bool process::exec(
 void process::start(QString const& command_line) {
   QProcess::connect(
              _process.get(),
-             SIGNAL(QProcess::finished()),
+             SIGNAL(QProcess::finished(int, QProcess::ExitStatus)),
              this,
              SLOT(finished()));
   QProcess::connect(
              _process.get(),
-             SIGNAL(QProcess::error()),
+             SIGNAL(QProcess::error(QProcess::ProcessError)),
              this,
              SLOT(error()));
   _process->start(command_line);
