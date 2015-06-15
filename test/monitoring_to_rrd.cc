@@ -233,7 +233,7 @@ int main(int argc, char* argv[]) {
 
     // Insert entries in index_data.
     {
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       // Host does not have status graph (yet).
       // for (unsigned int i(0); i < HOST_COUNT; ++i) {
       //   std::ostringstream query;
@@ -256,7 +256,7 @@ int main(int argc, char* argv[]) {
     // Get index list.
     std::list<unsigned int> indexes;
     {
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT id FROM rt_index_data"))
         throw (exceptions::msg() << "cannot get index list: "
                << qPrintable(q.lastError().text()));
@@ -327,7 +327,7 @@ int main(int argc, char* argv[]) {
             << "  FROM rt_metrics AS m INNER JOIN rt_index_data AS i"
             << "  ON m.index_id=i.id"
             << "  ORDER BY i.host_id ASC, i.service_id ASC";
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot get metric list: "
                << qPrintable(q.lastError().text()));
@@ -442,7 +442,7 @@ int main(int argc, char* argv[]) {
         query << "SELECT COUNT(*)"
               << "  FROM log_data_bin"
               << "  WHERE id_metric=" << *it;
-        QSqlQuery q(*db.storage_db());
+        QSqlQuery q(*db.centreon_db());
         if (!q.exec(query.str().c_str())
             || !q.next()
             || !q.value(0).toUInt())

@@ -64,15 +64,6 @@ QSqlDatabase* test_db::centreon_db() {
 }
 
 /**
- *  Get the Storage database.
- *
- *  @return Centreon Storage database object.
- */
-QSqlDatabase* test_db::storage_db() {
-  return (_storage.get());
-}
-
-/**
  *  Close databases.
  */
 void test_db::close() {
@@ -80,8 +71,6 @@ void test_db::close() {
     _close(_bi);
   if (_centreon.get())
     _close(_centreon);
-  if (_storage.get())
-    _close(_storage);
 }
 
 /*
@@ -111,29 +100,17 @@ void test_db::centreon_run(
 }
 
 /**
- *  Run a query on the Storage database.
- *
- *  @param[in] query      Query to run.
- *  @param[in] error_msg  Error message.
- */
-void test_db::storage_run(
-                QString const& query,
-                QString const& error_msg) {
-  _run_query(_storage.get(), query, error_msg);
-  return ;
-}
-
-/**
  *  Connect and install a new database to the DB server.
  *
- *  @param[in] storage_db_name   Centreon storage DB name.
- *  @param[in] bi_db_name        Centreon BI DB name.
- *  @param[in] centreon_db_name  Centreon Storage DB name.
+ *  @param[in] centreon__db_name  Centreon DB name.
+ *  @param[in] bi_db_name         Centreon BI DB name.
+ *  @param[in] with_cfg_tables    True if configuration tables should be
+ *                                installed.
  */
 void test_db::open(
-                char const* storage_db_name,
+                char const* centreon_db_name,
                 char const* bi_db_name,
-                char const* centreon_db_name) {
+                bool with_cfg_tables) {
   // Close previous connection.
   close();
 
@@ -145,16 +122,13 @@ void test_db::open(
   // Set connection names.
   QString bi_connection;
   QString centreon_connection;
-  QString storage_connection;
   {
     std::ostringstream oss;
     oss << this;
     bi_connection = oss.str().c_str();
     centreon_connection = bi_connection;
-    storage_connection = bi_connection;
     bi_connection.append("_bi");
     centreon_connection.append("_centreon");
-    storage_connection.append("_storage");
   }
 
   // Open Centreon BI DB.
@@ -172,18 +146,18 @@ void test_db::open(
                                                      db_type,
                                                      centreon_connection)));
     _open(*_centreon, centreon_db_name);
-    _run_script(*_centreon, PROJECT_SOURCE_DIR "/test/centreon.sql");
-    _run_script(*_centreon, PROJECT_SOURCE_DIR "/bam/mysql_schema_centreon.sql");
-    _run_script(*_centreon, PROJECT_SOURCE_DIR "/notification/mysql_schema.sql");
-  }
-
-  // Open Storage DB.
-  if (storage_db_name) {
-    _storage.reset(new QSqlDatabase(QSqlDatabase::addDatabase(
-                                                    db_type,
-                                                    storage_connection)));
-    _open(*_storage, storage_db_name);
-    _run_script(*_storage, PROJECT_SOURCE_DIR "/sql/mysql_schema.sql");
+    _run_script(*_centreon, PROJECT_SOURCE_DIR "/sql/mysql_schema.sql");
+    if (with_cfg_tables) {
+      _run_script(
+        *_centreon,
+        PROJECT_SOURCE_DIR "/test/centreon.sql");
+      _run_script(
+        *_centreon,
+        PROJECT_SOURCE_DIR "/bam/mysql_schema_centreon.sql");
+      _run_script(
+        *_centreon,
+        PROJECT_SOURCE_DIR "/notification/mysql_schema.sql");
+    }
   }
 
   return ;

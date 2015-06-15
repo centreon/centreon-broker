@@ -42,15 +42,11 @@ public:
   void          centreon_run(
                   QString const& query,
                   QString const& error_msg);
-  QSqlDatabase* storage_db();
-  void          storage_run(
-                  QString const& query,
-                  QString const& error_msg);
   void          close();
   void          open(
-                  char const* storage_db_name,
+                  char const* centreon_db_name,
                   char const* bi_db_name = NULL,
-                  char const* centreon_db_name = NULL);
+                  bool with_cfg_tables = false);
 
   void          set_remove_db_on_close(bool val);
 
@@ -69,8 +65,6 @@ private:
                 _bi;
   std::auto_ptr<QSqlDatabase>
                 _centreon;
-  std::auto_ptr<QSqlDatabase>
-                _storage;
 
   bool          _remove_db_on_close;
 };

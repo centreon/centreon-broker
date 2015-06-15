@@ -309,7 +309,7 @@ int main() {
 
       // Check.
       check_host_custom_variables(
-        *db.storage_db(),
+        *db.centreon_db(),
         entries,
         sizeof(entries) / sizeof(*entries),
         t1,
@@ -367,7 +367,7 @@ int main() {
 
       // Check.
       check_service_custom_variables(
-        *db.storage_db(),
+        *db.centreon_db(),
         entries,
         sizeof(entries) / sizeof(*entries),
         t1,
@@ -434,7 +434,7 @@ int main() {
 
       // Check.
       check_host_custom_variables(
-        *db.storage_db(),
+        *db.centreon_db(),
         entries,
         sizeof(entries) / sizeof(*entries),
         t1,
@@ -492,7 +492,7 @@ int main() {
 
       // Check.
       check_service_custom_variables(
-        *db.storage_db(),
+        *db.centreon_db(),
         entries,
         sizeof(entries) / sizeof(*entries),
         t1,

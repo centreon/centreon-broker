@@ -288,7 +288,7 @@ int main() {
 
   try {
     // Prepare database.
-    db.open(NULL, BI_DB_NAME, CENTREON_DB_NAME);
+    db.open(CENTREON_DB_NAME, BI_DB_NAME, true);
 
     // Create the config bam xml file.
     test_file file;

@@ -257,7 +257,7 @@ int main() {
         "       output, return_code, state, state_type, timeout, type"
         "  FROM rt_eventhandlers"
         "  ORDER BY host_id DESC, COALESCE(service_id, -1) ASC, start_time ASC");
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.c_str()))
         throw (exceptions::msg()
                << "cannot get host eventhandlers entries: "
