@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<centreonbroker>
+  <host id="1001" />
+  <service id="1001" host="1001" />
+  <service id="1002" host="1001" />
+  <service id="1003" host="1001" />
+  <service id="1004" host="1001" />
+  <dependency host="1001" service="1002" dependent_host="1001" dependent_service="1001" />
+  <parent host="1001" service="1002" parent_host="1001" parent_service="1003" />
+  <parent host="1001" service="1002" parent_host="1001" parent_service="1004" />
+</centreonbroker>

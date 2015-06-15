@@ -44,7 +44,7 @@ int main() {
   try {
     // Open database.
     test_db db;
-    db.open(NULL, DB_NAME, NULL);
+    db.open(NULL, DB_NAME);
 
     // Populate database.
     char const* queries[] = {

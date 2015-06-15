@@ -875,10 +875,17 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # BAM Boolexp retention.
+  # BAM bool expression retention.
   set(TEST_NAME "running_bam_boolexp_retention")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/bam_boolexp_retention.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # BA and correlation.
+  set(TEST_NAME "running_bam_correlation")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/bam_correlation.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 

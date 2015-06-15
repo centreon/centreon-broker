@@ -48,7 +48,7 @@ using namespace com::centreon::broker;
  */
 static bool instance_is_up_to_date(test_db& db, int limit) {
   time_t min_valid(time(NULL) - limit);
-  QSqlQuery q(*db.storage_db());
+  QSqlQuery q(*db.centreon_db());
   return (q.exec(
               "SELECT last_alive"
               "  FROM rt_instances"

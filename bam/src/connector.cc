@@ -70,15 +70,12 @@ connector& connector::operator=(connector const& other) {
  *
  *  @param[in] type             BAM stream type.
  *  @param[in] db_cfg           Database configuration.
- *  @param[in] storage_db_name  Storage DB name.
  */
 void connector::connect_to(
                   stream_type type,
-                  database_config const& db_cfg,
-                  std::string const& storage_db_name) {
+                  database_config const& db_cfg) {
   _type = type;
   _db_cfg = db_cfg;
-  _storage_db_name = storage_db_name;
   return ;
 }
 
@@ -95,9 +92,7 @@ misc::shared_ptr<io::stream> connector::open() {
   }
   else {
     misc::shared_ptr<monitoring_stream>
-      s(new monitoring_stream(
-               _db_cfg,
-               _storage_db_name));
+      s(new monitoring_stream(_db_cfg));
     s->initialize();
     return (s.staticCast<io::stream>());
   }
@@ -116,7 +111,6 @@ misc::shared_ptr<io::stream> connector::open() {
  */
 void connector::_internal_copy(connector const& other) {
   _db_cfg = other._db_cfg;
-  _storage_db_name = other._storage_db_name;
   _type = other._type;
   return ;
 }

@@ -362,7 +362,7 @@ int main() {
     std::cout << "node cache: " << node_cache_file << "\n";
 
     // Prepare database.
-    db.open(NULL, NULL, DB_NAME);
+    db.open(DB_NAME, NULL, true);
     db.set_remove_db_on_close(false);
 
     // Prepare monitoring engine configuration parameters.

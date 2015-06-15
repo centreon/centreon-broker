@@ -78,7 +78,7 @@ int main() {
 
     // Flag instance as deleted.
     {
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec("UPDATE rt_instances SET deleted=TRUE"))
         throw (exceptions::msg()
                << "could not flag instances as deleted: "
@@ -90,7 +90,7 @@ int main() {
 
     // Check hosts table.
     {
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT COUNT(*) FROM rt_hosts") || !q.next())
         throw (exceptions::msg() << "could not fetch host count: "
                << q.lastError().text());
@@ -100,7 +100,7 @@ int main() {
     }
     // Check services table.
     {
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT COUNT(*) FROM rt_services") || !q.next())
         throw (exceptions::msg() << "could not fetch service count: "
                << q.lastError().text());
@@ -110,7 +110,7 @@ int main() {
     }
     // Check modules table.
     {
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT COUNT(*) FROM rt_modules") || !q.next())
         throw (exceptions::msg() << "could not fetch modules count: "
                << q.lastError().text());

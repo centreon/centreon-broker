@@ -104,7 +104,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT COUNT(host_id)"
             << "  FROM rt_hosts";
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read host count from DB: "
                << q.lastError().text());
@@ -119,7 +119,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT COUNT(service_id)"
             << "  FROM rt_services";
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()
                << "cannot read service count from DB: "
@@ -136,7 +136,7 @@ int main() {
       query << "SELECT COUNT(*)"
             << "  FROM log_logs"
             << "  WHERE ctime<" << cbd_start_time;
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg()
                << "cannot read log entry count from DB: "

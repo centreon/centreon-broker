@@ -32,10 +32,10 @@ applier::ba::ba() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-applier::ba::ba(applier::ba const& right) {
-  _internal_copy(right);
+applier::ba::ba(applier::ba const& other) {
+  _internal_copy(other);
 }
 
 /**
@@ -46,25 +46,25 @@ applier::ba::~ba() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-applier::ba& applier::ba::operator=(applier::ba const& right) {
-  if (this != &right)
-    _internal_copy(right);
+applier::ba& applier::ba::operator=(applier::ba const& other) {
+  if (this != &other)
+    _internal_copy(other);
   return (*this);
 }
 
 /**
  *  Apply configuration.
  *
- *  @param[in] my_bas BAs to apply.
- *  @param[in] book   The service book.
- *  @param[in] tp     The timeperiod applier.
+ *  @param[in] my_bas  BAs to apply.
+ *  @param[in] book    The service book.
  */
-void applier::ba::apply(bam::configuration::state::bas const& my_bas,
-                        service_book& book) {
+void applier::ba::apply(
+                    bam::configuration::state::bas const& my_bas,
+                    service_book& book) {
   //
   // DIFF
   //
@@ -197,10 +197,10 @@ void applier::ba::visit(io::stream* visitor) {
 /**
  *  Copy internal data members.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void applier::ba::_internal_copy(applier::ba const& right) {
-  _applied = right._applied;
+void applier::ba::_internal_copy(applier::ba const& other) {
+  _applied = other._applied;
   return ;
 }
 

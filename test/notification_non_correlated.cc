@@ -61,7 +61,7 @@ int main() {
     std::cout << "node cache: " << node_cache_file << "\n";
 
     // Prepare database.
-    db.open(NULL, NULL, DB_NAME);
+    db.open(DB_NAME, NULL, true);
 
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, 1);

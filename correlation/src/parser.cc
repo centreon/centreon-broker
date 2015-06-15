@@ -233,8 +233,8 @@ bool parser::startElement(
       si1 = attrs.value("dependent_service");
       si2 = attrs.value("service");
       if (!hi1.size() || !hi2.size())
-        throw (exceptions::msg() << "missing an host id for an " \
-                 "element of a dependency definition");
+        throw (exceptions::msg() << "missing an host ID for an "
+                  "element of a dependency definition");
 
       // Process these attributes.
       n1 = _find_node(
@@ -318,26 +318,35 @@ bool parser::startElement(
       }
     }
     else if (!strcmp(value, "parent")) {
-      QString host_attr;
-      QString parent_attr;
-      QMap<QPair<unsigned int, unsigned int>, node>::iterator it1;
-      QMap<QPair<unsigned int, unsigned int>, node>::iterator it2;
+      QString hi1;
+      QString hi2;
+      node* n1(NULL);
+      node* n2(NULL);
+      QString si1;
+      QString si2;
 
       // Get XML node attributes.
-      host_attr = attrs.value("host");
-      parent_attr = attrs.value("parent");
-      if (!host_attr.size() || !parent_attr.size())
-        throw (exceptions::msg() << "could not find 'host' or " \
-                 "'parent' attribute of a parenting definition");
+      hi1 = attrs.value("parent_host");
+      hi2 = attrs.value("host");
+      si1 = attrs.value("parent_service");
+      si2 = attrs.value("service");
+      if (!hi1.size() || !hi2.size())
+        throw (exceptions::msg() << "missing an host ID for an element "
+                  "of a parent definition");
 
       // Process attributes.
-      it1 = (*_nodes).find(qMakePair(host_attr.toUInt(), 0u));
-      it2 = (*_nodes).find(qMakePair(parent_attr.toUInt(), 0u));
-      if ((it1 != (*_nodes).end()) && (it2 != (*_nodes).end())) {
-        logging::config(logging::medium) << "correlation: host "
-          << it2->host_id << " is parent of host "
-          << it1->host_id;
-        it1->add_parent(&*it2);
+      n1 = _find_node(
+             qPrintable(hi1),
+             (si1.size() ? qPrintable(si1) : NULL));
+      n2 = _find_node(
+             qPrintable(hi2),
+             (si2.size() ? qPrintable(si2) : NULL));
+      if (n1 && n2) {
+        logging::config(logging::medium) << "correlation: host ("
+          << n1->host_id << ", " << n1->service_id
+          << ") is parent of host (" << n2->host_id << ", "
+          << n2->service_id << ")";
+        n2->add_parent(n1);
       }
     }
     else if (!strcmp(value, "service")) {

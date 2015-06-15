@@ -33,8 +33,7 @@
 #include "test/misc.hh"
 #include "test/vars.hh"
 
-#define DB_NAME_CENTREON "broker_meta_service_centreon"
-#define DB_NAME_STORAGE "broker_meta_service_storage"
+#define DB_NAME "broker_meta_service"
 #define SERVICES_BY_HOST 10
 
 using namespace com::centreon::broker;
@@ -60,8 +59,7 @@ int main() {
 
   try {
     // Prepare database.
-    db.open(DB_NAME_STORAGE, NULL, DB_NAME_CENTREON);
-    db.set_remove_db_on_close(false);
+    db.open(DB_NAME, NULL, true);
 
     // Prepare monitoring engine configuration parameters.
     generate_commands(commands, SERVICES_BY_HOST);
@@ -174,7 +172,7 @@ int main() {
            end(storageq.end());
          it != end;
          ++it) {
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(it->c_str()))
         throw (exceptions::msg()
                << "could not execute a storage query: "

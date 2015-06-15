@@ -171,7 +171,7 @@ int main() {
 
     // Insert entries in index_data.
     {
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       // Host does not have status graph (yet).
       // for (unsigned int i(0); i < HOST_COUNT; ++i) {
       //   std::ostringstream query;

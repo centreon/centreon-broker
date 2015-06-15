@@ -128,6 +128,8 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
+  (void)cache;
+
   // Find DB parameters.
   database_config db_cfg;
   db_cfg.set_type(find_param(cfg, "db_type").toStdString());
@@ -162,23 +164,13 @@ io::endpoint* factory::new_endpoint(
   // Is it a BAM or BAM-BI output ?
   bool is_bam_bi(!cfg.type.compare("bam_bi", Qt::CaseInsensitive));
 
-  // Storage database.
-  QString storage_db_name;
-  if (!is_bam_bi) {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("storage_db_name"));
-    if (it != cfg.params.end())
-      storage_db_name = *it;
-  }
-
   // Connector.
   std::auto_ptr<bam::connector> c(new bam::connector);
   c->connect_to(
        is_bam_bi
        ? bam::connector::bam_bi_type
        : bam::connector::bam_type,
-       db_cfg,
-       storage_db_name.toStdString());
+       db_cfg);
   is_acceptor = false;
   return (c.release());
 }

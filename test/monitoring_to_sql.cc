@@ -91,7 +91,7 @@ int main() {
       query << "SELECT last_alive, name"
             << "  FROM rt_instances"
             << "  WHERE instance_id=42";
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()) || !q.next())
         throw (exceptions::msg() << "cannot read instances from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -116,7 +116,7 @@ int main() {
       query << "SELECT host_id, name, last_check"
             << "  FROM rt_hosts"
             << "  ORDER BY host_id ASC";
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read hosts from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -144,7 +144,7 @@ int main() {
       query << "SELECT host_id, service_id, description, last_check"
             << "  FROM rt_services"
             << "  ORDER BY host_id ASC, service_id ASC";
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read services from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -198,7 +198,7 @@ int main() {
             << "       status, type"
             << "  FROM log_logs"
             << "  WHERE host_id=1 AND msg_type=0 AND service_id=2";
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()) || !q.next())
         throw (exceptions::msg() << "cannot get logs from DB: "
                << qPrintable(q.lastError().text()));

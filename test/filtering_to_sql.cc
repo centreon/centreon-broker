@@ -89,7 +89,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT * FROM rt_instances";
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read instances from DB: "
                << q.lastError().text().toStdString().c_str());
@@ -102,7 +102,7 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT * FROM log_logs";
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read logs from DB: "
                << q.lastError().text().toStdString().c_str());

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -43,9 +43,9 @@ namespace     bam {
       class   ba {
       public:
               ba();
-              ba(ba const& right);
+              ba(ba const& other);
               ~ba();
-        ba&   operator=(ba const& right);
+        ba&   operator=(ba const& other);
         void  apply(
                 configuration::state::bas const& my_bas,
                 service_book& book);
@@ -59,10 +59,11 @@ namespace     bam {
           misc::shared_ptr<bam::ba> obj;
         };
 
-        void  _internal_copy(ba const& right);
+        void  _internal_copy(ba const& other);
         misc::shared_ptr<bam::ba>
-              _new_ba(configuration::ba const& cfg,
-                      service_book& book);
+              _new_ba(
+                configuration::ba const& cfg,
+                service_book& book);
 
         std::map<unsigned int, applied>
               _applied;
