@@ -19,25 +19,30 @@
   </logger>
   -->
   <output>
-    <name>BAMUnitTest</name>
+    <name>BAMCorrelation-Correlation</name>
+    <type>correlation</type>
+    <file>@PROJECT_SOURCE_DIR@/test/cfg/bam_correlation_file.xml</file>
+  </output>
+  <output>
+    <name>BAMCorrelation-BAM</name>
     <type>bam</type>
     <db_type>@DB_TYPE@</db_type>
     <db_host>@DB_HOST@</db_host>
     <db_port>@DB_PORT@</db_port>
     <db_user>@DB_USER@</db_user>
     <db_password>@DB_PASSWORD@</db_password>
-    <db_name>@DB_NAME_CENTREON@</db_name>
+    <db_name>@DB_NAME@</db_name>
     <queries_per_transaction>0</queries_per_transaction>
   </output>
   <output>
-    <name>BAMBIUnitTest</name>
-    <type>bam_bi</type>
+    <name>BAMCorrelation-SQL</name>
+    <type>sql</type>
     <db_type>@DB_TYPE@</db_type>
     <db_host>@DB_HOST@</db_host>
     <db_port>@DB_PORT@</db_port>
     <db_user>@DB_USER@</db_user>
     <db_password>@DB_PASSWORD@</db_password>
-    <db_name>@DB_NAME_BI@</db_name>
+    <db_name>@DB_NAME@</db_name>
     <queries_per_transaction>0</queries_per_transaction>
   </output>
 </centreonbroker>
