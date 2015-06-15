@@ -203,7 +203,7 @@ void node_events_stream::parse_command(
   buffer command(line.size());
   buffer args(line.size());
 
-  logging::debug(logging::low)
+  logging::info(logging::medium)
     << "neb: node events stream received command: '" << exc.command << "'";
 
   // Parse timestamp.
@@ -392,6 +392,10 @@ void node_events_stream::_parse_ack(
                            timestamp t,
                            const char* args,
                            io::stream& stream) {
+  logging::debug(logging::medium)
+    << "neb: node events stream: "
+       "parsing acknowledgement command: '" << args << "'";
+
   tokenizer tok(args);
 
   try {
@@ -427,6 +431,9 @@ void node_events_stream::_parse_ack(
     _acknowledgements[id] = *ack;
 
     // Send the acknowledgement.
+    logging::info(logging::high)
+      << "neb: node events stream: sending ack for "
+         "(" << ack->host_id << ", " << ack->service_id << ")";
     stream.write(ack);
 
   } catch (std::exception const& e) {
@@ -451,6 +458,10 @@ void node_events_stream::_parse_remove_ack(
                            timestamp t,
                            const char* args,
                            io::stream& stream) {
+  logging::debug(logging::medium)
+    << "neb: node events stream: "
+       "parsing acknowledgement removal command: '" << args << "'";
+
   tokenizer tok(args);
   try {
     // Parse.
@@ -481,6 +492,9 @@ void node_events_stream::_parse_remove_ack(
     _acknowledgements.erase(found);
 
     // Send the closed ack.
+    logging::info(logging::high)
+      << "neb: node events stream: erasing ack for "
+         "(" << ack->host_id << ", " << ack->service_id << ")";
     stream.write(ack);
   } catch (std::exception const& e) {
     throw (exceptions::msg()
@@ -508,7 +522,8 @@ void node_events_stream::_parse_downtime(
 
   (void)t;
   logging::debug(logging::medium)
-    << "notification: parsing downtime command: '" << args << "'";
+    << "neb: node events stream: "
+       "parsing downtime command: '" << args << "'";
 
   try {
     // Parse.
@@ -548,6 +563,10 @@ void node_events_stream::_parse_downtime(
     d->recurring_timeperiod = QString::fromStdString(recurring_timeperiod);
     d->is_recurring = !d->recurring_timeperiod.isEmpty();
 
+    logging::info(logging::high)
+      << "neb: node events stream: sending downtime for "
+         "(" << d->host_id << ", " << d->service_id << ")";
+
     _register_downtime(*d, &stream);
 
   } catch (std::exception const& e) {
@@ -573,6 +592,11 @@ void node_events_stream::_parse_remove_downtime(
                            io::stream& stream) {
   (void)type;
   unsigned int downtime_id;
+
+  logging::debug(logging::medium)
+    << "neb: node events stream: "
+       "parsing downtime removal command: '" << args << "'";
+
   if (::sscanf(args, "%u", &downtime_id) != 1)
     throw (exceptions::msg() << "error while parsing remove downtime arguments");
 
@@ -581,6 +605,9 @@ void node_events_stream::_parse_remove_downtime(
   if (!found)
     throw (exceptions::msg()
            << "couldn't find a downtime for downtime id " << downtime_id);
+
+  logging::info(logging::high)
+    << "neb: node events stream: erasing downtime '" << downtime_id << "'";
 
   _delete_downtime(*found, t, &stream);
 }
