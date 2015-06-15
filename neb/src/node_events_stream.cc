@@ -744,6 +744,9 @@ void node_events_stream::_load_cache() {
   if (_cache.isNull())
     return ;
 
+  logging::info(logging::medium)
+    << "neb: node events stream: loading cache...";
+
   misc::shared_ptr<io::data> d;
   while (true) {
     _cache->get(d);
@@ -766,10 +769,20 @@ void node_events_stream::_process_loaded_event(
   // Managed internally.
   if (d->type() == neb::acknowledgement::static_type()) {
     neb::acknowledgement const& ack = d.ref_as<neb::acknowledgement const>();
+    logging::debug(logging::medium)
+      << "neb: node events stream: loading acknowledgement for ("
+      << ack.host_id << ", " << ack.service_id << ")"
+      << ", starting at " << ack.entry_time;
     _acknowledgements[node_id(ack.host_id, ack.service_id)] = ack;
   }
-  else if (d->type() == neb::downtime::static_type())
+  else if (d->type() == neb::downtime::static_type()) {
+    neb::downtime const& dwn = d.ref_as<neb::downtime const>();
+    logging::debug(logging::medium)
+      << "neb: node events stream: loading downtime for ("
+      << dwn.host_id << ", " << dwn.service_id << ")"
+      << ", starting at " << dwn.start_time;
     _register_downtime(d.ref_as<downtime const>(), NULL);
+  }
 }
 
 /**
@@ -839,6 +852,9 @@ void node_events_stream::_save_cache() {
   // No cache, nothing to do.
   if (_cache.isNull())
     return ;
+
+  logging::info(logging::medium)
+    << "neb: node events stream: saving cache...";
 
   _cache->transaction();
   // Serialize the node cache.
