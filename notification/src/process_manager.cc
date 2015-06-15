@@ -67,6 +67,7 @@ void process_manager::create_process(
 
   {
     QMutexLocker lock(&_process_list_mutex);
+    pr->moveToThread(_thread.get());
     pr->setParent(this);
     _process_list.insert(pr);
   }

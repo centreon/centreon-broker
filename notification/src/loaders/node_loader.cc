@@ -50,44 +50,21 @@ void node_loader::load(QSqlDatabase* db, node_builder* output) {
   query.setForwardOnly(true);
 
   // Load hosts.
-  if (!query.exec("SELECT host_id, host_notification_options FROM cfg_hosts"))
+  if (!query.exec("SELECT host_id FROM cfg_hosts"))
     throw (exceptions::msg()
            << "notification: cannot load hosts from database: "
            << query.lastError().text());
   while (query.next()) {
-    node_notification_opt opts;
-    {
-      QString opt_str(query.value(1).toString());
-      for (QString::iterator it(opt_str.begin()), end(opt_str.end());
-           it != end;
-           ++it) {
-        if (*it == 'a') {
-          opts.add_option(node_notification_opt::host_down);
-          opts.add_option(node_notification_opt::host_unreachable);
-          opts.add_option(node_notification_opt::host_recovery);
-        }
-        else if (*it == 'd')
-          opts.add_option(node_notification_opt::host_down);
-        else if (*it == 'u')
-          opts.add_option(node_notification_opt::host_unreachable);
-        else if (*it == 'r')
-          opts.add_option(node_notification_opt::host_recovery);
-        else if (*it == 'y')
-          opts.add_option(node_notification_opt::not_correlated);
-      }
-    }
     unsigned int host_id = query.value(0).toUInt();
     node::ptr n(new node);
     n->set_node_id(node_id(host_id));
-    n->set_notification_options(opts);
     logging::config(logging::low)
       << "notification: loading host " << host_id << " from database";
     output->add_node(n);
   }
 
   // Load services.
-  if (!query.exec("SELECT hsr.host_host_id, hsr.service_service_id,"
-                  "       s.service_notification_options"
+  if (!query.exec("SELECT hsr.host_host_id, hsr.service_service_id"
                   "  FROM cfg_hosts_services_relations AS hsr"
                   "  LEFT JOIN cfg_services AS s"
                   "    ON hsr.service_service_id=s.service_id"))
@@ -95,35 +72,10 @@ void node_loader::load(QSqlDatabase* db, node_builder* output) {
            << "notification: cannot load services from database: "
            << query.lastError().text());
   while (query.next()) {
-    node_notification_opt opts;
-    {
-      QString opt_str(query.value(2).toString());
-      for (QString::iterator it(opt_str.begin()), end(opt_str.end());
-           it != end;
-           ++it) {
-        if (*it == 'a') {
-          opts.add_option(node_notification_opt::service_unknown);
-          opts.add_option(node_notification_opt::service_warning);
-          opts.add_option(node_notification_opt::service_critical);
-          opts.add_option(node_notification_opt::service_recovery);
-        }
-        else if (*it == 'u')
-          opts.add_option(node_notification_opt::service_unknown);
-        else if (*it == 'w')
-          opts.add_option(node_notification_opt::service_warning);
-        else if (*it == 'c')
-          opts.add_option(node_notification_opt::service_critical);
-        else if (*it == 'r')
-          opts.add_option(node_notification_opt::service_recovery);
-        else if (*it == 'y')
-          opts.add_option(node_notification_opt::not_correlated);
-      }
-    }
     unsigned int host_id = query.value(0).toUInt();
     unsigned int service_id = query.value(1).toUInt();
     node::ptr n(new node);
     n->set_node_id(node_id(host_id, service_id));
-    n->set_notification_options(opts);
     logging::config(logging::low) << "notification: loading service ("
       << host_id << ", " << service_id << ") from database";
     output->add_node(n);

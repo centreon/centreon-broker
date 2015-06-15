@@ -144,9 +144,6 @@ io::endpoint* factory::new_endpoint(
   // Find DB name.
   QString db_name(find_param(cfg, "db_name"));
 
-  // Find node cache file.
-  QString node_cache_file(find_param(cfg, "node_cache_file"));
-
   // Transaction size.
   unsigned int queries_per_transaction(0);
   {

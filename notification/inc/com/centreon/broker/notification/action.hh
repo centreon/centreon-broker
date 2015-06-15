@@ -93,8 +93,6 @@ namespace           notification {
                         ::com::centreon::broker::notification::state& st,
                         std::vector<std::pair<time_t, action> >&
                           spawned_actions) const;
-    bool              _check_action_viability(
-                        ::com::centreon::broker::notification::state& st) const;
     void              _process_notification(
                        ::com::centreon::broker::notification::state& st,
                        node_cache& cache,

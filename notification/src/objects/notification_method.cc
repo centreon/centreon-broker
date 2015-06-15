@@ -196,7 +196,7 @@ void notification_method::set_end(unsigned int val) throw() {
  */
 bool notification_method::should_be_notified_for(
                             node_state state,
-                            bool is_service) {
+                            bool is_service) const {
   if (state == node_state::ok)
     return (_status.find_first_of('o') != std::string::npos);
   if (is_service) {
@@ -223,7 +223,7 @@ bool notification_method::should_be_notified_for(
  *
  *  @return          True if the notification is allowed.
  */
-bool notification_method::should_be_notified_for(action::action_type type) {
+bool notification_method::should_be_notified_for(action::action_type type) const {
   if (type == action::notification_attempt)
     return (_types.find_first_of('n') != std::string::npos);
   else if (type == action::notification_up)
@@ -234,4 +234,13 @@ bool notification_method::should_be_notified_for(action::action_type type) {
     return (_types.find_first_of('d') != std::string::npos);
   else
     return (false);
+}
+
+/**
+ *  Check if the notification is valid even if the node is correlated.
+ *
+ *  @return  True if the notification is still valid for a correlated node.
+ */
+bool notification_method::should_be_notified_when_correlated() const {
+  return (_types.find_first_of('c') != std::string::npos);
 }
