@@ -82,7 +82,7 @@ node_events_stream::~node_events_stream() {
     _save_cache();
   } catch (std::exception const& e) {
     logging::error(logging::medium)
-      << "neb: node events error while trying to save cache: "
+      << "neb: node events stream: error while trying to save cache: "
       << e.what();
   }
 }
@@ -113,7 +113,14 @@ void node_events_stream::update() {
     _load_config_file();
   _apply_config_downtimes();
   _check_downtime_timeperiod_consistency();
+  try {
   _save_cache();
+  } catch (std::exception const& e) {
+    logging::error(logging::medium)
+      << "neb: node events stream: error while trying to save cache: "
+      << e.what();
+  }
+
   return ;
 }
 
@@ -745,7 +752,7 @@ void node_events_stream::_load_cache() {
     return ;
 
   logging::info(logging::medium)
-    << "neb: node events stream: loading cache...";
+    << "neb: node events stream: loading cache";
 
   misc::shared_ptr<io::data> d;
   while (true) {
@@ -854,7 +861,7 @@ void node_events_stream::_save_cache() {
     return ;
 
   logging::info(logging::medium)
-    << "neb: node events stream: saving cache...";
+    << "neb: node events stream: saving cache";
 
   _cache->transaction();
   // Serialize the node cache.
