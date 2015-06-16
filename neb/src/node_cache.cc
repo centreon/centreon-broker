@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/node_cache.hh"
 
 using namespace com::centreon::broker;
@@ -195,6 +196,9 @@ neb::service_status* node_cache::get_service_status(node_id id) {
  */
 void node_cache::_process_host(
                            neb::host const& hst) {
+  logging::debug(logging::medium)
+    << "neb: node events stream: processing host declaration for ("
+    << hst.host_id << ")";
   _hosts[node_id(hst.host_id)] = hst;
   _names_to_node[qMakePair(hst.host_name, QString())] = node_id(hst.host_id);
 }
@@ -206,6 +210,9 @@ void node_cache::_process_host(
  */
 void node_cache::_process_service(
                            neb::service const& svc) {
+  logging::debug(logging::medium)
+    << "neb: node events stream: processing service declaration for ("
+    << svc.host_id << ", " << svc.service_id << ")";
   _services[node_id(svc.host_id, svc.service_id)] = svc;
   _names_to_node[qMakePair(svc.host_name, svc.service_description)]
     = node_id(svc.host_id, svc.service_id);
@@ -218,6 +225,9 @@ void node_cache::_process_service(
  */
 void node_cache::_process_host_status(
                            neb::host_status const& hst) {
+  logging::debug(logging::medium)
+    << "neb: node events stream: processing host status for ("
+    << hst.host_id << ")";
   node_id id(hst.host_id);
   QHash<node_id, neb::host_status>::const_iterator found
     = _host_statuses.find(id);
@@ -231,6 +241,9 @@ void node_cache::_process_host_status(
  */
 void node_cache::_process_service_status(
                            neb::service_status const& sst) {
+  logging::debug(logging::medium)
+    << "neb: node events stream: processing service status for ("
+    << sst.host_id << ", " << sst.service_id  << ")";
   node_id id(sst.host_id, sst.service_id);
   QHash<node_id, neb::service_status>::const_iterator found
     = _service_statuses.find(id);
