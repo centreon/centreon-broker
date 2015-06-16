@@ -26,7 +26,9 @@
 #include "com/centreon/broker/correlation/parser.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
 #include "com/centreon/broker/neb/downtime.hh"
+#include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/neb/host_status.hh"
+#include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/neb/log_entry.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -40,6 +42,8 @@ using namespace com::centreon::broker::correlation;
  *
  *  @param[in]      correlation_file  Correlation file.
  *  @param[int,out] cache             Persistent cache.
+ *  @param[in]      load_correlation  True if we should load correlation
+ *                                    state from persistent cache.
  *  @param[in]      passive           Is this stream passive ?
  *                                    (won't send any event)
  */
@@ -75,7 +79,8 @@ stream::~stream() {
     misc::shared_ptr<engine_state> es(new engine_state);
     es->instance_id = io::data::instance_id;
     pblsh.write(es);
-  } catch (std::exception const& e) {
+  }
+  catch (std::exception const& e) {
     logging::error(logging::medium)
       << "correlator: error while trying to publish engine state: "
       << e.what();
@@ -149,6 +154,31 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
         _pblsh.get());
     }
   }
+  else if (d->type() == neb::host::static_type()) {
+    neb::host const& h(d.ref_as<neb::host>());
+    QPair<unsigned int, unsigned int> id(h.host_id, 0);
+    QMap<QPair<unsigned int, unsigned int>, node>::const_iterator
+      it(_nodes.find(id));
+    if (it != _nodes.end()) {
+      logging::debug(logging::medium)
+        << "correlation: generating state event for host "
+        << h.host_id << " following its (re)declaration";
+      multiplexing::publisher().write(new state(it->my_state));
+    }
+  }
+  else if (d->type() == neb::service::static_type()) {
+    neb::service const& s(d.ref_as<neb::service>());
+    QPair<unsigned int, unsigned int> id(s.host_id, s.service_id);
+    QMap<QPair<unsigned int, unsigned int>, node>::const_iterator
+      it(_nodes.find(id));
+    if (it != _nodes.end()) {
+      logging::debug(logging::medium)
+        << "correlation: generating state event for service ("
+        << s.host_id << ", " << s.service_id
+        << ") following its (re)declaration";
+      multiplexing::publisher().write(new state(it->my_state));
+    }
+  }
   else if (d->type() == neb::acknowledgement::static_type()) {
     neb::acknowledgement const& ack
       = d.ref_as<neb::acknowledgement>();
@@ -218,18 +248,18 @@ void stream::_load_correlation() {
   parser p;
   p.parse(_correlation_file, _nodes);
 
-  // No cache, nothing to do.
-  if (_cache.isNull())
-    return ;
-
   // Load the cache.
-  misc::shared_ptr<io::data> d;
-  while (true) {
-    _cache->get(d);
-    if (d.isNull())
-      break ;
-    _load_correlation_event(d);
+  if (!_cache.isNull()) {
+    misc::shared_ptr<io::data> d;
+    while (true) {
+      _cache->get(d);
+      if (d.isNull())
+        break ;
+      _load_correlation_event(d);
+    }
   }
+
+  return ;
 }
 
 /**
@@ -260,7 +290,7 @@ void stream::_load_correlation_event(misc::shared_ptr<io::data> const& d) {
       logging::debug(logging::medium)
         << "correlation: loading initial state for node ("
         << st.host_id << ", " << st.service_id << ")";
-      found->my_state.reset(new state(st));
+      found->my_state = st;
       found->state = st.current_state;
     }
   }

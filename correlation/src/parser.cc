@@ -265,6 +265,7 @@ bool parser::startElement(
       // Process attribute.
       node new_node;
       new_node.host_id = i_attr.toUInt();
+      new_node.my_state.host_id = new_node.host_id;
       n = &(*_nodes)[qMakePair(new_node.host_id, 0u)];
       *n = new_node;
       logging::config(logging::medium)
@@ -364,7 +365,9 @@ bool parser::startElement(
       // Process attributes.
       node new_node;
       new_node.host_id = host_attr.toUInt();
+      new_node.my_state.host_id = new_node.host_id;
       new_node.service_id = id_attr.toUInt();
+      new_node.my_state.service_id = new_node.service_id;
       (*_nodes)[qMakePair(new_node.host_id, new_node.service_id)]
         = new_node;
       n = &(*_nodes)[qMakePair(new_node.host_id, new_node.service_id)];

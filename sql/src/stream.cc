@@ -1059,15 +1059,19 @@ void stream::_process_host_parent(
 void stream::_process_host_state(
                misc::shared_ptr<io::data> const& e) {
   // Log message.
+  correlation::state const&
+    s(*static_cast<correlation::state const*>(e.data()));
   logging::info(logging::medium)
-    << "SQL: processing host state event";
+    << "SQL: processing host state event (host: " << s.host_id
+    << ", state: " << s.current_state << ", start time: "
+    << s.start_time << ", end time: " << s.end_time << ")";
 
   // Processing.
   if (_with_state_events) {
     _update_on_none_insert(
       _host_state_insert,
       _host_state_update,
-      *static_cast<correlation::state const*>(e.data()));
+      s);
   }
 
   return ;
@@ -1515,15 +1519,20 @@ void stream::_process_service_dependency(
 void stream::_process_service_state(
                misc::shared_ptr<io::data> const& e) {
   // Log message.
+  correlation::state const&
+    s(*static_cast<correlation::state const*>(e.data()));
   logging::info(logging::medium)
-    << "SQL: processing service state event";
+    << "SQL: processing service state event (host: " << s.host_id
+    << ", service: " << s.service_id << ", state: " << s.current_state
+    << ", start time: " << s.start_time << ", end time: " << s.end_time
+    << ")";
 
   // Processing.
   if (_with_state_events) {
     _update_on_none_insert(
       _service_state_insert,
       _service_state_update,
-      *static_cast<correlation::state const*>(e.data()));
+      s);
   }
 
   return ;
@@ -1547,7 +1556,7 @@ void stream::_process_state(misc::shared_ptr<io::data> const& e) {
  *  @param[in] e  Uncasted log issue.
  */
 void stream::_process_log_issue(misc::shared_ptr<io::data> const& e) {
-  // TODO
+  // XXX : TODO
   (void) e;
 }
 

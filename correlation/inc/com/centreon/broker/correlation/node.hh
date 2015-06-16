@@ -105,8 +105,7 @@ namespace                correlation {
     unsigned int         host_id;
     bool                 in_downtime;
     std::auto_ptr<issue> my_issue;
-    std::auto_ptr<correlation::state>
-                         my_state;
+    correlation::state   my_state;
     unsigned int         service_id;
     short                state;
     std::auto_ptr<neb::acknowledgement>
@@ -126,7 +125,7 @@ namespace                correlation {
                            timestamp start_time,
                            short new_status,
                            io::stream* stream);
-    correlation::state*  _open_state_event(
+    correlation::state   _open_state_event(
                            timestamp start_time) const;
 
     void                 _visit_linked_nodes(

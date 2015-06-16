@@ -169,7 +169,6 @@ int main() {
   try {
     // Prepare database.
     db.open(CENTREON_DB_NAME, BI_DB_NAME, true);
-    db.set_remove_db_on_close(false);
 
     // Generate standard hosts and services.
     generate_hosts(hosts, HOST_COUNT);
