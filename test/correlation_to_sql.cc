@@ -173,7 +173,7 @@ int main() {
 
     // Step 2.
     {
-      commander.execute("PROCESS_HOST_CHECK_RESULT;1;2;output2-1");
+      commander.execute("PROCESS_HOST_CHECK_RESULT;1;1;output2-1");
       commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;1;1;output2-1-1");
       commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;2;2;output2-1-2");
       {
@@ -248,10 +248,8 @@ int main() {
         /*
         ** Host 1.
         */
-        // Start = PENDING.
-        { 1, t0, t1, false, t1, t2, 4, true, 0, 0, false },
-        // Step 1 = UP.
-        { 1, t1, t2, false, t2, t3, 0, true, 0, 0, false },
+        // Start = UP.
+        { 1, t0, t1, false, t2, t3, 0, true, 0, 0, false },
         // Step 2 = UNREACHABLE.
         { 1, t2, t3, true, 0, 0, 2, true, 0, 0, false },
 

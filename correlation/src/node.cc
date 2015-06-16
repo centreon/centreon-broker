@@ -41,7 +41,11 @@ node::node()
   : host_id(0),
     in_downtime(false),
     service_id(0),
-    state(0) {}
+    state(0) {
+  // Default state.
+  my_state.current_state = 0;
+  my_state.start_time = time(NULL);
+}
 
 /**
  *  Copy constructor.
@@ -116,10 +120,7 @@ bool node::operator==(node const& n) const {
                || (my_issue.get()
                    && n.my_issue.get()
                    && (*my_issue == *n.my_issue)))
-           && ((!my_state.get() && !n.my_state.get())
-               || (my_state.get()
-                   && n.my_state.get()
-                   && (*my_state == *n.my_state)))
+           && (my_state == n.my_state)
            && (_children.size() == n._children.size())
            && (_depended_by.size() == n._depended_by.size())
            && (_depends_on.size() == n._depends_on.size())
@@ -572,8 +573,7 @@ void node::linked_node_updated(
 void node::serialize(persistent_cache& cache) const {
   if (my_issue.get())
     cache.add(misc::make_shared(new issue(*my_issue)));
-  if (my_state.get())
-    cache.add(misc::make_shared(new correlation::state(*my_state)));
+  cache.add(misc::make_shared(new correlation::state(my_state)));
   for (std::map<unsigned int, neb::downtime>::const_iterator
          it = downtimes.begin(),
          end = downtimes.end();
@@ -613,10 +613,7 @@ void node::_internal_copy(node const& n) {
     acknowledgement.reset(new neb::acknowledgement(*n.acknowledgement));
   else
     acknowledgement.reset();
-  if (n.my_state.get())
-    my_state.reset(new correlation::state(*n.my_state));
-  else
-    my_state.reset();
+  my_state = n.my_state;
 
   node_map::iterator it, end;
 
@@ -663,30 +660,23 @@ void node::_generate_state_event(
        short new_status,
        io::stream* stream) {
   // Close old state event.
-  if (my_state.get() && stream) {
+  if (stream) {
     logging::debug(logging::medium)
       << "correlation: node (" << host_id << ", " << service_id
       << ") closing state event";
-    my_state->end_time = start_time;
-    stream->write(misc::make_shared(new correlation::state(*my_state)));
-  }
-  // We didn't cache any state event beforehand. Gracefully manage this case.
-  else if (stream) {
-    misc::shared_ptr<correlation::state> st(_open_state_event(start_time));
-    st->start_time = 0;
-    st->end_time = start_time;
-    stream->write(st);
+    my_state.end_time = start_time;
+    stream->write(misc::make_shared(new correlation::state(my_state)));
   }
 
   // Open new state event.
   logging::debug(logging::medium)
     << "correlation: node (" << host_id << ", " << service_id
     << ") opening new state event";
-  my_state.reset(_open_state_event(start_time));
-  my_state->current_state = new_status;
+  my_state = _open_state_event(start_time);
+  my_state.current_state = new_status;
 
   if (stream)
-    stream->write(misc::make_shared(new correlation::state(*my_state)));
+    stream->write(misc::make_shared(new correlation::state(my_state)));
 }
 
 /**
@@ -696,28 +686,28 @@ void node::_generate_state_event(
  *
  *  @return                A new state event.
  */
-correlation::state* node::_open_state_event(timestamp start_time) const {
-  std::auto_ptr<correlation::state> st(new correlation::state);
-  st->start_time = start_time;
-  st->service_id = service_id;
-  st->host_id = host_id;
-  st->current_state = state;
+correlation::state node::_open_state_event(timestamp start_time) const {
+  correlation::state st;
+  st.start_time = start_time;
+  st.service_id = service_id;
+  st.host_id = host_id;
+  st.current_state = state;
   timestamp earliest_downtime;
   for (std::map<unsigned int, neb::downtime>::const_iterator
-         it = downtimes.begin(),
-         end = downtimes.end();
+         it(downtimes.begin()),
+         end(downtimes.end());
        it != end;
        ++it)
     if (earliest_downtime.is_null()
         || earliest_downtime < it->second.start_time)
       earliest_downtime = it->second.start_time;
-  st->in_downtime
+  st.in_downtime
     = earliest_downtime.is_null() ? false : earliest_downtime <= start_time;
   if (acknowledgement.get())
-    st->ack_time = acknowledgement->entry_time > start_time ?
-                           acknowledgement->entry_time
-                           : start_time;
-  return (st.release());
+    st.ack_time = acknowledgement->entry_time > start_time
+                  ? acknowledgement->entry_time
+                  : start_time;
+  return (st);
 }
 
 /**
