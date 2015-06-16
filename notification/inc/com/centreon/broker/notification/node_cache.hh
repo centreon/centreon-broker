@@ -90,7 +90,7 @@ namespace         notification {
     bool          node_acknowledged(objects::node_id node) const;
 
   private:
-    void          _prepare_serialization();
+    void          _save_cache();
 
     QHash<objects::node_id, host_node_state>
                   _host_node_states;
@@ -106,9 +106,6 @@ namespace         notification {
 
     misc::shared_ptr<persistent_cache>
                   _cache;
-
-    std::deque<misc::shared_ptr<io::data> >
-                  _serialized_data;
   };
 }
 

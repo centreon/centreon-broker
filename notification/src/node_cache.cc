@@ -123,26 +123,14 @@ void node_cache::stopping() {
   logging::debug(logging::low)
     << "notification: writing the node cache " << _cache->get_cache_file();
 
-  // Start a transaction.
-  _cache->transaction();
-
   // Lock the mutex;
   QMutexLocker lock(&_mutex);
 
-  // Prepare serialization.
-  _prepare_serialization();
-
-  misc::shared_ptr<io::data> data;
-
   try {
-    while (true) {
-      read(data, (time_t)-1);
-      _cache->add(data);
-    }
-  }
-  catch (io::exceptions::shutdown const& s) {
-    // Normal termination of the stream (ie nothing to write anymore).
-    (void)s;
+    // Start a transaction.
+    _cache->transaction();
+    // Sache into the cache.
+    _save_cache();
     logging::debug(logging::low)
       << "notification: finished writing the node cache "
       << _cache->get_cache_file() << " succesfully";
@@ -183,10 +171,6 @@ void node_cache::stopping() {
 bool node_cache::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.clear();
-  if (!_serialized_data.empty()) {
-    d = _serialized_data.front();
-    _serialized_data.pop_front();
-  }
   return (true);
 }
 
@@ -374,31 +358,39 @@ bool node_cache::node_acknowledged(objects::node_id node) const {
 /**
  *  Prepare the serialization of all the data.
  */
-void node_cache::_prepare_serialization() {
-  _serialized_data.clear();
+void node_cache::_save_cache() {
+  std::deque<misc::shared_ptr<io::data> > serialized_data;
+
   for (QHash<objects::node_id, host_node_state>::const_iterator
          it = _host_node_states.begin(),
          end = _host_node_states.end();
        it != end;
        ++it)
-    it->serialize(_serialized_data);
+    it->serialize(serialized_data);
   for (QHash<objects::node_id, service_node_state>::const_iterator
          it = _service_node_states.begin(),
          end = _service_node_states.end();
        it != end;
        ++it)
-    it->serialize(_serialized_data);
+    it->serialize(serialized_data);
   for (QHash<objects::node_id, neb::acknowledgement>::const_iterator
          it = _acknowledgements.begin(),
          end = _acknowledgements.end();
        it != end;
        ++it)
-    _serialized_data.push_back(
+    serialized_data.push_back(
       misc::make_shared(new neb::acknowledgement(*it)));
   for (QHash<unsigned int, neb::downtime>::const_iterator
          it = _downtimes.begin(),
          end = _downtimes.end();
        it != end;
        ++it)
-    _serialized_data.push_back(misc::make_shared(new neb::downtime(*it)));
+    serialized_data.push_back(misc::make_shared(new neb::downtime(*it)));
+
+  for (std::deque<misc::shared_ptr<io::data> >::const_iterator
+         it = serialized_data.begin(),
+         end = serialized_data.end();
+       it != end;
+       ++it)
+    _cache->add(*it);
 }
