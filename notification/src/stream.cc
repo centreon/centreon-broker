@@ -576,6 +576,10 @@ void stream::_process_ack(neb::acknowledgement const& event) {
     << "notification: processing acknowledgement of node ("
     << event.host_id << ", " << event.service_id << ")";
 
+  // End of ack.
+  if (!event.deletion_time.is_null())
+    return ;
+
   // Add the ack.
   if (event.notify_contacts &&
         (!event.notify_only_if_not_already_acknowledged
@@ -602,6 +606,10 @@ void stream::_process_downtime(neb::downtime const& event) {
     << "notification: processing downtime of node ("
     << event.host_id << ", " << event.service_id << ") starting at "
     << event.start_time << " and ending at " << event.end_time;
+
+  // End of downtime.
+  if (!event.actual_end_time.is_null())
+    return ;
 
   // Add the downtime.
   time_t when_to_schedule(::time(NULL) + 1);

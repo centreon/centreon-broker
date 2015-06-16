@@ -198,6 +198,10 @@ unsigned int node_cache::write(misc::shared_ptr<io::data> const& data) {
   else if (type == neb::custom_variable::static_type()
            || type == neb::custom_variable_status::static_type())
     update(*data.staticCast<neb::custom_variable_status>());
+  else if (type == neb::acknowledgement::static_type())
+    update(data.ref_as<neb::acknowledgement const>());
+  else if (type == neb::downtime::static_type())
+    update(data.ref_as<neb::downtime const>());
 
   return (1);
 }
@@ -271,7 +275,10 @@ void node_cache::update(neb::custom_variable_status const& cvs) {
  *  @param[in] ack  The data to update.
  */
 void node_cache::update(neb::acknowledgement const& ack) {
-  _acknowledgements[objects::node_id(ack.host_id, ack.service_id)] = ack;
+  if (!ack.deletion_time.is_null())
+    _acknowledgements.remove(objects::node_id(ack.host_id, ack.service_id));
+  else
+    _acknowledgements[objects::node_id(ack.host_id, ack.service_id)] = ack;
 }
 
 /**
@@ -280,10 +287,18 @@ void node_cache::update(neb::acknowledgement const& ack) {
  *  @param[in] dwn  The data to update.
  */
 void node_cache::update(neb::downtime const& dwn) {
-  _downtimes[dwn.internal_id] = dwn;
-  _downtime_id_by_nodes.insert(
-    objects::node_id(dwn.host_id, dwn.service_id),
-    dwn.internal_id);
+  if (dwn.actual_end_time.is_null()) {
+    _downtimes[dwn.internal_id] = dwn;
+    _downtime_id_by_nodes.insert(
+      objects::node_id(dwn.host_id, dwn.service_id),
+      dwn.internal_id);
+  }
+  else {
+    _downtimes.remove(dwn.internal_id);
+    _downtime_id_by_nodes.remove(
+      objects::node_id(dwn.host_id, dwn.service_id),
+      dwn.internal_id);
+  }
 }
 
 /**
