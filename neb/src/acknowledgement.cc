@@ -38,8 +38,6 @@ using namespace com::centreon::broker::neb;
  */
 acknowledgement::acknowledgement()
   : acknowledgement_type(0),
-    deletion_time(0),
-    entry_time(0),
     host_id(0),
     is_sticky(false),
     notify_contacts(false),
