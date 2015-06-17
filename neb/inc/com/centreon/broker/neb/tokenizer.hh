@@ -31,6 +31,23 @@
 CCB_BEGIN()
 
 namespace        neb {
+  template <typename T>
+  /**
+   *  Get a value from a stringstream.
+   *
+   *  @param[in] ss  The stringstream.
+   *
+   *  @return        The value.
+   */
+  T from_string_stream(std::stringstream& ss) {
+    T ret;
+    ss >> ret;
+    return (ret);
+  }
+
+  template <>
+  std::string from_string_stream(std::stringstream& ss);
+
   /**
    *  @class tokenizer tokenizer.hh "com/centreon/broker/neb/tokenizer.hh"
    *  @brief Simple tokenizer.
@@ -66,8 +83,7 @@ namespace        neb {
 
       std::stringstream ss;
       ss << arg;
-      T ret;
-      ss >> ret;
+      T ret = from_string_stream<T>(ss);
       if (ss.fail())
         throw (exceptions::msg()
                << "can't convert '" << ss.str()

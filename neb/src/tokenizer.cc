@@ -58,3 +58,16 @@ void tokenizer::end() {
   _pos = 0;
   _index = _line;
 }
+
+template <>
+/**
+ *  Get a string from a stringstream.
+ *
+ *  @param[in] ss  The stringstream.
+ *
+ *  @return        The string.
+ */
+std::string com::centreon::broker::neb::from_string_stream(
+              std::stringstream& ss) {
+  return (ss.str());
+}
