@@ -176,7 +176,7 @@ mapping::entry const acknowledgement::entries[] = {
     "state"),
   mapping::entry(
     &acknowledgement::notify_only_if_not_already_acknowledged,
-    "notify_only_if_not_already_acknowledged"),
+    ""),
   mapping::entry()
 };
 

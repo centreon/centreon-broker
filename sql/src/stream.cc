@@ -230,23 +230,17 @@ void stream::_clean_tables(int instance_id) {
  *  Prepare queries.
  */
 void stream::_prepare() {
+  std::vector<std::string> added_fields;
   // Prepare insert queries.
-  std::set<std::string> excluded;
-  excluded.clear();
-  excluded.insert("notify_only_if_not_already_acknowledged");
   _prepare_insert<neb::acknowledgement>(
                          _acknowledgement_insert,
-                         "rt_acknowledgements",
-                         excluded);
+                         "rt_acknowledgements");
   _prepare_insert<neb::custom_variable>(
                          _custom_variable_insert,
                          "rt_customvariables");
-  excluded.clear();
-  excluded.insert("come_from");
   _prepare_insert<neb::downtime>(
                          _downtime_insert,
-                         "rt_downtimes",
-                         excluded);
+                         "rt_downtimes");
   _prepare_insert<neb::event_handler>(
                          _event_handler_insert,
                          "rt_eventhandlers");
@@ -277,18 +271,18 @@ void stream::_prepare() {
   _prepare_insert<neb::service_dependency>(
                          _service_dependency_insert,
                          "rt_services_services_dependencies");
-  excluded.clear();
-  excluded.insert("service_id");
   _prepare_insert<correlation::state>(
                                  _host_state_insert,
-                                 "rt_hoststateevents",
-                                 excluded);
+                                 "rt_hoststateevents");
   _prepare_insert<correlation::issue>(
                                   _issue_insert,
                                   "rt_issues");
+  added_fields.clear();
+  added_fields.push_back("service_id");
   _prepare_insert<correlation::state>(
                                  _service_state_insert,
-                                 "rt_servicestateevents");
+                                 "rt_servicestateevents",
+                                 added_fields);
   {
     std::string query(
       "INSERT INTO rt_issues_issues_parents (child_id, end_time, start_time, parent_id)"
@@ -311,13 +305,10 @@ void stream::_prepare() {
   id["entry_time"] = false;
   id["host_id"] = false;
   id["service_id"] = true;
-  excluded.clear();
-  excluded.insert("notify_only_if_not_already_acknowledged");
   _prepare_update<neb::acknowledgement>(
                          _acknowledgement_update,
                          "rt_acknowledgements",
-                         id,
-                         excluded);
+                         id);
   id.clear();
   id["host_id"] = false;
   id["name"] = false;
@@ -424,10 +415,13 @@ void stream::_prepare() {
   id.clear();
   id["host_id"] = false;
   id["service_id"] = false;
+  added_fields.clear();
+  added_fields.push_back("service_id");
   _prepare_update<neb::service_status>(
                          _service_status_update,
                          "rt_services",
-                         id);
+                         id,
+                         added_fields);
 
   {
     std::ostringstream oss;
@@ -446,16 +440,13 @@ void stream::_prepare() {
     _downtime_update.prepare(query, "SQL: could not prepare query");
   }
 
-  excluded.clear();
-  excluded.insert("service_id");
   id.clear();
   id["host_id"] = false;
   id["start_time"] = false;
   _prepare_update<correlation::state>(
                                  _host_state_update,
                                  "rt_hoststateevents",
-                                 id,
-                                 excluded);
+                                 id);
 
   id.clear();
   id["host_id"] = false;
@@ -491,15 +482,15 @@ void stream::_prepare() {
 /**
  *  Prepare an insert statement for later execution.
  *
- *  @param[out] st          Query object.
- *  @param[in]  table_name  The name of the table.
- *  @param[in]  excluded    Fields to exclude from the query.
+ *  @param[out] st            Query object.
+ *  @param[in]  table_name    The name of the table.
+ *  @param[in]  added_fields  Fields added to the query.
  */
 template <typename T>
 void stream::_prepare_insert(
                database_query& st,
                std::string const& table_name,
-               std::set<std::string> const& excluded) {
+               std::vector<std::string> const& added_fields) {
   // Build query string.
   std::string query;
   query = "INSERT INTO ";
@@ -509,24 +500,34 @@ void stream::_prepare_insert(
   for (size_t i = 0; !entries[i].is_null(); ++i) {
     char const* entry_name(entries[i].get_name());
     if (!entry_name
-        || !entry_name[0]
-        || (excluded.find(entry_name) != excluded.end()))
+        || !entry_name[0])
       continue;
     query.append(entry_name);
     query.append(", ");
   }
+  for (std::vector<std::string>::const_iterator
+         it = added_fields.begin(),
+         end = added_fields.end();
+       it != end;
+       ++it)
+    query.append(*it).append(", ");
   query.resize(query.size() - 2);
   query.append(") VALUES(");
   for (size_t i = 0; !entries[i].is_null(); ++i) {
     char const* entry_name(entries[i].get_name());
     if (!entry_name
-        || !entry_name[0]
-        || (excluded.find(entry_name) != excluded.end()))
+        || !entry_name[0])
       continue;
     query.append(":");
     query.append(entry_name);
     query.append(", ");
   }
+  for (std::vector<std::string>::const_iterator
+         it = added_fields.begin(),
+         end = added_fields.end();
+       it != end;
+       ++it)
+    query.append(":").append(*it).append(", ");
   query.resize(query.size() - 2);
   query.append(")");
 
@@ -589,14 +590,14 @@ void stream::_prepare_select(
  *  @param[out] st          Query object.
  *  @param[in]  table_name  The name of the table.
  *  @param[in]  id          List of fields that form an UNIQUE.
- *  @param[in]  excluded    Fields to exclude from the query.
+ *  @param[in]  added_fields  Fields added to the query.
  */
 template <typename T>
 void stream::_prepare_update(
                database_query& st,
                std::string const& table_name,
                std::map<std::string, bool> const& id,
-               std::set<std::string> const& excluded) {
+               std::vector<std::string> const& added_fields) {
   // Build query string.
   std::string query;
   query = "UPDATE ";
@@ -606,8 +607,7 @@ void stream::_prepare_update(
   for (size_t i(0); !entries[i].is_null(); ++i) {
     char const* entry_name(entries[i].get_name());
     if (!entry_name
-        || !entry_name[0]
-        || (excluded.find(entry_name) != excluded.end()))
+        || !entry_name[0])
       continue;
     bool found(id.find(entry_name) != id.end());
     if (!found) {
@@ -617,6 +617,12 @@ void stream::_prepare_update(
       query.append(", ");
     }
   }
+  for (std::vector<std::string>::const_iterator
+         it = added_fields.begin(),
+         end = added_fields.end();
+       it != end;
+       ++it)
+    query.append(*it).append("=:").append(*it).append(", ");
   query.resize(query.size() - 2);
   query.append(" WHERE ");
   for (std::map<std::string, bool>::const_iterator
@@ -1529,6 +1535,8 @@ void stream::_process_service_state(
 
   // Processing.
   if (_with_state_events) {
+    _service_state_insert.bind_value("service_id", QVariant(s.service_id));
+    _service_state_update.bind_value("service_id", QVariant(s.service_id));
     _update_on_none_insert(
       _service_state_insert,
       _service_state_update,

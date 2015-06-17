@@ -25,6 +25,7 @@
 #  include <memory>
 #  include <QString>
 #  include <set>
+#  include <vector>
 #  include <string>
 #  include "com/centreon/broker/database.hh"
 #  include "com/centreon/broker/database_query.hh"
@@ -73,15 +74,15 @@ namespace          sql {
     void           _prepare_insert(
                      database_query& st,
                      std::string const& table_name,
-                     std::set<std::string> const& excluded
-                     = std::set<std::string>());
+                     std::vector<std::string> const& added_fields
+                       = std::vector<std::string>());
     template       <typename T>
     void           _prepare_update(
                      database_query& st,
                      std::string const& table_name,
                      std::map<std::string, bool> const& id,
-                     std::set<std::string> const& excluded
-                     = std::set<std::string>());
+                     std::vector<std::string> const& added_fields
+                       = std::vector<std::string>());
     template       <typename T>
     void           _prepare_delete(
                      database_query& st,

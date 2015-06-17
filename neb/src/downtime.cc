@@ -242,7 +242,7 @@ mapping::entry const downtime::entries[] = {
     "recurring_timeperiod"),
   mapping::entry(
     &downtime::come_from,
-    "come_from"),
+    ""),
   mapping::entry()
 };
 
