@@ -412,7 +412,6 @@ void action::_process_notification(
       << _id.get_service_id()
       << ") is in downtime, notification won't be sent";
     should_send_the_notification = false;
-    return;
   }
 
   // See if the node has been acknowledged.
@@ -422,7 +421,6 @@ void action::_process_notification(
       << _id.get_service_id()
       << ") is acknowledged, notification won't be sent";
     should_send_the_notification = false;
-    return ;
   }
 
   // See if this notification is between the start and end.
