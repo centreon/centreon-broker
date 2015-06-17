@@ -432,6 +432,8 @@ void stream::_prepare() {
            "     type=:type"
            " WHERE entry_time=:entry_time"
            "        AND host_id=:host_id"
+           "        AND is_recurring=:is_recurring"
+           "        AND recurring_timeperiod=:recurring_timeperiod"
            "        AND COALESCE(service_id, -1)=COALESCE(:service_id, -1)";
     std::string query(oss.str());
     _downtime_update.prepare(query, "SQL: could not prepare query");
