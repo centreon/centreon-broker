@@ -439,7 +439,7 @@ void action::_process_notification(
   // Send the notification.
   if (should_send_the_notification) {
     std::string resolved_command = cmd->resolve(cnt, n, cache, st, *this);
-    logging::debug(logging::low)
+    logging::info(logging::medium)
       << "notification: launching notification command on node ("
       << _id.get_host_id() << ", " << _id.get_service_id() << "): "
       << resolved_command;

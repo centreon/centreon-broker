@@ -74,7 +74,7 @@ CREATE TABLE rt_notification_rules (
   timeperiod_id int default NULL,
   contact_id int NOT NULL,
   host_id int NOT NULL,
-  service_id int NOT NULL,
+  service_id int default NULL,
 
   FOREIGN KEY (rule_id) REFERENCES cfg_notification_rules (rule_id)
     ON DELETE CASCADE,
