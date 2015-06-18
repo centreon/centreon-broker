@@ -263,9 +263,16 @@ void node_events_stream::set_timeperiods(
  */
 void node_events_stream::_process_host_status(
                            neb::host_status const& hst) {
+  logging::debug(logging::low)
+    << "neb: node events stream: processing host status for ("
+    << hst.host_id << "), state '" << hst.last_hard_state << "'";
   node_id id(hst.host_id);
   short prev_state = _node_cache.get_current_state(id);
-  _remove_expired_acknowledgement(id, prev_state, hst.last_hard_state);
+  _remove_expired_acknowledgement(
+    id,
+    hst.last_hard_state_change,
+    prev_state,
+    hst.last_hard_state);
   _trigger_floating_downtime(
     id,
     hst.last_hard_state_change,
@@ -279,9 +286,17 @@ void node_events_stream::_process_host_status(
  */
 void node_events_stream::_process_service_status(
                            neb::service_status const& sst) {
+  logging::debug(logging::low)
+    << "neb: node events stream: processing host status for ("
+    << sst.host_id << ", " << sst.service_id << "), state '"
+    << sst.last_hard_state << "'";
   node_id id(sst.host_id, sst.service_id);
   short prev_state = _node_cache.get_current_state(id);
-  _remove_expired_acknowledgement(id, prev_state, sst.last_hard_state);
+  _remove_expired_acknowledgement(
+    id,
+    sst.last_hard_state_change,
+    prev_state,
+    sst.last_hard_state);
   _trigger_floating_downtime(
     id,
     sst.last_hard_state_change,
@@ -326,19 +341,24 @@ void node_events_stream::_update_downtime(
  *  Remove an expired acknowledgement.
  *
  *  @param[in] node        A node.
+ *  @param[in] check_time  The time of the check.
  *  @param[in] prev_state  Its previous state.
  *  @param[in] state       Its current state.
  */
 void node_events_stream::_remove_expired_acknowledgement(
                            node_id node,
+                           timestamp check_time,
                            short prev_state,
                            short state) {
   QHash<node_id, neb::acknowledgement>::iterator found
     = _acknowledgements.find(node);
   if (found != _acknowledgements.end()
         && (state == 0 || (!found->is_sticky && prev_state != state))) {
+    logging::info(logging::medium)
+      << "neb: node events stream: removing expired acknowledgement for "
+         "(" << node.get_host_id() << ", " << node.get_service_id() << ")";
     // Close the ack.
-    found->deletion_time = state;
+    found->deletion_time = check_time;
     multiplexing::publisher pblsh;
     pblsh.write(misc::make_shared(new neb::acknowledgement(*found)));
     _acknowledgements.erase(found);

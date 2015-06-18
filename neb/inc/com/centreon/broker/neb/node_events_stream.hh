@@ -87,6 +87,7 @@ namespace        neb {
                    neb::downtime const& dwn);
     void         _remove_expired_acknowledgement(
                    node_id node,
+                   timestamp check_time,
                    short prev_state,
                    short state);
     void         _trigger_floating_downtime(
