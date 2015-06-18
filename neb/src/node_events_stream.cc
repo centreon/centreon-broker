@@ -579,6 +579,7 @@ void node_events_stream::_parse_downtime(
     d->comment = QString::fromStdString(comment);
     d->start_time = start_time;
     d->end_time = end_time;
+    d->entry_time = ::time(NULL);
     d->duration = fixed ? end_time - start_time : duration;
     d->fixed = (fixed == 1);
     d->downtime_type = type;
@@ -855,6 +856,7 @@ void node_events_stream::_apply_config_downtimes() {
       it->internal_id = _downtimes.get_new_downtime_id();
       it->downtime_type = it->service_id != 0
         ? down_service : down_host;
+      it->entry_time = ::time(NULL);
       found_downtime_ids.insert(it->internal_id);
       _register_downtime(*it, &pblsh);
     }
@@ -987,6 +989,7 @@ void node_events_stream::_spawn_recurring_downtime(
   spawned.end_time = (*tp)->get_next_invalid(spawned.start_time);
   if (spawned.end_time > dwn.end_time)
     spawned.end_time = dwn.end_time;
+  spawned.entry_time = ::time(NULL);
 
   // Save the downtime.
   _downtimes.add_downtime(spawned);
