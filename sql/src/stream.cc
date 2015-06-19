@@ -829,7 +829,7 @@ void stream::_process_downtime(
     << ", deletion time: " << d.deletion_time << ")";
 
   // Only update in case of downtime termination.
-  if (d.actual_end_time) {
+  if (d.actual_end_time.is_null()) {
     _downtime_update << d;
     _downtime_update.run_statement("SQL");
   }
