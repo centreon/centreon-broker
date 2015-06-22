@@ -50,6 +50,7 @@ namespace         neb {
     bool          is_host() const throw();
     bool          is_service() const throw();
     node_id       to_host() const throw();
+    bool          empty() const throw();
 
   private:
     unsigned int  _host_id;

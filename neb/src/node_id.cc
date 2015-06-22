@@ -147,6 +147,10 @@ node_id node_id::to_host() const throw() {
   return (node_id(_host_id));
 }
 
+bool node_id::empty() const throw() {
+  return (_host_id == 0 && _service_id == 0);
+}
+
 /**
  *  QHash function for hash and sets.
  *

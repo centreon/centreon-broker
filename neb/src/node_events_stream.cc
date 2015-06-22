@@ -441,6 +441,10 @@ void node_events_stream::_parse_ack(
     node_id id(_node_cache.get_node_by_names(
                  host_name,
                  service_description));
+    if (id.empty())
+      throw (exceptions::msg() << "couldn't find node "
+             << host_name << ", " << service_description);
+
     misc::shared_ptr<neb::acknowledgement>
       ack(new neb::acknowledgement);
     ack->acknowledgement_type = is_host;
@@ -572,6 +576,9 @@ void node_events_stream::_parse_downtime(
     node_id id = _node_cache.get_node_by_names(
                    host_name,
                    service_description);
+    if (id.empty())
+      throw (exceptions::msg() << "couldn't find node "
+             << host_name << ", " << service_description);
 
     misc::shared_ptr<neb::downtime>
       d(new neb::downtime);
