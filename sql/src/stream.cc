@@ -725,8 +725,8 @@ void stream::_process_acknowledgement(
 
   // Log message.
   logging::info(logging::medium)
-    << "SQL: processing acknowledgement event (instance: "
-    << ack.source_id << ", host: " << ack.host_id << ", service: "
+    << "SQL: processing acknowledgement event (poller: "
+    << ack.poller_id << ", host: " << ack.host_id << ", service: "
     << ack.service_id << ", entry time: " << ack.entry_time
     << ", deletion time: " << ack.deletion_time << ")";
 
@@ -834,7 +834,7 @@ void stream::_process_downtime(
 
   // Log message.
   logging::info(logging::medium)
-    << "SQL: processing downtime event (instance: " << d.source_id
+    << "SQL: processing downtime event (poller: " << d.poller_id
     << ", host: " << d.host_id << ", service: " << d.service_id
     << ", start time: " << d.start_time << ", end_time: " << d.end_time
     << ", actual start time: " << d.actual_start_time
@@ -966,7 +966,7 @@ void stream::_process_host(
 
   // Log message.
   logging::info(logging::medium) << "SQL: processing host event"
-       " (instance: " << h.source_id << ", id: "
+       " (poller: " << h.poller_id << ", id: "
     << h.host_id << ", name: " << h.host_name << ")";
 
   // Processing
@@ -974,7 +974,7 @@ void stream::_process_host(
     _update_on_none_insert(_host_insert, _host_update, h);
   else
     logging::error(logging::high) << "SQL: host '" << h.host_name
-      << "' of instance " << h.source_id << " has no ID";
+      << "' of poller " << h.poller_id << " has no ID";
 
   return ;
 }
@@ -1001,7 +1001,7 @@ void stream::_process_host_check(
     logging::info(logging::medium)
       << "SQL: processing host check event (host: " << hc.host_id
       << ", command: " << hc.command_line
-      << ", from instance: " << hc.source_id << ")";
+      << ", from poller: " << hc.poller_id << ")";
 
     // Processing.
     _host_check_update << hc;
@@ -1173,12 +1173,12 @@ void stream::_process_instance(
   neb::instance const& i(*static_cast<neb::instance const*>(e.data()));
 
   // Log message.
-  logging::info(logging::medium) << "SQL: processing instance event"
-    << "(id: " << i.source_id << ", name: " << i.name << ", running: "
+  logging::info(logging::medium) << "SQL: processing poller event"
+    << "(id: " << i.poller_id << ", name: " << i.name << ", running: "
     << (i.is_running ? "yes" : "no") << ")";
 
   // Clean tables.
-  _clean_tables(i.source_id);
+  _clean_tables(i.poller_id);
 
   // Processing.
   _update_on_none_insert(_instance_insert, _instance_update, i);
@@ -1199,15 +1199,15 @@ void stream::_process_instance_status(
 
   // Log message.
   logging::info(logging::medium)
-    << "SQL: processing instance status event (id: " << is.source_id
+    << "SQL: processing poller status event (id: " << is.poller_id
     << ", last alive: " << is.last_alive << ")";
 
   // Processing.
   _instance_status_update << is;
   _instance_status_update.run_statement("SQL");
   if (_instance_status_update.num_rows_affected() != 1)
-    logging::error(logging::medium) << "SQL: instance "
-      << is.source_id << " was not updated because no matching entry "
+    logging::error(logging::medium) << "SQL: poller "
+      << is.poller_id << " was not updated because no matching entry "
          "was found in database";
   return ;
 }
@@ -1395,7 +1395,7 @@ void stream::_process_module(
 
   // Log message.
   logging::info(logging::medium)
-    << "SQL: processing module event (instance: " << m.source_id
+    << "SQL: processing module event (poller: " << m.poller_id
     << ", filename: " << m.filename << ", loaded: "
     << (m.loaded ? "yes" : "no") << ")";
 
@@ -1411,7 +1411,7 @@ void stream::_process_module(
       "WHERE instance_id=:instance_id"
       "  AND filename=:filename",
       "SQL");
-    q.bind_value(":instance_id", m.source_id);
+    q.bind_value(":instance_id", m.poller_id);
     q.bind_value(":filename", m.filename);
     q.run_statement("SQL");
   }
@@ -1490,7 +1490,7 @@ void stream::_process_service_check(
     logging::info(logging::medium)
       << "SQL: processing service check event (host: " << sc.host_id
       << ", service: " << sc.service_id << ", command: "
-      << sc.command_line << ", from instance: " << sc.source_id << ")";
+      << sc.command_line << ", from poller: " << sc.poller_id << ")";
 
     // Processing.
     _service_check_update << sc;
@@ -2067,12 +2067,12 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
 
     // Check that event does not refer to a deleted instance.
     bool deleted(false);
-    if ((_cache_deleted_instance_id.find(data->source_id)
+    if ((_cache_deleted_instance_id.find(data->poller_id)
         != _cache_deleted_instance_id.end())
         && (data->type() != neb::log_entry::static_type())) {
       logging::info(logging::low)
-        << "SQL: discarding some event related to a deleted instance ("
-        << data->source_id << ")";
+        << "SQL: discarding some event related to a deleted poller ("
+        << data->poller_id << ")";
       deleted = true;
     }
     else if (io::events::category_of_type(data->type())
@@ -2081,19 +2081,19 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
                 == correlation::de_issue_parent) {
       correlation::issue_parent const&
         ip(*static_cast<correlation::issue_parent const*>(data.data()));
-      if (_cache_deleted_instance_id.find(ip.source_id)
+      if (_cache_deleted_instance_id.find(ip.poller_id)
           != _cache_deleted_instance_id.end()) {
         logging::info(logging::low)
           << "SQL: discarding some issue parent correlation event related to "
-          << "a deleted instance (" << ip.source_id <<  ")";
+          << "a deleted poller (" << ip.poller_id <<  ")";
         deleted = true;
       }
     }
     if (!deleted) {
       // Update the timestamp of this instance.
-      _update_timestamp(data->source_id);
+      _update_timestamp(data->poller_id);
       logging::debug(logging::low)
-        << "SQL: updating timestamp of instance " << data->source_id
+        << "SQL: updating timestamp of poller " << data->poller_id
         << " (" << _oldest_timestamp << ")";
 
       // Process event.

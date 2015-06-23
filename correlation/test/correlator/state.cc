@@ -63,7 +63,7 @@ int main() {
     // Send node status.
     {
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-      ss->source_id = 1;
+      ss->poller_id = 1;
       ss->host_id = 42;
       ss->service_id = 24;
       ss->state_type = 1;
@@ -73,7 +73,7 @@ int main() {
     }
     {
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-      ss->source_id = 1;
+      ss->poller_id = 1;
       ss->host_id = 42;
       ss->service_id = 24;
       ss->state_type = 1;
