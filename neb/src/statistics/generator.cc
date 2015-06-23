@@ -19,6 +19,7 @@
 
 #include <QDomDocument>
 #include <QDomElement>
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/internal.hh"
@@ -224,7 +225,8 @@ void generator::run() {
     ss->last_update = now;
     ss->host_id = it->first.first;
     ss->service_id = it->first.second;
-    ss->host_name = instance_name;
+    ss->host_name
+      = config::applier::state::instance().poller_name().c_str();
     ss->service_description = it->second->name().c_str();
     try {
       std::string output;

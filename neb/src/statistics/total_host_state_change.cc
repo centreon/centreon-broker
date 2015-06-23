@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -19,11 +19,13 @@
 
 #include <iomanip>
 #include <sstream>
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/statistics/compute_value.hh"
 #include "com/centreon/broker/neb/statistics/total_host_state_change.hh"
 #include "com/centreon/engine/globals.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 using namespace com::centreon::broker::neb::statistics;
 
@@ -76,7 +78,7 @@ void total_host_state_change::run(
 
     // Output.
     std::ostringstream oss;
-    oss << "Engine " << instance_name.toStdString()
+    oss << "Engine " << config::applier::state::instance().poller_name()
         << " has an average host state change of "
         << std::fixed << std::setprecision(2) << cv.avg() << "%";
     output = oss.str();
@@ -90,7 +92,7 @@ void total_host_state_change::run(
   else {
     // Output.
     output = "No host to compute total host state change on "
-      + instance_name.toStdString();
+      + config::applier::state::instance().poller_name();
   }
   return ;
 }

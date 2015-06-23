@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,10 +18,12 @@
 */
 
 #include <sstream>
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/statistics/hosts_scheduled.hh"
 #include "com/centreon/engine/globals.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 using namespace com::centreon::broker::neb::statistics;
 
@@ -75,7 +77,7 @@ void hosts_scheduled::run(
 
   // Output.
   std::ostringstream oss;
-  oss << "Engine " << instance_name.toStdString()
+  oss << "Engine " << config::applier::state::instance().poller_name()
       << " has " << total << " scheduled hosts";
   output = oss.str();
 

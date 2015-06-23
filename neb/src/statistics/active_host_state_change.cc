@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -19,11 +19,13 @@
 
 #include <iomanip>
 #include <sstream>
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/statistics/active_host_state_change.hh"
 #include "com/centreon/broker/neb/statistics/compute_value.hh"
 #include "com/centreon/engine/globals.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 using namespace com::centreon::broker::neb::statistics;
 
@@ -39,9 +41,7 @@ active_host_state_change::active_host_state_change()
  *  @param[in] right Object to copy.
  */
 active_host_state_change::active_host_state_change(active_host_state_change const& right)
- : plugin(right) {
-
-}
+ : plugin(right) {}
 
 /**
  *  Destructor.
@@ -77,7 +77,7 @@ void active_host_state_change::run(
   if (cv.size()) {
     // Output.
     std::ostringstream oss;
-    oss << "Engine " << instance_name.toStdString()
+    oss << "Engine " << config::applier::state::instance().poller_name()
         << " has an average active host state change of "
         << std::fixed << std::setprecision(2) << cv.avg() << "%";
     output = oss.str();
@@ -91,7 +91,7 @@ void active_host_state_change::run(
   else {
     // Output.
     output = "No active host to compute active host state "
-      "change on " + instance_name.toStdString();
+      "change on " + config::applier::state::instance().poller_name();
   }
   return ;
 }

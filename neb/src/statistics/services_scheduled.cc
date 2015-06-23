@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,6 +18,7 @@
 */
 
 #include <sstream>
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/statistics/services_scheduled.hh"
 #include "com/centreon/engine/globals.hh"
@@ -36,9 +37,7 @@ services_scheduled::services_scheduled() : plugin("services_scheduled") {}
  *  @param[in] right Object to copy.
  */
 services_scheduled::services_scheduled(services_scheduled const& right)
- : plugin(right) {
-
-}
+ : plugin(right) {}
 
 /**
  *  Destructor.
@@ -74,7 +73,7 @@ void services_scheduled::run(
 
   // Output.
   std::ostringstream oss;
-  oss << "Engine " << instance_name.toStdString()
+  oss << "Engine " << config::applier::state::instance().poller_name()
       << " has " << total << " scheduled services";
   output = oss.str();
 

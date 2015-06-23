@@ -65,9 +65,6 @@ namespace neb {
   // Configuration file.
   extern QString gl_configuration_file;
 
-  // Instance information.
-  extern QString      instance_name;
-
   // List of host IDs.
   extern umap<std::string, int> gl_hosts;
 

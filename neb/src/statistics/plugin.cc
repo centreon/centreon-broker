@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -26,10 +26,7 @@ using namespace com::centreon::broker::neb::statistics;
  *
  *  @param[in] name The plugin name.
  */
-plugin::plugin(std::string const& name)
-  : _name(name) {
-
-}
+plugin::plugin(std::string const& name) : _name(name) {}
 
 /**
  *  Copy constructor.

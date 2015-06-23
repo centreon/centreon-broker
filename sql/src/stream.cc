@@ -767,13 +767,13 @@ void stream::_process_acknowledgement(
     std::ostringstream query;
     if (ack.service_id == 0)
       query << "UPDATE rt_hosts SET acknowledged ="
-	    << ack.deletion_time.is_null()
-	    << "  WHERE host_id = " << ack.host_id;
+            << ack.deletion_time.is_null()
+            << "  WHERE host_id = " << ack.host_id;
     else
       query << "UPDATE rt_services SET acknowledged ="
-	    << ack.deletion_time.is_null()
-	    << "  WHERE host_id = " << ack.host_id
-	    << "   AND service_id = " << ack.service_id;
+            << ack.deletion_time.is_null()
+            << "  WHERE host_id = " << ack.host_id
+            << "   AND service_id = " << ack.service_id;
     database_query q(_db);
     q.run_query(query.str(), "SQL: couldn't update acknowledgement flags");
   }
@@ -882,24 +882,24 @@ void stream::_process_downtime(
     else
       _update_on_none_insert(
         _downtime_insert,
-	_downtime_update,
-	d);
+        _downtime_update,
+        d);
 
     // Update the associated host or service table.
     if (!d.is_recurring) {
       std::string operation = d.actual_end_time.is_null() ? "+ 1" : "- 1";
       std::ostringstream query;
       if (d.service_id == 0)
-	query << "UPDATE rt_hosts"
+        query << "UPDATE rt_hosts"
                  "       SET scheduled_downtime_depth ="
                  "                    scheduled_downtime_depth " << operation
-	      << "  WHERE host_id = " << d.host_id;
+              << "  WHERE host_id = " << d.host_id;
       else
-	query << "UPDATE rt_services"
+        query << "UPDATE rt_services"
                  "       SET scheduled_downtime_depth ="
                  "                    scheduled_downtime_depth " << operation
-	      << "  WHERE host_id = " << d.host_id
-	      << "   AND service_id = " << d.service_id;
+              << "  WHERE host_id = " << d.host_id
+              << "   AND service_id = " << d.service_id;
       database_query q(_db);
       q.run_query(query.str(), "SQL: couldn't update scheduled downtime depth");
     }
@@ -1444,9 +1444,9 @@ void stream::_process_module(
       database_query q(_db);
       q.prepare(
           "DELETE FROM rt_modules "
-	  "WHERE instance_id=:instance_id"
-	  "  AND filename=:filename",
-	  "SQL");
+          "WHERE instance_id=:instance_id"
+          "  AND filename=:filename",
+          "SQL");
       q.bind_value(":instance_id", m.poller_id);
       q.bind_value(":filename", m.filename);
       q.run_statement("SQL");

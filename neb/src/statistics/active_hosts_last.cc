@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,10 +18,12 @@
 */
 
 #include <sstream>
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/statistics/active_hosts_last.hh"
 #include "com/centreon/engine/globals.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 using namespace com::centreon::broker::neb::statistics;
 
@@ -37,9 +39,7 @@ active_hosts_last::active_hosts_last()
  *  @param[in] right Object to copy.
  */
 active_hosts_last::active_hosts_last(active_hosts_last const& right)
- : plugin(right) {
-
-}
+ : plugin(right) {}
 
 /**
  *  Destructor.
@@ -91,7 +91,7 @@ void active_hosts_last::run(
 
   // Output.
   std::ostringstream oss;
-  oss << "Engine " << instance_name.toStdString() << " ran "
+  oss << "Engine " << config::applier::state::instance().poller_name() << " ran "
       << last_checked_5 << " active checks during the last 5 minutes";
   output = oss.str();
 
