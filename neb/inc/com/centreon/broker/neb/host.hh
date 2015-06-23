@@ -55,6 +55,7 @@ namespace          neb {
     bool           flap_detection_on_unreachable;
     bool           flap_detection_on_up;
     QString        host_name;
+    unsigned int   poller_id;
 
     static mapping::entry const
                    entries[];

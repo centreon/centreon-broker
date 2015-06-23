@@ -35,16 +35,17 @@ using namespace com::centreon::broker::neb;
  */
 module::module()
   : enabled(true),
-        loaded(false),
+    loaded(false),
+    poller_id(0),
     should_be_loaded(false) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] m Object to copy.
+ *  @param[in] other  Object to copy.
  */
-module::module(module const& m) : io::data(m) {
-  _internal_copy(m);
+module::module(module const& other) : io::data(other) {
+  _internal_copy(other);
 }
 
 /**
@@ -55,13 +56,15 @@ module::~module() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] m Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-module& module::operator=(module const& m) {
-  io::data::operator=(m);
-  _internal_copy(m);
+module& module::operator=(module const& other) {
+  if (this != &other) {
+    io::data::operator=(other);
+    _internal_copy(other);
+  }
   return (*this);
 }
 
@@ -92,14 +95,15 @@ unsigned int module::static_type() {
 /**
  *  Copy data members.
  *
- *  @param[in] m Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void module::_internal_copy(module const& m) {
-  args = m.args;
-  enabled = m.enabled;
-  filename = m.filename;
-    loaded = m.loaded;
-  should_be_loaded = m.should_be_loaded;
+void module::_internal_copy(module const& other) {
+  args = other.args;
+  enabled = other.enabled;
+  filename = other.filename;
+  loaded = other.loaded;
+  poller_id = other.poller_id;
+  should_be_loaded = other.should_be_loaded;
   return ;
 }
 
@@ -121,7 +125,7 @@ mapping::entry const module::entries[] = {
     &module::filename,
     "filename"),
   mapping::entry(
-    &module::source_id,
+    &module::poller_id,
     "instance_id",
     mapping::entry::invalid_on_zero,
     false),

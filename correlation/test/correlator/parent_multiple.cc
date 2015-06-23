@@ -82,7 +82,6 @@ int main() {
     // Send node status.
     {
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-      ss->poller_id = 1;
       ss->host_id = 56;
       ss->service_id = 13;
       ss->state_type = 1;
@@ -92,7 +91,6 @@ int main() {
     }
     {
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-      ss->poller_id = 1;
       ss->host_id = 90;
       ss->service_id = 42;
       ss->state_type = 1;
@@ -102,7 +100,6 @@ int main() {
     }
     {
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-      ss->poller_id = 1;
       ss->host_id = 42;
       ss->service_id = 24;
       ss->state_type = 1;
@@ -112,7 +109,6 @@ int main() {
     }
     {
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-      ss->poller_id = 1;
       ss->host_id = 213;
       ss->service_id = 8;
       ss->state_type = 1;
@@ -122,7 +118,6 @@ int main() {
     }
     {
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-      ss->poller_id = 1;
       ss->host_id = 56;
       ss->service_id = 13;
       ss->state_type = 1;
@@ -132,7 +127,6 @@ int main() {
     }
     {
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-      ss->poller_id = 1;
       ss->host_id = 42;
       ss->service_id = 24;
       ss->state_type = 1;
@@ -142,7 +136,6 @@ int main() {
     }
     {
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-      ss->poller_id = 1;
       ss->host_id = 90;
       ss->service_id = 42;
       ss->state_type = 1;
@@ -152,7 +145,6 @@ int main() {
     }
     {
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-      ss->poller_id = 1;
       ss->host_id = 213;
       ss->service_id = 8;
       ss->state_type = 1;

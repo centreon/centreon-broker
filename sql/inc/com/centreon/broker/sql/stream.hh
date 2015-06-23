@@ -68,7 +68,8 @@ namespace          sql {
     stream&        operator=(stream const& other);
     void           _cache_clean();
     void           _cache_create();
-    void           _clean_tables(int instance_id);
+    void           _clean_tables(unsigned int instance_id);
+    bool           _is_valid_poller(unsigned int poller_id);
     void           _prepare();
     template       <typename T>
     void           _prepare_insert(

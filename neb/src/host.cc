@@ -128,6 +128,7 @@ void host::_internal_copy(host const& other) {
   flap_detection_on_unreachable = other.flap_detection_on_unreachable;
   flap_detection_on_up = other.flap_detection_on_up;
   host_name = other.host_name;
+  poller_id = other.poller_id;
   return ;
 }
 
@@ -140,6 +141,7 @@ void host::_zero_initialize() {
   flap_detection_on_down = 0;
   flap_detection_on_unreachable = 0;
   flap_detection_on_up = 0;
+  poller_id = 0;
   return ;
 }
 
@@ -235,7 +237,7 @@ mapping::entry const host::entries[] = {
     "host_id",
     mapping::entry::invalid_on_zero),
   mapping::entry(
-    &host::source_id,
+    &host::poller_id,
     "instance_id",
     mapping::entry::invalid_on_zero,
     false),

@@ -871,6 +871,7 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->percent_state_change = h->percent_state_change;
     if (h->perf_data)
       my_host->perf_data = h->perf_data;
+    my_host->poller_id = config::applier::state::instance().poller_id();
     my_host->retry_interval = h->retry_interval;
     my_host->should_be_scheduled = h->should_be_scheduled;
     my_host->state_type = (h->has_been_checked
@@ -886,7 +887,7 @@ int neb::callback_host(int callback_type, void* data) {
       // Send host event.
       logging::info(logging::low) << "callbacks:  new host "
         << my_host->host_id << " ('" << my_host->host_name
-        << "') on instance " << my_host->source_id;
+        << "') on instance " << my_host->poller_id;
       neb::gl_publisher.write(my_host);
 
       // Generate existing custom variables.
@@ -1129,6 +1130,7 @@ int neb::callback_module(int callback_type, void* data) {
     // Fill output var.
     module_data = static_cast<nebstruct_module_data*>(data);
     if (module_data->module) {
+      me->poller_id = config::applier::state::instance().poller_id();
       me->filename = module_data->module;
       if (module_data->args)
         me->args = module_data->args;
@@ -1216,6 +1218,8 @@ int neb::callback_process(int callback_type, void *data) {
 
       // Output variable.
       misc::shared_ptr<neb::instance> instance(new neb::instance);
+      instance->poller_id
+	= config::applier::state::instance().poller_id();
       instance->engine = "Centreon Engine";
       instance->is_running = true;
       instance->name
@@ -1259,6 +1263,8 @@ int neb::callback_process(int callback_type, void *data) {
       misc::shared_ptr<neb::instance> instance(new neb::instance);
 
       // Fill output var.
+      instance->poller_id
+	= config::applier::state::instance().poller_id();
       instance->engine = "Centreon Engine";
       instance->is_running = false;
       instance->name
@@ -1306,6 +1312,7 @@ int neb::callback_program_status(int callback_type, void* data) {
 
     // Fill output var.
     program_status_data = static_cast<nebstruct_program_status_data*>(data);
+    is->poller_id = config::applier::state::instance().poller_id();
     is->event_handler_enabled
       = program_status_data->event_handlers_enabled;
     is->flap_detection_enabled

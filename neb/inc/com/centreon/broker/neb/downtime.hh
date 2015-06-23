@@ -73,6 +73,7 @@ namespace               neb {
     bool                fixed;
     unsigned int        host_id;
     unsigned int        internal_id;
+    unsigned int        poller_id;
     unsigned int        service_id;
     timestamp           start_time;
     unsigned int        triggered_by;

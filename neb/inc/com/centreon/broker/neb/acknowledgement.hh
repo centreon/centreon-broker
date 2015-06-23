@@ -69,6 +69,7 @@ namespace               neb {
     bool                notify_contacts;
     bool                notify_only_if_not_already_acknowledged;
     bool                persistent_comment;
+    unsigned int        poller_id;
     unsigned int        service_id;
     short               state;
 

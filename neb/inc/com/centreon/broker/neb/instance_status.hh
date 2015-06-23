@@ -58,6 +58,7 @@ namespace            neb {
     timestamp        last_command_check;
     bool             obsess_over_hosts;
     bool             obsess_over_services;
+    unsigned int     poller_id;
 
     static mapping::entry const
                      entries[];

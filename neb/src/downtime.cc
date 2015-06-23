@@ -42,6 +42,7 @@ downtime::downtime()
     fixed(true),
     host_id(0),
     internal_id(0),
+    poller_id(0),
     service_id(0),
     triggered_by(0),
     was_cancelled(false),
@@ -109,6 +110,7 @@ bool downtime::operator==(downtime const& o) const {
           && (fixed == o.fixed)
           && (host_id == o.host_id)
           && (internal_id == o.internal_id)
+	  && (poller_id == o.poller_id)
           && (service_id == o.service_id)
           && (start_time == o.start_time)
           && (triggered_by == o.triggered_by)
@@ -151,6 +153,7 @@ void downtime::_internal_copy(downtime const& other) {
   fixed = other.fixed;
   host_id = other.host_id;
   internal_id = other.internal_id;
+  poller_id = other.poller_id;
   service_id = other.service_id;
   start_time = other.start_time;
   triggered_by = other.triggered_by;
@@ -207,7 +210,7 @@ mapping::entry const downtime::entries[] = {
     "host_id",
     mapping::entry::invalid_on_zero),
   mapping::entry(
-    &downtime::source_id,
+    &downtime::poller_id,
     "instance_id",
     mapping::entry::invalid_on_zero),
   mapping::entry(

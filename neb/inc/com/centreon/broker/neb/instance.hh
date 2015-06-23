@@ -51,6 +51,7 @@ namespace          neb {
     bool           is_running;
     QString        name;
     unsigned int   pid;
+    unsigned int   poller_id;
     timestamp      program_end;
     timestamp      program_start;
     QString        version;

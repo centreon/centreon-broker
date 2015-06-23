@@ -43,6 +43,7 @@ acknowledgement::acknowledgement()
     notify_contacts(false),
     notify_only_if_not_already_acknowledged(false),
     persistent_comment(false),
+    poller_id(0),
     service_id(0),
     state(0) {}
 
@@ -120,6 +121,7 @@ void acknowledgement::_internal_copy(acknowledgement const& other) {
   notify_only_if_not_already_acknowledged
     = other.notify_only_if_not_already_acknowledged;
   persistent_comment = other.persistent_comment;
+  poller_id = other.poller_id;
   service_id = other.service_id;
   state = other.state;
   return ;
@@ -155,7 +157,7 @@ mapping::entry const acknowledgement::entries[] = {
     "host_id",
     mapping::entry::invalid_on_zero),
   mapping::entry(
-    &acknowledgement::source_id,
+    &acknowledgement::poller_id,
     "instance_id",
     mapping::entry::invalid_on_zero),
   mapping::entry(

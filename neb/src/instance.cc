@@ -38,6 +38,7 @@ using namespace com::centreon::broker::neb;
 instance::instance()
   : is_running(true),
     pid(0),
+    poller_id(0),
     program_end(0),
     program_start(0) {}
 
@@ -110,6 +111,7 @@ void instance::_internal_copy(instance const& other) {
   is_running = other.is_running;
   name = other.name;
   pid = other.pid;
+  poller_id = other.poller_id;
   program_end = other.program_end;
   program_start = other.program_start;
   version = other.version;
@@ -128,7 +130,7 @@ mapping::entry const instance::entries[] = {
     &instance::engine,
     "engine"),
   mapping::entry(
-    &instance::source_id,
+    &instance::poller_id,
     "instance_id",
     mapping::entry::invalid_on_zero,
     false),

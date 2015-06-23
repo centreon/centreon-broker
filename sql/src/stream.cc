@@ -130,7 +130,7 @@ void stream::_cache_create() {
  *
  *  @param[in] instance_id Instance ID to remove.
  */
-void stream::_clean_tables(int instance_id) {
+void stream::_clean_tables(unsigned int instance_id) {
   // Query object.
   database_query q(_db);
 
@@ -224,6 +224,32 @@ void stream::_clean_tables(int instance_id) {
   }
 
   return ;
+}
+
+/**
+ *  Check if an instance is a valid instance.
+ *
+ *  @param[in] poller_id  Instance ID.
+ *
+ *  @return True if instance is valid.
+ */
+bool stream::_is_valid_poller(unsigned int poller_id) {
+  // Check if poller is deleted.
+  bool deleted(false);
+  if (_cache_deleted_instance_id.find(poller_id)
+      != _cache_deleted_instance_id.end()) {
+    logging::info(logging::low)
+      << "SQL: discarding some event related to a deleted poller ("
+      << poller_id << ")";
+    deleted = true;
+  }
+
+  // Update poller timestamp.
+  if (!deleted)
+    _update_timestamp(poller_id);
+
+  // Return whether poller is valid or not.
+  return (!deleted);
 }
 
 /**
@@ -731,24 +757,26 @@ void stream::_process_acknowledgement(
     << ", deletion time: " << ack.deletion_time << ")";
 
   // Processing.
-  _update_on_none_insert(
-    _acknowledgement_insert,
-    _acknowledgement_update,
-    ack);
+  if (_is_valid_poller(ack.poller_id)) {
+    _update_on_none_insert(
+      _acknowledgement_insert,
+      _acknowledgement_update,
+      ack);
 
-  // Update the associated host or service table.
-  std::ostringstream query;
-  if (ack.service_id == 0)
-    query << "UPDATE rt_hosts SET acknowledged ="
-          << ack.deletion_time.is_null()
-          << "  WHERE host_id = " << ack.host_id;
-  else
-    query << "UPDATE rt_services SET acknowledged ="
-          << ack.deletion_time.is_null()
-          << "  WHERE host_id = " << ack.host_id
-          << "   AND service_id = " << ack.service_id;
-  database_query q(_db);
-  q.run_query(query.str(), "SQL: couldn't update acknowledgement flags");
+    // Update the associated host or service table.
+    std::ostringstream query;
+    if (ack.service_id == 0)
+      query << "UPDATE rt_hosts SET acknowledged ="
+	    << ack.deletion_time.is_null()
+	    << "  WHERE host_id = " << ack.host_id;
+    else
+      query << "UPDATE rt_services SET acknowledged ="
+	    << ack.deletion_time.is_null()
+	    << "  WHERE host_id = " << ack.host_id
+	    << "   AND service_id = " << ack.service_id;
+    database_query q(_db);
+    q.run_query(query.str(), "SQL: couldn't update acknowledgement flags");
+  }
 
   return ;
 }
@@ -842,36 +870,39 @@ void stream::_process_downtime(
     << d.duration << ", entry time: " << d.entry_time
     << ", deletion time: " << d.deletion_time << ")";
 
-  // Only update in case of downtime termination.
-  if (d.actual_end_time.is_null()) {
-    _downtime_update << d;
-    _downtime_update.run_statement("SQL");
-  }
-  // Update or insert if no entry was found, as long as the downtime
-  // is valid.
-  else
-    _update_on_none_insert(
-      _downtime_insert,
-      _downtime_update,
-      d);
-
-  // Update the associated host or service table.
-  if (!d.is_recurring) {
-    std::string operation = d.actual_end_time.is_null() ? "+ 1" : "- 1";
-    std::ostringstream query;
-    if (d.service_id == 0)
-      query << "UPDATE rt_hosts"
-               "       SET scheduled_downtime_depth ="
-               "                    scheduled_downtime_depth " << operation
-            << "  WHERE host_id = " << d.host_id;
+  // Check if poller is valid.
+  if (_is_valid_poller(d.poller_id)) {
+    // Only update in case of downtime termination.
+    if (d.actual_end_time.is_null()) {
+      _downtime_update << d;
+      _downtime_update.run_statement("SQL");
+    }
+    // Update or insert if no entry was found, as long as the downtime
+    // is valid.
     else
-      query << "UPDATE rt_services"
-               "       SET scheduled_downtime_depth ="
-               "                    scheduled_downtime_depth " << operation
-            << "  WHERE host_id = " << d.host_id
-            << "   AND service_id = " << d.service_id;
-    database_query q(_db);
-    q.run_query(query.str(), "SQL: couldn't update scheduled downtime depth");
+      _update_on_none_insert(
+        _downtime_insert,
+	_downtime_update,
+	d);
+
+    // Update the associated host or service table.
+    if (!d.is_recurring) {
+      std::string operation = d.actual_end_time.is_null() ? "+ 1" : "- 1";
+      std::ostringstream query;
+      if (d.service_id == 0)
+	query << "UPDATE rt_hosts"
+                 "       SET scheduled_downtime_depth ="
+                 "                    scheduled_downtime_depth " << operation
+	      << "  WHERE host_id = " << d.host_id;
+      else
+	query << "UPDATE rt_services"
+                 "       SET scheduled_downtime_depth ="
+                 "                    scheduled_downtime_depth " << operation
+	      << "  WHERE host_id = " << d.host_id
+	      << "   AND service_id = " << d.service_id;
+      database_query q(_db);
+      q.run_query(query.str(), "SQL: couldn't update scheduled downtime depth");
+    }
   }
 
   return ;
@@ -970,11 +1001,13 @@ void stream::_process_host(
     << h.host_id << ", name: " << h.host_name << ")";
 
   // Processing
-  if (h.host_id)
-    _update_on_none_insert(_host_insert, _host_update, h);
-  else
-    logging::error(logging::high) << "SQL: host '" << h.host_name
-      << "' of poller " << h.poller_id << " has no ID";
+  if (_is_valid_poller(h.poller_id)) {
+    if (h.host_id)
+      _update_on_none_insert(_host_insert, _host_update, h);
+    else
+      logging::error(logging::high) << "SQL: host '" << h.host_name
+        << "' of poller " << h.poller_id << " has no ID";
+  }
 
   return ;
 }
@@ -1000,8 +1033,7 @@ void stream::_process_host_check(
     // Apply to DB.
     logging::info(logging::medium)
       << "SQL: processing host check event (host: " << hc.host_id
-      << ", command: " << hc.command_line
-      << ", from poller: " << hc.poller_id << ")";
+      << ", command: " << hc.command_line << ")";
 
     // Processing.
     _host_check_update << hc;
@@ -1181,7 +1213,8 @@ void stream::_process_instance(
   _clean_tables(i.poller_id);
 
   // Processing.
-  _update_on_none_insert(_instance_insert, _instance_update, i);
+  if (_is_valid_poller(i.poller_id))
+    _update_on_none_insert(_instance_insert, _instance_update, i);
 
   return ;
 }
@@ -1203,12 +1236,14 @@ void stream::_process_instance_status(
     << ", last alive: " << is.last_alive << ")";
 
   // Processing.
-  _instance_status_update << is;
-  _instance_status_update.run_statement("SQL");
-  if (_instance_status_update.num_rows_affected() != 1)
-    logging::error(logging::medium) << "SQL: poller "
-      << is.poller_id << " was not updated because no matching entry "
-         "was found in database";
+  if (_is_valid_poller(is.poller_id)) {
+    _instance_status_update << is;
+    _instance_status_update.run_statement("SQL");
+    if (_instance_status_update.num_rows_affected() != 1)
+      logging::error(logging::medium) << "SQL: poller "
+        << is.poller_id << " was not updated because no matching entry "
+           "was found in database";
+  }
   return ;
 }
 
@@ -1400,20 +1435,22 @@ void stream::_process_module(
     << (m.loaded ? "yes" : "no") << ")";
 
   // Processing.
-  if (m.enabled) {
-    _module_insert << m;
-    _module_insert.run_statement("SQL");
-  }
-  else {
-    database_query q(_db);
-    q.prepare(
-      "DELETE FROM rt_modules "
-      "WHERE instance_id=:instance_id"
-      "  AND filename=:filename",
-      "SQL");
-    q.bind_value(":instance_id", m.poller_id);
-    q.bind_value(":filename", m.filename);
-    q.run_statement("SQL");
+  if (_is_valid_poller(m.poller_id)) {
+    if (m.enabled) {
+      _module_insert << m;
+      _module_insert.run_statement("SQL");
+    }
+    else {
+      database_query q(_db);
+      q.prepare(
+          "DELETE FROM rt_modules "
+	  "WHERE instance_id=:instance_id"
+	  "  AND filename=:filename",
+	  "SQL");
+      q.bind_value(":instance_id", m.poller_id);
+      q.bind_value(":filename", m.filename);
+      q.run_statement("SQL");
+    }
   }
 
   return ;
@@ -1490,7 +1527,7 @@ void stream::_process_service_check(
     logging::info(logging::medium)
       << "SQL: processing service check event (host: " << sc.host_id
       << ", service: " << sc.service_id << ", command: "
-      << sc.command_line << ", from poller: " << sc.poller_id << ")";
+      << sc.command_line << ")";
 
     // Processing.
     _service_check_update << sc;
@@ -1783,17 +1820,16 @@ void stream::_write_logs() {
  */
 void stream::_update_timestamp(unsigned int instance_id) {
   stored_timestamp::state_type
-      s(stored_timestamp::responsive);
+    s(stored_timestamp::responsive);
 
   // Find the state of an existing timestamp of it exists.
   std::map<unsigned int, stored_timestamp>::iterator found =
-      _stored_timestamps.find(instance_id);
+    _stored_timestamps.find(instance_id);
   if (found != _stored_timestamps.end())
     s = found->second.get_state();
 
   // Update a suddenly alive instance
-  if (s == stored_timestamp::unresponsive)
-  {
+  if (s == stored_timestamp::unresponsive) {
     _update_hosts_and_services_of_instance(instance_id, true);
     s = stored_timestamp::responsive;
   }
@@ -2065,46 +2101,14 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   if (!data.isNull()) {
     ++_pending_events;
 
-    // Check that event does not refer to a deleted instance.
-    bool deleted(false);
-    if ((_cache_deleted_instance_id.find(data->poller_id)
-        != _cache_deleted_instance_id.end())
-        && (data->type() != neb::log_entry::static_type())) {
-      logging::info(logging::low)
-        << "SQL: discarding some event related to a deleted poller ("
-        << data->poller_id << ")";
-      deleted = true;
-    }
-    else if (io::events::category_of_type(data->type())
-                == io::events::correlation
-             && io::events::element_of_type(data->type())
-                == correlation::de_issue_parent) {
-      correlation::issue_parent const&
-        ip(*static_cast<correlation::issue_parent const*>(data.data()));
-      if (_cache_deleted_instance_id.find(ip.poller_id)
-          != _cache_deleted_instance_id.end()) {
-        logging::info(logging::low)
-          << "SQL: discarding some issue parent correlation event related to "
-          << "a deleted poller (" << ip.poller_id <<  ")";
-        deleted = true;
-      }
-    }
-    if (!deleted) {
-      // Update the timestamp of this instance.
-      _update_timestamp(data->poller_id);
-      logging::debug(logging::low)
-        << "SQL: updating timestamp of poller " << data->poller_id
-        << " (" << _oldest_timestamp << ")";
-
-      // Process event.
-      unsigned int type(data->type());
-      unsigned short cat(io::events::category_of_type(type));
-      unsigned short elem(io::events::element_of_type(type));
-      if (cat == io::events::neb)
-        (this->*(_neb_processing_table[elem]))(data);
-      else if (cat == io::events::correlation)
-        (this->*(_correlation_processing_table[elem]))(data);
-    }
+    // Process event.
+    unsigned int type(data->type());
+    unsigned short cat(io::events::category_of_type(type));
+    unsigned short elem(io::events::element_of_type(type));
+    if (cat == io::events::neb)
+      (this->*(_neb_processing_table[elem]))(data);
+    else if (cat == io::events::correlation)
+      (this->*(_correlation_processing_table[elem]))(data);
   }
   else {
     logging::info(logging::medium)

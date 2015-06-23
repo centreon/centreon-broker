@@ -41,7 +41,8 @@ instance_status::instance_status()
     last_alive(0),
     last_command_check(0),
     obsess_over_hosts(false),
-    obsess_over_services(false) {}
+    obsess_over_services(false),
+    poller_id(0) {}
 
 /**
  *  @brief Copy constructor.
@@ -120,6 +121,7 @@ void instance_status::_internal_copy(instance_status const& other) {
   last_command_check = other.last_command_check;
   obsess_over_hosts = other.obsess_over_hosts;
   obsess_over_services = other.obsess_over_services;
+  poller_id = other.poller_id;
   return ;
 }
 
@@ -150,7 +152,7 @@ mapping::entry const instance_status::entries[] = {
     &instance_status::flap_detection_enabled,
     "flap_detection"),
   mapping::entry(
-    &instance_status::source_id,
+    &instance_status::poller_id,
     "instance_id",
     mapping::entry::invalid_on_zero,
     false),

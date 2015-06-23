@@ -68,7 +68,6 @@ int main() {
       misc::shared_ptr<neb::service> sst(new neb::service);
       sst->host_id = 42;
       sst->service_id = 24;
-      sst->source_id = 1;
       sst->last_hard_state = 0;
       sst->last_hard_state_change = 123456789;
       sst->host_name = "42";
@@ -77,7 +76,6 @@ int main() {
     }
     {
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-      ss->source_id = 1;
       ss->host_id = 42;
       ss->service_id = 24;
       ss->last_hard_state = 0;
@@ -99,7 +97,6 @@ int main() {
     // Send error service status.
     {
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-      ss->source_id = 1;
       ss->host_id = 42;
       ss->service_id = 24;
       ss->last_hard_state = 1;
@@ -108,7 +105,6 @@ int main() {
     }
     {
       misc::shared_ptr<neb::service_status> ss(new neb::service_status);
-      ss->source_id = 1;
       ss->host_id = 42;
       ss->service_id = 24;
       ss->last_hard_state = 1;

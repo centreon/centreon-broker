@@ -50,6 +50,7 @@ namespace          neb {
     bool           enabled;
     QString        filename;
     bool           loaded;
+    unsigned int   poller_id;
     bool           should_be_loaded;
 
     static mapping::entry const

@@ -98,28 +98,14 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
       logging::debug(logging::medium)
         << "dumper: dumping content of file " << data->filename;
 
-      // Get poller ID.
-      std::ostringstream poller_id;
-      poller_id << data->poller_id;
-
       // Get Broker ID.
-      std::ostringstream broker_id;
-      broker_id << data->source_id;
+      std::ostringstream oss;
+      oss << data->source_id;
 
       // Build path.
       std::string path(_path);
-      misc::string::replace(
-                      path,
-                      "$POLLERID$",
-                      poller_id.str());
-      misc::string::replace( // For compatibility.
-                      path,
-                      "$INSTANCEID$",
-                      poller_id.str());
-      misc::string::replace(
-                      path,
-                      "$BROKERID$",
-                      broker_id.str());
+      misc::string::replace(path, "$INSTANCEID$", oss.str());
+      misc::string::replace(path, "$BROKERID$", oss.str());
       misc::string::replace(
                       path,
                       "$FILENAME$",
@@ -153,28 +139,14 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
       logging::debug(logging::medium)
         << "dumper: removing file " << data.filename;
 
-      // Get poller ID.
-      std::ostringstream poller_id;
-      poller_id << data.poller_id;
-
       // Get Broker ID.
-      std::ostringstream broker_id;
-      broker_id << data.source_id;
+      std::ostringstream oss;
+      oss << data.source_id;
 
       // Build path.
       std::string path(_path);
-      misc::string::replace(
-                      path,
-                      "$POLLERID$",
-                      poller_id.str());
-      misc::string::replace( // For compatibility.
-                      path,
-                      "$INSTANCEID$",
-                      poller_id.str());
-      misc::string::replace(
-                      path,
-                      "$BROKERID$",
-                      broker_id.str());
+      misc::string::replace(path, "$INSTANCEID$", oss.str());
+      misc::string::replace(path, "$BROKERID$", oss.str());
       misc::string::replace(
                       path,
                       "$FILENAME$",
