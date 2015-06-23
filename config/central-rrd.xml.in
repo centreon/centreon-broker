@@ -3,9 +3,11 @@
 
  <!-- Global configuration options. -->
  <module_directory>@PREFIX_MODULES@</module_directory>
- <instance>3</instance>
- <instance_name>central-rrd</instance_name>
- <event_queue_max_size>50000</event_queue_max_size>
+ <broker_id>2</broker_id>
+ <broker_name>central-rrd</broker_name>
+ <poller_id>1</poller_id>
+ <poller_name>Central</poller_name>
+ <event_queue_max_size>10000</event_queue_max_size>
  <flush_logs>no</flush_logs>
  <log_thread_id>no</log_thread_id>
  <log_timestamp>yes</log_timestamp>
