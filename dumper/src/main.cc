@@ -20,6 +20,7 @@
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/dumper/factory.hh"
 #include "com/centreon/broker/dumper/dump.hh"
+#include "com/centreon/broker/dumper/reload.hh"
 #include "com/centreon/broker/dumper/remove.hh"
 #include "com/centreon/broker/dumper/timestamp_cache.hh"
 #include "com/centreon/broker/dumper/internal.hh"
@@ -104,6 +105,13 @@ extern "C" {
                   "remove",
                   &dumper::remove::operations,
                   dumper::remove::entries));
+        e.register_event(
+            io::events::dumper,
+            dumper::de_reload,
+            io::event_info(
+                  "reload",
+                  &dumper::reload::operations,
+                  dumper::reload::entries));
       }
 
 

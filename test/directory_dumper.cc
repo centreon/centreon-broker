@@ -29,6 +29,7 @@
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "config.hh"
+#include "external_command.hh"
 #include "vars.hh"
 #include "cbd.hh"
 #include "generate.hh"
@@ -80,6 +81,7 @@ int main() {
   std::string subdirectory = sender_dir + "/" + SUB_DIRECTORY;
   std::string sent_file = sender_dir + "/" + SENT_FILENAME;
   std::string sent_subdir_file = subdirectory + "/" + SENT_SUBDIR_FILENAME;
+  std::string dumper_command_file = ::tmpnam(NULL);
   cbd broker;
 
   std::cout << "receiver directory: " << receiver_dir << std::endl;
@@ -97,6 +99,7 @@ int main() {
       PROJECT_SOURCE_DIR "/test/cfg/directory_dumper.xml.in");
     file.set("SENDER_DIRECTORY", sender_dir);
     file.set("RECEIVER_DIRECTORY", receiver_dir);
+    file.set("DUMPER_COMMAND_FILE", dumper_command_file);
     std::string config_file = file.generate();
 
     broker.set_config_file(config_file);
@@ -119,6 +122,10 @@ int main() {
              << "can't start the process to write into the sent subdir file "
              << process2->errorString());
 
+    external_command exc;
+    exc.set_file(dumper_command_file);
+    exc.execute("DUMP_DIR;dir_dumper_input");
+
     sleep_for(3);
 
     check_file_content(expected_file, "test");
@@ -126,6 +133,7 @@ int main() {
 
     // Remove file.
     ::remove(sent_file.c_str());
+    exc.execute("DUMP_DIR;dir_dumper_input");
     sleep_for(3);
 
     // Check for file removal

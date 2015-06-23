@@ -21,7 +21,7 @@
 #  define CCB_DUMPER_DIRECTORY_DUMPER_HH
 
 #  include <QMutex>
-#  include <set>
+#  include <map>
 #  include <list>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
@@ -38,11 +38,12 @@ namespace              dumper {
    *  @class directory_dumper directory_dumper.hh "com/centreon/broker/dumper/directory_dumper.hh"
    *  @brief Directory dumper stream.
    *
-   *  Watch over directories for files modifications, send them.
+   *  Send the files of a directory on command.
    */
   class                directory_dumper : public io::stream {
   public:
                        directory_dumper(
+                         std::string const& name,
                          std::string const& path,
                          std::string const& tagname,
                          misc::shared_ptr<persistent_cache> cache);
@@ -55,28 +56,22 @@ namespace              dumper {
   private:
                        directory_dumper(directory_dumper const& s);
     directory_dumper&  operator=(directory_dumper const& s);
-    void               _get_last_timestamps_from_cache();
-    void               _save_last_timestamps_to_cache();
-    std::set<std::string>
-                       _set_watch_over_directory(
-                         std::string const& path);
-    void               _remove_deleted_files(
-                         std::set<std::string> const& found_files);
-    std::pair<timestamp, misc::shared_ptr<io::data> >
-                       _dump_a_file(std::string const& path);
-    std::string        _get_relative_filename(std::string const& path);
 
     QMutex             _mutex;
+    std::string        _name;
     std::string        _path;
     std::string        _tagname;
     misc::shared_ptr<persistent_cache>
                        _cache;
-    std::list<std::pair<timestamp, misc::shared_ptr<io::data> > >
-                       _event_list;
-    file::directory_watcher
-                       _watcher;
-    std::map<std::string, timestamp>
-                       _last_modified_timestamps;
+
+    std::map<std::string, timestamp_cache>
+                        _files_cache;
+
+    void               _manage_external_command(std::string const& command);
+    void               _dump_dir(std::string const& path);
+
+    void               _load_cache();
+    void               _save_cache();
   };
 }
 

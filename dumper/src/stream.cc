@@ -24,7 +24,9 @@
 #include <sstream>
 #include <errno.h>
 #include <cstdio>
+#include <csignal>
 #include "com/centreon/broker/dumper/dump.hh"
+#include "com/centreon/broker/dumper/reload.hh"
 #include "com/centreon/broker/dumper/remove.hh"
 #include "com/centreon/broker/dumper/internal.hh"
 #include "com/centreon/broker/dumper/stream.hh"
@@ -150,6 +152,16 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
         logging::error(logging::medium)
           << "dumper: can't erase file '" << path << "': " << msg;
       }
+    }
+  }
+  else if (d->type() == dumper::reload::static_type()) {
+    dumper::reload const& data = d.ref_as<dumper::reload const>();
+    if (data.tag.toStdString() == _tagname) {
+      // Lock mutex.
+      QMutexLocker loc(&_mutex);
+      logging::debug(logging::medium)
+        << "dumper: reloading";
+      ::raise(SIGHUP);
     }
   }
   else

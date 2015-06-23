@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_NEB_TOKENIZER_HH
-#  define CCB_NEB_TOKENIZER_HH
+#ifndef CCB_MISC_TOKENIZER_HH
+#  define CCB_MISC_TOKENIZER_HH
 
 #  include <string>
 #  include <cstring>
@@ -30,7 +30,7 @@
 
 CCB_BEGIN()
 
-namespace        neb {
+namespace        misc {
   template <typename T>
   /**
    *  Get a value from a stringstream.
@@ -49,7 +49,7 @@ namespace        neb {
   std::string from_string_stream(std::stringstream& ss);
 
   /**
-   *  @class tokenizer tokenizer.hh "com/centreon/broker/neb/tokenizer.hh"
+   *  @class tokenizer tokenizer.hh "com/centreon/broker/misc/tokenizer.hh"
    *  @brief Simple tokenizer.
    *
    *  Tokenize like a tokenizer should.
@@ -59,7 +59,6 @@ namespace        neb {
                  tokenizer(std::string const& line, char separator = ';');
                  ~tokenizer();
 
-    void         begin();
     /**
      *  Get the next token.
      *
@@ -95,8 +94,6 @@ namespace        neb {
       return (ret);
     }
 
-    void         end();
-
   private:
     char*        _line;
     char         _separator;
@@ -113,4 +110,4 @@ namespace        neb {
 
 CCB_END()
 
-#endif // !CCB_NEB_TOKENIZER_HH
+#endif // !CCB_MISC_TOKENIZER_HH

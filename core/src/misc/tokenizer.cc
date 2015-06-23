@@ -17,9 +17,9 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/neb/tokenizer.hh"
+#include "com/centreon/broker/misc/tokenizer.hh"
 
-using namespace com::centreon::broker::neb;
+using namespace com::centreon::broker::misc;
 
 /**
  *  Tokenizer constructor.
@@ -34,6 +34,7 @@ tokenizer::tokenizer(std::string const& line, char separator /*= ';'*/)
   _line = ::strdup(line.c_str());
   if (_line == NULL)
     throw (exceptions::msg() << "can't allocate line for tokenizer");
+  _index = _line;
 }
 
 /**
@@ -41,22 +42,6 @@ tokenizer::tokenizer(std::string const& line, char separator /*= ';'*/)
  */
 tokenizer::~tokenizer() {
   ::free(_line);
-}
-
-/**
- *  Begin tokenization process.
- */
-void tokenizer::begin() {
-  _pos = 0;
-  _index = _line;
-}
-
-/**
- *  Stop tokenization process.
- */
-void tokenizer::end() {
-  _pos = 0;
-  _index = _line;
 }
 
 template <>
@@ -67,7 +52,7 @@ template <>
  *
  *  @return        The string.
  */
-std::string com::centreon::broker::neb::from_string_stream(
+std::string com::centreon::broker::misc::from_string_stream(
               std::stringstream& ss) {
   return (ss.str());
 }
