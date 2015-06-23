@@ -154,8 +154,7 @@ mapping::entry const instance_status::entries[] = {
   mapping::entry(
     &instance_status::poller_id,
     "instance_id",
-    mapping::entry::invalid_on_zero,
-    false),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &instance_status::last_alive,
     "last_alive"),

@@ -1119,7 +1119,7 @@ int neb::callback_log(int callback_type, void* data) {
  */
 int neb::callback_module(int callback_type, void* data) {
   // Log message.
-  logging::debug(logging::low) << "callbacks: module event callback";
+  logging::debug(logging::low) << "callbacks: generating module event";
   (void)callback_type;
 
   try {
@@ -1219,11 +1219,11 @@ int neb::callback_process(int callback_type, void *data) {
       // Output variable.
       misc::shared_ptr<neb::instance> instance(new neb::instance);
       instance->poller_id
-	= config::applier::state::instance().poller_id();
+        = config::applier::state::instance().poller_id();
       instance->engine = "Centreon Engine";
       instance->is_running = true;
       instance->name
-	= config::applier::state::instance().poller_name().c_str();
+        = config::applier::state::instance().poller_name().c_str();
       instance->pid = getpid();
       instance->program_start = time(NULL);
       instance->version = "2.x";
@@ -1264,11 +1264,11 @@ int neb::callback_process(int callback_type, void *data) {
 
       // Fill output var.
       instance->poller_id
-	= config::applier::state::instance().poller_id();
+        = config::applier::state::instance().poller_id();
       instance->engine = "Centreon Engine";
       instance->is_running = false;
       instance->name
-	= config::applier::state::instance().poller_name().c_str();
+        = config::applier::state::instance().poller_name().c_str();
       instance->pid = getpid();
       instance->program_end = time(NULL);
       instance->program_start = start_time;

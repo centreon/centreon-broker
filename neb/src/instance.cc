@@ -132,8 +132,7 @@ mapping::entry const instance::entries[] = {
   mapping::entry(
     &instance::poller_id,
     "instance_id",
-    mapping::entry::invalid_on_zero,
-    false),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &instance::name,
     "name"),

@@ -1205,7 +1205,7 @@ void stream::_process_instance(
   neb::instance const& i(*static_cast<neb::instance const*>(e.data()));
 
   // Log message.
-  logging::info(logging::medium) << "SQL: processing poller event"
+  logging::info(logging::medium) << "SQL: processing poller event "
     << "(id: " << i.poller_id << ", name: " << i.name << ", running: "
     << (i.is_running ? "yes" : "no") << ")";
 

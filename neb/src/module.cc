@@ -127,8 +127,7 @@ mapping::entry const module::entries[] = {
   mapping::entry(
     &module::poller_id,
     "instance_id",
-    mapping::entry::invalid_on_zero,
-    false),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &module::loaded,
     "loaded"),
