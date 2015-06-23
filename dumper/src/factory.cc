@@ -129,6 +129,7 @@ io::endpoint* factory::new_endpoint(
 
   // Generate opener.
   std::auto_ptr<opener> openr(new opener);
+  openr->set_name(cfg.name.toStdString());
   openr->set_type(type);
   openr->set_path(path);
   openr->set_tagname(tagname);

@@ -52,8 +52,10 @@ namespace                        dumper {
     void                         set_type(dumper_type type);
     void                         set_cache(
                                    misc::shared_ptr<persistent_cache> cache);
+    void                         set_name(std::string const& name);
 
    private:
+    std::string                  _name;
     std::string                  _path;
     std::string                  _tagname;
     dumper_type                  _type;

@@ -18,16 +18,17 @@
     <level>3</level>
   </logger>
   -->
-  <input>
+  <output>
     <type>dump_dir</type>
     <name>dir_dumper_input</name>
-    <tagname>engine-extcmd-1</tagname>
+    <tagname>engine-dump-1</tagname>
     <path>@SENDER_DIRECTORY@</path>
-  </input>
+  </output>
   <output>
     <type>dumper</type>
     <name>dir_dumper_output</name>
-    <tagname>engine-extcmd-1</tagname>
+    <tagname>engine-dump-1</tagname>
     <path>@RECEIVER_DIRECTORY@/$FILENAME$</path>
   </output>
+  <command_file>@DUMPER_COMMAND_FILE@</command_file>
 </centreonbroker>

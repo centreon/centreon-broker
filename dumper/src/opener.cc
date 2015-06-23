@@ -43,6 +43,7 @@ opener::opener() : endpoint(false), _type(opener::dump) {}
  */
 opener::opener(opener const& other)
   : io::endpoint(other),
+    _name(other._name),
     _path(other._path),
     _tagname(other._tagname),
     _type(other._type),
@@ -63,6 +64,7 @@ opener::~opener() {}
 opener& opener::operator=(opener const& other) {
   if (this != &other) {
     io::endpoint::operator=(other);
+    _name = other._name;
     _path = other._path;
     _tagname = other._tagname;
     _type = other._type;
@@ -81,7 +83,7 @@ misc::shared_ptr<io::stream> opener::open() {
   case dump:
     return (new stream(_path, _tagname));
   case dump_dir:
-    return (new directory_dumper(_path, _tagname, _cache));
+    return (new directory_dumper(_name, _path, _tagname, _cache));
   case dump_fifo:
     return (new fifo_dumper(_path, _tagname));
   default:
@@ -119,10 +121,20 @@ void opener::set_type(dumper_type type) {
 }
 
 /**
- *  Set the cache associated with this dumper endpoint.
+ *  Set the name of this endpoint.
  *
- *  @param[in] cache  The cache associated with this dumper endpoint.
+ *  @param[in] name  The name of this endpoint.
  */
-void opener::set_cache(misc::shared_ptr<persistent_cache> cache) {
+void opener::set_name(std::string const& name) {
+  _name = name;
+}
+
+/**
+ *  Set the persistent cache.
+ *
+ *  @param[in] cache  The persistent cache.
+ */
+void opener::set_cache(
+               misc::shared_ptr<persistent_cache> cache) {
   _cache = cache;
 }

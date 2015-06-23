@@ -23,7 +23,7 @@
 #include <sstream>
 #include <QPair>
 #include <QHash>
-#include "com/centreon/broker/neb/tokenizer.hh"
+#include "com/centreon/broker/misc/tokenizer.hh"
 #include "com/centreon/broker/neb/node_id.hh"
 #include "com/centreon/broker/neb/node_events_stream.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -423,11 +423,10 @@ void node_events_stream::_parse_ack(
     << "neb: node events stream: "
        "parsing acknowledgement command: '" << args << "'";
 
-  tokenizer tok(args);
+  misc::tokenizer tok(args);
 
   try {
     // Parse.
-    tok.begin();
     std::string host_name = tok.get_next_token<std::string>();
     std::string service_description =
       (is_host == ack_host ? "" : tok.get_next_token<std::string>());
@@ -436,7 +435,6 @@ void node_events_stream::_parse_ack(
     int persistent_comment = tok.get_next_token<int>();
     std::string author = tok.get_next_token<std::string>(true);
     std::string comment = tok.get_next_token<std::string>(true);
-    tok.end();
 
     node_id id(_node_cache.get_node_by_names(
                  host_name,
@@ -493,14 +491,12 @@ void node_events_stream::_parse_remove_ack(
     << "neb: node events stream: "
        "parsing acknowledgement removal command: '" << args << "'";
 
-  tokenizer tok(args);
+  misc::tokenizer tok(args);
   try {
     // Parse.
-    tok.begin();
     std::string host_name = tok.get_next_token<std::string>();
     std::string service_description =
       (type == ack_host ? "" : tok.get_next_token<std::string>());
-    tok.end();
 
     // Find the node id from the host name / description.
     node_id id = _node_cache.get_node_by_names(
@@ -549,7 +545,7 @@ void node_events_stream::_parse_downtime(
                            timestamp t,
                            char const* args,
                            io::stream& stream) {
-  tokenizer tok(args);
+  misc::tokenizer tok(args);
 
   (void)t;
   logging::debug(logging::medium)
@@ -558,7 +554,6 @@ void node_events_stream::_parse_downtime(
 
   try {
     // Parse.
-    tok.begin();
     std::string host_name =     tok.get_next_token<std::string>();
     std::string service_description =
       (type == down_host ? "" : tok.get_next_token<std::string>());
@@ -571,7 +566,6 @@ void node_events_stream::_parse_downtime(
     std::string comment =       tok.get_next_token<std::string>(true);
     std::string recurring_timeperiod =
                                 tok.get_next_token<std::string>(true);
-    tok.end();
 
     node_id id = _node_cache.get_node_by_names(
                    host_name,
