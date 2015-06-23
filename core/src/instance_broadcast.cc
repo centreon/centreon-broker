@@ -31,7 +31,10 @@ using namespace com::centreon::broker;
 /**
  *  Default constructor.
  */
-instance_broadcast::instance_broadcast() : enabled(true) {}
+instance_broadcast::instance_broadcast()
+  : broker_id(0),
+    enabled(true),
+    poller_id(0) {}
 
 /**
  *  Copy constructor.
@@ -99,8 +102,11 @@ void instance_broadcast::load() {
  *  @param[in] other  Object to copy.
  */
 void instance_broadcast::_internal_copy(instance_broadcast const& other) {
+  broker_id = other.broker_id;
+  broker_name = other.broker_name;
   enabled = other.enabled;
-  instance_name = other.instance_name;
+  poller_id = other.poller_id;
+  poller_name = other.poller_name;
   return ;
 }
 
@@ -113,12 +119,22 @@ void instance_broadcast::_internal_copy(instance_broadcast const& other) {
 // Mapping.
 mapping::entry const instance_broadcast::entries[] = {
   mapping::entry(
-    &instance_broadcast::enabled,
-    "enabled",
+    &instance_broadcast::broker_id,
+    "broker_id",
     mapping::entry::invalid_on_zero),
   mapping::entry(
-    &instance_broadcast::instance_name,
-    "instance_name"),
+    &instance_broadcast::broker_name,
+    "broker_name"),
+  mapping::entry(
+    &instance_broadcast::enabled,
+    "enabled"),
+  mapping::entry(
+    &instance_broadcast::poller_id,
+    "poller_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &instance_broadcast::poller_name,
+    "poller_name"),
   mapping::entry()
 };
 

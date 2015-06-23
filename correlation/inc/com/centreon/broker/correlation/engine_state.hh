@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -44,7 +44,7 @@ namespace          correlation {
     static unsigned int
                    static_type();
 
-    unsigned int   instance_id;
+    unsigned int   poller_id;
     bool           started;
 
     static mapping::entry const

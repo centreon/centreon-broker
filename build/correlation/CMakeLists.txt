@@ -71,7 +71,7 @@ set(CORRELATION_MODULE_PATH "${CORRELATION_MODULE_PATH}" PARENT_SCOPE)
 # Testing.
 if (WITH_TESTING)
   include_directories("${PROJECT_SOURCE_DIR}/correlation")
-  set(TEST_LIBRARIES "${NOTIFICATION}" "${CORRELATION}" "${NEB}" "roker")
+  set(TEST_LIBRARIES "${NOTIFICATION}" "${CORRELATION}" "${NEB}" "rokerbase" "roker")
 
   # Generate files.
   configure_file("${TEST_DIR}/parser/parse_include.xml.in"
@@ -122,7 +122,7 @@ if (WITH_TESTING)
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Assignment.
-  set(TEST_NAME "correlation_issue_ctor_assignment")
+  set(TEST_NAME "correlation_issue_assignment")
   add_executable("${TEST_NAME}"
     "${TEST_DIR}/issue/assignment.cc")
   target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})

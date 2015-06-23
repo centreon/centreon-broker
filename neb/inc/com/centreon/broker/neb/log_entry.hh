@@ -52,11 +52,11 @@ namespace          neb {
     timestamp      c_time;
     unsigned int   host_id;
     QString        host_name;
-    QString        instance_name;
     timestamp      issue_start_time;
     short          log_type;
     short          msg_type;
     QString        output;
+    QString        poller_name;
     int            retry;
     QString        service_description;
     unsigned int   service_id;

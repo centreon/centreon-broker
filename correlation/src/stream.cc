@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/correlation/stream.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -58,7 +59,7 @@ stream::stream(
   // Create the engine started event.
   multiplexing::publisher pblsh;
   misc::shared_ptr<engine_state> es(new engine_state);
-  es->instance_id = io::data::instance_id;
+  es->poller_id = config::applier::state::instance().poller_id();
   es->started = true;
   pblsh.write(es);
 
@@ -77,7 +78,7 @@ stream::~stream() {
   try {
     multiplexing::publisher pblsh;
     misc::shared_ptr<engine_state> es(new engine_state);
-    es->instance_id = io::data::instance_id;
+    es->poller_id = config::applier::state::instance().poller_id();
     pblsh.write(es);
   }
   catch (std::exception const& e) {

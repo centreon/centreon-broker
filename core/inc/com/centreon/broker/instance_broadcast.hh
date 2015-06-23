@@ -52,8 +52,11 @@ public:
                           io::events::de_instance_broadcast>::value);
   }
 
+  unsigned int        broker_id;
+  QString             broker_name;
   bool                enabled;
-  QString             instance_name;
+  unsigned int        poller_id;
+  QString             poller_name;
 
   static mapping::entry const
                       entries[];
@@ -63,7 +66,7 @@ public:
   static void         load();
 
 private:
-  void                _internal_copy(instance_broadcast const& right);
+  void                _internal_copy(instance_broadcast const& other);
 };
 
 CCB_END()

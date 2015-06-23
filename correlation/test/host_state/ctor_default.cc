@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -37,8 +37,8 @@ int main() {
           || (hs.current_state != 3)
           || (hs.end_time != 0)
           || (hs.host_id != 0)
-          || (hs.instance_id != 0)
           || (hs.in_downtime != false)
+	  || (hs.poller_id != 0)
           || (hs.service_id != 0)
           || (hs.start_time != 0)
           || (hs.type()

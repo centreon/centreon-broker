@@ -1087,7 +1087,8 @@ int neb::callback_log(int callback_type, void* data) {
     // Fill output var.
     log_data = static_cast<nebstruct_log_data*>(data);
     le->c_time = log_data->entry_time;
-    le->instance_name = instance_name;
+    le->poller_name
+      = config::applier::state::instance().poller_name().c_str();
     if (log_data->data) {
       if (log_data->data)
         le->output = log_data->data;
@@ -1206,7 +1207,6 @@ int neb::callback_process(int callback_type, void *data) {
         gl_generator.set(conf);
 
         // Set variables.
-        instance_name = conf.instance_name().c_str();
         statistics_interval = gl_generator.interval();
       }
       catch (exceptions::msg const& e) {
@@ -1218,7 +1218,8 @@ int neb::callback_process(int callback_type, void *data) {
       misc::shared_ptr<neb::instance> instance(new neb::instance);
       instance->engine = "Centreon Engine";
       instance->is_running = true;
-      instance->name = instance_name;
+      instance->name
+	= config::applier::state::instance().poller_name().c_str();
       instance->pid = getpid();
       instance->program_start = time(NULL);
       instance->version = "2.x";
@@ -1260,7 +1261,8 @@ int neb::callback_process(int callback_type, void *data) {
       // Fill output var.
       instance->engine = "Centreon Engine";
       instance->is_running = false;
-      instance->name = instance_name;
+      instance->name
+	= config::applier::state::instance().poller_name().c_str();
       instance->pid = getpid();
       instance->program_end = time(NULL);
       instance->program_start = start_time;

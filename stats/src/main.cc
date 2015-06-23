@@ -106,7 +106,7 @@ extern "C" {
               && !stats_cfg.metrics().empty()) {
             // Create thread.
             worker_dumper.reset(new stats::generator);
-            worker_dumper->run(stats_cfg, base_cfg.instance_id());
+            worker_dumper->run(stats_cfg, base_cfg.poller_id());
           }
 
           // File configured, load stats engine.

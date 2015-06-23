@@ -58,8 +58,12 @@ state::~state() {}
 void state::apply(
               com::centreon::broker::config::state const& s,
               bool run_mux) {
-  // Set instance id.
-  io::data::instance_id = s.instance_id();
+  // Set Broker instance ID.
+  io::data::broker_id = s.broker_id();
+
+  // Set poller instance.
+  _poller_id = s.poller_id();
+  _poller_name = s.poller_name();
 
   // Apply logging configuration.
   logger::instance().apply(s.loggers());
@@ -129,7 +133,9 @@ void state::apply(
 
   // Create instance broadcast event.
   misc::shared_ptr<instance_broadcast> ib(new instance_broadcast);
-  ib->instance_name = s.instance_name().c_str();
+  ib->broker_id = io::data::broker_id;
+  ib->poller_id = _poller_id;
+  ib->poller_name = _poller_name.c_str();
   ib->enabled = true;
   com::centreon::broker::multiplexing::engine::instance().publish(ib);
 
@@ -159,6 +165,24 @@ void state::load() {
 }
 
 /**
+ *  Get the poller ID.
+ *
+ *  @return Poller ID of this Broker instance.
+ */
+unsigned int state::poller_id() const throw () {
+  return (_poller_id);
+}
+
+/**
+ *  Get the poller name.
+ *
+ *  @return Poller name of this Broker instance.
+ */
+std::string const& state::poller_name() const throw () {
+  return (_poller_name);
+}
+
+/**
  *  Unload singleton.
  */
 void state::unload() {
@@ -176,4 +200,4 @@ void state::unload() {
 /**
  *  Default constructor.
  */
-state::state() {}
+state::state() : _poller_id(0) {}

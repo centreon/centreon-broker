@@ -113,11 +113,11 @@ void log_entry::_internal_copy(log_entry const& le) {
   c_time = le.c_time;
   host_id = le.host_id;
   host_name = le.host_name;
-  instance_name = le.instance_name;
   issue_start_time = le.issue_start_time;
   log_type = le.log_type;
   msg_type = le.msg_type;
   output = le.output;
+  poller_name = le.poller_name;
   retry = le.retry;
   service_description = le.service_description;
   service_id = le.service_id;
@@ -144,7 +144,7 @@ mapping::entry const log_entry::entries[] = {
     &log_entry::host_name,
     "host_name"),
   mapping::entry(
-    &log_entry::instance_name,
+    &log_entry::poller_name,
     "instance_name"),
   mapping::entry(
     &log_entry::issue_start_time,

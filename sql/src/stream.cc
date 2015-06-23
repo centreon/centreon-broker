@@ -1731,7 +1731,7 @@ void stream::_write_logs() {
       static QString const empty_string("''");
       static QString const null_string("NULL");
       host_name_field.setValue(le->host_name);
-      instance_name_field.setValue(le->instance_name);
+      instance_name_field.setValue(le->poller_name);
       output_field.setValue(le->output);
       service_description_field.setValue(le->service_description);
       query << "(" << le->c_time << ", ";

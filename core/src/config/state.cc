@@ -66,13 +66,13 @@ state& state::operator=(state const& other) {
  *  Reset state to default values.
  */
 void state::clear() {
+  _broker_id = 0;
+  _broker_name.clear();
   _cache_directory.clear();
   _command_file.clear();
   _endpoints.clear();
   _event_queue_max_size = 10000;
   _flush_logs = true;
-  _instance_id = 0;
-  _instance_name.clear();
   _log_thread_id = false;
   _log_timestamp
     = com::centreon::broker::logging::file::with_timestamp();
@@ -82,7 +82,47 @@ void state::clear() {
   _module_dir.clear();
   _module_list.clear();
   _params.clear();
+  _poller_id = 0;
+  _poller_name.clear();
   return ;
+}
+
+/**
+ *  Set the Broker ID.
+ *
+ *  @param[in] id  Broker ID.
+ */
+void state::broker_id(unsigned int id) throw () {
+  _broker_id = id;
+  return ;
+}
+
+/**
+ *  Get the Broker ID.
+ *
+ *  @return Broker ID.
+ */
+unsigned int state::broker_id() const throw () {
+  return (_broker_id);
+}
+
+/**
+ *  Set the Broker name.
+ *
+ *  @param[in] name  Broker name.
+ */
+void state::broker_name(std::string const& name) {
+  _broker_name = name;
+  return ;
+}
+
+/**
+ *  Get the Broker name.
+ *
+ *  @return Broker name.
+ */
+std::string const& state::broker_name() const throw () {
+  return (_broker_name);
 }
 
 /**
@@ -178,42 +218,6 @@ void state::flush_logs(bool flush) throw () {
  */
 bool state::flush_logs() const throw () {
   return (_flush_logs);
-}
-
-/**
- *  Set the instance id.
- *
- *  @param[in] id Instance id.
- */
-void state::instance_id(unsigned int id) throw () {
-  _instance_id = id;
-}
-
-/**
- *  Get the instance id.
- *
- *  @return Instance id.
- */
-unsigned int state::instance_id() const throw () {
-  return (_instance_id);
-}
-
-/**
- *  Set the instance name.
- *
- *  @param[in] name Instance name.
- */
-void state::instance_name(std::string const& name) throw () {
-  _instance_name = name;
-}
-
-/**
- *  Get the instance name.
- *
- *  @return Instance name.
- */
-std::string const& state::instance_name() const throw () {
-  return (_instance_name);
 }
 
 /**
@@ -347,6 +351,44 @@ std::map<std::string, std::string> const& state::params() const throw () {
   return (_params);
 }
 
+/**
+ *  Set the poller ID.
+ *
+ *  @param[in] id  Poller ID.
+ */
+void state::poller_id(unsigned int id) throw () {
+  _poller_id = id;
+  return ;
+}
+
+/**
+ *  Get the poller ID.
+ *
+ *  @return Poller ID.
+ */
+unsigned int state::poller_id() const throw () {
+  return (_poller_id);
+}
+
+/**
+ *  Set the poller name.
+ *
+ *  @param[in] name  Poller name.
+ */
+void state::poller_name(std::string const& name) {
+  _poller_name = name;
+  return ;
+}
+
+/**
+ *  Get the poller name.
+ *
+ *  @return Poller name.
+ */
+std::string const& state::poller_name() const throw () {
+  return (_poller_name);
+}
+
 /**************************************
 *                                     *
 *           Private Methods           *
@@ -359,12 +401,12 @@ std::map<std::string, std::string> const& state::params() const throw () {
  *  @param[in] other  Object to copy.
  */
 void state::_internal_copy(state const& other) {
+  _broker_id = other._broker_id;
+  _broker_name = other._broker_name;
   _cache_directory = other._cache_directory;
   _command_file = other._command_file;
   _endpoints = other._endpoints;
   _event_queue_max_size = other._event_queue_max_size;
-  _instance_id = other._instance_id;
-  _instance_name = other._instance_name;
   _log_thread_id = other._log_thread_id;
   _log_timestamp = other._log_timestamp;
   _log_human_readable_timestamp = other._log_human_readable_timestamp;
@@ -372,5 +414,7 @@ void state::_internal_copy(state const& other) {
   _module_dir = other._module_dir;
   _module_list = other._module_list;
   _params = other._params;
+  _poller_id = other._poller_id;
+  _poller_name = other._poller_name;
   return ;
 }

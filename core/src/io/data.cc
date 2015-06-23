@@ -21,7 +21,7 @@
 
 using namespace com::centreon::broker::io;
 
-unsigned int data::instance_id(0);
+unsigned int data::broker_id(0);
 
 /**************************************
 *                                     *
@@ -32,7 +32,7 @@ unsigned int data::instance_id(0);
 /**
  *  Constructor.
  */
-data::data() : source_id(instance_id), destination_id(0) {}
+data::data() : source_id(broker_id), destination_id(0) {}
 
 /**
  *  Copy constructor.

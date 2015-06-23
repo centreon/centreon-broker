@@ -30,9 +30,6 @@ using namespace com::centreon::broker;
 // Configuration file name.
 QString neb::gl_configuration_file;
 
-// Instance information.
-QString      neb::instance_name;
-
 // List of host IDs.
 umap<std::string, int> neb::gl_hosts;
 

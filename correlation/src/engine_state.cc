@@ -41,7 +41,7 @@ engine_state::engine_state() : started(false) {}
  *  @param[in] es Object to copy.
  */
 engine_state::engine_state(engine_state const& es)
-  : io::data(es), instance_id(es.instance_id), started(es.started) {}
+  : io::data(es), poller_id(es.poller_id), started(es.started) {}
 
 /**
  *  Destructor.
@@ -58,7 +58,7 @@ engine_state::~engine_state() {}
 engine_state& engine_state::operator=(engine_state const& es) {
   if (this != &es) {
     io::data::operator=(es);
-    instance_id = es.instance_id;
+    poller_id = es.poller_id;
     started = es.started;
   }
   return (*this);

@@ -141,7 +141,7 @@ QString const& macro_cache::get_instance(unsigned int instance_id) const {
     throw (exceptions::msg()
            << "graphite: could not find information on instance "
            << instance_id);
-  return (found->instance_name);
+  return (found->poller_name);
 }
 
 /**
@@ -171,7 +171,7 @@ void macro_cache::write(misc::shared_ptr<io::data> const& data) {
  *  @param in  The event.
  */
 void macro_cache::_process_instance(instance_broadcast const& in) {
-  _instances[in.instance_id] = in;
+  _instances[in.poller_id] = in;
 }
 
 /**

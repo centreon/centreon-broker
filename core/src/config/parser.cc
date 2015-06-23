@@ -99,11 +99,19 @@ void parser::parse(QString const& file, state& s) {
     // Process only element nodes.
     if (!elem.isNull()) {
       QString name(elem.tagName());
-      if (name == "instance") {
-        s.instance_id(elem.text().toUInt());
+      if (name == "broker_id") {
+	s.broker_id(elem.text().toUInt());
       }
-      else if (name == "instance_name") {
-        s.instance_name(elem.text().toStdString());
+      else if (name == "broker_name") {
+	s.broker_name(elem.text().toStdString());
+      }
+      else if ((name == "poller_id")
+	  || (name == "instance")) {
+        s.poller_id(elem.text().toUInt());
+      }
+      else if ((name == "poller_name")
+	       || (name == "instance_name")) {
+        s.poller_name(elem.text().toStdString());
       }
       else if (name == "flush_logs") {
         QString val(elem.text());

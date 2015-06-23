@@ -53,8 +53,8 @@ namespace        correlation {
     int          current_state;
     timestamp    end_time;
     unsigned int host_id;
-    unsigned int instance_id;
     bool         in_downtime;
+    unsigned int poller_id;
     unsigned int service_id;
     timestamp    start_time;
 
