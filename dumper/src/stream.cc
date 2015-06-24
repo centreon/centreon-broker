@@ -53,7 +53,15 @@ using namespace com::centreon::broker::dumper;
 stream::stream(
           std::string const& path,
           std::string const& tagname)
-  : _path(path), _tagname(tagname) {}
+  : _path(path), _tagname(tagname) {
+  // Replace macros.
+  std::ostringstream oss;
+  oss << io::data::broker_id;
+  misc::string::replace(_tagname, "$BROKERID$", oss.str());
+  oss.str("");
+  oss << io::data::poller_id;
+  misc::string::replace(_tagname, "$POLLERID$", oss.str());
+}
 
 /**
  *  Destructor.

@@ -224,7 +224,7 @@ void directory_dumper::_dump_dir(std::string const& path) {
     _files_cache[*it] = tc;
   }
 
-  // Ask for a reload;
+  // Ask for a reload.
   misc::shared_ptr<reload> rl(new reload);
   rl->tag = QString::fromStdString(_tagname);
   pblsh.write(rl);
