@@ -4,7 +4,8 @@
   <instance>42</instance>
   <instance_name>my_cbmod</instance_name>
   <cache_directory>@CACHE_DIRECTORY@</cache_directory>
-  <event_queue_max_size>100</event_queue_max_size>
+  <event_queue_max_size>10</event_queue_max_size>
+  <!--
   <stats>
     <fifo>/tmp/cmod.fifo</fifo>
   </stats>
@@ -17,6 +18,7 @@
     <info>1</info>
     <level>3</level>
   </logger>
+  -->
   <output>
     <name>AutomaticRetentionUnitTest</name>
     <type>tcp</type>
