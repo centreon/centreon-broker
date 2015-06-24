@@ -11,16 +11,14 @@
  <flush_logs>no</flush_logs>
  <log_thread_id>no</log_thread_id>
  <log_timestamp>yes</log_timestamp>
+ <cache_directory>/var/lib/centreon-broker</cache_directory>
  <command_file>/var/lib/centreon-broker/central-rrd.cmd</command_file>
- <name>central-rrd</name>
 
  <!-- Read performance data. -->
  <input>
-  <buffering_timeout>10</buffering_timeout>
-  <read_timeout>10</read_timeout>
   <retry_interval>60</retry_interval>
-  <type>ipv4</type>
-  <name>central-rrd</name>
+  <type>tcp</type>
+  <name>central-rrd-input</name>
   <port>5670</port>
   <protocol>bbdo</protocol>
   <tls>auto</tls>
@@ -30,8 +28,6 @@
 
  <!-- Write RRD files. -->
  <output>
-  <buffering_timeout>10</buffering_timeout>
-  <read_timeout>10</read_timeout>
   <retry_interval>60</retry_interval>
   <metrics_path>/var/lib/centreon/metrics</metrics_path>
   <status_path>/var/lib/centreon/status</status_path>
@@ -40,12 +36,12 @@
   <write_metrics>yes</write_metrics>
   <write_status>yes</write_status>
   <type>rrd</type>
-  <name>storage-rrd</name>
+  <name>central-rrd-files</name>
  </output>
 
  <!-- Log file. -->
  <logger>
-  <config>no</config>
+  <config>yes</config>
   <debug>no</debug>
   <error>yes</error>
   <info>yes</info>
@@ -57,8 +53,8 @@
  <!-- Statistics. -->
  <stats>
   <type>stats</type>
-  <name>stats-central-rrd</name>
-  <fifo>/var/lib/centreon-broker/stats-central-rrd.fifo</fifo>
+  <name>central-rrd-stats</name>
+  <fifo>/var/lib/centreon-broker/central-rrd.stats</fifo>
  </stats>
 
 </conf>
