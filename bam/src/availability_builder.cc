@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -48,9 +48,7 @@ availability_builder::availability_builder(
     _alert_degraded_opened(0),
     _alert_unknown_opened(0),
     _nb_downtime(0),
-    _timeperiods_is_default(false) {
-
-}
+    _timeperiods_is_default(false) {}
 
 /**
  *  Destructor
@@ -112,6 +110,8 @@ void availability_builder::add_event(
   // computing.
   if (end < _start)
     return ;
+  // Check if event was opened "today".
+  bool opened_today((start >= _start) && (start < _end));
   // Check that the event times are within the computed day.
   if (start < _start)
     start = _start;
@@ -126,22 +126,26 @@ void availability_builder::add_event(
   // Update the data.
   if (was_in_downtime) {
     _downtime += sla_duration;
-    ++_nb_downtime;
+    if (opened_today)
+      ++_nb_downtime;
   }
   else {
     if (status == 0)
       _available += sla_duration;
     else if (status == 1) {
       _degraded += sla_duration;
-      ++_alert_degraded_opened;
+      if (opened_today)
+	++_alert_degraded_opened;
     }
     else if (status == 2) {
       _unavailable += sla_duration;
-      ++_alert_unavailable_opened;
+      if (opened_today)
+	++_alert_unavailable_opened;
     }
     else {
       _unknown += sla_duration;
-      ++_alert_unknown_opened;
+      if (opened_today)
+	++_alert_unknown_opened;
     }
   }
 }

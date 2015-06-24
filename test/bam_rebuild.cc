@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -155,7 +155,7 @@ static void check_ba_availability(
         || q.value(11).toUInt() != baav[i].nb_downtime
         || q.value(12).toBool() != baav[i].timeperiod_is_default)
       throw (exceptions::msg() << "invalid BA availability "
-             << " at iteration " << iteration << ": got (ba id "
+             << " at iteration " << iteration << " (entry " << i << "): got (ba id "
              << q.value(0).toUInt() << ", time id "
              << q.value(1).toLongLong() << ", timeperiod id "
              << q.value(2).toUInt() << ", available "
@@ -256,7 +256,8 @@ int main() {
                 "         (2, 'BA2', 'DESC2', 80, 70, 60, 50, '1', NULL, '1'),"
                 "         (3, 'BA3', 'DESC3', 70, 60, 50, 40, '1', 1, '1'),"
                 "         (4, 'BA4', 'DESC4', 60, 50, 40, 30, '1', 1, '1'),"
-                "         (5, 'BA5', 'DESC5', 50, 40, 30, 20, '1', 2, '1')");
+                "         (5, 'BA5', 'DESC5', 50, 40, 30, 20, '1', 2, '1'),"
+                "         (6, 'BA6', 'DESC6', 40, 30, 20, 10, '1', 1, '1')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create BAs: "
@@ -278,7 +279,8 @@ int main() {
                 "         (1002, 'ba_2'),"
                 "         (1003, 'ba_3'),"
                 "         (1004, 'ba_4'),"
-                "         (1005, 'ba_5')");
+                "         (1005, 'ba_5'),"
+		"         (1006, 'ba_6')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg()
@@ -289,7 +291,8 @@ int main() {
       QString query(
                 "INSERT INTO host_service_relation"
                 "            (host_host_id, service_service_id)"
-                "  VALUES (1001, 1001), (1001, 1002), (1001, 1003), (1001, 1004), (1001, 1005)");
+                "  VALUES (1001, 1001), (1001, 1002), (1001, 1003),"
+                "         (1001, 1004), (1001, 1005), (1001, 1006)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg()
@@ -307,7 +310,8 @@ int main() {
                 "         (2, 'BA2', 'DESC2', 80, 70, 60, 50),"
                 "         (3, 'BA3', 'DESC3', 70, 60, 50, 40),"
                 "         (4, 'BA4', 'DESC4', 60, 50, 40, 30),"
-                "         (5, 'BA5', 'DESC5', 50, 40, 30, 20)");
+                "         (5, 'BA5', 'DESC5', 50, 40, 30, 20),"
+                "         (6, 'BA6', 'DESC6', 40, 30, 20, 10)");
       QSqlQuery q(*db.bi_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create BA dimensions: "
@@ -335,7 +339,8 @@ int main() {
             "         (9, 3, 1418327489, 1418329589, 2, false),"
             "         (10, 3, 1418329589, 1418398892, 0, false),"
             "         (11, 4, 1396303200, 1396389600, 0, false),"
-            "         (12, 5, 1418598000, 1418684400, 0, false)";
+            "         (12, 5, 1418598000, 1418684400, 0, false),"
+            "         (13, 6, 1418327489, 1418586689, 2, false)";
       QString query(ss.str().c_str());
       QSqlQuery q(*db.bi_db());
       if (!q.exec(query))
@@ -377,6 +382,7 @@ int main() {
         { 11, 1, 1396303200, 1396389600, 86400, 86400, true },
         { 12, 2, 1418630400, 1418684400, 54000, 28800, true },
         { 12, 3, 1418598000, 1418684400, 86400, 57600, false },
+        { 13, 1, 1418327489, 1418586689, 259200, 259200, true }
       };
       check_ba_event_durations(
         *db.bi_db(),
@@ -399,7 +405,11 @@ int main() {
         { 5, 1418598000, 2, 28800, 0, 0, 0, 0, 0, 0, 0, 0, true },
         { 5, 1418598000, 3, 57600, 0, 0, 0, 0, 0, 0, 0, 0, false },
         { 5, 1418684400, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, true },
-        { 5, 1418684400, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, false }
+        { 5, 1418684400, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, false },
+        { 6, 1418252400, 1, 0, 11311, 0, 0, 0, 1, 0, 0, 0, true },
+        { 6, 1418338800, 1, 0, 86400, 0, 0, 0, 0, 0, 0, 0, true },
+	{ 6, 1418425200, 1, 0, 86400, 0, 0, 0, 0, 0, 0, 0, true },
+	{ 6, 1418511600, 1, 0, 75089, 0, 0, 0, 0, 0, 0, 0, true }
       };
       check_ba_availability(
         *db.bi_db(),
