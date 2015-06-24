@@ -45,6 +45,8 @@ namespace                config {
       unsigned int       poller_id() const throw ();
       std::string const& poller_name() const throw ();
       static void        unload();
+      unsigned int       get_poller_id() const throw();
+      std::string const& get_poller_name() const throw();
 
     private:
                          state();

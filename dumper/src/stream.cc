@@ -30,6 +30,7 @@
 #include "com/centreon/broker/dumper/remove.hh"
 #include "com/centreon/broker/dumper/internal.hh"
 #include "com/centreon/broker/dumper/stream.hh"
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -59,7 +60,7 @@ stream::stream(
   oss << io::data::broker_id;
   misc::string::replace(_tagname, "$BROKERID$", oss.str());
   oss.str("");
-  oss << io::data::poller_id;
+  oss << config::applier::state::instance().get_poller_id();
   misc::string::replace(_tagname, "$POLLERID$", oss.str());
 }
 

@@ -60,8 +60,6 @@ void state::apply(
               bool run_mux) {
   // Set Broker instance ID.
   io::data::broker_id = s.broker_id();
-  // Set Poller instance ID.
-  io::data::poller_id = s.poller_id();
 
   // Set poller instance.
   _poller_id = s.poller_id();
@@ -191,6 +189,24 @@ void state::unload() {
   delete gl_state;
   gl_state = NULL;
   return ;
+}
+
+/**
+ *  Get poller id.
+ *
+ *  @return  The poller id.
+ */
+unsigned int state::get_poller_id() const throw() {
+  return (_poller_id);
+}
+
+/**
+ *  Get poller name.
+ *
+ *  @return  The poller name.
+ */
+std::string const& state::get_poller_name() const throw() {
+  return (_poller_name);
 }
 
 /**************************************

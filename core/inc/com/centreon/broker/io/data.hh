@@ -46,7 +46,6 @@ namespace                  io {
     unsigned int           destination_id;
 
     static unsigned int    broker_id;
-    static unsigned int    poller_id;
   };
 }
 
