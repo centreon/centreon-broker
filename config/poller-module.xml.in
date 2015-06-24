@@ -2,17 +2,17 @@
 <conf>
 
  <!-- Global configuration options. -->
+ <broker_id>XXX</broker_id>
+ <broker_name>XXX</broker_name>
+ <poller_id>XXX</poller_id>
+ <poller_name>XXX</poller_name>
  <module_directory>@PREFIX_MODULES@</module_directory>
- <broker_id>3</broker_id>
- <broker_name>central-module</broker_name>
- <poller_id>1</poller_id>
- <poller_name>Central</poller_name>
  <event_queue_max_size>10000</event_queue_max_size>
  <flush_logs>no</flush_logs>
  <log_thread_id>no</log_thread_id>
  <log_timestamp>yes</log_timestamp>
  <cache_directory>@PREFIX_VAR@</cache_directory>
- <command_file>@PREFIX_VAR@/central-module.cmd</command_file>
+ <command_file>@PREFIX_VAR@/poller-module.cmd</command_file>
 
  <!-- Transmits external commands and configuration files from central-broker. -->
  <input>
@@ -21,7 +21,7 @@
   <protocol>bbdo</protocol>
   <negociation>yes</negociation>
   <type>tcp</type>
-  <name>central-module-transfert-input</name>
+  <name>poller-module-transfert-input</name>
   <host>localhost</host>
   <port>5669</port>
  </input>
@@ -30,7 +30,7 @@
  <output>
   <retry_interval>60</retry_interval>
   <type>tcp</type>
-  <name>central-module-output</name>
+  <name>poller-module-output</name>
   <port>5668</port>
   <host>localhost</host>
   <protocol>bbdo</protocol>
@@ -44,8 +44,8 @@
   <retry_interval>60</retry_interval>
   <type>dumper</type>
   <tagname>extcommands-broker-$BROKERID$</tagname>
-  <path>@PREFIX_VAR@/central-module.cmd</path>
-  <name>central-module-extcommands-broker</name>
+  <path>@PREFIX_VAR@/poller-module.cmd</path>
+  <name>poller-module-extcommands-broker</name>
  </output>
 
  <!-- Write Engine external commands issued by central-broker. -->
@@ -54,7 +54,7 @@
   <type>dumper</type>
   <tagname>extcommands-engine-$BROKERID$</tagname>
   <path>/var/lib/centreon-engine/rw/centengine.cmd</path>
-  <name>central-module-extcommands-engine</name>
+  <name>poller-module-extcommands-engine</name>
  </output>
 
  <!-- Write Broker configuration files issued by central-broker. -->
@@ -63,7 +63,7 @@
   <type>dumper</type>
   <tagname>cfg-broker-$BROKERID$</tagname>
   <path>/etc/centreon-broker/$FILENAME$</path>
-  <name>central-module-cfg-broker</name>
+  <name>poller-module-cfg-broker</name>
  </output>
 
  <!-- Write Engine configuration files issued by central-broker. -->
@@ -72,7 +72,7 @@
   <type>dumper</type>
   <tagname>cfg-engine-$BROKERID$</tagname>
   <path>/etc/centreon-engine/$FILENAME$</path>
-  <name>central-module-cfg-engine</name>
+  <name>poller-module-cfg-engine</name>
  </output>
 
  <!-- Log file. -->
@@ -83,14 +83,14 @@
   <info>yes</info>
   <level>low</level>
   <type>file</type>
-  <name>/var/log/centreon-broker/central-module.log</name>
+  <name>/var/log/centreon-broker/poller-module.log</name>
  </logger>
 
  <!-- Statistics. -->
  <stats>
   <type>stats</type>
-  <name>central-module-stats</name>
-  <fifo>@PREFIX_VAR@/central-module.stats</fifo>
+  <name>poller-module-stats</name>
+  <fifo>@PREFIX_VAR@/poller-module.stats</fifo>
  </stats>
 
 </conf>

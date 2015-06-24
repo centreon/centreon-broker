@@ -211,8 +211,8 @@ if (WITH_DAEMONS)
 endif ()
 
 if (WITH_CONFIG_FILES)
-  configure_file("${PROJECT_SOURCE_DIR}/config/central-module.xml.in"
-    "${PROJECT_SOURCE_DIR}/config/central-module.xml"
+  configure_file("${PROJECT_SOURCE_DIR}/config/poller-module.xml.in"
+    "${PROJECT_SOURCE_DIR}/config/poller-module.xml"
     @ONLY)
   configure_file("${PROJECT_SOURCE_DIR}/config/central-broker.xml.in"
     "${PROJECT_SOURCE_DIR}/config/central-broker.xml"
@@ -220,8 +220,11 @@ if (WITH_CONFIG_FILES)
   configure_file("${PROJECT_SOURCE_DIR}/config/central-rrd.xml.in"
     "${PROJECT_SOURCE_DIR}/config/central-rrd.xml"
     @ONLY)
+  configure_file("${PROJECT_SOURCE_DIR}/config/cbmod.cfg.in"
+    "${PROJECT_SOURCE_DIR}/config/cbmod.cfg"
+    @ONLY)
 
-  install(FILES "${PROJECT_SOURCE_DIR}/config/central-module.xml"
+  install(FILES "${PROJECT_SOURCE_DIR}/config/poller-module.xml"
     DESTINATION "${PREFIX_CONF}")
   install(FILES "${PROJECT_SOURCE_DIR}/config/central-rrd.xml"
     DESTINATION "${PREFIX_CONF}")
