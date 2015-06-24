@@ -210,6 +210,7 @@ void directory_dumper::_dump_dir(std::string const& path) {
       misc::shared_ptr<remove> rm(new remove);
       rm->tag = QString::fromStdString(_tagname);
       rm->filename = QString::fromStdString(it->first);
+      pblsh.write(rm);
     }
 
   // Update the list of files found.
