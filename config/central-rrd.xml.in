@@ -11,8 +11,8 @@
  <flush_logs>no</flush_logs>
  <log_thread_id>no</log_thread_id>
  <log_timestamp>yes</log_timestamp>
- <cache_directory>/var/lib/centreon-broker</cache_directory>
- <command_file>/var/lib/centreon-broker/central-rrd.cmd</command_file>
+ <cache_directory>@PREFIX_VAR@</cache_directory>
+ <command_file>@PREFIX_VAR@/central-rrd.cmd</command_file>
 
  <!-- Read performance data. -->
  <input>
@@ -54,7 +54,7 @@
  <stats>
   <type>stats</type>
   <name>central-rrd-stats</name>
-  <fifo>/var/lib/centreon-broker/central-rrd.stats</fifo>
+  <fifo>@PREFIX_VAR@/central-rrd.stats</fifo>
  </stats>
 
 </conf>

@@ -108,6 +108,13 @@ else ()
   set(PREFIX_MODULES "${PREFIX_LIB}/centreon-broker")
 endif ()
 
+# var directory.
+if (WITH_PREFIX_VAR)
+  set(PREFIX_VAR "${WITH_PREFIX_VAR}")
+else ()
+  set(PREFIX_VAR "${CMAKE_INSTALL_PREFIX}/var")
+endif ()
+
 # Development headers directory.
 if (WITH_PREFIX_INC)
   set(PREFIX_INC "${WITH_PREFIX_INC}")

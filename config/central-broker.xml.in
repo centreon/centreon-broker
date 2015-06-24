@@ -179,7 +179,7 @@
  <stats>
   <type>stats</type>
   <name>central-broker-stats</name>
-  <fifo>/var/lib/centreon-broker/central-broker.stats</fifo>
+  <fifo>@PREFIX_VAR@/central-broker.stats</fifo>
  </stats>
 
 </conf>

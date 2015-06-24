@@ -44,7 +44,7 @@
   <retry_interval>60</retry_interval>
   <type>dumper</type>
   <tagname>extcommands-broker-$BROKERID$</tagname>
-  <path>/var/lib/centreon-broker/central-module.cmd</path>
+  <path>@PREFIX_VAR@/central-module.cmd</path>
   <name>central-module-extcommands-broker</name>
  </output>
 
@@ -90,7 +90,7 @@
  <stats>
   <type>stats</type>
   <name>central-module-stats</name>
-  <fifo>/var/lib/centreon-broker/central-module.stats</fifo>
+  <fifo>@PREFIX_VAR@/central-module.stats</fifo>
  </stats>
 
 </conf>
