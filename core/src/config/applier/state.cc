@@ -60,6 +60,8 @@ void state::apply(
               bool run_mux) {
   // Set Broker instance ID.
   io::data::broker_id = s.broker_id();
+  // Set Poller instance ID.
+  io::data::poller_id = s.poller_id();
 
   // Set poller instance.
   _poller_id = s.poller_id();
