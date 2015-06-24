@@ -11,64 +11,60 @@
  <flush_logs>no</flush_logs>
  <log_thread_id>no</log_thread_id>
  <log_timestamp>yes</log_timestamp>
- <command_file>/var/lib/centreon-broker/central-broker.cmd</command_file>
- <name>central-broker</name>
+ <cache_directory>@PREFIX_VAR@</cache_directory>
+ <command_file>@PREFIX_VAR@/central-broker.cmd</command_file>
 
  <!-- Read Broker external commands and send them to central-module. -->
  <input>
-  <name>extcommand-broker-central-module</name>
+  <name>central-broker-extcommands-broker-central-module</name>
   <type>dump_fifo</type>
-  <path>/var/lib/centreon-broker/extcommand-broker-1.fifo</path>
-  <tagname>extcommand-broker-central-module</tagname>
+  <path>@PREFIX_VAR@/central-broker-extcommands-broker-central-module.cmd</path>
+  <tagname>extcommands-broker-3</tagname>
  </input>
 
  <!-- Read Engine external commands and send them to central-module. -->
  <input>
-  <name>extcommand-engine-central-module</name>
+  <name>central-broker-extcommands-engine-central-module</name>
   <type>dump_fifo</type>
-  <path>/var/lib/centreon-broker/extcommand-engine-1.fifo</path>
-  <tagname>extcommand-engine-central-module</tagname>
+  <path>@PREFIX_VAR@/central-broker-extcommands-engine-central-module.cmd</path>
+  <tagname>extcommands-engine-3</tagname>
  </input>
 
  <!-- Read Broker configuration files and send them to central-module. -->
  <input>
-  <name>cfg-broker-central-module</name>
+  <name>central-broker-cfg-broker-central-module</name>
   <type>dump_dir</type>
-  <path>/tmp/broker/apply/1</path>
-  <tagname>cfg-broker-central-module</tagname>
+  <path>/tmp/broker/apply/3</path>
+  <tagname>cfg-broker-3</tagname>
  </input>
 
  <!-- Read Engine configuration files and send them to central-module. -->
  <input>
-  <name>cfg-engine-central-module</name>
+  <name>central-broker-cfg-engine-central-module</name>
   <type>dump_dir</type>
   <path>/tmp/engine/apply/1</path>
-  <tagname>cfg-engine-central-module</tagname>
+  <tagname>cfg-engine-3</tagname>
  </input>
 
  <!-- Receive monitoring information from pollers. -->
  <input>
-  <buffering_timeout>10</buffering_timeout>
-  <read_timeout>10</read_timeout>
   <retry_interval>60</retry_interval>
   <one_peer_retention_mode>no</one_peer_retention_mode>
   <protocol>bbdo</protocol>
   <negociation>yes</negociation>
   <type>tcp</type>
-  <name>central-input</name>
+  <name>central-broker-input</name>
   <port>5668</port>
  </input>
 
  <!-- Handle acknowledgements and downtimes (uses external command file). -->
  <output>
   <type>node_events</type>
-  <name>central-nodeevents</name>
+  <name>central-broker-nodeevents</name>
  </output>
 
  <!-- Write real-time monitoring information to database. -->
  <output>
-  <buffering_timeout>10</buffering_timeout>
-  <read_timeout>2</read_timeout>
   <retry_interval>60</retry_interval>
   <db_type>mysql</db_type>
   <db_host>localhost</db_host>
@@ -80,13 +76,11 @@
   <queries_per_transaction>1000</queries_per_transaction>
   <check_replication>0</check_replication>
   <type>sql</type>
-  <name>central-sql</name>
+  <name>central-broker-sql</name>
  </output>
 
  <!-- Write performance data to database. -->
  <output>
-  <buffering_timeout>10</buffering_timeout>
-  <read_timeout>2</read_timeout>
   <retry_interval>60</retry_interval>
   <db_type>mysql</db_type>
   <db_host>localhost</db_host>
@@ -101,16 +95,14 @@
   <interval>60</interval>
   <length>15552000</length>
   <type>storage</type>
-  <name>central-storage</name>
+  <name>central-broker-storage</name>
  </output>
 
  <!-- Write graph information to central-rrd. -->
  <output>
-  <buffering_timeout>10</buffering_timeout>
-  <read_timeout>10</read_timeout>
   <retry_interval>60</retry_interval>
-  <type>ipv4</type>
-  <name>central-rrd</name>
+  <type>tcp</type>
+  <name>central-broker-rrd</name>
   <port>5670</port>
   <host>localhost</host>
   <protocol>bbdo</protocol>
@@ -121,14 +113,12 @@
 
  <!-- Transmits external commands and configuration files to central-module. -->
  <output>
-  <buffering_timeout>10</buffering_timeout>
-  <read_timeout>10</read_timeout>
   <retry_interval>60</retry_interval>
   <one_peer_retention_mode>no</one_peer_retention_mode>
   <protocol>bbdo</protocol>
   <negociation>yes</negociation>
   <type>tcp</type>
-  <name>central-module-transfert-output</name>
+  <name>central-broker-transfer-output-central-module</name>
   <port>5669</port>
   <filters>
    <category>dumper</category>
@@ -137,18 +127,14 @@
 
  <!-- Perform correlation on monitoring information. -->
  <output>
-  <buffering_timeout>10</buffering_timeout>
-  <read_timeout>10</read_timeout>
   <retry_interval>60</retry_interval>
-  <name>central-correlation</name>
+  <name>central-broker-correlation</name>
   <type>correlation</type>
   <file>/etc/centreon-broker/correlation.xml</file>
  </output>
 
  <!-- Compute and store BAs and KPIs. -->
  <output>
-  <buffering_timeout>10</buffering_timeout>
-  <read_timeout>10</read_timeout>
   <retry_interval>60</retry_interval>
   <db_type>mysql</db_type>
   <db_host>localhost</db_host>
@@ -157,14 +143,12 @@
   <db_user>centreon</db_user>
   <db_password>centreon</db_password>
   <type>bam</type>
-  <name>central-bam-monitoring</name>
-  <queries_per_transaction>0</queries_per_transaction>
+  <name>central-broker-bam-monitoring</name>
+  <queries_per_transaction>1000</queries_per_transaction>
  </output>
 
  <!-- Compute and storage reporting information on BAs and KPIs. -->
  <output>
-  <buffering_timeout>10</buffering_timeout>
-  <read_timeout>10</read_timeout>
   <retry_interval>60</retry_interval>
   <db_type>mysql</db_type>
   <db_host>localhost</db_host>
@@ -173,8 +157,8 @@
   <db_user>centreon</db_user>
   <db_password>centreon</db_password>
   <type>bam_bi</type>
-  <name>central-bam-reporting</name>
-  <queries_per_transaction>0</queries_per_transaction>
+  <name>central-broker-bam-reporting</name>
+  <queries_per_transaction>1000</queries_per_transaction>
   <filters>
    <category>bam</category>
   </filters>
@@ -182,7 +166,7 @@
 
  <!-- Log file. -->
  <logger>
-  <config>no</config>
+  <config>yes</config>
   <debug>no</debug>
   <error>yes</error>
   <info>yes</info>
@@ -194,8 +178,8 @@
  <!-- Statistics. -->
  <stats>
   <type>stats</type>
-  <name>stats-central-broker</name>
-  <fifo>/var/lib/centreon-broker/stats-central-broker.fifo</fifo>
+  <name>central-broker-stats</name>
+  <fifo>/var/lib/centreon-broker/central-broker.stats</fifo>
  </stats>
 
 </conf>
