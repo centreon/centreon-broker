@@ -11,13 +11,11 @@
  <flush_logs>no</flush_logs>
  <log_thread_id>no</log_thread_id>
  <log_timestamp>yes</log_timestamp>
- <command_file>/var/lib/centreon-broker/central-module.cmd</command_file>
- <name>central-module</name>
+ <cache_directory>@PREFIX_VAR@</cache_directory>
+ <command_file>@PREFIX_VAR@/central-module.cmd</command_file>
 
  <!-- Transmits external commands and configuration files from central-broker. -->
  <input>
-  <buffering_timeout>10</buffering_timeout>
-  <read_timeout>10</read_timeout>
   <retry_interval>60</retry_interval>
   <one_peer_retention_mode>no</one_peer_retention_mode>
   <protocol>bbdo</protocol>
@@ -30,11 +28,9 @@
 
  <!-- Send monitoring information to central-broker. -->
  <output>
-  <buffering_timeout>10</buffering_timeout>
-  <read_timeout>10</read_timeout>
   <retry_interval>60</retry_interval>
-  <type>ipv4</type>
-  <name>central-output</name>
+  <type>tcp</type>
+  <name>central-module-output</name>
   <port>5668</port>
   <host>localhost</host>
   <protocol>bbdo</protocol>
@@ -45,51 +41,43 @@
 
  <!-- Write Broker external commands issued by central-broker. -->
  <output>
-  <buffering_timeout>10</buffering_timeout>
-  <read_timeout>10</read_timeout>
   <retry_interval>60</retry_interval>
   <type>dumper</type>
-  <tagname>extcommand-broker-central-module</tagname>
+  <tagname>extcommands-broker-$BROKERID$</tagname>
   <path>/var/lib/centreon-broker/central-module.cmd</path>
-  <name>extcommand-broker-central-module</name>
+  <name>central-module-extcommands-broker</name>
  </output>
 
  <!-- Write Engine external commands issued by central-broker. -->
  <output>
-  <buffering_timeout>10</buffering_timeout>
-  <read_timeout>10</read_timeout>
   <retry_interval>60</retry_interval>
   <type>dumper</type>
-  <tagname>extcommand-engine-central-module</tagname>
+  <tagname>extcommands-engine-$BROKERID$</tagname>
   <path>/var/lib/centreon-engine/rw/centengine.cmd</path>
-  <name>extcommand-engine-central-module</name>
+  <name>central-module-extcommands-engine</name>
  </output>
 
  <!-- Write Broker configuration files issued by central-broker. -->
  <output>
-  <buffering_timeout>10</buffering_timeout>
-  <read_timeout>10</read_timeout>
   <retry_interval>60</retry_interval>
   <type>dumper</type>
-  <tagname>cfg-broker-central-module</tagname>
+  <tagname>cfg-broker-$BROKERID$</tagname>
   <path>/etc/centreon-broker/$FILENAME$</path>
-  <name>cfg-broker-central-module</name>
+  <name>central-module-cfg-broker</name>
  </output>
 
  <!-- Write Engine configuration files issued by central-broker. -->
  <output>
-  <buffering_timeout>10</buffering_timeout>
-  <read_timeout>10</read_timeout>
   <retry_interval>60</retry_interval>
   <type>dumper</type>
-  <tagname>cfg-engine-central-module</tagname>
+  <tagname>cfg-engine-$BROKERID$</tagname>
   <path>/etc/centreon-engine/$FILENAME$</path>
-  <name>cfg-engine-central-module</name>
+  <name>central-module-cfg-engine</name>
  </output>
 
  <!-- Log file. -->
  <logger>
-  <config>no</config>
+  <config>yes</config>
   <debug>no</debug>
   <error>yes</error>
   <info>yes</info>
@@ -101,8 +89,8 @@
  <!-- Statistics. -->
  <stats>
   <type>stats</type>
-  <name>stats-central-broker</name>
-  <fifo>/var/lib/centreon-broker/stats-central-module.fifo</fifo>
+  <name>central-module-stats</name>
+  <fifo>/var/lib/centreon-broker/central-module.stats</fifo>
  </stats>
 
 </conf>
