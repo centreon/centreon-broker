@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2014 Merethis
+** Copyright 2009-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -265,7 +265,6 @@ bool parser::startElement(
       // Process attribute.
       node new_node;
       new_node.host_id = i_attr.toUInt();
-      new_node.my_state.host_id = new_node.host_id;
       n = &(*_nodes)[qMakePair(new_node.host_id, 0u)];
       *n = new_node;
       logging::config(logging::medium)
@@ -279,7 +278,7 @@ bool parser::startElement(
         n->since = time(NULL);*/
       i_attr = attrs.value("state");
       if (!i_attr.isEmpty())
-        n->state = i_attr.toUInt();
+        n->current_state = i_attr.toUInt();
     }
     else if (!strcmp(value, "include"))
       _in_include = true;
@@ -365,9 +364,7 @@ bool parser::startElement(
       // Process attributes.
       node new_node;
       new_node.host_id = host_attr.toUInt();
-      new_node.my_state.host_id = new_node.host_id;
       new_node.service_id = id_attr.toUInt();
-      new_node.my_state.service_id = new_node.service_id;
       (*_nodes)[qMakePair(new_node.host_id, new_node.service_id)]
         = new_node;
       n = &(*_nodes)[qMakePair(new_node.host_id, new_node.service_id)];
@@ -383,7 +380,7 @@ bool parser::startElement(
         n->since = time(NULL);*/
       id_attr = attrs.value("state");
       if (!id_attr.isEmpty())
-        n->state = id_attr.toUInt();
+        n->current_state = id_attr.toUInt();
     }
   }
   return (true);

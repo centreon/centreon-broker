@@ -59,7 +59,8 @@ int main() {
     node& n(state[qMakePair(42u, 24u)]);
     n.host_id = 42;
     n.service_id = 24;
-    n.state = 0;
+    n.current_state = 0;
+    n.start_time = 0;
 
     // Create correlator and apply state.
     correlation::stream c("", misc::shared_ptr<persistent_cache>(), false);

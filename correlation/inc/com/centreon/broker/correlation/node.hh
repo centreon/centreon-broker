@@ -46,17 +46,17 @@ namespace                correlation {
    *  A node is an element of the IT infrastructure graph. It can
    *  either be an host or a service.
    */
-  class                  node {
+  class                  node : public correlation::state {
   public:
     typedef std::set<node*>
                          node_map;
 
                          node();
-                         node(node const& n);
+                         node(node const& other);
                          ~node();
-    node&                operator=(node const& n);
-    bool                 operator==(node const& n) const;
-    bool                 operator!=(node const& n) const;
+    node&                operator=(node const& other);
+    bool                 operator==(node const& other) const;
+    bool                 operator!=(node const& other) const;
     void                 add_child(node* n);
     void                 add_depended(node* n);
     void                 add_dependency(node* n);
@@ -102,25 +102,14 @@ namespace                correlation {
 
     void                 serialize(persistent_cache& cache) const;
 
-    unsigned int         host_id;
-    bool                 in_downtime;
     std::auto_ptr<issue> my_issue;
-    correlation::state   my_state;
-    unsigned int         service_id;
-    short                state;
     std::auto_ptr<neb::acknowledgement>
                          acknowledgement;
     std::map<unsigned int, neb::downtime>
                          downtimes;
 
    private:
-    void                 _internal_copy(node const& n);
-
-    node_map             _children;
-    node_map             _depended_by;
-    node_map             _depends_on;
-    node_map             _parents;
-
+    void                 _internal_copy(node const& other);
     void                 _generate_state_event(
                            timestamp start_time,
                            short new_status,
@@ -137,6 +126,10 @@ namespace                correlation {
                            bool closed,
                            io::stream* stream);
 
+    node_map             _children;
+    node_map             _depended_by;
+    node_map             _depends_on;
+    node_map             _parents;
   };
 }
 

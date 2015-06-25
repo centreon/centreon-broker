@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -38,7 +38,7 @@ int main() {
   bn.my_issue->end_time = 234;
   bn.my_issue->start_time = 7678353;
   bn.service_id = 765334;
-  bn.state = 2;
+  bn.current_state = 2;
 
   // Linked objects.
   correlation::node n1;
@@ -68,14 +68,14 @@ int main() {
   bn.in_downtime = false;
   bn.my_issue.reset();
   bn.service_id = 2347;
-  bn.state = 1;
+  bn.current_state = 1;
 
   // Check copy construction.
   return ((bn.host_id != 23)
           || bn.in_downtime
           || bn.my_issue.get()
           || (bn.service_id != 2347)
-          || (bn.state != 1)
+          || (bn.current_state != 1)
           || !bn.get_children().empty()
           || (bn.get_dependeds().size() != 1)
           || !bn.get_dependencies().empty()
@@ -86,7 +86,7 @@ int main() {
           || (cn.my_issue->end_time != 234)
           || (cn.my_issue->start_time != 7678353)
           || (cn.service_id != 765334)
-          || (cn.state != 2)
+          || (cn.current_state != 2)
           || (cn.get_children().size() != 1)
           || (*cn.get_children().begin() != &n1)
           || (cn.get_dependeds().size() != 1)

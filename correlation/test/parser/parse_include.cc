@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Merethis
+** Copyright 2013-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -51,20 +51,20 @@ int main() {
     QMap<QPair<unsigned int, unsigned int>, node> expected;
     node& h1(expected[qMakePair(13u, 0u)]);
     h1.host_id = 13;
-    h1.state = 1;
+    h1.current_state = 1;
     node& s1(expected[qMakePair(13u, 21u)]);
     s1.host_id = 13;
     s1.service_id = 21;
     node& s2(expected[qMakePair(13u, 12u)]);
     s2.host_id = 13;
     s2.service_id = 12;
-    s2.state = 2;
+    s2.current_state = 2;
     node& h2(expected[qMakePair(42u, 0u)]);
     h2.host_id = 42;
     node& s3(expected[qMakePair(42u, 66u)]);
     s3.host_id = 42;
     s3.service_id = 66;
-    s3.state = 3;
+    s3.current_state = 3;
     s1.add_dependency(&s2);
     s1.add_dependency(&h1);
     s2.add_dependency(&h1);

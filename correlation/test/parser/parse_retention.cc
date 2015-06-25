@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -82,7 +82,7 @@ int main() {
     {
       node& h1(parsed2[qMakePair(13u, 0u)]);
       h1.host_id = 13;
-      h1.state = 3;
+      h1.current_state = 3;
       h1.my_issue.reset(new issue);
       h1.my_issue->host_id = 13;
       h1.my_issue->start_time = 4768215;
@@ -92,7 +92,7 @@ int main() {
       node& s2(parsed2[qMakePair(13u, 33u)]);
       s2.host_id = 13;
       s2.service_id = 33;
-      s2.state = 4;
+      s2.current_state = 4;
       s1.add_dependency(&h1);
     }
 
@@ -106,7 +106,7 @@ int main() {
     QMap<QPair<unsigned int, unsigned int>, node> expected;
     node& h1(expected[qMakePair(13u, 0u)]);
     h1.host_id = 13;
-    h1.state = 42;
+    h1.current_state = 42;
     h1.my_issue.reset(new issue);
     h1.my_issue->host_id = 13;
     h1.my_issue->start_time = 3456;
@@ -116,7 +116,7 @@ int main() {
     node& s2(expected[qMakePair(13u, 33u)]);
     s2.host_id = 13;
     s2.service_id = 33;
-    s2.state = 33;
+    s2.current_state = 33;
     s2.my_issue.reset(new issue);
     s2.my_issue->ack_time = 762;
     s2.my_issue->host_id = 13;

@@ -58,11 +58,11 @@ int main() {
       node& n1(state[qMakePair(42u, 24u)]);
       n1.host_id = 42;
       n1.service_id = 24;
-      n1.state = 0;
+      n1.current_state = 0;
       node& n2(state[qMakePair(56u, 13u)]);
       n2.host_id = 56;
       n2.service_id = 13u;
-      n2.state = 0;
+      n2.current_state = 0;
       n1.add_dependency(&n2);
 
       // Apply state.

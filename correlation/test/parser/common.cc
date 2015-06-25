@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -47,12 +47,18 @@ void compare_states(
                << ") against (" << it2.key().first << ", "
                << it2.key().second << ")");
       else if (*it1 != *it2)
-        throw (exceptions::msg() << "state mismatch: got node (host id "
+        throw (exceptions::msg()
+               << "state mismatch: got node state (host id "
                << it1->host_id << ", service id " << it1->service_id
-               << ", state " << it1->state
-               << ") against (" << it2->host_id << ", "
-               << it2->service_id << ", "
-               << it2->state << ")");
+               << ", start time " << it1->start_time << ", end time "
+               << it1->end_time << ", ack time " << it1->ack_time
+               << ", state " << it1->current_state << ", in downtime "
+               << it1->in_downtime << ", poller id" << it1->poller_id
+               << "), expected (" << it2->host_id << ", "
+               << it2->service_id << ", " << it2->start_time << ", "
+               << it2->end_time << ", " << it2->ack_time << ", "
+               << it2->current_state << ", " << it2->in_downtime << ", "
+               << it2->poller_id << ")");
   }
   return ;
 }

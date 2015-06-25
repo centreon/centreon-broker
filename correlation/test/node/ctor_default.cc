@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -39,5 +39,5 @@ int main() {
           || n.my_issue.get()
           || !n.get_parents().empty()
           || (n.service_id != 0)
-          || (n.state != 0));
+          || (n.current_state != 0));
 }

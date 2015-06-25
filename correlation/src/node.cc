@@ -37,23 +37,22 @@ using namespace com::centreon::broker::correlation;
 /**
  *  Constructor.
  */
-node::node()
-  : host_id(0),
-    in_downtime(false),
-    service_id(0),
-    state(0) {
+node::node() {
   // Default state.
-  my_state.current_state = 0;
-  my_state.start_time = time(NULL);
+  host_id = 0;
+  service_id = 0;
+  in_downtime = false;
+  current_state = 0;
+  start_time = time(NULL);
 }
 
 /**
  *  Copy constructor.
  *
- *  @param[in] n Object to copy.
+ *  @param[in] other  Object to copy.
  */
-node::node(node const& n) {
-  _internal_copy(n);
+node::node(node const& other) : correlation::state(other) {
+  _internal_copy(other);
 }
 
 /**
@@ -91,40 +90,39 @@ node::~node() {
 /**
  *  Assignment operator.
  *
- *  @param[in] n Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-node& node::operator=(node const& n) {
-  _internal_copy(n);
+node& node::operator=(node const& other) {
+  if (this != &other) {
+    correlation::state::operator=(other);
+    _internal_copy(other);
+  }
   return (*this);
 }
 
 /**
  *  Check equality between two nodes.
  *
- *  @param[in] n Node to compare to.
+ *  @param[in] other  Node to compare to.
  *
- *  @return true if both nodes are equal.
+ *  @return True if both nodes are equal.
  */
-bool node::operator==(node const& n) const {
+bool node::operator==(node const& other) const {
   bool retval;
-  if (this == &n)
+  if (this == &other)
     retval = true;
-  else if ((host_id == n.host_id)
-           && (in_downtime == n.in_downtime)
-           && (service_id == n.service_id)
-           && (state == n.state)
-           && (downtimes == n.downtimes)
-           && ((!my_issue.get() && !n.my_issue.get())
+  else if (state::operator==(other)
+           && (downtimes == other.downtimes)
+           && ((!my_issue.get() && !other.my_issue.get())
                || (my_issue.get()
-                   && n.my_issue.get()
-                   && (*my_issue == *n.my_issue)))
-           && (my_state == n.my_state)
-           && (_children.size() == n._children.size())
-           && (_depended_by.size() == n._depended_by.size())
-           && (_depends_on.size() == n._depends_on.size())
-           && (_parents.size() == n._parents.size())) {
+                   && other.my_issue.get()
+                   && (*my_issue == *other.my_issue)))
+           && (_children.size() == other._children.size())
+           && (_depended_by.size() == other._depended_by.size())
+           && (_depends_on.size() == other._depends_on.size())
+           && (_parents.size() == other._parents.size())) {
     retval = true;
     for (node_map::const_iterator
            it1 = _children.begin(),
@@ -133,8 +131,8 @@ bool node::operator==(node const& n) const {
          ++it1) {
       retval = false;
       for (node_map::const_iterator
-             it2 = n._children.begin(),
-             end2 = n._children.end();
+             it2 = other._children.begin(),
+             end2 = other._children.end();
            it2 != end2;
            ++it2)
         retval = retval || (((*it1)->host_id == (*it2)->host_id)
@@ -147,8 +145,8 @@ bool node::operator==(node const& n) const {
          ++it1) {
       retval = false;
       for (node_map::const_iterator
-             it2 = n._depended_by.begin(),
-             end2 = n._depended_by.end();
+             it2 = other._depended_by.begin(),
+             end2 = other._depended_by.end();
            it2 != end2;
            ++it2)
         retval = retval || (((*it1)->host_id == (*it2)->host_id)
@@ -161,8 +159,8 @@ bool node::operator==(node const& n) const {
          ++it1) {
       retval = false;
       for (node_map::const_iterator
-             it2 = n._depends_on.begin(),
-             end2 = n._depends_on.end();
+             it2 = other._depends_on.begin(),
+             end2 = other._depends_on.end();
            it2 != end2;
            ++it2)
         retval = retval || (((*it1)->host_id == (*it2)->host_id)
@@ -175,8 +173,8 @@ bool node::operator==(node const& n) const {
          ++it1) {
       retval = false;
       for (node_map::const_iterator
-             it2 = n._parents.begin(),
-             end2 = n._parents.end();
+             it2 = other._parents.begin(),
+             end2 = other._parents.end();
            it2 != end2;
            ++it2)
         retval = retval || (((*it1)->host_id == (*it2)->host_id)
@@ -191,18 +189,18 @@ bool node::operator==(node const& n) const {
 /**
  *  Check inequality between two nodes.
  *
- *  @param[in] n Node to compare to.
+ *  @param[in] other  Node to compare to.
  *
- *  @return true if both nodes are not equal.
+ *  @return True if both nodes are not equal.
  */
-bool node::operator!=(node const& n) const {
-  return (!this->operator==(n));
+bool node::operator!=(node const& other) const {
+  return (!this->operator==(other));
 }
 
 /**
  *  Add a child to the node.
  *
- *  @param[in,out] n New child.
+ *  @param[in,out] n  New child.
  */
 void node::add_child(node* n) {
   if (_parents.find(n) != _parents.end())
@@ -219,7 +217,7 @@ void node::add_child(node* n) {
 /**
  *  Add a node which depends on this node.
  *
- *  @param[in,out] n New node depending on this node.
+ *  @param[in,out] n  New node depending on this node.
  */
 void node::add_depended(node* n) {
   if (_depends_on.find(n) != _depends_on.end())
@@ -236,7 +234,7 @@ void node::add_depended(node* n) {
 /**
  *  Add a dependency.
  *
- *  @param[in,out] n New dependency.
+ *  @param[in,out] n  New dependency.
  */
 void node::add_dependency(node* n) {
   if (_depended_by.find(n) != _depended_by.end())
@@ -253,7 +251,7 @@ void node::add_dependency(node* n) {
 /**
  *  Add a parent.
  *
- *  @param[in,out] n New parent.
+ *  @param[in,out] n  New parent.
  */
 void node::add_parent(node* n) {
   if (_children.find(n) != _children.end())
@@ -390,7 +388,7 @@ void node::manage_status(
        timestamp last_state_change,
        io::stream* stream) {
 
-  short old_state = state;
+  short old_state = current_state;
 
   // No status change, nothing to do.
   if (old_state == new_state)
@@ -410,7 +408,7 @@ void node::manage_status(
   // Generate the state event.
   _generate_state_event(last_state_change, new_state, stream);
 
-  state = new_state;
+  current_state = new_state;
 
   // Recovery
   if (old_state != 0 && new_state == 0) {
@@ -455,7 +453,7 @@ void node::manage_ack(
     acknowledgement.reset(new neb::acknowledgement(ack));
     if (my_issue->ack_time.is_null())
       my_issue->ack_time = ack.entry_time;
-    _generate_state_event(ack.entry_time, state, stream);
+    _generate_state_event(ack.entry_time, current_state, stream);
   }
 }
 
@@ -471,13 +469,13 @@ void node::manage_downtime(
   if (!dwn.actual_end_time.is_null()) {
     downtimes[dwn.internal_id] = dwn;
     in_downtime = true;
-    _generate_state_event(dwn.start_time, state, stream);
+    _generate_state_event(dwn.start_time, current_state, stream);
   }
   else {
     downtimes.erase(dwn.internal_id);
     if (!downtimes.empty())
       in_downtime = false;
-    _generate_state_event(::time(NULL), state, stream);
+    _generate_state_event(::time(NULL), current_state, stream);
   }
 }
 
@@ -573,7 +571,7 @@ void node::linked_node_updated(
 void node::serialize(persistent_cache& cache) const {
   if (my_issue.get())
     cache.add(misc::make_shared(new issue(*my_issue)));
-  cache.add(misc::make_shared(new correlation::state(my_state)));
+  cache.add(misc::make_shared(new correlation::state(*this)));
   for (std::map<unsigned int, neb::downtime>::const_iterator
          it = downtimes.begin(),
          end = downtimes.end();
@@ -600,24 +598,18 @@ void node::serialize(persistent_cache& cache) const {
  */
 void node::_internal_copy(node const& n) {
   // Copy other members.
-  host_id = n.host_id;
-  in_downtime = n.in_downtime;
   if (n.my_issue.get())
     my_issue.reset(new issue(*(n.my_issue)));
   else
     my_issue.reset();
-  service_id = n.service_id;
-  state = n.state;
   downtimes = n.downtimes;
   if (n.acknowledgement.get())
     acknowledgement.reset(new neb::acknowledgement(*n.acknowledgement));
   else
     acknowledgement.reset();
-  my_state = n.my_state;
-
-  node_map::iterator it, end;
 
   // Copy childrens.
+  node_map::iterator it, end;
   _children = n._children;
   for (it = _children.begin(), end = _children.end();
        it != end;
@@ -664,19 +656,20 @@ void node::_generate_state_event(
     logging::debug(logging::medium)
       << "correlation: node (" << host_id << ", " << service_id
       << ") closing state event";
-    my_state.end_time = start_time;
-    stream->write(misc::make_shared(new correlation::state(my_state)));
+    end_time = start_time;
+    stream->write(misc::make_shared(new correlation::state(*this)));
   }
 
   // Open new state event.
   logging::debug(logging::medium)
     << "correlation: node (" << host_id << ", " << service_id
     << ") opening new state event";
-  my_state = _open_state_event(start_time);
-  my_state.current_state = new_status;
+  *static_cast<correlation::state*>(this)
+    = _open_state_event(start_time);
+  current_state = new_status;
 
   if (stream)
-    stream->write(misc::make_shared(new correlation::state(my_state)));
+    stream->write(misc::make_shared(new correlation::state(*this)));
 }
 
 /**
@@ -691,7 +684,7 @@ correlation::state node::_open_state_event(timestamp start_time) const {
   st.start_time = start_time;
   st.service_id = service_id;
   st.host_id = host_id;
-  st.current_state = state;
+  st.current_state = current_state;
   timestamp earliest_downtime;
   for (std::map<unsigned int, neb::downtime>::const_iterator
          it(downtimes.begin()),
