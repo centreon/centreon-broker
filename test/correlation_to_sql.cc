@@ -57,8 +57,6 @@ int main() {
   std::list<host> hosts;
   std::list<service> services;
   std::string engine_config_path(tmpnam(NULL));
-  std::string broker_correlation_path(tmpnam(NULL));
-  std::string cbmod_correlation_path(tmpnam(NULL));
   external_command engine_commander;
   external_command cbmod_commander;
   engine daemon;
@@ -66,10 +64,6 @@ int main() {
   test_db db;
   test_file cbmod_cfg;
   test_file cbd_cfg;
-
-  // Information.
-  std::cout << "base retention: " << cbmod_correlation_path << "\n"
-            << "passive retention: " << broker_correlation_path << "\n";
 
   try {
     // Prepare database.
@@ -615,29 +609,7 @@ int main() {
     sleep_for(2);
 
     // Check passive correlation.
-    std::ifstream active_correlation(cbmod_correlation_path.c_str());
-    if (!active_correlation.is_open())
-      throw (exceptions::msg() << "bad active correlation dump");
-    std::ifstream passive_correlation(broker_correlation_path.c_str());
-    if (!passive_correlation.is_open())
-      throw (exceptions::msg() << "bad passive correlation dump");
-
-    std::vector<std::string> active;
-    while (!active_correlation.eof() && active_correlation.good()) {
-      std::string line;
-      std::getline(active_correlation, line);
-      active.push_back(line);
-    }
-    std::vector<std::string> passive;
-    while (!passive_correlation.eof() && passive_correlation.good()) {
-      std::string line;
-      std::getline(passive_correlation, line);
-      passive.push_back(line);
-    }
-
-    if (active != passive)
-      throw (exceptions::msg() << "active correlation and passive "
-             "correlation are not equal");
+    // XXX
 
     // Success.
     retval = EXIT_SUCCESS;
@@ -655,8 +627,6 @@ int main() {
   daemon.stop();
   broker.stop();
   config_remove(engine_config_path.c_str());
-  ::remove(broker_correlation_path.c_str());
-  ::remove(cbmod_correlation_path.c_str());
   free_hosts(hosts);
   free_services(services);
 

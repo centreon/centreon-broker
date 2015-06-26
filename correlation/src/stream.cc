@@ -54,17 +54,17 @@ stream::stream(
           bool load_correlation,
           bool passive)
   : _cache(cache),
-    _correlation_file(correlation_file),
-    _passive(passive) {
-  // Create the engine started event.
-  multiplexing::publisher pblsh;
-  misc::shared_ptr<engine_state> es(new engine_state);
-  es->poller_id = config::applier::state::instance().poller_id();
-  es->started = true;
-  pblsh.write(es);
-
-  if (!_passive)
+    _correlation_file(correlation_file) {
+  if (!passive) {
+    // Events will be written to publisher.
     _pblsh.reset(new multiplexing::publisher);
+
+    // Create the engine started event.
+    misc::shared_ptr<engine_state> es(new engine_state);
+    es->poller_id = config::applier::state::instance().poller_id();
+    es->started = true;
+    _pblsh->write(es);
+  }
 
   // Load the correlation.
   if (load_correlation)
@@ -76,10 +76,11 @@ stream::stream(
  */
 stream::~stream() {
   try {
-    multiplexing::publisher pblsh;
-    misc::shared_ptr<engine_state> es(new engine_state);
-    es->poller_id = config::applier::state::instance().poller_id();
-    pblsh.write(es);
+    if (_pblsh.get()) {
+      misc::shared_ptr<engine_state> es(new engine_state);
+      es->poller_id = config::applier::state::instance().poller_id();
+      _pblsh->write(es);
+    }
   }
   catch (std::exception const& e) {
     logging::error(logging::medium)
@@ -108,8 +109,6 @@ bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *  Update the stream.
  */
 void stream::update() {
-  if (!_passive)
-    _pblsh.reset(new multiplexing::publisher);
   _save_persistent_cache();
   _load_correlation();
   return ;
@@ -160,11 +159,11 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
     QPair<unsigned int, unsigned int> id(h.host_id, 0);
     QMap<QPair<unsigned int, unsigned int>, node>::const_iterator
       it(_nodes.find(id));
-    if (it != _nodes.end()) {
+    if ((it != _nodes.end()) && _pblsh.get()) {
       logging::debug(logging::medium)
         << "correlation: generating state event for host "
         << h.host_id << " following its (re)declaration";
-      multiplexing::publisher().write(new state(*it));
+      _pblsh->write(new state(*it));
     }
   }
   else if (d->type() == neb::service::static_type()) {
@@ -172,12 +171,12 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
     QPair<unsigned int, unsigned int> id(s.host_id, s.service_id);
     QMap<QPair<unsigned int, unsigned int>, node>::const_iterator
       it(_nodes.find(id));
-    if (it != _nodes.end()) {
+    if ((it != _nodes.end()) && _pblsh.get()) {
       logging::debug(logging::medium)
         << "correlation: generating state event for service ("
         << s.host_id << ", " << s.service_id
         << ") following its (re)declaration";
-      multiplexing::publisher().write(new state(*it));
+      _pblsh->write(new state(*it));
     }
   }
   else if (d->type() == neb::acknowledgement::static_type()) {
