@@ -225,23 +225,23 @@ void node_events_stream::parse_command(
            << "couldn't parse the line");
 
   if (command == "ACKNOWLEDGE_HOST_PROBLEM")
-    _parse_ack(ack_host, timestamp, args.get(), stream);
+    _parse_ack(ack_host, args.get(), stream);
   else if (command == "ACKNOWLEDGE_SVC_PROBLEM")
-    _parse_ack(ack_service, timestamp, args.get(), stream);
+    _parse_ack(ack_service, args.get(), stream);
   else if (command == "REMOVE_HOST_ACKNOWLEDGEMENT")
-    _parse_remove_ack(ack_host, timestamp, args.get(), stream);
+    _parse_remove_ack(ack_host, args.get(), stream);
   else if (command == "REMOVE_SVC_ACKNOWLEDGEMENT")
-    _parse_remove_ack(ack_service, timestamp, args.get(), stream);
+    _parse_remove_ack(ack_service, args.get(), stream);
   else if (command == "SCHEDULE_HOST_DOWNTIME")
-    _parse_downtime(down_host, timestamp, args.get(), stream);
+    _parse_downtime(down_host, args.get(), stream);
   else if (command == "SCHEDULE_HOST_SVC_DOWNTIME")
-    _parse_downtime(down_host_service, timestamp, args.get(), stream);
+    _parse_downtime(down_host_service, args.get(), stream);
   else if (command == "SCHEDULE_SVC_DOWNTIME")
-    _parse_downtime(down_service, timestamp, args.get(), stream);
+    _parse_downtime(down_service, args.get(), stream);
   else if (command == "DELETE_HOST_DOWNTIME")
-    _parse_remove_downtime(down_host, timestamp, args.get(), stream);
+    _parse_remove_downtime(down_host, args.get(), stream);
   else if (command == "DELETE_SVC_DOWNTIME")
-    _parse_remove_downtime(down_service, timestamp, args.get(), stream);
+    _parse_remove_downtime(down_service, args.get(), stream);
 }
 
 /**
@@ -404,7 +404,6 @@ void node_events_stream::_trigger_floating_downtime(
  *  Parse an acknowledgment.
  *
  *  @param[in] is_host  Is this a host acknowledgement.
- *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
  *  @param[in] stream   The output stream.
  *
@@ -412,7 +411,6 @@ void node_events_stream::_trigger_floating_downtime(
  */
 void node_events_stream::_parse_ack(
                            ack_type is_host,
-                           timestamp t,
                            const char* args,
                            io::stream& stream) {
   logging::debug(logging::medium)
@@ -438,6 +436,12 @@ void node_events_stream::_parse_ack(
     if (id.empty())
       throw (exceptions::msg() << "couldn't find node "
              << host_name << ", " << service_description);
+
+    // The entry time is inherited from any existing ack.
+    timestamp t = ::time(NULL);
+    if (_acknowledgements.contains(id))
+      t = _acknowledgements[id].entry_time;
+
 
     misc::shared_ptr<neb::acknowledgement>
       ack(new neb::acknowledgement);
@@ -473,7 +477,6 @@ void node_events_stream::_parse_ack(
  *  Parse the removal of an acknowledgment.
  *
  *  @param[in] is_host  Is this a host acknowledgement.
- *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
  *  @param[in] stream   The output stream.
  *
@@ -481,7 +484,6 @@ void node_events_stream::_parse_ack(
  */
 void node_events_stream::_parse_remove_ack(
                            ack_type type,
-                           timestamp t,
                            const char* args,
                            io::stream& stream) {
   logging::debug(logging::medium)
@@ -510,7 +512,7 @@ void node_events_stream::_parse_remove_ack(
 
     // Close the ack.
     misc::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement(*found));
-    ack->deletion_time = t;
+    ack->deletion_time = ::time(NULL);
 
     // Erase the ack.
     _acknowledgements.erase(found);
@@ -532,7 +534,6 @@ void node_events_stream::_parse_remove_ack(
  *  Parse a downtime.
  *
  *  @param[in] type     The downtime type.
- *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
  *  @param[in] stream   The output stream.
  *
@@ -540,12 +541,10 @@ void node_events_stream::_parse_remove_ack(
  */
 void node_events_stream::_parse_downtime(
                            down_type type,
-                           timestamp t,
                            char const* args,
                            io::stream& stream) {
   misc::tokenizer tok(args);
 
-  (void)t;
   logging::debug(logging::medium)
     << "node events: parsing downtime command '" << args << "'";
 
@@ -588,6 +587,7 @@ void node_events_stream::_parse_downtime(
     d->triggered_by = trigger_id;
     d->recurring_timeperiod = QString::fromStdString(recurring_timeperiod);
     d->is_recurring = !d->recurring_timeperiod.isEmpty();
+    d->entry_time = ::time(NULL);
 
     logging::info(logging::high)
       << "node events: sending downtime for "
@@ -606,7 +606,6 @@ void node_events_stream::_parse_downtime(
  *  Parse a downtime removal.
  *
  *  @param[in] type     The downtime type.
- *  @param[in] t        The timestamp.
  *  @param[in] args     The args to parse.
  *  @param[in] stream   The output stream.
  *
@@ -614,7 +613,6 @@ void node_events_stream::_parse_downtime(
  */
 void node_events_stream::_parse_remove_downtime(
                            down_type type,
-                           timestamp t,
                            const char* args,
                            io::stream& stream) {
   (void)type;
@@ -635,7 +633,7 @@ void node_events_stream::_parse_remove_downtime(
   logging::info(logging::high)
     << "node events: erasing downtime '" << downtime_id << "'";
 
-  _delete_downtime(*found, t, &stream);
+  _delete_downtime(*found, ::time(NULL), &stream);
 }
 
 /**
