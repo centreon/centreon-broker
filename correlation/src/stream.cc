@@ -100,8 +100,8 @@ bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.clear();
   throw (io::exceptions::shutdown(true, false)
-	 << "cannot read from correlation stream");
-  return (true);;
+         << "cannot read from correlation stream");
+  return (true);
 }
 
 /**
@@ -164,7 +164,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
       logging::debug(logging::medium)
         << "correlation: generating state event for host "
         << h.host_id << " following its (re)declaration";
-      multiplexing::publisher().write(new state(it->my_state));
+      multiplexing::publisher().write(new state(*it));
     }
   }
   else if (d->type() == neb::service::static_type()) {
@@ -177,7 +177,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
         << "correlation: generating state event for service ("
         << s.host_id << ", " << s.service_id
         << ") following its (re)declaration";
-      multiplexing::publisher().write(new state(it->my_state));
+      multiplexing::publisher().write(new state(*it));
     }
   }
   else if (d->type() == neb::acknowledgement::static_type()) {
@@ -291,8 +291,7 @@ void stream::_load_correlation_event(misc::shared_ptr<io::data> const& d) {
       logging::debug(logging::medium)
         << "correlation: loading initial state for node ("
         << st.host_id << ", " << st.service_id << ")";
-      found->my_state = st;
-      found->state = st.current_state;
+      *static_cast<state*>(&*found) = st;
     }
   }
   else if (d->type() == neb::downtime::static_type()) {

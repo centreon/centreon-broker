@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -49,7 +49,7 @@ int main() {
     "  <service id=\"66\" host=\"42\" state=\"3\" />\n"
     "  <service id=\"33\" host=\"13\" />\n"
     "  <service id=\"12\" host=\"42\" state=\"2\" />\n"
-    "  <parent host=\"13\" parent=\"42\" />\n"
+    "  <parent host=\"13\" parent_host=\"42\" />\n"
     "  <dependency dependent_host=\"13\" dependent_service=\"21\"\n"
     "              host=\"13\" service=\"33\" />\n"
     "  <dependency dependent_host=\"42\" dependent_service=\"12\"\n"
@@ -82,7 +82,7 @@ int main() {
     QMap<QPair<unsigned int, unsigned int>, node> expected;
     node& h1(expected[qMakePair(13u, 0u)]);
     h1.host_id = 13;
-    h1.state = 1;
+    h1.current_state = 1;
     node& h2(expected[qMakePair(42u, 0u)]);
     h2.host_id = 42;
     node& s1(expected[qMakePair(13u, 21u)]);
@@ -91,14 +91,14 @@ int main() {
     node& s2(expected[qMakePair(42u, 66u)]);
     s2.host_id = 42;
     s2.service_id = 66;
-    s2.state = 3;
+    s2.current_state = 3;
     node& s3(expected[qMakePair(13u, 33u)]);
     s3.host_id = 13;
     s3.service_id = 33;
     node& s4(expected[qMakePair(42u, 12u)]);
     s4.host_id = 42;
     s4.service_id = 12;
-    s4.state = 2;
+    s4.current_state = 2;
     h1.add_parent(&h2);
     s1.add_dependency(&h1);
     s2.add_dependency(&h2);

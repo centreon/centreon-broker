@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Merethis
+** Copyright 2011,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -36,7 +36,7 @@ int main() {
   bn.my_issue->end_time = 234;
   bn.my_issue->start_time = 7678353;
   bn.service_id = 765334;
-  bn.state = 2;
+  bn.current_state = 2;
 
   // Linked objects.
   correlation::node n1;
@@ -57,7 +57,7 @@ int main() {
   dn.in_downtime = false;
   dn.my_issue.reset();
   dn.service_id = 2347;
-  dn.state = 1;
+  dn.current_state = 1;
   dn.remove_child(&n1);
   dn.remove_dependency(&n3);
 

@@ -59,15 +59,18 @@ int main() {
       node& n1(state[qMakePair(42u, 24u)]);
       n1.host_id = 42;
       n1.service_id = 24;
-      n1.state = 0;
+      n1.current_state = 0;
+      n1.start_time = 0;
       node& n2(state[qMakePair(56u, 13u)]);
       n2.host_id = 56;
       n2.service_id = 13;
-      n2.state = 0;
+      n2.current_state = 0;
+      n2.start_time = 0;
       node& n3(state[qMakePair(90u, 0u)]);
       n3.host_id = 90;
       n3.service_id = 0;
-      n3.state = 0;
+      n3.current_state = 0;
+      n3.start_time = 0;
       n2.add_dependency(&n1);
       n3.add_dependency(&n1);
 
