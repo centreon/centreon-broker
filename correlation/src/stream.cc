@@ -200,7 +200,9 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
       = _nodes.find(id);
     if (found != _nodes.end()) {
       logging::debug(logging::medium)
-        << "correlation: processing downtime for node ("
+        << "correlation: processing downtime ("
+	<< dwn.actual_start_time << "-" << dwn.actual_end_time
+	<< ") for node ("
         << dwn.host_id << ", " << dwn.service_id << ")";
       found->manage_downtime(dwn, _pblsh.get());
     }

@@ -3,6 +3,7 @@
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
   <instance>42</instance>
   <instance_name>MyBrokerActive</instance_name>
+  <command_file>@COMMAND_FILE@</command_file>
   <!--
   <stats>
     <fifo>/tmp/cbmod.fifo</fifo>
@@ -21,6 +22,10 @@
     <name>CorrelationToSQL-Correlation</name>
     <type>correlation</type>
     <file>@PROJECT_SOURCE_DIR@/test/cfg/correlation_file.xml</file>
+  </output>
+  <output>
+    <name>CorrelationToSQL-NodeEvents</name>
+    <type>node_events</type>
   </output>
   <output>
     <name>CorrelationToSQL-SQL</name>

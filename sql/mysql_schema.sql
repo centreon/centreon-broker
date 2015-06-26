@@ -561,9 +561,7 @@ CREATE TABLE rt_hoststateevents (
   in_downtime boolean default NULL,
   state int default NULL,
 
-  UNIQUE (host_id, start_time),
-  FOREIGN KEY (host_id) REFERENCES rt_hosts (host_id)
-    ON DELETE CASCADE
+  UNIQUE (host_id, start_time)
 ) ENGINE=InnoDB;
 
 
@@ -580,9 +578,7 @@ CREATE TABLE rt_servicestateevents (
   in_downtime boolean default NULL,
   state int default NULL,
 
-  UNIQUE (host_id, service_id, start_time),
-  FOREIGN KEY (host_id, service_id) REFERENCES rt_services (host_id, service_id)
-    ON DELETE CASCADE
+  UNIQUE (host_id, service_id, start_time)
 ) ENGINE=InnoDB;
 
 

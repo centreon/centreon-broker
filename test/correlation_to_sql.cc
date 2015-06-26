@@ -59,7 +59,8 @@ int main() {
   std::string engine_config_path(tmpnam(NULL));
   std::string broker_correlation_path(tmpnam(NULL));
   std::string cbmod_correlation_path(tmpnam(NULL));
-  external_command commander;
+  external_command engine_commander;
+  external_command cbmod_commander;
   engine daemon;
   cbd broker;
   test_db db;
@@ -75,9 +76,11 @@ int main() {
     db.open(DB_NAME);
 
     // Configuration files templates.
+    cbmod_commander.set_file(tmpnam(NULL));
     cbmod_cfg.set_template(
       PROJECT_SOURCE_DIR "/test/cfg/correlation_to_sql_1.xml.in");
     cbmod_cfg.set("DB_NAME", DB_NAME);
+    cbmod_cfg.set("COMMAND_FILE", cbmod_commander.get_file());
     cbd_cfg.set_template(
       PROJECT_SOURCE_DIR "/test/cfg/correlation_to_sql_2.xml.in");
 
@@ -98,11 +101,11 @@ int main() {
       it->checks_enabled = 0;
       it->max_attempts = 1;
     }
-    commander.set_file(tmpnam(NULL));
+    engine_commander.set_file(tmpnam(NULL));
     std::string additional_config;
     {
       std::ostringstream oss;
-      oss << commander.get_engine_config()
+      oss << engine_commander.get_engine_config()
           << "broker_module=" << CBMOD_PATH << " "
           << cbmod_cfg.generate() << "\n";
       additional_config = oss.str();
@@ -130,7 +133,7 @@ int main() {
     daemon.start();
 
     // Let the daemon initialize.
-    sleep_for(10);
+    sleep_for(8);
 
     // T1.
     time_t t1(time(NULL));
@@ -141,7 +144,7 @@ int main() {
     ** 1) UP -> DOWN
     ** 2) OK -> WARNING -> DOWNTIME
     ** 3) OK -> CRITICAL -> ACK (STICKY) -> WARNING
-    ** 4) UP -> DOWNTIME -> UNREACHABLE -> ACK (STICKY) -> DOWN
+    ** 4) UP -> DOWNTIME -> DOWN -> ACK (STICKY)
     ** 5) OK -> CRITICAL -> ACK (STICKY).
     ** 6) OK -> WARNING -> ACK (NORMAL) -> DOWNTIME
     */
@@ -152,7 +155,7 @@ int main() {
       for (unsigned int i(1); i <= HOST_COUNT; ++i) {
         std::ostringstream cmd;
         cmd << "PROCESS_HOST_CHECK_RESULT;" << i << ";0;output1-" << i;
-        commander.execute(cmd.str());
+        engine_commander.execute(cmd.str());
       }
 
       // Set services as OK.
@@ -163,7 +166,7 @@ int main() {
         cmd << "PROCESS_SERVICE_CHECK_RESULT;" << host_id << ";"
             << service_id << ";0;output1-" << host_id << ";"
             << service_id;
-        commander.execute(cmd.str());
+        engine_commander.execute(cmd.str());
       }
     }
     sleep_for(3);
@@ -173,17 +176,17 @@ int main() {
 
     // Step 2.
     {
-      commander.execute("PROCESS_HOST_CHECK_RESULT;1;1;output2-1");
-      commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;1;1;output2-1-1");
-      commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;2;2;output2-1-2");
+      engine_commander.execute("PROCESS_HOST_CHECK_RESULT;1;1;output2-1");
+      engine_commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;1;1;output2-1-1");
+      engine_commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;2;2;output2-1-2");
       {
         std::ostringstream oss;
         oss << "SCHEDULE_HOST_DOWNTIME;2;" << t2 << ";" << (t2 + 3600)
             << ";1;0;3600;Merethis;Host #2 is going in downtime";
-        commander.execute(oss.str());
+        cbmod_commander.execute(oss.str());
       }
-      commander.execute("PROCESS_SERVICE_CHECK_RESULT;2;3;2;output2-2-3");
-      commander.execute("PROCESS_SERVICE_CHECK_RESULT;2;4;1;output2-2-4");
+      engine_commander.execute("PROCESS_SERVICE_CHECK_RESULT;2;3;2;output2-2-3");
+      engine_commander.execute("PROCESS_SERVICE_CHECK_RESULT;2;4;1;output2-2-4");
     }
     sleep_for(3);
 
@@ -196,12 +199,12 @@ int main() {
         std::ostringstream oss;
         oss << "SCHEDULE_SVC_DOWNTIME;1;1;" << t3 << ";" << (t3 + 2000)
             << ";1;0;2000;Centreon;Service #1-#1 is going in downtime";
-        commander.execute(oss.str());
+        cbmod_commander.execute(oss.str());
       }
-      commander.execute("ACKNOWLEDGE_SVC_PROBLEM;1;2;0;0;1;Broker;Ack SVC1-2");
-      commander.execute("PROCESS_HOST_CHECK_RESULT;2;1;output3-2");
-      commander.execute("ACKNOWLEDGE_SVC_PROBLEM;2;3;2;0;1;Engine;Ack SVC2-3");
-      commander.execute("ACKNOWLEDGE_SVC_PROBLEM;2;4;0;0;1;foo;Ack SVC2-4");
+      cbmod_commander.execute("ACKNOWLEDGE_SVC_PROBLEM;1;2;1;0;1;Broker;Ack SVC1-2");
+      engine_commander.execute("PROCESS_HOST_CHECK_RESULT;2;1;output3-2");
+      cbmod_commander.execute("ACKNOWLEDGE_SVC_PROBLEM;2;3;1;0;1;Engine;Ack SVC2-3");
+      cbmod_commander.execute("ACKNOWLEDGE_SVC_PROBLEM;2;4;0;0;1;foo;Ack SVC2-4");
     }
     sleep_for(3);
 
@@ -210,25 +213,19 @@ int main() {
 
     // Step 4.
     {
-      commander.execute("PROCESS_SVC_CHECK_RESULT;1;2;1;output4-1-2");
-      commander.execute("ACKNOWLEDGE_HOST_PROBLEM;2;2;0;1;Centreon Map;Ack HST2");
+      engine_commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;2;1;output4-1-2");
+      cbmod_commander.execute("ACKNOWLEDGE_HOST_PROBLEM;2;2;0;1;Centreon Map;Ack HST2");
       {
         std::ostringstream oss;
         oss << "SCHEDULE_SVC_DOWNTIME;2;4;" << t4 << ";" << (t4 + 1600)
             << ";0;0;1000;Merethis;Service #2-#4 is going in downtime";
-        commander.execute(oss.str());
+        cbmod_commander.execute(oss.str());
       }
     }
     sleep_for(3);
 
     // T5.
     time_t t5(time(NULL));
-
-    // Step 5.
-    {
-      commander.execute("PROCESS_HOST_CHECK_RESULT;2;2;output5-2");
-    }
-    sleep_for(3);
 
     // Check host state events.
     {
@@ -251,38 +248,65 @@ int main() {
         // Start = UP.
         { 1, t0, t1, false, t2, t3, 0, true, 0, 0, false },
         // Step 2 = UNREACHABLE.
-        { 1, t2, t3, true, 0, 0, 2, true, 0, 0, false },
+        { 1, t2, t3, true, 0, 0, 1, true, 0, 0, false },
 
         /*
         ** Host 2.
         */
-        // Start = PENDING.
-        { 2, t0, t1, false, t1, t2, 4, true, 0, 0, false },
-        // Step 1 = UP.
-        { 2, t1, t2, false, t2, t3, 0, true, 0, 0, false },
+        // Start = UP.
+        { 2, t0, t1, false, t2, t3, 0, true, 0, 0, false },
         // Step 2 = DOWNTIME.
         { 2, t2, t3, false, t3, t4, 0, true, 0, 0, true },
         // Step 3 = DOWN, step 4 = ACK (STICKY).
-        { 2, t3, t4, false, t4, t5, 1, false, t4, t5, true },
-        // Step 5 = UNREACHABLE.
-        { 2, t4, t5, true, 0, 0, 2, false, t4, t5, true },
+        { 2, t3, t4, true, 0, 0, 1, false, t4, t5, true },
 
-        { 3, t0, t1, false, t1, t2, 4, true, 0, 0, false },
-        { 3, t1, t2, true, 0, 0, 0, true, 0, 0, false },
-        { 4, t0, t1, false, t1, t2, 4, true, 0, 0, false },
-        { 4, t1, t2, true, 0, 0, 0, true, 0, 0, false },
-        { 5, t0, t1, false, t1, t2, 4, true, 0, 0, false },
-        { 5, t1, t2, true, 0, 0, 0, true, 0, 0, false },
-        { 6, t0, t1, false, t1, t2, 4, true, 0, 0, false },
-        { 6, t1, t2, true, 0, 0, 0, true, 0, 0, false },
-        { 7, t0, t1, false, t1, t2, 4, true, 0, 0, false },
-        { 7, t1, t2, true, 0, 0, 0, true, 0, 0, false },
-        { 8, t0, t1, false, t1, t2, 4, true, 0, 0, false },
-        { 8, t1, t2, true, 0, 0, 0, true, 0, 0, false },
-        { 9, t0, t1, false, t1, t2, 4, true, 0, 0, false },
-        { 9, t1, t2, true, 0, 0, 0, true, 0, 0, false },
-        { 10, t0, t1, false, t1, t2, 4, true, 0, 0, false },
-        { 10, t1, t2, true, 0, 0, 0, true, 0, 0, false }
+        /*
+        ** Host 3.
+        */
+        // Start = UP.
+        { 3, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+
+        /*
+        ** Host 4.
+        */
+        // Start = UP.
+        { 4, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+
+        /*
+        ** Host 5.
+        */
+        // Start = UP.
+        { 5, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+
+        /*
+        ** Host 6.
+        */
+        // Start = UP.
+        { 6, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+
+        /*
+        ** Host 7.
+        */
+        // Start = UP.
+        { 7, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+
+        /*
+        ** Host 8.
+        */
+        // Start = UP.
+        { 8, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+
+        /*
+        ** Host 9.
+        */
+        // Start = UP.
+        { 9, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+
+        /*
+        ** Host 10.
+        */
+        // Start = UP.
+        { 10, t0, t1, true, 0, 0, 0, true, 0, 0, false }
       };
 
       // Get host state events.
@@ -373,97 +397,139 @@ int main() {
         time_t       ack_time_high;
         bool         in_downtime;
       } const          entries[] = {
-	/*
-	** Service 1-1.
-	*/
-	// Start = UNKNOWN.
-        { 1, 1, t0, t1, false, t1, t2, 3, true, 0, 0, false },
-	// Step 1 = OK.
-        { 1, 1, t1, t2, false, t2, t3, 0, true, 0, 0, false },
-	// Step 2 = WARNING.
-        { 1, 1, t2, t3, false, t3, t4, 3, true, 0, 0, false },
-	// Step 3 = DOWNTIME.
-	{ 1, 1, t3, t4, true, 0, 0, 3, true, 0, 0, true },
+        /*
+        ** Service 1-1.
+        */
+        // Start = OK.
+        { 1, 1, t0, t1, false, t2, t3, 0, true, 0, 0, false },
+        // Step 2 = WARNING.
+        { 1, 1, t2, t3, false, t3, t4, 1, true, 0, 0, false },
+        // Step 3 = DOWNTIME.
+        { 1, 1, t3, t4, true, 0, 0, 1, true, 0, 0, true },
 
-	/*
-	** Service 1-2.
-	*/
-	// Start = UNKNOWN.
-        { 1, 2, t0, t1, false, t1, t2, 3, true, 0, 0, false },
-	// Step 1 = OK.
-        { 1, 2, t1, t2, false, t2, t3, 0, true, 0, 0, false },
-	// Step 2 = CRITICAL, step 3 = ACK (STICKY), step 4 = WARNING.
-        { 1, 2, t2, t3, true, 0, 0, 3, false, t3, t4, false },
-
-	/*
-	** Service 2-3.
-	*/
-	// Start = UNKNOWN.
-	{ 2, 3, t0, t1, false, t1, t2, 3, true, 0, 0, false },
-	// Step 1 = OK.
-	{ 2, 3, t1, t2, false, t2, t3, 0, true, 0, 0, false },
+        /*
+        ** Service 1-2.
+        */
+        // Start = OK.
+        { 1, 2, t0, t1, false, t2, t3, 0, true, 0, 0, false },
         // Step 2 = CRITICAL, step 3 = ACK (STICKY).
-	{ 2, 3, t2, t3, true, 0, 0, 2, false, t3, t4, false },
+        { 1, 2, t2, t3, false, t4, t5, 2, false, t3, t4, false },
+        // Step 4 = WARNING.
+        { 1, 2, t4, t5, true, 0, 0, 1, false, t4, t5, false },
+
+        /*
+        ** Service 2-3.
+        */
+        // Start = OK.
+        { 2, 3, t0, t1, false, t2, t3, 0, true, 0, 0, false },
+        // Step 2 = CRITICAL, step 3 = ACK (STICKY).
+        { 2, 3, t2, t3, true, 0, 0, 2, false, t3, t4, false },
+
+        /*
+        ** Service 2-4.
+        */
+        // Start = OK.
+        { 2, 4, t0, t1, false, t2, t3, 0, true, 0, 0, false },
+        // Step 2 = WARNING, step 3 = ACK (NORMAL).
+        { 2, 4, t2, t3, false, t4, t5, 1, false, t3, t4, false },
+        // Step 4 = DOWNTIME.
+        { 2, 4, t4, t5, true, 0, 0, 1, false, t4, t5, true },
 
 	/*
-	** Service 2-4.
+	** Service 3-5.
 	*/
-	// Start = UNKNOWN.
-	{ 2, 4, t0, t1, false, t1, t2, 3, true, 0, 0, false },
-	// Step 1 = OK.
-	{ 2, 4, t1, t2, false, t2, t3, 0, true, 0, 0, false },
-	// Step 2 = WARNING, step 3 = ACK (NORMAL).
-	{ 2, 4, t2, t3, false, t4, t5, 3, false, t3, t4, false },
-	// Step 4 = DOWNTIME.
-	{ 2, 4, t4, t5, true, 0, 0, 3, false, t4, t5, true },
+	// Start = OK.
+        { 3, 5, t0, t1, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 3, 5, t0, t1, false, t1, t2, 3, true, 0, 0, false },
-	{ 3, 5, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+	/*
+	** Service 3-6.
+	*/
+	// Start = OK.
+        { 3, 6, t0, t1, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 3, 6, t0, t1, false, t1, t2, 3, true, 0, 0, false },
-	{ 3, 6, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+	/*
+	** Service 4-7.
+	*/
+	// Start = OK.
+        { 4, 7, t0, t1, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 4, 7, t0, t1, false, t1, t2, 3, true, 0, 0, false },
-	{ 4, 7, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+	/*
+	** Service 4-8.
+	*/
+	// Start = OK.
+        { 4, 8, t0, t1, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 4, 8, t0, t1, false, t1, t2, 3, true, 0, 0, false },
-	{ 4, 8, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+	/*
+	** Service 5-9.
+	*/
+	// Start = OK.
+        { 5, 9, t0, t1, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 5, 9, t0, t1, false, t1, t2, 3, true, 0, 0, false },
-	{ 5, 9, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+	/*
+	** Service 5-10.
+	*/
+	// Start = OK.
+        { 5, 10, t1, t2, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 5, 10, t0, t1, false, t1, t2, 3, true, 0, 0, false },
-	{ 5, 10, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+	/*
+	** Service 6-11.
+	*/
+	// Start = OK.
+        { 6, 11, t0, t1, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 6, 11, t0, t1, false, t1, t2, 3, true, 0, 0, false },
-	{ 6, 11, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+	/*
+	** Service 6-12.
+	*/
+	// Start = OK.
+        { 6, 12, t0, t1, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 6, 12, t0, t1, false, t1, t2, 3, true, 0, 0, false },
-	{ 6, 12, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+	/*
+	** Service 7-13.
+	*/
+	// Start = OK.
+        { 7, 13, t0, t1, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 7, 13, t0, t1, false, t1, t2, 3, true, 0, 0, false },
-	{ 7, 13, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+	/*
+	** Service 7-14.
+	*/
+	// Start = OK.
+        { 7, 14, t0, t1, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 7, 14, t0, t1, false, t1, t2, 3, true, 0, 0, false },
-	{ 7, 14, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+	/*
+	** Service 8-15.
+	*/
+	// Start = OK.
+        { 8, 15, t0, t1, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 8, 15, t0, t1, false, t1, t2, 3, true, 0, 0, false },
-	{ 8, 15, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+	/*
+	** Service 8-16.
+	*/
+	// Start = OK.
+        { 8, 16, t0, t1, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 8, 16, t0, t1, false, t1, t2, 3, true, 0, 0, false },
-	{ 8, 16, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+	/*
+	** Service 9-17.
+	*/
+	// Start = OK.
+        { 9, 17, t0, t1, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 9, 17, t0, t1, false, t1, t2, 3, true, 0, 0, false },
-	{ 9, 17, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+	/*
+	** Service 9-18.
+	*/
+	// Start = OK.
+        { 9, 18, t0, t1, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 9, 18, t0, t1, false, t1, t2, 3, true, 0, 0, false },
-	{ 9, 18, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+	/*
+	** Service 10-19.
+	*/
+	// Start = OK.
+        { 10, 19, t0, t1, true, 0, 0, 0, true, 0, 0, false },
 
-	{ 10, 19, t0, t1, false, t1, t2, 3, true, 0, 0, false },
-	{ 10, 19, t1, t2, true, 0, 0, 0, true, 0, 0, false },
-
-	{ 10, 20, t0, t1, false, t1, t2, 3, true, 0, 0, false },
-	{ 10, 20, t1, t2, true, 0, 0, 0, true, 0, 0, false }
+	/*
+	** Service 10-20.
+	*/
+	// Start = OK.
+        { 10, 20, t0, t1, true, 0, 0, 0, true, 0, 0, false }
       };
 
       // Get service state events.
@@ -578,9 +644,11 @@ int main() {
   }
   catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
+    db.set_remove_db_on_close(false);
   }
   catch (...) {
     std::cerr << "unknown exception" << std::endl;
+    db.set_remove_db_on_close(false);
   }
 
   // Cleanup.

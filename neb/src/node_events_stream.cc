@@ -451,7 +451,7 @@ void node_events_stream::_parse_ack(
     ack->entry_time = t;
     ack->host_id = id.get_host_id();
     ack->service_id = id.get_service_id();
-    ack->is_sticky = (sticky == 2);
+    ack->is_sticky = sticky;
     ack->persistent_comment = (persistent_comment == 1);
     ack->notify_contacts = (notify == 1 || notify == 2);
     ack->notify_only_if_not_already_acknowledged = (notify == 2);
