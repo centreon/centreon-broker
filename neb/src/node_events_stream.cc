@@ -82,7 +82,7 @@ node_events_stream::~node_events_stream() {
     _save_cache();
   } catch (std::exception const& e) {
     logging::error(logging::medium)
-      << "neb: node events stream: error while trying to save cache: "
+      << "node events: error while trying to save cache: "
       << e.what();
   }
 }
@@ -117,7 +117,7 @@ void node_events_stream::update() {
   _save_cache();
   } catch (std::exception const& e) {
     logging::error(logging::medium)
-      << "neb: node events stream: error while trying to save cache: "
+      << "node events: error while trying to save cache: "
       << e.what();
   }
 
@@ -150,7 +150,7 @@ unsigned int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
       parse_command(d.ref_as<command_file::external_command const>(), pblsh);
     } catch (std::exception const& e) {
       logging::error(logging::medium)
-        << "neb: node events stream can't parse command '"
+        << "node events: can't parse command '"
         << d.ref_as<command_file::external_command>().command
         << "': " << e.what();
     }
@@ -211,7 +211,7 @@ void node_events_stream::parse_command(
   buffer args(line.size());
 
   logging::info(logging::medium)
-    << "neb: node events stream received command: '" << exc.command << "'";
+    << "node events: received command '" << exc.command << "'";
 
   // Parse timestamp.
   unsigned long timestamp;
@@ -264,7 +264,7 @@ void node_events_stream::set_timeperiods(
 void node_events_stream::_process_host_status(
                            neb::host_status const& hst) {
   logging::debug(logging::low)
-    << "neb: node events stream: processing host status for ("
+    << "node events: processing host status for ("
     << hst.host_id << "), state '" << hst.last_hard_state << "'";
   node_id id(hst.host_id);
   short prev_state = _node_cache.get_current_state(id);
@@ -287,7 +287,7 @@ void node_events_stream::_process_host_status(
 void node_events_stream::_process_service_status(
                            neb::service_status const& sst) {
   logging::debug(logging::low)
-    << "neb: node events stream: processing host status for ("
+    << "node events: processing host status for ("
     << sst.host_id << ", " << sst.service_id << "), state '"
     << sst.last_hard_state << "'";
   node_id id(sst.host_id, sst.service_id);
@@ -355,7 +355,7 @@ void node_events_stream::_remove_expired_acknowledgement(
   if (found != _acknowledgements.end()
         && (state == 0 || (!found->is_sticky && prev_state != state))) {
     logging::info(logging::medium)
-      << "neb: node events stream: removing expired acknowledgement for "
+      << "node events: removing expired acknowledgement for "
          "(" << node.get_host_id() << ", " << node.get_service_id() << ")";
     // Close the ack.
     found->deletion_time = check_time;
@@ -420,7 +420,7 @@ void node_events_stream::_parse_ack(
                            const char* args,
                            io::stream& stream) {
   logging::debug(logging::medium)
-    << "neb: node events stream: "
+    << "node events: "
        "parsing acknowledgement command: '" << args << "'";
 
   misc::tokenizer tok(args);
@@ -461,11 +461,12 @@ void node_events_stream::_parse_ack(
 
     // Send the acknowledgement.
     logging::info(logging::high)
-      << "neb: node events stream: sending ack for "
+      << "node events: sending ack for "
          "(" << ack->host_id << ", " << ack->service_id << ")";
     stream.write(ack);
 
-  } catch (std::exception const& e) {
+  }
+  catch (std::exception const& e) {
     throw (exceptions::msg()
            << "couldn't parse the arguments for the acknowledgement: "
            <<  e.what());
@@ -488,7 +489,7 @@ void node_events_stream::_parse_remove_ack(
                            const char* args,
                            io::stream& stream) {
   logging::debug(logging::medium)
-    << "neb: node events stream: "
+    << "node events: "
        "parsing acknowledgement removal command: '" << args << "'";
 
   misc::tokenizer tok(args);
@@ -520,10 +521,11 @@ void node_events_stream::_parse_remove_ack(
 
     // Send the closed ack.
     logging::info(logging::high)
-      << "neb: node events stream: erasing ack for "
+      << "node events: erasing acknowledgement for "
          "(" << ack->host_id << ", " << ack->service_id << ")";
     stream.write(ack);
-  } catch (std::exception const& e) {
+  }
+  catch (std::exception const& e) {
     throw (exceptions::msg()
            << "couldn't parse the arguments for the acknowledgement removal: "
            << e.what());
@@ -549,8 +551,7 @@ void node_events_stream::_parse_downtime(
 
   (void)t;
   logging::debug(logging::medium)
-    << "neb: node events stream: "
-       "parsing downtime command: '" << args << "'";
+    << "node events: parsing downtime command '" << args << "'";
 
   try {
     // Parse.
@@ -593,12 +594,13 @@ void node_events_stream::_parse_downtime(
     d->is_recurring = !d->recurring_timeperiod.isEmpty();
 
     logging::info(logging::high)
-      << "neb: node events stream: sending downtime for "
+      << "node events: sending downtime for "
          "(" << d->host_id << ", " << d->service_id << ")";
 
     _register_downtime(*d, &stream);
 
-  } catch (std::exception const& e) {
+  }
+  catch (std::exception const& e) {
     throw (exceptions::msg()
            << "error while parsing downtime arguments: " << e.what());
   }
@@ -623,8 +625,7 @@ void node_events_stream::_parse_remove_downtime(
   unsigned int downtime_id;
 
   logging::debug(logging::medium)
-    << "neb: node events stream: "
-       "parsing downtime removal command: '" << args << "'";
+    << "node events: parsing downtime removal command '" << args << "'";
 
   if (::sscanf(args, "%u", &downtime_id) != 1)
     throw (exceptions::msg() << "error while parsing remove downtime arguments");
@@ -636,7 +637,7 @@ void node_events_stream::_parse_remove_downtime(
            << "couldn't find a downtime for downtime id " << downtime_id);
 
   logging::info(logging::high)
-    << "neb: node events stream: erasing downtime '" << downtime_id << "'";
+    << "node events: erasing downtime '" << downtime_id << "'";
 
   _delete_downtime(*found, t, &stream);
 }
@@ -773,8 +774,7 @@ void node_events_stream::_load_cache() {
   if (_cache.isNull())
     return ;
 
-  logging::info(logging::medium)
-    << "neb: node events stream: loading cache";
+  logging::info(logging::medium) << "node events: loading cache";
 
   misc::shared_ptr<io::data> d;
   while (true) {
@@ -799,7 +799,7 @@ void node_events_stream::_process_loaded_event(
   if (d->type() == neb::acknowledgement::static_type()) {
     neb::acknowledgement const& ack = d.ref_as<neb::acknowledgement const>();
     logging::debug(logging::medium)
-      << "neb: node events stream: loading acknowledgement for ("
+      << "node events: loading acknowledgement for ("
       << ack.host_id << ", " << ack.service_id << ")"
       << ", starting at " << ack.entry_time;
     _acknowledgements[node_id(ack.host_id, ack.service_id)] = ack;
@@ -807,7 +807,7 @@ void node_events_stream::_process_loaded_event(
   else if (d->type() == neb::downtime::static_type()) {
     neb::downtime const& dwn = d.ref_as<neb::downtime const>();
     logging::debug(logging::medium)
-      << "neb: node events stream: loading downtime for ("
+      << "node events: loading downtime for ("
       << dwn.host_id << ", " << dwn.service_id << ")"
       << ", starting at " << dwn.start_time;
     _register_downtime(d.ref_as<downtime const>(), NULL);
@@ -883,8 +883,7 @@ void node_events_stream::_save_cache() {
   if (_cache.isNull())
     return ;
 
-  logging::info(logging::medium)
-    << "neb: node events stream: saving cache";
+  logging::info(logging::medium) << "node events: saving cache";
 
   _cache->transaction();
   // Serialize the node cache.
@@ -971,7 +970,7 @@ void node_events_stream::_spawn_recurring_downtime(
 
   if (tp == _timeperiods.end()) {
     logging::error(logging::medium)
-      << "neb: node events stream: ignoring recurring downtime "
+      << "node events: ignoring recurring downtime "
       << dwn.internal_id << ", timeperiod '" << dwn.recurring_timeperiod
       << "' does not exist";
     return ;

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -63,13 +63,13 @@ void downtime_scheduler::run() {
                                    : 0;
 
     logging::debug(logging::medium)
-      << "neb: downtime scheduler sleeping for "
+      << "node_events: downtime scheduler sleeping for "
       << wait_for / 1000.0 << " seconds";
 
     _general_condition.wait(&_general_mutex, wait_for);
 
     logging::debug(logging::medium)
-        << "neb: downtime scheduler waking up";
+      << "node events: downtime scheduler waking up";
 
     // The should exit flag was set - exit.
     if (_should_exit)
@@ -115,7 +115,7 @@ void downtime_scheduler::add_downtime(
                            downtime const& dwn) {
   if (dwn.start_time >= dwn.end_time) {
     logging::debug(logging::medium)
-      << "neb: attempt to schedule a downtime when start time "
+      << "node events: attempt to schedule a downtime when start time "
          "is superior or equal to its end time";
     return ;
   }

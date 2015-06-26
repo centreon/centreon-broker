@@ -24,10 +24,9 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**
- *  Default Constructor.
+ *  Default constructor.
  */
-node_cache::node_cache()
-  {}
+node_cache::node_cache() {}
 
 /**
  *  Copy constructor.
@@ -195,9 +194,9 @@ neb::service_status* node_cache::get_service_status(node_id id) {
  *  @param[in] hst  The host event.
  */
 void node_cache::_process_host(
-                           neb::host const& hst) {
+                   neb::host const& hst) {
   logging::debug(logging::medium)
-    << "neb: node events stream: processing host declaration for ("
+    << "node events: processing host declaration for ("
     << hst.host_id << ")";
   _hosts[node_id(hst.host_id)] = hst;
   _names_to_node[qMakePair(hst.host_name, QString())] = node_id(hst.host_id);
@@ -209,9 +208,9 @@ void node_cache::_process_host(
  *  @param[in] svc  The service event.
  */
 void node_cache::_process_service(
-                           neb::service const& svc) {
+                   neb::service const& svc) {
   logging::debug(logging::medium)
-    << "neb: node events stream: processing service declaration for ("
+    << "node events: processing service declaration for ("
     << svc.host_id << ", " << svc.service_id << ")";
   _services[node_id(svc.host_id, svc.service_id)] = svc;
   _names_to_node[qMakePair(svc.host_name, svc.service_description)]
@@ -224,14 +223,13 @@ void node_cache::_process_service(
  *  @param[in] hst  Host status event.
  */
 void node_cache::_process_host_status(
-                           neb::host_status const& hst) {
+                   neb::host_status const& hst) {
   logging::debug(logging::medium)
-    << "neb: node events stream: processing host status for ("
+    << "node events: processing host status for ("
     << hst.host_id << ")";
   node_id id(hst.host_id);
-  QHash<node_id, neb::host_status>::const_iterator found
-    = _host_statuses.find(id);
   _host_statuses[id] = hst;
+  return ;
 }
 
 /**
@@ -240,12 +238,11 @@ void node_cache::_process_host_status(
  *  @param[in] sst  Service status event.
  */
 void node_cache::_process_service_status(
-                           neb::service_status const& sst) {
+                   neb::service_status const& sst) {
   logging::debug(logging::medium)
-    << "neb: node events stream: processing service status for ("
+    << "node events: processing service status for ("
     << sst.host_id << ", " << sst.service_id  << ")";
   node_id id(sst.host_id, sst.service_id);
-  QHash<node_id, neb::service_status>::const_iterator found
-    = _service_statuses.find(id);
   _service_statuses[id] = sst;
+  return ;
 }
