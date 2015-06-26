@@ -275,7 +275,6 @@ void node_events_stream::_process_host_status(
     hst.last_hard_state);
   _trigger_floating_downtime(
     id,
-    hst.last_hard_state_change,
     hst.last_hard_state);
 }
 
@@ -299,7 +298,6 @@ void node_events_stream::_process_service_status(
     sst.last_hard_state);
   _trigger_floating_downtime(
     id,
-    sst.last_hard_state_change,
     sst.last_hard_state);
 }
 
@@ -369,13 +367,10 @@ void node_events_stream::_remove_expired_acknowledgement(
  *  Trigger all the floating downtime of a node.
  *
  *  @param[in] node        A node.
- *  @param[in] check_time  The time of its last check.
- *  @param[in] prev_state  Its previous state.
  *  @param[in] state       Its current state.
  */
 void node_events_stream::_trigger_floating_downtime(
                            node_id node,
-                           timestamp check_time,
                            short state) {
   if (state == 0)
     return ;
@@ -386,19 +381,20 @@ void node_events_stream::_trigger_floating_downtime(
        it != end;
        ++it) {
     downtime const& dwn = *it;
+    time_t now(::time(NULL));
     // Trigger downtimes not already triggered.
     if (!dwn.fixed
-          && check_time >= dwn.start_time
-          && check_time < dwn.end_time
-          && dwn.actual_start_time.is_null())
+        && now >= dwn.start_time
+        && now < dwn.end_time
+        && dwn.actual_start_time.is_null())
       _downtime_scheduler.add_downtime(
-        check_time,
-        check_time + dwn.duration,
+        now,
+        now + dwn.duration,
         dwn);
     // Remove expired non-triggered downtimes.
     if (!dwn.fixed
-          && check_time >= dwn.end_time
-          && dwn.actual_start_time.is_null()) {
+        && now >= dwn.end_time
+        && dwn.actual_start_time.is_null()) {
       _downtimes.delete_downtime(dwn);
     }
   }
@@ -919,26 +915,27 @@ void node_events_stream::_schedule_downtime(
     _downtime_scheduler.add_downtime(dwn.start_time, dwn.end_time, dwn);
   else {
     node_id id(dwn.host_id, dwn.service_id);
+    time_t now(::time(NULL));
     if (id.is_host()) {
       neb::host_status* hst = _node_cache.get_host_status(id);
       if (hst != NULL
             && hst->last_hard_state != 0
-            && hst->last_hard_state_change >= dwn.start_time
-            && hst->last_hard_state_change < dwn.end_time)
+            && now >= dwn.start_time
+            && now < dwn.end_time)
         _downtime_scheduler.add_downtime(
-                              hst->last_hard_state_change,
-                              hst->last_hard_state_change + dwn.duration,
+                              now,
+                              now + dwn.duration,
                               dwn);
     }
     else {
       neb::service_status* sst = _node_cache.get_service_status(id);
       if (sst != NULL
-            && sst->last_hard_state != 0
-            && sst->last_hard_state_change >= dwn.start_time
-            && sst->last_hard_state_change < dwn.end_time)
+          && sst->last_hard_state != 0
+          && now >= dwn.start_time
+          && now < dwn.end_time)
         _downtime_scheduler.add_downtime(
-                              sst->last_hard_state_change,
-                              sst->last_hard_state_change + dwn.duration,
+                              now,
+                              now + dwn.duration,
                               dwn);
     }
   }

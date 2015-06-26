@@ -469,7 +469,7 @@ int main() {
 	** Service 5-10.
 	*/
 	// Start = OK.
-        { 5, 10, t1, t2, true, 0, 0, 0, true, 0, 0, false },
+        { 5, 10, t0, t1, true, 0, 0, 0, true, 0, 0, false },
 
 	/*
 	** Service 6-11.

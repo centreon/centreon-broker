@@ -713,7 +713,10 @@ void node::_generate_state_event(
   logging::debug(logging::medium)
     << "correlation: node (" << host_id << ", " << service_id
     << ") opening new state event";
-  if (acknowledgement.get() && !acknowledgement->is_sticky) {
+  if (acknowledgement.get()
+      && !acknowledgement->is_sticky
+      // Downtime start/stop do not remove non-sticky acknowledgements.
+      && (in_downtime == new_in_downtime)) {
     logging::debug(logging::low)
       << "correlation: reseting non-sticky acknowledgement of node ("
       << host_id << ", " << service_id << ")";

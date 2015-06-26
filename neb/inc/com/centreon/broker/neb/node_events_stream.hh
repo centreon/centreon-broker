@@ -90,10 +90,7 @@ namespace        neb {
                    timestamp check_time,
                    short prev_state,
                    short state);
-    void         _trigger_floating_downtime(
-                   node_id node,
-                   timestamp check_time,
-                   short state);
+    void         _trigger_floating_downtime(node_id node, short state);
 
     // Acks and downtimes caches.
     QHash<node_id, neb::acknowledgement>
