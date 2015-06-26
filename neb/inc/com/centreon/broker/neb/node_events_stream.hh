@@ -117,22 +117,18 @@ namespace        neb {
     };
     void         _parse_ack(
                    ack_type type,
-                   timestamp t,
                    const char* args,
                    io::stream& stream);
     void         _parse_remove_ack(
                    ack_type type,
-                   timestamp t,
                    const char* args,
                    io::stream& stream);
     void         _parse_downtime(
                    down_type type,
-                   timestamp t,
                    const char* args,
                    io::stream& stream);
     void         _parse_remove_downtime(
                    down_type type,
-                   timestamp t,
                    const char* args,
                    io::stream& stream);
     void          _schedule_downtime(
