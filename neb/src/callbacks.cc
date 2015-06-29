@@ -442,7 +442,7 @@ int neb::callback_custom_variable(int callback_type, void* data) {
                       && (it->first != existing_svc->first))
                     ids_changed = true;
                 }
-                if (!ids_changed) {
+                if (ids_changed) {
                   // Generate service event.
                   nebstruct_adaptive_service_data nsasd;
                   memset(&nsasd, 0, sizeof(nsasd));
