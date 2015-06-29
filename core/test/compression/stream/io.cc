@@ -108,7 +108,7 @@ int main() {
         misc::shared_ptr<io::data> d;
         cs.read(d);
         if (d.isNull()
-            || (io::events::data_type<io::events::internal, 1>::value != d->type()))
+            || (io::raw::static_type() != d->type()))
           retval |= 1;
         else {
           data = d.staticCast<io::raw>();

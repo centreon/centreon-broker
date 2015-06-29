@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-213 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -32,6 +32,6 @@ int main() {
   io::raw data;
 
   // Check construction.
-  return ((data.type() != io::events::data_type<io::events::internal, 1>::value)
+  return ((data.type() != io::raw::static_type())
 	  || (data.size() != 0));
 }

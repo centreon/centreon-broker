@@ -113,6 +113,7 @@ namespace                correlation {
     void                 _generate_state_event(
                            timestamp start_time,
                            short new_status,
+                           bool new_in_downtime,
                            io::stream* stream);
     correlation::state   _open_state_event(
                            timestamp start_time) const;

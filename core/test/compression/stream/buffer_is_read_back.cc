@@ -92,7 +92,7 @@ int main() {
     misc::shared_ptr<io::data> data;
     cs.read(data);
     if (!data.isNull()
-        && (io::events::data_type<io::events::internal, 1>::value
+        && (io::raw::static_type()
             == data->type())) {
       misc::shared_ptr<io::raw> raw;
       raw = data.staticCast<io::raw>();

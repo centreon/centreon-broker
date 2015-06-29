@@ -569,7 +569,8 @@ void config_write(
   // Base configuration.
   ofs << "log_file=monitoring_engine.log\n"
       << "command_file=monitoring_engine.cmd\n"
-      << "state_retention_file=\n";
+      << "state_retention_file=\n"
+      << "check_result_reaper_frequency=2\n";
 
   // Subconfiguration files.
   std::string hosts_file;

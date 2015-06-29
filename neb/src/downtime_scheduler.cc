@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -38,17 +38,12 @@ downtime_scheduler::downtime_scheduler()
  *  Called by the downtime manager thread when it starts.
  */
 void downtime_scheduler::run() {
-  bool just_started = true;
-
   QMutexLocker lock(&_general_mutex);
 
-  while (1) {
-    // Signal the thread waiting on us that we have started.
-    if (just_started) {
-      _started.release();
-      just_started = false;
-    }
+  // Signal the thread waiting on us that we have started.
+  _started.release();
 
+  while (1) {
     // Wait until the first downtime in the queue - or forever until awakened
     // if none.
     time_t first_time = std::min(
@@ -63,13 +58,13 @@ void downtime_scheduler::run() {
                                    : 0;
 
     logging::debug(logging::medium)
-      << "neb: downtime scheduler sleeping for "
+      << "node events: downtime scheduler sleeping for "
       << wait_for / 1000.0 << " seconds";
 
     _general_condition.wait(&_general_mutex, wait_for);
 
     logging::debug(logging::medium)
-        << "neb: downtime scheduler waking up";
+      << "node events: downtime scheduler waking up";
 
     // The should exit flag was set - exit.
     if (_should_exit)
@@ -115,7 +110,7 @@ void downtime_scheduler::add_downtime(
                            downtime const& dwn) {
   if (dwn.start_time >= dwn.end_time) {
     logging::debug(logging::medium)
-      << "neb: attempt to schedule a downtime when start time "
+      << "node events: attempt to schedule a downtime when start time "
          "is superior or equal to its end time";
     return ;
   }
@@ -129,15 +124,14 @@ void downtime_scheduler::add_downtime(
   // Don't start already started downtimes.
   if (dwn.actual_start_time.is_null())
     _downtime_starts.insert(std::make_pair(start_time, dwn.internal_id));
-  // Don't end already ended diowntimes.
+  // Don't end already ended downtimes.
   if (dwn.actual_end_time.is_null())
     _downtime_ends.insert(std::make_pair(end_time, dwn.internal_id));
 
-  // If we just added a timestamp < the previous first timestamps,
-  // wake the thread up.
-  if (_get_first_timestamp(_downtime_starts) != first_starting_timestamp
-        || _get_first_timestamp(_downtime_ends) != first_ending_timestamp)
-    _general_condition.wakeAll();
+  // Wake thread.
+  _general_condition.wakeAll();
+
+  return ;
 }
 
 /**
@@ -183,9 +177,9 @@ void downtime_scheduler::remove_downtime(unsigned int internal_id) {
  */
 timestamp downtime_scheduler::_get_first_timestamp(
             std::multimap<timestamp, unsigned int> const& list) {
-  return (list.begin() != list.end() ?
-            list.begin()->first :
-            timestamp());
+  return (list.begin() != list.end()
+          ? list.begin()->first
+          : timestamp());
 }
 
 /**
@@ -229,8 +223,13 @@ void downtime_scheduler::_process_downtimes() {
  */
 void downtime_scheduler::_start_downtime(downtime& dwn, io::stream* stream) {
   dwn.actual_start_time = ::time(NULL);
+  logging::debug(logging::medium)
+    << "node events: starting downtime (" << dwn.start_time << "-"
+    << dwn.end_time << ") on node (" << dwn.host_id << ", "
+    << dwn.service_id << ") at " << dwn.actual_start_time;
   if (stream)
     stream->write(misc::make_shared(new downtime(dwn)));
+  return ;
 }
 
 /**
@@ -241,6 +240,11 @@ void downtime_scheduler::_start_downtime(downtime& dwn, io::stream* stream) {
  */
 void downtime_scheduler::_end_downtime(downtime& dwn, io::stream* stream) {
   dwn.actual_end_time = ::time(NULL);
+  logging::debug(logging::medium)
+    << "node events: stopping downtime (" << dwn.start_time << "-"
+    << dwn.end_time << ") on node (" << dwn.host_id << ", "
+    << dwn.service_id << ") at " << dwn.actual_end_time;
   if (stream)
     stream->write(misc::make_shared(new downtime(dwn)));
+  return ;
 }

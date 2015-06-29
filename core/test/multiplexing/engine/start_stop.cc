@@ -42,7 +42,7 @@ int main() {
 
   // Subscriber.
   uset<unsigned int> filters;
-  filters.insert(io::events::data_type<io::events::internal, 1>::value);
+  filters.insert(io::raw::static_type());
   multiplexing::subscriber
     s("core_multiplexing_engine_start_stop", "");
   s.get_muxer().set_read_filters(filters);
@@ -73,7 +73,7 @@ int main() {
     misc::shared_ptr<io::data> data;
     s.get_muxer().read(data, 0);
     if (data.isNull()
-        || (data->type() != io::events::data_type<io::events::internal, 1>::value))
+        || (data->type() != io::raw::static_type()))
       retval |= 1;
     else {
       misc::shared_ptr<io::raw> raw(data.staticCast<io::raw>());
@@ -97,7 +97,7 @@ int main() {
     misc::shared_ptr<io::data> data;
     s.get_muxer().read(data, 0);
     if (data.isNull()
-        || (data->type() != io::events::data_type<io::events::internal, 1>::value))
+        || (data->type() != io::raw::static_type()))
       retval |= 1;
     else {
       misc::shared_ptr<io::raw> raw(data.staticCast<io::raw>());

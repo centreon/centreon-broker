@@ -483,13 +483,10 @@ void stream::_prepare() {
   id["host_id"] = false;
   id["service_id"] = false;
   id["start_time"] = false;
-  added_fields.clear();
-  added_fields.push_back("service_id");
   _prepare_update<correlation::state>(
                                  _service_state_update,
                                  "rt_servicestateevents",
-                                 id,
-                                 added_fields);
+                                 id);
 
   {
     std::string query(

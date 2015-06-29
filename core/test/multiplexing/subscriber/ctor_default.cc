@@ -42,7 +42,7 @@ int main() {
 
   // Subscriber.
   uset<unsigned int> filters;
-  filters.insert(io::events::data_type<io::events::internal, 1>::value);
+  filters.insert(io::raw::static_type());
   multiplexing::subscriber
     s("core_multiplexing_subscriber_ctor_default", "");
   s.get_muxer().set_read_filters(filters);
@@ -64,7 +64,7 @@ int main() {
   // Fetch event.
   s.get_muxer().read(event, 0);
   retval |= (event.isNull()
-             || (event->type() != io::events::data_type<io::events::internal, 1>::value)
+             || (event->type() != io::raw::static_type())
              || strncmp(
                   event.staticCast<io::raw>()->QByteArray::data(),
                   MSG,

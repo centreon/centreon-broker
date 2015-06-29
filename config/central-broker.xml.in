@@ -14,38 +14,6 @@
  <cache_directory>@PREFIX_VAR@</cache_directory>
  <command_file>@PREFIX_VAR@/central-broker.cmd</command_file>
 
- <!-- Read Broker external commands and send them to central-module. -->
- <input>
-  <name>central-broker-extcommands-broker-central-module</name>
-  <type>dump_fifo</type>
-  <path>@PREFIX_VAR@/central-broker-extcommands-broker-central-module.cmd</path>
-  <tagname>extcommands-broker-3</tagname>
- </input>
-
- <!-- Read Engine external commands and send them to central-module. -->
- <input>
-  <name>central-broker-extcommands-engine-central-module</name>
-  <type>dump_fifo</type>
-  <path>@PREFIX_VAR@/central-broker-extcommands-engine-central-module.cmd</path>
-  <tagname>extcommands-engine-3</tagname>
- </input>
-
- <!-- Read Broker configuration files and send them to central-module. -->
- <input>
-  <name>central-broker-cfg-broker-central-module</name>
-  <type>dump_dir</type>
-  <path>/tmp/broker/apply/3</path>
-  <tagname>cfg-broker-3</tagname>
- </input>
-
- <!-- Read Engine configuration files and send them to central-module. -->
- <input>
-  <name>central-broker-cfg-engine-central-module</name>
-  <type>dump_dir</type>
-  <path>/tmp/engine/apply/1</path>
-  <tagname>cfg-engine-3</tagname>
- </input>
-
  <!-- Receive monitoring information from pollers. -->
  <input>
   <retry_interval>60</retry_interval>
@@ -56,6 +24,50 @@
   <name>central-broker-input</name>
   <port>5668</port>
  </input>
+
+ <!-- Read Broker external commands and send them to central-module. -->
+ <output>
+  <name>central-broker-extcommands-broker-central-module</name>
+  <type>dump_fifo</type>
+  <path>@PREFIX_VAR@/central-broker-extcommands-broker-central-module.cmd</path>
+  <tagname>extcommands-broker-3</tagname>
+  <read_filters>
+   <category>internal</category>
+  </read_filters>
+ </output>
+
+ <!-- Read Engine external commands and send them to central-module. -->
+ <output>
+  <name>central-broker-extcommands-engine-central-module</name>
+  <type>dump_fifo</type>
+  <path>@PREFIX_VAR@/central-broker-extcommands-engine-central-module.cmd</path>
+  <tagname>extcommands-engine-3</tagname>
+  <read_filters>
+   <category>internal</category>
+  </read_filters>
+ </output>
+
+ <!-- Read Broker configuration files and send them to central-module. -->
+ <output>
+  <name>central-broker-cfg-broker-central-module</name>
+  <type>dump_dir</type>
+  <path>/tmp/broker/apply/3</path>
+  <tagname>cfg-broker-3</tagname>
+  <read_filters>
+   <category>internal</category>
+  </read_filters>
+ </output>
+
+ <!-- Read Engine configuration files and send them to central-module. -->
+ <output>
+  <name>central-broker-cfg-engine-central-module</name>
+  <type>dump_dir</type>
+  <path>/tmp/engine/apply/1</path>
+  <tagname>cfg-engine-3</tagname>
+  <read_filters>
+   <category>internal</category>
+  </read_filters>
+ </output>
 
  <!-- Handle acknowledgements and downtimes (uses external command file). -->
  <output>

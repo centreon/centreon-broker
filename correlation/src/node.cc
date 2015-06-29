@@ -406,7 +406,11 @@ void node::manage_status(
     acknowledgement.reset();
 
   // Generate the state event.
-  _generate_state_event(last_state_change, new_state, stream);
+  _generate_state_event(
+    last_state_change,
+    new_state,
+    in_downtime,
+    stream);
 
   current_state = new_state;
 
@@ -449,12 +453,35 @@ void node::manage_status(
 void node::manage_ack(
              neb::acknowledgement const& ack,
              io::stream* stream) {
-  if (my_issue.get() && !acknowledgement.get()) {
+  // Acknowledgement was created.
+  if (ack.deletion_time.is_null()) {
+    logging::debug(logging::low)
+      << "correlation: acknowledgement on node ("
+      << ack.host_id << ", " << ack.service_id << ") created at "
+      << ack.entry_time;
     acknowledgement.reset(new neb::acknowledgement(ack));
-    if (my_issue->ack_time.is_null())
+
+    // Update issue.
+    if (my_issue.get()) {
       my_issue->ack_time = ack.entry_time;
-    _generate_state_event(ack.entry_time, current_state, stream);
+      if (stream)
+        stream->write(misc::make_shared(new issue(*my_issue)));
+    }
+    
+    // Update state event.
+    ack_time = ack.entry_time;
+    if (stream)
+      stream->write(misc::make_shared(new state(*this)));
   }
+  // Acknowledgement was deleted.
+  else {
+    logging::debug(logging::low)
+      << "correlation: acknowledgement on node (" << ack.host_id << ", "
+      << ack.service_id << ") created at " << ack.entry_time
+      << " was deleted at " << ack.deletion_time;
+    acknowledgement.reset();
+  }
+  return ;
 }
 
 /**
@@ -466,17 +493,37 @@ void node::manage_ack(
 void node::manage_downtime(
              neb::downtime const& dwn,
              io::stream* stream) {
-  if (!dwn.actual_end_time.is_null()) {
-    downtimes[dwn.internal_id] = dwn;
-    in_downtime = true;
-    _generate_state_event(dwn.start_time, current_state, stream);
+  bool started(!dwn.actual_start_time.is_null());
+  bool finished(!dwn.actual_end_time.is_null());
+  if (started) {
+    if (!finished) {
+      logging::debug(logging::low)
+        << "correlation: downtime (" << dwn.actual_start_time << "-"
+        << dwn.actual_end_time << ") on node (" << dwn.host_id << ", "
+        << dwn.service_id << ") is starting";
+      downtimes[dwn.internal_id] = dwn;
+      if (!in_downtime)
+        _generate_state_event(
+          dwn.actual_start_time,
+          current_state,
+          true,
+          stream);
+    }
+    else {
+      logging::debug(logging::low)
+        << "correlation: downtime (" << dwn.actual_start_time << "-"
+        << dwn.actual_end_time << ") on node (" << dwn.host_id << ", "
+        << dwn.service_id << ") finished";
+      downtimes.erase(dwn.internal_id);
+      if (downtimes.empty())
+        _generate_state_event(
+          dwn.actual_end_time,
+          current_state,
+          false,
+          stream);
+    }
   }
-  else {
-    downtimes.erase(dwn.internal_id);
-    if (!downtimes.empty())
-      in_downtime = false;
-    _generate_state_event(::time(NULL), current_state, stream);
-  }
+  return ;
 }
 
 /**
@@ -643,13 +690,15 @@ void node::_internal_copy(node const& n) {
 /**
  *  Generate a state event.
  *
- *  @param[in] start_time  The start time of the new event.
- *  @param[in] new_status  The status of the new event.
- *  @param[out] stream     A stream to write the event to.
+ *  @param[in]  start_time       The start time of the new event.
+ *  @param[in]  new_status       The status of the new event.
+ *  @param[in]  new_in_downtime  The in_downtime flag of the new event.
+ *  @param[out] stream           A stream to write the event to.
  */
 void node::_generate_state_event(
        timestamp start_time,
        short new_status,
+       bool new_in_downtime,
        io::stream* stream) {
   // Close old state event.
   if (stream) {
@@ -664,12 +713,22 @@ void node::_generate_state_event(
   logging::debug(logging::medium)
     << "correlation: node (" << host_id << ", " << service_id
     << ") opening new state event";
+  if (acknowledgement.get()
+      && !acknowledgement->is_sticky
+      // Downtime start/stop do not remove non-sticky acknowledgements.
+      && (in_downtime == new_in_downtime)) {
+    logging::debug(logging::low)
+      << "correlation: reseting non-sticky acknowledgement of node ("
+      << host_id << ", " << service_id << ")";
+    acknowledgement.reset();
+  }
   *static_cast<correlation::state*>(this)
     = _open_state_event(start_time);
   current_state = new_status;
-
+  in_downtime = new_in_downtime;
   if (stream)
     stream->write(misc::make_shared(new correlation::state(*this)));
+  return ;
 }
 
 /**
@@ -692,7 +751,7 @@ correlation::state node::_open_state_event(timestamp start_time) const {
        it != end;
        ++it)
     if (earliest_downtime.is_null()
-        || earliest_downtime < it->second.start_time)
+        || earliest_downtime > it->second.start_time)
       earliest_downtime = it->second.start_time;
   st.in_downtime
     = earliest_downtime.is_null() ? false : earliest_downtime <= start_time;
