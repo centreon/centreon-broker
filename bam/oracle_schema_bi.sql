@@ -130,7 +130,7 @@ CREATE TABLE mod_bam_reporting_ba_events (
   in_downtime boolean default NULL,
 
   PRIMARY KEY (ba_event_id),
-  KEY (ba_id, start_time),
+  UNIQUE (ba_id, start_time),
   KEY (ba_id, end_time)
 );
 CREATE SEQUENCE mod_bam_reporting_ba_events_seq
@@ -160,7 +160,7 @@ CREATE TABLE mod_bam_reporting_kpi_events (
   first_perfdata varchar(45) default NULL,
 
   PRIMARY KEY (kpi_event_id),
-  KEY (kpi_id, start_time)
+  UNIQUE (kpi_id, start_time)
 );
 CREATE SEQUENCE mod_bam_reporting_kpi_events_seq
 START WITH 1
@@ -236,6 +236,7 @@ CREATE TABLE mod_bam_reporting_relations_ba_timeperiods (
   timeperiod_id int default NULL,
   is_default boolean default NULL,
 
+  UNIQUE (ba_id, timeperiod_id),
   FOREIGN KEY (ba_id) REFERENCES mod_bam_reporting_ba (ba_id)
     ON DELETE CASCADE,
   FOREIGN KEY (timeperiod_id) REFERENCES mod_bam_reporting_timeperiods (timeperiod_id)
