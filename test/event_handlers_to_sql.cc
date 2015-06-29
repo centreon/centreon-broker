@@ -116,7 +116,6 @@ int main() {
       std::ostringstream oss;
       oss << "enable_event_handlers=1\n"
           << "event_handler_timeout=42\n"
-          << "use_aggressive_host_checking=1\n"
           << commander.get_engine_config()
           << "broker_module=" << CBMOD_PATH << " " << PROJECT_SOURCE_DIR
           << "/test/cfg/event_handlers_to_sql_1.xml\n";
@@ -225,18 +224,6 @@ int main() {
         time_t timeout;
         short type;
       } const entries[] = {
-        { 2, 0, t1, t2, "",
-          MY_PLUGIN_PATH " 0 ThisIsTheHostEventHandlerOutput", false,
-          t1, t2, 0.0, static_cast<double>(t2 - t1),
-          ""/*"ThisIsTheHostEventHandlerOutput"*/, 0, 1, 0, 42, 0 },
-        { 2, 0, t2, t3, "",
-          MY_PLUGIN_PATH " 0 ThisIsTheHostEventHandlerOutput", false,
-          t2, t3, 0.0, static_cast<double>(t3 - t2),
-          ""/*"ThisIsTheHostEventHandlerOutput"*/, 0, 1, 0, 42, 0 },
-        { 2, 0, t3, t4, "",
-          MY_PLUGIN_PATH " 0 ThisIsTheHostEventHandlerOutput", false,
-          t3, t4, 0.0, static_cast<double>(t4 - t3),
-          ""/*"ThisIsTheHostEventHandlerOutput"*/, 0, 1, 1, 42, 0 },
         { 1, 1, t1, t2, "",
           MY_PLUGIN_PATH " 0 ThisIsTheServiceEventHandlerOutput", false,
           t1, t2, 0.0, static_cast<double>(t2 - t1),
@@ -248,7 +235,19 @@ int main() {
         { 1, 1, t3, t4, "",
           MY_PLUGIN_PATH " 0 ThisIsTheServiceEventHandlerOutput", false,
           t3, t4, 0.0, static_cast<double>(t4 - t3),
-          ""/*"ThisIsTheServiceEventHandlerOutput"*/, 0, 2, 1, 42, 1 }
+          ""/*"ThisIsTheServiceEventHandlerOutput"*/, 0, 2, 1, 42, 1 },
+        { 2, 0, t1, t2, "",
+          MY_PLUGIN_PATH " 0 ThisIsTheHostEventHandlerOutput", false,
+          t1, t2, 0.0, static_cast<double>(t2 - t1),
+          ""/*"ThisIsTheHostEventHandlerOutput"*/, 0, 1, 0, 42, 0 },
+        { 2, 0, t2, t3, "",
+          MY_PLUGIN_PATH " 0 ThisIsTheHostEventHandlerOutput", false,
+          t2, t3, 0.0, static_cast<double>(t3 - t2),
+          ""/*"ThisIsTheHostEventHandlerOutput"*/, 0, 1, 0, 42, 0 },
+        { 2, 0, t3, t4, "",
+          MY_PLUGIN_PATH " 0 ThisIsTheHostEventHandlerOutput", false,
+          t3, t4, 0.0, static_cast<double>(t4 - t3),
+          ""/*"ThisIsTheHostEventHandlerOutput"*/, 0, 1, 1, 42, 0 }
       };
 
       std::string query(
@@ -256,7 +255,7 @@ int main() {
         "       command_line, early_timeout, end_time, execution_time,"
         "       output, return_code, state, state_type, timeout, type"
         "  FROM rt_eventhandlers"
-        "  ORDER BY host_id DESC, COALESCE(service_id, -1) ASC, start_time ASC");
+        "  ORDER BY host_id ASC, COALESCE(service_id, -1) ASC, start_time ASC");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.c_str()))
         throw (exceptions::msg()
@@ -330,9 +329,11 @@ int main() {
   }
   catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
+    db.set_remove_db_on_close(false);
   }
   catch (...) {
     std::cerr << "unknown exception" << std::endl;
+    db.set_remove_db_on_close(false);
   }
 
   // Cleanup.
