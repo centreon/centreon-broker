@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -73,5 +73,5 @@ unsigned int raw::type() const {
  *  @return Raw data.
  */
 unsigned int raw::static_type() {
-  return (events::data_type<events::internal, 1>::value);
+  return (events::data_type<events::internal, events::de_raw>::value);
 }

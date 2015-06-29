@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -51,7 +51,7 @@ static int read_some(file::stream& f, unsigned int count) {
     while (-1 == index) {
       misc::shared_ptr<io::data> d;
       f.read(d, (time_t)-1);
-      if (d->type() != io::events::data_type<io::events::internal, 1>::value)
+      if (d->type() != io::raw::static_type())
         return (1);
       misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
       buffer.append(*r);

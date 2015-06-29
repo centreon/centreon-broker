@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
     if (raw.isNull()) {
       misc::shared_ptr<io::data> d;
       fs.read(d, (time_t)-1);
-      if (d.isNull() || (io::events::data_type<io::events::internal, 1>::value != d->type()))
+      if (d.isNull() || (io::raw::static_type() != d->type()))
         retval |= 1;
       else {
         raw = d.staticCast<io::raw>();
