@@ -428,10 +428,9 @@ int main() {
     // Create the BA/BV relations.
     {
       QString query(
-                "INSERT INTO cfg_bam_bagroup_ba_relation (id_bgr, id_ba, "
-                "                                         id_ba_group)"
-                "  VALUES (1, 2, 1),"
-                "         (2, 1, 2)");
+                "INSERT INTO cfg_bam_bagroup_ba_relation (id_ba, id_ba_group)"
+                "  VALUES (2, 1),"
+                "         (1, 2)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create the ba bv relations: "

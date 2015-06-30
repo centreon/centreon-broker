@@ -85,11 +85,10 @@ CREATE TABLE mod_bam_reporting_kpi (
 -- Relations between BA and BV.
 --
 CREATE TABLE mod_bam_reporting_relations_ba_bv (
-  ba_bv_id serial,
   bv_id int NOT NULL,
   ba_id int NOT NULL,
 
-  PRIMARY KEY (ba_bv_id),
+  UNIQUE (bv_id, ba_id),
   FOREIGN KEY (bv_id) REFERENCES mod_bam_reporting_bv (bv_id)
     ON DELETE CASCADE,
   FOREIGN KEY (ba_id) REFERENCES mod_bam_reporting_ba (ba_id)
@@ -140,6 +139,7 @@ CREATE TABLE mod_bam_reporting_relations_ba_kpi_events (
   ba_event_id int NOT NULL,
   kpi_event_id int NOT NULL,
 
+  UNIQUE (ba_event_id, kpi_event_id),
   FOREIGN KEY (ba_event_id) REFERENCES mod_bam_reporting_ba_events (ba_event_id)
     ON DELETE CASCADE,
   FOREIGN KEY (kpi_event_id) REFERENCES mod_bam_reporting_kpi_events (kpi_event_id)
@@ -151,7 +151,8 @@ CREATE TABLE mod_bam_reporting_relations_ba_kpi_events (
 --
 CREATE TABLE mod_bam_reporting_timeperiods (
   timeperiod_id int NOT NULL,
-  name varchar(200) default NULL,
+  name varchar(200) NOT NULL,
+
   sunday varchar(200) default NULL,
   monday varchar(200) default NULL,
   tuesday varchar(200) default NULL,
@@ -160,7 +161,8 @@ CREATE TABLE mod_bam_reporting_timeperiods (
   friday varchar(200) default NULL,
   saturday varchar(200) default NULL,
 
-  PRIMARY KEY (timeperiod_id)
+  PRIMARY KEY (timeperiod_id),
+  UNIQUE (name)
 );
 
 --
@@ -182,6 +184,7 @@ CREATE TABLE mod_bam_reporting_timeperiods_exclusions (
   timeperiod_id int NOT NULL,
   excluded_timeperiod_id int NOT NULL,
 
+  UNIQUE (timeperiod_id, excluded_timeperiod_id),
   FOREIGN KEY (timeperiod_id) REFERENCES mod_bam_reporting_timeperiods (timeperiod_id)
     ON DELETE CASCADE,
   FOREIGN KEY (excluded_timeperiod_id) REFERENCES mod_bam_reporting_timeperiods (timeperiod_id)

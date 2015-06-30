@@ -68,7 +68,8 @@ CREATE TABLE cfg_bam_boolean (
   bool_state boolean NOT NULL default 1,
   activate boolean NOT NULL default 0,
 
-  PRIMARY KEY (boolean_id)
+  PRIMARY KEY (boolean_id),
+  UNIQUE (name)
 );
 
 --
@@ -121,8 +122,9 @@ CREATE TABLE cfg_bam_kpi (
 --
 CREATE TABLE cfg_bam_relations_ba_timeperiods (
   ba_id int NOT NULL,
-  timeperiod_id int NOT NULL,
+  tp_id int NOT NULL,
 
+  UNIQUE (ba_id, tp_id),
   FOREIGN KEY (ba_id) REFERENCES cfg_bam (ba_id)
     ON DELETE CASCADE,
   FOREIGN KEY (tp_id) REFERENCES timeperiod (tp_id)
@@ -134,23 +136,23 @@ CREATE TABLE cfg_bam_relations_ba_timeperiods (
 --
 CREATE TABLE cfg_bam_ba_groups (
   id_ba_group serial,
+  ba_group_name varchar(255) NOT NULL,
 
-  ba_group_name varchar(255) default NULL,
   ba_group_description varchar(255) default NULL,
   visible enum('0', '1') NOT NULL default '1',
 
-  PRIMARY KEY (id_ba_group)
+  PRIMARY KEY (id_ba_group),
+  UNIQUE (ba_group_name)
 );
 
 --
 -- BA / Group relations.
 --
 CREATE TABLE cfg_bam_bagroup_ba_relation (
-  id_bgr serial,
   id_ba int NOT NULL,
   id_ba_group int NOT NULL,
 
-  PRIMARY KEY (id_bgr),
+  UNIQUE (id_ba, id_ba_group),
   FOREIGN KEY (id_ba) REFERENCES cfg_bam (ba_id)
     ON DELETE CASCADE,
   FOREIGN KEY (id_ba_group) REFERENCES cfg_bam_ba_groups (id_ba_group)
@@ -162,8 +164,8 @@ CREATE TABLE cfg_bam_bagroup_ba_relation (
 --
 CREATE TABLE cfg_meta_services (
   meta_id serial,
+  meta_name varchar(254) NOT NULL,
 
-  meta_name varchar(254) default NULL,
   meta_display varchar(254) default NULL,
   check_period int default NULL,
   max_check_attempts int default NULL,
@@ -185,21 +187,20 @@ CREATE TABLE cfg_meta_services (
   meta_activate enum('0','1') default NULL,
   value float default NULL,
 
-  PRIMARY KEY (meta_id)
+  PRIMARY KEY (meta_id),
+  UNIQUE (meta_name)
 );
 
 --
 -- Meta Services Relationships.
 --
 CREATE TABLE cfg_meta_services_relations (
-  msr_id serial,
-
-  meta_id int default NULL,
-  host_id int default NULL,
-  metric_id int default NULL,
+  meta_id int NOT NULL,
+  host_id int NOT NULL,
+  metric_id int NOT NULL,
   msr_comment text,
   activate enum('0','1') default NULL,
 
-  PRIMARY KEY (msr_id),
+  UNIQUE (meta_id, host_id, metric_id),
   FOREIGN KEY (meta_id) REFERENCES cfg_meta_services (meta_id) ON DELETE CASCADE
 );
