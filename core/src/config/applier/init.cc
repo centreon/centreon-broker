@@ -53,9 +53,9 @@ Q_DECLARE_METATYPE(QAbstractSocket::SocketState)
  *  Unload necessary structures.
  */
 void config::applier::deinit() {
-  config::applier::state::unload();
   config::applier::endpoint::unload();
   config::applier::logger::unload();
+  config::applier::state::unload();
   bbdo::unload();
   compression::unload();
   command_file::unload();
