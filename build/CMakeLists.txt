@@ -757,6 +757,12 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/sql_cleanup.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
   add_test("${TEST_NAME}" "${TEST_NAME}")
+  # SQL id change.
+  set(TEST_NAME "running_sql_id_change")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/sql_id_change.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 
   # Protocols.
   set(TEST_NAME "running_compression_to_sql")
