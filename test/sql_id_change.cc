@@ -92,7 +92,7 @@ int main() {
     sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Change the service id.
-    services.back().display_name = ::strdup("2");
+    set_custom_variable(services.back(), "SERVICE_ID", "2");
     config_write(
       engine_config_path.c_str(),
       cbmod_loading.c_str(),
@@ -108,11 +108,11 @@ int main() {
     {
       std::ostringstream query;
       query << "SELECT COUNT(service_id)"
-               "  FROM services "
+               "  FROM rt_services "
                "  WHERE host_id = 1"
                "    AND description = '1'"
                "    AND enabled = '1'";
-      QSqlQuery q(*db.storage_db());
+      QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
         throw (exceptions::msg() << "cannot read service count from DB: "
                << q.lastError().text().toStdString().c_str());
