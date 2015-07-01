@@ -1,5 +1,5 @@
 ##
-## Copyright 2013 Merethis
+## Copyright 2013,2015 Merethis
 ##
 ## This file is part of Centreon Broker.
 ##
@@ -18,10 +18,10 @@
 ##
 
 # Global options.
-set(INC_DIR "${PROJECT_SOURCE_DIR}/dumper/inc")
+set(INC_DIR "${PROJECT_SOURCE_DIR}/dumper/inc/com/centreon/broker/dumper")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/dumper/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/dumper/test")
-include_directories("${INC_DIR}")
+include_directories("${PROJECT_SOURCE_DIR}/dumper/inc")
 include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 
 # Dumper module.
@@ -31,6 +31,8 @@ add_library("${DUMPER}" SHARED
   # Sources.
   "${SRC_DIR}/dump.cc"
   "${SRC_DIR}/directory_dumper.cc"
+  "${SRC_DIR}/entries/ba.cc"
+  "${SRC_DIR}/entries/kpi.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/fifo_dumper.cc"
   "${SRC_DIR}/main.cc"
@@ -40,16 +42,18 @@ add_library("${DUMPER}" SHARED
   "${SRC_DIR}/stream.cc"
   "${SRC_DIR}/timestamp_cache.cc"
   # Headers.
-  "${INC_DIR}/com/centreon/broker/dumper/dump.hh"
-  "${INC_DIR}/com/centreon/broker/dumper/directory_dumper.hh"
-  "${INC_DIR}/com/centreon/broker/dumper/factory.hh"
-  "${INC_DIR}/com/centreon/broker/dumper/fifo_dumper.hh"
-  "${INC_DIR}/com/centreon/broker/dumper/internal.hh"
-  "${INC_DIR}/com/centreon/broker/dumper/opener.hh"
-  "${INC_DIR}/com/centreon/broker/dumper/reload.hh"
-  "${INC_DIR}/com/centreon/broker/dumper/remove.hh"
-  "${INC_DIR}/com/centreon/broker/dumper/stream.hh"
-  "${INC_DIR}/com/centreon/broker/dumper/timestamp_cache.hh"
+  "${INC_DIR}/dump.hh"
+  "${INC_DIR}/directory_dumper.hh"
+  "${INC_DIR}/entries/ba.hh"
+  "${INC_DIR}/entries/kpi.hh"
+  "${INC_DIR}/factory.hh"
+  "${INC_DIR}/fifo_dumper.hh"
+  "${INC_DIR}/internal.hh"
+  "${INC_DIR}/opener.hh"
+  "${INC_DIR}/reload.hh"
+  "${INC_DIR}/remove.hh"
+  "${INC_DIR}/stream.hh"
+  "${INC_DIR}/timestamp_cache.hh"
 )
 target_link_libraries("${DUMPER}" ${QT_LIBRARIES})
 set_target_properties("${DUMPER}" PROPERTIES PREFIX "")
