@@ -611,8 +611,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/sql_transactions.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/downtimes_to_sql.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/downtimes_to_sql.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/event_handlers_to_sql_1.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/event_handlers_to_sql_1.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/event_handlers_to_sql_2.xml.in"

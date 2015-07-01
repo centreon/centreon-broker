@@ -70,7 +70,7 @@ get_property(STORAGE_MODULE_PATH
 set(STORAGE_MODULE_PATH "${STORAGE_MODULE_PATH}" PARENT_SCOPE)
 
 if (WITH_TESTING)
-  set(TEST_LIBRARIES "${STORAGE}" "10-neb" "roker")
+  set(TEST_LIBRARIES "${STORAGE}" "10-neb" "rokerbase" "roker" "rokerbase")
 
   # Perfdata exception tests.
   #   Throw.

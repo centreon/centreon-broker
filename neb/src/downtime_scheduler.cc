@@ -79,7 +79,7 @@ void downtime_scheduler::run() {
  *  Start the downtime scheduler and wait until it has started.
  */
 void downtime_scheduler::start_and_wait() {
-  QThread::start();  
+  QThread::start();
   // Wait until the thread has started.
   _started.acquire();
 }
@@ -227,6 +227,7 @@ void downtime_scheduler::_start_downtime(downtime& dwn, io::stream* stream) {
     << "node events: starting downtime (" << dwn.start_time << "-"
     << dwn.end_time << ") on node (" << dwn.host_id << ", "
     << dwn.service_id << ") at " << dwn.actual_start_time;
+  dwn.was_started = true;
   if (stream)
     stream->write(misc::make_shared(new downtime(dwn)));
   return ;

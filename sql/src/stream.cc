@@ -869,21 +869,13 @@ void stream::_process_downtime(
 
   // Check if poller is valid.
   if (_is_valid_poller(d.poller_id)) {
-    // Only update in case of downtime termination.
-    if (d.actual_end_time.is_null()) {
-      _downtime_update << d;
-      _downtime_update.run_statement("SQL");
-    }
-    // Update or insert if no entry was found, as long as the downtime
-    // is valid.
-    else
-      _update_on_none_insert(
-        _downtime_insert,
-        _downtime_update,
-        d);
+    _update_on_none_insert(
+      _downtime_insert,
+      _downtime_update,
+      d);
 
     // Update the associated host or service table.
-    if (!d.is_recurring) {
+    if (!d.is_recurring && !d.actual_start_time.is_null()) {
       std::string operation = d.actual_end_time.is_null() ? "+ 1" : "- 1";
       std::ostringstream query;
       if (d.service_id == 0)

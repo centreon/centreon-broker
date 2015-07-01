@@ -97,8 +97,7 @@ int main() {
     std::string additional_config;
     {
       std::ostringstream oss;
-      oss << "use_aggressive_host_checking=1\n"
-          << engine_commander.get_engine_config()
+      oss << engine_commander.get_engine_config()
           << "broker_module=" << CBMOD_PATH << " "
           << broker_cfg.generate() << "\n";
       additional_config = oss.str();

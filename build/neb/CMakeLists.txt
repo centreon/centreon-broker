@@ -258,7 +258,7 @@ if (WITH_TESTING)
   include_directories("${PROJECT_SOURCE_DIR}/neb")
   include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
   include_directories("${PROJECT_SOURCE_DIR}/dumper/inc")
-  set(TEST_LIBRARIES "${NEB}" "roker")
+  set(TEST_LIBRARIES "${NEB}" "rokerbase" "roker" "rokerbase")
   # Custom Variable tests.
   #   Default constructor.
   set(TEST_NAME "neb_custom_variable_ctor_default")
@@ -587,7 +587,7 @@ if (WITH_TESTING)
   add_library("ccb_neb_set_log_data" STATIC
     "${SRC_DIR}/internal.cc"
     "${SRC_DIR}/set_log_data.cc")
-  set(SETLOGDATA_LIBRARIES "ccb_neb_set_log_data" "${NEB}" "roker")
+  set(SETLOGDATA_LIBRARIES "ccb_neb_set_log_data" "${NEB}" "rokerbase" "roker" "rokerbase")
   #   Host alert.
   set(TEST_NAME "neb_set_log_data_host_alert")
   add_executable("${TEST_NAME}"

@@ -23,6 +23,7 @@
 #include <sstream>
 #include <QPair>
 #include <QHash>
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/misc/tokenizer.hh"
 #include "com/centreon/broker/neb/node_id.hh"
 #include "com/centreon/broker/neb/node_events_stream.hh"
@@ -238,9 +239,9 @@ void node_events_stream::parse_command(
     _parse_downtime(down_host_service, args.get(), stream);
   else if (command == "SCHEDULE_SVC_DOWNTIME")
     _parse_downtime(down_service, args.get(), stream);
-  else if (command == "DELETE_HOST_DOWNTIME")
+  else if (command == "DEL_HOST_DOWNTIME")
     _parse_remove_downtime(down_host, args.get(), stream);
-  else if (command == "DELETE_SVC_DOWNTIME")
+  else if (command == "DEL_SVC_DOWNTIME")
     _parse_remove_downtime(down_service, args.get(), stream);
 }
 
@@ -582,6 +583,7 @@ void node_events_stream::_parse_downtime(
     d->downtime_type = type;
     d->host_id = id.get_host_id();
     d->service_id = id.get_service_id();
+    d->poller_id = config::applier::state::instance().poller_id();
     d->was_started = false;
     d->internal_id = _downtimes.get_new_downtime_id();
     d->triggered_by = trigger_id;

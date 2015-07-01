@@ -37,7 +37,7 @@ using namespace com::centreon::broker::neb;
 downtime::downtime()
   : actual_end_time(-1),
     actual_start_time(-1),
-    deletion_time(0),
+    deletion_time(-1),
     downtime_type(0),
     fixed(true),
     host_id(0),

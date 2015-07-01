@@ -51,8 +51,10 @@ int main() {
   std::list<service> services;
   std::list<command> commands;
   std::string engine_config_path(tmpnam(NULL));
-  external_command commander;
+  external_command engine_commander;
+  external_command broker_commander;
   engine daemon;
+  test_file broker_cfg;
   test_db db;
 
   try {
@@ -87,13 +89,17 @@ int main() {
         strcpy(it->service_check_command, "1");
         break ;
       }
-    commander.set_file(tmpnam(NULL));
+    engine_commander.set_file(tmpnam(NULL));
+    broker_commander.set_file(tmpnam(NULL));
+    broker_cfg.set_template(
+      PROJECT_SOURCE_DIR "/test/cfg/downtimes_to_sql.xml.in");
+    broker_cfg.set("BROKER_COMMAND_FILE", broker_commander.get_file());
     std::string additional_config;
     {
       std::ostringstream oss;
-      oss << commander.get_engine_config()
+      oss << engine_commander.get_engine_config()
           << "broker_module=" << CBMOD_PATH << " "
-          << PROJECT_SOURCE_DIR << "/test/cfg/downtimes_to_sql.xml\n";
+          << broker_cfg.generate() << "\n";
       additional_config = oss.str();
     }
 
@@ -116,8 +122,7 @@ int main() {
 
     // Set soon-to-be-in-downtime service as passive.
     {
-      commander.execute("ENABLE_PASSIVE_SVC_CHECKS;7;31");
-      commander.execute("DISABLE_SVC_CHECK;7;31");
+      engine_commander.execute("DISABLE_SVC_CHECK;7;31");
     }
 
     // Run a little while.
@@ -131,14 +136,14 @@ int main() {
       std::ostringstream oss;
       oss << "SCHEDULE_HOST_DOWNTIME;2;" << now << ";" << now + 3600
           << ";1;0;3600;Merethis;Centreon is beautiful";
-      commander.execute(oss.str().c_str());
+      broker_commander.execute(oss.str().c_str());
     }
     {
       std::ostringstream oss;
       oss << "SCHEDULE_HOST_DOWNTIME;1;" << now + 1000 << ";"
           << now + 2000
           << ";0;0;123;Broker;Some random and useless comment.";
-      commander.execute(oss.str().c_str());
+      broker_commander.execute(oss.str().c_str());
     }
 
     // Add downtimes on two services.
@@ -147,13 +152,13 @@ int main() {
       oss << "SCHEDULE_SVC_DOWNTIME;7;31;" << now << ";"
           << now + 8638
           << ";0;0;7129;Default Author; This is a comment !";
-      commander.execute(oss.str().c_str());
+      broker_commander.execute(oss.str().c_str());
     }
     {
       std::ostringstream oss;
       oss << "SCHEDULE_SVC_DOWNTIME;10;48;" << now + 2834 << ";"
           << now + 987564 << ";1;0;2;Author;Scheduling downtime";
-      commander.execute(oss.str().c_str());
+      broker_commander.execute(oss.str().c_str());
     }
 
     // Let the monitoring engine run a while.
@@ -306,10 +311,10 @@ int main() {
     }
 
     // Delete downtimes.
-    commander.execute("DEL_HOST_DOWNTIME;2");
-    commander.execute("DEL_SVC_DOWNTIME;4");
-    commander.execute("DEL_SVC_DOWNTIME;3");
-    commander.execute("DEL_HOST_DOWNTIME;1");
+    broker_commander.execute("DEL_HOST_DOWNTIME;2");
+    broker_commander.execute("DEL_SVC_DOWNTIME;4");
+    broker_commander.execute("DEL_SVC_DOWNTIME;3");
+    broker_commander.execute("DEL_HOST_DOWNTIME;1");
 
     // Run a while.
     sleep_for(10);
@@ -340,7 +345,8 @@ int main() {
           // Host downtime #2.
           || !q.next()
           || (q.value(0).toUInt() != 2)
-          || !q.value(1).isNull()
+          || (static_cast<time_t>(q.value(1).toLongLong()) < t2)
+          || (static_cast<time_t>(q.value(1).toLongLong()) > now)
           || !q.value(2).toUInt()
           || (static_cast<time_t>(q.value(3).toLongLong()) < t2)
           || (static_cast<time_t>(q.value(3).toLongLong()) > now)
@@ -355,7 +361,8 @@ int main() {
           // Service downtime #2.
           || !q.next()
           || (q.value(0).toUInt() != 4)
-          || !q.value(1).isNull()
+          || (static_cast<time_t>(q.value(1).toLongLong()) < t2)
+          || (static_cast<time_t>(q.value(1).toLongLong()) > now)
           || !q.value(2).toUInt()
           || (static_cast<time_t>(q.value(3).toLongLong()) < t2)
           || (static_cast<time_t>(q.value(3).toLongLong()) > now)
@@ -370,9 +377,11 @@ int main() {
   }
   catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
+    db.set_remove_db_on_close(false);
   }
   catch (...) {
     std::cerr << "unknown exception" << std::endl;
+    db.set_remove_db_on_close(false);
   }
 
   // Cleanup.
