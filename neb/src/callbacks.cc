@@ -153,7 +153,7 @@ int neb::callback_custom_variable(int callback_type, void* data) {
                   if ((it->second == existing_hst->second)
                       && (it->first != existing_hst->first))
                     id_changed = true;
-                if (!id_changed) {
+                if (id_changed) {
                   // Generate host event.
                   nebstruct_adaptive_host_data nsahd;
                   memset(&nsahd, 0, sizeof(nsahd));
