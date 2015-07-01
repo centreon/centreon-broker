@@ -609,8 +609,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/dependencies_to_sql.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_transactions.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/sql_transactions.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/acknowledgements_to_sql.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/acknowledgements_to_sql.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/downtimes_to_sql.xml.in"

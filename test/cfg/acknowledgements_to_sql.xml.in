@@ -18,7 +18,7 @@
   </logger>
   -->
   <output>
-    <name>EngineToSQLUnitTest</name>
+    <name>AcknowledgementsToSQL-SQL</name>
     <type>sql</type>
     <db_type>@DB_TYPE@</db_type>
     <db_host>@DB_HOST@</db_host>
@@ -27,5 +27,10 @@
     <db_password>@DB_PASSWORD@</db_password>
     <db_name>broker_acknowledgements_to_sql</db_name>
     <queries_per_transaction>0</queries_per_transaction>
+  </output>
+  <command_file>@BROKER_COMMAND_FILE@</command_file>
+  <output>
+    <type>node_events</type>
+    <name>AcknowledgementsToSQL-NodeEvents</name>
   </output>
 </centreonbroker>

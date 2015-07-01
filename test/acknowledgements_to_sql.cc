@@ -52,8 +52,10 @@ int main() {
   std::list<service> services;
   std::list<command> commands;
   std::string engine_config_path(tmpnam(NULL));
-  external_command commander;
+  external_command engine_commander;
+  external_command broker_commander;
   engine daemon;
+  test_file broker_cfg;
   test_db db;
 
   try {
@@ -87,14 +89,18 @@ int main() {
       it->service_check_command = new char[2];
       strcpy(it->service_check_command, "1");
     }
-    commander.set_file(tmpnam(NULL));
+    engine_commander.set_file(tmpnam(NULL));
+    broker_commander.set_file(tmpnam(NULL));
+    broker_cfg.set_template(
+      PROJECT_SOURCE_DIR "/test/cfg/acknowledgements_to_sql.xml.in");
+    broker_cfg.set("BROKER_COMMAND_FILE", broker_commander.get_file());
     std::string additional_config;
     {
       std::ostringstream oss;
       oss << "use_aggressive_host_checking=1\n"
-          << commander.get_engine_config()
+          << engine_commander.get_engine_config()
           << "broker_module=" << CBMOD_PATH << " "
-          << PROJECT_SOURCE_DIR << "/test/cfg/acknowledgements_to_sql.xml\n";
+          << broker_cfg.generate() << "\n";
       additional_config = oss.str();
     }
 
@@ -122,24 +128,24 @@ int main() {
     {
       std::ostringstream oss;
       oss << "ACKNOWLEDGE_HOST_PROBLEM;1;1;0;0;Merethis;Random comment";
-      commander.execute(oss.str().c_str());
+      broker_commander.execute(oss.str().c_str());
     }
     {
       std::ostringstream oss;
       oss << "ACKNOWLEDGE_HOST_PROBLEM;2;1;0;0;Centreon;Comment text.";
-      commander.execute(oss.str().c_str());
+      broker_commander.execute(oss.str().c_str());
     }
 
     // Acknowledge the services.
     {
       std::ostringstream oss;
       oss << "ACKNOWLEDGE_SVC_PROBLEM;1;1;1;0;0;Broker;Monitoring";
-      commander.execute(oss.str().c_str());
+      broker_commander.execute(oss.str().c_str());
     }
     {
       std::ostringstream oss;
       oss << "ACKNOWLEDGE_SVC_PROBLEM;2;2;1;0;0;Author;Just a comment!";
-      commander.execute(oss.str().c_str());
+      broker_commander.execute(oss.str().c_str());
     }
 
     // Let the monitoring engine process commands.
@@ -222,25 +228,25 @@ int main() {
     }
 
     // Disable acknowledgements on host #1 and service #1.
-    commander.execute("REMOVE_HOST_ACKNOWLEDGEMENT;1");
-    commander.execute("REMOVE_SVC_ACKNOWLEDGEMENT;1;1");
+    broker_commander.execute("REMOVE_HOST_ACKNOWLEDGEMENT;1");
+    broker_commander.execute("REMOVE_SVC_ACKNOWLEDGEMENT;1;1");
 
     // Disable active checks on host #2.
-    commander.execute("DISABLE_HOST_CHECK;2");
-    commander.execute(
+    engine_commander.execute("DISABLE_HOST_CHECK;2");
+    engine_commander.execute(
       "PROCESS_HOST_CHECK_RESULT;2;0;Submitted by unit test");
-    commander.execute(
+    engine_commander.execute(
       "PROCESS_HOST_CHECK_RESULT;2;0;Submitted by unit test");
-    commander.execute(
+    engine_commander.execute(
       "PROCESS_HOST_CHECK_RESULT;2;0;Submitted by unit test");
 
     // Disable active check on service #2.
-    commander.execute("DISABLE_SVC_CHECK;2;2");
-    commander.execute(
+    engine_commander.execute("DISABLE_SVC_CHECK;2;2");
+    engine_commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;2;2;0;Submitted by unit test");
-    commander.execute(
+    engine_commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;2;2;0;Submitted by unit test");
-    commander.execute(
+    engine_commander.execute(
       "PROCESS_SERVICE_CHECK_RESULT;2;2;0;Submitted by unit test");
 
     // Run a while.
