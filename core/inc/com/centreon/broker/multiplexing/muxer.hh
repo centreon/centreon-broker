@@ -20,6 +20,7 @@
 #ifndef CCB_MULTIPLEXING_MUXER_HH
 #  define CCB_MULTIPLEXING_MUXER_HH
 
+#  include <memory>
 #  include <queue>
 #  include <QWaitCondition>
 #  include <string>
@@ -82,8 +83,7 @@ namespace               multiplexing {
     std::string         _name;
     bool                _persistent;
     filters             _read_filters;
-    bool                _recovery_temporary;
-    misc::shared_ptr<io::stream>
+    std::auto_ptr<io::stream>
                         _temporary;
     std::string         _temp_dir;
     unsigned int        _total_events;

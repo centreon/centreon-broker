@@ -18,6 +18,7 @@
 */
 
 #include <limits>
+#include <memory>
 #include <sstream>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -53,19 +54,18 @@ muxer::muxer(
          bool persistent)
   : _name(name),
     _persistent(persistent),
-    _recovery_temporary(false),
     _temp_dir(temp_dir),
     _total_events(0) {
   // Load head queue file back in memory.
   if (_persistent) {
     try {
-      misc::shared_ptr<io::stream>
+      std::auto_ptr<io::stream>
         mf(new persistent_file(_memory_file()));
       misc::shared_ptr<io::data> e;
       while (true) {
+        e.clear();
         mf->read(e, 0);
-        _events.push(e);
-        ++_total_events;
+        publish(e);
       }
     }
     catch (io::exceptions::shutdown const& e) {
@@ -76,20 +76,17 @@ muxer::muxer(
 
   // Load temporary file back in memory.
   {
-    _temporary = new persistent_file(_queue_file());
-    misc::shared_ptr<io::data> event;
+    _temporary.reset(new persistent_file(_queue_file()));
+    misc::shared_ptr<io::data> e;
     do {
-      _recovery_temporary = _get_event_from_temporary(event);
-      if (!_recovery_temporary) {
+      e.clear();
+      if (!_get_event_from_temporary(e))
         // All temporary event was loaded into the memory event queue.
         // The recovery mode is disable.
         break ;
-      }
-      else {
-        // Push temporary event to the memory event queue.
-        _events.push(event);
-        ++_total_events;
-      }
+
+      // Push temporary event to the memory event queue.
+      publish(e);
     } while (_total_events < event_queue_max_size());
   }
 
@@ -97,7 +94,7 @@ muxer::muxer(
   logging::info(logging::low)
     << "multiplexing: '" << _name << "' start with " << _total_events
     << " in queue and the queue file is "
-    << (_recovery_temporary ? "enable" : "disable");
+    << (_temporary.get() ? "enable" : "disable");
 }
 
 /**
@@ -116,6 +113,7 @@ void muxer::event_queue_max_size(unsigned int max) throw () {
   if (!max)
     max = std::numeric_limits<unsigned int>::max();
   _event_queue_max_size = max;
+  return ;
 }
 
 /**
@@ -133,32 +131,24 @@ unsigned int muxer::event_queue_max_size() throw () {
  *  @param[in] event Event to add.
  */
 void muxer::publish(misc::shared_ptr<io::data> const& event) {
-  {
+  if (!event.isNull()) {
     QMutexLocker lock(&_mutex);
     // Check if we should process this event.
-    if (!event.isNull()
-        && (_read_filters.find(event->type()) == _read_filters.end()))
+    if (_read_filters.find(event->type()) == _read_filters.end())
       return ;
     // Check if the event queue limit is reach.
     if (_total_events >= event_queue_max_size()) {
       // Try to create temporary if is necessary.
-      if (!_temporary)
-        _temporary = new persistent_file(_queue_file());
-
-      // Check if we have temporary.
-      if (_temporary)
-        _temporary->write(event);
-      else
-        _events.push(event);
+      if (!_temporary.get())
+        _temporary.reset(new persistent_file(_queue_file()));
+      _temporary->write(event);
     }
-    else
+    else {
       _events.push(event);
-
-    // If the recovery mode is disable increase total events.
-    if (!_recovery_temporary)
-      ++_total_events;
+      _cv.wakeOne();
+    }
+    ++_total_events;
   }
-  _cv.wakeOne();
   return ;
 }
 
@@ -177,7 +167,7 @@ bool muxer::read(
   QMutexLocker lock(&_mutex);
 
   // No data is directly available.
-  if (!_total_events) {
+  if (_events.empty()) {
     // Wait a while if subscriber was not shutdown.
     if ((time_t)-1 == deadline)
       _cv.wait(&_mutex);
@@ -188,13 +178,11 @@ bool muxer::read(
       else
         timed_out = true;
     }
-    if (_total_events) {
+    if (!_events.empty()) {
       _get_last_event(event);
       lock.unlock();
       if (!event.isNull())
         timed_out = false;
-      logging::debug(logging::low) << "multiplexing: "
-        << _total_events << " events remaining in subcriber";
     }
     else
       event.clear();
@@ -203,8 +191,6 @@ bool muxer::read(
   else {
     _get_last_event(event);
     lock.unlock();
-    logging::debug(logging::low) << "multiplexing: " << _total_events
-      << " events remaining in subscriber";
   }
   return (!timed_out);
 }
@@ -244,10 +230,7 @@ void muxer::statistics(io::properties& tree) const {
   // Queued events.
   std::ostringstream oss;
   {
-    if (_recovery_temporary)
-      oss << "queued events=unkown";
-    else
-      oss << "queued events=" << _total_events;
+    oss << "queued events=" << _total_events;
     io::property& p(tree["queued_events"]);
     p.set_perfdata(oss.str());
     p.set_graphable(false);
@@ -256,9 +239,9 @@ void muxer::statistics(io::properties& tree) const {
   // Temporary mode.
   {
     oss.str("");
-    char const* enable(_recovery_temporary ? "yes" : "no");
-    oss << "temporary recovery mode=" << enable;
-    io::property& p(tree["temporary_recovery_mode"]);
+    char const* enable(_temporary.get() ? "yes" : "no");
+    oss << "queue file enabled=" << enable;
+    io::property& p(tree["queue_file_enabled"]);
     p.set_perfdata(oss.str());
     p.set_graphable(false);
   }
@@ -327,8 +310,8 @@ void muxer::wake() {
  *  @param[in] d  Event to multiplex.
  */
 unsigned int muxer::write(misc::shared_ptr<io::data> const& d) {
-  if (d.isNull()
-      || (_write_filters.find(d->type()) != _write_filters.end()))
+  if (!d.isNull()
+      && (_write_filters.find(d->type()) != _write_filters.end()))
     engine::instance().publish(d);
   return (1);
 }
@@ -344,11 +327,11 @@ unsigned int muxer::write(misc::shared_ptr<io::data> const& d) {
  */
 void muxer::_clean() {
   QMutexLocker lock(&_mutex);
-  if (_temporary)
-    _temporary = misc::shared_ptr<io::stream>();
+  if (_temporary.get())
+    _temporary.reset();
   if (_persistent && !_events.empty()) {
     try {
-      misc::shared_ptr<io::stream>
+      std::auto_ptr<io::stream>
         mf(new persistent_file(_memory_file()));
       while (!_events.empty()) {
         mf->write(_events.front());
@@ -363,7 +346,6 @@ void muxer::_clean() {
   }
   while (!_events.empty())
     _events.pop();
-  _recovery_temporary = false;
   _total_events = 0;
   return ;
 }
@@ -379,8 +361,9 @@ void muxer::_clean() {
 bool muxer::_get_event_from_temporary(
               misc::shared_ptr<io::data>& event) {
   bool ret(false);
+  event.clear();
   // If temporary exist, try to get the last event.
-  if (_temporary) {
+  if (_temporary.get()) {
     try {
       do {
         _temporary->read(event);
@@ -390,8 +373,8 @@ bool muxer::_get_event_from_temporary(
     catch (io::exceptions::shutdown const& e) {
       // The temporary end was reach.
       (void)e;
-      _temporary.clear();
-      _recovery_temporary = false;
+      _temporary.reset();
+      _total_events = _events.size();
     }
   }
   return (ret);
@@ -404,17 +387,16 @@ bool muxer::_get_event_from_temporary(
  *  @param[out] event Last event available.
  */
 void muxer::_get_last_event(misc::shared_ptr<io::data>& event) {
-  // Try to get the last temporary event.
-  if (_get_event_from_temporary(event))
-    _events.push(event);
-
-  // If the recovery mode is disable decrease total events.
-  if (!_recovery_temporary)
-    --_total_events;
-
   // Get the last avaiable event.
   event = _events.front();
   _events.pop();
+  --_total_events;
+
+  // Try to get the last temporary event.
+  misc::shared_ptr<io::data> e;
+  if (_get_event_from_temporary(e))
+    _events.push(e);
+
   return ;
 }
 
