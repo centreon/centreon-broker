@@ -233,12 +233,6 @@ int main() {
 
     // Disable active checks on host #2.
     engine_commander.execute("DISABLE_HOST_CHECK;2");
-    engine_commander.execute(
-      "PROCESS_HOST_CHECK_RESULT;2;0;Submitted by unit test");
-    engine_commander.execute(
-      "PROCESS_HOST_CHECK_RESULT;2;0;Submitted by unit test");
-    engine_commander.execute(
-      "PROCESS_HOST_CHECK_RESULT;2;0;Submitted by unit test");
 
     // Disable active check on service #2.
     engine_commander.execute("DISABLE_SVC_CHECK;2;2");
@@ -271,7 +265,7 @@ int main() {
           || q.value(1).toUInt()
           || !q.next()
           || (q.value(0).toUInt() != 2)
-          || q.value(1).toUInt()
+          || !q.value(1).toUInt()
           || q.next())
         throw (exceptions::msg()
                << "invalid host entry after deletion");
@@ -332,7 +326,8 @@ int main() {
           || !q.next()
           || (q.value(0).toUInt() != 2)
           || (q.value(1).toUInt() != 2)
-          || !(q.value(2).isNull() || !q.value(2).toUInt())
+          || (static_cast<time_t>(q.value(2).toLongLong()) < t2)
+          || (static_cast<time_t>(q.value(2).toLongLong()) > now)
           // EOF
           || q.next())
         throw (exceptions::msg()
@@ -344,9 +339,11 @@ int main() {
   }
   catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
+    db.set_remove_db_on_close(false);
   }
   catch (...) {
     std::cerr << "unknown exception" << std::endl;
+    db.set_remove_db_on_close(false);
   }
 
   // Cleanup.
