@@ -2046,14 +2046,6 @@ stream::~stream() {
 }
 
 /**
- *  Initialize SQL layer.
- */
-void stream::initialize() {
-  // Not used anymore.
-  return ;
-}
-
-/**
  *  Read from the database.
  *
  *  @param[out] d         Cleared.
