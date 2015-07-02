@@ -54,7 +54,6 @@ int main() {
   std::list<service> services;
   std::string cbmod_config_path(tmpnam(NULL));
   std::string engine_config_path(tmpnam(NULL));
-  std::string retention_file_path(tmpnam(NULL));
   std::string retention_secondary_file_path(tmpnam(NULL));
   std::string retention_secondary_file2_path(tmpnam(NULL));
   external_command commander;
@@ -93,10 +92,10 @@ int main() {
           << "  </logger>\n"
           << "  -->\n"
           << "  <output>\n"
-          << "    <name>EngineToTCP</name>\n"
-          << "    <failover>ToRetentionFile</failover>\n"
-          << "    <secondary_failover>SecondaryRetentionFile1</secondary_failover>\n"
-          << "    <secondary_failover>SecondaryRetentionFile2</secondary_failover>\n"
+          << "    <name>SecondaryFailoversToFile-TCP</name>\n"
+          << "    <failover>SecondaryFailoversToFile-NodeEvents</failover>\n"
+          << "    <secondary_failover>SecondaryFailoversToFile-File1</secondary_failover>\n"
+          << "    <secondary_failover>SecondaryFailoversToFile-File2</secondary_failover>\n"
           << "    <type>tcp</type>\n"
           << "    <host>localhost</host>\n"
           << "    <port>5680</port>\n"
@@ -104,21 +103,18 @@ int main() {
           << "    <retry_interval>1</retry_interval>\n"
           << "  </output>\n"
           << "  <output>\n"
-          << "    <name>ToRetentionFile</name>\n"
-          << "    <type>file</type>\n"
-          << "    <path>" << retention_file_path << "</path>\n"
-          << "    <protocol>bbdo</protocol>\n"
-          << "    <compression>yes</compression>\n"
+          << "    <name>SecondaryFailoversToFile-NodeEvents</name>\n"
+          << "    <type>node_events</type>\n"
           << "  </output>\n"
           << "  <output>\n"
-          << "    <name>SecondaryRetentionFile1</name>\n"
+          << "    <name>SecondaryFailoversToFile-File1</name>\n"
           << "    <type>file</type>\n"
           << "    <path>" << retention_secondary_file_path << "</path>\n"
           << "    <protocol>bbdo</protocol>\n"
           << "    <compression>yes</compression>\n"
           << "  </output>\n"
           << "  <output>\n"
-          << "    <name>SecondaryRetentionFile2</name>\n"
+          << "    <name>SecondaryFailoversToFile-File2</name>\n"
           << "    <type>file</type>\n"
           << "    <path>" << retention_secondary_file2_path << "</path>\n"
           << "    <protocol>bbdo</protocol>\n"
@@ -162,17 +158,11 @@ int main() {
 
     // Check the secondary failovers.
     std::fstream file;
-    std::string primary_file;
     std::string secondary_file1;
     std::string secondary_file2;
     std::stringstream sstream;
 
     file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    file.open(retention_file_path.c_str());
-    sstream << file.rdbuf();
-    primary_file = sstream.str();
-    file.close();
-
     file.open(retention_secondary_file_path.c_str());
     sstream.str("");
     sstream << file.rdbuf();
@@ -185,15 +175,15 @@ int main() {
     secondary_file2 = sstream.str();
     file.close();
 
-    if (primary_file.empty() || secondary_file1.empty() || secondary_file2.empty())
+    if (secondary_file1.empty() || secondary_file2.empty())
       throw (
         com::centreon::broker::exceptions::msg()
           << "a retention file was empty");
 
-    if (primary_file != secondary_file1 || primary_file != secondary_file2)
+    if (secondary_file1 != secondary_file2)
       throw (
         com::centreon::broker::exceptions::msg()
-          << "primary retention file and secondary retention files are not the same");
+          << "secondary retention files are not the same");
 
     retval = EXIT_SUCCESS;
   }
@@ -208,7 +198,6 @@ int main() {
   daemon.stop();
   config_remove(engine_config_path.c_str());
   ::remove(cbmod_config_path.c_str());
-  ::remove(retention_file_path.c_str());
   ::remove(retention_secondary_file_path.c_str());
   ::remove(retention_secondary_file2_path.c_str());
   free_hosts(hosts);
