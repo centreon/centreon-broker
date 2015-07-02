@@ -29,8 +29,9 @@ set(DUMPER "05-dumper")
 set(DUMPER "${DUMPER}" PARENT_SCOPE)
 add_library("${DUMPER}" SHARED
   # Sources.
-  "${SRC_DIR}/dump.cc"
+  "${SRC_DIR}/db_dump.cc"
   "${SRC_DIR}/directory_dumper.cc"
+  "${SRC_DIR}/dump.cc"
   "${SRC_DIR}/entries/ba.cc"
   "${SRC_DIR}/entries/kpi.cc"
   "${SRC_DIR}/factory.cc"
@@ -42,8 +43,9 @@ add_library("${DUMPER}" SHARED
   "${SRC_DIR}/stream.cc"
   "${SRC_DIR}/timestamp_cache.cc"
   # Headers.
-  "${INC_DIR}/dump.hh"
+  "${INC_DIR}/db_dump.hh"
   "${INC_DIR}/directory_dumper.hh"
+  "${INC_DIR}/dump.hh"
   "${INC_DIR}/entries/ba.hh"
   "${INC_DIR}/entries/kpi.hh"
   "${INC_DIR}/factory.hh"

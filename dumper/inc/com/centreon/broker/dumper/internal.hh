@@ -31,6 +31,7 @@ namespace dumper {
     de_timestamp_cache,
     de_remove,
     de_reload,
+    de_db_dump,
     de_entries_ba,
     de_entries_kpi
   };
