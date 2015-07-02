@@ -23,6 +23,9 @@
     <name>dir_dumper_input</name>
     <tagname>engine-dump-1</tagname>
     <path>@SENDER_DIRECTORY@</path>
+    <read_filters>
+      <category>internal</category>
+    </read_filters>
   </output>
   <output>
     <type>dumper</type>

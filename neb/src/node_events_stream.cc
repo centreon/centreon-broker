@@ -115,7 +115,7 @@ void node_events_stream::update() {
   _apply_config_downtimes();
   _check_downtime_timeperiod_consistency();
   try {
-  _save_cache();
+    _save_cache();
   } catch (std::exception const& e) {
     logging::error(logging::medium)
       << "node events: error while trying to save cache: "
