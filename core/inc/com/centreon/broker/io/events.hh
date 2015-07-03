@@ -108,6 +108,7 @@ namespace               io {
     event_info const*   get_event_info(unsigned int type);
     events_container    get_matching_events(
                           std::string const& name) const;
+    events_container    get_internal_events() const;
 
   private:
                         events();
