@@ -216,25 +216,22 @@ event_info const* events::get_event_info(unsigned int type) {
  *  If it's a category name followed by : and the name of an event,
  *  get this event.
  *
- *  Internal events are always implicitely matched.
- *
  *  @param[in] name  The name.
  *
  *  @return  A list of all the matching events.
  */
 events::events_container events::get_matching_events(
                                    std::string const& name) const {
+  // Ignore internal category.
+  if (name.compare(0, ::strlen("internal"), "internal") == 0)
+    return (events_container());
+
   size_t num = std::count(name.begin(), name.end(), ':');
-  if (num == 0) {
-    events_container const& internal_events = get_internal_events();
-    events_container category_events = get_events_by_category_name(name);
-    category_events.insert(internal_events.begin(), internal_events.end());
-    return (category_events);
-  }
+  if (num == 0)
+    return (get_events_by_category_name(name));
   else if (num == 1) {
     size_t place = name.find_first_of(':');
     std::string category_name = name.substr(0, place);
-    events_container const& internal_events = get_internal_events();
     events::events_container const &events = get_events_by_category_name(
                                                category_name);
     std::string event_name = name.substr(place + 1);
@@ -246,7 +243,6 @@ events::events_container events::get_matching_events(
       if (it->second.get_name() == event_name) {
         events::events_container res;
         res[it->first] = it->second;
-        res.insert(internal_events.begin(), internal_events.end());
         return (res);
       }
     }
@@ -256,15 +252,6 @@ events::events_container events::get_matching_events(
   else
     throw (exceptions::msg() << "core: too many ':' in '"
            << name << "'");
-}
-
-/**
- *  Get all the internal events.
- *
- *  @return  All the internal events.
- */
-events::events_container events::get_internal_events() const {
-  return (get_events_by_category_name("internal"));
 }
 
 /**************************************
