@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -30,7 +30,10 @@ namespace dumper {
     de_dump = 1,
     de_timestamp_cache,
     de_remove,
-    de_reload
+    de_reload,
+    de_db_dump,
+    de_entries_ba,
+    de_entries_kpi
   };
 }
 

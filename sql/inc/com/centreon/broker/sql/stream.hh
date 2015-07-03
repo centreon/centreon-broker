@@ -58,7 +58,6 @@ namespace          sql {
                      bool check_replication,
                      bool with_state_events);
                    ~stream();
-    static void    initialize();
     bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
     void           update();
     unsigned int   write(misc::shared_ptr<io::data> const& d);
