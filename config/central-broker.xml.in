@@ -30,7 +30,7 @@
   <name>central-broker-extcommands-broker-central-module</name>
   <type>dump_fifo</type>
   <path>@PREFIX_VAR@/central-broker-extcommands-broker-central-module.cmd</path>
-  <tagname>extcommands-broker-3</tagname>
+  <tagname>extcommands-broker-1</tagname>
  </input>
 
  <!-- Read Engine external commands and send them to central-module. -->
@@ -38,15 +38,15 @@
   <name>central-broker-extcommands-engine-central-module</name>
   <type>dump_fifo</type>
   <path>@PREFIX_VAR@/central-broker-extcommands-engine-central-module.cmd</path>
-  <tagname>extcommands-engine-3</tagname>
+  <tagname>extcommands-engine-1</tagname>
  </input>
 
  <!-- Read Broker configuration files and send them to central-module. -->
  <output>
-  <name>central-broker-cfg-broker-poller-module-3</name>
+  <name>central-broker-cfg-broker-poller-module-1</name>
   <type>dump_dir</type>
-  <path>/tmp/broker/apply/3</path>
-  <tagname>cfg-broker-3</tagname>
+  <path>/tmp/broker/apply/1</path>
+  <tagname>cfg-broker-1</tagname>
   <read_filters>
    <category>internal</category>
   </read_filters>
@@ -54,10 +54,10 @@
 
  <!-- Read Engine configuration files and send them to central-module. -->
  <output>
-  <name>central-broker-cfg-engine-poller-module-3</name>
+  <name>central-broker-cfg-engine-poller-module-1</name>
   <type>dump_dir</type>
-  <path>/tmp/engine/apply/3</path>
-  <tagname>cfg-engine-3</tagname>
+  <path>/tmp/engine/apply/1</path>
+  <tagname>cfg-engine-1</tagname>
   <read_filters>
    <category>internal</category>
   </read_filters>

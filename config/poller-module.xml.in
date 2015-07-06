@@ -43,7 +43,7 @@
  <output>
   <retry_interval>60</retry_interval>
   <type>dumper</type>
-  <tagname>extcommands-broker-$BROKERID$</tagname>
+  <tagname>extcommands-broker-$POLLERID$</tagname>
   <path>@PREFIX_VAR@/poller-module.cmd</path>
   <name>poller-module-extcommands-broker</name>
  </output>
@@ -52,7 +52,7 @@
  <output>
   <retry_interval>60</retry_interval>
   <type>dumper</type>
-  <tagname>extcommands-engine-$BROKERID$</tagname>
+  <tagname>extcommands-engine-$POLLERID$</tagname>
   <path>/var/lib/centreon-engine/rw/centengine.cmd</path>
   <name>poller-module-extcommands-engine</name>
  </output>
@@ -61,7 +61,7 @@
  <output>
   <retry_interval>60</retry_interval>
   <type>dumper</type>
-  <tagname>cfg-broker-$BROKERID$</tagname>
+  <tagname>cfg-broker-$POLLERID$</tagname>
   <path>/etc/centreon-broker/$FILENAME$</path>
   <name>poller-module-cfg-broker</name>
  </output>
@@ -70,7 +70,7 @@
  <output>
   <retry_interval>60</retry_interval>
   <type>dumper</type>
-  <tagname>cfg-engine-$BROKERID$</tagname>
+  <tagname>cfg-engine-$POLLERID$</tagname>
   <path>/etc/centreon-engine/$FILENAME$</path>
   <name>poller-module-cfg-engine</name>
  </output>
