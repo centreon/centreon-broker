@@ -43,7 +43,7 @@
 
  <!-- Read Broker configuration files and send them to central-module. -->
  <output>
-  <name>central-broker-cfg-broker-central-module</name>
+  <name>central-broker-cfg-broker-poller-module-3</name>
   <type>dump_dir</type>
   <path>/tmp/broker/apply/3</path>
   <tagname>cfg-broker-3</tagname>
@@ -54,9 +54,9 @@
 
  <!-- Read Engine configuration files and send them to central-module. -->
  <output>
-  <name>central-broker-cfg-engine-central-module</name>
+  <name>central-broker-cfg-engine-poller-module-3</name>
   <type>dump_dir</type>
-  <path>/tmp/engine/apply/1</path>
+  <path>/tmp/engine/apply/3</path>
   <tagname>cfg-engine-3</tagname>
   <read_filters>
    <category>internal</category>
