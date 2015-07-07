@@ -23,6 +23,7 @@
 #  include <QSqlQuery>
 #  include <QString>
 #  include <QVariant>
+#  include <set>
 #  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -40,6 +41,8 @@ class database;
  */
 class               database_query {
 public:
+  typedef std::set<std::string> excluded_fields;
+
                     database_query(database& db);
                     ~database_query();
   database_query&   operator<<(io::data const& e);
@@ -49,6 +52,7 @@ public:
   void              finish();
   QVariant          last_insert_id();
   int               num_rows_affected();
+  void              set_excluded(excluded_fields const& excluded);
   int               size();
   void              run_query(
                       std::string const& query,
@@ -66,6 +70,7 @@ private:
 
   database&         _db;
   QSqlQuery         _q;
+  excluded_fields   _excluded;
 };
 
 CCB_END()

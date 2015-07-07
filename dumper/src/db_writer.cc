@@ -19,6 +19,7 @@
 
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/database.hh"
+#include "com/centreon/broker/database_preparator.hh"
 #include "com/centreon/broker/database_query.hh"
 #include "com/centreon/broker/dumper/db_dump.hh"
 #include "com/centreon/broker/dumper/db_writer.hh"
@@ -122,25 +123,30 @@ void db_writer::_commit() {
   }
 
   // Prepare BA queries.
-  std::set<std::string> ids;
   database_query ba_insert(db);
-  //prepare_insert<entries::ba>(ba_insert);
   database_query ba_update(db);
-  ids.clear();
-  ids.insert("ba_id");
-  //prepare_update<entries::ba>(ba_update, ids);
   database_query ba_delete(db);
-  // prepare_delete<entries::ba>(ba_delete, ids);
+  {
+    database_preparator::event_unique ids;
+    ids.insert("ba_id");
+    database_preparator dbp(entries::ba::static_type(), ids);
+    dbp.prepare_insert(ba_insert);
+    dbp.prepare_update(ba_update);
+    dbp.prepare_delete(ba_delete);
+  }
 
   // Prepare KPI queries.
   database_query kpi_insert(db);
-  //prepare_insert<entries::kpi>(kpi_insert);
   database_query kpi_update(db);
-  ids.clear();
-  ids.insert("kpi_id");
-  //prepare_update<entries::kpi>(kpi_update, ids);
   database_query kpi_delete(db);
-  //prepare_delete<entries::kpi>(kpi_delete, ids);
+  {
+    database_preparator::event_unique ids;
+    ids.insert("kpi_id");
+    database_preparator dbp(entries::kpi::static_type(), ids);
+    dbp.prepare_insert(kpi_insert);
+    dbp.prepare_update(kpi_update);
+    dbp.prepare_delete(kpi_delete);
+  }
 
   // Process all BAs.
   for (std::list<entries::ba>::const_iterator it(_bas.begin()), end(_bas.end());

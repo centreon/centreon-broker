@@ -252,7 +252,7 @@ database_query::~database_query() {}
  *  @param[out] q  Query object.
  *  @param[in]  d  Object.
  */
-database_query& operator<<(database_query& q, io::data const& d) {
+database_query& database_query::operator<<(io::data const& d) {
   // Get event info.
   io::event_info const*
     info(io::events::instance().get_event_info(d.type()));
@@ -261,15 +261,17 @@ database_query& operator<<(database_query& q, io::data const& d) {
          !current_entry->is_null();
          ++current_entry) {
       char const* entry_name(current_entry->get_name());
-      if (entry_name && entry_name[0]) {
+      if (entry_name
+          && entry_name[0]
+          && (_excluded.find(entry_name) == _excluded.end())) {
         QString field(":");
         field.append(entry_name);
         switch (current_entry->get_type()) {
         case mapping::source::BOOL:
-          bind_boolean(field, current_entry->get_bool(d), q);
+          bind_boolean(field, current_entry->get_bool(d), *this);
           break ;
         case mapping::source::DOUBLE:
-          bind_double(field, current_entry->get_double(d), q);
+          bind_double(field, current_entry->get_double(d), *this);
           break ;
         case mapping::source::INT:
           switch (current_entry->get_attribute()) {
@@ -277,20 +279,20 @@ database_query& operator<<(database_query& q, io::data const& d) {
             bind_integer_null_on_zero(
               field,
               current_entry->get_int(d),
-              q);
+              *this);
             break ;
           case mapping::entry::invalid_on_minus_one:
             bind_integer_null_on_minus_one(
               field,
               current_entry->get_int(d),
-              q);
+              *this);
             break ;
           default:
-            bind_integer(field, current_entry->get_int(d), q);
+            bind_integer(field, current_entry->get_int(d), *this);
           }
           break ;
         case mapping::source::SHORT:
-          bind_short(field, current_entry->get_short(d), q);
+          bind_short(field, current_entry->get_short(d), *this);
           break ;
         case mapping::source::STRING:
           if (current_entry->get_attribute()
@@ -298,9 +300,9 @@ database_query& operator<<(database_query& q, io::data const& d) {
             bind_string_null_on_empty(
               field,
               current_entry->get_string(d),
-              q);
+              *this);
           else
-            bind_string(field, current_entry->get_string(d), q);
+            bind_string(field, current_entry->get_string(d), *this);
           break ;
         case mapping::source::TIME:
           switch (current_entry->get_attribute()) {
@@ -308,16 +310,16 @@ database_query& operator<<(database_query& q, io::data const& d) {
             bind_timet_null_on_zero(
               field,
               current_entry->get_time(d),
-              q);
+              *this);
             break ;
           case mapping::entry::invalid_on_minus_one:
             bind_timet_null_on_minus_one(
               field,
               current_entry->get_time(d),
-              q);
+              *this);
             break ;
           default:
-            bind_timet(field, current_entry->get_time(d), q);
+            bind_timet(field, current_entry->get_time(d), *this);
           }
           break ;
         case mapping::source::UINT:
@@ -326,16 +328,16 @@ database_query& operator<<(database_query& q, io::data const& d) {
             bind_uint_null_on_zero(
               field,
               current_entry->get_uint(d),
-              q);
+              *this);
             break ;
           case mapping::entry::invalid_on_minus_one:
             bind_uint_null_on_minus_one(
               field,
               current_entry->get_uint(d),
-              q);
+              *this);
             break ;
           default :
-            bind_uint(field, current_entry->get_uint(d), q);
+            bind_uint(field, current_entry->get_uint(d), *this);
           }
           break ;
         default: // Error in one of the mappings.
@@ -343,14 +345,14 @@ database_query& operator<<(database_query& q, io::data const& d) {
                  << "of type '" << info->get_name() << "': "
                  << current_entry->get_type()
                  << " is not a known type ID");
-        }
+        };
       }
     }
   }
   else
     throw (exceptions::msg() << "cannot bind object of type "
            << d.type() << " to database query: mapping does not exist");
-  return (q);
+  return (*this);
 }
 
 /**
@@ -393,6 +395,17 @@ QVariant database_query::last_insert_id() {
  */
 int database_query::num_rows_affected() {
   return (_q.numRowsAffected());
+}
+
+/**
+ *  Set excluded fields.
+ *
+ *  @param[in] excluded  Excluded fields.
+ */
+void database_query::set_excluded(
+                       database_query::excluded_fields const& excluded) {
+  _excluded = excluded;
+  return ;
 }
 
 /**
