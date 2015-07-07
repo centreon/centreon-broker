@@ -86,15 +86,16 @@ void db_loader::_load_bas() {
       "  FROM cfg_bam"
       "  WHERE activate='1'",
       "db_reader: could not load configuration of BAs from DB");
+  // XXX : poller ID
   while (q.next()) {
     entries::ba b;
     b.enable = true;
+    b.poller_id = _poller_id;
     b.ba_id = q.value(0).toUInt();
     b.name = q.value(1).toString();
     b.description = q.value(2).toString();
     b.level_warning = q.value(3).toDouble();
     b.level_critical = q.value(4).toDouble();
-    // XXX : poller_id
     _state->get_bas().push_back(b);
   }
   return ;
@@ -120,9 +121,11 @@ void db_loader::_load_kpis() {
       "    ON k.drop_unknown_impact_id=iu.id_impact"
       "  WHERE k.activate='1'",
       "db_reader: could not load configuration of KPIs from DB");
+  // XXX : poller_id
   while (q.next()) {
     entries::kpi k;
     k.enable = true;
+    k.poller_id = _poller_id;
     k.kpi_id = q.value(0).toUInt();
     k.kpi_type = q.value(1).toInt();
     k.host_id = q.value(2).toUInt();

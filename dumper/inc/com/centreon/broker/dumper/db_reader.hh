@@ -39,7 +39,7 @@ namespace           dumper {
    *
    *  Read configuration from database and dumps it.
    */
-  class             db_reader {
+  class             db_reader : public io::stream {
   public:
                     db_reader(
                       std::string const& name,

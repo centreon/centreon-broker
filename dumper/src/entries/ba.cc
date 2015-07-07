@@ -35,11 +35,11 @@ using namespace com::centreon::broker::dumper::entries;
  *  Default constructor.
  */
 ba::ba()
-  : ba_id(0),
-    enable(true),
+  : enable(true),
+    poller_id(0),
+    ba_id(0),
     level_critical(NAN),
-    level_warning(NAN),
-    poller_id(0) {}
+    level_warning(NAN) {}
 
 /**
  *  Copy constructor.
@@ -78,13 +78,13 @@ ba& ba::operator=(ba const& other) {
  *  @return True if both objects are equal.
  */
 bool ba::operator==(ba const& other) const {
-  return ((ba_id == other.ba_id)
+  return ((enable == other.enable)
+          && (poller_id == other.poller_id)
+          && (ba_id == other.ba_id)
           && (description == other.description)
-          && (enable == other.enable)
           && (level_critical == other.level_critical)
           && (level_warning == other.level_warning)
-          && (name == other.name)
-          && (poller_id == other.poller_id));
+          && (name == other.name));
 }
 
 /**
@@ -128,12 +128,12 @@ unsigned int ba::static_type() {
  *  @param[in] other  Object to copy.
  */
 void ba::_internal_copy(ba const& other) {
+  enable = other.enable;
+  poller_id = other.poller_id;
   ba_id = other.ba_id;
   description = other.description;
-  enable = other.enable;
   level_critical = other.level_critical;
   level_warning = other.level_warning;
   name = other.name;
-  poller_id = other.poller_id;
   return ;
 }

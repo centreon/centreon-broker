@@ -45,6 +45,7 @@ namespace                 dumper {
       static unsigned int static_type();
 
       bool                enable;
+      unsigned int        poller_id;
       unsigned int        kpi_id;
       short               kpi_type;
       unsigned int        ba_id;

@@ -45,13 +45,13 @@ namespace                 dumper {
       unsigned int        type() const;
       static unsigned int static_type();
 
+      bool                enable;
+      unsigned int        poller_id;
       unsigned int        ba_id;
       QString             description;
-      bool                enable;
       double              level_critical;
       double              level_warning;
       QString             name;
-      unsigned int        poller_id;
 
     private:
       void                _internal_copy(ba const& other);

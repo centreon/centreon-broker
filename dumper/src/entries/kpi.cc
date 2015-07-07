@@ -35,6 +35,7 @@ using namespace com::centreon::broker::dumper::entries;
  */
 kpi::kpi()
   : enable(true),
+    poller_id(0),
     kpi_id(0),
     kpi_type(0),
     ba_id(0),
@@ -85,6 +86,7 @@ kpi& kpi::operator=(kpi const& other) {
  */
 bool kpi::operator==(kpi const& other) const {
   return ((enable == other.enable)
+          && (poller_id == other.poller_id)
           && (kpi_id == other.kpi_id)
           && (kpi_type == other.kpi_type)
           && (ba_id == other.ba_id)
@@ -140,6 +142,7 @@ unsigned int kpi::static_type() {
  */
 void kpi::_internal_copy(kpi const& other) {
   enable = other.enable;
+  poller_id = other.poller_id;
   kpi_id = other.kpi_id;
   kpi_type = other.kpi_type;
   ba_id = other.ba_id;
