@@ -39,10 +39,12 @@ namespace                 dumper {
                           kpi(kpi const& other);
                           ~kpi();
       kpi&                operator=(kpi const& other);
+      bool                operator==(kpi const& other) const;
+      bool                operator!=(kpi const& other) const;
       unsigned int        type() const;
       static unsigned int static_type();
 
-      bool                activate;
+      bool                enable;
       unsigned int        kpi_id;
       short               kpi_type;
       unsigned int        ba_id;

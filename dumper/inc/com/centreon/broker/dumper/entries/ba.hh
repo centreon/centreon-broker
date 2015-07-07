@@ -40,15 +40,18 @@ namespace                 dumper {
                           ba(ba const& other);
                           ~ba();
       ba&                 operator=(ba const& other);
+      bool                operator==(ba const& other) const;
+      bool                operator!=(ba const& other) const;
       unsigned int        type() const;
       static unsigned int static_type();
 
-      bool                activate;
       unsigned int        ba_id;
       QString             description;
+      bool                enable;
       double              level_critical;
       double              level_warning;
       QString             name;
+      unsigned int        poller_id;
 
     private:
       void                _internal_copy(ba const& other);

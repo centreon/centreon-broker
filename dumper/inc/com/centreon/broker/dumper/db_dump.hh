@@ -43,6 +43,7 @@ namespace               dumper {
 
     bool                commit;
     bool                full;
+    unsigned int        poller_id;
 
   private:
     void                _internal_copy(db_dump const& other);
