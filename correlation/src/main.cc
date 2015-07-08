@@ -108,28 +108,32 @@ extern "C" {
             io::event_info(
                   "state",
                   &correlation::state::operations,
-                  correlation::state::entries));
+                  correlation::state::entries,
+                  "rt_servicestateevents"));
         e.register_event(
             io::events::correlation,
             correlation::de_issue,
             io::event_info(
                   "issue",
                   &correlation::issue::operations,
-                  correlation::issue::entries));
+                  correlation::issue::entries,
+                  "rt_issues"));
         e.register_event(
             io::events::correlation,
             correlation::de_issue_parent,
             io::event_info(
                   "issue_parent",
                   &correlation::issue_parent::operations,
-                  correlation::issue_parent::entries));
+                  correlation::issue_parent::entries,
+                  "rt_issues_issues_parents"));
         e.register_event(
             io::events::correlation,
             correlation::de_log_issue,
             io::event_info(
                   "log_issue",
                   &correlation::log_issue::operations,
-                  correlation::log_issue::entries));
+                  correlation::log_issue::entries,
+                  "log_logs"));
       }
     }
     return ;

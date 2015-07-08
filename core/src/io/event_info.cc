@@ -28,12 +28,14 @@ using namespace com::centreon::broker::io;
  *  @param[in] name     Event name.
  *  @param[in] ops      Event operations (constructor, ...).
  *  @param[in] entries  Event property mapping.
+ *  @param[in] table    SQL table of event.
  */
 event_info::event_info(
               std::string const& name,
               event_info::event_operations const* ops,
-              mapping::entry const* entries)
-  : _mapping(entries), _name(name), _ops(ops) {}
+              mapping::entry const* entries,
+              std::string const& table)
+  : _mapping(entries), _name(name), _ops(ops), _table(table) {}
 
 /**
  *  Copy constructor.
@@ -41,7 +43,10 @@ event_info::event_info(
  *  @param[in] other  Object to copy.
  */
 event_info::event_info(event_info const& other)
-  : _mapping(other._mapping), _name(other._name), _ops(other._ops) {}
+  : _mapping(other._mapping),
+    _name(other._name),
+    _ops(other._ops),
+    _table(other._table) {}
 
 /**
  *  Destructor.
@@ -59,6 +64,7 @@ event_info& event_info::operator=(event_info const& other) {
   _mapping = other._mapping;
   _name = other._name;
   _ops = other._ops;
+  _table = other._table;
   return (*this);
 }
 
@@ -87,4 +93,13 @@ std::string const& event_info::get_name() const {
  */
 event_info::event_operations const& event_info::get_operations() const {
   return (*_ops);
+}
+
+/**
+ *  Get event table.
+ *
+ *  @return Event SQL table name.
+ */
+std::string const& event_info::get_table() const {
+  return (_table);
 }
