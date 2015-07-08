@@ -18,6 +18,9 @@
 */
 
 #include "com/centreon/broker/config/state.hh"
+#include "com/centreon/broker/dumper/db_dump.hh"
+#include "com/centreon/broker/dumper/entries/ba.hh"
+#include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/factory.hh"
 #include "com/centreon/broker/dumper/dump.hh"
 #include "com/centreon/broker/dumper/reload.hh"
@@ -112,6 +115,29 @@ extern "C" {
                   "reload",
                   &dumper::reload::operations,
                   dumper::reload::entries));
+        e.register_event(
+            io::events::dumper,
+            dumper::de_db_dump,
+            io::event_info(
+                  "db_dump",
+                  &dumper::db_dump::operations,
+                  dumper::db_dump::entries));
+        e.register_event(
+            io::events::dumper,
+            dumper::de_entries_ba,
+            io::event_info(
+                  "ba",
+                  &dumper::entries::ba::operations,
+                  dumper::entries::ba::entries,
+                  "cfg_bam"));
+        e.register_event(
+            io::events::dumper,
+            dumper::de_entries_kpi,
+            io::event_info(
+                  "kpi",
+                  &dumper::entries::kpi::operations,
+                  dumper::entries::kpi::entries,
+                  "cfg_bam_kpi"));
       }
 
 

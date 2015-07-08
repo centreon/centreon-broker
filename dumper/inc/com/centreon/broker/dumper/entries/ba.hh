@@ -22,6 +22,8 @@
 
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -52,6 +54,11 @@ namespace                 dumper {
       double              level_critical;
       double              level_warning;
       QString             name;
+
+      static mapping::entry const
+                          entries[];
+      static io::event_info::event_operations const
+                          operations;
 
     private:
       void                _internal_copy(ba const& other);

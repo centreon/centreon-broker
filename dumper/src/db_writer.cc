@@ -114,11 +114,11 @@ void db_writer::_commit() {
   if (_full_dump) {
     {
       database_query q(db);
-      q.run_query("DELETE cfg_bam_kpi");
+      q.run_query("DELETE FROM cfg_bam_kpi");
     }
     {
       database_query q(db);
-      q.run_query("DELETE cfg_bam");
+      q.run_query("DELETE FROM cfg_bam");
     }
   }
 

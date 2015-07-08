@@ -156,3 +156,69 @@ void kpi::_internal_copy(kpi const& other) {
   drop_unknown = other.drop_unknown;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const kpi::entries[] = {
+  mapping::entry(
+    &kpi::enable,
+    "enable"),
+  mapping::entry(
+    &kpi::poller_id,
+    "poller_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &kpi::kpi_id,
+    "kpi_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &kpi::kpi_type,
+    "kpi_type"),
+  mapping::entry(
+    &kpi::ba_id,
+    "ba_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &kpi::host_id,
+    "host_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &kpi::service_id,
+    "service_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &kpi::ba_indicator_id,
+    "ba_indicator_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &kpi::meta_id,
+    "meta_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &kpi::boolean_id,
+    "boolean_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &kpi::drop_warning,
+    "drop_warning"),
+  mapping::entry(
+    &kpi::drop_critical,
+    "drop_critical"),
+  mapping::entry(
+    &kpi::drop_unknown,
+    "drop_unknown"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_kpi() {
+  return (new kpi);
+}
+io::event_info::event_operations const kpi::operations = {
+  &new_kpi
+};

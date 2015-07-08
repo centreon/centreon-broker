@@ -99,3 +99,31 @@ void db_dump::_internal_copy(db_dump const& other) {
   poller_id = other.poller_id;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const db_dump::entries[] = {
+  mapping::entry(
+    &db_dump::commit,
+    "commit"),
+  mapping::entry(
+    &db_dump::full,
+    "full"),
+  mapping::entry(
+    &db_dump::poller_id,
+    "poller_id"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_db_dump() {
+  return (new db_dump);
+}
+io::event_info::event_operations const db_dump::operations = {
+  &new_db_dump
+};

@@ -137,3 +137,45 @@ void ba::_internal_copy(ba const& other) {
   name = other.name;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const ba::entries[] = {
+  mapping::entry(
+    &ba::enable,
+    "enable"),
+  mapping::entry(
+    &ba::poller_id,
+    "poller_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &ba::ba_id,
+    "ba_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &ba::description,
+    "description"),
+  mapping::entry(
+    &ba::level_critical,
+    "level_c"),
+  mapping::entry(
+    &ba::level_warning,
+    "level_w"),
+  mapping::entry(
+    &ba::name,
+    "name"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_ba() {
+  return (new ba);
+}
+io::event_info::event_operations const ba::operations = {
+  &new_ba
+};
