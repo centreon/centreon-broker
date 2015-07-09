@@ -62,6 +62,42 @@ state& state::operator=(state const& other) {
   return (*this);
 }
 
+/**
+ *  Get BAs.
+ *
+ *  @return Non-modifiable list of BA.
+ */
+std::list<ba> const& state::get_bas() const {
+  return (_bas);
+}
+
+/**
+ *  Get BAs.
+ *
+ *  @return Modifiable list of BA.
+ */
+std::list<ba>& state::get_bas() {
+  return (_bas);
+}
+
+/**
+ *  Get KPIs.
+ *
+ *  @return Non-modifiable list of KPI.
+ */
+std::list<kpi> const& state::get_kpis() const {
+  return (_kpis);
+}
+
+/**
+ *  Get KPIs.
+ *
+ *  @return Modifiable list of KPI.
+ */
+std::list<kpi>& state::get_kpis() {
+  return (_kpis);
+}
+
 /**************************************
 *                                     *
 *           Private Methods           *
