@@ -119,7 +119,6 @@ unsigned int db_reader::write(misc::shared_ptr<io::data> const& d) {
     else {
       // Split command for processing.
       std::vector<std::string> params;
-      unsigned int poller_id(strtoul(params[2].c_str(), NULL, 0));
       misc::string::split(cmd.substr(start + 1), params, ';');
       if (params.size() != 3) {
         logging::info(logging::medium)
@@ -135,6 +134,7 @@ unsigned int db_reader::write(misc::shared_ptr<io::data> const& d) {
         }
         else {
           // Process external commands.
+          unsigned int poller_id(strtoul(params[2].c_str(), NULL, 0));
           if (params[0] == "UPDATE_CFG_DB")
             _update_cfg_db(poller_id);
           else if (params[0] == "SYNC_CFG_DB")
@@ -164,6 +164,11 @@ unsigned int db_reader::write(misc::shared_ptr<io::data> const& d) {
  */
 void db_reader::_sync_cfg_db(unsigned int poller_id) {
   if (poller_id) {
+    // Log message.
+    logging::info(logging::medium)
+      << "db_reader: reading a full DB configuration set for poller "
+      << poller_id;
+
     // Discard events of internal cache.
     _cache.erase(poller_id);
 
@@ -203,6 +208,11 @@ void db_reader::_sync_cfg_db(unsigned int poller_id) {
  */
 void db_reader::_update_cfg_db(unsigned int poller_id) {
   if (poller_id) {
+    // Log message.
+    logging::info(logging::medium)
+      << "db_reader: reading a partial DB configuration set for poller "
+      << poller_id;
+
     // Read database.
     entries::state state;
     _loader.load(state, poller_id);

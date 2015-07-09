@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/database.hh"
 #include "com/centreon/broker/database_preparator.hh"
@@ -26,6 +27,7 @@
 #include "com/centreon/broker/dumper/entries/ba.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::dumper;
@@ -154,15 +156,29 @@ void db_writer::_commit() {
        ++it) {
     // INSERT / UPDATE.
     if (it->enable) {
+      logging::debug(logging::medium)
+        << "db_dumper: updating BA " << it->ba_id << " ('" << it->name
+        << "')";
       ba_update << *it;
       ba_update.run_statement();
       if (!ba_update.num_rows_affected()) {
+        logging::debug(logging::medium)
+          << "db_dumper: inserting BA " << it->ba_id << " ('"
+          << it->name << "')";
         ba_insert << *it;
         ba_insert.run_statement();
       }
+      std::ostringstream query;
+      query << "UPDATE cfg_bam SET activate='1' WHERE ba_id="
+            << it->ba_id;
+      database_query q(db);
+      q.run_query(query.str().c_str());
     }
     // DELETE.
     else {
+      logging::debug(logging::medium)
+        << "db_dumper: deleting BA " << it->ba_id << " ('"
+        << it->name << "')";
       ba_delete.bind_value(":ba_id", it->ba_id);
       ba_delete.run_statement();
     }
@@ -176,15 +192,26 @@ void db_writer::_commit() {
        ++it) {
     // INSERT / UPDATE.
     if (it->enable) {
+      logging::debug(logging::medium)
+        << "db_dumper: updating KPI " << it->kpi_id;
       kpi_update << *it;
       kpi_update.run_statement();
       if (!kpi_update.num_rows_affected()) {
+        logging::debug(logging::medium)
+          << "db_dumper: inserting KPI " << it->kpi_id;
         kpi_insert << *it;
         kpi_insert.run_statement();
       }
+      std::ostringstream query;
+      query << "UPDATE cfg_bam_kpi SET activate='1' WHERE kpi_id="
+            << it->kpi_id;
+      database_query q(db);
+      q.run_query(query.str().c_str());
     }
     // DELETE.
     else {
+      logging::debug(logging::medium)
+        << "db_dumper: deleting KPI " << it->kpi_id;
       kpi_delete.bind_value(":kpi_id", it->kpi_id);
       kpi_delete.run_statement();
     }

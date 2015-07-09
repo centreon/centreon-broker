@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<centreonbroker>
+  <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
+  <instance>42</instance>
+  <instance_name>MyCentral</instance_name>
+  <!--
+  <stats>
+    <fifo>/tmp/cbd1.fifo</fifo>
+  </stats>
+  <log_timestamp>1</log_timestamp>
+  <logger>
+    <type>file</type>
+    <name>cbd1.log</name>
+    <config>1</config>
+    <debug>1</debug>
+    <error>1</error>
+    <info>1</info>
+    <level>3</level>
+  </logger>
+  -->
+  <command_file>@COMMAND_FILE@</command_file>
+  <output>
+    <name>DBCfg1-DBReader</name>
+    <type>db_cfg_reader</type>
+    <db_type>@DB_TYPE@</db_type>
+    <db_host>@DB_HOST@</db_host>
+    <db_port>@DB_PORT@</db_port>
+    <db_user>@DB_USER@</db_user>
+    <db_password>@DB_PASSWORD@</db_password>
+    <db_name>@DB_NAME@</db_name>
+    <queries_per_transaction>0</queries_per_transaction>
+  </output>
+  <output>
+    <name>DBCfg1-TCP</name>
+    <type>tcp</type>
+    <protocol>bbdo</protocol>
+    <host>localhost</host>
+    <port>5691</port>
+  </output>
+</centreonbroker>

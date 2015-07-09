@@ -148,10 +148,10 @@ void ba::_internal_copy(ba const& other) {
 mapping::entry const ba::entries[] = {
   mapping::entry(
     &ba::enable,
-    "enable"),
+    ""),
   mapping::entry(
     &ba::poller_id,
-    "poller_id",
+    "",
     mapping::entry::invalid_on_zero),
   mapping::entry(
     &ba::ba_id,

@@ -127,7 +127,7 @@ void db_loader::_load_kpis() {
     k.enable = true;
     k.poller_id = _poller_id;
     k.kpi_id = q.value(0).toUInt();
-    k.kpi_type = q.value(1).toInt();
+    k.kpi_type = q.value(1).toInt() + 1;
     k.host_id = q.value(2).toUInt();
     k.service_id = q.value(3).toUInt();
     k.ba_indicator_id = q.value(4).toUInt();

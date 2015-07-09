@@ -86,7 +86,7 @@ diff::diff(state const& older, state const& newer) {
         if (it_old->first == it_new->first) {
           // BA was updated.
           if (it_old->second != it_new->second)
-            _bas_to_update.push_back(it_old->second);
+            _bas_to_update.push_back(it_new->second);
           // BA was not modified, nothing to do.
 
           ++it_old;
@@ -130,7 +130,7 @@ diff::diff(state const& older, state const& newer) {
         if (it_old->first == it_new->first) {
           // KPI was updated.
           if (it_old->second != it_new->second)
-            _kpis_to_update.push_back(it_old->second);
+            _kpis_to_update.push_back(it_new->second);
           // KPI was not modified, nothing to do.
 
           ++it_old;

@@ -965,6 +965,13 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" ${TEST_LIB})
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
+  # Database synchronization.
+  set(TEST_NAME "running_db_cfg")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/db_cfg.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIB})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
   # RRD benchmark.
   unset(QT_WRAPPED_SOURCES)
   qt4_wrap_cpp(QT_WRAPPED_SOURCES

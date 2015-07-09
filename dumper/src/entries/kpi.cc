@@ -167,10 +167,10 @@ void kpi::_internal_copy(kpi const& other) {
 mapping::entry const kpi::entries[] = {
   mapping::entry(
     &kpi::enable,
-    "enable"),
+    ""),
   mapping::entry(
     &kpi::poller_id,
-    "poller_id",
+    "",
     mapping::entry::invalid_on_zero),
   mapping::entry(
     &kpi::kpi_id,
@@ -181,7 +181,7 @@ mapping::entry const kpi::entries[] = {
     "kpi_type"),
   mapping::entry(
     &kpi::ba_id,
-    "ba_id",
+    "id_ba",
     mapping::entry::invalid_on_zero),
   mapping::entry(
     &kpi::host_id,
@@ -193,7 +193,7 @@ mapping::entry const kpi::entries[] = {
     mapping::entry::invalid_on_zero),
   mapping::entry(
     &kpi::ba_indicator_id,
-    "ba_indicator_id",
+    "id_indicator_ba",
     mapping::entry::invalid_on_zero),
   mapping::entry(
     &kpi::meta_id,
