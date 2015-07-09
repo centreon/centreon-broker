@@ -32,7 +32,6 @@ add_library("${SQL}" SHARED
   "${SRC_DIR}/cleanup.cc"
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
-  "${SRC_DIR}/internal.cc"
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/stream.cc"
   "${SRC_DIR}/stored_timestamp.cc"
@@ -40,7 +39,6 @@ add_library("${SQL}" SHARED
   "${INC_DIR}/com/centreon/broker/sql/cleanup.hh"
   "${INC_DIR}/com/centreon/broker/sql/connector.hh"
   "${INC_DIR}/com/centreon/broker/sql/factory.hh"
-  "${INC_DIR}/com/centreon/broker/sql/internal.hh"
   "${INC_DIR}/com/centreon/broker/sql/stream.hh"
   "${INC_DIR}/com/centreon/broker/sql/stored_timestamp.hh"
 )

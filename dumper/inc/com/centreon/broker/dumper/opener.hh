@@ -21,6 +21,7 @@
 #  define CCB_DUMPER_OPENER_HH
 
 #  include <string>
+#  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
@@ -39,7 +40,9 @@ namespace                        dumper {
     enum                         dumper_type {
                                  dump,
                                  dump_dir,
-                                 dump_fifo
+                                 dump_fifo,
+                                 db_cfg_reader,
+                                 db_cfg_writer
     };
 
                                  opener();
@@ -47,6 +50,7 @@ namespace                        dumper {
                                  ~opener();
     opener&                      operator=(opener const& o);
     misc::shared_ptr<io::stream> open();
+    void                         set_db(database_config const& db_cfg);
     void                         set_path(std::string const& path);
     void                         set_tagname(std::string const& tagname);
     void                         set_type(dumper_type type);
@@ -55,6 +59,7 @@ namespace                        dumper {
     void                         set_name(std::string const& name);
 
    private:
+    database_config              _db;
     std::string                  _name;
     std::string                  _path;
     std::string                  _tagname;

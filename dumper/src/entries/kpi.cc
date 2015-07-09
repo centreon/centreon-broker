@@ -34,7 +34,8 @@ using namespace com::centreon::broker::dumper::entries;
  *  Default constructor.
  */
 kpi::kpi()
-  : activate(true),
+  : enable(true),
+    poller_id(0),
     kpi_id(0),
     kpi_type(0),
     ba_id(0),
@@ -77,6 +78,40 @@ kpi& kpi::operator=(kpi const& other) {
 }
 
 /**
+ *  Equality operator.
+ *
+ *  @param[in] other  Object to copy.
+ *
+ *  @return True if both objects are equal.
+ */
+bool kpi::operator==(kpi const& other) const {
+  return ((enable == other.enable)
+          && (poller_id == other.poller_id)
+          && (kpi_id == other.kpi_id)
+          && (kpi_type == other.kpi_type)
+          && (ba_id == other.ba_id)
+          && (host_id == other.host_id)
+          && (service_id == other.service_id)
+          && (ba_indicator_id == other.ba_indicator_id)
+          && (meta_id == other.meta_id)
+          && (boolean_id == other.boolean_id)
+          && (drop_warning == other.drop_warning)
+          && (drop_critical == other.drop_critical)
+          && (drop_unknown == other.drop_unknown));
+}
+
+/**
+ *  Inequality operator.
+ *
+ *  @param[in] other  Object to copy.
+ *
+ *  @return True if both objects are not equal.
+ */
+bool kpi::operator!=(kpi const& other) const {
+  return (!operator==(other));
+}
+
+/**
  *  Get event type.
  *
  *  @return This event type.
@@ -106,7 +141,8 @@ unsigned int kpi::static_type() {
  *  @param[in] other  Object to copy.
  */
 void kpi::_internal_copy(kpi const& other) {
-  activate = other.activate;
+  enable = other.enable;
+  poller_id = other.poller_id;
   kpi_id = other.kpi_id;
   kpi_type = other.kpi_type;
   ba_id = other.ba_id;
@@ -120,3 +156,69 @@ void kpi::_internal_copy(kpi const& other) {
   drop_unknown = other.drop_unknown;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const kpi::entries[] = {
+  mapping::entry(
+    &kpi::enable,
+    "enable"),
+  mapping::entry(
+    &kpi::poller_id,
+    "poller_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &kpi::kpi_id,
+    "kpi_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &kpi::kpi_type,
+    "kpi_type"),
+  mapping::entry(
+    &kpi::ba_id,
+    "ba_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &kpi::host_id,
+    "host_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &kpi::service_id,
+    "service_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &kpi::ba_indicator_id,
+    "ba_indicator_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &kpi::meta_id,
+    "meta_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &kpi::boolean_id,
+    "boolean_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &kpi::drop_warning,
+    "drop_warning"),
+  mapping::entry(
+    &kpi::drop_critical,
+    "drop_critical"),
+  mapping::entry(
+    &kpi::drop_unknown,
+    "drop_unknown"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_kpi() {
+  return (new kpi);
+}
+io::event_info::event_operations const kpi::operations = {
+  &new_kpi
+};

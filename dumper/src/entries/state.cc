@@ -17,12 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/dumper/db_dump.hh"
-#include "com/centreon/broker/dumper/internal.hh"
-#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/dumper/entries/ba.hh"
+#include "com/centreon/broker/dumper/entries/kpi.hh"
+#include "com/centreon/broker/dumper/entries/state.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::dumper;
+using namespace com::centreon::broker::dumper::entries;
 
 /**************************************
 *                                     *
@@ -33,21 +33,21 @@ using namespace com::centreon::broker::dumper;
 /**
  *  Default constructor.
  */
-db_dump::db_dump() : commit(false), full(false), poller_id(0) {}
+state::state() {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-db_dump::db_dump(db_dump const& other) : io::data(other) {
+state::state(state const& other) {
   _internal_copy(other);
 }
 
 /**
  *  Destructor.
  */
-db_dump::~db_dump() {}
+state::~state() {}
 
 /**
  *  Assignment operator.
@@ -56,30 +56,46 @@ db_dump::~db_dump() {}
  *
  *  @return This object.
  */
-db_dump& db_dump::operator=(db_dump const& other) {
-  if (this != &other) {
-    io::data::operator=(other);
+state& state::operator=(state const& other) {
+  if (this != &other)
     _internal_copy(other);
-  }
   return (*this);
 }
 
 /**
- *  Get event type.
+ *  Get BAs.
  *
- *  @return Event type.
+ *  @return Non-modifiable list of BA.
  */
-unsigned int db_dump::type() const {
-  return (static_type());
+std::list<ba> const& state::get_bas() const {
+  return (_bas);
 }
 
 /**
- *  Get event class type.
+ *  Get BAs.
  *
- *  @return Event class type.
+ *  @return Modifiable list of BA.
  */
-unsigned int db_dump::static_type() {
-  return (io::events::data_type<io::events::dumper, dumper::de_db_dump>::value);
+std::list<ba>& state::get_bas() {
+  return (_bas);
+}
+
+/**
+ *  Get KPIs.
+ *
+ *  @return Non-modifiable list of KPI.
+ */
+std::list<kpi> const& state::get_kpis() const {
+  return (_kpis);
+}
+
+/**
+ *  Get KPIs.
+ *
+ *  @return Modifiable list of KPI.
+ */
+std::list<kpi>& state::get_kpis() {
+  return (_kpis);
 }
 
 /**************************************
@@ -93,37 +109,8 @@ unsigned int db_dump::static_type() {
  *
  *  @param[in] other  Object to copy.
  */
-void db_dump::_internal_copy(db_dump const& other) {
-  commit = other.commit;
-  full = other.full;
-  poller_id = other.poller_id;
+void state::_internal_copy(state const& other) {
+  _bas = other._bas;
+  _kpis = other._kpis;
   return ;
 }
-
-/**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
-
-// Mapping.
-mapping::entry const db_dump::entries[] = {
-  mapping::entry(
-    &db_dump::commit,
-    "commit"),
-  mapping::entry(
-    &db_dump::full,
-    "full"),
-  mapping::entry(
-    &db_dump::poller_id,
-    "poller_id"),
-  mapping::entry()
-};
-
-// Operations.
-static io::data* new_db_dump() {
-  return (new db_dump);
-}
-io::event_info::event_operations const db_dump::operations = {
-  &new_db_dump
-};

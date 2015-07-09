@@ -28,6 +28,7 @@
 #include "com/centreon/engine/common.hh"
 #include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/correlation/internal.hh"
+#include "com/centreon/broker/database_preparator.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -35,7 +36,6 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/sql/internal.hh"
 #include "com/centreon/broker/sql/stream.hh"
 
 using namespace com::centreon::broker;
@@ -256,196 +256,46 @@ bool stream::_is_valid_poller(unsigned int poller_id) {
  *  Prepare queries.
  */
 void stream::_prepare() {
-  std::vector<std::string> added_fields;
-  // Prepare insert queries.
-  _prepare_insert<neb::acknowledgement>(
-                         _acknowledgement_insert,
-                         "rt_acknowledgements");
-  _prepare_insert<neb::custom_variable>(
-                         _custom_variable_insert,
-                         "rt_customvariables");
-  _prepare_insert<neb::downtime>(
-                         _downtime_insert,
-                         "rt_downtimes");
-  _prepare_insert<neb::event_handler>(
-                         _event_handler_insert,
-                         "rt_eventhandlers");
-  _prepare_insert<neb::flapping_status>(
-                         _flapping_status_insert,
-                         "rt_flappingstatuses");
-  _prepare_insert<neb::host>(
-                         _host_insert,
-                         "rt_hosts");
-  _prepare_insert<neb::host_dependency>(
-                         _host_dependency_insert,
-                         "rt_hosts_hosts_dependencies");
-  _prepare_insert<neb::host_parent>(
-                         _host_parent_insert,
-                         "rt_hosts_hosts_parents");
-  _prepare_insert<neb::instance>(
-                         _instance_insert,
-                         "rt_instances");
-  _prepare_insert<neb::module>(
-                         _module_insert,
-                         "rt_modules");
-  // XXX _prepare_insert<neb::notification>(
-  //                        _notification_insert,
-  //                        "rt_notifications");
-  _prepare_insert<neb::service>(
-                         _service_insert,
-                         "rt_services");
-  _prepare_insert<neb::service_dependency>(
-                         _service_dependency_insert,
-                         "rt_services_services_dependencies");
-  _prepare_insert<correlation::state>(
-                                 _host_state_insert,
-                                 "rt_hoststateevents");
-  _prepare_insert<correlation::issue>(
-                                  _issue_insert,
-                                  "rt_issues");
-  added_fields.clear();
-  added_fields.push_back("service_id");
-  _prepare_insert<correlation::state>(
-                                 _service_state_insert,
-                                 "rt_servicestateevents",
-                                 added_fields);
+  // Prepare queries.
+  database_query::excluded_fields excluded;
+  database_preparator::event_unique unique;
   {
-    std::string query(
-      "INSERT INTO rt_issues_issues_parents (child_id, end_time, start_time, parent_id)"
-      " VALUES (:child_id, :end_time, :start_time, :parent_id)");
-    _issue_parent_insert.prepare(query, "SQL: could not prepare query");
+    unique.clear();
+    unique.insert("entry_time");
+    unique.insert("host_id");
+    unique.insert("service_id");
+    database_preparator dbp(
+                          neb::acknowledgement::static_type(),
+                          unique);
+    dbp.prepare_insert(_acknowledgement_insert);
+    dbp.prepare_update(_acknowledgement_update);
   }
   {
-    std::string query(
-      "SELECT issue_id FROM rt_issues"
-      " WHERE host_id=:host_id"
-      " AND service_id=:service_id"
-      " AND start_time=:start_time");
-    _issue_select.prepare(query, "SQL: could not prepare query");
+    unique.clear();
+    unique.insert("host_id");
+    unique.insert("name");
+    unique.insert("service_id");
+    database_preparator dbp(
+                          neb::custom_variable::static_type(),
+                          unique);
+    dbp.prepare_insert(_custom_variable_insert);
+    dbp.prepare_update(_custom_variable_update);
+    dbp.prepare_delete(_custom_variable_delete);
   }
-
-  // Prepare update queries.
-  std::map<std::string, bool> id;
-
-  id.clear();
-  id["entry_time"] = false;
-  id["host_id"] = false;
-  id["service_id"] = true;
-  _prepare_update<neb::acknowledgement>(
-                         _acknowledgement_update,
-                         "rt_acknowledgements",
-                         id);
-  id.clear();
-  id["host_id"] = false;
-  id["name"] = false;
-  id["service_id"] = true;
-  _prepare_update<neb::custom_variable>(
-                         _custom_variable_update,
-                         "rt_customvariables",
-                         id);
-  _prepare_delete<neb::custom_variable>(
-                         _custom_variable_delete,
-                         "rt_customvariables",
-                         id);
-
-  id.clear();
-  id["host_id"] = false;
-  id["name"] = false;
-  id["service_id"] = true;
-  _prepare_update<neb::custom_variable_status>(
-    _custom_variable_status_update,
-    "rt_customvariables",
-    id);
-
-  id.clear();
-  id["host_id"] = false;
-  id["service_id"] = true;
-  id["start_time"] = false;
-  _prepare_update<neb::event_handler>(
-                         _event_handler_update,
-                         "rt_eventhandlers",
-                         id);
-
-  id.clear();
-  id["host_id"] = false;
-  id["service_id"] = true;
-  id["event_time"] = false;
-  _prepare_update<neb::flapping_status>(
-                         _flapping_status_update,
-                         "rt_flappingstatuses",
-                         id);
-
-  id.clear();
-  id["host_id"] = false;
-  _prepare_update<neb::host>(_host_update, "rt_hosts", id);
-
-  id.clear();
-  id["host_id"] = false;
-  _prepare_update<neb::host_check>(_host_check_update, "rt_hosts", id);
-
-  id.clear();
-  id["host_id"] = false;
-  id["dependent_host_id"] = false;
-  _prepare_update<neb::host_dependency>(
-                         _host_dependency_update,
-                         "rt_hosts_hosts_dependencies",
-                         id);
-
-  id.clear();
-  id["host_id"] = false;
-  _prepare_update<neb::host_status>(_host_status_update, "rt_hosts", id);
-
-  id.clear();
-  id["instance_id"] = false;
-  _prepare_update<neb::instance>(_instance_update, "rt_instances", id);
-
-  id.clear();
-  id["instance_id"] = false;
-  _prepare_update<neb::instance_status>(
-                         _instance_status_update,
-                         "rt_instances",
-                         id);
-
-  // XXX id.clear();
-  // id["host_id"] = false;
-  // id["service_id"] = true;
-  // id["start_time"] = false;
-  // _prepare_update<neb::notification>(
-  //                        _notification_update,
-  //                        "rt_notifications",
-  //                        id);
-
-  id.clear();
-  id["host_id"] = false;
-  id["service_id"] = false;
-  _prepare_update<neb::service>(_service_update, "rt_services", id);
-
-  id.clear();
-  id["host_id"] = false;
-  id["service_id"] = false;
-  _prepare_update<neb::service_check>(
-                         _service_check_update,
-                         "rt_services",
-                         id);
-
-  id.clear();
-  id["dependent_host_id"] = false;
-  id["dependent_service_id"] = false;
-  id["host_id"] = false;
-  id["service_id"] = false;
-  _prepare_update<neb::service_dependency>(
-                         _service_dependency_update,
-                         "rt_services_services_dependencies",
-                         id);
-
-  id.clear();
-  id["host_id"] = false;
-  id["service_id"] = false;
-  _prepare_update<neb::service_status>(
-                         _service_status_update,
-                         "rt_services",
-                         id);
-
+  {
+    unique.clear();
+    unique.insert("host_id");
+    unique.insert("name");
+    unique.insert("service_id");
+    database_preparator dbp(
+                          neb::custom_variable_status::static_type(),
+                          unique);
+    dbp.prepare_update(_custom_variable_status_update);
+  }
+  {
+    database_preparator dbp(neb::downtime::static_type());
+    dbp.prepare_insert(_downtime_insert);
+  }
   {
     std::ostringstream oss;
     oss << "UPDATE rt_downtimes"
@@ -464,30 +314,169 @@ void stream::_prepare() {
     std::string query(oss.str());
     _downtime_update.prepare(query, "SQL: could not prepare query");
   }
-
-  id.clear();
-  id["host_id"] = false;
-  id["start_time"] = false;
-  _prepare_update<correlation::state>(
-                                 _host_state_update,
-                                 "rt_hoststateevents",
-                                 id);
-
-  id.clear();
-  id["host_id"] = false;
-  id["service_id"] = true;
-  id["start_time"] = false;
-  _prepare_update<correlation::issue>(_issue_update, "rt_issues", id);
-
-  id.clear();
-  id["host_id"] = false;
-  id["service_id"] = false;
-  id["start_time"] = false;
-  _prepare_update<correlation::state>(
-                                 _service_state_update,
-                                 "rt_servicestateevents",
-                                 id);
-
+  {
+    unique.clear();
+    unique.insert("host_id");
+    unique.insert("service_id");
+    unique.insert("start_time");
+    database_preparator dbp(
+                          neb::event_handler::static_type(),
+                          unique);
+    dbp.prepare_insert(_event_handler_insert);
+    dbp.prepare_update(_event_handler_update);
+  }
+  {
+    unique.clear();
+    unique.insert("host_id");
+    unique.insert("service_id");
+    unique.insert("event_time");
+    database_preparator dbp(
+                          neb::flapping_status::static_type(),
+                          unique);
+    dbp.prepare_insert(_flapping_status_insert);
+    dbp.prepare_update(_flapping_status_update);
+  }
+  {
+    unique.clear();
+    unique.insert("host_id");
+    database_preparator dbp(neb::host::static_type(), unique);
+    dbp.prepare_insert(_host_insert);
+    dbp.prepare_update(_host_update);
+  }
+  {
+    unique.clear();
+    unique.insert("host_id");
+    database_preparator dbp(neb::host_check::static_type(), unique);
+    dbp.prepare_update(_host_check_update);
+  }
+  {
+    unique.clear();
+    unique.insert("host_id");
+    unique.insert("dependent_host_id");
+    database_preparator dbp(
+                          neb::host_dependency::static_type(),
+                          unique);
+    dbp.prepare_insert(_host_dependency_insert);
+    dbp.prepare_update(_host_dependency_update);
+  }
+  {
+    database_preparator dbp(neb::host_parent::static_type());
+    dbp.prepare_insert(_host_parent_insert);
+  }
+  {
+    unique.clear();
+    unique.insert("host_id");
+    database_preparator dbp(neb::host_status::static_type(), unique);
+    dbp.prepare_update(_host_status_update);
+  }
+  {
+    unique.clear();
+    unique.insert("instance_id");
+    database_preparator dbp(neb::instance::static_type(), unique);
+    dbp.prepare_insert(_instance_insert);
+    dbp.prepare_update(_instance_update);
+  }
+  {
+    unique.clear();
+    unique.insert("instance_id");
+    database_preparator dbp(
+                          neb::instance_status::static_type(),
+                          unique);
+    dbp.prepare_update(_instance_status_update);
+  }
+  {
+    database_preparator dbp(neb::module::static_type());
+    dbp.prepare_insert(_module_insert);
+  }
+  {
+    unique.clear();
+    unique.insert("host_id");
+    unique.insert("service_id");
+    database_preparator dbp(neb::service::static_type(), unique);
+    dbp.prepare_insert(_service_insert);
+    dbp.prepare_update(_service_update);
+  }
+  {
+    unique.clear();
+    unique.insert("host_id");
+    unique.insert("service_id");
+    database_preparator dbp(neb::service_check::static_type(), unique);
+    dbp.prepare_update(_service_check_update);
+  }
+  {
+    unique.clear();
+    unique.insert("dependent_host_id");
+    unique.insert("dependent_service_id");
+    unique.insert("host_id");
+    unique.insert("service_id");
+    database_preparator dbp(
+                          neb::service_dependency::static_type(),
+                          unique);
+    dbp.prepare_insert(_service_dependency_insert);
+    dbp.prepare_update(_service_dependency_update);
+  }
+  {
+    unique.clear();
+    unique.insert("host_id");
+    unique.insert("service_id");
+    database_preparator dbp(
+                          neb::service_status::static_type(),
+                          unique);
+    dbp.prepare_update(_service_status_update);
+  }
+  {
+    excluded.clear();
+    excluded.insert("service_id");
+    _host_state_insert.prepare(
+      "INSERT INTO rt_hoststateevents (host_id, start_time, ack_time,"
+      "            end_time, in_downtime, state)"
+      "  VALUES (:host_id, :start_time, :ack_time, :end_time,"
+      "          :in_downtime, :state)");
+    _host_state_insert.set_excluded(excluded);
+    _host_state_update.prepare(
+      "UPDATE rt_hoststateevents SET ack_time=:ack_time,"
+      "       end_time=:end_time, in_downtime=:in_downtime,"
+      "       state=:state"
+      "  WHERE host_id=:host_id AND start_time=:start_time");
+    _host_state_update.set_excluded(excluded);
+  }
+  {
+    unique.clear();
+    unique.insert("host_id");
+    unique.insert("service_id");
+    unique.insert("start_time");
+    database_preparator dbp(
+                          correlation::state::static_type(),
+                          unique);
+    dbp.prepare_insert(_service_state_insert);
+    dbp.prepare_update(_service_state_update);
+  }
+  {
+    unique.clear();
+    unique.insert("host_id");
+    unique.insert("service_id");
+    unique.insert("start_time");
+    database_preparator dbp(
+                          correlation::issue::static_type(),
+                          unique);
+    dbp.prepare_insert(_issue_insert);
+    dbp.prepare_update(_issue_update);
+  }
+  {
+    std::string query(
+      "INSERT INTO rt_issues_issues_parents (child_id, end_time,"
+      "            start_time, parent_id)"
+      " VALUES (:child_id, :end_time, :start_time, :parent_id)");
+    _issue_parent_insert.prepare(query);
+  }
+  {
+    std::string query(
+      "SELECT issue_id FROM rt_issues"
+      " WHERE host_id=:host_id"
+      " AND service_id=:service_id"
+      " AND start_time=:start_time");
+    _issue_select.prepare(query);
+  }
   {
     std::string query(
       "UPDATE rt_issues_issues_parents SET end_time=:end_time"
@@ -496,78 +485,12 @@ void stream::_prepare() {
       "       AND parent_id=:parent_id");
     _issue_parent_update.prepare(query, "SQL: could not prepare query");
   }
-
-  // Prepare select queries.
   _prepare_select<neb::host_parent>(
                         _host_parent_select,
                         "rt_hosts_hosts_parents");
   return ;
 }
 
-/**
- *  Prepare an insert statement for later execution.
- *
- *  @param[out] st            Query object.
- *  @param[in]  table_name    The name of the table.
- *  @param[in]  added_fields  Fields added to the query.
- */
-template <typename T>
-void stream::_prepare_insert(
-               database_query& st,
-               std::string const& table_name,
-               std::vector<std::string> const& added_fields) {
-  // Build query string.
-  std::string query;
-  query = "INSERT INTO ";
-  query.append(table_name);
-  query.append(" (");
-  mapping::entry const* entries = T::entries;
-  for (size_t i = 0; !entries[i].is_null(); ++i) {
-    char const* entry_name(entries[i].get_name());
-    if (!entry_name
-        || !entry_name[0])
-      continue;
-    query.append(entry_name);
-    query.append(", ");
-  }
-  for (std::vector<std::string>::const_iterator
-         it = added_fields.begin(),
-         end = added_fields.end();
-       it != end;
-       ++it)
-    query.append(*it).append(", ");
-  query.resize(query.size() - 2);
-  query.append(") VALUES(");
-  for (size_t i = 0; !entries[i].is_null(); ++i) {
-    char const* entry_name(entries[i].get_name());
-    if (!entry_name
-        || !entry_name[0])
-      continue;
-    query.append(":");
-    query.append(entry_name);
-    query.append(", ");
-  }
-  for (std::vector<std::string>::const_iterator
-         it = added_fields.begin(),
-         end = added_fields.end();
-       it != end;
-       ++it)
-    query.append(":").append(*it).append(", ");
-  query.resize(query.size() - 2);
-  query.append(")");
-
-  // Prepare statement.
-  try {
-    st.prepare(query);
-  }
-  catch (std::exception const& e) {
-    throw (exceptions::msg()
-           << "SQL: could not prepare insertion query in table '"
-           << table_name << "': " << e.what());
-  }
-
-  return ;
-}
 /**
  *  Prepare a select statement for later execution.
  *
@@ -603,132 +526,6 @@ void stream::_prepare_select(
   catch (std::exception const& e) {
     throw (exceptions::msg()
            << "SQL: could not prepare selection query from table '"
-           << table_name << "': " << e.what());
-  }
-
-  return ;
-}
-
-/**
- *  Prepare an update statement for later execution.
- *
- *  @param[out] st          Query object.
- *  @param[in]  table_name  The name of the table.
- *  @param[in]  id          List of fields that form an UNIQUE.
- *  @param[in]  added_fields  Fields added to the query.
- */
-template <typename T>
-void stream::_prepare_update(
-               database_query& st,
-               std::string const& table_name,
-               std::map<std::string, bool> const& id,
-               std::vector<std::string> const& added_fields) {
-  // Build query string.
-  std::string query;
-  query = "UPDATE ";
-  query.append(table_name);
-  query.append(" SET ");
-  mapping::entry const* entries = T::entries;
-  for (size_t i(0); !entries[i].is_null(); ++i) {
-    char const* entry_name(entries[i].get_name());
-    if (!entry_name
-        || !entry_name[0])
-      continue;
-    bool found(id.find(entry_name) != id.end());
-    if (!found) {
-      query.append(entry_name);
-      query.append("=:");
-      query.append(entry_name);
-      query.append(", ");
-    }
-  }
-  for (std::vector<std::string>::const_iterator
-         it = added_fields.begin(),
-         end = added_fields.end();
-       it != end;
-       ++it)
-    query.append(*it).append("=:").append(*it).append(", ");
-  query.resize(query.size() - 2);
-  query.append(" WHERE ");
-  for (std::map<std::string, bool>::const_iterator
-         it(id.begin()),
-         end(id.end());
-       it != end;
-       ++it) {
-    if (it->second) {
-      query.append("COALESCE(");
-      query.append(it->first);
-      query.append(", -1)=COALESCE(:");
-      query.append(it->first);
-      query.append(", -1)");
-    }
-    else {
-      query.append(it->first);
-      query.append("=:");
-      query.append(it->first);
-    }
-    query.append(" AND ");
-  }
-  query.resize(query.size() - 5);
-
-  // Prepare statement.
-  try {
-    st.prepare(query);
-  }
-  catch (std::exception const& e) {
-    throw (exceptions::msg()
-           << "SQL: could not prepare update query on table '"
-           << table_name << "': " << e.what());
-  }
-
-  return ;
-}
-
-/**
- *  Prepare a deletion query.
- *
- *  @param[out] st          Query object.
- *  @param[in]  table_name  The name of the table.
- *  @param[in]  id          List of fields that form an UNIQUE.
- */
-template <typename T>
-void stream::_prepare_delete(
-               database_query& st,
-               std::string const& table_name,
-               std::map<std::string, bool> const& id) {
-  // Build query string.
-  std::string query;
-  query = "DELETE FROM ";
-  query.append(table_name);
-  query.append(" WHERE ");
-  for (std::map<std::string, bool>::const_iterator
-         it(id.begin()),
-         end(id.end());
-       it != end;
-       ++it) {
-    if (it->second) {
-      query.append("COALESCE(");
-      query.append(it->first);
-      query.append(", -1)=COALESCE(:");
-      query.append(it->first);
-      query.append(", -1)");
-    }
-    else {
-      query.append(it->first);
-      query.append("=:");
-      query.append(it->first);
-    }
-    query.append(" AND ");
-  }
-  query.resize(query.size() - 5);
-
-  // Prepare statement.
-  try {
-    st.prepare(query);
-  }
-  catch (std::exception const& e) {
-    throw (exceptions::msg()
-           << "SQL: could not prepare deletion query on table '"
            << table_name << "': " << e.what());
   }
 

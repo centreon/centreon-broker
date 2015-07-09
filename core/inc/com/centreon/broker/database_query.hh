@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -23,7 +23,9 @@
 #  include <QSqlQuery>
 #  include <QString>
 #  include <QVariant>
+#  include <set>
 #  include <string>
+#  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -39,14 +41,18 @@ class database;
  */
 class               database_query {
 public:
+  typedef std::set<std::string> excluded_fields;
+
                     database_query(database& db);
                     ~database_query();
+  database_query&   operator<<(io::data const& e);
   void              bind_value(
                       QString const& placeholder,
                       QVariant const& value);
   void              finish();
   QVariant          last_insert_id();
   int               num_rows_affected();
+  void              set_excluded(excluded_fields const& excluded);
   int               size();
   void              run_query(
                       std::string const& query,
@@ -64,6 +70,7 @@ private:
 
   database&         _db;
   QSqlQuery         _q;
+  excluded_fields   _excluded;
 };
 
 CCB_END()

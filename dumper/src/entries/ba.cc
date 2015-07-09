@@ -35,7 +35,8 @@ using namespace com::centreon::broker::dumper::entries;
  *  Default constructor.
  */
 ba::ba()
-  : activate(true),
+  : enable(true),
+    poller_id(0),
     ba_id(0),
     level_critical(NAN),
     level_warning(NAN) {}
@@ -70,6 +71,34 @@ ba& ba::operator=(ba const& other) {
 }
 
 /**
+ *  Equality operator.
+ *
+ *  @param[in] other  Object to compare to.
+ *
+ *  @return True if both objects are equal.
+ */
+bool ba::operator==(ba const& other) const {
+  return ((enable == other.enable)
+          && (poller_id == other.poller_id)
+          && (ba_id == other.ba_id)
+          && (description == other.description)
+          && (level_critical == other.level_critical)
+          && (level_warning == other.level_warning)
+          && (name == other.name));
+}
+
+/**
+ *  Inequality operator.
+ *
+ *  @param[in] other  Object to compare to.
+ *
+ *  @return True if both objects are not equal.
+ */
+bool ba::operator!=(ba const& other) const {
+  return (!operator==(other));
+}
+
+/**
  *  Get event type.
  *
  *  @return Event type.
@@ -99,7 +128,8 @@ unsigned int ba::static_type() {
  *  @param[in] other  Object to copy.
  */
 void ba::_internal_copy(ba const& other) {
-  activate = other.activate;
+  enable = other.enable;
+  poller_id = other.poller_id;
   ba_id = other.ba_id;
   description = other.description;
   level_critical = other.level_critical;
@@ -107,3 +137,45 @@ void ba::_internal_copy(ba const& other) {
   name = other.name;
   return ;
 }
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+// Mapping.
+mapping::entry const ba::entries[] = {
+  mapping::entry(
+    &ba::enable,
+    "enable"),
+  mapping::entry(
+    &ba::poller_id,
+    "poller_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &ba::ba_id,
+    "ba_id",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &ba::description,
+    "description"),
+  mapping::entry(
+    &ba::level_critical,
+    "level_c"),
+  mapping::entry(
+    &ba::level_warning,
+    "level_w"),
+  mapping::entry(
+    &ba::name,
+    "name"),
+  mapping::entry()
+};
+
+// Operations.
+static io::data* new_ba() {
+  return (new ba);
+}
+io::event_info::event_operations const ba::operations = {
+  &new_ba
+};

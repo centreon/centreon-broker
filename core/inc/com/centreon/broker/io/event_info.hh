@@ -52,18 +52,21 @@ namespace                   io {
                             event_info(
                               std::string const& name = "",
                               event_operations const* ops = NULL,
-                              mapping::entry const* entries = NULL);
+                              mapping::entry const* entries = NULL,
+                              std::string const& table = std::string());
                             event_info(event_info const& other);
                             ~event_info();
     event_info&             operator=(event_info const& other);
     mapping::entry const*   get_mapping() const;
     std::string const&      get_name() const;
     event_operations const& get_operations() const;
+    std::string const&      get_table() const;
 
   private:
     mapping::entry const*   _mapping;
     std::string             _name;
     event_operations const* _ops;
+    std::string             _table;
   };
 }
 

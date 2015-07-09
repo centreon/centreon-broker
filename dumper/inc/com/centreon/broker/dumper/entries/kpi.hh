@@ -21,6 +21,8 @@
 #  define CCB_DUMPER_ENTRIES_KPI_HH
 
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -39,10 +41,13 @@ namespace                 dumper {
                           kpi(kpi const& other);
                           ~kpi();
       kpi&                operator=(kpi const& other);
+      bool                operator==(kpi const& other) const;
+      bool                operator!=(kpi const& other) const;
       unsigned int        type() const;
       static unsigned int static_type();
 
-      bool                activate;
+      bool                enable;
+      unsigned int        poller_id;
       unsigned int        kpi_id;
       short               kpi_type;
       unsigned int        ba_id;
@@ -54,6 +59,11 @@ namespace                 dumper {
       double              drop_warning;
       double              drop_critical;
       double              drop_unknown;
+
+      static mapping::entry const
+                          entries[];
+      static io::event_info::event_operations const
+                          operations;
 
     private:
       void                _internal_copy(kpi const& other);

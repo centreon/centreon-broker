@@ -96,7 +96,8 @@ extern "C" {
             io::event_info(
                   "metric",
                   &storage::metric::operations,
-                  storage::metric::entries));
+                  storage::metric::entries,
+                  "rt_metrics"));
         e.register_event(
             io::events::storage,
             storage::de_rebuild,
@@ -108,14 +109,14 @@ extern "C" {
             io::events::storage,
             storage::de_remove_graph,
             io::event_info(
-                  "metric",
+                  "remove_graph",
                   &storage::remove_graph::operations,
                   storage::remove_graph::entries));
         e.register_event(
             io::events::storage,
             storage::de_status,
             io::event_info(
-                  "metric",
+                  "status",
                   &storage::status::operations,
                   storage::status::entries));
         e.register_event(

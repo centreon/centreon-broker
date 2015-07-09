@@ -21,6 +21,8 @@
 #  define CCB_DUMPER_DB_DUMP_HH
 
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/event_info.hh"
+#  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -43,6 +45,12 @@ namespace               dumper {
 
     bool                commit;
     bool                full;
+    unsigned int        poller_id;
+
+    static mapping::entry const
+                        entries[];
+    static io::event_info::event_operations const
+                        operations;
 
   private:
     void                _internal_copy(db_dump const& other);
