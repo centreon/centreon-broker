@@ -17,6 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/dumper/db_reader.hh"
+#include "com/centreon/broker/dumper/db_writer.hh"
 #include "com/centreon/broker/dumper/opener.hh"
 #include "com/centreon/broker/dumper/stream.hh"
 #include "com/centreon/broker/dumper/directory_dumper.hh"
@@ -43,6 +45,7 @@ opener::opener() : endpoint(false), _type(opener::dump) {}
  */
 opener::opener(opener const& other)
   : io::endpoint(other),
+    _db(other._db),
     _name(other._name),
     _path(other._path),
     _tagname(other._tagname),
@@ -64,6 +67,7 @@ opener::~opener() {}
 opener& opener::operator=(opener const& other) {
   if (this != &other) {
     io::endpoint::operator=(other);
+    _db = other._db;
     _name = other._name;
     _path = other._path;
     _tagname = other._tagname;
@@ -86,9 +90,23 @@ misc::shared_ptr<io::stream> opener::open() {
     return (new directory_dumper(_name, _path, _tagname, _cache));
   case dump_fifo:
     return (new fifo_dumper(_path, _tagname));
+  case db_cfg_reader:
+    return (new db_reader(_name, _db));
+  case db_cfg_writer:
+    return (new db_writer(_db));
   default:
-    return (new stream(_path, _tagname));
+    return (misc::shared_ptr<io::stream>());
   }
+}
+
+/**
+ *  Set database parameters.
+ *
+ *  @param[in] db_cfg  Database parameters.
+ */
+void opener::set_db(database_config const& db_cfg) {
+  _db = db_cfg;
+  return ;
 }
 
 /**
@@ -134,7 +152,6 @@ void opener::set_name(std::string const& name) {
  *
  *  @param[in] cache  The persistent cache.
  */
-void opener::set_cache(
-               misc::shared_ptr<persistent_cache> cache) {
+void opener::set_cache(misc::shared_ptr<persistent_cache> cache) {
   _cache = cache;
 }

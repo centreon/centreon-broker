@@ -18,12 +18,37 @@
 */
 
 #include <memory>
+#include "com/centreon/broker/database_config.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/dumper/factory.hh"
 #include "com/centreon/broker/dumper/opener.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::dumper;
+
+/**************************************
+*                                     *
+*            Local Objects            *
+*                                     *
+**************************************/
+
+/**
+ *  Find a parameter in configuration.
+ *
+ *  @param[in] cfg Configuration object.
+ *  @param[in] key Property to get.
+ *
+ *  @return Property value.
+ */
+static QString const& find_param(
+                        config::endpoint const& cfg,
+                        QString const& key) {
+  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+  if (cfg.params.end() == it)
+    throw (exceptions::msg() << "dumper: no '" << key
+           << "' defined for endpoint '" << cfg.name << "'");
+  return (it.value());
+}
 
 /**************************************
 *                                     *
@@ -79,7 +104,9 @@ io::factory* factory::clone() const {
 bool factory::has_endpoint(config::endpoint& cfg) const {
   return (cfg.type == "dumper"
           || cfg.type == "dump_fifo"
-          || cfg.type == "dump_dir");
+          || cfg.type == "dump_dir"
+          || cfg.type == "db_cfg_reader"
+          || cfg.type == "db_cfg_writer");
 }
 
 /**
@@ -106,33 +133,49 @@ io::endpoint* factory::new_endpoint(
     type = opener::dump_fifo;
   else if (cfg.type == "dump_dir")
     type = opener::dump_dir;
+  else if (cfg.type == "db_cfg_reader")
+    type = opener::db_cfg_reader;
+  else if (cfg.type == "db_cfg_writer")
+    type = opener::db_cfg_writer;
 
-  // Find path to the dumper.
-  std::string path;
-  {
-    QMap<QString, QString>::const_iterator it(cfg.params.find("path"));
-    if (it == cfg.params.end())
-      throw (exceptions::msg() << "dumper: no 'path' defined for dumper "
-             "endpoint '" << cfg.name << "'");
-    path = it->toStdString();
-  }
-
-  // Find tagname to the dumper.
-  std::string tagname;
-  {
-    QMap<QString, QString>::const_iterator it(cfg.params.find("tagname"));
-    if (it == cfg.params.end())
-      throw (exceptions::msg() << "dumper: no 'tagname' defined for dumper "
-             "endpoint '" << cfg.name << "'");
-    tagname = it->toStdString();
-  }
-
-  // Generate opener.
+  // Opener that should be set.
   std::auto_ptr<opener> openr(new opener);
   openr->set_name(cfg.name.toStdString());
   openr->set_type(type);
-  openr->set_path(path);
-  openr->set_tagname(tagname);
   openr->set_cache(cache);
+
+  // DB configuration dumpers.
+  if ((type == opener::db_cfg_reader)
+      || (type == opener::db_cfg_writer)) {
+    // DB parameters.
+    std::string db_type(find_param(cfg, "db_type").toStdString());
+    std::string host(find_param(cfg, "db_host").toStdString());
+    unsigned short port(find_param(cfg, "db_port").toUInt());
+    std::string user(find_param(cfg, "db_user").toStdString());
+    std::string password(find_param(cfg, "db_password").toStdString());
+    std::string db_name(find_param(cfg, "db_name").toStdString());
+
+    // Set opener properties.
+    openr->set_db(database_config(
+                    db_type,
+                    host,
+                    port,
+                    user,
+                    password,
+                    db_name));
+  }
+  // Filesystem dumpers.
+  else {
+    // Find path to the dumper.
+    std::string path(find_param(cfg, "path").toStdString());
+
+    // Find tagname to the dumper.
+    std::string tagname(find_param(cfg, "tagname").toStdString());
+
+    // Set opener properties.
+    openr->set_path(path);
+    openr->set_tagname(tagname);
+  }
+
   return (openr.release());
 }
