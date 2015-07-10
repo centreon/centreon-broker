@@ -32,6 +32,7 @@
 #include "com/centreon/broker/bam/dimension_timeperiod_exception.hh"
 #include "com/centreon/broker/bam/dimension_timeperiod_exclusion.hh"
 #include "com/centreon/broker/bam/dimension_ba_timeperiod_relation.hh"
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/time/timeperiod.hh"
 #include "com/centreon/broker/database.hh"
 #include "com/centreon/broker/database_query.hh"
@@ -216,6 +217,95 @@ void reader::_load(state::bas& bas) {
         bas[ba_id].set_opened_event(e);
       }
     }
+
+    // Get organization ID.
+    unsigned int organization_id;
+    {
+      std::ostringstream query;
+      query << "SELECT o.organization_id"
+               "  FROM cfg_pollers AS p"
+               "  INNER JOIN cfg_organizations AS o"
+               "    ON p.organization_id=o.organization_id"
+               "  WHERE p.poller_id="
+            << config::applier::state::instance().poller_id();
+      database_query q(_db);
+      q.run_query(query.str());
+      if (q.next())
+        organization_id = q.value(0).toUInt();
+      else {
+        while (1) {
+          q.run_query("SELECT organization_id FROM cfg_organizations");
+          if (q.next()) {
+            organization_id = q.value(0).toUInt();
+            break ;
+          }
+          q.run_query(
+            "INSERT INTO cfg_organizations (name, shortname, active)"
+            "  VALUES ('Default organization', 'default_organization',"
+            "          1)");
+        }
+      }
+    }
+
+    // Get host ID.
+    unsigned int host_id;
+    while (1) {
+      {
+        std::ostringstream query;
+        query << "SELECT host_id"
+                 "  FROM cfg_hosts"
+                 "  WHERE host_name='_Module_BAM'"
+                 "    AND organization_id=" << organization_id;
+        database_query q(_db);
+        q.run_query(query.str());
+        if (q.next()) {
+          host_id = q.value(0).toUInt();
+          break ;
+        }
+      }
+      {
+        std::ostringstream query;
+        query << "INSERT INTO cfg_hosts (host_name, organization_id)"
+                 "  VALUES ('_Module_BAM', " << organization_id << ")";
+        database_query q(_db);
+        q.run_query(query.str());
+      }
+    }
+
+    // Load service ID for each BA.
+    for (state::bas::iterator it(bas.begin()), end(bas.end());
+         it != end;
+         ++it) {
+      unsigned int service_id;
+      while (1) {
+        {
+          std::ostringstream query;
+          query << "SELECT service_id"
+                   "  FROM cfg_services"
+                   "  WHERE service_description='ba_"
+                << it->second.get_id() << "'"
+                   "    AND organization_id=" << organization_id;
+          database_query q(_db);
+          q.run_query(query.str());
+          if (q.next()) {
+            service_id = q.value(0).toUInt();
+            break ;
+          }
+        }
+        {
+          std::ostringstream query;
+          query << "INSERT INTO cfg_services (service_description,"
+                   "            organization_id)"
+                   "  VALUES ('ba_" << it->second.get_id() << "', "
+                << organization_id << ")";
+          database_query q(_db);
+          q.run_query(query.str());
+        }
+      }
+
+      it->second.set_host_id(host_id);
+      it->second.set_service_id(service_id);
+    }
   }
   catch (reader_exception const& e) {
     (void)e;
@@ -226,68 +316,6 @@ void reader::_load(state::bas& bas) {
            << "BAM: could not retrieve BA configuration from DB: "
            << e.what());
   }
-
-  // Load host_id/service_id of virtual BA services. All the associated
-  // services have for description 'ba_[id]'.
-  try {
-    database_query query(_db);
-    query.run_query(
-            "SELECT h.host_name, s.service_description,"
-            "       hsr.host_host_id, hsr.service_service_id"
-            "  FROM cfg_services AS s"
-            "  INNER JOIN cfg_hosts_services_relations AS hsr"
-            "    ON s.service_id=hsr.service_service_id"
-            "  INNER JOIN cfg_hosts AS h"
-            "    ON hsr.host_host_id=h.host_id"
-            "  WHERE s.service_description LIKE 'ba_%'");
-    while (query.next()) {
-      unsigned int host_id = query.value(2).toUInt();
-      unsigned int service_id = query.value(3).toUInt();
-      std::string service_description = query.value(1).toString().toStdString();
-      service_description.erase(0, strlen("ba_"));
-
-      if (!service_description.empty()) {
-        bool ok = false;
-        unsigned int ba_id = QString(service_description.c_str()).toUInt(&ok);
-        if (!ok) {
-          logging::info(logging::medium)
-            << "BAM: service '" << query.value(1).toString() << "' of host '"
-            << query.value(0).toString()
-            << "' is not a valid virtual BA service";
-          continue ;
-        }
-        state::bas::iterator found = bas.find(ba_id);
-        if (found == bas.end()) {
-          logging::info(logging::medium) << "BAM: virtual BA service '"
-            << query.value(1).toString() << "' of host '"
-            << query.value(0).toString() << "' references an unknown BA ("
-            << ba_id << ")";
-          continue;
-        }
-        found->second.set_host_id(host_id);
-        found->second.set_service_id(service_id);
-      }
-    }
-  }
-  catch (reader_exception const& e) {
-    (void)e;
-    throw ;
-  }
-  catch (std::exception const& e) {
-    throw (reader_exception()
-           << "BAM: could not retrieve BA service IDs from DB: "
-           << e.what());
-  }
-
-  // Test for BA without service ID.
-  for (state::bas::const_iterator
-         it(bas.begin()),
-         end(bas.end());
-       it != end;
-       ++it)
-    if (!it->second.get_host_id() || !it->second.get_service_id())
-      throw (reader_exception() << "BAM: BA " << it->first
-             << " has no associated virtual service");
 
   return ;
 }

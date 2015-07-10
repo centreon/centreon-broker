@@ -166,10 +166,9 @@ mapping::entry const state::entries[] = {
   mapping::entry(
     &state::in_downtime,
     "in_downtime"),
-  // Service ids should not be saved into sql for host state events.
   mapping::entry(
     &state::service_id,
-    "",
+    "service_id",
     mapping::entry::invalid_on_zero),
   mapping::entry(
     &state::start_time,
