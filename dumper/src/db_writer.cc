@@ -83,6 +83,8 @@ unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
           _commit();
         else
           _full_dump = dbd.full;
+        _bas.clear();
+        _kpis.clear();
       }
     }
     else if (d->type() == entries::ba::static_type()) {
