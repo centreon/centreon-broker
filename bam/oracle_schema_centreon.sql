@@ -6,14 +6,15 @@
 --    Business Activity Monitoring   --
 -- ------------------------------------
 
--- meta_service
--- meta_service_relation
+-- cfg_meta_service
+-- cfg_meta_service_relation
 -- cfg_bam
 -- cfg_bam_ba_groups
 -- cfg_bam_bagroup_ba_relation
 -- cfg_bam_impacts
 -- cfg_bam_boolean
 -- cfg_bam_kpi
+-- cfg_bam_poller_relations
 -- cfg_bam_relations_ba_timeperiods
 
 
@@ -56,6 +57,14 @@ BEGIN
   SELECT cfg_bam_seq.nextval INTO :NEW.ba_id FROM dual;
 END;
 /
+
+--
+-- BA / poller association.
+--
+CREATE TABLE cfg_bam_poller_relations (
+  ba_id int NOT NULL,
+  poller_id int NOT NULL
+);
 
 --
 -- Impacts of KPI / boolean expressions.

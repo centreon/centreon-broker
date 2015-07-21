@@ -14,6 +14,7 @@
 -- cfg_bam_impacts
 -- cfg_bam_boolean
 -- cfg_bam_kpi
+-- cfg_bam_poller_relations
 -- cfg_bam_relations_ba_timeperiods
 
 
@@ -45,6 +46,14 @@ CREATE TABLE cfg_bam (
   UNIQUE (name),
   FOREIGN KEY (id_reporting_period) REFERENCES cfg_timeperiods (tp_id)
     ON DELETE SET NULL
+) ENGINE=InnoDB CHARACTER SET utf8;
+
+--
+-- BA / poller association.
+--
+CREATE TABLE cfg_bam_poller_relations (
+  ba_id int NOT NULL,
+  poller_id int NOT NULL
 ) ENGINE=InnoDB CHARACTER SET utf8;
 
 --
