@@ -24,14 +24,14 @@
 #include <QMap>
 #include <QPair>
 #include <QThread>
+#include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/extcmd/external_command.hh"
+#include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
-#include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/neb/node_events_stream.hh"
 #include "com/centreon/broker/neb/service_status.hh"
-#include "com/centreon/broker/command_file/external_command.hh"
-#include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/persistent_cache.hh"
 #include "common.hh"
 #include "vars.hh"
@@ -103,10 +103,10 @@ int main() {
       test.write(ss);
     }
 
-    //Send external command.
+    // Send external command.
     {
-      misc::shared_ptr<command_file::external_command> cmd(
-        new command_file::external_command);
+      misc::shared_ptr<extcmd::external_command>
+        cmd(new extcmd::external_command);
       cmd->command = format_command(
         "SCHEDULE_SVC_DOWNTIME;42;24;$TIMESTAMP$;$TIMESTAMP2$;1;0;3;TEST;A test for you;24x7",
         now,

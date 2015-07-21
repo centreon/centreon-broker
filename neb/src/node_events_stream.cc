@@ -31,7 +31,7 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
-#include "com/centreon/broker/command_file/external_command.hh"
+#include "com/centreon/broker/extcmd/external_command.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
 #include "com/centreon/broker/neb/ceof_parser.hh"
 #include "com/centreon/broker/neb/ceof_writer.hh"
@@ -145,14 +145,14 @@ unsigned int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
   else if (d->type() == neb::downtime::static_type()) {
     _update_downtime(d.ref_as<neb::downtime const>());
   }
-  else if (d->type() == command_file::external_command::static_type()) {
+  else if (d->type() == extcmd::external_command::static_type()) {
     try {
       multiplexing::publisher pblsh;
-      parse_command(d.ref_as<command_file::external_command const>(), pblsh);
+      parse_command(d.ref_as<extcmd::external_command const>(), pblsh);
     } catch (std::exception const& e) {
       logging::error(logging::medium)
         << "node events: can't parse command '"
-        << d.ref_as<command_file::external_command>().command
+        << d.ref_as<extcmd::external_command>().command
         << "': " << e.what();
     }
   }
@@ -205,7 +205,7 @@ private:
  *  @return         An event.
  */
 void node_events_stream::parse_command(
-                          command_file::external_command const& exc,
+                          extcmd::external_command const& exc,
                           io::stream& stream) {
   std::string line = exc.command.toStdString();
   buffer command(line.size());

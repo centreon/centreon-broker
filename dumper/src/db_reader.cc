@@ -17,13 +17,13 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/command_file/external_command.hh"
 #include "com/centreon/broker/dumper/db_dump.hh"
 #include "com/centreon/broker/dumper/db_reader.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
 #include "com/centreon/broker/dumper/entries/diff.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
+#include "com/centreon/broker/extcmd/external_command.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
@@ -104,9 +104,9 @@ bool db_reader::read(misc::shared_ptr<io::data>& d, time_t deadline) {
 unsigned int db_reader::write(misc::shared_ptr<io::data> const& d) {
   // Process only external commands.
   if (!d.isNull()
-      && (d->type() == command_file::external_command::static_type())) {
-    command_file::external_command const&
-      extcmd(d.ref_as<command_file::external_command const>());
+      && (d->type() == extcmd::external_command::static_type())) {
+    extcmd::external_command const&
+      extcmd(d.ref_as<extcmd::external_command const>());
     std::string cmd(extcmd.command.toStdString());
 
     // Discard timestamp.

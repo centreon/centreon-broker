@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_COMMAND_FILE_STREAM_HH
-#  define CCB_COMMAND_FILE_STREAM_HH
+#ifndef CCB_EXTCMD_STREAM_HH
+#  define CCB_EXTCMD_STREAM_HH
 
 #  include <string>
 #  include "com/centreon/broker/timestamp.hh"
@@ -28,9 +28,9 @@
 
 CCB_BEGIN()
 
-namespace           command_file {
+namespace           extcmd {
   /**
-   *  @class stream stream.hh "com/centreon/broker/command_file/stream.hh"
+   *  @class stream stream.hh "com/centreon/broker/extcmd/stream.hh"
    *  @brief Command file stream.
    *
    *  The class converts commands to NEB events.
@@ -56,4 +56,4 @@ namespace           command_file {
 
 CCB_END()
 
-#endif // !CCB_COMMAND_FILE_STREAM_HH
+#endif // !CCB_EXTCMD_STREAM_HH

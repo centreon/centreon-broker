@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_COMMAND_FILE_ENDPOINT_HH
-#  define CCB_COMMAND_FILE_ENDPOINT_HH
+#ifndef CCB_EXTCMD_ENDPOINT_HH
+#  define CCB_EXTCMD_ENDPOINT_HH
 
 #  include <string>
 #  include "com/centreon/broker/io/endpoint.hh"
@@ -27,9 +27,9 @@
 
 CCB_BEGIN()
 
-namespace                        command_file {
+namespace                        extcmd {
   /**
-   *  @class endpoint endpoint.hh "com/centreon/broker/command_file/endpoint.hh"
+   *  @class endpoint endpoint.hh "com/centreon/broker/extcmd/endpoint.hh"
    *  @brief Open a command file stream.
    *
    *  Open a command file stream.
@@ -49,4 +49,4 @@ namespace                        command_file {
 
 CCB_END()
 
-#endif // !CCB_COMMAND_FILE_ENDPOINT_HH
+#endif // !CCB_EXTCMD_ENDPOINT_HH

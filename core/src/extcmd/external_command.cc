@@ -17,12 +17,12 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/command_file/internal.hh"
-#include "com/centreon/broker/command_file/external_command.hh"
+#include "com/centreon/broker/extcmd/internal.hh"
+#include "com/centreon/broker/extcmd/external_command.hh"
 #include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::command_file;
+using namespace com::centreon::broker::extcmd;
 
 /**************************************
 *                                     *

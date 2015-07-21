@@ -17,14 +17,14 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/command_file/external_command.hh"
-#include "com/centreon/broker/command_file/stream.hh"
+#include "com/centreon/broker/extcmd/external_command.hh"
+#include "com/centreon/broker/extcmd/stream.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/namespace.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::command_file;
+using namespace com::centreon::broker::extcmd;
 
 /**************************************
 *                                     *
@@ -39,11 +39,11 @@ stream::stream(std::string const& filename)
   try :  _filename(filename),
          _fifo(filename.c_str()) {
   logging::debug(logging::medium)
-    << "command_file: command file '" << filename << "' initialized";
+    << "extcmd: command file '" << filename << "' initialized";
 }
 catch (std::exception const& e) {
   throw (exceptions::msg()
-         << "command_file: error while initializing command file: "
+         << "extcmd: error while initializing command file: "
          << e.what());
 }
 
@@ -75,7 +75,7 @@ bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
     exc->command = QString::fromStdString(line);
     d = exc;
     logging::info(logging::high)
-      << "command_file: received external command: '"
+      << "extcmd: received external command: '"
       << exc->command << "'";
   }
   return (!line.empty());

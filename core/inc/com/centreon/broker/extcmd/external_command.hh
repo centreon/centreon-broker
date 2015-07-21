@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_COMMAND_EXTERNAL_COMMAND_HH
-#  define CCB_COMMAND_EXTERNAL_COMMAND_HH
+#ifndef CCB_EXTCMD_EXTERNAL_COMMAND_HH
+#  define CCB_EXTCMD_EXTERNAL_COMMAND_HH
 
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
@@ -28,9 +28,9 @@
 
 CCB_BEGIN()
 
-namespace         command_file {
+namespace             extcmd {
   /**
-   *  @class external_command external_command.hh "com/centreon/broker/command_file/external_command.hh"
+   *  @class external_command external_command.hh "com/centreon/broker/extcmd/external_command.hh"
    *  @brief Represent an external command received.
    */
   class               external_command : public io::data {
@@ -57,4 +57,4 @@ namespace         command_file {
 
 CCB_END()
 
-#endif // !CCB_COMMAND_EXTERNAL_COMMAND_HH
+#endif // !CCB_EXTCMD_EXTERNAL_COMMAND_HH

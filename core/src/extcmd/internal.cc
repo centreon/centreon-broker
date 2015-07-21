@@ -17,16 +17,16 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/command_file/external_command.hh"
-#include "com/centreon/broker/command_file/internal.hh"
-#include "com/centreon/broker/command_file/factory.hh"
+#include "com/centreon/broker/extcmd/external_command.hh"
+#include "com/centreon/broker/extcmd/internal.hh"
+#include "com/centreon/broker/extcmd/factory.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::command_file;
+using namespace com::centreon::broker::extcmd;
 
 
 /**************************************
@@ -40,13 +40,13 @@ using namespace com::centreon::broker::command_file;
  *
  *  Initialize the command file endpoint.
  */
-void command_file::load() {
+void extcmd::load() {
   io::events& e(io::events::instance());
 
-  // Register command_file protocol.
+  // Register extcmd protocol.
   io::protocols::instance().reg(
-                              "command_file",
-                              command_file::factory(),
+                              "extcmd",
+                              extcmd::factory(),
                               1,
                               7);
 
@@ -67,9 +67,9 @@ void command_file::load() {
  *
  *  Delete the command file endpoint.
  */
-void command_file::unload() {
+void extcmd::unload() {
   // Unregister protocol.
-  io::protocols::instance().unreg("command_file");
+  io::protocols::instance().unreg("extcmd");
 
   return ;
 }

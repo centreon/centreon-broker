@@ -25,12 +25,12 @@
 #include <set>
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/misc/tokenizer.hh"
-#include "com/centreon/broker/command_file/external_command.hh"
 #include "com/centreon/broker/dumper/directory_dumper.hh"
 #include "com/centreon/broker/dumper/internal.hh"
 #include "com/centreon/broker/dumper/dump.hh"
 #include "com/centreon/broker/dumper/reload.hh"
 #include "com/centreon/broker/dumper/remove.hh"
+#include "com/centreon/broker/extcmd/external_command.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -111,9 +111,9 @@ unsigned int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
   if (d.isNull())
     return (1);
 
-  if (d->type() == command_file::external_command::static_type()) {
-    command_file::external_command const& com
-      = d.ref_as<command_file::external_command const>();
+  if (d->type() == extcmd::external_command::static_type()) {
+    extcmd::external_command const& com
+      = d.ref_as<extcmd::external_command const>();
     try {
     _manage_external_command(com.command.toStdString());
     } catch (std::exception const& e) {

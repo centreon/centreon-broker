@@ -28,7 +28,7 @@
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
-#  include "com/centreon/broker/command_file/external_command.hh"
+#  include "com/centreon/broker/extcmd/external_command.hh"
 #  include "com/centreon/broker/neb/acknowledgement.hh"
 #  include "com/centreon/broker/neb/downtime.hh"
 #  include "com/centreon/broker/neb/downtime_scheduler.hh"
@@ -58,7 +58,7 @@ namespace        neb {
     void         update();
     unsigned int write(misc::shared_ptr<io::data> const& d);
     void         parse_command(
-                   command_file::external_command const& exc,
+                   extcmd::external_command const& exc,
                    io::stream& stream);
     void         set_timeperiods(
                    QHash<QString, time::timeperiod::ptr> const& tps);

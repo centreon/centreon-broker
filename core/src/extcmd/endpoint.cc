@@ -17,11 +17,11 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/command_file/endpoint.hh"
-#include "com/centreon/broker/command_file/stream.hh"
+#include "com/centreon/broker/extcmd/endpoint.hh"
+#include "com/centreon/broker/extcmd/stream.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::command_file;
+using namespace com::centreon::broker::extcmd;
 
 /**************************************
 *                                     *

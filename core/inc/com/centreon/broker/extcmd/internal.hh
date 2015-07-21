@@ -17,23 +17,23 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_COMMAND_FILE_INTERNAL_HH
-#  define CCB_COMMAND_FILE_INTERNAL_HH
+#ifndef CCB_EXTCMD_INTERNAL_HH
+#  define CCB_EXTCMD_INTERNAL_HH
 
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 // Forward declarations.
-namespace                 io {
-  class                   data;
-  class                   event_info;
+namespace     io {
+  class       data;
+  class       event_info;
 }
-namespace                 mapping {
-  class                   entry;
+namespace     mapping {
+  class       entry;
 }
 
-namespace     command_file {
+namespace     extcmd {
   // Load the command file endpoints.
   void        load();
   void        unload();
@@ -41,4 +41,4 @@ namespace     command_file {
 
 CCB_END()
 
-#endif // !CCB_COMMAND_FILE_INTERNAL_HH
+#endif // !CCB_EXTCMD_INTERNAL_HH

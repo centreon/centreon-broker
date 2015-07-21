@@ -17,13 +17,13 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/command_file/endpoint.hh"
-#include "com/centreon/broker/command_file/factory.hh"
+#include "com/centreon/broker/extcmd/endpoint.hh"
+#include "com/centreon/broker/extcmd/factory.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/io/protocols.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::command_file;
+using namespace com::centreon::broker::extcmd;
 
 /**************************************
 *                                     *
@@ -79,7 +79,7 @@ io::factory* factory::clone() const {
  *  @return True if the configuration has this protocol.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  return (cfg.type == "command_file");
+  return (cfg.type == "extcmd");
 }
 
 /**
@@ -97,5 +97,5 @@ io::endpoint* factory::new_endpoint(
                          misc::shared_ptr<persistent_cache> cache) const {
   (void)cache;
   is_acceptor = false;
-  return (new endpoint(cfg.params.value("command_file").toStdString()));
+  return (new endpoint(cfg.params.value("extcmd").toStdString()));
 }

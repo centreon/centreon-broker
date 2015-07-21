@@ -17,17 +17,17 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_COMMAND_FILE_FACTORY_HH
-#  define CCB_COMMAND_FILE_FACTORY_HH
+#ifndef CCB_EXTCMD_FACTORY_HH
+#  define CCB_EXTCMD_FACTORY_HH
 
 #  include "com/centreon/broker/io/factory.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace         command_file {
+namespace         extcmd {
   /**
-   *  @class factory factory.hh "com/centreon/broker/command_file/factory.hh"
+   *  @class factory factory.hh "com/centreon/broker/extcmd/factory.hh"
    *  @brief Command file factory.
    *
    *  Build Command file endpoints.
@@ -50,4 +50,4 @@ namespace         command_file {
 
 CCB_END()
 
-#endif // !CCB_COMMAND_FILE_FACTORY_HH
+#endif // !CCB_EXTCMD_FACTORY_HH
