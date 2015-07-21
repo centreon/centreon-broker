@@ -31,6 +31,12 @@
 
 CCB_BEGIN()
 
+// Forward declarations.
+namespace     neb {
+  class       host;
+  class       service;
+}
+
 namespace     bam {
   namespace   configuration {
     namespace applier {
@@ -59,6 +65,13 @@ namespace     bam {
           misc::shared_ptr<bam::ba> obj;
         };
 
+        misc::shared_ptr<neb::host>
+              _ba_host(unsigned int host_id);
+        misc::shared_ptr<neb::service>
+              _ba_service(
+                unsigned int ba_id,
+                unsigned int host_id,
+                unsigned int service_id);
         void  _internal_copy(ba const& other);
         misc::shared_ptr<bam::ba>
               _new_ba(

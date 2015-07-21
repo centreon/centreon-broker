@@ -17,9 +17,14 @@
 ** <http:/www.gnu.org/licenses/>.
 */
 
+#include <sstream>
 #include "com/centreon/broker/bam/configuration/applier/ba.hh"
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/neb/host.hh"
+#include "com/centreon/broker/neb/service.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
@@ -115,11 +120,18 @@ void applier::ba::apply(
        ++it) {
     logging::config(logging::medium)
       << "BAM: removing BA " << it->first;
+    misc::shared_ptr<neb::service>
+      s(_ba_service(
+          it->first,
+          it->second.cfg.get_host_id(),
+          it->second.cfg.get_service_id()));
+    s->enabled = false;
     book.unlisten(
            it->second.cfg.get_host_id(),
            it->second.cfg.get_service_id(),
            static_cast<bam::ba*>(it->second.obj.data()));
     _applied.erase(it->first);
+    multiplexing::publisher().write(s);
   }
   to_delete.clear();
 
@@ -135,6 +147,15 @@ void applier::ba::apply(
     applied& content(_applied[it->first]);
     content.cfg = it->second;
     content.obj = new_ba;
+    misc::shared_ptr<neb::host>
+      h(_ba_host(it->second.get_host_id()));
+    multiplexing::publisher().write(h);
+    misc::shared_ptr<neb::service>
+      s(_ba_service(
+          it->first,
+          it->second.get_host_id(),
+          it->second.get_service_id()));
+    multiplexing::publisher().write(s);
   }
 
   // Modify existing objects.
@@ -192,6 +213,50 @@ void applier::ba::visit(io::stream* visitor) {
        ++it)
     it->second.obj->visit(visitor);
   return ;
+}
+
+/**
+ *  Get the virtual BA host of a BA.
+ *
+ *  @param[in] ba_id    BA ID.
+ *  @param[in] host_id  Host ID.
+ *
+ *  @return Virtual BA host.
+ */
+misc::shared_ptr<neb::host> applier::ba::_ba_host(
+                                           unsigned int host_id) {
+  misc::shared_ptr<neb::host> h(new neb::host);
+  h->host_id = host_id;
+  h->host_name = "_Module_BAM";
+  h->last_update = time(NULL);
+  h->poller_id
+    = com::centreon::broker::config::applier::state::instance().poller_id();
+  return (h);
+}
+
+/**
+ *  Get the virtual BA service of a BA.
+ *
+ *  @param[in] ba_id       BA ID.
+ *  @param[in] host_id     Host ID.
+ *  @param[in] service_id  Service ID.
+ *
+ *  @return Virtual BA service.
+ */
+misc::shared_ptr<neb::service> applier::ba::_ba_service(
+                                              unsigned int ba_id,
+                                              unsigned int host_id,
+                                              unsigned int service_id) {
+  misc::shared_ptr<neb::service> s(new neb::service);
+  s->host_id = host_id;
+  s->service_id = service_id;
+  {
+    std::ostringstream oss;
+    oss << "ba_" << ba_id;
+    s->service_description = oss.str().c_str();
+  }
+  s->last_update = time(NULL);
+  return (s);
 }
 
 /**

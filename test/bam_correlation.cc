@@ -81,7 +81,7 @@ int main() {
       QString query;
       query = "INSERT INTO cfg_hosts"
               "            (host_id, host_name, organization_id)"
-              "  VALUES (1, '1', 42), (1001, 'virtual_ba_host', 42)";
+              "  VALUES (1, '1', 42), (1001, '_Module_BAM', 42)";
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create hosts: "
@@ -154,30 +154,6 @@ int main() {
       if (!q.exec(query))
         throw (exceptions::msg()
                << "could not create RT instance: "
-               << q.lastError().text());
-    }
-    {
-      QString query;
-      query = "INSERT INTO rt_hosts (host_id, name, instance_id)"
-              "  VALUES (1001, 'Virtual BA host', 42)";
-      QSqlQuery q(*db.centreon_db());
-      if (!q.exec(query))
-        throw (exceptions::msg()
-               << "could not create RT host: "
-               << q.lastError().text());
-    }
-    {
-      QString query;
-      query = "INSERT INTO rt_services (host_id, service_id,"
-              "            description)"
-              "  VALUES (1001, 1001, 'ba_1'),"
-              "         (1001, 1002, 'ba_2'),"
-              "         (1001, 1003, 'ba_3'),"
-              "         (1001, 1004, 'ba_4')";
-      QSqlQuery q(*db.centreon_db());
-      if (!q.exec(query))
-        throw (exceptions::msg()
-               << "could not create RT services: "
                << q.lastError().text());
     }
 
