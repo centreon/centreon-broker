@@ -55,7 +55,8 @@ namespace               io {
     // Internal events used by the core.
     enum                internal_event_category {
       de_raw = 1,
-      de_command,
+      de_command_request,
+      de_command_result,
       de_instance_broadcast
     };
     template <unsigned short category, unsigned short element>

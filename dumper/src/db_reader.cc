@@ -23,7 +23,7 @@
 #include "com/centreon/broker/dumper/entries/diff.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
-#include "com/centreon/broker/extcmd/external_command.hh"
+#include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
@@ -104,17 +104,17 @@ bool db_reader::read(misc::shared_ptr<io::data>& d, time_t deadline) {
 unsigned int db_reader::write(misc::shared_ptr<io::data> const& d) {
   // Process only external commands.
   if (!d.isNull()
-      && (d->type() == extcmd::external_command::static_type())) {
-    extcmd::external_command const&
-      extcmd(d.ref_as<extcmd::external_command const>());
-    std::string cmd(extcmd.command.toStdString());
+      && (d->type() == extcmd::command_request::static_type())) {
+    extcmd::command_request const&
+      extcmd(d.ref_as<extcmd::command_request const>());
+    std::string cmd(extcmd.cmd.toStdString());
 
     // Discard timestamp.
     size_t start(cmd.find_first_of(' '));
     if (start == std::string::npos) {
       logging::info(logging::medium)
         << "db_reader: ignored improperly formatted external command '"
-        << extcmd.command << "'";
+        << extcmd.cmd << "'";
     }
     else {
       // Split command for processing.
@@ -123,7 +123,7 @@ unsigned int db_reader::write(misc::shared_ptr<io::data> const& d) {
       if (params.size() != 3) {
         logging::info(logging::medium)
           << "db_reader: ignored improperly formatted external command '"
-          << extcmd.command << "'";
+          << extcmd.cmd << "'";
       }
       else {
         // Check that command address ourselves.

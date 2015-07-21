@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/extcmd/external_command.hh"
+#include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/internal.hh"
 #include "com/centreon/broker/extcmd/factory.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -53,11 +53,11 @@ void extcmd::load() {
   // Register event.
   e.register_event(
     io::events::internal,
-    io::events::de_command,
+    io::events::de_command_request,
       io::event_info(
-            "command",
-            &external_command::operations,
-            external_command::entries));
+            "command_request",
+            &command_request::operations,
+            command_request::entries));
 
   return ;
 }

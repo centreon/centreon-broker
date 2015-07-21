@@ -24,20 +24,20 @@
 #include <QPair>
 #include <QHash>
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/misc/tokenizer.hh"
-#include "com/centreon/broker/neb/node_id.hh"
-#include "com/centreon/broker/neb/node_events_stream.hh"
-#include "com/centreon/broker/multiplexing/publisher.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
-#include "com/centreon/broker/extcmd/external_command.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/misc/tokenizer.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
 #include "com/centreon/broker/neb/ceof_parser.hh"
 #include "com/centreon/broker/neb/ceof_writer.hh"
-#include "com/centreon/broker/neb/timeperiod_serializable.hh"
 #include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/downtime_serializable.hh"
+#include "com/centreon/broker/neb/node_events_stream.hh"
+#include "com/centreon/broker/neb/node_id.hh"
+#include "com/centreon/broker/neb/timeperiod_serializable.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -145,14 +145,14 @@ unsigned int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
   else if (d->type() == neb::downtime::static_type()) {
     _update_downtime(d.ref_as<neb::downtime const>());
   }
-  else if (d->type() == extcmd::external_command::static_type()) {
+  else if (d->type() == extcmd::command_request::static_type()) {
     try {
       multiplexing::publisher pblsh;
-      parse_command(d.ref_as<extcmd::external_command const>(), pblsh);
+      parse_command(d.ref_as<extcmd::command_request const>(), pblsh);
     } catch (std::exception const& e) {
       logging::error(logging::medium)
         << "node events: can't parse command '"
-        << d.ref_as<extcmd::external_command>().command
+        << d.ref_as<extcmd::command_request>().cmd
         << "': " << e.what();
     }
   }
@@ -197,7 +197,7 @@ private:
 };
 
 /**
- *  Parse an external command.
+ *  Parse an external command request.
  *
  *  @param[in] exc     External command.
  *  @param[in] stream  Output stream.
@@ -205,14 +205,14 @@ private:
  *  @return         An event.
  */
 void node_events_stream::parse_command(
-                          extcmd::external_command const& exc,
+                          extcmd::command_request const& exc,
                           io::stream& stream) {
-  std::string line = exc.command.toStdString();
+  std::string line = exc.cmd.toStdString();
   buffer command(line.size());
   buffer args(line.size());
 
   logging::info(logging::medium)
-    << "node events: received command '" << exc.command << "'";
+    << "node events: received command '" << exc.cmd << "'";
 
   // Parse timestamp.
   unsigned long timestamp;

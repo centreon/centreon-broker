@@ -30,7 +30,7 @@
 #include "com/centreon/broker/dumper/dump.hh"
 #include "com/centreon/broker/dumper/reload.hh"
 #include "com/centreon/broker/dumper/remove.hh"
-#include "com/centreon/broker/extcmd/external_command.hh"
+#include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -111,15 +111,15 @@ unsigned int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
   if (d.isNull())
     return (1);
 
-  if (d->type() == extcmd::external_command::static_type()) {
-    extcmd::external_command const& com
-      = d.ref_as<extcmd::external_command const>();
+  if (d->type() == extcmd::command_request::static_type()) {
+    extcmd::command_request const& com
+      = d.ref_as<extcmd::command_request const>();
     try {
-    _manage_external_command(com.command.toStdString());
+    _manage_external_command(com.cmd.toStdString());
     } catch (std::exception const& e) {
       logging::error(logging::medium)
         << "directory_dumper: couldn't parse '"
-        << com.command << "': " << e.what();
+        << com.cmd << "': " << e.what();
     }
   }
 

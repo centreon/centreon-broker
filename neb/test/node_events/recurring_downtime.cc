@@ -25,7 +25,7 @@
 #include <QPair>
 #include <QThread>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/extcmd/external_command.hh"
+#include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
@@ -105,9 +105,9 @@ int main() {
 
     // Send external command.
     {
-      misc::shared_ptr<extcmd::external_command>
-        cmd(new extcmd::external_command);
-      cmd->command = format_command(
+      misc::shared_ptr<extcmd::command_request>
+        cmd(new extcmd::command_request);
+      cmd->cmd = format_command(
         "SCHEDULE_SVC_DOWNTIME;42;24;$TIMESTAMP$;$TIMESTAMP2$;1;0;3;TEST;A test for you;24x7",
         now,
         now + 3);

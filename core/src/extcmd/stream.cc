@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/extcmd/external_command.hh"
+#include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/stream.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -71,12 +71,12 @@ bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   std::string line = _fifo.read_line(timeout);
   if (!line.empty()) {
     line.erase(line.size() - 1); // Remove \n.
-    misc::shared_ptr<external_command> exc(new external_command);
-    exc->command = QString::fromStdString(line);
+    misc::shared_ptr<command_request> exc(new command_request);
+    exc->cmd = QString::fromStdString(line);
     d = exc;
     logging::info(logging::high)
       << "extcmd: received external command: '"
-      << exc->command << "'";
+      << exc->cmd << "'";
   }
   return (!line.empty());
 }

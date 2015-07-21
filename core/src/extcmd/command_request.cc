@@ -17,12 +17,22 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QMutexLocker>
+#include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/internal.hh"
-#include "com/centreon/broker/extcmd/external_command.hh"
 #include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::extcmd;
+
+/**************************************
+*                                     *
+*           Static Objects            *
+*                                     *
+**************************************/
+
+unsigned int command_request::_id(0);
+QMutex       command_request::_mutex;
 
 /**************************************
 *                                     *
@@ -33,35 +43,38 @@ using namespace com::centreon::broker::extcmd;
 /**
  *  Default constructor.
  */
-external_command::external_command() {}
+command_request::command_request() {
+  QMutexLocker lock(&_mutex);
+  id = ++_id;
+}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-external_command::external_command(external_command const& right)
-  : io::data(right) {
-  _internal_copy(right);
+command_request::command_request(command_request const& other)
+  : io::data(other) {
+  _internal_copy(other);
 }
 
 /**
  *  Destructor.
  */
-external_command::~external_command() {}
+command_request::~command_request() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-external_command& external_command::operator=(
-                                      external_command const& right) {
-  if (this != &right) {
-    io::data::operator=(right);
-    _internal_copy(right);
+command_request& command_request::operator=(
+                                    command_request const& other) {
+  if (this != &other) {
+    io::data::operator=(other);
+    _internal_copy(other);
   }
   return (*this);
 }
@@ -71,8 +84,8 @@ external_command& external_command::operator=(
  *
  *  @return The event type.
  */
-unsigned int external_command::type() const {
-  return (external_command::static_type());
+unsigned int command_request::type() const {
+  return (command_request::static_type());
 }
 
 /**
@@ -80,8 +93,8 @@ unsigned int external_command::type() const {
  *
  *  @return The event type.
  */
-unsigned int external_command::static_type() {
-  return (io::events::data_type<io::events::internal, io::events::de_command>::value);
+unsigned int command_request::static_type() {
+  return (io::events::data_type<io::events::internal, io::events::de_command_request>::value);
 }
 
 
@@ -94,10 +107,11 @@ unsigned int external_command::static_type() {
 /**
  *  Copy internal data members.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void external_command::_internal_copy(external_command const& right) {
-  command = right.command;
+void command_request::_internal_copy(command_request const& other) {
+  cmd = other.cmd;
+  id = other.id;
   return ;
 }
 
@@ -108,17 +122,21 @@ void external_command::_internal_copy(external_command const& right) {
 **************************************/
 
 // Mapping.
-mapping::entry const external_command::entries[] = {
+mapping::entry const command_request::entries[] = {
   mapping::entry(
-    &external_command::command,
-    "command"),
+    &command_request::cmd,
+    "cmd"),
+  mapping::entry(
+    &command_request::id,
+    "id",
+    mapping::entry::invalid_on_zero),
   mapping::entry()
 };
 
 // Operations.
-static io::data* new_external_command() {
-  return (new external_command);
+static io::data* new_command_request() {
+  return (new command_request);
 }
-io::event_info::event_operations const external_command::operations = {
-  &new_external_command
+io::event_info::event_operations const command_request::operations = {
+  &new_command_request
 };
