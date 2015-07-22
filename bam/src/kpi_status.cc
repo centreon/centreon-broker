@@ -37,7 +37,8 @@ kpi_status::kpi_status()
     level_nominal_soft(100.0),
     state_hard(0),
     state_soft(0),
-    last_impact(0) {}
+    last_impact(0),
+    valid(true) {}
 
 /**
  *  Copy constructor.
@@ -102,6 +103,7 @@ void kpi_status::_internal_copy(kpi_status const& other) {
   state_soft = other.state_soft;
   last_state_change = other.last_state_change;
   last_impact = other.last_impact;
+  valid = other.valid;
   return ;
 }
 
@@ -147,6 +149,9 @@ mapping::entry const kpi_status::entries[] = {
   mapping::entry(
     &bam::kpi_status::last_impact,
     "last_impact"),
+  mapping::entry(
+    &bam::kpi_status::valid,
+    "valid"),
   mapping::entry()
 };
 

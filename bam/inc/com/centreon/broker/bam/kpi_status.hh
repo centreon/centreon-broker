@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -56,6 +56,7 @@ namespace        bam {
     short        state_soft;
     timestamp    last_state_change;
     double       last_impact;
+    bool         valid;
 
     static mapping::entry const
                    entries[];
