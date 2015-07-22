@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -147,7 +147,7 @@ void applier::bool_expression::apply(
       << "BAM: creating new boolean expression " << it->first;
     misc::shared_ptr<bam::bool_expression>
       new_bool_exp(new bam::bool_expression);
-    {
+    try {
       bam::bool_parser p(it->second.get_expression(), mapping);
       bam::bool_value::ptr tree(p.get_tree());
       new_bool_exp->set_expression(tree);
@@ -166,6 +166,11 @@ void applier::bool_expression::apply(
                (*it2)->get_host_id(),
                (*it2)->get_service_id(),
                it2->data());
+    }
+    catch (std::exception const& e) {
+      logging::error(logging::high)
+        << "BAM: could not create boolean expresion "
+        << it->first << " so it will be discarded: " << e.what();
     }
     new_bool_exp->set_id(it->first);
     new_bool_exp->set_impact_if(it->second.get_impact_if());
