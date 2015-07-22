@@ -192,7 +192,7 @@ void downtime_serializable::init_bindings() {
     &downtime_serializable::get_downtime_member<bool, &downtime::was_started>,
     &downtime_serializable::set_downtime_member<bool, &downtime::was_started>);
   add_member(
-    "is_reccuring",
+    "is_recurring",
     &downtime_serializable::get_downtime_member<bool, &downtime::is_recurring>,
     &downtime_serializable::set_downtime_member<bool, &downtime::is_recurring>);
   add_member(
