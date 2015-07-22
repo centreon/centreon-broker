@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <sstream>
 #include "com/centreon/broker/database_query.hh"
 #include "com/centreon/broker/dumper/db_loader.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
@@ -80,13 +81,16 @@ void db_loader::load(entries::state& state, unsigned int poller_id) {
  *  Load BAs.
  */
 void db_loader::_load_bas() {
+  std::ostringstream query;
+  query << "SELECT b.ba_id, b.name, b.description, b.level_w, b.level_c"
+           "  FROM cfg_bam AS b"
+           "  INNER JOIN cfg_bam_poller_relations AS pr"
+           "  WHERE b.activate='1'"
+           "    AND pr.poller_id=" << _poller_id;
   database_query q(*_db);
   q.run_query(
-      "SELECT ba_id, name, description, level_w, level_c"
-      "  FROM cfg_bam"
-      "  WHERE activate='1'",
+      query.str(),
       "db_reader: could not load configuration of BAs from DB");
-  // XXX : poller ID
   while (q.next()) {
     entries::ba b;
     b.enable = true;
@@ -105,23 +109,27 @@ void db_loader::_load_bas() {
  *  Load KPIs.
  */
 void db_loader::_load_kpis() {
+  std::ostringstream query;
+  query << "SELECT k.kpi_id, k.kpi_type, k.host_id, k.service_id,"
+           "       k.id_indicator_ba, k.id_ba, k.meta_id, k.boolean_id,"
+           "       COALESCE(k.drop_warning, iw.impact),"
+           "       COALESCE(k.drop_critical, ic.impact),"
+           "       COALESCE(k.drop_unknown, iu.impact)"
+           "  FROM cfg_bam_kpi AS k"
+           "  INNER JOIN cfg_bam_poller_relations AS pr"
+           "    ON k.id_ba=pr.ba_id"
+           "  LEFT JOIN cfg_bam_impacts AS iw"
+           "    ON k.drop_warning_impact_id=iw.id_impact"
+           "  LEFT JOIN cfg_bam_impacts AS ic"
+           "    ON k.drop_critical_impact_id=ic.id_impact"
+           "  LEFT JOIN cfg_bam_impacts AS iu"
+           "    ON k.drop_unknown_impact_id=iu.id_impact"
+           "  WHERE k.activate='1'"
+           "    AND pr.poller_id=" << _poller_id;
   database_query q(*_db);
   q.run_query(
-      "SELECT k.kpi_id, k.kpi_type, k.host_id, k.service_id,"
-      "       k.id_indicator_ba, k.id_ba, k.meta_id, k.boolean_id,"
-      "       COALESCE(k.drop_warning, iw.impact),"
-      "       COALESCE(k.drop_critical, ic.impact),"
-      "       COALESCE(k.drop_unknown, iu.impact)"
-      "  FROM cfg_bam_kpi AS k"
-      "  LEFT JOIN cfg_bam_impacts AS iw"
-      "    ON k.drop_warning_impact_id=iw.id_impact"
-      "  LEFT JOIN cfg_bam_impacts AS ic"
-      "    ON k.drop_critical_impact_id=ic.id_impact"
-      "  LEFT JOIN cfg_bam_impacts AS iu"
-      "    ON k.drop_unknown_impact_id=iu.id_impact"
-      "  WHERE k.activate='1'",
+      query.str(),
       "db_reader: could not load configuration of KPIs from DB");
-  // XXX : poller_id
   while (q.next()) {
     entries::kpi k;
     k.enable = true;
