@@ -102,6 +102,7 @@ CREATE TABLE mod_bam_kpi (
   last_state_change int default NULL,
   in_downtime boolean default NULL,
   last_impact float default NULL,
+  valid boolean NOT NULL default 1,
 
   PRIMARY KEY (kpi_id),
   FOREIGN KEY (id_indicator_ba) REFERENCES mod_bam (ba_id)
