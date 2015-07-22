@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -28,7 +28,7 @@
 #include "com/centreon/broker/bam/kpi_service.hh"
 #include "com/centreon/broker/bam/meta_service.hh"
 #include "com/centreon/broker/bam/service_book.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/exceptions/config.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -37,15 +37,20 @@ using namespace com::centreon::broker::bam::configuration;
 /**
  *  Default constructor.
  */
-applier::kpi::kpi() {}
+applier::kpi::kpi()
+  : _bas(NULL),
+    _book(NULL),
+    _boolexps(NULL),
+    _mapping(NULL),
+    _metas(NULL) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-applier::kpi::kpi(applier::kpi const& right) {
-  _internal_copy(right);
+applier::kpi::kpi(applier::kpi const& other) {
+  _internal_copy(other);
 }
 
 /**
@@ -56,13 +61,13 @@ applier::kpi::~kpi() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-applier::kpi& applier::kpi::operator=(applier::kpi const& right) {
-  if (this != &right)
-    _internal_copy(right);
+applier::kpi& applier::kpi::operator=(applier::kpi const& other) {
+  if (this != &other)
+    _internal_copy(other);
   return (*this);
 }
 
@@ -84,6 +89,13 @@ void applier::kpi::apply(
                      applier::meta_service& my_metas,
                      applier::bool_expression& my_boolexps,
                      bam::service_book& book) {
+  // Set internal parameters.
+  _mapping = &mapping;
+  _bas = &my_bas;
+  _metas = &my_metas;
+  _boolexps = &my_boolexps;
+  _book = &book;
+
   //
   // DIFF
   //
@@ -160,15 +172,19 @@ void applier::kpi::apply(
         << "' linked to a deactivated service";
       continue;
     }
-    misc::shared_ptr<bam::kpi> new_kpi(_new_kpi(
-                                          it->second,
-                                          my_bas,
-                                          my_metas,
-                                          my_boolexps,
-                                          book));
-    applied& content(_applied[it->first]);
-    content.cfg = it->second;
-    content.obj = new_kpi;
+    try {
+      misc::shared_ptr<bam::kpi> new_kpi(_new_kpi(it->second));
+      applied& content(_applied[it->first]);
+      content.cfg = it->second;
+      content.obj = new_kpi;
+    }
+    catch (exceptions::config const& e) {
+      // Log message.
+      logging::error(logging::high)
+        << "BAM: could not create KPI " << it->first << ": "
+        << e.what();
+      // XXX
+    }
   }
 
   return ;
@@ -192,31 +208,35 @@ void applier::kpi::visit(io::stream* visitor) {
 /**
  *  Copy internal data members.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void applier::kpi::_internal_copy(applier::kpi const& right) {
-  _applied = right._applied;
+void applier::kpi::_internal_copy(applier::kpi const& other) {
+  _applied = other._applied;
+  _bas = other._bas;
+  _book = other._book;
+  _boolexps = other._boolexps;
+  _mapping = other._mapping;
+  _metas = other._metas;
   return ;
 }
 
 /**
  *  Create new KPI object.
  *
- *  @param[in]     cfg          KPI configuration.
- *  @param[in,out] my_bas       Already applied BAs.
- *  @param[in,out] my_metas     Already applied meta-services.
- *  @param[in,out] my_boolexps  Already applied boolean expressions.
- *  @param[out]    book         Service book, used to notify kpi_service
- *                              of service change.
+ *  @param[in] cfg  KPI configuration.
  *
  *  @return New KPI object.
  */
 misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
-                                           configuration::kpi const& cfg,
-                                           applier::ba& my_bas,
-                                           applier::meta_service& my_metas,
-                                           applier::bool_expression& my_boolexps,
-                                           service_book& book) {
+                                           configuration::kpi const& cfg) {
+  // Find target BA.
+  misc::shared_ptr<bam::ba>
+    my_ba(_bas->find_ba(cfg.get_ba_id()));
+  if (my_ba.isNull())
+    throw (exceptions::config()
+           << "target BA " << cfg.get_ba_id() << " does not exist");
+
+  // Create KPI according to its type.
   misc::shared_ptr<bam::kpi> my_kpi;
   if (cfg.is_service()) {
     logging::config(logging::medium)
@@ -234,7 +254,7 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     obj->set_state_hard(cfg.get_status());
     obj->set_state_type(cfg.get_state_type());
     my_kpi = obj.staticCast<bam::kpi>();
-    book.listen(cfg.get_host_id(), cfg.get_service_id(), obj.data());
+    _book->listen(cfg.get_host_id(), cfg.get_service_id(), obj.data());
   }
   else if (cfg.is_ba()) {
     logging::config(logging::medium)
@@ -245,11 +265,10 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     obj->set_impact_critical(cfg.get_impact_critical());
     obj->set_impact_warning(cfg.get_impact_warning());
     misc::shared_ptr<bam::ba>
-      target(my_bas.find_ba(cfg.get_indicator_ba_id()));
+      target(_bas->find_ba(cfg.get_indicator_ba_id()));
     if (target.isNull())
-      throw (exceptions::msg()
-             << "BAM: could not create KPI " << cfg.get_id()
-             << ": could not find BA " << cfg.get_indicator_ba_id());
+      throw (exceptions::config() << "could not find source BA "
+             << cfg.get_indicator_ba_id());
     obj->link_ba(target);
     target->add_parent(obj.staticCast<bam::computable>());
     my_kpi = obj.staticCast<bam::kpi>();
@@ -262,11 +281,11 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     obj->set_impact_critical(cfg.get_impact_critical());
     obj->set_impact_warning(cfg.get_impact_warning());
     misc::shared_ptr<bam::meta_service>
-      target(my_metas.find_meta(cfg.get_meta_id()));
+      target(_metas->find_meta(cfg.get_meta_id()));
     if (target.isNull())
-      throw (exceptions::msg()
-             << "BAM: could not create KPI " << cfg.get_id()
-             << ": could not find meta-service " << cfg.get_meta_id());
+      throw (exceptions::config()
+             << "could not find source meta-service "
+             << cfg.get_meta_id());
     obj->link_meta(target);
     target->add_parent(obj.staticCast<bam::computable>());
     my_kpi = obj.staticCast<bam::kpi>();
@@ -279,31 +298,28 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     misc::shared_ptr<bam::kpi_boolexp> obj(new bam::kpi_boolexp);
     obj->set_impact(cfg.get_impact_critical());
     misc::shared_ptr<bam::bool_expression>
-      target(my_boolexps.find_boolexp(cfg.get_boolexp_id()));
+      target(_boolexps->find_boolexp(cfg.get_boolexp_id()));
     if (target.isNull())
-      throw (exceptions::msg()
-             << "BAM: could not create KPI " << cfg.get_id()
-             << ": could not find boolean expression "
+      throw (exceptions::config()
+             << "could not find source boolean expression "
              << cfg.get_boolexp_id());
     obj->link_boolexp(target);
     target->add_parent(obj.staticCast<bam::computable>());
     my_kpi = obj.staticCast<bam::kpi>();
   }
   else
-    throw (exceptions::msg()
-           << "BAM: could not create KPI " << cfg.get_id()
-           << " which is neither related to a service, nor a BA,"
-           << " nor a meta-service");
-  misc::shared_ptr<bam::ba>
-    my_ba(my_bas.find_ba(cfg.get_ba_id()));
-  if (my_ba.isNull())
-    throw (exceptions::msg()
-           << "BAM: could not create KPI " << cfg.get_id()
-           << ": BA " << cfg.get_ba_id() << " does not exist");
+    throw (exceptions::config() << "create KPI " << cfg.get_id()
+           << " is neither related to a service, nor a BA,"
+           << " nor a meta-service, nor a boolean expression");
+
+  // Set common KPI parameters.
   my_kpi->set_id(cfg.get_id());
   if (cfg.get_opened_event().kpi_id != 0)
     my_kpi->set_initial_event(cfg.get_opened_event());
+
+  // Link KPI with BA.
   my_ba->add_impact(my_kpi.staticCast<bam::kpi>());
   my_kpi->add_parent(my_ba.staticCast<bam::computable>());
+
   return (my_kpi);
 }
