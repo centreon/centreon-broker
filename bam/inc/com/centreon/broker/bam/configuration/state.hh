@@ -43,10 +43,10 @@ namespace                    bam {
     class                    state {
     public:
       /* Typedefs */
-      typedef std::map<int, ba>              bas;
-      typedef std::map<int, kpi>             kpis;
-      typedef std::map<int, bool_expression> bool_exps;
-      typedef std::map<int, meta_service>    meta_services;
+      typedef std::map<unsigned int, ba>              bas;
+      typedef std::map<unsigned int, kpi>             kpis;
+      typedef std::map<unsigned int, bool_expression> bool_exps;
+      typedef std::map<unsigned int, meta_service>    meta_services;
 
                              state();
                              state(state const& other);
