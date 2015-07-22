@@ -94,7 +94,7 @@ void reader::_load(state::kpis& kpis) {
            "        COALESCE(COALESCE(k.drop_critical, cc.impact), g.average_impact),"
            "        COALESCE(COALESCE(k.drop_unknown, uu.impact), g.average_impact),"
            "        k.last_state_change, k.in_downtime, k.last_impact"
-           "  FROM  cfg_bam_kpi AS k"
+           "  FROM cfg_bam_kpi AS k"
            "  LEFT JOIN cfg_bam AS mb"
            "    ON k.id_ba = mb.ba_id"
            "  LEFT JOIN cfg_bam_poller_relations AS pr"
@@ -340,11 +340,18 @@ void reader::_load(state::bas& bas) {
 void reader::_load(state::bool_exps& bool_exps) {
   // Load boolean expressions themselves.
   try {
+    std::ostringstream q;
+    q << "SELECT b.boolean_id, b.expression, b.bool_state"
+         "  FROM cfg_bam_boolean AS b"
+         "  INNER JOIN cfg_bam_kpi AS k"
+         "    ON b.boolean_id=k.boolean_id"
+         "  INNER JOIN cfg_bam_poller_relations AS pr"
+         "    ON k.id_ba=pr.ba_id"
+         "  WHERE b.activate=1"
+         "    AND pr.poller_id="
+      << config::applier::state::instance().poller_id();
     database_query query(_db);
-    query.run_query(
-      "SELECT boolean_id, expression, bool_state"
-      "  FROM cfg_bam_boolean"
-      "  WHERE activate=1");
+    query.run_query(q.str());
     while (query.next()) {
       bool_exps[query.value(0).toUInt()] =
                   bool_expression(
