@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -50,9 +50,9 @@ namespace     bam {
       class   kpi {
       public:
               kpi();
-              kpi(kpi const& right);
+              kpi(kpi const& other);
               ~kpi();
-        kpi&  operator=(kpi const& right);
+        kpi&  operator=(kpi const& other);
         void  apply(
                 configuration::state::kpis const& my_kpis,
                 hst_svc_mapping const& mapping,
@@ -68,17 +68,21 @@ namespace     bam {
           misc::shared_ptr<bam::kpi> obj;
         };
 
-        void  _internal_copy(kpi const& right);
+        void  _internal_copy(kpi const& other);
         misc::shared_ptr<bam::kpi>
-              _new_kpi(
-                configuration::kpi const& cfg,
-                ba& my_bas,
-                meta_service& my_metas,
-                bool_expression& my_boolexps,
-                service_book& book);
+              _new_kpi(configuration::kpi const& cfg);
 
         std::map<unsigned int, applied>
               _applied;
+        ba*   _bas;
+        service_book*
+              _book;
+        bool_expression*
+              _boolexps;
+        hst_svc_mapping const*
+              _mapping;
+        meta_service*
+              _metas;
       };
     }
   }
