@@ -555,6 +555,25 @@ int main() {
           throw (exceptions::msg() << "could not create BAs: "
                  << q.lastError().text());
       }
+      {
+        QString query(
+                  "INSERT INTO cfg_bam_poller_relations (ba_id, poller_id)"
+                  "  VALUES (1, 42),"
+                  "         (2, 42),"
+                  "         (3, 42),"
+                  "         (4, 42),"
+                  "         (5, 42),"
+                  "         (6, 42),"
+                  "         (7, 42),"
+                  "         (8, 42),"
+                  "         (9, 42),"
+                  "         (10, 42)");
+        QSqlQuery q(*db.centreon_db());
+        if (!q.exec(query))
+          throw (exceptions::msg()
+                 << "could not create BA/poller relations: "
+                 << q.lastError().text());
+      }
       // {
       //   QString query(
       //             "INSERT INTO cfg_bam_ba_tp_rel (ba_id, timeperiod_id,"
@@ -575,42 +594,6 @@ int main() {
       //            << "could not link BAs to timeperiods: "
       //            << q.lastError().text());
       // }
-
-      // Create associated services.
-      {
-        QString query(
-                  "INSERT INTO cfg_hosts (host_id, host_name, organization_id)"
-                  "  VALUES (1001, 'virtual_ba_host', 1)");
-        QSqlQuery q(*db.centreon_db());
-        if (!q.exec(query))
-          throw (exceptions::msg()
-                 << "could not create virtual BA host: "
-                 << q.lastError().text());
-      }
-      for (int i(1); i <= BA_COUNT; ++i) {
-        {
-          std::ostringstream oss;
-          oss << "INSERT INTO cfg_services (service_id, service_description, organization_id)"
-              << "  VALUES (" << 1000 + i << ", 'ba_" << i << "', 1)";
-          QSqlQuery q(*db.centreon_db());
-          if (!q.exec(oss.str().c_str()))
-            throw (exceptions::msg()
-                   << "could not create virtual service of BA "
-                   << i << ": " << q.lastError().text());
-        }
-        {
-          std::ostringstream oss;
-          oss << "INSERT INTO cfg_hosts_services_relations (host_host_id, "
-              << "            service_service_id)"
-              << "  VALUES (1001, " << 1000 + i << ")";
-          QSqlQuery q(*db.centreon_db());
-          if (!q.exec(oss.str().c_str()))
-            throw (exceptions::msg()
-                   << "could not create link between virtual host "
-                   << "and virtual service of BA " << i << ": "
-                   << q.lastError().text());
-        }
-      }
     }
 
     // Create boolean expressions.

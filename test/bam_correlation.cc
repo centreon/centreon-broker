@@ -88,7 +88,8 @@ int main() {
                << q.lastError().text());
     }
 
-    // Create services.
+    // Create services. Virtual services are needed to get the same ID
+    // between DB and correlation file.
     {
       QString query;
       query = "INSERT INTO cfg_services"
@@ -145,6 +146,16 @@ int main() {
       if (!q.exec(query))
         throw (exceptions::msg()
                << "could not create BAs: " << q.lastError().text());
+    }
+    {
+      QString query;
+      query = "INSERT INTO cfg_bam_poller_relations (ba_id, poller_id)"
+              "  VALUES (1, 42), (2, 42), (3, 42), (4, 42)";
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg()
+               << "could not create BA/poller relations: "
+               << q.lastError().text());
     }
     {
       QString query;

@@ -56,9 +56,9 @@ struct ba_dimension {
 };
 
 static void check_bas(
-            QSqlDatabase& db,
-            ba_dimension const* bas,
-            size_t count) {
+              QSqlDatabase& db,
+              ba_dimension const* bas,
+              size_t count) {
   static int iteration(-1);
   ++iteration;
   QString query(
@@ -366,6 +366,16 @@ int main() {
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create BAs: "
+               << q.lastError().text());
+    }
+    {
+      QString query(
+                "INSERT INTO cfg_bam_poller_relations (ba_id, poller_id)"
+                "  VALUES (1, 42), (2, 42)");
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg()
+               << "could not create BA/poller relations: "
                << q.lastError().text());
     }
     {
