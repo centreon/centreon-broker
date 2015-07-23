@@ -61,15 +61,16 @@ ba::ba()
     _level_soft(100.0),
     _level_warning(0.0),
     _recompute_count(0),
-    _service_id(0) {}
+    _service_id(0),
+    _valid(true) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-ba::ba(ba const& right) : computable(right), service_listener(right) {
-  _internal_copy(right);
+ba::ba(ba const& other) : computable(other), service_listener(other) {
+  _internal_copy(other);
 }
 
 /**
@@ -80,15 +81,15 @@ ba::~ba() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-ba& ba::operator=(ba const& right) {
-  if (this != &right) {
-    computable::operator=(right);
-    service_listener::operator=(right);
-    _internal_copy(right);
+ba& ba::operator=(ba const& other) {
+  if (this != &other) {
+    computable::operator=(other);
+    service_listener::operator=(other);
+    _internal_copy(other);
   }
   return (*this);
 }
@@ -303,7 +304,9 @@ std::string ba::get_perfdata() const {
  */
 short ba::get_state_hard() {
   short state;
-  if (_level_hard <= _level_critical)
+  if (!_valid)
+    state = 3;
+  else if (_level_hard <= _level_critical)
     state = 2;
   else if (_level_hard <= _level_warning)
     state = 1;
@@ -319,7 +322,9 @@ short ba::get_state_hard() {
  */
 short ba::get_state_soft() {
   short state;
-  if (_level_soft <= _level_critical)
+  if (!_valid)
+    state = 3;
+  else if (_level_soft <= _level_critical)
     state = 2;
   else if (_level_soft <= _level_warning)
     state = 1;
@@ -413,6 +418,18 @@ void ba::set_initial_event(ba_event const& event) {
  */
 void ba::set_name(std::string const& name) {
   _name = name;
+  return ;
+}
+
+/**
+ *  @brief Set whether or not BA is valid.
+ *
+ *  An invalid BA will return an UNKNOWN state.
+ *
+ *  @param[in] valid  Whether or not BA is valid.
+ */
+void ba::set_valid(bool valid) {
+  _valid = valid;
   return ;
 }
 
@@ -527,24 +544,25 @@ void ba::_apply_impact(ba::impact_info& impact) {
 /**
  *  Copy internal data members.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void ba::_internal_copy(ba const& right) {
-  _acknowledgement_hard = right._acknowledgement_hard;
-  _acknowledgement_soft = right._acknowledgement_soft;
-  _downtime_hard = right._downtime_hard;
-  _downtime_soft = right._downtime_soft;
-  _event = right._event;
-  _id = right._id;
-  _service_id = right._service_id;
-  _host_id = right._host_id;
-  _impacts = right._impacts;
-  _in_downtime = right._in_downtime;
-  _last_kpi_update = right._last_kpi_update;
-  _level_critical = right._level_critical;
-  _level_hard = right._level_hard;
-  _level_soft = right._level_soft;
-  _level_warning = right._level_warning;
+void ba::_internal_copy(ba const& other) {
+  _acknowledgement_hard = other._acknowledgement_hard;
+  _acknowledgement_soft = other._acknowledgement_soft;
+  _downtime_hard = other._downtime_hard;
+  _downtime_soft = other._downtime_soft;
+  _event = other._event;
+  _id = other._id;
+  _service_id = other._service_id;
+  _host_id = other._host_id;
+  _impacts = other._impacts;
+  _in_downtime = other._in_downtime;
+  _last_kpi_update = other._last_kpi_update;
+  _level_critical = other._level_critical;
+  _level_hard = other._level_hard;
+  _level_soft = other._level_soft;
+  _level_warning = other._level_warning;
+  _valid = other._valid;
   return ;
 }
 

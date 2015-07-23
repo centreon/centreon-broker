@@ -26,10 +26,12 @@
 #include "com/centreon/broker/bam/kpi_boolexp.hh"
 #include "com/centreon/broker/bam/kpi_meta.hh"
 #include "com/centreon/broker/bam/kpi_service.hh"
+#include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/bam/meta_service.hh"
 #include "com/centreon/broker/bam/service_book.hh"
 #include "com/centreon/broker/exceptions/config.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
@@ -145,16 +147,7 @@ void applier::kpi::apply(
        ++it) {
     logging::config(logging::medium)
       << "BAM: removing KPI " << it->second.cfg.get_id();
-    if (it->second.cfg.is_service())
-      book.unlisten(
-             it->second.cfg.get_host_id(),
-             it->second.cfg.get_service_id(),
-             static_cast<kpi_service*>(it->second.obj.data()));
-    misc::shared_ptr<bam::ba>
-      my_ba(my_bas.find_ba(it->second.cfg.get_ba_id()));
-    if (!my_ba.isNull())
-      my_ba->remove_impact(it->second.obj);
-    _applied.erase(it->first);
+    _remove_kpi(it->first);
   }
   to_delete.clear();
 
@@ -183,7 +176,50 @@ void applier::kpi::apply(
       logging::error(logging::high)
         << "BAM: could not create KPI " << it->first << ": "
         << e.what();
-      // XXX
+
+      // Set KPI as invalid.
+      {
+        misc::shared_ptr<kpi_status> ks(new kpi_status);
+        ks->kpi_id = it->first;
+        ks->state_hard = 3;
+        ks->state_soft = 3;
+        ks->level_acknowledgement_hard = 0.0;
+        ks->level_acknowledgement_soft = 0.0;
+        ks->level_downtime_hard = 0.0;
+        ks->level_downtime_soft = 0.0;
+        ks->level_nominal_hard = 0.0;
+        ks->level_nominal_soft = 0.0;
+        ks->last_state_change = time(NULL);
+        ks->valid = false;
+        multiplexing::publisher().write(ks);
+      }
+
+      // Right now we have an invalid KPI targeting a BA. To avoid
+      // computation errors we now have to remove all KPIs that are
+      // targeting this same BA and that are already applied. Eventual
+      // remaining KPIs that are targeting the BA will be discarded
+      // because the BA won't be found. The BA object will remain
+      // applied.
+
+      // Remove KPIs linked to BA of this KPI.
+      for (std::map<unsigned int, applied>::const_iterator
+             kpi_it(_applied.begin()),
+             kpi_end(_applied.end());
+           kpi_it != kpi_end;) {
+        if (kpi_it->second.cfg.get_ba_id() == it->second.get_ba_id()) {
+          unsigned int kpi_id(kpi_it->first);
+          ++kpi_it;
+          _remove_kpi(kpi_id);
+        }
+        else
+          ++kpi_it;
+      }
+
+      // Set BA as invalid.
+      misc::shared_ptr<bam::ba>
+        my_ba(_bas->find_ba(it->second.get_ba_id()));
+      if (!my_ba.isNull())
+        my_ba->set_valid(false);
     }
   }
 
@@ -322,4 +358,27 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
   my_kpi->add_parent(my_ba.staticCast<bam::computable>());
 
   return (my_kpi);
+}
+
+/**
+ *  Remove an applied KPI.
+ *
+ *  @param[in] kpi_id  KPI ID.
+ */
+void applier::kpi::_remove_kpi(unsigned int kpi_id) {
+  std::map<unsigned int, applied>::iterator
+    it(_applied.find(kpi_id));
+  if (it != _applied.end()) {
+    if (it->second.cfg.is_service())
+      _book->unlisten(
+               it->second.cfg.get_host_id(),
+               it->second.cfg.get_service_id(),
+               static_cast<kpi_service*>(it->second.obj.data()));
+    misc::shared_ptr<bam::ba>
+      my_ba(_bas->find_ba(it->second.cfg.get_ba_id()));
+    if (!my_ba.isNull())
+      my_ba->remove_impact(it->second.obj);
+    _applied.erase(it);
+  }
+  return ;
 }

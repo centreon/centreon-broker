@@ -71,6 +71,7 @@ namespace     bam {
         void  _internal_copy(kpi const& other);
         misc::shared_ptr<bam::kpi>
               _new_kpi(configuration::kpi const& cfg);
+        void  _remove_kpi(unsigned int kpi_id);
 
         std::map<unsigned int, applied>
               _applied;
