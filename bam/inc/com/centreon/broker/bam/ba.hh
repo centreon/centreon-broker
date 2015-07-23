@@ -48,9 +48,9 @@ namespace        bam {
   class          ba : public computable, public service_listener {
   public:
                  ba();
-                 ba(ba const& right);
+                 ba(ba const& other);
                  ~ba();
-    ba&          operator=(ba const& right);
+    ba&          operator=(ba const& other);
     void         add_impact(misc::shared_ptr<kpi> const& impact);
     bool         child_has_update(
                    computable* child,
@@ -79,6 +79,7 @@ namespace        bam {
     void         set_level_warning(double level);
     void         set_initial_event(ba_event const& event);
     void         set_name(std::string const& name);
+    void         set_valid(bool valid);
     void         visit(io::stream* visitor);
     void         service_update(
                    misc::shared_ptr<neb::downtime> const& dt,
@@ -94,7 +95,7 @@ namespace        bam {
     };
 
     void         _apply_impact(impact_info& impact);
-    void         _internal_copy(ba const& right);
+    void         _internal_copy(ba const& other);
     void         _open_new_event(
                    io::stream* visitor,
                    short service_hard_state);
@@ -120,6 +121,7 @@ namespace        bam {
     std::string  _name;
     int          _recompute_count;
     unsigned int _service_id;
+    bool         _valid;
 
     void         _commit_initial_events(io::stream* visitor);
 

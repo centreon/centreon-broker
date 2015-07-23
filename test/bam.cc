@@ -53,6 +53,7 @@ typedef struct {
   double last_level;
   double downtime;
   double acknowledged;
+  bool valid;
 } kpi_state;
 
 typedef struct {
@@ -150,7 +151,7 @@ static void check_kpis(
   ++iteration;
   QString query(
             "SELECT kpi_id, state_type, current_status, last_level,"
-            "       downtime, acknowledged"
+            "       downtime, acknowledged, valid"
             "  FROM cfg_bam_kpi"
             "  ORDER BY kpi_id");
   QSqlQuery q(db);
@@ -165,17 +166,19 @@ static void check_kpis(
         || (q.value(2).toInt() != kpis[i].state)
         || !double_equals(q.value(3).toDouble(), kpis[i].last_level)
         || !double_equals(q.value(4).toDouble(), kpis[i].downtime)
-        || !double_equals(q.value(5).toDouble(), kpis[i].acknowledged))
+        || !double_equals(q.value(5).toDouble(), kpis[i].acknowledged)
+        || (q.value(6).toBool() != kpis[i].valid))
       throw (exceptions::msg() << "invalid KPI " << q.value(0).toUInt()
              << " at iteration " << iteration << ": got (state type "
              << q.value(1).toInt() << ", state "
              << q.value(2).toInt() << ", level "
              << q.value(3).toDouble() << ", downtime "
              << q.value(4).toDouble() << ", acknowledged "
-             << q.value(5).toDouble() << "), expected ("
-             << kpis[i].state_type << ", " << kpis[i].state
-             << ", " << kpis[i].last_level << ", " << kpis[i].downtime
-             << ", " << kpis[i].acknowledged << ")");
+             << q.value(5).toDouble() << ", " << q.value(6).toBool()
+             << "), expected (" << kpis[i].state_type << ", "
+             << kpis[i].state << ", " << kpis[i].last_level << ", "
+             << kpis[i].downtime << ", " << kpis[i].acknowledged << ", "
+             << kpis[i].valid << ")");
   }
   if (q.next())
     throw (exceptions::msg() << "too much KPIs at iteration "
@@ -549,7 +552,8 @@ int main() {
                   "         (7, 'BA7', 30, 21, '1', 1),"
                   "         (8, 'BA8', 20, 10, '1', 1),"
                   "         (9, 'BA9', 10, 0, '1', 1),"
-                  "         (10, 'BA10', 80, 60, '1', 1)");
+                  "         (10, 'BA10', 80, 60, '1', 1),"
+                  "         (11, 'BA11', 70, 50, '1', 1)");
         QSqlQuery q(*db.centreon_db());
         if (!q.exec(query))
           throw (exceptions::msg() << "could not create BAs: "
@@ -567,7 +571,8 @@ int main() {
                   "         (7, 42),"
                   "         (8, 42),"
                   "         (9, 42),"
-                  "         (10, 42)");
+                  "         (10, 42),"
+                  "         (11, 42)");
         QSqlQuery q(*db.centreon_db());
         if (!q.exec(query))
           throw (exceptions::msg()
@@ -604,7 +609,8 @@ int main() {
                 "  VALUES (1, 'BoolExp1', '{1 1} {is} {OK}', 0, 1),"
                 "         (2, 'BoolExp2', '{1 2} {not} {CRITICAL} {OR} {1 3} {not} {OK}', 1, 1),"
                 "         (3, 'BoolExp3', '({1 5} {not} {WARNING} {AND} {1 6} {is} {WARNING}) {OR} {1 7} {is} {CRITICAL}', 1, 1),"
-                "         (4, 'BoolExp4', '{1 14} {is} {CRITICAL}', 1, 1)");
+                "         (4, 'BoolExp4', '{1 14} {is} {CRITICAL}', 1, 1),"
+                "         (5, 'BoolExp5', '{Non Existent} {is} {OK}', 1, 1)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create boolexps: "
@@ -644,7 +650,8 @@ int main() {
                 "         (20, '0', 1, 11, NULL, 10, NULL, NULL, '0', NULL, NULL, NULL, NULL, 99, NULL, '0', '0', '1', '1'),"
                 "         (21, '0', 1, 12, NULL, 10, NULL, NULL, '0', NULL, NULL, NULL, NULL, 99, NULL, '0', '0', '1', '1'),"
                 "         (22, '0', 1, 13, NULL, 10, NULL, NULL, '0', NULL, NULL, NULL, NULL, 99, NULL, '0', '0', '1', '1'),"
-                "         (23, '3', NULL, NULL, NULL, 10, NULL, 4, '0', NULL, NULL, NULL, NULL, 99, NULL, '0', '0', '1', '1')");
+                "         (23, '3', NULL, NULL, NULL, 10, NULL, 4, '0', NULL, NULL, NULL, NULL, 99, NULL, '0', '0', '1', '1'),"
+                "         (24, '3', NULL, NULL, NULL, 11, NULL, 5, '0', NULL, NULL, NULL, NULL, 99, NULL, '0', '0', '1', '1')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create KPIs: "
@@ -676,35 +683,37 @@ int main() {
         { 100.0, 0.0, 0.0 },
         { 100.0, 0.0, 0.0 },
         { 75.0, 0.0, 0.0 },
+        { 100.0, 0.0, 0.0 },
         { 100.0, 0.0, 0.0 }
       };
       check_bas(*db.centreon_db(), bas, sizeof(bas) / sizeof(*bas));
     }
     {
       kpi_state const kpis[] = {
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 2, 25.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 }
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 2, 25.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 3, 0.0, 0.0, 0.0, false }
       };
       check_kpis(*db.centreon_db(), kpis, sizeof(kpis) / sizeof(*kpis));
     }
@@ -735,35 +744,37 @@ int main() {
         { 65.0, 0.0, 0.0 },  // BA3 C  = 35 => O
         { 15.0, 0.0, 0.0 },  // BA6 W  = 85 => W
         { 19.0, 0.0, 0.0 },  // BE1 F  = 75, BE3 T = 6 => O
-        { 75.0, 0.0, 0.0 }   // SVC11 C = 25 => O
+        { 75.0, 0.0, 0.0 },  // SVC11 C = 25 => O
+        { 100.0, 0.0, 0.0 }  // No impact.
       };
       check_bas(*db.centreon_db(), bas, sizeof(bas) / sizeof(*bas));
     }
     {
       kpi_state const kpis[] = {
-        { 1, 2, 25.0, 0.0, 0.0 },
-        { 1, 2, 45.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 2, 25.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 2, 25.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 1, 65.0, 0.0, 0.0 },
-        { 1, 2, 35.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 1, 85.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 2, 75.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 2, 6.0, 0.0, 0.0 },
-        { 1, 2, 25.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 }
+        { 1, 2, 25.0, 0.0, 0.0, true },
+        { 1, 2, 45.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 2, 25.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 2, 25.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 1, 65.0, 0.0, 0.0, true },
+        { 1, 2, 35.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 1, 85.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 2, 75.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 2, 6.0, 0.0, 0.0, true },
+        { 1, 2, 25.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 3, 0.0, 0.0, 0.0, false }
       };
       check_kpis(*db.centreon_db(), kpis, sizeof(kpis) / sizeof(*kpis));
     }
@@ -794,35 +805,37 @@ int main() {
         { 0.0, 0.0, 0.0 },   // BA3 C  = 35, BA4 C  = 45, BA5 W = 45 => C
         { 0.0, 0.0, 0.0 },   // BA6 W  = 85 => W, BA7 C = 105 => C
         { 0.0, 0.0, 0.0 },   // BE1 F  = 75, BE2 T = 25, BE3 T = 6 => C
-        { 50.0, 0.0, 0.0 }   // SVC11 C = 25, SVC12 C = 25 => W
+        { 50.0, 0.0, 0.0 },  // SVC11 C = 25, SVC12 C = 25 => W
+        { 100.0, 0.0, 0.0 }  // No impact.
       };
       check_bas(*db.centreon_db(), bas, sizeof(bas) / sizeof(*bas));
     }
     {
       kpi_state const kpis[] = {
-        { 1, 2, 25.0, 0.0, 0.0 },
-        { 1, 2, 45.0, 0.0, 0.0 },
-        { 1, 1, 35.0, 0.0, 0.0 },
-        { 1, 2, 25.0, 0.0, 0.0 },
-        { 1, 1, 26.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 2, 25.0, 0.0, 0.0 },
-        { 1, 1, 26.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 1, 65.0, 0.0, 0.0 },
-        { 1, 2, 35.0, 0.0, 0.0 },
-        { 1, 2, 45.0, 0.0, 0.0 },
-        { 1, 1, 45.0, 0.0, 0.0 },
-        { 1, 1, 85.0, 0.0, 0.0 },
-        { 1, 2, 105.0, 0.0, 0.0 },
-        { 1, 2, 75.0, 0.0, 0.0 },
-        { 1, 2, 25.0, 0.0, 0.0 },
-        { 1, 2, 6.0, 0.0, 0.0 },
-        { 1, 2, 25.0, 0.0, 0.0 },
-        { 1, 2, 25.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 },
-        { 1, 0, 0.0, 0.0, 0.0 }
+        { 1, 2, 25.0, 0.0, 0.0, true },
+        { 1, 2, 45.0, 0.0, 0.0, true },
+        { 1, 1, 35.0, 0.0, 0.0, true },
+        { 1, 2, 25.0, 0.0, 0.0, true },
+        { 1, 1, 26.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 2, 25.0, 0.0, 0.0, true },
+        { 1, 1, 26.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 1, 65.0, 0.0, 0.0, true },
+        { 1, 2, 35.0, 0.0, 0.0, true },
+        { 1, 2, 45.0, 0.0, 0.0, true },
+        { 1, 1, 45.0, 0.0, 0.0, true },
+        { 1, 1, 85.0, 0.0, 0.0, true },
+        { 1, 2, 105.0, 0.0, 0.0, true },
+        { 1, 2, 75.0, 0.0, 0.0, true },
+        { 1, 2, 25.0, 0.0, 0.0, true },
+        { 1, 2, 6.0, 0.0, 0.0, true },
+        { 1, 2, 25.0, 0.0, 0.0, true },
+        { 1, 2, 25.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 0, 0.0, 0.0, 0.0, true },
+        { 1, 3, 0.0, 0.0, 0.0, false }
       };
       check_kpis(*db.centreon_db(), kpis, sizeof(kpis) / sizeof(*kpis));
     }
@@ -848,7 +861,8 @@ int main() {
         { 9, t2, t3, true, 0, 0, 2, false },
         { 10, t0, t1, false, t1, t2, 0, false },
         { 10, t1, t2, false, t2, t3, 1, false },
-        { 10, t2, t3, true, 0, 0, 2, false }
+        { 10, t2, t3, true, 0, 0, 2, false },
+        { 11, t0, t1, true, 0, 0, 3, false }
       };
       check_ba_events(
         *db.bi_db(),

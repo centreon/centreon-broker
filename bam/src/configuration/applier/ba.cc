@@ -182,6 +182,15 @@ void applier::ba::apply(
         << "developers";
   }
 
+  // Set all BA objects as valid. Invalid BAs will be reset as invalid
+  // on KPI application.
+  for (std::map<unsigned int, applied>::iterator
+         it(_applied.begin()),
+         end(_applied.end());
+       it != end;
+       ++it)
+    it->second.obj->set_valid(true);
+
   return ;
 }
 
