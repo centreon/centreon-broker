@@ -377,7 +377,7 @@ com::centreon::broker::time::timeperiod::ptr
  */
 void timeperiod_serializable::init_bindings() {
   add_member(
-    "name",
+    "timeperiod_name",
     &timeperiod_serializable::get_name,
     &timeperiod_serializable::set_name);
   add_member(

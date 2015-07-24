@@ -196,7 +196,7 @@ void downtime_serializable::init_bindings() {
     &downtime_serializable::get_downtime_member<bool, &downtime::is_recurring>,
     &downtime_serializable::set_downtime_member<bool, &downtime::is_recurring>);
   add_member(
-    "recurring_timeperiod",
+    "recurring_period",
     &downtime_serializable::get_downtime_member<QString, &downtime::recurring_timeperiod>,
     &downtime_serializable::set_downtime_member<QString, &downtime::recurring_timeperiod>);
 }
