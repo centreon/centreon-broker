@@ -95,9 +95,9 @@ void reader::_load(state::kpis& kpis) {
            "        COALESCE(COALESCE(k.drop_unknown, uu.impact), g.average_impact),"
            "        k.last_state_change, k.in_downtime, k.last_impact"
            "  FROM cfg_bam_kpi AS k"
-           "  LEFT JOIN cfg_bam AS mb"
+           "  INNER JOIN cfg_bam AS mb"
            "    ON k.id_ba = mb.ba_id"
-           "  LEFT JOIN cfg_bam_poller_relations AS pr"
+           "  INNER JOIN cfg_bam_poller_relations AS pr"
            "    ON pr.ba_id = mb.ba_id"
            "  LEFT JOIN cfg_bam_impacts AS ww"
            "    ON k.drop_warning_impact_id = ww.id_impact"
@@ -202,7 +202,7 @@ void reader::_load(state::bas& bas) {
       oss << "SELECT b.ba_id, b.name, b.level_w, b.level_c,"
              "       b.last_state_change, b.current_status, b.in_downtime"
              "  FROM cfg_bam AS b"
-             "  LEFT JOIN cfg_bam_poller_relations AS pr"
+             "  INNER JOIN cfg_bam_poller_relations AS pr"
              "    ON b.ba_id=pr.ba_id"
              "  WHERE b.activate='1'"
              "    AND pr.poller_id="
@@ -681,7 +681,7 @@ void reader::_load_dimensions() {
            "       b.sla_month_duration_warn,"
            "       b.sla_month_duration_crit, b.id_reporting_period"
            "  FROM cfg_bam AS b"
-           "  LEFT JOIN cfg_bam_poller_relations AS pr"
+           "  INNER JOIN cfg_bam_poller_relations AS pr"
            "    ON b.ba_id=pr.ba_id"
            "  WHERE b.activate='1'"
            "    AND pr.poller_id="
@@ -729,9 +729,9 @@ void reader::_load_dimensions() {
       std::ostringstream oss;
       oss << "SELECT id_ba, id_ba_group"
              "  FROM cfg_bam_bagroup_ba_relation as r"
-             "  LEFT JOIN cfg_bam AS b"
+             "  INNER JOIN cfg_bam AS b"
              "    ON b.ba_id = r.id_ba"
-             "  LEFT JOIN cfg_bam_poller_relations AS pr"
+             "  INNER JOIN cfg_bam_poller_relations AS pr"
              "    ON b.ba_id=pr.ba_id"
              "  WHERE b.activate='1'"
              "    AND pr.poller_id="
@@ -775,7 +775,7 @@ void reader::_load_dimensions() {
              "    ON s.service_id = k.service_id"
              "  INNER JOIN cfg_bam AS b"
              "    ON b.ba_id = k.id_ba"
-             "  LEFT JOIN cfg_bam_poller_relations AS pr"
+             "  INNER JOIN cfg_bam_poller_relations AS pr"
              "    ON b.ba_id = pr.ba_id"
              "  LEFT JOIN cfg_meta_services AS meta"
              "    ON meta.meta_id = k.meta_id"
@@ -827,9 +827,18 @@ void reader::_load_dimensions() {
     }
 
     // Load the ba-timeperiods relations.
-    q.run_query(
-      "SELECT ba_id, tp_id FROM cfg_bam_relations_ba_timeperiods",
-      "could not retrieve the timeperiods associated with the BAs");
+    {
+      std::ostringstream oss;
+      oss << "SELECT bt.ba_id, bt.tp_id"
+             "  FROM cfg_bam_relations_ba_timeperiods AS bt"
+             "  INNER JOIN cfg_bam_poller_relations AS pr"
+             "    ON bt.ba_id=pr.ba_id"
+             "  WHERE pr.poller_id="
+          << config::applier::state::instance().poller_id();
+      q.run_query(
+          oss.str(),
+          "could not retrieve the timeperiods associated with the BAs");
+    }
     while (q.next()) {
       misc::shared_ptr<dimension_ba_timeperiod_relation>
         dbtr(new dimension_ba_timeperiod_relation);
