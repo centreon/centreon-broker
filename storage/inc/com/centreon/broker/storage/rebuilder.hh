@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Merethis
+** Copyright 2012-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,7 +20,6 @@
 #ifndef CCB_STORAGE_REBUILDER_HH
 #  define CCB_STORAGE_REBUILDER_HH
 
-#  include <ctime>
 #  include <memory>
 #  include <QThread>
 #  include "com/centreon/broker/database_config.hh"
@@ -43,12 +42,10 @@ namespace           storage {
                     rebuilder(
                       database_config const& db_cfg,
                       unsigned int rebuild_check_interval = 600,
-                      time_t interval_length = 60,
                       unsigned int rrd_length = 15552000);
                     ~rebuilder() throw ();
     void            exit() throw ();
     unsigned int    get_interval() const throw ();
-    time_t          get_interval_length() const throw ();
     unsigned int    get_rrd_length() const throw ();
     void            run();
 
@@ -77,7 +74,6 @@ namespace           storage {
 
     database_config _db_cfg;
     unsigned int    _interval;
-    time_t          _interval_length;
     unsigned int    _rrd_len;
     volatile bool   _should_exit;
   };

@@ -20,7 +20,6 @@
 #ifndef CCB_STORAGE_CONNECTOR_HH
 #  define CCB_STORAGE_CONNECTOR_HH
 
-#  include <ctime>
 #  include <QString>
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
@@ -44,7 +43,6 @@ namespace           storage {
     void            connect_to(
                       database_config const& db_cfg,
                       unsigned int rrd_len,
-                      time_t interval_length,
                       unsigned int rebuild_check_interval,
                       bool store_in_data_bin = true,
                       bool insert_in_index_data = false);
@@ -56,7 +54,6 @@ namespace           storage {
 
     database_config _db_cfg;
     bool            _insert_in_index_data;
-    time_t          _interval_length;
     unsigned int    _rebuild_check_interval;
     unsigned int    _rrd_len;
     bool            _store_in_data_bin;

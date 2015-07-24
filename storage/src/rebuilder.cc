@@ -63,17 +63,14 @@ struct metric_info {
  *  @param[in] db_cfg                  Database configuration.
  *  @param[in] rebuild_check_interval  How often the rebuild thread will
  *                                     check for rebuild.
- *  @param[in] interval_length         Base time unit.
  *  @param[in] rrd_length              Length of RRD files.
  */
 rebuilder::rebuilder(
              database_config const& db_cfg,
              unsigned int rebuild_check_interval,
-             time_t interval_length,
              unsigned int rrd_length)
   : _db_cfg(db_cfg),
     _interval(rebuild_check_interval),
-    _interval_length(interval_length),
     _rrd_len(rrd_length),
     _should_exit(false) {}
 
@@ -97,15 +94,6 @@ void rebuilder::exit() throw () {
  */
 unsigned int rebuilder::get_interval() const throw () {
   return (_interval);
-}
-
-/**
- *  Get the interval length in seconds.
- *
- *  @return Interval length in seconds.
- */
-time_t rebuilder::get_interval_length() const throw () {
-  return (_interval_length);
 }
 
 /**
@@ -139,9 +127,9 @@ void rebuilder::run() {
       {
         database_query index_to_rebuild_query(*db);
         index_to_rebuild_query.run_query(
-          "SELECT id, host_id, service_id, rrd_retention"
+          "SELECT index_id, host_id, service_id, rrd_retention"
           " FROM rt_index_data"
-          " WHERE must_be_rebuild='1'",
+          " WHERE must_be_rebuild=1",
           "storage: rebuilder: could not fetch index to rebuild");
         while (!_should_exit && index_to_rebuild_query.next()) {
           index_info info;
@@ -230,7 +218,7 @@ void rebuilder::run() {
               info.metric_id,
               info.metric_name,
               info.metric_type,
-              check_interval * _interval_length,
+              check_interval,
               rrd_len);
           }
 
@@ -238,7 +226,7 @@ void rebuilder::run() {
           _rebuild_status(
             *db,
             index_id,
-            check_interval * _interval_length);
+            check_interval);
         }
         catch (...) {
           // Set index as to-be-rebuilt.
@@ -306,7 +294,7 @@ void rebuilder::_rebuild_metric(
     std::ostringstream oss;
     oss << "SELECT ctime, value"
         << " FROM log_data_bin"
-        << " WHERE id_metric=" << metric_id
+        << " WHERE metric_id=" << metric_id
         << " ORDER BY ctime ASC";
     database_query data_bin_query(db);
     bool caught(false);
@@ -444,8 +432,8 @@ void rebuilder::_set_index_rebuild(
                   short state) {
   std::ostringstream oss;
   oss << "UPDATE rt_index_data"
-      << " SET must_be_rebuild=" << state + 1
-      << " WHERE id=" << index_id;
+      << " SET must_be_rebuild=" << state
+      << " WHERE index_id=" << index_id;
   database_query update_index_query(db);
   try { update_index_query.run_query(oss.str()); }
   catch (std::exception const& e) {

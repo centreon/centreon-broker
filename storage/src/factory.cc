@@ -129,7 +129,6 @@ io::endpoint* factory::new_endpoint(
   (void)cache;
 
   // Find lengths.
-  unsigned int interval_length(find_param(cfg, "interval").toUInt());
   unsigned int rrd_length(find_param(cfg, "length").toUInt());
 
   // Find storage DB parameters.
@@ -197,7 +196,6 @@ io::endpoint* factory::new_endpoint(
   c->connect_to(
        db_cfg,
        rrd_length,
-       interval_length,
        rebuild_check_interval,
        store_in_data_bin,
        insert_in_index_data);

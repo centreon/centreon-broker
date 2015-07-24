@@ -111,7 +111,6 @@ int main() {
           << "    <db_password>" DB_PASSWORD "</db_password>\n"
           << "    <db_name>" DB_NAME "</db_name>\n"
           << "    <queries_per_transaction>0</queries_per_transaction>\n"
-          << "    <interval>" MONITORING_ENGINE_INTERVAL_LENGTH_STR "</interval>\n"
           << "    <length>2592000</length>\n"
           << "  </output>\n"
           << "  <output>\n"

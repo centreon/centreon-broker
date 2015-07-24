@@ -97,7 +97,6 @@ static inline bool double_equal(double a, double b) {
  *
  *  @param[in] db_cfg                  Database configuration.
  *  @param[in] rrd_len                 RRD length.
- *  @param[in] interval_length         Interval length.
  *  @param[in] rebuild_check_interval  How often the stream must check
  *                                     for graph rebuild.
  *  @param[in] store_in_db             Should we insert data in
@@ -108,17 +107,14 @@ static inline bool double_equal(double a, double b) {
 stream::stream(
           database_config const& db_cfg,
           unsigned int rrd_len,
-          time_t interval_length,
           unsigned int rebuild_check_interval,
           bool store_in_db,
           bool insert_in_index_data)
   : _insert_in_index_data(insert_in_index_data),
-    _interval_length(interval_length),
     _pending_events(0),
     _rebuild_thread(
       db_cfg,
       rebuild_check_interval,
-      interval_length,
       rrd_len),
     _rrd_len(rrd_len ? rrd_len : 15552000),
     _store_in_db(store_in_db),
@@ -216,8 +212,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
         misc::shared_ptr<storage::status> status(new storage::status);
         status->ctime = ss->last_check;
         status->index_id = index_id;
-        status->interval = static_cast<time_t>(
-                             ss->check_interval * _interval_length);
+        status->interval = static_cast<time_t>(ss->check_interval);
         status->is_for_rebuild = false;
         status->rrd_len = rrd_len;
         status->state = ss->last_hard_state;
@@ -270,7 +265,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
               metric_value val;
               val.c_time = ss->last_check;
               val.metric_id = metric_id;
-              val.status = ss->current_state + 1;
+              val.status = ss->current_state;
               val.value = pd.value();
               _perfdata_queue.push_back(val);
             }
@@ -280,8 +275,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
               misc::shared_ptr<storage::metric>
                 perf(new storage::metric);
               perf->ctime = ss->last_check;
-              perf->interval = static_cast<time_t>(
-                                 ss->check_interval * _interval_length);
+              perf->interval = static_cast<time_t>(ss->check_interval);
               perf->is_for_rebuild = false;
               perf->metric_id = metric_id;
               perf->name = pd.name();
@@ -345,8 +339,8 @@ void stream::_check_deleted_index() {
     {
       database_query q(_db);
       q.run_query(
-          "SELECT id FROM rt_index_data WHERE to_delete=1 LIMIT 1",
-          "storage: could not query index_data to get index to delete");
+          "SELECT index_id FROM rt_index_data WHERE to_delete=1 LIMIT 1",
+          "storage: could not query rt_index_data to get index to delete");
       if (!q.next())
         break ;
       index_id = q.value(0).toULongLong();
@@ -375,7 +369,7 @@ void stream::_check_deleted_index() {
     // Delete index from DB.
     {
       std::ostringstream oss;
-      oss << "DELETE FROM rt_index_data WHERE id=" << index_id;
+      oss << "DELETE FROM rt_index_data WHERE index_id=" << index_id;
       database_query q(_db);
       try { q.run_query(oss.str()); }
       catch (std::exception const& e) {
@@ -531,7 +525,7 @@ unsigned int stream::_find_index_id(
         q.prepare(query);
         q.bind_value(":host_name", host_name);
         q.bind_value(":service_description", service_desc);
-        q.bind_value(":special", (special ? 2 : 1));
+        q.bind_value(":special", special);
         q.bind_value(":host_id", host_id);
         q.bind_value(":service_id", service_id);
         q.run_statement();
@@ -577,13 +571,13 @@ unsigned int stream::_find_index_id(
              "  service_id, service_description, "
              "  must_be_rebuild, special)"
              " VALUES (" << host_id << ", :host_name, " << service_id
-          << ", :service_description, 1, :special)";
+          << ", :service_description, 0, :special)";
       database_query q(_db);
       try {
         q.prepare(oss.str());
         q.bind_value(":host_name", host_name);
         q.bind_value(":service_description", service_desc);
-        q.bind_value(":special", (special ? 2 : 1));
+        q.bind_value(":special", special);
 
         // Execute query.
         q.run_statement();
@@ -599,7 +593,7 @@ unsigned int stream::_find_index_id(
           || !(retval = q.last_insert_id().toUInt())) {
         q.finish();
         std::ostringstream oss2;
-        oss2 << "SELECT id"
+        oss2 << "SELECT index_id"
                 " FROM rt_index_data"
                 " WHERE host_id=" << host_id
              << " AND service_id=" << service_id;
@@ -793,7 +787,7 @@ unsigned int stream::_find_metric_id(
     q.bind_value(":min", check_double(min));
     q.bind_value(":max", check_double(max));
     q.bind_value(":current_value", check_double(value));
-    q.bind_value(":data_source_type", *type + 1);
+    q.bind_value(":data_source_type", *type);
 
     // Execute query.
     try { q.run_statement(); }
@@ -881,7 +875,7 @@ void stream::_insert_perfdatas() {
       metric_value& mv(_perfdata_queue.front());
       query.precision(10);
       query << std::scientific
-            << "INSERT INTO log_data_bin (id_metric, ctime, status, value)"
+            << "INSERT INTO log_data_bin (metric_id, ctime, status, value)"
                " VALUES (" << mv.metric_id << ", " << mv.c_time << ", "
             << mv.status << ", '";
       if (isinf(mv.value))
@@ -966,8 +960,8 @@ void stream::_rebuild_cache() {
     // Execute query.
     database_query q(_db);
     q.run_query(
-        "SELECT id, host_id, service_id, host_name, rrd_retention,"
-        "       service_description, special, locked"
+        "SELECT index_id, host_id, service_id, host_name,"
+        "       rrd_retention, service_description, special, locked"
         " FROM rt_index_data",
         "storage: could not fetch index list from data DB");
 
@@ -982,8 +976,8 @@ void stream::_rebuild_cache() {
       if (!info.rrd_retention)
         info.rrd_retention = _rrd_len;
       info.service_description = q.value(5).toString();
-      info.special = (q.value(6).toUInt() == 2);
-      info.locked = (q.value(7).toUInt() == 1);
+      info.special = q.value(6).toBool();
+      info.locked = q.value(7).toBool();
       logging::debug(logging::high) << "storage: loaded index "
         << info.index_id << " of (" << host_id << ", "
         << service_id << ")";
@@ -1019,7 +1013,7 @@ void stream::_rebuild_cache() {
       info.type = (q.value(3).isNull()
                    ? static_cast<unsigned int>(perfdata::automatic)
                    : q.value(3).toUInt());
-      info.locked = (q.value(4).toUInt() == 1);
+      info.locked = q.value(4).toBool();
       info.value = (q.value(5).isNull() ? NAN : q.value(5).toDouble());
       info.unit_name = q.value(6).toString();
       info.warn = (q.value(7).isNull() ? NAN : q.value(7).toDouble());

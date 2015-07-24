@@ -69,7 +69,6 @@ connector& connector::operator=(connector const& other) {
  *
  *  @param[in] db_cfg                  Database configuration.
  *  @param[in] rrd_len                 RRD storage length.
- *  @param[in] interval_length         Interval length.
  *  @param[in] rebuild_check_interval  How often the storage endpoint
  *                                     must check for graph rebuild.
  *  @param[in] store_in_data_bin       True to store performance data in
@@ -79,13 +78,11 @@ connector& connector::operator=(connector const& other) {
 void connector::connect_to(
                   database_config const& db_cfg,
                   unsigned int rrd_len,
-                  time_t interval_length,
                   unsigned int rebuild_check_interval,
                   bool store_in_data_bin,
                   bool insert_in_index_data) {
   _db_cfg = db_cfg;
   _rrd_len = rrd_len;
-  _interval_length = interval_length;
   _rebuild_check_interval = rebuild_check_interval;
   _store_in_data_bin = store_in_data_bin;
   _insert_in_index_data = insert_in_index_data;
@@ -105,7 +102,6 @@ misc::shared_ptr<io::stream> connector::open() {
             new stream(
                   _db_cfg,
                   _rrd_len,
-                  _interval_length,
                   _rebuild_check_interval,
                   _store_in_data_bin,
                   _insert_in_index_data)));
@@ -125,7 +121,6 @@ misc::shared_ptr<io::stream> connector::open() {
 void connector::_internal_copy(connector const& other) {
   _db_cfg = other._db_cfg;
   _insert_in_index_data = other._insert_in_index_data;
-  _interval_length = other._interval_length;
   _rebuild_check_interval = other._rebuild_check_interval;
   _rrd_len = other._rrd_len;
   _store_in_data_bin = other._store_in_data_bin;

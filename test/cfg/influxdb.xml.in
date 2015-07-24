@@ -20,7 +20,6 @@
   -->
   <output>
     <name><![CDATA[central-broker-master-perfdata]]></name>
-    <interval><![CDATA[60]]></interval>
     <length>1</length>
     <db_type>@DB_TYPE@</db_type>
     <db_host>@DB_HOST@</db_host>

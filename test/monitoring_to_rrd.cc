@@ -128,7 +128,6 @@ int main(int argc, char* argv[]) {
           << "    <db_password>" DB_PASSWORD "</db_password>\n"
           << "    <db_name>" DB_NAME "</db_name>\n"
           << "    <queries_per_transaction>0</queries_per_transaction>\n"
-          << "    <interval>" MONITORING_ENGINE_INTERVAL_LENGTH_STR "</interval>\n"
           << "    <length>2592000</length>\n"
           << "  </output>\n"
           << "  <output>\n"
@@ -257,7 +256,7 @@ int main(int argc, char* argv[]) {
     std::list<unsigned int> indexes;
     {
       QSqlQuery q(*db.centreon_db());
-      if (!q.exec("SELECT id FROM rt_index_data"))
+      if (!q.exec("SELECT index_id FROM rt_index_data"))
         throw (exceptions::msg() << "cannot get index list: "
                << qPrintable(q.lastError().text()));
       while (q.next())
@@ -325,7 +324,7 @@ int main(int argc, char* argv[]) {
             << "       m.warn_threshold_mode, m.crit, m.crit_low, "
             << "       m.crit_threshold_mode, m.min, m.max"
             << "  FROM rt_metrics AS m INNER JOIN rt_index_data AS i"
-            << "  ON m.index_id=i.id"
+            << "  ON m.index_id=i.index_id"
             << "  ORDER BY i.host_id ASC, i.service_id ASC";
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
@@ -441,7 +440,7 @@ int main(int argc, char* argv[]) {
         std::ostringstream query;
         query << "SELECT COUNT(*)"
               << "  FROM log_data_bin"
-              << "  WHERE id_metric=" << *it;
+              << "  WHERE metric_id=" << *it;
         QSqlQuery q(*db.centreon_db());
         if (!q.exec(query.str().c_str())
             || !q.next()

@@ -51,7 +51,6 @@ namespace          storage {
                    stream(
                      database_config const& db_cfg,
                      unsigned int rrd_len,
-                     time_t interval_length,
                      unsigned int rebuild_check_interval,
                      bool store_in_db = true,
                      bool insert_in_index_data = false);
@@ -127,7 +126,6 @@ namespace          storage {
     std::map<std::pair<unsigned int, unsigned int>, index_info>
                    _index_cache;
     bool           _insert_in_index_data;
-    time_t         _interval_length;
     std::map<std::pair<unsigned int, QString>, metric_info>
                    _metric_cache;
     unsigned int   _pending_events;
