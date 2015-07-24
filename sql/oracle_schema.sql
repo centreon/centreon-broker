@@ -675,23 +675,23 @@ CREATE TABLE rt_servicestateevents (
 --  Base performance data index.
 --
 CREATE TABLE rt_index_data (
-  id int NOT NULL,
+  index_id int NOT NULL,
   host_id int NOT NULL,
   service_id int default NULL,
 
   check_interval int default NULL,
-  hidden enum('0', '1') NOT NULL default '0',
+  hidden boolean NOT NULL default 0,
   host_name varchar(255) default NULL,
-  locked enum('0', '1') NOT NULL default '0',
-  must_be_rebuild enum('0', '1', '2') NOT NULL default '0',
+  locked boolean NOT NULL default 0,
+  must_be_rebuild smallint NOT NULL default 0,
   rrd_retention int default NULL,
   service_description varchar(255) default NULL,
-  special enum('0', '1') NOT NULL default '0',
-  storage_type enum('0', '1', '2') NOT NULL default '2',
-  to_delete int NOT NULL default 0,
-  trashed enum('0', '1') NOT NULL default '0',
+  special boolean NOT NULL default 0,
+  storage_type smallint NOT NULL default 2,
+  to_delete boolean NOT NULL default 0,
+  trashed boolean NOT NULL default 0,
 
-  PRIMARY KEY (id),
+  PRIMARY KEY (index_id),
   UNIQUE (host_id, service_id),
   INDEX (host_id),
   INDEX (host_name),
@@ -707,7 +707,7 @@ CREATE TRIGGER index_data_trigger
 BEFORE INSERT ON index_data
 FOR EACH ROW
 BEGIN
-  SELECT index_data_seq.nextval INTO :NEW.id FROM dual;
+  SELECT index_data_seq.nextval INTO :NEW.index_id FROM dual;
 END;
 /
 
@@ -721,22 +721,22 @@ CREATE TABLE rt_metrics (
 
   crit double default NULL,
   crit_low double default NULL,
-  crit_threshold_mode char(1) default NULL,
+  crit_threshold_mode boolean default NULL,
   current_value double default NULL,
-  data_source_type enum('0', '1', '2', '3') NOT NULL default '0',
-  hidden enum('0', '1') NOT NULL default '0',
-  locked enum('0', '1') NOT NULL default '0',
+  data_source_type smallint NOT NULL default 0,
+  hidden boolean NOT NULL default 0,
+  locked boolean NOT NULL default 0,
   min double default NULL,
   max double default NULL,
-  to_delete int NOT NULL default 0,
+  to_delete boolean NOT NULL default 0,
   unit_name varchar(32) default NULL,
   warn double default NULL,
   warn_low double default NULL,
-  warn_threshold_mode char(1) default NULL,
+  warn_threshold_mode boolean default NULL,
 
   PRIMARY KEY (metric_id),
   UNIQUE KEY (index_id, metric_name),
-  FOREIGN KEY (index_id) REFERENCES rt_index_data (id)
+  FOREIGN KEY (index_id) REFERENCES rt_index_data (index_id)
     ON DELETE CASCADE,
   INDEX (index_id)
 );
@@ -755,12 +755,12 @@ END;
 --  Performance data.
 --
 CREATE TABLE log_data_bin (
-  id_metric int NOT NULL,
+  metric_id int NOT NULL,
   ctime int NOT NULL,
-  status enum('0', '1', '2', '3', '4') NOT NULL default '3',
+  status smallint NOT NULL default 3,
   value float default NULL,
 
-  FOREIGN KEY (id_metric) REFERENCES rt_metrics (metric_id)
+  FOREIGN KEY (metric_id) REFERENCES rt_metrics (metric_id)
     ON DELETE CASCADE,
-  INDEX (id_metric)
+  INDEX (metric_id)
 );
