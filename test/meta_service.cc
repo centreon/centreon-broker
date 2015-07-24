@@ -139,7 +139,7 @@ int main() {
       {
         std::ostringstream oss;
         oss << "INSERT INTO rt_metrics (index_id, metric_name)"
-            << "  SELECT id, 'metric'"
+            << "  SELECT index_id, 'metric'"
             << "    FROM rt_index_data"
             << "    WHERE host_id=1 AND service_id=" << i;
         storageq.push_back(oss.str());

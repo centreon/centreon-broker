@@ -85,6 +85,7 @@ void db_loader::_load_bas() {
   query << "SELECT b.ba_id, b.name, b.description, b.level_w, b.level_c"
            "  FROM cfg_bam AS b"
            "  INNER JOIN cfg_bam_poller_relations AS pr"
+           "    ON b.ba_id=pr.ba_id"
            "  WHERE b.activate='1'"
            "    AND pr.poller_id=" << _poller_id;
   database_query q(*_db);

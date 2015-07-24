@@ -1393,8 +1393,6 @@ void stream::_process_service_state(
 
   // Processing.
   if (_with_state_events) {
-    _service_state_insert.bind_value(":service_id", QVariant(s.service_id));
-    _service_state_update.bind_value(":service_id", QVariant(s.service_id));
     _update_on_none_insert(
       _service_state_insert,
       _service_state_update,

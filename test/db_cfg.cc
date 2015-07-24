@@ -180,7 +180,11 @@ int main() {
         "         (6, 'BA6', 40, 30, '1'),"
         "         (7, 'BA7', 30, 20, '1'),"
         "         (8, 'BA8', 20, 10, '1'),"
-        "         (9, 'BA9', 10, 0, '1')",
+        "         (9, 'BA9', 10, 0, '1'),"
+        "         (1001, 'BA1001', 50, 50, '1')",
+        "INSERT INTO cfg_bam_poller_relations (ba_id, poller_id)"
+        "  VALUES (1, 43), (2, 43), (3, 43), (4, 43), (5, 43),"
+        "         (6, 43), (7, 43), (8, 43), (9, 43), (10, 42)",
         "INSERT INTO cfg_bam_kpi (kpi_id, kpi_type, host_id,"
         "            service_id, id_indicator_ba, id_ba, config_type,"
         "            drop_warning, drop_critical, drop_unknown,"
@@ -257,6 +261,8 @@ int main() {
       char const* queries [] = {
         "INSERT INTO cfg_bam (ba_id, name, level_w, level_c, activate)"
         "  VALUES (10, 'BA10', 75, 50, '1')",
+        "INSERT INTO cfg_bam_poller_relations (ba_id, poller_id)"
+        "  VALUES (10, 43)",
         "INSERT INTO cfg_bam_kpi (kpi_id, kpi_type, host_id,"
         "            service_id, id_indicator_ba, id_ba, config_type,"
         "            drop_warning, drop_critical, drop_unknown,"

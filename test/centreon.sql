@@ -3192,11 +3192,11 @@ DROP TABLE IF EXISTS `log_data_bin`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `log_data_bin` (
-  `id_metric` int(11) DEFAULT NULL,
+  `metric_id` int(11) DEFAULT NULL,
   `ctime` int(11) DEFAULT NULL,
   `value` float DEFAULT NULL,
-  `status` enum('0','1','2','3','4') DEFAULT NULL,
-  KEY `index_metric` (`id_metric`)
+  `status` tinyint DEFAULT NULL,
+  KEY `index_metric` (`metric_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

@@ -120,7 +120,6 @@ int main() {
           << "    <db_password>" DB_PASSWORD "</db_password>\n"
           << "    <db_name>" DB_NAME "</db_name>\n"
           << "    <queries_per_transaction>0</queries_per_transaction>\n"
-          << "    <interval>" MONITORING_ENGINE_INTERVAL_LENGTH_STR "</interval>\n"
           << "    <length>2592000</length>\n"
           << "    <rebuild_check_interval>" MONITORING_ENGINE_INTERVAL_LENGTH_STR "</rebuild_check_interval>\n"
           << "  </output>\n"
@@ -205,7 +204,7 @@ int main() {
     std::map<unsigned int, time_t> indexes;
     {
       QSqlQuery q(*db.centreon_db());
-      if (!q.exec("SELECT id FROM rt_index_data"))
+      if (!q.exec("SELECT index_id FROM rt_index_data"))
         throw (exceptions::msg() << "cannot get index list: "
                << qPrintable(q.lastError().text()));
       while (q.next())
@@ -239,7 +238,7 @@ int main() {
       std::ostringstream query;
       query << "SELECT m.metric_id"
             << "  FROM rt_metrics AS m LEFT JOIN rt_index_data AS i"
-            << "  ON m.index_id = i.id"
+            << "  ON m.index_id = i.index_id"
             << "  ORDER BY i.host_id, i.service_id";
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
@@ -278,7 +277,7 @@ int main() {
     // Launch rebuild.
     {
       QSqlQuery q(*db.centreon_db());
-      if (!q.exec("UPDATE rt_index_data SET must_be_rebuild='1'"))
+      if (!q.exec("UPDATE rt_index_data SET must_be_rebuild=1"))
         throw (exceptions::msg() << "cannot launch rebuild from DB: "
                << qPrintable(q.lastError().text()));
       sleep_for(15);
@@ -289,7 +288,7 @@ int main() {
       QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT COUNT(*)"
                   " FROM rt_index_data"
-                  " WHERE must_be_rebuild!='0'")
+                  " WHERE must_be_rebuild!=0")
           || !q.next())
         throw (exceptions::msg()
                << "cannot check that rebuild successfully executed");

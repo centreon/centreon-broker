@@ -487,7 +487,7 @@ void reader::_load(state::meta_services& meta_services) {
       query << "SELECT m.metric_id"
             << "  FROM rt_metrics AS m"
             << "    INNER JOIN rt_index_data AS i"
-            << "    ON m.index_id=i.id"
+            << "    ON m.index_id=i.index_id"
             << "    INNER JOIN rt_services AS s"
             << "    ON i.host_id=s.host_id AND i.service_id=s.service_id"
             << "  WHERE s.description LIKE '"

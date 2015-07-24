@@ -119,7 +119,6 @@ int main() {
           << "    <db_password>" DB_PASSWORD "</db_password>\n"
           << "    <db_name>" DB_NAME "</db_name>\n"
           << "    <queries_per_transaction>0</queries_per_transaction>\n"
-          << "    <interval>" MONITORING_ENGINE_INTERVAL_LENGTH_STR "</interval>\n"
           << "    <length>" << 51840 * MONITORING_ENGINE_INTERVAL_LENGTH << "</length>\n"
           << "  </output>\n"
           << "  <output>\n"
@@ -204,7 +203,7 @@ int main() {
       indexes;
     {
       QSqlQuery q(*db.centreon_db());
-      std::string query("SELECT host_id, service_id, id"
+      std::string query("SELECT host_id, service_id, index_id"
                         "  FROM rt_index_data"
                         "  ORDER BY host_id, service_id");
       if (!q.exec(query.c_str()))
@@ -292,7 +291,7 @@ int main() {
     {
       QSqlQuery q(*db.centreon_db());
       std::string query("UPDATE rt_metrics AS m JOIN rt_index_data AS i"
-                        "  ON m.index_id=i.id"
+                        "  ON m.index_id=i.index_id"
                         "  SET m.to_delete=1"
                         "  WHERE i.host_id=1 AND i.service_id<>1");
       if (!q.exec(query.c_str()))
@@ -337,7 +336,7 @@ int main() {
       QSqlQuery q(*db.centreon_db());
       std::string query("SELECT i.host_id, i.service_id"
                         "  FROM rt_metrics AS m JOIN rt_index_data AS i"
-                        "  ON m.index_id=i.id");
+                        "  ON m.index_id=i.index_id");
       if (!q.exec(query.c_str()))
         throw (exceptions::msg() << "cannot read metrics: "
                << qPrintable(q.lastError().text()));

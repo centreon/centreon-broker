@@ -261,7 +261,6 @@ int main(int argc, char* argv[]) {
           << "    <db_password>" DB_PASSWORD "</db_password>\n"
           << "    <db_name>" DB_NAME "</db_name>\n"
           << "    <queries_per_transaction>0</queries_per_transaction>\n"
-          << "    <interval>" MONITORING_ENGINE_INTERVAL_LENGTH_STR "</interval>\n"
           << "    <length>86400</length>\n"
           << "  </output>\n"
           << "  <output>\n"
@@ -304,7 +303,7 @@ int main(int argc, char* argv[]) {
     std::list<unsigned int> indexes;
     {
       QSqlQuery q(*db.centreon_db());
-      if (!q.exec("SELECT id FROM rt_index_data ORDER BY service_id ASC"))
+      if (!q.exec("SELECT index_id FROM rt_index_data ORDER BY service_id ASC"))
         throw (exceptions::msg() << "cannot get index list: "
                << qPrintable(q.lastError().text()));
       while (q.next())
