@@ -50,8 +50,7 @@ void command_loader::load(QSqlDatabase* db, command_builder* output) {
 
   // Load the commands
   if (!query.exec("SELECT command_id, connector_id, command_name, command_line,"
-                  "       command_example, command_type, enable_shell,"
-                  "       command_comment, graph_id, cmd_cat_id"
+                  "       command_type, enable_shell"
                   "  FROM cfg_commands"))
     throw (exceptions::msg()
            << "notification: cannot load commands from database: "
