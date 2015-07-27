@@ -25,6 +25,7 @@
 #include "com/centreon/broker/dumper/db_dump.hh"
 #include "com/centreon/broker/dumper/db_writer.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
+#include "com/centreon/broker/dumper/entries/ba_type.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -83,6 +84,7 @@ unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
           _commit();
         else
           _full_dump = dbd.full;
+        _ba_types.clear();
         _bas.clear();
         _kpis.clear();
       }
@@ -91,6 +93,10 @@ unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
       entries::ba const& b(d.ref_as<entries::ba const>());
       if (b.poller_id == config::applier::state::instance().poller_id())
         _bas.push_back(b);
+    }
+    else if (d->type() == entries::ba_type::static_type()) {
+      entries::ba_type const& b(d.ref_as<entries::ba_type const>());
+      _ba_types.push_back(b);
     }
     else if (d->type() == entries::kpi::static_type()) {
       entries::kpi const& k(d.ref_as<entries::kpi const>());
@@ -126,6 +132,19 @@ void db_writer::_commit() {
     }
   }
 
+  // Prepare BA type queries.
+  database_query ba_type_insert(db);
+  database_query ba_type_update(db);
+  database_query ba_type_delete(db);
+  {
+    database_preparator::event_unique ids;
+    ids.insert("ba_type_id");
+    database_preparator dbp(entries::ba_type::static_type(), ids);
+    dbp.prepare_insert(ba_type_insert);
+    dbp.prepare_update(ba_type_update);
+    dbp.prepare_delete(ba_type_delete);
+  }
+
   // Prepare BA queries.
   database_query ba_insert(db);
   database_query ba_update(db);
@@ -150,6 +169,35 @@ void db_writer::_commit() {
     dbp.prepare_insert(kpi_insert);
     dbp.prepare_update(kpi_update);
     dbp.prepare_delete(kpi_delete);
+  }
+
+  // Process all BA types.
+  for (std::list<entries::ba_type>::const_iterator
+         it(_ba_types.begin()),
+         end(_ba_types.end());
+       it != end;
+       ++it) {
+    // INSERT / UPDATE.
+    if (it->enable) {
+      logging::debug(logging::medium) << "db_dumper: updating BA type "
+        << it->ba_type_id << " ('" << it->name << "')";
+      ba_type_update << *it;
+      ba_type_update.run_statement();
+      if (!ba_type_update.num_rows_affected()) {
+        logging::debug(logging::medium)
+          << "db_dumper: inserting BA type " << it->ba_type_id << " ('"
+          << it->name << "')";
+        ba_type_insert << *it;
+        ba_type_insert.run_statement();
+      }
+    }
+    // DELETE.
+    else {
+      logging::debug(logging::medium) << "db_dumper: deleting BA type "
+        << it->ba_type_id << " ('" << it->name << "')";
+      ba_type_delete.bind_value(":ba_type_id", it->ba_type_id);
+      ba_type_delete.run_statement();
+    }
   }
 
   // Process all BAs.

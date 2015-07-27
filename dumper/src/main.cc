@@ -20,6 +20,7 @@
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/dumper/db_dump.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
+#include "com/centreon/broker/dumper/entries/ba_type.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/factory.hh"
 #include "com/centreon/broker/dumper/dump.hh"
@@ -130,6 +131,14 @@ extern "C" {
                   &dumper::entries::ba::operations,
                   dumper::entries::ba::entries,
                   "cfg_bam"));
+        e.register_event(
+            io::events::dumper,
+            dumper::de_entries_ba_type,
+            io::event_info(
+                  "ba_type",
+                  &dumper::entries::ba_type::operations,
+                  dumper::entries::ba_type::entries,
+                  "cfg_bam_ba_types"));
         e.register_event(
             io::events::dumper,
             dumper::de_entries_kpi,

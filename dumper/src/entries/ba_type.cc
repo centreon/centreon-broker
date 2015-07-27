@@ -33,7 +33,7 @@ using namespace com::centreon::broker::dumper::entries;
 /**
  *  Default constructor.
  */
-ba_type::ba_type() : ba_type_id(0) {}
+ba_type::ba_type() : ba_type_id(0), enable(true) {}
 
 /**
  *  Copy constructor.
@@ -44,6 +44,7 @@ ba_type::ba_type(ba_type const& other)
   : io::data(other),
     ba_type_id(other.ba_type_id),
     description(other.description),
+    enable(other.enable),
     name(other.name),
     slug(other.slug) {}
 
@@ -64,6 +65,7 @@ ba_type& ba_type::operator=(ba_type const& other) {
     io::data::operator=(other);
     ba_type_id = other.ba_type_id;
     description = other.description;
+    enable = other.enable;
     name = other.name;
     slug = other.slug;
   }
@@ -80,6 +82,7 @@ ba_type& ba_type::operator=(ba_type const& other) {
 bool ba_type::operator==(ba_type const& other) const {
   return ((ba_type_id == other.ba_type_id)
           && (description == other.description)
+          && (enable == other.enable)
           && (name == other.name)
           && (slug == other.slug));
 }
@@ -121,6 +124,9 @@ unsigned int ba_type::static_type() {
 
 // Mapping.
 mapping::entry const ba_type::entries[] = {
+  mapping::entry(
+    &ba_type::enable,
+    ""),
   mapping::entry(
     &ba_type::ba_type_id,
     "ba_type_id",

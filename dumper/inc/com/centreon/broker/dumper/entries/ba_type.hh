@@ -47,6 +47,7 @@ namespace                 dumper {
       unsigned int        type() const;
       static unsigned int static_type();
 
+      bool                enable;
       unsigned int        ba_type_id;
       QString             description;
       QString             name;

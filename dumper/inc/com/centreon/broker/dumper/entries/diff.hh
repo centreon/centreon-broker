@@ -25,12 +25,13 @@
 
 CCB_BEGIN()
 
-namespace                   dumper {
-  namespace                 entries {
+namespace                       dumper {
+  namespace                     entries {
     // Forward declarations.
-    class                   ba;
-    class                   kpi;
-    class                   state;
+    class                       ba;
+    class                       ba_type;
+    class                       kpi;
+    class                       state;
 
     /**
      *  @class diff diff.hh "com/centreon/broker/dumper/entries/diff.hh"
@@ -38,31 +39,37 @@ namespace                   dumper {
      *
      *  Perform a diff on database entries.
      */
-    class                   diff {
+    class                       diff {
     public:
-                            diff();
-                            diff(
-                              state const& older,
-                              state const& newer);
-                            diff(diff const& other);
-                            ~diff();
-      diff&                 operator=(diff const& other);
-      std::list<ba> const&  bas_to_create() const;
-      std::list<ba> const&  bas_to_update() const;
-      std::list<ba> const&  bas_to_delete() const;
-      std::list<kpi> const& kpis_to_create() const;
-      std::list<kpi> const& kpis_to_update() const;
-      std::list<kpi> const& kpis_to_delete() const;
+                                diff();
+                                diff(
+                                  state const& older,
+                                  state const& newer);
+                                diff(diff const& other);
+                                ~diff();
+      diff&                     operator=(diff const& other);
+      std::list<ba_type> const& ba_types_to_create() const;
+      std::list<ba_type> const& ba_types_to_update() const;
+      std::list<ba_type> const& ba_types_to_delete() const;
+      std::list<ba> const&      bas_to_create() const;
+      std::list<ba> const&      bas_to_update() const;
+      std::list<ba> const&      bas_to_delete() const;
+      std::list<kpi> const&     kpis_to_create() const;
+      std::list<kpi> const&     kpis_to_update() const;
+      std::list<kpi> const&     kpis_to_delete() const;
 
     private:
-      void                  _internal_copy(diff const& other);
+      void                      _internal_copy(diff const& other);
 
-      std::list<ba>         _bas_to_create;
-      std::list<ba>         _bas_to_update;
-      std::list<ba>         _bas_to_delete;
-      std::list<kpi>        _kpis_to_create;
-      std::list<kpi>        _kpis_to_update;
-      std::list<kpi>        _kpis_to_delete;
+      std::list<ba_type>        _ba_types_to_create;
+      std::list<ba_type>        _ba_types_to_update;
+      std::list<ba_type>        _ba_types_to_delete;
+      std::list<ba>             _bas_to_create;
+      std::list<ba>             _bas_to_update;
+      std::list<ba>             _bas_to_delete;
+      std::list<kpi>            _kpis_to_create;
+      std::list<kpi>            _kpis_to_update;
+      std::list<kpi>            _kpis_to_delete;
     };
   }
 }

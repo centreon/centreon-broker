@@ -31,6 +31,7 @@ namespace           dumper {
   // Forward declarations.
   namespace         entries {
     class           ba;
+    class           ba_type;
     class           kpi;
   }
 
@@ -55,6 +56,8 @@ namespace           dumper {
 
     database_config _db_cfg;
     bool            _full_dump;
+    std::list<entries::ba_type>
+                    _ba_types;
     std::list<entries::ba>
                     _bas;
     std::list<entries::kpi>

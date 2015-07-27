@@ -171,20 +171,27 @@ int main() {
     // Populate database.
     {
       char const* queries[] = {
-        "INSERT INTO cfg_bam (ba_id, name, level_w, level_c, activate)"
-        "  VALUES (1, 'BA1', 90, 80, '1'),"
-        "         (2, 'BA2', 80, 70, '1'),"
-        "         (3, 'BA3', 70, 60, '1'),"
-        "         (4, 'BA4', 60, 50, '1'),"
-        "         (5, 'BA5', 50, 40, '1'),"
-        "         (6, 'BA6', 40, 30, '1'),"
-        "         (7, 'BA7', 30, 20, '1'),"
-        "         (8, 'BA8', 20, 10, '1'),"
-        "         (9, 'BA9', 10, 0, '1'),"
-        "         (1001, 'BA1001', 50, 50, '1')",
+        "INSERT INTO cfg_organizations (organization_id, name,"
+        "            shortname)"
+        "  VALUES (42, '42', '42')",
+        "INSERT INTO cfg_bam_ba_types (ba_type_id, name, slug,"
+        "            description)"
+        "  VALUES (1, 'Default', 'default', 'Default type')",
+        "INSERT INTO cfg_bam (ba_id, name, level_w, level_c, activate,"
+        "            ba_type_id, organization_id)"
+        "  VALUES (1, 'BA1', 90, 80, '1', 1, 42),"
+        "         (2, 'BA2', 80, 70, '1', 1, 42),"
+        "         (3, 'BA3', 70, 60, '1', 1, 42),"
+        "         (4, 'BA4', 60, 50, '1', 1, 42),"
+        "         (5, 'BA5', 50, 40, '1', 1, 42),"
+        "         (6, 'BA6', 40, 30, '1', 1, 42),"
+        "         (7, 'BA7', 30, 20, '1', 1, 42),"
+        "         (8, 'BA8', 20, 10, '1', 1, 42),"
+        "         (9, 'BA9', 10, 0, '1', 1, 42),"
+        "         (1001, 'BA1001', 50, 50, '1', 1, 42)",
         "INSERT INTO cfg_bam_poller_relations (ba_id, poller_id)"
         "  VALUES (1, 43), (2, 43), (3, 43), (4, 43), (5, 43),"
-        "         (6, 43), (7, 43), (8, 43), (9, 43), (10, 42)",
+        "         (6, 43), (7, 43), (8, 43), (9, 43), (1001, 42)",
         "INSERT INTO cfg_bam_kpi (kpi_id, kpi_type, host_id,"
         "            service_id, id_indicator_ba, id_ba, config_type,"
         "            drop_warning, drop_critical, drop_unknown,"
