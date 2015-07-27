@@ -17,8 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <cmath>
-#include "com/centreon/broker/dumper/entries/ba.hh"
+#include "com/centreon/broker/dumper/entries/ba_type.hh"
 #include "com/centreon/broker/dumper/internal.hh"
 #include "com/centreon/broker/io/events.hh"
 
@@ -34,27 +33,24 @@ using namespace com::centreon::broker::dumper::entries;
 /**
  *  Default constructor.
  */
-ba::ba()
-  : enable(true),
-    poller_id(0),
-    ba_id(0),
-    level_critical(NAN),
-    level_warning(NAN),
-    type_id(0) {}
+ba_type::ba_type() : ba_type_id(0) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-ba::ba(ba const& other) : io::data(other) {
-  _internal_copy(other);
-}
+ba_type::ba_type(ba_type const& other)
+  : io::data(other),
+    ba_type_id(other.ba_type_id),
+    description(other.description),
+    name(other.name),
+    slug(other.slug) {}
 
 /**
  *  Destructor.
  */
-ba::~ba() {}
+ba_type::~ba_type() {}
 
 /**
  *  Assignment operator.
@@ -63,10 +59,13 @@ ba::~ba() {}
  *
  *  @return This object.
  */
-ba& ba::operator=(ba const& other) {
+ba_type& ba_type::operator=(ba_type const& other) {
   if (this != &other) {
     io::data::operator=(other);
-    _internal_copy(other);
+    ba_type_id = other.ba_type_id;
+    description = other.description;
+    name = other.name;
+    slug = other.slug;
   }
   return (*this);
 }
@@ -78,15 +77,11 @@ ba& ba::operator=(ba const& other) {
  *
  *  @return True if both objects are equal.
  */
-bool ba::operator==(ba const& other) const {
-  return ((enable == other.enable)
-          && (poller_id == other.poller_id)
-          && (ba_id == other.ba_id)
+bool ba_type::operator==(ba_type const& other) const {
+  return ((ba_type_id == other.ba_type_id)
           && (description == other.description)
-          && (level_critical == other.level_critical)
-          && (level_warning == other.level_warning)
           && (name == other.name)
-          && (type_id == other.type_id));
+          && (slug == other.slug));
 }
 
 /**
@@ -94,9 +89,9 @@ bool ba::operator==(ba const& other) const {
  *
  *  @param[in] other  Object to compare to.
  *
- *  @return True if both objects are not equal.
+ *  @return False if both objects are equal.
  */
-bool ba::operator!=(ba const& other) const {
+bool ba_type::operator!=(ba_type const& other) const {
   return (!operator==(other));
 }
 
@@ -105,40 +100,17 @@ bool ba::operator!=(ba const& other) const {
  *
  *  @return Event type.
  */
-unsigned int ba::type() const {
+unsigned int ba_type::type() const {
   return (static_type());
 }
 
 /**
- *  Static type of event class.
+ *  Return class type.
  *
- *  @return Static type of event class.
+ *  @return Class type.
  */
-unsigned int ba::static_type() {
-  return (io::events::data_type<io::events::dumper, dumper::de_entries_ba>::value);
-}
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data objects.
- *
- *  @param[in] other  Object to copy.
- */
-void ba::_internal_copy(ba const& other) {
-  enable = other.enable;
-  poller_id = other.poller_id;
-  ba_id = other.ba_id;
-  description = other.description;
-  level_critical = other.level_critical;
-  level_warning = other.level_warning;
-  name = other.name;
-  type_id = other.type_id;
-  return ;
+unsigned int ba_type::static_type() {
+  return (io::events::data_type<io::events::dumper, dumper::de_entries_ba_type>::value);
 }
 
 /**************************************
@@ -148,41 +120,27 @@ void ba::_internal_copy(ba const& other) {
 **************************************/
 
 // Mapping.
-mapping::entry const ba::entries[] = {
+mapping::entry const ba_type::entries[] = {
   mapping::entry(
-    &ba::enable,
-    ""),
-  mapping::entry(
-    &ba::poller_id,
-    "",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &ba::ba_id,
-    "ba_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &ba::description,
-    "description"),
-  mapping::entry(
-    &ba::level_critical,
-    "level_c"),
-  mapping::entry(
-    &ba::level_warning,
-    "level_w"),
-  mapping::entry(
-    &ba::name,
-    "name"),
-  mapping::entry(
-    &ba::type_id,
+    &ba_type::ba_type_id,
     "ba_type_id",
     mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &ba_type::description,
+    "description"),
+  mapping::entry(
+    &ba_type::name,
+    "name"),
+  mapping::entry(
+    &ba_type::slug,
+    "slug"),
   mapping::entry()
 };
 
 // Operations.
-static io::data* new_ba() {
-  return (new ba);
+static io::data* new_ba_type() {
+  return (new ba_type);
 }
-io::event_info::event_operations const ba::operations = {
-  &new_ba
+io::event_info::event_operations const ba_type::operations = {
+  &new_ba_type
 };

@@ -27,8 +27,9 @@ CCB_BEGIN()
 
 namespace                   dumper {
   namespace                 entries {
-    // Forward declaration.
+    // Forward declarations.
     class                   ba;
+    class                   ba_type;
     class                   kpi;
 
     /**
@@ -43,6 +44,9 @@ namespace                   dumper {
                             state(state const& other);
                             ~state();
       state&                operator=(state const& other);
+      std::list<ba_type> const&
+                            get_ba_types() const;
+      std::list<ba_type>&   get_ba_types();
       std::list<ba> const&  get_bas() const;
       std::list<ba>&        get_bas();
       std::list<kpi> const& get_kpis() const;
@@ -51,6 +55,7 @@ namespace                   dumper {
     private:
       void                  _internal_copy(state const& other);
 
+      std::list<ba_type>    _ba_types;
       std::list<ba>         _bas;
       std::list<kpi>        _kpis;
     };

@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_DUMPER_ENTRIES_BA_HH
-#  define CCB_DUMPER_ENTRIES_BA_HH
+#ifndef CCB_DUMPER_ENTRIES_BA_TYPE_HH
+#  define CCB_DUMPER_ENTRIES_BA_TYPE_HH
 
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
@@ -31,42 +31,36 @@ CCB_BEGIN()
 namespace                 dumper {
   namespace               entries {
     /**
-     *  @class ba ba.hh "com/centreon/broker/dumper/entries/ba.hh"
-     *  @brief BA entry.
+     *  @class ba_type ba_type.hh "com/centreon/broker/dumper/entries/ba_type.hh"
+     *  @brief BA type.
      *
-     *  Some BA row of the BA configuration table.
+     *  BA type, used by UI.
      */
-    class                 ba : public io::data {
+    class                 ba_type : public io::data {
     public:
-                          ba();
-                          ba(ba const& other);
-                          ~ba();
-      ba&                 operator=(ba const& other);
-      bool                operator==(ba const& other) const;
-      bool                operator!=(ba const& other) const;
+                          ba_type();
+                          ba_type(ba_type const& other);
+                          ~ba_type();
+      ba_type&            operator=(ba_type const& other);
+      bool                operator==(ba_type const& other) const;
+      bool                operator!=(ba_type const& other) const;
       unsigned int        type() const;
       static unsigned int static_type();
 
-      bool                enable;
-      unsigned int        poller_id;
-      unsigned int        ba_id;
+      unsigned int        ba_type_id;
       QString             description;
-      double              level_critical;
-      double              level_warning;
       QString             name;
-      unsigned int        type_id;
+      QString             slug;
 
       static mapping::entry const
                           entries[];
       static io::event_info::event_operations const
                           operations;
 
-    private:
-      void                _internal_copy(ba const& other);
     };
   }
 }
 
 CCB_END()
 
-#endif // !CCB_DUMPER_ENTRIES_BA_HH
+#endif // !CCB_DUMPER_ENTRIES_BA_TYPE_HH
