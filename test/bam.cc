@@ -541,19 +541,30 @@ int main() {
     {
       {
         QString query(
+                  "INSERT INTO cfg_bam_ba_types (ba_type_id, name,"
+                  "            slug, description)"
+                  "  VALUES (1, 'Default', 'default', 'Default type')");
+        QSqlQuery q(*db.centreon_db());
+        if (!q.exec(query))
+          throw (exceptions::msg() << "could not create BA types: "
+                 << q.lastError().text());
+      }
+      {
+        QString query(
                   "INSERT INTO cfg_bam (ba_id, name, level_w, level_c,"
-                  "            activate, id_reporting_period)"
-                  "  VALUES (1, 'BA1', 90, 80, '1', 1),"
-                  "         (2, 'BA2', 80, 70, '1', 1),"
-                  "         (3, 'BA3', 70, 60, '1', 1),"
-                  "         (4, 'BA4', 60, 50, '1', 1),"
-                  "         (5, 'BA5', 50, 40, '1', 1),"
-                  "         (6, 'BA6', 40, 30, '1', 1),"
-                  "         (7, 'BA7', 30, 21, '1', 1),"
-                  "         (8, 'BA8', 20, 10, '1', 1),"
-                  "         (9, 'BA9', 10, 0, '1', 1),"
-                  "         (10, 'BA10', 80, 60, '1', 1),"
-                  "         (11, 'BA11', 70, 50, '1', 1)");
+                  "            activate, id_reporting_period,"
+                  "            ba_type_id, organization_id)"
+                  "  VALUES (1, 'BA1', 90, 80, '1', 1, 1, 1),"
+                  "         (2, 'BA2', 80, 70, '1', 1, 1, 1),"
+                  "         (3, 'BA3', 70, 60, '1', 1, 1, 1),"
+                  "         (4, 'BA4', 60, 50, '1', 1, 1, 1),"
+                  "         (5, 'BA5', 50, 40, '1', 1, 1, 1),"
+                  "         (6, 'BA6', 40, 30, '1', 1, 1, 1),"
+                  "         (7, 'BA7', 30, 21, '1', 1, 1, 1),"
+                  "         (8, 'BA8', 20, 10, '1', 1, 1, 1),"
+                  "         (9, 'BA9', 10, 0, '1', 1, 1, 1),"
+                  "         (10, 'BA10', 80, 60, '1', 1, 1, 1),"
+                  "         (11, 'BA11', 70, 50, '1', 1, 1, 1)");
         QSqlQuery q(*db.centreon_db());
         if (!q.exec(query))
           throw (exceptions::msg() << "could not create BAs: "

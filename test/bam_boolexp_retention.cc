@@ -336,9 +336,20 @@ int main() {
     {
       {
         QString query(
+                  "INSERT INTO cfg_bam_ba_types (ba_type_id, name,"
+                  "            slug, description)"
+                  "  VALUES (1, 'Default', 'default', 'Default type')");
+        QSqlQuery q(*db.centreon_db());
+        if (!q.exec(query))
+          throw (exceptions::msg() << "could not create BA types: "
+                 << q.lastError().text());
+      }
+      {
+        QString query(
                   "INSERT INTO cfg_bam (ba_id, name, level_w, level_c,"
-                  "            activate, id_reporting_period)"
-                  "  VALUES (1, 'BA1', 90, 80, '1', 1)");
+                  "            activate, id_reporting_period,"
+                  "            ba_type_id, organization_id)"
+                  "  VALUES (1, 'BA1', 90, 80, 1, 1, 1, 1)");
         QSqlQuery q(*db.centreon_db());
         if (!q.exec(query))
           throw (exceptions::msg() << "could not create BAs: "

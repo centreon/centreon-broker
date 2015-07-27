@@ -217,7 +217,7 @@ int main() {
     {
       QString query;
       query = "INSERT INTO cfg_organizations (organization_id, name, shortname)"
-              "  VALUES (1, '42', '42')";
+              "  VALUES (42, '42', '42')";
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create organization: "
@@ -231,13 +231,13 @@ int main() {
                 "                        tp_tuesday, tp_wednesday, tp_thursday,"
                 "                        tp_friday, tp_saturday, organization_id)"
                 "  VALUES (1, '24x7', '00:00-24:00', '00:00-24:00', '00:00-24:00',"
-                "          '00:00-24:00', '00:00-24:00', '00:00-24:00', '00:00-24:00', 1),"
+                "          '00:00-24:00', '00:00-24:00', '00:00-24:00', '00:00-24:00', 42),"
                 "         (2, 'workhours', '', '09:00-17:00', '09:00-17:00',"
-                "          '09:00-17:00', '09:00-17:00', '09:00-17:00', '', 1),"
+                "          '09:00-17:00', '09:00-17:00', '09:00-17:00', '', 42),"
                 "         (3, 'non-worhours', '', "
                 "          '00:00-09:00,17:00-24:00', '00:00-09:00,17:00-24:00',"
                 "          '00:00-09:00,17:00-24:00', '00:00-09:00,17:00-24:00',"
-                "           '00:00-09:00,17:00-24:00', '', 1)");
+                "           '00:00-09:00,17:00-24:00', '', 42)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create timeperiods: "
@@ -259,16 +259,27 @@ int main() {
     // Create BAs.
     {
       QString query(
+                "INSERT INTO cfg_bam_ba_types (ba_type_id, name, slug,"
+                "            description)"
+                "  VALUES (1, 'Default', 'default', 'Default type')");
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg() << "could not create BA types: "
+               << q.lastError().text());
+    }
+    {
+      QString query(
                 "INSERT INTO cfg_bam (ba_id, name, description,"
                 "                     sla_month_percent_warn, sla_month_percent_crit,"
                 "                     sla_month_duration_warn, sla_month_duration_crit,"
-                "                     must_be_rebuild, id_reporting_period, activate)"
-                "  VALUES (1, 'BA1', 'DESC1', 90, 80, 70, 60, '1', 1, '1'),"
-                "         (2, 'BA2', 'DESC2', 80, 70, 60, 50, '1', NULL, '1'),"
-                "         (3, 'BA3', 'DESC3', 70, 60, 50, 40, '1', 1, '1'),"
-                "         (4, 'BA4', 'DESC4', 60, 50, 40, 30, '1', 1, '1'),"
-                "         (5, 'BA5', 'DESC5', 50, 40, 30, 20, '1', 2, '1'),"
-                "         (6, 'BA6', 'DESC6', 40, 30, 20, 10, '1', 1, '1')");
+                "                     must_be_rebuild, id_reporting_period, activate,"
+                "                     ba_type_id, organization_id)"
+                "  VALUES (1, 'BA1', 'DESC1', 90, 80, 70, 60, '1', 1, '1', 1, 42),"
+                "         (2, 'BA2', 'DESC2', 80, 70, 60, 50, '1', NULL, '1', 1, 42),"
+                "         (3, 'BA3', 'DESC3', 70, 60, 50, 40, '1', 1, '1', 1, 42),"
+                "         (4, 'BA4', 'DESC4', 60, 50, 40, 30, '1', 1, '1', 1, 42),"
+                "         (5, 'BA5', 'DESC5', 50, 40, 30, 20, '1', 2, '1', 1, 42),"
+                "         (6, 'BA6', 'DESC6', 40, 30, 20, 10, '1', 1, '1', 1, 42)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create BAs: "
@@ -288,7 +299,7 @@ int main() {
     {
       QString query(
                 "INSERT INTO cfg_hosts (host_id, host_name, organization_id)"
-                "  VALUES (1001, 'Virtual BA host', 1)");
+                "  VALUES (1001, 'Virtual BA host', 42)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg() << "could not create virtual BA host: "
@@ -297,12 +308,12 @@ int main() {
     {
       QString query(
                 "INSERT INTO cfg_services (service_id, service_description, organization_id)"
-                "  VALUES (1001, 'ba_1', 1),"
-                "         (1002, 'ba_2', 1),"
-                "         (1003, 'ba_3', 1),"
-                "         (1004, 'ba_4', 1),"
-                "         (1005, 'ba_5', 1),"
-                "         (1006, 'ba_6', 1)");
+                "  VALUES (1001, 'ba_1', 42),"
+                "         (1002, 'ba_2', 42),"
+                "         (1003, 'ba_3', 42),"
+                "         (1004, 'ba_4', 42),"
+                "         (1005, 'ba_5', 42),"
+                "         (1006, 'ba_6', 42)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
         throw (exceptions::msg()
