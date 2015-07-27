@@ -34,7 +34,8 @@ namespace dumper {
     de_db_dump,
     de_entries_ba,
     de_entries_ba_type,
-    de_entries_kpi
+    de_entries_kpi,
+    de_entries_organization
   };
 }
 

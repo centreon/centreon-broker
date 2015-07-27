@@ -31,6 +31,7 @@ namespace                   dumper {
     class                   ba;
     class                   ba_type;
     class                   kpi;
+    class                   organization;
 
     /**
      *  @class state state.hh "com/centreon/broker/dumper/entries/dumper.hh"
@@ -51,6 +52,10 @@ namespace                   dumper {
       std::list<ba>&        get_bas();
       std::list<kpi> const& get_kpis() const;
       std::list<kpi>&       get_kpis();
+      std::list<organization> const&
+                            get_organizations() const;
+      std::list<organization>&
+                            get_organizations();
 
     private:
       void                  _internal_copy(state const& other);
@@ -58,6 +63,8 @@ namespace                   dumper {
       std::list<ba_type>    _ba_types;
       std::list<ba>         _bas;
       std::list<kpi>        _kpis;
+      std::list<organization>
+                            _organizations;
     };
   }
 }

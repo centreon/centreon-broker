@@ -27,6 +27,7 @@
 #include "com/centreon/broker/dumper/entries/ba.hh"
 #include "com/centreon/broker/dumper/entries/ba_type.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
+#include "com/centreon/broker/dumper/entries/organization.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
@@ -103,6 +104,11 @@ unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
       if (k.poller_id == config::applier::state::instance().poller_id())
         _kpis.push_back(k);
     }
+    else if (d->type() == entries::organization::static_type()) {
+      entries::organization const&
+        o(d.ref_as<entries::organization const>());
+      _organizations.push_back(o);
+    }
   }
   return (1);
 }
@@ -130,6 +136,23 @@ void db_writer::_commit() {
       database_query q(db);
       q.run_query("DELETE FROM cfg_bam");
     }
+    {
+      database_query q(db);
+      q.run_query("DELETE FROM cfg_bam_ba_types");
+    }
+  }
+
+  // Prepare organization queries.
+  database_query organization_insert(db);
+  database_query organization_update(db);
+  database_query organization_delete(db);
+  {
+    database_preparator::event_unique ids;
+    ids.insert("organization_id");
+    database_preparator dbp(entries::organization::static_type(), ids);
+    dbp.prepare_insert(organization_insert);
+    dbp.prepare_update(organization_update);
+    dbp.prepare_delete(organization_delete);
   }
 
   // Prepare BA type queries.
@@ -169,6 +192,39 @@ void db_writer::_commit() {
     dbp.prepare_insert(kpi_insert);
     dbp.prepare_update(kpi_update);
     dbp.prepare_delete(kpi_delete);
+  }
+
+  // Process all organizations.
+  for (std::list<entries::organization>::const_iterator
+         it(_organizations.begin()),
+         end(_organizations.end());
+       it != end;
+       ++it) {
+    // INSERT / UPDATE.
+    if (it->enable) {
+      logging::debug(logging::medium)
+        << "db_dmper: updating organization " << it->organization_id
+        << " ('" << it->name << "')";
+      organization_update << *it;
+      organization_update.run_statement();
+      if (!organization_update.num_rows_affected()) {
+        logging::debug(logging::medium)
+          << "db_dumper: inserting organization " << it->organization_id
+          << " ('" << it->name << "')";
+        organization_insert << *it;
+        organization_insert.run_statement();
+      }
+    }
+    // DELETE
+    else {
+      logging::debug(logging::medium)
+        << "db_dumper: deleting organization " << it->organization_id
+        << " ('" << it->name << "')";
+      organization_delete.bind_value(
+                            ":organization_id",
+                            it->organization_id);
+      organization_delete.run_statement();
+    }
   }
 
   // Process all BA types.

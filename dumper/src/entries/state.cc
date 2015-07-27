@@ -20,6 +20,7 @@
 #include "com/centreon/broker/dumper/entries/ba.hh"
 #include "com/centreon/broker/dumper/entries/ba_type.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
+#include "com/centreon/broker/dumper/entries/organization.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
 
 using namespace com::centreon::broker;
@@ -117,6 +118,24 @@ std::list<kpi>& state::get_kpis() {
   return (_kpis);
 }
 
+/**
+ *  Get organizations.
+ *
+ *  @return Non-modifiable list of organizations.
+ */
+std::list<organization> const& state::get_organizations() const {
+  return (_organizations);
+}
+
+/**
+ *  Get organizations.
+ *
+ *  @return Modifiable list of organizations.
+ */
+std::list<organization>& state::get_organizations() {
+  return (_organizations);
+}
+
 /**************************************
 *                                     *
 *           Private Methods           *
@@ -132,5 +151,6 @@ void state::_internal_copy(state const& other) {
   _ba_types = other._ba_types;
   _bas = other._bas;
   _kpis = other._kpis;
+  _organizations = other._organizations;
   return ;
 }

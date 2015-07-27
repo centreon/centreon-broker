@@ -51,6 +51,7 @@ namespace           dumper {
     void            _load_ba_types();
     void            _load_bas();
     void            _load_kpis();
+    void            _load_organizations();
 
     std::auto_ptr<database>
                     _db;

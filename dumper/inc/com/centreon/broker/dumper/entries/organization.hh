@@ -17,8 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCB_DUMPER_ENTRIES_BA_HH
-#  define CCB_DUMPER_ENTRIES_BA_HH
+#ifndef CCB_DUMPER_ENTRIES_ORGANIZATION_HH
+#  define CCB_DUMPER_ENTRIES_ORGANIZATION_HH
 
 #  include <QString>
 #  include "com/centreon/broker/io/data.hh"
@@ -31,31 +31,26 @@ CCB_BEGIN()
 namespace                 dumper {
   namespace               entries {
     /**
-     *  @class ba ba.hh "com/centreon/broker/dumper/entries/ba.hh"
-     *  @brief BA entry.
+     *  @class organization organization.hh "com/centreon/broker/dumper/entries/organization.hh"
+     *  @brief Organization entry.
      *
-     *  Some BA row of the BA configuration table.
+     *  An organization as defined by Centreon software.
      */
-    class                 ba : public io::data {
+    class                 organization : public io::data {
     public:
-                          ba();
-                          ba(ba const& other);
-                          ~ba();
-      ba&                 operator=(ba const& other);
-      bool                operator==(ba const& other) const;
-      bool                operator!=(ba const& other) const;
+                          organization();
+                          organization(organization const& other);
+                          ~organization();
+      organization&       operator=(organization const& other);
+      bool                operator==(organization const& other) const;
+      bool                operator!=(organization const& other) const;
       unsigned int        type() const;
       static unsigned int static_type();
 
       bool                enable;
-      unsigned int        poller_id;
-      unsigned int        ba_id;
-      QString             description;
-      double              level_critical;
-      double              level_warning;
       QString             name;
       unsigned int        organization_id;
-      unsigned int        type_id;
+      QString             shortname;
 
       static mapping::entry const
                           entries[];
@@ -63,11 +58,11 @@ namespace                 dumper {
                           operations;
 
     private:
-      void                _internal_copy(ba const& other);
+      void                _internal_copy(organization const& other);
     };
   }
 }
 
 CCB_END()
 
-#endif // !CCB_DUMPER_ENTRIES_BA_HH
+#endif // !CCB_DUMPER_ENTRIES_ORGANIZATION_HH

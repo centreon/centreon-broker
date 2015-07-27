@@ -22,6 +22,7 @@
 #include "com/centreon/broker/dumper/entries/ba_type.hh"
 #include "com/centreon/broker/dumper/entries/diff.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
+#include "com/centreon/broker/dumper/entries/organization.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
 
 using namespace com::centreon::broker;
@@ -117,6 +118,24 @@ diff::diff() {}
  *  @param[in] newer  Second state.
  */
 diff::diff(state const& older, state const& newer) {
+  // Diff organizations.
+  {
+    std::map<unsigned int, organization> old_organizations;
+    to_map<organization, &organization::organization_id>(
+      old_organizations,
+      older.get_organizations());
+    std::map<unsigned int, organization> new_organizations;
+    to_map<organization, &organization::organization_id>(
+      new_organizations,
+      newer.get_organizations());
+    diff_it(
+      _organizations_to_create,
+      _organizations_to_update,
+      _organizations_to_delete,
+      old_organizations,
+      new_organizations);
+  }
+
   // Diff BA types.
   {
     std::map<unsigned int, ba_type> old_ba_types;
@@ -272,6 +291,33 @@ std::list<kpi> const& diff::kpis_to_delete() const {
   return (_kpis_to_delete);
 }
 
+/**
+ *  Get organization that should be created.
+ *
+ *  @return List of organizations that should be created.
+ */
+std::list<organization> const& diff::organizations_to_create() const {
+  return (_organizations_to_create);
+}
+
+/**
+ *  Get organizations that should be updated.
+ *
+ *  @return List of organizations that should be updated.
+ */
+std::list<organization> const& diff::organizations_to_update() const {
+  return (_organizations_to_update);
+}
+
+/**
+ *  Get organizations that should be deleted.
+ *
+ *  @return List of organizations that should be deleted.
+ */
+std::list<organization> const& diff::organizations_to_delete() const {
+  return (_organizations_to_delete);
+}
+
 /**************************************
 *                                     *
 *           Private Methods           *
@@ -293,5 +339,8 @@ void diff::_internal_copy(diff const& other) {
   _kpis_to_create = other._kpis_to_create;
   _kpis_to_update = other._kpis_to_update;
   _kpis_to_delete = other._kpis_to_delete;
+  _organizations_to_create = other._organizations_to_create;
+  _organizations_to_update = other._organizations_to_update;
+  _organizations_to_delete = other._organizations_to_delete;
   return ;
 }

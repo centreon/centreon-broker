@@ -3,6 +3,7 @@
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
   <instance>42</instance>
   <instance_name>MyCentral</instance_name>
+  <!--
   <stats>
     <fifo>/tmp/cbd1.fifo</fifo>
   </stats>
@@ -16,6 +17,7 @@
     <info>1</info>
     <level>3</level>
   </logger>
+  -->
   <command_file>@COMMAND_FILE@</command_file>
   <output>
     <name>DBCfg1-DBReader</name>

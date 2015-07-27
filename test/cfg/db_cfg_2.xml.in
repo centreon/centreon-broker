@@ -3,6 +3,7 @@
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
   <instance>43</instance>
   <instance_name>MyPoller</instance_name>
+  <!--
   <stats>
     <fifo>/tmp/cbd2.fifo</fifo>
   </stats>
@@ -16,6 +17,7 @@
     <info>1</info>
     <level>3</level>
   </logger>
+  -->
   <input>
     <name>DBCfg2-TCP</name>
     <type>tcp</type>

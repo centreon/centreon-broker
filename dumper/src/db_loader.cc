@@ -23,7 +23,9 @@
 #include "com/centreon/broker/dumper/entries/ba.hh"
 #include "com/centreon/broker/dumper/entries/ba_type.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
+#include "com/centreon/broker/dumper/entries/organization.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::dumper;
@@ -61,6 +63,7 @@ void db_loader::load(entries::state& state, unsigned int poller_id) {
   _poller_id = poller_id;
 
   // Database loading.
+  _load_organizations();
   _load_ba_types();
   _load_bas();
   _load_kpis();
@@ -105,7 +108,7 @@ void db_loader::_load_ba_types() {
 void db_loader::_load_bas() {
   std::ostringstream query;
   query << "SELECT b.ba_id, b.name, b.description, b.level_w,"
-           "       b.level_c, b.ba_type_id"
+           "       b.level_c, b.organization_id, b.ba_type_id"
            "  FROM cfg_bam AS b"
            "  INNER JOIN cfg_bam_poller_relations AS pr"
            "    ON b.ba_id=pr.ba_id"
@@ -124,7 +127,8 @@ void db_loader::_load_bas() {
     b.description = q.value(2).toString();
     b.level_warning = q.value(3).toDouble();
     b.level_critical = q.value(4).toDouble();
-    b.type_id = q.value(5).toUInt();
+    b.organization_id = q.value(5).toUInt();
+    b.type_id = q.value(6).toUInt();
     _state->get_bas().push_back(b);
   }
   return ;
@@ -172,5 +176,31 @@ void db_loader::_load_kpis() {
     k.drop_unknown = q.value(10).toDouble();
     _state->get_kpis().push_back(k);
   }
+  return ;
+}
+
+/**
+ *  Load organizations.
+ */
+void db_loader::_load_organizations() {
+  std::ostringstream query;
+  query << "SELECT o.organization_id, o.name, o.shortname"
+           "  FROM cfg_pollers AS p"
+           "  INNER JOIN cfg_organizations AS o"
+           "    ON p.organization_id=o.organization_id"
+           "  WHERE p.poller_id=" << _poller_id;
+  database_query q(*_db);
+  q.run_query(
+      query.str(),
+      "db_reader: could not load organization from DB");
+  if (!q.next())
+    throw (exceptions::msg() << "db_reader: poller " << _poller_id
+           << " has no organization: cannot load remaining tables");
+  entries::organization o;
+  o.enable = true;
+  o.organization_id = q.value(0).toUInt();
+  o.name = q.value(1).toString();
+  o.shortname = q.value(2).toString();
+  _state->get_organizations().push_back(o);
   return ;
 }

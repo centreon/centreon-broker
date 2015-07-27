@@ -23,6 +23,7 @@
 #include "com/centreon/broker/dumper/entries/ba_type.hh"
 #include "com/centreon/broker/dumper/entries/diff.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
+#include "com/centreon/broker/dumper/entries/organization.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -186,6 +187,7 @@ void db_reader::_sync_cfg_db(unsigned int poller_id) {
       start->poller_id = poller_id;
       pblshr.write(start);
     }
+    send_objects(state.get_organizations());
     send_objects(state.get_ba_types());
     send_objects(state.get_bas());
     send_objects(state.get_kpis());
@@ -231,6 +233,9 @@ void db_reader::_update_cfg_db(unsigned int poller_id) {
       start->poller_id = poller_id;
       pblshr.write(start);
     }
+    send_objects(d.organizations_to_delete());
+    send_objects(d.organizations_to_update());
+    send_objects(d.organizations_to_create());
     send_objects(d.ba_types_to_delete());
     send_objects(d.ba_types_to_update());
     send_objects(d.ba_types_to_create());

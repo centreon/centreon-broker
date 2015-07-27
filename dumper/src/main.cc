@@ -22,6 +22,7 @@
 #include "com/centreon/broker/dumper/entries/ba.hh"
 #include "com/centreon/broker/dumper/entries/ba_type.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
+#include "com/centreon/broker/dumper/entries/organization.hh"
 #include "com/centreon/broker/dumper/factory.hh"
 #include "com/centreon/broker/dumper/dump.hh"
 #include "com/centreon/broker/dumper/reload.hh"
@@ -147,6 +148,14 @@ extern "C" {
                   &dumper::entries::kpi::operations,
                   dumper::entries::kpi::entries,
                   "cfg_bam_kpi"));
+        e.register_event(
+            io::events::dumper,
+            dumper::de_entries_organization,
+            io::event_info(
+                  "organization",
+                  &dumper::entries::organization::operations,
+                  dumper::entries::organization::entries,
+                  "cfg_organizations"));
       }
 
 

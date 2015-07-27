@@ -174,6 +174,14 @@ int main() {
         "INSERT INTO cfg_organizations (organization_id, name,"
         "            shortname)"
         "  VALUES (42, '42', '42')",
+        "INSERT INTO cfg_nodes (node_id, name, ip_address, enable,"
+        "            multiple_poller)"
+        "  VALUES (1, 'MyPollerNode1', 'localhost', 1, 0),"
+        "         (2, 'MyPollerNode2', 'remotehost', 1, 0)",
+        "INSERT INTO cfg_pollers (poller_id, node_id, organization_id,"
+        "            name, port, tmpl_name, enable)"
+        "  VALUES (42, 1, 42, 'MyPoller1', 0, '', 1),"
+        "         (43, 2, 42, 'MyPoller2', 0, '', 1)",
         "INSERT INTO cfg_bam_ba_types (ba_type_id, name, slug,"
         "            description)"
         "  VALUES (1, 'Default', 'default', 'Default type')",
@@ -266,8 +274,9 @@ int main() {
     // Change database entries.
     {
       char const* queries [] = {
-        "INSERT INTO cfg_bam (ba_id, name, level_w, level_c, activate)"
-        "  VALUES (10, 'BA10', 75, 50, '1')",
+        "INSERT INTO cfg_bam (ba_id, name, level_w, level_c, activate,"
+        "            ba_type_id, organization_id)"
+        "  VALUES (10, 'BA10', 75, 50, 1, 1, 42)",
         "INSERT INTO cfg_bam_poller_relations (ba_id, poller_id)"
         "  VALUES (10, 43)",
         "INSERT INTO cfg_bam_kpi (kpi_id, kpi_type, host_id,"

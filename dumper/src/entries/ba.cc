@@ -40,6 +40,7 @@ ba::ba()
     ba_id(0),
     level_critical(NAN),
     level_warning(NAN),
+    organization_id(0),
     type_id(0) {}
 
 /**
@@ -86,6 +87,7 @@ bool ba::operator==(ba const& other) const {
           && (level_critical == other.level_critical)
           && (level_warning == other.level_warning)
           && (name == other.name)
+          && (organization_id == other.organization_id)
           && (type_id == other.type_id));
 }
 
@@ -137,6 +139,7 @@ void ba::_internal_copy(ba const& other) {
   level_critical = other.level_critical;
   level_warning = other.level_warning;
   name = other.name;
+  organization_id = other.organization_id;
   type_id = other.type_id;
   return ;
 }
@@ -172,6 +175,10 @@ mapping::entry const ba::entries[] = {
   mapping::entry(
     &ba::name,
     "name"),
+  mapping::entry(
+    &ba::organization_id,
+    "organization_id",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &ba::type_id,
     "ba_type_id",

@@ -33,6 +33,7 @@ namespace           dumper {
     class           ba;
     class           ba_type;
     class           kpi;
+    class           organization;
   }
 
   /**
@@ -62,6 +63,8 @@ namespace           dumper {
                     _bas;
     std::list<entries::kpi>
                     _kpis;
+    std::list<entries::organization>
+                    _organizations;
   };
 }
 
