@@ -43,6 +43,8 @@ public:
   QSqlDatabase&     get_qt_db();
   QSqlDriver const* get_qt_driver() const;
   int               pending_queries() const;
+  bool              committed() const;
+  void              clear_committed_flag();
   static QString    qt_db_type(std::string const& broker_type);
   void              query_executed();
 
@@ -57,6 +59,7 @@ private:
   QString           _connection_id;
   database_config   _db_cfg;
   int               _pending_queries;
+  bool              _committed;
 };
 
 CCB_END()

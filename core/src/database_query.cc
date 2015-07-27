@@ -93,7 +93,6 @@ int database_query::size() {
   return (_q.size());
 }
 
-
 /**
  *  Execute a query.
  *

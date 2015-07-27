@@ -344,8 +344,9 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
     _db.commit();
 
   // Event acknowledgement.
-  if (!_db.pending_queries()) {
+  if (_db.committed()) {
     int retval(_pending_events);
+    _db.clear_committed_flag();
     _pending_events = 0;
     return (retval);
   }
