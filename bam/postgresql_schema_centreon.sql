@@ -10,6 +10,7 @@
 -- cfg_meta_services_relations
 -- cfg_bam
 -- cfg_bam_ba_groups
+-- cfg_bam_ba_types
 -- cfg_bam_bagroup_ba_relation
 -- cfg_bam_impacts
 -- cfg_bam_boolean
@@ -17,6 +18,19 @@
 -- cfg_bam_poller_relations
 -- cfg_bam_relations_ba_timeperiods
 
+
+--
+-- Business Activities types.
+--
+CREATE TABLE cfg_bam_ba_types (
+  ba_type_id serial,
+  name varchar(255) default NULL,
+  slug varchar(255) default NULL,
+  description varchar(255) default NULL,
+
+  PRIMARY KEY (ba_type_id),
+  KEY (name)
+);
 
 --
 -- Business Activities.
@@ -41,11 +55,14 @@ CREATE TABLE cfg_bam (
   in_downtime boolean default NULL,
   must_be_rebuild enum('0', '1', '2') NOT NULL default '0',
   id_reporting_period int default NULL,
+  ba_type_id int NOT NULL,
 
   PRIMARY KEY (ba_id),
   UNIQUE (name),
   FOREIGN KEY (id_reporting_period) REFERENCES timeperiod (tp_id)
-    ON DELETE SET NULL
+    ON DELETE SET NULL,
+  FOREIGN KEY (ba_type_id) REFERENCES cfg_bam_ba_types (ba_type_id)
+    ON DELETE RESTRICT
 );
 
 --
