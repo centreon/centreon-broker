@@ -37,7 +37,9 @@ using namespace com::centreon::broker;
  *  @param[in] db_cfg  Database configuration.
  */
 database::database(database_config const& db_cfg)
-  : _db_cfg(db_cfg), _pending_queries(0) {
+  : _db_cfg(db_cfg),
+    _pending_queries(0),
+    _committed(db_cfg.get_queries_per_transaction() > 0 ? false : true) {
   // Qt type.
   QString qt_type(qt_db_type(_db_cfg.get_type()));
 
@@ -167,6 +169,30 @@ int database::pending_queries() const {
 }
 
 /**
+ *  @brief Return true if at least a transaction was committed.
+ *
+ *  @return  True if at least a transaction was committed.
+ */
+bool database::committed() const {
+  return (_committed);
+}
+
+/**
+ *  @brief Clear the committed flag.
+ *
+ *  It's an implicit commit if there is pending queries.
+ */
+void database::clear_committed_flag() {
+  int qpt(_db_cfg.get_queries_per_transaction());
+
+  if (qpt > 0) {
+    if (_pending_queries != 0)
+      commit();
+    _committed = false;
+  }
+}
+
+/**
  *  Get Qt DB type matching Broker DB type.
  *
  *  @param[in] broker_type  Broker DB type.
@@ -224,6 +250,7 @@ void database::_commit() {
            << _db_cfg.get_host() << "': "
            << _db->lastError().text());
   _pending_queries = 0;
+  _committed = true;
   return ;
 }
 

@@ -198,7 +198,8 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
     _db.commit();
 
   // Event acknowledgement.
-  if (!_db.pending_queries()) {
+  if (_db.committed()) {
+    _db.clear_committed_flag();
     int retval(_pending_events);
     _pending_events = 0;
     return (retval);

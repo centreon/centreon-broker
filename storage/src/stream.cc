@@ -305,7 +305,8 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   // Event acknowledgement.
   logging::debug(logging::low)
     << "storage: " << _pending_events << " have not yet been acknowledged";
-  if (!_db.pending_queries()) {
+  if (_db.committed()) {
+    _db.clear_committed_flag();
     _insert_perfdatas();
     int retval(_pending_events);
     _pending_events = 0;
