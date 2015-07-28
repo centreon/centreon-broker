@@ -26,6 +26,7 @@
 #include "com/centreon/broker/dumper/entries/organization.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
+#include "com/centreon/broker/extcmd/command_result.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
@@ -73,7 +74,7 @@ static void send_objects(std::list<T> const& t) {
 db_reader::db_reader(
              std::string const& name,
              database_config const& db_cfg)
-  : _loader(db_cfg), _name(name) {}
+  : _loader(db_cfg), _name(name.c_str()) {}
 
 /**
  *  Destructor.
@@ -104,49 +105,60 @@ bool db_reader::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *  @return Always return 1.
  */
 unsigned int db_reader::write(misc::shared_ptr<io::data> const& d) {
-  // Process only external commands.
+  // Process only external commands addressed to us.
   if (!d.isNull()
       && (d->type() == extcmd::command_request::static_type())) {
     extcmd::command_request const&
-      extcmd(d.ref_as<extcmd::command_request const>());
-    std::string cmd(extcmd.cmd.toStdString());
-
-    // Discard timestamp.
-    size_t start(cmd.find_first_of(' '));
-    if (start == std::string::npos) {
-      logging::info(logging::medium)
-        << "db_reader: ignored improperly formatted external command '"
-        << extcmd.cmd << "'";
-    }
-    else {
-      // Split command for processing.
-      std::vector<std::string> params;
-      misc::string::split(cmd.substr(start + 1), params, ';');
-      if (params.size() != 3) {
-        logging::info(logging::medium)
-          << "db_reader: ignored improperly formatted external command '"
-          << extcmd.cmd << "'";
-      }
-      else {
-        // Check that command address ourselves.
-        if (params[1] != _name) {
-          logging::info(logging::medium)
-            << "db_reader: ignored external command '" << params[0]
-            << "' that was not intended for ourselves";
+      req(d.ref_as<extcmd::command_request const>());
+    if ((!req.destination_id
+         || (req.destination_id == io::data::broker_id))
+        && (req.endp == _name)) {
+      try {
+        // Split command for processing.
+        std::vector<std::string> params;
+        misc::string::split(req.cmd.toStdString(), params, ';');
+        if (params.size() != 2) {
+          throw (exceptions::msg()
+                 << "invalid format: expected format is"
+                 << " <UPDATE_CFG_DB|SYNC_CFG_DB>;<POLLERID>");
         }
         else {
           // Process external commands.
-          unsigned int poller_id(strtoul(params[2].c_str(), NULL, 0));
+          unsigned int poller_id(strtoul(params[1].c_str(), NULL, 0));
           if (params[0] == "UPDATE_CFG_DB")
             _update_cfg_db(poller_id);
           else if (params[0] == "SYNC_CFG_DB")
             _sync_cfg_db(poller_id);
           else {
-            logging::info(logging::medium)
-              << "db_reader: unknown external command '"
-              << params[0] << "'";
+            throw (exceptions::msg()
+                   << "unknown command: valid commands are"
+                   << " UPDATE_CFG and SYNC_CFG_DB");
           }
+
+          // Send successful result.
+          misc::shared_ptr<extcmd::command_result>
+            res(new extcmd::command_result);
+          res->id = req.id;
+          res->msg = "Command successfully executed.";
+          res->code = 0;
+          res->destination_id = req.source_id;
+          multiplexing::publisher().write(res);
         }
+      }
+      catch (std::exception const& e) {
+        // Log error.
+        logging::error(logging::medium)
+          << "db_reader: unable to process command '"
+          << req.cmd << "': " << e.what();
+
+        // Send error result.
+        misc::shared_ptr<extcmd::command_result>
+          res(new extcmd::command_result);
+        res->id = req.id;
+        res->msg = e.what();
+        res->code = -1;
+        res->destination_id = req.source_id;
+        multiplexing::publisher().write(res);
       }
     }
   }

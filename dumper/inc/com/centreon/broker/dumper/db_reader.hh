@@ -20,6 +20,7 @@
 #ifndef CCB_DUMPER_DB_READER_HH
 #  define CCB_DUMPER_DB_READER_HH
 
+#  include <QString>
 #  include <string>
 #  include "com/centreon/broker/dumper/db_loader.hh"
 #  include "com/centreon/broker/dumper/entries/state.hh"
@@ -57,7 +58,7 @@ namespace           dumper {
     umap<unsigned int, entries::state>
                     _cache;
     db_loader       _loader;
-    std::string     _name;
+    QString         _name;
   };
 }
 
