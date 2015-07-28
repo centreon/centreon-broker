@@ -63,6 +63,18 @@
   </read_filters>
  </output>
 
+ <!-- Read configuration database and send them to pollers. -->
+ <output>
+   <name>central-broker-db-cfg-reader</name>
+   <type>db_cfg_reader</type>
+   <db_type>mysql</db_type>
+   <db_host>localhost</db_host>
+   <db_port>3306</db_port>
+   <db_user>centreon</db_user>
+   <db_password>centreon</db_password>
+   <db_name>centreon</db_name>
+ </output>
+
  <!-- Handle acknowledgements and downtimes (uses external command file). -->
  <output>
   <type>node_events</type>
