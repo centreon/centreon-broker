@@ -64,8 +64,9 @@ directory_dumper::directory_dumper(
     _tagname(tagname),
     _cache(cache) {
   try {
-  _load_cache();
-  } catch (std::exception const& e) {
+    _load_cache();
+  }
+  catch (std::exception const& e) {
     throw (exceptions::msg()
              << "directory_dumper: couldn't load cache for '"
              << _name << "': " << e.what());
@@ -79,10 +80,11 @@ directory_dumper::directory_dumper(
 directory_dumper::~directory_dumper() {
   try {
     _save_cache();
-  } catch (std::exception const& e) {
-    throw (exceptions::msg()
-             << "directory_dumper: couldn't save cache for '"
-             << _name << "': " << e.what());
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::high)
+      << "directory_dumper: couldn't save cache for '"
+      << _name << "': " << e.what();
   }
 }
 
@@ -125,7 +127,8 @@ unsigned int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
         if (req.cmd == "DUMP_DIR")
           _dump_dir(_path);
         else
-          throw (exceptions::msg() << "unknown command '" << req.cmd);
+          throw (exceptions::msg() << "unknown command:"
+                 << " the only valid command is DUMP_DIR");
 
         // Send successful result.
         misc::shared_ptr<extcmd::command_result>

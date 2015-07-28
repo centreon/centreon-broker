@@ -172,7 +172,7 @@ unsigned int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
       catch (std::exception const& e) {
         // Log error.
         logging::error(logging::medium)
-          << "node events: can't parse command '"
+          << "node events: unable to process command '"
           << req.cmd << "': " << e.what();
 
         // Send error result.
@@ -244,15 +244,14 @@ void node_events_stream::parse_command(
   logging::info(logging::medium)
     << "node events: received command '" << exc.cmd << "'";
 
-  // Parse timestamp.
+  // Parse command and arguments.
   if (::sscanf(
         line.c_str(),
         "%[^ ;];%[^\n]",
         command.get(),
         args.get()) != 2)
-    throw (exceptions::msg()
-           << "couldn't parse command '" << exc.cmd
-           << "': expected format is '<CMD>[;<ARG1>[;<ARG2>...]]");
+    throw (exceptions::msg() << "invalid format: expected"
+           << " format is <CMD>[;<ARG1>[;<ARG2>...]]");
 
   // Execute command.
   if (command == "ACKNOWLEDGE_HOST_PROBLEM")
@@ -274,8 +273,8 @@ void node_events_stream::parse_command(
   else if (command == "DEL_SVC_DOWNTIME")
     _parse_remove_downtime(down_service, args.get(), stream);
   else
-    throw (exceptions::msg() << "unknown command '"
-           << command.get() << "'");
+    throw (exceptions::msg() << "unknown command: refer to"
+           << " documentation for the list of valid commands");
 
   return ;
 }
