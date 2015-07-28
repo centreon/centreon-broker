@@ -102,15 +102,7 @@ io::factory* factory::clone() const {
  *  @return True if the endpoint match the configuration.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  bool is_notif(!cfg.type.compare("notification", Qt::CaseInsensitive));
-  if (is_notif) {
-    // Default transaction timeout.
-    if (cfg.params.find("read_timeout") == cfg.params.end()) {
-      cfg.params["read_timeout"] = "2";
-      cfg.read_timeout = 2;
-    }
-  }
-  return (is_notif);
+  return (!cfg.type.compare("notification", Qt::CaseInsensitive));
 }
 
 /**
@@ -144,17 +136,6 @@ io::endpoint* factory::new_endpoint(
   // Find DB name.
   QString db_name(find_param(cfg, "db_name"));
 
-  // Transaction size.
-  unsigned int queries_per_transaction(0);
-  {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("queries_per_transaction"));
-    if (it != cfg.params.end())
-      queries_per_transaction = it.value().toUInt();
-    else
-      queries_per_transaction = 1000;
-  }
-
   // Check replication status ?
   bool check_replication(true);
   {
@@ -162,15 +143,6 @@ io::endpoint* factory::new_endpoint(
       it(cfg.params.find("check_replication"));
     if (it != cfg.params.end())
       check_replication = config::parser::parse_boolean(*it);
-  }
-
-  // Use state events ?
-  bool wse(false);
-  {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("with_state_events"));
-    if (it != cfg.params.end())
-      wse = config::parser::parse_boolean(*it);
   }
 
   // Connector.
@@ -182,9 +154,7 @@ io::endpoint* factory::new_endpoint(
        user,
        password,
        db_name,
-       queries_per_transaction,
-       check_replication,
-       wse);
+       check_replication);
   is_acceptor = false;
   return (c.release());
 }

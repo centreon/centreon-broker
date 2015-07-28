@@ -49,9 +49,7 @@ namespace                        notification {
                                    QString const& user,
                                    QString const& password,
                                    QString const& centreon_db,
-                                   unsigned int queries_per_transaction = 1,
-                                   bool check_replication = true,
-                                   bool with_state_events = false);
+                                   bool check_replication = true);
     misc::shared_ptr<io::stream> open();
 
   private:
@@ -60,10 +58,8 @@ namespace                        notification {
     QString                      _host;
     QString                      _password;
     unsigned short               _port;
-    unsigned int                 _queries_per_transaction;
     QString                      _type;
     QString                      _user;
-    bool                         _with_state_events;
     misc::shared_ptr<persistent_cache>
                                  _cache;
     node_cache                   _node_cache;

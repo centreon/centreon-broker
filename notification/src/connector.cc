@@ -49,10 +49,8 @@ connector::connector(connector const& c)
     _host(c._host),
     _password(c._password),
     _port(c._port),
-    _queries_per_transaction(0),
     _type(c._type),
     _user(c._user),
-    _with_state_events(c._with_state_events),
     _cache(c._cache),
     _node_cache(c._node_cache) {}
 
@@ -76,10 +74,8 @@ connector& connector::operator=(connector const& c) {
     _host = c._host;
     _password = c._password;
     _port = c._port;
-    _queries_per_transaction = c._queries_per_transaction;
     _type = c._type;
     _user = c._user;
-    _with_state_events = c._with_state_events;
     _cache = c._cache;
     _node_cache = c._node_cache;
   }
@@ -95,9 +91,7 @@ connector& connector::operator=(connector const& c) {
  *  @param[in] user                    User.
  *  @param[in] password                Password.
  *  @param[in] centreon_db             Database name.
- *  @param[in] queries_per_transaction Queries per transaction.
  *  @param[in] check_replication       true to check replication status.
- *  @param[in] with_state_events       Enable state events ?
  */
 void connector::connect_to(
                   QString const& type,
@@ -106,18 +100,14 @@ void connector::connect_to(
                   QString const& user,
                   QString const& password,
                   QString const& centreon_db,
-                  unsigned int queries_per_transaction,
-                  bool check_replication,
-                  bool with_state_events) {
+                  bool check_replication) {
   _check_replication = check_replication;
   _centreon_db = centreon_db;
   _host = host;
   _password = password;
   _port = port;
-  _queries_per_transaction = queries_per_transaction;
   _type = type;
   _user = user;
-  _with_state_events = with_state_events;
   return ;
 }
 
@@ -134,8 +124,6 @@ misc::shared_ptr<io::stream> connector::open() {
                                              _user,
                                              _password,
                                              _centreon_db,
-                                             _queries_per_transaction,
                                              _check_replication,
-                                             _with_state_events,
                                              _node_cache)));
 }

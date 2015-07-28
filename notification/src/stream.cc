@@ -61,9 +61,7 @@ using namespace com::centreon::broker::notification::objects;
  *  @param[in] user                    User.
  *  @param[in] password                Password.
  *  @param[in] centreon_db             Database name.
- *  @param[in] qpt                     Queries per transaction.
  *  @param[in] check_replication       true to check replication status.
- *  @param[in] wse                     With state events.
  *  @param[in] node_cache              A loaded node event cache.
  */
 stream::stream(
@@ -73,15 +71,9 @@ stream::stream(
           QString const& user,
           QString const& password,
           QString const& centreon_db,
-          unsigned int qpt,
           bool check_replication,
-          bool wse,
           node_cache& cache)
-  : _queries_per_transaction((qpt >= 2) ? qpt : 1),
-    _transaction_queries(0),
-    _with_state_events(wse),
-    _instance_timeout(15),
-    _node_cache(cache) {
+  : _node_cache(cache) {
   // Get the driver ID.
   QString t;
   if (!type.compare("db2", Qt::CaseInsensitive))
@@ -113,15 +105,16 @@ stream::stream(
   id.setNum((qulonglong)this, 16);
 
   // Open centreon database.
-  _open_db(_centreon_db,
-           t,
-           host,
-           port,
-           user,
-           password,
-           centreon_db,
-           id,
-           check_replication);
+  _open_db(
+    _centreon_db,
+    t,
+    host,
+    port,
+    user,
+    password,
+    centreon_db,
+    id,
+    check_replication);
 
   // Create the process manager.
   process_manager::instance();
@@ -138,13 +131,6 @@ stream::stream(
  */
 stream::stream(stream const& other) : io::stream(other),
   _node_cache(other._node_cache) {
-  // Queries per transaction.
-  _queries_per_transaction = other._queries_per_transaction;
-  _transaction_queries = 0;
-
-  // Process state events.
-  _with_state_events = other._with_state_events;
-
   // Connection ID.
   QString id;
   id.setNum((qulonglong)this, 16);
@@ -172,11 +158,8 @@ stream::~stream() {
   {
     QMutexLocker lock(&global_lock);
     // Close database.
-    if (_centreon_db->isOpen()) {
-      if (_queries_per_transaction > 1)
-        _centreon_db->commit();
+    if (_centreon_db->isOpen())
       _centreon_db->close();
-    }
     _centreon_db.reset();
   }
 
@@ -264,14 +247,14 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
  *  Open a database connexion.
  *
  *  @param[out] db                The pointer to the new database connection.
- *  @param[in] t                  The type of the database.
- *  @param[in] host               The host of the database.
- *  @param[in] port               The port of the database.
- *  @param[in] user               The user to connect with the database.
- *  @param[in] password           The password to use.
- *  @param[in] db_name            The name of the db to connect with.
- *  @param[in] id                 An unique id identifying the connection.
- *  @param[in] check_replication  True if we need to check the replication.
+ *  @param[in]  t                  The type of the database.
+ *  @param[in]  host               The host of the database.
+ *  @param[in]  port               The port of the database.
+ *  @param[in]  user               The user to connect with the database.
+ *  @param[in]  password           The password to use.
+ *  @param[in]  db_name            The name of the db to connect with.
+ *  @param[in]  id                 An unique id identifying the connection.
+ *  @param[in]  check_replication  True if we need to check the replication.
  */
 void stream::_open_db(
                std::auto_ptr<QSqlDatabase>& db,
@@ -370,18 +353,12 @@ void stream::_clone_db(
   db.reset(new QSqlDatabase(QSqlDatabase::cloneDatabase(*db_to_clone, id)));
 
   try {
-    {
-      QMutexLocker lock(&global_lock);
-      // Open database.
-      if (!db->open())
-        throw (exceptions::msg()
-          << "notification: could not open SQL database: "
-          << db->lastError().text());
-    }
-
-    // First transaction.
-    if (_queries_per_transaction > 1)
-      db->transaction();
+    QMutexLocker lock(&global_lock);
+    // Open database.
+    if (!db->open())
+      throw (exceptions::msg()
+             << "notification: could not open SQL database: "
+             << db->lastError().text());
   }
   catch (...) {
 
