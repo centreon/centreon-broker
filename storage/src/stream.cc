@@ -221,9 +221,11 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
     throw (io::exceptions::shutdown(true, true)
              << "storage stream is shutdown");
 
+  // Take this event into account.
+  ++_pending_events;
+
   // Process service status events.
   if (!data.isNull()) {
-    ++_pending_events;
     if (data->type() == io::events::data_type<io::events::neb, neb::de_service_status>::value) {
       misc::shared_ptr<neb::service_status>
         ss(data.staticCast<neb::service_status>());

@@ -186,9 +186,10 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
     throw (io::exceptions::shutdown(true, true)
            << "BAM monitoring stream is shutdown");
 
-  if (!data.isNull()) {
-    ++_pending_events;
+  // Take this event into account.
+  ++_pending_events;
 
+  if (!data.isNull()) {
     // Process service status events.
     if ((data->type()
         == io::events::data_type<io::events::neb, neb::de_service_status>::value)

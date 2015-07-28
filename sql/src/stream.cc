@@ -2312,10 +2312,11 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
     throw (io::exceptions::shutdown(true, true)
            << "SQL stream is shutdown");
 
+  // Take this event into account.
+  ++_pending_events;
+
   // Check that data exists.
   if (!data.isNull()) {
-    ++_pending_events;
-
     // Check that event does not refer to a deleted instance.
     bool deleted(false);
     if ((_cache_deleted_instance_id.find(data->instance_id)

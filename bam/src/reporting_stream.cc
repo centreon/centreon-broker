@@ -164,8 +164,10 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
     throw (io::exceptions::shutdown(true, true)
            << "BAM reporting stream is shutdown");
 
+  // Take this event into account.
+  ++_pending_events;
+
   if (!data.isNull()) {
-    ++_pending_events;
     if (data->type()
         == io::events::data_type<io::events::bam,
                                  bam::de_kpi_event>::value)
