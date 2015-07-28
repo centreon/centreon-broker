@@ -40,7 +40,7 @@ using namespace com::centreon::broker;
 database::database(database_config const& db_cfg)
   : _db_cfg(db_cfg),
     _pending_queries(0),
-    _committed(db_cfg.get_queries_per_transaction() > 0 ? false : true) {
+    _committed(db_cfg.get_queries_per_transaction() > 1 ? false : true) {
   // Qt type.
   QString qt_type(qt_db_type(_db_cfg.get_type()));
 
@@ -214,7 +214,7 @@ bool database::committed() const {
 void database::clear_committed_flag() {
   int qpt(_db_cfg.get_queries_per_transaction());
 
-  if (qpt > 0) {
+  if (qpt > 1) {
     if (_pending_queries != 0)
       commit();
     _committed = false;
