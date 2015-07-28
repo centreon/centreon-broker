@@ -26,6 +26,7 @@
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
+#include "com/centreon/broker/extcmd/command_result.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/tokenizer.hh"
@@ -81,7 +82,8 @@ node_events_stream::~node_events_stream() {
 
     // Save the cache.
     _save_cache();
-  } catch (std::exception const& e) {
+  }
+  catch (std::exception const& e) {
     logging::error(logging::medium)
       << "node events: error while trying to save cache: "
       << e.what();
@@ -145,11 +147,14 @@ unsigned int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
   else if (d->type() == neb::downtime::static_type()) {
     _update_downtime(d.ref_as<neb::downtime const>());
   }
-  else if (d->type() == extcmd::command_request::static_type()) {
+  else if ((d->type() == extcmd::command_request::static_type())
+           && (!d->destination_id
+               || (d->destination_id == io::data::broker_id))) {
     try {
       multiplexing::publisher pblsh;
       parse_command(d.ref_as<extcmd::command_request const>(), pblsh);
-    } catch (std::exception const& e) {
+    }
+    catch (std::exception const& e) {
       logging::error(logging::medium)
         << "node events: can't parse command '"
         << d.ref_as<extcmd::command_request>().cmd
@@ -205,8 +210,8 @@ private:
  *  @return         An event.
  */
 void node_events_stream::parse_command(
-                          extcmd::command_request const& exc,
-                          io::stream& stream) {
+                           extcmd::command_request const& exc,
+                           io::stream& stream) {
   std::string line = exc.cmd.toStdString();
   buffer command(line.size());
   buffer args(line.size());
@@ -223,26 +228,53 @@ void node_events_stream::parse_command(
         command.get(),
         args.get()) != 3)
     throw (exceptions::msg()
-           << "couldn't parse the line");
+           << "couldn't parse command '" << exc.cmd << "'");
 
-  if (command == "ACKNOWLEDGE_HOST_PROBLEM")
-    _parse_ack(ack_host, args.get(), stream);
-  else if (command == "ACKNOWLEDGE_SVC_PROBLEM")
-    _parse_ack(ack_service, args.get(), stream);
-  else if (command == "REMOVE_HOST_ACKNOWLEDGEMENT")
-    _parse_remove_ack(ack_host, args.get(), stream);
-  else if (command == "REMOVE_SVC_ACKNOWLEDGEMENT")
-    _parse_remove_ack(ack_service, args.get(), stream);
-  else if (command == "SCHEDULE_HOST_DOWNTIME")
-    _parse_downtime(down_host, args.get(), stream);
-  else if (command == "SCHEDULE_HOST_SVC_DOWNTIME")
-    _parse_downtime(down_host_service, args.get(), stream);
-  else if (command == "SCHEDULE_SVC_DOWNTIME")
-    _parse_downtime(down_service, args.get(), stream);
-  else if (command == "DEL_HOST_DOWNTIME")
-    _parse_remove_downtime(down_host, args.get(), stream);
-  else if (command == "DEL_SVC_DOWNTIME")
-    _parse_remove_downtime(down_service, args.get(), stream);
+  try {
+    // Execute command.
+    bool send_result(true);
+    if (command == "ACKNOWLEDGE_HOST_PROBLEM")
+      _parse_ack(ack_host, args.get(), stream);
+    else if (command == "ACKNOWLEDGE_SVC_PROBLEM")
+      _parse_ack(ack_service, args.get(), stream);
+    else if (command == "REMOVE_HOST_ACKNOWLEDGEMENT")
+      _parse_remove_ack(ack_host, args.get(), stream);
+    else if (command == "REMOVE_SVC_ACKNOWLEDGEMENT")
+      _parse_remove_ack(ack_service, args.get(), stream);
+    else if (command == "SCHEDULE_HOST_DOWNTIME")
+      _parse_downtime(down_host, args.get(), stream);
+    else if (command == "SCHEDULE_HOST_SVC_DOWNTIME")
+      _parse_downtime(down_host_service, args.get(), stream);
+    else if (command == "SCHEDULE_SVC_DOWNTIME")
+      _parse_downtime(down_service, args.get(), stream);
+    else if (command == "DEL_HOST_DOWNTIME")
+      _parse_remove_downtime(down_host, args.get(), stream);
+    else if (command == "DEL_SVC_DOWNTIME")
+      _parse_remove_downtime(down_service, args.get(), stream);
+    else
+      send_result = false;
+
+    // Send command result.
+    if (send_result) {
+      misc::shared_ptr<extcmd::command_result>
+        res(new extcmd::command_result);
+      res->id = exc.id;
+      res->msg = "Command successfully executed.";
+      res->code = 0;
+      res->destination_id = exc.source_id;
+      stream.write(res);
+    }
+  }
+  catch (std::exception const& e) {
+    misc::shared_ptr<extcmd::command_result>
+      res(new extcmd::command_result);
+    res->id = exc.id;
+    res->msg = e.what();
+    res->code = -1;
+    res->destination_id = exc.source_id;
+    stream.write(res);
+    throw ;
+  }
 }
 
 /**
@@ -465,7 +497,6 @@ void node_events_stream::_parse_ack(
       << "node events: sending ack for "
          "(" << ack->host_id << ", " << ack->service_id << ")";
     stream.write(ack);
-
   }
   catch (std::exception const& e) {
     throw (exceptions::msg()
