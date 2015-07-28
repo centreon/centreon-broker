@@ -165,7 +165,7 @@
   <queries_per_transaction>1000</queries_per_transaction>
  </output>
 
- <!-- Compute and storage reporting information on BAs and KPIs. -->
+ <!-- Compute and store reporting information on BAs and KPIs. -->
  <output>
   <retry_interval>60</retry_interval>
   <db_type>mysql</db_type>
@@ -180,6 +180,18 @@
   <filters>
    <category>bam</category>
   </filters>
+ </output>
+
+ <!-- Notifications. -->
+ <output>
+   <name>central-broker-notification</name>
+   <type>notification</type>
+   <db_type>mysql</db_type>
+   <db_host>localhost</db_host>
+   <db_port>3306</db_port>
+   <db_user>centreon</db_user>
+   <db_password>centreon</db_password>
+   <db_name>centreon</db_name>
  </output>
 
  <!-- Log file. -->
