@@ -43,6 +43,8 @@ namespace                extcmd {
                          command_request(command_request const& other);
                          ~command_request();
     command_request&     operator=(command_request const& other);
+    bool                 is_addressed_to(
+                           QString const& endp_name) const;
     unsigned int         type() const;
     static unsigned int  static_type();
 

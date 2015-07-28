@@ -152,9 +152,7 @@ unsigned int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
   else if (d->type() == extcmd::command_request::static_type()) {
     extcmd::command_request const&
       req(d.ref_as<extcmd::command_request const>());
-    if ((!req.destination_id
-         || (req.destination_id == io::data::broker_id))
-        && (req.endp == _name)) {
+    if (req.is_addressed_to(_name)) {
       multiplexing::publisher pblsh;
       try {
         // Execute command that was especially addressed to us.

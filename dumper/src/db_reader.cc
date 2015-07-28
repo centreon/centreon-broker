@@ -110,9 +110,7 @@ unsigned int db_reader::write(misc::shared_ptr<io::data> const& d) {
       && (d->type() == extcmd::command_request::static_type())) {
     extcmd::command_request const&
       req(d.ref_as<extcmd::command_request const>());
-    if ((!req.destination_id
-         || (req.destination_id == io::data::broker_id))
-        && (req.endp == _name)) {
+    if (req.is_addressed_to(_name)) {
       try {
         // Split command for processing.
         std::vector<std::string> params;

@@ -80,6 +80,18 @@ command_request& command_request::operator=(
 }
 
 /**
+ *  Check if command is addressed to some endpoint.
+ *
+ *  @param[in] endp_name  Endpoint name.
+ *
+ *  @return True if command request is addressed to specific endpoint.
+ */
+bool command_request::is_addressed_to(QString const& endp_name) const {
+  return ((!destination_id || (destination_id == io::data::broker_id))
+          && (endp == endp_name));
+}
+
+/**
  *  Get the event type.
  *
  *  @return The event type.

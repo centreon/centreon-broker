@@ -119,9 +119,7 @@ unsigned int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
   if (d->type() == extcmd::command_request::static_type()) {
     extcmd::command_request const&
       req(d.ref_as<extcmd::command_request const>());
-    if ((!req.destination_id
-         || (req.destination_id == io::data::broker_id))
-        && (req.endp == _name)) {
+    if (req.is_addressed_to(_name)) {
       try {
         // Execute command that was especially addressed to us.
         if (req.cmd == "DUMP_DIR")
