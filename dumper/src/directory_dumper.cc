@@ -31,6 +31,7 @@
 #include "com/centreon/broker/dumper/reload.hh"
 #include "com/centreon/broker/dumper/remove.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
+#include "com/centreon/broker/extcmd/command_result.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -57,8 +58,8 @@ directory_dumper::directory_dumper(
           std::string const& name,
           std::string const& path,
           std::string const& tagname,
-          misc::shared_ptr<persistent_cache> cache) :
-    _name(name),
+          misc::shared_ptr<persistent_cache> cache)
+  : _name(name.c_str()),
     _path(path),
     _tagname(tagname),
     _cache(cache) {
@@ -96,6 +97,8 @@ directory_dumper::~directory_dumper() {
 bool directory_dumper::read(
                          misc::shared_ptr<io::data>& d,
                          time_t deadline) {
+  (void)d;
+  (void)deadline;
   throw (io::exceptions::shutdown(true, false));
   return (true);
 }
@@ -112,56 +115,46 @@ unsigned int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
     return (1);
 
   if (d->type() == extcmd::command_request::static_type()) {
-    extcmd::command_request const& com
-      = d.ref_as<extcmd::command_request const>();
-    try {
-    _manage_external_command(com.cmd.toStdString());
-    } catch (std::exception const& e) {
-      logging::error(logging::medium)
-        << "directory_dumper: couldn't parse '"
-        << com.cmd << "': " << e.what();
+    extcmd::command_request const&
+      req(d.ref_as<extcmd::command_request const>());
+    if ((!req.destination_id
+         || (req.destination_id == io::data::broker_id))
+        && (req.endp == _name)) {
+      try {
+        // Execute command that was especially addressed to us.
+        if (req.cmd == "DUMP_DIR")
+          _dump_dir(_path);
+        else
+          throw (exceptions::msg() << "unknown command '" << req.cmd);
+
+        // Send successful result.
+        misc::shared_ptr<extcmd::command_result>
+          res(new extcmd::command_result);
+        res->id = req.id;
+        res->msg = "Command successfully executed.";
+        res->code = 0;
+        res->destination_id = req.source_id;
+        multiplexing::publisher().write(res);
+      }
+      catch (std::exception const& e) {
+        // Log error.
+        logging::error(logging::medium)
+          << "directory_dumper: couldn't parse '"
+          << req.cmd << "': " << e.what();
+
+        // Send error result.
+        misc::shared_ptr<extcmd::command_result>
+          res(new extcmd::command_result);
+        res->id = req.id;
+        res->msg = e.what();
+        res->code = -1;
+        res->destination_id = req.source_id;
+        multiplexing::publisher().write(res);
+      }
     }
   }
 
   return (1);
-}
-
-/**
- *  Manage an external command.
- *
- *  @param[in] command  The command to manage.
- */
-void directory_dumper::_manage_external_command(std::string const& command) {
-  logging::debug(logging::medium)
-    << "directory_dumper: dumper '" << _name
-    << "' received external command '" << command << "'";
-
-  unsigned long timestamp;
-  std::string args;
-  {
-    char* buffer = NULL;
-    buffer = new char[command.size()];
-
-    if (::sscanf(
-          command.c_str(),
-          "[%lu] %[^\n]",
-          &timestamp,
-         buffer) != 2) {
-      delete [] buffer;
-      return ;
-    }
-
-    args = buffer;
-    delete [] buffer;
-  }
-
-  misc::tokenizer tok(args, ';');
-  std::string command_name = tok.get_next_token<std::string>();
-  if (command_name == "DUMP_DIR") {
-    std::string endpoint_name = tok.get_next_token<std::string>();
-    if (endpoint_name == _name)
-      _dump_dir(_path);
-  }
 }
 
 /**
