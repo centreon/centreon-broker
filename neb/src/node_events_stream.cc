@@ -245,15 +245,14 @@ void node_events_stream::parse_command(
     << "node events: received command '" << exc.cmd << "'";
 
   // Parse timestamp.
-  unsigned long timestamp;
   if (::sscanf(
         line.c_str(),
-        "[%lu] %[^ ;];%[^\n]",
-        &timestamp,
+        "%[^ ;];%[^\n]",
         command.get(),
-        args.get()) != 3)
+        args.get()) != 2)
     throw (exceptions::msg()
-           << "couldn't parse command '" << exc.cmd << "'");
+           << "couldn't parse command '" << exc.cmd
+           << "': expected format is '<CMD>[;<ARG1>[;<ARG2>...]]");
 
   // Execute command.
   if (command == "ACKNOWLEDGE_HOST_PROBLEM")
@@ -274,6 +273,9 @@ void node_events_stream::parse_command(
     _parse_remove_downtime(down_host, args.get(), stream);
   else if (command == "DEL_SVC_DOWNTIME")
     _parse_remove_downtime(down_service, args.get(), stream);
+  else
+    throw (exceptions::msg() << "unknown command '"
+           << command.get() << "'");
 
   return ;
 }
