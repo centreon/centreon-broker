@@ -160,9 +160,10 @@ void monitoring_stream::update() {
  *  @return Number of events acknowledged.
  */
 unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
-  if (!data.isNull()) {
-    ++_pending_events;
+  // Take this event into account.
+  ++_pending_events;
 
+  if (!data.isNull()) {
     // Process service status events.
     if ((data->type() == neb::service_status::static_type())
         || (data->type() == neb::service::static_type())) {

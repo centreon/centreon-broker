@@ -146,9 +146,11 @@ void reporting_stream::statistics(io::properties& tree) const {
  *
  *  @return Number of events acknowledged.
  */
-unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
+unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {                         
+  // Take this event into account.
+  ++_pending_events;
+
   if (!data.isNull()) {
-    ++_pending_events;
     if (data->type()
         == io::events::data_type<io::events::bam,
                                  bam::de_kpi_event>::value)

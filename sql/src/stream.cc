@@ -1873,10 +1873,11 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
+  // Take this event into account.
+  ++_pending_events;
+
   // Check that data exists.
   if (!data.isNull()) {
-    ++_pending_events;
-
     // Process event.
     unsigned int type(data->type());
     unsigned short cat(io::events::category_of_type(type));
