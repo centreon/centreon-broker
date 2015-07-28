@@ -111,5 +111,8 @@ io::endpoint* node_events_factory::new_endpoint(
                          misc::shared_ptr<persistent_cache> cache) const {
   QString name = get(QString(), cfg, "cfg_file");
   is_acceptor = false;
-  return (new node_events_connector(cache, name.toStdString()));
+  return (new node_events_connector(
+                cfg.name.toStdString(),
+                cache,
+                name.toStdString()));
 }

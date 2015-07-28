@@ -38,6 +38,7 @@ namespace                        neb {
   class                          node_events_connector : public io::endpoint {
   public:
                                  node_events_connector(
+                                   std::string const& name,
                                    misc::shared_ptr<persistent_cache> cache,
                                    std::string const& config_file);
                                  node_events_connector(node_events_connector const& other);
@@ -49,6 +50,7 @@ namespace                        neb {
     misc::shared_ptr<persistent_cache>
                                  _cache;
     std::string                  _config_file;
+    std::string                  _name;
   };
 }
 

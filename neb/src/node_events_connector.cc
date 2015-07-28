@@ -27,14 +27,20 @@ using namespace com::centreon::broker::neb;
 /**
  *  Constructor.
  *
+ *  @param[in]     name              Endpoint name, to properly respond
+ *                                   to external commands.
  *  @param[in,out] cache             Endpoint persistent cache.
+ *  @param[in]     config_file       Configuration file with downtimes
+ *                                   and timeperiods.
  */
 node_events_connector::node_events_connector(
-             misc::shared_ptr<persistent_cache> cache,
-             std::string const& config_file)
+                         std::string const& name,
+                         misc::shared_ptr<persistent_cache> cache,
+                         std::string const& config_file)
   : io::endpoint(false),
     _cache(cache),
-    _config_file(config_file) {}
+    _config_file(config_file),
+    _name(name) {}
 
 /**
  *  Copy constructor.
@@ -44,7 +50,8 @@ node_events_connector::node_events_connector(
 node_events_connector::node_events_connector(node_events_connector const& other)
   : io::endpoint(other),
     _cache(other._cache),
-    _config_file(other._config_file) {}
+    _config_file(other._config_file),
+    _name(other._name) {}
 
 /**
  *  Destructor.
@@ -59,11 +66,12 @@ node_events_connector::~node_events_connector() {}
  *  @return This object.
  */
 node_events_connector& node_events_connector::operator=(
-  node_events_connector const& other) {
+                         node_events_connector const& other) {
   if (this != &other) {
     io::endpoint::operator=(other);
     _cache = other._cache;
     _config_file = other._config_file;
+    _name = other._name;
   }
   return (*this);
 }
@@ -74,5 +82,5 @@ node_events_connector& node_events_connector::operator=(
  *  @return A newly opened stream.
  */
 misc::shared_ptr<io::stream> node_events_connector::open() {
-  return (new node_events_stream(_cache, _config_file));
+  return (new node_events_stream(_name.c_str(), _cache, _config_file));
 }

@@ -101,6 +101,7 @@ int main() {
     {
     // Create node event stream.
       node_events_stream test(
+        "1",
         cache,
         PROJECT_SOURCE_DIR "/neb/test/node_events/cfg/downtime.cfg");
 
@@ -135,9 +136,10 @@ int main() {
     write_file(temporary_config_file, config_file.toStdString());
 
     // Create node event stream.
-      node_events_stream test(
-        cache,
-        temporary_config_file);
+    node_events_stream test(
+      "2",
+      cache,
+      temporary_config_file);
 
     ::sleep(5);
 
