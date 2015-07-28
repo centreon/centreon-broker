@@ -47,6 +47,7 @@ namespace                extcmd {
     static unsigned int  static_type();
 
     QString              cmd;
+    QString              endp;
     unsigned int         id;
 
     static mapping::entry const

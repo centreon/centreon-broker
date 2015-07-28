@@ -111,6 +111,7 @@ unsigned int command_request::static_type() {
  */
 void command_request::_internal_copy(command_request const& other) {
   cmd = other.cmd;
+  endp = other.endp;
   id = other.id;
   return ;
 }
@@ -126,6 +127,9 @@ mapping::entry const command_request::entries[] = {
   mapping::entry(
     &command_request::cmd,
     "cmd"),
+  mapping::entry(
+    &command_request::endp,
+    "endp"),
   mapping::entry(
     &command_request::id,
     "id",
