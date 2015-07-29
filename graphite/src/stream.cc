@@ -62,6 +62,7 @@ stream::stream(
     _db_port(db_port),
     _queries_per_transaction(queries_per_transaction == 0 ?
                                1 : queries_per_transaction),
+    _pending_queries(0),
     _actual_query(0),
     _metric_query(_metric_naming, query::metric),
     _status_query(_status_naming, query::status) {
@@ -145,6 +146,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
              << "graphite stream is shutdown");
 
   bool commit = false;
+  ++_pending_queries;
 
   // Process metric events.
   if (!data.isNull()) {
@@ -169,10 +171,11 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   if (commit) {
     logging::debug(logging::medium)
       << "graphite: commiting " << _actual_query << " queries";
-    unsigned int ret = _actual_query;
+    unsigned int ret = _pending_queries;
     if (_actual_query != 0)
       _commit();
     _actual_query = 0;
+    _pending_queries = 0;
     return (ret);
   }
   else

@@ -76,6 +76,7 @@ namespace          graphite {
     unsigned int  _queries_per_transaction;
 
     // Internal working members
+    unsigned int _pending_queries;
     unsigned int _actual_query;
 
     // Status members

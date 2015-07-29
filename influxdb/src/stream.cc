@@ -64,6 +64,7 @@ stream::stream(
     _db(db),
     _queries_per_transaction(queries_per_transaction == 0 ?
                                1 : queries_per_transaction),
+    _pending_queries(0),
     _actual_query(0) {
   if (version == "0.9")
     _influx_db.reset(new influxdb9(
@@ -146,6 +147,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
              << "influxdb stream is shutdown");
 
   bool commit = false;
+  ++_pending_queries = 0;
 
   // Process metric events.
   if (!data.isNull()) {
@@ -170,8 +172,9 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   if (commit) {
     logging::debug(logging::medium)
       << "influxdb: commiting " << _actual_query << " queries";
-    unsigned int ret = _actual_query;
+    unsigned int ret = _pending_queries;
     _actual_query = 0;
+    _pending_queries = 0;
     _influx_db->commit();
     return (ret);
   }
