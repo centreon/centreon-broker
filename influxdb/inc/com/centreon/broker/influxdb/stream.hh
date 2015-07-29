@@ -79,7 +79,8 @@ namespace          influxdb {
                    _influx_db;
 
     // Internal working members
-    unsigned int   _actual_query;
+    unsigned int _pending_queries;
+    unsigned int _actual_query;
 
     // Cache
     macro_cache    _cache;
