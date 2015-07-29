@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/extcmd/endpoint.hh"
+#include "com/centreon/broker/extcmd/command_server.hh"
 #include "com/centreon/broker/extcmd/factory.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/io/protocols.hh"
@@ -95,7 +95,8 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
-  (void)cache;
-  is_acceptor = false;
-  return (new endpoint(cfg.params.value("extcmd").toStdString()));
+  is_acceptor = true;
+  return (new command_server(
+                cfg.params.value("extcmd").toStdString(),
+                cache));
 }

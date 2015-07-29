@@ -22,6 +22,7 @@
 
 #  include <QMutex>
 #  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/io/event_info.hh"
@@ -45,6 +46,7 @@ namespace                extcmd {
     command_request&     operator=(command_request const& other);
     bool                 is_addressed_to(
                            QString const& endp_name) const;
+    void                 parse(std::string const& cmd);
     unsigned int         type() const;
     static unsigned int  static_type();
 

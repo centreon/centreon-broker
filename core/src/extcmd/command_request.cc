@@ -18,6 +18,7 @@
 */
 
 #include <QMutexLocker>
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/internal.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -89,6 +90,36 @@ command_request& command_request::operator=(
 bool command_request::is_addressed_to(QString const& endp_name) const {
   return ((!destination_id || (destination_id == io::data::broker_id))
           && (endp == endp_name));
+}
+
+/**
+ *  @brief Parse a command string and store it in this object.
+ *
+ *  Command format is <BROKERID>;<TARGETENDPOINT>;<CMD>[;ARG1[;ARG2...]]
+ *
+ *  @param[in] cmdline  Command string.
+ */
+void command_request::parse(std::string const& cmdline) {
+  // Get Broker ID.
+  std::size_t delim1;
+  delim1 = cmdline.find_first_of(';');
+  if (delim1 == std::string::npos)
+    throw (exceptions::msg() << "invalid command format: expected "
+           << "<BROKERID>;<TARGETENDPOINT>;<CMD>[;<ARG1>[;<ARG2>...]]");
+  destination_id = strtoul(cmdline.substr(0, delim1).c_str(), NULL, 0);
+
+  // Get target endpoint.
+  std::size_t delim2;
+  delim2 = cmdline.find_first_of(';', delim1 + 1);
+  if (delim2 == std::string::npos)
+    throw (exceptions::msg() << "invalid command format: expected "
+           << "<BROKERID>;<TARGETENDPOINT>;<CMD>[;<ARG1>[;<ARG2>...]]");
+  endp = cmdline.substr(delim1 + 1, delim2 - delim1 - 2).c_str();
+
+  // Get command.
+  cmd = cmdline.substr(delim2 + 1).c_str();
+
+  return ;
 }
 
 /**
