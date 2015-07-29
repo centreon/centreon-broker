@@ -56,10 +56,11 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
   query.setForwardOnly(true);
 
   // Load the dependencies.
-  if (!query.exec("SELECT dep_id, dep_name, dep_description, inherits_parent,"
-                  "       execution_failure_criteria,"
-                  "       notification_failure_criteria"
-                  "  FROM cfg_dependencies"))
+  if (!query.exec(
+               "SELECT dep_id, inherits_parent,"
+               "       execution_failure_criteria,"
+               "       notification_failure_criteria"
+               "  FROM cfg_dependencies"))
     throw (exceptions::msg()
            << "notification: cannot load dependencies from database: "
            << query.lastError().text());
@@ -67,11 +68,11 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
   while (query.next()) {
     dependency::ptr dep(new dependency);
     unsigned int id = query.value(0).toUInt();
-    dep->set_inherits_parent(query.value(3).toBool());
+    dep->set_inherits_parent(query.value(1).toBool());
     dep_execution_failure_options.push_back(
-      std::make_pair(id, query.value(4).toString().toStdString()));
+      std::make_pair(id, query.value(2).toString().toStdString()));
     dep_notification_failure_options.push_back(
-      std::make_pair(id, query.value(5).toString().toStdString()));
+      std::make_pair(id, query.value(3).toString().toStdString()));
 
     output->add_dependency(id, dep);
   }
