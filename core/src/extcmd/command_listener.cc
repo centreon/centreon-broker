@@ -48,6 +48,9 @@ command_listener::~command_listener() {}
 command_result command_listener::command_status(
                                    unsigned int source_broker_id,
                                    unsigned int command_id) {
+  // Check for entries that should be removed from cache.
+  _check_invalid();
+
   command_result res;
   QMutexLocker lock(&_pendingm);
   std::map<std::pair<unsigned int, unsigned int>, pending_command>::const_iterator
@@ -146,10 +149,18 @@ void command_listener::_check_invalid() {
          end(_pending.end());
        it != end;) {
     if (it->second.invalid_time < now) {
-      std::map<std::pair<unsigned int, unsigned int>, pending_command>::iterator
-        to_delete(it);
-      ++it;
-      _pending.erase(to_delete);
+      if (it->second.result.code == 1) { // Pending.
+        it->second.invalid_time = now + _result_timeout;
+        it->second.result.code = -1;
+        it->second.result.msg = "Command timeout";
+        ++it;
+      }
+      else {
+        std::map<std::pair<unsigned int, unsigned int>, pending_command>::iterator
+          to_delete(it);
+        ++it;
+        _pending.erase(to_delete);
+      }
     }
     else if (it->second.invalid_time < _next_invalid) {
       _next_invalid = it->second.invalid_time;

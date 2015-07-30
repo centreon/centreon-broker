@@ -41,7 +41,7 @@ namespace             extcmd {
   class               command_client : public io::stream {
   public:
                       command_client(
-                        QLocalSocket* socket,
+                        int native_socket,
                         command_listener* listener);
                       ~command_client();
     bool              read(
@@ -52,11 +52,13 @@ namespace             extcmd {
   private:
                       command_client(command_client const& other);
     command_client&   operator=(command_client const& other);
+    void              _initialize_socket();
 
     std::string       _buffer;
     command_listener* _listener;
     std::auto_ptr<QLocalSocket>
                       _socket;
+    int               _socket_native;
   };
 }
 

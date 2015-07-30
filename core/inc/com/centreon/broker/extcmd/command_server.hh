@@ -21,7 +21,6 @@
 #  define CCB_EXTCMD_COMMAND_SERVER_HH
 
 #  include <memory>
-#  include <QLocalServer>
 #  include <string>
 #  include "com/centreon/broker/extcmd/command_listener.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
@@ -36,8 +35,9 @@ namespace               processing {
 }
 
 namespace               extcmd {
-  // Forward declaratin.
+  // Forward declarations.
   class                 command_listener;
+  class                 server_socket;
 
   /**
    *  @class command_server command_server.hh "com/centreon/broker/extcmd/command_server.hh"
@@ -62,7 +62,7 @@ namespace               extcmd {
     misc::shared_ptr<command_listener>
                         _listener;
     processing::thread* _listener_thread;
-    std::auto_ptr<QLocalServer>
+    std::auto_ptr<server_socket>
                         _socket;
     std::string         _socket_file;
   };

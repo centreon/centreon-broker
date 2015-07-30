@@ -29,21 +29,32 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::extcmd;
 
+/**************************************
+*                                     *
+*           Public Methods            *
+*                                     *
+**************************************/
+
 /**
  *  Constructor.
  *
- *  @param[in]     socket    Client socket.
- *  @param[in,out] listener  Command listener.
+ *  @param[in]     native_socket  Client socket.
+ *  @param[in,out] listener       Command listener.
  */
 command_client::command_client(
-                  QLocalSocket* socket,
+                  int native_socket,
                   command_listener* listener)
-  : _listener(listener), _socket(socket) {}
+  : _listener(listener), _socket_native(native_socket) {}
 
 /**
  *  Destructor.
  */
-command_client::~command_client() {}
+command_client::~command_client() {
+  if (_socket_native >= 0)
+    _initialize_socket();
+  if (_socket.get())
+    _socket->close();
+}
 
 /**
  *  Read from command client.
@@ -56,6 +67,10 @@ command_client::~command_client() {}
 bool command_client::read(
                        misc::shared_ptr<io::data>& d,
                        time_t deadline) {
+  // Check that socket exist.
+  if (!_socket.get())
+    _initialize_socket();
+
   // Read commands from socket.
   d.clear();
   size_t delimiter(_buffer.find_first_of('\n'));
@@ -83,33 +98,38 @@ bool command_client::read(
     _buffer.erase(0, delimiter + 1);
 
     // Process command.
-    misc::shared_ptr<command_request>
-      req(new command_request);
     command_result res;
     try {
-      // Parse command.
-      req->parse(cmd);
-
       // Process command immediately if it queries
       // another command status.
-      static char const* status_cmd("COMMAND_STATUS;");
-      if (req->cmd.startsWith(status_cmd)) {
-        unsigned int cmd_id(req->cmd.mid(strlen(status_cmd)).toUInt());
+      static char const* execute_cmd("EXECUTE;");
+      static char const* status_cmd("STATUS;");
+      if (cmd.substr(0, strlen(status_cmd)) == status_cmd) {
+        unsigned int cmd_id(strtoul(
+                              cmd.substr(strlen(status_cmd)).c_str(),
+                              NULL,
+                              0));
         res = _listener->command_status(io::data::broker_id, cmd_id);
       }
       // Store command in result listener and let
       // it be processed by multiplexing engine.
-      else {
+      else if (cmd.substr(0, strlen(execute_cmd)) == execute_cmd) {
+        misc::shared_ptr<command_request>
+          req(new command_request);
+        req->parse(cmd.substr(strlen(execute_cmd)));
         d = req;
         _listener->write(req);
         res = _listener->command_status(io::data::broker_id, req->id);
       }
+      else
+        throw (exceptions::msg() << "invalid command format: expected "
+               << "either STATUS;<CMDID> or "
+               << "EXECUTE;<BROKERID>;<ENDPOINTNAME>;<CMD>[;ARG1[;ARG2...]]");
     }
     catch (std::exception const& e) {
       // At this point, command request was not written to the command
       // listener, so it not necessary to write command result either.
-      res.destination_id = req->source_id;
-      res.id = req->id;
+      res.id = 0;
       res.code = -1;
       res.msg = e.what();
     }
@@ -153,4 +173,20 @@ unsigned int command_client::write(
   throw (io::exceptions::shutdown(false, true)
          << "command: cannot write event to command client");
   return (1);
+}
+
+/**************************************
+*                                     *
+*           Private Methods           *
+*                                     *
+**************************************/
+
+/**
+ *  Initialize socket.
+ */
+void command_client::_initialize_socket() {
+  _socket.reset(new QLocalSocket);
+  _socket->setSocketDescriptor(_socket_native);
+  _socket_native = -1;
+  return ;
 }
