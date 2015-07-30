@@ -184,9 +184,11 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
+  // Take this event into account.
+  ++_pending_events;
+
   // Process service status events.
   if (!data.isNull()) {
-    ++_pending_events;
     if (data->type() == neb::service_status::static_type()) {
       misc::shared_ptr<neb::service_status>
         ss(data.staticCast<neb::service_status>());
@@ -305,7 +307,8 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   // Event acknowledgement.
   logging::debug(logging::low)
     << "storage: " << _pending_events << " have not yet been acknowledged";
-  if (!_db.pending_queries()) {
+  if (_db.committed()) {
+    _db.clear_committed_flag();
     _insert_perfdatas();
     int retval(_pending_events);
     _pending_events = 0;

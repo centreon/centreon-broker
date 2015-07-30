@@ -64,6 +64,7 @@ stream::stream(
     _db(db),
     _queries_per_transaction(queries_per_transaction == 0 ?
                                1 : queries_per_transaction),
+    _pending_queries(0),
     _actual_query(0),
     _cache(cache) {
   if (version == "0.9")
@@ -135,6 +136,7 @@ void stream::update() {
  */
 unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   bool commit = false;
+  ++_pending_queries = 0;
 
   // Give data to cache.
   _cache.write(data);
@@ -162,8 +164,9 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
   if (commit) {
     logging::debug(logging::medium)
       << "influxdb: commiting " << _actual_query << " queries";
-    unsigned int ret = _actual_query;
+    unsigned int ret = _pending_queries;
     _actual_query = 0;
+    _pending_queries = 0;
     _influx_db->commit();
     return (ret);
   }

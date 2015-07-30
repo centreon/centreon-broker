@@ -28,3 +28,10 @@ This version of Centreon Broker removes the support of Unix socket for communica
 between all broker modules and daemons.	Regarding our statistics, Unix socket is 
 not used by an enough representative part of users. So we decided to remove this function. 
 
+***************
+Important notes
+***************
+
+* Centreon Broker 2.9.1 fixes a memory leak introduced in Centreon Broker 2.8.0.
+  All users are strongly advised to upgrade.
+

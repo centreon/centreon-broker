@@ -146,9 +146,11 @@ void reporting_stream::statistics(io::properties& tree) const {
  *
  *  @return Number of events acknowledged.
  */
-unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
+unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {                         
+  // Take this event into account.
+  ++_pending_events;
+
   if (!data.isNull()) {
-    ++_pending_events;
     if (data->type()
         == io::events::data_type<io::events::bam,
                                  bam::de_kpi_event>::value)
@@ -198,7 +200,8 @@ unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
     _db.commit();
 
   // Event acknowledgement.
-  if (!_db.pending_queries()) {
+  if (_db.committed()) {
+    _db.clear_committed_flag();
     int retval(_pending_events);
     _pending_events = 0;
     return (retval);
