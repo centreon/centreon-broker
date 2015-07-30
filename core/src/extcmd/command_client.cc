@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
 #include <QCoreApplication>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
