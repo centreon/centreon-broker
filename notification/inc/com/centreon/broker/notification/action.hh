@@ -76,6 +76,9 @@ namespace           notification {
     time_t            get_at() const throw();
     void              set_at(time_t at) throw();
 
+    time_t            get_first_notification_time() const throw();
+    void              set_first_notification_time(time_t t) throw();
+
     void              process_action(
                         state& st,
                         node_cache& cache,
@@ -88,6 +91,7 @@ namespace           notification {
     unsigned int      _notification_rule_id;
     unsigned int      _notification_number;
     time_t            _at;
+    time_t            _first_time_of_notification;
 
     void              _spawn_notification_attempts(
                         ::com::centreon::broker::notification::state& st,

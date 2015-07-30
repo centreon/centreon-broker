@@ -35,7 +35,8 @@ action::action()
     _id(),
     _notification_rule_id(0),
     _notification_number(0),
-    _at(0) {}
+    _at(0),
+    _first_time_of_notification(0) {}
 
 /**
  *  Copy constructor.
@@ -61,6 +62,7 @@ action& action::operator=(action const& obj) {
     _notification_number = obj._notification_number;
     _at = obj._at;
     _forwarded_action = obj._forwarded_action;
+    _first_time_of_notification = obj._first_time_of_notification;
   }
   return (*this);
 }
@@ -78,7 +80,8 @@ bool action::operator==(action const& obj) const {
           _notification_rule_id == obj._notification_rule_id &&
           _notification_number == obj._notification_number &&
           _at == obj._at &&
-          _forwarded_action == obj._forwarded_action);
+          _forwarded_action == obj._forwarded_action &&
+          _first_time_of_notification == obj._first_time_of_notification);
 }
 
 /**
@@ -99,6 +102,8 @@ bool action::operator<(action const& obj) const {
     return (_notification_number < obj._notification_number);
   else if (_at != obj._at)
     return (_at < obj._at);
+  else if (_first_time_of_notification != obj._first_time_of_notification)
+    return (_first_time_of_notification < obj._first_time_of_notification);
   else
     return (_forwarded_action < obj._forwarded_action);
 }
@@ -214,6 +219,24 @@ void action::set_at(time_t at) throw() {
 }
 
 /**
+ *  Get the first notification time.
+ *
+ *  @return  The first notification time.
+ */
+time_t action::get_first_notification_time() const throw() {
+  return (_first_time_of_notification);
+}
+
+/**
+ *  Set the first notification time.
+ *
+ *  @param[in] t  The new first notification time.
+ */
+void action::set_first_notification_time(time_t t) throw() {
+  _first_time_of_notification = t;
+}
+
+/**
  *  @brief Process the action.
  *
  *  What is done changes based on the type of this notification.
@@ -274,6 +297,7 @@ void action::_spawn_notification_attempts(
     else
       at = ::time(NULL);
     spawned_actions.push_back(std::make_pair(at, a));
+    spawned_actions.back().second.set_first_notification_time(at);
   }
   return ;
 }
@@ -423,16 +447,17 @@ void action::_process_notification(
     should_send_the_notification = false;
   }
 
-  // See if this notification is between the start and end.
-  if (_notification_number < method->get_start()
-      || (_notification_number >= method->get_end()
+  // See if this notification time is between the start and end.
+  if (now < (_first_time_of_notification + method->get_start())
+      || (now >= (_first_time_of_notification + method->get_end())
           && method->get_end())) {
     logging::debug(logging::medium)
-      << "notification: notification number of node ("
+      << "notification: notification time of node ("
       << _id.get_host_id() << ", " << _id.get_service_id()
-      << ") is " << _notification_number
-      << " and not in the method's valid range (["
-      << method->get_start() << "-" << method->get_end() << "])";
+      << ") is '" << now
+      << "' and not in the method's valid range (["
+      << _first_time_of_notification + method->get_start()
+      << "-" << _first_time_of_notification + method->get_end() << "])";
     should_send_the_notification = false;
   }
 
