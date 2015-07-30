@@ -663,18 +663,20 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_LIB "brokertest")
   add_library("${TEST_LIB}" STATIC
     # Sources.
+    "${PROJECT_SOURCE_DIR}/test/broker_extcmd.cc"
     "${PROJECT_SOURCE_DIR}/test/cbd.cc"
     "${PROJECT_SOURCE_DIR}/test/config.cc"
     "${PROJECT_SOURCE_DIR}/test/engine.cc"
-    "${PROJECT_SOURCE_DIR}/test/external_command.cc"
+    "${PROJECT_SOURCE_DIR}/test/engine_extcmd.cc"
     "${PROJECT_SOURCE_DIR}/test/generate.cc"
     "${PROJECT_SOURCE_DIR}/test/misc.cc"
     "${PROJECT_SOURCE_DIR}/test/rrd_file.cc"
     # Headers.
+    "${PROJECT_SOURCE_DIR}/test/broker_extcmd.hh"
     "${PROJECT_SOURCE_DIR}/test/cbd.hh"
     "${PROJECT_SOURCE_DIR}/test/config.hh"
     "${PROJECT_SOURCE_DIR}/test/engine.hh"
-    "${PROJECT_SOURCE_DIR}/test/external_command.hh"
+    "${PROJECT_SOURCE_DIR}/test/engine_extcmd.hh"
     "${PROJECT_SOURCE_DIR}/test/generate.hh"
     "${PROJECT_SOURCE_DIR}/test/misc.hh"
     "${PROJECT_SOURCE_DIR}/test/rrd_file.hh"

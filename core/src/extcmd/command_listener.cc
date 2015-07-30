@@ -166,6 +166,8 @@ void command_listener::_check_invalid() {
       _next_invalid = it->second.invalid_time;
       ++it;
     }
+    else
+      ++it;
   }
   return ;
 }

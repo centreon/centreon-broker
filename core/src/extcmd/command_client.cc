@@ -87,6 +87,7 @@ bool command_client::read(
                << _socket->errorString());
       _buffer.append(buffer, rb);
     }
+    delimiter = _buffer.find_first_of('\n');
     if ((deadline == (time_t)-1) || (time(NULL) < deadline))
       QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
     else

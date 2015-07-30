@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,7 +21,7 @@
 #include <fstream>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "test/external_command.hh"
+#include "test/engine_extcmd.hh"
 
 using namespace com::centreon::broker;
 
@@ -34,35 +34,34 @@ using namespace com::centreon::broker;
 /**
  *  Default constructor.
  */
-external_command::external_command() {}
+engine_extcmd::engine_extcmd() {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-external_command::external_command(external_command const& right) {
-  _internal_copy(right);
+engine_extcmd::engine_extcmd(engine_extcmd const& other) {
+  _internal_copy(other);
 }
 
 /**
  *  Destructor.
  */
-external_command::~external_command() {
+engine_extcmd::~engine_extcmd() {
   ::remove(_file.c_str());
 }
 
 /**
  *  Assignment operator.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other Object to copy.
  *
  *  @return This object.
  */
-external_command& external_command::operator=(
-                                      external_command const& right) {
-  if (this != &right)
-    _internal_copy(right);
+engine_extcmd& engine_extcmd::operator=(engine_extcmd const& other) {
+  if (this != &other)
+    _internal_copy(other);
   return (*this);
 }
 
@@ -71,7 +70,7 @@ external_command& external_command::operator=(
  *
  *  @param[in] query Query to execute.
  */
-void external_command::execute(std::string const& query) {
+void engine_extcmd::execute(std::string const& query) {
   std::ofstream ofs;
   ofs.open(_file.c_str(), std::ios_base::out | std::ios_base::app);
   if (ofs.fail())
@@ -87,7 +86,7 @@ void external_command::execute(std::string const& query) {
  *
  *  @return Configuration entries.
  */
-std::string external_command::get_engine_config() const {
+std::string engine_extcmd::get_engine_config() const {
   std::ostringstream config;
   config << "command_file=" << _file << "\n"
          << "command_check_interval=-1\n";
@@ -99,7 +98,7 @@ std::string external_command::get_engine_config() const {
  *
  *  @return External command file path.
  */
-std::string const& external_command::get_file() const throw () {
+std::string const& engine_extcmd::get_file() const throw () {
   return (_file);
 }
 
@@ -108,7 +107,7 @@ std::string const& external_command::get_file() const throw () {
  *
  *  @param[in] file External command file path.
  */
-void external_command::set_file(std::string const& file) {
+void engine_extcmd::set_file(std::string const& file) {
   _file = file;
   return ;
 }
@@ -122,9 +121,9 @@ void external_command::set_file(std::string const& file) {
 /**
  *  Copy internal data members.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void external_command::_internal_copy(external_command const& right) {
-  _file = right._file;
+void engine_extcmd::_internal_copy(engine_extcmd const& other) {
+  _file = other._file;
   return ;
 }

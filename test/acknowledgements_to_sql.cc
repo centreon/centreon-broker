@@ -27,9 +27,10 @@
 #include <QVariant>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "test/broker_extcmd.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
-#include "test/external_command.hh"
+#include "test/engine_extcmd.hh"
 #include "test/generate.hh"
 #include "test/misc.hh"
 #include "test/vars.hh"
@@ -52,8 +53,8 @@ int main() {
   std::list<service> services;
   std::list<command> commands;
   std::string engine_config_path(tmpnam(NULL));
-  external_command engine_commander;
-  external_command broker_commander;
+  engine_extcmd engine_commander;
+  broker_extcmd broker_commander;
   engine daemon;
   test_file broker_cfg;
   test_db db;
@@ -126,24 +127,24 @@ int main() {
     // Acknowledge the hosts.
     {
       std::ostringstream oss;
-      oss << "ACKNOWLEDGE_HOST_PROBLEM;1;1;0;0;Merethis;Random comment";
+      oss << "EXECUTE;1;AcknowledgementsToSQL-NodeEvents;ACKNOWLEDGE_HOST_PROBLEM;1;1;0;0;Merethis;Random comment";
       broker_commander.execute(oss.str().c_str());
     }
     {
       std::ostringstream oss;
-      oss << "ACKNOWLEDGE_HOST_PROBLEM;2;1;0;0;Centreon;Comment text.";
+      oss << "EXECUTE;1;AcknowledgementsToSQL-NodeEvents;ACKNOWLEDGE_HOST_PROBLEM;2;1;0;0;Centreon;Comment text.";
       broker_commander.execute(oss.str().c_str());
     }
 
     // Acknowledge the services.
     {
       std::ostringstream oss;
-      oss << "ACKNOWLEDGE_SVC_PROBLEM;1;1;1;0;0;Broker;Monitoring";
+      oss << "EXECUTE;1;AcknowledgementsToSQL-NodeEvents;ACKNOWLEDGE_SVC_PROBLEM;1;1;1;0;0;Broker;Monitoring";
       broker_commander.execute(oss.str().c_str());
     }
     {
       std::ostringstream oss;
-      oss << "ACKNOWLEDGE_SVC_PROBLEM;2;2;1;0;0;Author;Just a comment!";
+      oss << "EXECUTE;1;AcknowledgementsToSQL-NodeEvents;ACKNOWLEDGE_SVC_PROBLEM;2;2;1;0;0;Author;Just a comment!";
       broker_commander.execute(oss.str().c_str());
     }
 
@@ -227,8 +228,8 @@ int main() {
     }
 
     // Disable acknowledgements on host #1 and service #1.
-    broker_commander.execute("REMOVE_HOST_ACKNOWLEDGEMENT;1");
-    broker_commander.execute("REMOVE_SVC_ACKNOWLEDGEMENT;1;1");
+    broker_commander.execute("EXECUTE;1;AcknowledgementsToSQL-NodeEvents;REMOVE_HOST_ACKNOWLEDGEMENT;1");
+    broker_commander.execute("EXECUTE;1;AcknowledgementsToSQL-NodeEvents;REMOVE_SVC_ACKNOWLEDGEMENT;1;1");
 
     // Disable active checks on host #2.
     engine_commander.execute("DISABLE_HOST_CHECK;2");
