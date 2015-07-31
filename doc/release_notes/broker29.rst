@@ -34,4 +34,5 @@ Important notes
 
 * Centreon Broker 2.9.1 fixes a memory leak introduced in Centreon Broker 2.8.0.
   All users are strongly advised to upgrade.
-
+* Centreon Broker 2.9.2 fixes an issue with KPI processing for BAM users. This
+  regression was introduced by the 2.9.1 release.
