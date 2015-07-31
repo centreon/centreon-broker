@@ -37,7 +37,7 @@ using namespace com::centreon::broker;
 
 #define CENTREON_DB_NAME "broker_bam_centreon"
 #define BI_DB_NAME "broker_bam_bi"
-#define BA_COUNT 10
+#define BA_COUNT 11
 #define HOST_COUNT 1
 #define SERVICES_BY_HOST 14
 
