@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <centreonbroker>
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
-  <instance>24</instance>
-  <instance_name>MyBrokerPassive</instance_name>
+  <broker_id>85</broker_id>
+  <broker_name>my-broker2</broker_name>
+  <poller_id>43</poller_id>
+  <poller_name>my-poller2</poller_name>
   <!--
   <stats>
     <fifo>/tmp/cbd.fifo</fifo>
@@ -18,13 +20,13 @@
   </logger>
   -->
   <input>
-    <name>CorrelationToSQL-TCPInput</name>
+    <name>correlationtosql2-tcp</name>
     <type>tcp</type>
     <protocol>bbdo</protocol>
     <port>5688</port>
   </input>
   <output>
-    <name>CorrelationToSQL-PassiveCorrelation</name>
+    <name>correlationtosql2-correlation</name>
     <type>correlation</type>
     <file>@PROJECT_SOURCE_DIR@/test/cfg/correlation_file.xml</file>
     <passive>1</passive>

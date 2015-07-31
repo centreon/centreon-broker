@@ -31,7 +31,7 @@
 #include "test/cbd.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
-#include "test/external_command.hh"
+#include "test/engine_extcmd.hh"
 #include "test/generate.hh"
 #include "test/misc.hh"
 #include "test/vars.hh"
@@ -56,7 +56,7 @@ int main() {
   std::string engine_config_path(tmpnam(NULL));
   std::string retention_secondary_file_path(tmpnam(NULL));
   std::string retention_secondary_file2_path(tmpnam(NULL));
-  external_command commander;
+  engine_extcmd commander;
   commander.set_file(tmpnam(NULL));
   engine daemon;
   test_db db;

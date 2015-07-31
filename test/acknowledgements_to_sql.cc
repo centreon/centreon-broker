@@ -127,24 +127,24 @@ int main() {
     // Acknowledge the hosts.
     {
       std::ostringstream oss;
-      oss << "EXECUTE;1;AcknowledgementsToSQL-NodeEvents;ACKNOWLEDGE_HOST_PROBLEM;1;1;0;0;Merethis;Random comment";
+      oss << "EXECUTE;84;acknowledgementstosql-nodeevents;ACKNOWLEDGE_HOST_PROBLEM;1;1;0;0;Merethis;Random comment";
       broker_commander.execute(oss.str().c_str());
     }
     {
       std::ostringstream oss;
-      oss << "EXECUTE;1;AcknowledgementsToSQL-NodeEvents;ACKNOWLEDGE_HOST_PROBLEM;2;1;0;0;Centreon;Comment text.";
+      oss << "EXECUTE;84;acknowledgementstosql-nodeevents;ACKNOWLEDGE_HOST_PROBLEM;2;1;0;0;Centreon;Comment text.";
       broker_commander.execute(oss.str().c_str());
     }
 
     // Acknowledge the services.
     {
       std::ostringstream oss;
-      oss << "EXECUTE;1;AcknowledgementsToSQL-NodeEvents;ACKNOWLEDGE_SVC_PROBLEM;1;1;1;0;0;Broker;Monitoring";
+      oss << "EXECUTE;84;acknowledgementstosql-nodeevents;ACKNOWLEDGE_SVC_PROBLEM;1;1;1;0;0;Broker;Monitoring";
       broker_commander.execute(oss.str().c_str());
     }
     {
       std::ostringstream oss;
-      oss << "EXECUTE;1;AcknowledgementsToSQL-NodeEvents;ACKNOWLEDGE_SVC_PROBLEM;2;2;1;0;0;Author;Just a comment!";
+      oss << "EXECUTE;84;acknowledgementstosql-nodeevents;ACKNOWLEDGE_SVC_PROBLEM;2;2;1;0;0;Author;Just a comment!";
       broker_commander.execute(oss.str().c_str());
     }
 
@@ -228,8 +228,8 @@ int main() {
     }
 
     // Disable acknowledgements on host #1 and service #1.
-    broker_commander.execute("EXECUTE;1;AcknowledgementsToSQL-NodeEvents;REMOVE_HOST_ACKNOWLEDGEMENT;1");
-    broker_commander.execute("EXECUTE;1;AcknowledgementsToSQL-NodeEvents;REMOVE_SVC_ACKNOWLEDGEMENT;1;1");
+    broker_commander.execute("EXECUTE;84;acknowledgementstosql-nodeevents;REMOVE_HOST_ACKNOWLEDGEMENT;1");
+    broker_commander.execute("EXECUTE;84;acknowledgementstosql-nodeevents;REMOVE_SVC_ACKNOWLEDGEMENT;1;1");
 
     // Disable active checks on host #2.
     engine_commander.execute("DISABLE_HOST_CHECK;2");

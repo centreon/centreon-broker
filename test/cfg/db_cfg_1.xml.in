@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <centreonbroker>
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
-  <instance>42</instance>
-  <instance_name>MyCentral</instance_name>
+  <broker_id>84</broker_id>
+  <broker_name>my-central-broker</broker_name>
+  <poller_id>42</poller_id>
+  <poller_name>my-central-engine</poller_name>
   <!--
   <stats>
     <fifo>/tmp/cbd1.fifo</fifo>
@@ -20,7 +22,7 @@
   -->
   <command_file>@COMMAND_FILE@</command_file>
   <output>
-    <name>DBCfg1-DBReader</name>
+    <name>dbcfg1-dbreader</name>
     <type>db_cfg_reader</type>
     <db_type>@DB_TYPE@</db_type>
     <db_host>@DB_HOST@</db_host>
@@ -31,7 +33,7 @@
     <queries_per_transaction>0</queries_per_transaction>
   </output>
   <output>
-    <name>DBCfg1-TCP</name>
+    <name>dbcfg1-tcp</name>
     <type>tcp</type>
     <protocol>bbdo</protocol>
     <host>localhost</host>

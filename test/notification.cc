@@ -24,9 +24,10 @@
 #include <fstream>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "test/broker_extcmd.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
-#include "test/external_command.hh"
+#include "test/engine_extcmd.hh"
 #include "test/generate.hh"
 #include "test/misc.hh"
 #include "test/vars.hh"
@@ -347,8 +348,8 @@ int main() {
   std::string flag_file3(tmpnam(NULL));
   std::string flag_file4(tmpnam(NULL));
   std::string node_cache_file(tmpnam(NULL));
-  external_command commander;
-  external_command broker_commander;
+  engine_extcmd commander;
+  broker_extcmd broker_commander;
   engine monitoring;
   test_file broker_cfg;
   test_db db;
@@ -650,8 +651,8 @@ int main() {
     time_t start = ::time(NULL);
     time_t end = start + 5;
     ss.str("");
-    ss << "SCHEDULE_SVC_DOWNTIME;Host1;Service2;" << start << ";"
-       << end << ";1;0;5;test author;some comments;test;0";
+    ss << "EXECUTE;84;notification-nodeevents;SCHEDULE_SVC_DOWNTIME;Host1;Service2;"
+       << start << ";" << end << ";1;0;5;test author;some comments;test;0";
     broker_commander.execute(ss.str());
 
     sleep_for(10);
@@ -666,7 +667,8 @@ int main() {
     }
 
     // Check acks
-    broker_commander.execute("ACKNOWLEDGE_SVC_PROBLEM;Host1;Service2;2;1;1;test author;some comments");
+    broker_commander.execute(
+      "EXECUTE;84;notification-nodeevents;ACKNOWLEDGE_SVC_PROBLEM;Host1;Service2;2;1;1;test author;some comments");
 
     sleep_for(3);
     get_file(flag_file4, error, ss);

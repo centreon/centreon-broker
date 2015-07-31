@@ -24,9 +24,9 @@
 #include <QSqlQuery>
 #include <QVariant>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "test/broker_extcmd.hh"
 #include "test/cbd.hh"
 #include "test/config.hh"
-#include "test/external_command.hh"
 #include "test/misc.hh"
 #include "test/vars.hh"
 
@@ -161,7 +161,7 @@ int main() {
   cbd db_writer;
   test_db db_to_read;
   test_db db_to_write;
-  external_command commander;
+  broker_extcmd commander;
 
   try {
     // Prepare databases.
@@ -240,7 +240,7 @@ int main() {
     sleep_for(2);
 
     // Full synchronization.
-    commander.execute("SYNC_CFG_DB;DBCfg1-DBReader;43");
+    commander.execute("EXECUTE;84;dbcfg1-dbreader;SYNC_CFG_DB;43");
     sleep_for(3);
 
     // Check database.
@@ -303,7 +303,7 @@ int main() {
     }
 
     // Diff synchronization.
-    commander.execute("UPDATE_CFG_DB;DBCfg1-DBReader;43");
+    commander.execute("EXECUTE;84;dbcfg1-dbreader;UPDATE_CFG_DB;43");
     sleep_for(3);
 
     // Check database.

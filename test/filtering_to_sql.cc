@@ -28,7 +28,6 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
-#include "test/external_command.hh"
 #include "test/generate.hh"
 #include "test/misc.hh"
 #include "test/vars.hh"
@@ -50,7 +49,6 @@ int main() {
   std::list<host> hosts;
   std::list<service> services;
   std::string engine_config_path(tmpnam(NULL));
-  external_command commander;
   engine daemon;
   test_db db;
 
@@ -61,12 +59,10 @@ int main() {
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, 10);
     generate_services(services, hosts, 5);
-    commander.set_file(tmpnam(NULL));
     std::string additional_config;
     {
       std::ostringstream oss;
-      oss << commander.get_engine_config()
-          << "broker_module=" << CBMOD_PATH << " "
+      oss << "broker_module=" << CBMOD_PATH << " "
           << PROJECT_SOURCE_DIR << "/test/cfg/filtering_to_sql.xml\n";
       additional_config = oss.str();
     }

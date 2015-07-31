@@ -28,7 +28,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
-#include "test/external_command.hh"
+#include "test/engine_extcmd.hh"
 #include "test/generate.hh"
 #include "test/misc.hh"
 #include "test/vars.hh"
@@ -203,7 +203,7 @@ int main() {
   std::list<host> hosts;
   std::list<service> services;
   std::string engine_config_path(tmpnam(NULL));
-  external_command commander;
+  engine_extcmd commander;
   engine daemon;
   test_db db;
 

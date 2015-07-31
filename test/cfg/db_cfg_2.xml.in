@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <centreonbroker>
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
-  <instance>43</instance>
-  <instance_name>MyPoller</instance_name>
+  <broker_id>85</broker_id>
+  <broker_name>my-poller-broker</broker_name>
+  <poller_id>43</poller_id>
+  <poller_name>my-poller-engine</poller_name>
   <!--
   <stats>
     <fifo>/tmp/cbd2.fifo</fifo>
@@ -19,13 +21,13 @@
   </logger>
   -->
   <input>
-    <name>DBCfg2-TCP</name>
+    <name>dbcfg2-tcp</name>
     <type>tcp</type>
     <protocol>bbdo</protocol>
     <port>5691</port>
   </input>
   <output>
-    <name>DBCfg2-DBWriter</name>
+    <name>dbcfg2-dbwriter</name>
     <type>db_cfg_writer</type>
     <db_type>@DB_TYPE@</db_type>
     <db_host>@DB_HOST@</db_host>

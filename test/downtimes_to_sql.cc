@@ -26,9 +26,10 @@
 #include <QVariant>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "test/broker_extcmd.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
-#include "test/external_command.hh"
+#include "test/engine_extcmd.hh"
 #include "test/generate.hh"
 #include "test/misc.hh"
 #include "test/vars.hh"
@@ -51,8 +52,8 @@ int main() {
   std::list<service> services;
   std::list<command> commands;
   std::string engine_config_path(tmpnam(NULL));
-  external_command engine_commander;
-  external_command broker_commander;
+  engine_extcmd engine_commander;
+  broker_extcmd broker_commander;
   engine daemon;
   test_file broker_cfg;
   test_db db;
@@ -134,14 +135,15 @@ int main() {
     // Add downtimes on two hosts.
     {
       std::ostringstream oss;
-      oss << "SCHEDULE_HOST_DOWNTIME;2;" << now << ";" << now + 3600
+      oss << "EXECUTE;84;downtimestosql-nodeevents;SCHEDULE_HOST_DOWNTIME;2;"
+          << now << ";" << now + 3600
           << ";1;0;3600;Merethis;Centreon is beautiful";
       broker_commander.execute(oss.str().c_str());
     }
     {
       std::ostringstream oss;
-      oss << "SCHEDULE_HOST_DOWNTIME;1;" << now + 1000 << ";"
-          << now + 2000
+      oss << "EXECUTE;84;downtimestosql-nodeevents;SCHEDULE_HOST_DOWNTIME;1;"
+          << now + 1000 << ";" << now + 2000
           << ";0;0;123;Broker;Some random and useless comment.";
       broker_commander.execute(oss.str().c_str());
     }
@@ -149,15 +151,16 @@ int main() {
     // Add downtimes on two services.
     {
       std::ostringstream oss;
-      oss << "SCHEDULE_SVC_DOWNTIME;7;31;" << now << ";"
-          << now + 8638
+      oss << "EXECUTE;84;downtimestosql-nodeevents;SCHEDULE_SVC_DOWNTIME;7;31;"
+          << now << ";" << now + 8638
           << ";0;0;7129;Default Author; This is a comment !";
       broker_commander.execute(oss.str().c_str());
     }
     {
       std::ostringstream oss;
-      oss << "SCHEDULE_SVC_DOWNTIME;10;48;" << now + 2834 << ";"
-          << now + 987564 << ";1;0;2;Author;Scheduling downtime";
+      oss << "EXECUTE;84;downtimestosql-nodeevents;SCHEDULE_SVC_DOWNTIME;10;48;"
+          << now + 2834 << ";" << now + 987564
+          << ";1;0;2;Author;Scheduling downtime";
       broker_commander.execute(oss.str().c_str());
     }
 
@@ -311,10 +314,14 @@ int main() {
     }
 
     // Delete downtimes.
-    broker_commander.execute("DEL_HOST_DOWNTIME;2");
-    broker_commander.execute("DEL_SVC_DOWNTIME;4");
-    broker_commander.execute("DEL_SVC_DOWNTIME;3");
-    broker_commander.execute("DEL_HOST_DOWNTIME;1");
+    broker_commander.execute(
+      "EXECUTE;84;downtimestosql-nodeevents;DEL_HOST_DOWNTIME;2");
+    broker_commander.execute(
+      "EXECUTE;84;downtimestosql-nodeevents;DEL_SVC_DOWNTIME;4");
+    broker_commander.execute(
+      "EXECUTE;84;downtimestosql-nodeevents;DEL_SVC_DOWNTIME;3");
+    broker_commander.execute(
+      "EXECUTE;84;downtimestosql-nodeevents;DEL_HOST_DOWNTIME;1");
 
     // Run a while.
     sleep_for(10);

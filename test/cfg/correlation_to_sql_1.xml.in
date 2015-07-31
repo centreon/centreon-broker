@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <centreonbroker>
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
-  <instance>42</instance>
-  <instance_name>MyBrokerActive</instance_name>
+  <broker_id>84</broker_id>
+  <broker_name>my-broker1</broker_name>
+  <poller_id>42</poller_id>
+  <poller_name>my-poller1</poller_name>
   <command_file>@COMMAND_FILE@</command_file>
   <!--
   <stats>
@@ -19,16 +21,16 @@
   </logger>
   -->
   <output>
-    <name>CorrelationToSQL-Correlation</name>
+    <name>correlationtosql1-correlation</name>
     <type>correlation</type>
     <file>@PROJECT_SOURCE_DIR@/test/cfg/correlation_file.xml</file>
   </output>
   <output>
-    <name>CorrelationToSQL-NodeEvents</name>
+    <name>correlationtosql1-nodeevents</name>
     <type>node_events</type>
   </output>
   <output>
-    <name>CorrelationToSQL-SQL</name>
+    <name>correlationtosql1-sql</name>
     <type>sql</type>
     <db_type>@DB_TYPE@</db_type>
     <db_host>@DB_HOST@</db_host>
@@ -40,7 +42,7 @@
     <with_state_events>1</with_state_events>
   </output>
   <output>
-    <name>CorrelationToSQL-TCPOutput</name>
+    <name>correlationtosql1-tcp</name>
     <type>tcp</type>
     <protocol>bbdo</protocol>
     <host>localhost</host>

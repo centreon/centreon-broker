@@ -26,14 +26,14 @@
 #include <QTcpServer>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "config.hh"
-#include "cbd.hh"
-#include "vars.hh"
-#include "generate.hh"
-#include "misc.hh"
-#include "vars.hh"
-#include "engine.hh"
-#include "external_command.hh"
+#include "test/config.hh"
+#include "test/cbd.hh"
+#include "test/vars.hh"
+#include "test/generate.hh"
+#include "test/misc.hh"
+#include "test/vars.hh"
+#include "test/engine.hh"
+#include "test/engine_extcmd.hh"
 
 using namespace com::centreon::broker;
 
@@ -67,7 +67,7 @@ int main() {
   std::list<host> hosts;
   std::list<service> services;
   test_db db;
-  external_command commander;
+  engine_extcmd commander;
   engine monitoring;
   std::string engine_config_path(tmpnam(NULL));
 

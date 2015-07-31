@@ -28,13 +28,13 @@
 #include <QProcess>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "config.hh"
-#include "external_command.hh"
-#include "vars.hh"
-#include "cbd.hh"
-#include "generate.hh"
-#include "misc.hh"
-#include "vars.hh"
+#include "test/broker_extcmd.hh"
+#include "test/config.hh"
+#include "test/vars.hh"
+#include "test/cbd.hh"
+#include "test/generate.hh"
+#include "test/misc.hh"
+#include "test/vars.hh"
 
 using namespace com::centreon::broker;
 
@@ -122,9 +122,9 @@ int main() {
              << "can't start the process to write into the sent subdir file "
              << process2->errorString());
 
-    external_command exc;
+    broker_extcmd exc;
     exc.set_file(dumper_command_file);
-    exc.execute("DUMP_DIR;dir_dumper_input");
+    exc.execute("EXECUTE;84;directorydumper-read;DUMP_DIR");
 
     sleep_for(3);
 
@@ -133,7 +133,7 @@ int main() {
 
     // Remove file.
     ::remove(sent_file.c_str());
-    exc.execute("DUMP_DIR;dir_dumper_input");
+    exc.execute("EXECUTE;84;directorydumper-read;DUMP_DIR");
     sleep_for(3);
 
     // Check for file removal

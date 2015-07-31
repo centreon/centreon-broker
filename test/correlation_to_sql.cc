@@ -30,10 +30,11 @@
 #include <sstream>
 #include <vector>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "test/broker_extcmd.hh"
 #include "test/cbd.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
-#include "test/external_command.hh"
+#include "test/engine_extcmd.hh"
 #include "test/generate.hh"
 #include "test/misc.hh"
 #include "test/vars.hh"
@@ -57,8 +58,8 @@ int main() {
   std::list<host> hosts;
   std::list<service> services;
   std::string engine_config_path(tmpnam(NULL));
-  external_command engine_commander;
-  external_command cbmod_commander;
+  engine_extcmd engine_commander;
+  broker_extcmd cbmod_commander;
   engine daemon;
   cbd broker;
   test_db db;
@@ -175,7 +176,8 @@ int main() {
       engine_commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;2;2;output2-1-2");
       {
         std::ostringstream oss;
-        oss << "SCHEDULE_HOST_DOWNTIME;2;" << t2 << ";" << (t2 + 3600)
+        oss << "EXECUTE;84;correlationtosql1-nodeevents;SCHEDULE_HOST_DOWNTIME;2;"
+            << t2 << ";" << (t2 + 3600)
             << ";1;0;3600;Merethis;Host #2 is going in downtime";
         cbmod_commander.execute(oss.str());
       }
@@ -191,14 +193,19 @@ int main() {
     {
       {
         std::ostringstream oss;
-        oss << "SCHEDULE_SVC_DOWNTIME;1;1;" << t3 << ";" << (t3 + 2000)
+        oss << "EXECUTE;84;correlationtosql1-nodeevents;SCHEDULE_SVC_DOWNTIME;1;1;"
+            << t3 << ";" << (t3 + 2000)
             << ";1;0;2000;Centreon;Service #1-#1 is going in downtime";
         cbmod_commander.execute(oss.str());
       }
-      cbmod_commander.execute("ACKNOWLEDGE_SVC_PROBLEM;1;2;1;0;1;Broker;Ack SVC1-2");
-      engine_commander.execute("PROCESS_HOST_CHECK_RESULT;2;1;output3-2");
-      cbmod_commander.execute("ACKNOWLEDGE_SVC_PROBLEM;2;3;1;0;1;Engine;Ack SVC2-3");
-      cbmod_commander.execute("ACKNOWLEDGE_SVC_PROBLEM;2;4;0;0;1;foo;Ack SVC2-4");
+      cbmod_commander.execute(
+        "EXECUTE;84;correlationtosql1-nodeevents;ACKNOWLEDGE_SVC_PROBLEM;1;2;1;0;1;Broker;Ack SVC1-2");
+      engine_commander.execute(
+        "PROCESS_HOST_CHECK_RESULT;2;1;output3-2");
+      cbmod_commander.execute(
+        "EXECUTE;84;correlationtosql1-nodeevents;ACKNOWLEDGE_SVC_PROBLEM;2;3;1;0;1;Engine;Ack SVC2-3");
+      cbmod_commander.execute(
+        "EXECUTE;84;correlationtosql1-nodeevents;ACKNOWLEDGE_SVC_PROBLEM;2;4;0;0;1;foo;Ack SVC2-4");
     }
     sleep_for(3);
 
@@ -208,10 +215,12 @@ int main() {
     // Step 4.
     {
       engine_commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;2;1;output4-1-2");
-      cbmod_commander.execute("ACKNOWLEDGE_HOST_PROBLEM;2;2;0;1;Centreon Map;Ack HST2");
+      cbmod_commander.execute(
+        "EXECUTE;84;correlationtosql1-nodeevents;ACKNOWLEDGE_HOST_PROBLEM;2;2;0;1;Centreon Map;Ack HST2");
       {
         std::ostringstream oss;
-        oss << "SCHEDULE_SVC_DOWNTIME;2;4;" << t4 << ";" << (t4 + 1600)
+        oss << "EXECUTE;84;correlationtosql1-nodeevents;SCHEDULE_SVC_DOWNTIME;2;4;"
+            << t4 << ";" << (t4 + 1600)
             << ";0;0;1000;Merethis;Service #2-#4 is going in downtime";
         cbmod_commander.execute(oss.str());
       }

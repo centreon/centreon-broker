@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <centreonbroker>
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
-  <broker_id>1</broker_id>
-  <broker_name>my_cbmod</broker_name>
+  <broker_id>84</broker_id>
+  <broker_name>my-broker</broker_name>
   <poller_id>42</poller_id>
-  <poller_name>my_poller</poller_name>
+  <poller_name>my-poller</poller_name>
   <!--
   <stats>
     <fifo>/tmp/cbd.fifo</fifo>
@@ -20,7 +20,7 @@
   </logger>
   -->
   <output>
-    <name>DowntimesToSQL-SQL</name>
+    <name>downtimestosql-sql</name>
     <type>sql</type>
     <db_type>@DB_TYPE@</db_type>
     <db_host>@DB_HOST@</db_host>
@@ -32,7 +32,7 @@
   </output>
   <command_file>@BROKER_COMMAND_FILE@</command_file>
   <output>
+    <name>downtimestosql-nodeevents</name>
     <type>node_events</type>
-    <name>DowntimesToSQL-NodeEvents</name>
   </output>
 </centreonbroker>
