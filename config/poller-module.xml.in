@@ -39,15 +39,6 @@
   </filters>
  </output>
 
- <!-- Write Broker external commands issued by central-broker. -->
- <output>
-  <retry_interval>60</retry_interval>
-  <type>dumper</type>
-  <tagname>extcommands-broker-$POLLERID$</tagname>
-  <path>@PREFIX_VAR@/poller-module.cmd</path>
-  <name>poller-module-extcommands-broker</name>
- </output>
-
  <!-- Write Engine external commands issued by central-broker. -->
  <output>
   <retry_interval>60</retry_interval>
