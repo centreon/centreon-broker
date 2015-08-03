@@ -120,7 +120,8 @@ void node_events_stream::update() {
   _check_downtime_timeperiod_consistency();
   try {
     _save_cache();
-  } catch (std::exception const& e) {
+  }
+  catch (std::exception const& e) {
     logging::error(logging::medium)
       << "node events: error while trying to save cache: "
       << e.what();
@@ -758,7 +759,8 @@ void node_events_stream::_load_config_file() {
     ifs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
     ifs.open(_config_file.c_str());
     ss << ifs.rdbuf();
-  } catch (std::exception const& e) {
+  }
+  catch (std::exception const& e) {
     throw (exceptions::msg()
            << "node_events: couldn't load file '"
            << _config_file << "': " << e.what());
@@ -786,7 +788,8 @@ void node_events_stream::_load_config_file() {
           QString::fromStdString(ts.get_name()), ts.get_timeperiod());
       }
     }
-  } catch (std::exception const& e) {
+  }
+  catch (std::exception const& e) {
     throw (exceptions::msg()
            << "node_events: couldn't parse file '"
            << _config_file << "': " << e.what());

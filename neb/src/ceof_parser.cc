@@ -99,9 +99,9 @@ ceof_iterator ceof_parser::parse() {
       state = waiting_for_object_name;
       break;
     case waiting_for_object_name:
+      parent_token = _tokens.size();
       _tokens.push_back(
-        ceof_token(ceof_token::object, substr, _tokens.size(), parent_token));
-      ++parent_token;
+        ceof_token(ceof_token::object, substr, parent_token, -1));
       state = waiting_for_object_opening;
       break;
     case waiting_for_object_opening:
@@ -110,10 +110,8 @@ ceof_iterator ceof_parser::parse() {
       state = in_object_waiting_for_key;
       break;
     case in_object_waiting_for_key:
-      if (substr == "}") {
-        parent_token = _tokens[parent_token].get_parent_token();
+      if (substr == "}")
         state = waiting_for_define;
-      }
       else {
         _tokens.push_back(
           ceof_token(ceof_token::key, substr, _tokens.size(), parent_token));

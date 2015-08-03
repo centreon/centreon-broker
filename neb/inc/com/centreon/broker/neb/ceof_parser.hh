@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Merethis
+** Copyright 2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -40,7 +40,7 @@ namespace   neb {
 
    ceof_iterator parse();
 
-  private:   
+  private:
     std::string  _string;
 
     std::vector<ceof_token>

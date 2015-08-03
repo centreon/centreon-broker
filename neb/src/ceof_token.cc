@@ -24,9 +24,7 @@ using namespace com::centreon::broker::neb;
 /**
  *  Default constructor.
  */
-ceof_token::ceof_token() {
-
-}
+ceof_token::ceof_token() {}
 
 /**
  *  Constructor.
@@ -39,14 +37,12 @@ ceof_token::ceof_token() {
 ceof_token::ceof_token(
               token_type type,
               std::string const& val,
-              unsigned int token_number,
+              int token_number,
               int parent)
   : _type(type),
     _value(val),
     _token_number(token_number),
-    _parent_token(parent) {
-
-}
+    _parent_token(parent) {}
 
 /**
  *  Copy constructor.
@@ -107,7 +103,7 @@ std::string const& ceof_token::get_value() const throw() {
  *
  *  @return  Get the token number.
  */
-unsigned int ceof_token::get_token_number() const throw() {
+int ceof_token::get_token_number() const throw() {
   return (_token_number);
 }
 

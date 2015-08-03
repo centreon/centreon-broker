@@ -103,11 +103,13 @@ bool ceof_iterator::operator!=(ceof_iterator const& other) const throw() {
  *  @return  Reference to this object.
  */
 ceof_iterator& ceof_iterator::operator++() throw() {
-  unsigned int parent_token = _token_it->get_parent_token();
+  int parent_token = _token_it->get_parent_token();
   for (++_token_it;
-       _token_it != _token_end
-         && _token_it->get_parent_token() != parent_token;
-       ++_token_it);
+       (_token_it != _token_end)
+       && (_token_it->get_parent_token() != parent_token);
+       ++_token_it)
+    ;
+  return (*this);
 }
 
 /**
@@ -134,11 +136,11 @@ std::string const& ceof_iterator::get_value() const throw() {
  *  @return  True if this iterator has children.
  */
 bool ceof_iterator::has_children() const throw() {
-  unsigned int token_number = _token_it->get_token_number();
+  int token_number = _token_it->get_token_number();
   std::vector<ceof_token>::const_iterator it = _token_it;
   ++it;
-  return (it != _token_end
-            && it->get_parent_token() == token_number);
+  return ((it != _token_end)
+          && (it->get_parent_token() == token_number));
 }
 
 /**
@@ -147,9 +149,9 @@ bool ceof_iterator::has_children() const throw() {
  *  @return  An iterator to the children.
  */
 ceof_iterator ceof_iterator::enter_children() const throw() {
-  return (has_children() ?
-            ceof_iterator(_token_it + 1, _token_end)
-              : ceof_iterator());
+  return (has_children()
+          ? ceof_iterator(_token_it + 1, _token_end)
+          : ceof_iterator());
 }
 
 /**

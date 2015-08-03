@@ -34,5 +34,6 @@
   <output>
     <name>downtimestosql-nodeevents</name>
     <type>node_events</type>
+    <cfg_file>@PROJECT_SOURCE_DIR@/test/cfg/downtimes_to_sql.cfg</cfg_file>
   </output>
 </centreonbroker>

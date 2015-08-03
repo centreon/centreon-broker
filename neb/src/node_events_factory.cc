@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <libgen.h>
 #include <memory>
 #include <QVariant>
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -106,9 +107,9 @@ bool node_events_factory::has_endpoint(config::endpoint& cfg) const {
  *  @return Connector matching configuration.
  */
 io::endpoint* node_events_factory::new_endpoint(
-                         config::endpoint& cfg,
-                         bool& is_acceptor,
-                         misc::shared_ptr<persistent_cache> cache) const {
+                config::endpoint& cfg,
+                bool& is_acceptor,
+                misc::shared_ptr<persistent_cache> cache) const {
   QString name = get(QString(), cfg, "cfg_file");
   is_acceptor = false;
   return (new node_events_connector(
