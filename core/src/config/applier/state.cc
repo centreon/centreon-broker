@@ -98,11 +98,22 @@ void state::apply(
 
   com::centreon::broker::multiplexing::subscriber::event_queue_max_size(s.event_queue_max_size());
 
+  com::centreon::broker::config::state st = s;
+
+  // Create command file.
+  if (!s.command_file().isEmpty()) {
+    config::endpoint ept;
+    ept.name = "(external commands)";
+    ept.type = "extcmd";
+    ept.params.insert("extcmd", s.command_file());
+    st.outputs().push_back(ept);
+  }
+
   // Apply temporary configuration.
-  temporary::instance().apply(s.temporary());
+  temporary::instance().apply(st.temporary());
 
   // Apply input and output configuration.
-  endpoint::instance().apply(s.inputs(), s.outputs());
+  endpoint::instance().apply(st.inputs(), st.outputs());
 
   // Enable multiplexing loop.
   if (run_mux)

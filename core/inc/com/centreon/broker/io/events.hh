@@ -45,6 +45,12 @@ namespace               io {
       bam,
       internal = 65535
     };
+    enum                internal_data_element {
+      de_raw = 1,
+      de_command_request,
+      de_command_result
+    };
+
 
     template <unsigned short category, unsigned short element>
     struct data_type {
