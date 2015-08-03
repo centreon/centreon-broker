@@ -112,6 +112,9 @@ void parser::parse(QString const& file, state& s) {
       else if (name == "instance_name") {
         s.instance_name(elem.text());
       }
+      else if (name == "command_file") {
+        s.command_file(elem.text());
+      }
       else if (name == "flush_logs") {
         QString val(elem.text());
         s.flush_logs(!((val == "no") || (val == "0")));

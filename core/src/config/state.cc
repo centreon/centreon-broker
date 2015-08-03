@@ -66,6 +66,7 @@ state& state::operator=(state const& s) {
  *  Reset state to default values.
  */
 void state::clear() {
+  _command_file.clear();
   _event_queue_max_size = 0;
   _flush_logs = true;
   _inputs.clear();
@@ -81,6 +82,25 @@ void state::clear() {
   _params.clear();
   _temporary = endpoint();
   return ;
+}
+
+/**
+ *  Set command file.
+ *
+ *  @param[in] path  Path to command file.
+ */
+void state::command_file(QString const& path) {
+  _command_file = path;
+  return ;
+}
+
+/**
+ *  Get command file.
+ *
+ *  @return Command file.
+ */
+QString const& state::command_file() const throw () {
+  return (_command_file);
 }
 
 /**
