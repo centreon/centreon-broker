@@ -79,87 +79,89 @@ void command_client::read(misc::shared_ptr<io::data>& d) {
   if (!_socket.get())
     _initialize_socket();
 
-  // Read commands from socket.
-  d.clear();
-  size_t delimiter(_buffer.find_first_of('\n'));
-  while (delimiter == std::string::npos) {
-    if (_socket->waitForReadyRead(0)) {
-      char buffer[1000];
-      int rb(_socket->read(buffer, sizeof(buffer)));
-      if (rb == 0)
-        throw (io::exceptions::shutdown(true, true)
-               << "command: client disconnected");
-      else if (rb < 0)
-        throw (exceptions::msg() << "command: error on client socket: "
-               << _socket->errorString());
-      _buffer.append(buffer, rb);
-    }
-    delimiter = _buffer.find_first_of('\n');
-    // if ((deadline == (time_t)-1) || (time(NULL) < deadline))
-    //   QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-    // else
-    //   break ;
-  }
-
-  // External command received.
-  if (delimiter != std::string::npos) {
-    std::string cmd(_buffer.substr(0, delimiter));
-    _buffer.erase(0, delimiter + 1);
-
-    // Process command.
-    command_result res;
-    try {
-      // Process command immediately if it queries
-      // another command status.
-      static char const* execute_cmd("EXECUTE;");
-      static char const* status_cmd("STATUS;");
-      if (cmd.substr(0, strlen(status_cmd)) == status_cmd) {
-        unsigned int cmd_id(strtoul(
-                              cmd.substr(strlen(status_cmd)).c_str(),
-                              NULL,
-                              0));
-        res = _listener->command_status(cmd_id);
+  while (true) {
+    // Read commands from socket.
+    d.clear();
+    size_t delimiter(_buffer.find_first_of('\n'));
+    while (delimiter == std::string::npos) {
+      if (_socket->waitForReadyRead(0)) {
+        char buffer[1000];
+        int rb(_socket->read(buffer, sizeof(buffer)));
+        if (rb == 0)
+          throw (io::exceptions::shutdown(true, true)
+                 << "command: client disconnected");
+        else if (rb < 0)
+          throw (exceptions::msg() << "command: error on client socket: "
+                 << _socket->errorString());
+        _buffer.append(buffer, rb);
       }
-      // Store command in result listener and let
-      // it be processed by multiplexing engine.
-      else if (cmd.substr(0, strlen(execute_cmd)) == execute_cmd) {
-        misc::shared_ptr<command_request>
-          req(new command_request);
-        req->parse(cmd.substr(strlen(execute_cmd)));
-        d = req;
-        _listener->write(req);
-        res = _listener->command_status(req->id);
-      }
-      else
-        throw (exceptions::msg() << "invalid command format: expected "
-               << "either STATUS;<CMDID> or "
-               << "EXECUTE;<ENDPOINTNAME>;<CMD>[;ARG1[;ARG2...]]");
-    }
-    catch (std::exception const& e) {
-      // At this point, command request was not written to the command
-      // listener, so it not necessary to write command result either.
-      res.id = 0;
-      res.code = -1;
-      res.msg = e.what();
+      delimiter = _buffer.find_first_of('\n');
+      // if ((deadline == (time_t)-1) || (time(NULL) < deadline))
+      //   QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+      // else
+      //   break ;
     }
 
-    // Write result string to client.
-    std::string result_str;
-    {
-      std::ostringstream oss;
-      oss << std::dec << res.id << " " << std::hex << std::showbase
-          << res.code << " " << res.msg.toStdString() << "\n";
-      result_str = oss.str();
-    }
-    int pos(0), remaining(result_str.size());
-    while (remaining > 0) {
-      int wb(_socket->write(result_str.data() + pos, remaining));
-      if (wb < 0)
-        throw (exceptions::msg()
-               << "could not write command result to client: "
-               << _socket->errorString());
-      pos += wb;
-      remaining -= wb;
+    // External command received.
+    if (delimiter != std::string::npos) {
+      std::string cmd(_buffer.substr(0, delimiter));
+      _buffer.erase(0, delimiter + 1);
+
+      // Process command.
+      command_result res;
+      try {
+        // Process command immediately if it queries
+        // another command status.
+        static char const* execute_cmd("EXECUTE;");
+        static char const* status_cmd("STATUS;");
+        if (cmd.substr(0, strlen(status_cmd)) == status_cmd) {
+          unsigned int cmd_id(strtoul(
+                                cmd.substr(strlen(status_cmd)).c_str(),
+                                NULL,
+                                0));
+          res = _listener->command_status(cmd_id);
+        }
+        // Store command in result listener and let
+        // it be processed by multiplexing engine.
+        else if (cmd.substr(0, strlen(execute_cmd)) == execute_cmd) {
+          misc::shared_ptr<command_request>
+            req(new command_request);
+          req->parse(cmd.substr(strlen(execute_cmd)));
+          d = req;
+          _listener->write(req);
+          res = _listener->command_status(req->id);
+        }
+        else
+          throw (exceptions::msg() << "invalid command format: expected"
+                 << " either STATUS;<CMDID> or "
+                 << "EXECUTE;<ENDPOINTNAME>;<CMD>[;ARG1[;ARG2...]]");
+      }
+      catch (std::exception const& e) {
+        // At this point, command request was not written to the command
+        // listener, so it not necessary to write command result either.
+        res.id = 0;
+        res.code = -1;
+        res.msg = e.what();
+      }
+
+      // Write result string to client.
+      std::string result_str;
+      {
+        std::ostringstream oss;
+        oss << std::dec << res.id << " " << std::hex << std::showbase
+            << res.code << " " << res.msg.toStdString() << "\n";
+        result_str = oss.str();
+      }
+      int pos(0), remaining(result_str.size());
+      while (remaining > 0) {
+        int wb(_socket->write(result_str.data() + pos, remaining));
+        if (wb < 0)
+          throw (exceptions::msg()
+                 << "could not write command result to client: "
+                 << _socket->errorString());
+        pos += wb;
+        remaining -= wb;
+      }
     }
   }
   return ;

@@ -106,7 +106,7 @@ void state::apply(
     ept.name = "(external commands)";
     ept.type = "extcmd";
     ept.params.insert("extcmd", s.command_file());
-    st.outputs().push_back(ept);
+    st.inputs().push_back(ept);
   }
 
   // Apply temporary configuration.

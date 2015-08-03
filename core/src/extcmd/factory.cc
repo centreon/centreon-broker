@@ -106,5 +106,6 @@ io::endpoint* factory::new_endpoint(
   (void)is_output;
   is_acceptor = true;
   return (new command_server(
-                cfg.params.value("extcmd").toStdString()));
+                cfg.params.value("extcmd").toStdString(),
+                cfg.name));
 }

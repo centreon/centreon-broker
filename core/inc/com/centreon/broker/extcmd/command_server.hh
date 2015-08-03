@@ -20,6 +20,7 @@
 #ifndef CCB_EXTCMD_COMMAND_SERVER_HH
 #  define CCB_EXTCMD_COMMAND_SERVER_HH
 
+#  include <list>
 #  include <memory>
 #  include <string>
 #  include "com/centreon/broker/extcmd/command_listener.hh"
@@ -28,6 +29,11 @@
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
+
+// Forward declaration.
+namespace               processing {
+  class                 feeder;
+}
 
 namespace               extcmd {
   // Forward declarations.
@@ -43,7 +49,9 @@ namespace               extcmd {
    */
   class                 command_server : public io::endpoint {
   public:
-                        command_server(std::string const& socket_file);
+                        command_server(
+                          std::string const& socket_file,
+                          QString const& name);
                         ~command_server();
     io::endpoint*       clone() const;
     void                close();
@@ -56,8 +64,11 @@ namespace               extcmd {
                         command_server(command_server const& other);
     command_server&     operator=(command_server const& other);
 
+    std::list<processing::feeder*>
+                        _clients;
     misc::shared_ptr<command_listener>
                         _listener;
+    QString             _name;
     std::auto_ptr<server_socket>
                         _socket;
     std::string         _socket_file;

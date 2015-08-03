@@ -25,6 +25,7 @@
 #include "com/centreon/broker/extcmd/command_server.hh"
 #include "com/centreon/broker/extcmd/server_socket.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/processing/feeder.hh"
 
 using namespace com::centreon::broker;
@@ -35,25 +36,43 @@ using namespace com::centreon::broker::extcmd;
  *
  *  @param[in] socket_file  Socket file.
  */
-command_server::command_server(std::string const& socket_file)
-  : io::endpoint(true), _socket_file(socket_file) {}
+command_server::command_server(
+                  std::string const& socket_file,
+                  QString const& name)
+  : io::endpoint(true), _name(name), _socket_file(socket_file) {}
 
 /**
  *  Destructor.
  */
-command_server::~command_server() {}
+command_server::~command_server() {
+  close();
+  for (std::list<processing::feeder*>::iterator
+         it(_clients.begin()),
+         end(_clients.end());
+       it != end;
+       ++it) {
+    (*it)->wait();
+    delete *it;
+  }
+}
 
 /**
  *  Clone endpoint.
  */
 io::endpoint* command_server::clone() const {
-  return (new command_server(_socket_file));
+  return (new command_server(_socket_file, _name));
 }
 
 /**
  *  Close endpoint.
  */
 void command_server::close() {
+  for (std::list<processing::feeder*>::iterator
+         it(_clients.begin()),
+         end(_clients.end());
+       it != end;
+       ++it)
+    (*it)->exit();
   return ;
 }
 
@@ -71,6 +90,21 @@ misc::shared_ptr<io::stream> command_server::open() {
 
     // Create command listener.
     _listener = new command_listener;
+  }
+
+  // Clean client threads.
+  for (std::list<processing::feeder*>::iterator
+         it(_clients.begin()),
+         end(_clients.end());
+       it != end;) {
+    if ((*it)->wait(0)) {
+      std::list<processing::feeder*>::iterator to_delete(it);
+      ++it;
+      delete *to_delete;
+      _clients.erase(to_delete);
+    }
+    else
+      ++it;
   }
 
   // Wait for incoming connections.
@@ -97,7 +131,12 @@ misc::shared_ptr<io::stream> command_server::open() {
   logging::info(logging::medium) << "command: new client connected";
   misc::shared_ptr<io::stream>
     new_client(new command_client(incoming, _listener.data()));
-  return (new_client);
+  std::auto_ptr<processing::feeder> feedr(new processing::feeder);
+  feedr->prepare(new_client, new multiplexing::publisher);
+  feedr->start();
+  _clients.push_back(feedr.get());
+  feedr.release();
+  return (misc::shared_ptr<io::stream>());
 }
 
 /**
