@@ -27,10 +27,10 @@ CCB_BEGIN()
 
 namespace        misc {
   namespace      string {
-    std::string& replace(
-                   std::string& str,
-                   std::string const& old_str,
-                   std::string const& new_str) {
+    inline std::string& replace(
+                          std::string& str,
+                          std::string const& old_str,
+                          std::string const& new_str) {
       std::size_t pos(str.find(old_str, 0));
       while (pos != std::string::npos) {
         str.replace(pos, old_str.size(), new_str);

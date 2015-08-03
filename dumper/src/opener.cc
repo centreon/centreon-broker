@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Merethis
+** Copyright 2012,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,6 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include "com/centreon/broker/dumper/db_reader.hh"
+#include "com/centreon/broker/dumper/db_writer.hh"
 #include "com/centreon/broker/dumper/opener.hh"
 #include "com/centreon/broker/dumper/stream.hh"
 
@@ -32,22 +34,20 @@ using namespace com::centreon::broker::dumper;
 /**
  *  Constructor.
  */
-opener::opener(bool is_in, bool is_out)
-  : endpoint(false),
-    _is_in(is_in),
-    _is_out(is_out) {}
+opener::opener() : endpoint(false), _type(opener::dump) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] o Object to copy.
+ *  @param[in] other  Object to copy.
  */
-opener::opener(opener const& o)
-  : io::endpoint(o),
-    _path(o._path),
-    _is_in(o._is_in),
-    _is_out(o._is_out),
-    _tagname(o._tagname) {}
+opener::opener(opener const& other)
+  : io::endpoint(other),
+    _db(other._db),
+    _name(other._name),
+    _path(other._path),
+    _tagname(other._tagname),
+    _type(other._type) {}
 
 /**
  *  Destructor.
@@ -57,33 +57,20 @@ opener::~opener() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] o Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-opener& opener::operator=(opener const& o) {
-  io::endpoint::operator=(o);
-  _path = o._path;
-  _is_in = o._is_in;
-  _is_out = o._is_out;
-  _tagname = o._tagname;
+opener& opener::operator=(opener const& other) {
+  if (this != &other) {
+    io::endpoint::operator=(other);
+    _db = other._db;
+    _name = other._name;
+    _path = other._path;
+    _tagname = other._tagname;
+    _type = other._type;
+  }
   return (*this);
-}
-
-/**
- *  Clone the opener.
- *
- *  @return This object.
- */
-io::endpoint* opener::clone() const {
-  return (new opener(*this));
-}
-
-/**
- *  Close the opener.
- */
-void opener::close() {
-  return ;
 }
 
 /**
@@ -92,20 +79,26 @@ void opener::close() {
  *  @return Opened stream.
  */
 misc::shared_ptr<io::stream> opener::open() {
-  return (misc::shared_ptr<io::stream>(
-            new stream(_path, _tagname)));
+  switch (_type) {
+  case dump:
+    return (new stream(_path, _tagname));
+  case db_cfg_reader:
+    return (new db_reader(_name, _db));
+  case db_cfg_writer:
+    return (new db_writer(_db));
+  default:
+    return (misc::shared_ptr<io::stream>());
+  }
 }
 
 /**
- *  Open a new stream.
+ *  Set database parameters.
  *
- *  @param[in] id The identifier.
- *
- *  @return Opened stream.
+ *  @param[in] db_cfg  Database parameters.
  */
-misc::shared_ptr<io::stream> opener::open(QString const& id) {
-  return (misc::shared_ptr<io::stream>(
-            new stream(_path + "-" + qPrintable(id), _tagname)));
+void opener::set_db(database_config const& db_cfg) {
+  _db = db_cfg;
+  return ;
 }
 
 /**
@@ -126,4 +119,49 @@ void opener::set_path(std::string const& path) {
 void opener::set_tagname(std::string const& tagname) {
   _tagname = tagname;
   return ;
+}
+
+/**
+ *  Set the type of this dumper endpoint.
+ *
+ *  @param[in] type  The type of this dumper endpoint.
+ */
+void opener::set_type(dumper_type type) {
+  _type = type;
+}
+
+/**
+ *  Set the name of this endpoint.
+ *
+ *  @param[in] name  The name of this endpoint.
+ */
+void opener::set_name(std::string const& name) {
+  _name = name;
+}
+
+/**
+ *  Open a new stream.
+ *
+ *  @param[in] id  Id of the stream.
+ *
+ *  @return Opened stream.
+ */
+misc::shared_ptr<io::stream> opener::open(QString const& id) {
+  return (open());
+}
+
+/**
+ *  Clone this endpoint.
+ *
+ *  @return  A clone of this endpoint.
+ */
+io::endpoint* opener::clone() const {
+  return (new opener(*this));
+}
+
+/**
+ *  Close this endpoint.
+ */
+void opener::close() {
+
 }

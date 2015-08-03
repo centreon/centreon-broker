@@ -43,6 +43,9 @@ namespace           config {
       static void   load();
       static void   unload();
 
+      static unsigned int
+                    instance_id;
+
     private:
                     state();
                     state(state const& s);

@@ -19,6 +19,11 @@
 
 #include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/dumper/dump.hh"
+#include "com/centreon/broker/dumper/reload.hh"
+#include "com/centreon/broker/dumper/db_dump.hh"
+#include "com/centreon/broker/dumper/entries/ba.hh"
+#include "com/centreon/broker/dumper/entries/ba_type.hh"
+#include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/engine/protoapi.h"
 #include "mapping.hh"
@@ -331,6 +336,163 @@ static mapped_data<dump> const dumper_dump_mapping[] = {
     3,
     "tag"),
   mapped_data<dump>()
+};
+
+// reload members mapping.
+static mapped_data<reload> const dumper_reload_mapping[] = {
+  mapped_data<reload>(
+    &reload::tag,
+    1,
+    "tag"),
+  mapped_data<reload>()
+};
+
+// db_dump members mapping.
+static mapped_data<db_dump> const dumper_db_dump_mapping[] = {
+  mapped_data<db_dump>(
+    &db_dump::commit,
+    1,
+    "commit"),
+  mapped_data<db_dump>(
+    &db_dump::full,
+    2,
+    "full"),
+  mapped_data<db_dump>(
+    &db_dump::poller_id,
+    3,
+    "poller_id"),
+  mapped_data<db_dump>()
+};
+
+// entries ba members mapping.
+static mapped_data<entries::ba> const dumper_entries_ba_mapping[] = {
+  mapped_data<entries::ba>(
+    &entries::ba::enable,
+    1,
+    NULL),
+  mapped_data<entries::ba>(
+    &entries::ba::poller_id,
+    2,
+    NULL),
+  mapped_data<entries::ba>(
+    &entries::ba::ba_id,
+    3,
+    "ba_id"),
+  mapped_data<entries::ba>(
+    &entries::ba::description,
+    4,
+    "description"),
+  mapped_data<entries::ba>(
+    &entries::ba::level_critical,
+    5,
+    "level_c"),
+  mapped_data<entries::ba>(
+    &entries::ba::level_warning,
+    6,
+    "level_w"),
+  mapped_data<entries::ba>(
+    &entries::ba::name,
+    7,
+    "name"),
+  mapped_data<entries::ba>(
+    &entries::ba::organization_id,
+    8,
+    "organization_id"),
+  mapped_data<entries::ba>(
+    &entries::ba::type_id,
+    9,
+    "ba_type_id"),
+  mapped_data<entries::ba>()
+};
+
+// entries ba type members mapping.
+static mapped_data<entries::ba_type> const dumper_entries_ba_type_mapping[] = {
+  mapped_data<entries::ba_type>(
+    &entries::ba_type::enable,
+    1,
+    NULL),
+  mapped_data<entries::ba_type>(
+    &entries::ba_type::ba_type_id,
+    2,
+    "ba_type_id"),
+  mapped_data<entries::ba_type>(
+    &entries::ba_type::description,
+    3,
+    "description"),
+  mapped_data<entries::ba_type>(
+    &entries::ba_type::name,
+    4,
+    "name"),
+  mapped_data<entries::ba_type>(
+    &entries::ba_type::slug,
+    5,
+    "slug"),
+  mapped_data<entries::ba_type>()
+};
+
+// entries kpi members mapping.
+static mapped_data<entries::kpi> const dumper_entries_kpi_mapping[] = {
+  mapped_data<entries::kpi>(
+    &entries::kpi::enable,
+    1,
+    NULL),
+  mapped_data<entries::kpi>(
+    &entries::kpi::poller_id,
+    2,
+    NULL,
+    NULL_ON_ZERO),
+  mapped_data<entries::kpi>(
+    &entries::kpi::kpi_id,
+    3,
+    "kpi_id",
+    NULL_ON_ZERO),
+  mapped_data<entries::kpi>(
+    &entries::kpi::kpi_type,
+    4,
+    "kpi_type"),
+  mapped_data<entries::kpi>(
+    &entries::kpi::ba_id,
+    5,
+    "id_ba",
+    NULL_ON_ZERO),
+  mapped_data<entries::kpi>(
+    &entries::kpi::host_id,
+    6,
+    "host_id",
+    NULL_ON_ZERO),
+  mapped_data<entries::kpi>(
+    &entries::kpi::service_id,
+    7,
+    "service_id",
+    NULL_ON_ZERO),
+  mapped_data<entries::kpi>(
+    &entries::kpi::ba_indicator_id,
+    8,
+    "id_indicator_ba",
+    NULL_ON_ZERO),
+  mapped_data<entries::kpi>(
+    &entries::kpi::meta_id,
+    9,
+    "meta_id",
+    NULL_ON_ZERO),
+  mapped_data<entries::kpi>(
+    &entries::kpi::boolean_id,
+    10,
+    "boolean_id",
+    NULL_ON_ZERO),
+  mapped_data<entries::kpi>(
+    &entries::kpi::drop_warning,
+    12,
+    "drop_warning"),
+  mapped_data<entries::kpi>(
+    &entries::kpi::drop_critical,
+    13,
+    "drop_critical"),
+  mapped_data<entries::kpi>(
+    &entries::kpi::drop_unknown,
+    14,
+    "drop_unknown"),
+  mapped_data<entries::kpi>()
 };
 
 // engine_state members mapping.
@@ -2474,6 +2636,31 @@ namespace     com {
         mapped_type<dumper::dump>::members(dumper_dump_mapping);
       template <> const char*
         mapped_type<dumper::dump>::table("dumper");
+
+      template <> const mapped_data<dumper::reload>*
+        mapped_type<dumper::reload>::members(dumper_reload_mapping);
+      template <> const char*
+        mapped_type<dumper::reload>::table(NULL);
+
+      template <> const mapped_data<dumper::db_dump>*
+        mapped_type<dumper::db_dump>::members(dumper_db_dump_mapping);
+      template <> const char*
+        mapped_type<dumper::db_dump>::table(NULL);
+
+      template <> const mapped_data<dumper::entries::ba>*
+        mapped_type<dumper::entries::ba>::members(dumper_entries_ba_mapping);
+      template <> const char*
+        mapped_type<dumper::entries::ba>::table(NULL);
+
+      template <> const mapped_data<dumper::entries::ba_type>*
+        mapped_type<dumper::entries::ba_type>::members(dumper_entries_ba_type_mapping);
+      template <> const char*
+        mapped_type<dumper::entries::ba_type>::table(NULL);
+
+      template <> const mapped_data<dumper::entries::kpi>*
+        mapped_type<dumper::entries::kpi>::members(dumper_entries_kpi_mapping);
+      template <> const char*
+        mapped_type<dumper::entries::kpi>::table(NULL);
 
       // Correlation engine state mapping.
       template <> const mapped_data<correlation::engine_state>*

@@ -29,16 +29,36 @@ set(DUMPER "05-dumper")
 set(DUMPER "${DUMPER}" PARENT_SCOPE)
 add_library("${DUMPER}" SHARED
   # Sources.
+  "${SRC_DIR}/db_dump.cc"
+  "${SRC_DIR}/db_loader.cc"
+  "${SRC_DIR}/db_reader.cc"
+  "${SRC_DIR}/db_writer.cc"
   "${SRC_DIR}/dump.cc"
+  "${SRC_DIR}/entries/ba.cc"
+  "${SRC_DIR}/entries/ba_type.cc"
+  "${SRC_DIR}/entries/diff.cc"
+  "${SRC_DIR}/entries/kpi.cc"
+  "${SRC_DIR}/entries/state.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/opener.cc"
+  "${SRC_DIR}/reload.cc"
   "${SRC_DIR}/stream.cc"
   # Headers.
+  "${INC_DIR}/com/centreon/broker/dumper/db_dump.hh"
+  "${INC_DIR}/com/centreon/broker/dumper/db_loader.hh"
+  "${INC_DIR}/com/centreon/broker/dumper/db_reader.hh"
+  "${INC_DIR}/com/centreon/broker/dumper/db_writer.hh"
   "${INC_DIR}/com/centreon/broker/dumper/dump.hh"
+  "${INC_DIR}/com/centreon/broker/dumper/entries/ba.hh"
+  "${INC_DIR}/com/centreon/broker/dumper/entries/ba_type.hh"
+  "${INC_DIR}/com/centreon/broker/dumper/entries/diff.hh"
+  "${INC_DIR}/com/centreon/broker/dumper/entries/kpi.hh"
+  "${INC_DIR}/com/centreon/broker/dumper/entries/state.hh"
   "${INC_DIR}/com/centreon/broker/dumper/factory.hh"
   "${INC_DIR}/com/centreon/broker/dumper/internal.hh"
   "${INC_DIR}/com/centreon/broker/dumper/opener.hh"
+  "${INC_DIR}/com/centreon/broker/dumper/reload.hh"
   "${INC_DIR}/com/centreon/broker/dumper/stream.hh"
 )
 target_link_libraries("${DUMPER}" ${QT_LIBRARIES})

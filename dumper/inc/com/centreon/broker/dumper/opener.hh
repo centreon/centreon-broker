@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -21,6 +21,7 @@
 #  define CCB_DUMPER_OPENER_HH
 
 #  include <string>
+#  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -35,25 +36,35 @@ namespace                        dumper {
    */
   class                          opener : public io::endpoint {
   public:
-                                 opener(bool is_in, bool is_out);
+    enum                         dumper_type {
+                                 dump,
+                                 db_cfg_reader,
+                                 db_cfg_writer
+    };
+
+                                 opener();
                                  opener(opener const& o);
                                  ~opener();
     opener&                      operator=(opener const& o);
-    io::endpoint*                clone() const;
-    void                         close();
     misc::shared_ptr<io::stream> open();
-    misc::shared_ptr<io::stream> open(QString const& id);
+    void                         set_db(database_config const& db_cfg);
     void                         set_path(std::string const& path);
     void                         set_tagname(std::string const& tagname);
+    void                         set_type(dumper_type type);
+    void                         set_name(std::string const& name);
+    misc::shared_ptr<io::stream> open(QString const& id);
+    endpoint*                    clone() const;
+    void                         close();
 
    private:
+    database_config              _db;
+    std::string                  _name;
     std::string                  _path;
-    bool                         _is_in;
-    bool                         _is_out;
     std::string                  _tagname;
+    dumper_type                  _type;
   };
 }
 
 CCB_END()
 
-#endif /* !CCB_DUMPER_OPENER_HH */
+#endif // !CCB_DUMPER_OPENER_HH

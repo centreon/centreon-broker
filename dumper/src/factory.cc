@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Merethis
+** Copyright 2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -18,12 +18,37 @@
 */
 
 #include <memory>
+#include "com/centreon/broker/database_config.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/dumper/factory.hh"
 #include "com/centreon/broker/dumper/opener.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::dumper;
+
+/**************************************
+*                                     *
+*            Local Objects            *
+*                                     *
+**************************************/
+
+/**
+ *  Find a parameter in configuration.
+ *
+ *  @param[in] cfg Configuration object.
+ *  @param[in] key Property to get.
+ *
+ *  @return Property value.
+ */
+static QString const& find_param(
+                        config::endpoint const& cfg,
+                        QString const& key) {
+  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+  if (cfg.params.end() == it)
+    throw (exceptions::msg() << "dumper: no '" << key
+           << "' defined for endpoint '" << cfg.name << "'");
+  return (it.value());
+}
 
 /**************************************
 *                                     *
@@ -39,9 +64,9 @@ factory::factory() {}
 /**
  *  Copy constructor.
  *
- *  @param[in] f Object to copy.
+ *  @param[in] other  Object to copy.
  */
-factory::factory(factory const& f) : io::factory(f) {}
+factory::factory(factory const& other) : io::factory(other) {}
 
 /**
  *  Destructor.
@@ -51,12 +76,12 @@ factory::~factory() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] f Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-factory& factory::operator=(factory const& f) {
-  io::factory::operator=(f);
+factory& factory::operator=(factory const& other) {
+  io::factory::operator=(other);
   return (*this);
 }
 
@@ -72,35 +97,25 @@ io::factory* factory::clone() const {
 /**
  *  Check if a configuration match the dumper layer.
  *
- *  @param[in] cfg       Endpoint configuration.
- *  @param[in] is_input  true if the dumper should act as input.
- *  @param[in] is_output true if the dumper should act as output.
+ *  @param[in] cfg  Endpoint configuration.
  *
- *  @return true if configuration matches the dumper layer.
+ *  @return True if configuration matches the dumper layer.
  */
-bool factory::has_endpoint(
-                config::endpoint& cfg,
-                bool is_input,
-                bool is_output) const {
-  (void)is_input;
-  (void)is_output;
-  bool retval;
-  if (cfg.type == "dumper") {
-    cfg.params["coarse"] = "yes"; // Dumper won't respond to any salutation.
-    retval = true;
-  }
-  else
-    retval = false;
-  return (retval);
+bool factory::has_endpoint(config::endpoint& cfg,
+                           bool is_input,
+                           bool is_output) const {
+  return (is_output &&
+          (cfg.type == "dumper"
+           || cfg.type == "db_cfg_reader"
+           || cfg.type == "db_cfg_writer"));
 }
 
 /**
  *  Generate an endpoint matching a configuration.
  *
  *  @param[in]  cfg         Endpoint configuration.
- *  @param[in]  is_input    true if the dumper should act as input.
- *  @param[in]  is_output   true if the dumper should act as output.
  *  @param[out] is_acceptor Will be set to false.
+ *  @param[in]  cache       Persistent cache.
  *
  *  @return Acceptor matching configuration.
  */
@@ -109,31 +124,57 @@ io::endpoint* factory::new_endpoint(
                          bool is_input,
                          bool is_output,
                          bool& is_acceptor) const {
-  (void)is_acceptor;
+  (void) is_input;
+  (void) is_output;
+  // Set acceptor flag.
+  is_acceptor = false;
 
-  // Find path to the dumper.
-  std::string path;
-  {
-    QMap<QString, QString>::const_iterator it(cfg.params.find("path"));
-    if (it == cfg.params.end())
-      throw (exceptions::msg() << "dumper: no 'path' defined for dumper "
-             "endpoint '" << cfg.name << "'");
-    path = it->toStdString();
+  // Get the type of this dumper.
+  opener::dumper_type type = opener::dump;
+  if (cfg.type == "dump")
+    type = opener::dump;
+  else if (cfg.type == "db_cfg_reader")
+    type = opener::db_cfg_reader;
+  else if (cfg.type == "db_cfg_writer")
+    type = opener::db_cfg_writer;
+
+  // Opener that should be set.
+  std::auto_ptr<opener> openr(new opener);
+  openr->set_name(cfg.name.toStdString());
+  openr->set_type(type);
+
+  // DB configuration dumpers.
+  if ((type == opener::db_cfg_reader)
+      || (type == opener::db_cfg_writer)) {
+    // DB parameters.
+    std::string db_type(find_param(cfg, "db_type").toStdString());
+    std::string host(find_param(cfg, "db_host").toStdString());
+    unsigned short port(find_param(cfg, "db_port").toUInt());
+    std::string user(find_param(cfg, "db_user").toStdString());
+    std::string password(find_param(cfg, "db_password").toStdString());
+    std::string db_name(find_param(cfg, "db_name").toStdString());
+
+    // Set opener properties.
+    openr->set_db(database_config(
+                    db_type,
+                    host,
+                    port,
+                    user,
+                    password,
+                    db_name));
+  }
+  // Filesystem dumpers.
+  else {
+    // Find path to the dumper.
+    std::string path(find_param(cfg, "path").toStdString());
+
+    // Find tagname to the dumper.
+    std::string tagname(find_param(cfg, "tagname").toStdString());
+
+    // Set opener properties.
+    openr->set_path(path);
+    openr->set_tagname(tagname);
   }
 
-  // Find tagname to the dumper.
-  std::string tagname;
-  {
-    QMap<QString, QString>::const_iterator it(cfg.params.find("tagname"));
-    if (it == cfg.params.end())
-      throw (exceptions::msg() << "dumper: no 'tagname' defined for dumper "
-             "endpoint '" << cfg.name << "'");
-    tagname = it->toStdString();
-  }
-
-  // Generate opener.
-  std::auto_ptr<opener> openr(new opener(is_input, is_output));
-  openr->set_path(path);
-  openr->set_tagname(tagname);
   return (openr.release());
 }
