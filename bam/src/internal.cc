@@ -137,7 +137,7 @@ static mapped_data<bam::kpi_status> const kpi_status_mapping[] = {
   mapped_data<bam::kpi_status>(
     &bam::kpi_status::valid,
     13,
-    NULL),
+    "valid"),
   mapped_data<bam::kpi_status>()
 };
 
