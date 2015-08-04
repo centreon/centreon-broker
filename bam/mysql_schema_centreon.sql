@@ -14,6 +14,7 @@
 -- mod_bam_impacts
 -- mod_bam_boolean
 -- mod_bam_kpi
+-- mod_bam_poller_relations
 -- mod_bam_relations_ba_timeperiods
 
 
@@ -45,6 +46,17 @@ CREATE TABLE mod_bam (
   UNIQUE (name),
   FOREIGN KEY (id_reporting_period) REFERENCES timeperiod (tp_id)
     ON DELETE SET NULL
+) ENGINE=InnoDB CHARACTER SET utf8;
+
+--
+-- BA/poller relation table.
+--
+CREATE TABLE mod_bam_poller_relations (
+  ba_id int NOT NULL,
+  poller_id int NOT NULL,
+
+  FOREIGN KEY (ba_id) REFERENCES mod_bam (ba_id)
+    ON DELETE CASCADE
 ) ENGINE=InnoDB CHARACTER SET utf8;
 
 --
