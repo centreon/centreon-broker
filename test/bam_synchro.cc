@@ -127,8 +127,8 @@ int main() {
 
   try {
     // Prepare database.
-    db.open(NULL, CENTREON_DB_NAME);
-    db2.open(NULL, CENTREON_DB_WRITER_NAME);
+    db.open(NULL, NULL, CENTREON_DB_NAME);
+    db2.open(NULL, NULL, CENTREON_DB_WRITER_NAME);
 
     // Prepare monitoring engine configuration parameters.
     commander.set_file(tmpnam(NULL));
