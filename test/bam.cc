@@ -549,6 +549,28 @@ int main() {
           throw (exceptions::msg() << "could not create BAs: "
                  << q.lastError().text());
       }
+
+      // Create BAs poller relation.
+      {
+        QString query(
+                  "INSERT INTO mod_bam_poller_relations (ba_id, poller_id)"
+                  "  VALUES (1, 42),"
+                  "         (2, 42),"
+                  "         (3, 42),"
+                  "         (4, 42),"
+                  "         (5, 42),"
+                  "         (6, 42),"
+                  "         (7, 42),"
+                  "         (8, 42),"
+                  "         (9, 42),"
+                  "         (10, 42),"
+                  "         (11, 42)");
+        QSqlQuery q(*db.centreon_db());
+        if (!q.exec(query))
+          throw (exceptions::msg()
+                 << "could not create BA/poller relations: "
+                 << q.lastError().text());
+      }
       // {
       //   QString query(
       //             "INSERT INTO mod_bam_ba_tp_rel (ba_id, timeperiod_id,"
