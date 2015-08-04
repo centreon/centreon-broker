@@ -14,6 +14,7 @@
 -- mod_bam_impacts
 -- mod_bam_boolean
 -- mod_bam_kpi
+-- mod_bam_poller_relations
 -- mod_bam_relations_ba_timeperiods
 
 
@@ -56,6 +57,17 @@ BEGIN
   SELECT mod_bam_seq.nextval INTO :NEW.ba_id FROM dual;
 END;
 /
+
+--
+-- BA/poller relation table.
+--
+CREATE TABLE mod_bam_poller_relations (
+  ba_id int NOT NULL,
+  poller_id int NOT NULL,
+
+  FOREIGN KEY (ba_id) REFERENCES mod_bam (ba_id)
+    ON DELETE CASCADE
+);
 
 --
 -- Impacts of KPI / boolean expressions.
