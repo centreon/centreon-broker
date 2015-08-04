@@ -42,14 +42,14 @@ namespace           config {
       static state& instance();
       static void   load();
       static void   unload();
-
-      static unsigned int
-                    instance_id;
+      unsigned int  get_instance_id() const throw();
 
     private:
                     state();
                     state(state const& s);
       state&        operator=(state const& s);
+
+      unsigned int  _instance_id;
     };
   }
 }

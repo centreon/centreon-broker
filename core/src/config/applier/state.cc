@@ -37,8 +37,6 @@ using namespace com::centreon::broker::config::applier;
 // Class instance.
 static state* gl_state = NULL;
 
-unsigned int state::instance_id = 0;
-
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -60,7 +58,7 @@ void state::apply(
               com::centreon::broker::config::state const& s,
               bool run_mux) {
   // Save poller id.
-  instance_id = s.instance_id();
+  _instance_id = s.instance_id();
 
   // Apply logging configuration.
   logger::instance().apply(s.loggers());
@@ -125,6 +123,15 @@ void state::apply(
     com::centreon::broker::multiplexing::engine::instance().start();
 
   return ;
+}
+
+/**
+ *  Get the instance ID.
+ *
+ *  @return Instance ID of this Broker instance.
+ */
+unsigned int state::get_instance_id() const throw () {
+  return (_instance_id);
 }
 
 /**

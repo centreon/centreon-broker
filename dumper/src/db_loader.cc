@@ -87,7 +87,7 @@ void db_loader::_load_ba_types() {
   database_query q(*_db);
   q.run_query(
       "SELECT ba_type_id, name, slug, description"
-      "  FROM cfg_bam_ba_types",
+      "  FROM mod_bam_ba_types",
       "db_reader: could not load BA types from DB");
   while (q.next()) {
     entries::ba_type b;
@@ -107,8 +107,8 @@ void db_loader::_load_bas() {
   std::ostringstream query;
   query << "SELECT b.ba_id, b.name, b.description, b.level_w,"
            "       b.level_c, b.organization_id, b.ba_type_id"
-           "  FROM cfg_bam AS b"
-           "  INNER JOIN cfg_bam_poller_relations AS pr"
+           "  FROM mod_bam AS b"
+           "  INNER JOIN mod_bam_poller_relations AS pr"
            "    ON b.ba_id=pr.ba_id"
            "  WHERE b.activate='1'"
            "    AND pr.poller_id=" << _poller_id;
@@ -142,14 +142,14 @@ void db_loader::_load_kpis() {
            "       COALESCE(k.drop_warning, iw.impact),"
            "       COALESCE(k.drop_critical, ic.impact),"
            "       COALESCE(k.drop_unknown, iu.impact)"
-           "  FROM cfg_bam_kpi AS k"
-           "  INNER JOIN cfg_bam_poller_relations AS pr"
+           "  FROM mod_bam_kpi AS k"
+           "  INNER JOIN mod_bam_poller_relations AS pr"
            "    ON k.id_ba=pr.ba_id"
-           "  LEFT JOIN cfg_bam_impacts AS iw"
+           "  LEFT JOIN mod_bam_impacts AS iw"
            "    ON k.drop_warning_impact_id=iw.id_impact"
-           "  LEFT JOIN cfg_bam_impacts AS ic"
+           "  LEFT JOIN mod_bam_impacts AS ic"
            "    ON k.drop_critical_impact_id=ic.id_impact"
-           "  LEFT JOIN cfg_bam_impacts AS iu"
+           "  LEFT JOIN mod_bam_impacts AS iu"
            "    ON k.drop_unknown_impact_id=iu.id_impact"
            "  WHERE k.activate='1'"
            "    AND pr.poller_id=" << _poller_id;

@@ -35,6 +35,7 @@
 #include "com/centreon/broker/bam/dimension_timeperiod_exclusion.hh"
 #include "com/centreon/broker/bam/dimension_ba_timeperiod_relation.hh"
 #include "com/centreon/broker/bam/time/timeperiod.hh"
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/database.hh"
 #include "com/centreon/broker/database_query.hh"
 #include "com/centreon/broker/io/stream.hh"
@@ -116,33 +117,38 @@ reader& reader::operator=(reader const& other) {
  */
 void reader::_load(state::kpis& kpis) {
   try {
+    std::ostringstream oss;
+    oss << "SELECT  k.kpi_id, k.state_type, k.host_id, k.service_id, k.id_ba,"
+           "        k.id_indicator_ba, k.meta_id, k.boolean_id,"
+           "        k.current_status, k.last_level, k.downtime,"
+           "        k.acknowledged, k.ignore_downtime,"
+           "        k.ignore_acknowledged,"
+           "        COALESCE(COALESCE(k.drop_warning, ww.impact), g.average_impact),"
+           "        COALESCE(COALESCE(k.drop_critical, cc.impact), g.average_impact),"
+           "        COALESCE(COALESCE(k.drop_unknown, uu.impact), g.average_impact),"
+           "        k.last_state_change, k.in_downtime, k.last_impact"
+           "  FROM mod_bam_kpi AS k"
+           "  INNER JOIN mod_bam AS mb"
+           "    ON k.id_ba = mb.ba_id"
+           "  INNER JOIN mod_bam_poller_relations AS pr"
+           "    ON pr.ba_id = mb.ba_id"
+           "  LEFT JOIN mod_bam_impacts AS ww"
+           "    ON k.drop_warning_impact_id = ww.id_impact"
+           "  LEFT JOIN mod_bam_impacts AS cc"
+           "    ON k.drop_critical_impact_id = cc.id_impact"
+           "  LEFT JOIN mod_bam_impacts AS uu"
+           "    ON k.drop_unknown_impact_id = uu.id_impact"
+           "  LEFT JOIN (SELECT id_ba, 100.0 / COUNT(kpi_id) AS average_impact"
+           "               FROM mod_bam_kpi"
+           "               WHERE activate='1'"
+           "               GROUP BY id_ba) AS g"
+           "    ON k.id_ba=g.id_ba"
+           "  WHERE k.activate='1'"
+           "    AND mb.activate='1'"
+           "    AND pr.poller_id="
+        << config::applier::state::instance().get_instance_id();
     database_query query(_db);
-    query.run_query(
-      "SELECT  k.kpi_id, k.state_type, k.host_id, k.service_id, k.id_ba,"
-      "        k.id_indicator_ba, k.meta_id, k.boolean_id,"
-      "        k.current_status, k.last_level, k.downtime,"
-      "        k.acknowledged, k.ignore_downtime,"
-      "        k.ignore_acknowledged,"
-      "        COALESCE(COALESCE(k.drop_warning, ww.impact), g.average_impact),"
-      "        COALESCE(COALESCE(k.drop_critical, cc.impact), g.average_impact),"
-      "        COALESCE(COALESCE(k.drop_unknown, uu.impact), g.average_impact),"
-      "        k.last_state_change, k.in_downtime, k.last_impact"
-      "  FROM  mod_bam_kpi AS k"
-      "  LEFT JOIN mod_bam AS mb"
-      "     ON k.id_ba = mb.ba_id"
-      "  LEFT JOIN mod_bam_impacts AS ww"
-      "    ON k.drop_warning_impact_id = ww.id_impact"
-      "  LEFT JOIN mod_bam_impacts AS cc"
-      "    ON k.drop_critical_impact_id = cc.id_impact"
-      "  LEFT JOIN mod_bam_impacts AS uu"
-      "    ON k.drop_unknown_impact_id = uu.id_impact"
-      "  LEFT JOIN (SELECT id_ba, 100.0 / COUNT(kpi_id) AS average_impact"
-      "               FROM mod_bam_kpi"
-      "               WHERE activate='1'"
-      "               GROUP BY id_ba) AS g"
-      "    ON k.id_ba=g.id_ba"
-      "  WHERE k.activate='1'"
-      "    AND mb.activate='1'");
+    query.run_query(oss.str());
     while (query.next()) {
       // KPI object.
       unsigned int kpi_id(query.value(0).toUInt());
@@ -225,11 +231,18 @@ void reader::_load(state::kpis& kpis) {
 void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
   try {
     database_query query(_db);
-    query.run_query(
-      "SELECT ba_id, name, level_w, level_c, last_state_change, "
-      "       current_status, in_downtime"
-      "  FROM mod_bam"
-      "  WHERE activate='1'");
+    {
+      std::ostringstream oss;
+      oss << "SELECT b.ba_id, b.name, b.level_w, b.level_c,"
+             "       b.last_state_change, b.current_status, b.in_downtime"
+             "  FROM mod_bam AS b"
+             "  INNER JOIN mod_bam_poller_relations AS pr"
+             "    ON b.ba_id=pr.ba_id"
+             "  WHERE b.activate='1'"
+             "    AND pr.poller_id="
+          << config::applier::state::instance().get_instance_id();
+      query.run_query(oss.str());
+    }
     while (query.next()) {
       // BA object.
       unsigned int ba_id(query.value(0).toUInt());
@@ -337,11 +350,18 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
 void reader::_load(state::bool_exps& bool_exps) {
   // Load boolean expressions themselves.
   try {
+    std::ostringstream q;
+    q << "SELECT b.boolean_id, b.expression, b.bool_state"
+         "  FROM mod_bam_boolean AS b"
+         "  INNER JOIN mod_bam_kpi AS k"
+         "    ON b.boolean_id=k.boolean_id"
+         "  INNER JOIN mod_bam_poller_relations AS pr"
+         "    ON k.id_ba=pr.ba_id"
+         "  WHERE b.activate=1"
+         "    AND pr.poller_id="
+      << config::applier::state::instance().get_instance_id();
     database_query query(_db);
-    query.run_query(
-      "SELECT  boolean_id, expression, bool_state"
-      "  FROM  mod_bam_boolean"
-      "  WHERE activate=1");
+    query.run_query(q.str());
     while (query.next()) {
       bool_exps[query.value(0).toUInt()] =
                   bool_expression(
@@ -682,14 +702,20 @@ void reader::_load_dimensions() {
     }
 
     // Load the BAs.
+    std::ostringstream oss;
+    oss << "SELECT b.ba_id, b.name, b.description,"
+           "       b.sla_month_percent_warn, b.sla_month_percent_crit,"
+           "       b.sla_month_duration_warn,"
+           "       b.sla_month_duration_crit, b.id_reporting_period"
+           "  FROM mod_bam AS b"
+           "  INNER JOIN mod_bam_poller_relations AS pr"
+           "    ON b.ba_id=pr.ba_id"
+           "  WHERE b.activate='1'"
+           "    AND pr.poller_id="
+        << config::applier::state::instance().get_instance_id();
     q.run_query(
-      "SELECT ba_id, name, description,"
-      "       sla_month_percent_warn, sla_month_percent_crit,"
-      "       sla_month_duration_warn, sla_month_duration_crit,"
-      "       id_reporting_period"
-      "  FROM mod_bam"
-      "  WHERE activate='1'",
-      "could not retrieve BAs from the database");
+        oss.str(),
+        "could not retrieve BAs from the database");
     while (q.next()) {
       misc::shared_ptr<dimension_ba_event> ba(new dimension_ba_event);
       ba->ba_id = q.value(0).toUInt();
@@ -726,13 +752,21 @@ void reader::_load_dimensions() {
     }
 
     // Load the BA BV relations.
-    q.run_query(
-      "SELECT id_ba, id_ba_group"
-      "  FROM mod_bam_bagroup_ba_relation as r"
-      "  LEFT JOIN mod_bam as b"
-      "    ON b.ba_id = r.id_ba"
-      "  WHERE b.activate='1'",
-      "could not retrieve BV memberships of BAs");
+    {
+      std::ostringstream oss;
+      oss << "SELECT id_ba, id_ba_group"
+             "  FROM mod_bam_bagroup_ba_relation as r"
+             "  INNER JOIN mod_bam AS b"
+             "    ON b.ba_id = r.id_ba"
+             "  INNER JOIN mod_bam_poller_relations AS pr"
+             "    ON b.ba_id=pr.ba_id"
+             "  WHERE b.activate='1'"
+             "    AND pr.poller_id="
+          << config::applier::state::instance().get_instance_id();
+      q.run_query(
+          oss.str(),
+          "could not retrieve BV memberships of BAs");
+    }
     while (q.next()) {
       misc::shared_ptr<dimension_ba_bv_relation_event>
           babv(new dimension_ba_bv_relation_event);
@@ -745,39 +779,48 @@ void reader::_load_dimensions() {
     // Unfortunately, we need to get the names of the
     // service/host/meta_service/ba/boolean expression associated with
     // this KPI. This explains the numerous joins.
-    q.run_query(
-      "SELECT k.kpi_id, k.kpi_type, k.host_id, k.service_id, k.id_ba,"
-      "       k.id_indicator_ba, k.meta_id, k.boolean_id,"
-      "       COALESCE(COALESCE(k.drop_warning, ww.impact), g.average_impact),"
-      "       COALESCE(COALESCE(k.drop_critical, cc.impact), g.average_impact),"
-      "       COALESCE(COALESCE(k.drop_unknown, uu.impact), g.average_impact),"
-      "       h.host_name, s.service_description, b.name,"
-      "       meta.meta_name, boo.name"
-      "  FROM mod_bam_kpi AS k"
-      "  LEFT JOIN mod_bam_impacts AS ww"
-      "    ON k.drop_warning_impact_id = ww.id_impact"
-      "  LEFT JOIN mod_bam_impacts AS cc"
-      "    ON k.drop_critical_impact_id = cc.id_impact"
-      "  LEFT JOIN mod_bam_impacts AS uu"
-      "    ON k.drop_unknown_impact_id = uu.id_impact"
-      "  LEFT JOIN host AS h"
-      "    ON h.host_id = k.host_id"
-      "  LEFT JOIN service AS s"
-      "    ON s.service_id = k.service_id"
-      "  INNER JOIN mod_bam AS b"
-      "    ON b.ba_id = k.id_ba"
-      "  LEFT JOIN meta_service AS meta"
-      "    ON meta.meta_id = k.meta_id"
-      "  LEFT JOIN mod_bam_boolean as boo"
-      "    ON boo.boolean_id = k.boolean_id"
-      "  LEFT JOIN (SELECT id_ba, 100.0 / COUNT(kpi_id) AS average_impact"
-      "               FROM mod_bam_kpi"
-      "               WHERE activate='1'"
-      "               GROUP BY id_ba) AS g"
-      "   ON k.id_ba=g.id_ba"
-      "  WHERE k.activate='1'"
-      "    AND b.activate='1'",
-      "could not retrieve KPI dimensions");
+    {
+      std::ostringstream oss;
+      oss << "SELECT k.kpi_id, k.kpi_type, k.host_id, k.service_id,"
+             "       k.id_ba, k.id_indicator_ba, k.meta_id,"
+             "       k.boolean_id,"
+             "       COALESCE(COALESCE(k.drop_warning, ww.impact), g.average_impact),"
+             "       COALESCE(COALESCE(k.drop_critical, cc.impact), g.average_impact),"
+             "       COALESCE(COALESCE(k.drop_unknown, uu.impact), g.average_impact),"
+             "       h.host_name, s.service_description, b.name,"
+             "       meta.meta_name, boo.name"
+             "  FROM mod_bam_kpi AS k"
+             "  LEFT JOIN mod_bam_impacts AS ww"
+             "    ON k.drop_warning_impact_id = ww.id_impact"
+             "  LEFT JOIN mod_bam_impacts AS cc"
+             "    ON k.drop_critical_impact_id = cc.id_impact"
+             "  LEFT JOIN mod_bam_impacts AS uu"
+             "    ON k.drop_unknown_impact_id = uu.id_impact"
+             "  LEFT JOIN host AS h"
+             "    ON h.host_id = k.host_id"
+             "  LEFT JOIN service AS s"
+             "    ON s.service_id = k.service_id"
+             "  INNER JOIN mod_bam AS b"
+             "    ON b.ba_id = k.id_ba"
+             "  INNER JOIN mod_bam_poller_relations AS pr"
+             "    ON b.ba_id = pr.ba_id"
+             "  LEFT JOIN meta_service AS meta"
+             "    ON meta.meta_id = k.meta_id"
+             "  LEFT JOIN mod_bam_boolean as boo"
+             "    ON boo.boolean_id = k.boolean_id"
+             "  LEFT JOIN (SELECT id_ba, 100.0 / COUNT(kpi_id) AS average_impact"
+             "               FROM mod_bam_kpi"
+             "               WHERE activate='1'"
+             "               GROUP BY id_ba) AS g"
+             "   ON k.id_ba=g.id_ba"
+             "  WHERE k.activate='1'"
+             "    AND b.activate='1'"
+             "    AND pr.poller_id="
+          << config::applier::state::instance().get_instance_id();
+      q.run_query(
+          oss.str(),
+          "could not retrieve KPI dimensions");
+    }
     while (q.next()) {
       misc::shared_ptr<dimension_kpi_event> k(new dimension_kpi_event);
       k->kpi_id = q.value(0).toUInt();

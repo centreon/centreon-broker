@@ -88,7 +88,7 @@ unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
         io::events::data_type<io::events::dumper, dumper::de_db_dump>::value) {
       db_dump const& dbd(d.ref_as<db_dump const>());
       if (dbd.poller_id
-          == config::applier::state::instance().instance_id) {
+          == config::applier::state::instance().get_instance_id()) {
         if (dbd.commit)
           _commit();
         else
@@ -101,7 +101,7 @@ unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
     else if (d->type() ==
              io::events::data_type<io::events::dumper, dumper::de_entries_ba>::value) {
       entries::ba const& b(d.ref_as<entries::ba const>());
-      if (b.poller_id == config::applier::state::instance().instance_id)
+      if (b.poller_id == config::applier::state::instance().get_instance_id())
         _bas.push_back(b);
     }
     else if (d->type() ==
@@ -112,7 +112,7 @@ unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
     else if (d->type() ==
              io::events::data_type<io::events::dumper, dumper::de_entries_kpi>::value) {
       entries::kpi const& k(d.ref_as<entries::kpi const>());
-      if (k.poller_id == config::applier::state::instance().instance_id)
+      if (k.poller_id == config::applier::state::instance().get_instance_id())
         _kpis.push_back(k);
     }
   }
@@ -136,15 +136,15 @@ void db_writer::_commit() {
   if (_full_dump) {
     {
       database_query q(db);
-      q.run_query("DELETE FROM cfg_bam_kpi");
+      q.run_query("DELETE FROM mod_bam_kpi");
     }
     {
       database_query q(db);
-      q.run_query("DELETE FROM cfg_bam");
+      q.run_query("DELETE FROM mod_bam");
     }
     {
       database_query q(db);
-      q.run_query("DELETE FROM cfg_bam_ba_types");
+      q.run_query("DELETE FROM mod_bam_ba_types");
     }
   }
 
@@ -232,7 +232,7 @@ void db_writer::_commit() {
         ba_insert.run_statement();
       }
       std::ostringstream query;
-      query << "UPDATE cfg_bam SET activate='1' WHERE ba_id="
+      query << "UPDATE mod_bam SET activate='1' WHERE ba_id="
             << it->ba_id;
       database_query q(db);
       q.run_query(query.str().c_str());
@@ -266,7 +266,7 @@ void db_writer::_commit() {
         kpi_insert.run_statement();
       }
       std::ostringstream query;
-      query << "UPDATE cfg_bam_kpi SET activate='1' WHERE kpi_id="
+      query << "UPDATE mod_bam_kpi SET activate='1' WHERE kpi_id="
             << it->kpi_id;
       database_query q(db);
       q.run_query(query.str().c_str());
