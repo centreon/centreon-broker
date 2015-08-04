@@ -68,6 +68,7 @@ namespace               extcmd {
                         _clients;
     misc::shared_ptr<command_listener>
                         _listener;
+    processing::feeder* _listener_thread;
     QString             _name;
     std::auto_ptr<server_socket>
                         _socket;

@@ -25,6 +25,7 @@
 #include "com/centreon/broker/extcmd/command_server.hh"
 #include "com/centreon/broker/extcmd/server_socket.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/multiplexing/subscriber.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/processing/feeder.hh"
 
@@ -39,7 +40,10 @@ using namespace com::centreon::broker::extcmd;
 command_server::command_server(
                   std::string const& socket_file,
                   QString const& name)
-  : io::endpoint(true), _name(name), _socket_file(socket_file) {}
+  : io::endpoint(true),
+    _listener_thread(NULL),
+    _name(name),
+    _socket_file(socket_file) {}
 
 /**
  *  Destructor.
@@ -53,6 +57,12 @@ command_server::~command_server() {
        ++it) {
     (*it)->wait();
     delete *it;
+  }
+
+  if (_listener_thread) {
+    _listener_thread->exit();
+    _listener_thread->wait();
+    delete _listener_thread;
   }
 }
 
@@ -90,6 +100,12 @@ misc::shared_ptr<io::stream> command_server::open() {
 
     // Create command listener.
     _listener = new command_listener;
+
+    // Launch listener thread.
+    _listener_thread = new processing::feeder;
+    _listener_thread->prepare(
+                        new multiplexing::subscriber(_name),
+                        _listener);
   }
 
   // Clean client threads.
