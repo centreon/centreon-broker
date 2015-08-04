@@ -20,6 +20,7 @@
 #include <limits>
 #include <memory>
 #include <sstream>
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -43,18 +44,14 @@ unsigned int muxer::_event_queue_max_size = std::numeric_limits<unsigned int>::m
  *
  *  @param[in] name        Name associated to this muxer. It is used to
  *                         create on-disk files.
- *  @param[in] temp_dir    Directory in which temporary files will be
- *                         created.
  *  @param[in] persistent  Whether or not this muxer should backup
  *                         unprocessed events in a persistent storage.
  */
 muxer::muxer(
          std::string const& name,
-         std::string const& temp_dir,
          bool persistent)
   : _name(name),
     _persistent(persistent),
-    _temp_dir(temp_dir),
     _total_events(0) {
   // Load head queue file back in memory.
   if (_persistent) {
@@ -406,7 +403,7 @@ void muxer::_get_last_event(misc::shared_ptr<io::data>& event) {
  *  @return Path to the memory file.
  */
 std::string muxer::_memory_file() const {
-  std::string retval(_temp_dir);
+  std::string retval(config::applier::state::instance().cache_dir());
   retval.append("memory-");
   retval.append(_name);
   return (retval);
@@ -418,7 +415,7 @@ std::string muxer::_memory_file() const {
  *  @return Path to the queue file.
  */
 std::string muxer::_queue_file() const {
-  std::string retval(_temp_dir);
+  std::string retval(config::applier::state::instance().cache_dir());
   retval.append("queue-");
   retval.append(_name);
   return (retval);

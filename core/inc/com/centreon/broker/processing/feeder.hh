@@ -47,8 +47,7 @@ namespace                        processing {
                                    std::string const& name,
                                    misc::shared_ptr<io::stream> client,
                                    uset<unsigned int> const& read_filters,
-                                   uset<unsigned int> const& write_filters,
-                                   std::string const& temp_dir);
+                                   uset<unsigned int> const& write_filters);
                                  ~feeder();
     void                         run();
 

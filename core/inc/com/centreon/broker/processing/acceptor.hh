@@ -48,8 +48,7 @@ namespace       processing {
   public:
                 acceptor(
                   misc::shared_ptr<io::endpoint> endp,
-                  std::string const& name,
-                  std::string const& temp_dir);
+                  std::string const& name);
                 ~acceptor();
     void        accept();
     void        exit();
@@ -71,7 +70,6 @@ namespace       processing {
     uset<unsigned int>
                 _read_filters;
     time_t      _retry_interval;
-    std::string _temp_dir;
     uset<unsigned int>
                 _write_filters;
   };

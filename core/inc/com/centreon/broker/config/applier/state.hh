@@ -40,19 +40,19 @@ namespace                config {
       void               apply(
                            config::state const& s,
                            bool run_mux = true);
+      std::string const& cache_dir() const throw ();
       static state&      instance();
       static void        load();
       unsigned int       poller_id() const throw ();
       std::string const& poller_name() const throw ();
       static void        unload();
-      unsigned int       get_poller_id() const throw();
-      std::string const& get_poller_name() const throw();
 
     private:
                          state();
                          state(state const& other);
       state&             operator=(state const& other);
 
+      std::string        _cache_dir;
       unsigned int       _poller_id;
       std::string        _poller_name;
     };

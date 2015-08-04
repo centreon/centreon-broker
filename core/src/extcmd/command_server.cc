@@ -75,8 +75,7 @@ misc::shared_ptr<io::stream> command_server::open() {
                                          "(external commands)",
                                          _listener,
                                          read_filters,
-                                         uset<unsigned int>(),
-                                         "");
+                                         uset<unsigned int>());
     _listener_thread->start();
   }
 

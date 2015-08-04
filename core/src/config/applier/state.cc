@@ -65,6 +65,11 @@ void state::apply(
   _poller_id = s.poller_id();
   _poller_name = s.poller_name();
 
+  // Set cache directory.
+  _cache_dir = s.cache_directory();
+  if (!_cache_dir.empty())
+    _cache_dir.append("/");
+
   // Apply logging configuration.
   logger::instance().apply(s.loggers());
 
@@ -147,6 +152,15 @@ void state::apply(
 }
 
 /**
+ *  Get applied cache directory.
+ *
+ *  @return Cache directory.
+ */
+std::string const& state::cache_dir() const throw () {
+  return (_cache_dir);
+}
+
+/**
  *  Get the instance of this object.
  *
  *  @return Class instance.
@@ -189,24 +203,6 @@ void state::unload() {
   delete gl_state;
   gl_state = NULL;
   return ;
-}
-
-/**
- *  Get poller id.
- *
- *  @return  The poller id.
- */
-unsigned int state::get_poller_id() const throw() {
-  return (_poller_id);
-}
-
-/**
- *  Get poller name.
- *
- *  @return  The poller name.
- */
-std::string const& state::get_poller_name() const throw() {
-  return (_poller_name);
 }
 
 /**************************************

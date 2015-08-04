@@ -40,7 +40,6 @@ namespace                multiplexing {
   public:
                          subscriber(
                            std::string const& name,
-                           std::string const& temp_dir,
                            bool persistent = false);
                          ~subscriber();
     muxer&               get_muxer() const;

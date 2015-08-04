@@ -25,6 +25,7 @@
 #include <QMutexLocker>
 #include <QLinkedList>
 #include "com/centreon/broker/config/applier/endpoint.hh"
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -123,7 +124,6 @@ void endpoint::apply(
     << endpoints.size() << " endpoints to apply";
 
   // Copy endpoint configurations and apply eventual modifications.
-  _cache_directory = cache_directory;
   std::list<config::endpoint> tmp_endpoints(endpoints);
   for (QMap<QString, io::protocols::protocol>::const_iterator
          it1(io::protocols::instance().begin()),
@@ -179,10 +179,7 @@ void endpoint::apply(
       std::auto_ptr<processing::thread> endp;
       if (is_acceptor) {
         std::auto_ptr<processing::acceptor>
-          acceptr(new processing::acceptor(
-                                    e,
-                                    it->name.toStdString(),
-                                    cache_directory));
+          acceptr(new processing::acceptor(e, it->name.toStdString()));
         acceptr->set_read_filters(_filters(it->read_filters));
         acceptr->set_write_filters(_filters(it->write_filters));
         endp.reset(acceptr.release());
@@ -339,7 +336,6 @@ multiplexing::subscriber* endpoint::_create_subscriber(config::endpoint& cfg) {
   std::auto_ptr<multiplexing::subscriber>
     s(new multiplexing::subscriber(
                           cfg.name.toStdString(),
-                          _cache_directory,
                           true));
   s->get_muxer().set_read_filters(read_elements);
   s->get_muxer().set_write_filters(write_elements);
@@ -420,8 +416,7 @@ processing::failover* endpoint::_create_failover(
     fo(new processing::failover(
                          endp,
                          sbscrbr,
-                         cfg.name,
-                         _cache_directory));
+                         cfg.name));
   fo->set_buffering_timeout(cfg.buffering_timeout);
   fo->set_read_timeout(cfg.read_timeout);
   fo->set_retry_interval(cfg.retry_interval);
@@ -452,8 +447,8 @@ misc::shared_ptr<io::endpoint> endpoint::_create_endpoint(
         && it.value().endpntfactry->has_endpoint(cfg)) {
       misc::shared_ptr<persistent_cache> cache;
       if (cfg.cache_enabled) {
-        std::string cache_path(_cache_directory);
-        cache_path.append("/");
+        std::string
+          cache_path(config::applier::state::instance().cache_dir());
         cache_path.append(cfg.name.toStdString());
         cache = misc::shared_ptr<persistent_cache>(
                         new persistent_cache(cache_path));

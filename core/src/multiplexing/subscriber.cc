@@ -27,14 +27,12 @@ using namespace com::centreon::broker::multiplexing;
  *  Constructor.
  *
  *  @param[in] name        Name associated to the muxer.
- *  @param[in] temp_dir    Temporary directory.
  *  @param[in] persistent  Whether or not the muxer is persistent.
  */
 subscriber::subscriber(
               std::string const& name,
-              std::string const& temp_dir,
               bool persistent)
-  : _muxer(new muxer(name, temp_dir, persistent)) {
+  : _muxer(new muxer(name, persistent)) {
   multiplexing::engine::instance().subscribe(_muxer.get());
 }
 

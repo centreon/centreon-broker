@@ -49,7 +49,6 @@ namespace               multiplexing {
 
                         muxer(
                           std::string const& name,
-                          std::string const& temp_dir,
                           bool persistent = false);
                         ~muxer();
     static void         event_queue_max_size(unsigned int max) throw ();
@@ -85,7 +84,6 @@ namespace               multiplexing {
     filters             _read_filters;
     std::auto_ptr<io::stream>
                         _temporary;
-    std::string         _temp_dir;
     unsigned int        _total_events;
     filters             _write_filters;
   };

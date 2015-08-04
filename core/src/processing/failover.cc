@@ -42,13 +42,11 @@ using namespace com::centreon::broker::processing;
  *  @param[in] endp      Failover thread endpoint.
  *  @param[in] sbscrbr   Multiplexing agent.
  *  @param[in] name      The failover name.
- *  @param[in] temp_dir  Temporary directory.
  */
 failover::failover(
             misc::shared_ptr<io::endpoint> endp,
             misc::shared_ptr<multiplexing::subscriber> sbscrbr,
-            QString const& name,
-            std::string const& temp_dir)
+            QString const& name)
   : _buffering_timeout(0),
     _endpoint(endp),
     _failover_launched(false),
@@ -57,7 +55,6 @@ failover::failover(
     _read_timeout((time_t)-1),
     _retry_interval(30),
     _subscriber(sbscrbr),
-    _temp_dir(temp_dir),
     _update(false) {}
 
 /**

@@ -60,7 +60,7 @@ stream::stream(
   oss << io::data::broker_id;
   misc::string::replace(_tagname, "$BROKERID$", oss.str());
   oss.str("");
-  oss << config::applier::state::instance().get_poller_id();
+  oss << config::applier::state::instance().poller_id();
   misc::string::replace(_tagname, "$POLLERID$", oss.str());
 }
 

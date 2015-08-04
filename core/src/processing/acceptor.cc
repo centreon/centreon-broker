@@ -35,16 +35,13 @@ using namespace com::centreon::broker::processing;
  *
  *  @param[in] endp       Endpoint.
  *  @param[in] name       Name of the endpoint.
- *  @param[in] temp_dir   Temporary directory.
  */
 acceptor::acceptor(
             misc::shared_ptr<io::endpoint> endp,
-            std::string const& name,
-            std::string const& temp_dir)
+            std::string const& name)
   : _endp(endp),
     _name(name),
-    _retry_interval(30),
-    _temp_dir(temp_dir) {}
+    _retry_interval(30) {}
 
 /**
  *  Destructor.
@@ -74,8 +71,7 @@ void acceptor::accept() {
                           name,
                           s,
                           _read_filters,
-                          _write_filters,
-                          _temp_dir));
+                          _write_filters));
 
     // Run feeder thread.
     f->start();

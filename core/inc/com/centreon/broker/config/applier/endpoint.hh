@@ -95,7 +95,6 @@ namespace              config {
       uset<unsigned int>
                        _filters(std::set<std::string> const& str_filters);
 
-      std::string      _cache_directory;
       std::map<config::endpoint, processing::thread*>
                        _endpoints;
       QMutex           _endpointsm;

@@ -58,8 +58,7 @@ namespace           processing {
                     failover(
                       misc::shared_ptr<io::endpoint> endp,
                       misc::shared_ptr<multiplexing::subscriber> sbscrbr,
-                      QString const& name,
-                      std::string const& temp_dir);
+                      QString const& name);
                     ~failover();
     void            add_secondary_endpoint(
                       misc::shared_ptr<io::endpoint> endp);
@@ -101,7 +100,6 @@ namespace           processing {
     volatile time_t _retry_interval;
     misc::shared_ptr<multiplexing::subscriber>
                     _subscriber;
-    std::string     _temp_dir;
     volatile bool   _update;
 
     // Status.

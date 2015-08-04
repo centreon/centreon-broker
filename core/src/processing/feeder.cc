@@ -42,15 +42,13 @@ using namespace com::centreon::broker::processing;
  *  @param[in] client         Client stream.
  *  @param[in] read_filters   Read filters.
  *  @param[in] write_filters  Write filters.
- *  @param[in] temp_dir       Temporary directory.
  */
 feeder::feeder(
           std::string const& name,
           misc::shared_ptr<io::stream> client,
           uset<unsigned int> const& read_filters,
-          uset<unsigned int> const& write_filters,
-          std::string const& temp_dir)
-  : _client(client), _name(name), _subscriber(name, temp_dir, false) {
+          uset<unsigned int> const& write_filters)
+  : _client(client), _name(name), _subscriber(name, false) {
   _subscriber.get_muxer().set_read_filters(read_filters);
   _subscriber.get_muxer().set_write_filters(write_filters);
 }
