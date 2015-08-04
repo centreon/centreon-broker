@@ -17,9 +17,10 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include "com/centreon/broker/bam/time/string.hh"
+#include <fstream>
+#include "com/centreon/broker/misc/string.hh"
 
-using namespace com::centreon::broker;
+using namespace com::centreon::broker::misc;
 
 static char const* whitespaces(" \t\r\n");
 

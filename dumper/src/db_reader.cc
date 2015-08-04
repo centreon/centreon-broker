@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <vector>
 #include "com/centreon/broker/dumper/db_dump.hh"
 #include "com/centreon/broker/dumper/db_reader.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
@@ -24,12 +25,13 @@
 #include "com/centreon/broker/dumper/entries/diff.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
-/*#include "com/centreon/broker/extcmd/command_request.hh"
-#include "com/centreon/broker/extcmd/command_result.hh"*/
+#include "com/centreon/broker/extcmd/command_request.hh"
+#include "com/centreon/broker/extcmd/command_result.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/misc/string.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::dumper;
@@ -112,11 +114,11 @@ void db_reader::read(misc::shared_ptr<io::data>& d) {
  */
 unsigned int db_reader::write(misc::shared_ptr<io::data> const& d) {
   // Process only external commands addressed to us.
-  /*if (!d.isNull()
+  if (!d.isNull()
       && (d->type() == extcmd::command_request::static_type())) {
     extcmd::command_request const&
       req(d.ref_as<extcmd::command_request const>());
-    if (req.is_addressed_to(_name)) {
+    if (_name == req.endp) {
       try {
         // Split command for processing.
         std::vector<std::string> params;
@@ -145,7 +147,6 @@ unsigned int db_reader::write(misc::shared_ptr<io::data> const& d) {
           res->id = req.id;
           res->msg = "Command successfully executed.";
           res->code = 0;
-          res->destination_id = req.source_id;
           multiplexing::publisher().write(res);
         }
       }
@@ -161,11 +162,10 @@ unsigned int db_reader::write(misc::shared_ptr<io::data> const& d) {
         res->id = req.id;
         res->msg = e.what();
         res->code = -1;
-        res->destination_id = req.source_id;
         multiplexing::publisher().write(res);
       }
     }
-  }*/
+  }
   return (1);
 }
 

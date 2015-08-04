@@ -18,11 +18,12 @@
 */
 
 #include <cstring>
-#include "com/centreon/broker/bam/time/string.hh"
+#include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/bam/time/timerange.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::time;
+using namespace com::centreon::broker::misc;
 
 /**
  *  Constructor.
