@@ -35,6 +35,7 @@ public:
                      ~external_command();
   external_command&  operator=(external_command const& right);
   void               execute(std::string const& query);
+  void               execute_broker(std::string const& query);
   std::string        get_engine_config() const;
   std::string const& get_file() const throw ();
   void               set_file(std::string const& file);

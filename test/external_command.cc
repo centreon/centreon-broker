@@ -83,6 +83,22 @@ void external_command::execute(std::string const& query) {
 }
 
 /**
+ *  Execute a broker query on the command file.
+ *
+ *  @param[in] query  Query to execute.
+ */
+void external_command::execute_broker(std::string const& query) {
+  std::ofstream ofs;
+  ofs.open(_file.c_str(), std::ios_base::out | std::ios_base::app);
+  if (ofs.fail())
+    throw (exceptions::msg() << "cannot open command file '"
+           << _file.c_str() << "'");
+  ofs << query << "\n";
+  ofs.close();
+  return ;
+}
+
+/**
  *  Get the monitoring engine configuration.
  *
  *  @return Configuration entries.
