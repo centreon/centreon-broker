@@ -358,6 +358,17 @@ int main() {
                << q.lastError().text());
     }
     {
+      QString query(
+                "INSERT INTO mod_bam_poller_relations (ba_id, poller_id)"
+                "  VALUES (1, 42),"
+                "         (2, 42)");
+      QSqlQuery q(*db.centreon_db());
+      if (!q.exec(query))
+        throw (exceptions::msg()
+               << "could not create BA/poller relations: "
+               << q.lastError().text());
+    }
+    {
       QString queries[] = {
         "INSERT INTO host (host_id, host_name)"
         "  VALUES (1001, 'Virtual BA host')",
