@@ -81,7 +81,7 @@ void command_client::read(misc::shared_ptr<io::data>& d) {
     _initialize_socket();
 
   d.clear();
-  while (_process && d.isNull()) {
+  while (d.isNull()) {
     // Read commands from socket.
     size_t delimiter(_buffer.find_first_of('\n'));
     while (_process && (delimiter == std::string::npos)) {
@@ -96,10 +96,10 @@ void command_client::read(misc::shared_ptr<io::data>& d) {
                  << _socket->errorString());
         _buffer.append(buffer, rb);
       }
-      else if (_socket->state() != QLocalSocket::ConnectedState)
-        break ;
-      else
+      else if (_socket->state() == QLocalSocket::ConnectedState)
         QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+      else
+        break ;
       delimiter = _buffer.find_first_of('\n');
     }
 
@@ -164,6 +164,8 @@ void command_client::read(misc::shared_ptr<io::data>& d) {
         remaining -= wb;
       }
     }
+    else
+      break ;
   }
   return ;
 }
