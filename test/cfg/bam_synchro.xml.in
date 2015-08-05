@@ -39,7 +39,7 @@
     <db_name>@DB_NAME_CENTREON@</db_name>
   </output>
   <output>
-    <name>DBReader</name>
+    <name>DBWriter</name>
     <type>db_cfg_writer</type>
     <db_type>@DB_TYPE@</db_type>
     <db_host>@DB_HOST@</db_host>

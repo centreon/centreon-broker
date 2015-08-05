@@ -32,6 +32,8 @@
 #include "test/generate.hh"
 #include "test/misc.hh"
 #include "test/vars.hh"
+#include "test/broker_extcmd.hh"
+#include <iostream>
 
 using namespace com::centreon::broker;
 
@@ -119,7 +121,7 @@ int main() {
   std::list<command> commands;
   std::string engine_config_path(tmpnam(NULL));
   external_command commander;
-  external_command broker_command_file;
+  broker_extcmd broker_command_file;
   engine monitoring;
   test_db db;
   test_db db2;
@@ -133,6 +135,7 @@ int main() {
     // Prepare monitoring engine configuration parameters.
     commander.set_file(tmpnam(NULL));
     broker_command_file.set_file(tmpnam(NULL));
+    std::cout << "broker command file: " << broker_command_file.get_file() << std::endl;
     cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/bam_synchro.xml.in");
     cfg.set("COMMAND_FILE", commander.get_file());
     cfg.set("DB_NAME_CENTREON", CENTREON_DB_NAME);
