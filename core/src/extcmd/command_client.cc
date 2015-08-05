@@ -45,7 +45,9 @@ using namespace com::centreon::broker::extcmd;
 command_client::command_client(
                   int native_socket,
                   command_listener* listener)
-  : _listener(listener), _socket_native(native_socket) {}
+  : _listener(listener),
+    _process(true),
+    _socket_native(native_socket) {}
 
 /**
  *  Destructor.
@@ -64,8 +66,7 @@ command_client::~command_client() {
  *  @param[in] out  True to process output.
  */
 void command_client::process(bool in, bool out) {
-  (void)in;
-  (void)out;
+  _process = in && out;
   return ;
 }
 
@@ -80,11 +81,11 @@ void command_client::read(misc::shared_ptr<io::data>& d) {
     _initialize_socket();
 
   d.clear();
-  while (d.isNull()) {
+  while (_process && d.isNull()) {
     // Read commands from socket.
     size_t delimiter(_buffer.find_first_of('\n'));
-    while (delimiter == std::string::npos) {
-      if (_socket->waitForReadyRead(0)) {
+    while (_process && (delimiter == std::string::npos)) {
+      if (_socket->waitForReadyRead(100)) {
         char buffer[1000];
         int rb(_socket->read(buffer, sizeof(buffer)));
         if (rb == 0)
@@ -95,11 +96,11 @@ void command_client::read(misc::shared_ptr<io::data>& d) {
                  << _socket->errorString());
         _buffer.append(buffer, rb);
       }
+      else if (_socket->state() != QLocalSocket::ConnectedState)
+        break ;
+      else
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
       delimiter = _buffer.find_first_of('\n');
-      // if ((deadline == (time_t)-1) || (time(NULL) < deadline))
-      //   QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-      // else
-      //   break ;
     }
 
     // External command received.
