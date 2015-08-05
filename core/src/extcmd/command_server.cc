@@ -107,6 +107,7 @@ misc::shared_ptr<io::stream> command_server::open() {
     _listener_thread->prepare(
                         new multiplexing::subscriber(_name),
                         _listener);
+    _listener_thread->start();
   }
 
   // Clean client threads.

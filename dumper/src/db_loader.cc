@@ -21,7 +21,6 @@
 #include "com/centreon/broker/database_query.hh"
 #include "com/centreon/broker/dumper/db_loader.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
-#include "com/centreon/broker/dumper/entries/ba_type.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -62,7 +61,6 @@ void db_loader::load(entries::state& state, unsigned int poller_id) {
   _poller_id = poller_id;
 
   // Database loading.
-  _load_ba_types();
   _load_bas();
   _load_kpis();
 
@@ -81,32 +79,12 @@ void db_loader::load(entries::state& state, unsigned int poller_id) {
 **************************************/
 
 /**
- *  Load BA types.
- */
-void db_loader::_load_ba_types() {
-  database_query q(*_db);
-  q.run_query(
-      "SELECT ba_type_id, name, slug, description"
-      "  FROM mod_bam_ba_types",
-      "db_reader: could not load BA types from DB");
-  while (q.next()) {
-    entries::ba_type b;
-    b.ba_type_id = q.value(0).toUInt();
-    b.name = q.value(1).toString();
-    b.slug = q.value(2).toString();
-    b.description = q.value(3).toString();
-    _state->get_ba_types().push_back(b);
-  }
-  return ;
-}
-
-/**
  *  Load BAs.
  */
 void db_loader::_load_bas() {
   std::ostringstream query;
   query << "SELECT b.ba_id, b.name, b.description, b.level_w,"
-           "       b.level_c, b.organization_id, b.ba_type_id"
+           "       b.level_c"
            "  FROM mod_bam AS b"
            "  INNER JOIN mod_bam_poller_relations AS pr"
            "    ON b.ba_id=pr.ba_id"
@@ -125,8 +103,6 @@ void db_loader::_load_bas() {
     b.description = q.value(2).toString();
     b.level_warning = q.value(3).toDouble();
     b.level_critical = q.value(4).toDouble();
-    b.organization_id = q.value(5).toUInt();
-    b.type_id = q.value(6).toUInt();
     _state->get_bas().push_back(b);
   }
   return ;

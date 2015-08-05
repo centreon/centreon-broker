@@ -18,7 +18,6 @@
 */
 
 #include "com/centreon/broker/dumper/entries/ba.hh"
-#include "com/centreon/broker/dumper/entries/ba_type.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
 
@@ -61,24 +60,6 @@ state& state::operator=(state const& other) {
   if (this != &other)
     _internal_copy(other);
   return (*this);
-}
-
-/**
- *  Get BA types.
- *
- *  @return Non-modifiable list of BA types.
- */
-std::list<ba_type> const& state::get_ba_types() const {
-  return (_ba_types);
-}
-
-/**
- *  Get BA types.
- *
- *  @return Modifiable list of BA types.
- */
-std::list<ba_type>& state::get_ba_types() {
-  return (_ba_types);
 }
 
 /**
@@ -129,7 +110,6 @@ std::list<kpi>& state::get_kpis() {
  *  @param[in] other  Object to copy.
  */
 void state::_internal_copy(state const& other) {
-  _ba_types = other._ba_types;
   _bas = other._bas;
   _kpis = other._kpis;
   return ;

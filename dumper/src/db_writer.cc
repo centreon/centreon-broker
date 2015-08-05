@@ -26,7 +26,6 @@
 #include "com/centreon/broker/dumper/db_dump.hh"
 #include "com/centreon/broker/dumper/db_writer.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
-#include "com/centreon/broker/dumper/entries/ba_type.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "mapping.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -47,7 +46,7 @@ using namespace com::centreon::broker::dumper;
  *  @param[in] db_cfg  Database configuration.
  */
 db_writer::db_writer(database_config const& db_cfg)
-  : _db_cfg(db_cfg), _full_dump(false) {}
+  : _process_out(true), _db_cfg(db_cfg), _full_dump(false) {}
 
 /**
  *  Destructor.
@@ -61,8 +60,7 @@ db_writer::~db_writer() {}
  *  @param[in] out Set to true to process output events.
  */
 void db_writer::process(bool in, bool out) {
-  (void) in;
-  (void) out;
+  _process_out = in || !out; // Only for immediate shutdown.
   return ;
 }
 
@@ -72,9 +70,9 @@ void db_writer::process(bool in, bool out) {
  *  @param[in] d         Unused.
  */
 void db_writer::read(misc::shared_ptr<io::data>& d) {
-  (void)d;
-  throw (io::exceptions::shutdown(true, false)
-         << "cannot read from database configuration writer");
+  d.clear();
+  throw (com::centreon::broker::exceptions::msg()
+         << "influxdb: attempt to read from a db_writer stream");
 }
 
 /**
@@ -83,6 +81,11 @@ void db_writer::read(misc::shared_ptr<io::data>& d) {
  *  @param[in] d  Event to write.
  */
 unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
+  // Check that processing is enabled.
+  if (!_process_out)
+    throw (io::exceptions::shutdown(true, true)
+             << "db_writer stream is shutdown");
+
   if (!d.isNull()) {
     if (d->type() ==
         io::events::data_type<io::events::dumper, dumper::de_db_dump>::value) {
@@ -93,7 +96,6 @@ unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
           _commit();
         else
           _full_dump = dbd.full;
-        _ba_types.clear();
         _bas.clear();
         _kpis.clear();
       }
@@ -103,11 +105,6 @@ unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
       entries::ba const& b(d.ref_as<entries::ba const>());
       if (b.poller_id == config::applier::state::instance().get_instance_id())
         _bas.push_back(b);
-    }
-    else if (d->type() ==
-             io::events::data_type<io::events::dumper, dumper::de_entries_ba_type>::value) {
-      entries::ba_type const& b(d.ref_as<entries::ba_type const>());
-      _ba_types.push_back(b);
     }
     else if (d->type() ==
              io::events::data_type<io::events::dumper, dumper::de_entries_kpi>::value) {
@@ -142,22 +139,6 @@ void db_writer::_commit() {
       database_query q(db);
       q.run_query("DELETE FROM mod_bam");
     }
-    {
-      database_query q(db);
-      q.run_query("DELETE FROM mod_bam_ba_types");
-    }
-  }
-
-  // Prepare BA type queries.
-  database_query ba_type_insert(db);
-  database_query ba_type_update(db);
-  database_query ba_type_delete(db);
-  {
-    std::set<std::string> ids;
-    ids.insert("ba_type_id");
-    _prepare_insert<entries::ba_type>(ba_type_insert);
-    _prepare_update<entries::ba_type>(ba_type_update, ids);
-    _prepare_delete<entries::ba_type>(ba_type_delete, ids);
   }
 
   // Prepare BA queries.
@@ -182,35 +163,6 @@ void db_writer::_commit() {
     _prepare_insert<entries::kpi>(kpi_insert);
     _prepare_update<entries::kpi>(kpi_update, ids);
     _prepare_delete<entries::kpi>(kpi_delete, ids);
-  }
-
-  // Process all BA types.
-  for (std::list<entries::ba_type>::const_iterator
-         it(_ba_types.begin()),
-         end(_ba_types.end());
-       it != end;
-       ++it) {
-    // INSERT / UPDATE.
-    if (it->enable) {
-      logging::debug(logging::medium) << "db_dumper: updating BA type "
-        << it->ba_type_id << " ('" << it->name << "')";
-      _fill_query(ba_type_update, *it);
-      ba_type_update.run_statement();
-      if (!ba_type_update.num_rows_affected()) {
-        logging::debug(logging::medium)
-          << "db_dumper: inserting BA type " << it->ba_type_id << " ('"
-          << it->name << "')";
-        _fill_query(ba_type_insert, *it);
-        ba_type_insert.run_statement();
-      }
-    }
-    // DELETE.
-    else {
-      logging::debug(logging::medium) << "db_dumper: deleting BA type "
-        << it->ba_type_id << " ('" << it->name << "')";
-      ba_type_delete.bind_value(":ba_type_id", it->ba_type_id);
-      ba_type_delete.run_statement();
-    }
   }
 
   // Process all BAs.

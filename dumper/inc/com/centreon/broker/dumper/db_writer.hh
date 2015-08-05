@@ -33,7 +33,6 @@ namespace           dumper {
   // Forward declarations.
   namespace         entries {
     class           ba;
-    class           ba_type;
     class           kpi;
   }
 
@@ -58,10 +57,10 @@ namespace           dumper {
     db_writer&      operator=(db_writer const& other);
     void            _commit();
 
+    bool            _process_out;
+
     database_config _db_cfg;
     bool            _full_dump;
-    std::list<entries::ba_type>
-                    _ba_types;
     std::list<entries::ba>
                     _bas;
     std::list<entries::kpi>

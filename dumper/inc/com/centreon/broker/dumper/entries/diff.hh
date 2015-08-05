@@ -29,7 +29,6 @@ namespace                            dumper {
   namespace                          entries {
     // Forward declarations.
     class                            ba;
-    class                            ba_type;
     class                            kpi;
     class                            state;
 
@@ -48,9 +47,6 @@ namespace                            dumper {
                                      diff(diff const& other);
                                      ~diff();
       diff&                          operator=(diff const& other);
-      std::list<ba_type> const&      ba_types_to_create() const;
-      std::list<ba_type> const&      ba_types_to_update() const;
-      std::list<ba_type> const&      ba_types_to_delete() const;
       std::list<ba> const&           bas_to_create() const;
       std::list<ba> const&           bas_to_update() const;
       std::list<ba> const&           bas_to_delete() const;
@@ -61,9 +57,6 @@ namespace                            dumper {
     private:
       void                           _internal_copy(diff const& other);
 
-      std::list<ba_type>             _ba_types_to_create;
-      std::list<ba_type>             _ba_types_to_update;
-      std::list<ba_type>             _ba_types_to_delete;
       std::list<ba>                  _bas_to_create;
       std::list<ba>                  _bas_to_update;
       std::list<ba>                  _bas_to_delete;

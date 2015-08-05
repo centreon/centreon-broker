@@ -22,7 +22,6 @@
 #include "com/centreon/broker/dumper/reload.hh"
 #include "com/centreon/broker/dumper/db_dump.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
-#include "com/centreon/broker/dumper/entries/ba_type.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/engine/protoapi.h"
@@ -394,40 +393,7 @@ static mapped_data<entries::ba> const dumper_entries_ba_mapping[] = {
     &entries::ba::name,
     7,
     "name"),
-  mapped_data<entries::ba>(
-    &entries::ba::organization_id,
-    8,
-    "organization_id"),
-  mapped_data<entries::ba>(
-    &entries::ba::type_id,
-    9,
-    "ba_type_id"),
   mapped_data<entries::ba>()
-};
-
-// entries ba type members mapping.
-static mapped_data<entries::ba_type> const dumper_entries_ba_type_mapping[] = {
-  mapped_data<entries::ba_type>(
-    &entries::ba_type::enable,
-    1,
-    NULL),
-  mapped_data<entries::ba_type>(
-    &entries::ba_type::ba_type_id,
-    2,
-    "ba_type_id"),
-  mapped_data<entries::ba_type>(
-    &entries::ba_type::description,
-    3,
-    "description"),
-  mapped_data<entries::ba_type>(
-    &entries::ba_type::name,
-    4,
-    "name"),
-  mapped_data<entries::ba_type>(
-    &entries::ba_type::slug,
-    5,
-    "slug"),
-  mapped_data<entries::ba_type>()
 };
 
 // entries kpi members mapping.
@@ -2650,17 +2616,12 @@ namespace     com {
       template <> const mapped_data<dumper::entries::ba>*
         mapped_type<dumper::entries::ba>::members(dumper_entries_ba_mapping);
       template <> const char*
-        mapped_type<dumper::entries::ba>::table(NULL);
-
-      template <> const mapped_data<dumper::entries::ba_type>*
-        mapped_type<dumper::entries::ba_type>::members(dumper_entries_ba_type_mapping);
-      template <> const char*
-        mapped_type<dumper::entries::ba_type>::table(NULL);
+        mapped_type<dumper::entries::ba>::table("mod_bam");
 
       template <> const mapped_data<dumper::entries::kpi>*
         mapped_type<dumper::entries::kpi>::members(dumper_entries_kpi_mapping);
       template <> const char*
-        mapped_type<dumper::entries::kpi>::table(NULL);
+        mapped_type<dumper::entries::kpi>::table("mod_bam_kpi");
 
       // Correlation engine state mapping.
       template <> const mapped_data<correlation::engine_state>*
