@@ -100,9 +100,9 @@ void db_reader::process(bool in, bool out) {
  *  @param[in] d         Unused.
  */
 void db_reader::read(misc::shared_ptr<io::data>& d) {
-  (void)d;
-  throw (io::exceptions::shutdown(true, false)
-         << "cannot read from DB configuration reader");
+  d.clear();
+  throw (com::centreon::broker::exceptions::msg()
+         << "influxdb: attempt to read from a db_reader stream");
 }
 
 /**
