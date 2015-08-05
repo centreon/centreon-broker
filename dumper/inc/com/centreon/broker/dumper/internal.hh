@@ -31,7 +31,6 @@ namespace dumper {
     de_reload,
     de_db_dump,
     de_entries_ba,
-    de_entries_ba_type,
     de_entries_kpi,
   };
 }

@@ -39,9 +39,7 @@ ba::ba()
     poller_id(0),
     ba_id(0),
     level_critical(NAN),
-    level_warning(NAN),
-    organization_id(0),
-    type_id(0) {}
+    level_warning(NAN) {}
 
 /**
  *  Copy constructor.
@@ -86,9 +84,7 @@ bool ba::operator==(ba const& other) const {
           && (description == other.description)
           && (level_critical == other.level_critical)
           && (level_warning == other.level_warning)
-          && (name == other.name)
-          && (organization_id == other.organization_id)
-          && (type_id == other.type_id));
+          && (name == other.name));
 }
 
 /**
@@ -130,7 +126,5 @@ void ba::_internal_copy(ba const& other) {
   level_critical = other.level_critical;
   level_warning = other.level_warning;
   name = other.name;
-  organization_id = other.organization_id;
-  type_id = other.type_id;
   return ;
 }

@@ -51,8 +51,6 @@ namespace                 dumper {
       double              level_critical;
       double              level_warning;
       QString             name;
-      unsigned int        organization_id;
-      unsigned int        type_id;
 
     private:
       void                _internal_copy(ba const& other);

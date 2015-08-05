@@ -19,7 +19,6 @@
 
 #include <map>
 #include "com/centreon/broker/dumper/entries/ba.hh"
-#include "com/centreon/broker/dumper/entries/ba_type.hh"
 #include "com/centreon/broker/dumper/entries/diff.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
@@ -117,23 +116,6 @@ diff::diff() {}
  *  @param[in] newer  Second state.
  */
 diff::diff(state const& older, state const& newer) {
-  // Diff BA types.
-  {
-    std::map<unsigned int, ba_type> old_ba_types;
-    to_map<ba_type, &ba_type::ba_type_id>(
-      old_ba_types,
-      older.get_ba_types());
-    std::map<unsigned int, ba_type> new_ba_types;
-    to_map<ba_type, &ba_type::ba_type_id>(
-      new_ba_types,
-      newer.get_ba_types());
-    diff_it(
-      _ba_types_to_create,
-      _ba_types_to_update,
-      _ba_types_to_delete,
-      old_ba_types,
-      new_ba_types);
-  }
 
   // Diff BAs.
   {
@@ -189,33 +171,6 @@ diff& diff::operator=(diff const& other) {
   if (this != &other)
     _internal_copy(other);
   return (*this);
-}
-
-/**
- *  Get BA types that should be created.
- *
- *  @return List of BA types that should be created.
- */
-std::list<ba_type> const& diff::ba_types_to_create() const {
-  return (_ba_types_to_create);
-}
-
-/**
- *  Get BA types that should be updated.
- *
- *  @return List of BA types that should be updated.
- */
-std::list<ba_type> const& diff::ba_types_to_update() const {
-  return (_ba_types_to_update);
-}
-
-/**
- *  Get BA types that should be deleted.
- *
- *  @return List of BA types that should be deleted.
- */
-std::list<ba_type> const& diff::ba_types_to_delete() const {
-  return (_ba_types_to_delete);
 }
 
 /**
@@ -284,9 +239,6 @@ std::list<kpi> const& diff::kpis_to_delete() const {
  *  @param[in] other  Object to copy.
  */
 void diff::_internal_copy(diff const& other) {
-  _ba_types_to_create = other._ba_types_to_create;
-  _ba_types_to_update = other._ba_types_to_update;
-  _ba_types_to_delete = other._ba_types_to_delete;
   _bas_to_create = other._bas_to_create;
   _bas_to_update = other._bas_to_update;
   _bas_to_delete = other._bas_to_delete;

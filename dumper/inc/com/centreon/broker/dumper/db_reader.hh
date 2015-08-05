@@ -56,6 +56,8 @@ namespace           dumper {
     void            _sync_cfg_db(unsigned int poller_id);
     void            _update_cfg_db(unsigned int poller_id);
 
+    bool            _process_out;
+
     umap<unsigned int, entries::state>
                     _cache;
     db_loader       _loader;

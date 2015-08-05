@@ -21,7 +21,6 @@
 #include "com/centreon/broker/dumper/db_dump.hh"
 #include "com/centreon/broker/dumper/db_reader.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
-#include "com/centreon/broker/dumper/entries/ba_type.hh"
 #include "com/centreon/broker/dumper/entries/diff.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
@@ -75,7 +74,7 @@ static void send_objects(std::list<T> const& t) {
 db_reader::db_reader(
              std::string const& name,
              database_config const& db_cfg)
-  : _loader(db_cfg), _name(name.c_str()) {}
+  : _process_out(true), _loader(db_cfg), _name(name.c_str()) {}
 
 /**
  *  Destructor.
@@ -89,8 +88,7 @@ db_reader::~db_reader() {}
  *  @param[in] out Set to true to process output events.
  */
 void db_reader::process(bool in, bool out) {
-  (void) in;
-  (void) out;
+  _process_out = in || !out; // Only for immediate shutdown.
   return ;
 }
 
@@ -113,6 +111,11 @@ void db_reader::read(misc::shared_ptr<io::data>& d) {
  *  @return Always return 1.
  */
 unsigned int db_reader::write(misc::shared_ptr<io::data> const& d) {
+  // Check that processing is enabled.
+  if (!_process_out)
+    throw (io::exceptions::shutdown(true, true)
+             << "db_reader stream is shutdown");
+
   // Process only external commands addressed to us.
   if (!d.isNull()
       && (d->type() == extcmd::command_request::static_type())) {
@@ -203,7 +206,6 @@ void db_reader::_sync_cfg_db(unsigned int poller_id) {
       start->poller_id = poller_id;
       pblshr.write(start);
     }
-    send_objects(state.get_ba_types());
     send_objects(state.get_bas());
     send_objects(state.get_kpis());
     {
@@ -248,9 +250,6 @@ void db_reader::_update_cfg_db(unsigned int poller_id) {
       start->poller_id = poller_id;
       pblshr.write(start);
     }
-    send_objects(d.ba_types_to_delete());
-    send_objects(d.ba_types_to_update());
-    send_objects(d.ba_types_to_create());
     send_objects(d.bas_to_delete());
     send_objects(d.bas_to_update());
     send_objects(d.bas_to_create());
