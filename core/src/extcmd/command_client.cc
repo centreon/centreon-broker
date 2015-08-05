@@ -79,9 +79,9 @@ void command_client::read(misc::shared_ptr<io::data>& d) {
   if (!_socket.get())
     _initialize_socket();
 
-  while (true) {
+  d.clear();
+  while (d.isNull()) {
     // Read commands from socket.
-    d.clear();
     size_t delimiter(_buffer.find_first_of('\n'));
     while (delimiter == std::string::npos) {
       if (_socket->waitForReadyRead(0)) {
