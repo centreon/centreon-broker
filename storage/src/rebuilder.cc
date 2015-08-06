@@ -318,7 +318,7 @@ void rebuilder::_rebuild_metric(
         entry->value = data_bin_query.value(1).toDouble();
         if (entry->value > FLT_MAX * 0.999)
           entry->value = INFINITY;
-        else if (entry->value < FLT_MIN * 0.999)
+        else if (entry->value < -FLT_MAX * 0.999)
           entry->value = -INFINITY;
         multiplexing::publisher().write(entry);
       }
