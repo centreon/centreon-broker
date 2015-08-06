@@ -37,6 +37,51 @@ using namespace com::centreon::broker;
 static volatile bool should_exit(false);
 
 /**
+ *  Thread that will read a stream.
+ */
+class            concurrent_stream : public QThread {
+public:
+                 concurrent_stream(misc::shared_ptr<io::stream> stream)
+    : _stream(stream), _failure(false) {}
+                 ~concurrent_stream() {}
+
+   /**
+    *  Check if thread failed.
+    *
+    *  @return true if thread encountered a failure.
+    */
+   bool           failure() const {
+     return (_failure);
+   }
+
+   /**
+    *  Thread entry point.
+    */
+   void           run() {
+     try {
+       while (true) {
+         misc::shared_ptr<io::data> d;
+         _stream->read(d);
+       }
+     }
+     catch (io::exceptions::shutdown const& e) {
+       (void)e;
+     }
+     catch (std::exception const& e) {
+       std::cerr << e.what() << std::endl;
+       _failure = true;
+     }
+     return ;
+   }
+
+private:
+  misc::shared_ptr<io::stream>
+                 _stream;
+  bool           _failure;
+  unsigned short _port;
+};
+
+/**
  *  Thread that will listen on a port.
  */
 class            concurrent_acceptor : public QThread {
@@ -78,8 +123,16 @@ public:
     _acceptor = new tcp::acceptor;
     _acceptor->listen_on(_port);
     try {
-      while (!should_exit)
-        _acceptor->open();
+      while (!should_exit) {
+        misc::shared_ptr<tcp::stream> stream =
+          _acceptor->open().staticCast<tcp::stream>();
+
+        if (!stream.isNull()) {
+          stream->set_read_timeout(1);
+          _streams.push_back(new concurrent_stream(stream));
+          _streams.back()->start();
+        }
+      }
     }
     catch (io::exceptions::shutdown const& e) {
       (void)e;
@@ -105,6 +158,8 @@ private:
   tcp::acceptor* _acceptor;
   bool           _failure;
   unsigned short _port;
+  std::vector<concurrent_stream*>
+                 _streams;
 };
 
 /**

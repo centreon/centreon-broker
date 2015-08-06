@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,8 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <sys/socket.h>
+#include <memory>
+#include <sstream>
 #include <QMutexLocker>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -38,132 +39,111 @@ using namespace com::centreon::broker::tcp;
  */
 connector::connector()
   : io::endpoint(false),
-    _mutex(new QMutex),
     _port(0),
-    _timeout(-1),
-    _write_timeout(-1) {}
+    _read_timeout(-1),
+    _write_timeout(-1),
+    _child(NULL) {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] c Object to copy.
+ *  @param[in] other  Object to copy.
  */
-connector::connector(connector const& c) : io::endpoint(c) {
-  _internal_copy(c);
+connector::connector(connector const& other) : io::endpoint(other) {
+  _internal_copy(other);
 }
 
 /**
  *  Destructor.
  */
-connector::~connector() {
-  this->close();
-}
+connector::~connector() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] c Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-connector& connector::operator=(connector const& c) {
-  if (this != &c) {
-    this->close();
-    io::endpoint::operator=(c);
-    _internal_copy(c);
+connector& connector::operator=(connector const& other) {
+  if (this != &other) {
+    io::endpoint::operator=(other);
+    _internal_copy(other);
   }
   return (*this);
 }
 
 /**
- *  Clone the connector.
- *
- *  @return This object.
- */
-io::endpoint* connector::clone() const {
-  return (new connector(*this));
-}
-
-/**
- *  Close the connector socket.
- */
-void connector::close() {
-  QMutexLocker lock(&*_mutex);
-  if (!_socket.isNull()) {
-    _socket->close();
-    _socket.clear();
-  }
-  return ;
-}
-
-/**
  *  Set connection parameters.
  *
- *  @param[in] host Host to connect to.
- *  @param[in] port Port to connect to.
+ *  @param[in] host  Host to connect to.
+ *  @param[in] port  Port to connect to.
  */
 void connector::connect_to(QString const& host, unsigned short port) {
-  this->close();
   _host = host;
   _port = port;
   return ;
 }
 
 /**
+ *  Clone this connector.
+ *
+ *  @return  A clone of this connector.
+ */
+io::endpoint* connector::clone() const {
+  return (new connector(*this));
+}
+
+/**
+ *  Close this connector.
+ */
+void connector::close() {
+  QMutexLocker lock(&_mutex);
+  if (_child) {
+    // Notify the child that it should close.
+    _child->close();
+    // Wait until it does.
+    _child_closed_condvar.wait(&_mutex);
+  }
+}
+
+/**
  *  Connect to the remote host.
  */
 misc::shared_ptr<io::stream> connector::open() {
-  // Close previous connection.
-  this->close();
-
-  // Lock mutex.
-  QMutexLocker lock(&*_mutex);
-
+  QMutexLocker lock(&_mutex);
   // Launch connection process.
   logging::info(logging::medium) << "TCP: connecting to "
     << _host << ":" << _port;
-  _socket = misc::shared_ptr<QTcpSocket>(new QTcpSocket);
-
-  _socket->connectToHost(_host, _port);
+  std::string connection_name;
+  {
+    std::ostringstream oss;
+    oss << _host.toStdString() << ":" << _port;
+    connection_name = oss.str();
+  }
+  std::auto_ptr<QTcpSocket> sock(new QTcpSocket);
+  sock->connectToHost(_host, _port);
 
   // Wait for connection result.
-  if (!_socket->waitForConnected())
+  if (!sock->waitForConnected())
     throw (exceptions::msg() << "TCP: could not connect to "
-           << _host << ":" << _port << ": "
-           << _socket->errorString());
-  logging::info(logging::medium) << "TCP: successfully connected to "
-    << _host << ":" << _port;
-
-  // Set the SO_KEEPALIVE option.
-  _socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
-
-  // Set the write timeout option.
-  if (_write_timeout >= 0) {
-#ifndef _WIN32
-    struct timeval t;
-    t.tv_sec = _write_timeout / 1000000;
-    t.tv_usec = _write_timeout % 1000000;
-    setsockopt(
-      _socket->socketDescriptor(),
-      SOL_SOCKET,
-      SO_SNDTIMEO,
-      &t,
-      sizeof(t));
-#endif //!_WIN32
-  }
+           << connection_name << ": " << sock->errorString());
+  logging::info(logging::medium)
+    << "TCP: successfully connected to " << connection_name;
 
   // Return stream.
-  misc::shared_ptr<stream> s(new stream(_socket, _mutex));
-  s->set_timeout(_timeout);
-  if (_write_timeout >= 0)
-    s->set_write_timeout(_write_timeout / 1000);
+  misc::shared_ptr<stream> s(new stream(sock.get(), connection_name));
+  sock.release();
+  s->set_read_timeout(_read_timeout);
+  s->set_write_timeout(_write_timeout);
+  s->set_parent(this);
   return (s);
 }
 
 /**
  *  Connect to the remote host.
  *
- *  @param[in] id Unused.
+ *  @param[in] id  Unused.
  */
 misc::shared_ptr<io::stream> connector::open(QString const& id) {
   (void)id;
@@ -171,24 +151,44 @@ misc::shared_ptr<io::stream> connector::open(QString const& id) {
 }
 
 /**
- *  Set connection timeout.
+ *  Set read timeout.
  *
- *  @param[in] msecs Timeout in ms.
+ *  @param[in] secs  Timeout in seconds.
  */
-void connector::set_timeout(int msecs) {
-  _timeout = msecs;
+void connector::set_read_timeout(int secs) {
+  _read_timeout = secs;
   return ;
 }
 
 /**
- *  Set write timeout on data.
+ *  Set write timeout.
  *
- *  @param[in] msecs  Timeout in ms.
+ *  @param[in] secs  Timeout in seconds.
  */
-void connector::set_write_timeout(int msecs) {
-  _write_timeout = msecs;
+void connector::set_write_timeout(int secs) {
+  _write_timeout = secs;
+  return ;
 }
 
+/**
+ *  Associate a child stream with the connector.
+ *  @param[in] child  The child stream to associate.
+ */
+void connector::add_child(stream& child) {
+  _child = &child;
+}
+
+/**
+ *  Remove a child stream associated with the connector.
+ *  @param[in] child  The child stream to remove.
+ */
+void connector::remove_child(stream& child) {
+  QMutexLocker lock(&_mutex);
+  if (_child == &child) {
+    _child = NULL;
+    _child_closed_condvar.wakeOne();
+  }
+}
 
 /**************************************
 *                                     *
@@ -199,13 +199,12 @@ void connector::set_write_timeout(int msecs) {
 /**
  *  Copy internal data members.
  *
- *  @param[in] c Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void connector::_internal_copy(connector const& c) {
-  _host = c._host;
-  _port = c._port;
-  _socket = c._socket;
-  _timeout = c._timeout;
-  _write_timeout = c._write_timeout;
+void connector::_internal_copy(connector const& other) {
+  _host = other._host;
+  _port = other._port;
+  _read_timeout = other._read_timeout;
+  _write_timeout = other._write_timeout;
   return ;
 }

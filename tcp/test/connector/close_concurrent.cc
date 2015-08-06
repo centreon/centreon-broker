@@ -79,7 +79,8 @@ class             concurrent : public QThread {
 
     // Will throw when socket is closed.
     try {
-      misc::shared_ptr<io::stream> s(_conn->open());
+      misc::shared_ptr<tcp::stream> s(_conn->open().staticCast<tcp::stream>());
+      s->set_read_timeout(1);
       while (true) {
         misc::shared_ptr<io::data> d;
         s->read(d);

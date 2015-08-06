@@ -58,6 +58,8 @@ int main() {
     // Prepare database.
     db.open(DB_NAME);
 
+    db.set_remove_db_on_close(false);
+
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, 10);
     generate_services(services, hosts, 5);

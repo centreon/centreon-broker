@@ -149,7 +149,7 @@ io::endpoint* factory::new_endpoint(
     std::auto_ptr<tcp::connector> c(new tcp::connector);
     c->connect_to(host, port);
     c->set_write_timeout(socket_timeout);
-    c->set_timeout(is_input && is_output ? 30 : -1);
+    c->set_read_timeout(is_input && is_output ? 30 : -1);
     endp.reset(c.release());
   }
   return (endp.release());

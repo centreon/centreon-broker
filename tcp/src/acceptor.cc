@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -17,7 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#include <sys/socket.h>
+#include <QThread>
 #include <QMutexLocker>
 #include <QWaitCondition>
 #include <sstream>
@@ -25,7 +25,7 @@
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/acceptor.hh"
-#include "com/centreon/broker/tcp/stream.hh"
+#include "com/centreon/broker/tcp/server_socket.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
@@ -39,78 +39,27 @@ using namespace com::centreon::broker::tcp;
 /**
  *  Default constructor.
  */
-acceptor::acceptor() : io::endpoint(true), _port(0), _write_timeout(-1) {}
-
-/**
- *  @brief Copy constructor.
- *
- *  The constructor only copy connection parameters. The socket will
- *  have to be opened after construction using open().
- *
- *  @param[in] a Object to copy.
- */
-acceptor::acceptor(acceptor const& a) : QObject(), io::endpoint(a) {
-  _internal_copy(a);
-}
+acceptor::acceptor()
+  : io::endpoint(true),
+    _port(0),
+    _read_timeout(-1),
+    _write_timeout(-1),
+    _closed(false) {}
 
 /**
  *  Destructor.
  */
 acceptor::~acceptor() {
-  this->close();
+  close();
 }
 
 /**
- *  @brief Assignment operator.
+ *  Add a child to this acceptor.
  *
- *  The method close the previous connection and copy the connection
- *  parameters of the object. The socket will have to be opened after
- *  assignment using open().
- *
- *  @param[in] a Object to copy.
- *
- *  @return This object.
+ *  @param[in] child  Child name.
  */
-acceptor& acceptor::operator=(acceptor const& a) {
-  if (this != &a) {
-    this->close();
-    io::endpoint::operator=(a);
-    _internal_copy(a);
-  }
-  return (*this);
-}
-
-/**
- *  Clone the acceptor.
- *
- *  @return This object.
- */
-io::endpoint* acceptor::clone() const {
-  return (new acceptor(*this));
-}
-
-/**
- *  Close the acceptor.
- */
-void acceptor::close() {
-  QMutexLocker lock(&_mutex);
-  if (_socket.get()) {
-    {
-      QMutexLocker childrenm(&_childrenm);
-      while (!_children.isEmpty()) {
-        QPair<misc::shared_ptr<QTcpSocket>, misc::shared_ptr<QMutex> >
-          p(_children.front());
-        _children.pop_front();
-        childrenm.unlock();
-        QMutexLocker l(p.second.data());
-        p.first->close();
-        childrenm.relock();
-      }
-    }
-    _socket->close();
-    _socket->deleteLater();
-    _socket.release();
-  }
+void acceptor::add_child(stream& child) {
+  _children.push_back(&child);
   return ;
 }
 
@@ -120,111 +69,139 @@ void acceptor::close() {
  *  @param[in] port Port on which the acceptor will listen.
  */
 void acceptor::listen_on(unsigned short port) {
-  this->close();
   _port = port;
   return ;
 }
 
 /**
- *  Start connection acception.
+ *  Clone the acceptor.
+ *
+ *  Won't clone opened connections, only connection parameters.
+ *
+ *  @return  A clone of this acceptor.
  */
-misc::shared_ptr<io::stream> acceptor::open() {
-  // Listen on port.
-  QMutexLocker lock(&_mutex);
-  if (!_socket.get()) {
-    _socket.reset(new QTcpServer);
-    if (!_socket->listen(QHostAddress::Any, _port)) {
-      exceptions::msg e;
-      e << "TCP: could not listen on port " << _port
-        << ": " << _socket->errorString();
-      _socket.reset();
-      throw (e);
-    }
-  }
+io::endpoint* acceptor::clone() const {
+  std::auto_ptr<acceptor> res(new acceptor);
 
-  // Wait for incoming connections.
-  if (!_socket->hasPendingConnections()) {
-    logging::debug(logging::medium) << "TCP: waiting for new connection";
-    bool timedout(false);
-    bool ret(_socket->waitForNewConnection(200, &timedout));
-    while (!ret && timedout) {
-      QWaitCondition cv;
-      cv.wait(&_mutex, 10);
-      timedout = false;
-      ret = _socket.get()
-	&& _socket->waitForNewConnection(200, &timedout);
-    }
-    if (!ret) {
-      if (!_socket.get())
-	throw (io::exceptions::shutdown(true, true)
-	       << "TCP: shutdown requested");
-      else
-	throw (exceptions::msg() << "TCP: error while waiting client: "
-	       << _socket->errorString());
-    }
-  }
+  res->listen_on(_port);
+  res->set_read_timeout(_read_timeout);
+  res->set_write_timeout(_write_timeout);
 
-  // Accept client.
-  misc::shared_ptr<QTcpSocket> incoming(_socket->nextPendingConnection());
-  if (incoming.isNull())
-    throw (exceptions::msg() << "TCP: could not accept client: "
-             << _socket->errorString());
-  logging::info(logging::medium) << "TCP: new client connected";
+  return (res.release());
+}
 
-  // Set the SO_KEEPALIVE option.
-  incoming->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
-
-  // Set the write timeout option.
-  if (_write_timeout >= 0) {
-#ifndef _WIN32
-    struct timeval t;
-    t.tv_sec = _write_timeout / 1000000;
-    t.tv_usec = _write_timeout % 1000000;
-    setsockopt(
-      incoming->socketDescriptor(),
-      SOL_SOCKET,
-      SO_SNDTIMEO,
-      &t,
-      sizeof(t));
-#endif //!_WIN32
-  }
-
-  // Create child objects.
-  misc::shared_ptr<QMutex> mutex(new QMutex);
-  connect(
-    incoming.data(),
-    SIGNAL(destroyed(QObject*)),
-    this,
-    SLOT(_on_stream_destroy(QObject*)));
-  connect(
-    incoming.data(),
-    SIGNAL(disconnected()),
-    this,
-    SLOT(_on_stream_disconnected()));
-  connect(
-    incoming.data(),
-    SIGNAL(error(QAbstractSocket::SocketError)),
-    this,
-    SLOT(_on_stream_error(QAbstractSocket::SocketError)));
+/**
+ *  @brief Close the acceptor.
+ *
+ *  This will only signal the thread to stop and wait until all the
+ *  threads are deleted.
+ */
+void acceptor::close() {
   {
-    QMutexLocker lock(&_childrenm);
-    QPair<misc::shared_ptr<QTcpSocket>, misc::shared_ptr<QMutex> >
-      tmp(incoming, mutex);
-    _children.push_back(tmp);
+    QMutexLocker lock(&_mutex);
+    _closed = true;
+    for (std::list<stream*>::iterator
+           it = _children.begin(),
+           end = _children.end();
+         it != end;
+         ++it)
+      (*it)->close();
+    if (_children.size() == 0)
+      return ;
+    _children_closed_condvar.wait(&_mutex);
   }
-
-  // Return object.
-  return (misc::shared_ptr<io::stream>(new stream(incoming, mutex)));
 }
 
 /**
  *  Start connection acception.
  *
- *  @param[in] id Unused.
+ */
+misc::shared_ptr<io::stream> acceptor::open() {
+  // Listen on port.
+  QMutexLocker lock(&_mutex);
+  if (!_socket.get())
+    _socket.reset(new server_socket(_port));
+
+  // Wait for incoming connections.
+  logging::debug(logging::medium) << "TCP: waiting for new connection";
+  if (!_socket->has_pending_connections()) {
+    bool timedout(false);
+    _socket->wait_for_new_connection(1000, &timedout);
+    if (!_socket->has_pending_connections()) {
+      if (timedout)
+        return (misc::shared_ptr<io::stream>());
+      else
+        throw (exceptions::msg()
+               << "TCP: error while waiting client on port: " << _port
+               << _socket->error_string());
+    }
+  }
+
+  // Accept client.
+  misc::shared_ptr<stream>
+    incoming(_socket->next_pending_connection());
+  if (incoming.isNull())
+    throw (exceptions::msg() << "TCP: could not accept client: "
+           << _socket->error_string());
+  logging::info(logging::medium) << "TCP: new client connected";
+  incoming->set_parent(this);
+  incoming->set_read_timeout(_read_timeout);
+  incoming->set_write_timeout(_write_timeout);
+  return (incoming);
+}
+
+/**
+ *  Start connection acception.
+ *
+ *  @param[in] id  Unused
  */
 misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
   (void)id;
   return (open());
+}
+
+/**
+ *  Remove child of this socket.
+ *
+ *  @param[in] child  Child to remove.
+ */
+void acceptor::remove_child(stream& child) {
+  QMutexLocker lock(&_childrenm);
+  for (std::list<stream*>::iterator
+         it(_children.begin()),
+         end(_children.end());
+       it != end;
+       ++it)
+    if (*it == &child) {
+      _children.erase(it);
+      break ;
+    }
+  if (_children.size() == 0 && _closed)
+    _children_closed_condvar.wakeOne();
+  return ;
+}
+
+/**
+ *  @brief Set read timeout.
+ *
+ *  If child stream does not provide data frequently enough, it will
+ *  time out after some configured seconds.
+ *
+ *  @param[in] secs  Timeout in seconds.
+ */
+void acceptor::set_read_timeout(int secs) {
+  _read_timeout = secs;
+  return ;
+}
+
+/**
+ *  Set write timeout on data.
+ *
+ *  @param[in] secs  Timeout in seconds.
+ */
+void acceptor::set_write_timeout(int secs) {
+  _write_timeout = secs;
+  return ;
 }
 
 /**
@@ -236,92 +213,14 @@ void acceptor::stats(io::properties& tree) {
   QMutexLocker children_lock(&_childrenm);
   std::ostringstream oss;
   oss << "peers=" << _children.size();
-  for (QList<QPair<misc::shared_ptr<QTcpSocket>, misc::shared_ptr<QMutex> > >::iterator
+  for (std::list<stream*>::const_iterator
          it(_children.begin()),
          end(_children.end());
        it != end;
-       ++it) {
-    QMutexLocker lock(it->second.data());
-    if (!it->first.isNull())
-      oss << "\n  " << it->first->peerAddress().toString().toStdString()
-          << ":" << it->first->peerPort();
-  }
+       ++it)
+    oss << "\n  " << (*it)->get_name();
   io::property& p(tree["peers"]);
   p.set_perfdata(oss.str());
   p.set_graphable(false);
-  return ;
-}
-
-/**
- *  Set write timeout on data.
- *
- *  @param[in] msecs  Timeout in ms.
- */
-void acceptor::set_write_timeout(int msecs) {
-  _write_timeout = msecs;
-}
-
-/**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] a Object to copy.
- */
-void acceptor::_internal_copy(acceptor const& a) {
-  _port = a._port;
-  _write_timeout = a._write_timeout;
-  return ;
-}
-
-/**
- *  Called when a child TCP socket is destroyed.
- */
-void acceptor::_on_stream_destroy(QObject* obj) {
-  // No object, no processing.
-  if (!obj)
-    return ;
-
-  // Retrieve QTcpSocket object.
-  QTcpSocket* sock(static_cast<QTcpSocket*>(obj));
-
-  // Find and remove matching entry.
-  QMutexLocker lock(&_childrenm);
-  for (QList<QPair<misc::shared_ptr<QTcpSocket>, misc::shared_ptr<QMutex> > >::iterator
-         it(_children.begin()),
-         end(_children.end());
-       it != end;
-         ++it)
-    if (it->first.data() == sock) {
-      {
-        QPair<misc::shared_ptr<QTcpSocket>, misc::shared_ptr<QMutex> >
-          p(*it);
-        _children.erase(it);
-        lock.unlock();
-      } // Eventual shared_ptr destruction, p going out of scope.
-      lock.relock();
-      break ;
-    }
-  return ;
-}
-
-/**
- *  Called when a child TCP socket is disconnected.
- */
-void acceptor::_on_stream_disconnected() {
-  _on_stream_destroy(QObject::sender());
-  return ;
-}
-
-/**
- *  Called when a child TCP socket has an error.
- */
-void acceptor::_on_stream_error(QAbstractSocket::SocketError e) {
-  if (e != QAbstractSocket::SocketTimeoutError)
-    _on_stream_destroy(QObject::sender());
   return ;
 }

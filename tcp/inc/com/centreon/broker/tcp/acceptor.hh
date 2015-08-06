@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -20,64 +20,61 @@
 #ifndef CCB_TCP_ACCEPTOR_HH
 #  define CCB_TCP_ACCEPTOR_HH
 
+#  include <list>
 #  include <memory>
-#  include <QMap>
 #  include <QMutex>
-#  include <QObject>
-#  include <QPair>
-#  include <QTcpServer>
-#  include <QTcpSocket>
+#  include <QWaitCondition>
 #  include "com/centreon/broker/io/endpoint.hh"
+#  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/tcp/server_socket.hh"
+#  include "com/centreon/broker/tcp/socket_parent.hh"
+#  include "com/centreon/broker/tcp/stream.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          tcp {
-        /**
-         *  @class acceptor acceptor.hh "com/centreon/broker/tcp/acceptor.hh"
-         *  @brief TCP acceptor.
-         *
-         *  Accept TCP connections.
-         */
-        class            acceptor : public QObject, public io::endpoint {
-          Q_OBJECT
+CCB_BEGIN()
 
-         public:
-                         acceptor();
-                         acceptor(acceptor const& a);
-                         ~acceptor();
-          acceptor&      operator=(acceptor const& a);
-          io::endpoint*  clone() const;
-          void           close();
-          void           listen_on(unsigned short port);
-          misc::shared_ptr<io::stream>
-                         open();
-          misc::shared_ptr<io::stream>
-                         open(QString const& id);
-          void           stats(io::properties& tree);
-          void           set_write_timeout(int msecs);
+namespace          tcp {
+  /**
+   *  @class acceptor acceptor.hh "com/centreon/broker/tcp/acceptor.hh"
+   *  @brief TCP acceptor.
+   *
+   *  Accept TCP connections.
+   */
+  class            acceptor : public io::endpoint, public socket_parent {
+  public:
+                   acceptor();
+                   ~acceptor();
 
-         private:
-          void           _internal_copy(acceptor const& a);
+    endpoint*      clone() const;
+    void           close();
+    void           add_child(stream& child);
+    void           listen_on(unsigned short port);
+    misc::shared_ptr<io::stream>
+                   open();
+    misc::shared_ptr<io::stream>
+                   open(QString const& id);
+    void           remove_child(stream& child);
+    void           set_read_timeout(int secs);
+    void           set_write_timeout(int secs);
+    void           stats(io::properties& tree);
 
-          QList<QPair<misc::shared_ptr<QTcpSocket>, misc::shared_ptr<QMutex> > >
-                         _children;
-          QMutex         _childrenm;
-          QMutex         _mutex;
-          unsigned short _port;
-          std::auto_ptr<QTcpServer>
-                         _socket;
-          int            _write_timeout;
+  private:
+                   acceptor(acceptor const& other);
+    acceptor&      operator=(acceptor const& other);
 
-         private slots:
-          void           _on_stream_destroy(QObject* obj);
-          void           _on_stream_disconnected();
-          void           _on_stream_error(
-                           QAbstractSocket::SocketError e);
-        };
-      }
-    }
-  }
+    std::list<stream*>
+                   _children;
+    QMutex         _childrenm;
+    QMutex         _mutex;
+    unsigned short _port;
+    int            _read_timeout;
+    std::auto_ptr<server_socket>
+                   _socket;
+    int            _write_timeout;
+    bool           _closed;
+    QWaitCondition _children_closed_condvar;
+  };
 }
+
+CCB_END()
 
 #endif // !CCB_TCP_ACCEPTOR_HH

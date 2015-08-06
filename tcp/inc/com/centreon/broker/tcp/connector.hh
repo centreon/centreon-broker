@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Broker.
 **
@@ -23,8 +23,11 @@
 #  include <QString>
 #  include <QTcpSocket>
 #  include <QMutex>
+#  include <QWaitCondition>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/tcp/socket_parent.hh"
+#  include "com/centreon/broker/tcp/stream.hh"
 
 CCB_BEGIN()
 
@@ -35,33 +38,34 @@ namespace          tcp {
    *
    *  Connect to some remote TCP host.
    */
-  class            connector : public io::endpoint {
+  class            connector : public io::endpoint, public socket_parent {
   public:
                    connector();
-                   connector(connector const& c);
+                   connector(connector const& other);
                    ~connector();
-    connector&     operator=(connector const& c);
-    io::endpoint*  clone() const;
+    connector&     operator=(connector const& other);
+    endpoint*      clone() const;
     void           close();
     void           connect_to(QString const& host, unsigned short port);
     misc::shared_ptr<io::stream>
                    open();
     misc::shared_ptr<io::stream>
                    open(QString const& id);
-    void           set_timeout(int msecs);
-    void           set_write_timeout(int msecs);
+    void           set_read_timeout(int secs);
+    void           set_write_timeout(int secs);
+    void           add_child(stream& child);
+    void           remove_child(stream& child);
 
   private:
-    void           _internal_copy(connector const& c);
+    void           _internal_copy(connector const& other);
 
     QString        _host;
-    misc::shared_ptr<QMutex>
-                   _mutex;
     unsigned short _port;
-    misc::shared_ptr<QTcpSocket>
-                   _socket;
-    int            _timeout;
+    int            _read_timeout;
     int            _write_timeout;
+    QMutex         _mutex;
+    QWaitCondition _child_closed_condvar;
+    stream*        _child;
   };
 }
 

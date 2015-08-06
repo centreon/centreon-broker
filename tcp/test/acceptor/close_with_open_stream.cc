@@ -63,10 +63,14 @@ class            concurrent : public QThread {
     _acceptor = new tcp::acceptor;
     _acceptor->listen_on(_port);
     try {
-      misc::shared_ptr<io::stream> s(_acceptor->open());
+      misc::shared_ptr<tcp::stream>
+        s(_acceptor->open().staticCast<tcp::stream>());
       if (!s.isNull()) {
-        misc::shared_ptr<io::data> d;
-        s->read(d);
+        s->set_read_timeout(1);
+        while (true) {
+          misc::shared_ptr<io::data> d;
+          s->read(d);
+        }
       }
     }
     catch (...) {}
@@ -124,7 +128,7 @@ int main(int argc, char* argv[]) {
   c.close();
 
   // For for thread to finish.
-  retval = (!c.wait(2000) || retval);
+  retval = (!c.wait(5000) || retval);
 
   // Cleanup.
   config::applier::deinit();

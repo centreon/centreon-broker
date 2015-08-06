@@ -39,6 +39,7 @@ set(SOURCES
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
+  "${SRC_DIR}/server_socket.cc"
   "${SRC_DIR}/stream.cc"
 )
 # Headers.
@@ -46,6 +47,8 @@ set(HEADERS
   "${INC_DIR}/acceptor.hh"
   "${INC_DIR}/connector.hh"
   "${INC_DIR}/factory.hh"
+  "${INC_DIR}/server_socket.hh"
+  "${INC_DIR}/socket_parent.hh"
   "${INC_DIR}/stream.hh"
 )
 
