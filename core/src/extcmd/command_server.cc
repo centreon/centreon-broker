@@ -17,6 +17,7 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
+#include <QCoreApplication>
 #include <QLocalSocket>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/extcmd/command_client.hh"
@@ -138,6 +139,7 @@ misc::shared_ptr<io::stream> command_server::open() {
                << "command: error while waiting on client on file '"
                << _socket_file << "': " << _socket->error_string());
     }
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
   }
 
   // Accept new client.
