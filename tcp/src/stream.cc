@@ -121,8 +121,14 @@ void stream::read(misc::shared_ptr<io::data>& d) {
   if (_socket->bytesAvailable() <= 0) {
     bool ret(_socket->waitForReadyRead(0));
     while (_socket->bytesAvailable() <= 0) {
+      // Check process
+      if (!_process_in) {
+        _stop();
+        throw (io::exceptions::shutdown(!_process_in, !_process_out)
+                 << "TCP stream is shutdown");
+      }
       // Request timeout.
-      if ((_read_timeout != (time_t)-1)
+      else if ((_read_timeout != (time_t)-1)
           && (time(NULL) >= deadline)) {
         return ;
       }
