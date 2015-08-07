@@ -120,6 +120,8 @@ io::endpoint* connector::clone() const {
  *  Close the connector.
  */
 void connector::close() {
+  if (!_from.isNull())
+    _from->close();
   return ;
 }
 
