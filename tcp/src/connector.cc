@@ -102,8 +102,6 @@ void connector::close() {
   if (_child) {
     // Notify the child that it should close.
     _child->close();
-    // Wait until it does.
-    _child_closed_condvar.wait(&_mutex);
   }
 }
 
@@ -175,6 +173,8 @@ void connector::set_write_timeout(int secs) {
  *  @param[in] child  The child stream to associate.
  */
 void connector::add_child(stream& child) {
+  if (_child)
+    _child->close();
   _child = &child;
 }
 
@@ -184,10 +184,8 @@ void connector::add_child(stream& child) {
  */
 void connector::remove_child(stream& child) {
   QMutexLocker lock(&_mutex);
-  if (_child == &child) {
+  if (_child == &child)
     _child = NULL;
-    _child_closed_condvar.wakeOne();
-  }
 }
 
 /**************************************

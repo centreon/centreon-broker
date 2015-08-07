@@ -64,7 +64,6 @@ namespace          tcp {
     int            _read_timeout;
     int            _write_timeout;
     QMutex         _mutex;
-    QWaitCondition _child_closed_condvar;
     stream*        _child;
   };
 }
