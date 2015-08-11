@@ -105,7 +105,7 @@ void feeder::run() {
       misc::shared_ptr<io::data> data;
       _in->read(data);
       if (data.isNull())
-        break ;
+        continue ;
       try {
         _out->write(data);
       }

@@ -25,6 +25,7 @@
 #include "com/centreon/broker/extcmd/command_listener.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/command_result.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 
 using namespace com::centreon::broker;
@@ -82,6 +83,11 @@ void command_client::read(misc::shared_ptr<io::data>& d) {
 
   d.clear();
   while (d.isNull()) {
+    // Check for connection termination.
+    if (_socket->state() == QLocalSocket::UnconnectedState)
+      throw (io::exceptions::shutdown(true, true)
+             << "command: client disconnected");
+
     // Read commands from socket.
     size_t delimiter(_buffer.find_first_of('\n'));
     while (_process && (delimiter == std::string::npos)) {
@@ -128,6 +134,8 @@ void command_client::read(misc::shared_ptr<io::data>& d) {
           misc::shared_ptr<command_request>
             req(new command_request);
           req->parse(cmd.substr(strlen(execute_cmd)));
+          logging::debug(logging::medium)
+            << "command: got a new command: '" << req->cmd << "'";
           d = req;
           _listener->write(req);
           res = _listener->command_status(req->id);

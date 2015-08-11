@@ -26,6 +26,12 @@
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/correlation/internal.hh"
+#include "com/centreon/broker/dumper/internal.hh"
+#include "com/centreon/broker/dumper/db_dump.hh"
+#include "com/centreon/broker/dumper/dump.hh"
+#include "com/centreon/broker/dumper/entries/ba.hh"
+#include "com/centreon/broker/dumper/entries/kpi.hh"
+#include "com/centreon/broker/dumper/reload.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -290,7 +296,17 @@ unsigned int output::write(misc::shared_ptr<io::data> const& e) {
     { io::events::data_type<io::events::bam, bam::de_dimension_ba_timeperiod_relation>::value,
       &serialize<bam::dimension_ba_timeperiod_relation, BBDO_ID(BBDO_BAM_TYPE, 15)> },
     { io::events::data_type<io::events::bbdo, bbdo::de_version_response>::value,
-      &serialize<version_response, BBDO_ID(BBDO_INTERNAL_TYPE, 1)> }
+      &serialize<version_response, BBDO_ID(BBDO_INTERNAL_TYPE, 1)> },
+    { io::events::data_type<io::events::dumper, dumper::de_dump>::value,
+      &serialize<dumper::dump, BBDO_ID(BBDO_DUMPER_TYPE, 1)> },
+    { io::events::data_type<io::events::dumper, dumper::de_reload>::value,
+      &serialize<dumper::reload, BBDO_ID(BBDO_DUMPER_TYPE, 2)> },
+    { io::events::data_type<io::events::dumper, dumper::de_db_dump>::value,
+      &serialize<dumper::db_dump, BBDO_ID(BBDO_DUMPER_TYPE, 3)> },
+    { io::events::data_type<io::events::dumper, dumper::de_entries_ba>::value,
+      &serialize<dumper::entries::ba, BBDO_ID(BBDO_DUMPER_TYPE, 4)> },
+    { io::events::data_type<io::events::dumper, dumper::de_entries_kpi>::value,
+      &serialize<dumper::entries::kpi, BBDO_ID(BBDO_DUMPER_TYPE, 5)> }
   };
 
   // Check if data should be processed.

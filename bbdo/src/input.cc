@@ -25,6 +25,12 @@
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/correlation/events.hh"
+#include "com/centreon/broker/dumper/internal.hh"
+#include "com/centreon/broker/dumper/db_dump.hh"
+#include "com/centreon/broker/dumper/dump.hh"
+#include "com/centreon/broker/dumper/entries/ba.hh"
+#include "com/centreon/broker/dumper/entries/kpi.hh"
+#include "com/centreon/broker/dumper/reload.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -280,7 +286,17 @@ unsigned int input::read_any(
     { BBDO_ID(BBDO_BAM_TYPE, 15),
       &unserialize<bam::dimension_ba_timeperiod_relation> },
     { BBDO_ID(BBDO_INTERNAL_TYPE, 1),
-      &unserialize<version_response> }
+      &unserialize<version_response> },
+    { BBDO_ID(BBDO_DUMPER_TYPE, 1),
+      &unserialize<dumper::dump> },
+    { BBDO_ID(BBDO_DUMPER_TYPE, 2),
+      &unserialize<dumper::reload> },
+    { BBDO_ID(BBDO_DUMPER_TYPE, 3),
+      &unserialize<dumper::db_dump> },
+    { BBDO_ID(BBDO_DUMPER_TYPE, 4),
+      &unserialize<dumper::entries::ba> },
+    { BBDO_ID(BBDO_DUMPER_TYPE, 5),
+      &unserialize<dumper::entries::kpi> }
   };
 
   // Return value.
