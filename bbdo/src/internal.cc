@@ -27,6 +27,12 @@
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/correlation/events.hh"
+#include "com/centreon/broker/dumper/internal.hh"
+#include "com/centreon/broker/dumper/db_dump.hh"
+#include "com/centreon/broker/dumper/dump.hh"
+#include "com/centreon/broker/dumper/entries/ba.hh"
+#include "com/centreon/broker/dumper/entries/kpi.hh"
+#include "com/centreon/broker/dumper/reload.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/neb/events.hh"
@@ -516,6 +522,21 @@ namespace bbdo {
   template <> std::vector<getter_setter<version_response> >
     bbdo_mapped_type<version_response>::table =
       std::vector<getter_setter<version_response> >();
+  template <> std::vector<getter_setter<dumper::dump> >
+    bbdo_mapped_type<dumper::dump>::table =
+      std::vector<getter_setter<dumper::dump> >();
+  template <> std::vector<getter_setter<dumper::reload> >
+    bbdo_mapped_type<dumper::reload>::table =
+      std::vector<getter_setter<dumper::reload> >();
+  template <> std::vector<getter_setter<dumper::db_dump> >
+    bbdo_mapped_type<dumper::db_dump>::table =
+      std::vector<getter_setter<dumper::db_dump> >();
+  template <> std::vector<getter_setter<dumper::entries::ba> >
+    bbdo_mapped_type<dumper::entries::ba>::table =
+      std::vector<getter_setter<dumper::entries::ba> >();
+  template <> std::vector<getter_setter<dumper::entries::kpi> >
+    bbdo_mapped_type<dumper::entries::kpi>::table =
+      std::vector<getter_setter<dumper::entries::kpi> >();
 }
 
 CCB_END()
@@ -578,5 +599,10 @@ void bbdo::initialize() {
   static_init<bam::dimension_timeperiod_exception>();
   static_init<bam::dimension_timeperiod_exclusion>();
   static_init<version_response>();
+  static_init<dumper::dump>();
+  static_init<dumper::reload>();
+  static_init<dumper::db_dump>();
+  static_init<dumper::entries::ba>();
+  static_init<dumper::entries::kpi>();
   return ;
 }
