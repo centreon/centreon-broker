@@ -32,6 +32,8 @@
 #include "com/centreon/broker/dumper/dump.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
+#include "com/centreon/broker/dumper/entries/host.hh"
+#include "com/centreon/broker/dumper/entries/service.hh"
 #include "com/centreon/broker/dumper/reload.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/namespace.hh"
@@ -537,6 +539,12 @@ namespace bbdo {
   template <> std::vector<getter_setter<dumper::entries::kpi> >
     bbdo_mapped_type<dumper::entries::kpi>::table =
       std::vector<getter_setter<dumper::entries::kpi> >();
+  template <> std::vector<getter_setter<dumper::entries::host> >
+    bbdo_mapped_type<dumper::entries::host>::table =
+      std::vector<getter_setter<dumper::entries::host> >();
+  template <> std::vector<getter_setter<dumper::entries::service> >
+    bbdo_mapped_type<dumper::entries::service>::table =
+      std::vector<getter_setter<dumper::entries::service> >();
 }
 
 CCB_END()
@@ -604,5 +612,7 @@ void bbdo::initialize() {
   static_init<dumper::db_dump>();
   static_init<dumper::entries::ba>();
   static_init<dumper::entries::kpi>();
+  static_init<dumper::entries::host>();
+  static_init<dumper::entries::service>();
   return ;
 }

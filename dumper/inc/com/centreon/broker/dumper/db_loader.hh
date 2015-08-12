@@ -50,6 +50,8 @@ namespace           dumper {
     db_loader&      operator=(db_loader const& other);
     void            _load_bas();
     void            _load_kpis();
+    void            _load_hosts();
+    void            _load_services();
 
     std::auto_ptr<database>
                     _db;

@@ -31,6 +31,8 @@ namespace                            dumper {
     class                            ba;
     class                            kpi;
     class                            state;
+    class                            host;
+    class                            service;
 
     /**
      *  @class diff diff.hh "com/centreon/broker/dumper/entries/diff.hh"
@@ -53,6 +55,12 @@ namespace                            dumper {
       std::list<kpi> const&          kpis_to_create() const;
       std::list<kpi> const&          kpis_to_update() const;
       std::list<kpi> const&          kpis_to_delete() const;
+      std::list<host> const&         hosts_to_create() const;
+      std::list<host> const&         hosts_to_update() const;
+      std::list<host> const&         hosts_to_delete() const;
+      std::list<service> const&      services_to_create() const;
+      std::list<service> const&      services_to_update() const;
+      std::list<service> const&      services_to_delete() const;
 
     private:
       void                           _internal_copy(diff const& other);
@@ -63,6 +71,13 @@ namespace                            dumper {
       std::list<kpi>                 _kpis_to_create;
       std::list<kpi>                 _kpis_to_update;
       std::list<kpi>                 _kpis_to_delete;
+      std::list<host>                _hosts_to_create;
+      std::list<host>                _hosts_to_update;
+      std::list<host>                _hosts_to_delete;
+      std::list<service>             _services_to_create;
+      std::list<service>             _services_to_update;
+      std::list<service>             _services_to_delete;
+
     };
   }
 }

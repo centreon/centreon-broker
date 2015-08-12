@@ -18,11 +18,14 @@
 */
 
 #include <sstream>
+#include <map>
 #include "com/centreon/broker/database_query.hh"
 #include "com/centreon/broker/dumper/db_loader.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
+#include "com/centreon/broker/dumper/entries/host.hh"
+#include "com/centreon/broker/dumper/entries/service.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
@@ -63,6 +66,8 @@ void db_loader::load(entries::state& state, unsigned int poller_id) {
   // Database loading.
   _load_bas();
   _load_kpis();
+  _load_hosts();
+  _load_services();
 
   // Cleanup.
   _db.reset();
@@ -151,4 +156,74 @@ void db_loader::_load_kpis() {
     _state->get_kpis().push_back(k);
   }
   return ;
+}
+
+/**
+ *  Load hosts.
+ */
+void db_loader::_load_hosts() {
+  std::ostringstream query;
+  query << "SELECT h.host_id, h.host_name"
+           "  FROM host AS h"
+           "  WHERE host_name = _Module_BAM_" << _poller_id;
+  database_query q(*_db);
+  q.run_query(
+      query.str(),
+      "db_reader: could not load configuration of hosts from DB");
+  if (!q.next())
+    throw (exceptions::msg()
+           << "db_reader: expected virtual host '_Module_BAM_"
+           << _poller_id << "'");
+  entries::host h;
+  h.host_id = q.value(0).toUInt();
+  h.name = q.value(1).toString();
+  _state->get_hosts().push_back(h);
+}
+
+/**
+ *  Load services.
+ */
+void db_loader::_load_services() {
+  std::map<unsigned int, entries::ba> bas;
+
+  {
+    std::list<entries::ba> const& unsorted_bas = _state->get_bas();
+    for (std::list<entries::ba>::const_iterator
+           it = unsorted_bas.begin(),
+           end = unsorted_bas.end();
+         it != end;
+         ++it)
+      bas[it->ba_id] = *it;
+  }
+
+  database_query query(*_db);
+  query.run_query(
+          "SELECT s.service_description,"
+          "       hsr.host_host_id, hsr.service_service_id"
+          "  FROM service AS s"
+          "  INNER JOIN host_service_relation AS hsr"
+          "    ON s.service_id=hsr.service_service_id"
+          "  WHERE s.service_description LIKE 'ba_%'");
+  while (query.next()) {
+    unsigned int host_id = query.value(1).toUInt();
+    unsigned int service_id = query.value(2).toUInt();
+    std::string service_description = query.value(0).toString().toStdString();
+    std::string trimmed_description = service_description;
+    trimmed_description.erase(0, strlen("ba_"));
+    if (!trimmed_description.empty()) {
+      bool ok = false;
+      unsigned int ba_id = QString(trimmed_description.c_str()).toUInt(&ok);
+      if (!ok)
+        continue ;
+      std::map<unsigned int, entries::ba>::const_iterator
+        found = bas.find(ba_id);
+      if (found == bas.end())
+        continue ;
+      entries::service s;
+      s.host_id = host_id;
+      s.service_id = service_id;
+      s.description = QString::fromStdString(service_description);
+      _state->get_services().push_back(s);
+    }
+  }
 }

@@ -23,6 +23,8 @@
 #include "com/centreon/broker/dumper/entries/ba.hh"
 #include "com/centreon/broker/dumper/entries/diff.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
+#include "com/centreon/broker/dumper/entries/host.hh"
+#include "com/centreon/broker/dumper/entries/service.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/command_result.hh"
@@ -208,6 +210,8 @@ void db_reader::_sync_cfg_db(unsigned int poller_id) {
     }
     send_objects(state.get_bas());
     send_objects(state.get_kpis());
+    send_objects(state.get_hosts());
+    send_objects(state.get_services());
     {
       misc::shared_ptr<db_dump> end(new db_dump);
       end->full = true;
@@ -256,6 +260,12 @@ void db_reader::_update_cfg_db(unsigned int poller_id) {
     send_objects(d.kpis_to_delete());
     send_objects(d.kpis_to_update());
     send_objects(d.kpis_to_create());
+    send_objects(d.hosts_to_delete());
+    send_objects(d.hosts_to_update());
+    send_objects(d.hosts_to_create());
+    send_objects(d.services_to_delete());
+    send_objects(d.services_to_update());
+    send_objects(d.services_to_create());
     {
       misc::shared_ptr<db_dump> end(new db_dump);
       end->full = false;

@@ -27,6 +27,8 @@
 #include "com/centreon/broker/dumper/db_writer.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
+#include "com/centreon/broker/dumper/entries/host.hh"
+#include "com/centreon/broker/dumper/entries/service.hh"
 #include "mapping.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -112,6 +114,18 @@ unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
       if (k.poller_id == config::applier::state::instance().get_instance_id())
         _kpis.push_back(k);
     }
+    else if (d->type() ==
+             io::events::data_type<io::events::dumper, dumper::de_entries_host>::value) {
+      entries::host const& h(d.ref_as<entries::host const>());
+      if (h.poller_id == config::applier::state::instance().get_instance_id())
+        _hosts.push_back(h);
+    }
+    else if (d->type() ==
+             io::events::data_type<io::events::dumper, dumper::de_entries_service>::value) {
+      entries::service const& s(d.ref_as<entries::service const>());
+      if (s.poller_id == config::applier::state::instance().get_instance_id())
+        _services.push_back(s);
+    }
   }
   return (1);
 }
@@ -139,6 +153,10 @@ void db_writer::_commit() {
       database_query q(db);
       q.run_query("DELETE FROM mod_bam");
     }
+    {
+      database_query q(db);
+      q.run_query("DELETE FROM service WHERE service_description like 'ba_%'");
+    }
   }
 
   // Prepare BA queries.
@@ -163,6 +181,30 @@ void db_writer::_commit() {
     _prepare_insert<entries::kpi>(kpi_insert);
     _prepare_update<entries::kpi>(kpi_update, ids);
     _prepare_delete<entries::kpi>(kpi_delete, ids);
+  }
+
+  // Prepare host queries.
+  database_query host_insert(db);
+  database_query host_update(db);
+  database_query host_delete(db);
+  {
+    std::set<std::string> ids;
+    ids.insert("host_id");
+    _prepare_insert<entries::host>(host_insert);
+    _prepare_update<entries::host>(host_update, ids);
+    _prepare_delete<entries::host>(host_delete, ids);
+  }
+
+  // Prepare service queries.
+  database_query service_insert(db);
+  database_query service_update(db);
+  database_query service_delete(db);
+  {
+    std::set<std::string> ids;
+    ids.insert("service_id");
+    _prepare_insert<entries::service>(service_insert);
+    _prepare_update<entries::service>(service_update, ids);
+    _prepare_delete<entries::service>(service_delete, ids);
   }
 
   // Process all BAs.
@@ -229,6 +271,72 @@ void db_writer::_commit() {
         << "db_dumper: deleting KPI " << it->kpi_id;
       kpi_delete.bind_value(":kpi_id", it->kpi_id);
       kpi_delete.run_statement();
+    }
+  }
+
+  // Process all hosts.
+  for (std::list<entries::host>::const_iterator
+         it(_hosts.begin()),
+         end(_hosts.end());
+       it != end;
+       ++it) {
+    // INSERT / UPDATE.
+    if (it->enable) {
+      logging::debug(logging::medium)
+        << "db_dumper: updating host " << it->host_id;
+      _fill_query(host_update, *it);
+      host_update.run_statement();
+      if (!host_update.num_rows_affected()) {
+        logging::debug(logging::medium)
+          << "db_dumper: inserting host " << it->host_id;
+        _fill_query(host_insert, *it);
+        host_insert.run_statement();
+      }
+      std::ostringstream query;
+      query << "UPDATE host SET activate='1' WHERE host_id="
+            << it->host_id;
+      database_query q(db);
+      q.run_query(query.str().c_str());
+    }
+    // DELETE.
+    else {
+      logging::debug(logging::medium)
+        << "db_dumper: deleting host " << it->host_id;
+      host_delete.bind_value(":host_id", it->host_id);
+      host_delete.run_statement();
+    }
+  }
+
+  // Process all services
+  for (std::list<entries::service>::const_iterator
+         it(_services.begin()),
+         end(_services.end());
+       it != end;
+       ++it) {
+    // INSERT / UPDATE.
+    if (it->enable) {
+      logging::debug(logging::medium)
+        << "db_dumper: updating service " << it->service_id;
+      _fill_query(service_update, *it);
+      service_update.run_statement();
+      if (!service_update.num_rows_affected()) {
+        logging::debug(logging::medium)
+          << "db_dumper: inserting service " << it->service_id;
+        _fill_query(service_insert, *it);
+        service_insert.run_statement();
+      }
+      std::ostringstream query;
+      query << "UPDATE service SET activate='1' WHERE service_id="
+            << it->service_id;
+      database_query q(db);
+      q.run_query(query.str().c_str());
+    }
+    // DELETE.
+    else {
+      logging::debug(logging::medium)
+        << "db_dumper: deleting service " << it->service_id;
+      service_delete.bind_value(":service_id", it->service_id);
+      service_delete.run_statement();
     }
   }
 

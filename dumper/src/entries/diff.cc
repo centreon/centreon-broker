@@ -21,6 +21,8 @@
 #include "com/centreon/broker/dumper/entries/ba.hh"
 #include "com/centreon/broker/dumper/entries/diff.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
+#include "com/centreon/broker/dumper/entries/host.hh"
+#include "com/centreon/broker/dumper/entries/service.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
 
 using namespace com::centreon::broker;
@@ -144,6 +146,34 @@ diff::diff(state const& older, state const& newer) {
       old_kpis,
       new_kpis);
   }
+
+  // Diff hosts.
+  {
+    std::map<unsigned int, host> old_hosts;
+    to_map<host, &host::host_id>(old_hosts, older.get_hosts());
+    std::map<unsigned int, host> new_hosts;
+    to_map<host, &host::host_id>(new_hosts, newer.get_hosts());
+    diff_it(
+      _hosts_to_create,
+      _hosts_to_update,
+      _hosts_to_delete,
+      old_hosts,
+      new_hosts);
+  }
+
+  // Diff services.
+  {
+    std::map<unsigned int, service> old_services;
+    to_map<service, &service::service_id>(old_services, older.get_services());
+    std::map<unsigned int, service> new_services;
+    to_map<service, &service::service_id>(new_services, newer.get_services());
+    diff_it(
+      _services_to_create,
+      _services_to_update,
+      _services_to_delete,
+      old_services,
+      new_services);
+  }
 }
 
 /**
@@ -227,6 +257,60 @@ std::list<kpi> const& diff::kpis_to_delete() const {
   return (_kpis_to_delete);
 }
 
+/**
+ *  Get hosts that should be created.
+ *
+ *  @return List of hosts that should be created.
+ */
+std::list<host> const& diff::hosts_to_create() const {
+  return (_hosts_to_create);
+}
+
+/**
+ *  Get hosts that should be updated.
+ *
+ *  @return List of hosts that should be updated.
+ */
+std::list<host> const& diff::hosts_to_update() const {
+  return (_hosts_to_update);
+}
+
+/**
+ *  Get hosts that should be deleted.
+ *
+ *  @return List of hosts that should be deleted.
+ */
+std::list<host> const& diff::hosts_to_delete() const {
+  return (_hosts_to_delete);
+}
+
+/**
+ *  Get services that should be created.
+ *
+ *  @return List of services that should be created.
+ */
+std::list<service> const& diff::services_to_create() const {
+  return (_services_to_create);
+}
+
+/**
+ *  Get services that should be updated.
+ *
+ *  @return List of services that should be updated.
+ */
+std::list<service> const& diff::services_to_update() const {
+  return (_services_to_update);
+}
+
+/**
+ *  Get services that should be deleted.
+ *
+ *  @return List of services that should be deleted.
+ */
+std::list<service> const& diff::services_to_delete() const {
+  return (_services_to_delete);
+}
+
 /**************************************
 *                                     *
 *           Private Methods           *
@@ -245,5 +329,11 @@ void diff::_internal_copy(diff const& other) {
   _kpis_to_create = other._kpis_to_create;
   _kpis_to_update = other._kpis_to_update;
   _kpis_to_delete = other._kpis_to_delete;
+  _hosts_to_create = other._hosts_to_create;
+  _hosts_to_update = other._hosts_to_update;
+  _hosts_to_delete = other._hosts_to_delete;
+  _services_to_create = other._services_to_create;
+  _services_to_update = other._services_to_update;
+  _services_to_delete = other._services_to_delete;
   return ;
 }

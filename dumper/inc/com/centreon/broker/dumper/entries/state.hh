@@ -30,6 +30,8 @@ namespace                   dumper {
     // Forward declarations.
     class                   ba;
     class                   kpi;
+    class                   host;
+    class                   service;
 
     /**
      *  @class state state.hh "com/centreon/broker/dumper/entries/dumper.hh"
@@ -47,12 +49,20 @@ namespace                   dumper {
       std::list<ba>&        get_bas();
       std::list<kpi> const& get_kpis() const;
       std::list<kpi>&       get_kpis();
+      std::list<host> const&
+                            get_hosts() const;
+      std::list<host>&      get_hosts();
+      std::list<service> const&
+                            get_services() const;
+      std::list<service>&   get_services();
 
     private:
       void                  _internal_copy(state const& other);
 
       std::list<ba>         _bas;
       std::list<kpi>        _kpis;
+      std::list<host>       _hosts;
+      std::list<service>    _services;
     };
   }
 }

@@ -23,6 +23,8 @@
 #include "com/centreon/broker/dumper/db_dump.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
+#include "com/centreon/broker/dumper/entries/host.hh"
+#include "com/centreon/broker/dumper/entries/service.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/engine/protoapi.h"
 #include "mapping.hh"
@@ -459,6 +461,54 @@ static mapped_data<entries::kpi> const dumper_entries_kpi_mapping[] = {
     14,
     "drop_unknown"),
   mapped_data<entries::kpi>()
+};
+
+// Entries host members mapping.
+static mapped_data<entries::host> const dumper_entries_host_mapping[] = {
+  mapped_data<entries::host>(
+    &entries::host::enable,
+    1,
+    NULL),
+  mapped_data<entries::host>(
+    &entries::host::poller_id,
+    2,
+    NULL,
+    NULL_ON_ZERO),
+  mapped_data<entries::host>(
+    &entries::host::host_id,
+    3,
+    "host_id"),
+  mapped_data<entries::host>(
+    &entries::host::name,
+    4,
+    "host_name"),
+  mapped_data<entries::host>()
+};
+
+// db_dump members mapping.
+static mapped_data<entries::service> const dumper_entries_service_mapping[] = {
+  mapped_data<entries::service>(
+    &entries::service::enable,
+    1,
+    NULL),
+  mapped_data<entries::service>(
+    &entries::service::poller_id,
+    2,
+    NULL,
+    NULL_ON_ZERO),
+  mapped_data<entries::service>(
+    &entries::service::host_id,
+    3,
+    "host_id"),
+  mapped_data<entries::service>(
+    &entries::service::service_id,
+    4,
+    "service_id"),
+  mapped_data<entries::service>(
+    &entries::service::description,
+    5,
+    "service_description"),
+  mapped_data<entries::service>()
 };
 
 // engine_state members mapping.
@@ -2622,6 +2672,16 @@ namespace     com {
         mapped_type<dumper::entries::kpi>::members(dumper_entries_kpi_mapping);
       template <> const char*
         mapped_type<dumper::entries::kpi>::table("mod_bam_kpi");
+
+      template <> const mapped_data<dumper::entries::host>*
+        mapped_type<dumper::entries::host>::members(dumper_entries_host_mapping);
+      template <> const char*
+        mapped_type<dumper::entries::host>::table("host");
+
+      template <> const mapped_data<dumper::entries::service>*
+        mapped_type<dumper::entries::service>::members(dumper_entries_service_mapping);
+      template <> const char*
+        mapped_type<dumper::entries::service>::table("service");
 
       // Correlation engine state mapping.
       template <> const mapped_data<correlation::engine_state>*

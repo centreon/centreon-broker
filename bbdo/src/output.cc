@@ -31,6 +31,8 @@
 #include "com/centreon/broker/dumper/dump.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
+#include "com/centreon/broker/dumper/entries/host.hh"
+#include "com/centreon/broker/dumper/entries/service.hh"
 #include "com/centreon/broker/dumper/reload.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -306,7 +308,11 @@ unsigned int output::write(misc::shared_ptr<io::data> const& e) {
     { io::events::data_type<io::events::dumper, dumper::de_entries_ba>::value,
       &serialize<dumper::entries::ba, BBDO_ID(BBDO_DUMPER_TYPE, 4)> },
     { io::events::data_type<io::events::dumper, dumper::de_entries_kpi>::value,
-      &serialize<dumper::entries::kpi, BBDO_ID(BBDO_DUMPER_TYPE, 5)> }
+      &serialize<dumper::entries::kpi, BBDO_ID(BBDO_DUMPER_TYPE, 5)> },
+    { io::events::data_type<io::events::dumper, dumper::de_entries_host>::value,
+      &serialize<dumper::entries::host, BBDO_ID(BBDO_DUMPER_TYPE, 6)> },
+    { io::events::data_type<io::events::dumper, dumper::de_entries_service>::value,
+      &serialize<dumper::entries::service, BBDO_ID(BBDO_DUMPER_TYPE, 7)> }
   };
 
   // Check if data should be processed.

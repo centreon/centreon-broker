@@ -34,6 +34,8 @@ namespace           dumper {
   namespace         entries {
     class           ba;
     class           kpi;
+    class           host;
+    class           service;
   }
 
   /**
@@ -65,6 +67,10 @@ namespace           dumper {
                     _bas;
     std::list<entries::kpi>
                     _kpis;
+    std::list<entries::host>
+                    _hosts;
+    std::list<entries::service>
+                    _services;
 
     template <typename T>
     static void    _prepare_insert(database_query& st);
