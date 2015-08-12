@@ -207,6 +207,24 @@ void db_writer::_commit() {
     _prepare_delete<entries::service>(service_delete, ids);
   }
 
+  // Prepare relation table queries.
+  database_query poller_ba_relation_insert(db);
+  database_query host_service_relation_insert(db);
+  {
+    poller_ba_relation_insert.prepare(
+      "INSERT INTO mod_bam_poller_relations"
+      "  (ba_id, poller_id)"
+      "  VALUES(:ba_id, :poller_id)",
+      "db_writer: could not prepare insertion query");
+  }
+  {
+    host_service_relation_insert.prepare(
+      "INSERT INTO host_service_relation"
+      "  (host_host_id, service_service_id)"
+      "  VALUES(:host_id, :service_id)",
+      "db_writer: could not prepare insertion query");
+  }
+
   // Process all BAs.
   for (std::list<entries::ba>::const_iterator it(_bas.begin()), end(_bas.end());
        it != end;
@@ -230,6 +248,11 @@ void db_writer::_commit() {
             << it->ba_id;
       database_query q(db);
       q.run_query(query.str().c_str());
+      poller_ba_relation_insert.bind_value(":poller_id", it->poller_id);
+      poller_ba_relation_insert.bind_value(":ba_id", it->ba_id);
+      try {
+        poller_ba_relation_insert.run_statement();
+      } catch (std::exception const&) {}
     }
     // DELETE.
     else {
@@ -330,6 +353,11 @@ void db_writer::_commit() {
             << it->service_id;
       database_query q(db);
       q.run_query(query.str().c_str());
+      host_service_relation_insert.bind_value(":host_id", it->host_id);
+      host_service_relation_insert.bind_value(":service_id", it->service_id);
+      try {
+        host_service_relation_insert.run_statement();
+      } catch (std::exception const&) {}
     }
     // DELETE.
     else {
@@ -373,7 +401,7 @@ void db_writer::_prepare_insert(database_query& st) {
   query.append(")");
 
   // Prepare statement.
-  st.prepare(query, "SQL: could not prepare insertion query");
+  st.prepare(query, "db_writer: could not prepare insertion query");
 
   return ;
 }
@@ -420,7 +448,7 @@ void db_writer::_prepare_update(
   query.resize(query.size() - 5);
 
   // Prepare statement.
-  st.prepare(query, "SQL: could not prepare update query");
+  st.prepare(query, "db_writer: could not prepare update query");
 
   return ;
 }
@@ -455,7 +483,7 @@ void db_writer::_prepare_delete(
   query.resize(query.size() - 5);
 
   // Prepare statement.
-  st.prepare(query, "SQL: could not prepare deletion query");
+  st.prepare(query, "db_writer: could not prepare deletion query");
 
   return ;
 }
