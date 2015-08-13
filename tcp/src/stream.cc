@@ -105,15 +105,20 @@ void stream::process(bool in, bool out) {
  */
 void stream::read(misc::shared_ptr<io::data>& d) {
   QMutexLocker lock(&_mutex);
-  if (!_process_in) {
-    _stop();
-    throw (io::exceptions::shutdown(!_process_in, !_process_out)
-             << "TCP stream is shutdown");
-  }
-
   // Check that socket exist.
   if (!_socket.get())
     _initialize_socket();
+
+  // Stopping asked.
+  if (!_process_in) {
+    if (_socket.get() && _socket->isOpen())
+      _socket->close();
+    else {
+     stop();
+     throw (io::exceptions::shutdown(!_process_in, !_process_out)
+              << "TCP stream is shutdown");
+    }
+  }
 
   // If data is already available, skip the waitForReadyRead() loop.
   d.clear();
@@ -226,8 +231,6 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
     throw (io::exceptions::shutdown(!_process_in, !_process_out)
              << "TCP stream is shutdown");
   }
-  if (d.isNull())
-    return (1);
 
   // Check that socket exist.
   if (!_socket.get())
