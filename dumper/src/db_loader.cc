@@ -165,7 +165,7 @@ void db_loader::_load_hosts() {
   std::ostringstream query;
   query << "SELECT h.host_id, h.host_name"
            "  FROM host AS h"
-           "  WHERE host_name = _Module_BAM_" << _poller_id;
+           "  WHERE host_name = '_Module_BAM_" << _poller_id << "'";
   database_query q(*_db);
   q.run_query(
       query.str(),
