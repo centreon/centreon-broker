@@ -315,11 +315,6 @@ void db_writer::_commit() {
         _fill_query(host_insert, *it);
         host_insert.run_statement();
       }
-      std::ostringstream query;
-      query << "UPDATE host SET activate='1' WHERE host_id="
-            << it->host_id;
-      database_query q(db);
-      q.run_query(query.str().c_str());
     }
     // DELETE.
     else {
@@ -348,11 +343,6 @@ void db_writer::_commit() {
         _fill_query(service_insert, *it);
         service_insert.run_statement();
       }
-      std::ostringstream query;
-      query << "UPDATE service SET activate='1' WHERE service_id="
-            << it->service_id;
-      database_query q(db);
-      q.run_query(query.str().c_str());
       host_service_relation_insert.bind_value(":host_id", it->host_id);
       host_service_relation_insert.bind_value(":service_id", it->service_id);
       try {
