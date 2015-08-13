@@ -109,6 +109,8 @@ void acceptor::close() {
     if (_children.size() == 0)
       return ;
     _children_closed_condvar.wait(&_mutex);
+    if (_socket.get())
+      _socket->close();
   }
 }
 
@@ -121,6 +123,10 @@ misc::shared_ptr<io::stream> acceptor::open() {
   QMutexLocker lock(&_mutex);
   if (!_socket.get())
     _socket.reset(new server_socket(_port));
+
+  if (_closed)
+    throw (io::exceptions::shutdown(true, true)
+           << "TCP: shutdown requested");
 
   // Wait for incoming connections.
   logging::debug(logging::medium) << "TCP: waiting for new connection";
