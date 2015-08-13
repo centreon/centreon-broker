@@ -175,6 +175,8 @@ void db_loader::_load_hosts() {
            << "db_reader: expected virtual host '_Module_BAM_"
            << _poller_id << "'");
   entries::host h;
+  h.enable = true;
+  h.poller_id = _poller_id;
   h.host_id = q.value(0).toUInt();
   h.name = q.value(1).toString();
   _state->get_hosts().push_back(h);
@@ -220,6 +222,8 @@ void db_loader::_load_services() {
       if (found == bas.end())
         continue ;
       entries::service s;
+      s.enable =  true;
+      s.poller_id = _poller_id;
       s.host_id = host_id;
       s.service_id = service_id;
       s.description = QString::fromStdString(service_description);
