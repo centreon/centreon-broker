@@ -499,7 +499,7 @@ static mapped_data<entries::service> const dumper_entries_service_mapping[] = {
   mapped_data<entries::service>(
     &entries::service::host_id,
     3,
-    "host_id"),
+    NULL),
   mapped_data<entries::service>(
     &entries::service::service_id,
     4,
