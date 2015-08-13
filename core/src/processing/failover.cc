@@ -518,6 +518,7 @@ void failover::run() {
           logging::debug(logging::medium)
             << "failover: resulting stream of endpoint '"
             << _name << "' is nul, retrying";
+          wl.unlock();
           exit_lock.relock();
           continue ;
         }
