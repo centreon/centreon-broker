@@ -110,15 +110,8 @@ void stream::read(misc::shared_ptr<io::data>& d) {
     _initialize_socket();
 
   // Stopping asked.
-  if (!_process_in) {
-    if (_socket.get() && _socket->isOpen())
+  if (!_process_in && _socket.get() && _socket->isOpen())
       _socket->close();
-    else {
-     stop();
-     throw (io::exceptions::shutdown(!_process_in, !_process_out)
-              << "TCP stream is shutdown");
-    }
-  }
 
   // If data is already available, skip the waitForReadyRead() loop.
   d.clear();
