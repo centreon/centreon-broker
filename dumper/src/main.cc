@@ -76,6 +76,10 @@ extern "C" {
                  io::events::data_type<io::events::dumper, dumper::de_entries_ba>::value);
       elements.insert(
                  io::events::data_type<io::events::dumper, dumper::de_entries_kpi>::value);
+      elements.insert(
+                 io::events::data_type<io::events::dumper, dumper::de_entries_host>::value);
+      elements.insert(
+                 io::events::data_type<io::events::dumper, dumper::de_entries_service>::value);
       io::events::instance().reg("dumper", elements);
     }
     return ;
