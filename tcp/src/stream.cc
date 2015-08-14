@@ -79,11 +79,7 @@ stream::~stream() {
   if (_socket_descriptor != -1) {
     _initialize_socket();
   }
-  if (_socket.get()) {
-    _socket->close();
-    if (_parent)
-      _parent->remove_child(*this);
-  }
+  _stop();
 }
 
 /**
