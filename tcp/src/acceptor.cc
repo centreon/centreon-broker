@@ -172,7 +172,7 @@ misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
  *  @param[in] child  Child to remove.
  */
 void acceptor::remove_child(stream& child) {
-  QMutexLocker lock(&_childrenm);
+  QMutexLocker lock(&_mutex);
   for (std::list<stream*>::iterator
          it(_children.begin()),
          end(_children.end());
@@ -216,7 +216,7 @@ void acceptor::set_write_timeout(int secs) {
  *  @param[out] tree Buffer in which statistics will be written.
  */
 void acceptor::stats(io::properties& tree) {
-  QMutexLocker children_lock(&_childrenm);
+  QMutexLocker children_lock(&_mutex);
   std::ostringstream oss;
   oss << "peers=" << _children.size();
   for (std::list<stream*>::const_iterator

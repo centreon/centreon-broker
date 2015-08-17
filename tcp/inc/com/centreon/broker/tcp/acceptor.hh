@@ -63,7 +63,6 @@ namespace          tcp {
 
     std::list<stream*>
                    _children;
-    QMutex         _childrenm;
     QMutex         _mutex;
     unsigned short _port;
     int            _read_timeout;
