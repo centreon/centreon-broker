@@ -104,12 +104,6 @@ acceptor::~acceptor() {
     (*it)->wait();
     delete *it;
   }
-  for (QList<QThread*>::iterator
-         it(_threads.begin()),
-         end(_threads.end());
-       it != end;
-       ++it)
-    (*it)->wait();
 }
 
 /**
@@ -150,11 +144,11 @@ io::endpoint* acceptor::clone() const {
  */
 void acceptor::close() {
   {
-    QMutexLocker lock(&_threadsm);
-    for (QList<QThread*>::iterator it = _threads.begin(), end = _threads.end();
+    QMutexLocker lock(&_clientsm);
+    for (QList<QThread*>::iterator it = _clients.begin(), end = _clients.end();
          it != end;
          ++it) {
-      processing::feeder* feedr = dynamic_cast<processing::feeder*>(*it);
+      acceptor::helper* feedr = dynamic_cast<acceptor::helper*>(*it);
       if (feedr)
         feedr->exit();
     }
@@ -202,7 +196,7 @@ misc::shared_ptr<io::stream> acceptor::open() {
       }
     }
     else {
-      misc::shared_ptr<io::stream> s(_open(_from->open()));
+      misc::shared_ptr<io::stream> s(_from->open());
       if (!s.isNull()) {
         _clients.push_back(new helper(this, s));
         _clients.last()->start();
@@ -251,7 +245,7 @@ misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
       }
     }
     else {
-      misc::shared_ptr<io::stream> s(_open(_from->open(id)));
+      misc::shared_ptr<io::stream> s(_from->open(id));
       if (!s.isNull()) {
         _clients.push_back(new helper(this, s));
         _clients.last()->start();
@@ -376,8 +370,8 @@ void acceptor::_negociate_features(
  */
 void acceptor::_on_thread_termination() {
   QThread* th(static_cast<QThread*>(QObject::sender()));
-  QMutexLocker lock(&_threadsm);
-  _threads.removeAll(th);
+  QMutexLocker lock(&_clientsm);
+  _clients.removeAll(th);
   return ;
 }
 
@@ -388,7 +382,8 @@ void acceptor::_on_thread_termination() {
  *          process the incoming connection.
  */
 misc::shared_ptr<io::stream> acceptor::_open(
-                                          misc::shared_ptr<io::stream> stream) {
+                                          misc::shared_ptr<io::stream> stream,
+                                          helper& thread) {
   if (!stream.isNull()) {
     // In and out objects.
     misc::shared_ptr<io::stream> in;
@@ -428,25 +423,19 @@ misc::shared_ptr<io::stream> acceptor::_open(
     }
 
     // Feeder thread.
+    // The feeder thread is not launched, but tied
     std::auto_ptr<processing::feeder> feedr(new processing::feeder);
     feedr->prepare(in, out);
-    QObject::connect(
-               feedr.get(),
-               SIGNAL(finished()),
-               this,
-               SLOT(_on_thread_termination()));
-    {
-      QMutexLocker lock(&_threadsm);
-      _threads.push_back(feedr.get());
-    }
-    QObject::connect(
-               feedr.get(),
-               SIGNAL(finished()),
-               feedr.get(),
-               SLOT(deleteLater()));
-    feedr.release()->start();
+    QObject::connect(&thread,
+                     SIGNAL(finished()),
+                     this,
+                     SLOT(_on_thread_termination()));
+    QObject::connect(&thread,
+                     SIGNAL(finished()),
+                     this,
+                     SLOT(deleteLater()));
+    thread.set_feeder(*feedr.release());
   }
-
   return (misc::shared_ptr<io::stream>());
 }
 
@@ -472,7 +461,7 @@ acceptor::helper::helper(
  */
 void acceptor::helper::run() {
   try {
-    _acceptor->_open(_stream);
+    _acceptor->_open(_stream, *this);
   }
   catch (std::exception const& e) {
     logging::error(logging::high)
@@ -482,5 +471,26 @@ void acceptor::helper::run() {
     logging::error(logging::high)
       << "BBDO: client handshake failed: unknown error";
   }
+
+  if (_feeder.get())
+    _feeder->run();
+
   return ;
+}
+
+/**
+ *  Set the feeder for this thread helper.
+ *
+ *  @param[in] feeder  The feeder.
+ */
+void acceptor::helper::set_feeder(processing::feeder& feeder) {
+  _feeder.reset(&feeder);
+}
+
+/**
+ *  Exit this thread helper.
+ */
+void acceptor::helper::exit() {
+  if (_feeder.get())
+    _feeder->exit();
 }

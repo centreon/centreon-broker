@@ -24,6 +24,8 @@
 #  include <QList>
 #  include <QMutex>
 #  include <QThread>
+#  include <memory>
+#  include "com/centreon/broker/processing/feeder.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
 
 namespace               com {
@@ -50,11 +52,15 @@ namespace               com {
                           acceptor* accptr,
                           misc::shared_ptr<io::stream> s);
             void        run();
+            void        set_feeder(processing::feeder& feeder);
+            void        exit();
 
           private:
             acceptor*   _acceptor;
             misc::shared_ptr<io::stream>
                         _stream;
+            std::auto_ptr<processing::feeder>
+                        _feeder;
           };
           friend class  helper;
 
@@ -83,8 +89,10 @@ namespace               com {
                            misc::shared_ptr<io::stream> stream,
                            misc::shared_ptr<bbdo::stream> my_bbdo);
           misc::shared_ptr<io::stream>
-                        _open(misc::shared_ptr<io::stream> stream);
+                        _open(misc::shared_ptr<io::stream> stream,
+                              helper& thread);
 
+          QMutex        _clientsm;
           QList<QThread*>
                         _clients;
           bool          _coarse;
@@ -93,9 +101,6 @@ namespace               com {
           QString       _name;
           bool          _negociate;
           bool          _one_peer_retention_mode;
-          QList<QThread*>
-                        _threads;
-          QMutex        _threadsm;
           time_t        _timeout;
 
         private slots:
