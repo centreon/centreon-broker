@@ -149,6 +149,16 @@ io::endpoint* acceptor::clone() const {
  *  Close the acceptor.
  */
 void acceptor::close() {
+  {
+    QMutexLocker lock(&_threadsm);
+    for (QList<QThread*>::iterator it = _threads.begin(), end = _threads.end();
+         it != end;
+         ++it) {
+      processing::feeder* feedr = dynamic_cast<processing::feeder*>(*it);
+      if (feedr)
+        feedr->exit();
+    }
+  }
   if (!_from.isNull())
     _from->close();
   return ;
