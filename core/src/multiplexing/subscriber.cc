@@ -223,8 +223,9 @@ void subscriber::read(
       throw (io::exceptions::shutdown(true, false)
              << "thread is shutdown, cannot get any further event");
     _get_last_event(event);
+    unsigned int total_events = _total_events;
     lock.unlock();
-    logging::debug(logging::low) << "multiplexing: " << _total_events
+    logging::debug(logging::low) << "multiplexing: " << total_events
       << " events remaining in subscriber";
   }
   return ;
