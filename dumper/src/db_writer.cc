@@ -100,6 +100,8 @@ unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
           _full_dump = dbd.full;
         _bas.clear();
         _kpis.clear();
+        _hosts.clear();
+        _services.clear();
       }
     }
     else if (d->type() ==
