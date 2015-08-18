@@ -36,6 +36,7 @@
 #include "com/centreon/broker/neb/callbacks.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/monitoring_logger.hh"
+#include "com/centreon/broker/neb/engcmd/internal.hh"
 #include "com/centreon/engine/common.hh"
 #include "com/centreon/engine/events/defines.hh"
 #include "com/centreon/engine/events/timed_event.hh"
@@ -162,6 +163,9 @@ extern "C" {
     try {
       // Initialization.
       com::centreon::broker::config::applier::init();
+
+      // Initialize the engcmd module.
+      ::com::centreon::broker::neb::engcmd::load();
 
       // Save module handle and flags for future use.
       neb::gl_mod_flags = flags;
