@@ -403,8 +403,6 @@ misc::shared_ptr<io::stream> acceptor::_open(
       misc::shared_ptr<multiplexing::subscriber> sbcr(
         new multiplexing::subscriber(_name));
       sbcr->set_filters(_filter);
-      logging::error(logging::high)
-        << "TEST: setting multiplexing filter for " <<_filter.size();
       in = sbcr;
       my_bbdo = misc::shared_ptr<bbdo::stream>(
                         new bbdo::stream(false, true));
@@ -423,7 +421,9 @@ misc::shared_ptr<io::stream> acceptor::_open(
     }
 
     // Feeder thread.
-    // The feeder thread is not launched, but tied
+    // The feeder thread is not launched, but tied to the thread helper.
+    // This prevents the QTcpSocket from jumping from thread to thread.
+    // They hate this.
     std::auto_ptr<processing::feeder> feedr(new processing::feeder);
     feedr->prepare(in, out);
     QObject::connect(&thread,
