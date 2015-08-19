@@ -100,6 +100,8 @@ void acceptor::close() {
   {
     QMutexLocker lock(&_mutex);
     _closed = true;
+  }
+  {
     QMutexLocker children_lock(&_childrenm);
     for (std::list<stream*>::iterator
            it = _children.begin(),
@@ -110,6 +112,11 @@ void acceptor::close() {
     if (_children.size() == 0)
       return ;
     _children_closed_condvar.wait(&_childrenm);
+  }
+  {
+    QMutexLocker lock(&_mutex);
+    if (_socket.get())
+      _socket->close();
   }
 }
 
