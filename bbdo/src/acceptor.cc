@@ -166,21 +166,6 @@ void acceptor::close() {
  *          process the incoming connection.
  */
 misc::shared_ptr<io::stream> acceptor::open() {
-  // Clean client threads.
-  for (QList<QThread*>::iterator
-         it(_clients.begin()),
-         end(_clients.end());
-       it != end;) {
-    if ((*it)->wait(0)) {
-      QList<QThread*>::iterator to_delete(it);
-      ++it;
-      delete *to_delete;
-      _clients.erase(to_delete);
-    }
-    else
-      ++it;
-  }
-
   // Wait for client from the lower layer.
   if (!_from.isNull()) {
     if (_one_peer_retention_mode) {
@@ -199,7 +184,14 @@ misc::shared_ptr<io::stream> acceptor::open() {
     else {
       misc::shared_ptr<io::stream> s(_from->open());
       if (!s.isNull()) {
-        _clients.push_back(new helper(this, s));
+        QMutexLocker lock(&_clientsm);
+        std::auto_ptr<helper> help(new helper(this, s));
+        help->moveToThread(this->thread());
+        QObject::connect(help.get(),
+                         SIGNAL(finished()),
+                         this,
+                         SLOT(_on_thread_termination()));
+        _clients.push_back(help.release());
         _clients.last()->start();
       }
     }
@@ -215,21 +207,6 @@ misc::shared_ptr<io::stream> acceptor::open() {
  *          process the incoming connection.
  */
 misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
-  // Clean client threads.
-  for (QList<QThread*>::iterator
-         it(_clients.begin()),
-         end(_clients.end());
-       it != end;) {
-    if ((*it)->wait(0)) {
-      QList<QThread*>::iterator to_delete(it);
-      ++it;
-      delete *to_delete;
-      _clients.erase(to_delete);
-    }
-    else
-      ++it;
-  }
-
   // Wait for client from the lower layer.
   if (!_from.isNull()) {
     if (_one_peer_retention_mode) {
@@ -248,7 +225,14 @@ misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
     else {
       misc::shared_ptr<io::stream> s(_from->open(id));
       if (!s.isNull()) {
-        _clients.push_back(new helper(this, s));
+        QMutexLocker lock(&_clientsm);
+        std::auto_ptr<helper> help(new helper(this, s));
+        help->moveToThread(this->thread());
+        QObject::connect(help.get(),
+                         SIGNAL(finished()),
+                         this,
+                         SLOT(_on_thread_termination()));
+        _clients.push_back(help.release());
         _clients.last()->start();
       }
     }
@@ -373,6 +357,7 @@ void acceptor::_on_thread_termination() {
   QThread* th(static_cast<QThread*>(QObject::sender()));
   QMutexLocker lock(&_clientsm);
   _clients.removeAll(th);
+  th->deleteLater();
   return ;
 }
 
@@ -427,14 +412,6 @@ misc::shared_ptr<io::stream> acceptor::_open(
     // They hate this.
     std::auto_ptr<processing::feeder> feedr(new processing::feeder);
     feedr->prepare(in, out);
-    QObject::connect(&thread,
-                     SIGNAL(finished()),
-                     this,
-                     SLOT(_on_thread_termination()));
-    QObject::connect(&thread,
-                     SIGNAL(finished()),
-                     &thread,
-                     SLOT(deleteLater()));
     thread.set_feeder(*feedr.release());
   }
   return (misc::shared_ptr<io::stream>());
@@ -455,7 +432,8 @@ misc::shared_ptr<io::stream> acceptor::_open(
 helper::helper(
           acceptor* accptr,
           misc::shared_ptr<io::stream> s)
-  : _acceptor(accptr), _stream(s) {}
+  : QThread(),
+    _acceptor(accptr), _stream(s) {}
 
 /**
  *  Thread entry point.
@@ -503,3 +481,4 @@ void helper::exit() {
   if (_feeder.get())
     _feeder->exit();
 }
+

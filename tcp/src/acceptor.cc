@@ -100,6 +100,7 @@ void acceptor::close() {
   {
     QMutexLocker lock(&_mutex);
     _closed = true;
+    QMutexLocker children_lock(&_childrenm);
     for (std::list<stream*>::iterator
            it = _children.begin(),
            end = _children.end();
@@ -108,9 +109,7 @@ void acceptor::close() {
       (*it)->close();
     if (_children.size() == 0)
       return ;
-    _children_closed_condvar.wait(&_mutex);
-    if (_socket.get())
-      _socket->close();
+    _children_closed_condvar.wait(&_childrenm);
   }
 }
 
@@ -150,7 +149,10 @@ misc::shared_ptr<io::stream> acceptor::open() {
     throw (exceptions::msg() << "TCP: could not accept client: "
            << _socket->error_string());
   logging::info(logging::medium) << "TCP: new client connected";
-  incoming->set_parent(this);
+  {
+    QMutexLocker children_lock(&_childrenm);
+    incoming->set_parent(this);
+  }
   incoming->set_read_timeout(_read_timeout);
   incoming->set_write_timeout(_write_timeout);
   return (incoming);
@@ -172,7 +174,7 @@ misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
  *  @param[in] child  Child to remove.
  */
 void acceptor::remove_child(stream& child) {
-  QMutexLocker lock(&_mutex);
+  QMutexLocker lock(&_childrenm);
   for (std::list<stream*>::iterator
          it(_children.begin()),
          end(_children.end());
@@ -216,7 +218,7 @@ void acceptor::set_write_timeout(int secs) {
  *  @param[out] tree Buffer in which statistics will be written.
  */
 void acceptor::stats(io::properties& tree) {
-  QMutexLocker children_lock(&_mutex);
+  QMutexLocker children_lock(&_childrenm);
   std::ostringstream oss;
   oss << "peers=" << _children.size();
   for (std::list<stream*>::const_iterator

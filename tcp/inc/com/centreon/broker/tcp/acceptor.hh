@@ -61,6 +61,7 @@ namespace          tcp {
                    acceptor(acceptor const& other);
     acceptor&      operator=(acceptor const& other);
 
+    QMutex         _childrenm;
     std::list<stream*>
                    _children;
     QMutex         _mutex;
