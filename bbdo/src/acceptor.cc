@@ -149,7 +149,7 @@ void acceptor::close() {
     for (QList<QThread*>::iterator it = _clients.begin(), end = _clients.end();
          it != end;
          ++it) {
-      acceptor::helper* feedr = dynamic_cast<acceptor::helper*>(*it);
+      helper* feedr = dynamic_cast<helper*>(*it);
       if (feedr)
         feedr->exit();
     }
@@ -452,15 +452,15 @@ misc::shared_ptr<io::stream> acceptor::_open(
  *  @param[in] accptr Acceptor object.
  *  @param[in] s      Stream object.
  */
-acceptor::helper::helper(
-                    acceptor* accptr,
-                    misc::shared_ptr<io::stream> s)
+helper::helper(
+          acceptor* accptr,
+          misc::shared_ptr<io::stream> s)
   : _acceptor(accptr), _stream(s) {}
 
 /**
  *  Thread entry point.
  */
-void acceptor::helper::run() {
+void helper::run() {
   try {
     _acceptor->_open(_stream, *this);
   }
@@ -492,14 +492,14 @@ void acceptor::helper::run() {
  *
  *  @param[in] feeder  The feeder.
  */
-void acceptor::helper::set_feeder(processing::feeder& feeder) {
+void helper::set_feeder(processing::feeder& feeder) {
   _feeder.reset(&feeder);
 }
 
 /**
  *  Exit this thread helper.
  */
-void acceptor::helper::exit() {
+void helper::exit() {
   if (_feeder.get())
     _feeder->exit();
 }

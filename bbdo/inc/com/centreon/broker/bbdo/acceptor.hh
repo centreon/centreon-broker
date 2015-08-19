@@ -34,6 +34,30 @@ namespace               com {
       namespace         bbdo {
         // Forward declaration.
         class           stream;
+        class           acceptor;
+
+        /**
+         *  @class helper helper.hh "com/centreon/broker/bbdo/acceptor.hh"
+         *  @brief help class
+         */
+        class         helper : public QThread {
+          Q_OBJECT
+
+        public:
+                      helper(
+                        acceptor* accptr,
+                        misc::shared_ptr<io::stream> s);
+          void        run();
+          void        set_feeder(processing::feeder& feeder);
+          void        exit();
+
+        private:
+          acceptor*   _acceptor;
+          misc::shared_ptr<io::stream>
+                      _stream;
+          std::auto_ptr<processing::feeder>
+                      _feeder;
+        };
 
         /**
          *  @class acceptor acceptor.hh "com/centreon/broker/bbdo/acceptor.hh"
@@ -45,23 +69,7 @@ namespace               com {
           : public QObject, public io::endpoint {
           Q_OBJECT
 
-        private:
-          class         helper : public QThread {
-          public:
-                        helper(
-                          acceptor* accptr,
-                          misc::shared_ptr<io::stream> s);
-            void        run();
-            void        set_feeder(processing::feeder& feeder);
-            void        exit();
-
-          private:
-            acceptor*   _acceptor;
-            misc::shared_ptr<io::stream>
-                        _stream;
-            std::auto_ptr<processing::feeder>
-                        _feeder;
-          };
+        public:
           friend class  helper;
 
         public:
