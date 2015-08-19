@@ -433,7 +433,7 @@ misc::shared_ptr<io::stream> acceptor::_open(
                      SLOT(_on_thread_termination()));
     QObject::connect(&thread,
                      SIGNAL(finished()),
-                     this,
+                     &thread,
                      SLOT(deleteLater()));
     thread.set_feeder(*feedr.release());
   }
@@ -480,7 +480,7 @@ void acceptor::helper::run() {
     logging::debug(logging::medium)
       << "BBDO: connexion to a client closed";
   } catch (std::exception const& e) {
-    logging::error(logging::high)
+    logging::error(logging::medium)
       << "BBDO: error while sending data to client: " << e.what();
   } catch (...) {}
 
