@@ -462,6 +462,9 @@ void helper::run() {
       << "BBDO: error while sending data to client: " << e.what();
   } catch (...) {}
 
+  // Remove feeder.
+  _feeder.reset();
+
   return ;
 }
 
