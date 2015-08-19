@@ -26,6 +26,7 @@
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -472,8 +473,16 @@ void acceptor::helper::run() {
       << "BBDO: client handshake failed: unknown error";
   }
 
-  if (_feeder.get())
-    _feeder->run();
+  try {
+    if (_feeder.get())
+      _feeder->run();
+  } catch (io::exceptions::shutdown const&) {
+    logging::debug(logging::medium)
+      << "BBDO: connexion to a client closed";
+  } catch (std::exception const& e) {
+    logging::error(logging::high)
+      << "BBDO: error while sending data to client: " << e.what();
+  } catch (...) {}
 
   return ;
 }
