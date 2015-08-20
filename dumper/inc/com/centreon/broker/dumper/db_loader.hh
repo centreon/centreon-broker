@@ -49,6 +49,7 @@ namespace           dumper {
                     db_loader(db_loader const& other);
     db_loader&      operator=(db_loader const& other);
     void            _load_bas();
+    void            _load_booleans();
     void            _load_kpis();
     void            _load_hosts();
     void            _load_services();

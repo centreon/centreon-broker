@@ -26,6 +26,7 @@
 #include "com/centreon/broker/dumper/entries/state.hh"
 #include "com/centreon/broker/dumper/entries/host.hh"
 #include "com/centreon/broker/dumper/entries/service.hh"
+#include "com/centreon/broker/dumper/entries/boolean.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
@@ -65,6 +66,7 @@ void db_loader::load(entries::state& state, unsigned int poller_id) {
 
   // Database loading.
   _load_bas();
+  _load_booleans();
   _load_kpis();
   _load_hosts();
   _load_services();
@@ -109,6 +111,38 @@ void db_loader::_load_bas() {
     b.level_warning = q.value(3).toDouble();
     b.level_critical = q.value(4).toDouble();
     _state->get_bas().push_back(b);
+  }
+  return ;
+}
+
+/**
+ *  Load boolean rules.
+ */
+void db_loader::_load_booleans() {
+  std::ostringstream query;
+  query << "SELECT b.boolean_id, b.name, b.expression, b.bool_state,"
+           "       b.comments"
+           "  FROM mod_bam_boolean AS b"
+           "  LEFT JOIN mod_bam_kpi as kpi"
+           "    ON b.boolean_id = kpi.boolean_id"
+           "  INNER JOIN mod_bam_poller_relations AS pr"
+           "    ON kpi.id_ba=pr.ba_id"
+           "  WHERE b.activate='1'"
+           "    AND pr.poller_id=" << _poller_id;
+  database_query q(*_db);
+  q.run_query(
+      query.str(),
+      "db_reader: could not load configuration of boolean rules from DB");
+  while (q.next()) {
+    entries::boolean b;
+    b.enable = true;
+    b.poller_id = _poller_id;
+    b.boolean_id = q.value(0).toUInt();
+    b.name = q.value(1).toString();
+    b.expression = q.value(2).toString();
+    b.bool_state = q.value(3).toInt();
+    b.comment = q.value(4).toString();
+    _state->get_booleans().push_back(b);
   }
   return ;
 }

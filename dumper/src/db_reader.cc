@@ -26,6 +26,7 @@
 #include "com/centreon/broker/dumper/entries/host.hh"
 #include "com/centreon/broker/dumper/entries/service.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
+#include "com/centreon/broker/dumper/entries/boolean.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/command_result.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -209,6 +210,7 @@ void db_reader::_sync_cfg_db(unsigned int poller_id) {
       pblshr.write(start);
     }
     send_objects(state.get_bas());
+    send_objects(state.get_booleans());
     send_objects(state.get_kpis());
     send_objects(state.get_hosts());
     send_objects(state.get_services());
@@ -257,6 +259,9 @@ void db_reader::_update_cfg_db(unsigned int poller_id) {
     send_objects(d.bas_to_delete());
     send_objects(d.bas_to_update());
     send_objects(d.bas_to_create());
+    send_objects(d.booleans_to_delete());
+    send_objects(d.booleans_to_update());
+    send_objects(d.booleans_to_create());
     send_objects(d.kpis_to_delete());
     send_objects(d.kpis_to_update());
     send_objects(d.kpis_to_create());

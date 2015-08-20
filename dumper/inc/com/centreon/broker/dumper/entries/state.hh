@@ -32,6 +32,7 @@ namespace                   dumper {
     class                   kpi;
     class                   host;
     class                   service;
+    class                   boolean;
 
     /**
      *  @class state state.hh "com/centreon/broker/dumper/entries/dumper.hh"
@@ -47,6 +48,9 @@ namespace                   dumper {
       state&                operator=(state const& other);
       std::list<ba> const&  get_bas() const;
       std::list<ba>&        get_bas();
+      std::list<boolean> const&
+                            get_booleans() const;
+      std::list<boolean>&   get_booleans();
       std::list<kpi> const& get_kpis() const;
       std::list<kpi>&       get_kpis();
       std::list<host> const&
@@ -60,6 +64,7 @@ namespace                   dumper {
       void                  _internal_copy(state const& other);
 
       std::list<ba>         _bas;
+      std::list<boolean>    _booleans;
       std::list<kpi>        _kpis;
       std::list<host>       _hosts;
       std::list<service>    _services;

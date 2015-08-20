@@ -23,6 +23,7 @@
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/entries/host.hh"
 #include "com/centreon/broker/dumper/entries/service.hh"
+#include "com/centreon/broker/dumper/entries/boolean.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
 
 using namespace com::centreon::broker;
@@ -133,6 +134,20 @@ diff::diff(state const& older, state const& newer) {
       new_bas);
   }
 
+  // Diff boolean rules.
+  {
+    std::map<unsigned int, boolean> old_booleans;
+    to_map<boolean, &boolean::boolean_id>(old_booleans, older.get_booleans());
+    std::map<unsigned int, boolean> new_booleans;
+    to_map<boolean, &boolean::boolean_id>(new_booleans, newer.get_booleans());
+    diff_it(
+      _booleans_to_create,
+      _booleans_to_update,
+      _booleans_to_delete,
+      old_booleans,
+      new_booleans);
+  }
+
   // Diff KPIs.
   {
     std::map<unsigned int, kpi> old_kpis;
@@ -231,6 +246,33 @@ std::list<ba> const& diff::bas_to_delete() const {
 }
 
 /**
+ *  Get the boolean rules that should be created.
+ *
+ *  @return List of boolean rules that should be created.
+ */
+std::list<boolean> const& diff::booleans_to_create() const {
+  return (_booleans_to_create);
+}
+
+/**
+ *  Get the boolean rules that should be updated.
+ *
+ *  @return List of boolean rules that should be updated.
+ */
+std::list<boolean> const& diff::booleans_to_update() const {
+  return (_booleans_to_update);
+}
+
+/**
+ *  Get the boolean rules that should be deleted.
+ *
+ *  @return List of boolean rules that should be deleted.
+ */
+std::list<boolean> const& diff::booleans_to_delete() const {
+  return (_booleans_to_delete);
+}
+
+/**
  *  Get KPIs that should be created.
  *
  *  @return List of KPIs that should be created.
@@ -326,6 +368,9 @@ void diff::_internal_copy(diff const& other) {
   _bas_to_create = other._bas_to_create;
   _bas_to_update = other._bas_to_update;
   _bas_to_delete = other._bas_to_delete;
+  _booleans_to_create = other._booleans_to_create;
+  _booleans_to_update = other._booleans_to_update;
+  _booleans_to_delete = other._booleans_to_delete;
   _kpis_to_create = other._kpis_to_create;
   _kpis_to_update = other._kpis_to_update;
   _kpis_to_delete = other._kpis_to_delete;

@@ -25,6 +25,7 @@
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/entries/host.hh"
 #include "com/centreon/broker/dumper/entries/service.hh"
+#include "com/centreon/broker/dumper/entries/boolean.hh"
 #include "com/centreon/broker/dumper/db_dump_committed.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/engine/protoapi.h"
@@ -486,7 +487,7 @@ static mapped_data<entries::host> const dumper_entries_host_mapping[] = {
   mapped_data<entries::host>()
 };
 
-// db_dump members mapping.
+// Entries service members mapping.
 static mapped_data<entries::service> const dumper_entries_service_mapping[] = {
   mapped_data<entries::service>(
     &entries::service::enable,
@@ -510,6 +511,41 @@ static mapped_data<entries::service> const dumper_entries_service_mapping[] = {
     5,
     "service_description"),
   mapped_data<entries::service>()
+};
+
+// Entries boolean members mapping.
+static mapped_data<entries::boolean> const dumper_entries_boolean_mapping[] = {
+  mapped_data<entries::boolean>(
+    &entries::boolean::enable,
+    1,
+    NULL),
+  mapped_data<entries::boolean>(
+    &entries::boolean::poller_id,
+    2,
+    NULL,
+    NULL_ON_ZERO),
+  mapped_data<entries::boolean>(
+    &entries::boolean::boolean_id,
+    3,
+    "boolean_id",
+    NULL_ON_ZERO),
+  mapped_data<entries::boolean>(
+    &entries::boolean::bool_state,
+    4,
+    "bool_state"),
+  mapped_data<entries::boolean>(
+    &entries::boolean::name,
+    5,
+    "name"),
+  mapped_data<entries::boolean>(
+    &entries::boolean::expression,
+    6,
+    "expression"),
+  mapped_data<entries::boolean>(
+    &entries::boolean::comment,
+    7,
+    "comments"),
+  mapped_data<entries::boolean>()
 };
 
 static mapped_data<db_dump_committed> const dumper_db_dump_committed_mapping[] = {
@@ -2687,6 +2723,11 @@ namespace     com {
         mapped_type<dumper::entries::service>::members(dumper_entries_service_mapping);
       template <> const char*
         mapped_type<dumper::entries::service>::table("service");
+
+      template <> const mapped_data<dumper::entries::boolean>*
+        mapped_type<dumper::entries::boolean>::members(dumper_entries_boolean_mapping);
+      template <> const char*
+        mapped_type<dumper::entries::boolean>::table("mod_bam_boolean");
 
       template <> const mapped_data<dumper::db_dump_committed>*
         mapped_type<dumper::db_dump_committed>::members(dumper_db_dump_committed_mapping);

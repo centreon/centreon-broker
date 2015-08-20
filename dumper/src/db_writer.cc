@@ -31,6 +31,7 @@
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/entries/host.hh"
 #include "com/centreon/broker/dumper/entries/service.hh"
+#include "com/centreon/broker/dumper/entries/boolean.hh"
 #include "mapping.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -101,6 +102,7 @@ unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
         else
           _full_dump = dbd.full;
         _bas.clear();
+        _booleans.clear();
         _kpis.clear();
         _hosts.clear();
         _services.clear();
@@ -114,6 +116,12 @@ unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
       entries::ba const& b(d.ref_as<entries::ba const>());
       if (b.poller_id == config::applier::state::instance().get_instance_id())
         _bas.push_back(b);
+    }
+    else if (d->type() ==
+             io::events::data_type<io::events::dumper, dumper::de_entries_boolean>::value) {
+      entries::boolean const& b(d.ref_as<entries::boolean const>());
+      if (b.poller_id == config::applier::state::instance().get_instance_id())
+        _booleans.push_back(b);
     }
     else if (d->type() ==
              io::events::data_type<io::events::dumper, dumper::de_entries_kpi>::value) {
@@ -162,6 +170,10 @@ void db_writer::_commit() {
     }
     {
       database_query q(db);
+      q.run_query("DELETE FROM mod_bam_boolean");
+    }
+    {
+      database_query q(db);
       q.run_query("DELETE FROM service WHERE service_description like 'ba_%'");
     }
   }
@@ -176,6 +188,18 @@ void db_writer::_commit() {
     _prepare_insert<entries::ba>(ba_insert);
     _prepare_update<entries::ba>(ba_update, ids);
     _prepare_delete<entries::ba>(ba_delete, ids);
+  }
+
+  // Prepare boolean rules queries.
+  database_query boolean_insert(db);
+  database_query boolean_update(db);
+  database_query boolean_delete(db);
+  {
+    std::set<std::string> ids;
+    ids.insert("boolean_id");
+    _prepare_insert<entries::boolean>(boolean_insert);
+    _prepare_update<entries::boolean>(boolean_update, ids);
+    _prepare_delete<entries::boolean>(boolean_delete, ids);
   }
 
   // Prepare KPI queries.
@@ -268,6 +292,40 @@ void db_writer::_commit() {
         << it->name << "')";
       ba_delete.bind_value(":ba_id", it->ba_id);
       ba_delete.run_statement();
+    }
+  }
+
+  // Process all boolean rules.
+  for (std::list<entries::boolean>::const_iterator it(_booleans.begin()), end(_booleans.end());
+       it != end;
+       ++it) {
+    // INSERT / UPDATE.
+    if (it->enable) {
+      logging::debug(logging::medium)
+        << "db_dumper: updating BA " << it->boolean_id << " ('" << it->name
+        << "')";
+      _fill_query(boolean_update, *it);
+      boolean_update.run_statement();
+      if (!boolean_update.num_rows_affected()) {
+        logging::debug(logging::medium)
+          << "db_dumper: inserting BA " << it->boolean_id << " ('"
+          << it->name << "')";
+        _fill_query(boolean_insert, *it);
+        boolean_insert.run_statement();
+      }
+      std::ostringstream query;
+      query << "UPDATE mod_bam_boolean SET activate='1' WHERE boolean_id="
+            << it->boolean_id;
+      database_query q(db);
+      q.run_query(query.str().c_str());
+    }
+    // DELETE.
+    else {
+      logging::debug(logging::medium)
+        << "db_dumper: deleting BA " << it->boolean_id << " ('"
+        << it->name << "')";
+      boolean_delete.bind_value(":boolean_id", it->boolean_id);
+      boolean_delete.run_statement();
     }
   }
 

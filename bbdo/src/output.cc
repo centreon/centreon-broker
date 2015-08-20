@@ -33,6 +33,7 @@
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/entries/host.hh"
 #include "com/centreon/broker/dumper/entries/service.hh"
+#include "com/centreon/broker/dumper/entries/boolean.hh"
 #include "com/centreon/broker/dumper/reload.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -312,7 +313,9 @@ unsigned int output::write(misc::shared_ptr<io::data> const& e) {
     { io::events::data_type<io::events::dumper, dumper::de_entries_host>::value,
       &serialize<dumper::entries::host, BBDO_ID(BBDO_DUMPER_TYPE, 6)> },
     { io::events::data_type<io::events::dumper, dumper::de_entries_service>::value,
-      &serialize<dumper::entries::service, BBDO_ID(BBDO_DUMPER_TYPE, 7)> }
+      &serialize<dumper::entries::service, BBDO_ID(BBDO_DUMPER_TYPE, 7)> },
+    { io::events::data_type<io::events::dumper, dumper::de_entries_boolean>::value,
+      &serialize<dumper::entries::boolean, BBDO_ID(BBDO_DUMPER_TYPE, 8)> }
   };
 
   // Check if data should be processed.

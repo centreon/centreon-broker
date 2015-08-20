@@ -33,6 +33,7 @@ namespace                            dumper {
     class                            state;
     class                            host;
     class                            service;
+    class                            boolean;
 
     /**
      *  @class diff diff.hh "com/centreon/broker/dumper/entries/diff.hh"
@@ -52,6 +53,9 @@ namespace                            dumper {
       std::list<ba> const&           bas_to_create() const;
       std::list<ba> const&           bas_to_update() const;
       std::list<ba> const&           bas_to_delete() const;
+      std::list<boolean> const&      booleans_to_create() const;
+      std::list<boolean> const&      booleans_to_update() const;
+      std::list<boolean> const&      booleans_to_delete() const;
       std::list<kpi> const&          kpis_to_create() const;
       std::list<kpi> const&          kpis_to_update() const;
       std::list<kpi> const&          kpis_to_delete() const;
@@ -68,6 +72,9 @@ namespace                            dumper {
       std::list<ba>                  _bas_to_create;
       std::list<ba>                  _bas_to_update;
       std::list<ba>                  _bas_to_delete;
+      std::list<boolean>             _booleans_to_create;
+      std::list<boolean>             _booleans_to_update;
+      std::list<boolean>             _booleans_to_delete;
       std::list<kpi>                 _kpis_to_create;
       std::list<kpi>                 _kpis_to_update;
       std::list<kpi>                 _kpis_to_delete;

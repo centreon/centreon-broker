@@ -36,6 +36,7 @@ namespace           dumper {
     class           kpi;
     class           host;
     class           service;
+    class           boolean;
   }
 
   /**
@@ -65,6 +66,8 @@ namespace           dumper {
     bool            _full_dump;
     std::list<entries::ba>
                     _bas;
+    std::list<entries::boolean>
+                    _booleans;
     std::list<entries::kpi>
                     _kpis;
     std::list<entries::host>

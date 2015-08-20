@@ -21,6 +21,7 @@
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/entries/host.hh"
 #include "com/centreon/broker/dumper/entries/service.hh"
+#include "com/centreon/broker/dumper/entries/boolean.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
 
 using namespace com::centreon::broker;
@@ -80,6 +81,24 @@ std::list<ba> const& state::get_bas() const {
  */
 std::list<ba>& state::get_bas() {
   return (_bas);
+}
+
+/**
+ *  Get the boolean rules.
+ *
+ *  @return  Non-modifiable list of boolean rules.
+ */
+std::list<boolean> const& state::get_booleans() const {
+  return (_booleans);
+}
+
+/**
+ *  Get the boolean rules.
+ *
+ *  @return  Modifiable list of boolean rules.
+ */
+std::list<boolean>& state::get_booleans() {
+  return (_booleans);
 }
 
 /**
@@ -149,6 +168,7 @@ std::list<service>& state::get_services() {
  */
 void state::_internal_copy(state const& other) {
   _bas = other._bas;
+  _booleans = other._booleans;
   _kpis = other._kpis;
   _hosts = other._hosts;
   _services = other._services;
