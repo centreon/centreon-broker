@@ -290,8 +290,8 @@ void db_writer::_commit() {
         kpi_insert.run_statement();
       }
       std::ostringstream query;
-      query << "UPDATE mod_bam_kpi SET activate='1' WHERE kpi_id="
-            << it->kpi_id;
+      query << "UPDATE mod_bam_kpi SET activate='1', config_type='1'"
+               " WHERE kpi_id=" << it->kpi_id;
       database_query q(db);
       q.run_query(query.str().c_str());
     }
