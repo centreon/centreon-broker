@@ -43,7 +43,8 @@ namespace bam {
     de_dimension_timeperiod,
     de_dimension_ba_timeperiod_relation,
     de_dimension_timeperiod_exception,
-    de_dimension_timeperiod_exclusion
+    de_dimension_timeperiod_exclusion,
+    de_reload_monitoring
   };
 }
 

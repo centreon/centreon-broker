@@ -33,6 +33,7 @@
 #include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/bam/monitoring_stream.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/dumper/internal.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -339,6 +340,10 @@ unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
           _write_external_command(oss.str());
         }
       }
+    }
+    else if (data->type()
+             == io::events::data_type<io::events::dumper, dumper::de_db_dump_committed>::value) {
+      update();
     }
   }
   else

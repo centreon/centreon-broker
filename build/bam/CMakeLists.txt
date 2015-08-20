@@ -22,6 +22,7 @@ set(INC_DIR "${PROJECT_SOURCE_DIR}/bam/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/bam/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/bam/test")
 include_directories("${INC_DIR}")
+include_directories("${PROJECT_SOURCE_DIR}/dumper/inc")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 set(INC_DIR "${INC_DIR}/com/centreon/broker/bam")
@@ -182,7 +183,7 @@ set(BAM_MODULE_PATH "${BAM_MODULE_PATH}" PARENT_SCOPE)
 
 # Testing.
 if (WITH_TESTING)
-  set(TEST_LIBRARIES "${NEB}" "${BAM}" "roker")
+  set(TEST_LIBRARIES "${NEB}" "${DUMPER}" "${BAM}" "roker")
 
   # ba tests.
   #   KPI change at recompute.

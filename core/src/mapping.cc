@@ -25,6 +25,7 @@
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/entries/host.hh"
 #include "com/centreon/broker/dumper/entries/service.hh"
+#include "com/centreon/broker/dumper/db_dump_committed.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/engine/protoapi.h"
 #include "mapping.hh"
@@ -509,6 +510,10 @@ static mapped_data<entries::service> const dumper_entries_service_mapping[] = {
     5,
     "service_description"),
   mapped_data<entries::service>()
+};
+
+static mapped_data<db_dump_committed> const dumper_db_dump_committed_mapping[] = {
+  mapped_data<db_dump_committed>()
 };
 
 // engine_state members mapping.
@@ -2682,6 +2687,11 @@ namespace     com {
         mapped_type<dumper::entries::service>::members(dumper_entries_service_mapping);
       template <> const char*
         mapped_type<dumper::entries::service>::table("service");
+
+      template <> const mapped_data<dumper::db_dump_committed>*
+        mapped_type<dumper::db_dump_committed>::members(dumper_db_dump_committed_mapping);
+      template <> const char*
+        mapped_type<dumper::db_dump_committed>::table(NULL);
 
       // Correlation engine state mapping.
       template <> const mapped_data<correlation::engine_state>*

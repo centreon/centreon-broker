@@ -80,6 +80,8 @@ extern "C" {
                  io::events::data_type<io::events::dumper, dumper::de_entries_host>::value);
       elements.insert(
                  io::events::data_type<io::events::dumper, dumper::de_entries_service>::value);
+      elements.insert(
+                 io::events::data_type<io::events::dumper, dumper::de_db_dump_committed>::value);
       io::events::instance().reg("dumper", elements);
     }
     return ;

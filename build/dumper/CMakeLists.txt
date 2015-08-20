@@ -32,6 +32,7 @@ set(DUMPER "${DUMPER}" PARENT_SCOPE)
 add_library("${DUMPER}" SHARED
   # Sources.
   "${SRC_DIR}/db_dump.cc"
+  "${SRC_DIR}/db_dump_committed.cc"
   "${SRC_DIR}/db_loader.cc"
   "${SRC_DIR}/db_reader.cc"
   "${SRC_DIR}/db_writer.cc"
@@ -50,6 +51,7 @@ add_library("${DUMPER}" SHARED
   "${PROJECT_SOURCE_DIR}/core/src/mapping.cc"
   # Headers.
   "${INC_DIR}/com/centreon/broker/dumper/db_dump.hh"
+  "${INC_DIR}/com/centreon/broker/dumper/db_dump_committed.hh"
   "${INC_DIR}/com/centreon/broker/dumper/db_loader.hh"
   "${INC_DIR}/com/centreon/broker/dumper/db_reader.hh"
   "${INC_DIR}/com/centreon/broker/dumper/db_writer.hh"

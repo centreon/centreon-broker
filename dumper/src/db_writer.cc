@@ -19,11 +19,13 @@
 
 #include <sstream>
 #include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/dumper/internal.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/database.hh"
 #include "com/centreon/broker/database_query.hh"
 #include "com/centreon/broker/dumper/db_dump.hh"
+#include "com/centreon/broker/dumper/db_dump_committed.hh"
 #include "com/centreon/broker/dumper/db_writer.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
@@ -102,6 +104,9 @@ unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
         _kpis.clear();
         _hosts.clear();
         _services.clear();
+        multiplexing::publisher pblsh;
+        misc::shared_ptr<db_dump_committed> dbc(new db_dump_committed);
+        pblsh.write(dbc);
       }
     }
     else if (d->type() ==
