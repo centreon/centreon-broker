@@ -36,7 +36,9 @@ namespace         engcmd {
    */
   class           endpoint : public io::endpoint {
   public:
-                  endpoint(std::string const& name);
+                  endpoint(
+                    std::string const& name,
+                    std::string const& command_module_path);
                   endpoint(endpoint const& other);
                   ~endpoint();
     endpoint&     operator=(endpoint const& other);
@@ -44,6 +46,7 @@ namespace         engcmd {
                   open();
   private:
     std::string   _name;
+    std::string  _command_module_path;
   };
 }
 }

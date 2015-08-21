@@ -28,9 +28,12 @@ using namespace com::centreon::broker::neb::engcmd;
  *
  *  @param[in] name  The name of the endpoint.
  */
-endpoint::endpoint(std::string const& name)
+endpoint::endpoint(
+            std::string const& name,
+            std::string const& command_module_path)
   : io::endpoint(false),
-    _name(name) {}
+    _name(name),
+    _command_module_path(command_module_path) {}
 
 /**
  *  Copy constructor.
@@ -57,6 +60,7 @@ endpoint::~endpoint() {}
 endpoint& endpoint::operator=(endpoint const& other) {
   if (this != &other) {
     _name = other._name;
+    _command_module_path = other._command_module_path;
   }
   return (*this);
 }
@@ -67,5 +71,5 @@ endpoint& endpoint::operator=(endpoint const& other) {
  *  @return  A new stream.
  */
 misc::shared_ptr<io::stream> endpoint::open() {
-  return (misc::make_shared(new engine_command(_name)));
+  return (misc::make_shared(new engine_command(_name, _command_module_path)));
 }

@@ -38,7 +38,9 @@ namespace                 engcmd {
    */
   class                   engine_command : public io::stream {
   public:
-                          engine_command(std::string const& name);
+                          engine_command(
+                            std::string const& name,
+                            std::string const& command_module_path);
                           ~engine_command();
     bool                  read(
                             misc::shared_ptr<io::data>& d,
@@ -50,7 +52,10 @@ namespace                 engcmd {
     engine_command&       operator=(engine_command const& other);
 
     std::string           _name;
+    std::string           _command_module_path;
+    int                   (*_process_external_command)(char const*);
 
+    void                  _load_command_engine_module();
     void                  _execute_command(std::string const cmd);
   };
 }

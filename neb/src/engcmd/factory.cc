@@ -22,9 +22,28 @@
 #include "com/centreon/broker/neb/engcmd/endpoint.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb::engcmd;
+
+/**
+ *  Find a parameter in configuration.
+ *
+ *  @param[in] cfg Configuration object.
+ *  @param[in] key Property to get.
+ *
+ *  @return Property value.
+ */
+static QString const& find_param(
+                        config::endpoint const& cfg,
+                        QString const& key) {
+  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+  if (cfg.params.end() == it)
+    throw (exceptions::msg() << "engcmd: no '" << key
+           << "' defined for endpoint '" << cfg.name << "'");
+  return (it.value());
+}
 
 /**************************************
 *                                     *
@@ -99,9 +118,12 @@ io::endpoint* factory::new_endpoint(
   (void)cache;
 
   std::string name = cfg.name.toStdString();
+  std::string command_module_path =
+    find_param(cfg, "command_module_path").toStdString();
+
 
   // Return value.
-  std::auto_ptr<io::endpoint> end(new endpoint(name));
+  std::auto_ptr<io::endpoint> end(new endpoint(name, command_module_path));
 
   return (end.release());
 }
