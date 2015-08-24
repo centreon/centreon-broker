@@ -438,6 +438,18 @@ version       string           Version of the monitoring engine used on
                                this instance.
 ============= ================ ========================================= =============
 
+Instance configuration
+======================
+
+============= ================ ========================================= =============
+Property      Type             Description                               Version
+============= ================ ========================================= =============
+loaded        boolean          True if the configuration was loaded      2.10+
+                               successfully.
+instance_id   unsigned integer Instance ID.
+============= ================ ========================================= =============
+
+
 Instance status
 ===============
 

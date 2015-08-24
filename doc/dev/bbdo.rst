@@ -132,6 +132,7 @@ Service dependency     22
 Service group          23
 Service group member   24
 Service status         25
+Instance configuration 26
 ====================== =====
 
 Storage
