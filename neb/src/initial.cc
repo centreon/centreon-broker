@@ -50,6 +50,8 @@ extern "C" {
   nebmodule* neb_module_list;
 }
 
+static bool loaded_successfully = true;
+
 /**************************************
 *                                     *
 *          Static Functions           *
@@ -143,10 +145,12 @@ static void send_host_dependencies_list() {
     logging::error(logging::high)
       << "init: error occurred while dumping host dependencies: "
       << e.what();
+    loaded_successfully = false;
   }
   catch (...) {
     logging::error(logging::high)
       << "init: unknown error occurred while dumping host dependencies";
+    loaded_successfully = false;
   }
 
   // End log message.
@@ -256,10 +260,12 @@ static void send_host_parents_list() {
     logging::error(logging::high)
       << "init: error occurred while dumping host parents: "
       << e.what();
+    loaded_successfully = false;
   }
   catch (...) {
     logging::error(logging::high)
       << "init: unknown error occurred while dumping host parents";
+    loaded_successfully = false;
   }
 
   // End log message.
@@ -329,10 +335,12 @@ static void send_service_dependencies_list() {
     logging::error(logging::high)
       << "init: error occurred while dumping service dependencies: "
       << e.what();
+    loaded_successfully = false;
   }
   catch (...) {
     logging::error(logging::high) << "init: unknown error occurred "
       << "while dumping service dependencies";
+    loaded_successfully = false;
   }
 
   // End log message.
@@ -409,6 +417,26 @@ static void send_service_list() {
   return ;
 }
 
+/**
+ *  Send the instance configuration loaded event.
+ */
+static void send_instance_configuration() {
+  // Log message.
+  static const char* loaded =
+    loaded_successfully ? "loaded" : "not loaded";
+  logging::info(logging::medium)
+    << "init: sending instance configuration loaded event:"
+       " configuration '" << loaded << "'";
+
+  misc::shared_ptr<neb::instance_configuration>
+    ic(new neb::instance_configuration);
+
+  ic->instance_id = neb::instance_id;
+  ic->loaded = loaded_successfully;
+
+  neb::gl_publisher.write(ic);
+}
+
 /**************************************
 *                                     *
 *          Global Functions           *
@@ -428,5 +456,6 @@ void neb::send_initial_configuration() {
   send_host_dependencies_list();
   send_service_dependencies_list();
   send_module_list();
+  send_instance_configuration();
   return ;
 }
