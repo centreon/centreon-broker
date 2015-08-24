@@ -422,7 +422,7 @@ static void send_service_list() {
  */
 static void send_instance_configuration() {
   // Log message.
-  static const char* loaded =
+  const char* loaded =
     loaded_successfully ? "loaded" : "not loaded";
   logging::info(logging::medium)
     << "init: sending instance configuration loaded event:"
