@@ -240,6 +240,8 @@ unsigned int input::read_any(
       &unserialize<neb::service_group_member> },
     { BBDO_ID(BBDO_NEB_TYPE, 25),
       &unserialize<neb::service_status> },
+    { BBDO_ID(BBDO_NEB_TYPE, 26),
+      &unserialize<neb::instance_configuration> },
     { BBDO_ID(BBDO_STORAGE_TYPE, 1),
       &unserialize<storage::metric> },
     { BBDO_ID(BBDO_STORAGE_TYPE, 2),

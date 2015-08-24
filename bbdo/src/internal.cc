@@ -459,6 +459,9 @@ namespace bbdo {
   template <> std::vector<getter_setter<neb::service_status> >
     bbdo_mapped_type<neb::service_status>::table =
       std::vector<getter_setter<neb::service_status> >();
+  template <> std::vector<getter_setter<neb::instance_configuration> >
+    bbdo_mapped_type<neb::instance_configuration>::table =
+      std::vector<getter_setter<neb::instance_configuration> >();
   template <> std::vector<getter_setter<storage::metric> >
     bbdo_mapped_type<storage::metric>::table =
       std::vector<getter_setter<storage::metric> >();
@@ -584,6 +587,7 @@ void bbdo::initialize() {
   static_init<neb::service_group>();
   static_init<neb::service_group_member>();
   static_init<neb::service_status>();
+  static_init<neb::instance_configuration>();
   static_init<storage::metric>();
   static_init<storage::rebuild>();
   static_init<storage::remove_graph>();

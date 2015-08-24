@@ -60,7 +60,8 @@ namespace neb {
     de_service_group,
     de_service_group_member,
     de_service,
-    de_service_status
+    de_service_status,
+    de_instance_configuration
   };
 
   // Configuration file.

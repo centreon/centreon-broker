@@ -1437,6 +1437,21 @@ static mapped_data<instance> const instance_mapping[] = {
   mapped_data<instance>()
 };
 
+// instance configuration members mapping.
+static mapped_data<instance_configuration> const instance_configuration_mapping[] = {
+  mapped_data<instance_configuration>(
+    &instance_configuration::loaded,
+    NDO_DATA_STATE,
+    "loaded"),
+  mapped_data<instance_configuration>(
+    &instance_configuration::instance_id,
+    NDO_DATA_STATE,
+    "instance_id",
+    NULL_ON_ZERO),
+  mapped_data<instance_configuration>()
+};
+
+
 // instance_status members mapping.
 static mapped_data<instance_status> const instance_status_mapping[] = {
   mapped_data<instance_status>(
@@ -2627,6 +2642,12 @@ namespace     com {
         mapped_type<neb::instance>::members(instance_mapping);
       template <> const char*
         mapped_type<neb::instance>::table("instances");
+
+      // instance configuration mapping.
+      template <> const mapped_data<neb::instance_configuration>*
+        mapped_type<neb::instance_configuration>::members(instance_configuration_mapping);
+      template <> const char*
+        mapped_type<neb::instance_configuration>::table(NULL);
 
       // instance_status mapping.
       template <> const mapped_data<neb::instance_status>*

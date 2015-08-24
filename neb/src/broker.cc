@@ -102,6 +102,8 @@ extern "C" {
                    io::events::data_type<io::events::neb, neb::de_service>::value);
         elements.insert(
                    io::events::data_type<io::events::neb, neb::de_service_status>::value);
+        elements.insert(
+                   io::events::data_type<io::events::neb, neb::de_instance_configuration>::value);
         io::events::instance().reg("neb", elements);
       }
     }

@@ -250,6 +250,8 @@ unsigned int output::write(misc::shared_ptr<io::data> const& e) {
       &serialize<neb::service_group_member, BBDO_ID(BBDO_NEB_TYPE, 24)> },
     { io::events::data_type<io::events::neb, neb::de_service_status>::value,
       &serialize<neb::service_status, BBDO_ID(BBDO_NEB_TYPE, 25)> },
+    { io::events::data_type<io::events::neb, neb::de_instance_configuration>::value,
+      &serialize<neb::instance_configuration, BBDO_ID(BBDO_NEB_TYPE, 26)> },
     { io::events::data_type<io::events::storage, storage::de_metric>::value,
       &serialize<storage::metric, BBDO_ID(BBDO_STORAGE_TYPE, 1)> },
     { io::events::data_type<io::events::storage, storage::de_rebuild>::value,
