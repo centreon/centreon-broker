@@ -28,6 +28,7 @@
 #include "com/centreon/broker/dumper/internal.hh"
 #include "com/centreon/broker/dumper/db_dump.hh"
 #include "com/centreon/broker/dumper/dump.hh"
+#include "com/centreon/broker/dumper/db_dump_committed.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/entries/host.hh"
@@ -307,7 +308,9 @@ unsigned int input::read_any(
     { BBDO_ID(BBDO_DUMPER_TYPE, 7),
       &unserialize<dumper::entries::service> },
     { BBDO_ID(BBDO_DUMPER_TYPE, 8),
-      &unserialize<dumper::entries::boolean> }
+      &unserialize<dumper::entries::boolean> },
+    { BBDO_ID(BBDO_DUMPER_TYPE, 9),
+      &unserialize<dumper::db_dump_committed> }
   };
 
   // Return value.
