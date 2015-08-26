@@ -82,7 +82,8 @@ void (stream::* const stream::_neb_processing_table[])(misc::shared_ptr<io::data
   &stream::_process_service_group,
   &stream::_process_service_group_member,
   &stream::_process_service,
-  &stream::_process_service_status
+  &stream::_process_service_status,
+  &stream::_null_process,
 };
 
 /**************************************
@@ -1863,6 +1864,15 @@ void stream::_process_service_status(
       << ss.state_type << "))";
 
   return ;
+}
+
+/**
+ *  Don't process an event.
+ *
+ *  @param[in] e  The event that won't be processed.
+ */
+void stream::_null_process(misc::shared_ptr<io::data> const& e)  {
+  (void) e;
 }
 
 template <typename T>
