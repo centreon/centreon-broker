@@ -1441,11 +1441,11 @@ static mapped_data<instance> const instance_mapping[] = {
 static mapped_data<instance_configuration> const instance_configuration_mapping[] = {
   mapped_data<instance_configuration>(
     &instance_configuration::loaded,
-    NDO_DATA_STATE,
+    1,
     "loaded"),
   mapped_data<instance_configuration>(
     &instance_configuration::instance_id,
-    NDO_DATA_STATE,
+    2,
     "instance_id",
     NULL_ON_ZERO),
   mapped_data<instance_configuration>()
