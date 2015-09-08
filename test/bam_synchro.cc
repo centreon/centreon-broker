@@ -258,7 +258,7 @@ int main() {
       {
         QString query(
                   "INSERT INTO host (host_id, host_name)"
-                  "  VALUES (1001, 'virtual_ba_host')");
+                  "  VALUES (1001, '_Module_BAM_42')");
         QSqlQuery q(*db.centreon_db());
         if (!q.exec(query))
           throw (exceptions::msg()
