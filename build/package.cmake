@@ -39,7 +39,7 @@ if (WITH_PACKAGE_SH
   set(CPACK_PACKAGE_FILE_NAME
     "centreon-broker-${CENTREON_BROKER_VERSION}")
   set(CPACK_PACKAGE_INSTALL_DIRECTORY "centreon-broker")
-  set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/license.txt")
+  set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE")
   set(CPACK_PACKAGE_CONTACT
     "Matthieu Kermagoret <mkermagoret@centreon.com>")
 
