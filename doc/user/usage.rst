@@ -17,9 +17,9 @@ Help
   [1376468351] info:      -D  Generate a diagnostic file.
   [1376468351] info:      -h  Print this help.
   [1376468351] info:      -v  Print Centreon Broker version.
-  [1376468351] info:    Centreon Broker 2.5.0
-  [1376468351] info:    Copyright 2009-2013 Merethis
-  [1376468351] info:    License GNU GPL version 2 <http://gnu.org/licenses/gpl.html>
+  [1376468351] info:    Centreon Broker 2.10.0
+  [1376468351] info:    Copyright 2009-2015 Centreon
+  [1376468351] info:    License ASL 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
 
 
 *******
@@ -51,9 +51,9 @@ troubleshooting issues with the configuration file. The flag is *-d* (or
   [1376467933] config:  endpoint applier: loading configuration
   [1376467933] debug:   endpoint applier: 0 inputs and 0 outputs to apply
   [1376467933] debug:   endpoint applier: 0 inputs to create, 0 outputs to create
-  [1376467933] info:    Centreon Broker 2.5.0
-  [1376467933] info:    Copyright 2009-2013 Merethis
-  [1376467933] info:    License GNU GPL version 2 <http://gnu.org/licenses/gpl.html>
+  [1376467933] info:    Centreon Broker 2.10.0
+  [1376467933] info:    Copyright 2009-2015 Centreon
+  [1376467933] info:    License ASL 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
   [1376467933] info:    PID: 21105
   [1376467933] info:    Qt compilation version 4.8.4
   [1376467933] info:    Qt runtime version 4.8.4
@@ -191,4 +191,3 @@ support center.
   [1376469279] info:    diagnostic: getting modules information
   [1376469279] info:    diagnostic: getting log files
   [1376469279] info:    diagnostic: creating tarball 'cbd-diag.tar.gz'
-
