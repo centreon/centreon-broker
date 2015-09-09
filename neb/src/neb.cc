@@ -178,11 +178,11 @@ extern "C" {
       neb_set_module_info(
         neb::gl_mod_handle,
         NEBMODULE_MODINFO_AUTHOR,
-        "Merethis");
+        "Centreon");
       neb_set_module_info(
         neb::gl_mod_handle,
         NEBMODULE_MODINFO_COPYRIGHT,
-        "Copyright 2009-2015 Merethis");
+        "Copyright 2009-2015 Centreon");
       neb_set_module_info(
         neb::gl_mod_handle,
         NEBMODULE_MODINFO_VERSION,

@@ -4,8 +4,8 @@
 Installation
 ############
 
-Merethis recommends using its official packages from the Centreon
-Entreprise Server (CES) repository. Most of Merethis' endorsed
+Centreon recommends using its official packages from the Centreon
+Entreprise Server (CES) repository. Most of Centreon' endorsed
 software are available as RPM packages.
 
 Alternatively, you can build and install your own version of this
@@ -15,7 +15,7 @@ software by following the :ref:`user_installation_using_sources`.
 Using packages
 **************
 
-Merethis provides RPM for its products through Centreon Entreprise
+Centreon provides RPM for its products through Centreon Entreprise
 Server (CES). Open source products are freely available from our
 repository.
 
@@ -56,7 +56,7 @@ Run the following commands as privileged user ::
 
   $ yum install centreon-broker centreon-broker-core centreon-broker-cbd centreon-broker-cbmod centreon-broker-storage
 
-All dependencies are automatically installed from Merethis repositories.
+All dependencies are automatically installed from Centreon repositories.
 
 .. _user_installation_using_sources:
 
@@ -126,7 +126,7 @@ GnuTLS **(>= 2.0)**         gnutls-devel (el6)         Development files for gnu
 
    $ yum install gcc gcc-c++ make
 
-#. Install Merethis repository
+#. Install Centreon repository
 
    You need to install Centreon Entreprise Server (CES) repos file as
    explained :ref:`user_installation_packages_prerequisites` to use some
@@ -255,11 +255,11 @@ Build
 Get sources
 -----------
 
-Centreon Broker can be checked out from Merethis's git server at
-http://git.centreon.com/centreon-broker.git. On a Linux box with svn
-installed folowing this ::
+Centreon Broker can be checked out from GitHub at
+https://github.com/centreon/centreon-broker. On a Linux box with git
+installed run this ::
 
-  $ git clone http://git.centreon.com/centreon-broker.git
+  $ git clone https://github.com/centreon/centreon-broker
 
 Or You can get the latest Centreon Broker's sources from its
 `download website <http://www.centreon.com/Centreon-Extensions/centreon-broker-download.html>`_

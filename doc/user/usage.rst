@@ -153,7 +153,7 @@ troubleshooting issues with the configuration file. The flag is *-d* (or
 Diagnostic
 **********
 
-The diagnostic feature is used when addressing an issue to Merethis'
+The diagnostic feature is used when addressing an issue to Centreon'
 support center. The *-D* flag (or *--diagnose*) generates a file called
 *cbd-diag.tar.gz* containing relevant information about your system and
 your Centreon Broker setup. Please provide it for all Broker-related
