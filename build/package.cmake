@@ -1,5 +1,5 @@
 ##
-## Copyright 2011-2012 Merethis
+## Copyright 2011-2012,2015 Centreon
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
 ## you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ if (WITH_PACKAGE_SH
     OR WITH_PACKAGE_RPM
     OR WITH_PACKAGE_NSIS)
   # Default settings.
-  set(CPACK_PACKAGE_VENDOR "Merethis")
+  set(CPACK_PACKAGE_VENDOR "Centreon")
   set(CPACK_PACKAGE_VERSION_MAJOR "${CENTREON_BROKER_MAJOR}")
   set(CPACK_PACKAGE_VERSION_MINOR "${CENTREON_BROKER_MINOR}")
   set(CPACK_PACKAGE_VERSION_PATCH "${CENTREON_BROKER_PATCH}")
@@ -39,9 +39,9 @@ if (WITH_PACKAGE_SH
   set(CPACK_PACKAGE_FILE_NAME
     "centreon-broker-${CENTREON_BROKER_VERSION}")
   set(CPACK_PACKAGE_INSTALL_DIRECTORY "centreon-broker")
-  set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/license.txt")
+  set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE")
   set(CPACK_PACKAGE_CONTACT
-    "Matthieu Kermagoret <mkermagoret@merethis.com>")
+    "Matthieu Kermagoret <mkermagoret@centreon.com>")
 
   # Generators.
   unset(PACKAGE_LIST)

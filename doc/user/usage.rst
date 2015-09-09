@@ -32,7 +32,7 @@ Broker version.
 ::
 
   $> cbd -v
-  [1376466956] info:    Centreon Broker 2.5.0
+  [1376466956] info:    Centreon Broker 2.10.0
 
 
 *****
@@ -153,7 +153,7 @@ troubleshooting issues with the configuration file. The flag is *-d* (or
 Diagnostic
 **********
 
-The diagnostic feature is used when addressing an issue to Merethis'
+The diagnostic feature is used when addressing an issue to Centreon'
 support center. The *-D* flag (or *--diagnose*) generates a file called
 *cbd-diag.tar.gz* containing relevant information about your system and
 your Centreon Broker setup. Please provide it for all Broker-related
@@ -177,7 +177,7 @@ support center.
 
   $> cbd -D centreon-broker.xml
   [1376469278] config:  log applier: applying 2 logging objects
-  [1376469278] info:    diagnostic: Centreon Broker 2.5.0
+  [1376469278] info:    diagnostic: Centreon Broker 2.10.0
   [1376469278] info:    diagnostic: using Qt 4.8.4 x86_64 linux g++-4 full-config (compiled with 4.8.4)
   [1376469278] info:    diagnostic: getting disk usage
   [1376469278] info:    diagnostic: getting LSB information

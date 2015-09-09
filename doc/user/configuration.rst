@@ -251,7 +251,7 @@ handles the first layer and one that handles the last one (ie.
 intermediate layers are not required but can provide additional
 features). Also one layer can only be handled by one protocol maximum.
 
-Merethis recommands to use the *BBDO* protocol by default. This
+Centreon recommands to use the *BBDO* protocol by default. This
 optimized protocol uses very low resources and provide feature
 negociation which usually enables encryption and compression without
 any configuration.
