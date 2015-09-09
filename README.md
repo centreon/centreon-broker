@@ -4,7 +4,7 @@ Centreon Broker is an extensible open-source monitoring event
 transmitter (broker). It is a low-level component of the
 [Centreon software suite](https://www.centreon.com).
 
-Centreon Broker is released under the General Public License version 2
+Centreon Broker is released under the Apache License, Version 2.0
 and is endorsed by the [Centreon company](https://www.centreon.com).
 
 ## Documentation ##
