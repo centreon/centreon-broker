@@ -352,20 +352,20 @@ int main() {
 
     time_t now = ::time(NULL);
     time_t midnight_time;
+    struct tm midnight;
+    ::localtime_r(&now, &midnight);
+    midnight.tm_sec = midnight.tm_min = midnight.tm_hour = 0;
+    midnight_time = ::mktime(&midnight) - (3600 * 24);
     // Create BA events.
     {
-      struct tm midnight;
-      ::localtime_r(&now, &midnight);
-      midnight.tm_sec = midnight.tm_min = midnight.tm_hour = 0;
-      midnight_time = ::mktime(&midnight) - (3600 * 24);
       std::stringstream ss;
       ss << "INSERT INTO mod_bam_reporting_ba_events (ba_event_id, ba_id, start_time, end_time, status, in_downtime)"
             "  VALUES (1, 1, 0, 30, 0, false),"
             "         (2, 2, 0, 50, 0, false),"
             "         (3, 1, 30, 120, 1, false),"
             "         (4, 2, 50, 160, 2, true),"
-            "         (5, 1, " << midnight_time << ", NULL, 1, false),"
-            "         (6, 2, " << midnight_time << ", NULL, 2, true),"
+            "         (5, 1, " << midnight_time << ", " << now << ", 1, false),"
+            "         (6, 2, " << midnight_time << ", " << now << ", 2, true),"
             "         (7, 3, 1418209039, 1418314059, 0, false),"
             "         (8, 3, 1418314059, 1418327489, 0, false),"
             "         (9, 3, 1418327489, 1418329589, 2, false),"
@@ -407,6 +407,8 @@ int main() {
         { 2, 1, 0, 50, 50, 50, false },
         { 3, 1, 30, 120, 90, 90, true },
         { 4, 1, 50, 160, 110, 110, false },
+        { 5, 1, 0, 0, 86400, 86400, true},
+        { 6, 1, 0, 0, 86400, 86400, false},
         { 7, 1, 1418209039, 1418314059, 105020, 105020, true },
         { 8, 1, 1418314059, 1418327489, 13430, 13430, true },
         { 9, 1, 1418327489, 1418329589, 2100, 2100, true },
@@ -416,6 +418,14 @@ int main() {
         { 12, 3, 1418598000, 1418684400, 86400, 57600, false },
         { 13, 1, 1418327489, 1418586689, 259200, 259200, true }
       };
+      baed[4].start_time = midnight_time;
+      baed[4].end_time = now;
+      baed[4].duration = now - midnight_time;
+      baed[4].sla_duration =  now - midnight_time;
+      baed[5].start_time = midnight_time;
+      baed[5].end_time = now;
+      baed[5].duration = now - midnight_time;
+      baed[5].sla_duration =  now - midnight_time;
       check_ba_event_durations(
         *db.bi_db(),
         baed,

@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <ctime>
 #include <cstdlib>
 #include <iostream>
 #include <QSqlError>
@@ -87,6 +88,7 @@ int main() {
     cfg.set("DB_NAME", DB_NAME);
     cbd broker;
     broker.set_config_file(cfg.generate());
+    time_t now(::time(NULL));
     broker.start();
     sleep_for(5);
     broker.stop();
@@ -97,16 +99,18 @@ int main() {
         unsigned int ba_id;
         long long start_time;
         long long end_time;
+        long long variance_max;
       } entries[] = {
-        { 1, 123456789, 123456790 },
-        { 1, 123456790, 123456791 },
-        { 1, 123456791, 123456792 },
-        { 1, 123456792, 123456800 },
-        { 1, 123456800, 123456900 },
-        { 2, 123456000, 123456789 },
-        { 2, 123456789, 123456790 },
-        { 2, 123456792, 0 }
+        { 1, 123456789, 123456790, 0 },
+        { 1, 123456790, 123456791, 0 },
+        { 1, 123456791, 123456792, 0 },
+        { 1, 123456792, 123456800, 0 },
+        { 1, 123456800, 123456900, 0 },
+        { 2, 123456000, 123456789, 0 },
+        { 2, 123456789, 123456790, 0 },
+        { 2, 123456792, 0, 3 }
       };
+      entries[7].end_time = static_cast<long long>(now);
       QSqlQuery q(*db.bi_db());
       if (!q.exec(
                "SELECT ba_id, start_time, end_time"
@@ -120,7 +124,9 @@ int main() {
           throw (exceptions::msg() << "too much BA events");
         if ((q.value(0).toUInt() != entries[i].ba_id)
             || (q.value(1).toLongLong() != entries[i].start_time)
-            || (q.value(2).toLongLong() != entries[i].end_time))
+            || ((q.value(2).toLongLong() < entries[i].end_time)
+                || (q.value(2).toLongLong() > (entries[i].end_time
+                                            + entries[i].variance_max))))
           throw (exceptions::msg()
                  << "invalid BA event entry: got (BA ID "
                  << q.value(0).toUInt() << ", start time "
@@ -136,16 +142,18 @@ int main() {
         unsigned int kpi_id;
         long long start_time;
         long long end_time;
+        long long variance_max;
       } entries[] = {
-        { 1, 123456789, 123456790 },
-        { 1, 123456790, 123456791 },
-        { 1, 123456791, 123456792 },
-        { 1, 123456792, 123456800 },
-        { 1, 123456800, 123456900 },
-        { 2, 123456000, 123456789 },
-        { 2, 123456789, 123456790 },
-        { 2, 123456792, 0 }
+        { 1, 123456789, 123456790, 0 },
+        { 1, 123456790, 123456791, 0 },
+        { 1, 123456791, 123456792, 0},
+        { 1, 123456792, 123456800, 0 },
+        { 1, 123456800, 123456900, 0 },
+        { 2, 123456000, 123456789, 0 },
+        { 2, 123456789, 123456790, 0 },
+        { 2, 123456792, 0, 3 }
       };
+      entries[7].end_time = static_cast<long long>(now);
       QSqlQuery q(*db.bi_db());
       if (!q.exec(
                "SELECT kpi_id, start_time, end_time"
@@ -159,7 +167,9 @@ int main() {
           throw (exceptions::msg() << "too much KPI events");
         if ((q.value(0).toUInt() != entries[i].kpi_id)
             || (q.value(1).toLongLong() != entries[i].start_time)
-            || (q.value(2).toLongLong() != entries[i].end_time))
+            || ((q.value(2).toLongLong() < entries[i].end_time)
+                || (q.value(2).toLongLong() > (entries[i].end_time
+                                            + entries[i].variance_max))))
           throw (exceptions::msg()
                  << "invalid KPI event entry: got (KPI ID "
                  << q.value(0).toUInt() << ", start time "

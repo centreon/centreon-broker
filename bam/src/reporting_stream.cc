@@ -66,12 +66,10 @@ using namespace com::centreon::broker::bam;
 reporting_stream::reporting_stream(database_config const& db_cfg)
   : _pending_events(0),
     _db(db_cfg),
-    _ba_event_insert(_db),
     _ba_full_event_insert(_db),
     _ba_event_update(_db),
     _ba_event_delete(_db),
     _ba_duration_event_insert(_db),
-    _kpi_event_insert(_db),
     _kpi_full_event_insert(_db),
     _kpi_event_update(_db),
     _kpi_event_delete(_db),
@@ -90,8 +88,18 @@ reporting_stream::reporting_stream(database_config const& db_cfg)
   // Load timeperiods.
   _load_timeperiods();
 
-  // Load last events stored in DB.
-  _load_last_events();
+  // Close inconsistent events.
+  _close_inconsistent_events(
+    "BA",
+    "mod_bam_reporting_ba_events",
+    "ba_id");
+  _close_inconsistent_events(
+    "KPI",
+    "mod_bam_reporting_kpi_events",
+    "kpi_id");
+
+  // Close remaining events.
+  _close_all_events();
 
   // Initialize the availabilities thread.
   _availabilities.reset(new availability_thread(db_cfg, _timeperiods));
@@ -358,117 +366,21 @@ void reporting_stream::_close_inconsistent_events(
   return ;
 }
 
-/**
- *  Load last BA/KPI events from DB.
- */
-void reporting_stream::_load_last_events() {
-  // Get the BA list.
-  std::list<unsigned int> ids;
-  {
-    std::string query("SELECT ba_id FROM mod_bam_reporting_ba");
-    database_query q(_db);
-    q.run_query(
-        query,
-        "BAM-BI: could not fetch the list of existing BAs");
-    while (q.next())
-      ids.push_back(q.value(0).toUInt());
-  }
+void reporting_stream::_close_all_events() {
+  database_query q(_db);
+  time_t now(::time(NULL));
+  std::stringstream query;
 
-  // Delete inconsistent entries.
-  {
-    _close_inconsistent_events(
-      "BA",
-      "mod_bam_reporting_ba_events",
-      "ba_id");
-    _close_inconsistent_events(
-      "KPI",
-      "mod_bam_reporting_kpi_events",
-      "kpi_id");
-  }
+  query << "UPDATE mod_bam_reporting_ba_events"
+           "  SET end_time=" << now
+        << "  WHERE end_time IS NULL";
+  q.run_query(query.str(), "BAM-BI: could not close all ba events");
 
-  // Load the last two events for each BA.
-  for (std::list<unsigned int>::const_iterator
-         it(ids.begin()),
-         end(ids.end());
-       it != end;
-       ++it) {
-    std::ostringstream oss;
-    oss << "SELECT start_time, end_time, first_level,"
-        << "       status, in_downtime"
-        << "  FROM mod_bam_reporting_ba_events"
-        << "  WHERE ba_id=" << *it
-        << "  ORDER BY start_time DESC"
-        << "  LIMIT 2";
-    database_query q(_db);
-    try { q.run_query(oss.str()); }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "BAM-BI: could not fetch last events of BA "
-             << *it << ": " << e.what());
-    }
-    while (q.next()) {
-      ba_event bae;
-      bae.ba_id = *it;
-      bae.start_time = q.value(0).toLongLong();
-      bae.end_time = (q.value(1).isNull()
-                      ? (time_t)-1
-                      : (time_t)q.value(1).toLongLong());
-      bae.first_level = q.value(2).toDouble();
-      bae.status = q.value(3).toInt();
-      bae.in_downtime = q.value(4).toBool();
-      _ba_event_cache[*it].push_back(bae);
-    }
-  }
-
-  // Get the KPI list.
-  ids.clear();
-  {
-    std::string query("SELECT kpi_id FROM mod_bam_reporting_kpi");
-    database_query q(_db);
-    q.run_query(
-        query,
-        "BAM-BI: could not fetch the list of existing KPI");
-    while (q.next())
-      ids.push_back(q.value(0).toUInt());
-  }
-
-  // Load the last two events for each KPI.
-  for (std::list<unsigned int>::const_iterator
-         it(ids.begin()),
-         end(ids.end());
-       it != end;
-       ++it) {
-    std::ostringstream oss;
-    oss << "SELECT start_time, end_time, status, in_downtime,"
-        << "       impact_level, first_output, first_perfdata"
-        << "  FROM mod_bam_reporting_kpi_events"
-        << "  WHERE kpi_id=" << *it
-        << "  ORDER BY start_time DESC"
-        << "  LIMIT 2";
-    database_query q(_db);
-    try { q.run_query(oss.str()); }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "BAM-BI: could not fetch last events of KPI "
-             << *it << ": " << e.what());
-    }
-    while (q.next()) {
-      kpi_event kpie;
-      kpie.kpi_id = *it;
-      kpie.start_time = q.value(0).toLongLong();
-      kpie.end_time = (q.value(1).isNull()
-                       ? (time_t)-1
-                       : (time_t)q.value(1).toLongLong());
-      kpie.status = q.value(2).toInt();
-      kpie.in_downtime = q.value(3).toBool();
-      kpie.impact_level = q.value(4).toInt();
-      kpie.output = q.value(5).toString();
-      kpie.perfdata = q.value(6).toString();
-      _kpi_event_cache[*it].push_back(kpie);
-    }
-  }
-
-  return ;
+  query.str("");
+  query << "UPDATE mod_bam_reporting_kpi_events"
+           "  SET end_time=" << now
+        << "  WHERE end_time IS NULL";
+  q.run_query(query.str(), "BAM-BI, could not close all kpi events");
 }
 
 /**
@@ -571,18 +483,6 @@ void reporting_stream::_load_timeperiods() {
  *  Prepare queries.
  */
 void reporting_stream::_prepare() {
-  // BA event insertion.
-  {
-    std::string query;
-    query = "INSERT INTO mod_bam_reporting_ba_events (ba_id, "
-            "            first_level, start_time, status, in_downtime)"
-            "  VALUES (:ba_id, :first_level,"
-            "          :start_time, :status, :in_downtime)";
-    _ba_event_insert.prepare(
-      query,
-      "BAM-BI: could not prepare BA event insertion query");
-  }
-
   // BA full event insertion.
   {
     std::string query;
@@ -630,19 +530,6 @@ void reporting_stream::_prepare() {
     _ba_duration_event_insert.prepare(
       query,
       "BAM-BI: could not prepare BA duration event insert query");
-  }
-
-  // KPI event insertion.
-  {
-    std::string query;
-    query = "INSERT INTO mod_bam_reporting_kpi_events (kpi_id,"
-            "            start_time, status, in_downtime, impact_level,"
-            "            first_output, first_perfdata)"
-            "  VALUES (:kpi_id, :start_time, :status, :in_downtime, "
-            "         :impact_level, :output, :perfdata)";
-    _kpi_event_insert.prepare(
-      query,
-      "BAM-BI: could not prepare KPI event insertion query");
   }
 
   // KPI full event insertion.
@@ -861,50 +748,26 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
              << be.ba_id << " at second " << be.start_time
              << ": " << e.what());
     }
-    std::map<unsigned int, std::list<ba_event> >::iterator
-      it(_ba_event_cache.find(be.ba_id));
-    if ((it != _ba_event_cache.end())
-        && !it->second.empty()
-        && (be.start_time == it->second.front().start_time)) {
-      it->second.pop_front();
-      if (it->second.empty())
-        _ba_event_cache.erase(it);
-    }
   }
-  // End of event.
-  else if ((be.end_time != 0) && (be.end_time != (time_t)-1)) {
-    std::map<unsigned int, std::list<ba_event> >::iterator
-      it(_ba_event_cache.find(be.ba_id));
-    if (it == _ba_event_cache.end()) {
-      _ba_event_cache[be.ba_id].push_front(be);
-      it = _ba_event_cache.find(be.ba_id);
-    }
-    else if (it->second.empty())
-      it->second.push_front(be);
-    else
-      it->second.front().end_time = be.end_time;
+  else {
+    // Try to update event.
     _ba_event_update.bind_value(":ba_id", be.ba_id);
     _ba_event_update.bind_value(
       ":start_time",
-      static_cast<qlonglong>(it->second.front().start_time.get_time_t()));
+      static_cast<qlonglong>(be.start_time.get_time_t()));
     _ba_event_update.bind_value(
       ":end_time",
-      static_cast<qlonglong>(it->second.front().end_time.get_time_t()));
+       be.end_time.is_null() ?
+         QVariant(QVariant::LongLong)
+         : static_cast<qlonglong>(be.end_time.get_time_t()));
     try { _ba_event_update.run_statement(); }
     catch (std::exception const& e) {
-      throw (exceptions::msg() << "BAM-BI: could not close event of BA "
+      throw (exceptions::msg() << "BAM-BI: could not update event of BA "
              << be.ba_id << " starting at " << be.start_time
              << " and ending at " << be.end_time << ": " << e.what());
     }
-
-    // If nothing was updated (can happen when there is a gap between
-    // the events for some reasons, then insert a new event in the database.
+    // Event was not found, insert one.
     if (_ba_event_update.num_rows_affected() == 0) {
-      logging::error(logging::medium)
-        << "BAM-BI: could not update the event of the BA " << be.ba_id
-        << " starting at " << it->second.front().start_time.get_time_t()
-        << " and ending at " << it->second.front().end_time.get_time_t()
-        << ": inserting a new event instead";
       _ba_full_event_insert.bind_value(":ba_id", be.ba_id);
       _ba_full_event_insert.bind_value(":first_level", be.first_level);
       _ba_full_event_insert.bind_value(
@@ -912,7 +775,9 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
         static_cast<qlonglong>(be.start_time.get_time_t()));
       _ba_full_event_insert.bind_value(
         ":end_time",
-        static_cast<qlonglong>(be.end_time.get_time_t()));
+        be.end_time.is_null() ?
+        QVariant(QVariant::LongLong)
+        : static_cast<qlonglong>(be.end_time.get_time_t()));
       _ba_full_event_insert.bind_value(":status", be.status);
       _ba_full_event_insert.bind_value(":in_downtime", be.in_downtime);
       try { _ba_full_event_insert.run_statement(); }
@@ -923,60 +788,10 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
                << ": " << e.what());
       }
     }
-
-    // Compute the associated event durations.
+  }
+  // Compute the associated event durations.
+  if (!be.end_time.is_null() && be.start_time != be.end_time)
     _compute_event_durations(e.staticCast<bam::ba_event>(), this);
-  }
-  // Start of event.
-  else {
-    std::map<unsigned int, std::list<ba_event> >::iterator
-      it(_ba_event_cache.find(be.ba_id));
-    // Reopen event.
-    if ((it != _ba_event_cache.end())
-        && !it->second.empty()
-        && ((it->second.front().end_time == be.start_time)
-             || (be.end_time == (time_t)(-1)
-                 && be.start_time == it->second.front().start_time))
-        && (it->second.front().in_downtime == be.in_downtime)
-        && (it->second.front().status == be.status)) {
-      _ba_event_update.bind_value(":ba_id", be.ba_id);
-      _ba_event_update.bind_value(
-        ":start_time",
-        static_cast<qlonglong>(it->second.front().start_time.get_time_t()));
-      _ba_event_update.bind_value(
-        ":end_time",
-        QVariant(QVariant::LongLong));
-      try { _ba_event_update.run_statement(); }
-      catch (std::exception const& e) {
-        throw (exceptions::msg()
-               << "BAM-BI: could not reopen event of BA "
-               << be.ba_id << " starting at " << be.start_time << ": "
-               << e.what());
-      }
-      it->second.front().end_time = (time_t)-1;
-    }
-    // Open new event.
-    else {
-      _ba_event_insert.bind_value(":ba_id", be.ba_id);
-      _ba_event_insert.bind_value(":first_level", be.first_level);
-      _ba_event_insert.bind_value(
-        ":start_time",
-        static_cast<qlonglong>(be.start_time.get_time_t()));
-      _ba_event_insert.bind_value(":status", be.status);
-      _ba_event_insert.bind_value(":in_downtime", be.in_downtime);
-      try { _ba_event_insert.run_statement(); }
-      catch (std::exception const& e) {
-        throw (exceptions::msg()
-               << "BAM-BI: could not insert event of BA "
-               << be.ba_id << " starting at " << be.start_time
-               << ": " << e.what());
-      }
-      std::list<ba_event>& event_list(_ba_event_cache[be.ba_id]);
-      event_list.push_front(be);
-      if (event_list.size() > 2)
-        event_list.pop_back();
-    }
-  }
   return ;
 }
 
@@ -1047,56 +862,36 @@ void reporting_stream::_process_kpi_event(
              << ke.kpi_id << " at second " << ke.start_time
              << ": " << e.what());
     }
-    std::map<unsigned int, std::list<kpi_event> >::iterator
-      it(_kpi_event_cache.find(ke.kpi_id));
-    if ((it != _kpi_event_cache.end())
-        && !it->second.empty()
-        && (ke.start_time == it->second.front().start_time)) {
-      it->second.pop_front();
-      if (it->second.empty())
-        _kpi_event_cache.erase(it);
-    }
   }
-  // End of event.
-  else if ((ke.end_time != 0) && (ke.end_time != (time_t)-1)) {
-    std::map<unsigned int, std::list<kpi_event> >::iterator
-      it(_kpi_event_cache.find(ke.kpi_id));
-    if (it == _kpi_event_cache.end())
-      _kpi_event_cache[ke.kpi_id].push_front(ke);
-    else if (it->second.empty())
-      it->second.push_front(ke);
-    else
-      it->second.front().end_time = ke.end_time;
+  else {
+    // Try to update kpi.
     _kpi_event_update.bind_value(":kpi_id", ke.kpi_id);
     _kpi_event_update.bind_value(
       ":start_time",
       static_cast<qlonglong>(ke.start_time.get_time_t()));
     _kpi_event_update.bind_value(
       ":end_time",
-      static_cast<qlonglong>(ke.end_time.get_time_t()));
+      ke.end_time.is_null() ?
+      QVariant(QVariant::LongLong)
+      : static_cast<qlonglong>(ke.end_time.get_time_t()));
     try { _kpi_event_update.run_statement(); }
     catch (std::exception const& e) {
-      throw (exceptions::msg() << "BAM-BI: could not close event of KPI "
+      throw (exceptions::msg() << "BAM-BI: could not update KPI "
              << ke.kpi_id << " starting at " << ke.start_time
              << " and ending at " << ke.end_time << ": "
              << e.what());
     }
-
-    // If nothing was updated (can happen when there is a gap between
-    // the events for some reasons, then insert a new event in the database.
+    // No kpis were updated, insert one.
     if (_kpi_event_update.num_rows_affected() == 0) {
-      logging::error(logging::medium)
-        << "BAM-BI: could not update the event of the KPI " << ke.kpi_id
-        << " starting at " << ke.start_time.get_time_t()
-        << " and ending at " << ke.end_time.get_time_t()
-        << ": inserting a new event instead";
       _kpi_full_event_insert.bind_value(":kpi_id", ke.kpi_id);
       _kpi_full_event_insert.bind_value(
         ":start_time",
         static_cast<qlonglong>(ke.start_time.get_time_t()));
       _kpi_full_event_insert.bind_value(
         ":end_time",
-        static_cast<qlonglong>(ke.end_time.get_time_t()));
+        ke.end_time.is_null() ?
+        QVariant(QVariant::LongLong)
+        : static_cast<qlonglong>(ke.end_time.get_time_t()));
       _kpi_full_event_insert.bind_value(":status", ke.status);
       _kpi_full_event_insert.bind_value(":in_downtime", ke.in_downtime);
       _kpi_full_event_insert.bind_value(":impact_level", ke.impact_level);
@@ -1109,84 +904,6 @@ void reporting_stream::_process_kpi_event(
                << ke.kpi_id << " starting at " << ke.start_time << ": "
                << e.what());
       }
-
-      _kpi_event_link.bind_value(
-        ":start_time",
-        static_cast<qlonglong>(ke.start_time.get_time_t()));
-      _kpi_event_link.bind_value(":kpi_id", ke.kpi_id);
-      try { _kpi_event_link.run_statement(); }
-      catch (std::exception const& e) {
-        throw (exceptions::msg()
-               << "BAM-BI: could not create link from event of KPI "
-               << ke.kpi_id << " starting at " << ke.start_time
-               << " to its associated BA event: " << e.what());
-      }
-    }
-  }
-  // Start of event.
-  else {
-    std::map<unsigned int, std::list<kpi_event> >::iterator
-      it(_kpi_event_cache.find(ke.kpi_id));
-    // Reopen event.
-    if ((it != _kpi_event_cache.end())
-        && !it->second.empty()
-        && ((it->second.front().end_time == ke.start_time)
-             || (it->second.front().end_time == (time_t)(-1)
-                 && ke.start_time == it->second.front().start_time))
-        && (it->second.front().in_downtime == ke.in_downtime)
-        && (it->second.front().status == ke.status)
-        && (it->second.front().impact_level == ke.impact_level)) {
-      _kpi_event_update.bind_value(":kpi_id", ke.kpi_id);
-      _kpi_event_update.bind_value(
-        ":start_time",
-        static_cast<qlonglong>(it->second.front().start_time.get_time_t()));
-      _kpi_event_update.bind_value(
-        ":end_time",
-        QVariant(QVariant::LongLong));
-      try { _kpi_event_update.run_statement(); }
-      catch (std::exception const& e) {
-        throw (exceptions::msg()
-               << "BAM-BI: could not reopen event of KPI "
-               << ke.kpi_id << " starting at " << ke.start_time << ": "
-               << e.what());
-      }
-      it->second.front().end_time = (time_t)-1;
-    }
-    // Open new event.
-    else {
-      _kpi_event_insert.bind_value(":kpi_id", ke.kpi_id);
-      _kpi_event_insert.bind_value(
-        ":start_time",
-        static_cast<qlonglong>(ke.start_time.get_time_t()));
-      _kpi_event_insert.bind_value(":status", ke.status);
-      _kpi_event_insert.bind_value(":in_downtime", ke.in_downtime);
-      _kpi_event_insert.bind_value(":impact_level", ke.impact_level);
-      _kpi_event_insert.bind_value(":output", ke.output);
-      _kpi_event_insert.bind_value(":perfdata", ke.perfdata);
-      try { _kpi_event_insert.run_statement(); }
-      catch (std::exception const& e) {
-        throw (exceptions::msg()
-               << "BAM-BI: could not insert event of KPI "
-               << ke.kpi_id << " starting at " << ke.start_time << ": "
-               << e.what());
-      }
-
-      _kpi_event_link.bind_value(
-        ":start_time",
-        static_cast<qlonglong>(ke.start_time.get_time_t()));
-      _kpi_event_link.bind_value(":kpi_id", ke.kpi_id);
-      try { _kpi_event_link.run_statement(); }
-      catch (std::exception const& e) {
-        throw (exceptions::msg()
-               << "BAM-BI: could not create link from event of KPI "
-               << ke.kpi_id << " starting at " << ke.start_time
-               << " to its associated BA event: " << e.what());
-      }
-
-      std::list<kpi_event>& event_list(_kpi_event_cache[ke.kpi_id]);
-      event_list.push_front(ke);
-      if (event_list.size() > 2)
-        event_list.pop_back();
     }
   }
   return ;
