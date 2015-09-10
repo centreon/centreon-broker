@@ -72,7 +72,7 @@ namespace          bam {
                      char const* event_type,
                      char const* table,
                      char const* id);
-    void           _load_last_events();
+    void           _close_all_events();
     void           _load_timeperiods();
     void           _prepare();
     void           _process_ba_event(misc::shared_ptr<io::data> const& e);
@@ -97,10 +97,6 @@ namespace          bam {
     void           _compute_event_durations(misc::shared_ptr<ba_event> const& ev,
                                             io::stream* visitor);
 
-    std::map<unsigned int, std::list<ba_event> >
-                   _ba_event_cache;
-    std::map<unsigned int, std::list<kpi_event> >
-                   _kpi_event_cache;
     unsigned int   _pending_events;
     bool           _process_out;
     unsigned int   _queries_per_transaction;
@@ -108,12 +104,10 @@ namespace          bam {
     mutable QMutex _statusm;
     unsigned int   _transaction_queries;
     database       _db;
-    database_query _ba_event_insert;
     database_query _ba_full_event_insert;
     database_query _ba_event_update;
     database_query _ba_event_delete;
     database_query _ba_duration_event_insert;
-    database_query _kpi_event_insert;
     database_query _kpi_full_event_insert;
     database_query _kpi_event_update;
     database_query _kpi_event_delete;
