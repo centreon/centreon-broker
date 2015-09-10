@@ -1,20 +1,19 @@
 ##
-## Copyright 2011-2012 Merethis
+## Copyright 2011-2012,2015 Centreon
 ##
-## This file is part of Centreon Broker.
+## Licensed under the Apache License, Version 2.0 (the "License");
+## you may not use this file except in compliance with the License.
+## You may obtain a copy of the License at
 ##
-## Centreon Broker is free software: you can redistribute it and/or
-## modify it under the terms of the GNU General Public License version 2
-## as published by the Free Software Foundation.
+##     http://www.apache.org/licenses/LICENSE-2.0
 ##
-## Centreon Broker is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-## General Public License for more details.
+## Unless required by applicable law or agreed to in writing, software
+## distributed under the License is distributed on an "AS IS" BASIS,
+## WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+## See the License for the specific language governing permissions and
+## limitations under the License.
 ##
-## You should have received a copy of the GNU General Public License
-## along with Centreon Broker. If not, see
-## <http://www.gnu.org/licenses/>.
+## For more information : contact@centreon.com
 ##
 
 # Packaging.
@@ -31,7 +30,7 @@ if (WITH_PACKAGE_SH
     OR WITH_PACKAGE_RPM
     OR WITH_PACKAGE_NSIS)
   # Default settings.
-  set(CPACK_PACKAGE_VENDOR "Merethis")
+  set(CPACK_PACKAGE_VENDOR "Centreon")
   set(CPACK_PACKAGE_VERSION_MAJOR "${CENTREON_BROKER_MAJOR}")
   set(CPACK_PACKAGE_VERSION_MINOR "${CENTREON_BROKER_MINOR}")
   set(CPACK_PACKAGE_VERSION_PATCH "${CENTREON_BROKER_PATCH}")
@@ -40,9 +39,9 @@ if (WITH_PACKAGE_SH
   set(CPACK_PACKAGE_FILE_NAME
     "centreon-broker-${CENTREON_BROKER_VERSION}")
   set(CPACK_PACKAGE_INSTALL_DIRECTORY "centreon-broker")
-  set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/license.txt")
+  set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE")
   set(CPACK_PACKAGE_CONTACT
-    "Matthieu Kermagoret <mkermagoret@merethis.com>")
+    "Matthieu Kermagoret <mkermagoret@centreon.com>")
 
   # Generators.
   unset(PACKAGE_LIST)
@@ -67,7 +66,7 @@ if (WITH_PACKAGE_SH
     list(APPEND CPACK_GENERATOR "RPM")
     list(APPEND PACKAGE_LIST "RPM package (.rpm)")
     set(CPACK_RPM_PACKAGE_RELEASE 1)
-    set(CPACK_RPM_PACKAGE_LICENSE "GPLv2")
+    set(CPACK_RPM_PACKAGE_LICENSE "ASL 2.0")
   endif ()
   if (WITH_PACKAGE_NSIS)
     list(APPEND CPACK_GENERATOR "NSIS")

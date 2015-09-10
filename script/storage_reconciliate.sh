@@ -44,7 +44,7 @@ if [ \( x"$help" = x1 \) \
   -o \( x"$dbpassword" = x \) \
   -o \( x"$dbname" = x \) ] ; then
   echo ""
-  echo "Merethis Storage Reconciliation Utility"
+  echo "Centreon Storage Reconciliation Utility"
   echo "---------------------------------------"
   echo ""
   echo "  --help                    Print this help."
