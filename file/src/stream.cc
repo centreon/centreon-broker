@@ -220,11 +220,11 @@ void stream::statistics(io::properties& tree) const {
     oss << "file_percent_processed=";
     if (_rid != _wid
         && _max_size == std::numeric_limits<long>::max()) {
-      oss << "unknown\n";
+      oss << "unknown";
     }
     else {
       oss << (_roffset * 100.0) / (_woffset + (_wid - _rid) * _max_size)
-          << "%\n";
+          << "%";
       write_time_expected = true;
     }
     p.set_perfdata(oss.str());
@@ -245,10 +245,10 @@ void stream::statistics(io::properties& tree) const {
         unsigned long long
           div(roffset + _last_write_offset - _last_read_offset - woffset);
         if (div == 0)
-          oss << "file not processed fast enough to terminate\n";
+          oss << "file not processed fast enough to terminate";
         else {
           eta = now + (woffset - roffset) * (now - _last_time) / div;
-          oss << eta << "\n";
+          oss << eta << "";
         }
 
         p.set_perfdata(oss.str());
@@ -262,8 +262,7 @@ void stream::statistics(io::properties& tree) const {
             << woffset
                + (woffset - _last_write_offset)
                * (eta - now)
-               / (now - _last_time)
-            << "\n";
+               / (now - _last_time);
 
         p.set_perfdata(oss.str());
         p.set_graphable(false);
