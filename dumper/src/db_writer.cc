@@ -193,6 +193,9 @@ void db_writer::_commit() {
     dbp.prepare_delete(kpi_delete);
   }
 
+  // Prepare relation table queries.
+  database_query poller_ba_relation_insert(db);
+
   // Process all organizations.
   for (std::list<entries::organization>::const_iterator
          it(_organizations.begin()),
@@ -278,6 +281,11 @@ void db_writer::_commit() {
             << it->ba_id;
       database_query q(db);
       q.run_query(query.str().c_str());
+      poller_ba_relation_insert.bind_value(":poller_id", it->poller_id);
+      poller_ba_relation_insert.bind_value(":ba_id", it->ba_id);
+      try {
+        poller_ba_relation_insert.run_statement();
+      } catch (std::exception const&) {}
     }
     // DELETE.
     else {
