@@ -180,8 +180,5 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
       ::raise(SIGHUP);
     }
   }
-  else
-    logging::info(logging::low) << "dumper: write request with "
-      "invalid data (" << d->type() << ")";
   return (1);
 }
