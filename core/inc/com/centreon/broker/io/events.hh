@@ -49,6 +49,7 @@ namespace               io {
       dumper,
       bam,
       notification,
+      extcmd,
       internal = 65535
     };
     // Internal events used by the core.

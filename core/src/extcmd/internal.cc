@@ -51,10 +51,17 @@ void extcmd::load() {
 
   // Register event.
   e.register_event(
-    io::events::internal,
+    io::events::extcmd,
     io::events::de_command_request,
       io::event_info(
             "command_request",
+            &command_request::operations,
+            command_request::entries));
+  e.register_event(
+    io::events::extcmd,
+    io::events::de_command_result,
+      io::event_info(
+            "command_result",
             &command_request::operations,
             command_request::entries));
 

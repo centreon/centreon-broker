@@ -137,7 +137,7 @@ unsigned int command_request::type() const {
  *  @return The event type.
  */
 unsigned int command_request::static_type() {
-  return (io::events::data_type<io::events::internal, io::events::de_command_request>::value);
+  return (io::events::data_type<io::events::extcmd, io::events::de_command_request>::value);
 }
 
 

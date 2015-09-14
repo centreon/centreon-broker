@@ -81,7 +81,7 @@ unsigned int command_result::type() const {
  *  @return The event type.
  */
 unsigned int command_result::static_type() {
-  return (io::events::data_type<io::events::internal, io::events::de_command_result>::value);
+  return (io::events::data_type<io::events::extcmd, io::events::de_command_result>::value);
 }
 
 

@@ -14,7 +14,8 @@
  <cache_directory>@PREFIX_VAR@</cache_directory>
  <command_file>@PREFIX_VAR@/central-broker.cmd</command_file>
 
- <!-- Receive monitoring information from pollers. -->
+ <!-- Receive monitoring information from pollers.
+      Send files and external commands back to pollers. -->
  <input>
   <retry_interval>60</retry_interval>
   <one_peer_retention_mode>no</one_peer_retention_mode>
@@ -23,6 +24,14 @@
   <type>tcp</type>
   <name>central-broker-input</name>
   <port>5668</port>
+  <read_filters>
+    <category>neb</category>
+    <category>extcmd:command_result</category>
+  </read_filters>
+  <write_filters>
+    <category>dumper</category>
+    <category>extcmd:command_request</category>
+  </write_filters>
  </input>
 
  <!-- Read Engine external commands and send them to central-module. -->
@@ -119,20 +128,6 @@
   <tls>no</tls>
   <negociation>yes</negociation>
   <compression>no</compression>
- </output>
-
- <!-- Transmits external commands and configuration files to central-module. -->
- <output>
-  <retry_interval>60</retry_interval>
-  <one_peer_retention_mode>no</one_peer_retention_mode>
-  <protocol>bbdo</protocol>
-  <negociation>yes</negociation>
-  <type>tcp</type>
-  <name>central-broker-transfer-output-central-module</name>
-  <port>5669</port>
-  <filters>
-   <category>dumper</category>
-  </filters>
  </output>
 
  <!-- Perform correlation on monitoring information. -->
