@@ -49,7 +49,7 @@
   <path>/tmp/broker/apply/1</path>
   <tagname>cfg-broker-1</tagname>
   <read_filters>
-   <category>internal</category>
+   <category>extcmd</category>
   </read_filters>
  </output>
 
@@ -60,7 +60,7 @@
   <path>/tmp/engine/apply/1</path>
   <tagname>cfg-engine-1</tagname>
   <read_filters>
-   <category>internal</category>
+   <category>extcmd</category>
   </read_filters>
  </output>
 
