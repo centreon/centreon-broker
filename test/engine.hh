@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Centreon
+** Copyright 2012,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ class         engine {
 public:
               engine();
               ~engine();
+  void        reload();
   void        set_config_file(std::string const& config_file);
   void        start();
   void        stop();

@@ -310,16 +310,7 @@ int neb::callback_custom_variable(int callback_type, void* data) {
                 existing_hst(neb::gl_hosts.find(hst->name));
               if (existing_hst != neb::gl_hosts.end()) {
                 // Was the ID changed ?
-                bool id_changed(false);
-                for (umap<std::string, int>::const_iterator
-                       it(gl_hosts.begin()),
-                       end(gl_hosts.end());
-                     it != end;
-                     ++it)
-                  if ((it->second == existing_hst->second)
-                      && (it->first != existing_hst->first))
-                    id_changed = true;
-                if (id_changed) {
+                if (existing_hst->second != host_id) {
                   // Generate host event.
                   nebstruct_adaptive_host_data nsahd;
                   memset(&nsahd, 0, sizeof(nsahd));
@@ -430,18 +421,8 @@ int neb::callback_custom_variable(int callback_type, void* data) {
                 existing_svc(neb::gl_services.find(pair_svc_name));
               if (existing_svc != neb::gl_services.end()) {
                 // Were the IDs changed ?
-                bool ids_changed(false);
-                for (std::map<std::pair<std::string, std::string>,
-                              std::pair<int, int> >::const_iterator
-                       it(gl_services.begin()),
-                       end(gl_services.end());
-                     it != end;
-                     ++it) {
-                  if ((it->second == existing_svc->second)
-                      && (it->first != existing_svc->first))
-                    ids_changed = true;
-                }
-                if (ids_changed) {
+                if (existing_svc->second
+                    != std::make_pair(host_id, service_id)) {
                   // Generate service event.
                   nebstruct_adaptive_service_data nsasd;
                   memset(&nsasd, 0, sizeof(nsasd));

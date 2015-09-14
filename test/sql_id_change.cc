@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Centreon
+** Copyright 2012-2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -90,35 +90,132 @@ int main() {
     daemon.start();
     sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
-    // Change the service id.
-    services.back().display_name = ::strdup("2");
+    //
+    // #1 ID change.
+    //
+    // Simulate a service deletion followed by a service recreation
+    // with the same host / description.
+    //
+
+    // Change the service ID.
+    services.back().display_name = ::strdup("42");
     config_write(
       engine_config_path.c_str(),
       cbmod_loading.c_str(),
       &hosts,
       &services);
 
-    // Restart daemon.
-    daemon.stop();
-    daemon.start();
-    sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    // Reload daemon.
+    daemon.reload();
+    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     // Check service count.
     {
       std::ostringstream query;
       query << "SELECT COUNT(service_id)"
                "  FROM services "
-               "  WHERE host_id = 1"
-               "    AND description = '1'"
-               "    AND enabled = '1'";
+               "  WHERE enabled = '1'";
       QSqlQuery q(*db.storage_db());
       if (!q.exec(query.str().c_str()))
-        throw (exceptions::msg() << "cannot read service count from DB: "
-               << q.lastError().text().toStdString().c_str());
+        throw (exceptions::msg()
+               << "cannot read service count from DB at check #1: "
+               << q.lastError().text());
       if (!q.next()
           || (q.value(0).toUInt() != 1)
           || q.next())
-        throw (exceptions::msg() << "invalid service count");
+        throw (exceptions::msg()
+               << "invalid service count at check #1: got "
+               << q.value(0).toUInt() << ", expected 1");
+    }
+
+    //
+    // #2 Name change.
+    //
+    // Simulate a service renaming.
+    //
+
+    // Rename service.
+    delete [] services.back().description;
+    services.back().description = NULL;
+    services.back().description = ::strdup("42");
+
+    // Write configuration.
+    config_write(
+      engine_config_path.c_str(),
+      cbmod_loading.c_str(),
+      &hosts,
+      &services);
+
+    // Reload daemon.
+    daemon.reload();
+    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+
+    // Check service count.
+    {
+      std::ostringstream query;
+      query << "SELECT COUNT(service_id)"
+               "  FROM services "
+               "  WHERE enabled = '1'";
+      QSqlQuery q(*db.storage_db());
+      if (!q.exec(query.str().c_str()))
+        throw (exceptions::msg()
+               << "cannot read service count from DB at check #2: "
+               << q.lastError().text());
+      if (!q.next()
+          || (q.value(0).toUInt() != 1)
+          || q.next())
+        throw (exceptions::msg()
+               << "invalid service count at check #2: got "
+               << q.value(0).toUInt() << ", expected 1");
+    }
+
+    //
+    // #3 Renaming and new service with previous name.
+    //
+    // Simulate a service renaming followed by the creation of a new
+    // service that has the original name of the service.
+    //
+
+    // Rename service.
+    delete [] services.back().description;
+    services.back().description = NULL;
+    services.back().description = ::strdup("84");
+
+    // Create new service.
+    generate_services(services, hosts, 1);
+    delete [] services.back().description;
+    services.back().description = NULL;
+    services.back().description = ::strdup("42");
+    services.back().display_name = ::strdup("2");
+
+    // Write configuration.
+    config_write(
+      engine_config_path.c_str(),
+      cbmod_loading.c_str(),
+      &hosts,
+      &services);
+
+    // Reload daemon.
+    daemon.reload();
+    sleep_for(4 * MONITORING_ENGINE_INTERVAL_LENGTH);
+
+    // Check service count.
+    {
+      std::ostringstream query;
+      query << "SELECT COUNT(service_id)"
+               "  FROM services "
+               "  WHERE enabled = '1'";
+      QSqlQuery q(*db.storage_db());
+      if (!q.exec(query.str().c_str()))
+        throw (exceptions::msg()
+               << "cannot read service count from DB at check #3: "
+               << q.lastError().text());
+      if (!q.next()
+          || (q.value(0).toUInt() != 2)
+          || q.next())
+        throw (exceptions::msg()
+               << "invalid service count at check #3: got "
+               << q.value(0).toUInt() << ", expected 2");
     }
 
     // Success.
@@ -126,9 +223,11 @@ int main() {
   }
   catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
+    db.set_remove_db_on_close(false);
   }
   catch (...) {
     std::cerr << "unknown exception" << std::endl;
+    db.set_remove_db_on_close(false);
   }
 
   // Cleanup.
