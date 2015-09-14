@@ -49,6 +49,9 @@ void extcmd::load() {
                               1,
                               7);
 
+  // Register extcmd category.
+  e.register_category("extcmd", io::events::extcmd);
+
   // Register event.
   e.register_event(
     io::events::extcmd,
@@ -76,6 +79,9 @@ void extcmd::load() {
 void extcmd::unload() {
   // Unregister protocol.
   io::protocols::instance().unreg("extcmd");
+
+  // Unregister category.
+  io::events::instance().unregister_category(io::events::extcmd);
 
   return ;
 }
