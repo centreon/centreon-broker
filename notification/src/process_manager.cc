@@ -47,6 +47,7 @@ void process_manager::release() {
     _instance_ptr->_thread->exit(0);
     _instance_ptr->_thread->wait();
     delete _instance_ptr;
+    _instance_ptr = 0;
   }
 }
 
