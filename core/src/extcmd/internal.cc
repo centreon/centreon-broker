@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/extcmd/command_request.hh"
+#include "com/centreon/broker/extcmd/command_result.hh"
 #include "com/centreon/broker/extcmd/internal.hh"
 #include "com/centreon/broker/extcmd/factory.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -65,8 +66,8 @@ void extcmd::load() {
     io::events::de_command_result,
       io::event_info(
             "command_result",
-            &command_request::operations,
-            command_request::entries));
+            &command_result::operations,
+            command_result::entries));
 
   return ;
 }
