@@ -48,9 +48,9 @@
   <type>dump_dir</type>
   <path>/tmp/broker/apply/1</path>
   <tagname>cfg-broker-1</tagname>
-  <read_filters>
+  <write_filters>
    <category>extcmd</category>
-  </read_filters>
+  </write_filters>
  </output>
 
  <!-- Read Engine configuration files and send them to central-module. -->
@@ -59,9 +59,9 @@
   <type>dump_dir</type>
   <path>/tmp/engine/apply/1</path>
   <tagname>cfg-engine-1</tagname>
-  <read_filters>
+  <write_filters>
    <category>extcmd</category>
-  </read_filters>
+  </write_filters>
  </output>
 
  <!-- Read configuration database and send them to pollers. -->
@@ -164,9 +164,9 @@
   <type>bam_bi</type>
   <name>central-broker-bam-reporting</name>
   <queries_per_transaction>1000</queries_per_transaction>
-  <filters>
+  <write_filters>
    <category>bam</category>
-  </filters>
+  </write_filters>
  </output>
 
  <!-- Notifications. -->

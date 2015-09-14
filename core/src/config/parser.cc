@@ -217,7 +217,7 @@ void parser::_parse_endpoint(QDomElement& elem, endpoint& e) {
         e.read_timeout = static_cast<time_t>(entry.text().toInt());
       else if (name == "retry_interval")
         e.retry_interval = static_cast<time_t>(entry.text().toUInt());
-      else if ((name == "filters") || (name == "read_filters")) {
+      else if (name == "read_filters") {
         e.read_filters.clear();
         QDomNodeList nlist(entry.childNodes());
         for (int i(0), len(nlist.size()); i < len; ++i) {
@@ -231,7 +231,7 @@ void parser::_parse_endpoint(QDomElement& elem, endpoint& e) {
           }
         }
       }
-      else if (name == "write_filters") {
+      else if ((name == "filters") || (name == "write_filters")) {
         e.write_filters.clear();
         QDomNodeList nlist(entry.childNodes());
         for (int i(0), len(nlist.size()); i < len; ++i) {

@@ -130,7 +130,7 @@ void muxer::publish(misc::shared_ptr<io::data> const& event) {
   if (!event.isNull()) {
     QMutexLocker lock(&_mutex);
     // Check if we should process this event.
-    if (_read_filters.find(event->type()) == _read_filters.end())
+    if (_write_filters.find(event->type()) == _write_filters.end())
       return ;
     // Check if the event queue limit is reach.
     if (_total_events >= event_queue_max_size()) {
@@ -249,8 +249,8 @@ void muxer::statistics(io::properties& tree) const {
     // Get numeric event categories.
     uset<unsigned short> numcats;
     for (uset<unsigned int>::const_iterator
-           it(_read_filters.begin()),
-           end(_read_filters.end());
+           it(_write_filters.begin()),
+           end(_write_filters.end());
          it != end;
          ++it)
       numcats.insert(io::events::category_of_type(*it));
@@ -307,7 +307,7 @@ void muxer::wake() {
  */
 unsigned int muxer::write(misc::shared_ptr<io::data> const& d) {
   if (!d.isNull()
-      && (_write_filters.find(d->type()) != _write_filters.end()))
+      && (_read_filters.find(d->type()) != _read_filters.end()))
     engine::instance().publish(d);
   return (1);
 }

@@ -67,14 +67,14 @@ misc::shared_ptr<io::stream> command_server::open() {
 
     // Create command listener.
     _listener = new command_listener;
-    uset<unsigned int> read_filters;
-    read_filters.insert(command_request::static_type());
-    read_filters.insert(command_result::static_type());
+    uset<unsigned int> write_filters;
+    write_filters.insert(command_request::static_type());
+    write_filters.insert(command_result::static_type());
     _listener_thread = new processing::feeder(
                                          "(external commands)",
                                          _listener,
-                                         read_filters,
-                                         uset<unsigned int>());
+                                         uset<unsigned int>(),
+                                         write_filters);
     _listener_thread->start();
   }
 

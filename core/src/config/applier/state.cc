@@ -126,7 +126,7 @@ void state::apply(
     ept.params.insert(
       "extcmd",
       QString::fromStdString(s.command_file()));
-    ept.write_filters.insert("all");
+    ept.read_filters.insert("all");
     st.endpoints().push_back(ept);
   }
 
