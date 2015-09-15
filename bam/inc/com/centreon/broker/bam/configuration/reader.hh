@@ -56,6 +56,7 @@ namespace               bam {
       void              _load_dimensions();
 
       database&         _db;
+      unsigned int      _poller_organization_id;
     };
   }
 }

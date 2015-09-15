@@ -23,6 +23,7 @@
 #  include "com/centreon/broker/bam/computable.hh"
 #  include "com/centreon/broker/bam/metric_listener.hh"
 #  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/timestamp.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -77,7 +78,7 @@ namespace            bam {
     void             set_service_id(unsigned int service_id);
     void             set_level_critical(double level);
     void             set_level_warning(double level);
-    void             visit(io::stream* visitor);
+    void             visit(io::stream* visitor, bool& changed_state);
 
   private:
     static int const _recompute_limit = 100;
@@ -86,6 +87,8 @@ namespace            bam {
     void             _recompute_partial(
                        double new_value,
                        double old_value);
+    void             _send_initial_event(io::stream* visitor);
+    void             _send_service_status(io::stream* visitor, bool state_has_changed);
 
     computation_type _computation;
     unsigned int     _id;
@@ -98,6 +101,7 @@ namespace            bam {
                      _metrics;
     int              _recompute_count;
     double           _value;
+    timestamp        _last_service_status_sent;
   };
 }
 
