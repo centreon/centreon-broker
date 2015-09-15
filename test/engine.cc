@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Centreon
+** Copyright 2012,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <csignal>
 #include <cstdlib>
 #include "test/engine.hh"
 #include "test/vars.hh"
@@ -36,6 +37,16 @@ engine::engine() {}
  */
 engine::~engine() {
   stop();
+}
+
+/**
+ *  Reload Engine.
+ */
+void engine::reload() {
+  pid_t pid(_engine.pid());
+  if ((pid != (pid_t)0) && (pid != (pid_t)-1))
+    kill(pid, SIGHUP);
+  return ;
 }
 
 /**
