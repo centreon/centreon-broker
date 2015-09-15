@@ -48,6 +48,7 @@ public:
   void              bind_value(
                       QString const& placeholder,
                       QVariant const& value);
+  database const&   db_object() const;
   void              finish();
   QVariant          last_insert_id();
   int               num_rows_affected();

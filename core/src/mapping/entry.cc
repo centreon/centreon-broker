@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Centreon
+** Copyright 2011,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -32,8 +32,9 @@ using namespace com::centreon::broker::mapping;
  *  Default constructor.
  */
 entry::entry()
-  : _attribute(always_valid),
+  : _attribute(valid_all_versions),
     _name(NULL),
+    _name_v2(NULL),
     _ptr(NULL),
     _serialize(false),
     _type(source::UNKNOWN) {}
@@ -45,6 +46,7 @@ entry::entry()
  */
 entry::entry(entry const& other)
   : _name(other._name),
+    _name_v2(other._name_v2),
     _ptr(other._ptr),
     _serialize(other._serialize),
     _source(other._source),
@@ -63,11 +65,14 @@ entry::~entry() {}
  *  @return This object.
  */
 entry& entry::operator=(entry const& other) {
-  _name = other._name;
-  _ptr = other._ptr;
-  _serialize = other._serialize;
-  _source = other._source;
-  _type = other._type;
+  if (this != &other) {
+    _name = other._name;
+    _name_v2 = other._name_v2;
+    _ptr = other._ptr;
+    _serialize = other._serialize;
+    _source = other._source;
+    _type = other._type;
+  }
   return (*this);
 }
 
@@ -116,10 +121,19 @@ int entry::get_int(io::data const& d) const {
 /**
  *  Get the name of this entry.
  *
- *  @return  The name of this entry.
+ *  @return The name of this entry.
  */
 char const* entry::get_name() const {
   return (_name);
+}
+
+/**
+ *  Get the name of this entry in version 2.x.
+ *
+ *  @return The name of this entry in version 2.x.
+ */
+char const* entry::get_name_v2() const {
+  return (_name_v2);
 }
 
 /**

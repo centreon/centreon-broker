@@ -38,7 +38,8 @@ using namespace com::centreon::broker;
 database::database(database_config const& db_cfg)
   : _db_cfg(db_cfg),
     _pending_queries(0),
-    _committed(db_cfg.get_queries_per_transaction() > 1 ? false : true) {
+    _committed(db_cfg.get_queries_per_transaction() > 1 ? false : true),
+    _version(v3) {
   // Qt type.
   QString qt_type(qt_db_type(_db_cfg.get_type()));
 
@@ -111,6 +112,15 @@ database::database(database_config const& db_cfg)
         << "core: NOT checking replication status of database '"
         << _db_cfg.get_name() << "' on host '" << _db_cfg.get_host()
         << "'";
+
+    // Check database structure.
+    {
+      QSqlQuery q(*_db);
+      if (q.exec("SELECT instance_id FROM instances LIMIT 1"))
+        _version = v2;
+      else
+        _version = v3;
+    }
 
     // Initialize transaction.
     _new_transaction();
@@ -237,6 +247,15 @@ void database::query_executed() {
     }
   }
   return ;
+}
+
+/**
+ *  Get schema version.
+ *
+ *  @return v2 for a 2.x schema and v3 for a 3.x schema.
+ */
+database::version database::schema_version() const {
+  return (_version);
 }
 
 /**

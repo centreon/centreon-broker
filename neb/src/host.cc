@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -183,17 +183,17 @@ mapping::entry const host::entries[] = {
   mapping::entry(
     static_cast<bool (host::*) >(&host::default_active_checks_enabled),
     "default_active_checks",
-    mapping::entry::always_valid,
+    mapping::entry::valid_all_versions,
     false),
   mapping::entry(
     static_cast<bool (host::*) >(&host::default_event_handler_enabled),
     "default_event_handler_enabled",
-    mapping::entry::always_valid,
+    mapping::entry::valid_all_versions,
     false),
   mapping::entry(
     static_cast<bool (host::*) >(&host::default_flap_detection_enabled),
     "default_flap_detection",
-    mapping::entry::always_valid,
+    mapping::entry::valid_all_versions,
     false),
   mapping::entry(
     &host::enabled,
