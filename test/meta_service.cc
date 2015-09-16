@@ -242,7 +242,7 @@ int main() {
 
   // Cleanup.
   monitoring.stop();
-  std::cout << engine_config_path << std::endl;  //config_remove(engine_config_path.c_str());
+  config_remove(engine_config_path.c_str());
   free_hosts(hosts);
   free_services(services);
   free_commands(commands);
