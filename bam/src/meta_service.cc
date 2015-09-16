@@ -16,13 +16,16 @@
 ** For more information : contact@centreon.com
 */
 
+#include <ctime>
 #include <cmath>
 #include <sstream>
 #include "com/centreon/broker/bam/meta_service.hh"
 #include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -39,7 +42,10 @@ meta_service::meta_service()
     _level_critical(0.0),
     _level_warning(0.0),
     _recompute_count(0),
-    _value(NAN) {}
+    _value(NAN) {
+  multiplexing::publisher pblsh;
+  _send_initial_event(&pblsh);
+}
 
 /**
  *  Copy constructor.
@@ -49,6 +55,8 @@ meta_service::meta_service()
 meta_service::meta_service(meta_service const& other)
   : computable(other), metric_listener(other) {
   _internal_copy(other);
+  multiplexing::publisher pblsh;
+  _send_initial_event(&pblsh);
 }
 
 /**
@@ -180,6 +188,7 @@ void meta_service::metric_update(
                      misc::shared_ptr<storage::metric> const& m,
                      io::stream* visitor) {
   if (!m.isNull()) {
+    bool state_has_changed = false;
     umap<unsigned int, double>::iterator
       it(_metrics.find(m->metric_id));
     if (it != _metrics.end()) {
@@ -195,8 +204,10 @@ void meta_service::metric_update(
           _recompute_partial(it->second, old_value);
 
         // Generate status event.
-        visit(visitor);
+        visit(visitor, state_has_changed);
       }
+
+      _send_service_status(visitor, state_has_changed);
     }
   }
   return ;
@@ -326,9 +337,10 @@ void meta_service::set_level_warning(double level) {
 /**
  *  Visit meta-service.
  *
- *  @param[out] visitor  Visitor that will receive meta-service status.
+ *  @param[out] visitor        Visitor that will receive meta-service status.
+ *  @param[out] changed_state  Set to true if the state was changed.
  */
-void meta_service::visit(io::stream* visitor) {
+void meta_service::visit(io::stream* visitor, bool& changed_state) {
   if (visitor) {
     // Recompute out-of-date value.
     if (_recompute_count >= _recompute_limit)
@@ -336,6 +348,7 @@ void meta_service::visit(io::stream* visitor) {
 
     // New state.
     short new_state(get_state());
+    changed_state = (_last_state != new_state);
 
     // Send meta-service status.
     {
@@ -343,52 +356,13 @@ void meta_service::visit(io::stream* visitor) {
         status(new meta_service_status);
       status->meta_service_id = _id;
       status->value = _value;
-      status->state_changed = (_last_state != new_state);
+      status->state_changed = changed_state;
       _last_state = new_state;
       logging::debug(logging::low)
         << "BAM: generating status of meta-service "
         << status->meta_service_id << " (value " << status->value
         << ")";
       visitor->write(status.staticCast<io::data>());
-    }
-
-    // Send virtual service status.
-    {
-      misc::shared_ptr<neb::service_status>
-        status(new neb::service_status);
-      status->active_checks_enabled = false;
-      status->check_interval = 0.0;
-      status->check_type = 1; // Passive.
-      status->current_check_attempt = 1;
-      status->current_state = new_state;
-      status->enabled = true;
-      status->event_handler_enabled = false;
-      status->execution_time = 0.0;
-      status->flap_detection_enabled = false;
-      status->has_been_checked = true;
-      status->host_id = _host_id;
-      // status->host_name = XXX;
-      status->is_flapping = false;
-      status->last_check = time(NULL);
-      status->last_hard_state = new_state;
-      status->last_hard_state_change = status->last_check;
-      status->last_state_change = status->last_check;
-      // status->last_time_critical = XXX;
-      // status->last_time_unknown = XXX;
-      // status->last_time_warning = XXX;
-      status->last_update = time(NULL);
-      status->latency = 0.0;
-      status->max_check_attempts = 1;
-      status->obsess_over = false;
-      status->output = get_output().c_str();
-      // status->percent_state_chagne = XXX;
-      status->perf_data = get_perfdata().c_str();
-      status->retry_interval = 0;
-      // status->service_description = XXX;
-      status->service_id = _service_id;
-      status->should_be_scheduled = false;
-      status->state_type = 1; // Hard.
-      visitor->write(status);
     }
   }
   return ;
@@ -445,4 +419,107 @@ void meta_service::_recompute_partial(
     _value = _value + (new_value - old_value) / _metrics.size();
   }
   return ;
+}
+
+/**
+ *  Send the initial event for the meta service.
+ *
+ *  @param[in] visitor  The visitor.
+ */
+void meta_service::_send_initial_event(io::stream* visitor) {
+  if (!visitor)
+    return ;
+
+  short new_state = get_state();
+
+  misc::shared_ptr<neb::service> s(new neb::service);
+  std::stringstream service_description;
+  service_description << "meta_" << _service_id;
+  s->active_checks_enabled = false;
+  s->check_interval = 0.0;
+  s->check_type = 1; // Passive.
+  s->current_check_attempt = 1;
+  s->current_state = new_state;
+  s->enabled = true;
+  s->event_handler_enabled = false;
+  s->execution_time = 0.0;
+  s->flap_detection_enabled = false;
+  s->has_been_checked = true;
+  s->host_id = _host_id;
+  s->host_name = "_Module_Meta";
+  s->is_flapping = false;
+  s->last_check = time(NULL);
+  s->last_hard_state = new_state;
+  // s->last_hard_state_change = XXX;
+  // s->last_state_change = XXX;
+  // s->last_time_critical = XXX;
+  // s->last_time_unknown = XXX;
+  // s->last_time_warning = XXX;
+  s->last_update = time(NULL);
+  s->latency = 0.0;
+  s->max_check_attempts = 1;
+  s->obsess_over = false;
+  s->output = get_output().c_str();
+  // s->percent_state_chagne = XXX;
+  s->perf_data = get_perfdata().c_str();
+  s->retry_interval = 0;
+  s->service_description = QString::fromStdString(service_description.str());
+  s->service_id = _service_id;
+  s->should_be_scheduled = false;
+  s->state_type = 1; // Hard.
+  visitor->write(s);
+}
+
+/**
+ *  Send service status occasionally.
+ *
+ *  @param[out] visitor           The visitor.
+ *  @param[in] state_has_changed  True if the state has changed.
+ */
+void meta_service::_send_service_status(io::stream* visitor, bool state_has_changed) {
+  if (!visitor)
+    return ;
+
+  time_t now(::time(NULL));
+
+  // Once every minutes, of if the state just changed.
+  if (state_has_changed
+      || _last_service_status_sent.is_null()
+      || std::difftime(_last_service_status_sent.get_time_t(), now) >= 60) {
+    short new_state = get_state();
+    misc::shared_ptr<neb::service_status>
+      status(new neb::service_status);
+    status->active_checks_enabled = false;
+    status->check_interval = 0.0;
+    status->check_type = 1; // Passive.
+    status->current_check_attempt = 1;
+    status->current_state = new_state;
+    status->enabled = true;
+    status->event_handler_enabled = false;
+    status->execution_time = 0.0;
+    status->flap_detection_enabled = false;
+    status->has_been_checked = true;
+    status->host_id = _host_id;
+    status->is_flapping = false;
+    status->last_check = time(NULL);
+    status->last_hard_state = new_state;
+    status->last_hard_state_change = status->last_check;
+    status->last_state_change = status->last_check;
+    // status->last_time_critical = XXX;
+    // status->last_time_unknown = XXX;
+    // status->last_time_warning = XXX;
+    status->last_update = time(NULL);
+    status->latency = 0.0;
+    status->max_check_attempts = 1;
+    status->obsess_over = false;
+    status->output = get_output().c_str();
+    // status->percent_state_chagne = XXX;
+    status->perf_data = get_perfdata().c_str();
+    status->retry_interval = 0;
+    status->service_id = _service_id;
+    status->should_be_scheduled = false;
+    status->state_type = 1; // Hard.
+    visitor->write(status);
+    _last_service_status_sent = now;
+  }
 }

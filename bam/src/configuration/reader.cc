@@ -19,6 +19,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <memory>
+#include <ctime>
 #include "com/centreon/broker/bam/configuration/state.hh"
 #include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/reader_exception.hh"
@@ -31,6 +32,7 @@
 #include "com/centreon/broker/bam/dimension_timeperiod_exception.hh"
 #include "com/centreon/broker/bam/dimension_timeperiod_exclusion.hh"
 #include "com/centreon/broker/bam/dimension_ba_timeperiod_relation.hh"
+#include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/time/timeperiod.hh"
 #include "com/centreon/broker/database.hh"
@@ -47,7 +49,9 @@ using namespace com::centreon::broker::bam::configuration;
  *
  *  @param[in] centreon_db  Centreon database connection.
  */
-reader::reader(database& centreon_db) : _db(centreon_db) {}
+reader::reader(database& centreon_db) :
+          _db(centreon_db),
+          _poller_organization_id(0) {}
 
 /**
  *  Destructor.
@@ -258,6 +262,8 @@ void reader::_load(state::bas& bas) {
       }
     }
 
+    _poller_organization_id = organization_id;
+
     // Get host ID.
     unsigned int host_id;
     while (1) {
@@ -463,15 +469,97 @@ void reader::_load(state::meta_services& meta_services) {
            << e.what());
   }
 
+  // Check for the virtual host existence.
+  unsigned int meta_virtual_host_id;
+  try {
+    while (true) {
+      database_query q(_db);
+      std::stringstream query;
+      query << "SELECT host_id"
+               "  FROM cfg_hosts"
+               "  WHERE host_name = '_Module_Meta'"
+               "    AND organization_id=" << _poller_organization_id;
+      q.run_query(query.str());
+      if (!q.next()) {
+        logging::info(logging::medium)
+          << "virtual host '_Module_Meta' does not exist: creating one";
+        query.str("");
+        query << "INSERT INTO cfg_hosts (host_name, organization_id)"
+                 "  VALUES (_Module_Meta, " << _poller_organization_id << ")";
+        q.run_query(query.str());
+      }
+      else {
+        meta_virtual_host_id = q.value(0).toUInt();
+        break ;
+      }
+    }
+  }
+  catch (std::exception const& e) {
+    throw (reader_exception()
+           << "BAM: could not retrieve virtual host '_Module_Meta' from DB: "
+           << e.what());
+  }
+
+  // Send virtual host event
+  {
+    multiplexing::publisher pblsh;
+    misc::shared_ptr<neb::host> host(new neb::host);
+    host->active_checks_enabled = false;
+    host->check_interval = 0.0;
+    host->check_type = 1; // Passive.
+    host->current_check_attempt = 1;
+    host->current_state = 0;
+    host->enabled = true;
+    host->event_handler_enabled = false;
+    host->execution_time = 0.0;
+    host->flap_detection_enabled = false;
+    host->has_been_checked = true;
+    host->host_id = meta_virtual_host_id;
+    host->host_name = "_Module_Meta";
+    host->is_flapping = false;
+    host->last_check = ::time(NULL);
+    host->last_hard_state = 0;
+    host->last_hard_state_change = 0;
+    host->last_state_change = 0;
+    host->last_update = ::time(NULL);
+    host->latency = 0.0;
+    host->max_check_attempts = 1;
+    host->obsess_over = false;
+    host->retry_interval = 0;
+    host->should_be_scheduled = false;
+    host->state_type = 1; // Hard.
+    pblsh.write(host);
+  }
+
   // Check for meta-services without service ID.
-  for (state::meta_services::const_iterator
+  for (state::meta_services::iterator
          it(meta_services.begin()),
          end(meta_services.end());
        it != end;
-       ++it)
-    if (!it->second.get_host_id() || !it->second.get_service_id())
-      throw (reader_exception() << "BAM: meta-service "
-             << it->first << " has no associated virtual service");
+       ++it) {
+    if (!it->second.get_host_id() || !it->second.get_service_id()) {
+      logging::info(logging::medium)
+          << "BAM: meta-service " << it->first
+          << " has no associated virtual service: creating one";
+      std::stringstream query;
+      database_query q(_db);
+
+      query << "INSERT INTO cfg_services"
+               "              (service_description, organization_id)"
+               "  VALUES ('meta_" << it->first << "', "
+            << _poller_organization_id << ")";
+      q.run_query(query.str());
+      query.str("");
+      query << "SELECT service_id"
+               "  FROM cfg_services"
+               "  WHERE service_description = 'ba_" << it->first << "'";
+      q.run_query(query.str());
+      if (q.next()) {
+        it->second.set_host_id(meta_virtual_host_id);
+        it->second.set_service_id(q.value(0).toUInt());
+      }
+    }
+  }
 
   // Load metrics of meta-services.
   for (state::meta_services::iterator
