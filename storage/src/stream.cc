@@ -334,15 +334,23 @@ void stream::_check_deleted_index() {
   _update_status(
     "status=deleting old performance data (might take a while)\n");
 
+  // Database schema version.
+  bool db_v2(_db.schema_version() == database::v2);
+
   // Delete index.
   while (1) {
     // Fetch next index to delete.
     unsigned long long index_id;
     {
+      std::ostringstream query;
+      query << "SELECT index_id"
+               "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
+            << "  WHERE to_delete=1"
+               "  LIMIT 1";
       database_query q(_db);
       q.run_query(
-          "SELECT index_id FROM rt_index_data WHERE to_delete=1 LIMIT 1",
-          "storage: could not query rt_index_data to get index to delete");
+          query.str(),
+          "storage: could not query index table to get index to delete");
       if (!q.next())
         break ;
       index_id = q.value(0).toULongLong();
@@ -352,7 +360,9 @@ void stream::_check_deleted_index() {
     std::list<unsigned long long> metrics_to_delete;
     {
       std::ostringstream oss;
-      oss << "SELECT metric_id FROM rt_metrics WHERE index_id=" << index_id;
+      oss << "SELECT metric_id"
+             "  FROM " << (db_v2 ? "metrics" : "rt_metrics")
+          << "  WHERE index_id=" << index_id;
       database_query q(_db);
       try { q.run_query(oss.str()); }
       catch (std::exception const& e) {
@@ -371,7 +381,8 @@ void stream::_check_deleted_index() {
     // Delete index from DB.
     {
       std::ostringstream oss;
-      oss << "DELETE FROM rt_index_data WHERE index_id=" << index_id;
+      oss << "DELETE FROM " << (db_v2 ? "index_data" : "rt_index_data")
+          << "  WHERE index_id=" << index_id;
       database_query q(_db);
       try { q.run_query(oss.str()); }
       catch (std::exception const& e) {
@@ -391,9 +402,13 @@ void stream::_check_deleted_index() {
   // Search standalone metrics to delete.
   std::list<unsigned long long> metrics_to_delete;
   {
+    std::ostringstream oss;
+    oss << "SELECT metric_id"
+           "  FROM " << (db_v2 ? "metrics" : "rt_metrics")
+        << "  WHERE to_delete=1";
     database_query q(_db);
     q.run_query(
-        "SELECT metric_id FROM rt_metrics WHERE to_delete=1",
+        oss.str(),
         "storage: could not get the list of metrics to delete");
     while (q.next())
       metrics_to_delete.push_back(q.value(0).toULongLong());
@@ -419,6 +434,9 @@ void stream::_check_deleted_index() {
  */
 void stream::_delete_metrics(
                std::list<unsigned long long> const& metrics_to_delete) {
+  // Database schema version.
+  bool db_v2(_db.schema_version() == database::v2);
+
   // Delete metrics.
   for (std::list<unsigned long long>::const_iterator
          it(metrics_to_delete.begin()),
@@ -445,7 +463,8 @@ void stream::_delete_metrics(
     // Delete from DB.
     {
       std::ostringstream oss;
-      oss << "DELETE FROM rt_metrics WHERE metric_id=" << metric_id;
+      oss << "DELETE FROM " << (db_v2 ? "metrics" : "rt_metrics")
+          << "  WHERE metric_id=" << metric_id;
       database_query q(_db);
       try { q.run_query(oss.str()); }
       catch (std::exception const& e) {
@@ -489,6 +508,9 @@ unsigned int stream::_find_index_id(
                        bool* locked) {
   unsigned int retval;
 
+  // Database schema version.
+  bool db_v2(_db.schema_version() == database::v2);
+
   // Look in the cache.
   std::map<
     std::pair<unsigned int, unsigned int>,
@@ -515,16 +537,16 @@ unsigned int stream::_find_index_id(
         << service_id << ") (host: " << host_name << ", service: "
         << service_desc << ", special: " << special << ")";
       // Update index_data table.
-      std::string query(
-        "UPDATE rt_index_data"
-        " SET host_name=:host_name,"
-        "     service_description=:service_description,"
-        "     special=:special"
-        " WHERE host_id=:host_id"
-        " AND service_id=:service_id");
+      std::ostringstream query;
+      query << "UPDATE " << (db_v2 ? "index_data" : "rt_index_data")
+            << "  SET host_name=:host_name,"
+               "     service_description=:service_description,"
+               "     special=:special"
+               "  WHERE host_id=:host_id"
+               "    AND service_id=:service_id";
       try {
         database_query q(_db);
-        q.prepare(query);
+        q.prepare(query.str());
         q.bind_value(":host_name", host_name);
         q.bind_value(":service_description", service_desc);
         q.bind_value(":special", special);
@@ -568,11 +590,10 @@ unsigned int stream::_find_index_id(
         << service_id << ")";
       // Build query.
       std::ostringstream oss;
-      oss << "INSERT INTO rt_index_data ("
-             "  host_id, host_name,"
-             "  service_id, service_description, "
-             "  must_be_rebuild, special)"
-             " VALUES (" << host_id << ", :host_name, " << service_id
+      oss << "INSERT INTO " << (db_v2 ? "index_data" : "rt_index_data")
+          << "  (host_id, host_name, service_id, service_description,"
+             "   must_be_rebuild, special)"
+             "  VALUES (" << host_id << ", :host_name, " << service_id
           << ", :service_description, 0, :special)";
       database_query q(_db);
       try {
@@ -596,9 +617,9 @@ unsigned int stream::_find_index_id(
         q.finish();
         std::ostringstream oss2;
         oss2 << "SELECT index_id"
-                " FROM rt_index_data"
-                " WHERE host_id=" << host_id
-             << " AND service_id=" << service_id;
+                "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
+             << "  WHERE host_id=" << host_id
+             << "    AND service_id=" << service_id;
         database_query q(_db);
         try {
           q.run_query(oss2.str());
@@ -760,22 +781,26 @@ unsigned int stream::_find_metric_id(
     logging::debug(logging::low)
       << "storage: creating new metric for (" << index_id
       << ", " << metric_name << ")";
+
+    // Database schema version.
+    bool db_v2(_db.schema_version() == database::v2);
+
     // Build query.
     if (*type == perfdata::automatic)
       *type = perfdata::gauge;
-    std::string query(
-      "INSERT INTO rt_metrics "
-      "  (index_id, metric_name, unit_name, warn, warn_low, "
-      "   warn_threshold_mode, crit, crit_low, "
-      "   crit_threshold_mode, min, max, current_value,"
-      "   data_source_type)"
-      " VALUES (:index_id, :metric_name, :unit_name, :warn, "
-      "         :warn_low, :warn_threshold_mode, :crit, "
-      "         :crit_low, :crit_threshold_mode, :min, :max, "
-      "         :current_value, :data_source_type)");
+    std::ostringstream query;
+    query << "INSERT INTO " << (db_v2 ? "metrics" : "rt_metrics")
+          << "  (index_id, metric_name, unit_name, warn, warn_low,"
+             "   warn_threshold_mode, crit, crit_low, "
+             "   crit_threshold_mode, min, max, current_value,"
+             "   data_source_type)"
+             " VALUES (:index_id, :metric_name, :unit_name, :warn, "
+             "         :warn_low, :warn_threshold_mode, :crit, "
+             "         :crit_low, :crit_threshold_mode, :min, :max, "
+             "         :current_value, :data_source_type)";
     database_query q(_db);
     q.prepare(
-        query,
+        query.str(),
         "storage: could not prepare metric insertion query");
     q.bind_value(":index_id", index_id);
     q.bind_value(":metric_name", metric_name);
@@ -803,14 +828,14 @@ unsigned int stream::_find_metric_id(
     if (!_db.get_qt_driver()->hasFeature(QSqlDriver::LastInsertId)
         || !(retval = q.last_insert_id().toUInt())) {
       q.finish();
-      std::string query(
-        "SELECT metric_id"
-        " FROM rt_metrics"
-        " WHERE index_id=:index_id"
-        " AND metric_name=:metric_name");
+      std::ostringstream query;
+      query << "SELECT metric_id"
+               "  FROM " << (db_v2 ? "metrics" : "rt_metrics")
+            << "  WHERE index_id=:index_id"
+               "    AND metric_name=:metric_name";
       database_query q2(_db);
       q2.prepare(
-           query,
+           query.str(),
            "storage: could not prepare metric ID fetching query");
       q2.bind_value(":index_id", index_id);
       q2.bind_value(":metric_name", metric_name);
@@ -871,14 +896,18 @@ void stream::_insert_perfdatas() {
     // Status.
     _update_status("status=inserting performance data\n");
 
+    // Database schema version.
+    bool db_v2(_db.schema_version() == database::v2);
+
     // Insert first entry.
     std::ostringstream query;
     {
       metric_value& mv(_perfdata_queue.front());
       query.precision(10);
       query << std::scientific
-            << "INSERT INTO log_data_bin (metric_id, ctime, status, value)"
-               " VALUES (" << mv.metric_id << ", " << mv.c_time << ", "
+            << "INSERT INTO " << (db_v2 ? "data_bin" : "log_data_bin")
+            << "  (metric_id, ctime, status, value)"
+               "  VALUES (" << mv.metric_id << ", " << mv.c_time << ", "
             << mv.status << ", '";
       if (isinf(mv.value))
         query << ((mv.value < 0.0) ? -FLT_MAX : FLT_MAX);
@@ -923,21 +952,26 @@ void stream::_prepare() {
   // Build cache.
   _rebuild_cache();
 
+  // Database schema version.
+  bool db_v2(_db.schema_version() == database::v2);
+
   // Prepare metrics update query.
+  std::ostringstream query;
+  query << "UPDATE " << (db_v2 ? "metrics" : "rt_metrics")
+        << " SET unit_name=:unit_name,"
+           "     warn=:warn,"
+           "     warn_low=:warn_low,"
+           "     warn_threshold_mode=:warn_threshold_mode,"
+           "     crit=:crit,"
+           "     crit_low=:crit_low,"
+           "     crit_threshold_mode=:crit_threshold_mode,"
+           "     min=:min,"
+           "     max=:max,"
+           "     current_value=:current_value"
+           "  WHERE index_id=:index_id"
+           "    AND metric_name=:metric_name";
   _update_metrics.prepare(
-    "UPDATE rt_metrics"
-    " SET unit_name=:unit_name,"
-    " warn=:warn,"
-    " warn_low=:warn_low,"
-    " warn_threshold_mode=:warn_threshold_mode,"
-    " crit=:crit,"
-    " crit_low=:crit_low,"
-    " crit_threshold_mode=:crit_threshold_mode,"
-    " min=:min,"
-    " max=:max,"
-    " current_value=:current_value"
-    " WHERE index_id=:index_id"
-    " AND metric_name=:metric_name",
+    query.str(),
     "storage: could not prepare metrics update query");
 
   return ;
@@ -957,14 +991,20 @@ void stream::_rebuild_cache() {
   _index_cache.clear();
   _metric_cache.clear();
 
+  // Database schema version.
+  bool db_v2(_db.schema_version() == database::v2);
+
   // Fill index cache.
   {
     // Execute query.
+    std::ostringstream query;
+    query << "SELECT index_id, host_id, service_id, host_name,"
+             "       rrd_retention, service_description, special,"
+             "       locked"
+             " FROM " << (db_v2 ? "index_data" : "rt_index_data");
     database_query q(_db);
     q.run_query(
-        "SELECT index_id, host_id, service_id, host_name,"
-        "       rrd_retention, service_description, special, locked"
-        " FROM rt_index_data",
+        query.str(),
         "storage: could not fetch index list from data DB");
 
     // Loop through result set.
@@ -997,13 +1037,16 @@ void stream::_rebuild_cache() {
   // Fill metric cache.
   {
     // Execute query.
+    std::ostringstream query;
+    query << "SELECT metric_id, index_id, metric_name,"
+             "       data_source_type,"
+             "       locked, current_value, unit_name, warn, warn_low,"
+             "       warn_threshold_mode, crit, crit_low,"
+             "       crit_threshold_mode, min, max"
+             "  FROM " << (db_v2 ? "metrics" : "rt_metrics");
     database_query q(_db);
     q.run_query(
-        "SELECT metric_id, index_id, metric_name, data_source_type,"
-        "       locked, current_value, unit_name, warn, warn_low,"
-        "       warn_threshold_mode, crit, crit_low,"
-        "       crit_threshold_mode, min, max"
-        "  FROM rt_metrics",
+        query.str(),
         "storage: could not fetch metric list from data DB");
 
     // Loop through result set.
