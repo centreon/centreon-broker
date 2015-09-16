@@ -105,7 +105,9 @@ void stream::_cache_clean() {
 void stream::_cache_create() {
   std::ostringstream ss;
   ss << "SELECT instance_id"
-     << " FROM rt_instances"
+     << "  FROM " << ((_db.schema_version() == database::v2)
+                      ? "instances"
+                      : "rt_instances")
      << " WHERE deleted=1";
   try {
     database_query q(_db);
@@ -130,17 +132,21 @@ void stream::_cache_create() {
  *  @param[in] instance_id Instance ID to remove.
  */
 void stream::_clean_tables(unsigned int instance_id) {
+  // Database version.
+  bool db_v2(_db.schema_version() == database::v2);
+
   // Query object.
   database_query q(_db);
 
   // Disable hosts and services.
   {
     std::ostringstream ss;
-    ss << "UPDATE rt_hosts"
-          " LEFT JOIN rt_services "
-          "  ON rt_hosts.host_id = rt_services.host_id"
-          " SET rt_hosts.enabled=0, rt_services.enabled=0"
-          " WHERE rt_hosts.instance_id=" << instance_id;
+    ss << "UPDATE " << (db_v2 ? "hosts" : "rt_hosts") << " AS h"
+          "  LEFT JOIN " << (db_v2 ? "services" : "rt_services")
+       << "    AS s"
+          "    ON h.host_id = s.host_id"
+          "  SET h.enabled=0, s.enabled=0"
+          "  WHERE h.instance_id=" << instance_id;
     q.run_query(
         ss.str(),
         "SQL: could not clean hosts and services tables");
@@ -149,15 +155,17 @@ void stream::_clean_tables(unsigned int instance_id) {
   // Remove host dependencies.
   {
     std::ostringstream ss;
-    ss << "DELETE FROM rt_hosts_hosts_dependencies"
-          " WHERE host_id IN ("
-          "  SELECT host_id"
-          "   FROM rt_hosts"
-          "   WHERE instance_id=" << instance_id << ")"
-          " OR dependent_host_id IN ("
-          "  SELECT host_id"
-          "   FROM rt_hosts"
-          "   WHERE instance_id=" << instance_id << ")";
+    ss << "DELETE FROM " << (db_v2
+                             ? "hosts_hosts_dependencies"
+                             : "rt_hosts_hosts_dependencies")
+       << "  WHERE host_id IN ("
+          "    SELECT host_id"
+          "      FROM " << (db_v2 ? "hosts" : "rt_hosts")
+       << "      WHERE instance_id=" << instance_id << ")"
+          "    OR dependent_host_id IN ("
+          "      SELECT host_id"
+          "        FROM " << (db_v2 ? "hosts" : "rt_hosts")
+       << "        WHERE instance_id=" << instance_id << ")";
     q.run_query(
         ss.str(),
         "SQL: could not clean host dependencies table");
@@ -166,15 +174,17 @@ void stream::_clean_tables(unsigned int instance_id) {
   // Remove host parents.
   {
     std::ostringstream ss;
-    ss << "DELETE FROM rt_hosts_hosts_parents"
-          " WHERE child_id IN ("
-          "  SELECT host_id"
-          "   FROM rt_hosts"
-          "   WHERE instance_id=" << instance_id << ")"
-          " OR parent_id IN ("
-          "  SELECT host_id"
-          "   FROM rt_hosts"
-          "   WHERE instance_id=" << instance_id << ")";
+    ss << "DELETE FROM " << (db_v2
+                             ? "hosts_hosts_parents"
+                             : "rt_hosts_hosts_parents")
+       << "  WHERE child_id IN ("
+          "    SELECT host_id"
+          "     FROM " << (db_v2 ? "hosts" : "rt_hosts")
+       << "     WHERE instance_id=" << instance_id << ")"
+          "    OR parent_id IN ("
+          "      SELECT host_id"
+          "      FROM " << (db_v2 ? "hosts" : "rt_hosts")
+       << "      WHERE instance_id=" << instance_id << ")";
     q.run_query(
         ss.str(),
         "SQL: could not clean host parents table");
@@ -183,19 +193,26 @@ void stream::_clean_tables(unsigned int instance_id) {
   // Remove service dependencies.
   {
     std::ostringstream ss;
-    ss << "DELETE FROM rt_services_services_dependencies"
-          " WHERE service_id IN ("
-          "  SELECT services.service_id"
-          "   FROM rt_services AS services"
-          "   JOIN rt_hosts AS hosts"
-          "   ON hosts.host_id=services.host_id WHERE hosts.instance_id="
-       << instance_id << ")"
-          " OR dependent_service_id IN ("
-          "  SELECT services.service_id "
-          "   FROM rt_services AS services"
-          "   JOIN rt_hosts AS hosts"
-          "   ON hosts.host_id=services.host_id WHERE hosts.instance_id="
-       << instance_id << ")";
+    ss << "DELETE FROM "
+       << (db_v2
+           ? "services_services_dependencies"
+           : "rt_services_services_dependencies")
+       << "  WHERE service_id IN ("
+          "    SELECT s.service_id"
+          "      FROM " << (db_v2 ? "services" : "rt_services")
+       << "        AS s"
+          "        INNER JOIN " << (db_v2 ? "hosts" : "rt_hosts")
+       << "          AS h"
+          "          ON h.host_id=s.host_id"
+          "      WHERE h.instance_id=" << instance_id << ")"
+          "    OR dependent_service_id IN ("
+          "      SELECT s.service_id "
+          "        FROM " << (db_v2 ? "services" : "rt_services")
+       << "          AS s"
+          "          INNER JOIN " << (db_v2 ? "hosts" : "rt_hosts")
+       << "            AS h"
+          "            ON h.host_id=s.host_id"
+          "        WHERE h.instance_id=" << instance_id << ")";
     q.run_query(
         ss.str(),
         "SQL: could not clean service dependencies tables");
@@ -204,19 +221,23 @@ void stream::_clean_tables(unsigned int instance_id) {
   // Remove list of modules.
   {
     std::ostringstream ss;
-    ss << "DELETE FROM rt_modules"
-          " WHERE instance_id=" << instance_id;
+    ss << "DELETE FROM " << (db_v2 ? "modules" : "rt_modules")
+       << "  WHERE instance_id=" << instance_id;
     q.run_query(ss.str(), "SQL: could not clean modules table");
   }
 
   // Remove custom variables.
   {
     std::ostringstream ss;
-    ss << "DELETE FROM rt_customvariables"
-          " USING rt_customvariables"
-          " JOIN rt_hosts"
-          "  ON rt_customvariables.host_id = rt_hosts.host_id"
-          " WHERE rt_hosts.instance_id=" << instance_id;
+    ss << "DELETE "
+       << (db_v2 ? "customvariables" : "rt_customvariables")
+       << "  FROM " << (db_v2
+                        ? "customvariables"
+                        : "rt_customvariables")
+       << "    AS cv"
+          "  INNER JOIN " << (db_v2 ? "hosts" : "rt_hosts") << " AS h"
+          "    ON cv.host_id = h.host_id"
+          "  WHERE h.instance_id=" << instance_id;
     q.run_query(
         ss.str(),
         "SQL: could not clean custom variables table");
@@ -255,6 +276,9 @@ bool stream::_is_valid_poller(unsigned int poller_id) {
  *  Prepare queries.
  */
 void stream::_prepare() {
+  // Database schema version.
+  bool db_v2(_db.schema_version() == database::v2);
+
   // Prepare queries.
   database_query::excluded_fields excluded;
   database_preparator::event_unique unique;
@@ -297,19 +321,19 @@ void stream::_prepare() {
   }
   {
     std::ostringstream oss;
-    oss << "UPDATE rt_downtimes"
-           " SET actual_end_time=GREATEST(COALESCE(actual_end_time, -1), :actual_end_time),"
-           "     actual_start_time=COALESCE(actual_start_time, :actual_start_time),"
-           "     author=:author, cancelled=:cancelled, comment_data=:comment_data,"
-           "     deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
-           "     fixed=:fixed, instance_id=:instance_id, internal_id=:internal_id,"
-           "     start_time=:start_time, started=:started, triggered_by=:triggered_by,"
-           "     type=:type"
-           " WHERE entry_time=:entry_time"
-           "        AND host_id=:host_id"
-           "        AND is_recurring=:is_recurring"
-           "        AND recurring_timeperiod=:recurring_timeperiod"
-           "        AND COALESCE(service_id, -1)=COALESCE(:service_id, -1)";
+    oss << "UPDATE " << (db_v2 ? "downtimes" : "rt_downtimes")
+        << "  SET actual_end_time=GREATEST(COALESCE(actual_end_time, -1), :actual_end_time),"
+           "      actual_start_time=COALESCE(actual_start_time, :actual_start_time),"
+           "      author=:author, cancelled=:cancelled, comment_data=:comment_data,"
+           "      deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
+           "      fixed=:fixed, instance_id=:instance_id, internal_id=:internal_id,"
+           "      start_time=:start_time, started=:started, triggered_by=:triggered_by,"
+           "      type=:type"
+           "  WHERE entry_time=:entry_time"
+           "    AND host_id=:host_id"
+           "    AND is_recurring=:is_recurring"
+           "    AND recurring_timeperiod=:recurring_timeperiod"
+           "    AND COALESCE(service_id, -1)=COALESCE(:service_id, -1)";
     std::string query(oss.str());
     _downtime_update.prepare(query, "SQL: could not prepare query");
   }
@@ -426,18 +450,28 @@ void stream::_prepare() {
   {
     excluded.clear();
     excluded.insert("service_id");
-    _host_state_insert.prepare(
-      "INSERT INTO rt_hoststateevents (host_id, start_time, ack_time,"
-      "            end_time, in_downtime, state)"
-      "  VALUES (:host_id, :start_time, :ack_time, :end_time,"
-      "          :in_downtime, :state)");
-    _host_state_insert.set_excluded(excluded);
-    _host_state_update.prepare(
-      "UPDATE rt_hoststateevents SET ack_time=:ack_time,"
-      "       end_time=:end_time, in_downtime=:in_downtime,"
-      "       state=:state"
-      "  WHERE host_id=:host_id AND start_time=:start_time");
-    _host_state_update.set_excluded(excluded);
+    {
+      std::ostringstream ss;
+      ss << "INSERT INTO "
+         << (db_v2 ? "hoststateevents" : "rt_hoststateevents")
+         << " (host_id, start_time, ack_time,"
+            "            end_time, in_downtime, state)"
+            "  VALUES (:host_id, :start_time, :ack_time, :end_time,"
+            "          :in_downtime, :state)";
+      _host_state_insert.prepare(ss.str());
+      _host_state_insert.set_excluded(excluded);
+    }
+    {
+      std::ostringstream ss;
+      ss << "UPDATE "
+         << (db_v2 ? "hoststateevents" : "rt_hoststateevents")
+         << "  SET ack_time=:ack_time,"
+            "      end_time=:end_time, in_downtime=:in_downtime,"
+            "      state=:state"
+            "  WHERE host_id=:host_id AND start_time=:start_time";
+      _host_state_update.prepare(ss.str());
+      _host_state_update.set_excluded(excluded);
+    }
   }
   {
     unique.clear();
@@ -462,31 +496,37 @@ void stream::_prepare() {
     dbp.prepare_update(_issue_update);
   }
   {
-    std::string query(
-      "INSERT INTO rt_issues_issues_parents (child_id, end_time,"
-      "            start_time, parent_id)"
-      " VALUES (:child_id, :end_time, :start_time, :parent_id)");
-    _issue_parent_insert.prepare(query);
+    std::ostringstream ss;
+    ss << "INSERT INTO "
+       << (db_v2 ? "issues_issues_parents" : "rt_issues_issues_parents")
+       << "  (child_id, end_time, start_time, parent_id)"
+          "  VALUES (:child_id, :end_time, :start_time, :parent_id)";
+    _issue_parent_insert.prepare(ss.str());
   }
   {
-    std::string query(
-      "SELECT issue_id FROM rt_issues"
-      " WHERE host_id=:host_id"
-      " AND service_id=:service_id"
-      " AND start_time=:start_time");
-    _issue_select.prepare(query);
+    std::ostringstream ss;
+    ss << "SELECT issue_id"
+       << "  FROM " << (db_v2 ? "issues" : "rt_issues")
+       << "  WHERE host_id=:host_id"
+          "    AND service_id=:service_id"
+          "    AND start_time=:start_time";
+    _issue_select.prepare(ss.str());
   }
   {
-    std::string query(
-      "UPDATE rt_issues_issues_parents SET end_time=:end_time"
-      " WHERE child_id=:child_id"
-      "       AND start_time=:start_time"
-      "       AND parent_id=:parent_id");
-    _issue_parent_update.prepare(query, "SQL: could not prepare query");
+    std::ostringstream ss;
+    ss << "UPDATE "
+       << (db_v2 ? "issues_issues_parents" : "rt_issues_issues_parents")
+       << "  SET end_time=:end_time"
+          "  WHERE child_id=:child_id"
+          "    AND start_time=:start_time"
+          "    AND parent_id=:parent_id";
+    _issue_parent_update.prepare(ss.str());
   }
   _prepare_select<neb::host_parent>(
-                        _host_parent_select,
-                        "rt_hosts_hosts_parents");
+                         _host_parent_select,
+                         (db_v2
+                          ? "hosts_hosts_parents"
+                          : "rt_hosts_hosts_parents"));
   return ;
 }
 
@@ -500,16 +540,23 @@ template <typename T>
 void stream::_prepare_select(
                database_query& st,
                std::string const& table_name) {
+  // Database schema version.
+  bool db_v2(st.db_object().schema_version() == database::v2);
+
   // Build query string.
   std::string query;
   query = "SELECT * FROM ";
   query.append(table_name);
   query.append(" WHERE ");
   mapping::entry const* entries = T::entries;
-  for (size_t i = 0; !entries[i].is_null(); ++i) {
-    char const* entry_name(entries[i].get_name());
+  for (size_t i(0); !entries[i].is_null(); ++i) {
+    char const* entry_name;
+    if (db_v2)
+      entry_name = entries[i].get_name_v2();
+    else
+      entry_name = entries[i].get_name();
     if (!entry_name || !entry_name[0])
-      continue;
+      continue ;
     query.append(entry_name);
     query.append(" = :");
     query.append(entry_name);
@@ -556,19 +603,20 @@ void stream::_process_acknowledgement(
       _acknowledgement_update,
       ack);
 
-    // Update the associated host or service table.
-    std::ostringstream query;
-    if (ack.service_id == 0)
-      query << "UPDATE rt_hosts SET acknowledged ="
-            << ack.deletion_time.is_null()
-            << "  WHERE host_id = " << ack.host_id;
-    else
-      query << "UPDATE rt_services SET acknowledged ="
-            << ack.deletion_time.is_null()
-            << "  WHERE host_id = " << ack.host_id
-            << "   AND service_id = " << ack.service_id;
-    database_query q(_db);
-    q.run_query(query.str(), "SQL: couldn't update acknowledgement flags");
+    // XXX : probably useless as we're using Centreon Engine 1.x
+    // // Update the associated host or service table.
+    // std::ostringstream query;
+    // if (ack.service_id == 0)
+    //   query << "UPDATE rt_hosts SET acknowledged ="
+    //         << ack.deletion_time.is_null()
+    //         << "  WHERE host_id = " << ack.host_id;
+    // else
+    //   query << "UPDATE rt_services SET acknowledged ="
+    //         << ack.deletion_time.is_null()
+    //         << "  WHERE host_id = " << ack.host_id
+    //         << "   AND service_id = " << ack.service_id;
+    // database_query q(_db);
+    // q.run_query(query.str(), "SQL: couldn't update acknowledgement flags");
   }
 
   return ;
@@ -670,24 +718,25 @@ void stream::_process_downtime(
       _downtime_update,
       d);
 
-    // Update the associated host or service table.
-    if (!d.is_recurring && !d.actual_start_time.is_null()) {
-      std::string operation = d.actual_end_time.is_null() ? "+ 1" : "- 1";
-      std::ostringstream query;
-      if (d.service_id == 0)
-        query << "UPDATE rt_hosts"
-                 "       SET scheduled_downtime_depth ="
-                 "                    scheduled_downtime_depth " << operation
-              << "  WHERE host_id = " << d.host_id;
-      else
-        query << "UPDATE rt_services"
-                 "       SET scheduled_downtime_depth ="
-                 "                    scheduled_downtime_depth " << operation
-              << "  WHERE host_id = " << d.host_id
-              << "   AND service_id = " << d.service_id;
-      database_query q(_db);
-      q.run_query(query.str(), "SQL: couldn't update scheduled downtime depth");
-    }
+    // XXX : probably useless as we're using Centreon Engine 1.x
+    // // Update the associated host or service table.
+    // if (!d.is_recurring && !d.actual_start_time.is_null()) {
+    //   std::string operation = d.actual_end_time.is_null() ? "+ 1" : "- 1";
+    //   std::ostringstream query;
+    //   if (d.service_id == 0)
+    //     query << "UPDATE rt_hosts"
+    //              "       SET scheduled_downtime_depth ="
+    //              "                    scheduled_downtime_depth " << operation
+    //           << "  WHERE host_id = " << d.host_id;
+    //   else
+    //     query << "UPDATE rt_services"
+    //              "       SET scheduled_downtime_depth ="
+    //              "                    scheduled_downtime_depth " << operation
+    //           << "  WHERE host_id = " << d.host_id
+    //           << "   AND service_id = " << d.service_id;
+    //   database_query q(_db);
+    //   q.run_query(query.str(), "SQL: couldn't update scheduled downtime depth");
+    // }
   }
 
   return ;
@@ -708,20 +757,27 @@ void stream::_process_engine(
   correlation::engine_state const&
     es(*static_cast<correlation::engine_state const*>(e.data()));
 
+  // Database schema version.
+  bool db_v2(_db.schema_version() == database::v2);
+
   // Close issues.
   if (es.started) {
     time_t now(time(NULL));
     {
       std::ostringstream ss;
-      ss << "UPDATE rt_issues SET end_time=" << now
-         << " WHERE end_time=0 OR end_time IS NULL";
+      ss << "UPDATE " << (db_v2 ? "issues" : "rt_issues")
+         << "  SET end_time=" << now
+         << "  WHERE end_time=0 OR end_time IS NULL";
       database_query q(_db);
       q.run_query(ss.str());
     }
     {
       std::ostringstream ss;
-      ss << "UPDATE rt_issues_issues_parents SET end_time=" << now
-         << " WHERE end_time=0 OR end_time IS NULL";
+      ss << "UPDATE " << (db_v2
+                          ? "isues_issues_parents"
+                          : "rt_issues_issues_parents")
+         << "  SET end_time=" << now
+         << "  WHERE end_time=0 OR end_time IS NULL";
       database_query q(_db);
       q.run_query(ss.str());
     }
@@ -866,9 +922,12 @@ void stream::_process_host_dependency(
       << "SQL: removing host dependency of " << hd.dependent_host_id
       << " on " << hd.host_id;
     std::ostringstream oss;
-    oss << "DELETE FROM rt_hosts_hosts_dependencies "
-           "WHERE dependent_host_id=" << hd.dependent_host_id
-        << "  AND host_id=" << hd.host_id;
+    oss << "DELETE FROM "
+        << ((_db.schema_version() == database::v2)
+            ? "hosts_hosts_dependencies"
+            : "rt_hosts_hosts_dependencies")
+        << "  WHERE dependent_host_id=" << hd.dependent_host_id
+        << "    AND host_id=" << hd.host_id;
     database_query q(_db);
     q.run_query(oss.str(), "SQL");
   }
@@ -1076,14 +1135,19 @@ void stream::_process_issue_parent(
     << "), start time: " << ip.start_time << ", end time: "
     << ip.end_time << ")";
 
+  // Database schema version.
+  bool db_v2(_db.schema_version() == database::v2);
+
   int child_id;
   int parent_id;
 
   // Get child ID.
   {
     std::ostringstream query;
-    query << "SELECT issue_id FROM rt_issues WHERE host_id="
-          << ip.child_host_id << " AND service_id";
+    query << "SELECT issue_id"
+          << "  FROM " << (db_v2 ? "issues" : "rt_issues")
+          << "  WHERE host_id=" << ip.child_host_id
+          << " AND service_id";
     if (ip.child_service_id)
       query << "=" << ip.child_service_id;
     else
@@ -1111,8 +1175,10 @@ void stream::_process_issue_parent(
   // Get parent ID.
   {
     std::ostringstream query;
-    query << "SELECT issue_id FROM rt_issues WHERE host_id="
-          << ip.parent_host_id << " AND service_id";
+    query << "SELECT issue_id"
+             "  FROM " << (db_v2 ? "issues" : "rt_issues")
+          << "  WHERE host_id=" << ip.parent_host_id
+          << "    AND service_id";
     if (ip.parent_service_id)
       query << "=" << ip.parent_service_id;
     else
@@ -1226,12 +1292,15 @@ void stream::_process_module(
       _module_insert.run_statement("SQL");
     }
     else {
+      std::ostringstream ss;
+      ss << "DELETE FROM "
+         << ((_db.schema_version() == database::v2)
+             ? "modules"
+             : "rt_modules")
+         << "  WHERE instance_id=:instance_id"
+            "    AND filename=:filename";
       database_query q(_db);
-      q.prepare(
-          "DELETE FROM rt_modules "
-          "WHERE instance_id=:instance_id"
-          "  AND filename=:filename",
-          "SQL");
+      q.prepare(ss.str(), "SQL");
       q.bind_value(":instance_id", m.poller_id);
       q.bind_value(":filename", m.filename);
       q.run_statement("SQL");
@@ -1362,11 +1431,14 @@ void stream::_process_service_dependency(
       << ", " << sd.dependent_service_id << ") on (" << sd.host_id
       << ", " << sd.service_id << ")";
     std::ostringstream oss;
-    oss << "DELETE FROM rt_services_services_dependencies "
-           "WHERE dependent_host_id=" << sd.dependent_host_id
-        << "  AND dependent_service_id=" << sd.dependent_service_id
-        << "  AND host_id=" << sd.host_id
-        << "  AND service_id=" << sd.service_id;
+    oss << "DELETE FROM "
+        << ((_db.schema_version() == database::v2)
+            ? "services_services_dependencies"
+            : "rt_services_services_dependencies")
+        << "  WHERE dependent_host_id=" << sd.dependent_host_id
+        << "    AND dependent_service_id=" << sd.dependent_service_id
+        << "    AND host_id=" << sd.host_id
+        << "    AND service_id=" << sd.service_id;
     database_query q(_db);
     q.run_query(oss.str(), "SQL");
   }
@@ -1498,7 +1570,10 @@ void stream::_write_logs() {
     // Log insertion query.
     QString q;
     QTextStream query(&q);
-    query << "INSERT INTO log_logs"
+    query << "INSERT INTO "
+          << ((_db.schema_version() == database::v2)
+              ? "logs"
+              : "log_logs")
           << "  (ctime, host_id, host_name, instance_name, issue_id, "
           << "  msg_type,  output, retry, service_description, "
           << "  service_id, status, type) "
@@ -1630,7 +1705,9 @@ void stream::_update_timestamp(unsigned int instance_id) {
 void stream::_get_all_outdated_instances_from_db() {
   std::ostringstream ss;
   ss << "SELECT instance_id"
-     << " FROM rt_instances"
+     << "  FROM " << ((_db.schema_version() == database::v2)
+                      ? "instances"
+                      : "rt_instances")
      << " WHERE outdated=TRUE";
   database_query q(_db);
   q.run_query(
@@ -1688,34 +1765,37 @@ void stream::_update_hosts_and_services_of_unresponsive_instances() {
 void stream::_update_hosts_and_services_of_instance(
                unsigned int id,
                bool responsive) {
+  bool db_v2(_db.schema_version() == database::v2);
   std::ostringstream ss;
   if (responsive) {
-    ss << "UPDATE rt_instances"
+    ss << "UPDATE " << (db_v2 ? "instances" : "rt_instances")
        << "  SET outdated=FALSE"
        << "  WHERE instance_id=" << id;
     database_query q(_db);
     q.run_query(ss.str(), "SQL: could not restore outdated instance");
     ss.str("");
     ss.clear();
-    ss << "UPDATE rt_hosts AS h"
-       << "  LEFT JOIN rt_services AS s"
-       << "  ON h.host_id=s.host_id"
+    ss << "UPDATE " << (db_v2 ? "hosts" : "rt_hosts") << " AS h"
+       << "  LEFT JOIN " << (db_v2 ? "services" : "rt_services")
+       << "    AS s"
+       << "    ON h.host_id=s.host_id"
        << "  SET h.state=h.real_state,"
        << "      s.state=s.real_state"
        << "  WHERE h.instance_id = " << id;
     q.run_query(ss.str(), "SQL: could not restore outdated instance");
   }
   else {
-    ss << "UPDATE rt_instances"
+    ss << "UPDATE " << (db_v2 ? "instances" : "rt_instances")
        << "  SET outdated=TRUE"
        << "  WHERE instance_id=" << id;
     database_query q(_db);
     q.run_query(ss.str(), "SQL: could not outdate instance");
     ss.str("");
     ss.clear();
-    ss << "UPDATE rt_hosts AS h"
-       << "  LEFT JOIN rt_services AS s"
-       << "  ON h.host_id=s.host_id"
+    ss << "UPDATE " << (db_v2 ? "hosts" : "rt_hosts") << " AS h"
+       << "  LEFT JOIN " << (db_v2 ? "services" : "rt_services")
+       << "    AS s"
+       << "    ON h.host_id=s.host_id"
        << "  SET h.real_state=h.state,"
        << "      s.real_state=s.state,"
        << "      h.state=" << HOST_UNREACHABLE << ","
