@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -18,10 +18,14 @@
 
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/dumper/db_dump.hh"
+#include "com/centreon/broker/dumper/db_dump_committed.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
 #include "com/centreon/broker/dumper/entries/ba_type.hh"
+#include "com/centreon/broker/dumper/entries/boolean.hh"
+#include "com/centreon/broker/dumper/entries/host.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/entries/organization.hh"
+#include "com/centreon/broker/dumper/entries/service.hh"
 #include "com/centreon/broker/dumper/factory.hh"
 #include "com/centreon/broker/dumper/dump.hh"
 #include "com/centreon/broker/dumper/reload.hh"
@@ -125,12 +129,20 @@ extern "C" {
                   dumper::db_dump::entries));
         e.register_event(
             io::events::dumper,
+            dumper::de_db_dump_committed,
+            io::event_info(
+                  "db_dump_committed",
+                  &dumper::db_dump_committed::operations,
+                  dumper::db_dump_committed::entries));
+        e.register_event(
+            io::events::dumper,
             dumper::de_entries_ba,
             io::event_info(
                   "ba",
                   &dumper::entries::ba::operations,
                   dumper::entries::ba::entries,
-                  "cfg_bam"));
+                  "cfg_bam",
+                  "mod_bam"));
         e.register_event(
             io::events::dumper,
             dumper::de_entries_ba_type,
@@ -141,12 +153,31 @@ extern "C" {
                   "cfg_bam_ba_types"));
         e.register_event(
             io::events::dumper,
+            dumper::de_entries_boolean,
+            io::event_info(
+                  "boolean",
+                  &dumper::entries::boolean::operations,
+                  dumper::entries::boolean::entries,
+                  NULL,
+                  "mod_bam_boolean"));
+        e.register_event(
+            io::events::dumper,
+            dumper::de_entries_host,
+            io::event_info(
+                  "host",
+                  &dumper::entries::host::operations,
+                  dumper::entries::host::entries,
+                  "cfg_hosts",
+                  "host"));
+        e.register_event(
+            io::events::dumper,
             dumper::de_entries_kpi,
             io::event_info(
                   "kpi",
                   &dumper::entries::kpi::operations,
                   dumper::entries::kpi::entries,
-                  "cfg_bam_kpi"));
+                  "cfg_bam_kpi",
+                  "mod_bam_kpi"));
         e.register_event(
             io::events::dumper,
             dumper::de_entries_organization,
@@ -155,6 +186,15 @@ extern "C" {
                   &dumper::entries::organization::operations,
                   dumper::entries::organization::entries,
                   "cfg_organizations"));
+        e.register_event(
+            io::events::dumper,
+            dumper::de_entries_service,
+            io::event_info(
+                  "service",
+                  &dumper::entries::service::operations,
+                  dumper::entries::service::entries,
+                  "cfg_services",
+                  "service"));
       }
 
 

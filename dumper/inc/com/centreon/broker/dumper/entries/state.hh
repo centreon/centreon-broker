@@ -24,13 +24,16 @@
 
 CCB_BEGIN()
 
-namespace                   dumper {
-  namespace                 entries {
+namespace                       dumper {
+  namespace                     entries {
     // Forward declarations.
-    class                   ba;
-    class                   ba_type;
-    class                   kpi;
-    class                   organization;
+    class                       ba;
+    class                       ba_type;
+    class                       boolean;
+    class                       host;
+    class                       kpi;
+    class                       organization;
+    class                       service;
 
     /**
      *  @class state state.hh "com/centreon/broker/dumper/entries/dumper.hh"
@@ -38,32 +41,38 @@ namespace                   dumper {
      *
      *  Holds all synchronizable entries of configuration database.
      */
-    class                   state {
+    class                       state {
     public:
-                            state();
-                            state(state const& other);
-                            ~state();
-      state&                operator=(state const& other);
-      std::list<ba_type> const&
-                            get_ba_types() const;
-      std::list<ba_type>&   get_ba_types();
-      std::list<ba> const&  get_bas() const;
-      std::list<ba>&        get_bas();
-      std::list<kpi> const& get_kpis() const;
-      std::list<kpi>&       get_kpis();
+                                state();
+                                state(state const& other);
+                                ~state();
+      state&                    operator=(state const& other);
+      std::list<ba_type> const& get_ba_types() const;
+      std::list<ba_type>&       get_ba_types();
+      std::list<ba> const&      get_bas() const;
+      std::list<ba>&            get_bas();
+      std::list<boolean> const& get_booleans() const;
+      std::list<boolean>&       get_booleans();
+      std::list<host> const&    get_hosts() const;
+      std::list<host>&          get_hosts();
+      std::list<kpi> const&     get_kpis() const;
+      std::list<kpi>&           get_kpis();
       std::list<organization> const&
-                            get_organizations() const;
-      std::list<organization>&
-                            get_organizations();
+                                get_organizations() const;
+      std::list<organization>&  get_organizations();
+      std::list<service> const& get_services() const;
+      std::list<service>&       get_services();
 
     private:
-      void                  _internal_copy(state const& other);
+      void                      _internal_copy(state const& other);
 
-      std::list<ba_type>    _ba_types;
-      std::list<ba>         _bas;
-      std::list<kpi>        _kpis;
-      std::list<organization>
-                            _organizations;
+      std::list<ba_type>        _ba_types;
+      std::list<ba>             _bas;
+      std::list<boolean>        _booleans;
+      std::list<host>           _hosts;
+      std::list<kpi>            _kpis;
+      std::list<organization>   _organizations;
+      std::list<service>        _services;
     };
   }
 }

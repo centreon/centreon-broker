@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_DUMPER_DB_LOADER_HH
-#  define CCB_DUMPER_DB_LOADER_HH
+#ifndef CCB_DUMPER_DB_LOADER_V2_HH
+#  define CCB_DUMPER_DB_LOADER_V2_HH
 
-#  include "com/centreon/broker/database_config.hh"
+#  include "com/centreon/broker/database.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -31,25 +31,32 @@ namespace           dumper {
   }
 
   /**
-   *  @class db_loader db_loader.hh "com/centreon/broker/dumper/db_loader.hh"
-   *  @brief Load entries from SQL database.
+   *  @class db_loader_v2 db_loader_v2.hh "com/centreon/broker/dumper/db_loader_v2.hh"
+   *  @brief Load entries from SQL database with 2.x schema.
    *
    *  Perform SELECT on SQL database to retrieve configuration entries.
    */
-  class             db_loader {
+  class             db_loader_v2 {
   public:
-                    db_loader(database_config const& db_cfg);
-                    ~db_loader();
+                    db_loader_v2(database& db);
+                    ~db_loader_v2();
     void            load(entries::state& state, unsigned int poller_id);
 
   private:
-                    db_loader(db_loader const& other);
-    db_loader&      operator=(db_loader const& other);
+                    db_loader_v2(db_loader_v2 const& other);
+    db_loader_v2&   operator=(db_loader_v2 const& other);
+    void            _load_bas();
+    void            _load_booleans();
+    void            _load_kpis();
+    void            _load_hosts();
+    void            _load_services();
 
-    database_config _db_cfg;
+    database&       _db;
+    unsigned int    _poller_id;
+    entries::state* _state;
   };
 }
 
 CCB_END()
 
-#endif // !CCB_DUMPER_DB_LOADER_HH
+#endif // !CCB_DUMPER_DB_LOADER_V2_HH

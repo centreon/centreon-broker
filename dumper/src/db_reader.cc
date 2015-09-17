@@ -17,12 +17,16 @@
 */
 
 #include "com/centreon/broker/dumper/db_dump.hh"
+#include "com/centreon/broker/dumper/db_loader.hh"
 #include "com/centreon/broker/dumper/db_reader.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
 #include "com/centreon/broker/dumper/entries/ba_type.hh"
+#include "com/centreon/broker/dumper/entries/boolean.hh"
 #include "com/centreon/broker/dumper/entries/diff.hh"
+#include "com/centreon/broker/dumper/entries/host.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/entries/organization.hh"
+#include "com/centreon/broker/dumper/entries/service.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/command_result.hh"
@@ -73,7 +77,7 @@ static void send_objects(std::list<T> const& t) {
 db_reader::db_reader(
              std::string const& name,
              database_config const& db_cfg)
-  : _loader(db_cfg), _name(name.c_str()) {}
+  : _db_cfg(db_cfg), _name(name.c_str()) {}
 
 /**
  *  Destructor.
@@ -185,7 +189,8 @@ void db_reader::_sync_cfg_db(unsigned int poller_id) {
 
     // Read database.
     entries::state state;
-    _loader.load(state, poller_id);
+    db_loader loader(_db_cfg);
+    loader.load(state, poller_id);
 
     // Send events.
     multiplexing::publisher pblshr;
@@ -228,7 +233,8 @@ void db_reader::_update_cfg_db(unsigned int poller_id) {
 
     // Read database.
     entries::state state;
-    _loader.load(state, poller_id);
+    db_loader loader(_db_cfg);
+    loader.load(state, poller_id);
 
     // Diff with existing configuration.
     entries::diff d(_cache[poller_id], state);
@@ -251,9 +257,18 @@ void db_reader::_update_cfg_db(unsigned int poller_id) {
     send_objects(d.bas_to_delete());
     send_objects(d.bas_to_update());
     send_objects(d.bas_to_create());
+    send_objects(d.booleans_to_delete());
+    send_objects(d.booleans_to_update());
+    send_objects(d.booleans_to_create());
     send_objects(d.kpis_to_delete());
     send_objects(d.kpis_to_update());
     send_objects(d.kpis_to_create());
+    send_objects(d.hosts_to_delete());
+    send_objects(d.hosts_to_update());
+    send_objects(d.hosts_to_create());
+    send_objects(d.services_to_delete());
+    send_objects(d.services_to_update());
+    send_objects(d.services_to_create());
     {
       misc::shared_ptr<db_dump> end(new db_dump);
       end->full = false;
