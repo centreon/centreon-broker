@@ -37,11 +37,11 @@ namespace                    mapping {
   class                      entry {
   public:
     enum                     attribute {
+      always_valid = 0,
       invalid_on_zero = (1 << 0),
       invalid_on_minus_one = (1 << 1),
-      valid_v2 = (1 << 2),
-      valid_v3 = (1 << 3),
-      valid_all_versions = valid_v2 | valid_v3
+      invalid_on_v2 = (1 << 2),
+      invalid_on_v3 = (1 << 3)
     };
 
     /**
@@ -56,12 +56,12 @@ namespace                    mapping {
                              entry(
                                U (T::* prop),
                                char const* name,
-                               attribute attr = valid_all_versions,
+                               attribute attr = always_valid,
                                bool serialize = true,
                                char const* name_v2 = NULL) {
       _name = name;
       _name_v2 = name_v2;
-      if (!_name_v2 && (attr & valid_v2))
+      if (!_name_v2 && !(attr & invalid_on_v2))
         _name_v2 = _name;
       _source = misc::shared_ptr<source>(new property<T>(prop, &_type));
       _ptr = _source.data();

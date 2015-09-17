@@ -183,17 +183,17 @@ mapping::entry const host::entries[] = {
   mapping::entry(
     static_cast<bool (host::*) >(&host::default_active_checks_enabled),
     "default_active_checks",
-    mapping::entry::valid_all_versions,
+    mapping::entry::always_valid,
     false),
   mapping::entry(
     static_cast<bool (host::*) >(&host::default_event_handler_enabled),
     "default_event_handler_enabled",
-    mapping::entry::valid_all_versions,
+    mapping::entry::always_valid,
     false),
   mapping::entry(
     static_cast<bool (host::*) >(&host::default_flap_detection_enabled),
     "default_flap_detection",
-    mapping::entry::valid_all_versions,
+    mapping::entry::always_valid,
     false),
   mapping::entry(
     &host::enabled,

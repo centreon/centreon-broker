@@ -32,7 +32,7 @@ using namespace com::centreon::broker::mapping;
  *  Default constructor.
  */
 entry::entry()
-  : _attribute(valid_all_versions),
+  : _attribute(always_valid),
     _name(NULL),
     _name_v2(NULL),
     _ptr(NULL),
