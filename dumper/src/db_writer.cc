@@ -22,13 +22,18 @@
 #include "com/centreon/broker/database_preparator.hh"
 #include "com/centreon/broker/database_query.hh"
 #include "com/centreon/broker/dumper/db_dump.hh"
+#include "com/centreon/broker/dumper/db_dump_committed.hh"
 #include "com/centreon/broker/dumper/db_writer.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
 #include "com/centreon/broker/dumper/entries/ba_type.hh"
+#include "com/centreon/broker/dumper/entries/boolean.hh"
+#include "com/centreon/broker/dumper/entries/host.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/entries/organization.hh"
+#include "com/centreon/broker/dumper/entries/service.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::dumper;
@@ -84,9 +89,15 @@ unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
           _commit();
         else
           _full_dump = dbd.full;
+        _organizations.clear();
         _ba_types.clear();
         _bas.clear();
+        _booleans.clear();
         _kpis.clear();
+        _hosts.clear();
+        _services.clear();
+        multiplexing::publisher pblshr;
+        pblshr.write(new db_dump_committed);
       }
     }
     else if (d->type() == entries::ba::static_type()) {
@@ -98,6 +109,16 @@ unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
       entries::ba_type const& b(d.ref_as<entries::ba_type const>());
       _ba_types.push_back(b);
     }
+    else if (d->type() == entries::boolean::static_type()) {
+      entries::boolean const& b(d.ref_as<entries::boolean const>());
+      if (b.poller_id == config::applier::state::instance().poller_id())
+        _booleans.push_back(b);
+    }
+    else if (d->type() == entries::host::static_type()) {
+      entries::host const& h(d.ref_as<entries::host const>());
+      if (h.poller_id == config::applier::state::instance().poller_id())
+        _hosts.push_back(h);
+    }
     else if (d->type() == entries::kpi::static_type()) {
       entries::kpi const& k(d.ref_as<entries::kpi const>());
       if (k.poller_id == config::applier::state::instance().poller_id())
@@ -107,6 +128,11 @@ unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
       entries::organization const&
         o(d.ref_as<entries::organization const>());
       _organizations.push_back(o);
+    }
+    else if (d->type() == entries::service::static_type()) {
+      entries::service const& s(d.ref_as<entries::service const>());
+      if (s.poller_id == config::applier::state::instance().poller_id())
+        _services.push_back(s);
     }
   }
   return (1);
@@ -124,209 +150,231 @@ unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
 void db_writer::_commit() {
   // Open DB connection.
   database db(_db_cfg);
+  bool db_v2(db.schema_version() == database::v2);
 
   // Clean database if necessary.
   if (_full_dump) {
+    static char const* const cleanup_v2[] = {
+      "DELETE FROM mod_bam_kpi",
+      "DELETE FROM mod_bam",
+      NULL
+    };
+    static char const* const cleanup_v3[] = {
+      "DELETE FROM cfg_bam_kpi",
+      "DELETE FROM cfg_bam",
+      "DELETE FROM cfg_bam_ba_types",
+      NULL
+    };
+    char const* const* cleanup_queries;
+    if (db_v2)
+      cleanup_queries = cleanup_v2;
+    else
+      cleanup_queries = cleanup_v3;
+    database_query q(db);
+    for (int i(0); cleanup_queries[i]; ++i)
+      q.run_query(cleanup_queries[i]);
+  }
+
+  // Process organizations.
+  if (!db_v2)
+    _store_objects(
+      db,
+      _organizations,
+      "organization_id",
+      &entries::organization::organization_id);
+
+  // Process BA types.
+  if (!db_v2)
+    _store_objects(
+      db,
+      _ba_types,
+      "ba_type_id",
+      &entries::ba_type::ba_type_id);
+
+  // Process BAs.
+  {
+    // Store BAs in their own table.
+    _store_objects(
+      db,
+      _bas,
+      "ba_id",
+      &entries::ba::ba_id);
+
+    // Link BAs to a poller.
     {
       database_query q(db);
-      q.run_query("DELETE FROM cfg_bam_kpi");
+      {
+        std::ostringstream query;
+        query << "INSERT INTO " << (db_v2
+                                    ? "mod_bam_poller_relations"
+                                    : "cfg_bam_poller_relations")
+              << "  (ba_id, poller_id)"
+                 "  VALUES (:ba_id, :poller_id)";
+        q.prepare(query.str());
+      }
+      for (std::list<entries::ba>::const_iterator
+             it(_bas.begin()),
+             end(_bas.end());
+           it != end;
+           ++it)
+        if (it->enable) {
+          q.bind_value(":ba_id", it->ba_id);
+          q.bind_value(":poller_id", it->poller_id);
+          try {
+            q.run_statement();
+          }
+          catch (std::exception const& e) {
+            (void)e;
+          }
+        }
     }
+
+    // Enable BAs.
     {
       database_query q(db);
-      q.run_query("DELETE FROM cfg_bam");
+      for (std::list<entries::ba>::const_iterator
+             it(_bas.begin()),
+             end(_bas.end());
+           it != end;
+           ++it)
+        if (it->enable) {
+          std::ostringstream query;
+          query << "UPDATE " << (db_v2 ? "mod_bam" : "cfg_bam")
+                << "  SET activate='1' WHERE ba_id="
+                << it->ba_id;
+          q.run_query(query.str().c_str());
+        }
     }
+  }
+
+  // Process booleans.
+  if (db_v2)
+    _store_objects(
+      db,
+      _booleans,
+      "boolean_id",
+      &entries::boolean::boolean_id);
+
+  // Process KPIs.
+  {
+    // Store KPIs in their own table.
+    _store_objects(
+      db,
+      _kpis,
+      "kpi_id",
+      &entries::kpi::kpi_id);
+
+    // Enable KPIs.
     {
       database_query q(db);
-      q.run_query("DELETE FROM cfg_bam_ba_types");
+      for (std::list<entries::kpi>::const_iterator
+             it(_kpis.begin()),
+             end(_kpis.end());
+           it != end;
+           ++it)
+        if (it->enable) {
+          std::ostringstream query;
+          query << "UPDATE cfg_bam_kpi SET activate='1' WHERE kpi_id="
+                << it->kpi_id;
+          q.run_query(query.str().c_str());
+        }
     }
   }
 
-  // Prepare organization queries.
-  database_query organization_insert(db);
-  database_query organization_update(db);
-  database_query organization_delete(db);
-  {
-    database_preparator::event_unique ids;
-    ids.insert("organization_id");
-    database_preparator dbp(entries::organization::static_type(), ids);
-    dbp.prepare_insert(organization_insert);
-    dbp.prepare_update(organization_update);
-    dbp.prepare_delete(organization_delete);
-  }
+  // Process virtual hosts.
+  if (db_v2)
+    _store_objects(
+      db,
+      _hosts,
+      "host_id",
+      &entries::host::host_id);
 
-  // Prepare BA type queries.
-  database_query ba_type_insert(db);
-  database_query ba_type_update(db);
-  database_query ba_type_delete(db);
-  {
-    database_preparator::event_unique ids;
-    ids.insert("ba_type_id");
-    database_preparator dbp(entries::ba_type::static_type(), ids);
-    dbp.prepare_insert(ba_type_insert);
-    dbp.prepare_update(ba_type_update);
-    dbp.prepare_delete(ba_type_delete);
-  }
+  // Process virtual services.
+  if (db_v2) {
+    // Store services in their own table.
+    _store_objects(
+      db,
+      _services,
+      "service_id",
+      &entries::service::service_id);
 
-  // Prepare BA queries.
-  database_query ba_insert(db);
-  database_query ba_update(db);
-  database_query ba_delete(db);
-  {
-    database_preparator::event_unique ids;
-    ids.insert("ba_id");
-    database_preparator dbp(entries::ba::static_type(), ids);
-    dbp.prepare_insert(ba_insert);
-    dbp.prepare_update(ba_update);
-    dbp.prepare_delete(ba_delete);
-  }
-
-  // Prepare KPI queries.
-  database_query kpi_insert(db);
-  database_query kpi_update(db);
-  database_query kpi_delete(db);
-  {
-    database_preparator::event_unique ids;
-    ids.insert("kpi_id");
-    database_preparator dbp(entries::kpi::static_type(), ids);
-    dbp.prepare_insert(kpi_insert);
-    dbp.prepare_update(kpi_update);
-    dbp.prepare_delete(kpi_delete);
-  }
-
-  // Prepare relation table queries.
-  database_query poller_ba_relation_insert(db);
-
-  // Process all organizations.
-  for (std::list<entries::organization>::const_iterator
-         it(_organizations.begin()),
-         end(_organizations.end());
-       it != end;
-       ++it) {
-    // INSERT / UPDATE.
-    if (it->enable) {
-      logging::debug(logging::medium)
-        << "db_dmper: updating organization " << it->organization_id
-        << " ('" << it->name << "')";
-      organization_update << *it;
-      organization_update.run_statement();
-      if (!organization_update.num_rows_affected()) {
-        logging::debug(logging::medium)
-          << "db_dumper: inserting organization " << it->organization_id
-          << " ('" << it->name << "')";
-        organization_insert << *it;
-        organization_insert.run_statement();
-      }
-    }
-    // DELETE
-    else {
-      logging::debug(logging::medium)
-        << "db_dumper: deleting organization " << it->organization_id
-        << " ('" << it->name << "')";
-      organization_delete.bind_value(
-                            ":organization_id",
-                            it->organization_id);
-      organization_delete.run_statement();
-    }
-  }
-
-  // Process all BA types.
-  for (std::list<entries::ba_type>::const_iterator
-         it(_ba_types.begin()),
-         end(_ba_types.end());
-       it != end;
-       ++it) {
-    // INSERT / UPDATE.
-    if (it->enable) {
-      logging::debug(logging::medium) << "db_dumper: updating BA type "
-        << it->ba_type_id << " ('" << it->name << "')";
-      ba_type_update << *it;
-      ba_type_update.run_statement();
-      if (!ba_type_update.num_rows_affected()) {
-        logging::debug(logging::medium)
-          << "db_dumper: inserting BA type " << it->ba_type_id << " ('"
-          << it->name << "')";
-        ba_type_insert << *it;
-        ba_type_insert.run_statement();
-      }
-    }
-    // DELETE.
-    else {
-      logging::debug(logging::medium) << "db_dumper: deleting BA type "
-        << it->ba_type_id << " ('" << it->name << "')";
-      ba_type_delete.bind_value(":ba_type_id", it->ba_type_id);
-      ba_type_delete.run_statement();
-    }
-  }
-
-  // Process all BAs.
-  for (std::list<entries::ba>::const_iterator it(_bas.begin()), end(_bas.end());
-       it != end;
-       ++it) {
-    // INSERT / UPDATE.
-    if (it->enable) {
-      logging::debug(logging::medium)
-        << "db_dumper: updating BA " << it->ba_id << " ('" << it->name
-        << "')";
-      ba_update << *it;
-      ba_update.run_statement();
-      if (!ba_update.num_rows_affected()) {
-        logging::debug(logging::medium)
-          << "db_dumper: inserting BA " << it->ba_id << " ('"
-          << it->name << "')";
-        ba_insert << *it;
-        ba_insert.run_statement();
-      }
+    // Link services to their host.
+    database_query q(db);
+    {
       std::ostringstream query;
-      query << "UPDATE cfg_bam SET activate='1' WHERE ba_id="
-            << it->ba_id;
-      database_query q(db);
-      q.run_query(query.str().c_str());
-      poller_ba_relation_insert.bind_value(":poller_id", it->poller_id);
-      poller_ba_relation_insert.bind_value(":ba_id", it->ba_id);
-      try {
-        poller_ba_relation_insert.run_statement();
-      } catch (std::exception const&) {}
+      query << "INSERT INTO host_service_relation"
+               "  (host_host_id, service_service_id)"
+               "  VALUES (:host_id, :service_id)";
+      q.prepare(query.str());
     }
-    // DELETE.
-    else {
-      logging::debug(logging::medium)
-        << "db_dumper: deleting BA " << it->ba_id << " ('"
-        << it->name << "')";
-      ba_delete.bind_value(":ba_id", it->ba_id);
-      ba_delete.run_statement();
-    }
+    for (std::list<entries::service>::const_iterator
+           it(_services.begin()),
+           end(_services.end());
+         it != end;
+         ++it)
+      if (it->enable) {
+        q.bind_value(":host_id", it->host_id);
+        q.bind_value(":service_id", it->service_id);
+        try {
+          q.run_statement();
+        }
+        catch (std::exception const& e) {
+          (void)e;
+        }
+      }
   }
 
-  // Process all KPIs.
-  for (std::list<entries::kpi>::const_iterator
-         it(_kpis.begin()),
-         end(_kpis.end());
+  return ;
+}
+
+/**
+ *  Store a list of objects in the database.
+ *
+ *  @param[out] db  Database object.
+ *  @param[in]  l   List of objects.
+ *  @param[in]  id  ID name in table.
+ */
+template <typename T>
+void db_writer::_store_objects(
+                  database& db,
+                  std::list<T> const& l,
+                  char const* id_name,
+                  unsigned int (T::* id_member)) {
+  // Prepare queries.
+  database_query insert_query(db);
+  database_query update_query(db);
+  database_query delete_query(db);
+  {
+    database_preparator::event_unique ids;
+    ids.insert(id_name);
+    database_preparator dbp(T::static_type(), ids);
+    dbp.prepare_insert(insert_query);
+    dbp.prepare_update(update_query);
+    dbp.prepare_delete(delete_query);
+  }
+  std::string placeholder;
+  placeholder = ":";
+  placeholder.append(id_name);
+
+  // Process objects.
+  for (typename std::list<T>::const_iterator
+         it(l.begin()),
+         end(l.end());
        it != end;
        ++it) {
     // INSERT / UPDATE.
     if (it->enable) {
-      logging::debug(logging::medium)
-        << "db_dumper: updating KPI " << it->kpi_id;
-      kpi_update << *it;
-      kpi_update.run_statement();
-      if (!kpi_update.num_rows_affected()) {
-        logging::debug(logging::medium)
-          << "db_dumper: inserting KPI " << it->kpi_id;
-        kpi_insert << *it;
-        kpi_insert.run_statement();
+      update_query << *it;
+      update_query.run_statement();
+      if (!update_query.num_rows_affected()) {
+        insert_query << *it;
+        insert_query.run_statement();
       }
-      std::ostringstream query;
-      query << "UPDATE cfg_bam_kpi SET activate='1' WHERE kpi_id="
-            << it->kpi_id;
-      database_query q(db);
-      q.run_query(query.str().c_str());
     }
     // DELETE.
     else {
-      logging::debug(logging::medium)
-        << "db_dumper: deleting KPI " << it->kpi_id;
-      kpi_delete.bind_value(":kpi_id", it->kpi_id);
-      kpi_delete.run_statement();
+      delete_query.bind_value(placeholder.c_str(), (*it).*id_member);
+      delete_query.run_statement();
     }
   }
 
