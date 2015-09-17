@@ -485,7 +485,7 @@ void reader::_load(state::meta_services& meta_services) {
           << "virtual host '_Module_Meta' does not exist: creating one";
         query.str("");
         query << "INSERT INTO cfg_hosts (host_name, organization_id)"
-                 "  VALUES (_Module_Meta, " << _poller_organization_id << ")";
+                 "  VALUES ('_Module_Meta', " << _poller_organization_id << ")";
         q.run_query(query.str());
       }
       else {

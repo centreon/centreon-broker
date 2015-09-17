@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <centreonbroker>
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
-  <instance>42</instance>
+  <poller_id>42</poller_id>
+  <broker_id>42</broker_id>
   <instance_name>MyBroker</instance_name>
   <!--
   <stats>
