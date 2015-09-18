@@ -19,10 +19,12 @@
 #ifndef CCB_MULTIPLEXING_ENGINE_HH
 #  define CCB_MULTIPLEXING_ENGINE_HH
 
+#  include <memory>
 #  include <QMutex>
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/multiplexing/hooker.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/persistent_cache.hh"
 
 CCB_BEGIN()
 
@@ -47,6 +49,7 @@ namespace           multiplexing {
     static engine&  instance();
     static void     load();
     void            publish(misc::shared_ptr<io::data> const& d);
+    void            set_cache_file(std::string const& cache_filename);
     void            start();
     void            stop();
     void            subscribe(muxer* subscriber);
@@ -61,10 +64,14 @@ namespace           multiplexing {
     void            _nop(misc::shared_ptr<io::data> const& d);
     void            _send_to_subscribers();
     void            _write(misc::shared_ptr<io::data> const& d);
+    void            _write_to_cache_file(misc::shared_ptr<io::data> const& d);
 
     static engine*  _instance;
     void (engine::* _write_func)(
                       misc::shared_ptr<io::data> const&);
+    std::string     _cache_filename;
+    std::auto_ptr<persistent_cache>
+                    _cache_file;
   };
 }
 

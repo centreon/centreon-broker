@@ -36,6 +36,9 @@ using namespace com::centreon::broker::multiplexing;
 *                                     *
 **************************************/
 
+// Default cache file.
+static char const* default_cache_file = "broker_engine_cache";
+
 // Hooks.
 static std::vector<std::pair<hooker*, bool> >           _hooks;
 static std::vector<std::pair<hooker*, bool> >::iterator _hooks_begin;
@@ -125,6 +128,16 @@ void engine::publish(misc::shared_ptr<io::data> const& e) {
 }
 
 /**
+ *  Set the cache file used by the multiplexing engine to create its cache file.
+ *
+ *  @param[in] cache_filename  The cache file name.
+ */
+void engine::set_cache_file(std::string const& cache_filename) {
+  _cache_filename = cache_filename;
+}
+
+
+/**
  *  Start multiplexing.
  */
 void engine::start() {
@@ -133,11 +146,30 @@ void engine::start() {
     logging::debug(logging::high) << "multiplexing: starting";
     _write_func = &engine::_write;
 
-    // Copy event queue.
     QMutexLocker lock(this);
-    std::queue<misc::shared_ptr<io::data> > kiew(_kiew);
-    while (!_kiew.empty())
+    // Local queue.
+    std::queue<misc::shared_ptr<io::data> > kiew;
+    // Get events from the cache file to the local queue.
+    try {
+      persistent_cache cache(_cache_filename);
+      misc::shared_ptr<io::data> d;
+      while (true) {
+        cache.get(d);
+        if (d.isNull())
+          break ;
+        kiew.push(d);
+      }
+    } catch (std::exception const& e) {
+      logging::error(logging::medium)
+        << "multiplexing: couldn't read cache file '"
+        << _cache_filename << "'";
+    }
+
+    // Copy global event queue to local queue.
+    while (!_kiew.empty()) {
+      kiew.push(_kiew.front());
       _kiew.pop();
+    }
 
     // Notify hooks of multiplexing loop start.
     for (std::vector<std::pair<hooker*, bool> >::iterator
@@ -211,8 +243,22 @@ void engine::stop() {
       lock.relock();
     } while (!_kiew.empty());
 
+    // Open the cache file and start the transaction.
+    // The cache file is used to cache all the events produced
+    // while the engine is stopped. It will be replayed next time
+    // the engine is started.
+    try {
+    _cache_file.reset(new persistent_cache(_cache_filename));
+    _cache_file->transaction();
+    } catch (std::exception const& e) {
+      logging::error(logging::medium)
+        << "multiplexng: could not open cache file '"
+        << _cache_filename << "'";
+      _cache_file.reset();
+    }
+
     // Set writing method.
-    _write_func = &engine::_nop;
+    _write_func = &engine::_write_to_cache_file;
   }
   return ;
 }
@@ -251,6 +297,10 @@ void engine::unhook(hooker& h) {
  *  Unload class instance.
  */
 void engine::unload() {
+  // Commit the cache file, if needed.
+  if (_instance && _instance->_cache_file.get())
+    _instance->_cache_file->commit();
+
   delete _instance;
   _instance = NULL;
   return ;
@@ -285,7 +335,8 @@ void engine::unsubscribe(muxer* subscriber) {
  */
 engine::engine()
   : QMutex(QMutex::Recursive),
-    _write_func(&engine::_nop) {
+    _write_func(&engine::_nop),
+    _cache_filename(default_cache_file) {
   // Initialize hook iterators.
   _hooks_begin = _hooks.begin();
   _hooks_end = _hooks.end();
@@ -361,4 +412,21 @@ void engine::_write(misc::shared_ptr<io::data> const& e) {
   }
 
   return ;
+}
+
+/**
+ *  Write to a cache file that will be played back at startup.
+ *
+ *  @param[in] d  Data to write.
+ */
+void engine::_write_to_cache_file(misc::shared_ptr<io::data> const& d) {
+  try {
+    if (_cache_file.get())
+      _cache_file->add(d);
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium)
+      << "multiplexing: could not write to cache file '"
+      << _cache_filename << "'";
+  }
 }
