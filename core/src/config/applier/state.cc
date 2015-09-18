@@ -69,6 +69,10 @@ void state::apply(
   if (!_cache_dir.empty())
     _cache_dir.append("/");
 
+  // Set multiplexing engine cache file.
+  com::centreon::broker::multiplexing::engine::instance().set_cache_file(
+    _cache_dir + s.broker_name() + "_broker_engine_cache");
+
   // Apply logging configuration.
   logger::instance().apply(s.loggers());
 
