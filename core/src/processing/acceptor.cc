@@ -280,6 +280,6 @@ void acceptor::_set_listening(bool val) {
  *  @return  The listening value.
  */
 bool acceptor::_get_listening() const throw() {
-  QMutexLocker lock(&_stat_mutex);
+  QMutexLocker lock(const_cast<QMutex*>(&_stat_mutex));
   return (_listening);
 }
