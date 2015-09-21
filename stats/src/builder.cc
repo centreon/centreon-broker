@@ -126,7 +126,7 @@ void builder::build() {
              ++it) {
           io::properties p;
           _generate_stats_for_endpoint(it->second, _data, p, false);
-          _root.children().push_back(p);
+          _root.add_child(p);
           _data.append("\n");
         }
       else
@@ -339,19 +339,36 @@ void builder::_generate_stats_for_endpoint(
 /**
  *  Serialize some properties.
  *
- *  @param[out] buffer Serialized data.
- *  @param[in]  tree   Properties tree.
+ *  @param[out] buffer  Serialized data.
+ *  @param[in]  tree    Properties tree.
+ *  @param[in]  indent  The indentation to use.
  */
 void builder::_serialize(
                 std::string& buffer,
-                io::properties const& tree) {
+                io::properties const& tree,
+                unsigned int indent) {
+  std::string indent_string(indent * 2, ' ');
   for (io::properties::const_iterator
          it(tree.begin()),
          end(tree.end());
        it != end;
        ++it) {
-    buffer.append(it->second.get_perfdata());
+    buffer.append(indent_string);
+    buffer.append(it->second.get_name());
+    buffer.append("=");
+    buffer.append(it->second.get_value());
     buffer.append("\n");
+  }
+  if (tree.children().size() != 0) {
+    for (io::properties::children_list::const_iterator
+           it = tree.children().begin(),
+           end = tree.children().end();
+         it != end;
+         ++it) {
+      if (!it->first.empty())
+        buffer.append(it->first).append("=").append("\n");
+      _serialize(buffer, it->second, indent + 1);
+    }
   }
   return ;
 }

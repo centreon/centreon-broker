@@ -239,7 +239,7 @@ void acceptor::_forward_statistic(io::properties& tree) {
        ++it) {
     io::properties subtree;
     (*it)->stats(subtree);
-    tree.merge(tree);
+    tree.add_child(subtree, (*it)->get_name());
   }
 }
 

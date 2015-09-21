@@ -53,7 +53,8 @@ namespace                 stats {
                             bool is_out);
     static void           _serialize(
                             std::string& buffer,
-                            io::properties const& tree);
+                            io::properties const& tree,
+                            unsigned int indent = 0);
 
     std::string           _data;
     io::properties        _root;

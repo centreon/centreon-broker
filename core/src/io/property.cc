@@ -23,17 +23,17 @@ using namespace com::centreon::broker::io;
 /**
  *  Constructor.
  *
- *  @param[in] output     The plugin output.
- *  @param[in] perfdata   The plugin perfdata.
+ *  @param[in] name       The name of the property.
+ *  @param[in] value      The value of the property..
  *  @param[in] graphable  If the plugin is graphable.
  */
 property::property(
-            std::string const& output,
-            std::string const& perfdata,
+            std::string const& name,
+            std::string const& value,
             bool graphable)
-  : _graphable(graphable),
-    _output(output),
-    _perfdata(perfdata) {
+  : _name(name),
+    _value(value),
+    _graphable(graphable) {
 
 }
 
@@ -62,29 +62,29 @@ property::~property() throw () {
  */
 property& property::operator=(property const& right) {
   if (this != &right) {
+    _name = right._name;
+    _value = right._value;
     _graphable = right._graphable;
-    _output = right._output;
-    _perfdata = right._perfdata;
   }
   return (*this);
 }
 
 /**
- *  Get the plugin output.
+ *  Get the name of this property.
  *
- *  @return The plugin output.
+ *  @return  The name of this property.
  */
-std::string const& property::get_output() const throw () {
-  return (_output);
+std::string const& property::get_name() const throw() {
+  return (_name);
 }
 
 /**
- *  Get the plugin perfdata.
+ *  Get the value of this property.
  *
- *  @return The perfdata.
+ *  @return  The value of this property.
  */
-std::string const& property::get_perfdata() const throw () {
-  return (_perfdata);
+std::string const& property::get_value() const throw() {
+  return (_value);
 }
 
 /**
@@ -97,28 +97,28 @@ bool property::is_graphable() const throw () {
 }
 
 /**
- *  Set if the plugin is graphable.
+ *  Set the name of this property.
  *
- *  @param[in] graphable True if the plugin is graphable.
+ *  @param[in] name  The name of this property.
+ */
+void property::set_name(std::string const& name) {
+  _name = name;
+}
+
+/**
+ *  Set the value of this property.
+ *
+ *  @param[in] value  The value of this property.
+ */
+void property::set_value(std::string const& value) {
+  _value = value;
+}
+
+/**
+ *  Set if graphable.
+ *
+ *  @param[in] graphable  True if graphable.
  */
 void property::set_graphable(bool graphable) {
   _graphable = graphable;
-}
-
-/**
- *  Set the plugin output.
- *
- *  @param[in] output The plugin output.
- */
-void property::set_output(std::string const& output) {
-  _output = output;
-}
-
-/**
- *  Set the plugin perfdata.
- *
- *  @param[in] perfdata The plugin perfdata.
- */
-void property::set_perfdata(std::string const& perfdata) {
-  _perfdata = perfdata;
 }

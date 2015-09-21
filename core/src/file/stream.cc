@@ -26,6 +26,7 @@
 #include <QDir>
 #include <QMutexLocker>
 #include <sstream>
+#include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/stream.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -186,65 +187,53 @@ void stream::set_auto_delete(bool auto_delete) {
  */
 void stream::statistics(io::properties& tree) const {
   std::ostringstream oss;
-
   // Easy to print.
   {
-    io::property& p(tree["file_read_path"]);
-    oss.str("");
-    oss << "file_read_path=" << _file_path(_rid);
-    p.set_perfdata(oss.str());
-    p.set_graphable(false);
+    tree.add_property(
+           "file_read_path",
+           io::property("file_read_path", misc::string::get(_rid)));
   }
   {
-    io::property& p(tree["file_read_offset"]);
-    oss.str("");
-    oss << "file_read_offset=" << _roffset;
-    p.set_perfdata(oss.str());
-    p.set_graphable(false);
+    tree.add_property(
+           "file_read_offset",
+           io::property("file_read_offset", misc::string::get(_roffset)));
   }
   {
-    io::property& p(tree["file_write_path"]);
-    oss.str("");
-    oss << "file_write_path=" << _file_path(_wid);
-    p.set_perfdata(oss.str());
-    p.set_graphable(false);
+    tree.add_property(
+           "file_write_path",
+           io::property("file_write_path", misc::string::get(_wid)));
   }
   {
-    io::property& p(tree["file_write_offset"]);
-    oss.str("");
-    oss << "file_write_offset=" << _woffset;
-    p.set_perfdata(oss.str());
-    p.set_graphable(false);
+    tree.add_property(
+           "file_write_offset",
+           io::property("file_write_offset", misc::string::get(_woffset)));
   }
   {
-    io::property& p(tree["file_max_size"]);
-    oss.str("");
-    oss << "file_max_size=";
-    if (_max_size != std::numeric_limits<long>::max())
-      oss << _max_size;
-    else
-      oss << "unlimited";
-    p.set_perfdata(oss.str());
-    p.set_graphable(false);
+    tree.add_property(
+           "file_max_size",
+           io::property(
+                 "file_max_size",
+                 _max_size != std::numeric_limits<long>::max()
+                 ? misc::string::get(_max_size)
+                 : "unlimited"));
   }
 
   // Need computation.
   bool write_time_expected(false);
   {
     io::property& p(tree["file_percent_processed"]);
+    p.set_name("file_percent_processed");
     oss.str("");
-    oss << "file_percent_processed=";
     if (_rid != _wid
         && _max_size == std::numeric_limits<long>::max()) {
-      oss << "unknown\n";
+      oss << "unknown";
     }
     else {
       oss << (_roffset * 100.0) / (_woffset + (_wid - _rid) * _max_size)
-          << "%\n";
+          << "%";
       write_time_expected = true;
     }
-    p.set_perfdata(oss.str());
-    p.set_graphable(false);
+    p.set_value(oss.str());
   }
   if (write_time_expected) {
     time_t now(time(NULL));
@@ -256,32 +245,29 @@ void stream::statistics(io::properties& tree) const {
       {
         io::property& p(tree["file_expected_terminated_at"]);
         oss.str("");
-        oss << "file_expected_terminated_at=";
+        p.set_name("file_expected_terminated_at");
 
         unsigned long long
           div(roffset + _last_write_offset - _last_read_offset - woffset);
         if (div == 0)
-          oss << "file not processed fast enough to terminate\n";
+          oss << "file not processed fast enough to terminate";
         else {
           eta = now + (woffset - roffset) * (now - _last_time) / div;
-          oss << eta << "\n";
+          oss << eta;
         }
-
-        p.set_perfdata(oss.str());
-        p.set_graphable(false);
+        p.set_value(oss.str());
       }
 
       if (_max_size == std::numeric_limits<long>::max()) {
         io::property& p(tree["file_expected_max_size"]);
         oss.str("");
-        oss << "file_expected_max_size="
-            << woffset
+        p.set_name("file_expected_max_size");
+        oss << woffset
                + (woffset - _last_write_offset)
                * (eta - now)
-               / (now - _last_time)
-            << "\n";
+               / (now - _last_time);
 
-        p.set_perfdata(oss.str());
+        p.set_value(oss.str());
         p.set_graphable(false);
       }
     }

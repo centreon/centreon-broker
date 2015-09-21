@@ -122,11 +122,8 @@ bool monitoring_stream::read(
  */
 void monitoring_stream::statistics(io::properties& tree) const {
   QMutexLocker lock(&_statusm);
-  if (!_status.empty()) {
-    io::property& p(tree["status"]);
-    p.set_perfdata(_status);
-    p.set_graphable(false);
-  }
+  if (!_status.empty())
+    tree.add_property("status", io::property("status", _status));
   return ;
 }
 

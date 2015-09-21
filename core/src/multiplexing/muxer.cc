@@ -26,6 +26,7 @@
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/persistent_file.hh"
+#include "com/centreon/broker/misc/string.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::multiplexing;
@@ -251,70 +252,10 @@ void muxer::statistics(io::properties& tree) const {
   // Lock object.
   QMutexLocker lock(&_mutex);
 
-  // Queued events.
-  std::ostringstream oss;
-  {
-    oss << "queued events=" << _total_events;
-    io::property& p(tree["queued_events"]);
-    p.set_perfdata(oss.str());
-    p.set_graphable(false);
-  }
-
   // Temporary mode.
-  {
-    oss.str("");
-    char const* enable(_temporary.get() ? "yes" : "no");
-    oss << "queue file enabled=" << enable;
-    io::property& p(tree["queue_file_enabled"]);
-    p.set_perfdata(oss.str());
-    p.set_graphable(false);
-  }
-
-  // Filters.
-  {
-    oss.str("");
-
-    // Get numeric event categories.
-    uset<unsigned short> numcats;
-    for (uset<unsigned int>::const_iterator
-           it(_write_filters.begin()),
-           end(_write_filters.end());
-         it != end;
-         ++it)
-      numcats.insert(io::events::category_of_type(*it));
-
-    // Print filters.
-    oss << "accepted events";
-    if (numcats.empty()) {
-      oss << "\n  all";
-    }
-    else {
-      // Convert numeric categories to strings.
-      for (uset<unsigned short>::const_iterator
-             it(numcats.begin()),
-             end(numcats.end());
-           it != end;
-           ++it) {
-        io::events::categories_container::const_iterator
-          it2(io::events::instance().begin()),
-          end2(io::events::instance().end());
-        while (it2 != end2) {
-          if (!it2->second.events.empty() && (*it == it2->first)) {
-            oss << "\n  " << it2->second.name;
-            break ;
-          }
-          ++it2;
-        }
-        if (it2 == end2)
-          oss << "\n  " << *it;
-      }
-    }
-
-    // Set property.
-    io::property& p(tree["accepted_events"]);
-    p.set_perfdata(oss.str());
-    p.set_graphable(false);
-  }
+  tree.add_property(
+         "queue_file_enabled",
+         io::property("queue file enabled", _temporary.get() ? "yes" : "no"));
 
   return ;
 }

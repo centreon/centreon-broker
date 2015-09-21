@@ -108,7 +108,7 @@ properties::const_iterator properties::begin() const {
  *
  *  @return Children.
  */
-std::list<properties> const& properties::children() const {
+properties::children_list const& properties::children() const {
   return (_children);
 }
 
@@ -117,8 +117,18 @@ std::list<properties> const& properties::children() const {
  *
  *  @return Children.
  */
-std::list<properties>& properties::children() {
+properties::children_list& properties::children() {
   return (_children);
+}
+
+/**
+ *  Add a child tree to this property tree.
+ *
+ *  @param[in] child  The child to add to this property tree.
+ *  @param[in] name   The name of the child tree.
+ */
+void properties::add_child(properties const& child, std::string const& name) {
+  _children.push_back(std::make_pair(name, child));
 }
 
 /**

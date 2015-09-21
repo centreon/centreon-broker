@@ -605,9 +605,10 @@ void failover::_forward_statistic(io::properties& tree) {
     QMutexLocker lock(&_streamm);
     _stream->statistics(tree);
   }
+  _subscriber->get_muxer().statistics(tree);
   io::properties subtree;
   _failover->statistics(subtree);
-  tree.merge(subtree);
+  tree.add_child(subtree, "failover");
 }
 
 /**************************************

@@ -157,7 +157,7 @@ void acceptor::set_write_timeout(int secs) {
 void acceptor::stats(io::properties& tree) {
   QMutexLocker children_lock(&_childrenm);
   std::ostringstream oss;
-  oss << "peers=" << _children.size();
+  oss << _children.size();
   for (std::list<std::string>::const_iterator
          it(_children.begin()),
          end(_children.end());
@@ -165,7 +165,7 @@ void acceptor::stats(io::properties& tree) {
        ++it)
     oss << "\n  " << *it;
   io::property& p(tree["peers"]);
-  p.set_perfdata(oss.str());
-  p.set_graphable(false);
+  p.set_name("peers");
+  p.set_value(oss.str());
   return ;
 }

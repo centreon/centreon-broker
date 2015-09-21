@@ -195,4 +195,5 @@ void feeder::_forward_statistic(io::properties& tree) {
       _client->statistics(tree);
     _client_mutex.unlock();
   }
+  _subscriber.get_muxer().statistics(tree);
 }
