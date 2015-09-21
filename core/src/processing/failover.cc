@@ -561,7 +561,10 @@ unsigned int failover::write(misc::shared_ptr<io::data> const& d) {
 std::string failover::_get_state() {
   char const* ret = NULL;
   if (_streamm.tryLock()) {
-    ret = "connected";
+    if (_stream.isNull())
+      ret = "connecting";
+    else
+      ret = "connected";
     _streamm.unlock();
   }
   else
