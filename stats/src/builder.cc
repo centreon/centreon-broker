@@ -125,7 +125,7 @@ void builder::build() {
              it != end;
              ++it) {
           io::properties p;
-          _generate_stats_for_endpoint(it->second, _data, p, false);
+          _generate_stats_for_endpoint(it->second, _data, p);
           _root.add_child(p);
           _data.append("\n");
         }
@@ -175,15 +175,13 @@ io::properties const& builder::root() const throw () {
  *  @param[in]  fo     Failover thread of the endpoint.
  *  @param[out] buffer Buffer in which data will be printed.
  *  @param[out] tree   Properties for this tree.
- *  @param[in]  is_out true if fo manage an output endpoint.
  */
 void builder::_generate_stats_for_endpoint(
                 processing::thread* fo,
                 std::string& buffer,
-                io::properties& tree,
-                bool is_out) {
+                io::properties& tree) {
   // Header.
-  buffer.append(is_out ? "output " : "input ");
+  buffer.append("endpoint ");
   buffer.append(fo->get_name());
   buffer.append("\n");
 

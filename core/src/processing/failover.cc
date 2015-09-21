@@ -189,11 +189,13 @@ void failover::run() {
     try {
       // Attempt to open endpoint.
       _update_status("opening endpoint");
+      _last_connection_attempt = timestamp::now();
       {
         misc::shared_ptr<io::stream> s(_endpoint->open());
         {
           QMutexLocker stream_lock(&_streamm);
           _stream = s;
+          _last_connection_success = timestamp::now();
         }
       }
       _update_status("");
@@ -253,6 +255,7 @@ void failover::run() {
             if (timed_out)
               break ;
             _stream->write(d);
+            _event_processing_speed.tick();
           }
         }
         catch (io::exceptions::shutdown const& e) {
@@ -314,6 +317,7 @@ void failover::run() {
               << "' to multiplexing engine";
             _update_status("writing event to multiplexing engine");
             _subscriber->get_muxer().write(d);
+            _event_processing_speed.tick();
             _update_status("");
             continue ; // Stream read bias.
           }
@@ -347,6 +351,7 @@ void failover::run() {
             {
               QMutexLocker stream_lock(&_streamm);
               _stream->write(d);
+              _event_processing_speed.tick();
             }
             for (std::vector<misc::shared_ptr<io::stream> >::iterator
                    it(secondaries.begin()),

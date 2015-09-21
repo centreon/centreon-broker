@@ -49,8 +49,7 @@ namespace                 stats {
     static void           _generate_stats_for_endpoint(
                             processing::thread* fo,
                             std::string& buffer,
-                            io::properties& tree,
-                            bool is_out);
+                            io::properties& tree);
     static void           _serialize(
                             std::string& buffer,
                             io::properties const& tree,
