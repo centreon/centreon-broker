@@ -73,6 +73,8 @@ namespace       processing {
                 acceptor(acceptor const& other);
     acceptor&   operator=(acceptor const& other);
     void        _wait_feeders();
+    void        _set_listening(bool val);
+    bool        _get_listening() const throw();
 
     misc::shared_ptr<io::endpoint>
                 _endp;
@@ -84,8 +86,7 @@ namespace       processing {
     time_t      _retry_interval;
     uset<unsigned int>
                 _write_filters;
-    volatile bool
-                _listening;
+    bool        _listening;
   };
 }
 

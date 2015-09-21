@@ -97,12 +97,12 @@ void acceptor::run() {
   // Run as long as no exit request was made.
   while (!should_exit()) {
     try {
-      _listening = true;
+      _set_listening(true);
       // Try to accept connection.
       accept();
     }
     catch (std::exception const& e) {
-      _listening = false;
+      _set_listening(false);
       // Log error.
       logging::error(logging::high) << "acceptor: endpoint '"
         << _name << "' could not accept client: " << e.what();
@@ -132,7 +132,7 @@ void acceptor::run() {
           ++it;
     }
   }
-  _listening = false;
+  _set_listening(false);
 
   // Cleanup.
   _wait_feeders();
@@ -186,7 +186,7 @@ void acceptor::set_write_filters(uset<unsigned int> const& filters) {
  *  @return  The state of the acceptor.
  */
 std::string acceptor::_get_state() {
-  if (_listening)
+  if (_get_listening())
     return ("listening");
   else
     return ("disconnected");
@@ -262,4 +262,24 @@ void acceptor::_wait_feeders() {
     (*it)->wait();
   _feeders.clear();
   return ;
+}
+
+/**
+ *  Set listening value.
+ *
+ *  @param[in] val  The new value.
+ */
+void acceptor::_set_listening(bool val) {
+  QMutexLocker lock(&_stat_mutex);
+  _listening = val;
+}
+
+/**
+ *  Get listening value.
+ *
+ *  @return  The listening value.
+ */
+bool acceptor::_get_listening() const throw() {
+  QMutexLocker lock(&_stat_mutex);
+  return (_listening);
 }
