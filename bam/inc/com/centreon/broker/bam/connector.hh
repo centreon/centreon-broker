@@ -19,7 +19,7 @@
 #ifndef CCB_BAM_CONNECTOR_HH
 #  define CCB_BAM_CONNECTOR_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -35,25 +35,28 @@ namespace           bam {
    */
   class             connector : public io::endpoint {
   public:
-    enum stream_type {
-      bam_type = 1,
-      bam_bi_type
-    };
-
                     connector();
                     connector(connector const& other);
                     ~connector();
     connector&      operator=(connector const& other);
-    void            connect_to(
-                      stream_type type,
+    void            connect_monitoring(
+                      database_config const& db_cfg,
+                      std::string const& storage_db_name);
+    void            connect_reporting(
                       database_config const& db_cfg);
     misc::shared_ptr<io::stream>
                     open();
 
    private:
+    enum            stream_type {
+      bam_monitoring_type = 1,
+      bam_reporting_type
+    };
+
     void            _internal_copy(connector const& other);
 
     database_config _db_cfg;
+    std::string     _storage_db_name;
     stream_type     _type;
   };
 }

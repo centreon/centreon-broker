@@ -46,7 +46,7 @@ namespace        bam {
    */
   class          ba : public computable, public service_listener {
   public:
-                 ba();
+                 ba(bool generate_virtual_status = true);
                  ba(ba const& other);
                  ~ba();
     ba&          operator=(ba const& other);
@@ -107,6 +107,7 @@ namespace        bam {
     double       _downtime_soft;
     misc::shared_ptr<ba_event>
                  _event;
+    bool         _generate_virtual_status;
     unsigned int _host_id;
     unsigned int _id;
     umap<kpi*, impact_info>

@@ -19,9 +19,8 @@
 #include <cstdlib>
 #include <sstream>
 #include <memory>
-#include <ctime>
 #include "com/centreon/broker/bam/configuration/state.hh"
-#include "com/centreon/broker/bam/configuration/reader.hh"
+#include "com/centreon/broker/bam/configuration/reader_v2.hh"
 #include "com/centreon/broker/bam/configuration/reader_exception.hh"
 #include "com/centreon/broker/bam/dimension_ba_event.hh"
 #include "com/centreon/broker/bam/dimension_bv_event.hh"
@@ -32,14 +31,13 @@
 #include "com/centreon/broker/bam/dimension_timeperiod_exception.hh"
 #include "com/centreon/broker/bam/dimension_timeperiod_exclusion.hh"
 #include "com/centreon/broker/bam/dimension_ba_timeperiod_relation.hh"
-#include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/time/timeperiod.hh"
 #include "com/centreon/broker/database.hh"
 #include "com/centreon/broker/database_query.hh"
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/time/timeperiod.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
@@ -48,15 +46,17 @@ using namespace com::centreon::broker::bam::configuration;
  *  Constructor.
  *
  *  @param[in] centreon_db  Centreon database connection.
+ *  @param[in] storage_cfg  Storage database configuration.
  */
-reader::reader(database& centreon_db)
-  : _db(centreon_db),
-    _poller_organization_id(0) {}
+reader_v2::reader_v2(
+          database& centreon_db,
+          database_config const& storage_cfg)
+  : _db(centreon_db), _storage_cfg(storage_cfg) {}
 
 /**
  *  Destructor.
  */
-reader::~reader() {}
+reader_v2::~reader_v2() {}
 
 /**
  *  Read configuration from database.
@@ -64,7 +64,7 @@ reader::~reader() {}
  *  @param[out] st  All the configuration state for the BA subsystem
  *                  recuperated from the specified database.
  */
-void reader::read(state& st) {
+void reader_v2::read(state& st) {
   try {
     _load_dimensions();
     _load(st.get_bas());
@@ -85,7 +85,7 @@ void reader::read(state& st) {
  *
  *  @param[out] kpis The list of kpis in database.
  */
-void reader::_load(state::kpis& kpis) {
+void reader_v2::_load(state::kpis& kpis) {
   try {
     std::ostringstream oss;
     oss << "SELECT  k.kpi_id, k.state_type, k.host_id, k.service_id, k.id_ba,"
@@ -97,19 +97,19 @@ void reader::_load(state::kpis& kpis) {
            "        COALESCE(COALESCE(k.drop_critical, cc.impact), g.average_impact),"
            "        COALESCE(COALESCE(k.drop_unknown, uu.impact), g.average_impact),"
            "        k.last_state_change, k.in_downtime, k.last_impact"
-           "  FROM cfg_bam_kpi AS k"
-           "  INNER JOIN cfg_bam AS mb"
+           "  FROM mod_bam_kpi AS k"
+           "  INNER JOIN mod_bam AS mb"
            "    ON k.id_ba = mb.ba_id"
-           "  INNER JOIN cfg_bam_poller_relations AS pr"
+           "  INNER JOIN mod_bam_poller_relations AS pr"
            "    ON pr.ba_id = mb.ba_id"
-           "  LEFT JOIN cfg_bam_impacts AS ww"
+           "  LEFT JOIN mod_bam_impacts AS ww"
            "    ON k.drop_warning_impact_id = ww.id_impact"
-           "  LEFT JOIN cfg_bam_impacts AS cc"
+           "  LEFT JOIN mod_bam_impacts AS cc"
            "    ON k.drop_critical_impact_id = cc.id_impact"
-           "  LEFT JOIN cfg_bam_impacts AS uu"
+           "  LEFT JOIN mod_bam_impacts AS uu"
            "    ON k.drop_unknown_impact_id = uu.id_impact"
            "  LEFT JOIN (SELECT id_ba, 100.0 / COUNT(kpi_id) AS average_impact"
-           "               FROM cfg_bam_kpi"
+           "               FROM mod_bam_kpi"
            "               WHERE activate='1'"
            "               GROUP BY id_ba) AS g"
            "    ON k.id_ba=g.id_ba"
@@ -165,8 +165,8 @@ void reader::_load(state::kpis& kpis) {
       if (it->second.is_meta()) {
         std::ostringstream oss;
         oss << "SELECT hsr.host_host_id, hsr.service_service_id"
-               "  FROM cfg_services AS s"
-               "  LEFT JOIN cfg_hosts_services_relations AS hsr"
+               "  FROM service AS s"
+               "  LEFT JOIN host_service_relation AS hsr"
                "    ON s.service_id=hsr.service_service_id"
                "  WHERE s.service_description='meta_" << it->second.get_meta_id()
             << "'";
@@ -198,15 +198,15 @@ void reader::_load(state::kpis& kpis) {
  *
  *  @param[out] bas  The list of BAs in database.
  */
-void reader::_load(state::bas& bas) {
+void reader_v2::_load(state::bas& bas) {
   try {
     database_query query(_db);
     {
       std::ostringstream oss;
       oss << "SELECT b.ba_id, b.name, b.level_w, b.level_c,"
              "       b.last_state_change, b.current_status, b.in_downtime"
-             "  FROM cfg_bam AS b"
-             "  INNER JOIN cfg_bam_poller_relations AS pr"
+             "  FROM mod_bam AS b"
+             "  INNER JOIN mod_bam_poller_relations AS pr"
              "    ON b.ba_id=pr.ba_id"
              "  WHERE b.activate='1'"
              "    AND pr.poller_id="
@@ -233,97 +233,6 @@ void reader::_load(state::bas& bas) {
         bas[ba_id].set_opened_event(e);
       }
     }
-
-    // Get organization ID.
-    unsigned int organization_id;
-    {
-      std::ostringstream query;
-      query << "SELECT o.organization_id"
-               "  FROM cfg_pollers AS p"
-               "  INNER JOIN cfg_organizations AS o"
-               "    ON p.organization_id=o.organization_id"
-               "  WHERE p.poller_id="
-            << config::applier::state::instance().poller_id();
-      database_query q(_db);
-      q.run_query(query.str());
-      if (q.next())
-        organization_id = q.value(0).toUInt();
-      else {
-        while (1) {
-          q.run_query("SELECT organization_id FROM cfg_organizations");
-          if (q.next()) {
-            organization_id = q.value(0).toUInt();
-            break ;
-          }
-          q.run_query(
-            "INSERT INTO cfg_organizations (name, shortname, active)"
-            "  VALUES ('Default organization', 'default_organization',"
-            "          1)");
-        }
-      }
-    }
-
-    _poller_organization_id = organization_id;
-
-    // Get host ID.
-    unsigned int host_id;
-    while (1) {
-      {
-        std::ostringstream query;
-        query << "SELECT host_id"
-                 "  FROM cfg_hosts"
-                 "  WHERE host_name='_Module_BAM'"
-                 "    AND organization_id=" << organization_id;
-        database_query q(_db);
-        q.run_query(query.str());
-        if (q.next()) {
-          host_id = q.value(0).toUInt();
-          break ;
-        }
-      }
-      {
-        std::ostringstream query;
-        query << "INSERT INTO cfg_hosts (host_name, organization_id)"
-                 "  VALUES ('_Module_BAM', " << organization_id << ")";
-        database_query q(_db);
-        q.run_query(query.str());
-      }
-    }
-
-    // Load service ID for each BA.
-    for (state::bas::iterator it(bas.begin()), end(bas.end());
-         it != end;
-         ++it) {
-      unsigned int service_id;
-      while (1) {
-        {
-          std::ostringstream query;
-          query << "SELECT service_id"
-                   "  FROM cfg_services"
-                   "  WHERE service_description='ba_"
-                << it->second.get_id() << "'"
-                   "    AND organization_id=" << organization_id;
-          database_query q(_db);
-          q.run_query(query.str());
-          if (q.next()) {
-            service_id = q.value(0).toUInt();
-            break ;
-          }
-        }
-        {
-          std::ostringstream query;
-          query << "INSERT INTO cfg_services (service_description,"
-                   "            organization_id)"
-                   "  VALUES ('ba_" << it->second.get_id() << "', "
-                << organization_id << ")";
-          database_query q(_db);
-          q.run_query(query.str());
-        }
-      }
-
-      it->second.set_host_id(host_id);
-      it->second.set_service_id(service_id);
-    }
   }
   catch (reader_exception const& e) {
     (void)e;
@@ -335,6 +244,67 @@ void reader::_load(state::bas& bas) {
            << e.what());
   }
 
+  // Load host_id/service_id of virtual BA services. All the associated
+  // services have for description 'ba_[id]'.
+  try {
+    database_query query(_db);
+    query.run_query(
+            "SELECT h.host_name, s.service_description,"
+            "       hsr.host_host_id, hsr.service_service_id"
+            "  FROM service AS s"
+            "  INNER JOIN host_service_relation AS hsr"
+            "    ON s.service_id=hsr.service_service_id"
+            "  INNER JOIN host AS h"
+            "    ON hsr.host_host_id=h.host_id"
+            "  WHERE s.service_description LIKE 'ba_%'");
+    while (query.next()) {
+      unsigned int host_id = query.value(2).toUInt();
+      unsigned int service_id = query.value(3).toUInt();
+      std::string service_description = query.value(1).toString().toStdString();
+      service_description.erase(0, strlen("ba_"));
+
+      if (!service_description.empty()) {
+        bool ok = false;
+        unsigned int ba_id = QString(service_description.c_str()).toUInt(&ok);
+        if (!ok) {
+          logging::info(logging::medium)
+            << "BAM: service '" << query.value(1).toString() << "' of host '"
+            << query.value(0).toString()
+            << "' is not a valid virtual BA service";
+          continue ;
+        }
+        state::bas::iterator found = bas.find(ba_id);
+        if (found == bas.end()) {
+          logging::info(logging::medium) << "BAM: virtual BA service '"
+            << query.value(1).toString() << "' of host '"
+            << query.value(0).toString() << "' references an unknown BA ("
+            << ba_id << ")";
+          continue;
+        }
+        found->second.set_host_id(host_id);
+        found->second.set_service_id(service_id);
+      }
+    }
+  }
+  catch (reader_exception const& e) {
+    (void)e;
+    throw ;
+  }
+  catch (std::exception const& e) {
+    throw (reader_exception()
+           << "BAM: could not retrieve BA service IDs from DB: "
+           << e.what());
+  }
+
+  // Test for BA without service ID.
+  for (state::bas::const_iterator it(bas.begin()),
+                                  end(bas.end());
+       it != end;
+       ++it)
+    if (it->second.get_service_id() == 0)
+      throw (reader_exception() << "BAM: BA " << it->second.get_id()
+             << " has no associated service");
+
   return ;
 }
 
@@ -343,15 +313,15 @@ void reader::_load(state::bas& bas) {
  *
  *  @param[out] bool_exps The list of bool expression in database.
  */
-void reader::_load(state::bool_exps& bool_exps) {
+void reader_v2::_load(state::bool_exps& bool_exps) {
   // Load boolean expressions themselves.
   try {
     std::ostringstream q;
     q << "SELECT b.boolean_id, b.expression, b.bool_state"
-         "  FROM cfg_bam_boolean AS b"
-         "  INNER JOIN cfg_bam_kpi AS k"
+         "  FROM mod_bam_boolean AS b"
+         "  INNER JOIN mod_bam_kpi AS k"
          "    ON b.boolean_id=k.boolean_id"
-         "  INNER JOIN cfg_bam_poller_relations AS pr"
+         "  INNER JOIN mod_bam_poller_relations AS pr"
          "    ON k.id_ba=pr.ba_id"
          "  WHERE b.activate=1"
          "    AND pr.poller_id="
@@ -384,14 +354,14 @@ void reader::_load(state::bool_exps& bool_exps) {
  *
  *  @param[out] meta_services  Meta-services.
  */
-void reader::_load(state::meta_services& meta_services) {
+void reader_v2::_load(state::meta_services& meta_services) {
   // Load meta-services.
   try {
     database_query q(_db);
     q.run_query(
       "SELECT meta_id, meta_name, calcul_type, warning, critical,"
       "       meta_select_mode, regexp_str, metric"
-      "  FROM cfg_meta_services"
+      "  FROM meta_service"
       "  WHERE meta_activate='1'");
     while (q.next()) {
       unsigned int meta_id(q.value(0).toUInt());
@@ -425,17 +395,14 @@ void reader::_load(state::meta_services& meta_services) {
   try {
     database_query q(_db);
     q.run_query(
-      "SELECT h.host_name, s.service_description,"
-      "       hsr.host_host_id, hsr.service_service_id"
-      "  FROM cfg_services AS s"
-      "  INNER JOIN cfg_hosts_services_relations AS hsr"
+      "SELECT h.host_name, s.service_description"
+      "  FROM service AS s"
+      "  INNER JOIN host_service_relation AS hsr"
       "    ON s.service_id=hsr.service_service_id"
-      "  INNER JOIN cfg_hosts AS h"
+      "  INNER JOIN host AS h"
       "    ON hsr.host_host_id=h.host_id"
       "  WHERE s.service_description LIKE 'meta_%'");
     while (q.next()) {
-      unsigned int host_id(q.value(2).toUInt());
-      unsigned int service_id(q.value(3).toUInt());
       std::string service_description(q.value(1).toString().toStdString());
       service_description.erase(0, strlen("meta_"));
       bool ok(false);
@@ -456,8 +423,6 @@ void reader::_load(state::meta_services& meta_services) {
           << "' references an unknown meta-service (" << meta_id << ")";
         continue ;
       }
-      found->second.set_host_id(host_id);
-      found->second.set_service_id(service_id);
     }
   }
   catch (reader_exception const& e) {
@@ -470,99 +435,21 @@ void reader::_load(state::meta_services& meta_services) {
            << e.what());
   }
 
-  // Check for the virtual host existence.
-  unsigned int meta_virtual_host_id;
-  try {
-    while (true) {
-      database_query q(_db);
-      std::stringstream query;
-      query << "SELECT host_id"
-               "  FROM cfg_hosts"
-               "  WHERE host_name = '_Module_Meta'"
-               "    AND organization_id=" << _poller_organization_id;
-      q.run_query(query.str());
-      if (!q.next()) {
-        logging::info(logging::medium)
-          << "virtual host '_Module_Meta' does not exist: creating one";
-        query.str("");
-        query << "INSERT INTO cfg_hosts (host_name, organization_id)"
-                 "  VALUES ('_Module_Meta', " << _poller_organization_id << ")";
-        q.run_query(query.str());
-      }
-      else {
-        meta_virtual_host_id = q.value(0).toUInt();
-        break ;
-      }
-    }
-  }
-  catch (std::exception const& e) {
-    throw (reader_exception()
-           << "BAM: could not retrieve virtual host '_Module_Meta' from DB: "
-           << e.what());
-  }
-
-  // Send virtual host event
-  {
-    multiplexing::publisher pblsh;
-    misc::shared_ptr<neb::host> host(new neb::host);
-    host->active_checks_enabled = false;
-    host->check_interval = 0.0;
-    host->check_type = 1; // Passive.
-    host->current_check_attempt = 1;
-    host->current_state = 0;
-    host->enabled = true;
-    host->event_handler_enabled = false;
-    host->execution_time = 0.0;
-    host->flap_detection_enabled = false;
-    host->has_been_checked = true;
-    host->host_id = meta_virtual_host_id;
-    host->host_name = "_Module_Meta";
-    host->is_flapping = false;
-    host->last_check = ::time(NULL);
-    host->last_hard_state = 0;
-    host->last_hard_state_change = 0;
-    host->last_state_change = 0;
-    host->last_update = ::time(NULL);
-    host->latency = 0.0;
-    host->max_check_attempts = 1;
-    host->obsess_over = false;
-    host->retry_interval = 0;
-    host->should_be_scheduled = false;
-    host->state_type = 1; // Hard.
-    pblsh.write(host);
-  }
-
   // Check for meta-services without service ID.
-  for (state::meta_services::iterator
+  for (state::meta_services::const_iterator
          it(meta_services.begin()),
          end(meta_services.end());
        it != end;
        ++it) {
-    if (!it->second.get_host_id() || !it->second.get_service_id()) {
-      logging::info(logging::medium)
-          << "BAM: meta-service " << it->first
-          << " has no associated virtual service: creating one";
-      std::stringstream query;
-      database_query q(_db);
-
-      query << "INSERT INTO cfg_services"
-               "              (service_description, organization_id)"
-               "  VALUES ('meta_" << it->first << "', "
-            << _poller_organization_id << ")";
-      q.run_query(query.str());
-      query.str("");
-      query << "SELECT service_id"
-               "  FROM cfg_services"
-               "  WHERE service_description = 'ba_" << it->first << "'";
-      q.run_query(query.str());
-      if (q.next()) {
-        it->second.set_host_id(meta_virtual_host_id);
-        it->second.set_service_id(q.value(0).toUInt());
-      }
-    }
+    // std::pair<std::string, std::string>
+    //   svc(mapping.get_service(it->first));
+    // if (svc.first.empty() || svc.second.empty())
+    //   throw (reader_exception() << "BAM: meta-service "
+    //          << it->first << " has no associated service");
   }
 
   // Load metrics of meta-services.
+  std::auto_ptr<database> storage_db;
   for (state::meta_services::iterator
          it(meta_services.begin()),
          end(meta_services.end());
@@ -573,16 +460,24 @@ void reader::_load(state::meta_services& meta_services) {
         && !it->second.get_metric_name().empty()) {
       std::ostringstream query;
       query << "SELECT m.metric_id"
-            << "  FROM rt_metrics AS m"
-            << "    INNER JOIN rt_index_data AS i"
-            << "    ON m.index_id=i.index_id"
-            << "    INNER JOIN rt_services AS s"
+            << "  FROM metrics AS m"
+            << "    INNER JOIN index_data AS i"
+            << "    ON m.index_id=i.id"
+            << "    INNER JOIN services AS s"
             << "    ON i.host_id=s.host_id AND i.service_id=s.service_id"
             << "  WHERE s.description LIKE '"
             << it->second.get_service_filter() << "'"
             << "    AND m.metric_name='"
             << it->second.get_metric_name() << "'";
-      database_query q(_db);
+      if (!storage_db.get())
+        try { storage_db.reset(new database(_storage_cfg)); }
+        catch (std::exception const& e) {
+          throw (reader_exception()
+                 << "BAM: could not initialize storage database to "
+                    "retrieve metrics associated with some "
+                    "meta-service: " << e.what());
+        }
+      database_query q(*storage_db);
       try { q.run_query(query.str()); }
       catch (std::exception const& e) {
         throw (reader_exception()
@@ -597,7 +492,7 @@ void reader::_load(state::meta_services& meta_services) {
       try {
         std::ostringstream query;
         query << "SELECT metric_id"
-              << "  FROM cfg_meta_services_relations"
+              << "  FROM meta_service_relation"
               << "  WHERE meta_id=" << it->second.get_id()
               << "    AND activate='1'";
         database_query q(_db);
@@ -624,16 +519,17 @@ void reader::_load(state::meta_services& meta_services) {
  *
  *  @param[out] mapping  Host/service mapping.
  */
-void reader::_load(bam::hst_svc_mapping& mapping) {
+void reader_v2::_load(bam::hst_svc_mapping& mapping) {
   try {
+    // XXX : expand hostgroups and servicegroups
     database_query q(_db);
     q.run_query(
       "SELECT h.host_id, s.service_id, h.host_name, s.service_description,"
-      "       service_activate"
-      "  FROM cfg_services AS s"
-      "  LEFT JOIN cfg_hosts_services_relations AS hsr"
+          "   service_activate"
+      "  FROM service AS s"
+      "  LEFT JOIN host_service_relation AS hsr"
       "    ON s.service_id=hsr.service_service_id"
-      "  LEFT JOIN cfg_hosts AS h"
+      "  LEFT JOIN host AS h"
       "    ON hsr.host_host_id=h.host_id");
     while (q.next())
       mapping.set_service(
@@ -658,7 +554,7 @@ void reader::_load(bam::hst_svc_mapping& mapping) {
 /**
  *  Load the dimensions from the database.
  */
-void reader::_load_dimensions() {
+void reader_v2::_load_dimensions() {
   std::auto_ptr<io::stream> out(new multiplexing::publisher);
   // As this operation is destructive (it truncates the database),
   // we cache the data until we are sure we have all the data
@@ -680,7 +576,7 @@ void reader::_load_dimensions() {
     q.run_query(
       "SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday, tp_tuesday, "
       "tp_wednesday, tp_thursday, tp_friday, tp_saturday"
-      "  FROM cfg_timeperiods",
+      "  FROM timeperiod",
       "could not load timeperiods from the database");
     while (q.next()) {
       timeperiods[q.value(0).toUInt()] = time::timeperiod::ptr(
@@ -711,7 +607,7 @@ void reader::_load_dimensions() {
     // Load the timeperiod exceptions.
     q.run_query(
       "SELECT timeperiod_id, days, timerange"
-      "  FROM cfg_timeperiods_exceptions",
+      "  FROM timeperiod_exceptions",
       "could not retrieve timeperiod exceptions from the database");
     while (q.next()) {
       unsigned int timeperiod_id = q.value(0).toUInt();
@@ -736,7 +632,7 @@ void reader::_load_dimensions() {
     // Load the excluded timeperiods.
     q.run_query(
       "SELECT timeperiod_id, timeperiod_exclude_id"
-      "  FROM cfg_timeperiods_exclude_relations",
+      "  FROM timeperiod_exclude_relations",
       "could not retrieve timeperiod exclusions from the database");
     while (q.next()) {
       unsigned int timeperiod_id = q.value(0).toUInt();
@@ -768,8 +664,8 @@ void reader::_load_dimensions() {
            "       b.sla_month_percent_warn, b.sla_month_percent_crit,"
            "       b.sla_month_duration_warn,"
            "       b.sla_month_duration_crit, b.id_reporting_period"
-           "  FROM cfg_bam AS b"
-           "  INNER JOIN cfg_bam_poller_relations AS pr"
+           "  FROM mod_bam AS b"
+           "  INNER JOIN mod_bam_poller_relations AS pr"
            "    ON b.ba_id=pr.ba_id"
            "  WHERE b.activate='1'"
            "    AND pr.poller_id="
@@ -801,7 +697,7 @@ void reader::_load_dimensions() {
     // Load the BVs.
     q.run_query(
       "SELECT id_ba_group, ba_group_name, ba_group_description"
-      "  FROM cfg_bam_ba_groups",
+      "  FROM mod_bam_ba_groups",
       "could not retrieve BVs from the database");
     while (q.next()) {
       misc::shared_ptr<dimension_bv_event>
@@ -816,10 +712,10 @@ void reader::_load_dimensions() {
     {
       std::ostringstream oss;
       oss << "SELECT id_ba, id_ba_group"
-             "  FROM cfg_bam_bagroup_ba_relation as r"
-             "  INNER JOIN cfg_bam AS b"
+             "  FROM mod_bam_bagroup_ba_relation as r"
+             "  INNER JOIN mod_bam AS b"
              "    ON b.ba_id = r.id_ba"
-             "  INNER JOIN cfg_bam_poller_relations AS pr"
+             "  INNER JOIN mod_bam_poller_relations AS pr"
              "    ON b.ba_id=pr.ba_id"
              "  WHERE b.activate='1'"
              "    AND pr.poller_id="
@@ -850,27 +746,27 @@ void reader::_load_dimensions() {
              "       COALESCE(COALESCE(k.drop_unknown, uu.impact), g.average_impact),"
              "       h.host_name, s.service_description, b.name,"
              "       meta.meta_name, boo.name"
-             "  FROM cfg_bam_kpi AS k"
-             "  LEFT JOIN cfg_bam_impacts AS ww"
+             "  FROM mod_bam_kpi AS k"
+             "  LEFT JOIN mod_bam_impacts AS ww"
              "    ON k.drop_warning_impact_id = ww.id_impact"
-             "  LEFT JOIN cfg_bam_impacts AS cc"
+             "  LEFT JOIN mod_bam_impacts AS cc"
              "    ON k.drop_critical_impact_id = cc.id_impact"
-             "  LEFT JOIN cfg_bam_impacts AS uu"
+             "  LEFT JOIN mod_bam_impacts AS uu"
              "    ON k.drop_unknown_impact_id = uu.id_impact"
-             "  LEFT JOIN cfg_hosts AS h"
+             "  LEFT JOIN host AS h"
              "    ON h.host_id = k.host_id"
-             "  LEFT JOIN cfg_services AS s"
+             "  LEFT JOIN service AS s"
              "    ON s.service_id = k.service_id"
-             "  INNER JOIN cfg_bam AS b"
+             "  INNER JOIN mod_bam AS b"
              "    ON b.ba_id = k.id_ba"
-             "  INNER JOIN cfg_bam_poller_relations AS pr"
+             "  INNER JOIN mod_bam_poller_relations AS pr"
              "    ON b.ba_id = pr.ba_id"
-             "  LEFT JOIN cfg_meta_services AS meta"
+             "  LEFT JOIN meta_service AS meta"
              "    ON meta.meta_id = k.meta_id"
-             "  LEFT JOIN cfg_bam_boolean as boo"
+             "  LEFT JOIN mod_bam_boolean as boo"
              "    ON boo.boolean_id = k.boolean_id"
              "  LEFT JOIN (SELECT id_ba, 100.0 / COUNT(kpi_id) AS average_impact"
-             "               FROM cfg_bam_kpi"
+             "               FROM mod_bam_kpi"
              "               WHERE activate='1'"
              "               GROUP BY id_ba) AS g"
              "   ON k.id_ba=g.id_ba"
@@ -915,18 +811,9 @@ void reader::_load_dimensions() {
     }
 
     // Load the ba-timeperiods relations.
-    {
-      std::ostringstream oss;
-      oss << "SELECT bt.ba_id, bt.tp_id"
-             "  FROM cfg_bam_relations_ba_timeperiods AS bt"
-             "  INNER JOIN cfg_bam_poller_relations AS pr"
-             "    ON bt.ba_id=pr.ba_id"
-             "  WHERE pr.poller_id="
-          << config::applier::state::instance().poller_id();
-      q.run_query(
-          oss.str(),
-          "could not retrieve the timeperiods associated with the BAs");
-    }
+    q.run_query(
+      "SELECT ba_id, tp_id FROM mod_bam_relations_ba_timeperiods",
+      "could not retrieve the timeperiods associated with the BAs");
     while (q.next()) {
       misc::shared_ptr<dimension_ba_timeperiod_relation>
         dbtr(new dimension_ba_timeperiod_relation);
