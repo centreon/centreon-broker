@@ -184,3 +184,15 @@ std::string const& properties::name() const throw () {
 void properties::name(std::string const& name) {
   _name = name;
 }
+
+/**
+ *  Add a property.
+ *
+ *  @param[in] name  The name of the property.
+ *  @param[in] prop  The property.
+ */
+void properties::add_property(
+                   std::string const& name,
+                   property const& prop) {
+  (*this)[name] = prop;
+}

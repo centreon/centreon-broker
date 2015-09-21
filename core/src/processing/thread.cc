@@ -17,6 +17,7 @@
 */
 
 #include <QMutexLocker>
+#include "com/centreon/broker/io/properties.hh"
 #include "com/centreon/broker/processing/thread.hh"
 
 using namespace com::centreon::broker::processing;
@@ -24,7 +25,8 @@ using namespace com::centreon::broker::processing;
 /**
  *  Default constructor.
  */
-thread::thread() : _should_exit(false) {}
+thread::thread(std::string const& name)
+  : stat_visitable(name), _should_exit(false) {}
 
 /**
  *  Destructor.
@@ -85,3 +87,4 @@ bool thread::wait(unsigned long timeout_ms) {
   }
   return (retval);
 }
+

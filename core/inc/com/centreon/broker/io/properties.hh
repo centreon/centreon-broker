@@ -57,6 +57,9 @@ namespace              io {
     void               merge(properties const& other);
     std::string const& name() const throw ();
     void               name(std::string const& name);
+    void               add_property(
+                         std::string const& name,
+                         property const& prop);
 
   private:
     std::list<properties>

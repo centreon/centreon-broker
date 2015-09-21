@@ -38,8 +38,8 @@ using namespace com::centreon::broker::processing;
 acceptor::acceptor(
             misc::shared_ptr<io::endpoint> endp,
             std::string const& name)
-  : _endp(endp),
-    _name(name),
+  : thread(name),
+    _endp(endp),
     _retry_interval(30) {}
 
 /**
@@ -74,6 +74,7 @@ void acceptor::accept() {
 
     // Run feeder thread.
     f->start();
+    QMutexLocker lock(&_stat_mutex);
     _feeders.push_back(f);
   }
   return ;
@@ -96,10 +97,12 @@ void acceptor::run() {
   // Run as long as no exit request was made.
   while (!should_exit()) {
     try {
+      _listening = true;
       // Try to accept connection.
       accept();
     }
     catch (std::exception const& e) {
+      _listening = false;
       // Log error.
       logging::error(logging::high) << "acceptor: endpoint '"
         << _name << "' could not accept client: " << e.what();
@@ -117,15 +120,19 @@ void acceptor::run() {
     }
 
     // Check for terminated feeders.
-    for (std::list<misc::shared_ptr<processing::feeder> >::iterator
-           it(_feeders.begin()),
-           end(_feeders.end());
-         it != end;)
-      if ((*it)->wait(0))
-        it = _feeders.erase(it);
-      else
-        ++it;
+    {
+      QMutexLocker lock(&_stat_mutex);
+      for (std::list<misc::shared_ptr<processing::feeder> >::iterator
+             it(_feeders.begin()),
+             end(_feeders.end());
+           it != end;)
+        if ((*it)->wait(0))
+          it = _feeders.erase(it);
+        else
+          ++it;
+    }
   }
+  _listening = false;
 
   // Cleanup.
   _wait_feeders();
@@ -141,6 +148,7 @@ void acceptor::run() {
  *  @param[in] filters  Set of accepted event IDs.
  */
 void acceptor::set_read_filters(uset<unsigned int> const& filters) {
+  QMutexLocker lock(&_stat_mutex);
   _read_filters = filters;
   return ;
 }
@@ -167,8 +175,72 @@ void acceptor::set_retry_interval(time_t retry_interval) {
  *  events.
  */
 void acceptor::set_write_filters(uset<unsigned int> const& filters) {
+  QMutexLocker lock(&_stat_mutex);
   _write_filters = filters;
   return ;
+}
+
+/**
+ *  Get the state of the acceptor.
+ *
+ *  @return  The state of the acceptor.
+ */
+std::string acceptor::_get_state() {
+  if (_listening)
+    return ("listening");
+  else
+    return ("disconnected");
+}
+
+/**
+ *  Get the number of queued events.
+ *
+ *  @return  The number of queued events.
+ */
+unsigned int acceptor::_get_queued_events() {
+  return (0);
+}
+
+/**
+ *  Get the read filters used by the feeder.
+ *
+ *  @return  The read filters used by the feeder.
+ */
+uset<unsigned int> acceptor::_get_read_filters() {
+  QMutexLocker lock(&_stat_mutex);
+  return (_read_filters);
+}
+
+/**
+ *  Get the write filters used by the feeder.
+ *
+ *  @return  The write filters used by the feeder.
+ */
+uset<unsigned int> acceptor::_get_write_filters() {
+  QMutexLocker lock(&_stat_mutex);
+  return (_write_filters);
+}
+
+/**
+ *  Forward the statistic to the feeders.
+ *
+ *  @param[in] tree  The tree.
+ */
+void acceptor::_forward_statistic(io::properties& tree) {
+  QMutexLocker lock(&_stat_mutex);
+
+  // Get statistic of acceptor.
+  _endp->stats(tree);
+  // Get statistics of feeders
+  for (std::list<misc::shared_ptr<processing::feeder> >::iterator
+         it(_feeders.begin()),
+         end(_feeders.end());
+       it != end;
+       ++it) {
+    io::properties subtree;
+    (*it)->stats(subtree);
+    tree.merge(tree);
+  }
 }
 
 /**

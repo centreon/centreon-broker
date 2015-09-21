@@ -215,6 +215,34 @@ void muxer::set_write_filters(muxer::filters const& fltrs) {
 }
 
 /**
+ *  Get the read filters.
+ *
+ *  @return  The read filters.
+ */
+muxer::filters const& muxer::get_read_filters() const {
+  return (_read_filters);
+}
+
+/**
+ *  Get the write filters.
+ *
+ *  @return  The write filters.
+ */
+muxer::filters const& muxer::get_write_filters() const {
+  return (_write_filters);
+}
+
+/**
+ *  Get the size of the event queue.
+ *
+ *  @return  The size of the event queue.
+ */
+unsigned int muxer::get_event_queue_size() const {
+  QMutexLocker lock(&_mutex);
+  return (_events.size());
+}
+
+/**
  *  Generate statistics about the subscriber.
  *
  *  @param[out] buffer Output buffer.

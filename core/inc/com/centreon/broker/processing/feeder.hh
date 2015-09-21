@@ -20,6 +20,7 @@
 #  define CCB_PROCESSING_FEEDER_HH
 
 #  include <string>
+#  include <QReadWriteLock>
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/multiplexing/subscriber.hh"
@@ -50,13 +51,22 @@ namespace                        processing {
                                  ~feeder();
     void                         run();
 
+  protected:
+    // From stat_visitable
+    virtual std::string         _get_state();
+    virtual unsigned int        _get_queued_events();
+    virtual uset<unsigned int>  _get_read_filters();
+    virtual uset<unsigned int>  _get_write_filters();
+    void                        _forward_statistic(io::properties& tree);
+
   private:
                                  feeder(feeder const& other);
     feeder&                      operator=(feeder const& other);
 
     misc::shared_ptr<io::stream> _client;
-    std::string                  _name;
     multiplexing::subscriber     _subscriber;
+    // This mutex is used for the stat thread.
+    QReadWriteLock               _client_mutex;
   };
 }
 

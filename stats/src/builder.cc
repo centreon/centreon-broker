@@ -25,6 +25,8 @@
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/endpoint.hh"
+#include "com/centreon/broker/io/properties.hh"
+#include "com/centreon/broker/processing/thread.hh"
 #include "com/centreon/broker/stats/builder.hh"
 
 using namespace com::centreon::broker;
@@ -180,6 +182,16 @@ void builder::_generate_stats_for_endpoint(
                 std::string& buffer,
                 io::properties& tree,
                 bool is_out) {
+  // Header.
+  buffer.append(is_out ? "output " : "input ");
+  buffer.append(fo->get_name());
+  buffer.append("\n");
+
+  // Gather statistic.
+  fo->stats(tree);
+
+  // Serialize.
+  _serialize(buffer, tree);
   // // Header.
   // buffer.append(is_out ? "output " : "input ");
   // buffer.append(fo->_name.toStdString());

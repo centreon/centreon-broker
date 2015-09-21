@@ -46,10 +46,10 @@ failover::failover(
             misc::shared_ptr<io::endpoint> endp,
             misc::shared_ptr<multiplexing::subscriber> sbscrbr,
             QString const& name)
-  : _buffering_timeout(0),
+  : thread(name.toStdString()),
+    _buffering_timeout(0),
     _endpoint(endp),
     _failover_launched(false),
-    _name(name),
     _next_timeout((time_t)-1),
     _read_timeout((time_t)-1),
     _retry_interval(30),
@@ -546,6 +546,68 @@ unsigned int failover::write(misc::shared_ptr<io::data> const& d) {
     throw (exceptions::msg() << "cannot write to endpoint '"
            << _name << "'");
   return (1);
+}
+
+/**
+ *  Get the state of the failover.
+ *
+ *  @return  The state of the failover.
+ */
+std::string failover::_get_state() {
+  char const* ret = NULL;
+  if (_streamm.tryLock()) {
+    ret = "connected";
+    _streamm.unlock();
+  }
+  else
+    ret = "blocked";
+  return (ret);
+}
+
+/**
+ *  Get the number of queued events.
+ *
+ *  @return  The number of queued events.
+ */
+unsigned int failover::_get_queued_events() {
+  return (_subscriber->get_muxer().get_event_queue_size());
+}
+
+/**
+ *  Get the read filters used by the failover.
+ *
+ *  @return  The read filters used by the failover.
+ */
+uset<unsigned int> failover::_get_read_filters() {
+  return (_subscriber->get_muxer().get_read_filters());
+}
+
+/**
+ *  Get the write filters used by the failover.
+ *
+ *  @return  The write filters used by the failover.
+ */
+uset<unsigned int> failover::_get_write_filters() {
+  return (_subscriber->get_muxer().get_write_filters());
+}
+
+/**
+ *  Forward to failover.
+ *
+ *  @param[in] tree  The tree.
+ */
+void failover::_forward_statistic(io::properties& tree) {
+  {
+    QMutexLocker lock(&_statusm);
+    tree.add_property("status", io::property(_status));
+  }
+  {
+    QMutexLocker lock(&_streamm);
+    _stream->statistics(tree);
+  }
+  io::properties subtree;
+  _failover->statistics(subtree);
+  tree.merge(subtree);
 }
 
 /**************************************
