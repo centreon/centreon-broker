@@ -33,6 +33,8 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/stats/builder.hh"
 #include "com/centreon/broker/stats/worker.hh"
+#include "com/centreon/broker/stats/json_serializer.hh"
+#include "com/centreon/broker/stats/plain_text_serializer.hh"
 
 using namespace com::centreon::broker::stats;
 
@@ -64,13 +66,17 @@ void worker::exit() {
  *  Run the statistics thread.
  *
  *  @param[in] fifo_file Path to the FIFO file.
+ *  @param[in] type     The type of this FIFO.
  */
-void worker::run(QString const& fifo_file) {
+void worker::run(QString const& fifo_file, config::fifo_type type) {
   // Close FD.
   _close();
 
   // Set FIFO file.
   _fifo = fifo_file.toStdString();
+
+  // Set FIFO type
+  _type = type;
 
   // Set exit flag.
   _should_exit = false;
@@ -159,7 +165,12 @@ void worker::run() {
           if (_buffer.empty()) {
             // Generate statistics.
             builder stats_builder;
-            stats_builder.build();
+            stats_builder.build(
+                            _type == config::plain_text
+                              ? static_cast<serializer const &>(
+                                  plain_text_serializer())
+                              : static_cast<serializer const &>(
+                                  json_serializer()));
             _buffer = stats_builder.data();
           }
 

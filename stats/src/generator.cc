@@ -24,6 +24,7 @@
 #include "com/centreon/broker/stats/config.hh"
 #include "com/centreon/broker/stats/generator.hh"
 #include "com/centreon/broker/stats/metric.hh"
+#include "com/centreon/broker/stats/plain_text_serializer.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::stats;
@@ -99,7 +100,7 @@ void generator::run() {
         << "stats: time has come to generate statistics (tag '"
         << _tag << "')";
       builder b;
-      b.build();
+      b.build(plain_text_serializer());
 
       // Send dumper events.
       {

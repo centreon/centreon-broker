@@ -72,9 +72,15 @@ void parser::parse(
     return ;
 
   QDomElement root(d.documentElement());
-  QDomElement fifo(root.lastChildElement("fifo"));
-  if (!fifo.isNull())
-    cfg.set_fifo(fifo.text().toStdString());
+
+  for (QDomElement fifo = root.firstChildElement("fifo");
+       !fifo.isNull();
+       fifo = fifo.nextSiblingElement("fifo"))
+    cfg.add_fifo(fifo.text().toStdString(), config::plain_text);
+  for (QDomElement fifo = root.firstChildElement("json_fifo");
+       !fifo.isNull();
+       fifo = fifo.nextSiblingElement("json_fifo"))
+    cfg.add_fifo(fifo.text().toStdString(), config::json);
 
   QDomElement remote(root.lastChildElement("remote"));
   if (!remote.isNull()) {

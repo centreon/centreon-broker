@@ -21,6 +21,7 @@
 
 #  include <string>
 #  include "com/centreon/broker/io/properties.hh"
+#  include "com/centreon/broker/stats/serializer.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -41,7 +42,7 @@ namespace                 stats {
                           builder(builder const& right);
                           ~builder() throw ();
     builder&              operator=(builder const& right);
-    void                  build();
+    void                  build(serializer const& srz);
     std::string const&    data() const throw ();
     io::properties const& root() const throw ();
 
@@ -49,11 +50,8 @@ namespace                 stats {
     static void           _generate_stats_for_endpoint(
                             processing::thread* fo,
                             std::string& buffer,
-                            io::properties& tree);
-    static void           _serialize(
-                            std::string& buffer,
-                            io::properties const& tree,
-                            unsigned int indent = 0);
+                            io::properties& tree,
+                            serializer const& srz);
 
     std::string           _data;
     io::properties        _root;

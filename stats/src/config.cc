@@ -50,7 +50,7 @@ config::~config() {}
 config& config::operator=(config const& right) {
   if (this != &right) {
     _dumper_tag = right._dumper_tag;
-    _fifo = right._fifo;
+    _fifos = right._fifos;
     _interval = right._interval;
     _metrics = right._metrics;
   }
@@ -71,8 +71,8 @@ std::string const& config::get_dumper_tag() const throw () {
  *
  *  @return The fifo path.
  */
-std::string const& config::get_fifo() const throw () {
-  return (_fifo);
+config::fifo_list const& config::get_fifo() const throw () {
+  return (_fifos);
 }
 
 /**
@@ -112,12 +112,13 @@ void config::set_dumper_tag(std::string const& tag) {
 }
 
 /**
- *  Set the fifo path.
+ *  Add a fifo.
  *
- *  @param[in] fifo The fifo path.
+ *  @param[in] fifo  The path of the fifo.
+ *  @param[in] type  The type of the fifo.
  */
-void config::set_fifo(std::string const& fifo) {
-  _fifo = fifo;
+void config::add_fifo(std::string const& fifo, fifo_type type) {
+  _fifos.push_back(std::make_pair(fifo, type));
 }
 
 /**

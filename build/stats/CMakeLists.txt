@@ -42,6 +42,8 @@ add_library("${STATS}" SHARED
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/metric.cc"
   "${SRC_DIR}/parser.cc"
+  "${SRC_DIR}/json_serializer.cc"
+  "${SRC_DIR}/plain_text_serializer.cc"
   "${SRC_DIR}/worker.cc"
   # Headers.
   "${INC_DIR}/builder.hh"
@@ -49,6 +51,9 @@ add_library("${STATS}" SHARED
   "${INC_DIR}/generator.hh"
   "${INC_DIR}/metric.hh"
   "${INC_DIR}/parser.hh"
+  "${INC_DIR}/serializer.hh"
+  "${INC_DIR}/json_serializer.hh"
+  "${INC_DIR}/plain_text_serializer.hh"
   "${INC_DIR}/worker.hh"
 )
 target_link_libraries("${STATS}" ${QT_LIBRARIES})
