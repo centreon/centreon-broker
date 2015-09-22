@@ -186,7 +186,7 @@ void acceptor::set_write_filters(uset<unsigned int> const& filters) {
  *  @return  The state of the acceptor.
  */
 std::string acceptor::_get_state() {
-  if (_get_listening())
+  if (_listening)
     return ("listening");
   else
     return ("disconnected");
