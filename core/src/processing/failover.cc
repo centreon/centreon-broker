@@ -189,14 +189,14 @@ void failover::run() {
     try {
       // Attempt to open endpoint.
       _update_status("opening endpoint");
-      _last_connection_attempt = timestamp::now();
+      set_last_connection_attempt(timestamp::now());
       {
         misc::shared_ptr<io::stream> s(_endpoint->open());
         {
           QMutexLocker stream_lock(&_streamm);
           _stream = s;
-          _last_connection_success = timestamp::now();
         }
+        set_last_connection_success(timestamp::now());
       }
       _update_status("");
       _update = true;

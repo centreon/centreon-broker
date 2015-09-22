@@ -80,7 +80,6 @@ namespace       processing {
                 _endp;
     std::list<misc::shared_ptr<processing::feeder> >
                 _feeders;
-    QMutex      _stat_mutex;
     uset<unsigned int>
                 _read_filters;
     time_t      _retry_interval;

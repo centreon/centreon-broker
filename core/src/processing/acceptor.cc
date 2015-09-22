@@ -207,7 +207,6 @@ unsigned int acceptor::_get_queued_events() {
  *  @return  The read filters used by the feeder.
  */
 uset<unsigned int> acceptor::_get_read_filters() {
-  QMutexLocker lock(&_stat_mutex);
   return (_read_filters);
 }
 
@@ -217,7 +216,6 @@ uset<unsigned int> acceptor::_get_read_filters() {
  *  @return  The write filters used by the feeder.
  */
 uset<unsigned int> acceptor::_get_write_filters() {
-  QMutexLocker lock(&_stat_mutex);
   return (_write_filters);
 }
 
@@ -227,8 +225,6 @@ uset<unsigned int> acceptor::_get_write_filters() {
  *  @param[in] tree  The tree.
  */
 void acceptor::_forward_statistic(io::properties& tree) {
-  QMutexLocker lock(&_stat_mutex);
-
   // Get statistic of acceptor.
   _endp->stats(tree);
   // Get statistics of feeders

@@ -20,6 +20,7 @@
 #  define CCB_PROCESSING_STAT_VISITABLE_HH
 
 #  include <string>
+#  include <QMutex>
 #  include "com/centreon/broker/io/properties.hh"
 #  include "com/centreon/broker/timestamp.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
@@ -39,14 +40,15 @@ namespace                        processing {
                                  ~stat_visitable();
 
     std::string const&           get_name() const;
+    void                         set_last_error(std::string const& last_error);
     virtual void                 stats(io::properties& tree);
-    void                         set_last_connection_times(
-                                   timestamp last_connection_success
-                                     = timestamp::now(),
-                                   timestamp last_connection_attempt
-                                     = timestamp::now());
+    void                         set_last_connection_attempt(
+                                   timestamp last_connection_attempt);
+    void                         set_last_connection_success(
+                                   timestamp last_connection_success);
 
   protected:
+    QMutex                      _stat_mutex;
     std::string                 _name;
     std::string                 _last_error;
     timestamp                   _last_connection_attempt;

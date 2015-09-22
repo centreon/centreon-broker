@@ -53,7 +53,8 @@ feeder::feeder(
   _subscriber.get_muxer().set_read_filters(read_filters);
   _subscriber.get_muxer().set_write_filters(write_filters);
   // By default, we assume the feeder is already connected.
-  set_last_connection_times();
+  set_last_connection_attempt(timestamp::now());
+  set_last_connection_success(timestamp::now());
 }
 
 /**
@@ -122,7 +123,7 @@ void feeder::run() {
     logging::error(logging::medium)
       << "feeder: error occured while processing client '"
       << _name << "': " << e.what();
-    _last_error = e.what();
+    set_last_error(e.what());
   }
   catch (...) {
     logging::error(logging::high)
