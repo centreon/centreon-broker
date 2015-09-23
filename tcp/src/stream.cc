@@ -91,6 +91,15 @@ bool stream::read(
   if (!_socket.get())
     _initialize_socket();
 
+  // Set deadline.
+  {
+    time_t now = ::time(NULL);
+    if (_read_timeout != -1
+        && (deadline == (time_t)-1
+            || now + _read_timeout < deadline))
+      deadline = now + _read_timeout / 1000;
+  }
+
   // If data is already available, skip the waitForReadyRead() loop.
   d.clear();
   if (_socket->bytesAvailable() <= 0) {
@@ -98,9 +107,8 @@ bool stream::read(
     while (_socket->bytesAvailable() <= 0) {
       // Request timeout.
       if ((deadline != (time_t)-1)
-          && (time(NULL) >= deadline)) {
+          && (time(NULL) >= deadline))
         return (false);
-      }
       // Disconnected socket with no data.
       else if (!ret
           && (_socket->state() == QAbstractSocket::UnconnectedState)
