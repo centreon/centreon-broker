@@ -436,6 +436,8 @@ void reader::_load(state::meta_services& meta_services) {
       unsigned int host_id(q.value(2).toUInt());
       unsigned int service_id(q.value(3).toUInt());
       std::string service_description(q.value(1).toString().toStdString());
+      unsigned int host_id(q.value(2).toUInt());
+      unsigned int service_id(q.value(3).toUInt());
       service_description.erase(0, strlen("meta_"));
       bool ok(false);
       unsigned int meta_id(QString(service_description.c_str()).toUInt(&ok));
@@ -571,7 +573,7 @@ void reader::_load(state::meta_services& meta_services) {
     if (!it->second.get_service_filter().empty()
         && !it->second.get_metric_name().empty()) {
       std::ostringstream query;
-      query << "SELECT m.metric_id"
+      query << "SELECT m.metric_id, i.host_id, s.service_id"
             << "  FROM rt_metrics AS m"
             << "    INNER JOIN rt_index_data AS i"
             << "    ON m.index_id=i.index_id"
@@ -588,12 +590,17 @@ void reader::_load(state::meta_services& meta_services) {
                << "BAM: could not retrieve members of meta-service '"
                << it->second.get_name() << "': " << e.what());
       }
-      while (q.next())
+      while (q.next()) {
         it->second.add_metric(q.value(0).toUInt());
+        it->second.add_service(
+                     q.value(1).toUInt(),
+                     q.value(2).toUInt());
+      }
     }
     // Service list mode.
     else {
       try {
+        // XXX : load service linked to metric and add_service() them to meta
         std::ostringstream query;
         query << "SELECT metric_id"
               << "  FROM cfg_meta_services_relations"
