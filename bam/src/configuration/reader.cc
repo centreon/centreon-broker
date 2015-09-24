@@ -432,7 +432,8 @@ void reader::_load(
   try {
     database_query q(_db);
     q.run_query(
-      "SELECT h.host_name, s.service_description"
+      "SELECT h.host_name, s.service_description, hsr.host_host_id,"
+      "       hsr.service_service_id"
       "  FROM service AS s"
       "  INNER JOIN host_service_relation AS hsr"
       "    ON s.service_id=hsr.service_service_id"
@@ -441,6 +442,8 @@ void reader::_load(
       "  WHERE s.service_description LIKE 'meta_%'");
     while (q.next()) {
       std::string service_description(q.value(1).toString().toStdString());
+      unsigned int host_id(q.value(2).toUInt());
+      unsigned int service_id(q.value(3).toUInt());
       service_description.erase(0, strlen("meta_"));
       bool ok(false);
       unsigned int meta_id(QString(service_description.c_str()).toUInt(&ok));
@@ -460,6 +463,8 @@ void reader::_load(
           << "' references an unknown meta-service (" << meta_id << ")";
         continue ;
       }
+      found->second.set_host_id(host_id);
+      found->second.set_service_id(service_id);
       mapping.set(
                 meta_id,
                 q.value(0).toString().toStdString(),
@@ -500,7 +505,7 @@ void reader::_load(
     if (!it->second.get_service_filter().empty()
         && !it->second.get_metric_name().empty()) {
       std::ostringstream query;
-      query << "SELECT m.metric_id"
+      query << "SELECT m.metric_id, i.host_id, s.service_id"
             << "  FROM metrics AS m"
             << "    INNER JOIN index_data AS i"
             << "    ON m.index_id=i.id"
@@ -525,12 +530,17 @@ void reader::_load(
                << "BAM: could not retrieve members of meta-service '"
                << it->second.get_name() << "': " << e.what());
       }
-      while (q.next())
+      while (q.next()) {
         it->second.add_metric(q.value(0).toUInt());
+        it->second.add_service(
+                     q.value(1).toUInt(),
+                     q.value(2).toUInt());
+      }
     }
     // Service list mode.
     else {
       try {
+        // XXX : load service linked to metric and add_service() them to meta
         std::ostringstream query;
         query << "SELECT metric_id"
               << "  FROM meta_service_relation"
