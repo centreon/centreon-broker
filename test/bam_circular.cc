@@ -55,7 +55,7 @@ int main() {
 
   try {
     // Prepare database.
-    db.open(NULL, NULL, DB_NAME);
+    db.open(DB_NAME, NULL, true);
 
     //
     // The following test uses multiple nodes that will be manipulated
@@ -116,24 +116,33 @@ int main() {
     // Populate database.
     {
       char const* queries[] = {
-        "INSERT INTO host (host_id, host_name)"
-        "  VALUES (1, '1')",
-        "INSERT INTO service (service_id, service_description)"
-        "  VALUES (1, 'svc1'),"
-        "         (2, 'svc2'),"
-        "         (3, 'ba_600'),"
-        "         (4, 'ba_601')",
-        "INSERT INTO host_service_relation (host_host_id, service_service_id)"
+        "INSERT INTO cfg_organizations (organization_id, name,"
+        "            shortname)"
+        "  VALUES (1, '42', '42')",
+        "INSERT INTO cfg_hosts (host_id, host_name, organization_id)"
+        "  VALUES (1, '1', 1)",
+        "INSERT INTO cfg_services (service_id, service_description,"
+        "            organization_id)"
+        "  VALUES (1, 'svc1', 1),"
+        "         (2, 'svc2', 1),"
+        "         (3, 'ba_600', 1),"
+        "         (4, 'ba_601', 1)",
+        "INSERT INTO cfg_hosts_services_relations (host_host_id,"
+        "            service_service_id)"
         "  VALUES (1, 1), (1, 2), (1, 3), (1, 4)",
-        "INSERT INTO mod_bam (ba_id, name, level_w, level_c, activate)"
-        "  VALUES (600, 'BA600', 80, 90, 1),"
-        "         (601, 'BA601', 50, 60, 1)",
-        "INSERT INTO mod_bam_poller_relations (ba_id, poller_id)"
+        "INSERT INTO cfg_bam_ba_types (ba_type_id, name, slug,"
+        "            description)"
+        "  VALUES (1, 'Default', 'default', 'Default type')",
+        "INSERT INTO cfg_bam (ba_id, name, level_w, level_c, activate,"
+        "            ba_type_id, organization_id)"
+        "  VALUES (600, 'BA600', 80, 90, 1, 1, 1),"
+        "         (601, 'BA601', 50, 60, 1, 1, 1)",
+        "INSERT INTO cfg_bam_poller_relations (ba_id, poller_id)"
         "  VALUES (600, 42), (601, 42)",
-        "INSERT INTO mod_bam_boolean (boolean_id, name, expression,"
+        "INSERT INTO cfg_bam_boolean (boolean_id, name, expression,"
         "            bool_state, activate)"
         "  VALUES (1000, 'boolexp1000', '{1 ba_600} {is} {CRITICAL}', 1, 1)",
-        "INSERT INTO mod_bam_kpi (kpi_id, kpi_type, host_id,"
+        "INSERT INTO cfg_bam_kpi (kpi_id, kpi_type, host_id,"
         "            service_id, id_indicator_ba, id_ba, meta_id,"
         "            boolean_id, config_type, drop_warning,"
         "            drop_critical, drop_unknown, state_type, activate)"
@@ -165,7 +174,7 @@ int main() {
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(
                "SELECT current_level"
-               "  FROM mod_bam"
+               "  FROM cfg_bam"
                " WHERE current_level IS NOT NULL"))
         throw (exceptions::msg()
                << "could not retrieve current BA level: "
