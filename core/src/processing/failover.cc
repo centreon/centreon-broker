@@ -607,7 +607,7 @@ uset<unsigned int> failover::_get_write_filters() {
 void failover::_forward_statistic(io::properties& tree) {
   {
     QMutexLocker lock(&_statusm);
-    tree.add_property("status", io::property(_status));
+    tree.add_property("status", io::property("status", _status));
   }
   {
     QMutexLocker lock(&_streamm);
