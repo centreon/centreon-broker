@@ -203,6 +203,15 @@ std::string const& meta_service::get_service_filter() const {
 }
 
 /**
+ *  Get services that impact this meta-service through their metric.
+ *
+ *  @return List of services that impact this meta-service.
+ */
+meta_service::service_container const& meta_service::get_services() const {
+  return (_services);
+}
+
+/**
  *  @brief Add a target metric.
  *
  *  The metric will be used to perform the computation of this
@@ -212,6 +221,19 @@ std::string const& meta_service::get_service_filter() const {
  */
 void meta_service::add_metric(unsigned int metric_id) {
   _metrics.push_back(metric_id);
+  return ;
+}
+
+/**
+ *  Add a source service.
+ *
+ *  @param[in] host_id     Host ID.
+ *  @param[in] service_id  Service ID.
+ */
+void meta_service::add_service(
+                     unsigned int host_id,
+                     unsigned int service_id) {
+  _services.insert(std::make_pair(host_id, service_id));
   return ;
 }
 

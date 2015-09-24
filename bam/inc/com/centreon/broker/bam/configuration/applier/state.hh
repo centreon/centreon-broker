@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014-2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,12 +19,15 @@
 #ifndef CCB_BAM_CONFIGURATION_APPLIER_STATE_HH
 #  define CCB_BAM_CONFIGURATION_APPLIER_STATE_HH
 
+#  include <set>
+#  include <string>
 #  include "com/centreon/broker/bam/configuration/applier/ba.hh"
 #  include "com/centreon/broker/bam/configuration/applier/bool_expression.hh"
 #  include "com/centreon/broker/bam/configuration/applier/kpi.hh"
 #  include "com/centreon/broker/bam/configuration/applier/meta_service.hh"
 #  include "com/centreon/broker/bam/metric_book.hh"
 #  include "com/centreon/broker/bam/service_book.hh"
+#  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -56,6 +59,18 @@ namespace               bam {
         void            visit(io::stream* visitor);
 
       private:
+        struct          circular_check_node {
+                        circular_check_node();
+
+          bool          in_visit;
+          bool          visited;
+          std::set<std::string>
+                        targets;
+        };
+
+        void            _circular_check(
+                          configuration::state const& my_state);
+        void            _circular_check(circular_check_node& n);
         void            _internal_copy(state const& other);
 
         ba              _ba_applier;
@@ -64,6 +79,8 @@ namespace               bam {
         kpi             _kpi_applier;
         bool_expression _bool_exp_applier;
         meta_service    _meta_service_applier;
+        umap<std::string, circular_check_node>
+                        _nodes;
       };
     }
   }

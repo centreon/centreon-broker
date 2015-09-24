@@ -20,6 +20,7 @@
 #  define CCB_BAM_CONFIGURATION_META_SERVICE_HH
 
 #  include <list>
+#  include <set>
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
@@ -36,7 +37,10 @@ namespace                bam {
      */
     class                meta_service {
     public:
-      typedef std::list<unsigned int> metric_container;
+      typedef            std::list<unsigned int>
+                         metric_container;
+      typedef            std::set<std::pair<unsigned int, unsigned int> >
+                         service_container;
 
                          meta_service(
                            unsigned int id = 0,
@@ -63,8 +67,13 @@ namespace                bam {
                          get_metrics() const;
       std::string const& get_name() const;
       std::string const& get_service_filter() const;
+      service_container const&
+                         get_services() const;
 
       void               add_metric(unsigned int metric_id);
+      void               add_service(
+                           unsigned int host_id,
+                           unsigned int service_id);
       void               set_computation(std::string const& function);
       void               set_id(unsigned int id);
       void               set_host_id(unsigned int host_id);
@@ -88,6 +97,7 @@ namespace                bam {
       metric_container   _metrics;
       std::string        _name;
       std::string        _service_filter;
+      service_container  _services;
     };
   }
 }
