@@ -47,11 +47,9 @@ namespace                 stats {
     io::properties const& root() const throw ();
 
   private:
-    static void           _generate_stats_for_endpoint(
+    static std::string    _generate_stats_for_endpoint(
                             processing::thread* fo,
-                            std::string& buffer,
-                            io::properties& tree,
-                            serializer const& srz);
+                            io::properties& tree);
 
     std::string           _data;
     io::properties        _root;

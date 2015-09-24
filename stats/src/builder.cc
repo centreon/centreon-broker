@@ -28,6 +28,7 @@
 #include "com/centreon/broker/io/properties.hh"
 #include "com/centreon/broker/processing/thread.hh"
 #include "com/centreon/broker/stats/builder.hh"
+#include "com/centreon/broker/misc/string.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::stats;
@@ -84,15 +85,21 @@ void builder::build(serializer const& srz) {
 
   // General.
   {
-    std::ostringstream oss;
-    oss << "broker\n"
-      "version=" CENTREON_BROKER_VERSION "\n"
-      "pid=" << getpid() << "\n"
-      "now=" << time(NULL) << "\n"
-      "compiled with qt=" << QT_VERSION_STR << "\n"
-      "running with qt=" << qVersion() << "\n"
-      "\n";
-    _data.append(oss.str());
+    _root.add_property(
+            "version",
+            io::property("version", misc::string::get(CENTREON_BROKER_VERSION)));
+    _root.add_property(
+            "pid",
+            io::property("pid", misc::string::get(getpid())));
+    _root.add_property(
+            "now",
+            io::property("now", misc::string::get(::time(NULL))));
+    _root.add_property(
+            "compiled with qt",
+            io::property("compiled with qt", QT_VERSION_STR));
+    _root.add_property(
+            "running with qt",
+            io::property("running with qt", qVersion()));
   }
 
   // Modules.
@@ -103,13 +110,13 @@ void builder::build(serializer const& srz) {
          end(mod_applier.end());
        it != end;
        ++it) {
-    std::ostringstream oss;
     QFileInfo fi(it->first.c_str());
-    oss << "module " << it->first << "\n"
-      "state=loaded\n"
-      "size=" << fi.size() << "B\n"
-      "\n";
-    _data.append(oss.str());
+    io::properties subtree;
+    subtree.add_property("state", io::property("state", "loaded"));
+    subtree.add_property(
+              "size",
+              io::property("size", misc::string::get(fi.size()) + "B"));
+    _root.add_child(subtree, std::string("module " + it->first));
   }
 
   // Endpoint applier.
@@ -127,9 +134,9 @@ void builder::build(serializer const& srz) {
              it != end;
              ++it) {
           io::properties p;
-          _generate_stats_for_endpoint(it->second, _data, p, srz);
-          _root.add_child(p);
-          _data.append("\n");
+          std::string endpoint_name =
+                        _generate_stats_for_endpoint(it->second, p);
+          _root.add_child(p, endpoint_name);
         }
       else
         _data.append(
@@ -143,6 +150,10 @@ void builder::build(serializer const& srz) {
     if (locked)
       endp_applier.endpoints_mutex().unlock();
   }
+
+  std::string buffer;
+  srz.serialize(buffer, _root);
+  _data.insert(0, buffer);
 
   return ;
 }
@@ -175,26 +186,19 @@ io::properties const& builder::root() const throw () {
  *  Generate statistics for an endpoint.
  *
  *  @param[in]  fo     Failover thread of the endpoint.
- *  @param[out] buffer Buffer in which data will be printed.
  *  @param[out] tree   Properties for this tree.
- *  @param[in,out] srz The serializer to use to serialize data.
+ *
+ *  @return            Name of the endpoint.
  */
-void builder::_generate_stats_for_endpoint(
-                processing::thread* fo,
-                std::string& buffer,
-                io::properties& tree,
-                serializer const& srz) {
+std::string builder::_generate_stats_for_endpoint(
+                       processing::thread* fo,
+                       io::properties& tree) {
   // Header.
-  buffer.append("endpoint ");
-  buffer.append(fo->get_name());
-  buffer.append("\n");
+  std::string endpoint = std::string("endpoint ") + fo->get_name();
 
   // Gather statistic.
   fo->stats(tree);
 
-  // Serialize.
-  srz.serialize(buffer, tree);
-
-  return ;
+  return (endpoint);
 }
 
