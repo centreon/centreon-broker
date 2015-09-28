@@ -468,7 +468,6 @@ int main() {
                 "            ignore_acknowledged, activate)"
                 "  VALUES (1, '0', 1, 1, NULL, 1, NULL, NULL, '0', 15, NULL, 25, NULL, 99, NULL, '0', '0', '1'),"
                 "         (2, '0', 1, 2, NULL, 2, NULL, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0', '1'),"
-                "         (3, '1', NULL, NULL, 1, 2, NULL, NULL, '0', 65, NULL, 75, NULL, 99, NULL, '0', '0', '1'),"
                 "         (4, '1', NULL, NULL, 2, 1, NULL, NULL, '0', 25, NULL, 35, NULL, 99, NULL, '0', '0', '1'),"
                 "         (5, '2', NULL, NULL, NULL, 1, 1, NULL, '0', 35, NULL, 45, NULL, 99, NULL, '0', '0', '1'),"
                 "         (6, '2', NULL, NULL, NULL, 2, 2, NULL, '0', 45, NULL, 55, NULL, 99, NULL, '0', '0', '1'),"
@@ -516,7 +515,6 @@ int main() {
       {1, "1 1", 1, "BA1", 1, "1", 1, "1", 0, NULL, 0, NULL, 15, 25, 99, 0, NULL},
       {2, "1 2", 2, "BA2", 1, "1", 2, "2", 0, NULL, 0, NULL, 35, 45, 99, 0, NULL},
       // Ba kpis.
-      {3, "BA1", 2, "BA2", 0, NULL, 0, NULL, 1, "BA1", 0, NULL, 65, 75, 99, 0, NULL},
       {4, "BA2", 1, "BA1", 0, NULL, 0, NULL, 2, "BA2", 0, NULL, 25, 35, 99, 0, NULL},
       // Meta service kpis.
       {5, "Meta1", 1, "BA1", 0, NULL, 0, NULL, 0, NULL, 1, "Meta1", 35, 45, 99, 0, NULL},
