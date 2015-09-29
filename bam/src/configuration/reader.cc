@@ -433,8 +433,6 @@ void reader::_load(state::meta_services& meta_services) {
       "    ON hsr.host_host_id=h.host_id"
       "  WHERE s.service_description LIKE 'meta_%'");
     while (q.next()) {
-      unsigned int host_id(q.value(2).toUInt());
-      unsigned int service_id(q.value(3).toUInt());
       std::string service_description(q.value(1).toString().toStdString());
       unsigned int host_id(q.value(2).toUInt());
       unsigned int service_id(q.value(3).toUInt());

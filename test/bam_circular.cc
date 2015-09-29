@@ -27,7 +27,6 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
-#include "test/external_command.hh"
 #include "test/generate.hh"
 #include "test/misc.hh"
 #include "test/vars.hh"
