@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014-2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -71,6 +71,7 @@ reporting_stream::reporting_stream(database_config const& db_cfg)
     _ba_event_update(_db),
     _ba_event_delete(_db),
     _ba_duration_event_insert(_db),
+    _ba_duration_event_update(_db),
     _kpi_full_event_insert(_db),
     _kpi_event_update(_db),
     _kpi_event_delete(_db),
@@ -252,6 +253,7 @@ reporting_stream::reporting_stream(reporting_stream const& other)
     _ba_event_update(_db),
     _ba_event_delete(_db),
     _ba_duration_event_insert(_db),
+    _ba_duration_event_update(_db),
     _kpi_full_event_insert(_db),
     _kpi_event_update(_db),
     _kpi_event_delete(_db),
@@ -591,6 +593,20 @@ void reporting_stream::_prepare() {
       "BAM-BI: could not prepare BA duration event insert query");
   }
 
+  // BA duration event update.
+  {
+    std::string query;
+    query = "UPDATE mod_bam_reporting_ba_events_durations"
+            "  SET start_time=:start_time, end_time=:end_time, "
+            "      duration=:duration, sla_duration=:sla_duration,"
+            "      timeperiod_is_default=:timeperiod_is_default"
+            "  WHERE ba_event_id=:ba_event_id"
+            "    AND timeperiod_id=:timeperiod_id";
+    _ba_duration_event_update.prepare(
+      query,
+      "BAM-BI: could not prepare BA duration event update query");
+  }
+
   // KPI full event insertion.
   {
     std::string query;
@@ -866,27 +882,56 @@ void reporting_stream::_process_ba_duration_event(
     << bde.ba_id << " (start time " << bde.start_time << ", end time "
     << bde.end_time << ", duration " << bde.duration << ", sla duration "
     << bde.sla_duration << ")";
-  _ba_duration_event_insert.bind_value(":ba_id", bde.ba_id);
-  _ba_duration_event_insert.bind_value(
+
+  // Try to update first.
+  _ba_duration_event_update.bind_value(":ba_id", bde.ba_id);
+  _ba_duration_event_update.bind_value(
     ":real_start_time",
     static_cast<qlonglong>(bde.real_start_time.get_time_t()));
-  _ba_duration_event_insert.bind_value(
+  _ba_duration_event_update.bind_value(
     ":end_time",
     static_cast<qlonglong>(bde.end_time.get_time_t()));
-  _ba_duration_event_insert.bind_value(
+  _ba_duration_event_update.bind_value(
     ":start_time",
     static_cast<qlonglong>(bde.start_time.get_time_t()));
-  _ba_duration_event_insert.bind_value(":duration", bde.duration);
-  _ba_duration_event_insert.bind_value(
+  _ba_duration_event_update.bind_value(":duration", bde.duration);
+  _ba_duration_event_update.bind_value(
     ":sla_duration",
     bde.sla_duration);
-  _ba_duration_event_insert.bind_value(
+  _ba_duration_event_update.bind_value(
     ":timeperiod_id",
     bde.timeperiod_id);
-  _ba_duration_event_insert.bind_value(
+  _ba_duration_event_update.bind_value(
     ":timeperiod_is_default",
     bde.timeperiod_is_default);
-  try { _ba_duration_event_insert.run_statement(); }
+  try {
+    _ba_duration_event_update.run_statement();
+
+    // Insert if no rows was updated.
+    if (_ba_duration_event_update.num_rows_affected() == 0) {
+      _ba_duration_event_insert.bind_value(":ba_id", bde.ba_id);
+      _ba_duration_event_insert.bind_value(
+        ":real_start_time",
+        static_cast<qlonglong>(bde.real_start_time.get_time_t()));
+      _ba_duration_event_insert.bind_value(
+        ":end_time",
+        static_cast<qlonglong>(bde.end_time.get_time_t()));
+      _ba_duration_event_insert.bind_value(
+        ":start_time",
+        static_cast<qlonglong>(bde.start_time.get_time_t()));
+      _ba_duration_event_insert.bind_value(":duration", bde.duration);
+      _ba_duration_event_insert.bind_value(
+        ":sla_duration",
+        bde.sla_duration);
+      _ba_duration_event_insert.bind_value(
+        ":timeperiod_id",
+        bde.timeperiod_id);
+      _ba_duration_event_insert.bind_value(
+        ":timeperiod_is_default",
+        bde.timeperiod_is_default);
+      _ba_duration_event_insert.run_statement();
+    }
+  }
   catch (std::exception const& e) {
     throw (exceptions::msg()
            << "BAM-BI: could not insert duration event of BA "

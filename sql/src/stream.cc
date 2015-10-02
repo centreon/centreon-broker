@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2014 Centreon
+** Copyright 2009-2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -315,6 +315,16 @@ void stream::_clean_tables(int instance_id) {
        << " AND c.persistent=0"
           " AND (c.deletion_time IS NULL OR c.deletion_time=0)";
     q.run_query(ss.str(), "SQL: could not clean comments table");
+  }
+
+  // Remove downtimes.
+  {
+    std::ostringstream ss;
+    ss << "UPDATE " << mapped_type<neb::downtime>::table << " AS d"
+          "  SET d.deletion_time=" << time(NULL)
+       << "  WHERE d.instance_id=" << instance_id
+       << "  AND (d.deletion_time IS NULL OR d.deletion_time=0)";
+    q.run_query(ss.str(), "SQL: could not clean downtimes table");
   }
 
   return ;

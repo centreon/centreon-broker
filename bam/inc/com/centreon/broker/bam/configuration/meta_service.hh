@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014-2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 #  define CCB_BAM_CONFIGURATION_META_SERVICE_HH
 
 #  include <list>
+#  include <set>
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
@@ -36,7 +37,10 @@ namespace                bam {
      */
     class                meta_service {
     public:
-      typedef std::list<unsigned int> metric_container;
+      typedef            std::list<unsigned int>
+                         metric_container;
+      typedef            std::set<std::pair<unsigned int, unsigned int> >
+                         service_container;
 
                          meta_service(
                            unsigned int id = 0,
@@ -54,6 +58,8 @@ namespace                bam {
 
       std::string const& get_computation() const;
       unsigned int       get_id() const;
+      unsigned int       get_host_id() const;
+      unsigned int       get_service_id() const;
       double             get_level_critical() const;
       double             get_level_warning() const;
       std::string const& get_metric_name() const;
@@ -61,10 +67,17 @@ namespace                bam {
                          get_metrics() const;
       std::string const& get_name() const;
       std::string const& get_service_filter() const;
+      service_container const&
+                         get_services() const;
 
       void               add_metric(unsigned int metric_id);
+      void               add_service(
+                           unsigned int host_id,
+                           unsigned int service_id);
       void               set_computation(std::string const& function);
       void               set_id(unsigned int id);
+      void               set_host_id(unsigned int host_id);
+      void               set_service_id(unsigned int service_id);
       void               set_level_critical(double level);
       void               set_level_warning(double level);
       void               set_metric_name(std::string const& metric);
@@ -76,12 +89,15 @@ namespace                bam {
 
       std::string        _computation;
       unsigned int       _id;
+      unsigned int       _host_id;
+      unsigned int       _service_id;
       double             _level_critical;
       double             _level_warning;
       std::string        _metric_name;
       metric_container   _metrics;
       std::string        _name;
       std::string        _service_filter;
+      service_container  _services;
     };
   }
 }

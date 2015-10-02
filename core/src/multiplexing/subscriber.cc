@@ -423,7 +423,13 @@ void subscriber::_get_last_event(misc::shared_ptr<io::data>& event) {
   if (!_recovery_temporary)
     --_total_events;
 
-  // Get the last avaiable event.
-  event = _events.dequeue();
+  // Get the last available event.
+  if (!_events.empty())
+    event = _events.dequeue();
+  else {
+    event.clear();
+    _total_events = 0;
+  }
+
   return ;
 }

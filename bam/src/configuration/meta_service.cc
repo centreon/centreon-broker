@@ -41,6 +41,8 @@ meta_service::meta_service(
                 std::string const& metric)
   : _computation(computation),
     _id(id),
+    _host_id(0),
+    _service_id(0),
     _level_critical(critical_level),
     _level_warning(warning_level),
     _metric_name(metric),
@@ -122,6 +124,24 @@ unsigned int meta_service::get_id() const {
 }
 
 /**
+ *  Get the ID of the meta-service virtual host.
+ *
+ *  @return ID of meta-service virtual host.
+ */
+unsigned int meta_service::get_host_id() const {
+  return (_host_id);
+}
+
+/**
+ *  Get the ID of the meta-service virtual service.
+ *
+ *  @return ID of meta-service virtual service.
+ */
+unsigned int meta_service::get_service_id() const {
+  return (_service_id);
+}
+
+/**
  *  Get the critical level.
  *
  *  @return Critical level.
@@ -181,6 +201,15 @@ std::string const& meta_service::get_service_filter() const {
 }
 
 /**
+ *  Get services that impact this meta-service through their metric.
+ *
+ *  @return List of services that impact this meta-service.
+ */
+meta_service::service_container const& meta_service::get_services() const {
+  return (_services);
+}
+
+/**
  *  @brief Add a target metric.
  *
  *  The metric will be used to perform the computation of this
@@ -190,6 +219,19 @@ std::string const& meta_service::get_service_filter() const {
  */
 void meta_service::add_metric(unsigned int metric_id) {
   _metrics.push_back(metric_id);
+  return ;
+}
+
+/**
+ *  Add a source service.
+ *
+ *  @param[in] host_id     Host ID.
+ *  @param[in] service_id  Service ID.
+ */
+void meta_service::add_service(
+                     unsigned int host_id,
+                     unsigned int service_id) {
+  _services.insert(std::make_pair(host_id, service_id));
   return ;
 }
 
@@ -211,6 +253,26 @@ void meta_service::set_computation(std::string const& function) {
  */
 void meta_service::set_id(unsigned int id) {
   _id = id;
+  return ;
+}
+
+/**
+ *  Set the meta-service virtual host ID.
+ *
+ *  @param[in] host_id  Meta-service virtual host ID.
+ */
+void meta_service::set_host_id(unsigned int host_id) {
+  _host_id = host_id;
+  return ;
+}
+
+/**
+ *  Set the meta-service virtual service ID.
+ *
+ *  @param[in] service_id  Meta-service virtual service ID.
+ */
+void meta_service::set_service_id(unsigned int service_id) {
+  _service_id = service_id;
   return ;
 }
 
