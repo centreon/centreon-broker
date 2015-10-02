@@ -225,24 +225,27 @@ void stream::_flush() {
  *  Get data with a fixed size.
  *
  *  @param[in] size Data size to get.
+ *
+ *  @return  True is enough data was found.
  */
 bool stream::_get_data(unsigned int size) {
-  bool retval;
-  if (static_cast<unsigned int>(_rbuffer.size()) < size) {
+  bool retval = false;
+  while (static_cast<unsigned int>(_rbuffer.size()) < size) {
     misc::shared_ptr<io::data> d;
     _from->read(d);
     if (d.isNull())
-      retval = false;
+      break ;
     else {
       if (d->type() == io::events::data_type<io::events::internal, 1>::value) {
         misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
         _rbuffer.append(*r);
       }
-      retval = _get_data(size);
     }
   }
-  else
+
+  if (static_cast<unsigned int>(_rbuffer.size()) >= size)
     retval = true;
+
   return (retval);
 }
 
