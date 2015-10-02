@@ -134,9 +134,9 @@ void node_events_stream::update() {
  *
  *  @param[in] d  Multiplexed data.
  */
-unsigned int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
+int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
   // Check that data can be processed.
-  if (d.isNull())
+  if (!validate(d, "node events"))
     return (1);
 
   // Manage data.

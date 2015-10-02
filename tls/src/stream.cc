@@ -158,9 +158,12 @@ long long stream::read_encrypted(void* buffer, long long size) {
  *
  *  @return Number of events acknowledged.
  */
-unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
+int stream::write(misc::shared_ptr<io::data> const& d) {
+  if (!validate(d, "tls"))
+    return (1);
+
   // Send data.
-  if (!d.isNull() && d->type() == io::raw::static_type()) {
+  if (d->type() == io::raw::static_type()) {
     io::raw const* packet(static_cast<io::raw const*>(d.data()));
     char const* ptr(packet->QByteArray::data());
     int size(packet->size());

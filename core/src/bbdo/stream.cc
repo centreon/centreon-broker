@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <QStringList>
+#include "com/centreon/broker/bbdo/ack.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
@@ -42,7 +43,10 @@ stream::stream()
   : _coarse(false),
     _negociate(true),
     _negociated(false),
-    _timeout(5) {}
+    _timeout(5),
+    _acknowledged_events(0),
+    _ack_limit(0),
+    _events_received_since_last_ack(0) {}
 
 /**
  *  Copy constructor.
@@ -57,7 +61,10 @@ stream::stream(stream const& other)
     _extensions(other._extensions),
     _negociate(other._negociate),
     _negociated(other._negociated),
-    _timeout(other._timeout) {}
+    _timeout(other._timeout),
+    _acknowledged_events(other._acknowledged_events),
+    _ack_limit(other._ack_limit),
+    _events_received_since_last_ack(other._events_received_since_last_ack) {}
 
 /**
  *  Destructor.
@@ -80,6 +87,9 @@ stream& stream::operator=(stream const& other) {
     _negociate = other._negociate;
     _negociated = other._negociated;
     _timeout = other._timeout;
+    _acknowledged_events = other._acknowledged_events;
+    _ack_limit = other._ack_limit;
+    _events_received_since_last_ack = other._events_received_since_last_ack;
   }
   return (*this);
 }
@@ -211,7 +221,21 @@ bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   d.clear();
   if (!_negociated)
     negociate(negociate_second);
-  return (input::read(d, deadline));
+  bool retval = input::read(d, deadline);
+  if (retval && !d.isNull())
+    ++_events_received_since_last_ack;
+  if (_events_received_since_last_ack >= _ack_limit)
+    send_event_acknowledgement();
+  return (retval);
+}
+
+/**
+ *  Set the limit of events received before an ack should be sent.
+ *
+ *  @param limit  The limit of events received before an ack should be sent.
+ */
+void stream::set_ack_limit(unsigned int limit) {
+  _ack_limit = limit;
 }
 
 /**
@@ -263,8 +287,31 @@ void stream::statistics(io::properties& tree) const {
  *
  *  @return Number of events acknowledged.
  */
-unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
+int stream::write(misc::shared_ptr<io::data> const& d) {
   if (!_negociated)
     negociate(negociate_second);
-  return (output::write(d));
+
+  output::write(d);
+  int retval = _acknowledged_events;
+  _acknowledged_events = 0;
+  return (retval);
+}
+
+/**
+ *  Acknowledge a certain amount of events.
+ *
+ *  @param[in] events  The amount of event.
+ */
+void stream::acknowledge_events(unsigned int events) {
+  _acknowledged_events += events;
+}
+
+/**
+ *  Send an acknowledgement for all the events received.
+ */
+void stream::send_event_acknowledgement() {
+  misc::shared_ptr<ack> acknowledgement(new ack);
+  acknowledgement->acknowledged_events = _events_received_since_last_ack;
+  output::write(acknowledgement);
+  _events_received_since_last_ack = 0;
 }

@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::io;
@@ -85,4 +86,32 @@ void stream::statistics(io::properties& tree) const {
  */
 void stream::update() {
   return ;
+}
+
+/**
+ *  Flush data.
+ */
+void stream::flush() {
+  return ;
+}
+
+/**
+ *  Validate an event.
+ *
+ *  @param[in] d      The event.
+ *  @param[in] error  The prefix of the error message.
+ *
+ *  @return           True if event is valid.
+ */
+bool stream::validate(
+               misc::shared_ptr<io::data> const& d,
+               std::string const& error) {
+  if (d.isNull()) {
+    logging::error(logging::medium)
+      << error << ": received a null event. This should never happen."
+                   "This is likely a software bug that you should report "
+                   "to Centreon Broker developers";
+    return (false);
+  }
+  return (true);
 }

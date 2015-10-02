@@ -59,7 +59,8 @@ namespace          sql {
                    ~stream();
     bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
     void           update();
-    unsigned int   write(misc::shared_ptr<io::data> const& d);
+    void           flush();
+    int            write(misc::shared_ptr<io::data> const& d);
 
   private:
                    stream(stream const& other);

@@ -52,7 +52,8 @@ namespace         bbdo {
                     QString const& extensions,
                     time_t timeout,
                     bool one_peer_retention_mode = false,
-                    bool coarse = false);
+                    bool coarse = false,
+                    unsigned int ack_limit = 3000);
                   acceptor(acceptor const& other);
                   ~acceptor();
     acceptor&     operator=(acceptor const& other);
@@ -72,6 +73,7 @@ namespace         bbdo {
     bool          _negociate;
     bool          _one_peer_retention_mode;
     time_t        _timeout;
+    unsigned int  _ack_limit;
   };
 }
 

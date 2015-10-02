@@ -54,7 +54,7 @@ namespace        correlation {
                    misc::shared_ptr<io::data>& d,
                    time_t deadline);
     void         update();
-    unsigned int write(misc::shared_ptr<io::data> const& d);
+    int          write(misc::shared_ptr<io::data> const& d);
     void         set_state(
                    QMap<QPair<unsigned int, unsigned int>, node> const& st);
     QMap<QPair<unsigned int, unsigned int>, node> const&

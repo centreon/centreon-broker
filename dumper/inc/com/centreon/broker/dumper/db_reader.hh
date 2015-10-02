@@ -46,7 +46,7 @@ namespace           dumper {
                       database_config const& db_cfg);
                     ~db_reader();
     bool            read(misc::shared_ptr<io::data>& d, time_t deadline);
-    unsigned int    write(misc::shared_ptr<io::data> const& d);
+    int             write(misc::shared_ptr<io::data> const& d);
 
   private:
                     db_reader(db_reader const& other);

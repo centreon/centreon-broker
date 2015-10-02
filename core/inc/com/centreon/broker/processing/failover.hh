@@ -76,7 +76,7 @@ namespace           processing {
     void            statistics(io::properties& tree) const;
     void            update();
     bool            wait(unsigned long time = ULONG_MAX);
-    unsigned int    write(misc::shared_ptr<io::data> const& d);
+    int             write(misc::shared_ptr<io::data> const& d);
 
 
   protected:

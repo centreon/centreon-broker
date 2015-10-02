@@ -57,7 +57,8 @@ namespace               io {
       de_raw = 1,
       de_command_request,
       de_command_result,
-      de_instance_broadcast
+      de_instance_broadcast,
+      de_buffer
     };
     template <unsigned short category, unsigned short element>
     struct data_type {

@@ -50,6 +50,8 @@ using namespace com::centreon::broker::bbdo;
  *  @param[in] one_peer_retention_mode True to enable the "one peer
  *                                     retention mode" (TM).
  *  @param[in] coarse                  If the acceptor is coarse or not.
+ *  @param[in] ack_limit               The number of event received before
+ *                                     an ack needs to be sent.
  */
 acceptor::acceptor(
             QString const& name,
@@ -57,14 +59,16 @@ acceptor::acceptor(
             QString const& extensions,
             time_t timeout,
             bool one_peer_retention_mode,
-            bool coarse)
+            bool coarse,
+            unsigned int ack_limit)
   : io::endpoint(!one_peer_retention_mode),
     _coarse(coarse),
     _extensions(extensions),
     _name(name),
     _negociate(negociate),
     _one_peer_retention_mode(one_peer_retention_mode),
-    _timeout(timeout) {
+    _timeout(timeout),
+    _ack_limit(ack_limit) {
   if ((_timeout == (time_t)-1) || (_timeout == 0))
     _timeout = 3;
 }
@@ -81,7 +85,8 @@ acceptor::acceptor(acceptor const& other)
     _name(other._name),
     _negociate(other._negociate),
     _one_peer_retention_mode(other._one_peer_retention_mode),
-    _timeout(other._timeout) {}
+    _timeout(other._timeout),
+    _ack_limit(other._ack_limit) {}
 
 /**
  *  Destructor.
@@ -106,6 +111,7 @@ acceptor& acceptor::operator=(acceptor const& other) {
     _negociate = other._negociate;
     _one_peer_retention_mode = other._one_peer_retention_mode;
     _timeout = other._timeout;
+    _ack_limit = other._ack_limit;
   }
   return (*this);
 }
@@ -131,8 +137,10 @@ misc::shared_ptr<io::stream> acceptor::open() {
       my_bbdo->set_coarse(_coarse);
       my_bbdo->set_negociate(_negociate, _extensions);
       my_bbdo->set_timeout(_timeout);
+      my_bbdo->set_ack_limit(_ack_limit);
       if (_one_peer_retention_mode)
         my_bbdo->negociate(bbdo::stream::negociate_second);
+
       return (my_bbdo);
     }
   }

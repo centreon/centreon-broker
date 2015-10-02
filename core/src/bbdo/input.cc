@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <memory>
 #include <stdint.h>
+#include "com/centreon/broker/bbdo/ack.hh"
 #include "com/centreon/broker/bbdo/input.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
@@ -317,6 +318,12 @@ bool input::read(misc::shared_ptr<io::data>& d, time_t deadline) {
         << "." << version->bbdo_minor << "." << version->bbdo_patch
         << ", we're using version " << BBDO_VERSION_MAJOR << "."
         << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH;
+    }
+    else if ((event_id & 0xFFFF) == 2) {
+      logging::info(logging::medium)
+        << "BBDO: received acknowledgement for "
+        << d.ref_as<ack const>().acknowledged_events << " events";
+      acknowledge_events(d.ref_as<ack const>().acknowledged_events);
     }
 
     // Control messages.

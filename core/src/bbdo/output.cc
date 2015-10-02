@@ -273,7 +273,8 @@ output::output() {}
  *
  *  @param[in] other  Object to copy.
  */
-output::output(output const& other) : io::stream(other) {}
+output::output(output const& other)
+  : io::stream(other){}
 
 /**
  *  Destructor.
@@ -304,20 +305,28 @@ void output::statistics(io::properties& tree) const {
 }
 
 /**
+ *  Flush.
+ */
+void output::flush() {
+  _substream->flush();
+}
+
+/**
  *  Send an event.
  *
  *  @param[in] e Event to send.
  *
  *  @return Number of events acknowledged.
  */
-unsigned int output::write(misc::shared_ptr<io::data> const& e) {
+int output::write(misc::shared_ptr<io::data> const& e) {
+  if (!validate(e, "bbdo"))
+    return (1);
+
   // Check if data exists.
-  if (!e.isNull()) {
-    misc::shared_ptr<io::raw> serialized(serialize(*e));
-    if (serialized.data())
-      _substream->write(serialized);
-  }
-  else
-    _substream->write(e);
-  return (1);
+  misc::shared_ptr<io::raw> serialized(serialize(*e));
+  if (serialized.data())
+    _substream->write(serialized);
+
+  // Event acknowledgement is done in the higher level bbdo::stream.
+  return (-1);
 }

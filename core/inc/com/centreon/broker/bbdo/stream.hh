@@ -49,13 +49,16 @@ namespace            bbdo {
     bool             read(
                        misc::shared_ptr<io::data>& d,
                        time_t deadline = (time_t)-1);
+    void             set_ack_limit(unsigned int limit);
     void             set_coarse(bool coarse);
     void             set_negociate(
                        bool negociate,
                        QString const& extensions = QString());
     void             set_timeout(int timeout);
     void             statistics(io::properties& tree) const;
-    unsigned int     write(misc::shared_ptr<io::data> const& d);
+    int              write(misc::shared_ptr<io::data> const& d);
+    void             acknowledge_events(unsigned int events);
+    void             send_event_acknowledgement();
 
   private:
     bool             _coarse;
@@ -63,6 +66,9 @@ namespace            bbdo {
     bool             _negociate;
     bool             _negociated;
     int              _timeout;
+    unsigned int     _acknowledged_events;
+    unsigned int     _ack_limit;
+    unsigned int     _events_received_since_last_ack;
   };
 }
 

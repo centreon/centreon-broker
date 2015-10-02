@@ -74,40 +74,41 @@ bool db_writer::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @param[in] d  Event to write.
  */
-unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
-  if (!d.isNull()) {
-    if (d->type() == db_dump::static_type()) {
-      db_dump const& dbd(d.ref_as<db_dump const>());
-      if (dbd.poller_id
-          == config::applier::state::instance().poller_id()) {
-        if (dbd.commit)
-          _commit();
-        else
-          _full_dump = dbd.full;
-        _ba_types.clear();
-        _bas.clear();
-        _kpis.clear();
-      }
+int db_writer::write(misc::shared_ptr<io::data> const& d) {
+  if (!validate(d, "db writer"))
+    return (1);
+
+  if (d->type() == db_dump::static_type()) {
+    db_dump const& dbd(d.ref_as<db_dump const>());
+    if (dbd.poller_id
+        == config::applier::state::instance().poller_id()) {
+      if (dbd.commit)
+        _commit();
+      else
+        _full_dump = dbd.full;
+      _ba_types.clear();
+      _bas.clear();
+      _kpis.clear();
     }
-    else if (d->type() == entries::ba::static_type()) {
-      entries::ba const& b(d.ref_as<entries::ba const>());
-      if (b.poller_id == config::applier::state::instance().poller_id())
-        _bas.push_back(b);
-    }
-    else if (d->type() == entries::ba_type::static_type()) {
-      entries::ba_type const& b(d.ref_as<entries::ba_type const>());
-      _ba_types.push_back(b);
-    }
-    else if (d->type() == entries::kpi::static_type()) {
-      entries::kpi const& k(d.ref_as<entries::kpi const>());
-      if (k.poller_id == config::applier::state::instance().poller_id())
-        _kpis.push_back(k);
-    }
-    else if (d->type() == entries::organization::static_type()) {
-      entries::organization const&
-        o(d.ref_as<entries::organization const>());
-      _organizations.push_back(o);
-    }
+  }
+  else if (d->type() == entries::ba::static_type()) {
+    entries::ba const& b(d.ref_as<entries::ba const>());
+    if (b.poller_id == config::applier::state::instance().poller_id())
+      _bas.push_back(b);
+  }
+  else if (d->type() == entries::ba_type::static_type()) {
+    entries::ba_type const& b(d.ref_as<entries::ba_type const>());
+    _ba_types.push_back(b);
+  }
+  else if (d->type() == entries::kpi::static_type()) {
+    entries::kpi const& k(d.ref_as<entries::kpi const>());
+    if (k.poller_id == config::applier::state::instance().poller_id())
+      _kpis.push_back(k);
+  }
+  else if (d->type() == entries::organization::static_type()) {
+    entries::organization const&
+      o(d.ref_as<entries::organization const>());
+    _organizations.push_back(o);
   }
   return (1);
 }

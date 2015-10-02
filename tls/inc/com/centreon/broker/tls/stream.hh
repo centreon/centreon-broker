@@ -44,7 +44,7 @@ namespace             tls {
                         misc::shared_ptr<io::data>& d,
                         time_t deadline);
     long long         read_encrypted(void* buffer, long long size);
-    unsigned int      write(misc::shared_ptr<io::data> const& d);
+    int               write(misc::shared_ptr<io::data> const& d);
     long long         write_encrypted(
                         void const* buffer,
                         long long size);

@@ -149,143 +149,149 @@ void monitoring_stream::update() {
 }
 
 /**
+ *  Flush data.
+ */
+void monitoring_stream::flush() {
+  _db.commit();
+}
+
+/**
  *  Write an event.
  *
  *  @param[in] data Event pointer.
  *
  *  @return Number of events acknowledged.
  */
-unsigned int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
+int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
+  if (!validate(data, "monitoring_stream"))
+    return (1);
+
   // Take this event into account.
   ++_pending_events;
 
-  if (!data.isNull()) {
-    // Process service status events.
-    if ((data->type() == neb::service_status::static_type())
-        || (data->type() == neb::service::static_type())) {
-      misc::shared_ptr<neb::service_status>
-        ss(data.staticCast<neb::service_status>());
-      logging::debug(logging::low)
-        << "BAM: processing service status (host "
-        << ss->host_id << ", service " << ss->service_id
-        << ", hard state " << ss->last_hard_state << ", current state "
-        << ss->current_state << ")";
-      multiplexing::publisher pblshr;
-      event_cache_visitor ev_cache;
-      _applier.book_service().update(ss, &ev_cache);
-      ev_cache.commit_to(pblshr);
-    }
-    else if (data->type() == neb::acknowledgement::static_type()) {
-      misc::shared_ptr<neb::acknowledgement>
-	ack(data.staticCast<neb::acknowledgement>());
-      logging::debug(logging::low)
-	<< "BAM: processing acknowledgement (host "
-	<< ack->host_id << ", service " << ack->service_id << ")";
-      multiplexing::publisher pblshr;
-      event_cache_visitor ev_cache;
-      _applier.book_service().update(ack, &ev_cache);
-      ev_cache.commit_to(pblshr);
-    }
-    else if (data->type() == neb::downtime::static_type()) {
-      misc::shared_ptr<neb::downtime>
-	dt(data.staticCast<neb::downtime>());
-      logging::debug(logging::low)
-	<< "BAM: processing downtime (host " << dt->host_id
-	<< ", service " << dt->service_id << ")";
-      multiplexing::publisher pblshr;
-      event_cache_visitor ev_cache;
-      _applier.book_service().update(dt, &ev_cache);
-      ev_cache.commit_to(pblshr);
-    }
-    else if (data->type() == storage::metric::static_type()) {
-      misc::shared_ptr<storage::metric>
-        m(data.staticCast<storage::metric>());
-      logging::debug(logging::low)
-        << "BAM: processing metric (id " << m->metric_id << ", time "
-        << m->ctime << ", value " << m->value << ")";
-      multiplexing::publisher pblshr;
-      event_cache_visitor ev_cache;
-      _applier.book_metric().update(m, &ev_cache);
-      ev_cache.commit_to(pblshr);
-    }
-    else if (data->type() == bam::ba_status::static_type()) {
-      ba_status* status(static_cast<ba_status*>(data.data()));
-      logging::debug(logging::low) << "BAM: processing BA status (id "
-        << status->ba_id << ", level " << status->level_nominal
-        << ", acknowledgement " << status->level_acknowledgement
-        << ", downtime " << status->level_downtime << ")";
-      _ba_update.bind_value(":level_nominal", status->level_nominal);
-      _ba_update.bind_value(
-                   ":level_acknowledgement",
-                   status->level_acknowledgement);
-      _ba_update.bind_value(":level_downtime", status->level_downtime);
-      _ba_update.bind_value(":ba_id", status->ba_id);
-      _ba_update.bind_value(
-        ":last_state_change",
-        (((status->last_state_change == (time_t)-1)
-          || (status->last_state_change == 0))
-         ? QVariant(QVariant::LongLong)
-         : QVariant(static_cast<qlonglong>(status->last_state_change.get_time_t()))));
-      _ba_update.bind_value(":state", status->state);
-      _ba_update.bind_value(":in_downtime", status->in_downtime);
-      try { _ba_update.run_statement(); }
-      catch (std::exception const& e) {
-        throw (exceptions::msg() << "BAM: could not update BA "
-               << status->ba_id << ": " << e.what());
-      }
-    }
-    else if (data->type() == bam::kpi_status::static_type()) {
-      kpi_status* status(static_cast<kpi_status*>(data.data()));
-      logging::debug(logging::low) << "BAM: processing KPI status (id "
-        << status->kpi_id << ", level " << status->level_nominal_hard
-        << ", acknowledgement " << status->level_acknowledgement_hard
-        << ", downtime " << status->level_downtime_hard << ")";
-      _kpi_update.bind_value(
-                    ":level_nominal",
-                    status->level_nominal_hard);
-      _kpi_update.bind_value(
-                    ":level_acknowledgement",
-                    status->level_acknowledgement_hard);
-      _kpi_update.bind_value(
-                    ":level_downtime",
-                    status->level_downtime_hard);
-      _kpi_update.bind_value(":state", status->state_hard);
-      _kpi_update.bind_value(":state_type", 1 + 1);
-      _kpi_update.bind_value(":kpi_id", status->kpi_id);
-      _kpi_update.bind_value(
-        ":last_state_change",
-        (((status->last_state_change == (time_t)-1)
-          || (status->last_state_change == 0))
-         ? QVariant(QVariant::LongLong)
-         : QVariant(static_cast<qlonglong>(status->last_state_change.get_time_t()))));
-      _kpi_update.bind_value(":last_impact", status->last_impact);
-      _kpi_update.bind_value(":valid", status->valid);
-      try { _kpi_update.run_statement(); }
-      catch (std::exception const& e) {
-        throw (exceptions::msg() << "BAM: could not update KPI "
-               << status->kpi_id << ": " << e.what());
-      }
-    }
-    else if (data->type() == bam::meta_service_status::static_type()) {
-      meta_service_status* status(static_cast<meta_service_status*>(data.data()));
-      logging::debug(logging::low)
-        << "BAM: processing meta-service status (id "
-        << status->meta_service_id << ", value " << status->value
-        << ")";
-      _meta_service_update.bind_value(
-                              ":meta_service_id",
-                              status->meta_service_id);
-      _meta_service_update.bind_value(":value", status->value);
-      try { _meta_service_update.run_statement(); }
-      catch (std::exception const& e) {
-        throw (exceptions::msg()
-               << "BAM: could not update meta-service "
-               << status->meta_service_id << ": " << e.what());
-      }
+  // Process service status events.
+  if ((data->type() == neb::service_status::static_type())
+      || (data->type() == neb::service::static_type())) {
+    misc::shared_ptr<neb::service_status>
+      ss(data.staticCast<neb::service_status>());
+    logging::debug(logging::low)
+      << "BAM: processing service status (host "
+      << ss->host_id << ", service " << ss->service_id
+      << ", hard state " << ss->last_hard_state << ", current state "
+      << ss->current_state << ")";
+    multiplexing::publisher pblshr;
+    event_cache_visitor ev_cache;
+    _applier.book_service().update(ss, &ev_cache);
+    ev_cache.commit_to(pblshr);
+  }
+  else if (data->type() == neb::acknowledgement::static_type()) {
+    misc::shared_ptr<neb::acknowledgement>
+ack(data.staticCast<neb::acknowledgement>());
+    logging::debug(logging::low)
+<< "BAM: processing acknowledgement (host "
+<< ack->host_id << ", service " << ack->service_id << ")";
+    multiplexing::publisher pblshr;
+    event_cache_visitor ev_cache;
+    _applier.book_service().update(ack, &ev_cache);
+    ev_cache.commit_to(pblshr);
+  }
+  else if (data->type() == neb::downtime::static_type()) {
+    misc::shared_ptr<neb::downtime>
+dt(data.staticCast<neb::downtime>());
+    logging::debug(logging::low)
+<< "BAM: processing downtime (host " << dt->host_id
+<< ", service " << dt->service_id << ")";
+    multiplexing::publisher pblshr;
+    event_cache_visitor ev_cache;
+    _applier.book_service().update(dt, &ev_cache);
+    ev_cache.commit_to(pblshr);
+  }
+  else if (data->type() == storage::metric::static_type()) {
+    misc::shared_ptr<storage::metric>
+      m(data.staticCast<storage::metric>());
+    logging::debug(logging::low)
+      << "BAM: processing metric (id " << m->metric_id << ", time "
+      << m->ctime << ", value " << m->value << ")";
+    multiplexing::publisher pblshr;
+    event_cache_visitor ev_cache;
+    _applier.book_metric().update(m, &ev_cache);
+    ev_cache.commit_to(pblshr);
+  }
+  else if (data->type() == bam::ba_status::static_type()) {
+    ba_status* status(static_cast<ba_status*>(data.data()));
+    logging::debug(logging::low) << "BAM: processing BA status (id "
+      << status->ba_id << ", level " << status->level_nominal
+      << ", acknowledgement " << status->level_acknowledgement
+      << ", downtime " << status->level_downtime << ")";
+    _ba_update.bind_value(":level_nominal", status->level_nominal);
+    _ba_update.bind_value(
+                 ":level_acknowledgement",
+                 status->level_acknowledgement);
+    _ba_update.bind_value(":level_downtime", status->level_downtime);
+    _ba_update.bind_value(":ba_id", status->ba_id);
+    _ba_update.bind_value(
+      ":last_state_change",
+      (((status->last_state_change == (time_t)-1)
+        || (status->last_state_change == 0))
+       ? QVariant(QVariant::LongLong)
+       : QVariant(static_cast<qlonglong>(status->last_state_change.get_time_t()))));
+    _ba_update.bind_value(":state", status->state);
+    _ba_update.bind_value(":in_downtime", status->in_downtime);
+    try { _ba_update.run_statement(); }
+    catch (std::exception const& e) {
+      throw (exceptions::msg() << "BAM: could not update BA "
+             << status->ba_id << ": " << e.what());
     }
   }
-  else
-    _db.commit();
+  else if (data->type() == bam::kpi_status::static_type()) {
+    kpi_status* status(static_cast<kpi_status*>(data.data()));
+    logging::debug(logging::low) << "BAM: processing KPI status (id "
+      << status->kpi_id << ", level " << status->level_nominal_hard
+      << ", acknowledgement " << status->level_acknowledgement_hard
+      << ", downtime " << status->level_downtime_hard << ")";
+    _kpi_update.bind_value(
+                  ":level_nominal",
+                  status->level_nominal_hard);
+    _kpi_update.bind_value(
+                  ":level_acknowledgement",
+                  status->level_acknowledgement_hard);
+    _kpi_update.bind_value(
+                  ":level_downtime",
+                  status->level_downtime_hard);
+    _kpi_update.bind_value(":state", status->state_hard);
+    _kpi_update.bind_value(":state_type", 1 + 1);
+    _kpi_update.bind_value(":kpi_id", status->kpi_id);
+    _kpi_update.bind_value(
+      ":last_state_change",
+      (((status->last_state_change == (time_t)-1)
+        || (status->last_state_change == 0))
+       ? QVariant(QVariant::LongLong)
+       : QVariant(static_cast<qlonglong>(status->last_state_change.get_time_t()))));
+    _kpi_update.bind_value(":last_impact", status->last_impact);
+    _kpi_update.bind_value(":valid", status->valid);
+    try { _kpi_update.run_statement(); }
+    catch (std::exception const& e) {
+      throw (exceptions::msg() << "BAM: could not update KPI "
+             << status->kpi_id << ": " << e.what());
+    }
+  }
+  else if (data->type() == bam::meta_service_status::static_type()) {
+    meta_service_status* status(static_cast<meta_service_status*>(data.data()));
+    logging::debug(logging::low)
+      << "BAM: processing meta-service status (id "
+      << status->meta_service_id << ", value " << status->value
+      << ")";
+    _meta_service_update.bind_value(
+                            ":meta_service_id",
+                            status->meta_service_id);
+    _meta_service_update.bind_value(":value", status->value);
+    try { _meta_service_update.run_statement(); }
+    catch (std::exception const& e) {
+      throw (exceptions::msg()
+             << "BAM: could not update meta-service "
+             << status->meta_service_id << ": " << e.what());
+    }
+  }
 
   // Event acknowledgement.
   if (_db.committed()) {

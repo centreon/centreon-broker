@@ -41,7 +41,7 @@ namespace                bam {
     virtual bool         read(
                            misc::shared_ptr<io::data>& d,
                            time_t deadline);
-    virtual unsigned int write(misc::shared_ptr<io::data> const& d);
+    virtual int          write(misc::shared_ptr<io::data> const& d);
 
   private:
                          event_cache_visitor(event_cache_visitor const& other);

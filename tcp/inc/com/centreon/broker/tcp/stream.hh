@@ -48,7 +48,7 @@ namespace        tcp {
     void         set_parent(acceptor* parent);
     void         set_read_timeout(int secs);
     void         set_write_timeout(int secs);
-    unsigned int write(misc::shared_ptr<io::data> const& d);
+    int          write(misc::shared_ptr<io::data> const& d);
 
   private:
                  stream(stream const& other);

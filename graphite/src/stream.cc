@@ -63,6 +63,7 @@ stream::stream(
                                1 : queries_per_transaction),
     _pending_queries(0),
     _actual_query(0),
+    _commit_flag(false),
     _cache(cache),
     _metric_query(_metric_naming, query::metric, _cache),
     _status_query(_status_naming, query::status, _cache) {
@@ -123,40 +124,45 @@ void stream::update() {
 }
 
 /**
+ *  Flush the stream.
+ */
+void stream::flush() {
+  _commit_flag = true;
+}
+
+/**
  *  Write an event.
  *
  *  @param[in] data Event pointer.
  *
  *  @return Number of events acknowledged.
  */
-unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
-  bool commit = false;
+int stream::write(misc::shared_ptr<io::data> const& data) {
+  if (!validate(data, "graphite"))
+    return (1);
+
   ++_pending_queries;
 
   // Give the event to the cache.
   _cache.write(data);
 
   // Process metric events.
-  if (!data.isNull()) {
-    if (data->type()
-          == io::events::data_type<io::events::storage,
-                                   storage::de_metric>::value) {
-      _process_metric(data.ref_as<storage::metric const>());
-      ++_actual_query;
-    }
-    else if (data->type()
-               == io::events::data_type<io::events::storage,
-                                        storage::de_status>::value) {
-      _process_status(data.ref_as<storage::status const>());
-      ++_actual_query;
-    }
-    if (_actual_query >= _queries_per_transaction)
-      commit = true;
+  if (data->type()
+        == io::events::data_type<io::events::storage,
+                                 storage::de_metric>::value) {
+    _process_metric(data.ref_as<storage::metric const>());
+    ++_actual_query;
   }
-  else
-    commit = true;
+  else if (data->type()
+             == io::events::data_type<io::events::storage,
+                                      storage::de_status>::value) {
+    _process_status(data.ref_as<storage::status const>());
+    ++_actual_query;
+  }
+  if (_actual_query >= _queries_per_transaction)
+    _commit_flag = true;
 
-  if (commit) {
+  if (_commit_flag) {
     logging::debug(logging::medium)
       << "graphite: commiting " << _actual_query << " queries";
     unsigned int ret = _pending_queries;
@@ -164,6 +170,7 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
       _commit();
     _actual_query = 0;
     _pending_queries = 0;
+    _commit_flag = false;
     return (ret);
   }
   else

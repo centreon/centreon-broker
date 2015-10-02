@@ -38,7 +38,8 @@ namespace         bbdo {
                     bool negociate,
                     QString const& extensions,
                     time_t timeout,
-                    bool coarse = false);
+                    bool coarse = false,
+                    unsigned int ack_limit = 3000);
                   connector(connector const& other);
                   ~connector();
     connector&    operator=(connector const& other);
@@ -53,6 +54,7 @@ namespace         bbdo {
     QString       _extensions;
     bool          _negociate;
     time_t        _timeout;
+    unsigned int  _ack_limit;
   };
 }
 

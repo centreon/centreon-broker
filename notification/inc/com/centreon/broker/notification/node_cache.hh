@@ -68,8 +68,7 @@ namespace         notification {
     virtual bool  read(
                     misc::shared_ptr<io::data>& d,
                     time_t deadline);
-    virtual unsigned int
-                  write(misc::shared_ptr<io::data> const& d);
+    virtual int   write(misc::shared_ptr<io::data> const& d);
 
     void          update(neb::host const& hst);
     void          update(neb::host_status const& hs);

@@ -288,6 +288,7 @@ qt4_wrap_cpp(QT_WRAPPED_SOURCES
 set(LIBROKER_SOURCES
   # Sources.
   "${SRC_DIR}/bbdo/acceptor.cc"
+  "${SRC_DIR}/bbdo/ack.cc"
   "${SRC_DIR}/bbdo/connector.cc"
   "${SRC_DIR}/bbdo/factory.cc"
   "${SRC_DIR}/bbdo/input.cc"
@@ -379,6 +380,7 @@ set(LIBROKER_SOURCES
   ${QT_WRAPPED_SOURCES}
   # Headers.
   "${INC_DIR}/bbdo/acceptor.hh"
+  "${INC_DIR}/bbdo/ack.hh"
   "${INC_DIR}/bbdo/connector.hh"
   "${INC_DIR}/bbdo/factory.hh"
   "${INC_DIR}/bbdo/input.hh"

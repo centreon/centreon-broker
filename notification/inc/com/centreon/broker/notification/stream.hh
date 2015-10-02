@@ -65,7 +65,7 @@ namespace        notification {
                    misc::shared_ptr<io::data>& d,
                    time_t deadline);
     void         update();
-    unsigned int write(misc::shared_ptr<io::data> const& d);
+    int          write(misc::shared_ptr<io::data> const& d);
 
   private:
     stream&      operator=(stream const& s);

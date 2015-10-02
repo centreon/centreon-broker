@@ -63,7 +63,7 @@ namespace               multiplexing {
     unsigned int        get_event_queue_size() const;
     void                statistics(io::properties& tree) const;
     void                wake();
-    unsigned int        write(misc::shared_ptr<io::data> const& d);
+    int                 write(misc::shared_ptr<io::data> const& d);
 
   private:
                         muxer(muxer const& other);

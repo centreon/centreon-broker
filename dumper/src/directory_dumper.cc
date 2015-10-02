@@ -111,9 +111,9 @@ bool directory_dumper::read(
  *
  *  @return Always return 1, or throw exceptions.
  */
-unsigned int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
-  if (d.isNull())
-    return (1);
+int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
+  if (!validate(d, "directory dumper"))
+    return  (1);
 
   if (d->type() == extcmd::command_request::static_type()) {
     extcmd::command_request const&

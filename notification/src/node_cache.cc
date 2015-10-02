@@ -180,9 +180,9 @@ bool node_cache::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @return          Number of event acknowledged.
  */
-unsigned int node_cache::write(misc::shared_ptr<io::data> const& data) {
+int node_cache::write(misc::shared_ptr<io::data> const& data) {
   // Check that data exists.
-  if (data.isNull())
+  if (!validate(data, "node_cache"))
     return (1);
 
   unsigned int type = data->type();

@@ -274,7 +274,7 @@ void muxer::wake() {
  *
  *  @param[in] d  Event to multiplex.
  */
-unsigned int muxer::write(misc::shared_ptr<io::data> const& d) {
+int muxer::write(misc::shared_ptr<io::data> const& d) {
   if (!d.isNull()
       && (_read_filters.find(d->type()) != _read_filters.end()))
     engine::instance().publish(d);

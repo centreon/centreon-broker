@@ -72,7 +72,6 @@ bool persistent_file::read(
  *
  *  @param[in] d  Input data.
  */
-unsigned int persistent_file::write(
-                                misc::shared_ptr<io::data> const& d) {
+int persistent_file::write(misc::shared_ptr<io::data> const& d) {
   return (_file->write(d));
 }

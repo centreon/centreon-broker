@@ -47,6 +47,7 @@ namespace        bbdo {
     bool         read_any(
                    misc::shared_ptr<io::data>& d,
                    time_t deadline = (time_t)-1);
+    virtual void acknowledge_events(unsigned int events) = 0;
 
   private:
     void         _buffer_must_have_unprocessed(

@@ -41,7 +41,9 @@ namespace        bbdo {
     virtual      ~output();
     output&      operator=(output const& other);
     void         statistics(io::properties& tree) const;
-    unsigned int write(misc::shared_ptr<io::data> const& e);
+    void         flush();
+    int          write(misc::shared_ptr<io::data> const& e);
+    void         add_acknowledged_events(unsigned int events);
   };
 }
 

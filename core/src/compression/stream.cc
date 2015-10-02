@@ -147,31 +147,37 @@ void stream::statistics(io::properties& tree) const {
 }
 
 /**
+ *  Flush the stream.
+ */
+void stream::flush() {
+  _flush();
+}
+
+/**
  *  @brief Write data.
  *
  *  The data can be buffered before being written to the subobject.
  *
  *  @param[in] d Data to send.
  *
- *  @return Number of events acknowledged (1).
+ *  @return -1 due to buffering making it impossible to accurately
+ *          acknowledge events.
  */
-unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
-  // Forced commit.
-  if (d.isNull())
-    _flush();
-  else {
-    // Process raw data only.
-    if (d->type() == io::raw::static_type()) {
-      // Append data to write buffer.
-      misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
-      _wbuffer.append(*r);
+int stream::write(misc::shared_ptr<io::data> const& d) {
+  if (!validate(d, "compression"))
+    return (1);
 
-      // Send compressed data if size limit is reached.
-      if (static_cast<unsigned int>(_wbuffer.size()) >= _size)
-        _flush();
-    }
+  // Process raw data only.
+  if (d->type() == io::raw::static_type()) {
+    // Append data to write buffer.
+    misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
+    _wbuffer.append(*r);
+
+    // Send compressed data if size limit is reached.
+    if (static_cast<unsigned int>(_wbuffer.size()) >= _size)
+      _flush();
   }
-  return (1);
+  return (-1);
 }
 
 /**************************************

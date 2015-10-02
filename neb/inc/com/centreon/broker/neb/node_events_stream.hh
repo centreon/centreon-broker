@@ -56,7 +56,7 @@ namespace        neb {
                  ~node_events_stream();
     bool         read(misc::shared_ptr<io::data>& d, time_t deadline);
     void         update();
-    unsigned int write(misc::shared_ptr<io::data> const& d);
+    int          write(misc::shared_ptr<io::data> const& d);
     void         parse_command(
                    extcmd::command_request const& exc,
                    io::stream& stream);

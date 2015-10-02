@@ -44,7 +44,8 @@ namespace        compression {
                    misc::shared_ptr<io::data>& d,
                    time_t deadline = (time_t)-1);
     void         statistics(io::properties& tree) const;
-    unsigned int write(misc::shared_ptr<io::data> const& d);
+    void         flush();
+    int          write(misc::shared_ptr<io::data> const& d);
 
   private:
     void         _flush();

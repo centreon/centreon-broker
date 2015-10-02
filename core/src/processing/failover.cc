@@ -254,8 +254,10 @@ void failover::run() {
             bool timed_out(!_failover->read(d, 0));
             if (timed_out)
               break ;
-            _stream->write(d);
-            _event_processing_speed.tick();
+            if (!d.isNull()) {
+              _stream->write(d);
+              _event_processing_speed.tick();
+            }
           }
         }
         catch (io::exceptions::shutdown const& e) {
@@ -545,7 +547,7 @@ bool failover::wait(unsigned long time) {
  *
  *  @return Does not return, throw an exception.
  */
-unsigned int failover::write(misc::shared_ptr<io::data> const& d) {
+int failover::write(misc::shared_ptr<io::data> const& d) {
   (void)d;
   if (!d.isNull())
     throw (exceptions::msg() << "cannot write to endpoint '"

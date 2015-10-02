@@ -75,8 +75,8 @@ bool engine_command::read(
  *
  *  @return  See io::stream::read().
  */
-unsigned int engine_command::write(misc::shared_ptr<io::data> const& d) {
-  if (d.isNull())
+int engine_command::write(misc::shared_ptr<io::data> const& d) {
+  if (!validate(d, "engine command"))
     return (1);
 
   if (d->type() == command_request::static_type()) {

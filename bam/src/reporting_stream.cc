@@ -145,64 +145,70 @@ void reporting_stream::statistics(io::properties& tree) const {
 }
 
 /**
+ *  Flush the stream.
+ */
+void reporting_stream::flush() {
+  _db.commit();
+}
+
+/**
  *  Write an event.
  *
  *  @param[in] data Event pointer.
  *
  *  @return Number of events acknowledged.
  */
-unsigned int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
+int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
+  if (!validate(data, "reporting_stream"))
+    return (1);
+
   // Take this event into account.
   ++_pending_events;
 
-  if (!data.isNull()) {
-    if (data->type()
-        == io::events::data_type<io::events::bam,
-                                 bam::de_kpi_event>::value)
-      _process_kpi_event(data);
-    else if (data->type()
-             == io::events::data_type<io::events::bam,
-                                      bam::de_ba_event>::value)
-      _process_ba_event(data);
-    else if (data->type()
-             == io::events::data_type<io::events::bam,
-                                      bam::de_ba_duration_event>::value)
-      _process_ba_duration_event(data);
-    else if (data->type()
-             == io::events::data_type<io::events::bam,
-                                      bam::de_dimension_ba_event>::value ||
-             data->type()
-             == io::events::data_type<io::events::bam,
-                                      bam::de_dimension_bv_event>::value ||
-             data->type()
-                          == io::events::data_type<io::events::bam,
-                                                   bam::de_dimension_ba_bv_relation_event>::value ||
-             data->type()
-                          == io::events::data_type<io::events::bam,
-                                                   bam::de_dimension_kpi_event>::value ||
-             data->type()
-                          == io::events::data_type<io::events::bam,
-                                                   bam::de_dimension_truncate_table_signal>::value ||
-             data->type()
-                          == io::events::data_type<io::events::bam,
-                                                   bam::de_dimension_timeperiod>::value ||
-             data->type()
-                          == io::events::data_type<io::events::bam,
-                                                   bam::de_dimension_timeperiod_exception>::value ||
-             data->type()
-                          == io::events::data_type<io::events::bam,
-                                                   bam::de_dimension_timeperiod_exclusion>::value ||
-             data->type()
-                          == io::events::data_type<io::events::bam,
-                                                   bam::de_dimension_ba_timeperiod_relation>::value)
-      _process_dimension(data);
-    else if (data->type()
-             == io::events::data_type<io::events::bam,
-                                      bam::de_rebuild>::value)
-    _process_rebuild(data);
-  }
-  else
-    _db.commit();
+  if (data->type()
+      == io::events::data_type<io::events::bam,
+                               bam::de_kpi_event>::value)
+    _process_kpi_event(data);
+  else if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_ba_event>::value)
+    _process_ba_event(data);
+  else if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_ba_duration_event>::value)
+    _process_ba_duration_event(data);
+  else if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_dimension_ba_event>::value ||
+           data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_dimension_bv_event>::value ||
+           data->type()
+                        == io::events::data_type<io::events::bam,
+                                                 bam::de_dimension_ba_bv_relation_event>::value ||
+           data->type()
+                        == io::events::data_type<io::events::bam,
+                                                 bam::de_dimension_kpi_event>::value ||
+           data->type()
+                        == io::events::data_type<io::events::bam,
+                                                 bam::de_dimension_truncate_table_signal>::value ||
+           data->type()
+                        == io::events::data_type<io::events::bam,
+                                                 bam::de_dimension_timeperiod>::value ||
+           data->type()
+                        == io::events::data_type<io::events::bam,
+                                                 bam::de_dimension_timeperiod_exception>::value ||
+           data->type()
+                        == io::events::data_type<io::events::bam,
+                                                 bam::de_dimension_timeperiod_exclusion>::value ||
+           data->type()
+                        == io::events::data_type<io::events::bam,
+                                                 bam::de_dimension_ba_timeperiod_relation>::value)
+    _process_dimension(data);
+  else if (data->type()
+           == io::events::data_type<io::events::bam,
+                                    bam::de_rebuild>::value)
+  _process_rebuild(data);
 
   // Event acknowledgement.
   if (_db.committed()) {
