@@ -78,6 +78,19 @@ namespace           processing {
     bool            wait(unsigned long time = ULONG_MAX);
     unsigned int    write(misc::shared_ptr<io::data> const& d);
 
+
+  protected:
+    // From stat_visitable
+    virtual std::string
+                    _get_state();
+    virtual unsigned int
+                    _get_queued_events();
+    virtual uset<unsigned int>
+                    _get_read_filters();
+    virtual uset<unsigned int>
+                    _get_write_filters();
+    virtual void    _forward_statistic(io::properties& tree);
+
   private:
                     failover(failover const& other);
     failover&       operator=(failover const& other);
@@ -93,7 +106,6 @@ namespace           processing {
     misc::shared_ptr<failover>
                     _failover;
     bool            _failover_launched;
-    QString         _name;
     time_t          _next_timeout;
     time_t          _read_timeout;
     volatile time_t _retry_interval;

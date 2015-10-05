@@ -21,6 +21,7 @@
 
 #  include <QThread>
 #  include <string>
+#  include "com/centreon/broker/stats/config.hh"
 
 namespace               com {
   namespace             centreon {
@@ -48,7 +49,7 @@ namespace               com {
                         worker();
                         ~worker() throw ();
           void          exit();
-          void          run(QString const& fifo_file);
+          void          run(QString const& fifo_file, config::fifo_type type);
 
         private:
                         worker(worker const& right);
@@ -60,6 +61,8 @@ namespace               com {
           std::string   _buffer;
           int           _fd;
           std::string   _fifo;
+          config::fifo_type
+                        _type;
           volatile bool _should_exit;
         };
       }

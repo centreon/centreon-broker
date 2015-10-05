@@ -17,6 +17,8 @@
 */
 
 #include <unistd.h>
+#include <QReadLocker>
+#include <QWriteLocker>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -47,9 +49,12 @@ feeder::feeder(
           misc::shared_ptr<io::stream> client,
           uset<unsigned int> const& read_filters,
           uset<unsigned int> const& write_filters)
-  : _client(client), _name(name), _subscriber(name, false) {
+  : thread(name), _client(client), _subscriber(name, false) {
   _subscriber.get_muxer().set_read_filters(read_filters);
   _subscriber.get_muxer().set_write_filters(write_filters);
+  // By default, we assume the feeder is already connected.
+  set_last_connection_attempt(timestamp::now());
+  set_last_connection_success(timestamp::now());
 }
 
 /**
@@ -75,13 +80,16 @@ void feeder::run() {
       bool timed_out_stream(true);
       if (stream_can_read)
         try {
+          QReadLocker lock(&_client_mutex);
           timed_out_stream = !_client->read(d, 0);
         }
         catch (io::exceptions::shutdown const& e) {
           stream_can_read = false;
         }
       if (!d.isNull()) {
+        QReadLocker lock(&_client_mutex);
         _subscriber.get_muxer().write(d);
+        _event_processing_speed.tick();
         continue ; // Stream read bias.
       }
 
@@ -95,8 +103,11 @@ void feeder::run() {
         catch (io::exceptions::shutdown const& e) {
           muxer_can_read = false;
         }
-      if (!d.isNull())
+      if (!d.isNull()) {
+        QReadLocker lock(&_client_mutex);
         _client->write(d);
+        _event_processing_speed.tick();
+      }
 
       // If both timed out, sleep a while.
       d.clear();
@@ -112,14 +123,78 @@ void feeder::run() {
     logging::error(logging::medium)
       << "feeder: error occured while processing client '"
       << _name << "': " << e.what();
+    set_last_error(e.what());
   }
   catch (...) {
     logging::error(logging::high)
       << "feeder: unknown error occured while processing client '"
       << _name << "'";
   }
-  _client.clear();
+  {
+    QWriteLocker lock(&_client_mutex);
+    _client.clear();
+  }
   logging::info(logging::medium)
     << "feeder: thread of client '" << _name << "' will exit";
   return ;
+}
+
+/**
+ *  Get the state of the feeder.
+ *
+ *  @return  The state of the feeder.
+ */
+std::string feeder::_get_state() {
+  char const* ret;
+  if (_client_mutex.tryLockForRead(300)) {
+    if (_client.isNull())
+      ret = "disconnected";
+    else
+      ret = "connected";
+    _client_mutex.unlock();
+  }
+  else
+    ret = "blocked";
+  return (ret);
+}
+
+/**
+ *  Get the number of queued events.
+ *
+ *  @return  The number of queued events.
+ */
+unsigned int feeder::_get_queued_events() {
+  return (_subscriber.get_muxer().get_event_queue_size());
+}
+
+/**
+ *  Get the read filters used by the feeder.
+ *
+ *  @return  The read filters used by the feeder.
+ */
+uset<unsigned int> feeder::_get_read_filters() {
+  return (_subscriber.get_muxer().get_read_filters());
+}
+
+/**
+ *  Get the write filters used by the feeder.
+ *
+ *  @return  The write filters used by the feeder.
+ */
+uset<unsigned int> feeder::_get_write_filters() {
+  return (_subscriber.get_muxer().get_write_filters());
+}
+
+/**
+ *  Forward to stream.
+ *
+ *  @param[in] tree  The statistic tree.
+ */
+void feeder::_forward_statistic(io::properties& tree) {
+  if (_client_mutex.tryLockForRead(300)) {
+    if (!_client.isNull())
+      _client->statistics(tree);
+    _client_mutex.unlock();
+  }
+  _subscriber.get_muxer().statistics(tree);
 }

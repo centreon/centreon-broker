@@ -351,8 +351,10 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/mapping/entry.cc"
   "${SRC_DIR}/mapping/source.cc"
   "${SRC_DIR}/misc/diagnostic.cc"
+  "${SRC_DIR}/misc/processing_speed_computer.cc"
   "${SRC_DIR}/misc/string.cc"
   "${SRC_DIR}/misc/stringifier.cc"
+  "${SRC_DIR}/misc/json_writer.cc"
   "${SRC_DIR}/misc/tokenizer.cc"
   "${SRC_DIR}/misc/global_lock.cc"
   "${SRC_DIR}/modules/handle.cc"
@@ -368,6 +370,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/processing/failover.cc"
   "${SRC_DIR}/processing/feeder.cc"
   "${SRC_DIR}/processing/thread.cc"
+  "${SRC_DIR}/processing/stat_visitable.cc"
   "${SRC_DIR}/time/timezone_manager.cc"
   "${SRC_DIR}/time/timezone_locker.cc"
   "${SRC_DIR}/time/timerange.cc"
@@ -443,8 +446,10 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/mapping/property.hh"
   "${INC_DIR}/mapping/source.hh"
   "${INC_DIR}/misc/diagnostic.hh"
+  "${INC_DIR}/misc/processing_speed_computer.hh"
   "${INC_DIR}/misc/string.hh"
   "${INC_DIR}/misc/stringifier.hh"
+  "${INC_DIR}/misc/json_writer.hh"
   "${INC_DIR}/misc/tokenizer.hh"
   "${INC_DIR}/misc/global_lock.hh"
   "${INC_DIR}/misc/shared_ptr.hh"
@@ -461,6 +466,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/processing/failover.hh"
   "${INC_DIR}/processing/feeder.hh"
   "${INC_DIR}/processing/thread.hh"
+  "${INC_DIR}/processing/stat_visitable.hh"
   "${INC_DIR}/timestamp.hh"
   "${INC_DIR}/time/timezone_manager.hh"
   "${INC_DIR}/time/timezone_locker.hh"
@@ -876,6 +882,13 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_bam")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/bam.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # Circular path in BA graph.
+  set(TEST_NAME "running_bam_circular")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/bam_circular.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 

@@ -105,6 +105,7 @@ namespace          bam {
     database_query _ba_event_update;
     database_query _ba_event_delete;
     database_query _ba_duration_event_insert;
+    database_query _ba_duration_event_update;
     database_query _kpi_full_event_insert;
     database_query _kpi_event_update;
     database_query _kpi_event_delete;

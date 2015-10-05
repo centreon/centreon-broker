@@ -56,21 +56,36 @@ namespace       processing {
     void        set_retry_interval(time_t retry_interval);
     void        set_write_filters(uset<unsigned int> const& filters);
 
+  protected:
+    // From stat_visitable
+    virtual std::string
+                _get_state();
+    virtual unsigned int
+                _get_queued_events();
+    virtual uset<unsigned int>
+                _get_read_filters();
+    virtual uset<unsigned int>
+                _get_write_filters();
+    virtual void
+                _forward_statistic(io::properties& tree);
+
   private:
                 acceptor(acceptor const& other);
     acceptor&   operator=(acceptor const& other);
     void        _wait_feeders();
+    void        _set_listening(bool val);
+    bool        _get_listening() const throw();
 
     misc::shared_ptr<io::endpoint>
                 _endp;
     std::list<misc::shared_ptr<processing::feeder> >
                 _feeders;
-    std::string _name;
     uset<unsigned int>
                 _read_filters;
     time_t      _retry_interval;
     uset<unsigned int>
                 _write_filters;
+    bool        _listening;
   };
 }
 

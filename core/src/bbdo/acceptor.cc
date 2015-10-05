@@ -147,9 +147,8 @@ misc::shared_ptr<io::stream> acceptor::open() {
  */
 void acceptor::stats(io::properties& tree) {
   io::property& p(tree["one_peer_retention_mode"]);
-  p.set_perfdata(_one_peer_retention_mode
-                 ? "one peer retention mode=true"
-                 : "one peer retention mode=false");
+  p.set_name("one_peer_retention_mode");
+  p.set_value(_one_peer_retention_mode ? "true" : "false");
   p.set_graphable(false);
   if (!_from.isNull())
     _from->stats(tree);

@@ -123,6 +123,15 @@ public:
       return (left._sec < right._sec);
   }
 
+  /**
+   *  Return a timestamp from now.
+   *
+   *  @return  A timestamp set to present time, present day.
+   */
+  static timestamp now() {
+    return (::time(NULL));
+  }
+
   // Data.
   std::time_t _sec;
 };

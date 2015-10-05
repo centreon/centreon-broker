@@ -20,12 +20,19 @@
 #  define CCB_PROCESSING_THREAD_HH
 
 #  include <climits>
+#  include <string>
 #  include <QMutex>
 #  include <QThread>
+#  include "com/centreon/broker/processing/stat_visitable.hh"
 
 namespace                com {
   namespace              centreon {
     namespace            broker {
+      // Forward declaration.
+      namespace          io {
+        class            properties;
+      }
+
       namespace          processing {
         /**
          *  @class thread thread.hh "com/centreon/broker/processing/thread.hh"
@@ -35,13 +42,13 @@ namespace                com {
          *
          *  @see acceptor
          *  @see failover
-         *  @see input
+         *  @see feeder
          */
-        class            thread : protected QThread {
+        class            thread : protected QThread, public stat_visitable {
           Q_OBJECT
 
         public:
-                         thread();
+                         thread(std::string const& name = std::string());
                          ~thread();
           virtual void   exit();
           bool           should_exit() const;

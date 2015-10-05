@@ -58,6 +58,9 @@ namespace               multiplexing {
                           time_t deadline);
     void                set_read_filters(filters const& fltrs);
     void                set_write_filters(filters const& fltrs);
+    filters const&      get_read_filters() const;
+    filters const&      get_write_filters() const;
+    unsigned int        get_event_queue_size() const;
     void                statistics(io::properties& tree) const;
     void                wake();
     unsigned int        write(misc::shared_ptr<io::data> const& d);

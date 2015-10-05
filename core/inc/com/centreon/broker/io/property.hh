@@ -34,23 +34,23 @@ namespace              io {
   class                property {
   public:
                        property(
-                         std::string const& output = "",
-                         std::string const& perfdata = "",
+                         std::string const& name = "",
+                         std::string const& value = "",
                          bool graphable = false);
                        property(property const& right);
                        ~property() throw ();
     property&          operator=(property const& right);
-    std::string const& get_output() const throw ();
-    std::string const& get_perfdata() const throw ();
+    std::string const& get_name() const throw();
+    std::string const& get_value() const throw();
     bool               is_graphable() const throw ();
+    void               set_name(std::string const& name);
+    void               set_value(std::string const& value);
     void               set_graphable(bool graphable = true);
-    void               set_output(std::string const& output);
-    void               set_perfdata(std::string const& perfdata);
 
   private:
+    std::string        _name;
+    std::string        _value;
     bool               _graphable;
-    std::string        _output;
-    std::string        _perfdata;
   };
 }
 

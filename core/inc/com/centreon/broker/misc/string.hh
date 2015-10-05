@@ -87,6 +87,13 @@ namespace        misc {
       return (buf);
     }
 
+    template <typename T>
+    inline std::string      get(T value) {
+      std::ostringstream oss;
+      oss << value;
+      return (oss.str());
+    }
+
     inline char*            dup(char const* value) {
       if (!value)
         return (NULL);

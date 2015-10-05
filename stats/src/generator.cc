@@ -24,6 +24,7 @@
 #include "com/centreon/broker/stats/config.hh"
 #include "com/centreon/broker/stats/generator.hh"
 #include "com/centreon/broker/stats/metric.hh"
+#include "com/centreon/broker/stats/plain_text_serializer.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::stats;
@@ -99,7 +100,7 @@ void generator::run() {
         << "stats: time has come to generate statistics (tag '"
         << _tag << "')";
       builder b;
-      b.build();
+      b.build(plain_text_serializer());
 
       // Send dumper events.
       {
@@ -112,14 +113,14 @@ void generator::run() {
       }
 
       // Send RRD events.
-      for (std::list<io::properties>::const_iterator
+      for (io::properties::children_list::const_iterator
              it1(b.root().children().begin()),
              end1(b.root().children().end());
            it1 != end1;
            ++it1) {
         for (std::map<std::string, io::property>::const_iterator
-               it2(it1->begin()),
-               end2(it1->end());
+               it2(it1->second.begin()),
+               end2(it1->second.end());
              it2 != end2;
              ++it2) {
           std::map<
@@ -137,8 +138,12 @@ void generator::run() {
             ss->service_id = it3->second.second;
             // XXX ss->host_name = instance_name;
             ss->service_description = it3->first.c_str();
-            ss->output = it2->second.get_output().c_str();
-            ss->perf_data = it2->second.get_perfdata().c_str();
+            ss->output = "";
+            ss->perf_data =
+                  QString::fromStdString(
+                             it2->second.get_name()
+                             + "="
+                             + it2->second.get_value());
             multiplexing::publisher p;
             p.write(ss);
           }

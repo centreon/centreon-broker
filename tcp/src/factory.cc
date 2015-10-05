@@ -119,19 +119,28 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Find TCP socket timeout option.
-  int socket_timeout(-1);
+  int write_timeout(-1);
   {
     QMap<QString, QString>::const_iterator it(cfg.params.find("socket_write_timeout"));
     if (it != cfg.params.end())
-      socket_timeout = it.value().toUInt();
+      write_timeout = it.value().toUInt();
   }
+
+  int read_timeout(-1);
+  {
+    QMap<QString, QString>::const_iterator it(cfg.params.find("socket_read_timeout"));
+    if (it != cfg.params.end())
+      read_timeout = it.value().toUInt();
+  }
+
 
   // Acceptor.
   std::auto_ptr<io::endpoint> endp;
   if (host.isEmpty()) {
     is_acceptor = true;
     std::auto_ptr<tcp::acceptor> a(new tcp::acceptor);
-    a->set_write_timeout(socket_timeout);
+    a->set_read_timeout(read_timeout);
+    a->set_write_timeout(write_timeout);
     a->listen_on(port);
     endp.reset(a.release());
   }
@@ -139,8 +148,9 @@ io::endpoint* factory::new_endpoint(
   else {
     is_acceptor = false;
     std::auto_ptr<tcp::connector> c(new tcp::connector);
+    c->set_read_timeout(read_timeout);
     c->connect_to(host, port);
-    c->set_write_timeout(socket_timeout);
+    c->set_write_timeout(write_timeout);
     endp.reset(c.release());
   }
   return (endp.release());

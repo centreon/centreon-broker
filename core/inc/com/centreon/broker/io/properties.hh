@@ -38,6 +38,7 @@ namespace              io {
   public:
     typedef std::map<std::string, property>::iterator iterator;
     typedef std::map<std::string, property>::const_iterator const_iterator;
+    typedef std::list<std::pair<std::string, properties> > children_list;
 
                        properties(std::string const& name = "");
                        properties(properties const& right);
@@ -47,20 +48,24 @@ namespace              io {
     property&          operator[](std::string const& name);
     iterator           begin();
     const_iterator     begin() const;
-    std::list<properties> const&
+    children_list const&
                        children() const;
-    std::list<properties>&
-                       children();
+    children_list&     children();
+    void               add_child(
+                         io::properties const& child,
+                         std::string const& name = std::string());
     iterator           end();
     const_iterator     end() const;
     property const&    get(std::string const& name) const;
     void               merge(properties const& other);
     std::string const& name() const throw ();
     void               name(std::string const& name);
+    void               add_property(
+                         std::string const& name,
+                         property const& prop);
 
   private:
-    std::list<properties>
-                       _children;
+    children_list      _children;
     std::string        _name;
     std::map<std::string, property>
                        _properties;

@@ -21,6 +21,7 @@
 
 #  include <list>
 #  include <string>
+#  include <vector>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -37,23 +38,30 @@ namespace                    stats {
    */
   class                      config {
   public:
+    enum                     fifo_type {
+                             plain_text,
+                             json
+    };
+    typedef std::vector<std::pair<std::string, fifo_type> >
+                             fifo_list;
+
                              config();
                              config(config const& right);
                              ~config();
     config&                  operator=(config const& right);
     std::string const&       get_dumper_tag() const throw ();
-    std::string const&       get_fifo() const throw ();
+    fifo_list const&         get_fifo() const throw ();
     unsigned int             get_interval() const throw ();
     std::list<metric>&       metrics() throw ();
     std::list<metric> const& metrics() const throw ();
     void                     set_dumper_tag(std::string const& tag);
-    void                     set_fifo(std::string const& fifo);
+    void                     add_fifo(std::string const& fifo, fifo_type type);
     void                     set_interval(
                                unsigned int interval) throw ();
 
   private:
     std::string              _dumper_tag;
-    std::string              _fifo;
+    fifo_list                _fifos;
     unsigned int             _interval;
     std::list<metric>        _metrics;
   };
