@@ -252,7 +252,7 @@ void engine::stop() {
     _cache_file->transaction();
     } catch (std::exception const& e) {
       logging::error(logging::medium)
-        << "multiplexng: could not open cache file '"
+        << "multiplexing: could not open cache file '"
         << _cache_filename << "'";
       _cache_file.reset();
     }
