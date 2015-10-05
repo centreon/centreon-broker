@@ -149,7 +149,7 @@ std::string command::resolve(
   // (no secure function doing that in our libraries, unfortunately).
   // XXX: do the same for windows.
   if (_enable_shell) {
-    misc::string::replace(resolved_command, "'", "'\\''");
+    misc::string::replace(resolved_command, "'", "'\''");
     resolved_command.insert(0, "sh -c '");
     resolved_command.append("'");
   }
