@@ -1,6 +1,6 @@
 /*
-** Copyright 1999-2009 Ethan Galstad
-** Copyright 2011-2014 Merethis
+** Copyright 1999-2010 Ethan Galstad
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -18,25 +18,20 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCE_TIMEPERIOD_HH
-#  define CCE_TIMEPERIOD_HH
+#ifndef CCE_MACROS_CLEAR_SERVICEGROUP_HH
+#  define CCE_MACROS_CLEAR_SERVICEGROUP_HH
+
+#  include "com/centreon/engine/macros/defines.hh"
 
 #  ifdef __cplusplus
 extern "C" {
 #  endif // C++
 
-int  check_time_against_period(
-       time_t test_time,
-       timeperiod* tperiod,
-       char const* tz);
-void get_next_valid_time(
-       time_t pref_time,
-       time_t* valid_time,
-       timeperiod* tperiod,
-       char const* tz);
+int clear_servicegroup_macros_r(nagios_macros* mac);
+int clear_servicegroup_macros();
 
 #  ifdef __cplusplus
 }
 #  endif // C++
 
-#endif // !CCE_TIMEPERIOD_HH
+#endif // !CCE_MACROS_CLEAR_SERVICEGROUP_HH

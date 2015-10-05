@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -31,10 +31,13 @@ namespace              retention {
   class                object {
   public:
     enum               type_id {
-      host = 0,
-      info,
-      program,
-      service
+      comment = 0,
+      contact = 1,
+      downtime = 2,
+      host = 3,
+      info = 4,
+      program = 5,
+      service = 6
     };
 
                        object(type_id type);

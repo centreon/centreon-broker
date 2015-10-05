@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -24,11 +24,16 @@
 #  include <string>
 #  include "com/centreon/engine/configuration/command.hh"
 #  include "com/centreon/engine/configuration/connector.hh"
+#  include "com/centreon/engine/configuration/contact.hh"
 #  include "com/centreon/engine/configuration/file_info.hh"
 #  include "com/centreon/engine/configuration/hostdependency.hh"
+#  include "com/centreon/engine/configuration/hostescalation.hh"
+#  include "com/centreon/engine/configuration/hostextinfo.hh"
 #  include "com/centreon/engine/configuration/host.hh"
 #  include "com/centreon/engine/configuration/object.hh"
 #  include "com/centreon/engine/configuration/servicedependency.hh"
+#  include "com/centreon/engine/configuration/serviceescalation.hh"
+#  include "com/centreon/engine/configuration/serviceextinfo.hh"
 #  include "com/centreon/engine/configuration/service.hh"
 #  include "com/centreon/engine/configuration/state.hh"
 #  include "com/centreon/engine/configuration/timeperiod.hh"
@@ -43,11 +48,20 @@ namespace              configuration {
     enum               read_options {
       read_commands = (1 << 0),
       read_connector = (1 << 1),
-      read_host = (1 << 2),
-      read_hostdependency = (1 << 3),
-      read_service = (1 << 4),
-      read_servicedependency = (1 << 5),
-      read_timeperiod = (1 << 6),
+      read_contact = (1 << 2),
+      read_contactgroup = (1 << 3),
+      read_host = (1 << 4),
+      read_hostdependency = (1 << 5),
+      read_hostescalation = (1 << 6),
+      read_hostextinfo = (1 << 7),
+      read_hostgroup = (1 << 8),
+      read_hostgroupescalation = (1 << 9),
+      read_service = (1 << 10),
+      read_servicedependency = (1 << 11),
+      read_serviceescalation = (1 << 12),
+      read_serviceextinfo = (1 << 13),
+      read_servicegroup = (1 << 14),
+      read_timeperiod = (1 << 15),
       read_all = (~0)
     };
 
@@ -65,7 +79,15 @@ namespace              configuration {
     void               _apply(
                          std::list<std::string> const& lst,
                          void (parser::*pfunc)(std::string const&));
+    void               _apply_hostextinfo();
+    void               _apply_serviceextinfo();
     file_info const&   _get_file_info(object* obj) const;
+    void               _get_hosts_by_hostgroups(
+                         hostgroup_ptr const& hostgroups,
+                         list_host& hosts);
+    void               _get_hosts_by_hostgroups_name(
+                         list_string const& lst_group,
+                         list_host& hosts);
     template<typename T>
     void               _get_objects_by_list_name(
                          list_string const& lst,
@@ -83,12 +105,10 @@ namespace              configuration {
                          std::set<shared_ptr<T> >& to);
     std::string const& _map_object_type(
                          map_object const& objects) const throw ();
-    void               _parse_directory_configuration(
-                         std::string const& path);
-    void               _parse_global_configuration(
-                         std::string const& path,
-                         bool is_main_file);
+    void               _parse_directory_configuration(std::string const& path);
+    void               _parse_global_configuration(std::string const& path);
     void               _parse_object_definitions(std::string const& path);
+    void               _parse_resource_file(std::string const& path);
     void               _resolve_template();
     void               _store_into_list(object_ptr obj);
     template<typename T, std::string const& (T::*ptr)() const throw ()>
@@ -97,13 +117,13 @@ namespace              configuration {
     state*             _config;
     unsigned int       _current_line;
     std::string        _current_path;
-    list_object        _lst_objects[16];
-    map_object         _map_objects[16];
+    list_object        _lst_objects[15];
+    map_object         _map_objects[15];
     umap<object*, file_info>
                        _objects_info;
     unsigned int       _read_options;
     static store       _store[];
-    map_object         _templates[16];
+    map_object         _templates[15];
   };
 }
 

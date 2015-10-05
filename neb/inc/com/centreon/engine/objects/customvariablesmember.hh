@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -21,6 +21,7 @@
 #  define CCE_OBJECTS_CUSTOMVARIABLESMEMBER_HH
 
 /* Forward declarations. */
+struct contact_struct;
 struct host_struct;
 struct service_struct;
 
@@ -35,6 +36,10 @@ typedef struct                         customvariablesmember_struct {
 extern "C" {
 #  endif /* C++ */
 
+customvariablesmember* add_custom_variable_to_contact(
+                         contact_struct* cntct,
+                         char const* varname,
+                         char const* varvalue);
 customvariablesmember* add_custom_variable_to_host(
                          host_struct* hst,
                          char const* varname,
@@ -47,6 +52,8 @@ customvariablesmember* add_custom_variable_to_service(
                          service_struct* svc,
                          char const* varname,
                          char const* varvalue);
+void                   remove_all_custom_variables_from_contact(
+                         contact_struct* cntct);
 void                   remove_all_custom_variables_from_host(
                          host_struct* hst);
 void                   remove_all_custom_variables_from_service(
@@ -84,3 +91,5 @@ CCE_END()
 #  endif /* C++ */
 
 #endif // !CCE_OBJECTS_CUSTOMVARIABLESMEMBER_HH
+
+

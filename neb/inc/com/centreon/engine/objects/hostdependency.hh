@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -25,6 +25,7 @@ struct host_struct;
 struct timeperiod_struct;
 
 typedef struct                  hostdependency_struct {
+  int                           dependency_type;
   char*                         dependent_host_name;
   char*                         host_name;
   char*                         dependency_period;
@@ -50,6 +51,7 @@ extern "C" {
 hostdependency* add_host_dependency(
                   char const* dependent_host_name,
                   char const* host_name,
+                  int dependency_type,
                   int inherits_parent,
                   int fail_on_up,
                   int fail_on_down,
@@ -58,7 +60,8 @@ hostdependency* add_host_dependency(
                   char const* dependency_period);
 int             check_for_circular_hostdependency_path(
                   hostdependency* root_dep,
-                  hostdependency* dep);
+                  hostdependency* dep,
+                  int dependency_type);
 
 #  ifdef __cplusplus
 }
@@ -79,3 +82,5 @@ std::ostream& operator<<(std::ostream& os, hostdependency const& obj);
 #  endif /* C++ */
 
 #endif // !CCE_OBJECTS_HOSTDEPENDENCY_HH
+
+
