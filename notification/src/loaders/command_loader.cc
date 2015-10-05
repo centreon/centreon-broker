@@ -60,6 +60,7 @@ void command_loader::load(QSqlDatabase* db, command_builder* output) {
     std::string base_command = query.value(3).toString().toStdString();
     command::ptr com(new command(base_command));
     com->set_name(query.value(2).toString().toStdString());
+    com->set_enable_shell(query.value(5).toBool());
 
     output->add_command(id, com);
   }
