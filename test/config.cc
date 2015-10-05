@@ -680,11 +680,9 @@ void config_write(
                                          ? it->max_attempts
                                          : 3) << "\n"
           << "  check_interval "
-          << ((it->check_interval > 0) ? it->check_interval : 5)
-             * MONITORING_ENGINE_INTERVAL_LENGTH << "\n"
+          << ((it->check_interval > 0) ? it->check_interval : 5) << "\n"
           << "  retry_interval "
-          << ((it->retry_interval > 0) ? it->retry_interval : 3)
-             * MONITORING_ENGINE_INTERVAL_LENGTH << "\n"
+          << ((it->retry_interval > 0) ? it->retry_interval : 3) << "\n"
           << "  check_period " << (it->check_period
                                    ? it->check_period
                                    : "default_timeperiod") << "\n"
@@ -770,11 +768,9 @@ void config_write(
           << "  max_check_attempts "
           << ((it->max_attempts > 0) ? it->max_attempts : 3) << "\n"
           << "  check_interval "
-          << ((it->check_interval > 0) ? it->check_interval : 5)
-             * MONITORING_ENGINE_INTERVAL_LENGTH << "\n"
+          << ((it->check_interval > 0) ? it->check_interval : 5) << "\n"
           << "  retry_interval "
-          << ((it->retry_interval > 0) ? it->retry_interval : 3)
-             * MONITORING_ENGINE_INTERVAL_LENGTH << "\n"
+          << ((it->retry_interval > 0) ? it->retry_interval : 3) << "\n"
           << "  check_period " << (it->check_period
                                    ? it->check_period
                                    : "default_timeperiod") << "\n"

@@ -229,8 +229,7 @@ void stream::_clean_tables(unsigned int instance_id) {
   // Remove custom variables.
   {
     std::ostringstream ss;
-    ss << "DELETE "
-       << (db_v2 ? "customvariables" : "rt_customvariables")
+    ss << "DELETE cv"
        << "  FROM " << (db_v2
                         ? "customvariables"
                         : "rt_customvariables")

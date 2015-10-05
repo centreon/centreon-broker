@@ -158,7 +158,7 @@ extern "C" {
                   "boolean",
                   &dumper::entries::boolean::operations,
                   dumper::entries::boolean::entries,
-                  NULL,
+                  "",
                   "mod_bam_boolean"));
         e.register_event(
             io::events::dumper,

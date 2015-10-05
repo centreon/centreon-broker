@@ -60,6 +60,12 @@ int main() {
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, 10);
     generate_services(services, hosts, 5);
+    for (std::list<service>::iterator
+           it(services.begin()),
+           end(services.end());
+         it != end;
+         ++it)
+      it->accept_passive_service_checks = 1;
     commander.set_file(tmpnam(NULL));
     std::string additional_config;
     {
