@@ -136,7 +136,7 @@ void test_db::open(
                                                db_type,
                                                bi_connection)));
     _open(*_bi, bi_db_name);
-    _run_script(*_bi, PROJECT_SOURCE_DIR "/bam/mysql_schema_bi.sql");
+    _run_script(*_bi, PROJECT_SOURCE_DIR "/bam/mysql_bi_v3.sql");
   }
 
   // Open Centreon DB.
@@ -145,17 +145,17 @@ void test_db::open(
                                                      db_type,
                                                      centreon_connection)));
     _open(*_centreon, centreon_db_name);
-    _run_script(*_centreon, PROJECT_SOURCE_DIR "/sql/mysql_schema.sql");
+    _run_script(*_centreon, PROJECT_SOURCE_DIR "/sql/mysql_v3.sql");
     if (with_cfg_tables) {
       _run_script(
         *_centreon,
-        PROJECT_SOURCE_DIR "/test/centreon.sql");
+        PROJECT_SOURCE_DIR "/test/centreon_v3.sql");
       _run_script(
         *_centreon,
-        PROJECT_SOURCE_DIR "/bam/mysql_schema_centreon.sql");
+        PROJECT_SOURCE_DIR "/bam/mysql_centreon_v3.sql");
       _run_script(
         *_centreon,
-        PROJECT_SOURCE_DIR "/notification/mysql_schema.sql");
+        PROJECT_SOURCE_DIR "/notification/mysql_v3.sql");
     }
   }
 
