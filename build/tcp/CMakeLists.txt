@@ -49,10 +49,6 @@ add_library("${TCP}" SHARED
 )
 target_link_libraries("${TCP}" ${QT_LIBRARIES})
 set_target_properties("${TCP}" PROPERTIES PREFIX "")
-get_property(TCP_MODULE_PATH
-  TARGET "${TCP}"
-  PROPERTY LOCATION)
-set(TCP_MODULE_PATH "${TCP_MODULE_PATH}" PARENT_SCOPE)
 
 # Install rule.
 install(TARGETS "${TCP}"

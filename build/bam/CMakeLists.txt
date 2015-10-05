@@ -157,10 +157,6 @@ add_library("${BAM}" SHARED
 )
 target_link_libraries("${BAM}" ${QT_LIBRARIES})
 set_target_properties("${BAM}" PROPERTIES PREFIX "")
-get_property(BAM_MODULE_PATH
-  TARGET "${BAM}"
-  PROPERTY LOCATION)
-set(BAM_MODULE_PATH "${BAM_MODULE_PATH}" PARENT_SCOPE)
 
 # Testing.
 if (WITH_TESTING)

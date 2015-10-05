@@ -16,25 +16,14 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef TEST_VARS_HH
-#  define TEST_VARS_HH
-
-#  include "install_paths.hh"
+#ifndef TEST_INSTALL_PATHS
+#  define TEST_INSTALL_PATHS
 
 // Paths.
-#  define PROJECT_SOURCE_DIR "@PROJECT_SOURCE_DIR@"
+#  define CBD_PATH $<TARGET_FILE:cbd>
+#  define CBMOD_PATH $<TARGET_FILE:cbmod>
+#  define MY_PLUGIN_PATH $<TARGET_FILE:@MY_PLUGIN@>
+#  define MY_PLUGIN_BAM_PATH $<TARGET_FILE:@MY_PLUGIN_BAM@>
+#  define BENCH_GENERATE_RRD_MOD_PATH $<TARGET_FILE:@TEST_NAME@>
 
-// Monitoring engine.
-#  define MONITORING_ENGINE "@MONITORING_ENGINE@"
-#  define MONITORING_ENGINE_ADDITIONAL "@MONITORING_ENGINE_ADDITIONAL@"
-#  define MONITORING_ENGINE_INTERVAL_LENGTH @MONITORING_ENGINE_INTERVAL_LENGTH@
-#  define MONITORING_ENGINE_INTERVAL_LENGTH_STR "@MONITORING_ENGINE_INTERVAL_LENGTH@"
-
-// DB info.
-#  define DB_TYPE "@DB_TYPE@"
-#  define DB_HOST "@DB_HOST@"
-#  define DB_PORT "@DB_PORT@"
-#  define DB_USER "@DB_USER@"
-#  define DB_PASSWORD "@DB_PASSWORD@"
-
-#endif // !TEST_VARS_HH
+#endif // !TEST_INSTALL_PATHS

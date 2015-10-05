@@ -52,10 +52,6 @@ add_library("${INFLUXDB}" SHARED
 )
 target_link_libraries("${INFLUXDB}" ${QT_LIBRARIES})
 set_target_properties("${INFLUXDB}" PROPERTIES PREFIX "")
-get_property(INFLUXDB_MODULE_PATH
-  TARGET "${INFLUXDB}"
-  PROPERTY LOCATION)
-set(INFLUXDB_MODULE_PATH "${INFLUXDB_MODULE_PATH}" PARENT_SCOPE)
 
 # Testing.
 if (WITH_TESTING)

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<centreonbroker>
+  <module>$<TARGET_FILE:@DUMPER@></module>
+  <module>$<TARGET_FILE:@NEB@></module>
+  <module>$<TARGET_FILE:@STATS@></module>
+  <module>$<TARGET_FILE:@CORRELATION@></module>
+  <module>$<TARGET_FILE:@STORAGE@></module>
+  <module>$<TARGET_FILE:@BAM@></module>
+  <module>$<TARGET_FILE:@NOTIFICATION@></module>
+  <module>$<TARGET_FILE:@TCP@></module>
+  <module>$<TARGET_FILE:@TLS@></module>
+  <module>$<TARGET_FILE:@RRD@></module>
+  <module>$<TARGET_FILE:@SQL@></module>
+  <module>$<TARGET_FILE:@INFLUXDB@></module>
+  <module>$<TARGET_FILE:@GRAPHITE@></module>
+</centreonbroker>

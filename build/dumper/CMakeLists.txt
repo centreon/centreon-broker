@@ -72,10 +72,6 @@ add_library("${DUMPER}" SHARED
 )
 target_link_libraries("${DUMPER}" ${QT_LIBRARIES})
 set_target_properties("${DUMPER}" PROPERTIES PREFIX "")
-get_property(DUMPER_MODULE_PATH
-  TARGET "${DUMPER}"
-  PROPERTY LOCATION)
-set(DUMPER_MODULE_PATH "${DUMPER_MODULE_PATH}" PARENT_SCOPE)
 
 if (WITH_TESTING)
   set(TEST_LIBRARIES "${DUMPER}" "roker")
