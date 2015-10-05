@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -99,9 +99,6 @@ void handle::close() {
       << _handle.fileName() << "'";
 
     // Find deinitialization routine.
-    logging::debug(logging::low) << "modules: searching " \
-         "deinitialization routine (symbol " << deinitialization
-      << ") in '" << _handle.fileName() << "'";
     union {
       void (* code)();
       void*   data;
@@ -111,16 +108,16 @@ void handle::close() {
     // Could not find deinitialization routine.
     if (!sym.data) {
       QString error_str(_handle.errorString());
-      logging::info(logging::medium) << "modules: could not find " \
+      logging::info(logging::medium) << "modules: could not find "
            "deinitialization routine in '" << _handle.fileName()
         << "': " << error_str;
     }
     // Call deinitialization routine.
     else {
+      logging::debug(logging::low)
+        << "modules: running deinitialization routine of '"
+        << _handle.fileName() << "'";
       (*(sym.code))();
-      logging::debug(logging::low) << "modules: deinitialization " \
-           "routine of '" << _handle.fileName()
-        << "' successfully completed";
     }
 
     // Reset library handle.
@@ -133,10 +130,6 @@ void handle::close() {
         << "modules: could not unload library '"
         << _handle.fileName() << "': " << error_str;
     }
-    // Library was unloaded.
-    else
-      logging::info(logging::medium) << "modules: library '"
-        << _handle.fileName() << "' unloaded";
   }
   return ;
 }
@@ -171,8 +164,6 @@ void handle::open(std::string const& filename, void const* arg) {
   if (!_handle.load())
     throw (exceptions::msg() << "modules: could not load library '"
              << filename << "': " << _handle.errorString());
-  logging::info(logging::medium) << "modules: library '"
-    << filename << "' loaded";
 
   // Initialize module.
   _check_version();
@@ -193,9 +184,6 @@ void handle::update(void const* arg) {
                                 "module that is not loaded");
 
   // Find update routine.
-  logging::debug(logging::low) << "modules: searching update "
-    << "routine (symbol " << updatization << ") in '"
-    << _handle.fileName() << "'";
   union {
     void (* code)();
     void*   data;
@@ -204,14 +192,11 @@ void handle::update(void const* arg) {
 
   // Found routine.
   if (sym.data) {
+    logging::debug(logging::low)
+      << "modules: running update routine of '"
+      << _handle.fileName() << "'";
     (*(void (*)(void const*))(sym.code))(arg);
-    logging::debug(logging::low) << "modules: update routine of '"
-      << _handle.fileName() << "' successfully completed";
   }
-  // Routine not found.
-  else
-    logging::info(logging::medium) << "modules: could not find update "
-      << "routine of module '" << _handle.fileName() << "'";
 
   return ;
 }
@@ -227,8 +212,8 @@ void handle::update(void const* arg) {
  */
 void handle::_check_version() {
   // Find version symbol.
-  logging::debug(logging::low) << "modules: searching "
-       "version (symbol " << versionning
+  logging::debug(logging::low)
+    << "modules: checking module version (symbol " << versionning
     << ") in '" << _handle.fileName() << "'";
 
   char const** version = (char const**)_handle.resolve(versionning);
@@ -236,7 +221,7 @@ void handle::_check_version() {
   // Could not find version symbol.
   if (!version) {
     QString error_str(_handle.errorString());
-    throw (exceptions::msg() << "modules: could not find " \
+    throw (exceptions::msg() << "modules: could not find "
                 "version in '" << _handle.fileName()
              << "' (not a Centreon Broker module ?): " << error_str);
   }
@@ -260,9 +245,6 @@ void handle::_check_version() {
  */
 void handle::_init(void const* arg) {
   // Find initialization routine.
-  logging::debug(logging::low) << "modules: searching "
-       "initialization routine (symbol " << initialization
-    << ") in '" << _handle.fileName() << "'";
   union {
     void (* code)();
     void*   data;
@@ -278,9 +260,10 @@ void handle::_init(void const* arg) {
   }
 
   // Call initialization routine.
+  logging::debug(logging::medium)
+    << "modules: running initialization routine of '"
+    << _handle.fileName() << "'";
   (*(void (*)(void const*))(sym.code))(arg);
-  logging::debug(logging::medium) << "modules: initialization " \
-    "routine of '" << _handle.fileName() << "' successfully completed";
 
   return ;
 }
