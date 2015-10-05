@@ -76,7 +76,10 @@ void connector::connect_monitoring(
                   std::string const& storage_db_name) {
   _type = bam_monitoring_type;
   _db_cfg = db_cfg;
-  _storage_db_name = storage_db_name;
+  if (storage_db_name.empty())
+    _storage_db_name = db_cfg.get_name();
+  else
+    _storage_db_name = storage_db_name;
   return ;
 }
 
@@ -104,8 +107,10 @@ misc::shared_ptr<io::stream> connector::open() {
     return (s.staticCast<io::stream>());
   }
   else {
+    database_config storage_db_cfg(_db_cfg);
+    storage_db_cfg.set_name(_storage_db_name);
     misc::shared_ptr<monitoring_stream>
-      s(new monitoring_stream(_db_cfg, _storage_db_name));
+      s(new monitoring_stream(_db_cfg, storage_db_cfg));
     s->initialize();
     return (s.staticCast<io::stream>());
   }

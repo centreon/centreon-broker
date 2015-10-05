@@ -169,7 +169,7 @@ io::endpoint* factory::new_endpoint(
     QMap<QString, QString>::const_iterator
       it(cfg.params.find("storage_db_name"));
     if (it != cfg.params.end())
-      storage_db_name = *it;
+      storage_db_name = it->toStdString();
   }
 
   // Connector.
