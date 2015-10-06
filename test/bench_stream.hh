@@ -34,7 +34,7 @@ public:
                   com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>& d,
                   time_t deadline);
   void          reset_bench();
-  unsigned int  write(
+  int           write(
                   com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> const& d);
 
 private:

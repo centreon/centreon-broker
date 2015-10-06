@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Centreon
+** Copyright 2012-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -97,7 +97,7 @@ bool temporary_stream::read(
  *
  *  @return Number of elements acknowledged (1).
  */
-unsigned int temporary_stream::write(misc::shared_ptr<io::data> const& d) {
+int temporary_stream::write(misc::shared_ptr<io::data> const& d) {
   QMutexLocker lock(&_eventsm);
   _events.enqueue(d);
   return (1);
