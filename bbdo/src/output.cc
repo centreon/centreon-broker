@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Centreon
+** Copyright 2013-2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -76,8 +76,8 @@ static void serialize(QByteArray& data, io::data const* e) {
     (*it->getter)(t, *it->member, data);
 
     // Packet splitting.
-    if (static_cast<unsigned int>(data.size())
-        >= (beginning + BBDO_HEADER_SIZE + 0xFFFF)) {
+    while (static_cast<unsigned int>(data.size())
+           >= (beginning + BBDO_HEADER_SIZE + 0xFFFF)) {
       // Set size.
       *(static_cast<uint16_t*>(static_cast<void*>(data.data() + beginning)) + 1)
         = 0xFFFF;
