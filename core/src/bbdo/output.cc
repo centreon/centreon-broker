@@ -210,8 +210,8 @@ static io::raw* serialize(io::data const& e) {
         }
 
       // Packet splitting.
-      if (static_cast<unsigned int>(data.size())
-          >= (beginning + BBDO_HEADER_SIZE + 0xFFFF)) {
+      while (static_cast<unsigned int>(data.size())
+             >= (beginning + BBDO_HEADER_SIZE + 0xFFFF)) {
         // Set size.
         *(static_cast<uint16_t*>(static_cast<void*>(
                                    data.data() + beginning)) + 1)
