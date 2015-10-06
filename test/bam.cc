@@ -94,6 +94,12 @@ typedef struct {
   bool timeperiod_is_default;
 } ba_event_duration;
 
+typedef struct {
+  bool optional;
+  unsigned int ba_event_id;
+  unsigned int kpi_event_id;
+} relation_ba_kpi_event;
+
 /**
  *  Compare two double values.
  */
@@ -295,7 +301,71 @@ static void check_kpi_events(
   if (q.next())
     throw (exceptions::msg() << "too much KPI events: expected "
            << count);
-  // XXX : check relations
+  return ;
+}
+
+/**
+ *  Check the relations between BA events and KPI events.
+ *
+ *  @param[in] db         The database.
+ */
+static void check_ba_kpi_relations(
+              QSqlDatabase& db) {
+  // Check for kpi events without relations.
+  {
+    QString query(
+      "SELECT kpi.kpi_event_id"
+      "  FROM mod_bam_reporting_kpi_events AS kpi"
+      "  WHERE NOT EXISTS"
+      "    (SELECT 1 FROM mod_bam_reporting_relations_ba_kpi_events AS rel"
+      "       WHERE kpi.kpi_event_id = rel.kpi_event_id)"
+    );
+
+    QSqlQuery q(db);
+    if (!q.exec(query))
+      throw (exceptions::msg() << "could not fetch BA-KPI event relations: "
+             << q.lastError().text());
+    if (q.size() != 0)
+     throw (exceptions::msg()
+             << "found '" << q.size()
+             << "' KPI events without relations");
+  }
+
+  // Check for relation consistency.
+  {
+    QString query(
+      "SELECT ke.kpi_event_id, ke.start_time,"
+      "       be.start_time, be.end_time, kpi.ba_id, be.ba_id, be.ba_event_id"
+      "  FROM mod_bam_reporting_kpi_events as ke"
+      "  LEFT JOIN mod_bam_reporting_relations_ba_kpi_events AS rel"
+      "    ON ke.kpi_event_id = rel.kpi_event_id"
+      "  LEFT JOIN mod_bam_reporting_ba_events AS be"
+      "    ON rel.ba_event_id = be.ba_event_id"
+      "  LEFT JOIN mod_bam_reporting_kpi AS kpi"
+      "    ON kpi.kpi_id = ke.kpi_id");
+    QSqlQuery q(db);
+    if (!q.exec(query))
+      throw (exceptions::msg() << "could not fetch BA-KPI event relations: "
+             << q.lastError().text());
+    while (q.next()) {
+      unsigned int kpi_event_start_time = q.value(1).toUInt();
+      unsigned int ba_event_start_time = q.value(2).toUInt();
+      unsigned int ba_event_end_time = q.value(3).toUInt();
+      if (kpi_event_start_time < ba_event_start_time
+          || (ba_event_end_time != 0
+              && kpi_event_start_time >= ba_event_end_time))
+        throw (exceptions::msg()
+               << "inconsistent start time between KPI event '"
+               << q.value(0).toUInt() << "' and BA event '"
+               << q.value(6).toUInt() << "'");
+      if (q.value(4).toUInt() != q.value(5).toUInt())
+        throw (exceptions::msg()
+               << "inconsistent linking between KPI event '"
+               << q.value(0).toUInt() << "' and BA event '"
+               << q.value(6).toUInt() << "'");
+    }
+  }
+
   return ;
 }
 
@@ -947,6 +1017,10 @@ int main() {
         kpievents,
         sizeof(kpievents) / sizeof(*kpievents));
     }
+
+    // Check BA KPI relations.
+    check_ba_kpi_relations(*db.bi_db());
+
     {
       ba_event_duration const badurations[] = {
         { 2, t0, t1, t1, t2, 0, t2 - t0, 0, t2 - t0, true },
