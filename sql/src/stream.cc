@@ -1944,32 +1944,37 @@ void stream::update() {
 }
 
 /**
+ *  Flush the stream.
+ */
+void stream::flush() {
+  logging::info(logging::medium)
+    << "SQL: committing transaction";
+  _db.commit();
+}
+
+/**
  *  Write an event.
  *
  *  @param[in] data Event pointer.
  *
  *  @return Number of events acknowledged.
  */
-unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
+int stream::write(misc::shared_ptr<io::data> const& data) {
+  if (!validate(data, "sql"))
+    return (1);
+
   // Take this event into account.
   ++_pending_events;
 
   // Check that data exists.
-  if (!data.isNull()) {
     // Process event.
-    unsigned int type(data->type());
-    unsigned short cat(io::events::category_of_type(type));
-    unsigned short elem(io::events::element_of_type(type));
-    if (cat == io::events::neb)
-      (this->*(_neb_processing_table[elem]))(data);
-    else if (cat == io::events::correlation)
-      (this->*(_correlation_processing_table[elem]))(data);
-  }
-  else {
-    logging::info(logging::medium)
-      << "SQL: committing transaction";
-    _db.commit();
-  }
+  unsigned int type(data->type());
+  unsigned short cat(io::events::category_of_type(type));
+  unsigned short elem(io::events::element_of_type(type));
+  if (cat == io::events::neb)
+    (this->*(_neb_processing_table[elem]))(data);
+  else if (cat == io::events::correlation)
+    (this->*(_correlation_processing_table[elem]))(data);
 
   // Update hosts and services of stopped instances
   _update_hosts_and_services_of_unresponsive_instances();

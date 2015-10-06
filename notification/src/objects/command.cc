@@ -20,6 +20,7 @@
 #include <QRegExp>
 #include <QStringList>
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/notification/objects/command.hh"
 #include "com/centreon/broker/notification/state.hh"
 #include "com/centreon/broker/notification/macro_generator.hh"
@@ -40,7 +41,7 @@ static void single_pass_replace(
  *  @param[in] base_command  The command from which to construct this object.
  */
 command::command(std::string const& base_command) :
-  _base_command(base_command) {}
+  _enable_shell(true), _base_command(base_command) {}
 
 /**
  *  Copy constructor.
@@ -60,10 +61,29 @@ command::command(command const& obj) {
  */
 command& command::operator=(command const& obj) {
   if (this != &obj) {
+    _enable_shell = obj._enable_shell;
     _name = obj._name;
     _base_command = obj._base_command;
   }
   return (*this);
+}
+
+/**
+ *  Get the enable shell flag.
+ *
+ *  @return  True if we enable
+ */
+bool command::get_enable_shell() const throw() {
+  return (_enable_shell);
+}
+
+/**
+ *  Set the enable shell flag.
+ *
+ *  @param[in] val  The new value of the enable shell flag.
+ */
+void command::set_enable_shell(bool val) {
+  _enable_shell = val;
 }
 
 /**
@@ -123,6 +143,16 @@ std::string command::resolve(
   // Replace the macros by their values.
   std::string resolved_command = _base_command;
   single_pass_replace(resolved_command, macros);
+
+  // If it needs to be launched into a shell, wrap it into a shell command.
+  // The command is correctly escaped in single quotes
+  // (no secure function doing that in our libraries, unfortunately).
+  // XXX: do the same for windows.
+  if (_enable_shell) {
+    misc::string::replace(resolved_command, "'", "'\''");
+    resolved_command.insert(0, "sh -c '");
+    resolved_command.append("'");
+  }
 
   return (resolved_command);
 }

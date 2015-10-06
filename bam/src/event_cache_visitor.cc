@@ -85,8 +85,8 @@ bool event_cache_visitor::read(
  *
  *  @return       Number of event acknowledged.
  */
-unsigned int event_cache_visitor::write(misc::shared_ptr<io::data> const& d) {
-  if (d.isNull())
+int event_cache_visitor::write(misc::shared_ptr<io::data> const& d) {
+  if (!validate(d, "event_cache_visitor"))
     return (1);
 
   if (d->type()

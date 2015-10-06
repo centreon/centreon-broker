@@ -45,10 +45,6 @@ add_library("${GRAPHITE}" SHARED
 )
 target_link_libraries("${GRAPHITE}" ${QT_LIBRARIES})
 set_target_properties("${GRAPHITE}" PROPERTIES PREFIX "")
-get_property(GRAPHITE_MODULE_PATH
-  TARGET "${GRAPHITE}"
-  PROPERTY LOCATION)
-set(GRAPHITE_MODULE_PATH "${GRAPHITE_MODULE_PATH}" PARENT_SCOPE)
 
 # Testing.
 if (WITH_TESTING)

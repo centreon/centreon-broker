@@ -180,9 +180,9 @@ void output::update() {
  *
  *  @return Number of events acknowledged.
  */
-unsigned int output::write(misc::shared_ptr<io::data> const& d) {
+int output::write(misc::shared_ptr<io::data> const& d) {
   // Check that data exists.
-  if (d.isNull())
+  if (!validate(d, "storage"))
     return (1);
 
   if (d->type() == storage::metric::static_type()) {

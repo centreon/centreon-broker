@@ -63,10 +63,6 @@ add_library("${TLS}" SHARED
 )
 target_link_libraries("${TLS}" ${GNUTLS_LIBRARIES})
 set_target_properties("${TLS}" PROPERTIES PREFIX "")
-get_property(TLS_MODULE_PATH
-  TARGET "${TLS}"
-  PROPERTY LOCATION)
-set(TLS_MODULE_PATH "${TLS_MODULE_PATH}" PARENT_SCOPE)
 
 # Install rule.
 install(TARGETS "${TLS}"

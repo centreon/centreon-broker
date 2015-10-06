@@ -47,7 +47,7 @@ namespace              file {
     void               reset();
     void               set_auto_delete(bool auto_delete);
     void               statistics(io::properties& tree) const;
-    unsigned int       write(misc::shared_ptr<io::data> const& d);
+    int                write(misc::shared_ptr<io::data> const& d);
 
   private:
                        stream(stream const& s);

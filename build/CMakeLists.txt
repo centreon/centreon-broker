@@ -288,6 +288,7 @@ qt4_wrap_cpp(QT_WRAPPED_SOURCES
 set(LIBROKER_SOURCES
   # Sources.
   "${SRC_DIR}/bbdo/acceptor.cc"
+  "${SRC_DIR}/bbdo/ack.cc"
   "${SRC_DIR}/bbdo/connector.cc"
   "${SRC_DIR}/bbdo/factory.cc"
   "${SRC_DIR}/bbdo/input.cc"
@@ -379,6 +380,7 @@ set(LIBROKER_SOURCES
   ${QT_WRAPPED_SOURCES}
   # Headers.
   "${INC_DIR}/bbdo/acceptor.hh"
+  "${INC_DIR}/bbdo/ack.hh"
   "${INC_DIR}/bbdo/connector.hh"
   "${INC_DIR}/bbdo/factory.hh"
   "${INC_DIR}/bbdo/input.hh"
@@ -512,9 +514,6 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 else ()
   target_link_libraries("${DAEMON}" "roker")
 endif ()
-get_property(CBD_PATH
-  TARGET "cbd"
-  PROPERTY LOCATION)
 
 # Module list.
 unset(MODULE_LIST)
@@ -616,8 +615,10 @@ string(REPLACE ";" ", " MODULE_LIST "${MODULE_LIST}")
 # Functional tests.
 if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   # Configure files.
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml")
+  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml.in.in"
+    "${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml.in")
+  file(GENERATE OUTPUT "${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml"
+    INPUT "${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml.in")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml.in"
     "${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml")
   configure_file("${PROJECT_SOURCE_DIR}/test/cfg/dependencies_to_sql.xml.in"
@@ -692,17 +693,11 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(MY_PLUGIN "my_plugin")
   add_executable("${MY_PLUGIN}"
     "${PROJECT_SOURCE_DIR}/test/my_plugin.cc")
-  get_property(MY_PLUGIN_PATH
-    TARGET "${MY_PLUGIN}"
-    PROPERTY LOCATION)
   # My BAM plugin.
   set(MY_PLUGIN_BAM "my_plugin_bam")
   add_executable("${MY_PLUGIN_BAM}"
     "${PROJECT_SOURCE_DIR}/test/my_plugin_bam.cc")
   target_link_libraries("${MY_PLUGIN_BAM}" "${TEST_LIB}")
-  get_property(MY_PLUGIN_BAM_PATH
-    TARGET "${MY_PLUGIN_BAM}"
-    PROPERTY LOCATION)
 
   # Monitoring to SQL.
   set(TEST_NAME "running_monitoring_to_sql")
@@ -1002,9 +997,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   add_library("${TEST_NAME}" SHARED
     "${PROJECT_SOURCE_DIR}/test/bench_generate_rrd_mod.cc"
     ${QT_WRAPPED_SOURCES})
-  get_property(BENCH_GENERATE_RRD_MOD_PATH
-    TARGET "${TEST_NAME}"
-    PROPERTY LOCATION)
   set(TEST_NAME "running_bench_generate_rrd")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/bench_generate_rrd.cc")
@@ -1019,6 +1011,10 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${BAM} ${NOTIFICATION} ${CORRELATION} ${NEB} ${STORAGE})
 
   # Last file to configure, based on target paths.
+  configure_file("${PROJECT_SOURCE_DIR}/test/install_paths.hh.in.in"
+    "${PROJECT_SOURCE_DIR}/test/install_paths.hh.in")
+  file(GENERATE OUTPUT "${PROJECT_SOURCE_DIR}/test/install_paths.hh"
+   INPUT "${PROJECT_SOURCE_DIR}/test/install_paths.hh.in")
   configure_file("${PROJECT_SOURCE_DIR}/test/vars.hh.in"
     "${PROJECT_SOURCE_DIR}/test/vars.hh")
 

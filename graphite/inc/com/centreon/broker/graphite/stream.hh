@@ -61,7 +61,8 @@ namespace          graphite {
     bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
     void           statistics(io::properties& tree) const;
     void           update();
-    unsigned int   write(misc::shared_ptr<io::data> const& d);
+    void           flush();
+    int            write(misc::shared_ptr<io::data> const& d);
 
   private:
     // Database parameters
@@ -74,8 +75,9 @@ namespace          graphite {
     unsigned int   _queries_per_transaction;
 
     // Internal working members
-    unsigned int _pending_queries;
-    unsigned int _actual_query;
+    unsigned int   _pending_queries;
+    unsigned int   _actual_query;
+    bool           _commit_flag;
 
     // Status members
     std::string    _status;

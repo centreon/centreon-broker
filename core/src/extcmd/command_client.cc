@@ -168,8 +168,8 @@ bool command_client::read(
  *
  *  @return This method will throw.
  */
-unsigned int command_client::write(
-                               misc::shared_ptr<io::data> const& d) {
+int command_client::write(
+                      misc::shared_ptr<io::data> const& d) {
   (void)d;
   throw (io::exceptions::shutdown(false, true)
          << "command: cannot write event to command client");

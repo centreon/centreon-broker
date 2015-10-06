@@ -43,17 +43,21 @@ using namespace com::centreon::broker::bbdo;
  *  @param[in] negociate  True if extension negociation is allowed.
  *  @param[in] extensions Available extensions.
  *  @param[in] timeout    Timeout.
+ *  @param[in] coarse     Is this connection coarse?
+ *  @param[in] ack_limit  The number of event received before an ack needs to be sent.
  */
 connector::connector(
              bool negociate,
              QString const& extensions,
              time_t timeout,
-             bool coarse)
+             bool coarse,
+             unsigned int ack_limit)
   : io::endpoint(false),
     _coarse(coarse),
     _extensions(extensions),
     _negociate(negociate),
-    _timeout(timeout) {
+    _timeout(timeout),
+    _ack_limit(ack_limit) {
   if ((_timeout == (time_t)-1) || (_timeout == 0))
     _timeout = 3;
 }
@@ -68,7 +72,8 @@ connector::connector(connector const& other)
     _coarse(other._coarse),
     _extensions(other._extensions),
     _negociate(other._negociate),
-    _timeout(other._timeout) {}
+    _timeout(other._timeout),
+    _ack_limit(other._ack_limit) {}
 
 /**
  *  Destructor.
@@ -89,6 +94,7 @@ connector& connector::operator=(connector const& other) {
     _extensions = other._extensions;
     _negociate = other._negociate;
     _timeout = other._timeout;
+    _ack_limit = other._ack_limit;
   }
   return (*this);
 }
@@ -132,6 +138,7 @@ misc::shared_ptr<io::stream> connector::_open(
     bbdo_stream->set_negociate(_negociate, _extensions);
     bbdo_stream->set_timeout(_timeout);
     bbdo_stream->negociate(bbdo::stream::negociate_first);
+    bbdo_stream->set_ack_limit(_ack_limit);
   }
   return (bbdo_stream);
 }

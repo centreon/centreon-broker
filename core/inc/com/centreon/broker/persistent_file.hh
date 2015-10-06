@@ -38,7 +38,7 @@ public:
   bool             read(
                      misc::shared_ptr<io::data>& d,
                      time_t deadline);
-  unsigned int     write(misc::shared_ptr<io::data> const& d);
+  int              write(misc::shared_ptr<io::data> const& d);
 
 private:
                    persistent_file(persistent_file const& other);

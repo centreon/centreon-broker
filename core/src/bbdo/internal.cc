@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/bbdo/ack.hh"
 #include "com/centreon/broker/bbdo/factory.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
@@ -57,6 +58,14 @@ void bbdo::load() {
             "version_response",
             &version_response::operations,
             version_response::entries));
+  e.register_event(
+      io::events::bbdo,
+      bbdo::de_ack,
+      io::event_info(
+            "ack",
+            &ack::operations,
+            ack::entries));
+
 
   // Register BBDO protocol.
   io::protocols::instance().reg(

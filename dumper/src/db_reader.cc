@@ -107,10 +107,12 @@ bool db_reader::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @return Always return 1.
  */
-unsigned int db_reader::write(misc::shared_ptr<io::data> const& d) {
+int db_reader::write(misc::shared_ptr<io::data> const& d) {
+  if (!validate(d, "db reader"))
+    return (1);
+
   // Process only external commands addressed to us.
-  if (!d.isNull()
-      && (d->type() == extcmd::command_request::static_type())) {
+  if (d->type() == extcmd::command_request::static_type()) {
     extcmd::command_request const&
       req(d.ref_as<extcmd::command_request const>());
     if (req.is_addressed_to(_name)) {

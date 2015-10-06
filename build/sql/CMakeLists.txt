@@ -43,10 +43,6 @@ add_library("${SQL}" SHARED
 )
 target_link_libraries("${SQL}" ${QT_LIBRARIES})
 set_target_properties("${SQL}" PROPERTIES PREFIX "")
-get_property(SQL_MODULE_PATH
-  TARGET "${SQL}"
-  PROPERTY LOCATION)
-set(SQL_MODULE_PATH "${SQL_MODULE_PATH}" PARENT_SCOPE)
 
 # Install rule.
 install(TARGETS "${SQL}"

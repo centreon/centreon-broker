@@ -287,9 +287,9 @@ void stream::statistics(io::properties& tree) const {
  *
  *  @return Number of events acknowledged (1).
  */
-unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
+int stream::write(misc::shared_ptr<io::data> const& d) {
   // Check that data exists.
-  if (d.isNull())
+  if (!validate(d, "file"))
     return (1);
 
   if (d->type() == io::raw::static_type()) {

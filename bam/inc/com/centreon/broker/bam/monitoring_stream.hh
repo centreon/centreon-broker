@@ -49,7 +49,8 @@ namespace           bam {
                       time_t deadline);
     void            statistics(io::properties& tree) const;
     void            update();
-    unsigned int    write(misc::shared_ptr<io::data> const& d);
+    void            flush();
+    int             write(misc::shared_ptr<io::data> const& d);
 
   private:
                     monitoring_stream(monitoring_stream const& other);

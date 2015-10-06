@@ -126,6 +126,15 @@ io::endpoint* factory::new_endpoint(
     }
   }
 
+  // Ack limit.
+  unsigned int ack_limit = 3000;
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("ack_limit"));
+    if (it != cfg.params.end())
+      ack_limit = it->toUInt();
+  }
+
   // Create object.
   if (is_acceptor) {
     // One peer retention mode ?

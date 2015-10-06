@@ -118,9 +118,9 @@ void stream::update() {
  *
  *  @param[in] d  Multiplexed data.
  */
-unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
+int stream::write(misc::shared_ptr<io::data> const& d) {
   // Check that data can be processed.
-  if (d.isNull())
+  if (!validate(d, "correlation"))
     return (1);
 
   if (d->type() == neb::host_status::static_type()) {

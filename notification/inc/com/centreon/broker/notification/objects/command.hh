@@ -54,6 +54,8 @@ namespace               notification {
                           command(command const& obj);
                           command& operator=(command const& obj);
 
+      bool                get_enable_shell() const throw();
+      void                set_enable_shell(bool val);
       std::string const&  get_name() const throw();
       void                set_name(std::string const& name);
 
@@ -67,6 +69,7 @@ namespace               notification {
     private:
       command();
 
+      bool                _enable_shell;
       std::string         _name;
       std::string         _base_command;
 

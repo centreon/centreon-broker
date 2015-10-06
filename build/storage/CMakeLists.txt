@@ -63,10 +63,6 @@ add_library("${STORAGE}" SHARED
 )
 target_link_libraries("${STORAGE}" ${QT_LIBRARIES})
 set_target_properties("${STORAGE}" PROPERTIES PREFIX "")
-get_property(STORAGE_MODULE_PATH
-  TARGET "${STORAGE}"
-  PROPERTY LOCATION)
-set(STORAGE_MODULE_PATH "${STORAGE_MODULE_PATH}" PARENT_SCOPE)
 
 if (WITH_TESTING)
   set(TEST_LIBRARIES "${STORAGE}" "10-neb" "rokerbase" "roker" "rokerbase")

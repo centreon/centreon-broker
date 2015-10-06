@@ -57,7 +57,8 @@ namespace          bam {
                    ~reporting_stream();
     bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
     void           statistics(io::properties& tree) const;
-    unsigned int   write(misc::shared_ptr<io::data> const& d);
+    void           flush();
+    int            write(misc::shared_ptr<io::data> const& d);
 
   private:
                    reporting_stream(reporting_stream const& other);

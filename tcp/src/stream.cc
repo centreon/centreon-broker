@@ -185,13 +185,13 @@ void stream::set_write_timeout(int secs) {
  *
  *  @return Number of events acknowledged.
  */
-unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
+int stream::write(misc::shared_ptr<io::data> const& d) {
   // Check that socket exist.
   if (!_socket.get())
     _initialize_socket();
 
   // Check that data exists and should be processed.
-  if (d.isNull())
+  if (!validate(d, "tcp"))
     return (1);
 
   if (d->type() == io::raw::static_type()) {

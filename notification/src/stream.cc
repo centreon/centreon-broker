@@ -212,11 +212,12 @@ void stream::update() {
  *
  *  @return Number of events acknowledged.
  */
-unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
+int stream::write(misc::shared_ptr<io::data> const& data) {
   // Check that data exists.
-  unsigned int retval(1);
-  if (data.isNull())
+  if (!validate(data, "notification"))
     return (1);
+
+  unsigned int retval(1);
 
   // Update node cache.
   _node_cache.write(data);

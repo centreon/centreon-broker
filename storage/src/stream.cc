@@ -173,131 +173,136 @@ void stream::update() {
 }
 
 /**
+ *  Flush the stream.
+ */
+void stream::flush() {
+  logging::info(logging::medium)
+    << "storage: committing transaction";
+  _update_status("status=committing current transaction\n");
+  _db.commit();
+  _update_status("");
+}
+
+/**
  *  Write an event.
  *
  *  @param[in] data Event pointer.
  *
  *  @return Number of events acknowledged.
  */
-unsigned int stream::write(misc::shared_ptr<io::data> const& data) {
+int stream::write(misc::shared_ptr<io::data> const& data) {
+  if (!validate(data, "storage"))
+    return (1);
+
   // Take this event into account.
   ++_pending_events;
 
   // Process service status events.
-  if (!data.isNull()) {
-    if (data->type() == neb::service_status::static_type()) {
-      misc::shared_ptr<neb::service_status>
-        ss(data.staticCast<neb::service_status>());
-      logging::debug(logging::high)
-        << "storage: processing service status event of service "
-        << ss->service_id << " of host " << ss->host_id
-        << " (ctime " << ss->last_check << ")";
+  if (data->type() == neb::service_status::static_type()) {
+    misc::shared_ptr<neb::service_status>
+      ss(data.staticCast<neb::service_status>());
+    logging::debug(logging::high)
+      << "storage: processing service status event of service "
+      << ss->service_id << " of host " << ss->host_id
+      << " (ctime " << ss->last_check << ")";
 
-      unsigned int rrd_len;
-      bool index_locked(false);
-      unsigned int index_id(_find_index_id(
-                              ss->host_id,
-                              ss->service_id,
-                              ss->host_name,
-                              ss->service_description,
-                              &rrd_len,
-                              &index_locked));
-      if (index_id != 0) {
-        // Generate status event.
-        logging::debug(logging::low)
-          << "storage: generating status event for (" << ss->host_id
-          << ", " << ss->service_id << ") of index " << index_id;
-        misc::shared_ptr<storage::status> status(new storage::status);
-        status->ctime = ss->last_check;
-        status->index_id = index_id;
-        status->interval = static_cast<time_t>(ss->check_interval);
-        status->is_for_rebuild = false;
-        status->rrd_len = rrd_len;
-        status->state = ss->last_hard_state;
-        multiplexing::publisher().write(status);
+    unsigned int rrd_len;
+    bool index_locked(false);
+    unsigned int index_id(_find_index_id(
+                            ss->host_id,
+                            ss->service_id,
+                            ss->host_name,
+                            ss->service_description,
+                            &rrd_len,
+                            &index_locked));
+    if (index_id != 0) {
+      // Generate status event.
+      logging::debug(logging::low)
+        << "storage: generating status event for (" << ss->host_id
+        << ", " << ss->service_id << ") of index " << index_id;
+      misc::shared_ptr<storage::status> status(new storage::status);
+      status->ctime = ss->last_check;
+      status->index_id = index_id;
+      status->interval = static_cast<time_t>(ss->check_interval);
+      status->is_for_rebuild = false;
+      status->rrd_len = rrd_len;
+      status->state = ss->last_hard_state;
+      multiplexing::publisher().write(status);
 
-        if (!ss->perf_data.isEmpty()) {
-          // Parse perfdata.
-          QList<perfdata> pds;
-          parser p;
-          try {
-            p.parse_perfdata(ss->perf_data, pds);
+      if (!ss->perf_data.isEmpty()) {
+        // Parse perfdata.
+        QList<perfdata> pds;
+        parser p;
+        try {
+          p.parse_perfdata(ss->perf_data, pds);
+        }
+        catch (storage::exceptions::perfdata const& e) { // Discard parsing errors.
+          logging::error(logging::medium)
+            << "storage: error while parsing perfdata of service ("
+            << ss->host_id << ", " << ss->service_id << "): "
+            << e.what();
+          return (1);
+        }
+
+        // Loop through all metrics.
+        for (QList<perfdata>::iterator
+               it(pds.begin()),
+               end(pds.end());
+             it != end;
+             ++it) {
+          perfdata& pd(*it);
+
+          // Find metric_id.
+          unsigned int metric_type(pd.value_type());
+          bool metric_locked(false);
+          unsigned int metric_id(_find_metric_id(
+                                   index_id,
+                                   pd.name(),
+                                   pd.unit(),
+                                   pd.warning(),
+                                   pd.warning_low(),
+                                   pd.warning_mode(),
+                                   pd.critical(),
+                                   pd.critical_low(),
+                                   pd.critical_mode(),
+                                   pd.min(),
+                                   pd.max(),
+                                   pd.value(),
+                                   &metric_type,
+                                   &metric_locked));
+
+          if (_store_in_db) {
+            // Append perfdata to queue.
+            metric_value val;
+            val.c_time = ss->last_check;
+            val.metric_id = metric_id;
+            val.status = ss->current_state;
+            val.value = pd.value();
+            _perfdata_queue.push_back(val);
           }
-          catch (storage::exceptions::perfdata const& e) { // Discard parsing errors.
-            logging::error(logging::medium)
-              << "storage: error while parsing perfdata of service ("
-              << ss->host_id << ", " << ss->service_id << "): "
-              << e.what();
-            return (1);
-          }
 
-          // Loop through all metrics.
-          for (QList<perfdata>::iterator
-                 it(pds.begin()),
-                 end(pds.end());
-               it != end;
-               ++it) {
-            perfdata& pd(*it);
-
-            // Find metric_id.
-            unsigned int metric_type(pd.value_type());
-            bool metric_locked(false);
-            unsigned int metric_id(_find_metric_id(
-                                     index_id,
-                                     pd.name(),
-                                     pd.unit(),
-                                     pd.warning(),
-                                     pd.warning_low(),
-                                     pd.warning_mode(),
-                                     pd.critical(),
-                                     pd.critical_low(),
-                                     pd.critical_mode(),
-                                     pd.min(),
-                                     pd.max(),
-                                     pd.value(),
-                                     &metric_type,
-                                     &metric_locked));
-
-            if (_store_in_db) {
-              // Append perfdata to queue.
-              metric_value val;
-              val.c_time = ss->last_check;
-              val.metric_id = metric_id;
-              val.status = ss->current_state;
-              val.value = pd.value();
-              _perfdata_queue.push_back(val);
-            }
-
-            if (!index_locked && !metric_locked) {
-              // Send perfdata event to processing.
-              misc::shared_ptr<storage::metric>
-                perf(new storage::metric);
-              perf->ctime = ss->last_check;
-              perf->interval = static_cast<time_t>(ss->check_interval);
-              perf->is_for_rebuild = false;
-              perf->metric_id = metric_id;
-              perf->name = pd.name();
-              perf->rrd_len = rrd_len;
-              perf->value = pd.value();
-              perf->value_type = metric_type;
-              logging::debug(logging::high)
-                << "storage: generating perfdata event for metric "
-                << perf->metric_id << " (name " << perf->name
-                << ", ctime " << perf->ctime << ", value "
-                << perf->value << ")";
-              multiplexing::publisher().write(perf);
-            }
+          if (!index_locked && !metric_locked) {
+            // Send perfdata event to processing.
+            misc::shared_ptr<storage::metric>
+              perf(new storage::metric);
+            perf->ctime = ss->last_check;
+            perf->interval = static_cast<time_t>(ss->check_interval);
+            perf->is_for_rebuild = false;
+            perf->metric_id = metric_id;
+            perf->name = pd.name();
+            perf->rrd_len = rrd_len;
+            perf->value = pd.value();
+            perf->value_type = metric_type;
+            logging::debug(logging::high)
+              << "storage: generating perfdata event for metric "
+              << perf->metric_id << " (name " << perf->name
+              << ", ctime " << perf->ctime << ", value "
+              << perf->value << ")";
+            multiplexing::publisher().write(perf);
           }
         }
       }
     }
-  }
-  else {
-    logging::info(logging::medium)
-      << "storage: committing transaction";
-    _update_status("status=committing current transaction\n");
-    _db.commit();
-    _update_status("");
   }
 
   // Event acknowledgement.

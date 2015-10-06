@@ -36,12 +36,18 @@ namespace                    io {
    *  Interface to exchange data.
    *
    *  The read() method is used to get data while waiting for it. It
-   *  should work as follow :
-   *    - has data :        shared pointer is properly set, true returned
-   *    - spurious wake :   null shared pointer, true returned
-   *    - timeout :         null shared pointer, false returned
-   *    - known shutdown :  throw io::exceptions::shutdown
-   *    - error :           any exception
+   *  should work as follow:
+   *    - has data:        shared pointer is properly set, true returned
+   *    - spurious wake:   null shared pointer, true returned
+   *    - timeout:         null shared pointer, false returned
+   *    - known shutdown:  throw io::exceptions::shutdown
+   *    - error:           any exception
+   *
+   *  The write() method is used to send data through the stream. It
+   *  should return the number of event fully written through (excluding
+   *  any buffering, or underlayer) to the end device. If that information
+   *  is not available or not meaningful, it should always return '-1'.
+   *
    */
   class                      stream {
   public:
@@ -56,7 +62,11 @@ namespace                    io {
                                misc::shared_ptr<stream> substream);
     virtual void             statistics(io::properties& tree) const;
     virtual void             update();
-    virtual unsigned int     write(misc::shared_ptr<data> const& d) = 0;
+    virtual int              write(misc::shared_ptr<data> const& d) = 0;
+    virtual void             flush();
+    bool                     validate(
+                               misc::shared_ptr<io::data> const& d,
+                               std::string const& error);
 
   protected:
     misc::shared_ptr<stream> _substream;

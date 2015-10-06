@@ -85,7 +85,7 @@ bool publisher::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @return Number of elements acknowledged (1).
  */
-unsigned int publisher::write(misc::shared_ptr<io::data> const& d) {
+int publisher::write(misc::shared_ptr<io::data> const& d) {
   engine::instance().publish(d);
   return (1);
 }

@@ -97,37 +97,37 @@ bool command_listener::read(
  *  @param[in] d  Command listener only process command requests and
  *                command results.
  */
-unsigned int command_listener::write(
-                                 misc::shared_ptr<io::data> const& d) {
-  if (!d.isNull()) {
-    // Command request, store it in the cache.
-    if (d->type() == command_request::static_type()) {
-      command_request const& req(d.ref_as<command_request const>());
-      QMutexLocker lock(&_pendingm);
-      std::map<std::pair<unsigned int, unsigned int>, pending_command>::iterator
-        it(_pending.find(std::make_pair(req.source_id, req.id)));
-      if (it == _pending.end()) {
-        pending_command&
-          p(_pending[std::make_pair(req.source_id, req.id)]);
-        p.invalid_time = time(NULL) + _request_timeout;
-        p.result.id = req.id;
-        p.result.code = 1;
-        p.result.msg = "Pending";
-        if (p.invalid_time < _next_invalid)
-          _next_invalid = p.invalid_time;
-      }
-    }
-    // Command result, store it in the cache.
-    else if (d->type() == command_result::static_type()) {
-      command_result const& res(d.ref_as<command_result const>());
-      QMutexLocker lock(&_pendingm);
+int command_listener::write(misc::shared_ptr<io::data> const& d) {
+  if (!validate(d, "command"))
+    return (1);
+
+  // Command request, store it in the cache.
+  if (d->type() == command_request::static_type()) {
+    command_request const& req(d.ref_as<command_request const>());
+    QMutexLocker lock(&_pendingm);
+    std::map<std::pair<unsigned int, unsigned int>, pending_command>::iterator
+      it(_pending.find(std::make_pair(req.source_id, req.id)));
+    if (it == _pending.end()) {
       pending_command&
-        p(_pending[std::make_pair(res.destination_id, res.id)]);
-      p.result = res;
-      p.invalid_time = time(NULL) + _result_timeout;
+        p(_pending[std::make_pair(req.source_id, req.id)]);
+      p.invalid_time = time(NULL) + _request_timeout;
+      p.result.id = req.id;
+      p.result.code = 1;
+      p.result.msg = "Pending";
       if (p.invalid_time < _next_invalid)
         _next_invalid = p.invalid_time;
     }
+  }
+  // Command result, store it in the cache.
+  else if (d->type() == command_result::static_type()) {
+    command_result const& res(d.ref_as<command_result const>());
+    QMutexLocker lock(&_pendingm);
+    pending_command&
+      p(_pending[std::make_pair(res.destination_id, res.id)]);
+    p.result = res;
+    p.invalid_time = time(NULL) + _result_timeout;
+    if (p.invalid_time < _next_invalid)
+      _next_invalid = p.invalid_time;
   }
 
   // Check for entries that should be removed from cache.

@@ -91,9 +91,9 @@ bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @return Always return 1, or throw exceptions.
  */
-unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
+int stream::write(misc::shared_ptr<io::data> const& d) {
   // Check that data exists.
-  if (d.isNull())
+  if (!validate(d, "dumper"))
     return (1);
 
   // Check if the event is a dumper event.
