@@ -68,12 +68,10 @@ reporting_stream::reporting_stream(database_config const& db_cfg)
     _db(db_cfg),
     _ba_full_event_insert(_db),
     _ba_event_update(_db),
-    _ba_event_delete(_db),
     _ba_duration_event_insert(_db),
     _ba_duration_event_update(_db),
     _kpi_full_event_insert(_db),
     _kpi_event_update(_db),
-    _kpi_event_delete(_db),
     _kpi_event_link(_db),
     _dimension_ba_insert(_db),
     _dimension_bv_insert(_db),
@@ -503,21 +501,12 @@ void reporting_stream::_prepare() {
   {
     std::string query;
     query = "UPDATE mod_bam_reporting_ba_events"
-            "  SET end_time=:end_time"
+            "  SET end_time=:end_time, first_level=:first_level,"
+            "      status=:status, in_downtime=:in_downtime"
             "  WHERE ba_id=:ba_id AND start_time=:start_time";
     _ba_event_update.prepare(
       query,
       "BAM-BI: could not prepare BA event update query");
-  }
-
-  // BA event deletion.
-  {
-    std::string query;
-    query = "DELETE FROM mod_bam_reporting_ba_events"
-            "  WHERE ba_id=:ba_id AND start_time=:start_time";
-    _ba_event_delete.prepare(
-      query,
-      "BAM-BI: could not prepare BA event deletion query");
   }
 
   // BA duration event insert.
@@ -567,21 +556,13 @@ void reporting_stream::_prepare() {
   {
     std::string query;
     query = "UPDATE mod_bam_reporting_kpi_events"
-            "  SET end_time=:end_time"
+            "  SET end_time=:end_time, status=:status,"
+            "      in_downtime=:in_downtime, impact_level=:impact_level,"
+            "      first_output=:output, first_perfdata=:perfdata"
             "  WHERE kpi_id=:kpi_id AND start_time=:start_time";
     _kpi_event_update.prepare(
       query,
       "BAM-BI: could not prepare KPI event update query");
-  }
-
-  // KPI event deletion.
-  {
-    std::string query;
-    query = "DELETE FROM mod_bam_reporting_kpi_events"
-            "  WHERE kpi_id=:kpi_id AND start_time=:start_time";
-    _kpi_event_delete.prepare(
-      query,
-      "BAM-BI: could not prepare KPI event deletion query");
   }
 
   // KPI event link to BA event.
@@ -753,58 +734,46 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
     << be.ba_id << " (start time " << be.start_time << ", end time "
     << be.end_time << ", status " << be.status << ", in downtime "
     << be.in_downtime << ")";
-  // Ephemeral event.
-  if (be.start_time == be.end_time) {
-    _ba_event_delete.bind_value(":ba_id", be.ba_id);
-    _ba_event_delete.bind_value(
+
+  // Try to update event.
+  _ba_event_update.bind_value(":ba_id", be.ba_id);
+  _ba_event_update.bind_value(
+    ":start_time",
+    static_cast<qlonglong>(be.start_time.get_time_t()));
+  _ba_event_update.bind_value(
+    ":end_time",
+     be.end_time.is_null() ?
+       QVariant(QVariant::LongLong)
+       : static_cast<qlonglong>(be.end_time.get_time_t()));
+  _ba_event_update.bind_value(":status", be.status);
+  _ba_event_update.bind_value(":in_downtime", be.in_downtime);
+  _ba_event_update.bind_value(":first_level", be.first_level);
+  try { _ba_event_update.run_statement(); }
+  catch (std::exception const& e) {
+    throw (exceptions::msg() << "BAM-BI: could not update event of BA "
+           << be.ba_id << " starting at " << be.start_time
+           << " and ending at " << be.end_time << ": " << e.what());
+  }
+  // Event was not found, insert one.
+  if (_ba_event_update.num_rows_affected() == 0) {
+    _ba_full_event_insert.bind_value(":ba_id", be.ba_id);
+    _ba_full_event_insert.bind_value(":first_level", be.first_level);
+    _ba_full_event_insert.bind_value(
       ":start_time",
       static_cast<qlonglong>(be.start_time.get_time_t()));
-    try { _ba_event_delete.run_statement(); }
+    _ba_full_event_insert.bind_value(
+      ":end_time",
+      be.end_time.is_null() ?
+      QVariant(QVariant::LongLong)
+      : static_cast<qlonglong>(be.end_time.get_time_t()));
+    _ba_full_event_insert.bind_value(":status", be.status);
+    _ba_full_event_insert.bind_value(":in_downtime", be.in_downtime);
+    try { _ba_full_event_insert.run_statement(); }
     catch (std::exception const& e) {
       throw (exceptions::msg()
-             << "BAM-BI: could not delete ephemeral event of BA "
-             << be.ba_id << " at second " << be.start_time
-             << ": " << e.what());
-    }
-  }
-  else {
-    // Try to update event.
-    _ba_event_update.bind_value(":ba_id", be.ba_id);
-    _ba_event_update.bind_value(
-      ":start_time",
-      static_cast<qlonglong>(be.start_time.get_time_t()));
-    _ba_event_update.bind_value(
-      ":end_time",
-       be.end_time.is_null() ?
-         QVariant(QVariant::LongLong)
-         : static_cast<qlonglong>(be.end_time.get_time_t()));
-    try { _ba_event_update.run_statement(); }
-    catch (std::exception const& e) {
-      throw (exceptions::msg() << "BAM-BI: could not update event of BA "
+             << "BAM-BI: could not insert event of BA "
              << be.ba_id << " starting at " << be.start_time
-             << " and ending at " << be.end_time << ": " << e.what());
-    }
-    // Event was not found, insert one.
-    if (_ba_event_update.num_rows_affected() == 0) {
-      _ba_full_event_insert.bind_value(":ba_id", be.ba_id);
-      _ba_full_event_insert.bind_value(":first_level", be.first_level);
-      _ba_full_event_insert.bind_value(
-        ":start_time",
-        static_cast<qlonglong>(be.start_time.get_time_t()));
-      _ba_full_event_insert.bind_value(
-        ":end_time",
-        be.end_time.is_null() ?
-        QVariant(QVariant::LongLong)
-        : static_cast<qlonglong>(be.end_time.get_time_t()));
-      _ba_full_event_insert.bind_value(":status", be.status);
-      _ba_full_event_insert.bind_value(":in_downtime", be.in_downtime);
-      try { _ba_full_event_insert.run_statement(); }
-      catch (std::exception const& e) {
-        throw (exceptions::msg()
-               << "BAM-BI: could not insert event of BA "
-               << be.ba_id << " starting at " << be.start_time
-               << ": " << e.what());
-      }
+             << ": " << e.what());
     }
   }
   // Compute the associated event durations.
@@ -896,74 +865,64 @@ void reporting_stream::_process_kpi_event(
     << ke.kpi_id << " (start time " << ke.start_time << ", end time "
     << ke.end_time << ", state " << ke.status << ", in downtime "
     << ke.in_downtime << ")";
-  // Ephemeral event.
-  if (ke.start_time == ke.end_time) {
-    _kpi_event_delete.bind_value(":kpi_id", ke.kpi_id);
-    _kpi_event_delete.bind_value(
-      ":start_time",
-      static_cast<qlonglong>(ke.start_time.get_time_t()));
-    try { _kpi_event_delete.run_statement(); }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "BAM-BI: could not delete ephemeral event of KPI "
-             << ke.kpi_id << " at second " << ke.start_time
-             << ": " << e.what());
-    }
+
+  // Try to update kpi.
+  _kpi_event_update.bind_value(":kpi_id", ke.kpi_id);
+  _kpi_event_update.bind_value(
+    ":start_time",
+    static_cast<qlonglong>(ke.start_time.get_time_t()));
+  _kpi_event_update.bind_value(
+    ":end_time",
+    ke.end_time.is_null() ?
+    QVariant(QVariant::LongLong)
+    : static_cast<qlonglong>(ke.end_time.get_time_t()));
+  _kpi_event_update.bind_value(":status", ke.status);
+  _kpi_event_update.bind_value(":in_downtime", ke.in_downtime);
+  _kpi_event_update.bind_value(":impact_level", ke.impact_level);
+  _kpi_event_update.bind_value(":output", ke.output);
+  _kpi_event_update.bind_value(":perfdata", ke.perfdata);
+  try { _kpi_event_update.run_statement(); }
+  catch (std::exception const& e) {
+    throw (exceptions::msg() << "BAM-BI: could not update KPI "
+           << ke.kpi_id << " starting at " << ke.start_time
+           << " and ending at " << ke.end_time << ": "
+           << e.what());
   }
-  else {
-    // Try to update kpi.
-    _kpi_event_update.bind_value(":kpi_id", ke.kpi_id);
-    _kpi_event_update.bind_value(
+  // No kpis were updated, insert one.
+  if (_kpi_event_update.num_rows_affected() == 0) {
+    _kpi_full_event_insert.bind_value(":kpi_id", ke.kpi_id);
+    _kpi_full_event_insert.bind_value(
       ":start_time",
       static_cast<qlonglong>(ke.start_time.get_time_t()));
-    _kpi_event_update.bind_value(
+    _kpi_full_event_insert.bind_value(
       ":end_time",
       ke.end_time.is_null() ?
       QVariant(QVariant::LongLong)
       : static_cast<qlonglong>(ke.end_time.get_time_t()));
-    try { _kpi_event_update.run_statement(); }
+    _kpi_full_event_insert.bind_value(":status", ke.status);
+    _kpi_full_event_insert.bind_value(":in_downtime", ke.in_downtime);
+    _kpi_full_event_insert.bind_value(":impact_level", ke.impact_level);
+    _kpi_full_event_insert.bind_value(":output", ke.output);
+    _kpi_full_event_insert.bind_value(":perfdata", ke.perfdata);
+    try { _kpi_full_event_insert.run_statement(); }
     catch (std::exception const& e) {
-      throw (exceptions::msg() << "BAM-BI: could not update KPI "
-             << ke.kpi_id << " starting at " << ke.start_time
-             << " and ending at " << ke.end_time << ": "
+      throw (exceptions::msg()
+             << "BAM-BI: could not insert event of KPI "
+             << ke.kpi_id << " starting at " << ke.start_time << ": "
              << e.what());
     }
-    // No kpis were updated, insert one.
-    if (_kpi_event_update.num_rows_affected() == 0) {
-      _kpi_full_event_insert.bind_value(":kpi_id", ke.kpi_id);
-      _kpi_full_event_insert.bind_value(
-        ":start_time",
-        static_cast<qlonglong>(ke.start_time.get_time_t()));
-      _kpi_full_event_insert.bind_value(
-        ":end_time",
-        ke.end_time.is_null() ?
-        QVariant(QVariant::LongLong)
-        : static_cast<qlonglong>(ke.end_time.get_time_t()));
-      _kpi_full_event_insert.bind_value(":status", ke.status);
-      _kpi_full_event_insert.bind_value(":in_downtime", ke.in_downtime);
-      _kpi_full_event_insert.bind_value(":impact_level", ke.impact_level);
-      _kpi_full_event_insert.bind_value(":output", ke.output);
-      _kpi_full_event_insert.bind_value(":perfdata", ke.perfdata);
-      try { _kpi_full_event_insert.run_statement(); }
-      catch (std::exception const& e) {
-        throw (exceptions::msg()
-               << "BAM-BI: could not insert event of KPI "
-               << ke.kpi_id << " starting at " << ke.start_time << ": "
-               << e.what());
-      }
 
-      // Insert kpi event link.
-      _kpi_event_link.bind_value(
-        ":start_time",
-        static_cast<qlonglong>(ke.start_time.get_time_t()));
-      _kpi_event_link.bind_value(":kpi_id", ke.kpi_id);
-      try { _kpi_event_link.run_statement(); }
-      catch (std::exception const& e) {
-        throw (exceptions::msg()
-               << "BAM-BI: could not create link from event of KPI "
-               << ke.kpi_id << " starting at " << ke.start_time
-               << " to its associated BA event: " << e.what());
-      }
+    // Insert kpi event link.
+    _kpi_event_link.bind_value(
+      ":start_time",
+      static_cast<qlonglong>(ke.start_time.get_time_t()));
+    _kpi_event_link.bind_value(":kpi_id", ke.kpi_id);
+    try { _kpi_event_link.run_statement(); }
+    catch (std::exception const& e) {
+      throw (exceptions::msg()
+             << "BAM-BI: could not create link from event of KPI "
+             << ke.kpi_id << " starting at " << ke.start_time
+             << " to its associated BA event: " << e.what());
     }
   }
   return ;
