@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cstdlib>
+#include <iostream>
 #include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -39,86 +42,103 @@ using namespace com::centreon::broker;
 int main() {
   // Initialization.
   config::applier::init();
+  bool error(true);
 
-  // Subscriber.
-  uset<unsigned int> filters;
-  filters.insert(io::raw::static_type());
-  multiplexing::subscriber
-    s("core_multiplexing_engine_hook", "");
-  s.get_muxer().set_read_filters(filters);
-  s.get_muxer().set_write_filters(filters);
+  try {
+    // Subscriber.
+    uset<unsigned int> filters;
+    filters.insert(io::raw::static_type());
+    multiplexing::subscriber
+      s("core_multiplexing_engine_hook", "");
+    s.get_muxer().set_read_filters(filters);
+    s.get_muxer().set_write_filters(filters);
 
-  // Hook.
-  hooker h;
-  h.hook(true);
+    // Hook.
+    hooker h;
+    h.hook(true);
 
-  // Send events through engine.
-  {
-    char const* messages[] = { MSG1, MSG2, NULL };
-    for (unsigned int i = 0; messages[i]; ++i) {
+    // Send events through engine.
+    {
+      char const* messages[] = { MSG1, MSG2, NULL };
+      for (unsigned int i = 0; messages[i]; ++i) {
+        misc::shared_ptr<io::raw> data(new io::raw);
+        data->append(messages[i]);
+        multiplexing::engine::instance().publish(
+          data.staticCast<io::data>());
+      }
+    }
+
+    // Should read no events from subscriber.
+    {
+      misc::shared_ptr<io::data> data;
+      s.get_muxer().read(data, 0);
+      if (!data.isNull())
+        throw (exceptions::msg() << "error at step #1");
+    }
+
+    // Start multiplexing engine.
+    multiplexing::engine::instance().start();
+
+    // Publish a new event.
+    {
       misc::shared_ptr<io::raw> data(new io::raw);
-      data->append(messages[i]);
+      data->append(MSG3);
       multiplexing::engine::instance().publish(
         data.staticCast<io::data>());
     }
-  }
 
-  // Should read no events from subscriber.
-  int retval(0);
-  {
-    misc::shared_ptr<io::data> data;
-    s.get_muxer().read(data, 0);
-    retval |= !data.isNull();
-  }
+    // Stop multiplexing engine.
+    multiplexing::engine::instance().stop();
 
-  // Start multiplexing engine.
-  multiplexing::engine::instance().start();
+    // Publish a new event.
+    {
+      misc::shared_ptr<io::raw> data(new io::raw);
+      data->append(MSG4);
+      multiplexing::engine::instance().publish(
+        data.staticCast<io::data>());
+    }
 
-  // Publish a new event.
-  {
-    misc::shared_ptr<io::raw> data(new io::raw);
-    data->append(MSG3);
-    multiplexing::engine::instance().publish(
-      data.staticCast<io::data>());
-  }
-
-  // Stop multiplexing engine.
-  multiplexing::engine::instance().stop();
-
-  // Publish a new event.
-  {
-    misc::shared_ptr<io::raw> data(new io::raw);
-    data->append(MSG4);
-    multiplexing::engine::instance().publish(
-      data.staticCast<io::data>());
-  }
-
-  // Check subscriber content.
-  {
-    char const* messages[] =
-      { HOOKMSG1, MSG1, HOOKMSG2, MSG2, HOOKMSG2, MSG3, HOOKMSG2, HOOKMSG3, NULL };
-    for (unsigned int i = 0; messages[i]; ++i) {
+    // Check subscriber content.
+    {
+      char const* messages[] =
+        { HOOKMSG1, MSG1, HOOKMSG2, MSG2, HOOKMSG2, MSG3, HOOKMSG2, HOOKMSG3, NULL };
+      for (unsigned int i = 0; messages[i]; ++i) {
+        misc::shared_ptr<io::data> d;
+        s.get_muxer().read(d, 0);
+        if (d.isNull()
+            || (d->type() != io::raw::static_type()))
+          throw (exceptions::msg() << "error at step #2");
+        else {
+          misc::shared_ptr<io::raw> raw(d.staticCast<io::raw>());
+          if (strncmp(
+                raw->QByteArray::data(),
+                messages[i],
+                strlen(messages[i])))
+            throw (exceptions::msg() << "error at step #3");
+        }
+      }
       misc::shared_ptr<io::data> d;
       s.get_muxer().read(d, 0);
-      if (d.isNull()
-          || (d->type() != io::raw::static_type()))
-        retval |= 1;
-      else {
-        misc::shared_ptr<io::raw> raw(d.staticCast<io::raw>());
-        retval |= strncmp(
-          raw->QByteArray::data(),
-          messages[i],
-          strlen(messages[i]));
-      }
+      if (!d.isNull())
+        throw (exceptions::msg() << "error at step #4");
     }
-    misc::shared_ptr<io::data> d;
-    s.get_muxer().read(d, 0);
-    retval |= !d.isNull();
+
+    // Unhook.
+    h.hook(false);
+
+    // Success.
+    error = false;
+  }
+  catch (std::exception const& e) {
+    std::cerr << e.what() << "\n";
+  }
+  catch (...) {
+    std::cerr << "unknown exception\n";
   }
 
   // Cleanup.
   config::applier::deinit();
 
   // Return.
-  return (retval);
+  return (error ? EXIT_FAILURE : EXIT_SUCCESS);
 }
