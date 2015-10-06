@@ -1960,7 +1960,7 @@ void stream::flush() {
  *  @return Number of events acknowledged.
  */
 int stream::write(misc::shared_ptr<io::data> const& data) {
-  if (!validate(data, "sql"))
+  if (!validate(data, "SQL"))
     return (1);
 
   // Take this event into account.

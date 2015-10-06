@@ -191,7 +191,7 @@ int stream::write(misc::shared_ptr<io::data> const& d) {
     _initialize_socket();
 
   // Check that data exists and should be processed.
-  if (!validate(d, "tcp"))
+  if (!validate(d, "TCP"))
     return (1);
 
   if (d->type() == io::raw::static_type()) {

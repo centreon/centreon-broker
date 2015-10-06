@@ -172,7 +172,7 @@ void monitoring_stream::flush() {
  *  @return Number of events acknowledged.
  */
 int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
-  if (!validate(data, "monitoring_stream"))
+  if (!validate(data, "BAM"))
     return (1);
 
   // Take this event into account.

@@ -159,7 +159,7 @@ void reporting_stream::flush() {
  *  @return Number of events acknowledged.
  */
 int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
-  if (!validate(data, "reporting_stream"))
+  if (!validate(data, "BAM-BI"))
     return (1);
 
   // Take this event into account.
