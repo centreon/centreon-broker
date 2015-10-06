@@ -84,7 +84,7 @@ void bench_stream::reset_bench() {
  *
  *  @return Number of events processed (1).
  */
-unsigned int bench_stream::write(misc::shared_ptr<io::data> const& d) {
+int bench_stream::write(misc::shared_ptr<io::data> const& d) {
   if (!d.isNull()
       && (d->type() == io::raw::static_type())) {
     misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());

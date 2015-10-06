@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@ void hooker::stopping() {
  *
  *  @return Number of elements acknowledged (1).
  */
-unsigned int hooker::write(misc::shared_ptr<io::data> const& d) {
+int hooker::write(misc::shared_ptr<io::data> const& d) {
   (void)d;
   if (_registered) {
     misc::shared_ptr<io::raw> raw(new io::raw);

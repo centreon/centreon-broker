@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ public:
   bool              read(
                       misc::shared_ptr<io::data>& d,
                       time_t deadline);
-  unsigned int      write(misc::shared_ptr<io::data> const& d);
+  int               write(misc::shared_ptr<io::data> const& d);
 
 private:
   QQueue<misc::shared_ptr<io::data> >

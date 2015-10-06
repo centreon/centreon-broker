@@ -286,8 +286,8 @@ bool test_stream::read(
  *
  *  @return       1.
  */
-unsigned int test_stream::write(
-  com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> const& d) {
+int test_stream::write(
+      com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> const& d) {
   if (!d.isNull())
     _events.push_back(d);
 

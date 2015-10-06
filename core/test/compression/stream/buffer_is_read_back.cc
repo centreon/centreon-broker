@@ -45,7 +45,7 @@ public:
     return (true);
   }
 
-  unsigned int write(misc::shared_ptr<io::data> const& d) {
+  int          write(misc::shared_ptr<io::data> const& d) {
     (void)d;
     throw (io::exceptions::shutdown(true, true)
            << "fake stream never writes");
