@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Centreon
+** Copyright 2011-2012,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -108,7 +108,7 @@ bool stream::validate(
                std::string const& error) {
   if (d.isNull()) {
     logging::error(logging::medium)
-      << error << ": received a null event. This should never happen."
+      << error << ": received a null event. This should never happen. "
                    "This is likely a software bug that you should report "
                    "to Centreon Broker developers";
     return (false);
