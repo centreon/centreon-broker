@@ -382,13 +382,13 @@ void failover::run() {
           if (should_commit) {
             should_commit = false;
             QMutexLocker stream_lock(&_streamm);
-            _stream->write(misc::shared_ptr<io::data>());
+            _stream->flush();
           }
           else if ((_next_timeout != (time_t)-1)
                    && (now >= _next_timeout)) {
             _next_timeout = now + _read_timeout;
             QMutexLocker stream_lock(&_streamm);
-            _stream->write(misc::shared_ptr<io::data>());
+            _stream->flush();
           }
           ::usleep(100000);
         }

@@ -197,6 +197,6 @@ long long stream::write_encrypted(
   misc::shared_ptr<io::raw> r(new io::raw);
   r->append(static_cast<char const*>(buffer), size);
   _substream->write(r);
-  _substream->write(misc::shared_ptr<io::data>());
+  _substream->flush();
   return (size);
 }
