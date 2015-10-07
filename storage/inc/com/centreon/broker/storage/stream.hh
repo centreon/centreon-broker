@@ -54,10 +54,10 @@ namespace          storage {
                      bool store_in_db = true,
                      bool insert_in_index_data = false);
                    ~stream();
+    int            flush();
     bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
     void           statistics(io::properties& tree) const;
     void           update();
-    void           flush();
     int            write(misc::shared_ptr<io::data> const& d);
 
   private:

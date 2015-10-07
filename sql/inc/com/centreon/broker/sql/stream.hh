@@ -57,9 +57,9 @@ namespace          sql {
                      bool check_replication,
                      bool with_state_events);
                    ~stream();
+    int            flush();
     bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
     void           update();
-    void           flush();
     int            write(misc::shared_ptr<io::data> const& d);
 
   private:

@@ -1919,6 +1919,22 @@ stream::~stream() {
 }
 
 /**
+ *  Flush the stream.
+ *
+ *  @return Number of events acknowledged.
+ */
+int stream::flush() {
+  logging::info(logging::medium)
+    << "SQL: committing transaction";
+  _write_logs();
+  _db.commit();
+  _db.clear_committed_flag();
+  int retval(_pending_events);
+  _pending_events = 0;
+  return (retval);
+}
+
+/**
  *  Read from the database.
  *
  *  @param[out] d         Cleared.
@@ -1941,15 +1957,6 @@ void stream::update() {
   _cache_clean();
   _cache_create();
   return ;
-}
-
-/**
- *  Flush the stream.
- */
-void stream::flush() {
-  logging::info(logging::medium)
-    << "SQL: committing transaction";
-  _db.commit();
 }
 
 /**

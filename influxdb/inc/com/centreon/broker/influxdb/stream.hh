@@ -61,10 +61,10 @@ namespace          influxdb {
                      std::vector<column> const& metric_cols,
                      misc::shared_ptr<persistent_cache> const& cache);
                    ~stream();
+    int            flush();
     bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
     void           statistics(io::properties& tree) const;
     void           update();
-    void           flush();
     int            write(misc::shared_ptr<io::data> const& d);
 
   private:
@@ -79,7 +79,7 @@ namespace          influxdb {
                    _influx_db;
 
     // Internal working members
-    unsigned int   _pending_queries;
+    int            _pending_queries;
     unsigned int   _actual_query;
     bool           _commit;
 

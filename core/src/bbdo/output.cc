@@ -273,8 +273,7 @@ output::output() {}
  *
  *  @param[in] other  Object to copy.
  */
-output::output(output const& other)
-  : io::stream(other){}
+output::output(output const& other) : io::stream(other){}
 
 /**
  *  Destructor.
@@ -294,6 +293,16 @@ output& output::operator=(output const& other) {
 }
 
 /**
+ *  Flush.
+ *
+ *  @return Number of events acknowledged (0).
+ */
+int output::flush() {
+  _substream->flush();
+  return (0);
+}
+
+/**
  *  Get statistics.
  *
  *  @param[out] tree Output tree.
@@ -302,13 +311,6 @@ void output::statistics(io::properties& tree) const {
   if (!_substream.isNull())
     _substream->statistics(tree);
   return ;
-}
-
-/**
- *  Flush.
- */
-void output::flush() {
-  _substream->flush();
 }
 
 /**

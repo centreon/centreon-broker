@@ -148,9 +148,12 @@ void stream::statistics(io::properties& tree) const {
 
 /**
  *  Flush the stream.
+ *
+ *  @return The number of events acknowledged.
  */
-void stream::flush() {
+int stream::flush() {
   _flush();
+  return (-1);
 }
 
 /**

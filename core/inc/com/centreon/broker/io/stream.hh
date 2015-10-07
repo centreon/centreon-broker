@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@ namespace                    io {
                              stream(stream const& other);
     virtual                  ~stream();
     stream&                  operator=(stream const& other);
+    virtual int              flush();
     virtual bool             read(
                                misc::shared_ptr<io::data>& d,
                                time_t deadline = (time_t)-1) = 0;
@@ -62,11 +63,10 @@ namespace                    io {
                                misc::shared_ptr<stream> substream);
     virtual void             statistics(io::properties& tree) const;
     virtual void             update();
-    virtual int              write(misc::shared_ptr<data> const& d) = 0;
-    virtual void             flush();
     bool                     validate(
                                misc::shared_ptr<io::data> const& d,
                                std::string const& error);
+    virtual int              write(misc::shared_ptr<data> const& d) = 0;
 
   protected:
     misc::shared_ptr<stream> _substream;

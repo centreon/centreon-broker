@@ -144,9 +144,15 @@ void reporting_stream::statistics(io::properties& tree) const {
 
 /**
  *  Flush the stream.
+ *
+ *  @return Number of acknowledged events.
  */
-void reporting_stream::flush() {
+int reporting_stream::flush() {
   _db.commit();
+  _db.clear_committed_flag();
+  int retval(_pending_events);
+  _pending_events = 0;
+  return (retval);
 }
 
 /**

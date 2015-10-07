@@ -89,6 +89,23 @@ stream::~stream() {
 }
 
 /**
+ *  Flush the stream.
+ *
+ *  @return Number of events acknowledged.
+ */
+int stream::flush() {
+  logging::debug(logging::medium)
+    << "graphite: commiting " << _actual_query << " queries";
+  int ret(_pending_queries);
+  if (_actual_query != 0)
+    _commit();
+  _actual_query = 0;
+  _pending_queries = 0;
+  _commit_flag = false;
+  return (ret);
+}
+
+/**
  *  Read from the database.
  *
  *  @param[out] d         Cleared.
@@ -124,13 +141,6 @@ void stream::update() {
 }
 
 /**
- *  Flush the stream.
- */
-void stream::flush() {
-  _commit_flag = true;
-}
-
-/**
  *  Write an event.
  *
  *  @param[in] data Event pointer.
@@ -162,17 +172,8 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
   if (_actual_query >= _queries_per_transaction)
     _commit_flag = true;
 
-  if (_commit_flag) {
-    logging::debug(logging::medium)
-      << "graphite: commiting " << _actual_query << " queries";
-    unsigned int ret = _pending_queries;
-    if (_actual_query != 0)
-      _commit();
-    _actual_query = 0;
-    _pending_queries = 0;
-    _commit_flag = false;
-    return (ret);
-  }
+  if (_commit_flag)
+    return (flush());
   else
     return (0);
 }
