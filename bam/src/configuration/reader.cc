@@ -233,7 +233,8 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
     {
       std::ostringstream oss;
       oss << "SELECT b.ba_id, b.name, b.level_w, b.level_c,"
-             "       b.last_state_change, b.current_status, b.in_downtime"
+             "       b.last_state_change, b.current_status,"
+             "       b.in_downtime, b.current_level"
              "  FROM mod_bam AS b"
              "  INNER JOIN mod_bam_poller_relations AS pr"
              "    ON b.ba_id=pr.ba_id"
@@ -259,6 +260,7 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
         e.start_time = query.value(4).toLongLong();
         e.status = query.value(5).toInt();
         e.in_downtime = query.value(6).toBool();
+        e.first_level = query.value(7).toUInt();
         bas[ba_id].set_opened_event(e);
       }
     }
