@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -40,10 +40,9 @@ namespace        bbdo {
                  output(output const& other);
     virtual      ~output();
     output&      operator=(output const& other);
+    int          flush();
     void         statistics(io::properties& tree) const;
-    void         flush();
     int          write(misc::shared_ptr<io::data> const& e);
-    void         add_acknowledged_events(unsigned int events);
   };
 }
 

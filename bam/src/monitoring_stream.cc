@@ -87,6 +87,19 @@ monitoring_stream::monitoring_stream(database_config const& db_cfg)
 monitoring_stream::~monitoring_stream() {}
 
 /**
+ *  Flush data.
+ *
+ *  @return Number of acknowledged events.
+ */
+int monitoring_stream::flush() {
+  _db.commit();
+  _db.clear_committed_flag();
+  int retval(_pending_events);
+  _pending_events = 0;
+  return (retval);
+}
+
+/**
  *  Generate default state.
  */
 void monitoring_stream::initialize() {
@@ -146,13 +159,6 @@ void monitoring_stream::update() {
            << "BAM: could not process configuration update: " << e.what());
   }
   return ;
-}
-
-/**
- *  Flush data.
- */
-void monitoring_stream::flush() {
-  _db.commit();
 }
 
 /**

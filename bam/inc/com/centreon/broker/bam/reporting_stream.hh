@@ -55,9 +55,9 @@ namespace          bam {
   public:
                    reporting_stream(database_config const& db_cfg);
                    ~reporting_stream();
+    int            flush();
     bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
     void           statistics(io::properties& tree) const;
-    void           flush();
     int            write(misc::shared_ptr<io::data> const& d);
 
   private:

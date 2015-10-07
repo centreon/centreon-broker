@@ -136,6 +136,24 @@ stream::~stream() {
 }
 
 /**
+ *  Flush the stream.
+ *
+ *  @return Number of events acknowledged.
+ */
+int stream::flush() {
+  logging::info(logging::medium)
+    << "storage: committing transaction";
+  _update_status("status=committing current transaction\n");
+  _insert_perfdatas();
+  _db.commit();
+  _db.clear_committed_flag();
+  int retval(_pending_events);
+  _pending_events = 0;
+  _update_status("");
+  return (retval);
+}
+
+/**
  *  Read from the datbase.
  *
  *  @param[out] d         Cleared.
@@ -170,17 +188,6 @@ void stream::update() {
   _check_deleted_index();
   _rebuild_cache();
   return ;
-}
-
-/**
- *  Flush the stream.
- */
-void stream::flush() {
-  logging::info(logging::medium)
-    << "storage: committing transaction";
-  _update_status("status=committing current transaction\n");
-  _db.commit();
-  _update_status("");
 }
 
 /**

@@ -41,13 +41,13 @@ namespace           bam {
   public:
                     monitoring_stream(database_config const& db_cfg);
                     ~monitoring_stream();
+    int             flush();
     void            initialize();
     bool            read(
                       misc::shared_ptr<io::data>& d,
                       time_t deadline);
     void            statistics(io::properties& tree) const;
     void            update();
-    void            flush();
     int             write(misc::shared_ptr<io::data> const& d);
 
   private:

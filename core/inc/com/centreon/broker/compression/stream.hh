@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -40,11 +40,11 @@ namespace        compression {
                  stream(stream const& other);
                  ~stream();
     stream&      operator=(stream const& other);
+    int          flush();
     bool         read(
                    misc::shared_ptr<io::data>& d,
                    time_t deadline = (time_t)-1);
     void         statistics(io::properties& tree) const;
-    void         flush();
     int          write(misc::shared_ptr<io::data> const& d);
 
   private:

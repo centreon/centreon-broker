@@ -90,6 +90,22 @@ stream::stream(
 stream::~stream() {}
 
 /**
+ *  Flush the stream.
+ *
+ *  @return Number of events acknowledged.
+ */
+int stream::flush() {
+  logging::debug(logging::medium)
+    << "influxdb: commiting " << _actual_query << " queries";
+  int ret(_pending_queries);
+  _actual_query = 0;
+  _pending_queries = 0;
+  _influx_db->commit();
+  _commit = false;
+  return (ret);
+}
+
+/**
  *  Read from the datbase.
  *
  *  @param[out] d         Cleared.
@@ -125,13 +141,6 @@ void stream::update() {
 }
 
 /**
- *  Flush the stream.
- */
-void stream::flush() {
-  _commit = true;
-}
-
-/**
  *  Write an event.
  *
  *  @param[in] data Event pointer.
@@ -163,16 +172,8 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
   if (_actual_query >= _queries_per_transaction)
     _commit = true;
 
-  if (_commit) {
-    logging::debug(logging::medium)
-      << "influxdb: commiting " << _actual_query << " queries";
-    unsigned int ret = _pending_queries;
-    _actual_query = 0;
-    _pending_queries = 0;
-    _influx_db->commit();
-    _commit = false;
-    return (ret);
-  }
+  if (_commit)
+    return (flush());
   else
     return (0);
 }

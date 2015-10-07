@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Centreon
+** Copyright 2011-2012,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -61,6 +61,15 @@ stream& stream::operator=(stream const& other) {
 }
 
 /**
+ *  Flush data.
+ *
+ *  @return Number of events acknowledged. This is 0 by default.
+ */
+int stream::flush() {
+  return (0);
+}
+
+/**
  *  Set sub-stream.
  *
  *  @param[in,out] substream  Stream on which this stream will read and
@@ -89,13 +98,6 @@ void stream::update() {
 }
 
 /**
- *  Flush data.
- */
-void stream::flush() {
-  return ;
-}
-
-/**
  *  Validate an event.
  *
  *  @param[in] d      The event.
@@ -110,7 +112,7 @@ bool stream::validate(
     logging::error(logging::medium)
       << error << ": received a null event. This should never happen."
                    "This is likely a software bug that you should report "
-                   "to Centreon Broker developers";
+                   "to Centreon Broker developers.";
     return (false);
   }
   return (true);
