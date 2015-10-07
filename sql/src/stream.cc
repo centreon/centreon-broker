@@ -1725,6 +1725,10 @@ void stream::_get_all_outdated_instances_from_db() {
  *  Update all the hosts and services of unresponsive instances.
  */
 void stream::_update_hosts_and_services_of_unresponsive_instances() {
+  // Log message.
+  logging::debug(logging::medium)
+    << "SQL: checking for outdated instances";
+
   // Don't do anything if timeout is deactivated.
   if (_instance_timeout == 0)
     return ;
@@ -1924,6 +1928,10 @@ stream::~stream() {
  *  @return Number of events acknowledged.
  */
 int stream::flush() {
+  // Update hosts and services of stopped instances
+  _update_hosts_and_services_of_unresponsive_instances();
+
+  // Commit transaction.
   logging::info(logging::medium)
     << "SQL: committing transaction";
   _write_logs();
