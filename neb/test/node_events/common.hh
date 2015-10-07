@@ -68,7 +68,7 @@ public:
   virtual bool             read(
     com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>& d,
     time_t deadline);
-  virtual unsigned int     write(
+  virtual int              write(
     com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> const& d);
   std::vector<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> > const&
                            get_events() const;

@@ -97,7 +97,7 @@ bool temporary_stream::read(
  *
  *  @return Number of elements acknowledged (1).
  */
-unsigned int temporary_stream::write(misc::shared_ptr<io::data> const& d) {
+int temporary_stream::write(misc::shared_ptr<io::data> const& d) {
   QMutexLocker lock(&_eventsm);
   _events.enqueue(d);
   return (1);

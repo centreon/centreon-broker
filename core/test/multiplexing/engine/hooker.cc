@@ -111,7 +111,7 @@ void hooker::stopping() {
  *
  *  @return Number of elements acknowledged (1).
  */
-unsigned int hooker::write(misc::shared_ptr<io::data> const& d) {
+int hooker::write(misc::shared_ptr<io::data> const& d) {
   (void)d;
   if (_registered) {
     misc::shared_ptr<io::raw> raw(new io::raw);

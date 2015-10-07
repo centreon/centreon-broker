@@ -45,7 +45,7 @@ public:
                  time_t deadline = (time_t)-1);
   void         starting();
   void         stopping();
-  unsigned int write(misc::shared_ptr<io::data> const& d);
+  int          write(misc::shared_ptr<io::data> const& d);
 
 private:
   QQueue<misc::shared_ptr<io::data> >
