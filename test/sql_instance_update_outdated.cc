@@ -150,8 +150,7 @@ int main() {
     }
 
     daemon.start();
-
-    sleep_for(2);
+    sleep_for(3);
 
     // Check for living instance
     {
@@ -206,9 +205,11 @@ int main() {
   }
   catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
+    db.set_remove_db_on_close(false);
   }
   catch (...) {
     std::cerr << "unknown exception" << std::endl;
+    db.set_remove_db_on_close(false);
   }
 
   // cleanup
