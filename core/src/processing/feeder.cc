@@ -87,9 +87,11 @@ void feeder::run() {
           stream_can_read = false;
         }
       if (!d.isNull()) {
-        QReadLocker lock(&_client_mutex);
-        _subscriber.get_muxer().write(d);
-        _event_processing_speed.tick();
+        {
+          QReadLocker lock(&_client_mutex);
+          _subscriber.get_muxer().write(d);
+        }
+        tick();
         continue ; // Stream read bias.
       }
 
@@ -104,9 +106,11 @@ void feeder::run() {
           muxer_can_read = false;
         }
       if (!d.isNull()) {
-        QReadLocker lock(&_client_mutex);
-        _client->write(d);
-        _event_processing_speed.tick();
+        {
+          QReadLocker lock(&_client_mutex);
+          _client->write(d);
+        }
+        tick();
       }
 
       // If both timed out, sleep a while.

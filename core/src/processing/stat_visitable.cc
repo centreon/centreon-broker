@@ -172,6 +172,14 @@ void stat_visitable::set_last_connection_success(
 }
 
 /**
+ *  Tick the event processing computation.
+ */
+void stat_visitable::tick(unsigned int events) {
+  QMutexLocker lock(&_stat_mutex);
+  _event_processing_speed.tick(events);
+}
+
+/**
  *  @brief Delegate statistic to subojects.
  *
  *  Do nothing by default.

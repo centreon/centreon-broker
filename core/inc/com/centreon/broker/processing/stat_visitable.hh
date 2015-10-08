@@ -46,15 +46,11 @@ namespace                        processing {
                                    timestamp last_connection_attempt);
     void                         set_last_connection_success(
                                    timestamp last_connection_success);
+    void                         tick(unsigned int events = 1);
 
   protected:
-    QMutex                      _stat_mutex;
     std::string                 _name;
-    std::string                 _last_error;
-    timestamp                   _last_connection_attempt;
-    timestamp                   _last_connection_success;
-    misc::processing_speed_computer
-                                _event_processing_speed;
+    QMutex                      _stat_mutex;
 
     virtual std::string         _get_state() = 0;
     virtual unsigned int        _get_queued_events() = 0;
@@ -63,6 +59,11 @@ namespace                        processing {
     virtual void                _forward_statistic(io::properties& tree);
 
   private:
+    std::string                  _last_error;
+    timestamp                    _last_connection_attempt;
+    timestamp                    _last_connection_success;
+    misc::processing_speed_computer
+                                 _event_processing_speed;
                                  stat_visitable(stat_visitable const& other);
     stat_visitable&              operator=(stat_visitable const& other);
   };
