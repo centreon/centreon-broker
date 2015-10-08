@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ stream::stream()
     _negociated(false),
     _timeout(5),
     _acknowledged_events(0),
-    _ack_limit(0),
+    _ack_limit(1000),
     _events_received_since_last_ack(0) {}
 
 /**
@@ -310,8 +310,11 @@ void stream::acknowledge_events(unsigned int events) {
  *  Send an acknowledgement for all the events received.
  */
 void stream::send_event_acknowledgement() {
-  misc::shared_ptr<ack> acknowledgement(new ack);
-  acknowledgement->acknowledged_events = _events_received_since_last_ack;
-  output::write(acknowledgement);
-  _events_received_since_last_ack = 0;
+  if (!_coarse) {
+    misc::shared_ptr<ack> acknowledgement(new ack);
+    acknowledgement->acknowledged_events = _events_received_since_last_ack;
+    output::write(acknowledgement);
+    _events_received_since_last_ack = 0;
+  }
+  return ;
 }
