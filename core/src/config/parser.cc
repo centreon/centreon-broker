@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Centreon
+** Copyright 2011-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -129,7 +129,7 @@ void parser::parse(QString const& file, state& s) {
       }
       else if (name == "input") {
         endpoint in;
-        in.write_filters.insert("all");
+        in.read_filters.insert("all");
         _parse_endpoint(elem, in);
         s.endpoints().push_back(in);
       }

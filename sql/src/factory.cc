@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -103,18 +103,8 @@ io::factory* factory::clone() const {
 bool factory::has_endpoint(config::endpoint& cfg) const {
   bool is_sql(!cfg.type.compare("sql", Qt::CaseInsensitive));
   if (is_sql) {
-    // Default transaction timeout.
-    QMap<QString, QString>::const_iterator
-      instance_timeout_it(cfg.params.find("instance_timeout"));
-    if (instance_timeout_it != cfg.params.end()) {
-      if (cfg.params.find("read_timeout") == cfg.params.end()) {
-        int timeout(instance_timeout_it->toInt());
-        QString timeout_str;
-        timeout_str.setNum(timeout);
-        cfg.params["read_timeout"] = timeout_str;
-        cfg.read_timeout = timeout;
-      }
-    }
+    cfg.params["read_timeout"] = 1;
+    cfg.read_timeout = 1;
   }
   return (is_sql);
 }

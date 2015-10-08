@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -135,7 +135,6 @@ void engine::publish(misc::shared_ptr<io::data> const& e) {
 void engine::set_cache_file(std::string const& cache_filename) {
   _cache_filename = cache_filename;
 }
-
 
 /**
  *  Start multiplexing.
