@@ -105,11 +105,8 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
   bool is_bam(!cfg.type.compare("bam", Qt::CaseInsensitive));
   bool is_bam_bi(!cfg.type.compare("bam_bi", Qt::CaseInsensitive));
   if (is_bam || is_bam_bi) {
-    // Transaction timeout.
-    if (cfg.params.find("read_timeout") == cfg.params.end()) {
-      cfg.params["read_timeout"] = "2";
-      cfg.read_timeout = 2;
-    }
+    cfg.params["read_timeout"] = "1";
+    cfg.read_timeout = 1;
   }
   return (is_bam || is_bam_bi);
 }
