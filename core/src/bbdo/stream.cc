@@ -118,7 +118,7 @@ void stream::negociate(stream::negociation_type neg) {
     if (_negociate)
       welcome_packet->extensions = _extensions;
     output::write(welcome_packet);
-    output::write(misc::shared_ptr<io::data>());
+    output::flush();
   }
 
   // Read peer packet.
@@ -161,7 +161,7 @@ void stream::negociate(stream::negociation_type neg) {
     if (_negociate)
       welcome_packet->extensions = _extensions;
     output::write(welcome_packet);
-    output::write(misc::shared_ptr<io::data>());
+    output::flush();
   }
 
   // Negociation.
