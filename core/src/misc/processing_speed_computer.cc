@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -70,21 +70,18 @@ processing_speed_computer& processing_speed_computer::operator=(
  */
 double processing_speed_computer::get_processing_speed() const {
   timestamp now = timestamp::now();
-  unsigned int events = 0;
+  int events = 0;
   if (_first_event_time.is_null())
     return (0.0);
 
   timestamp seconds_since_first_time = now - _first_event_time;
-  unsigned int event_window_length =
-                 seconds_since_first_time >= window_length
-                 ? static_cast<unsigned int>(window_length)
-                 : static_cast<unsigned int>(seconds_since_first_time);
+  int event_window_length((seconds_since_first_time >= window_length)
+                          ? window_length
+                          : static_cast<int>(seconds_since_first_time));
 
   if (now >= _last_tick) {
     int limit(event_window_length - now + _last_tick);
-    for (int i(0);
-         i < limit;
-         ++i)
+    for (int i(0); i < limit; ++i)
       events += _event_by_seconds[i];
   }
   return (static_cast<double>(events) / event_window_length);
@@ -95,18 +92,20 @@ double processing_speed_computer::get_processing_speed() const {
  *
  *  @param[in] events  The number of events to register.
  */
-void processing_speed_computer::tick(unsigned int events) {
+void processing_speed_computer::tick(int events) {
   timestamp now = timestamp::now();
 
   // New second(s)
   if (!_last_tick.is_null() && now >= _last_tick) {
-    unsigned int step = (now - _last_tick);
-    ::memmove(
-        _event_by_seconds + step,
-        _event_by_seconds,
-        (window_length - step) * sizeof(*_event_by_seconds));
-    for (unsigned int i = 0; i < step; ++i)
-      _event_by_seconds[i] = 0;
+    int step(now - _last_tick);
+    if ((step < window_length) && (step > 0))
+      ::memmove(
+          _event_by_seconds + step,
+          _event_by_seconds,
+          (window_length - step) * sizeof(*_event_by_seconds));
+    else
+      step = window_length;
+    ::memset(_event_by_seconds, 0, step * sizeof(*_event_by_seconds));
   }
 
   // Update the data of this second.
