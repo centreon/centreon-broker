@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014-2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -28,8 +28,13 @@
 
 CCB_BEGIN()
 
+// Forward declarations.
+namespace             neb {
+  class               host;
+  class               service;
+}
+
 namespace             bam {
-  // Forward declaration.
   class               metric_book;
 
   namespace           configuration {
@@ -59,6 +64,13 @@ namespace             bam {
         };
 
         void          _internal_copy(meta_service const& other);
+        misc::shared_ptr<neb::host>
+                      _meta_host(unsigned int host_id);
+        misc::shared_ptr<neb::service>
+                      _meta_service(
+                         unsigned int meta_id,
+                         unsigned int host_id,
+                         unsigned int service_id);
         void          _modify_meta(
                         bam::meta_service& obj,
                         metric_book& book,
