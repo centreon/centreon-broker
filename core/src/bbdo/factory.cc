@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -127,7 +127,7 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Ack limit.
-  unsigned int ack_limit = 3000;
+  unsigned int ack_limit(1000);
   {
     QMap<QString, QString>::const_iterator
       it(cfg.params.find("ack_limit"));
@@ -151,14 +151,16 @@ io::endpoint* factory::new_endpoint(
                          extensions,
                          cfg.read_timeout,
                          one_peer_retention_mode,
-                         coarse);
+                         coarse,
+                         ack_limit);
   }
   else
     retval = new bbdo::connector(
                          negociate,
                          extensions,
                          cfg.read_timeout,
-                         coarse);
+                         coarse,
+                         ack_limit);
   return (retval);
 }
 

@@ -136,7 +136,7 @@ void test_db::open(
                                                db_type,
                                                bi_connection)));
     _open(*_bi, bi_db_name);
-    _run_script(*_bi, PROJECT_SOURCE_DIR "/bam/mysql_schema_bi.sql");
+    _run_script(*_bi, PROJECT_SOURCE_DIR "/bam/mysql_bi_v3.sql");
   }
 
   // Open Centreon DB.
@@ -145,17 +145,17 @@ void test_db::open(
                                                      db_type,
                                                      centreon_connection)));
     _open(*_centreon, centreon_db_name);
-    _run_script(*_centreon, PROJECT_SOURCE_DIR "/sql/mysql_schema.sql");
+    _run_script(*_centreon, PROJECT_SOURCE_DIR "/sql/mysql_v3.sql");
     if (with_cfg_tables) {
       _run_script(
         *_centreon,
-        PROJECT_SOURCE_DIR "/test/centreon.sql");
+        PROJECT_SOURCE_DIR "/test/centreon_v3.sql");
       _run_script(
         *_centreon,
-        PROJECT_SOURCE_DIR "/bam/mysql_schema_centreon.sql");
+        PROJECT_SOURCE_DIR "/bam/mysql_centreon_v3.sql");
       _run_script(
         *_centreon,
-        PROJECT_SOURCE_DIR "/notification/mysql_schema.sql");
+        PROJECT_SOURCE_DIR "/notification/mysql_v3.sql");
     }
   }
 
@@ -569,7 +569,24 @@ void config_write(
   ofs << "log_file=monitoring_engine.log\n"
       << "command_file=monitoring_engine.cmd\n"
       << "state_retention_file=\n"
-      << "check_result_reaper_frequency=2\n";
+      << "check_result_reaper_frequency=2\n"
+    // Deprecated in Centreon Engine 2.x.
+      << "accept_passive_host_checks=1\n"
+      << "accept_passive_service_checks=1\n"
+      << "check_result_path=.\n"
+      << "event_broker_options=-1\n"
+      << "execute_host_checks=1\n"
+      << "execute_service_checks=1\n"
+      << "interval_length=" MONITORING_ENGINE_INTERVAL_LENGTH_STR "\n"
+      << "max_service_check_spread=1\n"
+      << "max_concurrent_checks=200\n"
+      << "service_inter_check_delay_method=s\n"
+      << "sleep_time=0.01\n"
+      << "status_file=monitoring_engine_status.dat\n"
+      << "service_inter_check_delay_method=n\n"
+      << "host_inter_check_delay_method=n\n"
+      << "temp_file=monitoring_engine.tmp\n"
+      << "temp_path=.\n";
 
   // Subconfiguration files.
   std::string hosts_file;
@@ -637,6 +654,12 @@ void config_write(
       << "  host_name default_host\n"
       << "  address localhost\n"
       << "  active_checks_enabled 0\n"
+    // Deprecated in Centreon Engine 2.x.
+      << "  alias default_host\n"
+      << "  check_command default_command\n"
+      << "  max_check_attempts 3\n"
+      << "  check_period default_timeperiod\n"
+      << "  contacts default_contact\n"
       << "}\n\n";
   if (hosts)
     for (std::list<host>::iterator
@@ -657,15 +680,36 @@ void config_write(
                                          ? it->max_attempts
                                          : 3) << "\n"
           << "  check_interval "
-          << ((it->check_interval > 0) ? it->check_interval : 5)
-             * MONITORING_ENGINE_INTERVAL_LENGTH << "\n"
+          << ((it->check_interval > 0) ? it->check_interval : 5) << "\n"
           << "  retry_interval "
-          << ((it->retry_interval > 0) ? it->retry_interval : 3)
-             * MONITORING_ENGINE_INTERVAL_LENGTH << "\n"
+          << ((it->retry_interval > 0) ? it->retry_interval : 3) << "\n"
           << "  check_period " << (it->check_period
                                    ? it->check_period
                                    : "default_timeperiod") << "\n"
-          << "\n";
+          << "  event_handler_enabled " << it->event_handler_enabled
+          << "\n"
+        // Deprecated in Centreon Engine 2.x.
+          << "  passive_checks_enabled "
+          << it->accept_passive_host_checks << "\n"
+          << "  notification_interval "
+          << ((it->notification_interval > 0)
+              ? it->notification_interval
+              : 10) << "\n"
+          << "  notification_period " << (it->notification_period
+                                          ? it->notification_period
+                                          : "default_timeperiod")
+          << "\n"
+          << "  contacts ";
+      if (it->contacts) {
+        ofs << it->contacts->contact_name;
+        for (contactsmember* mbr(it->contacts->next);
+             mbr;
+             mbr = mbr->next)
+          ofs << "," << mbr->contact_name;
+      }
+      else
+        ofs << "default_contact";
+      ofs << "\n";
       if (it->parent_hosts) {
         ofs << "  parents " << it->parent_hosts->host_name;
         for (hostsmember* parent(it->parent_hosts->next);
@@ -674,8 +718,6 @@ void config_write(
           ofs << "," << parent->host_name;
         ofs << "\n";
       }
-      ofs << "  event_handler_enabled " << it->event_handler_enabled
-          << "\n";
       if (it->event_handler)
         ofs << "  event_handler " << it->event_handler << "\n";
       for (customvariablesmember* cvar(it->custom_variables);
@@ -699,6 +741,15 @@ void config_write(
       << "  service_description default_service\n"
       << "  host_name default_host\n"
       << "  active_checks_enabled 0\n"
+    // Deprecated in Centreon Engine 2.x
+      << "  check_command default_command\n"
+      << "  max_check_attempts 3\n"
+      << "  check_interval 5\n"
+      << "  retry_interval 3\n"
+      << "  check_period default_timeperiod\n"
+      << "  notification_interval 10\n"
+      << "  notification_period default_timeperiod\n"
+      << "  contacts default_contact\n"
       << "}\n\n";
   if (services)
     for (std::list<service>::iterator
@@ -717,16 +768,36 @@ void config_write(
           << "  max_check_attempts "
           << ((it->max_attempts > 0) ? it->max_attempts : 3) << "\n"
           << "  check_interval "
-          << ((it->check_interval > 0) ? it->check_interval : 5)
-             * MONITORING_ENGINE_INTERVAL_LENGTH << "\n"
+          << ((it->check_interval > 0) ? it->check_interval : 5) << "\n"
           << "  retry_interval "
-          << ((it->retry_interval > 0) ? it->retry_interval : 3)
-             * MONITORING_ENGINE_INTERVAL_LENGTH << "\n"
+          << ((it->retry_interval > 0) ? it->retry_interval : 3) << "\n"
           << "  check_period " << (it->check_period
                                    ? it->check_period
                                    : "default_timeperiod") << "\n"
           << "  event_handler_enabled " << it->event_handler_enabled
-          << "\n";
+          << "\n"
+        // Deprecated in Centreon Engine 2.x.
+          << "  passive_checks_enabled "
+          << it->accept_passive_service_checks << "\n"
+          << "  notification_interval "
+          << ((it->notification_interval > 0)
+                            ? it->notification_interval
+              : 10) << "\n"
+          << "  notification_period "
+          << (it->notification_period
+                            ? it->notification_period
+              : "default_timeperiod") << "\n"
+          << "  contacts ";
+      if (it->contacts) {
+        ofs << it->contacts->contact_name;
+        for (contactsmember* mbr(it->contacts->next);
+             mbr;
+             mbr = mbr->next)
+          ofs << "," << mbr->contact_name;
+      }
+      else
+        ofs << "default_contact";
+      ofs << "\n";
       if (it->event_handler)
         ofs << "  event_handler " << it->event_handler << "\n";
       for (customvariablesmember* cvar(it->custom_variables);
@@ -781,7 +852,8 @@ void config_write(
       ofs << "define hostdependency{\n"
           << "  dependent_host_name " << it->dependent_host_name << "\n"
           << "  host_name " << it->host_name << "\n"
-          << "  failure_criteria d,u\n"
+        // Is failure_criteria in Centreon Engine 2.x.
+          << "  notification_failure_criteria d,u\n"
           << "}\n\n";
     }
   ofs.close();
@@ -806,7 +878,8 @@ void config_write(
           << it->dependent_service_description << "\n"
           << "  host_name " << it->host_name << "\n"
           << "  service_description " << it->service_description << "\n"
-          << "  failure_criteria w,c,u\n"
+        // Is failure_criteria in Centreon Engine 2.x.
+          << "  notification_failure_criteria w,c,u\n"
           << "}\n\n";
     }
   ofs.close();
@@ -829,6 +902,14 @@ void config_write(
       << "  friday 00:00-24:00\n"
       << "  saturday 00:00-24:00\n"
       << "  sunday 00:00-24:00\n"
+      << "}\n"
+      << "\n"
+      << "define contact{\n"
+      << "  contact_name default_contact\n"
+      << "  host_notification_period default_timeperiod\n"
+      << "  host_notification_commands default_command\n"
+      << "  service_notification_period default_timeperiod\n"
+      << "  service_notification_commands default_command\n"
       << "}\n"
       << "\n";
 

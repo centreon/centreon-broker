@@ -39,7 +39,9 @@ namespace           bam {
    */
   class             monitoring_stream : public io::stream {
   public:
-                    monitoring_stream(database_config const& db_cfg);
+                    monitoring_stream(
+                      database_config const& db_cfg,
+                      database_config const& storage_db_cfg);
                     ~monitoring_stream();
     int             flush();
     void            initialize();

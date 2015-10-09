@@ -22,10 +22,8 @@
 #include "com/centreon/broker/bam/meta_service.hh"
 #include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/storage/metric.hh"
-#include "com/centreon/broker/multiplexing/publisher.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -42,10 +40,7 @@ meta_service::meta_service()
     _level_critical(0.0),
     _level_warning(0.0),
     _recompute_count(0),
-    _value(NAN) {
-  multiplexing::publisher pblsh;
-  _send_initial_event(&pblsh);
-}
+    _value(NAN) {}
 
 /**
  *  Copy constructor.
@@ -55,8 +50,6 @@ meta_service::meta_service()
 meta_service::meta_service(meta_service const& other)
   : computable(other), metric_listener(other) {
   _internal_copy(other);
-  multiplexing::publisher pblsh;
-  _send_initial_event(&pblsh);
 }
 
 /**
@@ -419,55 +412,6 @@ void meta_service::_recompute_partial(
     _value = _value + (new_value - old_value) / _metrics.size();
   }
   return ;
-}
-
-/**
- *  Send the initial event for the meta service.
- *
- *  @param[in] visitor  The visitor.
- */
-void meta_service::_send_initial_event(io::stream* visitor) {
-  if (!visitor)
-    return ;
-
-  short new_state = get_state();
-
-  misc::shared_ptr<neb::service> s(new neb::service);
-  std::stringstream service_description;
-  service_description << "meta_" << _service_id;
-  s->active_checks_enabled = false;
-  s->check_interval = 0.0;
-  s->check_type = 1; // Passive.
-  s->current_check_attempt = 1;
-  s->current_state = new_state;
-  s->enabled = true;
-  s->event_handler_enabled = false;
-  s->execution_time = 0.0;
-  s->flap_detection_enabled = false;
-  s->has_been_checked = true;
-  s->host_id = _host_id;
-  s->host_name = "_Module_Meta";
-  s->is_flapping = false;
-  s->last_check = time(NULL);
-  s->last_hard_state = new_state;
-  // s->last_hard_state_change = XXX;
-  // s->last_state_change = XXX;
-  // s->last_time_critical = XXX;
-  // s->last_time_unknown = XXX;
-  // s->last_time_warning = XXX;
-  s->last_update = time(NULL);
-  s->latency = 0.0;
-  s->max_check_attempts = 1;
-  s->obsess_over = false;
-  s->output = get_output().c_str();
-  // s->percent_state_chagne = XXX;
-  s->perf_data = get_perfdata().c_str();
-  s->retry_interval = 0;
-  s->service_description = QString::fromStdString(service_description.str());
-  s->service_id = _service_id;
-  s->should_be_scheduled = false;
-  s->state_type = 1; // Hard.
-  visitor->write(s);
 }
 
 /**

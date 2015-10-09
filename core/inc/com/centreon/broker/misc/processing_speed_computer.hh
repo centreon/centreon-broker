@@ -39,10 +39,10 @@ namespace         misc {
                   operator=(processing_speed_computer const& right);
 
     double        get_processing_speed() const;
-    void          tick(unsigned int events = 1);
+    void          tick(int events = 1);
     timestamp     get_last_event_time() const;
 
-    static const unsigned int
+    static int const
                   window_length = 30;
 
   private:

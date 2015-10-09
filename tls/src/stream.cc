@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2014 Centreon
+** Copyright 2009-2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -159,7 +159,7 @@ long long stream::read_encrypted(void* buffer, long long size) {
  *  @return Number of events acknowledged.
  */
 int stream::write(misc::shared_ptr<io::data> const& d) {
-  if (!validate(d, "tls"))
+  if (!validate(d, "TLS"))
     return (1);
 
   // Send data.

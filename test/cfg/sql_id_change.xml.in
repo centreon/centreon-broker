@@ -2,6 +2,7 @@
 <centreonbroker>
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
   <instance>1</instance>
+  <!--
   <stats>
     <fifo>/tmp/cbd.fifo</fifo>
   </stats>
@@ -14,6 +15,7 @@
     <info>1</info>
     <level>3</level>
   </logger>
+  -->
   <output>
     <name>sql_id_change_sql_output</name>
     <type>sql</type>

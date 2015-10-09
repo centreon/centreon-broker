@@ -21,16 +21,13 @@
 
 #  include <QString>
 #  include <string>
-#  include "com/centreon/broker/dumper/db_loader.hh"
+#  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/dumper/entries/state.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 
 CCB_BEGIN()
-
-// Forward declaration.
-class               database_config;
 
 namespace           dumper {
   /**
@@ -56,7 +53,7 @@ namespace           dumper {
 
     umap<unsigned int, entries::state>
                     _cache;
-    db_loader       _loader;
+    database_config _db_cfg;
     QString         _name;
   };
 }

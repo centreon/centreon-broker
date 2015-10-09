@@ -29,8 +29,11 @@ namespace                            dumper {
     // Forward declarations.
     class                            ba;
     class                            ba_type;
+    class                            boolean;
+    class                            host;
     class                            kpi;
     class                            organization;
+    class                            service;
     class                            state;
 
     /**
@@ -54,12 +57,21 @@ namespace                            dumper {
       std::list<ba> const&           bas_to_create() const;
       std::list<ba> const&           bas_to_update() const;
       std::list<ba> const&           bas_to_delete() const;
+      std::list<boolean> const&      booleans_to_create() const;
+      std::list<boolean> const&      booleans_to_update() const;
+      std::list<boolean> const&      booleans_to_delete() const;
+      std::list<host> const&         hosts_to_create() const;
+      std::list<host> const&         hosts_to_update() const;
+      std::list<host> const&         hosts_to_delete() const;
       std::list<kpi> const&          kpis_to_create() const;
       std::list<kpi> const&          kpis_to_update() const;
       std::list<kpi> const&          kpis_to_delete() const;
       std::list<organization> const& organizations_to_create() const;
       std::list<organization> const& organizations_to_update() const;
       std::list<organization> const& organizations_to_delete() const;
+      std::list<service> const&      services_to_create() const;
+      std::list<service> const&      services_to_update() const;
+      std::list<service> const&      services_to_delete() const;
 
     private:
       void                           _internal_copy(diff const& other);
@@ -70,12 +82,21 @@ namespace                            dumper {
       std::list<ba>                  _bas_to_create;
       std::list<ba>                  _bas_to_update;
       std::list<ba>                  _bas_to_delete;
+      std::list<boolean>             _booleans_to_create;
+      std::list<boolean>             _booleans_to_update;
+      std::list<boolean>             _booleans_to_delete;
+      std::list<host>                _hosts_to_create;
+      std::list<host>                _hosts_to_update;
+      std::list<host>                _hosts_to_delete;
       std::list<kpi>                 _kpis_to_create;
       std::list<kpi>                 _kpis_to_update;
       std::list<kpi>                 _kpis_to_delete;
       std::list<organization>        _organizations_to_create;
       std::list<organization>        _organizations_to_update;
       std::list<organization>        _organizations_to_delete;
+      std::list<service>             _services_to_create;
+      std::list<service>             _services_to_update;
+      std::list<service>             _services_to_delete;
     };
   }
 }

@@ -45,13 +45,18 @@ static double normalize(double d) {
 }
 
 /**
- *  Default constructor.
+ *  Constructor.
+ *
+ *  @param[in] generate_virtual_status  Whether or not the BA object
+ *                                      should generate statuses of
+ *                                      virtual hosts and services.
  */
-ba::ba()
+ba::ba(bool generate_virtual_status)
   : _acknowledgement_hard(0.0),
     _acknowledgement_soft(0.0),
     _downtime_hard(0.0),
     _downtime_soft(0.0),
+    _generate_virtual_status(generate_virtual_status),
     _host_id(0),
     _id(0),
     _in_downtime(false),
@@ -484,7 +489,7 @@ void ba::visit(io::stream* visitor) {
     }
 
     // Generate virtual service status event.
-    {
+    if (_generate_virtual_status) {
       misc::shared_ptr<neb::service_status> status(new neb::service_status);
       status->active_checks_enabled = false;
       status->check_interval = 0.0;
@@ -609,6 +614,7 @@ void ba::_internal_copy(ba const& other) {
   _downtime_hard = other._downtime_hard;
   _downtime_soft = other._downtime_soft;
   _event = other._event;
+  _generate_virtual_status = other._generate_virtual_status;
   _id = other._id;
   _service_id = other._service_id;
   _host_id = other._host_id;

@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ namespace         bbdo {
                     time_t timeout,
                     bool one_peer_retention_mode = false,
                     bool coarse = false,
-                    unsigned int ack_limit = 3000);
+                    unsigned int ack_limit = 1000);
                   acceptor(acceptor const& other);
                   ~acceptor();
     acceptor&     operator=(acceptor const& other);

@@ -105,11 +105,8 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
   bool is_bam(!cfg.type.compare("bam", Qt::CaseInsensitive));
   bool is_bam_bi(!cfg.type.compare("bam_bi", Qt::CaseInsensitive));
   if (is_bam || is_bam_bi) {
-    // Transaction timeout.
-    if (cfg.params.find("read_timeout") == cfg.params.end()) {
-      cfg.params["read_timeout"] = "2";
-      cfg.read_timeout = 2;
-    }
+    cfg.params["read_timeout"] = "1";
+    cfg.read_timeout = 1;
   }
   return (is_bam || is_bam_bi);
 }
@@ -163,13 +160,21 @@ io::endpoint* factory::new_endpoint(
   // Is it a BAM or BAM-BI output ?
   bool is_bam_bi(!cfg.type.compare("bam_bi", Qt::CaseInsensitive));
 
+  // Storage database name.
+  std::string storage_db_name;
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("storage_db_name"));
+    if (it != cfg.params.end())
+      storage_db_name = it->toStdString();
+  }
+
   // Connector.
   std::auto_ptr<bam::connector> c(new bam::connector);
-  c->connect_to(
-       is_bam_bi
-       ? bam::connector::bam_bi_type
-       : bam::connector::bam_type,
-       db_cfg);
+  if (is_bam_bi)
+    c->connect_reporting(db_cfg);
+  else
+    c->connect_monitoring(db_cfg, storage_db_name);
   is_acceptor = false;
   return (c.release());
 }

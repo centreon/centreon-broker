@@ -103,11 +103,8 @@ io::factory* factory::clone() const {
 bool factory::has_endpoint(config::endpoint& cfg) const {
   bool is_storage(!cfg.type.compare("storage", Qt::CaseInsensitive));
   if (is_storage) {
-    // Transaction timeout.
-    if (cfg.params.find("read_timeout") == cfg.params.end()) {
-      cfg.params["read_timeout"] = "2";
-      cfg.read_timeout = 2;
-    }
+    cfg.params["read_timeout"] = "1";
+    cfg.read_timeout = 1;
   }
   return (is_storage);
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -38,6 +38,11 @@ namespace                  configuration {
       unreachable = (1 << 2),
       pending = (1 << 3)
     };
+    enum                   dependency_kind {
+      unknown = 0,
+      notification_dependency,
+      execution_dependency
+    };
     typedef hostdependency key_type;
 
                            hostdependency();
@@ -56,15 +61,25 @@ namespace                  configuration {
 
     void                   dependency_period(std::string const& period);
     std::string const&     dependency_period() const throw ();
+    void                   dependency_type(
+                             dependency_kind type) throw ();
+    dependency_kind        dependency_type() const throw ();
+    list_string&           dependent_hostgroups() throw ();
+    list_string const&     dependent_hostgroups() const throw ();
     list_string&           dependent_hosts() throw ();
     list_string const&     dependent_hosts() const throw ();
-    void                   failure_options(
+    void                   execution_failure_options(
                              unsigned int options) throw ();
-    unsigned int           failure_options() const throw ();
+    unsigned int           execution_failure_options() const throw ();
+    list_string&           hostgroups() throw ();
+    list_string const&     hostgroups() const throw ();
     list_string&           hosts() throw ();
     list_string const&     hosts() const throw ();
     void                   inherits_parent(bool inherit) throw ();
     bool                   inherits_parent() const throw ();
+    void                   notification_failure_options(
+                             unsigned int options) throw ();
+    unsigned int           notification_failure_options() const throw ();
 
   private:
     struct                 setters {
@@ -75,17 +90,21 @@ namespace                  configuration {
     bool                   _set_dependency_period(std::string const& value);
     bool                   _set_dependent_hostgroups(std::string const& value);
     bool                   _set_dependent_hosts(std::string const& value);
-    bool                   _set_failure_options(std::string const& value);
+    bool                   _set_execution_failure_options(std::string const& value);
     bool                   _set_hostgroups(std::string const& value);
     bool                   _set_hosts(std::string const& value);
     bool                   _set_inherits_parent(bool value);
     bool                   _set_notification_failure_options(std::string const& value);
 
     std::string            _dependency_period;
+    dependency_kind        _dependency_type;
+    group                  _dependent_hostgroups;
     group                  _dependent_hosts;
-    opt<unsigned int>      _failure_options;
+    opt<unsigned int>      _execution_failure_options;
+    group                  _hostgroups;
     group                  _hosts;
     opt<bool>              _inherits_parent;
+    opt<unsigned int>      _notification_failure_options;
     static setters const   _setters[];
   };
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -20,35 +20,29 @@
 #ifndef CCE_OBJECTS_TIMERANGE_HH
 #  define CCE_OBJECTS_TIMERANGE_HH
 
-// Forward declarations.
+/* Forward declarations. */
 struct daterange_struct;
 struct timeperiod_struct;
 
 typedef struct             timerange_struct {
-  int                      start_hour;
-  int                      start_minute;
-  int                      end_hour;
-  int                      end_minute;
+  unsigned long            range_start;
+  unsigned long            range_end;
   struct timerange_struct* next;
 }                          timerange;
 
 #  ifdef __cplusplus
 extern "C" {
-#  endif // C++
+#  endif
 
 timerange* add_timerange_to_daterange(
              daterange_struct* drange,
-             int start_hour,
-             int start_minute,
-             int end_hour,
-             int end_minute);
+             unsigned long start_time,
+             unsigned long end_time);
 timerange* add_timerange_to_timeperiod(
              timeperiod_struct* period,
              int day,
-             int start_hour,
-             int start_minute,
-             int end_hour,
-             int end_minute);
+             unsigned long start_time,
+             unsigned long end_time);
 
 #  ifdef __cplusplus
 }
@@ -63,6 +57,8 @@ bool          operator!=(
                 timerange const& obj2) throw ();
 std::ostream& operator<<(std::ostream& os, timerange const& obj);
 
-#  endif // C++
+#  endif /* C++ */
 
 #endif // !CCE_OBJECTS_TIMERANGE_HH
+
+

@@ -32,7 +32,8 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-connector::connector() : io::endpoint(false), _type(bam_type) {}
+connector::connector()
+  : io::endpoint(false), _type(bam_monitoring_type) {}
 
 /**
  *  Copy constructor.
@@ -67,14 +68,30 @@ connector& connector::operator=(connector const& other) {
 /**
  *  Set connection parameters.
  *
- *  @param[in] type             BAM stream type.
  *  @param[in] db_cfg           Database configuration.
+ *  @param[in] storage_db_name  Storage database name.
  */
-void connector::connect_to(
-                  stream_type type,
-                  database_config const& db_cfg) {
-  _type = type;
+void connector::connect_monitoring(
+                  database_config const& db_cfg,
+                  std::string const& storage_db_name) {
+  _type = bam_monitoring_type;
   _db_cfg = db_cfg;
+  if (storage_db_name.empty())
+    _storage_db_name = db_cfg.get_name();
+  else
+    _storage_db_name = storage_db_name;
+  return ;
+}
+
+/**
+ *  Set reporting connection parameters.
+ *
+ *  @param[in] db_cfg  Database configuration.
+ */
+void connector::connect_reporting(database_config const& db_cfg) {
+  _type = bam_reporting_type;
+  _db_cfg = db_cfg;
+  _storage_db_name.clear();
   return ;
 }
 
@@ -84,14 +101,16 @@ void connector::connect_to(
  *  @return BAM connection object.
  */
 misc::shared_ptr<io::stream> connector::open() {
-  if (_type == bam_bi_type) {
+  if (_type == bam_reporting_type) {
     misc::shared_ptr<reporting_stream>
       s(new reporting_stream(_db_cfg));
     return (s.staticCast<io::stream>());
   }
   else {
+    database_config storage_db_cfg(_db_cfg);
+    storage_db_cfg.set_name(_storage_db_name);
     misc::shared_ptr<monitoring_stream>
-      s(new monitoring_stream(_db_cfg));
+      s(new monitoring_stream(_db_cfg, storage_db_cfg));
     s->initialize();
     return (s.staticCast<io::stream>());
   }
@@ -110,6 +129,7 @@ misc::shared_ptr<io::stream> connector::open() {
  */
 void connector::_internal_copy(connector const& other) {
   _db_cfg = other._db_cfg;
+  _storage_db_name = other._storage_db_name;
   _type = other._type;
   return ;
 }

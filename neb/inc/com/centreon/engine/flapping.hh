@@ -1,6 +1,6 @@
 /*
-** Copyright 2002-2006      Ethan Galstad
-** Copyright 2011-2013,2015 Merethis
+** Copyright 2002-2006 Ethan Galstad
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -35,15 +35,23 @@ extern "C" {
 // Flap Detection Functions
 
 // determines whether or not a service is "flapping" between states
-void check_for_service_flapping(service* svc, int update);
+void check_for_service_flapping(
+       service* svc,
+       int update,
+       int allow_flapstart_notification);
 // determines whether or not a host is "flapping" between states
-void check_for_host_flapping(host* hst, int update, int actual_check);
+void check_for_host_flapping(
+       host* hst,
+       int update,
+       int actual_check,
+       int allow_flapstart_notification);
 // handles a service that is flapping
 void set_service_flap(
        service* svc,
        double percent_change,
        double high_threshold,
-       double low_threshold);
+       double low_threshold,
+       int allow_flapstart_notification);
 // handles a service that has stopped flapping
 void clear_service_flap(
        service* svc,
@@ -55,7 +63,8 @@ void set_host_flap(
        host* hst,
        double percent_change,
        double high_threshold,
-       double low_threshold);
+       double low_threshold,
+       int allow_flapstart_notification);
 // handles a host that has stopped flapping
 void clear_host_flap(
        host* hst,

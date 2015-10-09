@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014-2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -98,23 +98,53 @@ void cleanup::run() {
                    _db_name));
       database_query q(db);
 
-      q.run_query(
-        "UPDATE rt_index_data"
-        " INNER JOIN rt_hosts ON rt_index_data.host_id=rt_hosts.host_id"
-        " INNER JOIN rt_instances ON rt_hosts.instance_id=rt_instances.instance_id"
-        " SET rt_index_data.to_delete=1"
-        " WHERE rt_instances.deleted=1",
-        "could not flag the index_data table to delete outdated entries");
-      q.run_query(
-        "DELETE rt_hosts FROM rt_hosts INNER JOIN rt_instances"
-        " ON rt_hosts.instance_id=rt_instances.instance_id"
-        " WHERE rt_instances.deleted=1",
-        "could not delete outdated entries from the hosts table");
-      q.run_query(
-        "DELETE rt_modules FROM rt_modules INNER JOIN rt_instances"
-        " ON rt_modules.instance_id=rt_instances.instance_id"
-        " WHERE rt_instances.deleted=1",
-        "could not delete outdated entries from the modules table");
+      if (db.schema_version() == database::v2) {
+        q.run_query(
+            "UPDATE index_data"
+            "  INNER JOIN hosts"
+            "    ON index_data.host_id=hosts.host_id"
+            "  INNER JOIN instances"
+            "    ON hosts.instance_id=instances.instance_id"
+            "  SET index_data.to_delete=1"
+            "  WHERE instances.delete=1",
+            "could not flag the index_data table"
+            " to delete outdated entries");
+        q.run_query(
+            "DELETE hosts FROM hosts INNER JOIN instances"
+            "  ON hosts.instance_id=instances.instance_id"
+            "  WHERE instances.delete=1",
+            "could not delete outdated entries from the hosts table");
+        q.run_query(
+            "DELETE modules FROM modules INNER JOIN instances"
+            "  ON modules.instance_id=instances.instance_id"
+            "  WHERE instances.deleted=1",
+            "could not delete outdated entries"
+            " from the modules tables");
+      }
+      else {
+        q.run_query(
+            "UPDATE rt_index_data"
+            "  INNER JOIN rt_hosts"
+            "    ON rt_index_data.host_id=rt_hosts.host_id"
+            "  INNER JOIN rt_instances"
+            "    ON rt_hosts.instance_id=rt_instances.instance_id"
+            "  SET rt_index_data.to_delete=1"
+            "  WHERE rt_instances.deleted=1",
+            "could not flag the rt_index_data table"
+            " to delete outdated entries");
+        q.run_query(
+            "DELETE rt_hosts FROM rt_hosts INNER JOIN rt_instances"
+            "  ON rt_hosts.instance_id=rt_instances.instance_id"
+            "  WHERE rt_instances.deleted=1",
+            "could not delete outdated entries"
+            " from the rt_hosts table");
+        q.run_query(
+            "DELETE rt_modules FROM rt_modules INNER JOIN rt_instances"
+            "  ON rt_modules.instance_id=rt_instances.instance_id"
+            "  WHERE rt_instances.deleted=1",
+            "could not delete outdated entries"
+            " from the rt_modules table");
+      }
     }
     catch (std::exception const& e) {
       logging::error(logging::high) << "SQL: " << e.what();

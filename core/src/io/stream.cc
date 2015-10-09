@@ -110,7 +110,7 @@ bool stream::validate(
                std::string const& error) {
   if (d.isNull()) {
     logging::error(logging::medium)
-      << error << ": received a null event. This should never happen."
+      << error << ": received a null event. This should never happen. "
                    "This is likely a software bug that you should report "
                    "to Centreon Broker developers.";
     return (false);

@@ -23,6 +23,7 @@
 #include <QMutexLocker>
 #include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/configuration/reader.hh"
+#include "com/centreon/broker/bam/configuration/reader_v2.hh"
 #include "com/centreon/broker/bam/configuration/state.hh"
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
@@ -56,9 +57,13 @@ using namespace com::centreon::broker::bam;
 /**
  *  Constructor.
  *
- *  @param[in] db_cfg           Database configuration.
+ *  @param[in] db_cfg          Main (centreon) database configuration.
+ *  @param[in] storage_db_cfg  Storage (centreon_storage) database
+ *                             configuration.
  */
-monitoring_stream::monitoring_stream(database_config const& db_cfg)
+monitoring_stream::monitoring_stream(
+                     database_config const& db_cfg,
+                     database_config const& storage_db_cfg)
   : _db(db_cfg),
     _ba_update(_db),
     _kpi_update(_db),
@@ -69,7 +74,11 @@ monitoring_stream::monitoring_stream(database_config const& db_cfg)
 
   // Read configuration from DB.
   configuration::state s;
-  {
+  if (_db.schema_version() == database::v2) {
+    configuration::reader_v2 r(_db, storage_db_cfg);
+    r.read(s);
+  }
+  else {
     configuration::reader r(_db);
     r.read(s);
   }
@@ -169,7 +178,7 @@ void monitoring_stream::update() {
  *  @return Number of events acknowledged.
  */
 int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
-  if (!validate(data, "monitoring_stream"))
+  if (!validate(data, "BAM"))
     return (1);
 
   // Take this event into account.

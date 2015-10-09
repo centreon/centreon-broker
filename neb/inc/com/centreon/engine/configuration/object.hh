@@ -40,12 +40,20 @@ namespace                  configuration {
   public:
     enum                   object_type {
       command = 0,
-      connector,
-      host,
-      hostdependency,
-      service,
-      servicedependency,
-      timeperiod
+      connector = 1,
+      contact = 2,
+      contactgroup = 3,
+      host = 4,
+      hostdependency = 5,
+      hostescalation = 6,
+      hostextinfo = 7,
+      hostgroup = 8,
+      service = 9,
+      servicedependency = 10,
+      serviceescalation = 11,
+      serviceextinfo = 12,
+      servicegroup = 13,
+      timeperiod = 14
     };
 
                            object(object_type type);
@@ -146,12 +154,16 @@ namespace std {
   } while (false)
 #  define MRG_DEFAULT(prop) \
   if (prop.empty()) prop = tmpl.prop
+#  define MRG_IMPORTANT(prop) \
+  if (prop.empty() || tmpl.prop##_is_important) prop = tmpl.prop
 #  define MRG_INHERIT(prop) \
   do { \
     if (!prop.is_set()) \
       prop = tmpl.prop; \
-    else if (prop.is_inherit()) \
+    else if (prop.is_inherit()) { \
       prop += tmpl.prop; \
+      prop.is_inherit(false); \
+    } \
   } while (false)
 #  define MRG_MAP(prop) \
   prop.insert(tmpl.prop.begin(), tmpl.prop.end())

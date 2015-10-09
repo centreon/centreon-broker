@@ -18,8 +18,11 @@
 
 #include "com/centreon/broker/dumper/entries/ba.hh"
 #include "com/centreon/broker/dumper/entries/ba_type.hh"
+#include "com/centreon/broker/dumper/entries/boolean.hh"
+#include "com/centreon/broker/dumper/entries/host.hh"
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/entries/organization.hh"
+#include "com/centreon/broker/dumper/entries/service.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
 
 using namespace com::centreon::broker;
@@ -100,6 +103,42 @@ std::list<ba>& state::get_bas() {
 }
 
 /**
+ *  Get boolean expressions.
+ *
+ *  @return Non-modifiable list of boolean expressions.
+ */
+std::list<boolean> const& state::get_booleans() const {
+  return (_booleans);
+}
+
+/**
+ *  Get boolean expressions.
+ *
+ *  @return Modifiable list of boolean expressions.
+ */
+std::list<boolean>& state::get_booleans() {
+  return (_booleans);
+}
+
+/**
+ *  Get virtual hosts.
+ *
+ *  @return Non-modifiable list of virtual hosts.
+ */
+std::list<host> const& state::get_hosts() const {
+  return (_hosts);
+}
+
+/**
+ *  Get virtual hosts.
+ *
+ *  @return Modifiable list of virtual hosts.
+ */
+std::list<host>& state::get_hosts() {
+  return (_hosts);
+}
+
+/**
  *  Get KPIs.
  *
  *  @return Non-modifiable list of KPI.
@@ -135,6 +174,24 @@ std::list<organization>& state::get_organizations() {
   return (_organizations);
 }
 
+/**
+ *  Get virtual services.
+ *
+ *  @return Non-modifiable list of services.
+ */
+std::list<service> const& state::get_services() const {
+  return (_services);
+}
+
+/**
+ *  Get virtual services.
+ *
+ *  @return Modifiable list of services.
+ */
+std::list<service>& state::get_services() {
+  return (_services);
+}
+
 /**************************************
 *                                     *
 *           Private Methods           *
@@ -149,7 +206,10 @@ std::list<organization>& state::get_organizations() {
 void state::_internal_copy(state const& other) {
   _ba_types = other._ba_types;
   _bas = other._bas;
+  _booleans = other._booleans;
+  _hosts = other._hosts;
   _kpis = other._kpis;
   _organizations = other._organizations;
+  _services = other._services;
   return ;
 }

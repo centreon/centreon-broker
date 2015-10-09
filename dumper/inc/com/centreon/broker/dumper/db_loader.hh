@@ -19,8 +19,6 @@
 #ifndef CCB_DUMPER_DB_LOADER_HH
 #  define CCB_DUMPER_DB_LOADER_HH
 
-#  include <memory>
-#  include "com/centreon/broker/database.hh"
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -28,8 +26,8 @@ CCB_BEGIN()
 
 namespace           dumper {
   // Forward declaration.
-  namespace           entries {
-    class             state;
+  namespace         entries {
+    class           state;
   }
 
   /**
@@ -47,16 +45,8 @@ namespace           dumper {
   private:
                     db_loader(db_loader const& other);
     db_loader&      operator=(db_loader const& other);
-    void            _load_ba_types();
-    void            _load_bas();
-    void            _load_kpis();
-    void            _load_organizations();
 
-    std::auto_ptr<database>
-                    _db;
     database_config _db_cfg;
-    unsigned int    _poller_id;
-    entries::state* _state;
   };
 }
 

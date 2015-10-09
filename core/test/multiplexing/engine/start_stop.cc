@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cstdlib>
+#include <iostream>
 #include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -38,96 +41,111 @@ using namespace com::centreon::broker;
 int main() {
   // Initialization.
   config::applier::init();
+  bool error(true);
 
-  // Subscriber.
-  uset<unsigned int> filters;
-  filters.insert(io::raw::static_type());
-  multiplexing::subscriber
-    s("core_multiplexing_engine_start_stop", "");
-  s.get_muxer().set_read_filters(filters);
-  s.get_muxer().set_write_filters(filters);
+  try {
+    // Subscriber.
+    uset<unsigned int> filters;
+    filters.insert(io::raw::static_type());
+    multiplexing::subscriber
+      s("core_multiplexing_engine_start_stop", "");
+    s.get_muxer().set_read_filters(filters);
+    s.get_muxer().set_write_filters(filters);
 
-  // Send events through engine.
-  char const* messages[] = { MSG1, MSG2, NULL };
-  for (unsigned int i = 0; messages[i]; ++i) {
-    misc::shared_ptr<io::raw> data(new io::raw);
-    data->append(messages[i]);
-    multiplexing::engine::instance().publish(
+    // Send events through engine.
+    char const* messages[] = { MSG1, MSG2, NULL };
+    for (unsigned int i = 0; messages[i]; ++i) {
+      misc::shared_ptr<io::raw> data(new io::raw);
+      data->append(messages[i]);
+      multiplexing::engine::instance().publish(
       data.staticCast<io::data>());
-  }
-
-  // Should read no events from subscriber.
-  int retval(0);
-  {
-    misc::shared_ptr<io::data> data;
-    s.get_muxer().read(data, 0);
-    retval |= !data.isNull();
-  }
-
-  // Start multiplexing engine.
-  multiplexing::engine::instance().start();
-
-  // Read retained events.
-  for (unsigned int i(0); messages[i]; ++i) {
-    misc::shared_ptr<io::data> data;
-    s.get_muxer().read(data, 0);
-    if (data.isNull()
-        || (data->type() != io::raw::static_type()))
-      retval |= 1;
-    else {
-      misc::shared_ptr<io::raw> raw(data.staticCast<io::raw>());
-      retval |= strncmp(
-        raw->QByteArray::data(),
-        messages[i],
-        strlen(messages[i]));
     }
-  }
 
-  // Publish a new event.
-  {
-    misc::shared_ptr<io::raw> data(new io::raw);
-    data->append(MSG3);
-    multiplexing::engine::instance().publish(
-      data.staticCast<io::data>());
-  }
-
-  // Read event.
-  {
-    misc::shared_ptr<io::data> data;
-    s.get_muxer().read(data, 0);
-    if (data.isNull()
-        || (data->type() != io::raw::static_type()))
-      retval |= 1;
-    else {
-      misc::shared_ptr<io::raw> raw(data.staticCast<io::raw>());
-      retval |= strncmp(
-        raw->QByteArray::data(),
-        MSG3,
-        strlen(MSG3));
+    // Should read no events from subscriber.
+    {
+      misc::shared_ptr<io::data> data;
+      s.get_muxer().read(data, 0);
+      if (!data.isNull())
+        throw (exceptions::msg() << "error at step #1");
     }
+
+    // Start multiplexing engine.
+    multiplexing::engine::instance().start();
+
+    // Read retained events.
+    for (unsigned int i(0); messages[i]; ++i) {
+      misc::shared_ptr<io::data> data;
+      s.get_muxer().read(data, 0);
+      if (data.isNull()
+          || (data->type() != io::raw::static_type()))
+        throw (exceptions::msg() << "error at step #2");
+      else {
+        misc::shared_ptr<io::raw> raw(data.staticCast<io::raw>());
+        if (strncmp(
+              raw->QByteArray::data(),
+              messages[i],
+              strlen(messages[i])))
+          throw (exceptions::msg() << "error at step #3");
+      }
+    }
+
+    // Publish a new event.
+    {
+      misc::shared_ptr<io::raw> data(new io::raw);
+      data->append(MSG3);
+      multiplexing::engine::instance().publish(
+        data.staticCast<io::data>());
+    }
+
+    // Read event.
+    {
+      misc::shared_ptr<io::data> data;
+      s.get_muxer().read(data, 0);
+      if (data.isNull()
+          || (data->type() != io::raw::static_type()))
+        throw (exceptions::msg() << "error at step #4");
+      else {
+        misc::shared_ptr<io::raw> raw(data.staticCast<io::raw>());
+        if (strncmp(
+              raw->QByteArray::data(),
+              MSG3,
+              strlen(MSG3)))
+          throw (exceptions::msg() << "error at step #5");
+      }
+    }
+
+    // Stop multiplexing engine.
+    multiplexing::engine::instance().stop();
+
+    // Publish a new event.
+    {
+      misc::shared_ptr<io::raw> data(new io::raw);
+      data->append(MSG4);
+      multiplexing::engine::instance().publish(
+        data.staticCast<io::data>());
+    }
+
+    // Read no event.
+    {
+      misc::shared_ptr<io::data> data;
+      s.get_muxer().read(data, 0);
+      if (!data.isNull())
+        throw (exceptions::msg() << "error at step #6");
+    }
+
+    // Success.
+    error = false;
   }
-
-  // Stop multiplexing engine.
-  multiplexing::engine::instance().stop();
-
-  // Publish a new event.
-  {
-    misc::shared_ptr<io::raw> data(new io::raw);
-    data->append(MSG4);
-    multiplexing::engine::instance().publish(
-      data.staticCast<io::data>());
+  catch (std::exception const& e) {
+    std::cerr << e.what() << "\n";
   }
-
-  // Read no event.
-  {
-    misc::shared_ptr<io::data> data;
-    s.get_muxer().read(data, 0);
-    retval |= !data.isNull();
+  catch (...) {
+    std::cerr << "unknown exception\n";
   }
 
   // Cleanup.
   config::applier::deinit();
 
   // Return.
-  return (retval);
+  return (error ? EXIT_FAILURE : EXIT_SUCCESS);
 }

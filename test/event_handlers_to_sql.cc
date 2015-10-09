@@ -69,7 +69,7 @@ int main() {
       // The two first command will return UNREACHABLE/CRITICAL for
       // host (#1) and service (#2).
       std::list<command>::iterator it(commands.begin());
-      char const* cmdline(MY_PLUGIN_PATH " 1 ThisIsTheHostPluginOutput");
+      char const* cmdline(MY_PLUGIN_PATH " 2 ThisIsTheHostPluginOutput");
       it->command_line = new char[strlen(cmdline) + 1];
       strcpy(it->command_line, cmdline);
       ++it;
@@ -90,6 +90,7 @@ int main() {
     generate_hosts(hosts, HOST_COUNT);
     {
       host& h(*(++hosts.begin()));
+      h.accept_passive_host_checks = 0;
       h.checks_enabled = 0;
       h.max_attempts = 3;
       h.host_check_command = new char[2];
@@ -101,6 +102,7 @@ int main() {
     generate_services(services, hosts, SERVICES_BY_HOST);
     {
       service& s(services.front());
+      s.accept_passive_service_checks = 0;
       s.checks_enabled = 0;
       s.max_attempts = 3;
       s.service_check_command = new char[2];

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Centreon
+** Copyright 2011-2012,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -38,8 +38,10 @@ namespace                    mapping {
   public:
     enum                     attribute {
       always_valid = 0,
-      invalid_on_zero,
-      invalid_on_minus_one
+      invalid_on_zero = (1 << 0),
+      invalid_on_minus_one = (1 << 1),
+      invalid_on_v2 = (1 << 2),
+      invalid_on_v3 = (1 << 3)
     };
 
     /**
@@ -55,8 +57,12 @@ namespace                    mapping {
                                U (T::* prop),
                                char const* name,
                                attribute attr = always_valid,
-                               bool serialize = true) {
+                               bool serialize = true,
+                               char const* name_v2 = NULL) {
       _name = name;
+      _name_v2 = name_v2;
+      if (!_name_v2 && !(attr & invalid_on_v2))
+        _name_v2 = _name;
       _source = misc::shared_ptr<source>(new property<T>(prop, &_type));
       _ptr = _source.data();
       _serialize = serialize;
@@ -72,6 +78,7 @@ namespace                    mapping {
     double                   get_double(io::data const& d) const;
     int                      get_int(io::data const& d) const;
     char const*              get_name() const;
+    char const*              get_name_v2() const;
     bool                     get_serialize() const;
     short                    get_short(io::data const& d) const;
     QString const&           get_string(io::data const& d) const;
@@ -102,6 +109,7 @@ namespace                    mapping {
   private:
     attribute                _attribute;
     char const*              _name;
+    char const*              _name_v2;
     source*                  _ptr;
     bool                     _serialize;
     misc::shared_ptr<source> _source;

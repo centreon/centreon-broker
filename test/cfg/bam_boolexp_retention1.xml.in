@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <centreonbroker>
   <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
-  <instance>42</instance>
-  <instance_name>MyBroker</instance_name>
+  <broker_id>84</broker_id>
+  <broker_name>my-broker1</broker_name>
+  <poller_id>42</poller_id>
+  <poller_name>my-poller</poller_name>
   <!--
   <stats>
     <fifo>/tmp/cbmod.fifo</fifo>

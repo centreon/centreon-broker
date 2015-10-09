@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -55,6 +55,8 @@ namespace             configuration {
     private:
       void            _expand_hosts(
                         std::list<std::string> const& hosts,
+                        std::list<std::string> const& hostgroups,
+                        configuration::state& s,
                         std::set<std::string>& expanded);
     };
   }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -25,6 +25,7 @@ struct service_struct;
 struct timeperiod_struct;
 
 typedef struct                     servicedependency_struct {
+  int                              dependency_type;
   char*                            dependent_host_name;
   char*                            dependent_service_description;
   char*                            host_name;
@@ -55,6 +56,7 @@ servicedependency* add_service_dependency(
                      char const* dependent_service_description,
                      char const* host_name,
                      char const* service_description,
+                     int dependency_type,
                      int inherits_parent,
                      int fail_on_ok,
                      int fail_on_warning,
@@ -64,7 +66,8 @@ servicedependency* add_service_dependency(
                      char const* dependency_period);
 int                check_for_circular_servicedependency_path(
                      servicedependency* root_dep,
-                     servicedependency* dep);
+                     servicedependency* dep,
+                     int dependency_type);
 
 #  ifdef __cplusplus
 }
@@ -86,3 +89,5 @@ std::ostream& operator<<(
 #  endif /* C++ */
 
 #endif // !CCE_OBJECTS_SERVICEDEPENDENCY_HH
+
+

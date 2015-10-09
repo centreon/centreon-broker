@@ -16,9 +16,14 @@
 ** For more information : contact@centreon.com
 */
 
+#include <sstream>
 #include "com/centreon/broker/bam/configuration/applier/meta_service.hh"
 #include "com/centreon/broker/bam/metric_book.hh"
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/neb/host.hh"
+#include "com/centreon/broker/neb/service.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
@@ -116,8 +121,15 @@ void applier::meta_service::apply(
        ++it) {
     logging::config(logging::medium)
       << "BAM: removing meta-service " << it->second.cfg.get_id();
+    misc::shared_ptr<neb::service>
+      s(_meta_service(
+          it->first,
+          it->second.cfg.get_host_id(),
+          it->second.cfg.get_service_id()));
+    s->enabled = false;
     book.unlisten(it->second.cfg.get_id(), it->second.obj.data());
     _applied.erase(it->first);
+    multiplexing::publisher().write(s);
   }
   to_delete.clear();
 
@@ -134,6 +146,15 @@ void applier::meta_service::apply(
     applied& content(_applied[it->first]);
     content.cfg = it->second;
     content.obj = new_meta;
+    misc::shared_ptr<neb::host>
+      h(_meta_host(it->second.get_host_id()));
+    multiplexing::publisher().write(h);
+    misc::shared_ptr<neb::service>
+      s(_meta_service(
+          it->first,
+          it->second.get_host_id(),
+          it->second.get_service_id()));
+    multiplexing::publisher().write(s);
   }
 
   // Modify existing objects.
@@ -186,6 +207,49 @@ void applier::meta_service::_internal_copy(
                               applier::meta_service const& other) {
   _applied = other._applied;
   return ;
+}
+
+/**
+ *  Get the virtual host of a meta-service.
+ *
+ *  @param[in] host_id  Host ID.
+ *
+ *  @return Virtual meta-service host.
+ */
+misc::shared_ptr<neb::host> applier::meta_service::_meta_host(
+                                                     unsigned int host_id) {
+  misc::shared_ptr<neb::host> h(new neb::host);
+  h->host_id = host_id;
+  h->host_name = "_Module_Meta";
+  h->last_update = time(NULL);
+  h->poller_id
+    = com::centreon::broker::config::applier::state::instance().poller_id();
+  return (h);
+}
+
+/**
+ *  Get the virtual service of a meta-service.
+ *
+ *  @param[in] meta_id     Meta-service ID.
+ *  @param[in] host_id     Host ID.
+ *  @param[in] service_id  Service ID.
+ *
+ *  @return Virtual BA service.
+ */
+misc::shared_ptr<neb::service> applier::meta_service::_meta_service(
+                                                        unsigned int meta_id,
+                                                        unsigned int host_id,
+                                                        unsigned int service_id) {
+  misc::shared_ptr<neb::service> s(new neb::service);
+  s->host_id = host_id;
+  s->service_id = service_id;
+  {
+    std::ostringstream oss;
+    oss << "meta_" << meta_id;
+    s->service_description = oss.str().c_str();
+  }
+  s->last_update = time(NULL);
+  return (s);
 }
 
 /**

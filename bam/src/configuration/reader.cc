@@ -32,7 +32,6 @@
 #include "com/centreon/broker/bam/dimension_timeperiod_exception.hh"
 #include "com/centreon/broker/bam/dimension_timeperiod_exclusion.hh"
 #include "com/centreon/broker/bam/dimension_ba_timeperiod_relation.hh"
-#include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/time/timeperiod.hh"
 #include "com/centreon/broker/database.hh"
@@ -49,9 +48,9 @@ using namespace com::centreon::broker::bam::configuration;
  *
  *  @param[in] centreon_db  Centreon database connection.
  */
-reader::reader(database& centreon_db) :
-          _db(centreon_db),
-          _poller_organization_id(0) {}
+reader::reader(database& centreon_db)
+  : _db(centreon_db),
+    _poller_organization_id(0) {}
 
 /**
  *  Destructor.
@@ -149,8 +148,9 @@ void reader::_load(state::kpis& kpis) {
         e.status = query.value(8).toInt();
         e.start_time = query.value(17).toLongLong();
         e.in_downtime = query.value(18).toBool();
-        e.impact_level = query.value(19).isNull() ?
-                                 -1 : query.value(19).toDouble();
+        e.impact_level = query.value(19).isNull()
+                         ? -1
+                         : query.value(19).toDouble();
         kpis[kpi_id].set_opened_event(e);
       }
     }
@@ -498,37 +498,6 @@ void reader::_load(state::meta_services& meta_services) {
     throw (reader_exception()
            << "BAM: could not retrieve virtual host '_Module_Meta' from DB: "
            << e.what());
-  }
-
-  // Send virtual host event
-  {
-    multiplexing::publisher pblsh;
-    misc::shared_ptr<neb::host> host(new neb::host);
-    host->active_checks_enabled = false;
-    host->check_interval = 0.0;
-    host->check_type = 1; // Passive.
-    host->current_check_attempt = 1;
-    host->current_state = 0;
-    host->enabled = true;
-    host->event_handler_enabled = false;
-    host->execution_time = 0.0;
-    host->flap_detection_enabled = false;
-    host->has_been_checked = true;
-    host->host_id = meta_virtual_host_id;
-    host->host_name = "_Module_Meta";
-    host->is_flapping = false;
-    host->last_check = ::time(NULL);
-    host->last_hard_state = 0;
-    host->last_hard_state_change = 0;
-    host->last_state_change = 0;
-    host->last_update = ::time(NULL);
-    host->latency = 0.0;
-    host->max_check_attempts = 1;
-    host->obsess_over = false;
-    host->retry_interval = 0;
-    host->should_be_scheduled = false;
-    host->state_type = 1; // Hard.
-    pblsh.write(host);
   }
 
   // Check for meta-services without service ID.

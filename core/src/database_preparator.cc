@@ -17,6 +17,7 @@
 */
 
 #include <sstream>
+#include "com/centreon/broker/database.hh"
 #include "com/centreon/broker/database_preparator.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -85,14 +86,24 @@ void database_preparator::prepare_insert(database_query& q) {
            << "could not prepare insertion query for event of type "
            << _event_id << ": event is not registered");
 
+  // Database schema version.
+  bool schema_v2(q.db_object().schema_version() == database::v2);
+
   // Build query string.
   std::string query;
   query = "INSERT INTO ";
-  query.append(info->get_table());
+  if (schema_v2)
+    query.append(info->get_table_v2());
+  else
+    query.append(info->get_table());
   query.append(" (");
   mapping::entry const* entries(info->get_mapping());
   for (int i(0); !entries[i].is_null(); ++i) {
-    char const* entry_name(entries[i].get_name());
+    char const* entry_name;
+    if (schema_v2)
+      entry_name = entries[i].get_name_v2();
+    else
+      entry_name = entries[i].get_name();
     if (!entry_name
         || !entry_name[0]
         || (_excluded.find(entry_name) != _excluded.end()))
@@ -103,7 +114,11 @@ void database_preparator::prepare_insert(database_query& q) {
   query.resize(query.size() - 2);
   query.append(") VALUES(");
   for (int i(0); !entries[i].is_null(); ++i) {
-    char const* entry_name(entries[i].get_name());
+    char const* entry_name;
+    if (schema_v2)
+      entry_name = entries[i].get_name_v2();
+    else
+      entry_name = entries[i].get_name();
     if (!entry_name
         || !entry_name[0]
         || (_excluded.find(entry_name) != _excluded.end()))
@@ -143,16 +158,26 @@ void database_preparator::prepare_update(database_query& q) {
            << "could not prepare update query for event of type "
            << _event_id << ": event is not registered");
 
+  // Database schema version.
+  bool schema_v2(q.db_object().schema_version() == database::v2);
+
   // Build query string.
   std::string query;
   std::string where;
   query = "UPDATE ";
-  query.append(info->get_table());
+  if (schema_v2)
+    query.append(info->get_table_v2());
+  else
+    query.append(info->get_table());
   query.append(" SET ");
   where = " WHERE ";
   mapping::entry const* entries(info->get_mapping());
   for (int i(0); !entries[i].is_null(); ++i) {
-    char const* entry_name(entries[i].get_name());
+    char const* entry_name;
+    if (schema_v2)
+      entry_name = entries[i].get_name_v2();
+    else
+      entry_name = entries[i].get_name();
     if (!entry_name
         || !entry_name[0]
         || (_excluded.find(entry_name) != _excluded.end()))
@@ -204,10 +229,16 @@ void database_preparator::prepare_delete(database_query& q) {
            << "could not prepare deletion query for event of type "
            << _event_id << ": event is not registered");
 
+  // Database schema version.
+  bool schema_v2(q.db_object().schema_version() == database::v2);
+
   // Prepare query.
   std::string query;
   query = "DELETE FROM ";
-  query.append(info->get_table());
+  if (schema_v2)
+    query.append(info->get_table_v2());
+  else
+    query.append(info->get_table());
   query.append(" WHERE ");
   for (event_unique::const_iterator
          it(_unique.begin()),

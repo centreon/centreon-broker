@@ -256,10 +256,15 @@ database_query& database_query::operator<<(io::data const& d) {
   io::event_info const*
     info(io::events::instance().get_event_info(d.type()));
   if (info) {
+    bool db_v2(_db.schema_version() == database::v2);
     for (mapping::entry const* current_entry(info->get_mapping());
          !current_entry->is_null();
          ++current_entry) {
-      char const* entry_name(current_entry->get_name());
+      char const* entry_name;
+      if (db_v2)
+        entry_name = current_entry->get_name_v2();
+      else
+        entry_name = current_entry->get_name();
       if (entry_name
           && entry_name[0]
           && (_excluded.find(entry_name) == _excluded.end())) {
@@ -365,6 +370,15 @@ void database_query::bind_value(
                        QVariant const& value) {
   _q.bindValue(placeholder, value);
   return ;
+}
+
+/**
+ *  Get database object associated to this query.
+ *
+ *  @return Database object.
+ */
+database const& database_query::db_object() const {
+  return (_db);
 }
 
 /**

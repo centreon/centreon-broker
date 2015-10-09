@@ -321,7 +321,7 @@ void output::statistics(io::properties& tree) const {
  *  @return Number of events acknowledged.
  */
 int output::write(misc::shared_ptr<io::data> const& e) {
-  if (!validate(e, "bbdo"))
+  if (!validate(e, "BBDO"))
     return (1);
 
   // Check if data exists.

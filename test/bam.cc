@@ -383,6 +383,15 @@ int main() {
     // Generate standard hosts and services.
     generate_hosts(hosts, HOST_COUNT);
     generate_services(services, hosts, SERVICES_BY_HOST);
+    for (std::list<service>::iterator
+           it(services.begin()),
+           end(services.end());
+         it != end;
+         ++it) {
+      it->accept_passive_service_checks = 1;
+      it->checks_enabled = 0;
+      it->max_attempts = 1;
+    }
 
     // Generate virtual BA host and services.
     {
@@ -422,6 +431,7 @@ int main() {
         s.service_check_command = new char[str.size() + 1];
         strcpy(s.service_check_command, str.c_str());
       }
+      s.accept_passive_service_checks = 1;
       s.checks_enabled = 0;
       s.max_attempts = 1;
       services.push_back(s);

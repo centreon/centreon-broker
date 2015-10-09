@@ -24,17 +24,23 @@ using namespace com::centreon::broker::io;
 /**
  *  Constructor.
  *
- *  @param[in] name     Event name.
- *  @param[in] ops      Event operations (constructor, ...).
- *  @param[in] entries  Event property mapping.
- *  @param[in] table    SQL table of event.
+ *  @param[in] name      Event name.
+ *  @param[in] ops       Event operations (constructor, ...).
+ *  @param[in] entries   Event property mapping.
+ *  @param[in] table     SQL table of event (if any).
+ *  @param[in] table_v2  SQL table of event in version 2.x (if any).
  */
 event_info::event_info(
               std::string const& name,
               event_info::event_operations const* ops,
               mapping::entry const* entries,
-              std::string const& table)
-  : _mapping(entries), _name(name), _ops(ops), _table(table) {}
+              std::string const& table,
+              std::string const& table_v2)
+  : _mapping(entries),
+    _name(name),
+    _ops(ops),
+    _table(table),
+    _table_v2(table_v2) {}
 
 /**
  *  Copy constructor.
@@ -45,7 +51,8 @@ event_info::event_info(event_info const& other)
   : _mapping(other._mapping),
     _name(other._name),
     _ops(other._ops),
-    _table(other._table) {}
+    _table(other._table),
+    _table_v2(other._table_v2) {}
 
 /**
  *  Destructor.
@@ -60,10 +67,13 @@ event_info::~event_info() {}
  *  @return This object.
  */
 event_info& event_info::operator=(event_info const& other) {
-  _mapping = other._mapping;
-  _name = other._name;
-  _ops = other._ops;
-  _table = other._table;
+  if (this != &other) {
+    _mapping = other._mapping;
+    _name = other._name;
+    _ops = other._ops;
+    _table = other._table;
+    _table_v2 = other._table_v2;
+  }
   return (*this);
 }
 
@@ -95,10 +105,19 @@ event_info::event_operations const& event_info::get_operations() const {
 }
 
 /**
- *  Get event table.
+ *  Get event table name.
  *
  *  @return Event SQL table name.
  */
 std::string const& event_info::get_table() const {
   return (_table);
+}
+
+/**
+ *  Get event table name in version 2.x.
+ *
+ *  @return Event SQL table name in version 2.x.
+ */
+std::string const& event_info::get_table_v2() const {
+  return (_table_v2);
 }

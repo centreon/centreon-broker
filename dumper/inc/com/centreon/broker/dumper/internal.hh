@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -31,10 +31,14 @@ namespace dumper {
     de_remove,
     de_reload,
     de_db_dump,
+    de_db_dump_committed,
     de_entries_ba,
     de_entries_ba_type,
+    de_entries_boolean,
+    de_entries_host,
     de_entries_kpi,
-    de_entries_organization
+    de_entries_organization,
+    de_entries_service
   };
 }
 

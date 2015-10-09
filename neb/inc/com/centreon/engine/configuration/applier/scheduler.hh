@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -43,8 +43,6 @@ namespace                 configuration {
      */
     class                 scheduler {
     public:
-      static int const    auto_rescheduling_interval = 5 * 60;
-
       void                apply(
                             state& config,
                             difference<set_host> const& diff_hosts,
@@ -61,11 +59,16 @@ namespace                 configuration {
                           ~scheduler() throw ();
       scheduler&          operator=(scheduler const&);
       void                _apply_misc_event();
-      void                _calculate_host_inter_check_delay();
-      void                _calculate_host_scheduling_params();
-      void                _calculate_service_inter_check_delay();
-      void                _calculate_service_interleave_factor();
-      void                _calculate_service_scheduling_params();
+      void                _calculate_host_inter_check_delay(
+                            configuration::state::inter_check_delay method);
+      void                _calculate_host_scheduling_params(
+                            configuration::state const& config);
+      void                _calculate_service_inter_check_delay(
+                            configuration::state::inter_check_delay method);
+      void                _calculate_service_interleave_factor(
+                            configuration::state::interleave_factor method);
+      void                _calculate_service_scheduling_params(
+                            configuration::state const& config);
       timed_event_struct* _create_misc_event(
                             int type,
                             time_t start,
@@ -92,15 +95,24 @@ namespace                 configuration {
       timed_event_struct* _evt_check_reaper;
       timed_event_struct* _evt_command_check;
       timed_event_struct* _evt_hfreshness_check;
+      timed_event_struct* _evt_host_perfdata;
+      timed_event_struct* _evt_orphan_check;
       timed_event_struct* _evt_reschedule_checks;
       timed_event_struct* _evt_retention_save;
       timed_event_struct* _evt_sfreshness_check;
+      timed_event_struct* _evt_service_perfdata;
       timed_event_struct* _evt_status_save;
+      unsigned int        _old_auto_rescheduling_interval;
       unsigned int        _old_check_reaper_interval;
       int                 _old_command_check_interval;
       unsigned int        _old_host_freshness_check_interval;
+      std::string         _old_host_perfdata_file_processing_command;
+      unsigned int        _old_host_perfdata_file_processing_interval;
       unsigned int        _old_retention_update_interval;
       unsigned int        _old_service_freshness_check_interval;
+      std::string         _old_service_perfdata_file_processing_command;
+      unsigned int        _old_service_perfdata_file_processing_interval;
+      unsigned int        _old_status_update_interval;
     };
   }
 }

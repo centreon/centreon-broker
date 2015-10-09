@@ -182,7 +182,7 @@ void output::update() {
  */
 int output::write(misc::shared_ptr<io::data> const& d) {
   // Check that data exists.
-  if (!validate(d, "storage"))
+  if (!validate(d, "RRD"))
     return (1);
 
   if (d->type() == storage::metric::static_type()) {

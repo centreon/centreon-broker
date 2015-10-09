@@ -26,13 +26,17 @@
 
 CCB_BEGIN()
 
+// Forward declarations.
+class               database;
 namespace           dumper {
-  // Forward declarations.
   namespace         entries {
     class           ba;
     class           ba_type;
+    class           boolean;
+    class           host;
     class           kpi;
     class           organization;
+    class           service;
   }
 
   /**
@@ -53,6 +57,12 @@ namespace           dumper {
                     db_writer(db_writer const& other);
     db_writer&      operator=(db_writer const& other);
     void            _commit();
+    template        <typename T>
+    void            _store_objects(
+                      database& db,
+                      std::list<T> const& l,
+                      char const* id_name,
+                      unsigned int (T::* id_member));
 
     database_config _db_cfg;
     bool            _full_dump;
@@ -60,10 +70,16 @@ namespace           dumper {
                     _ba_types;
     std::list<entries::ba>
                     _bas;
+    std::list<entries::boolean>
+                    _booleans;
+    std::list<entries::host>
+                    _hosts;
     std::list<entries::kpi>
                     _kpis;
     std::list<entries::organization>
                     _organizations;
+    std::list<entries::service>
+                    _services;
   };
 }
 

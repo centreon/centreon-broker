@@ -226,7 +226,6 @@ void applier::ba::visit(io::stream* visitor) {
 /**
  *  Get the virtual BA host of a BA.
  *
- *  @param[in] ba_id    BA ID.
  *  @param[in] host_id  Host ID.
  *
  *  @return Virtual BA host.
