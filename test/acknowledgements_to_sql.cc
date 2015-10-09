@@ -86,6 +86,7 @@ int main() {
            end(services.end());
          it != end;
          ++it) {
+      it->accept_passive_service_checks = 1;
       it->service_check_command = new char[2];
       strcpy(it->service_check_command, "1");
     }

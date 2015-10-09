@@ -686,6 +686,8 @@ void config_write(
           << "  check_period " << (it->check_period
                                    ? it->check_period
                                    : "default_timeperiod") << "\n"
+          << "  event_handler_enabled " << it->event_handler_enabled
+          << "\n"
         // Deprecated in Centreon Engine 2.x.
           << "  passive_checks_enabled "
           << it->accept_passive_host_checks << "\n"
@@ -716,8 +718,6 @@ void config_write(
           ofs << "," << parent->host_name;
         ofs << "\n";
       }
-      ofs << "  event_handler_enabled " << it->event_handler_enabled
-          << "\n";
       if (it->event_handler)
         ofs << "  event_handler " << it->event_handler << "\n";
       for (customvariablesmember* cvar(it->custom_variables);
