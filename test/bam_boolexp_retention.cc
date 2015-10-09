@@ -172,6 +172,15 @@ int main() {
     // Generate standard hosts and services.
     generate_hosts(hosts, HOST_COUNT);
     generate_services(services, hosts, SERVICES_BY_HOST);
+    for (std::list<service>::iterator
+           it(services.begin()),
+           end(services.end());
+         it != end;
+         ++it) {
+      it->accept_passive_service_checks = 1;
+      it->checks_enabled = 0;
+      it->max_attempts = 1;
+    }
 
     // Generate virtual BA host and services.
     {
@@ -202,7 +211,7 @@ int main() {
       {
         std::ostringstream oss;
         oss << i + 1000;
-  set_custom_variable(s, "SERVICE_ID", oss.str().c_str());
+        set_custom_variable(s, "SERVICE_ID", oss.str().c_str());
       }
       {
         std::ostringstream oss;
@@ -211,8 +220,6 @@ int main() {
         s.service_check_command = new char[str.size() + 1];
         strcpy(s.service_check_command, str.c_str());
       }
-      s.checks_enabled = 0;
-      s.max_attempts = 1;
       services.push_back(s);
     }
 
@@ -222,6 +229,7 @@ int main() {
            end(services.end());
          it != end;
          ++it) {
+      it->accept_passive_service_checks = 1;
       it->checks_enabled = 0;
       it->max_attempts = 1;
     }
@@ -352,6 +360,16 @@ int main() {
         QSqlQuery q(*db.centreon_db());
         if (!q.exec(query))
           throw (exceptions::msg() << "could not create BAs: "
+                 << q.lastError().text());
+      }
+      {
+        QString query;
+        query = "INSERT INTO cfg_bam_poller_relations (ba_id, poller_id)"
+                "  VALUES (1, 42)";
+        QSqlQuery q(*db.centreon_db());
+        if (!q.exec(query))
+          throw (exceptions::msg()
+                 << "could not create BAs / poller relations: "
                  << q.lastError().text());
       }
 
@@ -523,9 +541,11 @@ int main() {
   }
   catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
+    db.set_remove_db_on_close(false);
   }
   catch (...) {
     std::cerr << "unknown exception" << std::endl;
+    db.set_remove_db_on_close(false);
   }
 
   // Cleanup.

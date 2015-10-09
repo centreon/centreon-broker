@@ -90,6 +90,7 @@ int main() {
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, 1);
     generate_services(services, hosts, 1);
+    services.back().accept_passive_service_checks = 1;
     services.back().checks_enabled = 0;
     services.back().max_attempts = 1;
     commander.set_file(tmpnam(NULL));

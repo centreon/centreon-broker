@@ -212,6 +212,7 @@ int main() {
            end(services.end());
          it != end;
          ++it) {
+      it->accept_passive_service_checks = 1;
       it->checks_enabled = 0;
       it->max_attempts = 1;
     }
@@ -411,11 +412,11 @@ int main() {
   }
   catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
-    error = true;
+    db.set_remove_db_on_close(false);
   }
   catch (...) {
     std::cerr << "unknown exception" << std::endl;
-    error = true;
+    db.set_remove_db_on_close(false);
   }
 
   // Cleanup.
