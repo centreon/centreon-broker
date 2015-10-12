@@ -35,10 +35,9 @@
 using namespace com::centreon::broker;
 
 // Valid empty event (a command_request).
-//#define EMPTY_EVENT "0x000E0008000200000000000000"
 #define EMPTY_EVENT "000E000800020000000000000000000000000000"
-// This event has not enough data available at its end.
-#define NOT_ENOUGH_DATA "0028FFFF00010"
+// This event does not have enough data for its payload.
+#define NOT_ENOUGH_DATA_EVENT "0009000800020000000000000000000000000000"
 // This event is of invalid type.
 #define INVALID_EVENT_TYPE "000000420042"
 
@@ -96,7 +95,7 @@ void append_empty_valid_event(QByteArray& packet) {
  */
 void test_not_enough_data() {
   try {
-    QByteArray packet = QByteArray::fromHex(NOT_ENOUGH_DATA);
+    QByteArray packet = QByteArray::fromHex(NOT_ENOUGH_DATA_EVENT);
     prepend_checksum(packet);
     misc::shared_ptr<from_memory> memory_stream(new from_memory(packet));
     bbdo::stream stream;
@@ -185,7 +184,7 @@ int main(int argc, char* argv[]) {
   int retval = 0;
 
   try {
-    //test_not_enough_data();
+    test_not_enough_data();
     test_invalid_event();
     test_invalid_checksum();
   } catch (std::exception const& e) {
