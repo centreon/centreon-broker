@@ -96,6 +96,7 @@ The TCP output should have a failover file.
   * max_file_size = 500000000
   * filter category = *empty*
   * compression = yes
+  * compression buffer size = 2000
 
 Central Broker
 ==============
@@ -131,6 +132,7 @@ The SQL output should have a failover file.
   * max_file_size = 500000000
   * filter category = *empty*
   * compression = yes
+  * compression buffer size = 2000
 
 This is the performance data output.
 
@@ -164,6 +166,7 @@ The performance data output should have a failover file.
   * max_file_size = 500000000
   * filter category = *empty*
   * compression = yes
+  * compression buffer size = 2000
 
 This is the output to central-rrd.
 
@@ -192,6 +195,7 @@ The central-rrd output should have a failover file.
   * max_file_size = 500000000
   * filter category = *empty*
   * compression = yes
+  * compression buffer size = 2000
 
 Central RRD
 ===========
@@ -220,6 +224,7 @@ The RRD output should have a failover file.
   * max_file_size = 500000000
   * filter category = *empty*
   * compression = yes
+  * compression buffer size = 2000
 
 *****
 Stats
@@ -241,4 +246,5 @@ Temporary must be enabled.
   * name = poller-temporary / central-broker-temporary-master / central-rrd-temporary-master
   * protocol = BBDO
   * compression = yes
+  * compression buffer size = 2000
   * max_file_size = 500000000
