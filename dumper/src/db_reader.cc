@@ -108,7 +108,7 @@ bool db_reader::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *  @return Always return 1.
  */
 int db_reader::write(misc::shared_ptr<io::data> const& d) {
-  if (!validate(d, "db reader"))
+  if (!validate(d, "db_reader"))
     return (1);
 
   // Process only external commands addressed to us.
@@ -116,6 +116,8 @@ int db_reader::write(misc::shared_ptr<io::data> const& d) {
     extcmd::command_request const&
       req(d.ref_as<extcmd::command_request const>());
     if (req.is_addressed_to(_name)) {
+      logging::info(logging::medium)
+        << "db_reader: processing command: " << req.cmd;
       try {
         // Split command for processing.
         std::vector<std::string> params;

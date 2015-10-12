@@ -239,7 +239,7 @@ int main() {
     sleep_for(2);
 
     // Full synchronization.
-    commander.execute("EXECUTE;42;dbcfg1-dbreader;SYNC_CFG_DB;43");
+    commander.execute("EXECUTE;84;dbcfg1-dbreader;SYNC_CFG_DB;43");
     sleep_for(3);
 
     // Check database.
@@ -302,7 +302,7 @@ int main() {
     }
 
     // Diff synchronization.
-    commander.execute("EXECUTE;42;dbcfg1-dbreader;UPDATE_CFG_DB;43");
+    commander.execute("EXECUTE;84;dbcfg1-dbreader;UPDATE_CFG_DB;43");
     sleep_for(3);
 
     // Check database.

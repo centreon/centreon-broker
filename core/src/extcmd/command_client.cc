@@ -25,6 +25,7 @@
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/command_result.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::extcmd;
@@ -119,6 +120,10 @@ bool command_client::read(
           req(new command_request);
         req->parse(cmd.substr(strlen(execute_cmd)));
         d = req;
+        logging::debug(logging::high)
+          << "command: sending request " << req->id << " ('" << req->cmd
+          << "') to endpoint '" << req->endp
+          << "' of Centreon Broker instance " << req->destination_id;
         _listener->write(req);
         res = _listener->command_status(io::data::broker_id, req->id);
       }
