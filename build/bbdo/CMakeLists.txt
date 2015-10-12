@@ -19,13 +19,15 @@
 # Global options.
 set(INC_DIR "${PROJECT_SOURCE_DIR}/bbdo/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/bbdo/src")
-set(TEST_DIR "${PROJECT_SOURCE_DIR}/bbdp/test")
+set(TEST_DIR "${PROJECT_SOURCE_DIR}/bbdo/test")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/bam/inc")
 include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
 include_directories("${PROJECT_SOURCE_DIR}/dumper/inc")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
+# For unit test (it uses FILE)
+include_directories("${PROJECT_SOURCE_DIR}/file/inc")
 set(INC_DIR "${INC_DIR}/com/centreon/broker/bbdo")
 
 # Some files must be processed by Qt's moc.
@@ -67,6 +69,19 @@ get_property(BBDO_MODULE_PATH
   TARGET "${BBDO}"
   PROPERTY LOCATION)
 set(BBDO_MODULE_PATH "${BBDO_MODULE_PATH}" PARENT_SCOPE)
+
+
+# Testing.
+if (WITH_TESTING)
+  set(TEST_LIBRARIES "${NEB}" "${BAM}" "${DUMPER}" "${CORRELATION}" "${STORAGE}" "${FILE}" "${BBDO}" "roker")
+
+  #   Read events test.
+  set(TEST_NAME "bbdo_read")
+  add_executable("${TEST_NAME}"
+    "${TEST_DIR}/read.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+endif ()
 
 # Install rule.
 install(TARGETS "${BBDO}"

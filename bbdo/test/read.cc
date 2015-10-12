@@ -47,21 +47,26 @@ public:
     : sent_data(false), _memory(memory) {}
   ~from_memory() {}
 
-  bool read(
-         misc::shared_ptr<io::data>& d,
-         time_t deadline = (time_t)-1) {
+  void process(
+         bool in = false,
+         bool out = true) {
+    (void)in;
+    (void)out;
+  }
+
+  void read(
+         misc::shared_ptr<io::data>& d) {
     if (sent_data)
       throw (io::exceptions::shutdown(true, true));
     misc::shared_ptr<io::raw> raw(new io::raw);
     raw.ref_as<QByteArray>() = _memory;
     d = raw;
     sent_data = true;
-    return (true);
   }
 
-  int write(misc::shared_ptr<io::data> const& d) {
+  unsigned int write(misc::shared_ptr<io::data> const& d) {
     throw (io::exceptions::shutdown(false, true));
-    return (-1);
+    return (0);
   }
 
 private:
@@ -98,8 +103,8 @@ void test_not_enough_data() {
     QByteArray packet = QByteArray::fromHex(NOT_ENOUGH_DATA_EVENT);
     prepend_checksum(packet);
     misc::shared_ptr<from_memory> memory_stream(new from_memory(packet));
-    bbdo::stream stream;
-    stream.set_substream(memory_stream);
+    bbdo::stream stream(true, false);
+    stream.read_from(memory_stream);
     // We should be throwing.
     try {
       misc::shared_ptr<io::data> d;
@@ -125,9 +130,8 @@ void test_invalid_event() {
     prepend_checksum(packet);
     append_empty_valid_event(packet);
     misc::shared_ptr<from_memory> memory_stream(new from_memory(packet));
-    bbdo::stream stream;
-    stream.set_coarse(true);
-    stream.set_substream(memory_stream);
+    bbdo::stream stream(true, false);
+    stream.read_from(memory_stream);
     misc::shared_ptr<io::data> d;
     // The first is null.
     stream.read(d);
@@ -152,9 +156,8 @@ void test_invalid_checksum() {
     packet.prepend(42);
     append_empty_valid_event(packet);
     misc::shared_ptr<from_memory> memory_stream(new from_memory(packet));
-    bbdo::stream stream;
-    stream.set_coarse(true);
-    stream.set_substream(memory_stream);
+    bbdo::stream stream(true, false);
+    stream.read_from(memory_stream);
     misc::shared_ptr<io::data> d;
     stream.read(d);
     if (d.isNull() || d->type() != extcmd::command_request::static_type())
