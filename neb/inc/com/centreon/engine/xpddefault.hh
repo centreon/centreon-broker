@@ -1,6 +1,6 @@
 /*
 ** Copyright 2001-2006 Ethan Galstad
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -21,28 +21,33 @@
 #ifndef CCE_XPDDEFAULT_HH
 #  define CCE_XPDDEFAULT_HH
 
-#  include "com/centreon/engine/objects.hh"
-
-#  define DEFAULT_HOST_PERFDATA_FILE_TEMPLATE "[HOSTPERFDATA]\t$TIMET$\t$HOSTNAME$\t$HOSTEXECUTIONTIME$\t$HOSTOUTPUT$\t$HOSTPERFDATA$"
-#  define DEFAULT_SERVICE_PERFDATA_FILE_TEMPLATE "[SERVICEPERFDATA]\t$TIMET$\t$HOSTNAME$\t$SERVICEDESC$\t$SERVICEEXECUTIONTIME$\t$SERVICELATENCY$\t$SERVICEOUTPUT$\t$SERVICEPERFDATA$"
+#  include "com/centreon/engine/macros/defines.hh"
+#  include "com/centreon/engine/objects/host.hh"
+#  include "com/centreon/engine/objects/service.hh"
 
 #  ifdef __cplusplus
 extern "C" {
 #  endif // C++
 
-int xpddefault_initialize_performance_data(char* config_file);
-int xpddefault_cleanup_performance_data(char* config_file);
-int xpddefault_grab_config_info(char* config_file);
-int xpddefault_grab_config_directives(char* input);
+int xpddefault_initialize_performance_data();
+int xpddefault_cleanup_performance_data();
 
 int xpddefault_update_service_performance_data(service* svc);
 int xpddefault_update_host_performance_data(host* hst);
 
-int xpddefault_run_service_performance_data_command(nagios_macros* mac, service* svc);
-int xpddefault_run_host_performance_data_command(nagios_macros* mac, host* hst);
+int xpddefault_run_service_performance_data_command(
+      nagios_macros* mac,
+      service* svc);
+int xpddefault_run_host_performance_data_command(
+      nagios_macros* mac,
+      host* hst);
 
-int xpddefault_update_service_performance_data_file(nagios_macros* mac, service* svc);
-int xpddefault_update_host_performance_data_file(nagios_macros* mac, host* hst);
+int xpddefault_update_service_performance_data_file(
+      nagios_macros* mac,
+      service* svc);
+int xpddefault_update_host_performance_data_file(
+      nagios_macros* mac,
+      host* hst);
 
 void xpddefault_preprocess_file_templates(char* tmpl);
 

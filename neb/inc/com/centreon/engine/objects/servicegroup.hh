@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -20,36 +20,69 @@
 #ifndef CCE_OBJECTS_SERVICEGROUP_HH
 #  define CCE_OBJECTS_SERVICEGROUP_HH
 
-#  include "com/centreon/engine/objects.hh"
+/* Forward declaration. */
+struct host_struct;
+struct service_struct;
+struct servicesmember_struct;
 
-# ifdef __cplusplus
-#    include <QString>
-#    include <QVector>
+typedef struct                servicegroup_struct {
+  char*                       group_name;
+  char*                       alias;
+  servicesmember_struct*      members;
+  char*                       notes;
+  char*                       notes_url;
+  char*                       action_url;
+  struct servicegroup_struct* next;
+  struct servicegroup_struct* nexthash;
+}                             servicegroup;
+
+/* Other HOSTGROUP structure. */
+struct                        servicegroup_other_properties {
+  unsigned int                servicegroup_id;
+};
+
+#  ifdef __cplusplus
 extern "C" {
-#  endif // C++
+#  endif /* C++ */
 
-bool link_servicegroup(
-       servicegroup* obj,
-       service** members,
-       servicegroup** groups);
-void release_servicegroup(servicegroup const* obj);
+servicegroup* add_servicegroup(
+                char const* name,
+                char const* alias,
+                char const* notes,
+                char const* notes_url,
+                char const* action_url);
+int           is_host_member_of_servicegroup(
+                servicegroup_struct* group,
+                host_struct* hst);
+int           is_service_member_of_servicegroup(
+                servicegroup_struct* group,
+                service_struct* svc);
 
 #  ifdef __cplusplus
 }
 
-namespace       com {
-  namespace     centreon {
-    namespace   engine {
-      namespace objects {
-        void    link(
-                  servicegroup* obj,
-                  QVector<service*> const& members,
-                  QVector<servicegroup*> const& groups);
-        void    release(servicegroup const* obj);
-      }
-    }
-  }
-}
-#  endif // C++
+#    include <ostream>
+#    include <string>
+#    include "com/centreon/engine/namespace.hh"
+
+bool          operator==(
+                servicegroup const& obj1,
+                servicegroup const& obj2) throw ();
+bool          operator!=(
+                servicegroup const& obj1,
+                servicegroup const& obj2) throw ();
+std::ostream& operator<<(std::ostream& os, servicegroup const& obj);
+
+CCE_BEGIN()
+
+servicegroup& find_servicegroup(std::string const& name);
+bool          is_servicegroup_exist(std::string const& name) throw ();
+unsigned int  get_servicegroup_id(char const* name);
+
+CCE_END()
+
+#  endif /* C++ */
 
 #endif // !CCE_OBJECTS_SERVICEGROUP_HH
+
+

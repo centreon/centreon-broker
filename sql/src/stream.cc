@@ -443,7 +443,7 @@ void stream::_prepare() {
 
   id.clear();
   id["instance_id"] = false;
-  id["name"] = false;
+  id["hostgroup_id"] = false;
   _prepare_update<neb::host_group>(_host_group_update, id);
 
   id.clear();
@@ -483,7 +483,7 @@ void stream::_prepare() {
 
   id.clear();
   id["instance_id"] = false;
-  id["name"] = false;
+  id["servicegroup_id"] = false;
   _prepare_update<neb::service_group>(_service_group_update, id);
 
   id.clear();

@@ -1,6 +1,6 @@
 /*
 ** Copyright 1999-2010 Ethan Galstad
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -21,7 +21,13 @@
 #ifndef CCE_MACROS_DEFINES_HH_
 # define CCE_MACROS_DEFINES_HH_
 
-# include "com/centreon/engine/objects.hh"
+# include "com/centreon/engine/objects/contact.hh"
+# include "com/centreon/engine/objects/contactgroup.hh"
+# include "com/centreon/engine/objects/customvariablesmember.hh"
+# include "com/centreon/engine/objects/host.hh"
+# include "com/centreon/engine/objects/hostgroup.hh"
+# include "com/centreon/engine/objects/service.hh"
+# include "com/centreon/engine/objects/servicegroup.hh"
 
 // Length Limitations
 # define MAX_COMMAND_ARGUMENTS                  32   // maximum number of $ARGx$ macros
@@ -29,7 +35,7 @@
 // Macro Definitions
 # define MACRO_ENV_VAR_PREFIX                   "NAGIOS_"
 # define MAX_USER_MACROS                        256  // maximum number of $USERx$ macros
-# define MACRO_X_COUNT                          153  // size of macro_x[] array
+# define MACRO_X_COUNT                          155  // size of macro_x[] array
 
 # define MACRO_HOSTNAME                         0
 # define MACRO_HOSTALIAS                        1
@@ -184,6 +190,8 @@
 # define MACRO_LASTHOSTSTATEID                  150
 # define MACRO_LASTSERVICESTATE                 151
 # define MACRO_LASTSERVICESTATEID               152
+# define MACRO_HOSTPARENTS                      153
+# define MACRO_HOSTCHILDREN                     154
 
 // Macro Cleaning Options
 # define STRIP_ILLEGAL_MACRO_CHARS              1

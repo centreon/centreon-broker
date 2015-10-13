@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -20,31 +20,43 @@
 #ifndef CCE_OBJECTS_COMMAND_HH
 #  define CCE_OBJECTS_COMMAND_HH
 
-#  include "com/centreon/engine/objects.hh"
+typedef struct           command_struct {
+  char*                  name;
+  char*                  command_line;
+  struct command_struct* next;
+  struct command_struct* nexthash;
+}                        command;
 
 #  ifdef __cplusplus
 extern "C" {
-#  endif // C++
+#  endif /* C++ */
 
-bool link_command(command const* obj);
-void release_command(command const* obj);
+command* add_command(char const* name, char const* value);
 
 #  ifdef __cplusplus
 }
 
-namespace       com {
-  namespace     centreon {
-    namespace   engine {
-      namespace objects {
-        bool    add_commands_to_object(
-                  QVector<command*> const& commands,
-                  commandsmember** list_command);
-        void    link(command const* obj);
-        void    release(command const* obj);
-      }
-    }
-  }
-}
-#  endif // C++
+#    include <ostream>
+#    include <string>
+#    include "com/centreon/engine/namespace.hh"
+
+bool          operator==(
+                command const& obj1,
+                command const& obj2) throw ();
+bool          operator!=(
+                command const& obj1,
+                command const& obj2) throw ();
+std::ostream& operator<<(std::ostream& os, command const& obj);
+
+CCE_BEGIN()
+
+command&      find_command(std::string const& name);
+bool          is_command_exist(std::string const& name) throw ();
+
+CCE_END()
+
+#  endif /* C++ */
 
 #endif // !CCE_OBJECTS_COMMAND_HH
+
+

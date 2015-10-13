@@ -1,6 +1,6 @@
 /*
 ** Copyright 1999-2007 Ethan Galstad
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -22,7 +22,6 @@
 #  define CCE_LOGGING_HH
 
 #  include <time.h>
-#  include "com/centreon/engine/objects.hh"
 
 // State Logging Types
 #  define INITIAL_STATES             1
@@ -91,19 +90,35 @@ extern "C" {
 
 // Logging Functions
 void logit(int data_type, int display, char const* fmt, ...);
-int log_debug_info(int level, unsigned int verbosity,char const* fmt, ...);
+int log_debug_info(
+      int level,
+      unsigned int verbosity,
+      char const* fmt,
+      ...);
 
-int write_to_all_logs(char const* buffer, unsigned long data_type);               // writes a string to main log file and syslog facility
-int write_to_log(char const* buffer, unsigned long data_type, time_t* timestamp); // write a string to the main log file
-int write_to_syslog(char const* buffer, unsigned long data_type);                 // write a string to the syslog facility
-int log_service_event(service* svc);                                              // logs a service event
-int log_host_event(host* hst);                                                    // logs a host event
-int log_host_states(unsigned int type, time_t* timestamp);                        // logs initial/current host states
-int log_service_states(unsigned int type, time_t* timestamp);                     // logs initial/current service states
-int rotate_log_file(time_t rotation_time);                                        // rotates the main log file
-int write_log_file_info(time_t* timestamp);                                       // records log file/version info
-int open_debug_log(void);
-int close_debug_log(void);
+// writes a string to main log file and syslog facility
+int write_to_all_logs(char const* buffer, unsigned long data_type);
+// write a string to the main log file
+int write_to_log(
+      char const* buffer,
+      unsigned long data_type,
+      time_t* timestamp);
+// write a string to the syslog facility
+int write_to_syslog(char const* buffer, unsigned long data_type);
+// logs a service event
+int log_service_event(service const* svc);
+// logs a host event
+int log_host_event(host const* hst);
+// logs initial/current host states
+int log_host_states(unsigned int type, time_t* timestamp);
+// logs initial/current service states
+int log_service_states(unsigned int type, time_t* timestamp);
+// rotates the main log file
+int rotate_log_file(time_t rotation_time);
+// records log file/version info
+int write_log_file_info(time_t* timestamp);
+int open_debug_log();
+int close_debug_log();
 
 #  ifdef __cplusplus
 }

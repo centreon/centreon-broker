@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -21,51 +21,49 @@
 #  define CCE_ERROR_HH
 
 #  include <exception>
-#  include <QString>
 #  include <string>
+#  include "com/centreon/engine/namespace.hh"
 
-namespace            com {
-  namespace          centreon {
-    namespace        engine {
+CCE_BEGIN()
 
-      /**
-       *  @class error error.hh
-       *  @brief Base exception class.
-       *
-       *  Simple exception class containing an error message and a flag to
-       *  determine if the error that generated the exception was either fatal
-       *  or not.
-       */
-      class          error : public std::exception {
-       private:
-        mutable char _buffer[4096];
-        unsigned int _current;
-        bool         _fatal;
-        template     <typename T>
-        void         _insert_with_snprintf(T t, char const* format);
+/**
+ *  @class error error.hh
+ *  @brief Base exception class.
+ *
+ *  Simple exception class containing an error message and a flag to
+ *  determine if the error that generated the exception was either fatal
+ *  or not.
+ */
+class          error : public std::exception {
+public:
+               error() throw ();
+               error(
+                 char const* file,
+                 char const* function,
+                 int line) throw ();
+               error(error const& e) throw ();
+               ~error() throw ();
+  error&       operator=(error const& e) throw ();
+  error&       operator<<(char c) throw ();
+  error&       operator<<(char const* str) throw ();
+  error&       operator<<(int i) throw ();
+  error&       operator<<(unsigned int u) throw ();
+  error&       operator<<(long l) throw ();
+  error&       operator<<(long long ll) throw ();
+  error&       operator<<(unsigned long long ull) throw ();
+  error&       operator<<(double d) throw ();
+  error&       operator<<(std::string const& str) throw ();
+  char const*  what() const throw ();
 
-       public:
-                     error() throw();
-                     error(char const* file, char const* function, int line) throw();
-                     error(error const& e) throw ();
-                     ~error() throw ();
-        error&       operator=(error const& e) throw ();
-        error&       operator<<(char c) throw ();
-        error&       operator<<(char const* str) throw ();
-        error&       operator<<(int i) throw ();
-        error&       operator<<(unsigned int u) throw ();
-        error&       operator<<(long l) throw ();
-        error&       operator<<(long long ll) throw ();
-        error&       operator<<(unsigned long long ull) throw ();
-        error&       operator<<(std::string const& str) throw ();
-        error&       operator<<(QString const& str) throw ();
-        bool         is_fatal() const throw ();
-        void         set_fatal(bool fatal) throw ();
-        char const*  what() const throw ();
-      };
-    }
-  }
-}
+private:
+  template     <typename T>
+  void         _insert_with_snprintf(T t, char const* format);
+
+  mutable char _buffer[4096];
+  unsigned int _current;
+};
+
+CCE_END()
 
 #  ifdef NDEBUG
 #    define engine_error() com::centreon::engine::error()

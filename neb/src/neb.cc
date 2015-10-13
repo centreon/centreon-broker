@@ -36,7 +36,7 @@
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/monitoring_logger.hh"
 #include "com/centreon/engine/common.hh"
-#include "com/centreon/engine/events.hh"
+#include "com/centreon/engine/events/defines.hh"
 #include "com/centreon/engine/globals.hh"
 #include "com/centreon/engine/nebcallbacks.hh"
 
@@ -207,20 +207,20 @@ extern "C" {
         if (utf8_codec)
           QTextCodec::setCodecForCStrings(utf8_codec);
         else
-          logging::error(logging::high)
+          broker::logging::error(broker::logging::high)
             << "core: could not find UTF-8 codec, strings will be "
                "interpreted using the current locale";
       }
       // Qt already loaded.
       else
-        logging::info(logging::high)
+        broker::logging::info(broker::logging::high)
           << "core: Qt was already loaded";
 
       // Reset locale.
       setlocale(LC_NUMERIC, "C");
 
       // Disable timestamp printing in logs (cause starvation when forking).
-      logging::file::with_timestamp(false);
+      broker::logging::file::with_timestamp(false);
 
       // Default logging object.
       neb::monitoring_logger monlog;
@@ -239,19 +239,19 @@ extern "C" {
             debug = false;
 
           // Add log.
-          logging::manager::instance().log_on(
+          broker::logging::manager::instance().log_on(
                                          monlog,
                                          (debug
-                                          ? logging::config_type
-                                          | logging::debug_type
-                                          | logging::error_type
-                                          | logging::info_type
-                                          : logging::config_type
-                                          | logging::error_type
-                                          | logging::info_type),
+                                          ? broker::logging::config_type
+                                          | broker::logging::debug_type
+                                          | broker::logging::error_type
+                                          | broker::logging::info_type
+                                          : broker::logging::config_type
+                                          | broker::logging::error_type
+                                          | broker::logging::info_type),
                                          (debug ?
-                                          logging::low
-                                          : logging::high));
+                                          broker::logging::low
+                                          : broker::logging::high));
         }
 
         // Set configuration file.
@@ -263,7 +263,7 @@ extern "C" {
           neb::gl_configuration_file = args;
         }
         else
-          throw (exceptions::msg()
+          throw (broker::exceptions::msg()
                  << "main: no configuration file provided");
 
         // Try configuration parsing.
@@ -275,32 +275,32 @@ extern "C" {
         broker::config::applier::logger::instance().apply(s.loggers());
 
         // Remove monitoring log.
-        logging::manager::instance().log_on(monlog, 0);
+        broker::logging::manager::instance().log_on(monlog, 0);
       }
       catch (std::exception const& e) {
-        logging::error(logging::high) << e.what();
-        logging::manager::instance().log_on(monlog, 0);
+        broker::logging::error(broker::logging::high) << e.what();
+        broker::logging::manager::instance().log_on(monlog, 0);
         return (-1);
       }
       catch (...) {
-        logging::error(logging::high)
+        broker::logging::error(broker::logging::high)
           << "main: configuration file parsing failed";
-        logging::manager::instance().log_on(monlog, 0);
+        broker::logging::manager::instance().log_on(monlog, 0);
         return (-1);
       }
 
       // Remove old monitoring object.
-      logging::manager::instance().log_on(monlog, 0);
+      broker::logging::manager::instance().log_on(monlog, 0);
 
       // Register process and log callback.
       neb::gl_registered_callbacks.push_back(
-             misc::shared_ptr<neb::callback>(
+             broker::misc::shared_ptr<neb::callback>(
                new neb::callback(
                           NEBCALLBACK_PROCESS_DATA,
                           neb::gl_mod_handle,
                           &neb::callback_process)));
       neb::gl_registered_callbacks.push_back(
-             misc::shared_ptr<neb::callback>(
+             broker::misc::shared_ptr<neb::callback>(
                new neb::callback(
                           NEBCALLBACK_LOG_DATA,
                           neb::gl_mod_handle,
@@ -327,13 +327,13 @@ extern "C" {
       }
     }
     catch (std::exception const& e) {
-      logging::error(logging::high)
+      broker::logging::error(broker::logging::high)
         << "main: cbmod loading failed: " << e.what();
       nebmodule_deinit(0, 0);
       return (-1);
     }
     catch (...) {
-      logging::error(logging::high)
+      broker::logging::error(broker::logging::high)
         << "main: cbmod loading failed due to an unknown exception";
       nebmodule_deinit(0, 0);
       return (-1);

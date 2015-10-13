@@ -1,6 +1,6 @@
 /*
 ** Copyright 2002-2006 Ethan Galstad
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -51,8 +51,8 @@ int neb_unload_module(void* mod, int flags, int reason);
 
 // Callback Functions
 int neb_make_callbacks(int callback_type, void* data);
-int neb_init_callback_list(void);
-int neb_free_callback_list(void);
+int neb_init_callback_list();
+int neb_free_callback_list();
 
 #  ifdef __cplusplus
 }

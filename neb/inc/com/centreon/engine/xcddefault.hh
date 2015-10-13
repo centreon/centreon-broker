@@ -1,6 +1,6 @@
 /*
 ** Copyright 2000-2006 Ethan Galstad
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -27,11 +27,31 @@
 extern "C" {
 #  endif // C++
 
-int xcddefault_initialize_comment_data(char const* main_config_file);
-int xcddefault_cleanup_comment_data(char const* main_config_file);
+int xcddefault_initialize_comment_data();
 int xcddefault_save_comment_data();
-int xcddefault_add_new_host_comment(int entry_type, char const* host_name, time_t entry_time, char const* author_name, char const* comment_data, int persistent, int source, int expires, time_t expire_time, unsigned long* comment_id);
-int xcddefault_add_new_service_comment(int entry_type, char const* host_name, char const* svc_description, time_t entry_time, char const* author_name, char const* comment_data, int persistent, int source, int expires, time_t expire_time, unsigned long* comment_id);
+int xcddefault_add_new_host_comment(
+      int entry_type,
+      char const* host_name,
+      time_t entry_time,
+      char const* author_name,
+      char const* comment_data,
+      int persistent,
+      int source,
+      int expires,
+      time_t expire_time,
+      unsigned long* comment_id);
+int xcddefault_add_new_service_comment(
+      int entry_type,
+      char const* host_name,
+      char const* svc_description,
+      time_t entry_time,
+      char const* author_name,
+      char const* comment_data,
+      int persistent,
+      int source,
+      int expires,
+      time_t expire_time,
+      unsigned long* comment_id);
 int xcddefault_delete_host_comment(unsigned long comment_id);
 int xcddefault_delete_service_comment(unsigned long comment_id);
 

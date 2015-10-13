@@ -2,7 +2,7 @@
 ** Copyright 2007-2008 Ethan Galstad
 ** Copyright 2007,2010 Andreas Ericsson
 ** Copyright 2010      Max Schubert
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -22,6 +22,13 @@
 
 #ifndef CCE_EVENTS_SCHED_INFO_HH
 #  define CCE_EVENTS_SCHED_INFO_HH
+
+#  include <time.h>
+
+// Forward declaration.
+struct host_struct;
+struct service_struct;
+struct timed_event_struct;
 
 typedef struct  sched_info_struct {
   int           total_services;
@@ -47,5 +54,27 @@ typedef struct  sched_info_struct {
   time_t        first_host_check;
   time_t        last_host_check;
 }               sched_info;
+
+#  ifdef __cplusplus
+extern "C" {
+#  endif /* C++ */
+
+void adjust_check_scheduling();
+void display_scheduling_info();
+
+#  ifdef __cplusplus
+}
+
+#    include <ostream>
+
+bool          operator==(
+                sched_info const& obj1,
+                sched_info const& obj2) throw ();
+bool          operator!=(
+                sched_info const& obj1,
+                sched_info const& obj2) throw ();
+std::ostream& operator<<(std::ostream& os, sched_info const& obj);
+
+#  endif /* C++ */
 
 #endif // !CCE_EVENTS_SCHED_INFO_HH

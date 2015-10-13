@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2014 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -20,38 +20,65 @@
 #ifndef CCE_OBJECTS_SERVICEESCALATION_HH
 #  define CCE_OBJECTS_SERVICEESCALATION_HH
 
-#  include "com/centreon/engine/objects.hh"
+/* Forward declaration. */
+struct contactgroupsmember_struct;
+struct contactsmember_struct;
+struct service_struct;
+struct timeperiod_struct;
+
+typedef struct                     serviceescalation_struct {
+  char*                            host_name;
+  char*                            description;
+  int                              first_notification;
+  int                              last_notification;
+  double                           notification_interval;
+  char*                            escalation_period;
+  int                              escalate_on_recovery;
+  int                              escalate_on_warning;
+  int                              escalate_on_unknown;
+  int                              escalate_on_critical;
+  contactgroupsmember_struct*      contact_groups;
+  contactsmember_struct*           contacts;
+  service_struct*                  service_ptr;
+  timeperiod_struct*               escalation_period_ptr;
+  struct serviceescalation_struct* next;
+  struct serviceescalation_struct* nexthash;
+}                                  serviceescalation;
 
 #  ifdef __cplusplus
-#    include <QVector>
-
 extern "C" {
-#  endif // C++
+#  endif /* C++ */
 
-bool link_serviceescalation(
-       serviceescalation* obj,
-       contact** contacts,
-       contactgroup** contactgroups,
-       timeperiod* escalation_period);
-void release_serviceescalation(serviceescalation const* obj);
+serviceescalation* add_service_escalation(
+                     char const* host_name,
+                     char const* description,
+                     int first_notification,
+                     int last_notification,
+                     double notification_interval,
+                     char const* escalation_period,
+                     int escalate_on_warning,
+                     int escalate_on_unknown,
+                     int escalate_on_critical,
+                     int escalate_on_recovery);
 
 #  ifdef __cplusplus
 }
 
-namespace       com {
-  namespace     centreon {
-    namespace   engine {
-      namespace objects {
-        void    link(
-                  serviceescalation* obj,
-                  QVector<contact*> const& contacts = QVector<contact*>(),
-                  QVector<contactgroup*> const& contactgroups = QVector<contactgroup*>(),
-                  timeperiod* escalation_period = NULL);
-        void    release(serviceescalation const* obj);
-      }
-    }
-  }
-}
-#  endif // C++
+#    include <ostream>
+
+bool          operator==(
+                serviceescalation const& obj1,
+                serviceescalation const& obj2) throw ();
+bool          operator!=(
+                serviceescalation const& obj1,
+                serviceescalation const& obj2) throw ();
+bool          operator<(
+                serviceescalation const& obj1,
+                serviceescalation const& obj2) throw ();
+std::ostream& operator<<(
+                std::ostream& os,
+                serviceescalation const& obj);
+
+#  endif /* C++ */
 
 #endif // !CCE_OBJECTS_SERVICEESCALATION_HH

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -20,26 +20,61 @@
 #ifndef CCE_OBJECTS_CONTACTSMEMBER_HH
 #  define CCE_OBJECTS_CONTACTSMEMBER_HH
 
-#  include "com/centreon/engine/objects.hh"
+/* Forward declaration. */
+struct contact_struct;
+struct contactgroup_struct;
+struct host_struct;
+struct hostescalation_struct;
+struct service_struct;
+struct serviceescalation_struct;
+
+typedef struct                  contactsmember_struct {
+  char*                         contact_name;
+  contact_struct*               contact_ptr;
+  struct contactsmember_struct* next;
+}                               contactsmember;
 
 #  ifdef __cplusplus
 extern "C" {
-#  endif // C++
+#  endif /* C++ */
 
-contactsmember const* release_contactsmember(contactsmember const* obj);
+contactsmember* add_contact_to_contactgroup(
+                  contactgroup_struct* grp,
+                  char const* contact_name);
+contactsmember* add_contact_to_host(
+                  host_struct* hst,
+                  char const* contact_name);
+contactsmember* add_contact_to_host_escalation(
+                  hostescalation_struct* he,
+                  char const* contact_name);
+contactsmember* add_contact_to_object(
+                  contactsmember** object_ptr,
+                  char const* contact_name);
+contactsmember* add_contact_to_service(
+                  service_struct* svc,
+                  char const* contact_name);
+contactsmember* add_contact_to_serviceescalation(
+                  serviceescalation_struct* se,
+                  char const* contact_name);
 
 #  ifdef __cplusplus
 }
 
-namespace                     com {
-  namespace                   centreon {
-    namespace                 engine {
-      namespace               objects {
-        contactsmember const* release(contactsmember const* obj);
-      }
-    }
-  }
-}
-#  endif // C++
+#    include <ostream>
+
+bool          operator==(
+                contactsmember const& obj1,
+                contactsmember const& obj2) throw ();
+bool          operator!=(
+                contactsmember const& obj1,
+                contactsmember const& obj2) throw ();
+bool          operator<(
+                contactsmember const& obj1,
+                contactsmember const& obj2) throw ();
+std::ostream& operator<<(std::ostream& os, contactsmember const& obj);
+
+#  endif /* C++ */
 
 #endif // !CCE_OBJECTS_CONTACTSMEMBER_HH
+
+

@@ -70,13 +70,6 @@ namespace neb {
   extern unsigned int instance_id;
   extern QString      instance_name;
 
-  // List of host IDs.
-  extern umap<std::string, int> gl_hosts;
-
-  // List of service IDs.
-  extern std::map<std::pair<std::string, std::string>, std::pair<int, int> >
-    gl_services;
-
   // Sender object.
   extern multiplexing::publisher gl_publisher;
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -20,26 +20,63 @@
 #ifndef CCE_OBJECTS_DATERANGE_HH
 #  define CCE_OBJECTS_DATERANGE_HH
 
-#  include "com/centreon/engine/objects.hh"
+/* Forward declaration. */
+struct timeperiod_struct;
+struct timerange_struct;
+
+typedef struct             daterange_struct {
+  int                      type;
+  int                      syear;        // Start year.
+  int                      smon;         // Start month.
+  int                      smday;        // Start day of month (may 3rd, last day in feb).
+  int                      swday;        // Start day of week (thursday).
+  int                      swday_offset; // Start weekday offset (3rd thursday, last monday in jan).
+  int                      eyear;
+  int                      emon;
+  int                      emday;
+  int                      ewday;
+  int                      ewday_offset;
+  int                      skip_interval;
+  timerange_struct*        times;
+  struct daterange_struct* next;
+}                          daterange;
 
 #  ifdef __cplusplus
 extern "C" {
-#  endif // C++
+#  endif /* C++ */
 
-void release_daterange(daterange const* obj);
+daterange* add_exception_to_timeperiod(
+             timeperiod_struct* period,
+             int type,
+             int syear,
+             int smon,
+             int smday,
+             int swday,
+             int swday_offset,
+             int eyear,
+             int emon,
+             int emday,
+             int ewday,
+             int ewday_offset,
+             int skip_interval);
 
 #  ifdef __cplusplus
 }
 
-namespace       com {
-  namespace     centreon {
-    namespace   engine {
-      namespace objects {
-        void    release(daterange const* obj);
-      }
-    }
-  }
-}
-#  endif // C++
+#    include <ostream>
+
+bool               operator==(
+                     daterange const& obj1,
+                     daterange const& obj2) throw ();
+bool               operator!=(
+                     daterange const& obj1,
+                     daterange const& obj2) throw ();
+std::ostream&      operator<<(std::ostream& os, daterange const& obj);
+std::string const& get_month_name(unsigned int index);
+std::string const& get_weekday_name(unsigned int index);
+
+#  endif /* C++ */
 
 #endif // !CCE_OBJECTS_DATERANGE_HH
+
+

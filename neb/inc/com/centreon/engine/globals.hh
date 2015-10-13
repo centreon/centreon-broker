@@ -1,7 +1,7 @@
 /*
-** Copyright 1999-2009 Ethan Galstad
-** Copyright 2009-2010 Nagios Core Development Team and Community Contributors
-** Copyright 2011-2012 Merethis
+** Copyright 1999-2009      Ethan Galstad
+** Copyright 2009-2010      Nagios Core Development Team and Community Contributors
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -22,29 +22,32 @@
 #ifndef CCE_GLOBALS_HH
 #  define CCE_GLOBALS_HH
 
-#  include <QHash>
-#  include <QPair>
-#  include <QString>
+#  include <map>
+#  include <string>
 #  include <stdio.h>
 #  include "com/centreon/engine/checks.hh"
 #  include "com/centreon/engine/circular_buffer.hh"
-#  include "com/centreon/engine/comments.hh"
 #  include "com/centreon/engine/configuration/state.hh"
-#  include "com/centreon/engine/downtime.hh"
-#  include "com/centreon/engine/events.hh"
+#  include "com/centreon/engine/events/hash_timed_event.hh"
 #  include "com/centreon/engine/events/sched_info.hh"
-#  include "com/centreon/engine/hash_timed_event.hh"
+#  include "com/centreon/engine/events/timed_event.hh"
 #  include "com/centreon/engine/nebmods.hh"
 #  include "com/centreon/engine/notifications.hh"
 #  include "com/centreon/engine/objects.hh"
-#  include "com/centreon/engine/skiplist.hh"
 #  include "com/centreon/engine/utils.hh"
 
 #  ifdef __cplusplus
 extern "C" {
 #  endif /* C++ */
 
-extern com::centreon::engine::configuration::state config;
+
+extern int                       config_errors;
+extern int                       config_warnings;
+
+extern unsigned long             max_check_result_file_age;
+extern char*                     check_result_path;
+
+extern com::centreon::engine::configuration::state* config;
 extern char*                     config_file;
 
 extern command*                  global_host_event_handler_ptr;
@@ -56,7 +59,7 @@ extern command*                  ochp_command_ptr;
 extern unsigned long             logging_options;
 extern unsigned long             syslog_options;
 
-extern com::centreon::engine::hash_timed_event quick_timed_event;
+extern com::centreon::engine::events::hash_timed_event quick_timed_event;
 
 extern time_t                    last_command_check;
 extern time_t                    last_command_status_update;
@@ -98,18 +101,21 @@ extern int                       embedded_perl_initialized;
 
 extern host*                     host_list;
 extern host*                     host_list_tail;
-extern QHash<QString, host_other_properties> host_other_props;
+extern std::map<std::string, host_other_properties> host_other_props;
 extern service*                  service_list;
 extern service*                  service_list_tail;
-extern QHash<QPair<QString, QString>, service_other_properties> service_other_props;
+extern std::map<std::pair<std::string, std::string>, service_other_properties> service_other_props;
 extern contact*                  contact_list;
 extern contact*                  contact_list_tail;
+extern std::map<std::string, contact_other_properties> contact_other_props;
 extern contactgroup*             contactgroup_list;
 extern contactgroup*             contactgroup_list_tail;
 extern hostgroup*                hostgroup_list;
 extern hostgroup*                hostgroup_list_tail;
+extern std::map<std::string, hostgroup_other_properties> hostgroup_other_props;
 extern servicegroup*             servicegroup_list;
 extern servicegroup*             servicegroup_list_tail;
+extern std::map<std::string, servicegroup_other_properties> servicegroup_other_props;
 extern command*                  command_list;
 extern command*                  command_list_tail;
 extern timeperiod*               timeperiod_list;
@@ -122,8 +128,6 @@ extern hostdependency*           hostdependency_list;
 extern hostdependency*           hostdependency_list_tail;
 extern hostescalation*           hostescalation_list;
 extern hostescalation*           hostescalation_list_tail;
-
-extern skiplist*                 object_skiplists[];
 
 extern int                       __nagios_object_structure_version;
 
@@ -207,8 +211,6 @@ extern unsigned int enable_predictive_host_dependency_checks;
 extern unsigned long cached_service_check_horizon;
 extern unsigned int enable_predictive_service_dependency_checks;
 extern unsigned int soft_state_dependencies;
-extern unsigned int log_rotation_method;
-extern char* log_archive_path;
 extern unsigned int enable_event_handlers;
 extern unsigned int enable_notifications;
 extern unsigned int execute_service_checks;
@@ -248,7 +250,6 @@ extern float low_host_flap_threshold;
 extern float high_host_flap_threshold;
 extern unsigned int date_format;
 extern char* use_timezone;
-extern char* p1_file;
 extern unsigned long event_broker_options;
 extern char* illegal_object_chars;
 extern char* illegal_output_chars;
@@ -256,7 +257,6 @@ extern unsigned int use_regexp_matches;
 extern unsigned int use_true_regexp_matching;
 extern unsigned int use_large_installation_tweaks;
 extern unsigned int enable_environment_macros;
-extern unsigned int free_child_process_memory;
 extern int external_command_buffer_slots;
 /* auth_file; */
 

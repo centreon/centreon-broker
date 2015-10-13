@@ -1125,6 +1125,10 @@ static mapped_data<host_group> const host_group_mapping[] = {
     &host_group::notes_url,
     NDO_DATA_NOTESURL,
     "notes_url"),
+  mapped_data<host_group>(
+    &host_group::id,
+    0,
+    "hostgroup_id"),
   mapped_data<host_group>()
 };
 
@@ -2273,6 +2277,10 @@ static mapped_data<service_group> const service_group_mapping[] = {
     &service_group::notes_url,
     NDO_DATA_NOTESURL,
     "notes_url"),
+  mapped_data<service_group>(
+    &service_group::id,
+    0,
+    "servicegroup_id"),
   mapped_data<service_group>()
 };
 

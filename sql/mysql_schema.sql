@@ -199,7 +199,7 @@ CREATE TABLE hosts (
 -- Host groups.
 --
 CREATE TABLE hostgroups (
-  hostgroup_id int NOT NULL auto_increment,
+  hostgroup_id int NOT NULL,
   instance_id int NOT NULL,
   name varchar(255) NOT NULL,
 
@@ -209,8 +209,7 @@ CREATE TABLE hostgroups (
   notes_url varchar(160) default NULL,
   enabled bool NOT NULL default true,
 
-  PRIMARY KEY (hostgroup_id),
-  UNIQUE (name, instance_id),
+  UNIQUE (hostgroup_id, instance_id),
   FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -387,7 +386,7 @@ CREATE TABLE servicegroups (
   notes_url varchar(160) default NULL,
   enabled bool NOT NULL default true,
 
-  PRIMARY KEY (servicegroup_id),
+  UNIQUE (servicegroup_id, instance_id),
   FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;

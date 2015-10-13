@@ -22,6 +22,8 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/set_log_data.hh"
+#include "com/centreon/engine/objects/host.hh"
+#include "com/centreon/engine/objects/service.hh"
 
 using namespace com::centreon::broker;
 
@@ -219,17 +221,10 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
   free(datadup);
 
   // Set host and service IDs.
-  umap<std::string, int>::const_iterator host_it;
-  std::map<std::pair<std::string, std::string>, std::pair<int, int> >::const_iterator service_it;
-  host_it = neb::gl_hosts.find(le.host_name.toStdString());
-  if (host_it != neb::gl_hosts.end())
-    le.host_id = host_it->second;
-  service_it = neb::gl_services.find(std::make_pair(le.host_name.toStdString(),
-    le.service_description.toStdString()));
-  if (service_it != neb::gl_services.end()) {
-    le.host_id = service_it->second.first;
-    le.service_id = service_it->second.second;
-  }
+  le.host_id = engine::get_host_id(le.host_name.toStdString().c_str());
+  le.service_id = engine::get_service_id(
+                    le.host_name.toStdString().c_str(),
+                    le.service_description.toStdString().c_str());
 
   return ;
 }

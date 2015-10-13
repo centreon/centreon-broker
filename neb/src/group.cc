@@ -31,7 +31,7 @@ using namespace com::centreon::broker::neb;
  *
  *  Set all members to their default value (0, NULL or equivalent).
  */
-group::group() : enabled(true) {}
+group::group() : enabled(true), id(0) {}
 
 /**
  *  @brief Copy constructor.
@@ -88,7 +88,8 @@ void group::_internal_copy(group const& g) {
   action_url = g.action_url;
   alias = g.alias;
   enabled = g.enabled;
-    name = g.name;
+  id = g.id;
+  name = g.name;
   notes = g.notes;
   notes_url = g.notes_url;
   return ;

@@ -1,6 +1,6 @@
 /*
 ** Copyright 2000-2007 Ethan Galstad
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -21,19 +21,28 @@
 #ifndef CCE_STATUSDATA_HH
 #  define CCE_STATUSDATA_HH
 
-#  include "com/centreon/engine/objects.hh"
+#  include "com/centreon/engine/objects/contact.hh"
+#  include "com/centreon/engine/objects/host.hh"
+#  include "com/centreon/engine/objects/service.hh"
 
 #  ifdef __cplusplus
 extern "C" {
 #  endif // C++
 
-int initialize_status_data(char* config_file);                     // initializes status data at program start
-int update_all_status_data(void);                                  // updates all status data
-int cleanup_status_data(char* config_file,int delete_status_data); // cleans up status data at program termination
-int update_program_status(int aggregated_dump);                    // updates program status data
-int update_host_status(host* hst,int aggregated_dump);             // updates host status data
-int update_service_status(service* svc,int aggregated_dump);       // updates service status data
-int update_contact_status(contact* cntct,int aggregated_dump);     // updates contact status data
+// initializes status data at program start
+int initialize_status_data();
+// updates all status data
+int update_all_status_data();
+ // cleans up status data at program termination
+int cleanup_status_data(int delete_status_data);
+// updates program status data
+int update_program_status(int aggregated_dump);
+// updates host status data
+int update_host_status(host* hst,int aggregated_dump);
+// updates service status data
+int update_service_status(service* svc,int aggregated_dump);
+// updates contact status data
+int update_contact_status(contact* cntct,int aggregated_dump);
 
 #  ifdef __cplusplus
 }

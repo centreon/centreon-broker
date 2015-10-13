@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Merethis
+** Copyright 2011-2013 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -20,39 +20,51 @@
 #ifndef CCE_OBJECTS_CONTACTGROUP_HH
 #  define CCE_OBJECTS_CONTACTGROUP_HH
 
-#  include "com/centreon/engine/objects.hh"
+/* Forward declaration. */
+struct contact_struct;
+struct contactsmember_struct;
+
+typedef struct                contactgroup_struct {
+  char*                       group_name;
+  char*                       alias;
+  contactsmember_struct*      members;
+  struct contactgroup_struct* next;
+  struct contactgroup_struct* nexthash;
+}                             contactgroup;
 
 #  ifdef __cplusplus
-#    include <QString>
-#    include <QVector>
 extern "C" {
-#  endif // C++
+#  endif /* C++ */
 
-bool link_contactgroup(
-       contactgroup* obj,
-       contact** members,
-       contactgroup** groups);
-void release_contactgroup(contactgroup const* obj);
+contactgroup* add_contactgroup(char const* name, char const* alias);
+int           is_contact_member_of_contactgroup(
+                contactgroup_struct* group,
+                contact_struct* cntct);
 
 #  ifdef __cplusplus
 }
 
-namespace       com {
-  namespace     centreon {
-    namespace   engine {
-      namespace objects {
-        bool    add_contactgroups_to_object(
-                  QVector<contactgroup*> const& contactgroups,
-                  contactgroupsmember** list_contactgroup);
-        void    link(
-                  contactgroup* obj,
-                  QVector<contact*> const& members,
-                  QVector<contactgroup*> const& groups);
-        void    release(contactgroup const* obj);
-      }
-    }
-  }
-}
-#  endif // C++
+#    include <ostream>
+#    include <string>
+#    include "com/centreon/engine/namespace.hh"
+
+bool          operator==(
+                contactgroup const& obj1,
+                contactgroup const& obj2) throw ();
+bool          operator!=(
+                contactgroup const& obj1,
+                contactgroup const& obj2) throw ();
+std::ostream& operator<<(std::ostream& os, contactgroup const& obj);
+
+CCE_BEGIN()
+
+contactgroup& find_contactgroup(std::string const& name);
+bool          is_contactgroup_exist(std::string const& name) throw ();
+
+CCE_END()
+
+#  endif /* C++ */
 
 #endif // !CCE_OBJECTS_CONTACTGROUP_HH
+
+
