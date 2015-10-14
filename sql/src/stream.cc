@@ -336,6 +336,7 @@ void stream::_prepare() {
     std::string query(oss.str());
     _downtime_update.prepare(query, "SQL: could not prepare query");
   }
+
   {
     unique.clear();
     unique.insert("host_id");

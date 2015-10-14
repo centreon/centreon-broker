@@ -35,6 +35,11 @@ typedef struct             hostgroup_struct {
   struct hostgroup_struct* nexthash;
 }                          hostgroup;
 
+/* Other HOSTGROUP structure. */
+struct                      hostgroup_other_properties {
+  unsigned int              hostgroup_id;
+};
+
 #  ifdef __cplusplus
 extern "C" {
 #  endif /* C++ */
@@ -68,6 +73,7 @@ CCE_BEGIN()
 
 hostgroup&    find_hostgroup(std::string const& name);
 bool          is_hostgroup_exist(std::string const& name) throw ();
+unsigned int  get_hostgroup_id(char const* name);
 
 CCE_END()
 

@@ -16,22 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/neb/internal.hh"
-
-using namespace com::centreon::broker;
-
-/**************************************
-*                                     *
-*           Global Objects            *
-*                                     *
-**************************************/
-
-// Configuration file name.
-QString neb::gl_configuration_file;
-
-// Instance information.
-unsigned int neb::instance_id;
-QString      neb::instance_name;
-
-// Sender object.
-multiplexing::publisher neb::gl_publisher;
+// Dummy com::centreon::engine::get_host_id and
+// com::centreon::engine::get_service_id.
+// Used for binary linkage of the set_log_data unit test.
+namespace      com {
+  namespace    centreon {
+    namespace  engine {
+      unsigned int get_host_id(char const*) {
+        return (0);
+      }
+      unsigned int get_service_id(char const*, char const*) {
+        return (0);
+      }
+    }
+  }
+}

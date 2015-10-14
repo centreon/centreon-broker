@@ -162,6 +162,44 @@ CREATE TABLE rt_hosts (
 
 
 --
+<<<<<<< HEAD:sql/mysql_v3.sql
+=======
+-- Host groups.
+--
+CREATE TABLE hostgroups (
+  hostgroup_id int NOT NULL,
+  instance_id int NOT NULL,
+  name varchar(255) NOT NULL,
+
+  action_url varchar(160) default NULL,
+  alias varchar(255) default NULL,
+  notes varchar(160) default NULL,
+  notes_url varchar(160) default NULL,
+  enabled bool NOT NULL default true,
+
+  UNIQUE (hostgroup_id, instance_id),
+  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+
+--
+-- Relationships between hosts and host groups.
+--
+CREATE TABLE hosts_hostgroups (
+  host_id int NOT NULL,
+  hostgroup_id int NOT NULL,
+
+  UNIQUE (host_id, hostgroup_id),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (hostgroup_id) REFERENCES hostgroups (hostgroup_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+
+--
+>>>>>>> 13683bd... BBDO: add hostgroup_id, servicegroup_id, host_id and service_id property (from Engine 1.5).:sql/mysql_schema.sql
 -- Hosts dependencies.
 --
 CREATE TABLE rt_hosts_hosts_dependencies (
@@ -284,6 +322,45 @@ CREATE TABLE rt_services (
 
 
 --
+<<<<<<< HEAD:sql/mysql_v3.sql
+=======
+-- Groups of services.
+--
+CREATE TABLE servicegroups (
+  servicegroup_id int NOT NULL auto_increment,
+  instance_id int NOT NULL,
+  name varchar(255) NOT NULL,
+
+  action_url varchar(160) default NULL,
+  alias varchar(255) default NULL,
+  notes varchar(160) default NULL,
+  notes_url varchar(160) default NULL,
+  enabled bool NOT NULL default true,
+
+  UNIQUE (servicegroup_id, instance_id),
+  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+
+--
+-- Relationships between services and service groups.
+--
+CREATE TABLE services_servicegroups (
+  host_id int NOT NULL,
+  service_id int NOT NULL,
+  servicegroup_id int NOT NULL,
+
+  UNIQUE (host_id, service_id, servicegroup_id),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (servicegroup_id) REFERENCES servicegroups (servicegroup_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+
+--
+>>>>>>> 13683bd... BBDO: add hostgroup_id, servicegroup_id, host_id and service_id property (from Engine 1.5).:sql/mysql_schema.sql
 -- Services dependencies.
 --
 CREATE TABLE rt_services_services_dependencies (

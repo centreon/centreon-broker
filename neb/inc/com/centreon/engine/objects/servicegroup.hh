@@ -36,6 +36,11 @@ typedef struct                servicegroup_struct {
   struct servicegroup_struct* nexthash;
 }                             servicegroup;
 
+/* Other HOSTGROUP structure. */
+struct                        servicegroup_other_properties {
+  unsigned int                servicegroup_id;
+};
+
 #  ifdef __cplusplus
 extern "C" {
 #  endif /* C++ */
@@ -72,6 +77,7 @@ CCE_BEGIN()
 
 servicegroup& find_servicegroup(std::string const& name);
 bool          is_servicegroup_exist(std::string const& name) throw ();
+unsigned int  get_servicegroup_id(char const* name);
 
 CCE_END()
 
