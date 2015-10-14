@@ -706,6 +706,12 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   ## Real-time monitoring.
   ##
 
+  # Instances table (v2).
+  set(TEST_NAME "running_rtmonitoring_instances_v2")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/rtmonitoring/instances_v2.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+
   # XXX
   # # Monitoring to SQL.
   # set(TEST_NAME "running_monitoring_to_sql")
