@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Centreon
+** Copyright 2012,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 #include <fstream>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "test/engine_extcmd.hh"
+#include "test/centengine_extcmd.hh"
 
 using namespace com::centreon::broker;
 
@@ -33,21 +33,21 @@ using namespace com::centreon::broker;
 /**
  *  Default constructor.
  */
-engine_extcmd::engine_extcmd() {}
+centengine_extcmd::centengine_extcmd() {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-engine_extcmd::engine_extcmd(engine_extcmd const& other) {
+centengine_extcmd::centengine_extcmd(centengine_extcmd const& other) {
   _internal_copy(other);
 }
 
 /**
  *  Destructor.
  */
-engine_extcmd::~engine_extcmd() {
+centengine_extcmd::~centengine_extcmd() {
   ::remove(_file.c_str());
 }
 
@@ -58,7 +58,8 @@ engine_extcmd::~engine_extcmd() {
  *
  *  @return This object.
  */
-engine_extcmd& engine_extcmd::operator=(engine_extcmd const& other) {
+centengine_extcmd& centengine_extcmd::operator=(
+                     centengine_extcmd const& other) {
   if (this != &other)
     _internal_copy(other);
   return (*this);
@@ -69,7 +70,7 @@ engine_extcmd& engine_extcmd::operator=(engine_extcmd const& other) {
  *
  *  @param[in] query Query to execute.
  */
-void engine_extcmd::execute(std::string const& query) {
+void centengine_extcmd::execute(std::string const& query) {
   std::ofstream ofs;
   ofs.open(_file.c_str(), std::ios_base::out | std::ios_base::app);
   if (ofs.fail())
@@ -85,7 +86,7 @@ void engine_extcmd::execute(std::string const& query) {
  *
  *  @return Configuration entries.
  */
-std::string engine_extcmd::get_engine_config() const {
+std::string centengine_extcmd::get_engine_config() const {
   std::ostringstream config;
   config << "command_file=" << _file << "\n"
          << "command_check_interval=-1\n";
@@ -97,7 +98,7 @@ std::string engine_extcmd::get_engine_config() const {
  *
  *  @return External command file path.
  */
-std::string const& engine_extcmd::get_file() const throw () {
+std::string const& centengine_extcmd::get_file() const throw () {
   return (_file);
 }
 
@@ -106,7 +107,7 @@ std::string const& engine_extcmd::get_file() const throw () {
  *
  *  @param[in] file External command file path.
  */
-void engine_extcmd::set_file(std::string const& file) {
+void centengine_extcmd::set_file(std::string const& file) {
   _file = file;
   return ;
 }
@@ -122,7 +123,7 @@ void engine_extcmd::set_file(std::string const& file) {
  *
  *  @param[in] other  Object to copy.
  */
-void engine_extcmd::_internal_copy(engine_extcmd const& other) {
+void centengine_extcmd::_internal_copy(centengine_extcmd const& other) {
   _file = other._file;
   return ;
 }

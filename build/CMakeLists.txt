@@ -619,46 +619,47 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml.in")
   file(GENERATE OUTPUT "${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml"
     INPUT "${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml.in")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/dependencies_to_sql.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/dependencies_to_sql.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_transactions.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/sql_transactions.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/event_handlers_to_sql_1.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/event_handlers_to_sql_1.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/event_handlers_to_sql_2.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/event_handlers_to_sql_2.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/filtering_to_sql.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/filtering_to_sql.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_1.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_1.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_2.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_2.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_1.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_1.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_2.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_2.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_protocol_version.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_protocol_version.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_0.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_0.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_1.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_1.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_2.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_2.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_1.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_1.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_2.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_2.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/delete_graphs.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/delete_graphs.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
-  configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_cleanup.xml.in"
-    "${PROJECT_SOURCE_DIR}/test/cfg/sql_cleanup.xml")
+  # XXX
+  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml.in"
+  #   "${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml")
+  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/dependencies_to_sql.xml.in"
+  #   "${PROJECT_SOURCE_DIR}/test/cfg/dependencies_to_sql.xml")
+  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_transactions.xml.in"
+  #   "${PROJECT_SOURCE_DIR}/test/cfg/sql_transactions.xml")
+  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml.in"
+  #   "${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml")
+  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/event_handlers_to_sql_1.xml.in"
+  #   "${PROJECT_SOURCE_DIR}/test/cfg/event_handlers_to_sql_1.xml")
+  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/event_handlers_to_sql_2.xml.in"
+  #   "${PROJECT_SOURCE_DIR}/test/cfg/event_handlers_to_sql_2.xml")
+  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/filtering_to_sql.xml.in"
+  #   "${PROJECT_SOURCE_DIR}/test/cfg/filtering_to_sql.xml")
+  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_1.xml.in"
+  #   "${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_1.xml")
+  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_2.xml.in"
+  #   "${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_2.xml")
+  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_1.xml.in"
+  #   "${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_1.xml")
+  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_2.xml.in"
+  #   "${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_2.xml")
+  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_protocol_version.xml.in"
+  #   "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_protocol_version.xml")
+  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_0.xml.in"
+  #   "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_0.xml")
+  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_1.xml.in"
+  #   "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_1.xml")
+  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_2.xml.in"
+  #   "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_2.xml")
+  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_1.xml.in"
+  #   "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_1.xml")
+  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_2.xml.in"
+  #   "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_2.xml")
+  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/delete_graphs.xml.in"
+  #   "${PROJECT_SOURCE_DIR}/test/cfg/delete_graphs.xml")
+  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml.in"
+  #   "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
+  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_cleanup.xml.in"
+  #   "${PROJECT_SOURCE_DIR}/test/cfg/sql_cleanup.xml")
 
   # Test library.
   include_directories("${PROJECT_SOURCE_DIR}")
@@ -671,19 +672,21 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     # Sources.
     "${PROJECT_SOURCE_DIR}/test/broker_extcmd.cc"
     "${PROJECT_SOURCE_DIR}/test/cbd.cc"
-    "${PROJECT_SOURCE_DIR}/test/config.cc"
-    "${PROJECT_SOURCE_DIR}/test/engine.cc"
-    "${PROJECT_SOURCE_DIR}/test/engine_extcmd.cc"
-    "${PROJECT_SOURCE_DIR}/test/generate.cc"
+    "${PROJECT_SOURCE_DIR}/test/centengine.cc"
+    "${PROJECT_SOURCE_DIR}/test/centengine_config.cc"
+    "${PROJECT_SOURCE_DIR}/test/centengine_extcmd.cc"
+    "${PROJECT_SOURCE_DIR}/test/db.cc"
+    "${PROJECT_SOURCE_DIR}/test/file.cc"
     "${PROJECT_SOURCE_DIR}/test/misc.cc"
     "${PROJECT_SOURCE_DIR}/test/rrd_file.cc"
     # Headers.
     "${PROJECT_SOURCE_DIR}/test/broker_extcmd.hh"
     "${PROJECT_SOURCE_DIR}/test/cbd.hh"
-    "${PROJECT_SOURCE_DIR}/test/config.hh"
-    "${PROJECT_SOURCE_DIR}/test/engine.hh"
-    "${PROJECT_SOURCE_DIR}/test/engine_extcmd.hh"
-    "${PROJECT_SOURCE_DIR}/test/generate.hh"
+    "${PROJECT_SOURCE_DIR}/test/centengine.hh"
+    "${PROJECT_SOURCE_DIR}/test/centengine_config.hh"
+    "${PROJECT_SOURCE_DIR}/test/centengine_extcmd.hh"
+    "${PROJECT_SOURCE_DIR}/test/db.hh"
+    "${PROJECT_SOURCE_DIR}/test/file.hh"
     "${PROJECT_SOURCE_DIR}/test/misc.hh"
     "${PROJECT_SOURCE_DIR}/test/rrd_file.hh"
     )
@@ -699,316 +702,321 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/my_plugin_bam.cc")
   target_link_libraries("${MY_PLUGIN_BAM}" "${TEST_LIB}")
 
-  # Monitoring to SQL.
-  set(TEST_NAME "running_monitoring_to_sql")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/monitoring_to_sql.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Dependencies to SQL.
-  set(TEST_NAME "running_dependencies_to_sql")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/dependencies_to_sql.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # SQL transactions.
-  set(TEST_NAME "running_sql_transactions")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/sql_transactions.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Acknowledgements to SQL.
-  set(TEST_NAME "running_acknowledgements_to_sql")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/acknowledgements_to_sql.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Correlation to SQL.
-  set(TEST_NAME "running_correlation_to_sql")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/correlation_to_sql.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Custom variables to SQL.
-  set(TEST_NAME "running_custom_variables_to_sql")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/custom_variables_to_sql.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Downtimes to SQL.
-  set(TEST_NAME "running_downtimes_to_sql")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/downtimes_to_sql.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Event handlers to SQL.
-  set(TEST_NAME "running_event_handlers_to_sql")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/event_handlers_to_sql.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Filtering to SQL.
-  set(TEST_NAME "running_filtering_to_sql")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/filtering_to_sql.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Instance update when outdated.
-  set(TEST_NAME "running_sql_instance_update_outdated")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/sql_instance_update_outdated.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # SQL cleanup.
-  set(TEST_NAME "running_sql_cleanup")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/sql_cleanup.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # SQL id change.
-  set(TEST_NAME "running_sql_id_change")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/sql_id_change.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  ##
+  ## Real-time monitoring.
+  ##
 
-  # Protocols.
-  set(TEST_NAME "running_compression_to_sql")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/compression_to_sql.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Encryption.
-  set(TEST_NAME "running_tls_to_sql")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/tls_to_sql.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # BBDO protocol version.
-  set(TEST_NAME "running_bbdo_protocol_version")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/bbdo_protocol_version.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # BBDO supports multiple connections.
-  set(TEST_NAME "running_bbdo_multiple_connections")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/bbdo_multiple_connections.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # BBDO One Peer Retention Mode.
-  set(TEST_NAME "running_bbdo_one_peer_retention_mode")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/bbdo_one_peer_retention_mode.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # XXX
+  # # Monitoring to SQL.
+  # set(TEST_NAME "running_monitoring_to_sql")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/monitoring_to_sql.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Dependencies to SQL.
+  # set(TEST_NAME "running_dependencies_to_sql")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/dependencies_to_sql.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # SQL transactions.
+  # set(TEST_NAME "running_sql_transactions")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/sql_transactions.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Acknowledgements to SQL.
+  # set(TEST_NAME "running_acknowledgements_to_sql")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/acknowledgements_to_sql.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Correlation to SQL.
+  # set(TEST_NAME "running_correlation_to_sql")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/correlation_to_sql.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Custom variables to SQL.
+  # set(TEST_NAME "running_custom_variables_to_sql")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/custom_variables_to_sql.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Downtimes to SQL.
+  # set(TEST_NAME "running_downtimes_to_sql")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/downtimes_to_sql.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Event handlers to SQL.
+  # set(TEST_NAME "running_event_handlers_to_sql")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/event_handlers_to_sql.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Filtering to SQL.
+  # set(TEST_NAME "running_filtering_to_sql")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/filtering_to_sql.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Instance update when outdated.
+  # set(TEST_NAME "running_sql_instance_update_outdated")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/sql_instance_update_outdated.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # SQL cleanup.
+  # set(TEST_NAME "running_sql_cleanup")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/sql_cleanup.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # SQL id change.
+  # set(TEST_NAME "running_sql_id_change")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/sql_id_change.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Monitoring to RRD graphs.
-  set(TEST_NAME "running_monitoring_to_rrd")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/monitoring_to_rrd.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Graph rebuild
-  set(TEST_NAME "running_rebuild_graphs")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/rebuild_graphs.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Disable status graphs.
-  set(TEST_NAME "running_disable_status_graphs")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/disable_status_graphs.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Disable metrics graphs.
-  set(TEST_NAME "running_disable_metrics_graphs")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/disable_metrics_graphs.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Graph deletion.
-  set(TEST_NAME "running_delete_graphs")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/delete_graphs.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Protocols.
+  # set(TEST_NAME "running_compression_to_sql")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/compression_to_sql.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Encryption.
+  # set(TEST_NAME "running_tls_to_sql")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/tls_to_sql.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # BBDO protocol version.
+  # set(TEST_NAME "running_bbdo_protocol_version")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/bbdo_protocol_version.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # BBDO supports multiple connections.
+  # set(TEST_NAME "running_bbdo_multiple_connections")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/bbdo_multiple_connections.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # BBDO One Peer Retention Mode.
+  # set(TEST_NAME "running_bbdo_one_peer_retention_mode")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/bbdo_one_peer_retention_mode.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Failover to TCP.
-  set(TEST_NAME "running_failover_to_tcp")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/failover_to_tcp.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Monitoring to RRD graphs.
+  # set(TEST_NAME "running_monitoring_to_rrd")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/monitoring_to_rrd.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Graph rebuild
+  # set(TEST_NAME "running_rebuild_graphs")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/rebuild_graphs.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Disable status graphs.
+  # set(TEST_NAME "running_disable_status_graphs")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/disable_status_graphs.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Disable metrics graphs.
+  # set(TEST_NAME "running_disable_metrics_graphs")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/disable_metrics_graphs.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Graph deletion.
+  # set(TEST_NAME "running_delete_graphs")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/delete_graphs.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Secondary failover to file.
-  set(TEST_NAME "running_secondary_failovers_to_file")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/secondary_failovers_to_file.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Failover to TCP.
+  # set(TEST_NAME "running_failover_to_tcp")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/failover_to_tcp.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # RRD endpoint as failover.
-  set(TEST_NAME "running_rrd_as_failover")
-  add_test("${TEST_NAME}" "cbd" "-c" "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
+  # # Secondary failover to file.
+  # set(TEST_NAME "running_secondary_failovers_to_file")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/secondary_failovers_to_file.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Automatic retention.
-  set(TEST_NAME "running_automatic_retention")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/automatic_retention.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # RRD endpoint as failover.
+  # set(TEST_NAME "running_rrd_as_failover")
+  # add_test("${TEST_NAME}" "cbd" "-c" "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
 
-  # Statistics.
-  set(TEST_NAME "running_stats")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/stats.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Automatic retention.
+  # set(TEST_NAME "running_automatic_retention")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/automatic_retention.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Statistics events (internal metrics).
-  set(TEST_NAME "running_stats_events")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/stats_events.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Statistics.
+  # set(TEST_NAME "running_stats")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/stats.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # BAM engine.
-  set(TEST_NAME "running_bam")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/bam.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Statistics events (internal metrics).
+  # set(TEST_NAME "running_stats_events")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/stats_events.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Circular path in BA graph.
-  set(TEST_NAME "running_bam_circular")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/bam_circular.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # BAM engine.
+  # set(TEST_NAME "running_bam")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/bam.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # BAM dimension.
-  set(TEST_NAME "running_bam_dimension")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/bam_dimension.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Circular path in BA graph.
+  # set(TEST_NAME "running_bam_circular")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/bam_circular.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # BAM rebuild.
-  set(TEST_NAME "running_bam_rebuild")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/bam_rebuild.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # BAM dimension.
+  # set(TEST_NAME "running_bam_dimension")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/bam_dimension.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # BAM BI events autoclose.
-  set(TEST_NAME "running_bam_events_autoclose")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/bam_events_autoclose.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # BAM rebuild.
+  # set(TEST_NAME "running_bam_rebuild")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/bam_rebuild.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # BAM bool expression retention.
-  set(TEST_NAME "running_bam_boolexp_retention")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/bam_boolexp_retention.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # BAM BI events autoclose.
+  # set(TEST_NAME "running_bam_events_autoclose")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/bam_events_autoclose.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # BA and correlation.
-  set(TEST_NAME "running_bam_correlation")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/bam_correlation.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # BAM bool expression retention.
+  # set(TEST_NAME "running_bam_boolexp_retention")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/bam_boolexp_retention.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Meta-services.
-  set(TEST_NAME "running_meta_service")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/meta_service.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # BA and correlation.
+  # set(TEST_NAME "running_bam_correlation")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/bam_correlation.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Non-correlated notification.
-  set(TEST_NAME "running_notification_non_correlated")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/notification_non_correlated.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Meta-services.
+  # set(TEST_NAME "running_meta_service")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/meta_service.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Correlated notification.
-  set(TEST_NAME "running_notification_correlated")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/notification_correlated.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Non-correlated notification.
+  # set(TEST_NAME "running_notification_non_correlated")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/notification_non_correlated.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Notification write into file utility
-  add_executable("util_write_into_file"
-    "${PROJECT_SOURCE_DIR}/test/write_into_file.cc")
+  # # Correlated notification.
+  # set(TEST_NAME "running_notification_correlated")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/notification_correlated.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Notification.
-  set(TEST_NAME "running_notification")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/notification.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Notification write into file utility
+  # add_executable("util_write_into_file"
+  #   "${PROJECT_SOURCE_DIR}/test/write_into_file.cc")
 
-  # Influxdb
-  set(TEST_NAME "running_influxdb")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/influxdb.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIB})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Notification.
+  # set(TEST_NAME "running_notification")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/notification.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Graphite
-  set(TEST_NAME "running_graphite")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/graphite.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIB})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Influxdb
+  # set(TEST_NAME "running_influxdb")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/influxdb.cc")
+  # target_link_libraries("${TEST_NAME}" ${TEST_LIB})
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Dumper FIFO
-  set(TEST_NAME "running_fifo_dumper")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/fifo_dumper.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIB})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Graphite
+  # set(TEST_NAME "running_graphite")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/graphite.cc")
+  # target_link_libraries("${TEST_NAME}" ${TEST_LIB})
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Dumper DIR
-  set(TEST_NAME "running_directory_dumper")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/directory_dumper.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIB})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Dumper FIFO
+  # set(TEST_NAME "running_fifo_dumper")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/fifo_dumper.cc")
+  # target_link_libraries("${TEST_NAME}" ${TEST_LIB})
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # Database synchronization.
-  set(TEST_NAME "running_db_cfg")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/db_cfg.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIB})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
+  # # Dumper DIR
+  # set(TEST_NAME "running_directory_dumper")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/directory_dumper.cc")
+  # target_link_libraries("${TEST_NAME}" ${TEST_LIB})
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # RRD benchmark.
-  unset(QT_WRAPPED_SOURCES)
-  qt4_wrap_cpp(QT_WRAPPED_SOURCES
-    "${PROJECT_SOURCE_DIR}/test/bench_generate_rrd_mod.hh")
-  set(TEST_NAME "running_bench_generate_rrd_mod")
-  add_library("${TEST_NAME}" SHARED
-    "${PROJECT_SOURCE_DIR}/test/bench_generate_rrd_mod.cc"
-    ${QT_WRAPPED_SOURCES})
-  set(TEST_NAME "running_bench_generate_rrd")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/bench_generate_rrd.cc")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  # # Database synchronization.
+  # set(TEST_NAME "running_db_cfg")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/db_cfg.cc")
+  # target_link_libraries("${TEST_NAME}" ${TEST_LIB})
+  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # BBDO benchmark.
-  set(TEST_NAME "running_bench_bbdo")
-  add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/bench_bbdo.cc"
-    "${PROJECT_SOURCE_DIR}/test/bench_stream.cc"
-    "${PROJECT_SOURCE_DIR}/test/bench_stream.hh")
-  target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${BAM} ${NOTIFICATION} ${CORRELATION} ${NEB} ${STORAGE})
+  # # RRD benchmark.
+  # unset(QT_WRAPPED_SOURCES)
+  # qt4_wrap_cpp(QT_WRAPPED_SOURCES
+  #   "${PROJECT_SOURCE_DIR}/test/bench_generate_rrd_mod.hh")
+  # set(TEST_NAME "running_bench_generate_rrd_mod")
+  # add_library("${TEST_NAME}" SHARED
+  #   "${PROJECT_SOURCE_DIR}/test/bench_generate_rrd_mod.cc"
+  #   ${QT_WRAPPED_SOURCES})
+  # set(TEST_NAME "running_bench_generate_rrd")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/bench_generate_rrd.cc")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+
+  # # BBDO benchmark.
+  # set(TEST_NAME "running_bench_bbdo")
+  # add_executable("${TEST_NAME}"
+  #   "${PROJECT_SOURCE_DIR}/test/bench_bbdo.cc"
+  #   "${PROJECT_SOURCE_DIR}/test/bench_stream.cc"
+  #   "${PROJECT_SOURCE_DIR}/test/bench_stream.hh")
+  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${BAM} ${NOTIFICATION} ${CORRELATION} ${NEB} ${STORAGE})
 
   # Last file to configure, based on target paths.
   configure_file("${PROJECT_SOURCE_DIR}/test/install_paths.hh.in.in"
