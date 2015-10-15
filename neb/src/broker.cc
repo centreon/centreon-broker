@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -80,7 +80,8 @@ extern "C" {
                   "acknowledgement",
                   &neb::acknowledgement::operations,
                   neb::acknowledgement::entries,
-                  "rt_acknowledgements"));
+                  "rt_acknowledgements",
+                  "acknowledgements"));
         e.register_event(
             io::events::neb,
             neb::de_custom_variable,
@@ -88,7 +89,8 @@ extern "C" {
                   "custom_variable",
                   &neb::custom_variable::operations,
                   neb::custom_variable::entries,
-                  "rt_customvariables"));
+                  "rt_customvariables",
+                  "customvariables"));
         e.register_event(
             io::events::neb,
             neb::de_custom_variable_status,
@@ -96,7 +98,8 @@ extern "C" {
                   "custom_variable_status",
                   &neb::custom_variable_status::operations,
                   neb::custom_variable_status::entries,
-                  "rt_customvariables"));
+                  "rt_customvariables",
+                  "customvariables"));
         e.register_event(
             io::events::neb,
             neb::de_downtime,
@@ -104,7 +107,8 @@ extern "C" {
                   "downtime",
                   &neb::downtime::operations,
                   neb::downtime::entries,
-                  "rt_downtimes"));
+                  "rt_downtimes",
+                  "downtimes"));
         e.register_event(
             io::events::neb,
             neb::de_event_handler,
@@ -112,7 +116,8 @@ extern "C" {
                   "event_handler",
                   &neb::event_handler::operations,
                   neb::event_handler::entries,
-                  "rt_eventhandlers"));
+                  "rt_eventhandlers",
+                  "eventhandlers"));
         e.register_event(
             io::events::neb,
             neb::de_flapping_status,
@@ -120,7 +125,8 @@ extern "C" {
                   "flapping_status",
                   &neb::flapping_status::operations,
                   neb::flapping_status::entries,
-                  "rt_flappingstatuses"));
+                  "rt_flappingstatuses",
+                  "flappingstatuses"));
         e.register_event(
             io::events::neb,
             neb::de_host_check,
@@ -128,7 +134,8 @@ extern "C" {
                   "host_check",
                   &neb::host_check::operations,
                   neb::host_check::entries,
-                  "rt_hosts"));
+                  "rt_hosts",
+                  "hosts"));
         e.register_event(
             io::events::neb,
             neb::de_host_dependency,
@@ -136,7 +143,8 @@ extern "C" {
                   "host_dependency",
                   &neb::host_dependency::operations,
                   neb::host_dependency::entries,
-                  "rt_hosts_hosts_dependencies"));
+                  "rt_hosts_hosts_dependencies",
+                  "hosts_hosts_dependencies"));
         e.register_event(
             io::events::neb,
             neb::de_host,
@@ -144,7 +152,8 @@ extern "C" {
                   "host",
                   &neb::host::operations,
                   neb::host::entries,
-                  "rt_hosts"));
+                  "rt_hosts",
+                  "hosts"));
         e.register_event(
             io::events::neb,
             neb::de_host_parent,
@@ -152,7 +161,8 @@ extern "C" {
                   "host_parent",
                   &neb::host_parent::operations,
                   neb::host_parent::entries,
-                  "rt_hosts_hosts_parents"));
+                  "rt_hosts_hosts_parents",
+                  "hosts_hosts_parents"));
         e.register_event(
             io::events::neb,
             neb::de_host_status,
@@ -160,7 +170,8 @@ extern "C" {
                   "host_status",
                   &neb::host_status::operations,
                   neb::host_status::entries,
-                  "rt_hosts"));
+                  "rt_hosts",
+                  "hosts"));
         e.register_event(
             io::events::neb,
             neb::de_instance,
@@ -168,7 +179,8 @@ extern "C" {
                   "instance",
                   &neb::instance::operations,
                   neb::instance::entries,
-                  "rt_instances"));
+                  "rt_instances",
+                  "instances"));
         e.register_event(
             io::events::neb,
             neb::de_instance_status,
@@ -176,7 +188,8 @@ extern "C" {
                   "instance_status",
                   &neb::instance_status::operations,
                   neb::instance_status::entries,
-                  "rt_instances"));
+                  "rt_instances",
+                  "instances"));
         e.register_event(
             io::events::neb,
             neb::de_log_entry,
@@ -184,7 +197,8 @@ extern "C" {
                   "log_entry",
                   &neb::log_entry::operations,
                   neb::log_entry::entries,
-                  "log_logs"));
+                  "log_logs",
+                  "logs"));
         e.register_event(
             io::events::neb,
             neb::de_module,
@@ -192,7 +206,8 @@ extern "C" {
                   "module",
                   &neb::module::operations,
                   neb::module::entries,
-                  "rt_modules"));
+                  "rt_modules",
+                  "modules"));
         e.register_event(
             io::events::neb,
             neb::de_service_check,
@@ -200,7 +215,8 @@ extern "C" {
                   "service_check",
                   &neb::service_check::operations,
                   neb::service_check::entries,
-                  "rt_services"));
+                  "rt_services",
+                  "services"));
         e.register_event(
             io::events::neb,
             neb::de_service_dependency,
@@ -208,7 +224,8 @@ extern "C" {
                   "service_dependency",
                   &neb::service_dependency::operations,
                   neb::service_dependency::entries,
-                  "rt_services_services_dependencies"));
+                  "rt_services_services_dependencies",
+                  "services_services_dependencies"));
         e.register_event(
             io::events::neb,
             neb::de_service,
@@ -216,7 +233,8 @@ extern "C" {
                   "service",
                   &neb::service::operations,
                   neb::service::entries,
-                  "rt_services"));
+                  "rt_services",
+                  "services"));
         e.register_event(
             io::events::neb,
             neb::de_service_status,
@@ -224,7 +242,8 @@ extern "C" {
                   "service_status",
                   &neb::service_status::operations,
                   neb::service_status::entries,
-                  "rt_services"));
+                  "rt_services",
+                  "services"));
       }
 
       // Register neb layer.

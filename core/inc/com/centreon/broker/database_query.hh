@@ -62,6 +62,7 @@ public:
   void              prepare(
                       std::string const& query,
                       char const* error_msg = NULL);
+  bool              prepared() const;
   QVariant          value(int index);
 
 private:
@@ -71,6 +72,7 @@ private:
   database&         _db;
   QSqlQuery         _q;
   excluded_fields   _excluded;
+  bool              _prepared;
 };
 
 CCB_END()

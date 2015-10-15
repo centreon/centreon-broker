@@ -236,7 +236,7 @@ static void bind_uint_null_on_minus_one(
  *  @param[in] db  Database object.
  */
 database_query::database_query(database& db)
-  : _db(db), _q(db.get_qt_db()) {
+  : _db(db), _q(db.get_qt_db()), _prepared(false) {
   _q.setForwardOnly(true);
 }
 
@@ -495,7 +495,17 @@ void database_query::prepare(
     e << "could not prepare query: " << _q.lastError().text();
     throw (e);
   }
+  _prepared = true;
   return ;
+}
+
+/**
+ *  Check if query has been prepared.
+ *
+ *  @return True if query has been prepared.
+ */
+bool database_query::prepared() const {
+  return (_prepared);
 }
 
 /**

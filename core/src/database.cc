@@ -116,10 +116,16 @@ database::database(database_config const& db_cfg)
     // Check database structure.
     {
       QSqlQuery q(*_db);
-      if (q.exec("SELECT instance_id FROM instances LIMIT 1"))
+      if (q.exec("SELECT instance_id FROM instances LIMIT 1")) {
         _version = v2;
-      else
+        logging::info(logging::low)
+          << "core: database is using version 2 of Centreon schema";
+      }
+      else {
         _version = v3;
+        logging::info(logging::low)
+          << "core: database is using version 3 of Centreon schema";
+      }
     }
 
     // Initialize transaction.

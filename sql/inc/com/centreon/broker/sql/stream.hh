@@ -69,7 +69,6 @@ namespace          sql {
     void           _cache_create();
     void           _clean_tables(unsigned int instance_id);
     bool           _is_valid_poller(unsigned int poller_id);
-    void           _prepare();
     template <typename T>
     void           _prepare_select(
                      database_query& st,

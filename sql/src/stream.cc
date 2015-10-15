@@ -139,7 +139,7 @@ void stream::_clean_tables(unsigned int instance_id) {
   database_query q(_db);
 
   // Disable hosts and services.
-  {
+  try {
     std::ostringstream ss;
     ss << "UPDATE " << (db_v2 ? "hosts" : "rt_hosts") << " AS h"
           "  LEFT JOIN " << (db_v2 ? "services" : "rt_services")
@@ -147,13 +147,15 @@ void stream::_clean_tables(unsigned int instance_id) {
           "    ON h.host_id = s.host_id"
           "  SET h.enabled=0, s.enabled=0"
           "  WHERE h.instance_id=" << instance_id;
-    q.run_query(
-        ss.str(),
-        "SQL: could not clean hosts and services tables");
+    q.run_query(ss.str());
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium)
+      << "SQL: could not clean hosts and services tables: " << e.what();
   }
 
   // Remove host dependencies.
-  {
+  try {
     std::ostringstream ss;
     ss << "DELETE FROM " << (db_v2
                              ? "hosts_hosts_dependencies"
@@ -166,13 +168,16 @@ void stream::_clean_tables(unsigned int instance_id) {
           "      SELECT host_id"
           "        FROM " << (db_v2 ? "hosts" : "rt_hosts")
        << "        WHERE instance_id=" << instance_id << ")";
-    q.run_query(
-        ss.str(),
-        "SQL: could not clean host dependencies table");
+    q.run_query(ss.str());
+
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium)
+      << "SQL: could not clean host dependencies table: " << e.what();
   }
 
   // Remove host parents.
-  {
+  try {
     std::ostringstream ss;
     ss << "DELETE FROM " << (db_v2
                              ? "hosts_hosts_parents"
@@ -185,13 +190,15 @@ void stream::_clean_tables(unsigned int instance_id) {
           "      SELECT host_id"
           "      FROM " << (db_v2 ? "hosts" : "rt_hosts")
        << "      WHERE instance_id=" << instance_id << ")";
-    q.run_query(
-        ss.str(),
-        "SQL: could not clean host parents table");
+    q.run_query(ss.str());
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium)
+      << "SQL: could not clean host parents table: " << e.what();
   }
 
   // Remove service dependencies.
-  {
+  try {
     std::ostringstream ss;
     ss << "DELETE FROM "
        << (db_v2
@@ -213,21 +220,28 @@ void stream::_clean_tables(unsigned int instance_id) {
        << "            AS h"
           "            ON h.host_id=s.host_id"
           "        WHERE h.instance_id=" << instance_id << ")";
-    q.run_query(
-        ss.str(),
-        "SQL: could not clean service dependencies tables");
+    q.run_query(ss.str());
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium)
+      << "SQL: could not clean service dependencies tables: "
+      << e.what();
   }
 
   // Remove list of modules.
-  {
+  try {
     std::ostringstream ss;
     ss << "DELETE FROM " << (db_v2 ? "modules" : "rt_modules")
        << "  WHERE instance_id=" << instance_id;
-    q.run_query(ss.str(), "SQL: could not clean modules table");
+    q.run_query(ss.str());
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium)
+      << "SQL: could not clean modules table: " << e.what();
   }
 
   // Remove custom variables.
-  {
+  try {
     std::ostringstream ss;
     ss << "DELETE cv"
        << "  FROM " << (db_v2
@@ -237,9 +251,11 @@ void stream::_clean_tables(unsigned int instance_id) {
           "  INNER JOIN " << (db_v2 ? "hosts" : "rt_hosts") << " AS h"
           "    ON cv.host_id = h.host_id"
           "  WHERE h.instance_id=" << instance_id;
-    q.run_query(
-        ss.str(),
-        "SQL: could not clean custom variables table");
+    q.run_query(ss.str());
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium)
+      << "SQL: could not clean custom variables table: " << e.what();
   }
 
   return ;
@@ -269,265 +285,6 @@ bool stream::_is_valid_poller(unsigned int poller_id) {
 
   // Return whether poller is valid or not.
   return (!deleted);
-}
-
-/**
- *  Prepare queries.
- */
-void stream::_prepare() {
-  // Database schema version.
-  bool db_v2(_db.schema_version() == database::v2);
-
-  // Prepare queries.
-  database_query::excluded_fields excluded;
-  database_preparator::event_unique unique;
-  {
-    unique.clear();
-    unique.insert("entry_time");
-    unique.insert("host_id");
-    unique.insert("service_id");
-    database_preparator dbp(
-                          neb::acknowledgement::static_type(),
-                          unique);
-    dbp.prepare_insert(_acknowledgement_insert);
-    dbp.prepare_update(_acknowledgement_update);
-  }
-  {
-    unique.clear();
-    unique.insert("host_id");
-    unique.insert("name");
-    unique.insert("service_id");
-    database_preparator dbp(
-                          neb::custom_variable::static_type(),
-                          unique);
-    dbp.prepare_insert(_custom_variable_insert);
-    dbp.prepare_update(_custom_variable_update);
-    dbp.prepare_delete(_custom_variable_delete);
-  }
-  {
-    unique.clear();
-    unique.insert("host_id");
-    unique.insert("name");
-    unique.insert("service_id");
-    database_preparator dbp(
-                          neb::custom_variable_status::static_type(),
-                          unique);
-    dbp.prepare_update(_custom_variable_status_update);
-  }
-  {
-    database_preparator dbp(neb::downtime::static_type());
-    dbp.prepare_insert(_downtime_insert);
-  }
-  {
-    std::ostringstream oss;
-    oss << "UPDATE " << (db_v2 ? "downtimes" : "rt_downtimes")
-        << "  SET actual_end_time=GREATEST(COALESCE(actual_end_time, -1), :actual_end_time),"
-           "      actual_start_time=COALESCE(actual_start_time, :actual_start_time),"
-           "      author=:author, cancelled=:cancelled, comment_data=:comment_data,"
-           "      deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
-           "      fixed=:fixed, instance_id=:instance_id, internal_id=:internal_id,"
-           "      start_time=:start_time, started=:started, triggered_by=:triggered_by,"
-           "      type=:type"
-           "  WHERE entry_time=:entry_time"
-           "    AND host_id=:host_id"
-           "    AND is_recurring=:is_recurring"
-           "    AND recurring_timeperiod=:recurring_timeperiod"
-           "    AND COALESCE(service_id, -1)=COALESCE(:service_id, -1)";
-    std::string query(oss.str());
-    _downtime_update.prepare(query, "SQL: could not prepare query");
-  }
-
-  {
-    unique.clear();
-    unique.insert("host_id");
-    unique.insert("service_id");
-    unique.insert("start_time");
-    database_preparator dbp(
-                          neb::event_handler::static_type(),
-                          unique);
-    dbp.prepare_insert(_event_handler_insert);
-    dbp.prepare_update(_event_handler_update);
-  }
-  {
-    unique.clear();
-    unique.insert("host_id");
-    unique.insert("service_id");
-    unique.insert("event_time");
-    database_preparator dbp(
-                          neb::flapping_status::static_type(),
-                          unique);
-    dbp.prepare_insert(_flapping_status_insert);
-    dbp.prepare_update(_flapping_status_update);
-  }
-  {
-    unique.clear();
-    unique.insert("host_id");
-    database_preparator dbp(neb::host::static_type(), unique);
-    dbp.prepare_insert(_host_insert);
-    dbp.prepare_update(_host_update);
-  }
-  {
-    unique.clear();
-    unique.insert("host_id");
-    database_preparator dbp(neb::host_check::static_type(), unique);
-    dbp.prepare_update(_host_check_update);
-  }
-  {
-    unique.clear();
-    unique.insert("host_id");
-    unique.insert("dependent_host_id");
-    database_preparator dbp(
-                          neb::host_dependency::static_type(),
-                          unique);
-    dbp.prepare_insert(_host_dependency_insert);
-    dbp.prepare_update(_host_dependency_update);
-  }
-  {
-    database_preparator dbp(neb::host_parent::static_type());
-    dbp.prepare_insert(_host_parent_insert);
-  }
-  {
-    unique.clear();
-    unique.insert("host_id");
-    database_preparator dbp(neb::host_status::static_type(), unique);
-    dbp.prepare_update(_host_status_update);
-  }
-  {
-    unique.clear();
-    unique.insert("instance_id");
-    database_preparator dbp(neb::instance::static_type(), unique);
-    dbp.prepare_insert(_instance_insert);
-    dbp.prepare_update(_instance_update);
-  }
-  {
-    unique.clear();
-    unique.insert("instance_id");
-    database_preparator dbp(
-                          neb::instance_status::static_type(),
-                          unique);
-    dbp.prepare_update(_instance_status_update);
-  }
-  {
-    database_preparator dbp(neb::module::static_type());
-    dbp.prepare_insert(_module_insert);
-  }
-  {
-    unique.clear();
-    unique.insert("host_id");
-    unique.insert("service_id");
-    database_preparator dbp(neb::service::static_type(), unique);
-    dbp.prepare_insert(_service_insert);
-    dbp.prepare_update(_service_update);
-  }
-  {
-    unique.clear();
-    unique.insert("host_id");
-    unique.insert("service_id");
-    database_preparator dbp(neb::service_check::static_type(), unique);
-    dbp.prepare_update(_service_check_update);
-  }
-  {
-    unique.clear();
-    unique.insert("dependent_host_id");
-    unique.insert("dependent_service_id");
-    unique.insert("host_id");
-    unique.insert("service_id");
-    database_preparator dbp(
-                          neb::service_dependency::static_type(),
-                          unique);
-    dbp.prepare_insert(_service_dependency_insert);
-    dbp.prepare_update(_service_dependency_update);
-  }
-  {
-    unique.clear();
-    unique.insert("host_id");
-    unique.insert("service_id");
-    database_preparator dbp(
-                          neb::service_status::static_type(),
-                          unique);
-    dbp.prepare_update(_service_status_update);
-  }
-  {
-    excluded.clear();
-    excluded.insert("service_id");
-    {
-      std::ostringstream ss;
-      ss << "INSERT INTO "
-         << (db_v2 ? "hoststateevents" : "rt_hoststateevents")
-         << " (host_id, start_time, ack_time,"
-            "            end_time, in_downtime, state)"
-            "  VALUES (:host_id, :start_time, :ack_time, :end_time,"
-            "          :in_downtime, :state)";
-      _host_state_insert.prepare(ss.str());
-      _host_state_insert.set_excluded(excluded);
-    }
-    {
-      std::ostringstream ss;
-      ss << "UPDATE "
-         << (db_v2 ? "hoststateevents" : "rt_hoststateevents")
-         << "  SET ack_time=:ack_time,"
-            "      end_time=:end_time, in_downtime=:in_downtime,"
-            "      state=:state"
-            "  WHERE host_id=:host_id AND start_time=:start_time";
-      _host_state_update.prepare(ss.str());
-      _host_state_update.set_excluded(excluded);
-    }
-  }
-  {
-    unique.clear();
-    unique.insert("host_id");
-    unique.insert("service_id");
-    unique.insert("start_time");
-    database_preparator dbp(
-                          correlation::state::static_type(),
-                          unique);
-    dbp.prepare_insert(_service_state_insert);
-    dbp.prepare_update(_service_state_update);
-  }
-  {
-    unique.clear();
-    unique.insert("host_id");
-    unique.insert("service_id");
-    unique.insert("start_time");
-    database_preparator dbp(
-                          correlation::issue::static_type(),
-                          unique);
-    dbp.prepare_insert(_issue_insert);
-    dbp.prepare_update(_issue_update);
-  }
-  {
-    std::ostringstream ss;
-    ss << "INSERT INTO "
-       << (db_v2 ? "issues_issues_parents" : "rt_issues_issues_parents")
-       << "  (child_id, end_time, start_time, parent_id)"
-          "  VALUES (:child_id, :end_time, :start_time, :parent_id)";
-    _issue_parent_insert.prepare(ss.str());
-  }
-  {
-    std::ostringstream ss;
-    ss << "SELECT issue_id"
-       << "  FROM " << (db_v2 ? "issues" : "rt_issues")
-       << "  WHERE host_id=:host_id"
-          "    AND service_id=:service_id"
-          "    AND start_time=:start_time";
-    _issue_select.prepare(ss.str());
-  }
-  {
-    std::ostringstream ss;
-    ss << "UPDATE "
-       << (db_v2 ? "issues_issues_parents" : "rt_issues_issues_parents")
-       << "  SET end_time=:end_time"
-          "  WHERE child_id=:child_id"
-          "    AND start_time=:start_time"
-          "    AND parent_id=:parent_id";
-    _issue_parent_update.prepare(ss.str());
-  }
-  _prepare_select<neb::host_parent>(
-                         _host_parent_select,
-                         (db_v2
-                          ? "hosts_hosts_parents"
-                          : "rt_hosts_hosts_parents"));
-  return ;
 }
 
 /**
@@ -598,6 +355,21 @@ void stream::_process_acknowledgement(
 
   // Processing.
   if (_is_valid_poller(ack.poller_id)) {
+    // Prepare queries.
+    if (!_acknowledgement_insert.prepared()
+        || !_acknowledgement_update.prepared()) {
+      database_preparator::event_unique unique;
+      unique.insert("entry_time");
+      unique.insert("host_id");
+      unique.insert("service_id");
+      database_preparator dbp(
+                            neb::acknowledgement::static_type(),
+                            unique);
+      dbp.prepare_insert(_acknowledgement_insert);
+      dbp.prepare_update(_acknowledgement_update);
+    }
+
+    // Process object.
     _update_on_none_insert(
       _acknowledgement_insert,
       _acknowledgement_update,
@@ -637,6 +409,22 @@ void stream::_process_custom_variable(
   logging::info(logging::medium)
     << "SQL: processing custom variable event (host: " << cv.host_id
     << ", service: " << cv.service_id << ", name: " << cv.name << ")";
+
+  // Prepare queries.
+  if (!_custom_variable_insert.prepared()
+      || !_custom_variable_update.prepared()
+      || !_custom_variable_delete.prepared()) {
+    database_preparator::event_unique unique;
+    unique.insert("host_id");
+    unique.insert("name");
+    unique.insert("service_id");
+    database_preparator dbp(
+                          neb::custom_variable::static_type(),
+                          unique);
+    dbp.prepare_insert(_custom_variable_insert);
+    dbp.prepare_update(_custom_variable_update);
+    dbp.prepare_delete(_custom_variable_delete);
+  }
 
   // Processing.
   if (cv.enabled) {
@@ -679,6 +467,18 @@ void stream::_process_custom_variable_status(
     << cvs.host_id << ", service: " << cvs.service_id << ", name: "
     << cvs.name << ", update time: " << cvs.update_time << ")";
 
+  // Prepare queries.
+  if (!_custom_variable_status_update.prepared()) {
+    database_preparator::event_unique unique;
+    unique.insert("host_id");
+    unique.insert("name");
+    unique.insert("service_id");
+    database_preparator dbp(
+                          neb::custom_variable_status::static_type(),
+                          unique);
+    dbp.prepare_update(_custom_variable_status_update);
+  }
+
   // Processing.
   _custom_variable_status_update << cvs;
   _custom_variable_status_update.run_statement("SQL");
@@ -713,6 +513,36 @@ void stream::_process_downtime(
 
   // Check if poller is valid.
   if (_is_valid_poller(d.poller_id)) {
+    // Prepare queries.
+    if (!_downtime_insert.prepared()
+        || !_downtime_update.prepared()) {
+      {
+        database_preparator dbp(neb::downtime::static_type());
+        dbp.prepare_insert(_downtime_insert);
+      }
+      {
+        std::ostringstream oss;
+        oss << "UPDATE " << ((_db.schema_version() == database::v2)
+                             ? "downtimes"
+                             : "rt_downtimes")
+            << "  SET actual_end_time=GREATEST(COALESCE(actual_end_time, -1), :actual_end_time),"
+               "      actual_start_time=COALESCE(actual_start_time, :actual_start_time),"
+               "      author=:author, cancelled=:cancelled, comment_data=:comment_data,"
+               "      deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
+               "      fixed=:fixed, instance_id=:instance_id, internal_id=:internal_id,"
+               "      start_time=:start_time, started=:started, triggered_by=:triggered_by,"
+               "      type=:type"
+               "  WHERE entry_time=:entry_time"
+               "    AND host_id=:host_id"
+               "    AND is_recurring=:is_recurring"
+               "    AND recurring_timeperiod=:recurring_timeperiod"
+               "    AND COALESCE(service_id, -1)=COALESCE(:service_id, -1)";
+        std::string query(oss.str());
+        _downtime_update.prepare(query, "SQL: could not prepare query");
+      }
+    }
+
+    // Process object.
     _update_on_none_insert(
       _downtime_insert,
       _downtime_update,
@@ -797,6 +627,20 @@ void stream::_process_event_handler(
   logging::info(logging::medium)
     << "SQL: processing event handler event";
 
+  // Prepare queries.
+  if (!_event_handler_insert.prepared()
+      || !_event_handler_update.prepared()) {
+    database_preparator::event_unique unique;
+    unique.insert("host_id");
+    unique.insert("service_id");
+    unique.insert("start_time");
+    database_preparator dbp(
+                          neb::event_handler::static_type(),
+                          unique);
+    dbp.prepare_insert(_event_handler_insert);
+    dbp.prepare_update(_event_handler_update);
+  }
+
   // Processing.
   _update_on_none_insert(
     _event_handler_insert,
@@ -816,6 +660,20 @@ void stream::_process_flapping_status(
   // Log message.
   logging::info(logging::medium)
     << "SQL: processing flapping status event";
+
+  // Prepare queries.
+  if (!_flapping_status_insert.prepared()
+      || !_flapping_status_update.prepared()) {
+    database_preparator::event_unique unique;
+    unique.insert("host_id");
+    unique.insert("service_id");
+    unique.insert("event_time");
+    database_preparator dbp(
+                          neb::flapping_status::static_type(),
+                          unique);
+    dbp.prepare_insert(_flapping_status_insert);
+    dbp.prepare_update(_flapping_status_update);
+  }
 
   // Processing.
   _update_on_none_insert(
@@ -843,8 +701,19 @@ void stream::_process_host(
 
   // Processing
   if (_is_valid_poller(h.poller_id)) {
-    if (h.host_id)
+    if (h.host_id) {
+      // Prepare queries.
+      if (!_host_insert.prepared() || !_host_update.prepared()) {
+        database_preparator::event_unique unique;
+        unique.insert("host_id");
+        database_preparator dbp(neb::host::static_type(), unique);
+        dbp.prepare_insert(_host_insert);
+        dbp.prepare_update(_host_update);
+      }
+
+      // Process object.
       _update_on_none_insert(_host_insert, _host_update, h);
+    }
     else
       logging::error(logging::high) << "SQL: host '" << h.host_name
         << "' of poller " << h.poller_id << " has no ID";
@@ -875,6 +744,14 @@ void stream::_process_host_check(
     logging::info(logging::medium)
       << "SQL: processing host check event (host: " << hc.host_id
       << ", command: " << hc.command_line << ")";
+
+    // Prepare queries.
+    if (!_host_check_update.prepared()) {
+      database_preparator::event_unique unique;
+      unique.insert("host_id");
+      database_preparator dbp(neb::host_check::static_type(), unique);
+      dbp.prepare_update(_host_check_update);
+    }
 
     // Processing.
     _host_check_update << hc;
@@ -911,6 +788,21 @@ void stream::_process_host_dependency(
     logging::info(logging::medium)
       << "SQL: enabling host dependency of " << hd.dependent_host_id
       << " on " << hd.host_id;
+
+    // Prepare queries.
+    if (!_host_dependency_insert.prepared()
+        || !_host_dependency_update.prepared()) {
+      database_preparator::event_unique unique;
+      unique.insert("host_id");
+      unique.insert("dependent_host_id");
+      database_preparator dbp(
+                            neb::host_dependency::static_type(),
+                            unique);
+      dbp.prepare_insert(_host_dependency_insert);
+      dbp.prepare_update(_host_dependency_update);
+    }
+
+    // Process object.
     _update_on_none_insert(
       _host_dependency_insert,
       _host_dependency_update,
@@ -949,6 +841,18 @@ void stream::_process_host_parent(
     << "SQL: processing host parent (host: " << hp.host_id << ", parent: "
     << hp.parent_id << ")";
 
+  // Prepare queries.
+  if (!_host_parent_insert.prepared()
+      || !_host_parent_select.prepared()) {
+    database_preparator dbp(neb::host_parent::static_type());
+    dbp.prepare_insert(_host_parent_insert);
+    _prepare_select<neb::host_parent>(
+      _host_parent_select,
+      ((_db.schema_version() == database::v2)
+       ? "hosts_hosts_parents"
+       : "rt_hosts_hosts_parents"));
+  }
+
   // Insert.
   try {
     _host_parent_select << hp;
@@ -982,6 +886,36 @@ void stream::_process_host_state(
     << "SQL: processing host state event (host: " << s.host_id
     << ", state: " << s.current_state << ", start time: "
     << s.start_time << ", end time: " << s.end_time << ")";
+
+  // Prepare queries.
+  if (!_host_state_insert.prepared()
+      || !_host_state_update.prepared()) {
+    bool db_v2(_db.schema_version() == database::v2);
+    database_query::excluded_fields excluded;
+    excluded.insert("service_id");
+    {
+      std::ostringstream ss;
+      ss << "INSERT INTO "
+         << (db_v2 ? "hoststateevents" : "rt_hoststateevents")
+         << " (host_id, start_time, ack_time,"
+            "            end_time, in_downtime, state)"
+            "  VALUES (:host_id, :start_time, :ack_time, :end_time,"
+            "          :in_downtime, :state)";
+      _host_state_insert.prepare(ss.str());
+      _host_state_insert.set_excluded(excluded);
+    }
+    {
+      std::ostringstream ss;
+      ss << "UPDATE "
+         << (db_v2 ? "hoststateevents" : "rt_hoststateevents")
+         << "  SET ack_time=:ack_time,"
+            "      end_time=:end_time, in_downtime=:in_downtime,"
+            "      state=:state"
+            "  WHERE host_id=:host_id AND start_time=:start_time";
+      _host_state_update.prepare(ss.str());
+      _host_state_update.set_excluded(excluded);
+    }
+  }
 
   // Processing.
   if (_with_state_events) {
@@ -1017,6 +951,14 @@ void stream::_process_host_status(
       << "SQL: processing host status event (id: " << hs.host_id
       << ", last check: " << hs.last_check << ", state ("
       << hs.current_state << ", " << hs.state_type << "))";
+
+    // Prepare queries.
+    if (!_host_status_update.prepared()) {
+      database_preparator::event_unique unique;
+      unique.insert("host_id");
+      database_preparator dbp(neb::host_status::static_type(), unique);
+      dbp.prepare_update(_host_status_update);
+    }
 
     // Processing.
     _host_status_update << hs;
@@ -1057,8 +999,19 @@ void stream::_process_instance(
   _clean_tables(i.poller_id);
 
   // Processing.
-  if (_is_valid_poller(i.poller_id))
+  if (_is_valid_poller(i.poller_id)) {
+    // Prepare queries.
+    if (!_instance_insert.prepared() || !_instance_update.prepared()) {
+      database_preparator::event_unique unique;
+      unique.insert("instance_id");
+      database_preparator dbp(neb::instance::static_type(), unique);
+      dbp.prepare_insert(_instance_insert);
+      dbp.prepare_update(_instance_update);
+    }
+
+    // Process object.
     _update_on_none_insert(_instance_insert, _instance_update, i);
+  }
 
   return ;
 }
@@ -1081,6 +1034,17 @@ void stream::_process_instance_status(
 
   // Processing.
   if (_is_valid_poller(is.poller_id)) {
+    // Prepare queries.
+    if (!_instance_status_update.prepared()) {
+      database_preparator::event_unique unique;
+      unique.insert("instance_id");
+      database_preparator dbp(
+                            neb::instance_status::static_type(),
+                            unique);
+      dbp.prepare_update(_instance_status_update);
+    }
+
+    // Process object.
     _instance_status_update << is;
     _instance_status_update.run_statement("SQL");
     if (_instance_status_update.num_rows_affected() != 1)
@@ -1108,6 +1072,19 @@ void stream::_process_issue(
     << i.service_id << "), start time: " << i.start_time
     << ", end_time: " << i.end_time << ", ack time: " << i.ack_time
     << ")";
+
+  // Prepare queries.
+  if (!_issue_insert.prepared() || !_issue_update.prepared()) {
+    database_preparator::event_unique unique;
+    unique.insert("host_id");
+    unique.insert("service_id");
+    unique.insert("start_time");
+    database_preparator dbp(
+                          correlation::issue::static_type(),
+                          unique);
+    dbp.prepare_insert(_issue_insert);
+    dbp.prepare_update(_issue_update);
+  }
 
   // Processing.
   _update_on_none_insert(_issue_insert, _issue_update, i);
@@ -1137,6 +1114,29 @@ void stream::_process_issue_parent(
 
   // Database schema version.
   bool db_v2(_db.schema_version() == database::v2);
+
+  // Prepare queries.
+  if (!_issue_parent_insert.prepared()
+      || !_issue_parent_update.prepared()) {
+    {
+      std::ostringstream ss;
+      ss << "INSERT INTO "
+         << (db_v2 ? "issues_issues_parents" : "rt_issues_issues_parents")
+         << "  (child_id, end_time, start_time, parent_id)"
+            "  VALUES (:child_id, :end_time, :start_time, :parent_id)";
+      _issue_parent_insert.prepare(ss.str());
+    }
+    {
+      std::ostringstream ss;
+      ss << "UPDATE "
+         << (db_v2 ? "issues_issues_parents" : "rt_issues_issues_parents")
+         << "  SET end_time=:end_time"
+            "  WHERE child_id=:child_id"
+            "    AND start_time=:start_time"
+            "    AND parent_id=:parent_id";
+      _issue_parent_update.prepare(ss.str());
+    }
+  }
 
   int child_id;
   int parent_id;
@@ -1287,6 +1287,13 @@ void stream::_process_module(
 
   // Processing.
   if (_is_valid_poller(m.poller_id)) {
+    // Prepare queries.
+    if (!_module_insert.prepared()) {
+      database_preparator dbp(neb::module::static_type());
+      dbp.prepare_insert(_module_insert);
+    }
+
+    // Process object.
     if (m.enabled) {
       _module_insert << m;
       _module_insert.run_statement("SQL");
@@ -1347,11 +1354,23 @@ void stream::_process_service(
     << ", description: " << s.service_description << ")";
 
   // Processing.
-  if (s.host_id && s.service_id)
+  if (s.host_id && s.service_id) {
+    // Prepare queries.
+    if (!_service_insert.prepared() || !_service_update.prepared()) {
+      database_preparator::event_unique unique;
+      unique.insert("host_id");
+      unique.insert("service_id");
+      database_preparator dbp(neb::service::static_type(), unique);
+      dbp.prepare_insert(_service_insert);
+      dbp.prepare_update(_service_update);
+    }
+
+    // Process object.
     _update_on_none_insert(
       _service_insert,
       _service_update,
       s);
+  }
   else
     logging::error(logging::high) << "SQL: service '"
       << s.service_description << "' has no host ID or no service ID";
@@ -1382,6 +1401,15 @@ void stream::_process_service_check(
       << "SQL: processing service check event (host: " << sc.host_id
       << ", service: " << sc.service_id << ", command: "
       << sc.command_line << ")";
+
+    // Prepare queries.
+    if (!_service_check_update.prepared()) {
+      database_preparator::event_unique unique;
+      unique.insert("host_id");
+      unique.insert("service_id");
+      database_preparator dbp(neb::service_check::static_type(), unique);
+      dbp.prepare_update(_service_check_update);
+    }
 
     // Processing.
     _service_check_update << sc;
@@ -1419,6 +1447,23 @@ void stream::_process_service_dependency(
       << "SQL: enabling service dependency of (" << sd.dependent_host_id
       << ", " << sd.dependent_service_id << ") on (" << sd.host_id
       << ", " << sd.service_id << ")";
+
+    // Prepare queries.
+    if (!_service_dependency_insert.prepared()
+        || !_service_dependency_update.prepared()) {
+      database_preparator::event_unique unique;
+      unique.insert("dependent_host_id");
+      unique.insert("dependent_service_id");
+      unique.insert("host_id");
+      unique.insert("service_id");
+      database_preparator dbp(
+                            neb::service_dependency::static_type(),
+                            unique);
+      dbp.prepare_insert(_service_dependency_insert);
+      dbp.prepare_update(_service_dependency_update);
+    }
+
+    // Process object.
     _update_on_none_insert(
       _service_dependency_insert,
       _service_dependency_update,
@@ -1464,6 +1509,21 @@ void stream::_process_service_state(
 
   // Processing.
   if (_with_state_events) {
+    // Prepare queries.
+    if (!_service_state_insert.prepared()
+        || !_service_state_update.prepared()) {
+      database_preparator::event_unique unique;
+      unique.insert("host_id");
+      unique.insert("service_id");
+      unique.insert("start_time");
+      database_preparator dbp(
+                            correlation::state::static_type(),
+                            unique);
+      dbp.prepare_insert(_service_state_insert);
+      dbp.prepare_update(_service_state_update);
+    }
+
+    // Process object.
     _update_on_none_insert(
       _service_state_insert,
       _service_state_update,
@@ -1519,6 +1579,17 @@ void stream::_process_service_status(
       << ss.host_id << ", service: " << ss.service_id
       << ", last check: " << ss.last_check << ", state ("
       << ss.current_state << ", " << ss.state_type << "))";
+
+    // Prepare queries.
+    if (!_service_status_update.prepared()) {
+      database_preparator::event_unique unique;
+      unique.insert("host_id");
+      unique.insert("service_id");
+      database_preparator dbp(
+                            neb::service_status::static_type(),
+                            unique);
+      dbp.prepare_update(_service_status_update);
+    }
 
     // Processing.
     _service_status_update << ss;
@@ -1603,6 +1674,17 @@ void stream::_write_logs() {
       // Fetch issue ID (if any).
       int issue;
       if (le->issue_start_time) {
+        if (!_issue_select.prepared()) {
+          std::ostringstream ss;
+          ss << "SELECT issue_id"
+             << "  FROM " << ((_db.schema_version() == database::v2)
+                              ? "issues"
+                              : "rt_issues")
+             << "  WHERE host_id=:host_id"
+                "    AND service_id=:service_id"
+            "    AND start_time=:start_time";
+          _issue_select.prepare(ss.str());
+        }
         _issue_select.bind_value(":host_id", le->host_id);
         _issue_select.bind_value(
                         ":service_id",
@@ -1904,9 +1986,6 @@ stream::stream(
     _with_state_events(wse),
     _instance_timeout(instance_timeout),
     _oldest_timestamp(std::numeric_limits<time_t>::max()) {
-  // Prepare queries.
-  _prepare();
-
   // Get oudated instances.
   _get_all_outdated_instances_from_db();
 
