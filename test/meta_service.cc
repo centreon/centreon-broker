@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QVariant>

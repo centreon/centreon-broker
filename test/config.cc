@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <sys/stat.h>

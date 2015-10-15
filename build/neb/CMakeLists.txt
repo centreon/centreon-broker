@@ -739,7 +739,8 @@ if (WITH_TESTING)
   #   set_log_data library.
   add_library("ccb_neb_set_log_data" STATIC
     "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/set_log_data.cc")
+    "${SRC_DIR}/set_log_data.cc"
+    "${TEST_DIR}/set_log_data/dummy_engine.cc")
   set(SETLOGDATA_LIBRARIES "ccb_neb_set_log_data" "${NEB}" "roker")
   #   Host alert.
   set(TEST_NAME "neb_set_log_data_host_alert")

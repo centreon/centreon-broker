@@ -51,6 +51,10 @@
 
 using namespace com::centreon::broker;
 
+// Used to detect change in host/service ids (same name, id changed).
+// Centreon engine is unable to do that for now.
+static std::map<std::pair<std::string, std::string>, unsigned int> ids_cache;
+
 // Acknowledgement list.
 std::map<std::pair<unsigned int, unsigned int>, neb::acknowledgement>
   neb::gl_acknowledgements;
@@ -1132,9 +1136,6 @@ int neb::callback_host(int callback_type, void* data) {
       h(static_cast< ::host*>(host_data->object_ptr));
     misc::shared_ptr<neb::host> my_host(new neb::host);
 
-    // Get host id.
-
-
     // Set host parameters.
     my_host->instance_id = instance_id;
     my_host->acknowledgement_type = h->acknowledgement_type;
@@ -1254,10 +1255,31 @@ int neb::callback_host(int callback_type, void* data) {
       my_host->statusmap_image = h->statusmap_image;
 
     // Find host ID.
-    unsigned int host_id = engine::get_host_id(
-                             my_host->host_name.toStdString().c_str());
-    if (host_id != 0) {
-      my_host->host_id = host_id;
+    my_host->host_id = engine::get_host_id(
+                         my_host->host_name.toStdString().c_str());
+    if (my_host->host_id != 0) {
+      // Find if an id has changed. If that is the case, remove the old host
+      // before adding the new.
+      std::map<std::pair<std::string, std::string>, unsigned int>::const_iterator
+        cached_id = ids_cache.find(
+                      std::make_pair(
+                             my_host->host_name.toStdString(),
+                             std::string()));
+      if (cached_id != ids_cache.end()
+          && cached_id->second != my_host->host_id) {
+        // Oh noes, the ID has changed. Damnation.
+        misc::shared_ptr<neb::host> my_removed_host(new neb::host(*my_host));
+        my_removed_host->enabled = false;
+        my_removed_host->host_id = cached_id->second;
+        logging::info(logging::low) << "callbacks:  disabling host "
+          << my_removed_host->host_id << " ('" << my_removed_host->host_name
+          << "') on instance " << my_removed_host->instance_id;
+        neb::gl_publisher.write(my_removed_host);
+      }
+
+      // Save the id in the cache.
+      ids_cache[std::make_pair(my_host->host_name.toStdString(), std::string())]
+        = my_host->host_id;
 
       // Send host event.
       logging::info(logging::low) << "callbacks:  new host "
@@ -1984,6 +2006,33 @@ int neb::callback_service(int callback_type, void* data) {
                                s->host_name ? s->host_name : "",
                                my_service->service_description.toStdString().c_str());
     if (my_service->host_id && my_service->service_id) {
+      // Find if an id has changed. If this is the case, remove the old service
+      // before adding the new.
+      std::map<std::pair<std::string, std::string>, unsigned int>::const_iterator
+        cached_id = ids_cache.find(
+                      std::make_pair(
+                             my_service->host_name.toStdString(),
+                             my_service->service_description.toStdString()));
+      if (cached_id != ids_cache.end()
+          && cached_id->second != my_service->service_id) {
+        // Oh noes, the ID has changed. Damnation.
+        misc::shared_ptr<neb::service> my_removed_service(new neb::service(*my_service));
+        my_removed_service->enabled = false;
+        my_removed_service->service_id = cached_id->second;
+        logging::info(logging::low) << "callbacks:  disabling service "
+          << my_removed_service->service_id
+          << " ('" << my_removed_service->service_description
+          << "') on host " << my_removed_service->host_id;
+        neb::gl_publisher.write(my_removed_service);
+      }
+
+      // Save the id in the cache.
+      ids_cache[std::make_pair(
+                       my_service->host_name.toStdString(),
+                       my_service->service_description.toStdString())]
+        = my_service->service_id;
+
+
       // Send service event.
       logging::info(logging::low) << "callbacks: new service "
         << my_service->service_id << " ('"
