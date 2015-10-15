@@ -1026,6 +1026,13 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   #   "${PROJECT_SOURCE_DIR}/test/bench_stream.hh")
   # target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${BAM} ${NOTIFICATION} ${CORRELATION} ${NEB} ${STORAGE})
 
+  # Helgrind.
+  set(TEST_NAME "running_helgrind")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/helgrind.cc")
+  target_link_libraries("${TEST_NAME}" ${TEST_LIB})
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
   # Last file to configure, based on target paths.
   configure_file("${PROJECT_SOURCE_DIR}/test/install_paths.hh.in.in"
     "${PROJECT_SOURCE_DIR}/test/install_paths.hh.in")

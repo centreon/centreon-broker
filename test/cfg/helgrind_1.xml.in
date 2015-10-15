@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<centreonbroker>
+  <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
+  <broker_id>24</broker_id>
+  <broker_name>my-broker1</broker_name>
+  <poller_id>42</poller_id>
+  <poller_name>my-poller1</poller_name>
+  <!--
+  <stats>
+    <fifo>/tmp/cbmod.fifo</fifo>
+  </stats>
+  <logger>
+    <type>file</type>
+    <name>cbmod.log</name>
+    <config>1</config>
+    <debug>1</debug>
+    <error>1</error>
+    <info>1</info>
+    <level>3</level>
+  </logger>
+  -->
+  <output>
+    <name>OutputToHelgrindTest</name>
+    <type>tcp</type>
+    <host>localhost</host>
+    <port>5659</port>
+    <protocol>bbdo</protocol>
+    <read_timeout>5</read_timeout>
+  </output>
+</centreonbroker>

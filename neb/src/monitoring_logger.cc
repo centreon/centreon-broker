@@ -19,6 +19,9 @@
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/monitoring_logger.hh"
 #include "com/centreon/engine/logging/logger.hh"
+#include "com/centreon/engine/objects/host.hh"
+#include "com/centreon/engine/objects/service.hh"
+#include "com/centreon/engine/logging.hh"
 
 using namespace com::centreon;
 using namespace com::centreon::broker::neb;

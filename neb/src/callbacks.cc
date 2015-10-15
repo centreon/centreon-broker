@@ -39,11 +39,15 @@
 #include "com/centreon/broker/neb/set_log_data.hh"
 #include "com/centreon/broker/neb/statistics/generator.hh"
 #include "com/centreon/engine/broker.hh"
-#include "com/centreon/engine/events/defines.hh"
-#include "com/centreon/engine/events/timed_event.hh"
 #include "com/centreon/engine/nebcallbacks.hh"
 #include "com/centreon/engine/nebstructs.hh"
-#include "com/centreon/engine/objects.hh"
+#include "com/centreon/engine/objects/hostdependency.hh"
+#include "com/centreon/engine/objects/servicedependency.hh"
+#include "com/centreon/engine/objects/comment.hh"
+#include "com/centreon/engine/objects/hostgroup.hh"
+#include "com/centreon/engine/objects/servicegroup.hh"
+#include "com/centreon/engine/events/timed_event.hh"
+#include "com/centreon/engine/events/defines.hh"
 
 using namespace com::centreon::broker;
 
@@ -133,84 +137,36 @@ int neb::callback_custom_variable(int callback_type, void* data) {
       if (NEBTYPE_HOSTCUSTOMVARIABLE_ADD == cvar->type) {
         ::host* hst(static_cast< ::host*>(cvar->object_ptr));
         if (hst && hst->name) {
-          // Special HOST_ID custom variable.
-          if (!strcmp(cvar->var_name, "HOST_ID")) {
-            // Host ID.
-            int host_id(strtol(cvar->var_value, NULL, 0));
-            if (host_id) {
-              // Already existing ?
-              umap<std::string, int>::const_iterator
-                existing_hst(neb::gl_hosts.find(hst->name));
-              if (existing_hst != neb::gl_hosts.end()) {
-                // Was the ID changed ?
-                if (existing_hst->second != host_id) {
-                  // Generate host event.
-                  nebstruct_adaptive_host_data nsahd;
-                  memset(&nsahd, 0, sizeof(nsahd));
-                  nsahd.type = NEBTYPE_HOST_DELETE;
-                  nsahd.timestamp.tv_sec = cvar->timestamp.tv_sec;
-                  nsahd.command_type = CMD_NONE;
-                  nsahd.modified_attribute = MODATTR_ALL;
-                  nsahd.modified_attributes = MODATTR_ALL;
-                  nsahd.object_ptr = hst;
+          // Fill custom variable event.
+          unsigned int host_id = engine::get_host_id(hst->name);
+          if (host_id != 0) {
+            misc::shared_ptr<custom_variable>
+              new_cvar(new custom_variable);
+            new_cvar->enabled = true;
+            new_cvar->host_id = host_id;
+            new_cvar->modified = false;
+            new_cvar->name = cvar->var_name;
+            new_cvar->var_type = 0;
+            new_cvar->update_time = cvar->timestamp.tv_sec;
+            new_cvar->value = cvar->var_value;
 
-                  // Callback.
-                  callback_host(NEBCALLBACK_ADAPTIVE_HOST_DATA, &nsahd);
-                }
-              }
-
-              // Record host ID.
-              neb::gl_hosts[hst->name] = host_id;
-
-              // Generate host event.
-              nebstruct_adaptive_host_data nsahd;
-              memset(&nsahd, 0, sizeof(nsahd));
-              nsahd.type = NEBTYPE_HOST_ADD;
-              nsahd.timestamp.tv_sec = cvar->timestamp.tv_sec;
-              nsahd.command_type = CMD_NONE;
-              nsahd.modified_attribute = MODATTR_ALL;
-              nsahd.modified_attributes = MODATTR_ALL;
-              nsahd.object_ptr = hst;
-
-              // Callback.
-              callback_host(NEBCALLBACK_ADAPTIVE_HOST_DATA, &nsahd);
-            }
-          }
-          // Normal custom variable.
-          else {
-            // Fill custom variable event.
-            umap<std::string, int>::iterator
-              it(neb::gl_hosts.find(hst->name));
-            if (it != neb::gl_hosts.end()) {
-              misc::shared_ptr<custom_variable>
-                new_cvar(new custom_variable);
-              new_cvar->enabled = true;
-              new_cvar->host_id = it->second;
-              new_cvar->modified = false;
-              new_cvar->name = cvar->var_name;
-              new_cvar->var_type = 0;
-              new_cvar->update_time = cvar->timestamp.tv_sec;
-              new_cvar->value = cvar->var_value;
-
-              // Send custom variable event.
-              logging::info(logging::low)
-                << "callbacks: new custom variable '" << new_cvar->name
-                << "' on host " << new_cvar->host_id;
-              neb::gl_publisher.write(new_cvar);
-            }
+            // Send custom variable event.
+            logging::info(logging::low)
+              << "callbacks: new custom variable '" << new_cvar->name
+              << "' on host " << new_cvar->host_id;
+            neb::gl_publisher.write(new_cvar);
           }
         }
       }
       else if (NEBTYPE_HOSTCUSTOMVARIABLE_DELETE == cvar->type) {
         ::host* hst(static_cast< ::host*>(cvar->object_ptr));
-        if (hst && hst->name && strcmp(cvar->var_name, "HOST_ID")) {
-          umap<std::string, int>::iterator
-            it(neb::gl_hosts.find(hst->name));
-          if (it != neb::gl_hosts.end()) {
+        if (hst && hst->name) {
+          unsigned int host_id = engine::get_host_id(hst->name);
+          if (host_id != 0) {
             misc::shared_ptr<custom_variable>
               old_cvar(new custom_variable);
             old_cvar->enabled = false;
-            old_cvar->host_id = it->second;
+            old_cvar->host_id = host_id;
             old_cvar->name = cvar->var_name;
             old_cvar->var_type = 0;
             old_cvar->update_time = cvar->timestamp.tv_sec;
@@ -227,92 +183,29 @@ int neb::callback_custom_variable(int callback_type, void* data) {
       else if (NEBTYPE_SERVICECUSTOMVARIABLE_ADD == cvar->type) {
         ::service* svc(static_cast< ::service*>(cvar->object_ptr));
         if (svc && svc->description && svc->host_name) {
-          // Special SERVICE_ID custom variable.
-          if (!strcmp(cvar->var_name, "SERVICE_ID")) {
-            // Host ID.
-            int host_id;
-            {
-              umap<std::string, int>::iterator
-                it(neb::gl_hosts.find(svc->host_name));
-              if (it != neb::gl_hosts.end())
-                host_id = it->second;
-              else
-                host_id = 0;
-            }
+          // Fill custom variable event.
+          unsigned int host_id = engine::get_host_id(svc->host_name);
+          unsigned int service_id = engine::get_service_id(
+                                      svc->host_name,
+                                      svc->description);
+          if (host_id != 0 && service_id != 0) {
+            misc::shared_ptr<custom_variable>
+              new_cvar(new custom_variable);
+            new_cvar->enabled = true;
+            new_cvar->host_id = host_id;
+            new_cvar->modified = false;
+            new_cvar->name = cvar->var_name;
+            new_cvar->service_id = service_id;
+            new_cvar->var_type = 1;
+            new_cvar->update_time = cvar->timestamp.tv_sec;
+            new_cvar->value = cvar->var_value;
 
-            // Service ID.
-            int service_id(strtol(cvar->var_value, NULL, 0));
-
-            if (host_id && service_id) {
-              // Already existing ?
-              std::pair<std::string, std::string>
-                pair_svc_name(svc->host_name, svc->description);
-              std::map<std::pair<std::string, std::string>,
-                       std::pair<int, int> >::const_iterator
-                existing_svc(neb::gl_services.find(pair_svc_name));
-              if (existing_svc != neb::gl_services.end()) {
-                // Were the IDs changed ?
-                if (existing_svc->second
-                    != std::make_pair(host_id, service_id)) {
-                  // Generate service event.
-                  nebstruct_adaptive_service_data nsasd;
-                  memset(&nsasd, 0, sizeof(nsasd));
-                  nsasd.type = NEBTYPE_SERVICE_DELETE;
-                  nsasd.timestamp.tv_sec = cvar->timestamp.tv_sec;
-                  nsasd.command_type = CMD_NONE;
-                  nsasd.modified_attribute = MODATTR_ALL;
-                  nsasd.modified_attributes = MODATTR_ALL;
-                  nsasd.object_ptr = svc;
-
-                  // Callback.
-                  callback_service(NEBCALLBACK_ADAPTIVE_SERVICE_DATA, &nsasd);
-                }
-              }
-
-              // Record host ID/service ID.
-              neb::gl_services[std::make_pair<std::string, std::string>(
-                                 svc->host_name,
-                                 svc->description)]
-                = std::make_pair(host_id, service_id);
-
-              // Generate service event.
-              nebstruct_adaptive_service_data nsasd;
-              memset(&nsasd, 0, sizeof(nsasd));
-              nsasd.type = NEBTYPE_SERVICE_ADD;
-              nsasd.timestamp.tv_sec = cvar->timestamp.tv_sec;
-              nsasd.command_type = CMD_NONE;
-              nsasd.modified_attribute = MODATTR_ALL;
-              nsasd.modified_attributes = MODATTR_ALL;
-              nsasd.object_ptr = svc;
-
-              // Callback.
-              callback_service(NEBCALLBACK_ADAPTIVE_SERVICE_DATA, &nsasd);
-            }
-          }
-          // Normal custom variable (discard HOST_ID).
-          else if (strcmp(cvar->var_name, "HOST_ID")) {
-            // Fill custom variable event.
-            std::map<std::pair<std::string, std::string>, std::pair<int, int> >::iterator
-              it(neb::gl_services.find(std::make_pair<std::string, std::string>(svc->host_name, svc->description)));
-            if (it != neb::gl_services.end()) {
-              misc::shared_ptr<custom_variable>
-                new_cvar(new custom_variable);
-              new_cvar->enabled = true;
-              new_cvar->host_id = it->second.first;
-              new_cvar->modified = false;
-              new_cvar->name = cvar->var_name;
-              new_cvar->service_id = it->second.second;
-              new_cvar->var_type = 1;
-              new_cvar->update_time = cvar->timestamp.tv_sec;
-              new_cvar->value = cvar->var_value;
-
-              // Send custom variable event.
-              logging::info(logging::low)
-                << "callbacks: new custom variable '" << new_cvar->name
-                << "' on service (" << new_cvar->host_id << ", "
-                << new_cvar->service_id << ")";
-              neb::gl_publisher.write(new_cvar);
-            }
+            // Send custom variable event.
+            logging::info(logging::low)
+              << "callbacks: new custom variable '" << new_cvar->name
+              << "' on service (" << new_cvar->host_id << ", "
+              << new_cvar->service_id << ")";
+            neb::gl_publisher.write(new_cvar);
           }
         }
       }
@@ -320,21 +213,19 @@ int neb::callback_custom_variable(int callback_type, void* data) {
         ::service* svc(static_cast< ::service*>(cvar->object_ptr));
         if (svc
             && svc->description
-            && svc->host_name
-            && strcmp(cvar->var_name, "SERVICE_ID")) {
-          std::map<std::pair<std::string, std::string>,
-                   std::pair<int, int> >::const_iterator
-            it(neb::gl_services.find(std::make_pair<std::string, std::string>(
-                                       svc->host_name,
-                                       svc->description)));
-          if (it != neb::gl_services.end()) {
+            && svc->host_name) {
+          unsigned int host_id = engine::get_host_id(svc->host_name);
+          unsigned int service_id = engine::get_service_id(
+                                      svc->host_name,
+                                      svc->description);
+          if (host_id != 0 && service_id != 0) {
             misc::shared_ptr<custom_variable>
               old_cvar(new custom_variable);
             old_cvar->enabled = false;
-            old_cvar->host_id = it->second.first;
+            old_cvar->host_id = host_id;
             old_cvar->modified = true;
             old_cvar->name = cvar->var_name;
-            old_cvar->service_id = it->second.second;
+            old_cvar->service_id = service_id;
             old_cvar->var_type = 1;
             old_cvar->update_time = cvar->timestamp.tv_sec;
 
@@ -389,12 +280,7 @@ int neb::callback_dependency(int callback_type, void* data) {
       hostdependency*
         dep(static_cast<hostdependency*>(nsadd->object_ptr));
       if (dep->host_name) {
-        umap<std::string, int>::iterator it;
-        it = neb::gl_hosts.find(dep->host_name);
-        if (it != neb::gl_hosts.end())
-          host_id = it->second;
-        else
-          host_id = 0;
+        host_id = engine::get_host_id(dep->host_name);
       }
       else {
         logging::error(logging::medium)
@@ -403,12 +289,7 @@ int neb::callback_dependency(int callback_type, void* data) {
         host_id = 0;
       }
       if (dep->dependent_host_name) {
-        umap<std::string, int>::iterator it;
-        it = neb::gl_hosts.find(dep->dependent_host_name);
-        if (it != neb::gl_hosts.end())
-          dep_host_id = it->second;
-        else
-          dep_host_id = 0;
+        dep_host_id = engine::get_host_id(dep->dependent_host_name);
       }
       else {
         logging::error(logging::medium)
@@ -446,20 +327,10 @@ int neb::callback_dependency(int callback_type, void* data) {
       servicedependency*
         dep(static_cast<servicedependency*>(nsadd->object_ptr));
       if (dep->host_name && dep->service_description) {
-        std::map<std::pair<std::string, std::string>,
-                 std::pair<int, int> >::iterator it;
-        it = neb::gl_services.find(
-                    std::make_pair<std::string, std::string>(
-                           dep->host_name,
-                           dep->service_description));
-        if (it != neb::gl_services.end()) {
-          host_id = it->second.first;
-          service_id = it->second.second;
-        }
-        else {
-          host_id = 0;
-          service_id = 0;
-        }
+        host_id = engine::get_host_id(dep->host_name);
+        service_id = engine::get_service_id(
+                       dep->host_name,
+                       dep->service_description);
       }
       else {
         logging::error(logging::medium)
@@ -470,20 +341,10 @@ int neb::callback_dependency(int callback_type, void* data) {
       }
       if (dep->dependent_host_name
           && dep->dependent_service_description) {
-        std::map<std::pair<std::string, std::string>,
-                 std::pair<int, int> >::iterator it;
-        it = neb::gl_services.find(
-                    std::make_pair<std::string, std::string>(
-                           dep->dependent_host_name,
-                           dep->dependent_service_description));
-        if (it != neb::gl_services.end()) {
-          dep_host_id = it->second.first;
-          dep_service_id = it->second.second;
-        }
-        else {
-          dep_host_id = 0;
-          dep_service_id = 0;
-        }
+        dep_host_id = engine::get_host_id(dep->host_name);
+        dep_service_id = engine::get_service_id(
+                           dep->host_name,
+                           dep->service_description);
       }
       else {
         logging::error(logging::medium)
@@ -521,7 +382,6 @@ int neb::callback_dependency(int callback_type, void* data) {
 
   return (0);
 }
-
 /**
  *  @brief Function that process event handler data.
  *
@@ -558,23 +418,19 @@ int neb::callback_event_handler(int callback_type, void* data) {
     event_handler->execution_time = event_handler_data->execution_time;
     if (!event_handler_data->host_name)
       throw (exceptions::msg() << "unnamed host");
-    umap<std::string, int>::const_iterator it1;
-    it1 = gl_hosts.find(event_handler_data->host_name);
-    if (it1 == gl_hosts.end())
+    event_handler->host_id = engine::get_host_id(
+                               event_handler_data->host_name);
+    if (event_handler->host_id == 0)
       throw (exceptions::msg() << "could not find ID of host '"
              << event_handler_data->host_name << "'");
-    event_handler->host_id = it1->second;
     if (event_handler_data->service_description) {
-      std::map<std::pair<std::string, std::string>,
-               std::pair<int, int> >::const_iterator it2;
-      it2 = gl_services.find(std::make_pair(
-              event_handler_data->host_name,
-              event_handler_data->service_description));
-      if (it2 == gl_services.end())
+      event_handler->service_id = engine::get_service_id(
+                                    event_handler_data->host_name,
+                                    event_handler_data->service_description);
+      if (event_handler->service_id == 0)
         throw (exceptions::msg() << "could not find ID of service ('"
                << event_handler_data->host_name << "', '"
                << event_handler_data->service_description << "')");
-      event_handler->service_id = it2->second.second;
     }
     if (event_handler_data->output)
       event_handler->output = event_handler_data->output;
@@ -636,13 +492,13 @@ int neb::callback_external_command(int callback_type, void* data) {
             QString var_value(*it);
 
             // Find host ID.
-            umap<std::string, int>::const_iterator id;
-            id = gl_hosts.find(host.toStdString());
-            if (id != gl_hosts.end()) {
+            unsigned int host_id = engine::get_host_id(
+                                     host.toStdString().c_str());
+            if (host_id != 0) {
               // Fill custom variable.
               misc::shared_ptr<neb::custom_variable_status>
                 cvs(new neb::custom_variable_status);
-              cvs->host_id = id->second;
+              cvs->host_id = host_id;
               cvs->modified = true;
               cvs->name = var_name;
               cvs->service_id = 0;
@@ -673,18 +529,19 @@ int neb::callback_external_command(int callback_type, void* data) {
             QString var_value(*it);
 
             // Find host/service IDs.
-            std::map<std::pair<std::string, std::string>,
-                   std::pair<int, int> >::const_iterator ids;
-            ids = gl_services.find(std::make_pair(host.toStdString(),
-                                                  service.toStdString()));
-            if (ids != gl_services.end()) {
+            unsigned int host_id = engine::get_host_id(
+                                     host.toStdString().c_str());
+            unsigned int service_id = engine::get_service_id(
+                                        host.toStdString().c_str(),
+                                        service.toStdString().c_str());
+            if (host_id != 0 && service_id != 0) {
               // Fill custom variable.
               misc::shared_ptr<neb::custom_variable_status> cvs(
                 new neb::custom_variable_status);
-              cvs->host_id = ids->second.first;
+              cvs->host_id = host_id;
               cvs->modified = true;
               cvs->name = var_name;
-              cvs->service_id = ids->second.second;
+              cvs->service_id = service_id;
               cvs->update_time = necd->timestamp.tv_sec;
               cvs->value = var_value;
 
@@ -732,23 +589,18 @@ int neb::callback_flapping_status(int callback_type, void* data) {
     flapping_status->high_threshold = flapping_data->high_threshold;
     if (!flapping_data->host_name)
       throw (exceptions::msg() << "unnamed host");
-    umap<std::string, int>::const_iterator it1;
-    it1 = gl_hosts.find(flapping_data->host_name);
-    if (it1 == gl_hosts.end())
+    flapping_status->host_id = engine::get_host_id(flapping_data->host_name);
+    if (flapping_status->host_id == 0)
       throw (exceptions::msg() << "could not find ID of host '"
              << flapping_data->host_name << "'");
-    flapping_status->host_id = it1->second;
     if (flapping_data->service_description) {
-      std::map<std::pair<std::string, std::string>,
-             std::pair<int, int> >::const_iterator it2;
-      it2 = gl_services.find(std::make_pair(
-              flapping_data->host_name,
-              flapping_data->service_description));
-      if (it2 == gl_services.end())
+      flapping_status->service_id = engine::get_service_id(
+                                      flapping_data->host_name,
+                                      flapping_data->service_description);
+      if (flapping_status->service_id == 0)
         throw (exceptions::msg() << "could not find ID of service ('"
                << flapping_data->host_name << "', '"
                << flapping_data->service_description << "')");
-      flapping_status->service_id = it2->second.second;
     }
     flapping_status->low_threshold = flapping_data->low_threshold;
     flapping_status->percent_state_change = flapping_data->percent_change;
@@ -792,6 +644,9 @@ int neb::callback_host(int callback_type, void* data) {
     ::host const*
       h(static_cast< ::host*>(host_data->object_ptr));
     misc::shared_ptr<neb::host> my_host(new neb::host);
+
+    // Get host id.
+
 
     // Set host parameters.
     my_host->active_checks_enabled = h->checks_enabled;
@@ -859,10 +714,10 @@ int neb::callback_host(int callback_type, void* data) {
                            : HARD_STATE);
 
     // Find host ID.
-    umap<std::string, int>::iterator
-      it(neb::gl_hosts.find(my_host->host_name.toStdString()));
-    if (it != neb::gl_hosts.end()) {
-      my_host->host_id = it->second;
+    unsigned int host_id = engine::get_host_id(
+                             my_host->host_name.toStdString().c_str());
+    if (host_id != 0) {
+      my_host->host_id = host_id;
 
       // Send host event.
       logging::info(logging::low) << "callbacks:  new host "
@@ -930,12 +785,10 @@ int neb::callback_host_check(int callback_type, void* data) {
       host_check->command_line = hcdata->command_line;
       if (!hcdata->host_name)
         throw (exceptions::msg() << "unnamed host");
-      umap<std::string, int>::const_iterator it;
-      it = gl_hosts.find(hcdata->host_name);
-      if (it == gl_hosts.end())
+      host_check->host_id = engine::get_host_id(hcdata->host_name);
+      if (host_check->host_id == 0)
         throw (exceptions::msg() << "could not find ID of host '"
                << hcdata->host_name << "'");
-      host_check->host_id = it->second;
       host_check->next_check = h->next_check;
 
       // Send event.
@@ -997,12 +850,10 @@ int neb::callback_host_status(int callback_type, void* data) {
     if (!h->name)
       throw (exceptions::msg() << "unnamed host");
     {
-      umap<std::string, int>::const_iterator it;
-      it = gl_hosts.find(h->name);
-      if (it == gl_hosts.end())
+      host_status->host_id = engine::get_host_id(h->name);
+      if (host_status->host_id == 0)
         throw (exceptions::msg() << "could not find ID of host '"
                << h->name << "'");
-      host_status->host_id = it->second;
     }
     host_status->is_flapping = h->is_flapping;
     host_status->last_check = h->last_check;
@@ -1353,17 +1204,8 @@ int neb::callback_relation(int callback_type, void* data) {
         int host_id;
         int parent_id;
         {
-          umap<std::string, int>::iterator it;
-          it = neb::gl_hosts.find(relation->dep_hst->name);
-          if (it != neb::gl_hosts.end())
-            host_id = it->second;
-          else
-            host_id = 0;
-          it = neb::gl_hosts.find(relation->hst->name);
-          if (it != neb::gl_hosts.end())
-            parent_id = it->second;
-          else
-            parent_id = 0;
+          host_id = engine::get_host_id(relation->dep_hst->name);
+          parent_id = engine::get_host_id(relation->hst->name);
         }
         if (host_id && parent_id) {
           // Generate parent event.
@@ -1482,14 +1324,12 @@ int neb::callback_service(int callback_type, void* data) {
                               : HARD_STATE);
 
     // Search host ID and service ID.
-    std::map<std::pair<std::string, std::string>, std::pair<int, int> >::iterator
-      it(neb::gl_services.find(std::make_pair<std::string, std::string>(
-                                 s->host_name ? s->host_name : "",
-                                 my_service->service_description.toStdString())));
-    if (it != neb::gl_services.end()) {
-      my_service->host_id = it->second.first;
-      my_service->service_id = it->second.second;
-
+    my_service->host_id = engine::get_host_id(
+                            s->host_name ? s->host_name : "");
+    my_service->service_id = engine::get_service_id(
+                               s->host_name ? s->host_name : "",
+                               my_service->service_description.toStdString().c_str());
+    if (my_service->host_id && my_service->service_id) {
       // Send service event.
       logging::info(logging::low) << "callbacks: new service "
         << my_service->service_id << " ('"
@@ -1565,17 +1405,15 @@ int neb::callback_service_check(int callback_type, void* data) {
         throw (exceptions::msg() << "unnamed host");
       if (!scdata->service_description)
         throw (exceptions::msg() << "unnamed service");
-      std::map<std::pair<std::string, std::string>, std::pair<int, int> >::const_iterator it;
-      it = gl_services.find(std::make_pair(
-                                   scdata->host_name,
-                                   scdata->service_description));
-      if (it == gl_services.end())
+      service_check->host_id = engine::get_host_id(scdata->host_name);
+      service_check->service_id = engine::get_service_id(
+                                    scdata->host_name,
+                                    scdata->service_description);
+      if (!service_check->host_id || !service_check->service_id)
         throw (exceptions::msg() << "could not find ID of service ('"
                << scdata->host_name << "', '"
                << scdata->service_description << "')");
-      service_check->host_id = it->second.first;
       service_check->next_check = s->next_check;
-      service_check->service_id = it->second.second;
 
       // Send event.
       gl_publisher.write(service_check);
@@ -1666,16 +1504,13 @@ int neb::callback_service_status(int callback_type, void* data) {
     service_status->host_name = s->host_name;
     service_status->service_description = s->description;
     {
-      std::map<std::pair<std::string, std::string>,
-               std::pair<int, int> >::const_iterator it;
-      it = gl_services.find(std::make_pair(
-                                   s->host_name,
-                                   s->description));
-      if (it == gl_services.end())
+      service_status->host_id = engine::get_host_id(s->host_name);
+      service_status->service_id = engine::get_service_id(
+                                     s->host_name,
+                                     s->description);
+      if (!service_status->host_id || !service_status->service_id)
         throw (exceptions::msg() << "could not find ID of service ('"
                << s->host_name << "', '" << s->description << "')");
-      service_status->host_id = it->second.first;
-      service_status->service_id = it->second.second;
     }
     service_status->should_be_scheduled = s->should_be_scheduled;
     service_status->state_type = (s->has_been_checked
