@@ -23,6 +23,30 @@
 #  include <QSqlDatabase>
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
+#  include "test/predicate.hh"
+
+#  define RTMONITORING_TABLES_V2 "instances", \
+                                 "hosts", \
+                                 "hostgroups", \
+                                 "hosts_hostgroups", \
+                                 "hosts_hosts_dependencies", \
+                                 "hosts_hosts_parents", \
+                                 "services", \
+                                 "servicegroups", \
+                                 "services_servicegroups", \
+                                 "services_services_dependencies", \
+                                 "acknowledgements", \
+                                 "comments", \
+                                 "customvariables", \
+                                 "downtimes", \
+                                 "eventhandlers", \
+                                 "flappingstatuses", \
+                                 "issues", \
+                                 "issues_issues_parents", \
+                                 "logs", \
+                                 "modules", \
+                                 "hoststateevents", \
+                                 "servicestateevents"
 
 CCB_BEGIN()
 
@@ -37,6 +61,10 @@ namespace         test {
                     char const* const* include = NULL,
                     char const* const* exclude = NULL);
                   ~db();
+    template      <int columns>
+    void          check_content(
+                    std::string const& query,
+                    predicate expected[][columns]);
     void          close();
     QSqlDatabase* get_db();
     void          run(
@@ -49,9 +77,6 @@ namespace         test {
     db&           operator=(db const& other);
     void          _close(std::auto_ptr<QSqlDatabase>& db);
     void          _open(QSqlDatabase& db, char const* db_name);
-    void          _run_query(
-                    QString const& query,
-                    QString const& error_msg);
     void          _run_script(char const* script_name);
 
     std::auto_ptr<QSqlDatabase>

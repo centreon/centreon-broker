@@ -21,6 +21,7 @@
 #include <map>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <set>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/db.hh"
@@ -89,10 +90,56 @@ db::db(
     throw (exceptions::msg() << "cannot reopen connection to DB '"
            << name << "': " << _db->lastError().text());
 
-  // Build table creation script list.
-  std::map<std::string, std::string> tables;
-  tables["instances"] = PROJECT_SOURCE_DIR "/sql/mysql_v2/instances.sql";
-  // XXX
+  // Build table creation script list. Order is important.
+  std::pair<std::string, std::string> p;
+  std::list<std::pair<std::string, std::string> > tables;
+  // Instances table.
+  p.first = "instances";
+  p.second = PROJECT_SOURCE_DIR "/sql/mysql_v2/instances.sql";
+  tables.push_back(p);
+
+  // Only include valid tables.
+  if (include) {
+    std::set<std::string> included;
+    while (*include) {
+      included.insert(*include);
+      ++include;
+    }
+    for (std::list<std::pair<std::string, std::string> >::iterator
+           it(tables.begin()),
+           end(tables.end());
+         it != end;)
+      if (included.find(it->first) == included.end()) {
+        std::list<std::pair<std::string, std::string> >::iterator
+          to_erase(it);
+        ++it;
+        tables.erase(to_erase);
+      }
+      else
+        ++it;
+  }
+
+  // Exclude invalid tables.
+  if (exclude) {
+    while (*exclude)
+      for (std::list<std::pair<std::string, std::string> >::iterator
+             it(tables.begin()),
+             end(tables.end());
+           it != end;
+           ++it)
+        if (it->first == *exclude) {
+          tables.erase(it);
+          break ;
+        }
+  }
+
+  // Run table creation scripts.
+  for (std::list<std::pair<std::string, std::string> >::iterator
+         it(tables.begin()),
+         end(tables.end());
+       it != end;
+       ++it)
+    _run_script(it->second.c_str());
 }
 
 /**
@@ -101,6 +148,73 @@ db::db(
 db::~db() {
   close();
 }
+
+/**
+ *  Check database content.
+ *
+ *  @param[in] columns   Number of columns returned in the query.
+ *  @param[in] query     SELECT query.
+ *  @param[in] expected  Expected content.
+ */
+template <int columns>
+void db::check_content(
+           std::string const& query,
+           predicate expected[][columns]) {
+  // Run query.
+  QSqlQuery q(*_db);
+  if (!q.exec(query.c_str()))
+    throw (exceptions::msg() << "could not run query: "
+           << q.lastError().text() << " (query was " << query << ")");
+
+  // Browse data.
+  int entry(0);
+  while (q.next()) {
+    if (!expected[entry][0].is_valid())
+      throw (exceptions::msg()
+             << "too much data returned by query (query was "
+             << query << ")");
+  }
+
+  // Check if enough data was provided.
+  if (expected[entry][0].is_valid())
+    throw (exceptions::msg()
+           << "not enough data returned by query (query was "
+           << query << ")");
+
+  return ;
+}
+
+// Generate templates.
+template void db::check_content<1>(std::string const& query, predicate expected[][1]);
+template void db::check_content<2>(std::string const& query, predicate expected[][2]);
+template void db::check_content<3>(std::string const& query, predicate expected[][3]);
+template void db::check_content<4>(std::string const& query, predicate expected[][4]);
+template void db::check_content<5>(std::string const& query, predicate expected[][5]);
+template void db::check_content<6>(std::string const& query, predicate expected[][6]);
+template void db::check_content<7>(std::string const& query, predicate expected[][7]);
+template void db::check_content<8>(std::string const& query, predicate expected[][8]);
+template void db::check_content<9>(std::string const& query, predicate expected[][9]);
+template void db::check_content<10>(std::string const& query, predicate expected[][10]);
+template void db::check_content<11>(std::string const& query, predicate expected[][11]);
+template void db::check_content<12>(std::string const& query, predicate expected[][12]);
+template void db::check_content<13>(std::string const& query, predicate expected[][13]);
+template void db::check_content<14>(std::string const& query, predicate expected[][14]);
+template void db::check_content<15>(std::string const& query, predicate expected[][15]);
+template void db::check_content<16>(std::string const& query, predicate expected[][16]);
+template void db::check_content<17>(std::string const& query, predicate expected[][17]);
+template void db::check_content<18>(std::string const& query, predicate expected[][18]);
+template void db::check_content<19>(std::string const& query, predicate expected[][19]);
+template void db::check_content<20>(std::string const& query, predicate expected[][20]);
+template void db::check_content<21>(std::string const& query, predicate expected[][21]);
+template void db::check_content<22>(std::string const& query, predicate expected[][22]);
+template void db::check_content<23>(std::string const& query, predicate expected[][23]);
+template void db::check_content<24>(std::string const& query, predicate expected[][24]);
+template void db::check_content<25>(std::string const& query, predicate expected[][25]);
+template void db::check_content<26>(std::string const& query, predicate expected[][26]);
+template void db::check_content<27>(std::string const& query, predicate expected[][27]);
+template void db::check_content<28>(std::string const& query, predicate expected[][28]);
+template void db::check_content<29>(std::string const& query, predicate expected[][29]);
+template void db::check_content<30>(std::string const& query, predicate expected[][30]);
 
 /**
  *  Close database.
@@ -140,6 +254,11 @@ QSqlDatabase* db::get_db() {
  *  @param[in] error_msg  Error message in case of execution failure.
  */
 void db::run(QString const& query, QString const& error_msg) {
+  QSqlQuery q(*_db);
+  if (!q.exec(query))
+    throw (exceptions::msg()
+           << error_msg << ": " << q.lastError().text());
+  return ;
 }
 
 /**
@@ -149,20 +268,6 @@ void db::run(QString const& query, QString const& error_msg) {
  */
 void db::set_remove_db_on_close(bool val) {
   _remove_db_on_close = val;
-  return ;
-}
-
-/**
- *  Run a query on the database.
- *
- *  @param[in] query      Query to run.
- *  @param[in] error_msg  Error message.
- */
-void db::_run_query(QString const& query, QString const& error_msg) {
-  QSqlQuery q(*_db);
-  if (!q.exec(query))
-    throw (exceptions::msg()
-           << error_msg << ": " << q.lastError().text());
   return ;
 }
 
