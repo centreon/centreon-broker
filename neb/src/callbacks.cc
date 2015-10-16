@@ -944,6 +944,7 @@ int neb::callback_group(int callback_type, void* data) {
       if (host_group->group_name) {
         misc::shared_ptr<neb::host_group> new_hg(new neb::host_group);
         new_hg->instance_id = instance_id;
+        new_hg->id = engine::get_hostgroup_id(host_group->group_name);
         if (host_group->action_url)
           new_hg->action_url = host_group->action_url;
         if (host_group->alias)
@@ -974,6 +975,7 @@ int neb::callback_group(int callback_type, void* data) {
         misc::shared_ptr<neb::service_group>
           new_sg(new neb::service_group);
         new_sg->instance_id = instance_id;
+        new_sg->id = engine::get_servicegroup_id(service_group->group_name);
         if (service_group->action_url)
           new_sg->action_url = service_group->action_url;
         if (service_group->alias)
