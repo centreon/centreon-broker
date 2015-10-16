@@ -514,10 +514,10 @@ int neb::callback_dependency(int callback_type, void* data) {
       }
       if (dep->dependent_host_name
           && dep->dependent_service_description) {
-        dep_host_id = engine::get_host_id(dep->host_name);
+        dep_host_id = engine::get_host_id(dep->dependent_host_name);
         dep_service_id = engine::get_service_id(
-                           dep->host_name,
-                           dep->service_description);
+                           dep->dependent_host_name,
+                           dep->dependent_service_description);
       }
       else {
         logging::error(logging::medium)

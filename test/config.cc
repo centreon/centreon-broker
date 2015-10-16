@@ -664,9 +664,6 @@ void config_write(
          ++it) {
       ofs << "define host{\n"
           << "  host_name " << it->name << "\n"
-          << "  _HOST_ID " << (it->display_name
-                               ? it->display_name
-                               : it->name) << "\n"
           << "  alias " << (it->alias ? it->alias : it->name) << "\n"
           << "  address " << (it->address ? it->address : "localhost")
           << "\n"
@@ -713,11 +710,19 @@ void config_write(
           << "\n";
       if (it->event_handler)
         ofs << "  event_handler " << it->event_handler << "\n";
+      bool host_id_provided = false;
       for (customvariablesmember* cvar(it->custom_variables);
            cvar;
-           cvar = cvar->next)
+           cvar = cvar->next) {
         ofs << "  _" << cvar->variable_name << " "
             << cvar->variable_value << "\n";
+        if (::strcmp(cvar->variable_name, "HOST_ID") == 0)
+          host_id_provided = true;
+      }
+      if (!host_id_provided)
+        ofs << "  _HOST_ID " << (it->display_name
+                                ? it->display_name
+                                : it->name) << "\n";
       ofs << "}\n\n";
     }
   ofs.close();
@@ -750,9 +755,6 @@ void config_write(
          ++it) {
       ofs << "define service{\n"
           << "  service_description " << it->description << "\n"
-          << "  _SERVICE_ID " << (it->display_name
-                                  ? it->display_name
-                                  : it->description) << "\n"
           << "  host_name " << it->host_name << "\n"
           << "  active_checks_enabled " << it->checks_enabled << "\n"
           << "  passive_checks_enabled "
@@ -793,11 +795,19 @@ void config_write(
           << "\n";
       if (it->event_handler)
         ofs << "  event_handler " << it->event_handler << "\n";
+      bool service_id_provided = false;
       for (customvariablesmember* cvar(it->custom_variables);
            cvar;
-           cvar = cvar->next)
+           cvar = cvar->next) {
         ofs << "  _" << cvar->variable_name << " "
             << cvar->variable_value << "\n";
+        if (::strcmp(cvar->variable_name, "SERVICE_ID") == 0)
+          service_id_provided = true;
+      }
+      if (!service_id_provided)
+        ofs << "  _SERVICE_ID " << (it->display_name
+                                   ? it->display_name
+                                   : it->description) << "\n";
       ofs << "}\n\n";
     }
   ofs.close();
@@ -844,6 +854,7 @@ void config_write(
          ++it) {
       ofs << "define hostgroup{\n"
           << "  hostgroup_name " << it->group_name << "\n";
+      ofs << "  hostgroup_id " << it->group_name << "\n";
       if (it->action_url)
         ofs << "  action_url " << it->action_url << "\n";
       if (it->alias)
@@ -878,6 +889,7 @@ void config_write(
          ++it) {
       ofs << "define servicegroup{\n"
           << "  servicegroup_name " << it->group_name << "\n";
+      ofs << "  servicegroup_id " << it->group_name << "\n";
       if (it->action_url)
         ofs << "  action_url " << it->action_url << "\n";
       if (it->alias)
