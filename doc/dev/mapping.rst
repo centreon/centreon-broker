@@ -1120,6 +1120,8 @@ state_changed                boolean          True if the state just changed.   
                                                                                               (BBDO 1.2.0).
 instance_id unsigned         integer          Instance ID.                                    Since 2.8.0
                                                                                               (BBDO 1.2.0).
+state                        short            The state of the meta service.                  Since 2.11.0
+                                                                                              (BBDO 1.2.1).
 ============================ ================ =============================================== =============
 
 BA-event event

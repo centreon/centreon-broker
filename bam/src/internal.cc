@@ -159,6 +159,10 @@ static mapped_data<bam::meta_service_status> const meta_service_status_mapping[]
     &bam::meta_service_status::instance_id,
     4,
     NULL),
+  mapped_data<bam::meta_service_status>(
+    &bam::meta_service_status::state,
+    5,
+    NULL),
   mapped_data<bam::meta_service_status>()
 };
 

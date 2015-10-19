@@ -28,7 +28,7 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 meta_service_status::meta_service_status()
-  : meta_service_id(0), state_changed(false), value(NAN) {}
+  : meta_service_id(0), state_changed(false), value(NAN), state(0) {}
 
 /**
  *  Copy constructor.
@@ -81,5 +81,6 @@ void meta_service_status::_internal_copy(
   meta_service_id = other.meta_service_id;
   state_changed = other.state_changed;
   value = other.value;
+  state = other.state;
   return ;
 }

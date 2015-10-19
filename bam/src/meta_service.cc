@@ -276,6 +276,7 @@ void meta_service::visit(io::stream* visitor) {
     status->meta_service_id = _id;
     status->value = _value;
     status->state_changed = (_last_state != new_state);
+    status->state = new_state;
     _last_state = new_state;
     logging::debug(logging::low)
       << "BAM: generating status of meta-service "

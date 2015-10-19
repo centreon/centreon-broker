@@ -44,6 +44,7 @@ namespace                bam {
     unsigned int         meta_service_id;
     bool                 state_changed;
     double               value;
+    short                state;
 
   private:
     void                 _internal_copy(
