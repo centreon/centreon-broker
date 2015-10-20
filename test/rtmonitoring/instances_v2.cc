@@ -68,7 +68,7 @@ int main() {
     test::centengine engine(engine_config);
     time_t t0(time(NULL));
     engine.start();
-    test::sleep_for(2);
+    test::sleep_for(8);
 
     // #1 Check entry insertion.
     time_t t1(time(NULL));

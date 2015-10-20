@@ -21,10 +21,12 @@
 #include <map>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QSqlRecord>
 #include <set>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/db.hh"
+#include "test/predicate.hh"
 #include "test/vars.hh"
 
 using namespace com::centreon::broker;
@@ -173,6 +175,27 @@ void db::check_content(
       throw (exceptions::msg()
              << "too much data returned by query (query was "
              << query << ")");
+    std::list<int> mismatching;
+    for (int i(0); i < columns; ++i)
+      if (expected[entry][i] != q.value(i))
+        mismatching.push_back(i);
+    if (!mismatching.empty()) {
+      exceptions::msg e;
+      e << "row " << entry << " does not match expected values: ";
+      QSqlRecord rec(q.record());
+      for (std::list<int>::const_iterator
+             it(mismatching.begin()),
+             end(mismatching.end());
+           it != end;
+           ++it) {
+        e << ((it == mismatching.begin()) ? "" : ", ")
+          << rec.fieldName(*it) << " "
+          << (q.value(*it).isNull() ? "NULL" : q.value(*it).toString())
+          << " / " << expected[entry][*it];
+      }
+      throw (e);
+    }
+    ++entry;
   }
 
   // Check if enough data was provided.

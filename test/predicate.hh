@@ -21,18 +21,19 @@
 
 #  include <ctime>
 #  include <QVariant>
+#  include "com/centreon/broker/misc/stringifier.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace      test {
+namespace       test {
   /**
    *  Class used to match some values to some predicate (another value,
    *  a range, a regex, ...).
    */
-  class        predicate {
+  class         predicate {
   public:
-    enum       value_type {
+    enum        value_type {
       type_invalid = -1,
       type_null,
       type_bool,
@@ -40,23 +41,6 @@ namespace      test {
       type_timet,
       type_uint
     };
-
-               predicate();
-               predicate(value_type t);
-               predicate(bool val);
-               predicate(double val);
-               predicate(time_t val);
-               predicate(unsigned int val);
-               predicate(time_t val1, time_t val2);
-               predicate(predicate const& other);
-               ~predicate();
-    predicate& operator=(predicate const& other);
-    bool       operator==(predicate const& other) const;
-    bool       operator==(QVariant const& other) const;
-    bool       is_null() const;
-    bool       is_valid() const;
-
-  private:
     union                uval {
       bool               bval;
       double             dval;
@@ -64,13 +48,40 @@ namespace      test {
       unsigned int       uival;
     };
 
-    bool       _range;
-    value_type _type;
-    uval       _val1;
-    uval       _val2;
+
+                predicate();
+                predicate(value_type t);
+                predicate(bool val);
+                predicate(double val);
+                predicate(time_t val);
+                predicate(unsigned int val);
+                predicate(time_t val1, time_t val2);
+                predicate(predicate const& other);
+                ~predicate();
+    predicate&  operator=(predicate const& other);
+    bool        operator==(predicate const& other) const;
+    bool        operator==(QVariant const& other) const;
+    bool        operator!=(predicate const& other) const;
+    bool        operator!=(QVariant const& other) const;
+    uval const& get_value() const;
+    uval const& get_value2() const;
+    value_type  get_value_type() const;
+    bool        is_null() const;
+    bool        is_range() const;
+    bool        is_valid() const;
+
+  private:
+    bool        _range;
+    value_type  _type;
+    uval        _val1;
+    uval        _val2;
   };
 }
 
 CCB_END()
+
+com::centreon::broker::misc::stringifier& operator<<(
+                                            com::centreon::broker::misc::stringifier& s,
+                                            com::centreon::broker::test::predicate const& p);
 
 #endif // !CCB_TEST_PREDICATE_HH

@@ -16,8 +16,11 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cmath>
+#include <cstring>
 #include "test/predicate.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::test;
 
 /**
@@ -119,6 +122,119 @@ predicate& predicate::operator=(predicate const& other) {
 }
 
 /**
+ *  Equality operator.
+ *
+ *  @param[in] other  Object to compare to.
+ *
+ *  @return True if other object matches this predicate.
+ */
+bool predicate::operator==(predicate const& other) const {
+  return ((_range == other._range)
+          && (_type == other._type)
+          && !memcmp(&_val1, &other._val1, sizeof(_val1))
+          && !memcmp(&_val2, &other._val2, sizeof(_val2)));
+}
+
+/**
+ *  Equality operator.
+ *
+ *  @param[in] other  Object to compare to.
+ *
+ *  @return True if other object matches this predicate.
+ */
+bool predicate::operator==(QVariant const& other) const {
+  bool retval;
+  if (!is_valid())
+    retval = false;
+  else if (is_null())
+    retval = other.isNull();
+  else if (is_range()) {
+    if (_type == type_double) {
+      double d(other.toDouble());
+      retval = (d >= _val1.dval) && (d <= _val2.dval);
+    }
+    else if (_type == type_timet) {
+      time_t t(other.toLongLong());
+      retval = (t >= _val1.tval) && (t <= _val2.tval);
+    }
+    else if (_type == type_uint) {
+      unsigned int u(other.toUInt());
+      retval = (u >= _val1.uival) && (u <= _val2.uival);
+    }
+    else
+      retval = false;
+  }
+  else if (_type == type_bool)
+    retval = (other.toBool() == _val1.bval);
+  else if (_type == type_double) {
+    double d(other.toDouble());
+    retval = (isnan(d) && isnan(_val1.dval))
+             || (isinf(d)
+                 && isinf(_val1.dval)
+                 && (std::signbit(d) == std::signbit(_val1.dval)))
+             || (std::isfinite(d)
+                 && std::isfinite(_val1.dval)
+                 && !(fabs(d - _val1.dval) > (0.01 * fabs(_val1.dval))));
+  }
+  else if (_type == type_timet)
+    retval = (other.toLongLong() == _val1.tval);
+  else if (_type == type_uint)
+    retval = (other.toUInt() == _val1.uival);
+  else
+    retval = false;
+  return (retval);
+}
+
+/**
+ *  Inequality operator.
+ *
+ *  @param[in] other  Object to compare to.
+ *
+ *  @return True if other object does not match this predicate.
+ */
+bool predicate::operator!=(predicate const& other) const {
+  return (!operator==(other));
+}
+
+/**
+ *  Inequality operator.
+ *
+ *  @param[in] other  Object to compare to.
+ *
+ *  @return True if other object does not match this predicate.
+ */
+bool predicate::operator!=(QVariant const& other) const {
+  return (!operator==(other));
+}
+
+/**
+ *  Get (first) value.
+ *
+ *  @return First value.
+ */
+predicate::uval const& predicate::get_value() const {
+  return (_val1);
+}
+
+/**
+ *  Get second value.
+ *
+ *  @return Second value.
+ */
+predicate::uval const& predicate::get_value2() const {
+  return (_val2);
+}
+
+/**
+ *  Get value type.
+ *
+ *  @return Value type.
+ */
+predicate::value_type predicate::get_value_type() const {
+  return (_type);
+}
+
+/**
  *  Check if the predicate is null.
  *
  *  @return True if the predicate is null.
@@ -128,10 +244,60 @@ bool predicate::is_null() const {
 }
 
 /**
+ *  Check if the predicate is a range.
+ *
+ *  @return True if the predicate is a range.
+ */
+bool predicate::is_range() const {
+  return (_range);
+}
+
+/**
  *  Check if the predicate is valid.
  *
  *  @return True if the predicate is valid.
  */
 bool predicate::is_valid() const {
   return (_type != type_invalid);
+}
+
+/**
+ *  Print a predicate to a stringifier.
+ *
+ *  @param[out] s  Stringifier.
+ *  @param[in]  p  Predicate.
+ *
+ *  @return The stringifier object.
+ */
+misc::stringifier& operator<<(
+                     misc::stringifier& s,
+                     predicate const& p) {
+  if (!p.is_valid())
+    s << "(invalid)";
+  else if (p.is_null())
+    s << "NULL";
+  else if (p.is_range()) {
+    if (p.get_value_type() == predicate::type_bool)
+      s << (p.get_value().bval ? "true" : "false")
+        << "-" << (p.get_value2().bval ? "true" : "false");
+    else if (p.get_value_type() == predicate::type_double)
+      s << p.get_value().dval << "-" << p.get_value2().dval;
+    else if (p.get_value_type() == predicate::type_timet)
+      s << p.get_value().tval << "-" << p.get_value2().tval;
+    else if (p.get_value_type() == predicate::type_uint)
+      s << p.get_value().uival << "-" << p.get_value2().uival;
+    else
+      s << "(unsupported)";
+  }
+  else if (p.get_value_type() == predicate::type_bool)
+    s << (p.get_value().bval ? "true" : "false");
+  else if (p.get_value_type() == predicate::type_double)
+    s << p.get_value().dval;
+  else if (p.get_value_type() == predicate::type_timet)
+    s << p.get_value().tval;
+  else if (p.get_value_type() == predicate::type_uint)
+    s << p.get_value().uival;
+  else
+    s << "(unsupported)";
+  return (s);
 }
