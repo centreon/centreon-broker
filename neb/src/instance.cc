@@ -143,7 +143,9 @@ mapping::entry const instance::entries[] = {
     "pid"),
   mapping::entry(
     &instance::program_end,
-    "end_time"),
+    "end_time",
+    mapping::entry::invalid_on_zero
+    | mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &instance::program_start,
     "start_time"),

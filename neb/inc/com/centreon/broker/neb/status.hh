@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -44,7 +44,9 @@ namespace        neb {
     status&      operator=(status const& s);
 
     bool         event_handler_enabled;
+    bool         failure_prediction_enabled;
     bool         flap_detection_enabled;
+    bool         notifications_enabled;
 
   private:
     void         _internal_copy(status const& s);

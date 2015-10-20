@@ -673,6 +673,7 @@ int neb::callback_host(int callback_type, void* data) {
       my_host->event_handler = h->event_handler;
     my_host->event_handler_enabled = h->event_handler_enabled;
     my_host->execution_time = h->execution_time;
+    my_host->failure_prediction_enabled = h->failure_prediction_enabled;
     my_host->flap_detection_enabled = h->flap_detection_enabled;
     my_host->flap_detection_on_down = h->flap_detection_on_down;
     my_host->flap_detection_on_unreachable
@@ -696,6 +697,7 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->low_flap_threshold = h->low_flap_threshold;
     my_host->max_check_attempts = h->max_attempts;
     my_host->next_check = h->next_check;
+    my_host->notifications_enabled = h->notifications_enabled;
     my_host->obsess_over = h->obsess_over_host;
     if (h->plugin_output) {
       my_host->output = h->plugin_output;
@@ -845,6 +847,8 @@ int neb::callback_host_status(int callback_type, void* data) {
       host_status->event_handler = h->event_handler;
     host_status->event_handler_enabled = h->event_handler_enabled;
     host_status->execution_time = h->execution_time;
+    host_status->failure_prediction_enabled
+      = h->failure_prediction_enabled;
     host_status->flap_detection_enabled = h->flap_detection_enabled;
     host_status->has_been_checked = h->has_been_checked;
     if (!h->name)
@@ -867,6 +871,7 @@ int neb::callback_host_status(int callback_type, void* data) {
     host_status->latency = h->latency;
     host_status->max_check_attempts = h->max_attempts;
     host_status->next_check = h->next_check;
+    host_status->notifications_enabled = h->notifications_enabled;
     host_status->obsess_over = h->obsess_over_host;
     if (h->plugin_output) {
       host_status->output = h->plugin_output;
@@ -1146,6 +1151,8 @@ int neb::callback_program_status(int callback_type, void* data) {
     is->poller_id = config::applier::state::instance().poller_id();
     is->event_handler_enabled
       = program_status_data->event_handlers_enabled;
+    is->failure_prediction_enabled
+      = program_status_data->failure_prediction_enabled;
     is->flap_detection_enabled
       = program_status_data->flap_detection_enabled;
     if (program_status_data->global_host_event_handler)
@@ -1156,6 +1163,8 @@ int neb::callback_program_status(int callback_type, void* data) {
         = program_status_data->global_service_event_handler;
     is->last_alive = time(NULL);
     is->last_command_check = program_status_data->last_command_check;
+    is->notifications_enabled
+      = program_status_data->notifications_enabled;
     is->obsess_over_hosts
       = program_status_data->obsess_over_hosts;
     is->obsess_over_services
@@ -1280,6 +1289,8 @@ int neb::callback_service(int callback_type, void* data) {
       my_service->event_handler = s->event_handler;
     my_service->event_handler_enabled = s->event_handler_enabled;
     my_service->execution_time = s->execution_time;
+    my_service->failure_prediction_enabled
+      = s->failure_prediction_enabled;
     my_service->flap_detection_enabled = s->flap_detection_enabled;
     my_service->flap_detection_on_critical = s->flap_detection_on_critical;
     my_service->flap_detection_on_ok = s->flap_detection_on_ok;
@@ -1305,6 +1316,7 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->low_flap_threshold = s->low_flap_threshold;
     my_service->max_check_attempts = s->max_attempts;
     my_service->next_check = s->next_check;
+    my_service->notifications_enabled = s->notifications_enabled;
     my_service->obsess_over = s->obsess_over_service;
     if (s->plugin_output) {
       my_service->output = s->plugin_output;
@@ -1471,6 +1483,8 @@ int neb::callback_service_status(int callback_type, void* data) {
       service_status->event_handler = s->event_handler;
     service_status->event_handler_enabled = s->event_handler_enabled;
     service_status->execution_time = s->execution_time;
+    service_status->failure_prediction_enabled
+      = s->failure_prediction_enabled;
     service_status->flap_detection_enabled = s->flap_detection_enabled;
     service_status->has_been_checked = s->has_been_checked;
     service_status->is_flapping = s->is_flapping;
@@ -1486,6 +1500,7 @@ int neb::callback_service_status(int callback_type, void* data) {
     service_status->latency = s->latency;
     service_status->max_check_attempts = s->max_attempts;
     service_status->next_check = s->next_check;
+    service_status->notifications_enabled = s->notifications_enabled;
     service_status->obsess_over = s->obsess_over_service;
     if (s->plugin_output) {
       service_status->output = s->plugin_output;

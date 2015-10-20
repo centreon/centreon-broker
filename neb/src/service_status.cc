@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -159,6 +159,12 @@ mapping::entry const service_status::entries[] = {
     &service_status::execution_time,
     "execution_time"),
   mapping::entry(
+    &service_status::failure_prediction_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "failure_prediction"),
+  mapping::entry(
     &service_status::flap_detection_enabled,
     "flap_detection"),
   mapping::entry(
@@ -210,6 +216,12 @@ mapping::entry const service_status::entries[] = {
   mapping::entry(
     &service_status::next_check,
     "next_check"),
+  mapping::entry(
+    &service_status::notifications_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify"),
   mapping::entry(
     &service_status::obsess_over,
     "obsess_over_service"),

@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Centreon
+** Copyright 2012-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -35,16 +35,16 @@ int main() {
   // Check.
   return (((is.source_id != 0)
            || (is.destination_id != 0)
-           || (is.address != "")
            || (is.check_hosts_freshness != false)
            || (is.check_services_freshness != false)
-           || (is.description != "")
            || (is.event_handler_enabled != false)
+           || (is.failure_prediction_enabled != false)
            || (is.flap_detection_enabled != false)
            || (is.global_host_event_handler != "")
            || (is.global_service_event_handler != "")
            || (is.last_alive != 0)
            || (is.last_command_check != 0)
+           || (is.notifications_enabled != false)
            || (is.obsess_over_hosts != false)
            || (is.obsess_over_services != false)
            || (is.type()

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -153,6 +153,12 @@ mapping::entry const host_status::entries[] = {
     &host_status::execution_time,
     "execution_time"),
   mapping::entry(
+    &host_status::failure_prediction_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "failure_prediction"),
+  mapping::entry(
     &host_status::flap_detection_enabled,
     "flap_detection"),
   mapping::entry(
@@ -198,6 +204,12 @@ mapping::entry const host_status::entries[] = {
   mapping::entry(
     &host_status::next_check,
     "next_check"),
+  mapping::entry(
+    &host_status::notifications_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify"),
   mapping::entry(
     &host_status::obsess_over,
     "obsess_over_host"),

@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ int main() {
            || !hs.event_handler.isEmpty()
            || hs.event_handler_enabled
            || (fabs(hs.execution_time) > 0.0001)
+           || hs.failure_prediction_enabled
            || hs.flap_detection_enabled
            || hs.has_been_checked
            || (hs.host_id != 0)
@@ -60,6 +61,7 @@ int main() {
            || (fabs(hs.latency) > 0.0001)
            || (hs.max_check_attempts != 0)
            || (hs.next_check != 0)
+           || hs.notifications_enabled
            || hs.obsess_over
            || !hs.output.isEmpty()
            || (fabs(hs.percent_state_change) > 0.0001)

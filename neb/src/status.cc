@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -33,7 +33,9 @@ using namespace com::centreon::broker::neb;
  */
 status::status()
   : event_handler_enabled(false),
-    flap_detection_enabled(false) {}
+    failure_prediction_enabled(false),
+    flap_detection_enabled(false),
+    notifications_enabled(false) {}
 
 /**
  *  @brief Copy constructor.
@@ -83,6 +85,8 @@ status& status::operator=(status const& s) {
  */
 void status::_internal_copy(status const& s) {
   event_handler_enabled = s.event_handler_enabled;
+  failure_prediction_enabled = s.failure_prediction_enabled;
   flap_detection_enabled = s.flap_detection_enabled;
+  notifications_enabled = s.notifications_enabled;
   return ;
 }

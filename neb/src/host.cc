@@ -208,6 +208,12 @@ mapping::entry const host::entries[] = {
     &host::execution_time,
     "execution_time"),
   mapping::entry(
+    &host::failure_prediction_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "failure_prediction"),
+  mapping::entry(
     &host::flap_detection_enabled,
     "flap_detection"),
   mapping::entry(
@@ -278,6 +284,12 @@ mapping::entry const host::entries[] = {
   mapping::entry(
     &host::next_check,
     "next_check"),
+  mapping::entry(
+    &host::notifications_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify"),
   mapping::entry(
     &host::obsess_over,
     "obsess_over_host"),

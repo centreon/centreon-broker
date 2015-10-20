@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ int main() {
            || !s.event_handler.isEmpty()
            || s.event_handler_enabled
            || (fabs(s.execution_time) > 0.001)
+           || s.failure_prediction_enabled
            || s.flap_detection_enabled
            || s.flap_detection_on_critical
            || s.flap_detection_on_ok
@@ -74,6 +75,7 @@ int main() {
            || (fabs(s.low_flap_threshold) > 0.001)
            || (s.max_check_attempts != 0)
            || (s.next_check != 0)
+           || s.notifications_enabled
            || s.obsess_over
            || !s.output.isEmpty()
            || (fabs(s.percent_state_change) > 0.001)

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -110,10 +110,8 @@ unsigned int instance_status::static_type() {
  *  @param[in] other  Object to copy.
  */
 void instance_status::_internal_copy(instance_status const& other) {
-  address = other.address;
   check_hosts_freshness = other.check_hosts_freshness;
   check_services_freshness = other.check_services_freshness;
-  description = other.description;
   global_host_event_handler = other.global_host_event_handler;
   global_service_event_handler = other.global_service_event_handler;
   last_alive = other.last_alive;
@@ -133,20 +131,20 @@ void instance_status::_internal_copy(instance_status const& other) {
 // Mapping.
 mapping::entry const instance_status::entries[] = {
   mapping::entry(
-    &instance_status::address,
-    "address"),
-  mapping::entry(
     &instance_status::check_hosts_freshness,
     "check_hosts_freshness"),
   mapping::entry(
     &instance_status::check_services_freshness,
     "check_services_freshness"),
   mapping::entry(
-    &instance_status::description,
-    "description"),
-  mapping::entry(
     &instance_status::event_handler_enabled,
     "event_handlers"),
+  mapping::entry(
+    &instance_status::failure_prediction_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "failure_prediction"),
   mapping::entry(
     &instance_status::flap_detection_enabled,
     "flap_detection"),
@@ -160,6 +158,12 @@ mapping::entry const instance_status::entries[] = {
   mapping::entry(
     &instance_status::last_command_check,
     "last_command_check"),
+  mapping::entry(
+    &instance_status::notifications_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notifications"),
   mapping::entry(
     &instance_status::obsess_over_hosts,
     "obsess_over_hosts"),
