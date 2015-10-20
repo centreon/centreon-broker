@@ -43,7 +43,7 @@ namespace         neb {
     group_member& operator=(group_member const& gm);
 
     bool          enabled;
-    QString       group;
+    unsigned int  group_id;
     unsigned int  host_id;
 
   private:

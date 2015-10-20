@@ -1037,22 +1037,21 @@ int neb::callback_group_member(int callback_type, void* data) {
         // Output variable.
         misc::shared_ptr<neb::host_group_member>
           hgm(new neb::host_group_member);
-        hgm->instance_id = instance_id;
-        hgm->group = hg->group_name;
+        hgm->group_id = engine::get_hostgroup_id(hg->group_name);
         hgm->instance_id = neb::instance_id;
         unsigned int host_id = engine::get_host_id(hst->name);
-        if (host_id != 0) {
+        if (host_id != 0 && hgm->group_id != 0) {
           hgm->host_id = host_id;
           if (member_data->type == NEBTYPE_HOSTGROUPMEMBER_DELETE) {
             logging::info(logging::low) << "callbacks: host "
               << hgm->host_id << " is not a member of group '"
-              << hgm->group << "' on instance " << hgm->instance_id
+              << hgm->group_id << "' on instance " << hgm->instance_id
               << " anymore";
             hgm->enabled = false;
           }
           else {
             logging::info(logging::low) << "callbacks: host "
-              << hgm->host_id << " is a member of group '" << hgm->group
+              << hgm->host_id << " is a member of group '" << hgm->group_id
               << "' on instance " << hgm->instance_id;
             hgm->enabled = true;
           }
@@ -1077,25 +1076,24 @@ int neb::callback_group_member(int callback_type, void* data) {
         // Output variable.
         misc::shared_ptr<neb::service_group_member>
           sgm(new neb::service_group_member);
-        sgm->instance_id = instance_id;
-        sgm->group = sg->group_name;
+        sgm->group_id = engine::get_servicegroup_id(sg->group_name);
         sgm->instance_id = neb::instance_id;
         sgm->host_id = engine::get_host_id(svc->host_name);
         sgm->service_id = engine::get_service_id(
                             svc->host_name,
                             svc->description);
-        if (sgm->host_id && sgm->service_id) {
+        if (sgm->host_id && sgm->service_id && sgm->group_id) {
           if (member_data->type == NEBTYPE_SERVICEGROUPMEMBER_DELETE) {
             logging::info(logging::low) << "callbacks: service ("
               << sgm->host_id << ", " << sgm->service_id
-              << ") is not a member of group '" << sgm->group
+              << ") is not a member of group '" << sgm->group_id
               << "' on instance " << sgm->instance_id << " anymore";
             sgm->enabled = false;
           }
           else {
             logging::info(logging::low) << "callbacks: service ("
               << sgm->host_id << ", " << sgm->service_id
-              << ") is a member of group '" << sgm->group
+              << ") is a member of group '" << sgm->group_id
               << "' on instance " << sgm->instance_id;
             sgm->enabled = true;
           }

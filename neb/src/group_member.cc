@@ -30,7 +30,7 @@ using namespace com::centreon::broker;
  *  Default constructor.
  */
 neb::group_member::group_member()
-  : enabled(true), host_id(0) {}
+  : enabled(true), group_id(0), host_id(0) {}
 
 /**
  *  Copy constructor.
@@ -76,7 +76,7 @@ neb::group_member& neb::group_member::operator=(group_member const& gm) {
  */
 void neb::group_member::_internal_copy(group_member const& gm) {
   enabled = gm.enabled;
-  group = gm.group;
+  group_id = gm.group_id;
   host_id = gm.host_id;
     return ;
 }

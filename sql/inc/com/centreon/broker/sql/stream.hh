@@ -148,6 +148,8 @@ namespace          sql {
     database_query _host_dependency_update;
     database_query _host_group_insert;
     database_query _host_group_update;
+    database_query _host_group_member_insert;
+    database_query _host_group_member_delete;
     database_query _host_parent_insert;
     database_query _host_parent_select;
     database_query _host_state_insert;
@@ -171,6 +173,8 @@ namespace          sql {
     database_query _service_dependency_update;
     database_query _service_group_insert;
     database_query _service_group_update;
+    database_query _service_group_member_insert;
+    database_query _service_group_member_delete;
     database_query _service_state_insert;
     database_query _service_state_update;
     database_query _service_status_update;

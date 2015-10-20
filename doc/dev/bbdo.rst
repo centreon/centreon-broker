@@ -118,7 +118,7 @@ Host                   8
 Host check             9
 Host dependency        10
 Host group             11
-Host group member      12
+Host group member      27
 Host parent            13
 Host status            14
 Instance               15
@@ -130,9 +130,11 @@ Service                20
 Service check          21
 Service dependency     22
 Service group          23
-Service group member   24
+Service group member   28
 Service status         25
 Instance configuration 26
+Deprecated             12
+Deprecated             24
 ====================== =====
 
 Storage

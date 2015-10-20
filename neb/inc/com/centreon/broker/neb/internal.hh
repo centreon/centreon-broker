@@ -45,7 +45,7 @@ namespace neb {
     de_host_check,
     de_host_dependency,
     de_host_group,
-    de_host_group_member,
+    de_deprecated_host_group_member, // DEPRECATED
     de_host,
     de_host_parent,
     de_host_status,
@@ -57,10 +57,12 @@ namespace neb {
     de_service_check,
     de_service_dependency,
     de_service_group,
-    de_service_group_member,
+    de_deprecated_service_group_member, // DEPRECATED
     de_service,
     de_service_status,
-    de_instance_configuration
+    de_instance_configuration,
+    de_host_group_member,
+    de_service_group_member
   };
 
   // Configuration file.

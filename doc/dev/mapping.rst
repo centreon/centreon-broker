@@ -346,7 +346,7 @@ Property    Type             Description                                 Version
 =========== ================ =========================================== =============
 enabled     boolean          True if the membership is enabled, false if
                              it is not (deletion).
-group       string           Group name.
+group_id    unsigned integer The host group id.
 instance_id unsigned integer Instance ID.
 host_id     unsigned integer Host ID.
 =========== ================ =========================================== =============
@@ -761,7 +761,7 @@ Property    Type             Description                                 Version
 =========== ================ =========================================== =============
 enabled     boolean          True if the membership is enabled, false if
                              it is not (deletion).
-group       string           Group name.
+group_id    unsigned integer The service group ID.
 host_id     unsigned integer Host ID.
 instance_id unsigned integer Instance ID.
 service_id  unsigned integer Service ID.

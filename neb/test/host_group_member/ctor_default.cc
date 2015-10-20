@@ -33,7 +33,7 @@ int main() {
 
   // Check.
   return ((hgrpmmbr.enabled != true)
-          || (hgrpmmbr.group != "")
+          || (hgrpmmbr.group_id != 0)
           || (hgrpmmbr.host_id != 0)
           || (hgrpmmbr.instance_id != 0)
           || (hgrpmmbr.type()

@@ -33,7 +33,7 @@ int main() {
 
   // Check.
   return ((sgrpmmbr.enabled != true)
-          || (sgrpmmbr.group != "")
+          || (sgrpmmbr.group_id != 0)
           || (sgrpmmbr.host_id != 0)
           || (sgrpmmbr.instance_id != 0)
           || (sgrpmmbr.service_id != 0)
