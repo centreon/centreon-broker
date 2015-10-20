@@ -20,6 +20,7 @@
 #  define CCB_TEST_CENTENGINE_CONFIG_HH
 
 #  include <list>
+#  include <map>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/engine/objects.hh"
 
@@ -50,6 +51,8 @@ namespace                     test {
     std::string const&        get_cbmod_cfg_file() const;
     std::list<command>&       get_commands();
     std::list<command> const& get_commands() const;
+    std::map<std::string, std::string> const&
+                              get_directives() const;
     std::list<host>&          get_hosts();
     std::list<host> const&    get_hosts() const;
     std::list<hostdependency>&
@@ -69,6 +72,9 @@ namespace                     test {
                                 char const* depended_service);
     void                      set_cbmod_cfg_file(
                                 std::string const& cfg_path);
+    void                      set_directive(
+                                std::string const& directive,
+                                std::string const& value);
     void                      set_host_custom_variable(
                                 char const* host_name,
                                 char const* var_name,
@@ -90,6 +96,8 @@ namespace                     test {
 
     std::string               _cbmod_cfg;
     std::list<command>        _commands;
+    std::map<std::string, std::string>
+                              _directives;
     std::list<host>           _hosts;
     std::list<hostdependency> _host_deps;
     std::list<service>        _services;

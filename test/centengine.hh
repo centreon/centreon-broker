@@ -26,8 +26,8 @@
 
 CCB_BEGIN()
 
-namespace       test {
-  class         centengine_config;
+namespace                    test {
+  class                      centengine_config;
 
   /**
    *  @class centengine centengine.hh "test/centengine.hh"
@@ -35,22 +35,23 @@ namespace       test {
    *
    *  Some monitoring engine such as Centreon Engine.
    */
-  class         centengine {
+  class                      centengine {
   public:
-                centengine(centengine_config const& cfg);
-                ~centengine();
-  void          reload();
-  void          start();
-  void          stop();
+                             centengine(centengine_config const* cfg);
+                             ~centengine();
+  void                       reload();
+  void                       start();
+  void                       stop();
 
   private:
-                centengine(centengine const& other);
-    centengine& operator=(centengine const& other);
+                             centengine(centengine const& other);
+    centengine&              operator=(centengine const& other);
+    void                     _write_cfg();
 
-    std::string _config_path;
-    QProcess    _engine;
-    centengine_extcmd
-                _extcmd;
+    centengine_config const* _config;
+    std::string              _config_path;
+    QProcess                 _engine;
+    centengine_extcmd        _extcmd;
   };
 }
 

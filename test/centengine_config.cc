@@ -20,6 +20,7 @@
 #include <sstream>
 #include "com/centreon/engine/objects.hh"
 #include "test/centengine_config.hh"
+#include "test/vars.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::test;
@@ -27,7 +28,28 @@ using namespace com::centreon::broker::test;
 /**
  *  Default constructor.
  */
-centengine_config::centengine_config() {}
+centengine_config::centengine_config() {
+  // Default directives.
+  set_directive("log_file", "monitoring_engine.log");
+  set_directive("command_file", "monitoring_engine.cmd");
+  set_directive("state_retention_file", "");
+  set_directive("check_result_reaper_frequency", "2");
+  // Deprecated in Centreon Engine 2.x.
+  set_directive("accept_passive_host_checks", "1");
+  set_directive("accept_passive_service_checks", "1");
+  set_directive("check_result_path", ".");
+  set_directive("event_broker_options", "-1");
+  set_directive("execute_host_checks", "1");
+  set_directive("execute_service_checks", "1");
+  set_directive("interval_length", MONITORING_ENGINE_INTERVAL_LENGTH_STR);
+  set_directive("max_service_check_spread", "1");
+  set_directive("max_concurrent_checks", "200");
+  set_directive("service_inter_check_delay_method", "s");
+  set_directive("sleep_time", "0.01");
+  set_directive("status_file", "monitoring_engine_status.dat");
+  set_directive("service_inter_check_delay_method", "n");
+  set_directive("host_inter_check_delay_method", "n");
+}
 
 /**
  *  Destructor.
@@ -392,6 +414,15 @@ std::list<command> const& centengine_config::get_commands() const {
 }
 
 /**
+ *  Get global directives.
+ *
+ *  @return Directives map.
+ */
+std::map<std::string, std::string> const& centengine_config::get_directives() const {
+  return (_directives);
+}
+
+/**
  *  Get host list.
  *
  *  @return Modifiable host list.
@@ -498,6 +529,19 @@ void centengine_config::service_depends_on(
 void centengine_config::set_cbmod_cfg_file(
                           std::string const& cfg_path) {
   _cbmod_cfg = cfg_path;
+  return ;
+}
+
+/**
+ *  Set a global directive.
+ *
+ *  @param[in] directive  Directive name.
+ *  @param[in] value      Directive value.
+ */
+void centengine_config::set_directive(
+                          std::string const& directive,
+                          std::string const& value) {
+  _directives[directive] = value;
   return ;
 }
 

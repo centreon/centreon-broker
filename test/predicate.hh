@@ -38,12 +38,14 @@ namespace       test {
       type_null,
       type_bool,
       type_double,
+      type_string,
       type_timet,
       type_uint
     };
     union                uval {
       bool               bval;
       double             dval;
+      char const*        sval;
       time_t             tval;
       unsigned int       uival;
     };
@@ -53,6 +55,7 @@ namespace       test {
                 predicate(value_type t);
                 predicate(bool val);
                 predicate(double val);
+                predicate(char const* val);
                 predicate(time_t val);
                 predicate(unsigned int val);
                 predicate(time_t val1, time_t val2);

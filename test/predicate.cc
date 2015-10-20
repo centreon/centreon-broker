@@ -60,6 +60,16 @@ predicate::predicate(double val) : _range(false), _type(type_double) {
 /**
  *  Constructor.
  *
+ *  @param[in] val  String value.
+ */
+predicate::predicate(char const* val)
+  : _range(false), _type(type_string) {
+  _val1.sval = val;
+}
+
+/**
+ *  Constructor.
+ *
  *  @param[in] val  Time value.
  */
 predicate::predicate(time_t val) : _range(false), _type(type_timet) {
@@ -95,9 +105,10 @@ predicate::predicate(time_t val1, time_t val2)
  */
 predicate::predicate(predicate const& other)
   : _range(other._range),
-    _type(other._type),
-    _val1(other._val1),
-    _val2(other._val2) {}
+    _type(other._type) {
+  memcpy(&_val1, &other._val1, sizeof(_val1));
+  memcpy(&_val2, &other._val2, sizeof(_val2));
+}
 
 /**
  *  Destructor.
@@ -176,6 +187,8 @@ bool predicate::operator==(QVariant const& other) const {
                  && std::isfinite(_val1.dval)
                  && !(fabs(d - _val1.dval) > (0.01 * fabs(_val1.dval))));
   }
+  else if (_type == type_string)
+    retval = (other.toString() == _val1.sval);
   else if (_type == type_timet)
     retval = (other.toLongLong() == _val1.tval);
   else if (_type == type_uint)
@@ -293,6 +306,8 @@ misc::stringifier& operator<<(
     s << (p.get_value().bval ? "true" : "false");
   else if (p.get_value_type() == predicate::type_double)
     s << p.get_value().dval;
+  else if (p.get_value_type() == predicate::type_string)
+    s << p.get_value().sval;
   else if (p.get_value_type() == predicate::type_timet)
     s << p.get_value().tval;
   else if (p.get_value_type() == predicate::type_uint)

@@ -37,13 +37,75 @@ using namespace com::centreon::broker::test;
 **************************************/
 
 /**
- *  Default constructor.
+ *  Constructor.
+ *
+ *  @param[in] cfg  Pointer to centengine configuration object.
+ *                  Configuration object must remain valid
+ *                  thorough centengine lifetime.
  */
-centengine::centengine(centengine_config const& cfg) {
+centengine::centengine(centengine_config const* cfg) : _config(cfg) {
   // Create base directory.
   _config_path = tmpnam(NULL);
   mkdir(_config_path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
 
+  // Write configuration files.
+  _write_cfg();
+}
+
+/**
+ *  Destructor.
+ */
+centengine::~centengine() {
+  stop();
+  recursive_remove(_config_path);
+}
+
+/**
+ *  Reload Engine.
+ */
+void centengine::reload() {
+  _write_cfg();
+  pid_t pid(_engine.pid());
+  if ((pid != (pid_t)0) && (pid != (pid_t)-1))
+    kill(pid, SIGHUP);
+  return ;
+}
+
+/**
+ *  Start monitoring engine.
+ */
+void centengine::start() {
+  if (_engine.state() == QProcess::NotRunning) {
+    QString config_file;
+    config_file = _config_path.c_str();
+    config_file.append("/centengine.cfg");
+    QStringList args;
+    args.push_back(config_file);
+    _engine.start(MONITORING_ENGINE, args);
+    _engine.waitForStarted();
+  }
+  return ;
+}
+
+/**
+ *  Stop monitoring engine.
+ */
+void centengine::stop() {
+  if (_engine.state() != QProcess::NotRunning) {
+    _engine.terminate();
+    _engine.waitForFinished(20000);
+    if (_engine.state() != QProcess::NotRunning) {
+      _engine.kill();
+      _engine.waitForFinished(-1);
+    }
+  }
+  return ;
+}
+
+/**
+ *  Write configuration files.
+ */
+void centengine::_write_cfg() {
   // Open base file.
   std::ofstream ofs;
   {
@@ -57,28 +119,13 @@ centengine::centengine(centengine_config const& cfg) {
              << _config_path << "'");
   }
 
-  // Base configuration.
-  ofs << "log_file=monitoring_engine.log\n"
-      << "command_file=monitoring_engine.cmd\n"
-      << "state_retention_file=\n"
-      << "check_result_reaper_frequency=2\n"
-    // Deprecated in Centreon Engine 2.x.
-      << "accept_passive_host_checks=1\n"
-      << "accept_passive_service_checks=1\n"
-      << "check_result_path=.\n"
-      << "event_broker_options=-1\n"
-      << "execute_host_checks=1\n"
-      << "execute_service_checks=1\n"
-      << "interval_length=" MONITORING_ENGINE_INTERVAL_LENGTH_STR "\n"
-      << "max_service_check_spread=1\n"
-      << "max_concurrent_checks=200\n"
-      << "service_inter_check_delay_method=s\n"
-      << "sleep_time=0.01\n"
-      << "status_file=monitoring_engine_status.dat\n"
-      << "service_inter_check_delay_method=n\n"
-      << "host_inter_check_delay_method=n\n"
-      << "temp_file=monitoring_engine.tmp\n"
-      << "temp_path=.\n";
+  // Write configured directives.
+  for (std::map<std::string, std::string>::const_iterator
+         it(_config->get_directives().begin()),
+         end(_config->get_directives().end());
+       it != end;
+       ++it)
+    ofs << it->first << "=" << it->second << "\n";
 
   // Subconfiguration files.
   std::string hosts_file;
@@ -126,7 +173,7 @@ centengine::centengine(centengine_config const& cfg) {
 
   // cbmod.
   ofs << "broker_module=" << CBMOD_PATH << " "
-      << cfg.get_cbmod_cfg_file() << "\n";
+      << _config->get_cbmod_cfg_file() << "\n";
 
   // External command.
   ofs << _extcmd.get_engine_config();
@@ -157,8 +204,8 @@ centengine::centengine(centengine_config const& cfg) {
       << "  contacts default_contact\n"
       << "}\n\n";
   for (std::list<host>::const_iterator
-         it(cfg.get_hosts().begin()),
-         end(cfg.get_hosts().end());
+         it(_config->get_hosts().begin()),
+         end(_config->get_hosts().end());
        it != end;
        ++it) {
     ofs << "define host{\n"
@@ -246,8 +293,8 @@ centengine::centengine(centengine_config const& cfg) {
       << "  contacts default_contact\n"
       << "}\n\n";
   for (std::list<service>::const_iterator
-         it(cfg.get_services().begin()),
-         end(cfg.get_services().end());
+         it(_config->get_services().begin()),
+         end(_config->get_services().end());
        it != end;
        ++it) {
     ofs << "define service{\n"
@@ -315,8 +362,8 @@ centengine::centengine(centengine_config const& cfg) {
       << "  command_line " MY_PLUGIN_PATH " 0\n"
       << "}\n\n";
   for (std::list<command>::const_iterator
-         it(cfg.get_commands().begin()),
-         end(cfg.get_commands().end());
+         it(_config->get_commands().begin()),
+         end(_config->get_commands().end());
        it != end;
        ++it) {
     ofs << "define command{\n"
@@ -337,8 +384,8 @@ centengine::centengine(centengine_config const& cfg) {
            << "cannot open host dependencies configuration file in '"
            << _config_path << "'");
   for (std::list<hostdependency>::const_iterator
-         it(cfg.get_host_dependencies().begin()),
-         end(cfg.get_host_dependencies().end());
+         it(_config->get_host_dependencies().begin()),
+         end(_config->get_host_dependencies().end());
        it != end;
        ++it) {
     ofs << "define hostdependency{\n"
@@ -359,8 +406,8 @@ centengine::centengine(centengine_config const& cfg) {
            << "cannot open service dependencies configuration file in '"
            << _config_path << "'");
   for (std::list<servicedependency>::const_iterator
-         it(cfg.get_service_dependencies().begin()),
-         end(cfg.get_service_dependencies().end());
+         it(_config->get_service_dependencies().begin()),
+         end(_config->get_service_dependencies().end());
        it != end;
        ++it) {
     ofs << "define servicedependency{\n"
@@ -404,53 +451,4 @@ centengine::centengine(centengine_config const& cfg) {
       << "}\n"
       << "\n";
   ofs.close();
-}
-
-/**
- *  Destructor.
- */
-centengine::~centengine() {
-  stop();
-  recursive_remove(_config_path);
-}
-
-/**
- *  Reload Engine.
- */
-void centengine::reload() {
-  pid_t pid(_engine.pid());
-  if ((pid != (pid_t)0) && (pid != (pid_t)-1))
-    kill(pid, SIGHUP);
-  return ;
-}
-
-/**
- *  Start monitoring engine.
- */
-void centengine::start() {
-  if (_engine.state() == QProcess::NotRunning) {
-    QString config_file;
-    config_file = _config_path.c_str();
-    config_file.append("/centengine.cfg");
-    QStringList args;
-    args.push_back(config_file);
-    _engine.start(MONITORING_ENGINE, args);
-    _engine.waitForStarted();
-  }
-  return ;
-}
-
-/**
- *  Stop monitoring engine.
- */
-void centengine::stop() {
-  if (_engine.state() != QProcess::NotRunning) {
-    _engine.terminate();
-    _engine.waitForFinished(20000);
-    if (_engine.state() != QProcess::NotRunning) {
-      _engine.kill();
-      _engine.waitForFinished(-1);
-    }
-  }
-  return ;
 }
