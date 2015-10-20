@@ -81,7 +81,7 @@ entry& entry::operator=(entry const& other) {
  *
  *  @return Entry attribute.
  */
-entry::attribute entry::get_attribute() const {
+unsigned int entry::get_attribute() const {
   return (_attribute);
 }
 
