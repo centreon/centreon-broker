@@ -208,7 +208,7 @@ CREATE TABLE hostgroups (
   notes_url varchar(160) default NULL,
   enabled char(1) default 1 NOT NULL,
 
-  PRIMARY KEY (hostgroup_id),
+  PRIMARY KEY (hostgroup_id, instance_id),
   UNIQUE (name, instance_id),
   FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
     ON DELETE CASCADE
@@ -396,7 +396,7 @@ CREATE TABLE servicegroups (
   notes_url varchar(160) default NULL,
   enabled char(1) default 1 NOT NULL,
 
-  PRIMARY KEY (servicegroup_id),
+  PRIMARY KEY (servicegroup_id, instance_id),
   FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
     ON DELETE CASCADE
 );

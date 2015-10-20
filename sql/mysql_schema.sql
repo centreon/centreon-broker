@@ -209,7 +209,7 @@ CREATE TABLE hostgroups (
   notes_url varchar(160) default NULL,
   enabled bool NOT NULL default true,
 
-  UNIQUE (hostgroup_id, instance_id),
+  PRIMARY KEY (hostgroup_id, instance_id),
   FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -386,7 +386,7 @@ CREATE TABLE servicegroups (
   notes_url varchar(160) default NULL,
   enabled bool NOT NULL default true,
 
-  UNIQUE (servicegroup_id, instance_id),
+  PRIMARY KEY (servicegroup_id, instance_id),
   FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
