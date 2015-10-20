@@ -25,12 +25,56 @@
 #include "test/file.hh"
 #include "test/misc.hh"
 #include "test/predicate.hh"
+#include "test/time_points.hh"
 #include "test/vars.hh"
 
 using namespace com::centreon::broker;
 
 #define TEST_NAME "rtmonitoring_instances_v2"
 #define DB_NAME "broker_" TEST_NAME
+
+// Check count.
+static int check_number(0);
+
+/**
+ *  Precheck routine.
+ */
+static void precheck(test::time_points& tpoints, char const* name) {
+  ++check_number;
+  std::cout << "check #" << check_number << " (" << name << ")\n";
+  tpoints.store();
+  return ;
+}
+
+/**
+ *  Postcheck routine.
+ */
+static void postcheck(
+              test::centengine& engine,
+              test::time_points& tpoints,
+              test::db& db,
+              test::predicate expected[][25]) {
+  static std::string check_query(
+    "SELECT instance_id, name, active_host_checks,"
+    "       active_service_checks, check_hosts_freshness,"
+    "       check_services_freshness, deleted, end_time, engine,"
+    "       event_handlers, failure_prediction, flap_detection,"
+    "       global_host_event_handler,"
+    "       global_service_event_handler, last_alive,"
+    "       last_command_check, notifications, obsess_over_hosts,"
+    "       obsess_over_services, outdated, passive_host_checks,"
+    "       passive_service_checks, pid, running, start_time"
+    // XXX : not checked yet       "       version"
+    "  FROM instances");
+  engine.reload();
+  test::sleep_for(3);
+  tpoints.store();
+  expected[0][14]
+    = test::predicate(tpoints.prelast(), tpoints.last() + 1);
+  db.check_content(check_query, expected);
+  std::cout << "  passed\n";
+  return ;
+}
 
 /**
  *  Check that the instances table work properly.
@@ -43,7 +87,7 @@ int main() {
 
   try {
     // Database.
-    char const* tables[] = { RTMONITORING_TABLES_V2, NULL };
+    char const* tables[] = { "instances", NULL };
     test::db db(DB_NAME, tables);
 
     // Monitoring engine.
@@ -65,48 +109,169 @@ int main() {
     engine_config.generate_hosts(3);
     engine_config.generate_services(5);
     engine_config.set_cbmod_cfg_file(cbmod_cfg.generate());
-    test::centengine engine(engine_config);
-    time_t t0(time(NULL));
-    engine.start();
-    test::sleep_for(8);
+    engine_config.set_directive("accept_passive_host_checks", "0");
+    engine_config.set_directive("accept_passive_service_checks", "0");
+    engine_config.set_directive("check_host_freshness", "0");
+    engine_config.set_directive("check_service_freshness", "0");
+    engine_config.set_directive("enable_event_handlers", "0");
+    engine_config.set_directive("enable_failure_prediction", "0");
+    engine_config.set_directive("enable_flap_detection", "0");
+    engine_config.set_directive("enable_notifications", "0");
+    engine_config.set_directive("execute_host_checks", "0");
+    engine_config.set_directive("execute_service_checks", "0");
+    engine_config.set_directive("obsess_over_hosts", "0");
+    engine_config.set_directive("obsess_over_services", "0");
+    test::centengine engine(&engine_config);
 
-    // #1 Check entry insertion.
-    time_t t1(time(NULL));
-    {
-      std::string query(
-        "SELECT instance_id, name, active_host_checks,"
-        "       active_service_checks, check_hosts_freshness,"
-        "       check_services_freshness, deleted, end_time, engine,"
-        "       event_handlers, failure_prediction, flap_detection,"
-        "       global_host_event_handler,"
-        "       global_service_event_handler, last_alive,"
-        "       last_command_check, notifications, obsess_over_hosts,"
-        "       obsess_over_services, outdated, passive_host_checks,"
-        "       passive_service_checks, pid, running, start_time"
-        // XXX : not checked yet       "       version"
-        "  FROM instances");
-      test::predicate expected[][25] = {
-        { 42u, "my-poller", true, true, false, false, false,
-          test::predicate(test::predicate::type_null), "Centreon Engine",
-          false, false, false, "", "", test::predicate(t0, t1 + 1),
-          test::predicate(t0, t1 + 1), false, false, false, false, true,
-          true, true,// PID will be converted to boolean, any non-0 will match.
-          true, test::predicate(t0, t1 + 1) },
-        { test::predicate() }
-      };
-      db.check_content(query, expected);
-    }
+    // Objects.
+    test::time_points tpoints;
+
+    // Check default entry.
+    precheck(tpoints, "engine, last_alive, pid, running, start_time");
+    engine.start();
+    test::sleep_for(1);
+    test::predicate expected[][25] = {
+      { 42u, "my-poller", false, false, false, false, false,
+        test::predicate(test::predicate::type_null), "Centreon Engine",
+        false, false, false, "", "",
+        test::predicate(tpoints.prelast(), tpoints.last() + 1),
+        test::predicate(test::predicate::type_null), false, false,
+        false, false, false, false,
+        true, // PID will be converted to boolean, any non-0 will match.
+        true, test::predicate(tpoints.prelast(), tpoints.last() + 1) },
+      { test::predicate() }
+    };
+    postcheck(engine, tpoints, db, expected);
+
+    // Check name.
+    precheck(tpoints, "name");
     // XXX
+    // postcheck(engine, tpoints, db, expected);
+    std::cout << "  not tested\n";
+
+    // Check active_host_checks.
+    precheck(tpoints, "active_host_checks");
+    engine_config.set_directive("execute_host_checks", "1");
+    expected[0][2] = true;
+    postcheck(engine, tpoints, db, expected);
+
+    // Check active_service_checks.
+    precheck(tpoints, "active_service_checks");
+    engine_config.set_directive("execute_service_checks", "1");
+    expected[0][3] = true;
+    postcheck(engine, tpoints, db, expected);
+
+    // Check check_hosts_freshness.
+    precheck(tpoints, "check_hosts_freshness");
+    engine_config.set_directive("check_host_freshness", "1");
+    expected[0][4] = true;
+    postcheck(engine, tpoints, db, expected);
+
+    // Check check_service_freshness.
+    precheck(tpoints, "check_service_freshness");
+    engine_config.set_directive("check_service_freshness", "1");
+    expected[0][5] = true;
+    postcheck(engine, tpoints, db, expected);
+
+    // Check event_handlers.
+    precheck(tpoints, "event_handlers");
+    engine_config.set_directive("enable_event_handlers", "1");
+    expected[0][9] = true;
+    postcheck(engine, tpoints, db, expected);
+
+    // Check failure_prediction.
+    precheck(tpoints, "failure_prediction");
+    engine_config.set_directive("enable_failure_prediction", "1");
+    expected[0][10] = true;
+    postcheck(engine, tpoints, db, expected);
+
+    // Check flap_detection.
+    precheck(tpoints, "flap_detection");
+    engine_config.set_directive("enable_flap_detection", "1");
+    expected[0][11] = true;
+    postcheck(engine, tpoints, db, expected);
+
+    // Check global_host_event_handler.
+    precheck(tpoints, "global_host_event_handler");
+    // XXX
+    // postcheck(engine, tpoints, db, expected);
+    std::cout << "  not tested\n";
+
+    // Check global_service_event_handler.
+    precheck(tpoints, "global_service_event_handler");
+    // XXX
+    // postcheck(engine, tpoints, db, expected);
+    std::cout << "  not tested\n";
+
+    // Check notifications.
+    precheck(tpoints, "enable_notifications");
+    engine_config.set_directive("enable_notifications", "1");
+    expected[0][16] = true;
+    postcheck(engine, tpoints, db, expected);
+
+    // Check obsess_over_hosts.
+    precheck(tpoints, "obsess_over_hosts");
+    engine_config.set_directive("obsess_over_hosts", "1");
+    expected[0][17] = true;
+    postcheck(engine, tpoints, db, expected);
+
+    // Check obsess_over_services.
+    precheck(tpoints, "obsess_over_services");
+    engine_config.set_directive("obsess_over_services", "1");
+    expected[0][18] = true;
+    postcheck(engine, tpoints, db, expected);
+
+    // Check passive_host_checks.
+    precheck(tpoints, "passive_host_checks");
+    engine_config.set_directive("accept_passive_host_checks", "1");
+    expected[0][20] = true;
+    postcheck(engine, tpoints, db, expected);
+
+    // Check passive_service_checks.
+    precheck(tpoints, "passive_service_checks");
+    engine_config.set_directive("accept_passive_service_checks", "1");
+    expected[0][21] = true;
+    postcheck(engine, tpoints, db, expected);
+
+    // Check version.
+    precheck(tpoints, "version");
+    // XXX
+    // postcheck(engine, tpoints, db, expected);
+    std::cout << "  not tested\n";
+
+    // Check last_command_check.
+    precheck(tpoints, "last_command_check");
+    // XXX
+    // postcheck(engine, tpoints, db, expected);
+    std::cout << "  not tested\n";
+
+    // Check outdated.
+    precheck(tpoints, "outdated");
+    // XXX
+    // postcheck(engine, tpoints, db, expected);
+    std::cout << "  not tested\n";
+
+    // Check end_time.
+    precheck(tpoints, "end_time");
+    // XXX
+    // postcheck(engine, tpoints, db, expected);
+    std::cout << "  not tested\n";
+
+    // Check deleted.
+    precheck(tpoints, "deleted");
+    // XXX
+    // postcheck(engine, tpoints, db, expected);
+    std::cout << "  not tested\n";
 
     // Success.
     error = false;
     db.set_remove_db_on_close(true);
   }
   catch (std::exception const& e) {
-    std::cerr << e.what() << "\n";
+    std::cout << "  " << e.what() << "\n";
   }
   catch (...) {
-    std::cerr << "unknown exception\n";
+    std::cout << "  unknown exception\n";
   }
 
   return (error ? EXIT_FAILURE : EXIT_SUCCESS);

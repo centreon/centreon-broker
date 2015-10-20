@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Centreon
+** Copyright 2012-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -39,8 +39,8 @@ int main() {
            || (i.is_running != true)
            || (i.name != "")
            || (i.pid != 0)
-           || (i.program_end != 0)
-           || (i.program_start != 0)
+           || (i.program_end != (time_t)-1)
+           || (i.program_start != (time_t)-1)
            || (i.version != "")
            || (i.type()
                != io::events::data_type<

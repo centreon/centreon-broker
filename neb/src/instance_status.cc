@@ -39,8 +39,8 @@ instance_status::instance_status()
     active_service_checks_enabled(false),
     check_hosts_freshness(false),
     check_services_freshness(false),
-    last_alive(0),
-    last_command_check(0),
+    last_alive((time_t)-1),
+    last_command_check((time_t)-1),
     obsess_over_hosts(false),
     obsess_over_services(false),
     passive_host_checks_enabled(false),
@@ -174,10 +174,12 @@ mapping::entry const instance_status::entries[] = {
     mapping::entry::invalid_on_zero),
   mapping::entry(
     &instance_status::last_alive,
-    "last_alive"),
+    "last_alive",
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &instance_status::last_command_check,
-    "last_command_check"),
+    "last_command_check",
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &instance_status::notifications_enabled,
     NULL,

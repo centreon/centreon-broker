@@ -39,6 +39,7 @@
 #include "com/centreon/broker/neb/set_log_data.hh"
 #include "com/centreon/broker/neb/statistics/generator.hh"
 #include "com/centreon/engine/broker.hh"
+#include "com/centreon/engine/globals.hh"
 #include "com/centreon/engine/nebcallbacks.hh"
 #include "com/centreon/engine/nebstructs.hh"
 #include "com/centreon/engine/objects/hostdependency.hh"
@@ -1153,6 +1154,8 @@ int neb::callback_program_status(int callback_type, void* data) {
       = program_status_data->active_host_checks_enabled;
     is->active_service_checks_enabled
       = program_status_data->active_service_checks_enabled;
+    is->check_hosts_freshness = check_host_freshness;
+    is->check_services_freshness = check_service_freshness;
     is->event_handler_enabled
       = program_status_data->event_handlers_enabled;
     is->failure_prediction_enabled

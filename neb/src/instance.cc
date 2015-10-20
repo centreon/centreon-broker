@@ -38,8 +38,8 @@ instance::instance()
   : is_running(true),
     pid(0),
     poller_id(0),
-    program_end(0),
-    program_start(0) {}
+    program_end((time_t)-1),
+    program_start((time_t)-1) {}
 
 /**
  *  @brief Copy constructor.
@@ -144,13 +144,11 @@ mapping::entry const instance::entries[] = {
   mapping::entry(
     &instance::program_end,
     "end_time",
-    mapping::entry::invalid_on_zero
-    | mapping::entry::invalid_on_minus_one),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &instance::program_start,
     "start_time",
-    mapping::entry::invalid_on_zero
-    | mapping::entry::invalid_on_minus_one),
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &instance::version,
     "version"),
