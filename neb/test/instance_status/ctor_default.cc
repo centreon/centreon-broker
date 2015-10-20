@@ -35,6 +35,8 @@ int main() {
   // Check.
   return (((is.source_id != 0)
            || (is.destination_id != 0)
+           || (is.active_host_checks_enabled != false)
+           || (is.active_service_checks_enabled != false)
            || (is.check_hosts_freshness != false)
            || (is.check_services_freshness != false)
            || (is.event_handler_enabled != false)
@@ -47,6 +49,8 @@ int main() {
            || (is.notifications_enabled != false)
            || (is.obsess_over_hosts != false)
            || (is.obsess_over_services != false)
+           || (is.passive_host_checks_enabled != false)
+           || (is.passive_service_checks_enabled != false)
            || (is.type()
                != io::events::data_type<
                                 io::events::neb,

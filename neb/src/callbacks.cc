@@ -1149,6 +1149,10 @@ int neb::callback_program_status(int callback_type, void* data) {
     // Fill output var.
     program_status_data = static_cast<nebstruct_program_status_data*>(data);
     is->poller_id = config::applier::state::instance().poller_id();
+    is->active_host_checks_enabled
+      = program_status_data->active_host_checks_enabled;
+    is->active_service_checks_enabled
+      = program_status_data->active_service_checks_enabled;
     is->event_handler_enabled
       = program_status_data->event_handlers_enabled;
     is->failure_prediction_enabled
@@ -1169,6 +1173,10 @@ int neb::callback_program_status(int callback_type, void* data) {
       = program_status_data->obsess_over_hosts;
     is->obsess_over_services
       = program_status_data->obsess_over_services;
+    is->passive_host_checks_enabled
+      = program_status_data->passive_host_checks_enabled;
+    is->passive_service_checks_enabled
+      = program_status_data->passive_service_checks_enabled;
 
     // Send event.
     gl_publisher.write(is);

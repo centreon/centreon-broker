@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -148,7 +148,9 @@ mapping::entry const instance::entries[] = {
     | mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &instance::program_start,
-    "start_time"),
+    "start_time",
+    mapping::entry::invalid_on_zero
+    | mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &instance::version,
     "version"),
