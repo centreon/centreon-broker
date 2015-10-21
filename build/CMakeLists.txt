@@ -675,6 +675,7 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/centengine.cc"
     "${PROJECT_SOURCE_DIR}/test/centengine_config.cc"
     "${PROJECT_SOURCE_DIR}/test/centengine_extcmd.cc"
+    "${PROJECT_SOURCE_DIR}/test/centengine_object.cc"
     "${PROJECT_SOURCE_DIR}/test/db.cc"
     "${PROJECT_SOURCE_DIR}/test/file.cc"
     "${PROJECT_SOURCE_DIR}/test/misc.cc"
@@ -687,6 +688,7 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/centengine.hh"
     "${PROJECT_SOURCE_DIR}/test/centengine_config.hh"
     "${PROJECT_SOURCE_DIR}/test/centengine_extcmd.hh"
+    "${PROJECT_SOURCE_DIR}/test/centengine_object.hh"
     "${PROJECT_SOURCE_DIR}/test/db.hh"
     "${PROJECT_SOURCE_DIR}/test/file.hh"
     "${PROJECT_SOURCE_DIR}/test/misc.hh"
@@ -710,11 +712,19 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   ## Real-time monitoring (v2).
   ##
 
-  # Instances table (v2).
+  # Instances table.
   set(TEST_NAME "running_rtmonitoring_v2_instances")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/rtmonitoring/v2/instances.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # Hosts table.
+  set(TEST_NAME "running_rtmonitoring_v2_hosts")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/rtmonitoring/v2/hosts.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
 
   # XXX
   # # Monitoring to SQL.

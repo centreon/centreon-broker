@@ -192,82 +192,7 @@ void centengine::_write_cfg() {
     throw (exceptions::msg()
            << "cannot open hosts configuration file in '"
            << _config_path << "'");
-  ofs << "define host{\n"
-      << "  host_name default_host\n"
-      << "  address localhost\n"
-      << "  active_checks_enabled 0\n"
-    // Deprecated in Centreon Engine 2.x.
-      << "  alias default_host\n"
-      << "  check_command default_command\n"
-      << "  max_check_attempts 3\n"
-      << "  check_period default_timeperiod\n"
-      << "  contacts default_contact\n"
-      << "}\n\n";
-  for (std::list<host>::const_iterator
-         it(_config->get_hosts().begin()),
-         end(_config->get_hosts().end());
-       it != end;
-       ++it) {
-    ofs << "define host{\n"
-        << "  host_name " << it->name << "\n"
-        << "  alias " << (it->alias ? it->alias : it->name) << "\n"
-        << "  address " << (it->address ? it->address : "localhost")
-        << "\n"
-        << "  active_checks_enabled " << it->checks_enabled << "\n"
-        << "  check_command " << (it->host_check_command
-                                  ? it->host_check_command
-                                  : "default_command") << "\n"
-        << "  max_check_attempts " << ((it->max_attempts > 0)
-                                       ? it->max_attempts
-                                       : 3) << "\n"
-        << "  check_interval "
-        << ((it->check_interval > 0) ? it->check_interval : 5) << "\n"
-        << "  retry_interval "
-        << ((it->retry_interval > 0) ? it->retry_interval : 3) << "\n"
-        << "  check_period " << (it->check_period
-                                 ? it->check_period
-                                 : "default_timeperiod") << "\n"
-        << "  event_handler_enabled " << it->event_handler_enabled
-        << "\n"
-      // Deprecated in Centreon Engine 2.x.
-        << "  passive_checks_enabled "
-        << it->accept_passive_host_checks << "\n"
-        << "  notification_interval "
-        << ((it->notification_interval > 0)
-            ? it->notification_interval
-            : 10) << "\n"
-        << "  notification_period " << (it->notification_period
-                                        ? it->notification_period
-                                        : "default_timeperiod")
-        << "\n"
-        << "  contacts ";
-    if (it->contacts) {
-      ofs << it->contacts->contact_name;
-      for (contactsmember* mbr(it->contacts->next);
-           mbr;
-           mbr = mbr->next)
-        ofs << "," << mbr->contact_name;
-    }
-    else
-      ofs << "default_contact";
-    ofs << "\n";
-    if (it->parent_hosts) {
-      ofs << "  parents " << it->parent_hosts->host_name;
-      for (hostsmember* parent(it->parent_hosts->next);
-           parent;
-           parent = parent->next)
-        ofs << "," << parent->host_name;
-      ofs << "\n";
-    }
-    if (it->event_handler)
-      ofs << "  event_handler " << it->event_handler << "\n";
-    for (customvariablesmember* cvar(it->custom_variables);
-         cvar;
-         cvar = cvar->next)
-      ofs << "  _" << cvar->variable_name << " "
-          << cvar->variable_value << "\n";
-    ofs << "}\n\n";
-  }
+  _write_objs(ofs, _config->get_hosts());
   ofs.close();
 
   // Services.
@@ -278,75 +203,7 @@ void centengine::_write_cfg() {
     throw (exceptions::msg()
            << "cannot open services configuration file in '"
            << _config_path << "'");
-  ofs << "define service{\n"
-      << "  service_description default_service\n"
-      << "  host_name default_host\n"
-      << "  active_checks_enabled 0\n"
-    // Deprecated in Centreon Engine 2.x
-      << "  check_command default_command\n"
-      << "  max_check_attempts 3\n"
-      << "  check_interval 5\n"
-      << "  retry_interval 3\n"
-      << "  check_period default_timeperiod\n"
-      << "  notification_interval 10\n"
-      << "  notification_period default_timeperiod\n"
-      << "  contacts default_contact\n"
-      << "}\n\n";
-  for (std::list<service>::const_iterator
-         it(_config->get_services().begin()),
-         end(_config->get_services().end());
-       it != end;
-       ++it) {
-    ofs << "define service{\n"
-        << "  service_description " << it->description << "\n"
-        << "  host_name " << it->host_name << "\n"
-        << "  active_checks_enabled " << it->checks_enabled << "\n"
-        << "  check_command "
-        << (it->service_check_command
-            ? it->service_check_command
-            : "default_command") << "\n"
-        << "  max_check_attempts "
-        << ((it->max_attempts > 0) ? it->max_attempts : 3) << "\n"
-        << "  check_interval "
-        << ((it->check_interval > 0) ? it->check_interval : 5) << "\n"
-        << "  retry_interval "
-        << ((it->retry_interval > 0) ? it->retry_interval : 3) << "\n"
-        << "  check_period " << (it->check_period
-                                 ? it->check_period
-                                 : "default_timeperiod") << "\n"
-        << "  event_handler_enabled " << it->event_handler_enabled
-        << "\n"
-      // Deprecated in Centreon Engine 2.x.
-        << "  passive_checks_enabled "
-        << it->accept_passive_service_checks << "\n"
-        << "  notification_interval "
-        << ((it->notification_interval > 0)
-            ? it->notification_interval
-            : 10) << "\n"
-        << "  notification_period "
-        << (it->notification_period
-            ? it->notification_period
-            : "default_timeperiod") << "\n"
-        << "  contacts ";
-    if (it->contacts) {
-      ofs << it->contacts->contact_name;
-      for (contactsmember* mbr(it->contacts->next);
-           mbr;
-           mbr = mbr->next)
-        ofs << "," << mbr->contact_name;
-    }
-    else
-      ofs << "default_contact";
-    ofs << "\n";
-    if (it->event_handler)
-      ofs << "  event_handler " << it->event_handler << "\n";
-    for (customvariablesmember* cvar(it->custom_variables);
-         cvar;
-         cvar = cvar->next)
-      ofs << "  _" << cvar->variable_name << " "
-          << cvar->variable_value << "\n";
-    ofs << "}\n\n";
-  }
+  _write_objs(ofs, _config->get_services());
   ofs.close();
 
   // Commands.
@@ -357,22 +214,7 @@ void centengine::_write_cfg() {
     throw (exceptions::msg()
            << "cannot open commands configuration file in '"
            << _config_path << "'");
-  ofs << "define command{\n"
-      << "  command_name default_command\n"
-      << "  command_line " MY_PLUGIN_PATH " 0\n"
-      << "}\n\n";
-  for (std::list<command>::const_iterator
-         it(_config->get_commands().begin()),
-         end(_config->get_commands().end());
-       it != end;
-       ++it) {
-    ofs << "define command{\n"
-        << "  command_name " << it->name << "\n"
-        << "  command_line "
-        << (it->command_line ? it->command_line : MY_PLUGIN_PATH " 0")
-        << "\n"
-        << "}\n\n";
-  }
+  _write_objs(ofs, _config->get_commands());
   ofs.close();
 
   // Host dependencies.
@@ -383,18 +225,7 @@ void centengine::_write_cfg() {
     throw (exceptions::msg()
            << "cannot open host dependencies configuration file in '"
            << _config_path << "'");
-  for (std::list<hostdependency>::const_iterator
-         it(_config->get_host_dependencies().begin()),
-         end(_config->get_host_dependencies().end());
-       it != end;
-       ++it) {
-    ofs << "define hostdependency{\n"
-        << "  dependent_host_name " << it->dependent_host_name << "\n"
-        << "  host_name " << it->host_name << "\n"
-      // Is failure_criteria in Centreon Engine 2.x.
-        << "  notification_failure_criteria d,u\n"
-        << "}\n\n";
-  }
+  _write_objs(ofs, _config->get_host_dependencies());
   ofs.close();
 
   // Service dependencies.
@@ -405,21 +236,7 @@ void centengine::_write_cfg() {
     throw (exceptions::msg()
            << "cannot open service dependencies configuration file in '"
            << _config_path << "'");
-  for (std::list<servicedependency>::const_iterator
-         it(_config->get_service_dependencies().begin()),
-         end(_config->get_service_dependencies().end());
-       it != end;
-       ++it) {
-    ofs << "define servicedependency{\n"
-        << "  dependent_host_name " << it->dependent_host_name << "\n"
-        << "  dependent_service_description "
-        << it->dependent_service_description << "\n"
-        << "  host_name " << it->host_name << "\n"
-        << "  service_description " << it->service_description << "\n"
-      // Is failure_criteria in Centreon Engine 2.x.
-        << "  notification_failure_criteria w,c,u\n"
-        << "}\n\n";
-  }
+  _write_objs(ofs, _config->get_service_dependencies());
   ofs.close();
 
   // Misc.
@@ -430,25 +247,66 @@ void centengine::_write_cfg() {
     throw (exceptions::msg()
            << "cannot open misc configuration file in '"
            << _config_path << "'");
-  ofs << "define timeperiod{\n"
-      << "  timeperiod_name default_timeperiod\n"
-      << "  alias MyTimePeriod\n"
-      << "  monday 00:00-24:00\n"
-      << "  tuesday 00:00-24:00\n"
-      << "  wednesday 00:00-24:00\n"
-      << "  thursday 00:00-24:00\n"
-      << "  friday 00:00-24:00\n"
-      << "  saturday 00:00-24:00\n"
-      << "  sunday 00:00-24:00\n"
-      << "}\n"
-      << "\n"
-      << "define contact{\n"
-      << "  contact_name default_contact\n"
-      << "  host_notification_period default_timeperiod\n"
-      << "  host_notification_commands default_command\n"
-      << "  service_notification_period default_timeperiod\n"
-      << "  service_notification_commands default_command\n"
-      << "}\n"
-      << "\n";
+  _write_objs(ofs, _config->get_contacts());
+  _write_objs(ofs, _config->get_timeperiods());
   ofs.close();
+}
+
+/**
+ *  Write objects to a file.
+ *
+ *  @param[out] ofs   Output stream.
+ *  @param[in]  objs  Objects.
+ */
+void centengine::_write_objs(
+                   std::ofstream& ofs,
+                   centengine_config::objlist const& objs) {
+  for (centengine_config::objlist::const_iterator
+         it_obj(objs.begin()),
+         end_obj(objs.end());
+       it_obj != end_obj;
+       ++it_obj) {
+    ofs << "define ";
+    switch (it_obj->get_type()) {
+    case centengine_object::command_type:
+      ofs << "command";
+      break ;
+    case centengine_object::contact_type:
+      ofs << "contact";
+      break ;
+    case centengine_object::host_type:
+      ofs << "host";
+      break ;
+    case centengine_object::hostdependency_type:
+      ofs << "hostdependency";
+      break ;
+    case centengine_object::hostgroup_type:
+      ofs << "hostgroup";
+      break ;
+    case centengine_object::service_type:
+      ofs << "service";
+      break ;
+    case centengine_object::servicedependency_type:
+      ofs << "servicedependency";
+      break ;
+    case centengine_object::servicegroup_type:
+      ofs << "servicegroup";
+      break ;
+    case centengine_object::timeperiod_type:
+      ofs << "timeperiod";
+      break ;
+    default:
+      throw (exceptions::msg() << "invalid object type "
+             << it_obj->get_type());
+    };
+    ofs << " {\n";
+    for (std::map<std::string, std::string>::const_iterator
+           it_prop(it_obj->get_variables().begin()),
+           end_prop(it_obj->get_variables().end());
+         it_prop != end_prop;
+         ++it_prop)
+      ofs << it_prop->first << "  " << it_prop->second << "\n";
+    ofs << "}\n";
+  }
+  return ;
 }

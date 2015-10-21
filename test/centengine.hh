@@ -19,16 +19,16 @@
 #ifndef CCB_TEST_CENTENGINE_HH
 #  define CCB_TEST_CENTENGINE_HH
 
+#  include <fstream>
 #  include <QProcess>
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
+#  include "test/centengine_config.hh"
 #  include "test/centengine_extcmd.hh"
 
 CCB_BEGIN()
 
 namespace                    test {
-  class                      centengine_config;
-
   /**
    *  @class centengine centengine.hh "test/centengine.hh"
    *  @brief Monitoring engine.
@@ -47,6 +47,9 @@ namespace                    test {
                              centengine(centengine const& other);
     centengine&              operator=(centengine const& other);
     void                     _write_cfg();
+    void                     _write_objs(
+                               std::ofstream& ofs,
+                               centengine_config::objlist const& objs);
 
     centengine_config const* _config;
     std::string              _config_path;

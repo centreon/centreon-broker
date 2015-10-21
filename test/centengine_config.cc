@@ -49,97 +49,50 @@ centengine_config::centengine_config() {
   set_directive("status_file", "monitoring_engine_status.dat");
   set_directive("service_inter_check_delay_method", "n");
   set_directive("host_inter_check_delay_method", "n");
+
+  // Default objects.
+  {
+    centengine_object obj(centengine_object::host_type);
+    obj.set("host_name", "default_host");
+    obj.set("alias", "default_host");
+    _hosts.push_back(obj);
+  }
+  {
+    centengine_object obj(centengine_object::service_type);
+    obj.set("service_description", "default_service");
+    obj.set("host_name", "default_host");
+    _services.push_back(obj);
+  }
+  {
+    centengine_object obj(centengine_object::command_type);
+    obj.set("command_name", "default_command");
+    obj.set("command_line", MY_PLUGIN_PATH " 0");
+    _commands.push_back(obj);
+  }
+  {
+    centengine_object obj(centengine_object::contact_type);
+    obj.set("contact_name", "default_contact");
+    _contacts.push_back(obj);
+  }
+  {
+    centengine_object obj(centengine_object::timeperiod_type);
+    obj.set("timeperiod_name", "default_timeperiod");
+    obj.set("alias", "default_timeperiod");
+    obj.set("monday", "00:00-24:00");
+    obj.set("tuesday", "00:00-24:00");
+    obj.set("wednesday", "00:00-24:00");
+    obj.set("thursday", "00:00-24:00");
+    obj.set("friday", "00:00-24:00");
+    obj.set("saturday", "00:00-24:00");
+    obj.set("sunday", "00:00-24:00");
+    _timeperiods.push_back(obj);
+  }
 }
 
 /**
  *  Destructor.
  */
-centengine_config::~centengine_config() {
-  // Free commands.
-  for (std::list<command>::iterator
-         it(_commands.begin()),
-         end(_commands.end());
-       it != end;
-       ++it) {
-    delete [] it->name;
-    delete [] it->command_line;
-  }
-  _commands.clear();
-
-  // Free hosts.
-  for (std::list<host>::iterator it(_hosts.begin()), end(_hosts.end());
-       it != end;
-       ++it) {
-    delete [] it->name;
-    delete [] it->alias;
-    delete [] it->host_check_command;
-    for (hostsmember* child(it->child_hosts); child; ) {
-      hostsmember* to_delete(child);
-      child = child->next;
-      delete [] to_delete->host_name;
-      delete to_delete;
-    }
-    for (hostsmember* parent(it->parent_hosts); parent; ) {
-      hostsmember* to_delete(parent);
-      parent = parent->next;
-      delete [] to_delete->host_name;
-      delete to_delete;
-    }
-    for (customvariablesmember* cvar(it->custom_variables); cvar; ) {
-      customvariablesmember* to_delete(cvar);
-      cvar = cvar->next;
-      delete [] to_delete->variable_name;
-      delete [] to_delete->variable_value;
-      delete to_delete;
-    }
-  }
-  _hosts.clear();
-
-  // Free host dependencies.
-  for (std::list<hostdependency>::iterator
-         it(_host_deps.begin()),
-         end(_host_deps.end());
-       it != end;
-       ++it) {
-    delete [] it->dependency_period;
-    delete [] it->dependent_host_name;
-    delete [] it->host_name;
-  }
-  _host_deps.clear();
-
-  // Free services.
-  for (std::list<service>::iterator
-         it(_services.begin()),
-         end(_services.end());
-       it != end;
-       ++it) {
-    delete [] it->description;
-    delete [] it->host_name;
-    delete [] it->service_check_command;
-    for (customvariablesmember* cvar(it->custom_variables); cvar; ) {
-      customvariablesmember* to_delete(cvar);
-      cvar = cvar->next;
-      delete [] to_delete->variable_name;
-      delete [] to_delete->variable_value;
-      delete to_delete;
-    }
-  }
-  _services.clear();
-
-  // Free service dependencies.
-  for (std::list<servicedependency>::iterator
-         it(_service_deps.begin()),
-         end(_service_deps.end());
-       it != end;
-       ++it) {
-    delete [] it->dependency_period;
-    delete [] it->dependent_host_name;
-    delete [] it->dependent_service_description;
-    delete [] it->host_name;
-    delete [] it->service_description;
-  }
-  _service_deps.clear();
-}
+centengine_config::~centengine_config() {}
 
 /**
  *  Find a host in the host list.
@@ -149,13 +102,12 @@ centengine_config::~centengine_config() {
  *  @return Iterator to the matching entry if found,
  *          get_hosts().end() otherwise.
  */
-std::list<host>::iterator centengine_config::find_host(
-                                               char const* host_name) {
-  for (std::list<host>::iterator it(_hosts.begin()), end(_hosts.end());
+centengine_config::objlist::iterator centengine_config::find_host(
+                                       std::string const& host_name) {
+  for (objlist::iterator it(_hosts.begin()), end(_hosts.end());
        it != end;
        ++it)
-    if ((!host_name && !it->name)
-        || (host_name && it->name && !strcmp(host_name, it->name)))
+    if (it->get("host_name") == host_name)
       return (it);
   return (_hosts.end());
 }
@@ -169,38 +121,14 @@ std::list<host>::iterator centengine_config::find_host(
  *  @return Iterator to the matching entry if found,
  *          get_services().end() otherwise.
  */
-std::list<service>::iterator centengine_config::find_service(
-                               char const* host_name,
-                               char const* service_description) {
-  for (std::list<service>::iterator
-         it(_services.begin()),
-         end(_services.end());
+centengine_config::objlist::iterator centengine_config::find_service(
+                                       std::string const& host_name,
+                                       std::string const& service_description) {
+  for (objlist::iterator it(_services.begin()), end(_services.end());
        it != end;
        ++it)
-    // Case 1 : all null pointers.
-    if ((!host_name
-         && !service_description
-         && !it->host_name
-         && !it->description)
-        // Case 2 : host name is null, description is set.
-        || (!host_name
-            && service_description
-            && !it->host_name
-            && it->description
-            && !strcmp(service_description, it->description))
-        // Case 3 : host name is set, description is null.
-        || (host_name
-            && !service_description
-            && it->host_name
-            && !it->description
-            && !strcmp(host_name, it->host_name))
-        // Case 4 : all set.
-        || (host_name
-            && service_description
-            && it->host_name
-            && it->description
-            && !strcmp(host_name, it->host_name)
-            && !strcmp(service_description, it->description)))
+    if ((it->get("host_name") == host_name)
+        && (it->get("service_description") == service_description))
       return (it);
   return (_services.end());
 }
@@ -212,14 +140,12 @@ std::list<service>::iterator centengine_config::find_service(
  *  @param[in] depended_host   Name of depended host.
  */
 void centengine_config::host_depends_on(
-                          char const* dependent_host,
-                          char const* depended_host) {
-  hostdependency dep;
-  memset(&dep, 0, sizeof(dep));
-  dep.dependent_host_name = new char[strlen(dependent_host) + 1];
-  strcpy(dep.dependent_host_name, dependent_host);
-  dep.host_name = new char[strlen(depended_host) + 1];
-  strcpy(dep.host_name, depended_host);
+                          std::string const& dependent_host,
+                          std::string const& depended_host) {
+  centengine_object obj(centengine_object::hostdependency_type);
+  obj.set("dependent_host_name", dependent_host);
+  obj.set("host_name", depended_host);
+  _host_deps.push_back(obj);
   return ;
 }
 
@@ -230,30 +156,18 @@ void centengine_config::host_depends_on(
  *  @param[in] child_host   Child host.
  */
 void centengine_config::host_parent_of(
-                          char const* parent_host,
-                          char const* child_host) {
-  // Find hosts.
-  std::list<host>::iterator parent(find_host(parent_host));
-  std::list<host>::iterator child(find_host(child_host));
-  if ((parent != _hosts.end())
-      && (child != _hosts.end())) {
-    // Parent is parent of child.
-    hostsmember** parent_member(&parent->child_hosts);
-    while (*parent_member)
-      parent_member = &(*parent_member)->next;
-    *parent_member = new hostsmember;
-    memset(*parent_member, 0, sizeof(**parent_member));
-    (*parent_member)->host_name = new char[strlen(child->name) + 1];
-    strcpy((*parent_member)->host_name, child->name);
-
-    // Child is child of parent.
-    hostsmember** child_member(&child->parent_hosts);
-    while (*child_member)
-      child_member = &(*child_member)->next;
-    *child_member = new hostsmember;
-    memset(*child_member, 0, sizeof(**child_member));
-    (*child_member)->host_name = new char[strlen(parent->name) + 1];
-    strcpy((*child_member)->host_name, parent->name);
+                          std::string const& parent_host,
+                          std::string const& child_host) {
+  objlist::iterator it(find_host(child_host));
+  if (it != _hosts.end()) {
+    std::string parents(it->get("parents"));
+    if (parents.empty())
+      it->set("parents", parent_host);
+    else {
+      parents.append(",");
+      parents.append(parent_host);
+      it->set("parents", parents);
+    }
   }
   return ;
 }
@@ -267,10 +181,6 @@ void centengine_config::generate_commands(int count) {
   static int id(0);
 
   for (int i(0); i < count; ++i) {
-    // Create new command.
-    command new_command;
-    memset(&new_command, 0, sizeof(new_command));
-
     // Generate name.
     std::string name;
     {
@@ -279,11 +189,9 @@ void centengine_config::generate_commands(int count) {
       name = oss.str();
     }
 
-    // Set command name.
-    new_command.name = new char[name.size() + 1];
-    strcpy(new_command.name, name.c_str());
-
-    // Add to list.
+    // Object.
+    centengine_object new_command(centengine_object::command_type);
+    new_command.set("command_name", name);
     _commands.push_back(new_command);
   }
 
@@ -299,10 +207,6 @@ void centengine_config::generate_hosts(int count) {
   static int id(0);
 
   for (int i(0); i < count; ++i) {
-    // Create new host.
-    host new_host;
-    memset(&new_host, 0, sizeof(new_host));
-
     // Generate name.
     std::string name;
     {
@@ -311,18 +215,11 @@ void centengine_config::generate_hosts(int count) {
       name = oss.str();
     }
 
-    // Set host name.
-    new_host.name = new char[name.size() + 1];
-    strcpy(new_host.name, name.c_str());
-
-    // Set some default properties.
-    new_host.checks_enabled = 1;
-
-    // Add to list.
+    // Object.
+    centengine_object new_host(centengine_object::host_type);
+    new_host.set("host_name", name);
+    new_host.set("_HOST_ID", name);
     _hosts.push_back(new_host);
-
-    // Set host ID.
-    set_host_custom_variable(name.c_str(), "HOST_ID", name.c_str());
   }
 
   return ;
@@ -337,14 +234,10 @@ void centengine_config::generate_hosts(int count) {
 void centengine_config::generate_services(int services_per_host) {
   static int id(0);
 
-  for (std::list<host>::iterator it(_hosts.begin()), end(_hosts.end());
+  for (objlist::iterator it(_hosts.begin()), end(_hosts.end());
        it != end;
        ++it) {
     for (int i(0); i < services_per_host; ++i) {
-      // Create new service.
-      service new_service;
-      memset(&new_service, 0, sizeof(new_service));
-
       // Generate service description.
       std::string description;
       {
@@ -353,33 +246,13 @@ void centengine_config::generate_services(int services_per_host) {
         description = oss.str();
       }
 
-      // Set service description.
-      new_service.description = new char[description.size() + 1];
-      strcpy(new_service.description, description.c_str());
-
-      // Set host.
-      new_service.host_name = new char[strlen(it->name) + 1];
-      strcpy(new_service.host_name, it->name);
-
-      // Set some default properties.
-      new_service.checks_enabled = 1;
-
-      // Add to list.
+      // Object.
+      centengine_object new_service(centengine_object::service_type);
+      new_service.set("service_description", description);
+      new_service.set("host_name", it->get("host_name"));
+      new_service.set("_SERVICE_ID", description);
+      new_service.set("_HOST_ID", it->get("_HOST_ID"));
       _services.push_back(new_service);
-
-      // Set service ID.
-      set_service_custom_variable(
-        new_service.host_name,
-        new_service.description,
-        "SERVICE_ID",
-        description.c_str());
-
-      // Set host ID.
-      set_service_custom_variable(
-        new_service.host_name,
-        new_service.description,
-        "HOST_ID",
-        it->name);
     }
   }
 
@@ -400,7 +273,7 @@ std::string const& centengine_config::get_cbmod_cfg_file() const {
  *
  *  @return Modifiable command list.
  */
-std::list<command>& centengine_config::get_commands() {
+centengine_config::objlist& centengine_config::get_commands() {
   return (_commands);
 }
 
@@ -409,8 +282,26 @@ std::list<command>& centengine_config::get_commands() {
  *
  *  @return Non-modifiable command list.
  */
-std::list<command> const& centengine_config::get_commands() const {
+centengine_config::objlist const& centengine_config::get_commands() const {
   return (_commands);
+}
+
+/**
+ *  Get contact list.
+ *
+ *  @return Modifiable contact list.
+ */
+centengine_config::objlist& centengine_config::get_contacts() {
+  return (_contacts);
+}
+
+/**
+ *  Get contact list.
+ *
+ *  @return Non-modifiable contact list.
+ */
+centengine_config::objlist const& centengine_config::get_contacts() const {
+  return (_contacts);
 }
 
 /**
@@ -427,7 +318,7 @@ std::map<std::string, std::string> const& centengine_config::get_directives() co
  *
  *  @return Modifiable host list.
  */
-std::list<host>& centengine_config::get_hosts() {
+centengine_config::objlist& centengine_config::get_hosts() {
   return (_hosts);
 }
 
@@ -436,7 +327,7 @@ std::list<host>& centengine_config::get_hosts() {
  *
  *  @return Non-modifiable host list.
  */
-std::list<host> const& centengine_config::get_hosts() const {
+centengine_config::objlist const& centengine_config::get_hosts() const {
   return (_hosts);
 }
 
@@ -445,7 +336,7 @@ std::list<host> const& centengine_config::get_hosts() const {
  *
  *  @return Modifiable host dependency list.
  */
-std::list<hostdependency>& centengine_config::get_host_dependencies() {
+centengine_config::objlist& centengine_config::get_host_dependencies() {
   return (_host_deps);
 }
 
@@ -454,7 +345,7 @@ std::list<hostdependency>& centengine_config::get_host_dependencies() {
  *
  *  @return Non-modifiable host dependency list.
  */
-std::list<hostdependency> const& centengine_config::get_host_dependencies() const {
+centengine_config::objlist const& centengine_config::get_host_dependencies() const {
   return (_host_deps);
 }
 
@@ -463,7 +354,7 @@ std::list<hostdependency> const& centengine_config::get_host_dependencies() cons
  *
  *  @return Modifiable service list.
  */
-std::list<service>& centengine_config::get_services() {
+centengine_config::objlist& centengine_config::get_services() {
   return (_services);
 }
 
@@ -472,7 +363,7 @@ std::list<service>& centengine_config::get_services() {
  *
  *  @return Non-modifiable service list.
  */
-std::list<service> const& centengine_config::get_services() const {
+centengine_config::objlist const& centengine_config::get_services() const {
   return (_services);
 }
 
@@ -481,7 +372,7 @@ std::list<service> const& centengine_config::get_services() const {
  *
  *  @return Modifiable service dependency list.
  */
-std::list<servicedependency>& centengine_config::get_service_dependencies() {
+centengine_config::objlist& centengine_config::get_service_dependencies() {
   return (_service_deps);
 }
 
@@ -490,8 +381,26 @@ std::list<servicedependency>& centengine_config::get_service_dependencies() {
  *
  *  @return Non-modifiable service dependency list.
  */
-std::list<servicedependency> const& centengine_config::get_service_dependencies() const {
+centengine_config::objlist const& centengine_config::get_service_dependencies() const {
   return (_service_deps);
+}
+
+/**
+ *  Get timeperiod list.
+ *
+ *  @return Modifiable timeperiod list.
+ */
+centengine_config::objlist& centengine_config::get_timeperiods() {
+  return (_timeperiods);
+}
+
+/**
+ *  Get timeperiod list.
+ *
+ *  @return Non-modifiable timeperiod list.
+ */
+centengine_config::objlist const& centengine_config::get_timeperiods() const {
+  return (_timeperiods);
 }
 
 /**
@@ -503,21 +412,16 @@ std::list<servicedependency> const& centengine_config::get_service_dependencies(
  *  @param[in] depended_service   Depended service.
  */
 void centengine_config::service_depends_on(
-                          char const* dependent_host,
-                          char const* dependent_service,
-                          char const* depended_host,
-                          char const* depended_service) {
-  servicedependency dep;
-  memset(&dep, 0, sizeof(dep));
-  dep.dependent_host_name = new char[strlen(dependent_host) + 1];
-  strcpy(dep.dependent_host_name, dependent_host);
-  dep.dependent_service_description
-    = new char[strlen(dependent_service) + 1];
-  strcpy(dep.dependent_service_description, dependent_service);
-  dep.host_name = new char[strlen(depended_host) + 1];
-  strcpy(dep.host_name, depended_host);
-  dep.service_description = new char[strlen(depended_service) + 1];
-  strcpy(dep.service_description, depended_service);
+                          std::string const& dependent_host,
+                          std::string const& dependent_service,
+                          std::string const& depended_host,
+                          std::string const& depended_service) {
+  centengine_object obj(centengine_object::servicedependency_type);
+  obj.set("dependent_host_name", dependent_host);
+  obj.set("dependent_service_description", dependent_service);
+  obj.set("host_name", depended_host);
+  obj.set("service_description", depended_service);
+  _service_deps.push_back(obj);
   return ;
 }
 
@@ -542,71 +446,5 @@ void centengine_config::set_directive(
                           std::string const& directive,
                           std::string const& value) {
   _directives[directive] = value;
-  return ;
-}
-
-/**
- *  Set host custom variable.
- *
- *  @param[in] host_name  Host name.
- *  @param[in] var_name   Variable name.
- *  @param[in] var_value  Variable value.
- */
-void centengine_config::set_host_custom_variable(
-                          char const* host_name,
-                          char const* var_name,
-                          char const* var_value) {
-  std::list<host>::iterator it;
-  it = find_host(host_name);
-  if (it != _hosts.end())
-    _set_custom_variable(&it->custom_variables, var_name, var_value);
-  return ;
-}
-
-/**
- *  Set service custom variable.
- *
- *  @param[in] host_name            Host name.
- *  @param[in] service_description  Service description.
- *  @param[in] var_name             Variable name.
- *  @param[in] var_value            Variable value.
- */
-void centengine_config::set_service_custom_variable(
-                          char const* host_name,
-                          char const* service_description,
-                          char const* var_name,
-                          char const* var_value) {
-  std::list<service>::iterator it;
-  it = find_service(host_name, service_description);
-  if (it != _services.end())
-    _set_custom_variable(&it->custom_variables, var_name, var_value);
-  return ;
-}
-
-/**
- *  Custom variable modification core function.
- *
- *  @param[in,out] vars       Custom variable list.
- *  @param[in]     var_name   Variable name.
- *  @param[in]     var_value  Variable value.
- */
-void centengine_config::_set_custom_variable(
-                          customvariablesmember** vars,
-                          char const* var_name,
-                          char const* var_value) {
-  while (*vars && strcmp((*vars)->variable_name, var_name))
-    vars = &(*vars)->next;
-  if (!*vars) {
-    *vars = new customvariablesmember;
-    memset(*vars, 0, sizeof(**vars));
-    (*vars)->variable_name = new char[strlen(var_name) + 1];
-    strcpy((*vars)->variable_name, var_name);
-  }
-  else {
-    delete [] (*vars)->variable_value;
-    (*vars)->variable_value = NULL;
-  }
-  (*vars)->variable_value = new char[strlen(var_value) + 1];
-  strcpy((*vars)->variable_value, var_value);
   return ;
 }

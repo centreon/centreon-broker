@@ -60,6 +60,15 @@ predicate::predicate(double val) : _range(false), _type(type_double) {
 /**
  *  Constructor.
  *
+ *  @param[in] val  Integer value.
+ */
+predicate::predicate(int val) : _range(false), _type(type_int) {
+  _val1.ival = val;
+}
+
+/**
+ *  Constructor.
+ *
  *  @param[in] val  String value.
  */
 predicate::predicate(char const* val)
@@ -164,6 +173,10 @@ bool predicate::operator==(QVariant const& other) const {
       double d(other.toDouble());
       retval = (d >= _val1.dval) && (d <= _val2.dval);
     }
+    else if (_type == type_int) {
+      int i(other.toInt());
+      retval = (i >= _val1.ival) && (i <= _val2.ival);
+    }
     else if (_type == type_timet) {
       time_t t(other.toLongLong());
       retval = (t >= _val1.tval) && (t <= _val2.tval);
@@ -187,6 +200,8 @@ bool predicate::operator==(QVariant const& other) const {
                  && std::isfinite(_val1.dval)
                  && !(fabs(d - _val1.dval) > (0.01 * fabs(_val1.dval))));
   }
+  else if (_type == type_int)
+    retval = (other.toInt() == _val1.ival);
   else if (_type == type_string)
     retval = (other.toString() == _val1.sval);
   else if (_type == type_timet)
@@ -295,6 +310,8 @@ misc::stringifier& operator<<(
         << "-" << (p.get_value2().bval ? "true" : "false");
     else if (p.get_value_type() == predicate::type_double)
       s << p.get_value().dval << "-" << p.get_value2().dval;
+    else if (p.get_value_type() == predicate::type_int)
+      s << p.get_value().ival << "-" << p.get_value2().ival;
     else if (p.get_value_type() == predicate::type_timet)
       s << p.get_value().tval << "-" << p.get_value2().tval;
     else if (p.get_value_type() == predicate::type_uint)
@@ -306,6 +323,8 @@ misc::stringifier& operator<<(
     s << (p.get_value().bval ? "true" : "false");
   else if (p.get_value_type() == predicate::type_double)
     s << p.get_value().dval;
+  else if (p.get_value_type() == predicate::type_int)
+    s << p.get_value().ival;
   else if (p.get_value_type() == predicate::type_string)
     s << p.get_value().sval;
   else if (p.get_value_type() == predicate::type_timet)

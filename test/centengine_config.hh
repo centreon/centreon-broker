@@ -22,87 +22,75 @@
 #  include <list>
 #  include <map>
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/engine/objects.hh"
+#  include "test/centengine_object.hh"
 
 CCB_BEGIN()
 
-namespace                     test {
+namespace              test {
   /**
    *  Centreon Engine configuration set.
    */
-  class                       centengine_config {
+  class                centengine_config {
   public:
-                              centengine_config();
-                              ~centengine_config();
-    std::list<host>::iterator find_host(char const* host_name);
-    std::list<service>::iterator
-                              find_service(
-                                char const* host_name,
-                                char const* service_description);
-    void                      host_depends_on(
-                                char const* dependent_host,
-                                char const* depended_host);
-    void                      host_parent_of(
-                                char const* parent_host,
-                                char const* child_host);
-    void                      generate_commands(int count);
-    void                      generate_hosts(int count);
-    void                      generate_services(int services_per_host);
-    std::string const&        get_cbmod_cfg_file() const;
-    std::list<command>&       get_commands();
-    std::list<command> const& get_commands() const;
+    typedef std::list<centengine_object> objlist;
+
+                       centengine_config();
+                       ~centengine_config();
+    objlist::iterator  find_host(std::string const& host_name);
+    objlist::iterator  find_service(
+                         std::string const& host_name,
+                         std::string const& service_description);
+    void               host_depends_on(
+                         std::string const& dependent_host,
+                         std::string const& depended_host);
+    void               host_parent_of(
+                         std::string const& parent_host,
+                         std::string const& child_host);
+    void               generate_commands(int count);
+    void               generate_hosts(int count);
+    void               generate_services(int services_per_host);
+    std::string const& get_cbmod_cfg_file() const;
+    objlist&           get_commands();
+    objlist const&     get_commands() const;
+    objlist&           get_contacts();
+    objlist const&     get_contacts() const;
     std::map<std::string, std::string> const&
-                              get_directives() const;
-    std::list<host>&          get_hosts();
-    std::list<host> const&    get_hosts() const;
-    std::list<hostdependency>&
-                              get_host_dependencies();
-    std::list<hostdependency> const&
-                              get_host_dependencies() const;
-    std::list<service>&       get_services();
-    std::list<service> const& get_services() const;
-    std::list<servicedependency>&
-                              get_service_dependencies();
-    std::list<servicedependency> const&
-                              get_service_dependencies() const;
-    void                      service_depends_on(
-                                char const* dependent_host,
-                                char const* dependent_service,
-                                char const* depended_host,
-                                char const* depended_service);
-    void                      set_cbmod_cfg_file(
-                                std::string const& cfg_path);
-    void                      set_directive(
-                                std::string const& directive,
-                                std::string const& value);
-    void                      set_host_custom_variable(
-                                char const* host_name,
-                                char const* var_name,
-                                char const* var_value);
-    void                      set_service_custom_variable(
-                                char const* host_name,
-                                char const* service_description,
-                                char const* var_name,
-                                char const* var_value);
+                       get_directives() const;
+    objlist&           get_hosts();
+    objlist const&     get_hosts() const;
+    objlist&           get_host_dependencies();
+    objlist const&     get_host_dependencies() const;
+    objlist&           get_services();
+    objlist const&     get_services() const;
+    objlist&           get_service_dependencies();
+    objlist const&     get_service_dependencies() const;
+    objlist&           get_timeperiods();
+    objlist const&     get_timeperiods() const;
+    void               service_depends_on(
+                         std::string const& dependent_host,
+                         std::string const& dependent_service,
+                         std::string const& depended_host,
+                         std::string const& depended_service);
+    void               set_cbmod_cfg_file(std::string const& cfg_path);
+    void               set_directive(
+                         std::string const& directive,
+                         std::string const& value);
 
   private:
-                              centengine_config(
-                                centengine_config const& other);
-    centengine_config&        operator=(centengine_config const& other);
-    void                      _set_custom_variable(
-                                customvariablesmember** vars,
-                                char const* var_name,
-                                char const* var_value);
+                       centengine_config(
+                         centengine_config const& other);
+    centengine_config& operator=(centengine_config const& other);
 
-    std::string               _cbmod_cfg;
-    std::list<command>        _commands;
+    std::string        _cbmod_cfg;
+    objlist            _commands;
+    objlist            _contacts;
     std::map<std::string, std::string>
-                              _directives;
-    std::list<host>           _hosts;
-    std::list<hostdependency> _host_deps;
-    std::list<service>        _services;
-    std::list<servicedependency>
-                              _service_deps;
+                       _directives;
+    objlist            _hosts;
+    objlist            _host_deps;
+    objlist            _services;
+    objlist            _service_deps;
+    objlist            _timeperiods;
   };
 }
 
