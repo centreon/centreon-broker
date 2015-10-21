@@ -707,13 +707,13 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${MY_PLUGIN_BAM}" "${TEST_LIB}")
 
   ##
-  ## Real-time monitoring.
+  ## Real-time monitoring (v2).
   ##
 
   # Instances table (v2).
-  set(TEST_NAME "running_rtmonitoring_instances_v2")
+  set(TEST_NAME "running_rtmonitoring_v2_instances")
   add_executable("${TEST_NAME}"
-    "${PROJECT_SOURCE_DIR}/test/rtmonitoring/instances_v2.cc")
+    "${PROJECT_SOURCE_DIR}/test/rtmonitoring/v2/instances.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
 
   # XXX

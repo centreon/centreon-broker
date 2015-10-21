@@ -31,7 +31,7 @@
 
 using namespace com::centreon::broker;
 
-#define TEST_NAME "rtmonitoring_instances_v2"
+#define TEST_NAME "rtmonitoring_v2_instances"
 #define DB_NAME "broker_" TEST_NAME
 
 // Check count.
