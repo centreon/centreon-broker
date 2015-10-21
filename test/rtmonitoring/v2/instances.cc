@@ -17,7 +17,6 @@
 */
 
 #include <cstdlib>
-#include <ctime>
 #include <iostream>
 #include "test/cbd.hh"
 #include "test/centengine.hh"
@@ -96,7 +95,7 @@ int main() {
     cbd_cfg.set_template(
       PROJECT_SOURCE_DIR "/test/cfg/sql.xml.in");
     cbd_cfg.set("BROKER_ID", "84");
-    cbd_cfg.set("BROKER_NAME", "my-broker-cbd");
+    cbd_cfg.set("BROKER_NAME", TEST_NAME "-cbd");
     cbd_cfg.set("POLLER_ID", "42");
     cbd_cfg.set("POLLER_NAME", "my-poller");
     cbd_cfg.set("TCP_PORT", "5571");
@@ -117,7 +116,7 @@ int main() {
     cbmod_cfg.set_template(
       PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
     cbmod_cfg.set("BROKER_ID", "83");
-    cbmod_cfg.set("BROKER_NAME", "my-broker-cbmod");
+    cbmod_cfg.set("BROKER_NAME", TEST_NAME "-cbmod");
     cbmod_cfg.set("POLLER_ID", "42");
     cbmod_cfg.set("POLLER_NAME", "my-poller");
     cbmod_cfg.set("TCP_HOST", "localhost");
@@ -140,7 +139,7 @@ int main() {
     engine_config.set_directive("obsess_over_services", "0");
     test::centengine engine(&engine_config);
 
-    // Objects.
+    // Time points.
     test::time_points tpoints;
 
     // Check default entry.
