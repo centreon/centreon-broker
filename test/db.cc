@@ -33,6 +33,25 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::test;
 
 /**
+ *  Add a database script to the list of scripts.
+ *
+ *  @param[out] list      Script list.
+ *  @param[in]  table     Table name.
+ *  @param[in]  base_dir  Scripts base directory.
+ */
+static void add_db_script(
+              std::list<std::pair<std::string, std::string> >& list,
+              std::string const& table,
+              std::string const& base_dir) {
+  std::string path(base_dir);
+  path.append("/");
+  path.append(table);
+  path.append(".sql");
+  list.push_back(std::make_pair(table, path));
+  return ;
+}
+
+/**
  *  Constructor.
  *
  *  @param[in] name     Name of database.
@@ -46,8 +65,24 @@ db::db(
       char const* const* exclude) : _remove_db_on_close(false) {
   // Find DB type.
   QString db_type;
-  if (!strcmp(DB_TYPE, "mysql"))
+  std::string db_dir(PROJECT_SOURCE_DIR "/sql/");
+  if (!strcmp(DB_TYPE, "mysql")) {
     db_type = "QMYSQL";
+    db_dir.append("mysql");
+  }
+  else if (!strcmp(DB_TYPE, "psql")
+           || !strcmp(DB_TYPE, "postgres")
+           || !strcmp(DB_TYPE, "postgresql")) {
+    db_type = "QPSQL";
+    db_dir.append("postgresql");
+  }
+  else if (!strcmp(DB_TYPE, "oci") || !strcmp(DB_TYPE, "oracle")) {
+    db_type = "QOCI";
+    db_dir.append("oracle");
+  }
+  else
+    throw (exceptions::msg() << "unsupported database type: "
+           << DB_TYPE);
 
   // Open DB.
   {
@@ -93,12 +128,13 @@ db::db(
            << name << "': " << _db->lastError().text());
 
   // Build table creation script list. Order is important.
-  std::pair<std::string, std::string> p;
   std::list<std::pair<std::string, std::string> > tables;
-  // Instances table.
-  p.first = "instances";
-  p.second = PROJECT_SOURCE_DIR "/sql/mysql_v2/instances.sql";
-  tables.push_back(p);
+  std::string db_dir_v2(db_dir);
+  db_dir_v2.append("_v2");
+  add_db_script(tables, "instances", db_dir_v2);
+  std::string db_dir_v3(db_dir);
+  db_dir_v3.append("_v3");
+  add_db_script(tables, "rt_instances", db_dir_v3);
 
   // Only include valid tables.
   if (include) {
