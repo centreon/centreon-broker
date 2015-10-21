@@ -19,6 +19,12 @@
     <level>3</level>
   </logger>
   -->
+  <input>
+    <name>tcp</name>
+    <type>tcp</type>
+    <protocol>bbdo</protocol>
+    <port>@TCP_PORT@</port>
+  </input>
   <output>
     <name>sql</name>
     <type>sql</type>

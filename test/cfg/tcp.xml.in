@@ -22,8 +22,9 @@
   <output>
     <name>tcp</name>
     <type>tcp</type>
-    <host>localhost</host>
-    <port>@PORT@</port>
     <protocol>bbdo</protocol>
+    <host>@TCP_HOST@</host>
+    <port>@TCP_PORT@</port>
+    @TCP_ADDITIONAL@
   </output>
 </centreonbroker>

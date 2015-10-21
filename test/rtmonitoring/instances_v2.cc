@@ -19,9 +19,10 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
-#include "test/db.hh"
+#include "test/cbd.hh"
 #include "test/centengine.hh"
 #include "test/centengine_config.hh"
+#include "test/db.hh"
 #include "test/file.hh"
 #include "test/misc.hh"
 #include "test/predicate.hh"
@@ -90,21 +91,37 @@ int main() {
     char const* tables[] = { "instances", NULL };
     test::db db(DB_NAME, tables);
 
-    // Monitoring engine.
-    test::file cbmod_cfg;
-    cbmod_cfg.set_template(
+    // Monitoring broker.
+    test::file cbd_cfg;
+    cbd_cfg.set_template(
       PROJECT_SOURCE_DIR "/test/cfg/sql.xml.in");
-    cbmod_cfg.set("BROKER_ID", "84");
-    cbmod_cfg.set("BROKER_NAME", "my-broker");
-    cbmod_cfg.set("POLLER_ID", "42");
-    cbmod_cfg.set("POLLER_NAME", "my-poller");
-    cbmod_cfg.set("DB_NAME", DB_NAME);
-    cbmod_cfg.set(
+    cbd_cfg.set("BROKER_ID", "84");
+    cbd_cfg.set("BROKER_NAME", "my-broker-cbd");
+    cbd_cfg.set("POLLER_ID", "42");
+    cbd_cfg.set("POLLER_NAME", "my-poller");
+    cbd_cfg.set("TCP_PORT", "5571");
+    cbd_cfg.set("DB_NAME", DB_NAME);
+    cbd_cfg.set(
       "SQL_ADDITIONAL",
       "<write_filters>"
       "  <category>neb:instance</category>"
       "  <category>neb:instance_status</category>"
       "</write_filters>");
+    test::cbd broker;
+    broker.set_config_file(cbd_cfg.generate());
+    broker.start();
+    test::sleep_for(1);
+
+    // Monitoring engine.
+    test::file cbmod_cfg;
+    cbmod_cfg.set_template(
+      PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
+    cbmod_cfg.set("BROKER_ID", "83");
+    cbmod_cfg.set("BROKER_NAME", "my-broker-cbmod");
+    cbmod_cfg.set("POLLER_ID", "42");
+    cbmod_cfg.set("POLLER_NAME", "my-poller");
+    cbmod_cfg.set("TCP_HOST", "localhost");
+    cbmod_cfg.set("TCP_PORT", "5571");
     test::centengine_config engine_config;
     engine_config.generate_hosts(3);
     engine_config.generate_services(5);
@@ -245,14 +262,25 @@ int main() {
     // postcheck(engine, tpoints, db, expected);
     std::cout << "  not tested\n";
 
-    // Check outdated.
-    precheck(tpoints, "outdated");
-    // XXX
-    // postcheck(engine, tpoints, db, expected);
-    std::cout << "  not tested\n";
-
     // Check end_time.
     precheck(tpoints, "end_time");
+    engine.stop();
+    test::sleep_for(2);
+    tpoints.store();
+    {
+      test::predicate expected_end_time[][3] = {
+        { 42u, test::predicate(tpoints.prelast(), tpoints.last() + 1),
+          false },
+        { test::predicate() }
+      };
+      db.check_content(
+           "SELECT instance_id, end_time, running FROM instances",
+           expected_end_time);
+    }
+    std::cout << "  passed\n";
+
+    // Check outdated.
+    precheck(tpoints, "outdated");
     // XXX
     // postcheck(engine, tpoints, db, expected);
     std::cout << "  not tested\n";
@@ -266,6 +294,7 @@ int main() {
     // Success.
     error = false;
     db.set_remove_db_on_close(true);
+    broker.stop();
   }
   catch (std::exception const& e) {
     std::cout << "  " << e.what() << "\n";
