@@ -46,7 +46,7 @@ int main() {
           || (le.retry != 0)
           || (le.service_description != "")
           || (le.service_id != 0)
-          || (le.status != 5)
+          || (le.status != -1)
           || (le.type()
               != io::events::data_type<io::events::neb, neb::de_log_entry>::value));
 }

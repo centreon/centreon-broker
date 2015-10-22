@@ -1694,7 +1694,8 @@ static mapped_data<log_entry> log_mapping[] = {
   mapped_data<log_entry>(
     &log_entry::status,
     NDO_DATA_CURRENTSTATE,
-    "status"),
+    "status",
+    NULL_ON_MINUS_ONE),
   mapped_data<log_entry>(
     &log_entry::output,
     NDO_DATA_OUTPUT,

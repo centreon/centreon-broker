@@ -41,7 +41,7 @@ log_entry::log_entry()
     msg_type(0),
     retry(0),
     service_id(0),
-    status(5) {}
+    status(-1) {}
 
 /**
  *  @brief Copy constructor.
