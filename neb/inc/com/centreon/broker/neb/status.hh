@@ -44,7 +44,6 @@ namespace        neb {
     status&      operator=(status const& s);
 
     bool         event_handler_enabled;
-    bool         failure_prediction_enabled;
     bool         flap_detection_enabled;
     bool         notifications_enabled;
 

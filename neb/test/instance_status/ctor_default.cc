@@ -40,7 +40,6 @@ int main() {
            || (is.check_hosts_freshness != false)
            || (is.check_services_freshness != false)
            || (is.event_handler_enabled != false)
-           || (is.failure_prediction_enabled != false)
            || (is.flap_detection_enabled != false)
            || (is.global_host_event_handler != "")
            || (is.global_service_event_handler != "")

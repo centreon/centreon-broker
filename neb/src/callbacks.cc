@@ -674,7 +674,6 @@ int neb::callback_host(int callback_type, void* data) {
       my_host->event_handler = h->event_handler;
     my_host->event_handler_enabled = h->event_handler_enabled;
     my_host->execution_time = h->execution_time;
-    my_host->failure_prediction_enabled = h->failure_prediction_enabled;
     my_host->flap_detection_enabled = h->flap_detection_enabled;
     my_host->flap_detection_on_down = h->flap_detection_on_down;
     my_host->flap_detection_on_unreachable
@@ -848,8 +847,6 @@ int neb::callback_host_status(int callback_type, void* data) {
       host_status->event_handler = h->event_handler;
     host_status->event_handler_enabled = h->event_handler_enabled;
     host_status->execution_time = h->execution_time;
-    host_status->failure_prediction_enabled
-      = h->failure_prediction_enabled;
     host_status->flap_detection_enabled = h->flap_detection_enabled;
     host_status->has_been_checked = h->has_been_checked;
     if (!h->name)
@@ -1158,8 +1155,6 @@ int neb::callback_program_status(int callback_type, void* data) {
     is->check_services_freshness = check_service_freshness;
     is->event_handler_enabled
       = program_status_data->event_handlers_enabled;
-    is->failure_prediction_enabled
-      = program_status_data->failure_prediction_enabled;
     is->flap_detection_enabled
       = program_status_data->flap_detection_enabled;
     if (program_status_data->global_host_event_handler)
@@ -1300,8 +1295,6 @@ int neb::callback_service(int callback_type, void* data) {
       my_service->event_handler = s->event_handler;
     my_service->event_handler_enabled = s->event_handler_enabled;
     my_service->execution_time = s->execution_time;
-    my_service->failure_prediction_enabled
-      = s->failure_prediction_enabled;
     my_service->flap_detection_enabled = s->flap_detection_enabled;
     my_service->flap_detection_on_critical = s->flap_detection_on_critical;
     my_service->flap_detection_on_ok = s->flap_detection_on_ok;
@@ -1494,8 +1487,6 @@ int neb::callback_service_status(int callback_type, void* data) {
       service_status->event_handler = s->event_handler;
     service_status->event_handler_enabled = s->event_handler_enabled;
     service_status->execution_time = s->execution_time;
-    service_status->failure_prediction_enabled
-      = s->failure_prediction_enabled;
     service_status->flap_detection_enabled = s->flap_detection_enabled;
     service_status->has_been_checked = s->has_been_checked;
     service_status->is_flapping = s->is_flapping;

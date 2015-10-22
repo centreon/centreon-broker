@@ -49,7 +49,6 @@ int main() {
            || !s.event_handler.isEmpty()
            || s.event_handler_enabled
            || (fabs(s.execution_time) > 0.001)
-           || s.failure_prediction_enabled
            || s.flap_detection_enabled
            || s.flap_detection_on_critical
            || s.flap_detection_on_ok

@@ -160,12 +160,6 @@ mapping::entry const instance_status::entries[] = {
     &instance_status::event_handler_enabled,
     "event_handlers"),
   mapping::entry(
-    &instance_status::failure_prediction_enabled,
-    NULL,
-    mapping::entry::always_valid,
-    true,
-    "failure_prediction"),
-  mapping::entry(
     &instance_status::flap_detection_enabled,
     "flap_detection"),
   mapping::entry(

@@ -45,7 +45,6 @@ int main() {
            || !ss.event_handler.isEmpty()
            || ss.event_handler_enabled
            || (fabs(ss.execution_time) > 0.001)
-           || ss.failure_prediction_enabled
            || ss.flap_detection_enabled
            || ss.has_been_checked
            || (ss.host_id != 0)

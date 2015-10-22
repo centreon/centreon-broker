@@ -159,12 +159,6 @@ mapping::entry const service_status::entries[] = {
     &service_status::execution_time,
     "execution_time"),
   mapping::entry(
-    &service_status::failure_prediction_enabled,
-    NULL,
-    mapping::entry::always_valid,
-    true,
-    "failure_prediction"),
-  mapping::entry(
     &service_status::flap_detection_enabled,
     "flap_detection"),
   mapping::entry(

@@ -153,12 +153,6 @@ mapping::entry const host_status::entries[] = {
     &host_status::execution_time,
     "execution_time"),
   mapping::entry(
-    &host_status::failure_prediction_enabled,
-    NULL,
-    mapping::entry::always_valid,
-    true,
-    "failure_prediction"),
-  mapping::entry(
     &host_status::flap_detection_enabled,
     "flap_detection"),
   mapping::entry(
