@@ -173,22 +173,28 @@ mapping::entry const host_status::entries[] = {
     "last_hard_state"),
   mapping::entry(
     &host_status::last_hard_state_change,
-    "last_hard_state_change"),
+    "last_hard_state_change",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host_status::last_state_change,
-    "last_state_change"),
+    "last_state_change",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host_status::last_time_down,
-    "last_time_down"),
+    "last_time_down",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host_status::last_time_unreachable,
-    "last_time_unreachable"),
+    "last_time_unreachable",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host_status::last_time_up,
-    "last_time_up"),
+    "last_time_up",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host_status::last_update,
-    "last_update"),
+    "last_update",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host_status::latency,
     "latency"),
@@ -197,7 +203,8 @@ mapping::entry const host_status::entries[] = {
     "max_check_attempts"),
   mapping::entry(
     &host_status::next_check,
-    "next_check"),
+    "next_check",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host_status::notifications_enabled,
     NULL,

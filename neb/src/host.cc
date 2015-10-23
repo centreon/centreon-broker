@@ -154,6 +154,12 @@ void host::_zero_initialize() {
 // are from the host_service class which does not inherit from io::data.
 mapping::entry const host::entries[] = {
   mapping::entry(
+    static_cast<QString (host::*) >(&host::action_url),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "action_url"),
+  mapping::entry(
     &host::active_checks_enabled,
     "active_checks"),
   mapping::entry(
@@ -184,17 +190,29 @@ mapping::entry const host::entries[] = {
     static_cast<bool (host::*) >(&host::default_active_checks_enabled),
     "default_active_checks",
     mapping::entry::always_valid,
-    false),
+    true),
   mapping::entry(
     static_cast<bool (host::*) >(&host::default_event_handler_enabled),
     "default_event_handler_enabled",
     mapping::entry::always_valid,
-    false),
+    true),
   mapping::entry(
     static_cast<bool (host::*) >(&host::default_flap_detection_enabled),
     "default_flap_detection",
     mapping::entry::always_valid,
-    false),
+    true),
+  mapping::entry(
+    static_cast<bool (host::*) >(&host::default_notifications_enabled),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "default_notify"),
+  mapping::entry(
+    static_cast<bool (host::*) >(&host::default_passive_checks_enabled),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "default_passive_checks"),
   mapping::entry(
     &host::enabled,
     "enabled"),
@@ -207,6 +225,11 @@ mapping::entry const host::entries[] = {
   mapping::entry(
     &host::execution_time,
     "execution_time"),
+  mapping::entry(
+    static_cast<double (host::*) >(&host::first_notification_delay),
+    NULL,
+    mapping::entry::always_valid,
+    "first_notification_delay"),
   mapping::entry(
     &host::flap_detection_enabled,
     "flap_detection"),
@@ -236,6 +259,18 @@ mapping::entry const host::entries[] = {
     "host_id",
     mapping::entry::invalid_on_zero),
   mapping::entry(
+    static_cast<QString (host::*) >(&host::icon_image),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "icon_image"),
+  mapping::entry(
+    static_cast<QString (host::*) >(&host::icon_image_alt),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "icon_image_alt"),
+  mapping::entry(
     &host::poller_id,
     "instance_id",
     mapping::entry::invalid_on_zero),
@@ -244,28 +279,35 @@ mapping::entry const host::entries[] = {
     "flapping"),
   mapping::entry(
     &host::last_check,
-    "last_check"),
+    "last_check",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host::last_hard_state,
     "last_hard_state"),
   mapping::entry(
     &host::last_hard_state_change,
-    "last_hard_state_change"),
+    "last_hard_state_change",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host::last_state_change,
-    "last_state_change"),
+    "last_state_change",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host::last_time_down,
-    "last_time_down"),
+    "last_time_down",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host::last_time_unreachable,
-    "last_time_unreachable"),
+    "last_time_unreachable",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host::last_time_up,
-    "last_time_up"),
+    "last_time_up",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host::last_update,
-    "last_update"),
+    "last_update",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host::latency,
     "latency"),
@@ -277,13 +319,56 @@ mapping::entry const host::entries[] = {
     "max_check_attempts"),
   mapping::entry(
     &host::next_check,
-    "next_check"),
+    "next_check",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    static_cast<QString (host::*) >(&host::notes),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notes"),
+  mapping::entry(
+    static_cast<QString (host::*) >(&host::notes_url),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notes_url"),
+  mapping::entry(
+    static_cast<double (host::*) >(&host::notification_interval),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notification_interval"),
+  mapping::entry(
+    static_cast<QString (host::*) >(&host::notification_period),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notification_period"),
   mapping::entry(
     &host::notifications_enabled,
     NULL,
     mapping::entry::always_valid,
     true,
     "notify"),
+  mapping::entry(
+    static_cast<bool (host::*) >(&host::notify_on_downtime),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify_on_downtime"),
+  mapping::entry(
+    static_cast<bool (host::*) >(&host::notify_on_flapping),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify_on_flapping"),
+  mapping::entry(
+    static_cast<bool (host::*) >(&host::notify_on_recovery),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify_on_recovery"),
   mapping::entry(
     &host::obsess_over,
     "obsess_over_host"),
@@ -308,6 +393,18 @@ mapping::entry const host::entries[] = {
   mapping::entry(
     &host::perf_data,
     "perfdata"),
+  mapping::entry(
+    static_cast<bool (host::*) >(&host::retain_nonstatus_information),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "retain_nonstatus_information"),
+  mapping::entry(
+    static_cast<bool (host::*) >(&host::retain_status_information),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "retain_status_information"),
   mapping::entry()
 };
 

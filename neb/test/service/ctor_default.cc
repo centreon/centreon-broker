@@ -34,6 +34,7 @@ int main() {
   // Check.
   return (((s.source_id != 0)
            || (s.destination_id != 0)
+           || !s.action_url.isEmpty()
            || s.active_checks_enabled
            || !s.check_command.isEmpty()
            || s.check_freshness
@@ -45,10 +46,13 @@ int main() {
            || s.default_active_checks_enabled
            || s.default_event_handler_enabled
            || s.default_flap_detection_enabled
+           || s.default_notifications_enabled
+           || s.default_passive_checks_enabled
            || !s.enabled
            || !s.event_handler.isEmpty()
            || s.event_handler_enabled
            || (fabs(s.execution_time) > 0.001)
+           || (fabs(s.first_notification_delay) > 0.0001)
            || s.flap_detection_enabled
            || s.flap_detection_on_critical
            || s.flap_detection_on_ok
@@ -59,6 +63,8 @@ int main() {
            || (fabs(s.high_flap_threshold) > 0.001)
            || (s.host_id != 0)
            || !s.host_name.isEmpty()
+           || !s.icon_image.isEmpty()
+           || !s.icon_image_alt.isEmpty()
            || s.is_flapping
            || s.is_volatile
            || (s.last_check != 0)
@@ -74,11 +80,20 @@ int main() {
            || (fabs(s.low_flap_threshold) > 0.001)
            || (s.max_check_attempts != 0)
            || (s.next_check != 0)
+           || !s.notes.isEmpty()
+           || !s.notes_url.isEmpty()
            || s.notifications_enabled
+           || (fabs(s.notification_interval) > 0.0001)
+           || !s.notification_period.isEmpty()
+           || s.notify_on_downtime
+           || s.notify_on_flapping
+           || s.notify_on_recovery
            || s.obsess_over
            || !s.output.isEmpty()
            || (fabs(s.percent_state_change) > 0.001)
            || !s.perf_data.isEmpty()
+           || s.retain_nonstatus_information
+           || s.retain_status_information
            || (fabs(s.retry_interval) > 0.001)
            || s.should_be_scheduled
            || (s.state_type != 0)

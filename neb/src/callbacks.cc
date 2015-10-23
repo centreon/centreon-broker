@@ -650,6 +650,8 @@ int neb::callback_host(int callback_type, void* data) {
 
 
     // Set host parameters.
+    if (h->action_url)
+      my_host->action_url = h->action_url;
     my_host->active_checks_enabled = h->checks_enabled;
     if (h->address)
       my_host->address = h->address;
@@ -669,11 +671,14 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->default_active_checks_enabled = h->checks_enabled;
     my_host->default_event_handler_enabled = h->event_handler_enabled;
     my_host->default_flap_detection_enabled = h->flap_detection_enabled;
+    my_host->default_notifications_enabled = h->notifications_enabled;
+    my_host->default_passive_checks_enabled = h->accept_passive_host_checks;
     my_host->enabled = (host_data->type != NEBTYPE_HOST_DELETE);
     if (h->event_handler)
       my_host->event_handler = h->event_handler;
     my_host->event_handler_enabled = h->event_handler_enabled;
     my_host->execution_time = h->execution_time;
+    my_host->first_notification_delay = h->first_notification_delay;
     my_host->flap_detection_enabled = h->flap_detection_enabled;
     my_host->flap_detection_on_down = h->flap_detection_on_down;
     my_host->flap_detection_on_unreachable
@@ -684,6 +689,10 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->high_flap_threshold = h->high_flap_threshold;
     if (h->name)
       my_host->host_name = h->name;
+    if (h->icon_image)
+      my_host->icon_image = h->icon_image;
+    if (h->icon_image_alt)
+      my_host->icon_image_alt = h->icon_image_alt;
     my_host->is_flapping = h->is_flapping;
     my_host->last_check = h->last_check;
     my_host->last_hard_state = h->last_hard_state;
@@ -697,7 +706,17 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->low_flap_threshold = h->low_flap_threshold;
     my_host->max_check_attempts = h->max_attempts;
     my_host->next_check = h->next_check;
+    if (h->notes)
+      my_host->notes = h->notes;
+    if (h->notes_url)
+      my_host->notes_url = h->notes_url;
     my_host->notifications_enabled = h->notifications_enabled;
+    my_host->notification_interval = h->notification_interval;
+    if (h->notification_period)
+      my_host->notification_period = h->notification_period;
+    my_host->notify_on_downtime = h->notify_on_downtime;
+    my_host->notify_on_flapping = h->notify_on_flapping;
+    my_host->notify_on_recovery = h->notify_on_recovery;
     my_host->obsess_over = h->obsess_over_host;
     if (h->plugin_output) {
       my_host->output = h->plugin_output;
@@ -709,6 +728,9 @@ int neb::callback_host(int callback_type, void* data) {
     if (h->perf_data)
       my_host->perf_data = h->perf_data;
     my_host->poller_id = config::applier::state::instance().poller_id();
+    my_host->retain_nonstatus_information
+      = h->retain_nonstatus_information;
+    my_host->retain_status_information = h->retain_status_information;
     my_host->retry_interval = h->retry_interval;
     my_host->should_be_scheduled = h->should_be_scheduled;
     my_host->state_type = (h->has_been_checked
@@ -1274,6 +1296,8 @@ int neb::callback_service(int callback_type, void* data) {
     misc::shared_ptr<neb::service> my_service(new neb::service);
 
     // Fill output var.
+    if (s->action_url)
+      my_service->action_url = s->action_url;
     my_service->active_checks_enabled = s->checks_enabled;
     if (s->service_check_command)
       my_service->check_command = s->service_check_command;
@@ -1289,12 +1313,16 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->default_active_checks_enabled = s->checks_enabled;
     my_service->default_event_handler_enabled = s->event_handler_enabled;
     my_service->default_flap_detection_enabled = s->flap_detection_enabled;
+    my_service->default_notifications_enabled = s->notifications_enabled;
+    my_service->default_passive_checks_enabled
+      = s->accept_passive_service_checks;
     my_service->enabled
       = (service_data->type != NEBTYPE_SERVICE_DELETE);
     if (s->event_handler)
       my_service->event_handler = s->event_handler;
     my_service->event_handler_enabled = s->event_handler_enabled;
     my_service->execution_time = s->execution_time;
+    my_service->first_notification_delay = s->first_notification_delay;
     my_service->flap_detection_enabled = s->flap_detection_enabled;
     my_service->flap_detection_on_critical = s->flap_detection_on_critical;
     my_service->flap_detection_on_ok = s->flap_detection_on_ok;
@@ -1305,6 +1333,10 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->high_flap_threshold = s->high_flap_threshold;
     if (s->host_name)
       my_service->host_name = s->host_name;
+    if (s->icon_image)
+      my_service->icon_image = s->icon_image;
+    if (s->icon_image_alt)
+      my_service->icon_image_alt = s->icon_image_alt;
     my_service->is_flapping = s->is_flapping;
     my_service->is_volatile = s->is_volatile;
     my_service->last_check = s->last_check;
@@ -1320,7 +1352,17 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->low_flap_threshold = s->low_flap_threshold;
     my_service->max_check_attempts = s->max_attempts;
     my_service->next_check = s->next_check;
+    if (s->notes)
+      my_service->notes = s->notes;
+    if (s->notes_url)
+      my_service->notes_url = s->notes_url;
     my_service->notifications_enabled = s->notifications_enabled;
+    my_service->notification_interval = s->notification_interval;
+    if (s->notification_period)
+      my_service->notification_period = s->notification_period;
+    my_service->notify_on_downtime = s->notify_on_downtime;
+    my_service->notify_on_flapping = s->notify_on_flapping;
+    my_service->notify_on_recovery = s->notify_on_recovery;
     my_service->obsess_over = s->obsess_over_service;
     if (s->plugin_output) {
       my_service->output = s->plugin_output;
@@ -1331,6 +1373,10 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->percent_state_change = s->percent_state_change;
     if (s->perf_data)
       my_service->perf_data = s->perf_data;
+    my_service->retain_nonstatus_information
+      = s->retain_nonstatus_information;
+    my_service->retain_status_information
+      = s->retain_status_information;
     my_service->retry_interval = s->retry_interval;
     if (s->description)
       my_service->service_description = s->description;

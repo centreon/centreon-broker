@@ -34,6 +34,7 @@ int main() {
   // Check.
   return (((h.source_id != 0)
            || (h.destination_id != 0)
+           || !h.action_url.isEmpty()
            || h.active_checks_enabled
            || !h.address.isEmpty()
            || !h.alias.isEmpty()
@@ -47,10 +48,13 @@ int main() {
            || h.default_active_checks_enabled
            || h.default_event_handler_enabled
            || h.default_flap_detection_enabled
+           || h.default_notifications_enabled
+           || h.default_passive_checks_enabled
            || !h.enabled
            || !h.event_handler.isEmpty()
            || h.event_handler_enabled
            || (fabs(h.execution_time) > 0.0001)
+           || (fabs(h.first_notification_delay) > 0.0001)
            || h.flap_detection_enabled
            || h.flap_detection_on_down
            || h.flap_detection_on_unreachable
@@ -60,6 +64,8 @@ int main() {
            || (fabs(h.high_flap_threshold) > 0.0001)
            || (h.host_id != 0)
            || !h.host_name.isEmpty()
+           || !h.icon_image.isEmpty()
+           || !h.icon_image_alt.isEmpty()
            || h.is_flapping
            || (h.last_check != 0)
            || (h.last_hard_state != 4)
@@ -73,11 +79,20 @@ int main() {
            || (fabs(h.low_flap_threshold) > 0.0001)
            || (h.max_check_attempts != 0)
            || (h.next_check != 0)
+           || !h.notes.isEmpty()
+           || !h.notes_url.isEmpty()
            || h.notifications_enabled
+           || (fabs(h.notification_interval) > 0.0001)
+           || !h.notification_period.isEmpty()
+           || h.notify_on_downtime
+           || h.notify_on_flapping
+           || h.notify_on_recovery
            || h.obsess_over
            || !h.output.isEmpty()
            || (fabs(h.percent_state_change) > 0.0001)
            || !h.perf_data.isEmpty()
+           || h.retain_nonstatus_information
+           || h.retain_status_information
            || (fabs(h.retry_interval) > 0.0001)
            || h.should_be_scheduled
            || (h.state_type != 0))

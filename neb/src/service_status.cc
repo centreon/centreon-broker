@@ -176,31 +176,39 @@ mapping::entry const service_status::entries[] = {
     "flapping"),
   mapping::entry(
     &service_status::last_check,
-    "last_check"),
+    "last_check",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service_status::last_hard_state,
     "last_hard_state"),
   mapping::entry(
     &service_status::last_hard_state_change,
-    "last_hard_state_change"),
+    "last_hard_state_change",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service_status::last_state_change,
-    "last_state_change"),
+    "last_state_change",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service_status::last_time_critical,
-    "last_time_critical"),
+    "last_time_critical",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service_status::last_time_ok,
-    "last_time_ok"),
+    "last_time_ok",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service_status::last_time_unknown,
-    "last_time_unknown"),
+    "last_time_unknown",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service_status::last_time_warning,
-    "last_time_warning"),
+    "last_time_warning",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service_status::last_update,
-    "last_update"),
+    "last_update",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service_status::latency,
     "latency"),
@@ -209,7 +217,8 @@ mapping::entry const service_status::entries[] = {
     "max_check_attempts"),
   mapping::entry(
     &service_status::next_check,
-    "next_check"),
+    "next_check",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service_status::notifications_enabled,
     NULL,
