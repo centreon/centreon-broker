@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -32,7 +32,9 @@ using namespace com::centreon::broker::neb;
  *  Initialize members to 0, NULL or equivalent.
  */
 host_service_status::host_service_status()
-  : active_checks_enabled(false),
+  : acknowledged(false),
+    acknowledgement_type(0),
+    active_checks_enabled(false),
     check_interval(0.0),
     check_type(0),
     current_check_attempt(0),
@@ -45,12 +47,16 @@ host_service_status::host_service_status()
     last_check(0),
     last_hard_state(4), // Pending
     last_hard_state_change(0),
+    last_notification(0),
     last_state_change(0),
     last_update(0),
     latency(0.0),
     max_check_attempts(0),
     next_check(0),
+    next_notification(0),
+    no_more_notifications(false),
     obsess_over(false),
+    passive_checks_enabled(false),
     percent_state_change(0.0),
     retry_interval(0.0),
     should_be_scheduled(false),
@@ -104,6 +110,8 @@ host_service_status& host_service_status::operator=(host_service_status const& h
  *  @param[in] hss Object to copy.
  */
 void host_service_status::_internal_copy(host_service_status const& hss) {
+  acknowledged = hss.acknowledged;
+  acknowledgement_type = hss.acknowledgement_type;
   active_checks_enabled = hss.active_checks_enabled;
   check_command = hss.check_command;
   check_interval = hss.check_interval;
@@ -120,13 +128,17 @@ void host_service_status::_internal_copy(host_service_status const& hss) {
   last_check = hss.last_check;
   last_hard_state = hss.last_hard_state;
   last_hard_state_change = hss.last_hard_state_change;
+  last_notification = hss.last_notification;
   last_state_change = hss.last_state_change;
   last_update = hss.last_update;
   latency = hss.latency;
   max_check_attempts = hss.max_check_attempts;
   next_check = hss.next_check;
+  next_notification = hss.next_notification;
+  no_more_notifications = hss.no_more_notifications;
   obsess_over = hss.obsess_over;
   output = hss.output;
+  passive_checks_enabled = hss.passive_checks_enabled;
   percent_state_change = hss.percent_state_change;
   perf_data = hss.perf_data;
   retry_interval = hss.retry_interval;

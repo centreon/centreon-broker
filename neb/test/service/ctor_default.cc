@@ -34,6 +34,8 @@ int main() {
   // Check.
   return (((s.source_id != 0)
            || (s.destination_id != 0)
+           || s.acknowledged
+           || (s.acknowledgement_type != 0)
            || !s.action_url.isEmpty()
            || s.active_checks_enabled
            || !s.check_command.isEmpty()
@@ -70,6 +72,7 @@ int main() {
            || (s.last_check != 0)
            || (s.last_hard_state != 4)
            || (s.last_hard_state_change != 0)
+           || (s.last_notification != 0)
            || (s.last_state_change != 0)
            || (s.last_time_critical != 0)
            || (s.last_time_ok != 0)
@@ -80,6 +83,8 @@ int main() {
            || (fabs(s.low_flap_threshold) > 0.001)
            || (s.max_check_attempts != 0)
            || (s.next_check != 0)
+           || (s.next_notification != 0)
+           || s.no_more_notifications
            || !s.notes.isEmpty()
            || !s.notes_url.isEmpty()
            || s.notifications_enabled
@@ -90,6 +95,7 @@ int main() {
            || s.notify_on_recovery
            || s.obsess_over
            || !s.output.isEmpty()
+           || s.passive_checks_enabled
            || (fabs(s.percent_state_change) > 0.001)
            || !s.perf_data.isEmpty()
            || s.retain_nonstatus_information

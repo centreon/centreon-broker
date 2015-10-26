@@ -151,6 +151,18 @@ void service::_zero_initialize() {
 // are from the host_service class which does not inherit from io::data.
 mapping::entry const service::entries[] = {
   mapping::entry(
+    &service::acknowledged,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "acknowledged"),
+  mapping::entry(
+    &service::acknowledgement_type,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "acknowledgement_type"),
+  mapping::entry(
     static_cast<QString (service::*) >(&service::action_url),
     NULL,
     mapping::entry::always_valid,
@@ -287,6 +299,12 @@ mapping::entry const service::entries[] = {
     "last_hard_state_change",
     mapping::entry::invalid_on_zero),
   mapping::entry(
+    &service::last_notification,
+    NULL,
+    mapping::entry::invalid_on_zero,
+    true,
+    "last_notification"),
+  mapping::entry(
     &service::last_state_change,
     "last_state_change",
     mapping::entry::invalid_on_zero),
@@ -323,6 +341,18 @@ mapping::entry const service::entries[] = {
     &service::next_check,
     "next_check",
     mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &service::next_notification,
+    NULL,
+    mapping::entry::invalid_on_zero,
+    true,
+    "next_notification"),
+  mapping::entry(
+    &service::no_more_notifications,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "no_more_notifications"),
   mapping::entry(
     static_cast<QString (service::*) >(&service::notes),
     NULL,
@@ -374,6 +404,12 @@ mapping::entry const service::entries[] = {
   mapping::entry(
     &service::obsess_over,
     "obsess_over_service"),
+  mapping::entry(
+    &service::passive_checks_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "passive_checks"),
   mapping::entry(
     &service::percent_state_change,
     "percent_state_change"),

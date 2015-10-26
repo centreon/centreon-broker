@@ -34,6 +34,8 @@ int main() {
   // Check.
   return (((h.source_id != 0)
            || (h.destination_id != 0)
+           || h.acknowledged
+           || (h.acknowledgement_type != 0)
            || !h.action_url.isEmpty()
            || h.active_checks_enabled
            || !h.address.isEmpty()
@@ -70,6 +72,7 @@ int main() {
            || (h.last_check != 0)
            || (h.last_hard_state != 4)
            || (h.last_hard_state_change != 0)
+           || (h.last_notification != 0)
            || (h.last_state_change != 0)
            || (h.last_time_down != 0)
            || (h.last_time_unreachable != 0)
@@ -79,16 +82,21 @@ int main() {
            || (fabs(h.low_flap_threshold) > 0.0001)
            || (h.max_check_attempts != 0)
            || (h.next_check != 0)
+           || (h.next_notification != 0)
+           || h.no_more_notifications
            || !h.notes.isEmpty()
            || !h.notes_url.isEmpty()
            || h.notifications_enabled
            || (fabs(h.notification_interval) > 0.0001)
            || !h.notification_period.isEmpty()
+           || h.notify_on_down
            || h.notify_on_downtime
            || h.notify_on_flapping
            || h.notify_on_recovery
+           || h.notify_on_unreachable
            || h.obsess_over
            || !h.output.isEmpty()
+           || h.passive_checks_enabled
            || (fabs(h.percent_state_change) > 0.0001)
            || !h.perf_data.isEmpty()
            || h.retain_nonstatus_information

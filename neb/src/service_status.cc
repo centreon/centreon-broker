@@ -129,6 +129,18 @@ void service_status::_internal_copy(service_status const& ss) {
 // Mapping.
 mapping::entry const service_status::entries[] = {
   mapping::entry(
+    &service_status::acknowledged,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "acknowledged"),
+  mapping::entry(
+    &service_status::acknowledgement_type,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "acknowledgement_type"),
+  mapping::entry(
     &service_status::active_checks_enabled,
     "active_checks"),
   mapping::entry(
@@ -186,6 +198,12 @@ mapping::entry const service_status::entries[] = {
     "last_hard_state_change",
     mapping::entry::invalid_on_zero),
   mapping::entry(
+    &service_status::last_notification,
+    NULL,
+    mapping::entry::invalid_on_zero,
+    true,
+    "last_notification"),
+  mapping::entry(
     &service_status::last_state_change,
     "last_state_change",
     mapping::entry::invalid_on_zero),
@@ -220,6 +238,18 @@ mapping::entry const service_status::entries[] = {
     "next_check",
     mapping::entry::invalid_on_zero),
   mapping::entry(
+    &service_status::next_notification,
+    NULL,
+    mapping::entry::invalid_on_zero,
+    true,
+    "next_notification"),
+  mapping::entry(
+    &service_status::no_more_notifications,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "no_more_notifications"),
+  mapping::entry(
     &service_status::notifications_enabled,
     NULL,
     mapping::entry::always_valid,
@@ -228,6 +258,12 @@ mapping::entry const service_status::entries[] = {
   mapping::entry(
     &service_status::obsess_over,
     "obsess_over_service"),
+  mapping::entry(
+    &service_status::passive_checks_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "passive_checks"),
   mapping::entry(
     &service_status::percent_state_change,
     "percent_state_change"),

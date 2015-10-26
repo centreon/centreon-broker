@@ -646,10 +646,9 @@ int neb::callback_host(int callback_type, void* data) {
       h(static_cast< ::host*>(host_data->object_ptr));
     misc::shared_ptr<neb::host> my_host(new neb::host);
 
-    // Get host id.
-
-
     // Set host parameters.
+    my_host->acknowledged = h->problem_has_been_acknowledged;
+    my_host->acknowledgement_type = h->acknowledgement_type;
     if (h->action_url)
       my_host->action_url = h->action_url;
     my_host->active_checks_enabled = h->checks_enabled;
@@ -697,6 +696,7 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->last_check = h->last_check;
     my_host->last_hard_state = h->last_hard_state;
     my_host->last_hard_state_change = h->last_hard_state_change;
+    my_host->last_notification = h->last_host_notification;
     my_host->last_state_change = h->last_state_change;
     my_host->last_time_down = h->last_time_down;
     my_host->last_time_unreachable = h->last_time_unreachable;
@@ -706,6 +706,8 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->low_flap_threshold = h->low_flap_threshold;
     my_host->max_check_attempts = h->max_attempts;
     my_host->next_check = h->next_check;
+    my_host->next_notification = h->next_host_notification;
+    my_host->no_more_notifications = h->no_more_notifications;
     if (h->notes)
       my_host->notes = h->notes;
     if (h->notes_url)
@@ -714,9 +716,11 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->notification_interval = h->notification_interval;
     if (h->notification_period)
       my_host->notification_period = h->notification_period;
+    my_host->notify_on_down = h->notify_on_down;
     my_host->notify_on_downtime = h->notify_on_downtime;
     my_host->notify_on_flapping = h->notify_on_flapping;
     my_host->notify_on_recovery = h->notify_on_recovery;
+    my_host->notify_on_unreachable = h->notify_on_unreachable;
     my_host->obsess_over = h->obsess_over_host;
     if (h->plugin_output) {
       my_host->output = h->plugin_output;
@@ -724,6 +728,7 @@ int neb::callback_host(int callback_type, void* data) {
     }
     if (h->long_plugin_output)
         my_host->output.append(h->long_plugin_output);
+    my_host->passive_checks_enabled = h->accept_passive_host_checks;
     my_host->percent_state_change = h->percent_state_change;
     if (h->perf_data)
       my_host->perf_data = h->perf_data;
@@ -854,6 +859,8 @@ int neb::callback_host_status(int callback_type, void* data) {
     // Fill output var.
     h = static_cast< ::host*>(
       static_cast<nebstruct_host_status_data*>(data)->object_ptr);
+    host_status->acknowledged = h->problem_has_been_acknowledged;
+    host_status->acknowledgement_type = h->acknowledgement_type;
     host_status->active_checks_enabled = h->checks_enabled;
     if (h->host_check_command)
       host_status->check_command = h->host_check_command;
@@ -883,6 +890,7 @@ int neb::callback_host_status(int callback_type, void* data) {
     host_status->last_check = h->last_check;
     host_status->last_hard_state = h->last_hard_state;
     host_status->last_hard_state_change = h->last_hard_state_change;
+    host_status->last_notification = h->last_host_notification;
     host_status->last_state_change = h->last_state_change;
     host_status->last_time_down = h->last_time_down;
     host_status->last_time_unreachable = h->last_time_unreachable;
@@ -891,6 +899,8 @@ int neb::callback_host_status(int callback_type, void* data) {
     host_status->latency = h->latency;
     host_status->max_check_attempts = h->max_attempts;
     host_status->next_check = h->next_check;
+    host_status->next_notification = h->next_host_notification;
+    host_status->no_more_notifications = h->no_more_notifications;
     host_status->notifications_enabled = h->notifications_enabled;
     host_status->obsess_over = h->obsess_over_host;
     if (h->plugin_output) {
@@ -899,6 +909,7 @@ int neb::callback_host_status(int callback_type, void* data) {
     }
     if (h->long_plugin_output)
       host_status->output.append(h->long_plugin_output);
+    host_status->passive_checks_enabled = h->accept_passive_host_checks;
     host_status->percent_state_change = h->percent_state_change;
     if (h->perf_data)
       host_status->perf_data = h->perf_data;
@@ -1296,6 +1307,8 @@ int neb::callback_service(int callback_type, void* data) {
     misc::shared_ptr<neb::service> my_service(new neb::service);
 
     // Fill output var.
+    my_service->acknowledged = s->problem_has_been_acknowledged;
+    my_service->acknowledgement_type = s->acknowledgement_type;
     if (s->action_url)
       my_service->action_url = s->action_url;
     my_service->active_checks_enabled = s->checks_enabled;
@@ -1342,6 +1355,7 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->last_check = s->last_check;
     my_service->last_hard_state = s->last_hard_state;
     my_service->last_hard_state_change = s->last_hard_state_change;
+    my_service->last_notification = s->last_notification;
     my_service->last_state_change = s->last_state_change;
     my_service->last_time_critical = s->last_time_critical;
     my_service->last_time_ok = s->last_time_ok;
@@ -1352,6 +1366,8 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->low_flap_threshold = s->low_flap_threshold;
     my_service->max_check_attempts = s->max_attempts;
     my_service->next_check = s->next_check;
+    my_service->next_notification = s->next_notification;
+    my_service->no_more_notifications = s->no_more_notifications;
     if (s->notes)
       my_service->notes = s->notes;
     if (s->notes_url)
@@ -1370,6 +1386,8 @@ int neb::callback_service(int callback_type, void* data) {
     }
     if (s->long_plugin_output)
       my_service->output.append(s->long_plugin_output);
+    my_service->passive_checks_enabled
+      = s->accept_passive_service_checks;
     my_service->percent_state_change = s->percent_state_change;
     if (s->perf_data)
       my_service->perf_data = s->perf_data;
@@ -1518,6 +1536,8 @@ int neb::callback_service_status(int callback_type, void* data) {
     // Fill output var.
     s = static_cast< ::service*>(
       static_cast<nebstruct_service_status_data*>(data)->object_ptr);
+    service_status->acknowledged = s->problem_has_been_acknowledged;
+    service_status->acknowledgement_type = s->acknowledgement_type;
     service_status->active_checks_enabled = s->checks_enabled;
     if (s->service_check_command)
       service_status->check_command = s->service_check_command;
@@ -1539,6 +1559,7 @@ int neb::callback_service_status(int callback_type, void* data) {
     service_status->last_check = s->last_check;
     service_status->last_hard_state = s->last_hard_state;
     service_status->last_hard_state_change = s->last_hard_state_change;
+    service_status->last_notification = s->last_notification;
     service_status->last_state_change = s->last_state_change;
     service_status->last_time_critical = s->last_time_critical;
     service_status->last_time_ok = s->last_time_ok;
@@ -1548,6 +1569,8 @@ int neb::callback_service_status(int callback_type, void* data) {
     service_status->latency = s->latency;
     service_status->max_check_attempts = s->max_attempts;
     service_status->next_check = s->next_check;
+    service_status->next_notification = s->next_notification;
+    service_status->no_more_notifications = s->no_more_notifications;
     service_status->notifications_enabled = s->notifications_enabled;
     service_status->obsess_over = s->obsess_over_service;
     if (s->plugin_output) {
@@ -1556,6 +1579,8 @@ int neb::callback_service_status(int callback_type, void* data) {
     }
     if (s->long_plugin_output)
       service_status->output.append(s->long_plugin_output);
+    service_status->passive_checks_enabled
+      = s->accept_passive_service_checks;
     service_status->percent_state_change = s->percent_state_change;
     if (s->perf_data)
       service_status->perf_data = s->perf_data;

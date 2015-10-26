@@ -123,6 +123,18 @@ void host_status::_internal_copy(host_status const& other) {
 // Mapping.
 mapping::entry const host_status::entries[] = {
   mapping::entry(
+    &host_status::acknowledged,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "acknowledged"),
+  mapping::entry(
+    &host_status::acknowledgement_type,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "acknowledgement_type"),
+  mapping::entry(
     &host_status::active_checks_enabled,
     "active_checks"),
   mapping::entry(
@@ -167,7 +179,8 @@ mapping::entry const host_status::entries[] = {
     "flapping"),
   mapping::entry(
     &host_status::last_check,
-    "last_check"),
+    "last_check",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host_status::last_hard_state,
     "last_hard_state"),
@@ -175,6 +188,12 @@ mapping::entry const host_status::entries[] = {
     &host_status::last_hard_state_change,
     "last_hard_state_change",
     mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &host_status::last_notification,
+    NULL,
+    mapping::entry::invalid_on_zero,
+    true,
+    "last_notification"),
   mapping::entry(
     &host_status::last_state_change,
     "last_state_change",
@@ -206,6 +225,18 @@ mapping::entry const host_status::entries[] = {
     "next_check",
     mapping::entry::invalid_on_zero),
   mapping::entry(
+    &host_status::next_notification,
+    NULL,
+    mapping::entry::invalid_on_zero,
+    false,
+    "next_host_notification"),
+  mapping::entry(
+    &host_status::no_more_notifications,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "no_more_notifications"),
+  mapping::entry(
     &host_status::notifications_enabled,
     NULL,
     mapping::entry::always_valid,
@@ -214,6 +245,12 @@ mapping::entry const host_status::entries[] = {
   mapping::entry(
     &host_status::obsess_over,
     "obsess_over_host"),
+  mapping::entry(
+    &host_status::passive_checks_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "passive_checks"),
   mapping::entry(
     &host_status::percent_state_change,
     "percent_state_change"),

@@ -127,6 +127,8 @@ void host::_internal_copy(host const& other) {
   flap_detection_on_unreachable = other.flap_detection_on_unreachable;
   flap_detection_on_up = other.flap_detection_on_up;
   host_name = other.host_name;
+  notify_on_down = other.notify_on_down;
+  notify_on_unreachable = other.notify_on_unreachable;
   poller_id = other.poller_id;
   return ;
 }
@@ -140,6 +142,8 @@ void host::_zero_initialize() {
   flap_detection_on_down = 0;
   flap_detection_on_unreachable = 0;
   flap_detection_on_up = 0;
+  notify_on_down = false;
+  notify_on_unreachable = false;
   poller_id = 0;
   return ;
 }
@@ -153,6 +157,18 @@ void host::_zero_initialize() {
 // Mapping. Some pointer-to-member are explicitely casted because they
 // are from the host_service class which does not inherit from io::data.
 mapping::entry const host::entries[] = {
+  mapping::entry(
+    &host::acknowledged,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "acknowledged"),
+  mapping::entry(
+    &host::acknowledgement_type,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "acknowledgement_type"),
   mapping::entry(
     static_cast<QString (host::*) >(&host::action_url),
     NULL,
@@ -229,6 +245,7 @@ mapping::entry const host::entries[] = {
     static_cast<double (host::*) >(&host::first_notification_delay),
     NULL,
     mapping::entry::always_valid,
+    true,
     "first_notification_delay"),
   mapping::entry(
     &host::flap_detection_enabled,
@@ -289,6 +306,12 @@ mapping::entry const host::entries[] = {
     "last_hard_state_change",
     mapping::entry::invalid_on_zero),
   mapping::entry(
+    &host::last_notification,
+    NULL,
+    mapping::entry::invalid_on_zero,
+    true,
+    "last_notification"),
+  mapping::entry(
     &host::last_state_change,
     "last_state_change",
     mapping::entry::invalid_on_zero),
@@ -322,6 +345,18 @@ mapping::entry const host::entries[] = {
     "next_check",
     mapping::entry::invalid_on_zero),
   mapping::entry(
+    &host::next_notification,
+    NULL,
+    mapping::entry::invalid_on_zero,
+    true,
+    "next_host_notification"),
+  mapping::entry(
+    &host::no_more_notifications,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "no_more_notifications"),
+  mapping::entry(
     static_cast<QString (host::*) >(&host::notes),
     NULL,
     mapping::entry::always_valid,
@@ -352,6 +387,12 @@ mapping::entry const host::entries[] = {
     true,
     "notify"),
   mapping::entry(
+    &host::notify_on_down,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify_on_down"),
+  mapping::entry(
     static_cast<bool (host::*) >(&host::notify_on_downtime),
     NULL,
     mapping::entry::always_valid,
@@ -370,8 +411,20 @@ mapping::entry const host::entries[] = {
     true,
     "notify_on_recovery"),
   mapping::entry(
+    &host::notify_on_unreachable,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify_on_unreachable"),
+  mapping::entry(
     &host::obsess_over,
     "obsess_over_host"),
+  mapping::entry(
+    &host::passive_checks_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "passive_checks"),
   mapping::entry(
     &host::percent_state_change,
     "percent_state_change"),
