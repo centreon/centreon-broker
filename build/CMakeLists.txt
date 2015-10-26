@@ -515,6 +515,12 @@ else ()
   target_link_libraries("${DAEMON}" "roker")
 endif ()
 
+# Centreon Broker Watchdog
+option(WITH_CBWD "Build centreon broker watchdong." ON)
+if (WITH_CBWD)
+  add_subdirectory("watchdog")
+endif()
+
 # Module list.
 unset(MODULE_LIST)
 
