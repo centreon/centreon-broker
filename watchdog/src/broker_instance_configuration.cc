@@ -85,6 +85,41 @@ broker_instance_configuration& broker_instance_configuration::operator=(
 }
 
 /**
+ *  @brief Compare two instance configuration.
+ *
+ *  Two instances compare true if their name and config file are the same.
+ *
+ *  @param[in] other  The object to compare with.
+ *
+ *  @return  True if equal.
+ */
+bool broker_instance_configuration::operator==(
+       broker_instance_configuration const& other) const {
+  return (_name == other._name && _config_file == other._config_file);
+}
+
+/**
+ *  @brief Unequal comparison.
+ *
+ *  @param[in] other  The object to compare.
+ *
+ *  @return  !operator==().
+ */
+bool broker_instance_configuration::operator!=(
+       broker_instance_configuration const& other) const {
+  return (!broker_instance_configuration::operator==(other));
+}
+
+/**
+ *  Is this configuration empty?
+ *
+ *  @return  True if empty.
+ */
+bool broker_instance_configuration::is_empty() const throw() {
+  return (_name.empty());
+}
+
+/**
  *  Get the name of this instance.
  *
  *  @return[in]  The name of this instance.

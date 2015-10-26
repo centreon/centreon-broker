@@ -20,7 +20,7 @@
 #  define CCB_WATCHDOG_CONFIGURATION_HH
 
 #  include <string>
-#  include <vector>
+#  include <map>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/watchdog/broker_instance_configuration.hh"
 
@@ -33,24 +33,32 @@ namespace     watchdog {
    */
   class       configuration {
   public:
+    typedef std::map<std::string, broker_instance_configuration>
+              instance_map;
+
               configuration();
               ~configuration();
               configuration(
                 std::string const& log_filename,
-                std::vector<broker_instance_configuration> const& instances);
+                std::map<
+                      std::string,
+                      broker_instance_configuration> const& instances);
               configuration(configuration const& other);
     configuration&
               operator=(configuration const& other);
 
     std::string const&
               get_log_filename() const throw();
-    std::vector<broker_instance_configuration> const&
+    instance_map const&
               get_instances_configuration() const throw();
+    broker_instance_configuration
+              get_instance_configuration(std::string const& name) const;
+    bool      instance_exists(std::string const& name) const throw();
 
   private:
     std::string
               _log_filename;
-    std::vector<broker_instance_configuration>
+    instance_map
               _instances_configuration;
   };
 }

@@ -34,7 +34,9 @@ configuration::configuration() {}
  */
 configuration::configuration(
                  std::string const& log_filename,
-                 std::vector<broker_instance_configuration> const& instances)
+                 std::map<
+                   std::string,
+                   broker_instance_configuration> const& instances)
   : _log_filename(log_filename),
     _instances_configuration(instances) {}
 
@@ -83,7 +85,35 @@ std::string const& configuration::get_log_filename() const throw() {
  *
  *  @return  The configuration of the instances.
  */
-std::vector<broker_instance_configuration> const&
+std::map<std::string, broker_instance_configuration> const&
   configuration::get_instances_configuration() const throw() {
   return (_instances_configuration);
+}
+
+/**
+ *  Get an instance configuration, or an empty configuration instance.
+ *
+ *  @param[in] name  The name of the instance.
+ *
+ *  @return  The configuration of this instance, or an empty one.
+ */
+broker_instance_configuration
+  configuration::get_instance_configuration(std::string const& name) const {
+  instance_map::const_iterator found = _instances_configuration.find(name);
+  return (found != _instances_configuration.end()
+            ? *found
+            : broker_instance_configuration);
+}
+
+/**
+ *  Return true if an instance exist with this name.
+ *
+ *  @param[in] name  The name.
+ *
+ *  @return  True if the instance exist.
+ */
+bool configuration::instance_exists(
+                      std::string const& name) const throw() {
+  return (_instances_configuration.find(name)
+          != _instances_configuration.end());
 }

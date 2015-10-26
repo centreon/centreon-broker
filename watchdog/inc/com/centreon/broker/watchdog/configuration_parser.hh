@@ -19,7 +19,8 @@
 #ifndef CCB_WATCHDOG_CONFIGURATION_PARSER_HH
 #  define CCB_WATCHDOG_CONFIGURATION_PARSER_HH
 
-#  include <vector>
+#  include <map>
+#  include <string>
 #  include <QDomDocument>
 #  include <QDomElement>
 #  include <QFile>
@@ -42,20 +43,20 @@ namespace         watchdog {
                   configuration_parser();
                   ~configuration_parser();
 
-    configuration parse(char* config_filename);
+    configuration parse(std::string const& config_filename);
 
   private:
     configuration_parser&
                   operator=(configuration_parser const& other);
                   configuration_parser(configuration_parser const& other);
 
-    void          _parse_file(char* config_filename);
+    void          _parse_file(std::string const& config_filename);
     void          _parse_xml_document();
     void          _parse_centreon_broker_element(QDomElement const& element);
 
     QDomDocument  _xml_document;
     QString       _log_path;
-    std::vector<broker_instance_configuration>
+    configuration::instance_map
                   _instances_configuration;
 
   };

@@ -19,15 +19,16 @@
 #include <csignal>
 #include <cstring>
 #include <iostream>
+#include "com/centreon/broker/watchdog/application.hh"
 #include "com/centreon/broker/watchdog/configuration_parser.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+
+#include <QMetaObject>
+
+static com::centreon::broker::watchdog::application* p_app = NULL;
 
 static char const* help_msg =
     "usage: cbwd configuration_file";
-
-/**
- *  Contain the configuration file given in argument.
- */
-static char* config_filename = NULL;
 
 /**
  *  Print the help.
@@ -39,17 +40,35 @@ static void print_help() {
 /**
  *  Signal handler
  *
- *  @param sig
+ *  @param sig  The signal.
  */
 static void signal_handler(int sig) {
+  if (!p_app)
+    return ;
+
   if (sig == SIGTERM || sig == SIGINT) {
-    ;
+    QMetaObject::invokeMethod(p_app, SLOT(quit()));
   }
   else if (sig == SIGHUP) {
-    ;
+    QMetaObject::invokeMethod(p_app, SLOT(reload_config()));
   }
 }
 
+/**
+ *  Set the signals handlers.
+ */
+static void set_signal_handlers() {
+  struct sigaction sig;
+  sig.sa_handler = signal_handler;
+  ::sigemptyset(&sig.sa_mask);
+  ::sigfillset(&sig.sa_mask);
+  sig.sa_flags = 0;
+  if (::sigaction(SIGTERM, &sig, NULL) < 0
+      || ::sigaction(SIGINT, &sig, NULL) < 0
+      || ::sigaction(SIGHUP, &sig, NULL) < 0)
+    throw (com::centreon::broker::exceptions::msg()
+            << "can't set the signal handlers");
+}
 
 /**
  *  Centreon Watchdog entry point.
@@ -65,34 +84,17 @@ int main(int argc, char **argv) {
     print_help();
     return (0);
   }
-  config_filename = argv[1];
+  char* config_filename = argv[1];
 
-  // Parse the configuration.
-  com::centreon::broker::watchdog::configuration_parser
-    parser;
-  com::centreon::broker::watchdog::configuration
-    config;
-
+  // Create the main even loop.
   try {
-    config = parser.parse(config_filename);
+    com::centreon::broker::watchdog::application app(config_filename);
+    p_app = &app;
+    set_signal_handlers();
+    app.exec();
   } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
     return (-1);
-  }
-
-  // Add signal manager.
-  {
-    struct sigaction sig;
-    sig.sa_handler = signal_handler;
-    ::sigemptyset(&sig.sa_mask);
-    ::sigfillset(&sig.sa_mask);
-    sig.sa_flags = 0;
-    if (::sigaction(SIGTERM, &sig, NULL) < 0
-        || ::sigaction(SIGINT, &sig, NULL) < 0
-        || ::sigaction(SIGHUP, &sig, NULL) < 0) {
-      std::cerr << "can't set signal handlers" << std::endl;
-      return (-1);
-    }
   }
 
   return (0);

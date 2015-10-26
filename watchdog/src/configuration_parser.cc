@@ -41,7 +41,7 @@ configuration_parser::~configuration_parser() {}
  *
  *  @return  The configuration.
  */
-configuration configuration_parser::parse(char* config_filename) {
+configuration configuration_parser::parse(std::string const& config_filename) {
   _parse_file(config_filename);
   _parse_xml_document();
   return (configuration(_log_path.toStdString(), _instances_configuration));
@@ -52,8 +52,8 @@ configuration configuration_parser::parse(char* config_filename) {
  *
  *  @param[in] config_filename  The config file name.
  */
-void configuration_parser::_parse_file(char* config_filename) {
-  QFile config_file(config_filename);
+void configuration_parser::_parse_file(std::string const& config_filename) {
+  QFile config_file(config_filename.c_str());
   if (!config_file.open(QFile::ReadOnly))
     // We don't know where is our log file, so we can't log.
     throw exceptions::msg()
@@ -104,11 +104,18 @@ void configuration_parser::_parse_centreon_broker_element(
   unsigned int seconds_per_tentative
     = (element.firstChildElement("seconds_per_tentative").text().toUInt());
 
-  _instances_configuration.push_back(
-    broker_instance_configuration(
-      instance_name.toStdString(),
-      instance_config.toStdString(),
-      run,
-      reload,
-      seconds_per_tentative));
+  if (instance_name.isEmpty())
+    throw (exceptions::msg() << "watchdog: missing instance_name");
+
+  if (_instances_configuration.insert(
+    std::make_pair(
+           instance_name.toStdString(),
+           broker_instance_configuration(
+             instance_name.toStdString(),
+             instance_config.toStdString(),
+             run,
+             reload,
+             seconds_per_tentative))).second == false)
+    throw (exceptions::msg()
+             << "watchdog: instance '" << instance_name << "' already exists");
 }

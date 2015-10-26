@@ -42,6 +42,10 @@ namespace         watchdog {
                     broker_instance_configuration const& other);
     broker_instance_configuration&
                   operator=(broker_instance_configuration const& other);
+    bool          operator==(broker_instance_configuration const& other) const;
+    bool          operator!=(broker_instance_configuration const& other) const;
+
+    bool          is_empty() const throw();
 
     std::string const&
                   get_name() const throw();
