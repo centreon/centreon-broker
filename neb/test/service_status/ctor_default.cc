@@ -43,6 +43,7 @@ int main() {
            || (ss.check_type != 0)
            || (ss.current_check_attempt != 0)
            || (ss.current_state != 4)
+           || (ss.downtime_depth != 0)
            || !ss.enabled
            || !ss.event_handler.isEmpty()
            || ss.event_handler_enabled
@@ -67,6 +68,7 @@ int main() {
            || (ss.next_check != 0)
            || (ss.next_notification != 0)
            || ss.no_more_notifications
+           || (ss.notification_number != 0)
            || ss.notifications_enabled
            || ss.obsess_over
            || !ss.output.isEmpty()

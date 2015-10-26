@@ -153,6 +153,12 @@ mapping::entry const host_status::entries[] = {
     &host_status::current_state,
     "state"),
   mapping::entry(
+    &host_status::downtime_depth,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "scheduled_downtime_depth"),
+  mapping::entry(
     &host_status::enabled,
     "enabled"),
   mapping::entry(
@@ -236,6 +242,12 @@ mapping::entry const host_status::entries[] = {
     mapping::entry::always_valid,
     true,
     "no_more_notifications"),
+  mapping::entry(
+    &host_status::notification_number,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notification_number"),
   mapping::entry(
     &host_status::notifications_enabled,
     NULL,

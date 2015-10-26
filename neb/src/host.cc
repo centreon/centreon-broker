@@ -130,6 +130,10 @@ void host::_internal_copy(host const& other) {
   notify_on_down = other.notify_on_down;
   notify_on_unreachable = other.notify_on_unreachable;
   poller_id = other.poller_id;
+  stalk_on_down = other.stalk_on_down;
+  stalk_on_unreachable = other.stalk_on_unreachable;
+  stalk_on_up = other.stalk_on_up;
+  statusmap_image = other.statusmap_image;
   return ;
 }
 
@@ -145,6 +149,9 @@ void host::_zero_initialize() {
   notify_on_down = false;
   notify_on_unreachable = false;
   poller_id = 0;
+  stalk_on_down = false;
+  stalk_on_unreachable = false;
+  stalk_on_up = false;
   return ;
 }
 
@@ -229,6 +236,12 @@ mapping::entry const host::entries[] = {
     mapping::entry::always_valid,
     true,
     "default_passive_checks"),
+  mapping::entry(
+    &host::downtime_depth,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "scheduled_downtime_depth"),
   mapping::entry(
     &host::enabled,
     "enabled"),
@@ -375,6 +388,12 @@ mapping::entry const host::entries[] = {
     true,
     "notification_interval"),
   mapping::entry(
+    &host::notification_number,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notification_number"),
+  mapping::entry(
     static_cast<QString (host::*) >(&host::notification_period),
     NULL,
     mapping::entry::always_valid,
@@ -434,6 +453,30 @@ mapping::entry const host::entries[] = {
   mapping::entry(
     &host::should_be_scheduled,
     "should_be_scheduled"),
+  mapping::entry(
+    &host::stalk_on_down,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "stalk_on_down"),
+  mapping::entry(
+    &host::stalk_on_unreachable,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "stalk_on_unreachable"),
+  mapping::entry(
+    &host::stalk_on_up,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "stalk_on_up"),
+  mapping::entry(
+    &host::statusmap_image,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "statusmap_image"),
   mapping::entry(
     &host::state_type,
     "state_type"),

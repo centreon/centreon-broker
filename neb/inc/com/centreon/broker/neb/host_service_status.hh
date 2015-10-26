@@ -53,6 +53,7 @@ namespace                neb {
     short                check_type;
     short                current_check_attempt;
     short                current_state;
+    short                downtime_depth;
     bool                 enabled;
     QString              event_handler;
     double               execution_time;
@@ -70,6 +71,7 @@ namespace                neb {
     timestamp            next_check;
     timestamp            next_notification;
     bool                 no_more_notifications;
+    short                notification_number;
     bool                 obsess_over;
     QString              output;
     bool                 passive_checks_enabled;

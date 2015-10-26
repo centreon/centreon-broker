@@ -159,6 +159,12 @@ mapping::entry const service_status::entries[] = {
     &service_status::current_state,
     "state"),
   mapping::entry(
+    &service_status::downtime_depth,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "scheduled_downtime_depth"),
+  mapping::entry(
     &service_status::enabled,
     "enabled"),
   mapping::entry(
@@ -249,6 +255,12 @@ mapping::entry const service_status::entries[] = {
     mapping::entry::always_valid,
     true,
     "no_more_notifications"),
+  mapping::entry(
+    &service_status::notification_number,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notification_number"),
   mapping::entry(
     &service_status::notifications_enabled,
     NULL,

@@ -50,6 +50,7 @@ int main() {
            || s.default_flap_detection_enabled
            || s.default_notifications_enabled
            || s.default_passive_checks_enabled
+           || (s.downtime_depth != 0)
            || !s.enabled
            || !s.event_handler.isEmpty()
            || s.event_handler_enabled
@@ -89,6 +90,7 @@ int main() {
            || !s.notes_url.isEmpty()
            || s.notifications_enabled
            || (fabs(s.notification_interval) > 0.0001)
+           || (s.notification_number != 0)
            || !s.notification_period.isEmpty()
            || s.notify_on_downtime
            || s.notify_on_flapping

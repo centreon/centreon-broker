@@ -738,9 +738,14 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->retain_status_information = h->retain_status_information;
     my_host->retry_interval = h->retry_interval;
     my_host->should_be_scheduled = h->should_be_scheduled;
+    my_host->stalk_on_down = h->stalk_on_down;
+    my_host->stalk_on_unreachable = h->stalk_on_unreachable;
+    my_host->stalk_on_up = h->stalk_on_up;
     my_host->state_type = (h->has_been_checked
                            ? h->state_type
                            : HARD_STATE);
+    if (h->statusmap_image)
+      my_host->statusmap_image = h->statusmap_image;
 
     // Find host ID.
     unsigned int host_id = engine::get_host_id(

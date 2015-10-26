@@ -52,6 +52,7 @@ int main() {
            || h.default_flap_detection_enabled
            || h.default_notifications_enabled
            || h.default_passive_checks_enabled
+           || (h.downtime_depth != 0)
            || !h.enabled
            || !h.event_handler.isEmpty()
            || h.event_handler_enabled
@@ -86,6 +87,7 @@ int main() {
            || h.no_more_notifications
            || !h.notes.isEmpty()
            || !h.notes_url.isEmpty()
+           || (h.notification_number != 0)
            || h.notifications_enabled
            || (fabs(h.notification_interval) > 0.0001)
            || !h.notification_period.isEmpty()
@@ -103,7 +105,11 @@ int main() {
            || h.retain_status_information
            || (fabs(h.retry_interval) > 0.0001)
            || h.should_be_scheduled
-           || (h.state_type != 0))
+           || h.stalk_on_down
+           || h.stalk_on_unreachable
+           || h.stalk_on_up
+           || (h.state_type != 0)
+           || !h.statusmap_image.isEmpty())
           ? EXIT_FAILURE
           : EXIT_SUCCESS);
 }

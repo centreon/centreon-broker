@@ -217,6 +217,12 @@ mapping::entry const service::entries[] = {
     true,
     "default_passive_checks"),
   mapping::entry(
+    &service::downtime_depth,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "scheduled_downtime_depth"),
+  mapping::entry(
     &service::enabled,
     "enabled"),
   mapping::entry(
@@ -371,6 +377,12 @@ mapping::entry const service::entries[] = {
     mapping::entry::always_valid,
     true,
     "notification_interval"),
+  mapping::entry(
+    &service::notification_number,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notification_number"),
   mapping::entry(
     static_cast<QString (service::*) >(&service::notification_period),
     NULL,

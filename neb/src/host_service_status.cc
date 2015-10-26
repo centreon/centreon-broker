@@ -39,6 +39,7 @@ host_service_status::host_service_status()
     check_type(0),
     current_check_attempt(0),
     current_state(4), // Pending
+    downtime_depth(0),
     enabled(true),
     execution_time(0.0),
     has_been_checked(false),
@@ -55,6 +56,7 @@ host_service_status::host_service_status()
     next_check(0),
     next_notification(0),
     no_more_notifications(false),
+    notification_number(0),
     obsess_over(false),
     passive_checks_enabled(false),
     percent_state_change(0.0),
@@ -119,6 +121,7 @@ void host_service_status::_internal_copy(host_service_status const& hss) {
   check_type = hss.check_type;
   current_check_attempt = hss.current_check_attempt;
   current_state = hss.current_state;
+  downtime_depth = hss.downtime_depth;
   enabled = hss.enabled;
   event_handler = hss.event_handler;
   execution_time = hss.execution_time;
@@ -136,6 +139,7 @@ void host_service_status::_internal_copy(host_service_status const& hss) {
   next_check = hss.next_check;
   next_notification = hss.next_notification;
   no_more_notifications = hss.no_more_notifications;
+  notification_number = hss.notification_number;
   obsess_over = hss.obsess_over;
   output = hss.output;
   passive_checks_enabled = hss.passive_checks_enabled;
