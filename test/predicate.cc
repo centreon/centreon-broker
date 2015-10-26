@@ -168,6 +168,8 @@ bool predicate::operator==(QVariant const& other) const {
     retval = false;
   else if (is_null())
     retval = other.isNull();
+  else if (other.isNull())
+    retval = false;
   else if (is_range()) {
     if (_type == type_double) {
       double d(other.toDouble());

@@ -37,7 +37,6 @@ centengine_config::centengine_config() {
   // Deprecated in Centreon Engine 2.x.
   set_directive("accept_passive_host_checks", "1");
   set_directive("accept_passive_service_checks", "1");
-  set_directive("check_result_path", ".");
   set_directive("event_broker_options", "-1");
   set_directive("execute_host_checks", "1");
   set_directive("execute_service_checks", "1");
@@ -234,7 +233,7 @@ void centengine_config::generate_hosts(int count) {
 void centengine_config::generate_services(int services_per_host) {
   static int id(0);
 
-  for (objlist::iterator it(_hosts.begin()), end(_hosts.end());
+  for (objlist::iterator it(++_hosts.begin()), end(_hosts.end());
        it != end;
        ++it) {
     for (int i(0); i < services_per_host; ++i) {
