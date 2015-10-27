@@ -33,7 +33,9 @@ using namespace com::centreon::broker;
 /**
  *  Default constructor.
  */
-centengine_extcmd::centengine_extcmd() {}
+centengine_extcmd::centengine_extcmd() {
+  _file = tmpnam(NULL);
+}
 
 /**
  *  Copy constructor.

@@ -32,8 +32,9 @@ centengine_config::centengine_config() {
   // Default directives.
   set_directive("log_file", "monitoring_engine.log");
   set_directive("command_file", "monitoring_engine.cmd");
+  set_directive("command_check_interval", "-1");
   set_directive("state_retention_file", "");
-  set_directive("check_result_reaper_frequency", "2");
+  set_directive("check_result_reaper_frequency", "1");
   // Deprecated in Centreon Engine 2.x.
   set_directive("accept_passive_host_checks", "1");
   set_directive("accept_passive_service_checks", "1");
@@ -43,6 +44,7 @@ centengine_config::centengine_config() {
   set_directive("interval_length", MONITORING_ENGINE_INTERVAL_LENGTH_STR);
   set_directive("max_service_check_spread", "1");
   set_directive("max_concurrent_checks", "200");
+  set_directive("passive_host_checks_are_soft", "1");
   set_directive("service_inter_check_delay_method", "s");
   set_directive("sleep_time", "0.01");
   set_directive("status_file", "monitoring_engine_status.dat");

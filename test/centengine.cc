@@ -61,6 +61,15 @@ centengine::~centengine() {
 }
 
 /**
+ *  Get external command object.
+ *
+ *  @return External command object.
+ */
+centengine_extcmd& centengine::extcmd() {
+  return (_extcmd);
+}
+
+/**
  *  Reload Engine.
  */
 void centengine::reload() {

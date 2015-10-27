@@ -39,6 +39,7 @@ namespace                    test {
   public:
                              centengine(centengine_config const* cfg);
                              ~centengine();
+  centengine_extcmd&         extcmd();
   void                       reload();
   void                       start();
   void                       stop();
