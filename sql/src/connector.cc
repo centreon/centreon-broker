@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Centreon
+** Copyright 2011-2012,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -36,21 +36,14 @@ connector::connector() : io::endpoint(false) {}
 /**
  *  Copy constructor.
  *
- *  @param[in] c Object to copy.
+ *  @param[in] other  Object to copy.
  */
-connector::connector(connector const& c)
-  : io::endpoint(c),
-    _check_replication(c._check_replication),
-    _cleanup_check_interval(c._cleanup_check_interval),
-    _db(c._db),
-    _host(c._host),
-    _instance_timeout(c._instance_timeout),
-    _password(c._password),
-    _port(c._port),
-    _queries_per_transaction(0),
-    _type(c._type),
-    _user(c._user),
-    _with_state_events(c._with_state_events) {}
+connector::connector(connector const& other)
+  : io::endpoint(other),
+    _cleanup_check_interval(other._cleanup_check_interval),
+    _dbcfg(other._dbcfg),
+    _instance_timeout(other._instance_timeout),
+    _with_state_events(other._with_state_events) {}
 
 /**
  *  Destructor.
@@ -60,24 +53,17 @@ connector::~connector() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] c Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-connector& connector::operator=(connector const& c) {
-  if (this != &c) {
-    io::endpoint::operator=(c);
-    _check_replication = c._check_replication;
-    _cleanup_check_interval = c._cleanup_check_interval;
-    _db = c._db;
-    _host = c._host;
-    _instance_timeout = c._instance_timeout;
-    _password = c._password;
-    _port = c._port;
-    _queries_per_transaction = c._queries_per_transaction;
-    _type = c._type;
-    _user = c._user;
-    _with_state_events = c._with_state_events;
+connector& connector::operator=(connector const& other) {
+  if (this != &other) {
+    io::endpoint::operator=(other);
+    _cleanup_check_interval = other._cleanup_check_interval;
+    _dbcfg = other._dbcfg;
+    _instance_timeout = other._instance_timeout;
+    _with_state_events = other._with_state_events;
   }
   return (*this);
 }
@@ -101,40 +87,20 @@ void connector::close() {
 /**
  *  Set connection parameters.
  *
- *  @param[in] type                    Database type.
- *  @param[in] host                    Database host.
- *  @param[in] port                    Database port.
- *  @param[in] user                    User.
- *  @param[in] password                Password.
- *  @param[in] db                      Database name.
- *  @param[in] queries_per_transaction Queries per transaction.
+ *  @param[in] dbcfg                   Database configuration.
  *  @param[in] cleanup_check_interval  How often the stream must
  *                                     check for cleanup database.
- *  @param[in] check_replication       true to check replication status.
+ *  @param[in] instance_timeout        Timeout of instances.
  *  @param[in] with_state_events       Enable state events ?
  */
 void connector::connect_to(
-                  QString const& type,
-                  QString const& host,
-                  unsigned short port,
-                  QString const& user,
-                  QString const& password,
-                  QString const& db,
-                  unsigned int queries_per_transaction,
+                  database_config const& dbcfg,
                   unsigned int cleanup_check_interval,
                   unsigned int instance_timeout,
-                  bool check_replication,
                   bool with_state_events) {
   _cleanup_check_interval = cleanup_check_interval;
+  _dbcfg = dbcfg;
   _instance_timeout = instance_timeout;
-  _check_replication = check_replication;
-  _db = db;
-  _host = host;
-  _password = password;
-  _port = port;
-  _queries_per_transaction = queries_per_transaction;
-  _type = type;
-  _user = user;
   _with_state_events = with_state_events;
   return ;
 }
@@ -146,16 +112,9 @@ void connector::connect_to(
  */
 misc::shared_ptr<io::stream> connector::open() {
   return (misc::shared_ptr<io::stream>(new stream(
-                                             _type.toStdString(),
-                                             _host.toStdString(),
-                                             _port,
-                                             _user.toStdString(),
-                                             _password.toStdString(),
-                                             _db.toStdString(),
-                                             _queries_per_transaction,
+                                             _dbcfg,
                                              _cleanup_check_interval,
                                              _instance_timeout,
-                                             _check_replication,
                                              _with_state_events)));
 }
 

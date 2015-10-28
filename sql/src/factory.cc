@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -137,34 +137,8 @@ io::endpoint* factory::new_endpoint(
   (void)is_input;
   (void)is_output;
 
-  // Find DB type.
-  QString type(find_param(cfg, "db_type"));
-
-  // Find DB host.
-  QString host(find_param(cfg, "db_host"));
-
-  // Find DB port.
-  unsigned short port(find_param(cfg, "db_port").toUShort());
-
-  // Find DB user.
-  QString user(find_param(cfg, "db_user"));
-
-  // Find DB password.
-  QString password(find_param(cfg, "db_password"));
-
-  // Find DB name.
-  QString name(find_param(cfg, "db_name"));
-
-  // Transaction size.
-  unsigned int queries_per_transaction(0);
-  {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("queries_per_transaction"));
-    if (it != cfg.params.end())
-      queries_per_transaction = it.value().toUInt();
-    else
-      queries_per_transaction = 1000;
-  }
+  // Database configuration.
+  database_config dbcfg(cfg);
 
   // Cleanup check interval.
   unsigned int cleanup_check_interval(0);
@@ -185,15 +159,6 @@ io::endpoint* factory::new_endpoint(
       instance_timeout = it.value().toUInt();
   }
 
-  // Check replication status ?
-  bool check_replication(true);
-  {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("check_replication"));
-    if (it != cfg.params.end())
-      check_replication = config::parser::parse_boolean(*it);
-  }
-
   // Use state events ?
   bool wse(false);
   {
@@ -206,16 +171,9 @@ io::endpoint* factory::new_endpoint(
   // Connector.
   std::auto_ptr<sql::connector> c(new sql::connector);
   c->connect_to(
-       type,
-       host,
-       port,
-       user,
-       password,
-       name,
-       queries_per_transaction,
+       dbcfg,
        cleanup_check_interval,
        instance_timeout,
-       check_replication,
        wse);
   is_acceptor = false;
   return (c.release());
