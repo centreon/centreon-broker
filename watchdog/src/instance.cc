@@ -36,7 +36,9 @@ instance::instance(instance_configuration const& config)
 /**
  *  Destructor.
  */
-instance::~instance() {}
+instance::~instance() {
+  stop_instance();
+}
 
 /**
  *  Start an instance broker.
@@ -44,6 +46,7 @@ instance::~instance() {}
 void instance::start_instance() {
   if (!_started) {
     _started = true;
+    _since_last_start = timestamp::now();
     start(
       "cbd",
        QStringList(QString::fromStdString(_config.get_config_file())),
@@ -82,10 +85,19 @@ void instance::on_exit() {
     return;
 
   // Process should not be quit, restart it.
-  logging::error(logging::medium)
-    << "watchdog: process '" << _config.get_name()
-    << "' has terminated unexpectedly, restarting it in "
-    << _config.seconds_per_tentative() << " seconds";
+  unsigned int time_to_restart =
+    std::min(
+      static_cast<unsigned int>(timestamp::now() - _since_last_start),
+      _config.seconds_per_tentative());
+  if (time_to_restart == 0)
+    logging::error(logging::medium)
+      << "watchdog: process '" << _config.get_name()
+      << "' has terminated unexpectedly, restarting it immediately";
+  else
+    logging::error(logging::medium)
+      << "watchdog: process '" << _config.get_name()
+      << "' has terminated unexpectedly, restarting it in "
+      << _config.seconds_per_tentative() << " seconds";
   QTimer::singleShot(
     _config.seconds_per_tentative() * 1000,
     this,

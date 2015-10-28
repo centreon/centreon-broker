@@ -22,6 +22,7 @@
 #  include <QObject>
 #  include <QProcess>
 #  include <string>
+#  include "com/centreon/broker/timestamp.hh"
 #  include "com/centreon/broker/watchdog/instance_configuration.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -55,6 +56,7 @@ namespace               com {
           instance_configuration
                         _config;
           bool          _started;
+          timestamp     _since_last_start;
         };
       }
     }

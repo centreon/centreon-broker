@@ -54,6 +54,13 @@ application::application(std::string const& config_file)
  *  Destructor.
  */
 application::~application() {
+  for (std::map<std::string, instance*>::iterator
+         it = _instances.begin(),
+         end = _instances.end();
+       it != end;
+       ++it)
+    delete it->second;
+
   logging::manager::unload();
 }
 
@@ -157,7 +164,6 @@ void application::_apply_new_configuration(configuration const& config) {
        ++it) {
     std::map<std::string, instance*>::iterator found = _instances.find(*it);
     if (found != _instances.end()) {
-      found->second->stop_instance();
       delete found->second;
       _instances.erase(found);
     }
