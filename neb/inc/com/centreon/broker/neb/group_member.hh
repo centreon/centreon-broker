@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Centreon
+** Copyright 2009-2012,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -38,16 +38,17 @@ namespace         neb {
   class           group_member : public io::data {
   public:
                   group_member();
-                  group_member(group_member const& gm);
+                  group_member(group_member const& other);
     virtual       ~group_member();
-    group_member& operator=(group_member const& gm);
+    group_member& operator=(group_member const& other);
 
     bool          enabled;
     unsigned int  group_id;
+    QString       group_name;
     unsigned int  host_id;
 
   private:
-    void          _internal_copy(group_member const& gm);
+    void          _internal_copy(group_member const& other);
   };
 }
 

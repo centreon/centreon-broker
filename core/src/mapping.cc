@@ -1127,6 +1127,10 @@ static mapped_data<host_group_member> const host_group_member_mapping[] = {
     NDO_DATA_HOSTGROUPNAME,
     "hostgroup_id"),
   mapped_data<host_group_member>(
+    &host_group_member::group_name,
+    NDO_DATA_HOST,
+    NULL),
+  mapped_data<host_group_member>(
     &host_group_member::instance_id,
     NDO_DATA_INSTANCE,
     NULL,
@@ -2265,6 +2269,10 @@ static mapped_data<service_group_member> const service_group_member_mapping[] = 
     NDO_DATA_SERVICEGROUPNAME,
     "servicegroup_id",
     NULL_ON_ZERO),
+  mapped_data<service_group_member>(
+    &service_group_member::group_name,
+    NDO_DATA_HOST,
+    NULL),
   mapped_data<service_group_member>(
     &service_group_member::host_id,
     NDO_DATA_HOST,
