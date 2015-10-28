@@ -325,28 +325,30 @@ instance_id                  unsigned integer Instance ID.               Since 2
 Host group
 ==========
 
-=========== ================ =========================================== =============
-Property    Type             Description                                 Version
-=========== ================ =========================================== =============
-action_url  string           Action URL.
-alias       string           Group alias.
-enabled     boolean          True if the group is enabled, false if it
-                             is not (deletion).
-instance_id unsigned integer Instance ID.
-name        string           Group name.
-notes       string           Notes.
-notes_url   string           Notes URL.
-=========== ================ =========================================== =============
+This class was introduced in Centreon Broker 2.11.0 (BBDO 1.2.1).
+
+============ ================ =========================================== ==============
+Property     Type             Description                                 Version
+============ ================ =========================================== ==============
+enabled      boolean          True if the group is enabled, false if it
+                              is not (deletion).
+instance_id  unsigned integer Instance ID.
+name         string           Group name.
+group_id     unsigned integer Host group ID.
+============ ================ =========================================== ==============
 
 Host group member
 =================
+
+This class was introduced in Centreon Broker 2.11.0 (BBDO 1.2.1).
 
 =========== ================ =========================================== =============
 Property    Type             Description                                 Version
 =========== ================ =========================================== =============
 enabled     boolean          True if the membership is enabled, false if
                              it is not (deletion).
-group_id    unsigned integer The host group id.
+group_id    unsigned integer The host group ID.
+group_name  string           Group name.
 instance_id unsigned integer Instance ID.
 host_id     unsigned integer Host ID.
 =========== ================ =========================================== =============
@@ -740,21 +742,22 @@ instance_id                  unsigned integer Instance ID.               Since 2
 Service group
 =============
 
+This class was introduced in Centreon Broker 2.11.0 (BBDO 1.2.1).
+
 =========== ================ =========================================== =============
 Property    Type             Description                                 Version
 =========== ================ =========================================== =============
-action_url  string           Action URL.
-alias       string           Group alias.
 enabled     enabled          True if the group is enable, false if it is
                              not (deletion).
 instance_id unsigned integer Instance ID.
 name        string           Group name.
-notes       string           Notes.
-notes_url   string           Notes URL.
+group_id    unsigned integer Service group ID.
 =========== ================ =========================================== =============
 
 Service group member
 ====================
+
+This class was introduced in Centreon Broker 2.11.0 (BBDO 1.2.1).
 
 =========== ================ =========================================== =============
 Property    Type             Description                                 Version
@@ -762,6 +765,7 @@ Property    Type             Description                                 Version
 enabled     boolean          True if the membership is enabled, false if
                              it is not (deletion).
 group_id    unsigned integer The service group ID.
+group_name  string           The service group name.
 host_id     unsigned integer Host ID.
 instance_id unsigned integer Instance ID.
 service_id  unsigned integer Service ID.
