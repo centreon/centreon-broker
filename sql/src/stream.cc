@@ -66,7 +66,7 @@ void (stream::* const stream::_neb_processing_table[])(misc::shared_ptr<io::data
   &stream::_process_flapping_status,
   &stream::_process_host_check,
   &stream::_process_host_dependency,
-  &stream::_process_host_group,
+  &stream::_null_process,
   &stream::_null_process,
   &stream::_process_host,
   &stream::_process_host_parent,
@@ -78,12 +78,14 @@ void (stream::* const stream::_neb_processing_table[])(misc::shared_ptr<io::data
   &stream::_process_notification,
   &stream::_process_service_check,
   &stream::_process_service_dependency,
-  &stream::_process_service_group,
+  &stream::_null_process,
   &stream::_null_process,
   &stream::_process_service,
   &stream::_process_service_status,
   &stream::_null_process,
+  &stream::_process_host_group,
   &stream::_process_host_group_member,
+  &stream::_process_service_group,
   &stream::_process_service_group_member
 };
 
