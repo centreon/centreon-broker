@@ -199,30 +199,16 @@ CREATE TABLE hosts (
 --
 CREATE TABLE hostgroups (
   hostgroup_id int NOT NULL,
-  instance_id int NOT NULL,
   name varchar(255) NOT NULL,
 
   action_url varchar(160) default NULL,
   alias varchar(255) default NULL,
   notes varchar(160) default NULL,
   notes_url varchar(160) default NULL,
-  enabled char(1) default 1 NOT NULL,
 
-  PRIMARY KEY (hostgroup_id, instance_id),
-  UNIQUE (name, instance_id),
-  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
-    ON DELETE CASCADE
+  PRIMARY KEY (hostgroup_id),
+  UNIQUE (name)
 );
-CREATE SEQUENCE hostgroups_seq
-START WITH 1
-INCREMENT BY 1;
-CREATE TRIGGER hostgroups_trigger
-BEFORE INSERT ON hostgroups
-FOR EACH ROW
-BEGIN
-  SELECT hostgroups_seq.nextval INTO :NEW.hostgroup_id FROM dual;
-END;
-/
 
 
 --
@@ -231,12 +217,11 @@ END;
 CREATE TABLE hosts_hostgroups (
   host_id int NOT NULL,
   hostgroup_id int NOT NULL,
-  instance_id int NOT NULL,
 
   UNIQUE (host_id, hostgroup_id),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (hostgroup_id, instance_id) REFERENCES hostgroups (hostgroup_id, instance_id)
+  FOREIGN KEY (hostgroup_id) REFERENCES hostgroups (hostgroup_id)
     ON DELETE CASCADE
 );
 
@@ -388,29 +373,16 @@ CREATE TABLE services (
 --
 CREATE TABLE servicegroups (
   servicegroup_id int NOT NULL,
-  instance_id int NOT NULL,
   name varchar(255) NOT NULL,
 
   action_url varchar(160) default NULL,
   alias varchar(255) default NULL,
   notes varchar(160) default NULL,
   notes_url varchar(160) default NULL,
-  enabled char(1) default 1 NOT NULL,
 
-  PRIMARY KEY (servicegroup_id, instance_id),
-  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
-    ON DELETE CASCADE
+  PRIMARY KEY (servicegroup_id),
+  UNIQUE (name)
 );
-CREATE SEQUENCE servicegroups_seq
-START WITH 1
-INCREMENT BY 1;
-CREATE TRIGGER servicegroups_trigger
-BEFORE INSERT ON servicegroups
-FOR EACH ROW
-BEGIN
-  SELECT servicegroups_seq.nextval INTO :NEW.servicegroup_id FROM dual;
-END;
-/
 
 
 --
@@ -420,12 +392,11 @@ CREATE TABLE services_servicegroups (
   host_id int NOT NULL,
   service_id int NOT NULL,
   servicegroup_id int NOT NULL,
-  instance_id int NOT NULL,
 
   UNIQUE (host_id, service_id, servicegroup_id),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+  FOREIGN KEY (host_id, service_id) REFERENCES services (host_id, service_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (servicegroup_id, instance_id) REFERENCES servicegroups (servicegroup_id, instance_id)
+  FOREIGN KEY (servicegroup_id) REFERENCES servicegroups (servicegroup_id)
     ON DELETE CASCADE
 );
 
