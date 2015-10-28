@@ -201,11 +201,6 @@ CREATE TABLE hostgroups (
   hostgroup_id int NOT NULL,
   name varchar(255) NOT NULL,
 
-  action_url varchar(160) default NULL,
-  alias varchar(255) default NULL,
-  notes varchar(160) default NULL,
-  notes_url varchar(160) default NULL,
-
   PRIMARY KEY (hostgroup_id),
   UNIQUE (name)
 );
@@ -374,11 +369,6 @@ CREATE TABLE services (
 CREATE TABLE servicegroups (
   servicegroup_id int NOT NULL,
   name varchar(255) NOT NULL,
-
-  action_url varchar(160) default NULL,
-  alias varchar(255) default NULL,
-  notes varchar(160) default NULL,
-  notes_url varchar(160) default NULL,
 
   PRIMARY KEY (servicegroup_id),
   UNIQUE (name)
