@@ -121,10 +121,12 @@ void application::_init() {
  *  @param[in] config  The new configuration.
  */
 void application::_apply_new_configuration(configuration const& config) {
-  // Create the log file backend.
-  _log.reset(new logging::file(
-                    QString::fromStdString(config.get_log_filename())));
-  logging::manager::instance().log_on(*_log);
+  // Create the log file backend if needed.
+  if (_config.get_log_filename() != config.get_log_filename()) {
+    _log.reset(new logging::file(
+                      QString::fromStdString(config.get_log_filename())));
+    logging::manager::instance().log_on(*_log);
+  }
 
   std::set<std::string> to_update;
   std::set<std::string> to_delete;
@@ -190,7 +192,7 @@ void application::_apply_new_configuration(configuration const& config) {
        it != end;
        ++it) {
     std::auto_ptr<instance> ins(
-      new instance(config.get_instance_configuration(*it)));
+      new instance(config.get_instance_configuration(*it), *this));
     _instances.insert(std::make_pair(*it, ins.release()));
   }
 

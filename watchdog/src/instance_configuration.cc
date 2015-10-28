@@ -165,5 +165,5 @@ bool instance_configuration::should_reload() const throw() {
  *  @return  How many seconds between restart.
  */
 unsigned int instance_configuration::seconds_per_tentative() const throw() {
-  return (_seconds_per_tentative);
+  return (_seconds_per_tentative == 0 ? 1 : _seconds_per_tentative);
 }

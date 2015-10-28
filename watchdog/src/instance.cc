@@ -20,6 +20,7 @@
 #include <csignal>
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/watchdog/instance.hh"
+#include "com/centreon/broker/watchdog/application.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::watchdog;
@@ -27,10 +28,15 @@ using namespace com::centreon::broker::watchdog;
 /**
  *  Default constructor.
  */
-instance::instance(instance_configuration const& config)
-  : _config(config) {
+instance::instance(
+            instance_configuration const& config,
+            application& parent)
+  : QProcess(&parent),
+    _config(config),
+    _started(false) {
   if (config.should_run())
     start_instance();
+  connect(this, SIGNAL(finished(int)), this, SLOT(on_exit()));
 }
 
 /**
@@ -68,7 +74,7 @@ void instance::start_instance() {
     logging::info(logging::medium)
       << "watchdog: starting process '" << _config.get_name() << "'";
     start(
-      "cbd",
+      "/usr/sbin/cbd",
        QStringList(QString::fromStdString(_config.get_config_file())),
        QProcess::ReadOnly);
   }
@@ -78,8 +84,12 @@ void instance::start_instance() {
  *  Update an instance broker.
  */
 void instance::update_instance() {
-  if (state() == QProcess::Running && _config.should_reload())
+  if (state() == QProcess::Running && _config.should_reload()) {
+    logging::info(logging::medium)
+      << "watchdog: sending update signal to process '"
+      << _config.get_name() << "'";
     ::kill(pid(), SIGHUP);
+  }
 }
 
 /**
@@ -107,6 +117,8 @@ void instance::on_exit() {
   // Process should be stopped, everything is going well.
   if (!_started || !_config.should_run())
     return;
+
+  _started = false;
 
   // Process should not be stopped, restart it.
   unsigned int time_to_restart =

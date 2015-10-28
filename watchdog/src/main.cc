@@ -20,6 +20,7 @@
 #include <csignal>
 #include <cstring>
 #include <iostream>
+#include <QCoreApplication>
 #include "com/centreon/broker/watchdog/application.hh"
 #include "com/centreon/broker/watchdog/configuration_parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -39,7 +40,11 @@ static void print_help() {
 }
 
 /**
- *  Signal handler
+ *  @brief Signal handler
+ *
+ *  There is not many things we can do in signal handlers.
+ *  We convert the signal into something usable by using the
+ *  writing to a self-pipe pattern.
  *
  *  @param sig  The signal.
  */
@@ -88,6 +93,9 @@ static void set_signal_handlers() {
  *  @return  0 on success.
  */
 int main(int argc, char **argv) {
+  // Create QApplication.
+  QCoreApplication a(argc, argv);
+
   // Check arguments.
   if (argc != 2 || ::strcmp(argv[1], "-h") == 0) {
     print_help();

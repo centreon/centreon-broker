@@ -79,13 +79,13 @@ void configuration_parser::_parse_file(std::string const& config_filename) {
  *  Parse the xml document.
  */
 void configuration_parser::_parse_xml_document() {
-  QDomElement e = _xml_document.firstChildElement();
+  QDomElement e = _xml_document.firstChildElement().firstChildElement();
   while(!e.isNull()) {
       if (e.tagName() == "log")
         _log_path = e.text();
       else if (e.tagName() == "cbd")
         _parse_centreon_broker_element(e);
-     QDomElement e = e.nextSiblingElement();
+     e = e.nextSiblingElement();
   }
 }
 
@@ -97,10 +97,10 @@ void configuration_parser::_parse_xml_document() {
 void configuration_parser::_parse_centreon_broker_element(
                              QDomElement const& element) {
   // The default are sane.
-  QString instance_name = element.firstChildElement("instance_name").text();
-  QString instance_config = element.firstChildElement("instance_config").text();
-  bool run = (element.firstChildElement("run").text() == "true");
-  bool reload = (element.firstChildElement("reload").text() == "true");
+  QString instance_name = element.firstChildElement("name").text();
+  QString instance_config = element.firstChildElement("configuration_file").text();
+  bool run = (element.firstChildElement("run").text().toInt() == 1);
+  bool reload = (element.firstChildElement("reload").text().toInt() == 1);
   unsigned int seconds_per_tentative
     = (element.firstChildElement("seconds_per_tentative").text().toUInt());
 

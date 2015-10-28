@@ -30,6 +30,8 @@ namespace               com {
   namespace             centreon {
     namespace           broker {
       namespace         watchdog {
+      class application;
+
   /**
    *  @class instance instance.hh "com/centreon/broker/watchdog/instance.hh"
    *  @brief This represents the process associated with an instance of broker.
@@ -37,7 +39,9 @@ namespace               com {
         class           instance : public QProcess {
           Q_OBJECT
         public:
-                        instance(instance_configuration const& config);
+                        instance(
+                          instance_configuration const& config,
+                          application& parent);
                         ~instance();
 
           void          merge_configuration(
