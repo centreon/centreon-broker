@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Centreon
+** Copyright 2009-2012,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -38,10 +38,10 @@ group::group() : enabled(true), id(0) {}
  *
  *  Copy all members of the Group object to the current instance.
  *
- *  @param[in] g Object to copy.
+ *  @param[in] other  Object to copy.
  */
-group::group(group const& g) : io::data(g) {
-  _internal_copy(g);
+group::group(group const& other) : io::data(other) {
+  _internal_copy(other);
 }
 
 /**
@@ -54,13 +54,15 @@ group::~group() {}
  *
  *  Copy all members of the group object to the current instance.
  *
- *  @param[in] g Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-group& group::operator=(group const& g) {
-  io::data::operator=(g);
-  _internal_copy(g);
+group& group::operator=(group const& other) {
+  if (this != &other) {
+    io::data::operator=(other);
+    _internal_copy(other);
+  }
   return (*this);
 }
 
@@ -79,18 +81,14 @@ group& group::operator=(group const& g) {
  *  superclass data are copied. This method is used in the copy
  *  constructor and in the assignment operator.
  *
- *  @param[in] g Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @see group(group const&)
  *  @see operator=(group const&)
  */
-void group::_internal_copy(group const& g) {
-  action_url = g.action_url;
-  alias = g.alias;
-  enabled = g.enabled;
-  id = g.id;
-  name = g.name;
-  notes = g.notes;
-  notes_url = g.notes_url;
+void group::_internal_copy(group const& other) {
+  enabled = other.enabled;
+  id = other.id;
+  name = other.name;
   return ;
 }

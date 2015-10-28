@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ namespace neb {
     de_flapping_status,
     de_host_check,
     de_host_dependency,
-    de_host_group,
+    de_deprecated_host_group, // DEPRECATED
     de_deprecated_host_group_member, // DEPRECATED
     de_host,
     de_host_parent,
@@ -56,12 +56,14 @@ namespace neb {
     de_notification,
     de_service_check,
     de_service_dependency,
-    de_service_group,
+    de_deprecated_service_group, // DEPRECATED
     de_deprecated_service_group_member, // DEPRECATED
     de_service,
     de_service_status,
     de_instance_configuration,
+    de_host_group,
     de_host_group_member,
+    de_service_group,
     de_service_group_member
   };
 
@@ -87,5 +89,3 @@ namespace neb {
 CCB_END()
 
 #endif // !CCB_MODULE_INTERNAL_HH
-
-

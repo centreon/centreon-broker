@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Centreon
+** Copyright 2012-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -32,13 +32,9 @@ int main() {
   neb::host_group hgrp;
 
   // Check.
-  return ((hgrp.action_url != "")
-          || (hgrp.alias != "")
-          || (hgrp.enabled != true)
+  return ((hgrp.enabled != true)
           || (hgrp.instance_id != 0)
           || (hgrp.name != "")
-          || (hgrp.notes != "")
-          || (hgrp.notes_url != "")
           || (hgrp.type()
               != io::events::data_type<io::events::neb, neb::de_host_group>::value));
 }
