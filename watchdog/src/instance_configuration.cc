@@ -16,7 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/watchdog/broker_instance_configuration.hh"
+#include "com/centreon/broker/watchdog/instance_configuration.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::watchdog;
@@ -24,7 +24,7 @@ using namespace com::centreon::broker::watchdog;
 /**
  *  Default constructor.
  */
-broker_instance_configuration::broker_instance_configuration()
+instance_configuration::instance_configuration()
   : _run(false), _reload(false), _seconds_per_tentative(0) {}
 
 /**
@@ -36,7 +36,7 @@ broker_instance_configuration::broker_instance_configuration()
  *  @param[in] should_reload  Should this instance be reloaded on SIGHUP?
  *  @param[in] seconds_per_tentative  The number of seconds between tentatives.
  */
-broker_instance_configuration::broker_instance_configuration(
+instance_configuration::instance_configuration(
                                  std::string const& name,
                                  std::string const& config_file,
                                  bool should_run,
@@ -50,15 +50,15 @@ broker_instance_configuration::broker_instance_configuration(
 /**
  *  Destructor.
  */
-broker_instance_configuration::~broker_instance_configuration() {}
+instance_configuration::~instance_configuration() {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-broker_instance_configuration::broker_instance_configuration(
-                                 broker_instance_configuration const& other)
+instance_configuration::instance_configuration(
+                                 instance_configuration const& other)
   : _name(other._name),
     _config_file(other._config_file),
     _run(other._run),
@@ -72,8 +72,8 @@ broker_instance_configuration::broker_instance_configuration(
  *
  *  @return  A reference to this object.
  */
-broker_instance_configuration& broker_instance_configuration::operator=(
-                                 broker_instance_configuration const& other) {
+instance_configuration& instance_configuration::operator=(
+                                 instance_configuration const& other) {
   if (this != &other) {
     _name = other._name;
     _config_file = other._config_file;
@@ -93,8 +93,8 @@ broker_instance_configuration& broker_instance_configuration::operator=(
  *
  *  @return  True if equal.
  */
-bool broker_instance_configuration::operator==(
-       broker_instance_configuration const& other) const {
+bool instance_configuration::operator==(
+       instance_configuration const& other) const {
   return (_name == other._name && _config_file == other._config_file);
 }
 
@@ -105,9 +105,9 @@ bool broker_instance_configuration::operator==(
  *
  *  @return  !operator==().
  */
-bool broker_instance_configuration::operator!=(
-       broker_instance_configuration const& other) const {
-  return (!broker_instance_configuration::operator==(other));
+bool instance_configuration::operator!=(
+       instance_configuration const& other) const {
+  return (!instance_configuration::operator==(other));
 }
 
 /**
@@ -115,7 +115,7 @@ bool broker_instance_configuration::operator!=(
  *
  *  @return  True if empty.
  */
-bool broker_instance_configuration::is_empty() const throw() {
+bool instance_configuration::is_empty() const throw() {
   return (_name.empty());
 }
 
@@ -124,7 +124,7 @@ bool broker_instance_configuration::is_empty() const throw() {
  *
  *  @return[in]  The name of this instance.
  */
-std::string const& broker_instance_configuration::get_name() const throw() {
+std::string const& instance_configuration::get_name() const throw() {
   return (_name);
 }
 
@@ -134,7 +134,7 @@ std::string const& broker_instance_configuration::get_name() const throw() {
  *  @return[in]  The configuration file for this instance.
  */
 std::string const&
-  broker_instance_configuration::get_config_file() const throw() {
+  instance_configuration::get_config_file() const throw() {
   return (_config_file);
 }
 
@@ -143,7 +143,7 @@ std::string const&
  *
  *  @return  True if this instance should be run.
  */
-bool broker_instance_configuration::should_run() const throw() {
+bool instance_configuration::should_run() const throw() {
   return (_run);
 }
 
@@ -152,7 +152,7 @@ bool broker_instance_configuration::should_run() const throw() {
  *
  *  @return  True if this instance should be reloaded.
  */
-bool broker_instance_configuration::should_reload() const throw() {
+bool instance_configuration::should_reload() const throw() {
   return (_reload);
 }
 
@@ -161,6 +161,6 @@ bool broker_instance_configuration::should_reload() const throw() {
  *
  *  @return  How many seconds between restart.
  */
-unsigned int broker_instance_configuration::seconds_per_tentative() const throw() {
+unsigned int instance_configuration::seconds_per_tentative() const throw() {
   return (_seconds_per_tentative);
 }

@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <unistd.h>
 #include <csignal>
 #include <cstring>
 #include <iostream>
@@ -47,10 +48,18 @@ static void signal_handler(int sig) {
     return ;
 
   if (sig == SIGTERM || sig == SIGINT) {
-    QMetaObject::invokeMethod(p_app, SLOT(quit()));
+    char a = 1;
+    ::write(
+      com::centreon::broker::watchdog::application::sigterm_fd[0],
+      &a,
+      sizeof(a));
   }
   else if (sig == SIGHUP) {
-    QMetaObject::invokeMethod(p_app, SLOT(reload_config()));
+    char a = 1;
+    ::write(
+      com::centreon::broker::watchdog::application::sighup_fd[0],
+      &a,
+      sizeof(a));
   }
 }
 
@@ -93,7 +102,7 @@ int main(int argc, char **argv) {
     set_signal_handlers();
     app.exec();
   } catch (std::exception const& e) {
-    std::cerr << e.what() << std::endl;
+    std::cerr << "watchdog: " << e.what() << std::endl;
     return (-1);
   }
 

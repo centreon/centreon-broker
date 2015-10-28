@@ -27,7 +27,7 @@
 #  include <QString>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/watchdog/configuration.hh"
-#  include "com/centreon/broker/watchdog/broker_instance_configuration.hh"
+#  include "com/centreon/broker/watchdog/instance_configuration.hh"
 
 CCB_BEGIN()
 

@@ -57,7 +57,7 @@ void configuration_parser::_parse_file(std::string const& config_filename) {
   if (!config_file.open(QFile::ReadOnly))
     // We don't know where is our log file, so we can't log.
     throw exceptions::msg()
-      << "watchdog: cannot open '" << config_filename
+      << "cannot open '" << config_filename
       << "': " << config_file.errorString();
 
   // Parse the configuration file.
@@ -70,7 +70,7 @@ void configuration_parser::_parse_file(std::string const& config_filename) {
                        &error_line,
                        &error_column))
     throw exceptions::msg()
-      << "watchdog: couldn't parse file '" << config_filename << "': "
+      << "couldn't parse file '" << config_filename << "': "
       << error_msg << " at line '" << error_line << "', column '"
       <<  error_column << "'";
 }
@@ -110,12 +110,12 @@ void configuration_parser::_parse_centreon_broker_element(
   if (_instances_configuration.insert(
     std::make_pair(
            instance_name.toStdString(),
-           broker_instance_configuration(
+           instance_configuration(
              instance_name.toStdString(),
              instance_config.toStdString(),
              run,
              reload,
              seconds_per_tentative))).second == false)
     throw (exceptions::msg()
-             << "watchdog: instance '" << instance_name << "' already exists");
+             << "instance '" << instance_name << "' already exists");
 }

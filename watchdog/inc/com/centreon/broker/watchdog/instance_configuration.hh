@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_WATCHDOG_BROKER_INSTANCE_CONFIGURATION_HH
-#  define CCB_WATCHDOG_BROKER_INSTANCE_CONFIGURATION_HH
+#ifndef CCB_WATCHDOG_INSTANCE_CONFIGURATION_HH
+#  define CCB_WATCHDOG_INSTANCE_CONFIGURATION_HH
 
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
@@ -26,24 +26,24 @@ CCB_BEGIN()
 
 namespace         watchdog {
   /**
-   *  @class broker_instance_configuration broker_instance_configuration.hh "com/centreon/broker/watchdog/broker_instance_configuration.hh"
+   *  @class instance_configuration instance_configuration.hh "com/centreon/broker/watchdog/instance_configuration.hh"
    *  @brief Configuration of a centreon broker instance.
    */
-  class           broker_instance_configuration {
+  class           instance_configuration {
   public:
-                  broker_instance_configuration();
-                  broker_instance_configuration(std::string const& name,
+                  instance_configuration();
+                  instance_configuration(std::string const& name,
                     std::string const& config_file,
                     bool should_run,
                     bool should_reload,
                     unsigned int seconds_per_tentative);
-                  ~broker_instance_configuration();
-                  broker_instance_configuration(
-                    broker_instance_configuration const& other);
-    broker_instance_configuration&
-                  operator=(broker_instance_configuration const& other);
-    bool          operator==(broker_instance_configuration const& other) const;
-    bool          operator!=(broker_instance_configuration const& other) const;
+                  ~instance_configuration();
+                  instance_configuration(
+                    instance_configuration const& other);
+    instance_configuration&
+                  operator=(instance_configuration const& other);
+    bool          operator==(instance_configuration const& other) const;
+    bool          operator!=(instance_configuration const& other) const;
 
     bool          is_empty() const throw();
 
@@ -66,4 +66,4 @@ namespace         watchdog {
 
 CCB_END()
 
-#endif // !CCB_WATCHDOG_BROKER_INSTANCE_CONFIGURATION_HH
+#endif // !CCB_WATCHDOG_INSTANCE_CONFIGURATION_HH
