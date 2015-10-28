@@ -1107,11 +1107,11 @@ static mapped_data<host_group> const host_group_mapping[] = {
   mapped_data<host_group>(
     &host_group::enabled,
     NDO_DATA_FIXED,
-    "enabled"),
+    NULL),
   mapped_data<host_group>(
     &host_group::instance_id,
     NDO_DATA_INSTANCE,
-    "instance_id",
+    NULL,
     NULL_ON_ZERO),
   mapped_data<host_group>(
     &host_group::name,
@@ -1139,13 +1139,14 @@ static mapped_data<host_group_member> const host_group_member_mapping[] = {
     NDO_DATA_FIXED,
     NULL),
   mapped_data<host_group_member>(
-    &host_group_member::group_id, // XXX : should be replaced by hostgroup_id
+    &host_group_member::group_id,
     NDO_DATA_HOSTGROUPNAME,
     "hostgroup_id"),
   mapped_data<host_group_member>(
     &host_group_member::instance_id,
     NDO_DATA_INSTANCE,
-    "instance_id"),
+    NULL,
+    NULL_ON_ZERO),
   mapped_data<host_group_member>(
     &host_group_member::host_id,
     NDO_DATA_HOSTGROUPMEMBER,
@@ -2260,11 +2261,11 @@ static mapped_data<service_group> const service_group_mapping[] = {
   mapped_data<service_group>(
     &service_group::enabled,
     NDO_DATA_FIXED,
-    "enabled"),
+    NULL),
   mapped_data<service_group>(
     &service_group::instance_id,
     NDO_DATA_INSTANCE,
-    "instance_id",
+    NULL,
     NULL_ON_ZERO),
   mapped_data<service_group>(
     &service_group::name,
@@ -2294,7 +2295,8 @@ static mapped_data<service_group_member> const service_group_member_mapping[] = 
   mapped_data<service_group_member>(
     &service_group_member::group_id,
     NDO_DATA_SERVICEGROUPNAME,
-    "servicegroup_id"),
+    "servicegroup_id",
+    NULL_ON_ZERO),
   mapped_data<service_group_member>(
     &service_group_member::host_id,
     NDO_DATA_HOST,
@@ -2303,7 +2305,8 @@ static mapped_data<service_group_member> const service_group_member_mapping[] = 
   mapped_data<service_group_member>(
     &service_group_member::instance_id,
     NDO_DATA_INSTANCE,
-    "instance_id"),
+    NULL,
+    NULL_ON_ZERO),
   mapped_data<service_group_member>(
     &service_group_member::service_id,
     NDO_DATA_SERVICEGROUPMEMBER,

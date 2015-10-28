@@ -150,51 +150,14 @@ void stream::_clean_tables(int instance_id) {
         "SQL: could not clean hosts and services tables");
   }
 
-  // Disable host groups.
-  {
-    std::ostringstream ss;
-    ss << "UPDATE " << mapped_type<neb::host_group>::table
-       << " SET enabled=0"
-       << " WHERE instance_id=" << instance_id;
-    q.run_query(
-        ss.str(),
-        "SQL: could not clean host groups table");
-  }
-
-  // Disable service groups.
-  {
-    std::ostringstream ss;
-    ss << "UPDATE " << mapped_type<neb::service_group>::table
-       << " SET enabled=0"
-       << " WHERE instance_id=" << instance_id;
-    q.run_query(
-        ss.str(),
-        "SQL: could not clean service groups table");
-  }
-
   // Remove host group memberships.
   {
     std::ostringstream ss;
-    ss << "DELETE " << mapped_type<neb::host_group_member>::table
-       << " FROM " << mapped_type<neb::host_group_member>::table
-       << " LEFT JOIN " << mapped_type<neb::host>::table
-       << " ON " << mapped_type<neb::host_group_member>::table << ".host_id="
-       << mapped_type<neb::host>::table << ".host_id"
-       << " WHERE " << mapped_type<neb::host>::table
-       << ".instance_id=" << instance_id;
-    q.run_query(
-        ss.str(),
-        "SQL: could not clean host groups memberships tables");
-  }
-  {
-    std::ostringstream ss;
-    ss << "DELETE " << mapped_type<neb::host_group_member>::table
-       << " FROM " << mapped_type<neb::host_group_member>::table
-       << " LEFT JOIN " << mapped_type<neb::host_group>::table
-       << " ON " << mapped_type<neb::host_group_member>::table << ".hostgroup_id="
-       << mapped_type<neb::host_group>::table << ".hostgroup_id"
-       << " WHERE " << mapped_type<neb::host_group>::table
-       << ".instance_id=" << instance_id;
+    ss << "DELETE hgm"
+       << " FROM " << mapped_type<neb::host_group_member>::table << " AS hgm"
+       << " LEFT JOIN " << mapped_type<neb::host>::table << " AS h"
+       << " ON hgm.host_id=h.host_id"
+       << " WHERE h.instance_id=" << instance_id;
     q.run_query(
         ss.str(),
         "SQL: could not clean host groups memberships tables");
@@ -203,30 +166,21 @@ void stream::_clean_tables(int instance_id) {
   // Remove service group memberships
   {
     std::ostringstream ss;
-    ss << "DELETE " << mapped_type<neb::service_group_member>::table
-       << " FROM " << mapped_type<neb::service_group_member>::table
-       << " LEFT JOIN " << mapped_type<neb::host>::table
-       << " ON " << mapped_type<neb::service_group_member>::table << ".host_id="
-       << mapped_type<neb::host>::table << ".host_id"
-       << " WHERE " << mapped_type<neb::host>::table
-       << ".instance_id=" << instance_id;
+    ss << "DELETE sgm"
+       << " FROM " << mapped_type<neb::service_group_member>::table << " AS sgm"
+       << " LEFT JOIN " << mapped_type<neb::host>::table << " AS h"
+       << " ON sgm.host_id=h.host_id"
+       << " WHERE h.instance_id=" << instance_id;
     q.run_query(
         ss.str(),
         "SQL: could not clean service groups memberships tables");
   }
-  {
-    std::ostringstream ss;
-    ss << "DELETE " << mapped_type<neb::service_group_member>::table
-       << " FROM " << mapped_type<neb::service_group_member>::table
-       << " LEFT JOIN " << mapped_type<neb::service_group>::table
-       << " ON " << mapped_type<neb::service_group_member>::table << ".servicegroup_id="
-       << mapped_type<neb::service_group>::table << ".servicegroup_id"
-       << " WHERE " << mapped_type<neb::service_group>::table
-       << ".instance_id=" << instance_id;
-    q.run_query(
-        ss.str(),
-        "SQL: could not clean service groups memberships tables");
-  }
+
+  // Remove host groups.
+  _empty_host_group_delete.run_statement("SQL");
+
+  // Remove service groups.
+  _empty_service_group_delete.run_statement("SQL");
 
   // Remove host dependencies.
   {
@@ -446,12 +400,10 @@ void stream::_prepare() {
   _prepare_update<neb::host_dependency>(_host_dependency_update, id);
 
   id.clear();
-  id["instance_id"] = false;
   id["hostgroup_id"] = false;
   _prepare_update<neb::host_group>(_host_group_update, id);
 
   id.clear();
-  id["instance_id"] = false;
   id["hostgroup_id"] = false;
   id["host_id"] = false;
   _prepare_delete<neb::host_group_member>(_host_group_member_delete, id);
@@ -492,12 +444,10 @@ void stream::_prepare() {
   _prepare_update<neb::service_dependency>(_service_dependency_update, id);
 
   id.clear();
-  id["instance_id"] = false;
   id["servicegroup_id"] = false;
   _prepare_update<neb::service_group>(_service_group_update, id);
 
   id.clear();
-  id["instance_id"] = false;
   id["servicegroup_id"] = false;
   id["host_id"] = false;
   id["service_id"] = false;
@@ -531,11 +481,34 @@ void stream::_prepare() {
       " WHERE child_id=:child_id"
       "       AND start_time=:start_time"
       "       AND parent_id=:parent_id");
-    _issue_parent_update.prepare(query, "SQL: could not prepare query");
+    _issue_parent_update.prepare(
+      query,
+      "SQL: could not prepare issues links update query");
   }
 
   // Prepare select queries.
   _prepare_select<neb::host_parent>(_host_parent_select);
+
+  // Prepare cleanup queries.
+  {
+    std::string query(
+      "DELETE FROM hostgroups"
+      "  WHERE hostgroup_id"
+      "    NOT IN (SELECT DISTINCT hostgroup_id FROM hosts_hostgroups)");
+    _empty_host_group_delete.prepare(
+      query,
+      "SQL: could not prepare host group cleanup query");
+  }
+  {
+    std::string query(
+      "DELETE FROM servicegroups"
+      "  WHERE servicegroup_id"
+      "    NOT IN (SELECT DISTINCT servicegroup_id FROM services_servicegroups)");
+    _empty_service_group_delete.prepare(
+      query,
+      "SQL: could not prepare service group cleanup query");
+  }
+
   return ;
 }
 
@@ -1061,20 +1034,34 @@ void stream::_process_host_group(
   neb::host_group const&
     hg(*static_cast<neb::host_group const*>(e.data()));
 
-  if (hg.enabled)
+  if (hg.enabled) {
     logging::info(logging::medium) << "SQL: enabling host group '"
       << hg.name << "' of instance " << hg.instance_id;
-  else
+    _update_on_none_insert(
+      _host_group_insert,
+      _host_group_update,
+      hg);
+  }
+  else {
     logging::info(logging::medium) << "SQL: disabling host group '"
       << hg.name << "' of instance " << hg.instance_id;
 
-  // Insert/Update.
-  _host_group_insert.bind_value(":enabled", hg.enabled);
-  _host_group_update.bind_value(":enabled", hg.enabled);
-  _update_on_none_insert(
-    _host_group_insert,
-    _host_group_update,
-    hg);
+    // Delete group members.
+    {
+      std::ostringstream oss;
+      oss << "DELETE hgm"
+          << "  FROM " << mapped_type<neb::host_group_member>::table << " AS hgm"
+          << "  LEFT JOIN " << mapped_type<neb::host>::table << " AS h"
+          << "    ON hgm.host_id=h.host_id"
+          << "  WHERE hgm.hostgroup_id=" << hg.id
+          << "    AND h.instance_id=" << hg.instance_id;
+      database_query q(_db);
+      q.run_query(oss.str(), "SQL");
+    }
+
+    // Delete empty group.
+    _empty_host_group_delete.run_statement("SQL");
+  }
 
   return ;
 }
@@ -1098,14 +1085,17 @@ void stream::_process_host_group_member(
       << hgm.group_id << ", instance: " << hgm.instance_id
       << ", host: " << hgm.host_id << ")";
 
+    // We only need to try to insert in this table as the
+    // host_id/hostgroup_id should be UNIQUE.
     try {
       _host_group_member_insert << hgm;
       _host_group_member_insert.run_statement("SQL");
-    } catch (std::exception const&) {
+    }
+    catch (std::exception const& e) {
       logging::info(logging::high)
         << "SQL: discarding membership between host " << hgm.host_id
-        << " and hostgroup (" << hgm.instance_id << ", " << hgm.group_id
-        << ")";
+        << " and host group " << hgm.group_id << " on instance "
+        << hgm.instance_id << ": " << e.what();
     }
   }
   // Delete.
@@ -1116,8 +1106,16 @@ void stream::_process_host_group_member(
       << hgm.group_id << ", instance: " << hgm.instance_id
       << ", host: " << hgm.host_id << ")";
 
-    _host_group_member_delete << hgm;
-    _host_group_member_delete.run_statement("SQL");
+    try {
+      _host_group_member_delete << hgm;
+      _host_group_member_delete.run_statement();
+    }
+    catch (std::exception const& e) {
+      throw (exceptions::msg()
+             << "SQL: cannot delete membership of host " << hgm.host_id
+             << " to host group " << hgm.group_id << " on instance "
+             << hgm.instance_id << ": " << e.what());
+    }
   }
 
   return ;
@@ -1624,21 +1622,34 @@ void stream::_process_service_group(
   neb::service_group const&
     sg(*static_cast<neb::service_group const*>(e.data()));
 
-  if (sg.enabled)
+  if (sg.enabled) {
     logging::info(logging::medium) << "SQL: enabling service group '"
       << sg.name << "' of instance: " << sg.instance_id;
-  else
+    _update_on_none_insert(
+      _service_group_insert,
+      _service_group_update,
+      sg);
+  }
+  else {
     logging::info(logging::medium) << "SQL: disabling service group '"
       << sg.name << "' of instance: " << sg.instance_id;
 
+    // Delete group members.
+    {
+      std::ostringstream oss;
+      oss << "DELETE " << mapped_type<neb::service_group_member>::table
+          << "  FROM " << mapped_type<neb::service_group_member>::table << " AS sgm"
+          << "  LEFT JOIN " << mapped_type<neb::host>::table << " AS h"
+          << "    ON sgm.host_id=h.host_id"
+          << "  WHERE sgm.servicegroup_id=" << sg.id
+          << "    AND h.instance_id=" << sg.instance_id;
+      database_query q(_db);
+      q.run_query(oss.str(), "SQL");
+    }
 
-  // Insert/Update.
-  _service_group_insert.bind_value(":enabled", sg.enabled);
-  _service_group_update.bind_value(":enabled", sg.enabled);
-  _update_on_none_insert(
-    _service_group_insert,
-    _service_group_update,
-    sg);
+    // Delete empty groups.
+    _empty_service_group_delete.run_statement("SQL");
+  }
 
   return ;
 }
@@ -1662,6 +1673,8 @@ void stream::_process_service_group_member(
       << sgm.group_id << ", instance: " << sgm.instance_id << ", host: "
       << sgm.host_id << ", service: " << sgm.service_id << ")";
 
+    // We only need to try to insert in this table as the
+    // host_id/service_id/servicegroup_id combo should be UNIQUE.
     try {
       _service_group_member_insert << sgm;
       _service_group_member_insert.run_statement("SQL");
@@ -1670,8 +1683,8 @@ void stream::_process_service_group_member(
       logging::info(logging::high)
         << "SQL: discarding membership between service ("
         << sgm.host_id << ", " << sgm.service_id
-        << ") and service group (" << sgm.instance_id << ", "
-        << sgm.group_id << "): " << e.what();
+        << ") and service group " << sgm.group_id << " on instance "
+        << sgm.instance_id << ": " << e.what();
     }
   }
   // Delete.
@@ -1684,13 +1697,13 @@ void stream::_process_service_group_member(
 
     try {
       _service_group_member_delete << sgm;
-      _service_group_member_delete.run_statement("SQL");
+      _service_group_member_delete.run_statement();
     }
     catch (std::exception const& e) {
       throw (exceptions::msg()
              << "SQL: cannot delete membership of service ("
              << sgm.host_id << ", " << sgm.service_id
-             << ") to service group '" << sgm.group_id << "' on instance "
+             << ") to service group " << sgm.group_id << " on instance "
              << sgm.instance_id << ": " << e.what());
     }
   }
@@ -2100,6 +2113,8 @@ stream::stream(
     _custom_variable_status_update(_db),
     _downtime_insert(_db),
     _downtime_update(_db),
+    _empty_host_group_delete(_db),
+    _empty_service_group_delete(_db),
     _event_handler_insert(_db),
     _event_handler_update(_db),
     _flapping_status_insert(_db),

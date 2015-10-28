@@ -137,6 +137,8 @@ namespace          sql {
     database_query _custom_variable_status_update;
     database_query _downtime_insert;
     database_query _downtime_update;
+    database_query _empty_host_group_delete;
+    database_query _empty_service_group_delete;
     database_query _event_handler_insert;
     database_query _event_handler_update;
     database_query _flapping_status_insert;

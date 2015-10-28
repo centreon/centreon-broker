@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Centreon
+** Copyright 2013-2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -206,7 +206,7 @@ int main() {
     std::list<unsigned int> host_groups_id;
     {
       std::ostringstream query;
-      query << "SELECT hostgroup_id, name, instance_id, action_url, alias, notes, notes_url"
+      query << "SELECT hostgroup_id, name, action_url, alias, notes, notes_url"
             << "  FROM hostgroups"
             << "  ORDER BY name";
       QSqlQuery q(*db.storage_db());
@@ -223,24 +223,22 @@ int main() {
                  << sizeof(host_groups_entries) / sizeof(*host_groups_entries));
         host_groups_id.push_back(q.value(0).toUInt());
         if ((q.value(1).toUInt() != (i + 1))
-            || (q.value(2).toUInt() != 42)
-            || (q.value(3).toString()
+            || (q.value(2).toString()
                 != host_groups_entries[i].action_url.c_str())
-            || (q.value(4).toString()
+            || (q.value(3).toString()
                 != host_groups_entries[i].alias.c_str())
-            || (q.value(5).toString()
+            || (q.value(4).toString()
                 != host_groups_entries[i].notes.c_str())
-            || (q.value(6).toString()
+            || (q.value(5).toString()
                 != host_groups_entries[i].notes_url.c_str()))
           throw (exceptions::msg()
                  << "invalid host group entry: got (name "
-                 << q.value(1).toUInt() << ", instance_id "
-                 << q.value(2).toUInt() << ", action_url "
-                 << q.value(3).toString() << ", alias "
-                 << q.value(4).toString() << ", notes "
-                 << q.value(5).toString() << ", notes_url "
-                 << q.value(6).toString() << "), expected ("
-                 << (i + 1) << ", 42 "
+                 << q.value(1).toUInt() << ", action_url "
+                 << q.value(2).toString() << ", alias "
+                 << q.value(3).toString() << ", notes "
+                 << q.value(4).toString() << ", notes_url "
+                 << q.value(5).toString() << "), expected ("
+                 << (i + 1) << ", "
                  << host_groups_entries[i].action_url.c_str() << ", "
                  << host_groups_entries[i].alias.c_str() << ", "
                  << host_groups_entries[i].notes.c_str() << ", "
@@ -254,7 +252,7 @@ int main() {
     std::list<unsigned int> service_groups_id;
     {
       std::ostringstream query;
-      query << "SELECT servicegroup_id, name, instance_id, action_url, alias, notes, notes_url"
+      query << "SELECT servicegroup_id, name, action_url, alias, notes, notes_url"
             << "  FROM servicegroups"
             << "  ORDER BY name";
       QSqlQuery q(*db.storage_db());
@@ -271,24 +269,22 @@ int main() {
                  << sizeof(service_groups_entries) / sizeof(*service_groups_entries));
         service_groups_id.push_back(q.value(0).toUInt());
         if ((q.value(1).toUInt() != (i + 1))
-            || (q.value(2).toUInt() != 42)
-            || (q.value(3).toString()
+            || (q.value(2).toString()
                 != service_groups_entries[i].action_url.c_str())
-            || (q.value(4).toString()
+            || (q.value(3).toString()
                 != service_groups_entries[i].alias.c_str())
-            || (q.value(5).toString()
+            || (q.value(4).toString()
                 != service_groups_entries[i].notes.c_str())
-            || (q.value(6).toString()
+            || (q.value(5).toString()
                 != service_groups_entries[i].notes_url.c_str()))
           throw (exceptions::msg()
                  << "invalid service group entry: got (name "
-                 << q.value(1).toUInt() << ", instance_id "
-                 << q.value(2).toUInt() << ", action_url "
-                 << q.value(3).toString() << ", alias "
-                 << q.value(4).toString() << ", notes "
-                 << q.value(5).toString() << ", notes_url "
-                 << q.value(6).toString() << "), expected ("
-                 << (i + 1) << ", 42 "
+                 << q.value(1).toUInt() << ", action_url "
+                 << q.value(2).toString() << ", alias "
+                 << q.value(3).toString() << ", notes "
+                 << q.value(4).toString() << ", notes_url "
+                 << q.value(5).toString() << "), expected ("
+                 << (i + 1) << ", "
                  << service_groups_entries[i].action_url.c_str() << ", "
                  << service_groups_entries[i].alias.c_str() << ", "
                  << service_groups_entries[i].notes.c_str() << ", "
@@ -383,7 +379,7 @@ int main() {
     // Check that host groups were deleted from DB.
     {
       QSqlQuery q(*db.storage_db());
-      if (!q.exec("SELECT COUNT(*) FROM hostgroups WHERE enabled=1")
+      if (!q.exec("SELECT COUNT(*) FROM hostgroups")
           || !q.next())
         throw (exceptions::msg()
                << "cannot get host group count from DB: "
@@ -396,7 +392,7 @@ int main() {
     // Check that service groups were deleted from DB.
     {
       QSqlQuery q(*db.storage_db());
-      if (!q.exec("SELECT COUNT(*) FROM servicegroups WHERE enabled=1")
+      if (!q.exec("SELECT COUNT(*) FROM servicegroups")
           || !q.next())
         throw (exceptions::msg()
                << "cannot get service group count from DB: "
