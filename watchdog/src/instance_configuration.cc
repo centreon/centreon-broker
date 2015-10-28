@@ -87,7 +87,8 @@ instance_configuration& instance_configuration::operator=(
 /**
  *  @brief Compare two instance configuration.
  *
- *  Two instances compare true if their name and config file are the same.
+ *  Two instances compare true if their name, config file and run properties
+ *  are the same.
  *
  *  @param[in] other  The object to compare with.
  *
@@ -95,7 +96,9 @@ instance_configuration& instance_configuration::operator=(
  */
 bool instance_configuration::operator==(
        instance_configuration const& other) const {
-  return (_name == other._name && _config_file == other._config_file);
+  return (_name == other._name
+          && _config_file == other._config_file
+          && _run == other._run);
 }
 
 /**

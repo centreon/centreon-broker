@@ -40,6 +40,9 @@ namespace               com {
                         instance(instance_configuration const& config);
                         ~instance();
 
+          void          merge_configuration(
+                          instance_configuration const& new_config);
+
         public slots:
           void          start_instance();
           void          update_instance();

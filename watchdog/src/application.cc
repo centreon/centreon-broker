@@ -176,8 +176,11 @@ void application::_apply_new_configuration(configuration const& config) {
        it != end;
        ++it) {
     std::map<std::string, instance*>::iterator found = _instances.find(*it);
-    if (found != _instances.end())
+    if (found != _instances.end()) {
+      found->second->merge_configuration(
+        config.get_instance_configuration(*it));
       found->second->update_instance();
+    }
   }
 
   // Start new processes.
@@ -187,9 +190,12 @@ void application::_apply_new_configuration(configuration const& config) {
        it != end;
        ++it) {
     std::auto_ptr<instance> ins(
-      new instance(_config.get_instance_configuration(*it)));
+      new instance(config.get_instance_configuration(*it)));
     _instances.insert(std::make_pair(*it, ins.release()));
   }
+
+  // Save the new configuration.
+  _config = config;
 }
 
 /**

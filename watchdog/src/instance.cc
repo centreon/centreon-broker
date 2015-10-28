@@ -41,12 +41,32 @@ instance::~instance() {
 }
 
 /**
+ *  Merge a configuration with this instance.
+ *
+ *  @param[in] new_config  The new config.
+ */
+void instance::merge_configuration(
+                instance_configuration const& new_config) {
+  if (_config != new_config) {
+    logging::error(logging::medium)
+      << "watchdog: attempting to merge an incompatible configuration "
+         "for process '" << _config.get_name()
+      << "': this is probably a software bug that should be reported "
+         "to centreon developpers";
+    return ;
+  }
+  _config = new_config;
+}
+
+/**
  *  Start an instance broker.
  */
 void instance::start_instance() {
-  if (!_started) {
+  if (!_started && _config.should_run()) {
     _started = true;
     _since_last_start = timestamp::now();
+    logging::info(logging::medium)
+      << "watchdog: starting process '" << _config.get_name() << "'";
     start(
       "cbd",
        QStringList(QString::fromStdString(_config.get_config_file())),
@@ -58,7 +78,7 @@ void instance::start_instance() {
  *  Update an instance broker.
  */
 void instance::update_instance() {
-  if (state() == QProcess::Running)
+  if (state() == QProcess::Running && _config.should_reload())
     ::kill(pid(), SIGHUP);
 }
 
@@ -66,13 +86,17 @@ void instance::update_instance() {
  *  Stop an instance broker.
  */
 void instance::stop_instance() {
-  _started = false;
-  terminate();
-  if (!waitForFinished()) {
-    logging::error(logging::medium)
-      << "watchdog: couldn't terminate properly the process '"
-      << _config.get_name() << "'(" << pid() << "): killing it";
-    kill();
+  if (_started) {
+    logging::info(logging::medium)
+      << "watchdog: stopping process '" << _config.get_name() << "'";
+    _started = false;
+    terminate();
+    if (!waitForFinished()) {
+      logging::error(logging::medium)
+        << "watchdog: couldn't properly terminate the process '"
+        << _config.get_name() << "'(" << pid() << "): killing it";
+      kill();
+    }
   }
 }
 
@@ -80,11 +104,11 @@ void instance::stop_instance() {
  *  Called when the process exit.
  */
 void instance::on_exit() {
-  // Process should be quit, everything is going well.
+  // Process should be stopped, everything is going well.
   if (!_started || !_config.should_run())
     return;
 
-  // Process should not be quit, restart it.
+  // Process should not be stopped, restart it.
   unsigned int time_to_restart =
     std::min(
       static_cast<unsigned int>(timestamp::now() - _since_last_start),
