@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014-2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 */
 
 #include <map>
+#include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/database_config.hh"
+#include "com/centreon/broker/exceptions/config.hh"
 
 using namespace com::centreon::broker;
 
@@ -61,6 +63,70 @@ database_config::database_config(
     _name(name),
     _queries_per_transaction(queries_per_transaction),
     _check_replication(check_replication) {}
+
+/**
+ *  Build a database configuration from a configuration set.
+ *
+ *  @param[in] cfg  Endpoint configuration.
+ */
+database_config::database_config(config::endpoint const& cfg) {
+  QMap<QString, QString>::const_iterator it, end;
+  end = cfg.params.end();
+
+  // db_type
+  it = cfg.params.find("db_type");
+  if (it != end)
+    _type = it->toStdString();
+  else
+    throw (exceptions::config() << "no 'db_type' defined for endpoint '"
+           << cfg.name << "'");
+
+  // db_host
+  it = cfg.params.find("db_host");
+  if (it != end)
+    _host = it->toStdString();
+  else
+    _host = "localhost";
+
+  // db_port
+  it = cfg.params.find("db_port");
+  if (it != end)
+    _port = it->toInt();
+  else
+    _port = 0;
+
+  // db_user
+  it = cfg.params.find("db_user");
+  if (it != end)
+    _user = it->toStdString();
+
+  // db_password
+  it = cfg.params.find("db_password");
+  if (it != end)
+    _password = it->toStdString();
+
+  // db_name
+  it = cfg.params.find("db_name");
+  if (it != end)
+    _name = it->toStdString();
+  else
+    throw (exceptions::config() << "no 'db_name' defined for endpoint '"
+           << cfg.name << "'");
+
+  // queries_per_transaction
+  it = cfg.params.find("queries_per_transaction");
+  if (it != end)
+    _queries_per_transaction = it->toUInt();
+  else
+    _queries_per_transaction = 20000;
+
+  // check_replication
+  it = cfg.params.find("check_replication");
+  if (it != end)
+    _check_replication = config::parser::parse_boolean(*it);
+  else
+    _check_replication = true;
+}
 
 /**
  *  Copy constructor.
