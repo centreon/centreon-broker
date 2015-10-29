@@ -45,16 +45,9 @@ namespace          sql {
   class            stream : public io::stream {
   public:
                    stream(
-                     std::string const& type,
-                     std::string const& host,
-                     unsigned short port,
-                     std::string const& user,
-                     std::string const& password,
-                     std::string const& db,
-                     unsigned int queries_per_transaction,
+                     database_config const& dbcfg,
                      unsigned int cleanup_check_interval,
                      unsigned int instance_timeout,
-                     bool check_replication,
                      bool with_state_events);
                    ~stream();
     int            flush();

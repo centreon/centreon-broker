@@ -58,7 +58,7 @@ CREATE TABLE hostgroups (
   notes_url varchar(160) default NULL,
   enabled bool NOT NULL default true,
 
-  PRIMARY KEY (hostgroup_id),
+  PRIMARY KEY (hostgroup_id, instance_id),
   UNIQUE (instance_id, name),
   FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
     ON DELETE CASCADE
@@ -71,11 +71,12 @@ CREATE TABLE hostgroups (
 CREATE TABLE hosts_hostgroups (
   host_id int NOT NULL,
   hostgroup_id int NOT NULL,
+  instance_id int NOT NULL,
 
   UNIQUE (host_id, hostgroup_id),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (hostgroup_id) REFERENCES hostgroups (hostgroup_id)
+  FOREIGN KEY (hostgroup_id, instance_id) REFERENCES hostgroups (hostgroup_id, instance_id)
     ON DELETE CASCADE
 );
 
@@ -236,7 +237,7 @@ CREATE TABLE servicegroups (
   notes_url varchar(160) default NULL,
   enabled bool NOT NULL default true,
 
-  PRIMARY KEY (servicegroup_id),
+  PRIMARY KEY (servicegroup_id, instance_id),
   FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
     ON DELETE CASCADE
 );
@@ -249,11 +250,12 @@ CREATE TABLE services_servicegroups (
   host_id int NOT NULL,
   service_id int NOT NULL,
   servicegroup_id int NOT NULL,
+  instance_id int NOT NULL,
 
   UNIQUE (host_id, service_id, servicegroup_id),
   FOREIGN KEY (host_id) REFERENCES hosts (host_id)
     ON DELETE CASCADE,
-  FOREIGN KEY (servicegroup_id) REFERENCES servicegroups (servicegroup_id)
+  FOREIGN KEY (servicegroup_id, instance_id) REFERENCES servicegroups (servicegroup_id, instance_id)
     ON DELETE CASCADE
 );
 

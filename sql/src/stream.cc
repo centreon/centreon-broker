@@ -1900,39 +1900,18 @@ void stream::_update_hosts_and_services_of_instance(
 /**
  *  Constructor.
  *
- *  @param[in] type                    Database type.
- *  @param[in] host                    Database host.
- *  @param[in] port                    Database port.
- *  @param[in] user                    User.
- *  @param[in] password                Password.
- *  @param[in] db                      Database name.
- *  @param[in] qpt                     Queries per transaction.
+ *  @param[in] dbcfg                   Database configuration.
  *  @param[in] cleanup_thread_interval How often the stream must
  *                                     check for cleanup database.
- *  @param[in] check_replication       true to check replication status.
- *  @param[in] wse                     With state events.
+ *  @param[in] instance_timeout        Timeout of instances.
+ *  @param[in] with_state_events       With state events.
  */
 stream::stream(
-          std::string const& type,
-          std::string const& host,
-          unsigned short port,
-          std::string const& user,
-          std::string const& password,
-          std::string const& db,
-          unsigned int qpt,
+          database_config const& dbcfg,
           unsigned int cleanup_check_interval,
           unsigned int instance_timeout,
-          bool check_replication,
-          bool wse)
-  : _db(database_config(
-          type,
-          host,
-          port,
-          user,
-          password,
-          db,
-          qpt,
-          check_replication)),
+          bool with_state_events)
+  : _db(dbcfg),
     _acknowledgement_insert(_db),
     _acknowledgement_update(_db),
     _custom_variable_insert(_db),
@@ -1975,15 +1954,15 @@ stream::stream(
     _service_state_update(_db),
     _service_status_update(_db),
     _cleanup_thread(
-      type,
-      host,
-      port,
-      user,
-      password,
-      db,
+      dbcfg.get_type(),
+      dbcfg.get_host(),
+      dbcfg.get_port(),
+      dbcfg.get_user(),
+      dbcfg.get_password(),
+      dbcfg.get_name(),
       cleanup_check_interval),
     _pending_events(0),
-    _with_state_events(wse),
+    _with_state_events(with_state_events),
     _instance_timeout(instance_timeout),
     _oldest_timestamp(std::numeric_limits<time_t>::max()) {
   // Get oudated instances.
