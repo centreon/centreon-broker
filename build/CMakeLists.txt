@@ -193,16 +193,15 @@ if (WITH_DAEMONS)
       @ONLY)
   endif ()
 
-  set(DAEMONS_CONFIGURATION "")
   foreach (DAEMON_NAME IN LISTS WITH_DAEMONS)
     set(DAEMONS_CONFIGURATION
-      "${DAEMONS_CONFIGURATION}${DAEMON_NAME}\t${DAEMON_NAME}.xml\ty\ty\n")
+      "${DAEMONS_CONFIGURATION}  <cbd>\n  <name>${DAEMON_NAME}</name>\n    <configuration_file>${PREFIX_CONF}/${DAEMON_NAME}.xml</configuration_file>\n    <run>1</run>\n    <reload>1</reload>\n  </cbd>\n")
   endforeach ()
 
-  configure_file("${PROJECT_SOURCE_DIR}/script/master.run.in"
-    "${PROJECT_SOURCE_DIR}/script/master.run"
+  configure_file("${PROJECT_SOURCE_DIR}/script/watchdog.xml.in"
+    "${PROJECT_SOURCE_DIR}/script/watchdog.xml"
     @ONLY)
-  install(FILES "${PROJECT_SOURCE_DIR}/script/master.run"
+  install(FILES "${PROJECT_SOURCE_DIR}/script/watchdog.xml"
     DESTINATION "${PREFIX_CONF}")
   install(PROGRAMS "${PROJECT_SOURCE_DIR}/script/cbd.init"
     DESTINATION "${STARTUP_DIR}"

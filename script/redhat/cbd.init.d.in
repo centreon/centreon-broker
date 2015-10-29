@@ -32,84 +32,40 @@
 . /etc/init.d/functions
 
 # Configuration parameters.
-master_file="@PREFIX_CONF@/master.run"
+watchdog_file="@PREFIX_CONF@/watchdog.xml"
 config_dir="@PREFIX_CONF@"
-cbd="@PREFIX_BIN@/cbd"
+cbwd="@PREFIX_BIN@/cbwd"
 pid_path=/var/run
 lockfile=/var/lock/subsys/cbd
 stop_timeout=10
 user="@USER@"
+pidfile="${pid_path}/cbwd.pid"
 
-# Check that cbd is executable.
-if [ ! -x "${cbd}" ] ; then
-  echo "The cbd binary can't be run."
+# Check that cbwd is executable.
+if [ ! -x "${cbwd}" ] ; then
+  echo "The cbwd binary can't be run."
   exit 1
 fi
 
 # Check that configuration file exists.
-if [ ! -e "${master_file}" ] ; then
-  echo "The master file isn't found."
+if [ ! -e "${watchdog_file}" ] ; then
+  echo "The watchdog configuration file isn't found."
   exit 1
 fi
 
 # Start cbd.
-start_all() {
+start_watchdog() {
   global_retval=0
-  cat ${master_file} | grep -v '^#'| while read line; do
-    daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
-    daemon_config="${config_dir}/$(echo ${line} | awk '{ print $2 }')"
-    running="$(echo ${line} | awk '{ print $3 }')"
-    pidfile="${pid_path}/${daemon_name}.pid"
-    if [ "${running}" = "y" ]; then
-      if [ -f "${pidfile}" ] ; then
-        is_running=$(ps -edf | grep "${cbd} ${daemon_config}" | grep -v grep | wc -l )
-        if [ $is_running = 0 ] ; then
-          rm -f "${pidfile}"
-          rm -f "${lockfile}"
-        else
-          echo -n "${daemon_name} already running"
-          failure "cbd startup"
-          return 1
-        fi
-      fi
-
-      # Start cbd.
-      echo -n "Starting ${daemon_name}: "
-      PID=`su - "${user}" -c "${cbd} ${daemon_config} >/dev/null 2>&1 & echo \\$!"`
-      RETVAL=$?
-      if [ ${RETVAL} = 0 ]; then
-        echo ${PID} > "${pidfile}"
-        touch "${lockfile}"
-        success "cbd startup"
-      else
-        ${global_retval} = ${RETVAL}
-        failure "cbd startup"
-      fi
-      echo
-    fi
-  done
-  return ${global_retval}
-}
-
-start_one() {
-  grep "^$1[[:space:]]" ${master_file} &>/dev/null
-  if [ $? -ne 0 ]; then
-    echo "Daemon is not found"
+  if [ -f "${pidfile}" ] ; then
+    echo -n "Centreon Broker Watchdog is already running."
+    failure "cbd startup"
     return 1
   fi
-  line=$(grep "^$1[[:space:]]" ${master_file})
-  daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
-  daemon_config="${config_dir}/$(echo ${line} | awk '{ print $2 }')"
-  running="$(echo ${line} | awk '{ print $3 }')"
-  pidfile="${pid_path}/${daemon_name}.pid"
-  if [ "${running}" != "y" ]; then
-    echo "Daemon is set to not running"
-    return 1
-  fi
-  # Start cbd.
-  echo -n "Starting ${daemon_name}: "
-  PID=`su - "${user}" -c "${cbd} ${daemon_config} >/dev/null 2>&1 & echo \\$!"`
+  # Start centreon broker watchdog.
+  echo -n "Starting Centreon Broker watchdog: "
+  PID=`su - "${user}" -c "${cbwd} ${watchdog_file} >/dev/null 2>&1 & echo \\$!"`
   RETVAL=$?
+
   if [ ${RETVAL} = 0 ]; then
     echo ${PID} > "${pidfile}"
     touch "${lockfile}"
@@ -119,175 +75,74 @@ start_one() {
     failure "cbd startup"
   fi
   echo
+  return ${global_retval}
 }
 
 # Stop cbd.
-stop_all() {
-  cat ${master_file} | grep -v '^#'| while read line; do
-    daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
-    daemon_config="${config_dir}/$(echo ${line} | awk '{ print $2 }')"
-    running="$(echo ${line} | awk '{ print $3 }')"
-    pidfile="${pid_path}/${daemon_name}.pid"
-    if [ "${running}" = "y" ]; then
-      echo -n "Stopping ${daemon_name}: "
-      killproc -p "${pidfile}" -d ${stop_timeout} "$cbd"
-      RETVAL=$?
-      if [ ${RETVAL} = 0 ] ; then
-        rm -f "${pidfile}"
-        success "cbd shutdown"
-      else
-        failure "cbd shutdown"
-      fi
-      echo
+stop_watchdog() {
+  if [ -f "${pidfile}" ] ; then
+    echo -n "Stopping Centreon Broker watchdog: "
+    killproc -p "${pidfile}" -d ${stop_timeout} "${cbwd}"
+    RETVAL=$?
+    if [ ${RETVAL} = 0 ] ; then
+      rm -f "${pidfile}"
+      success "cbd shutdown"
+    else
+      failure "cbd shutdown"
     fi
-  done
-  remaining_cbd=0
-  cat ${master_file} | grep -v '^#'| while read line; do
-    daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
-    pidfile="${pid_path}/${daemon_name}.pid"
-    if [ -e "${pidfile}" ] ; then
-      remaining_cbd=1
-    fi
-  done
-  if [ "${remaining_cbd}" = 0 ] ; then
-    rm -f "${lockfile}"
-  fi
-}
-
-stop_one() {
-  grep "^$1[[:space:]]" ${master_file} &>/dev/null
-  if [ $? -ne 0 ]; then
-    echo "Daemon is not found"
-    return 1
-  fi
-  line=$(grep "^$1[[:space:]]" ${master_file})
-  daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
-  daemon_config="${config_dir}/$(echo ${line} | awk '{ print $2 }')"
-  running="$(echo ${line} | awk '{ print $3 }')"
-  pidfile="${pid_path}/${daemon_name}.pid"
-  if [ "${running}" != "y" ]; then
-    echo "Daemon is set to not running"
-    return 1
-  fi
-  echo -n "Stopping ${daemon_name}: "
-  killproc -p "${pidfile}" -d ${stop_timeout} "$cbd"
-  RETVAL=$?
-  if [ ${RETVAL} = 0 ] ; then
-    rm -f "${pidfile}"
-    remaining_cbd=0
-    cat ${master_file} | grep -v '^#'| while read line; do
-      daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
-      pidfile="${pid_path}/${daemon_name}.pid"
-      if [ -e "${pidfile}" ] ; then
-        remaining_cbd=1
-      fi
-    done
-    if [ "${remaining_cbd}" = 0 ] ; then
-      rm -f "${lockfile}"
-    fi
-    success "cbd shutdown"
+    echo
   else
+    echo "Centreon Broker watchdog is not running."
     failure "cbd shutdown"
   fi
-  echo
+  rm -f "${lockfile}"
 }
 
 # Send kill HUP
-reload_all() {
-  cat ${master_file} | grep -v '^#'| while read line; do
-    daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
-    daemon_config="${config_dir}/$(echo ${line} | awk '{ print $2 }')"
-    running="$(echo ${line} | awk '{ print $3 }')"
-    reload="$(echo ${line} | awk '{ print $4 }')"
-    pidfile="${pid_path}/${daemon_name}.pid"
-    if [ "${reload}" = "y" ]; then
-      echo -n "Reloading ${daemon_name}: "
-      killproc -p "${pidfile}" "${cbd}" -HUP
-      RETVAL=$?
-      if [ ${RETVAL} = 0 ]; then
-        success "cbd reload"
-      else
-        failure "cbd reload"
-      fi
-      echo
+reload_watchdog() {
+  if [ -f "${pidfile}" ] ; then
+    echo -n "Reloading Centreon Broker watchdog: "
+    killproc -p "${pidfile}" "${cbwd}" -HUP
+    RETVAL=$?
+    if [ ${RETVAL} = 0 ]; then
+      success "cbd reload"
+    else
+      failure "cbd reload"
     fi
-  done
-}
-
-# Check status on one daemon
-status_one() {
-  grep "^$1[[:space:]]" ${master_file} &>/dev/null
-  if [ $? -ne 0 ]; then
-    echo "Daemon is not found"
-    return 1
+  else
+    echo "Centreon Broker watchdog is not running."
+    failure "cbd reload"
   fi
-  line=$(grep "^$1[[:space:]]" ${master_file})
-  daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
-  running="$(echo ${line} | awk '{ print $3 }')"
-  pidfile="${pid_path}/${daemon_name}.pid"
-  if [ "${running}" != "y" ]; then
-    echo "Daemon is set to not running"
-    return 1
-  fi
-  status -p ${pidfile} ${cbd}
-  return $?
 }
 
 # Status
-status_all() {
-  cat ${master_file} | grep -v '^#'| while read line; do
-    daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
-    daemon_config="${config_dir}/$(echo ${line} | awk '{ print $2 }')"
-    running="$(echo ${line} | awk '{ print $3 }')"
-    pidfile="${pid_path}/${daemon_name}.pid"
-    if [ "${running}" = "y" ]; then
-      status -p ${pidfile} ${cbd}
-    fi
-  done
+status_watchdog() {
+  if [ -f "${pidfile}" ] ; then
+    status -p ${pidfile} ${cbwd}
+  fi
 }
 
 # Switch case.
 case "$1" in
   start)
-    if [ -n "$2" ]; then
-      start_one $2
-      RETVAL=$?
-    else
-      start_all
-      RETVAL=$?
-    fi
+    start_watchdog
+    RETVAL=$?
     ;;
   stop)
-    if [ -n "$2" ]; then
-      stop_one $2
-      RETVAL=$?
-    else
-      stop_all
-      RETVAL=$?
-    fi
+    stop_watchdog
+    RETVAL=$?
     ;;
   restart)
-    if [ -n "$2" ]; then
-      stop_one $2
-      start_one $2
-      RETVAL=$?
-    else
-      stop_all
-      start_all
-      RETVAL=$?
-    fi
+    stop_watchdog
+    start_watchdog
+    RETVAL=$?
     ;;
   reload)
-    reload_all
+    reload_watchdog
     ;;
   status)
-    if [ -n "$2" ]; then
-      status_one $2
-      RETVAL=$?
-    else
-      status_all
-      RETVAL=$?
-    fi
+    status_watchdog
+    RETVAL=$?
     ;;
   *)
     echo "Usage: ${daemon_name} {start|stop|restart|status}"
