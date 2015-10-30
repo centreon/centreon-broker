@@ -1090,8 +1090,17 @@ void stream::_process_host_group_member(
     // We only need to try to insert in this table as the
     // host_id/hostgroup_id should be UNIQUE.
     try {
-      _host_group_member_insert << hgm;
-      _host_group_member_insert.run_statement("SQL");
+      try {
+        _host_group_member_insert << hgm;
+        _host_group_member_insert.run_statement();
+      }
+      // The insertion error could be caused by a missing group.
+      catch (std::exception const& e) {
+        _host_group_insert.bind_value(":name", hgm.group_name);
+        _host_group_insert.bind_value(":hostgroup_id", hgm.group_id);
+        _host_group_insert.run_statement();
+        _host_group_member_insert.run_statement();
+      }
     }
     catch (std::exception const& e) {
       logging::info(logging::high)
@@ -1678,8 +1687,19 @@ void stream::_process_service_group_member(
     // We only need to try to insert in this table as the
     // host_id/service_id/servicegroup_id combo should be UNIQUE.
     try {
-      _service_group_member_insert << sgm;
-      _service_group_member_insert.run_statement("SQL");
+      try {
+        _service_group_member_insert << sgm;
+        _service_group_member_insert.run_statement();
+      }
+      // The insertion error could be caused by a missing group.
+      catch (std::exception const& e) {
+        _service_group_insert.bind_value(":name", sgm.group_name);
+        _service_group_insert.bind_value(
+                                ":servicegroup_id",
+                                sgm.group_id);
+        _service_group_insert.run_statement();
+        _service_group_member_insert.run_statement();
+      }
     }
     catch (std::exception const& e) {
       logging::info(logging::high)
