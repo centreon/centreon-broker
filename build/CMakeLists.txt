@@ -173,7 +173,13 @@ endif ()
 
 # Configure files.
 if (WITH_DAEMONS)
-  if (OS_DISTRIBUTOR STREQUAL "CentOS" OR OS_DISTRIBUTOR STREQUAL "RedHat")
+  if (WITH_SYSTEMD_INIT)
+    configure_file("${PROJECT_SOURCE_DIR}/script/systemd/cbd.service.in"
+      "${PROJECT_SOURCE_DIR}/script/cbd.service"
+      @ONLY)
+    install(FILES "${PROJECT_SOURCE_DIR}/script/cbd.service"
+      DESTINATION "/lib/systemd/system/")
+  elseif (OS_DISTRIBUTOR STREQUAL "CentOS" OR OS_DISTRIBUTOR STREQUAL "RedHat")
     configure_file("${PROJECT_SOURCE_DIR}/script/redhat/cbd.init.d.in"
       "${PROJECT_SOURCE_DIR}/script/cbd.init"
       @ONLY)
@@ -203,9 +209,11 @@ if (WITH_DAEMONS)
     @ONLY)
   install(FILES "${PROJECT_SOURCE_DIR}/script/watchdog.xml"
     DESTINATION "${PREFIX_CONF}")
+  if (!WITH_SYSTEMD_INIT)
   install(PROGRAMS "${PROJECT_SOURCE_DIR}/script/cbd.init"
     DESTINATION "${STARTUP_DIR}"
     RENAME "cbd")
+  endif ()
 endif ()
 
 if (WITH_CONFIG_FILES)
