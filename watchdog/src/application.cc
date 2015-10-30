@@ -132,8 +132,9 @@ void application::_apply_new_configuration(configuration const& config) {
   std::set<std::string> to_delete;
   std::set<std::string> to_create;
 
-  // Old configs that aren't present in the new should be deleted and recreated.
-  // Old configs that are present in the new should be updated.
+  // Old configs that aren't present in the new should be deleted.
+  // Old configs that are present in the new should be updated
+  // or deleted/recreated.
   for (configuration::instance_map::const_iterator
          it = _config.get_instances_configuration().begin(),
          end = _config.get_instances_configuration().end();
@@ -141,7 +142,9 @@ void application::_apply_new_configuration(configuration const& config) {
        ++it) {
     instance_configuration new_config
       = config.get_instance_configuration(it->first);
-    if (new_config != it->second) {
+    if (new_config.is_empty())
+      to_delete.insert(it->first);
+    else if (new_config != it->second) {
       to_delete.insert(it->first);
       to_create.insert(it->first);
     }
