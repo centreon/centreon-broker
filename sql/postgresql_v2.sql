@@ -15,8 +15,6 @@
 -- downtimes
 -- eventhandlers
 -- flappingstatuses
--- hostgroups
--- hosts_hostgroups
 -- hosts_hosts_dependencies
 -- hosts_hosts_parents
 -- hoststateevents
@@ -28,8 +26,6 @@
 -- notifications
 -- schemaversion
 -- services
--- servicegroups
--- services_servicegroups
 -- services_services_dependencies
 -- servicestateevents
 
@@ -42,43 +38,6 @@ CREATE TABLE schemaversion (
   version int NOT NULL
 );
 INSERT INTO schemaversion (software, version) VALUES ('centreon-broker', 2);
-
-
---
--- Host groups.
---
-CREATE TABLE hostgroups (
-  hostgroup_id serial,
-  instance_id int NOT NULL,
-  name varchar(255) NOT NULL,
-
-  action_url varchar(160) default NULL,
-  alias varchar(255) default NULL,
-  notes varchar(160) default NULL,
-  notes_url varchar(160) default NULL,
-  enabled bool NOT NULL default true,
-
-  PRIMARY KEY (hostgroup_id, instance_id),
-  UNIQUE (instance_id, name),
-  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
-    ON DELETE CASCADE
-);
-
-
---
--- Relationships between hosts and host groups.
---
-CREATE TABLE hosts_hostgroups (
-  host_id int NOT NULL,
-  hostgroup_id int NOT NULL,
-  instance_id int NOT NULL,
-
-  UNIQUE (host_id, hostgroup_id),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (hostgroup_id, instance_id) REFERENCES hostgroups (hostgroup_id, instance_id)
-    ON DELETE CASCADE
-);
 
 
 --
@@ -220,43 +179,6 @@ CREATE TABLE services (
   INDEX (scheduled_downtime_depth),
   INDEX (state),
   INDEX (state_type)
-);
-
-
---
--- Groups of services.
---
-CREATE TABLE servicegroups (
-  servicegroup_id serial,
-  instance_id int NOT NULL,
-  name varchar(255) NOT NULL,
-
-  action_url varchar(160) default NULL,
-  alias varchar(255) default NULL,
-  notes varchar(160) default NULL,
-  notes_url varchar(160) default NULL,
-  enabled bool NOT NULL default true,
-
-  PRIMARY KEY (servicegroup_id, instance_id),
-  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
-    ON DELETE CASCADE
-);
-
-
---
--- Relationships between services and service groups.
---
-CREATE TABLE services_servicegroups (
-  host_id int NOT NULL,
-  service_id int NOT NULL,
-  servicegroup_id int NOT NULL,
-  instance_id int NOT NULL,
-
-  UNIQUE (host_id, service_id, servicegroup_id),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (servicegroup_id, instance_id) REFERENCES servicegroups (servicegroup_id, instance_id)
-    ON DELETE CASCADE
 );
 
 

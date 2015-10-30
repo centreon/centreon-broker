@@ -15,8 +15,6 @@
 -- downtimes
 -- eventhandlers
 -- flappingstatuses
--- hostgroups
--- hosts_hostgroups
 -- hosts_hosts_dependencies
 -- hosts_hosts_parents
 -- hoststateevents
@@ -28,8 +26,6 @@
 -- notifications
 -- schemaversion
 -- services
--- servicegroups
--- services_servicegroups
 -- services_services_dependencies
 -- servicestateevents
 
@@ -42,53 +38,6 @@ CREATE TABLE schemaversion (
   version int NOT NULL
 );
 INSERT INTO schemaversion (software, version) VALUES ('centreon-broker', 2);
-
-
---
--- Host groups.
---
-CREATE TABLE hostgroups (
-  hostgroup_id int NOT NULL,
-  instance_id int NOT NULL,
-  name varchar(255) NOT NULL,
-
-  action_url varchar(160) default NULL,
-  alias varchar(255) default NULL,
-  notes varchar(160) default NULL,
-  notes_url varchar(160) default NULL,
-  enabled char(1) default 1 NOT NULL,
-
-  PRIMARY KEY (hostgroup_id, instance_id),
-  UNIQUE (name, instance_id),
-  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
-    ON DELETE CASCADE
-);
-CREATE SEQUENCE hostgroups_seq
-START WITH 1
-INCREMENT BY 1;
-CREATE TRIGGER hostgroups_trigger
-BEFORE INSERT ON hostgroups
-FOR EACH ROW
-BEGIN
-  SELECT hostgroups_seq.nextval INTO :NEW.hostgroup_id FROM dual;
-END;
-/
-
-
---
--- Relationships between hosts and host groups.
---
-CREATE TABLE hosts_hostgroups (
-  host_id int NOT NULL,
-  hostgroup_id int NOT NULL,
-  instance_id int NOT NULL,
-
-  UNIQUE (host_id, hostgroup_id),
-  FOREIGN KEY (host_id, instance_id) REFERENCES hosts (host_id, instance_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (hostgroup_id) REFERENCES hostgroups (hostgroup_id)
-    ON DELETE CASCADE
-);
 
 
 --
@@ -230,53 +179,6 @@ CREATE TABLE services (
   INDEX (scheduled_downtime_depth),
   INDEX (state),
   INDEX (state_type)
-);
-
-
---
--- Groups of services.
---
-CREATE TABLE servicegroups (
-  servicegroup_id int NOT NULL,
-  instance_id int NOT NULL,
-  name varchar(255) NOT NULL,
-
-  action_url varchar(160) default NULL,
-  alias varchar(255) default NULL,
-  notes varchar(160) default NULL,
-  notes_url varchar(160) default NULL,
-  enabled char(1) default 1 NOT NULL,
-
-  PRIMARY KEY (servicegroup_id, instance_id),
-  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
-    ON DELETE CASCADE
-);
-CREATE SEQUENCE servicegroups_seq
-START WITH 1
-INCREMENT BY 1;
-CREATE TRIGGER servicegroups_trigger
-BEFORE INSERT ON servicegroups
-FOR EACH ROW
-BEGIN
-  SELECT servicegroups_seq.nextval INTO :NEW.servicegroup_id FROM dual;
-END;
-/
-
-
---
--- Relationships between services and service groups.
---
-CREATE TABLE services_servicegroups (
-  host_id int NOT NULL,
-  service_id int NOT NULL,
-  servicegroup_id int NOT NULL,
-  instance_id NOT NULL,
-
-  UNIQUE (host_id, service_id, servicegroup_id),
-  FOREIGN KEY (host_id, instance_id) REFERENCES hosts (host_id, instance_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (servicegroup_id) REFERENCES servicegroups (servicegroup_id)
-    ON DELETE CASCADE
 );
 
 
