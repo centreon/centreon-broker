@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2014 Centreon
+** Copyright 2009-2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -946,7 +946,8 @@ int neb::callback_group(int callback_type, void* data) {
         new_hg->instance_id = instance_id;
         new_hg->id = engine::get_hostgroup_id(host_group->group_name);
         new_hg->enabled
-          = (group_data->type != NEBTYPE_HOSTGROUP_DELETE);
+          = ((group_data->type != NEBTYPE_HOSTGROUP_DELETE)
+             && host_group->members);
         new_hg->instance_id = neb::instance_id;
         new_hg->name = host_group->group_name;
 
@@ -969,7 +970,8 @@ int neb::callback_group(int callback_type, void* data) {
         new_sg->instance_id = instance_id;
         new_sg->id = engine::get_servicegroup_id(service_group->group_name);
         new_sg->enabled
-          = (group_data->type != NEBTYPE_SERVICEGROUP_DELETE);
+          = ((group_data->type != NEBTYPE_SERVICEGROUP_DELETE)
+             && service_group->members);
         new_sg->instance_id = neb::instance_id;
         new_sg->name = service_group->group_name;
 
