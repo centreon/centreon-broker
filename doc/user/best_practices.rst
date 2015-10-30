@@ -244,6 +244,7 @@ Temporary must be enabled.
 
   * type = file
   * name = poller-temporary / central-broker-temporary-master / central-rrd-temporary-master
+  * path = /var/lib/centreon-broker/poller-temporary.tmp / /var/lib/centreon-broker/central-broker-master.tmp / /var/lib/centreon-broker/central-rrd-master.tmp
   * protocol = BBDO
   * compression = yes
   * compression buffer size = 2000
