@@ -156,6 +156,24 @@ extern "C" {
                   "hosts"));
         e.register_event(
             io::events::neb,
+            neb::de_host_group,
+            io::event_info(
+                  "host_group",
+                  &neb::host_group::operations,
+                  neb::host_group::entries,
+                  "",
+                  "hostgroups"));
+        e.register_event(
+            io::events::neb,
+            neb::de_host_group_member,
+            io::event_info(
+                  "host_group_member",
+                  &neb::host_group_member::operations,
+                  neb::host_group::entries,
+                  "",
+                  "hosts_hostgroups"));
+        e.register_event(
+            io::events::neb,
             neb::de_host_parent,
             io::event_info(
                   "host_parent",
@@ -235,6 +253,24 @@ extern "C" {
                   neb::service::entries,
                   "rt_services",
                   "services"));
+        e.register_event(
+            io::events::neb,
+            neb::de_service_group,
+            io::event_info(
+                  "service_group",
+                  &neb::service_group::operations,
+                  neb::service_group::entries,
+                  "",
+                  "servicegroups"));
+        e.register_event(
+            io::events::neb,
+            neb::de_service_group_member,
+            io::event_info(
+                  "service_group_member",
+                  &neb::service_group_member::operations,
+                  neb::service_group_member::entries,
+                  "",
+                  "services_servicegroups"));
         e.register_event(
             io::events::neb,
             neb::de_service_status,

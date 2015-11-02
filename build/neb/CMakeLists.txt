@@ -1,5 +1,5 @@
 ##
-## Copyright 2009-2013 Centreon
+## Copyright 2009-2013,2015 Centreon
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
 ## you may not use this file except in compliance with the License.
@@ -33,9 +33,13 @@ set(NEB_SOURCES
   "${SRC_DIR}/downtime.cc"
   "${SRC_DIR}/event_handler.cc"
   "${SRC_DIR}/flapping_status.cc"
+  "${SRC_DIR}/group.cc"
+  "${SRC_DIR}/group_member.cc"
   "${SRC_DIR}/host.cc"
   "${SRC_DIR}/host_check.cc"
   "${SRC_DIR}/host_dependency.cc"
+  "${SRC_DIR}/host_group.cc"
+  "${SRC_DIR}/host_group_member.cc"
   "${SRC_DIR}/host_parent.cc"
   "${SRC_DIR}/host_service.cc"
   "${SRC_DIR}/host_service_status.cc"
@@ -47,6 +51,8 @@ set(NEB_SOURCES
   "${SRC_DIR}/service.cc"
   "${SRC_DIR}/service_check.cc"
   "${SRC_DIR}/service_dependency.cc"
+  "${SRC_DIR}/service_group.cc"
+  "${SRC_DIR}/service_group_member.cc"
   "${SRC_DIR}/service_status.cc"
   "${SRC_DIR}/status.cc"
   # Headers.
@@ -59,9 +65,13 @@ set(NEB_SOURCES
   "${INC_DIR}/com/centreon/broker/neb/event_handler.hh"
   "${INC_DIR}/com/centreon/broker/neb/events.hh"
   "${INC_DIR}/com/centreon/broker/neb/flapping_status.hh"
+  "${INC_DIR}/com/centreon/broker/neb/group.hh"
+  "${INC_DIR}/com/centreon/broker/neb/group_member.hh"
   "${INC_DIR}/com/centreon/broker/neb/host.hh"
   "${INC_DIR}/com/centreon/broker/neb/host_check.hh"
   "${INC_DIR}/com/centreon/broker/neb/host_dependency.hh"
+  "${INC_DIR}/com/centreon/broker/neb/host_group.hh"
+  "${INC_DIR}/com/centreon/broker/neb/host_group_member.hh"
   "${INC_DIR}/com/centreon/broker/neb/host_parent.hh"
   "${INC_DIR}/com/centreon/broker/neb/host_service.hh"
   "${INC_DIR}/com/centreon/broker/neb/host_service_status.hh"
@@ -74,6 +84,8 @@ set(NEB_SOURCES
   "${INC_DIR}/com/centreon/broker/neb/service.hh"
   "${INC_DIR}/com/centreon/broker/neb/service_check.hh"
   "${INC_DIR}/com/centreon/broker/neb/service_dependency.hh"
+  "${INC_DIR}/com/centreon/broker/neb/service_group.hh"
+  "${INC_DIR}/com/centreon/broker/neb/service_group_member.hh"
   "${INC_DIR}/com/centreon/broker/neb/service_status.hh"
   "${INC_DIR}/com/centreon/broker/neb/status.hh"
 )
