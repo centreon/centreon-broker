@@ -169,7 +169,7 @@ extern "C" {
             io::event_info(
                   "host_group_member",
                   &neb::host_group_member::operations,
-                  neb::host_group::entries,
+                  neb::host_group_member::entries,
                   "",
                   "hosts_hostgroups"));
         e.register_event(
