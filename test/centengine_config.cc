@@ -351,6 +351,24 @@ centengine_config::objlist const& centengine_config::get_host_dependencies() con
 }
 
 /**
+ *  Get host group list.
+ *
+ *  @return Modifiable host group list.
+ */
+centengine_config::objlist& centengine_config::get_host_groups() {
+  return (_host_groups);
+}
+
+/**
+ *  Get host group list.
+ *
+ *  @return Non-modifiable host group list.
+ */
+centengine_config::objlist const& centengine_config::get_host_groups() const {
+  return (_host_groups);
+}
+
+/**
  *  Get service list.
  *
  *  @return Modifiable service list.
@@ -384,6 +402,24 @@ centengine_config::objlist& centengine_config::get_service_dependencies() {
  */
 centengine_config::objlist const& centengine_config::get_service_dependencies() const {
   return (_service_deps);
+}
+
+/**
+ *  Get service group list.
+ *
+ *  @return Modifiable host group list.
+ */
+centengine_config::objlist& centengine_config::get_service_groups() {
+  return (_service_groups);
+}
+
+/**
+ *  Get service group list.
+ *
+ *  @return Non-modifiable host group list.
+ */
+centengine_config::objlist const& centengine_config::get_service_groups() const {
+  return (_service_groups);
 }
 
 /**

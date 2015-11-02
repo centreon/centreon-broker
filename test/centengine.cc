@@ -167,6 +167,18 @@ void centengine::_write_cfg() {
     oss << _config_path << "/service_dependencies.cfg";
     service_dependencies_file = oss.str();
   }
+  std::string host_groups_file;
+  {
+    std::ostringstream oss;
+    oss << _config_path << "/host_groups.cfg";
+    host_groups_file = oss.str();
+  }
+  std::string service_groups_file;
+  {
+    std::ostringstream oss;
+    oss << _config_path << "/service_groups.cfg";
+    service_groups_file = oss.str();
+  }
   std::string misc_file;
   {
     std::ostringstream oss;
@@ -178,6 +190,8 @@ void centengine::_write_cfg() {
       << "cfg_file=" << commands_file << "\n"
       << "cfg_file=" << host_dependencies_file << "\n"
       << "cfg_file=" << service_dependencies_file << "\n"
+      << "cfg_file=" << host_groups_file << "\n"
+      << "cfg_file=" << service_groups_file << "\n"
       << "cfg_file=" << misc_file << "\n";
 
   // cbmod.
@@ -246,6 +260,28 @@ void centengine::_write_cfg() {
            << "cannot open service dependencies configuration file in '"
            << _config_path << "'");
   _write_objs(ofs, _config->get_service_dependencies());
+  ofs.close();
+
+  // Host groups.
+  ofs.open(
+        host_groups_file.c_str(),
+        std::ios_base::out | std::ios_base::trunc);
+  if (ofs.fail())
+    throw (exceptions::msg()
+           << "cannot open host groups configuration file in '"
+           << _config_path << "'");
+  _write_objs(ofs, _config->get_host_groups());
+  ofs.close();
+
+  // Service groups.
+  ofs.open(
+        service_groups_file.c_str(),
+        std::ios_base::out | std::ios_base::trunc);
+  if (ofs.fail())
+    throw (exceptions::msg()
+           << "cannot open service groups configuration file in '"
+           << _config_path << "'");
+  _write_objs(ofs, _config->get_service_groups());
   ofs.close();
 
   // Misc.

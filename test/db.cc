@@ -134,7 +134,7 @@ db::db(
   add_db_script(tables, "instances", db_dir_v2);
   add_db_script(tables, "hosts", db_dir_v2);
   add_db_script(tables, "hostgroups", db_dir_v2);
-  add_db_script(tables, "hosts_hostsgroups", db_dir_v2);
+  add_db_script(tables, "hosts_hostgroups", db_dir_v2);
   add_db_script(tables, "services", db_dir_v2);
   add_db_script(tables, "servicegroups", db_dir_v2);
   add_db_script(tables, "services_servicegroups", db_dir_v2);

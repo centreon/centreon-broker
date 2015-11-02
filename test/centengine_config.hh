@@ -60,10 +60,14 @@ namespace              test {
     objlist const&     get_hosts() const;
     objlist&           get_host_dependencies();
     objlist const&     get_host_dependencies() const;
+    objlist&           get_host_groups();
+    objlist const&     get_host_groups() const;
     objlist&           get_services();
     objlist const&     get_services() const;
     objlist&           get_service_dependencies();
     objlist const&     get_service_dependencies() const;
+    objlist&           get_service_groups();
+    objlist const&     get_service_groups() const;
     objlist&           get_timeperiods();
     objlist const&     get_timeperiods() const;
     void               service_depends_on(
@@ -88,8 +92,10 @@ namespace              test {
                        _directives;
     objlist            _hosts;
     objlist            _host_deps;
+    objlist            _host_groups;
     objlist            _services;
     objlist            _service_deps;
+    objlist            _service_groups;
     objlist            _timeperiods;
   };
 }
