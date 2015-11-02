@@ -22,6 +22,7 @@
 #include "com/centreon/broker/database_query.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 
 using namespace com::centreon::broker;
@@ -488,6 +489,8 @@ bool database_query::next() {
 void database_query::prepare(
                        std::string const& query,
                        char const* error_msg) {
+  logging::debug(logging::medium)
+    << "core: preparing query: " << query;
   if (!_q.prepare(query.c_str())) {
     exceptions::msg e;
     if (error_msg)
