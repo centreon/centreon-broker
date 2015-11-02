@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -37,6 +37,8 @@ namespace neb {
   int     callback_event_handler(int callback_type, void* data);
   int     callback_external_command(int callback_type, void* data);
   int     callback_flapping_status(int callback_type, void* data);
+  int     callback_group(int callback_type, void* data);
+  int     callback_group_member(int callback_type, void* data);
   int     callback_host(int callback_type, void* data);
   int     callback_host_check(int callback_type, void* data);
   int     callback_host_status(int callback_type, void* data);
