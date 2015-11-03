@@ -92,7 +92,7 @@ unsigned int service_group_member::static_type() {
 mapping::entry const service_group_member::entries[] = {
   mapping::entry(
     &service_group_member::group_id,
-    "hostgroup_id",
+    "servicegroup_id",
     mapping::entry::invalid_on_zero),
   mapping::entry(
     &service_group_member::host_id,
