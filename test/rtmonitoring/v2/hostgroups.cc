@@ -156,7 +156,7 @@ int main() {
     test::time_points tpoints;
 
     // Check default entries.
-    precheck(tpoints, "hostgroups");
+    precheck(tpoints, "hostgroups.insert");
     engine.start();
     test::sleep_for(1);
     test::predicate expected_groups[][2] = {
@@ -167,7 +167,7 @@ int main() {
       { 5, "group5" },
       { test::predicate() }
     };
-    test::predicate expected_members[][2] = {
+    test::predicate expected_members[20][2] = {
       { 1, 1 },
       { 1, 2 },
       { 2, 3 },
@@ -183,12 +183,54 @@ int main() {
     postcheck(engine, tpoints, db, expected_groups, expected_members);
 
     // Change host group name.
+    precheck(tpoints, "hostgroups.update");
+    test::centengine_object&
+      hg(engine_config.get_host_groups().front());
+    hg.set("hostgroup_name", "renamed");
+    expected_groups[0][1] = "renamed";
+    postcheck(engine, tpoints, db, expected_groups, expected_members);
 
     // Add members.
+    precheck(tpoints, "hosts_hostgroups.insert");
+    hg.set("members", "1,3,5,7,9");
+    // The first 5 entries will be the members of group 1. All other
+    // entries will remain valid but have to be moved at the end of the
+    // array.
+    for (int i(7); i >= 0; --i) {
+      expected_members[i + 5][0] = expected_members[i + 2][0];
+      expected_members[i + 5][1] = expected_members[i + 2][1];
+    }
+    for (int i(0); i < 5; ++i) {
+      expected_members[i][0] = 1;
+      expected_members[i][1] = i * 2 + 1;
+    }
+    expected_members[13][0] = test::predicate();
+    postcheck(engine, tpoints, db, expected_groups, expected_members);
 
     // Remove members.
+    precheck(tpoints, "hosts_hostgroups.delete");
+    hg.set("members", "5");
+    // Move entries.
+    for (int i(0); i < 8; ++i) {
+      expected_members[i + 1][0] = expected_members[i + 5][0];
+      expected_members[i + 1][1] = expected_members[i + 5][1];
+    }
+    expected_members[0][0] = 1;
+    expected_members[0][1] = 5;
+    expected_members[9][0] = test::predicate();
+    postcheck(engine, tpoints, db, expected_groups, expected_members);
 
     // Remove all members.
+    precheck(tpoints, "hostgroups.delete");
+    for (test::centengine_config::objlist::iterator
+           it(engine_config.get_host_groups().begin()),
+           end(engine_config.get_host_groups().end());
+         it != end;
+         ++it)
+      it->set("members", "");
+    expected_groups[0][0] = test::predicate();
+    expected_members[0][0] = test::predicate();
+    postcheck(engine, tpoints, db, expected_groups, expected_members);
 
     // Success.
     error = false;
