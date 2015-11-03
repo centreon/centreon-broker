@@ -663,7 +663,7 @@ int neb::callback_group(int callback_type, void* data) {
 
         // Send host group event.
         logging::info(logging::low) << "callbacks: new host group '"
-          << new_hg->name << " (instance " << new_hg->poller_id
+          << new_hg->name << "' (instance " << new_hg->poller_id
           << ")";
         neb::gl_publisher.write(new_hg);
       }
@@ -688,7 +688,7 @@ int neb::callback_group(int callback_type, void* data) {
 
         // Send service group event.
         logging::info(logging::low) << "callbacks:: new service group '"
-          << new_sg->name << " (instance " << new_sg->poller_id
+          << new_sg->name << "' (instance " << new_sg->poller_id
           << ")";
         neb::gl_publisher.write(new_sg);
       }
