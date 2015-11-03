@@ -92,9 +92,12 @@ int main() {
            || (fabs(s.notification_interval) > 0.0001)
            || (s.notification_number != 0)
            || !s.notification_period.isEmpty()
+           || s.notify_on_critical
            || s.notify_on_downtime
            || s.notify_on_flapping
            || s.notify_on_recovery
+           || s.notify_on_unknown
+           || s.notify_on_warning
            || s.obsess_over
            || !s.output.isEmpty()
            || s.passive_checks_enabled
@@ -104,6 +107,10 @@ int main() {
            || s.retain_status_information
            || (fabs(s.retry_interval) > 0.001)
            || s.should_be_scheduled
+           || s.stalk_on_critical
+           || s.stalk_on_ok
+           || s.stalk_on_unknown
+           || s.stalk_on_warning
            || (s.state_type != 0)
            || !s.service_description.isEmpty()
            || (s.service_id != 0))

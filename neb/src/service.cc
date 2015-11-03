@@ -44,7 +44,7 @@ service::service() {
  *  Copy all members from service_status to the current instance and
  *  zero-initialize remaining members.
  *
- *  @param[in] ss Object to copy.
+ *  @param[in] ss  Object to copy.
  */
 service::service(service_status const& ss) : service_status(ss) {
   _zero_initialize();
@@ -56,11 +56,11 @@ service::service(service_status const& ss) : service_status(ss) {
  *  Copy all members of the given service object to the current
  *  instance.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] other  Object to copy.
  */
-service::service(service const& s)
-  : host_service(s), service_status(s) {
-  _internal_copy(s);
+service::service(service const& other)
+  : host_service(other), service_status(other) {
+  _internal_copy(other);
 }
 
 /**
@@ -74,14 +74,16 @@ service::~service() {}
  *  Copy all members of the given service object to the current
  *  instance.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-service& service::operator=(service const& s) {
-  host_service::operator=(s);
-  service_status::operator=(s);
-  _internal_copy(s);
+service& service::operator=(service const& other) {
+  if (this != &other) {
+    host_service::operator=(other);
+    service_status::operator=(other);
+    _internal_copy(other);
+  }
   return (*this);
 }
 
@@ -115,14 +117,21 @@ unsigned int service::static_type() {
  *  Copy all members defined within the service class. This method is
  *  used by the copy constructor and the assignment operator.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void service::_internal_copy(service const& s) {
-  flap_detection_on_critical = s.flap_detection_on_critical;
-  flap_detection_on_ok = s.flap_detection_on_ok;
-  flap_detection_on_unknown = s.flap_detection_on_unknown;
-  flap_detection_on_warning = s.flap_detection_on_warning;
-  is_volatile = s.is_volatile;
+void service::_internal_copy(service const& other) {
+  flap_detection_on_critical = other.flap_detection_on_critical;
+  flap_detection_on_ok = other.flap_detection_on_ok;
+  flap_detection_on_unknown = other.flap_detection_on_unknown;
+  flap_detection_on_warning = other.flap_detection_on_warning;
+  is_volatile = other.is_volatile;
+  notify_on_critical = other.notify_on_critical;
+  notify_on_unknown = other.notify_on_unknown;
+  notify_on_warning = other.notify_on_warning;
+  stalk_on_critical = other.stalk_on_critical;
+  stalk_on_ok = other.stalk_on_ok;
+  stalk_on_unknown = other.stalk_on_unknown;
+  stalk_on_warning = other.stalk_on_warning;
   return ;
 }
 
@@ -138,6 +147,13 @@ void service::_zero_initialize() {
   flap_detection_on_unknown = false;
   flap_detection_on_warning = false;
   is_volatile = false;
+  notify_on_critical = false;
+  notify_on_unknown = false;
+  notify_on_warning = false;
+  stalk_on_critical = false;
+  stalk_on_ok = false;
+  stalk_on_unknown = false;
+  stalk_on_warning = false;
   return ;
 }
 
@@ -396,6 +412,12 @@ mapping::entry const service::entries[] = {
     true,
     "notify"),
   mapping::entry(
+    &service::notify_on_critical,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify_on_critical"),
+  mapping::entry(
     static_cast<bool (service::*) >(&service::notify_on_downtime),
     NULL,
     mapping::entry::always_valid,
@@ -413,6 +435,18 @@ mapping::entry const service::entries[] = {
     mapping::entry::always_valid,
     true,
     "notify_on_recovery"),
+  mapping::entry(
+    &service::notify_on_unknown,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify_on_unknown"),
+  mapping::entry(
+    &service::notify_on_warning,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify_on_warning"),
   mapping::entry(
     &service::obsess_over,
     "obsess_over_service"),
@@ -434,6 +468,30 @@ mapping::entry const service::entries[] = {
   mapping::entry(
     &service::should_be_scheduled,
     "should_be_scheduled"),
+  mapping::entry(
+    &service::stalk_on_critical,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "stalk_on_critical"),
+  mapping::entry(
+    &service::stalk_on_ok,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "stalk_on_ok"),
+  mapping::entry(
+    &service::stalk_on_unknown,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "stalk_on_unknown"),
+  mapping::entry(
+    &service::stalk_on_warning,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "stalk_on_warning"),
   mapping::entry(
     &service::state_type,
     "state_type"),
