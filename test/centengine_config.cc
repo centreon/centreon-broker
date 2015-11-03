@@ -62,6 +62,7 @@ centengine_config::centengine_config() {
     centengine_object obj(centengine_object::service_type);
     obj.set("service_description", "default_service");
     obj.set("host_name", "default_host");
+    obj.set("check_command", "default_command");
     _services.push_back(obj);
   }
   {

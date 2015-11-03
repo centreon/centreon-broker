@@ -332,6 +332,7 @@ template void db::check_content<77>(std::string const& query, predicate expected
 template void db::check_content<78>(std::string const& query, predicate expected[][78]);
 template void db::check_content<79>(std::string const& query, predicate expected[][79]);
 template void db::check_content<80>(std::string const& query, predicate expected[][80]);
+template void db::check_content<81>(std::string const& query, predicate expected[][81]);
 
 /**
  *  Close database.
