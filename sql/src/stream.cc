@@ -190,11 +190,11 @@ void stream::_clean_tables(unsigned int instance_id) {
   if (db_v2)
     try {
       std::ostringstream ss;
-      ss << "DELETE hgm"
-         << " FROM hosts_hostgroups AS hgm"
-         << " LEFT JOIN hosts AS h"
-         << " ON hgm.host_id=h.host_id"
-         << " WHERE h.instance_id=" << instance_id;
+      ss << "DELETE hosts_hostgroups"
+         << " FROM hosts_hostgroups"
+         << " LEFT JOIN hosts"
+         << "   ON hosts_hostgroups.host_id=hosts.host_id"
+         << " WHERE hosts.instance_id=" << instance_id;
       q.run_query(ss.str());
     }
     catch (std::exception const& e) {
@@ -207,11 +207,11 @@ void stream::_clean_tables(unsigned int instance_id) {
   if (db_v2)
     try {
       std::ostringstream ss;
-      ss << "DELETE sgm"
-         << " FROM services_servicegroups AS sgm"
-         << " LEFT JOIN hosts AS h"
-         << " ON sgm.host_id=h.host_id"
-         << " WHERE h.instance_id=" << instance_id;
+      ss << "DELETE services_servicegroups"
+         << " FROM services_servicegroups"
+         << " LEFT JOIN hosts"
+         << "   ON services_servicegroups.host_id=hosts.host_id"
+         << " WHERE hosts.instance_id=" << instance_id;
       q.run_query(ss.str());
     }
     catch (std::exception const& e) {
@@ -930,7 +930,7 @@ void stream::_process_host_group(
   // Insert/update group.
   else if (hg.enabled) {
     logging::info(logging::medium) << "SQL: enabling host group "
-      << hg.id << " ('" << hg.name << "' of instance "
+      << hg.id << " ('" << hg.name << "') of instance "
       << hg.poller_id;
     if (!_host_group_insert.prepared()
         || !_host_group_update.prepared()) {
@@ -953,12 +953,12 @@ void stream::_process_host_group(
     // Delete group members.
     {
       std::ostringstream oss;
-      oss << "DELETE hgm"
-          << "  FROM hostgroups AS hgm"
-          << "  LEFT JOIN hosts AS h"
-          << "    ON hgm.host_id=h.host_id"
-          << "  WHERE hgm.hostgroup_id=" << hg.id
-          << "    AND h.instance_id=" << hg.poller_id;
+      oss << "DELETE hosts_hostgroups"
+          << "  FROM hosts_hostgroups"
+          << "  LEFT JOIN hosts"
+          << "    ON hosts_hostgroups.host_id=hosts.host_id"
+          << "  WHERE hosts_hostgroups.hostgroup_id=" << hg.id
+          << "    AND hosts.instance_id=" << hg.poller_id;
       database_query q(_db);
       q.run_query(oss.str(), "SQL");
     }
@@ -1018,6 +1018,8 @@ void stream::_process_host_group_member(
         hg->enabled = true;
         hg->poller_id = hgm.poller_id;
         _process_host_group(hg);
+        _host_group_member_insert << hgm;
+        _host_group_member_insert.run_statement();
       }
     }
     catch (std::exception const& e) {
@@ -1740,8 +1742,8 @@ void stream::_process_service_group(
       << "' of instance " << sg.poller_id << ")";
   // Insert/update group.
   else if (sg.enabled) {
-    logging::info(logging::medium) << "SQL: enabling service group '"
-      << sg.name << "' of instance " << sg.poller_id;
+    logging::info(logging::medium) << "SQL: enabling service group "
+      << sg.id << " ('" << sg.name << "') of instance " << sg.poller_id;
     if (!_service_group_insert.prepared()
         || !_service_group_update.prepared()) {
       database_preparator::event_unique unique;
@@ -1764,12 +1766,12 @@ void stream::_process_service_group(
     // Delete group members.
     {
       std::ostringstream oss;
-      oss << "DELETE sgm"
-          << "  FROM services_servicegroups AS sgm"
-          << "  LEFT JOIN hosts AS h"
-          << "    ON sgm.host_id=h.host_id"
-          << "  WHERE sgm.servicegroup_id=" << sg.id
-          << "    AND h.instance_id=" << sg.poller_id;
+      oss << "DELETE services_servicegroups"
+          << "  FROM services_servicegroups"
+          << "  LEFT JOIN hosts"
+          << "    ON services_servicegroups.host_id=hosts.host_id"
+          << "  WHERE services_servicegroups.servicegroup_id=" << sg.id
+          << "    AND hosts.instance_id=" << sg.poller_id;
       database_query q(_db);
       q.run_query(oss.str(), "SQL");
     }
@@ -1830,6 +1832,8 @@ void stream::_process_service_group_member(
         sg->enabled = true;
         sg->poller_id = sgm.poller_id;
         _process_service_group(sg);
+        _service_group_member_insert << sgm;
+        _service_group_member_insert.run_statement();
       }
     }
     catch (std::exception const& e) {
