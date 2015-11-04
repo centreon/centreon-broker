@@ -1570,9 +1570,12 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->notification_interval = s->notification_interval;
     if (s->notification_period)
       my_service->notification_period = s->notification_period;
+    my_service->notify_on_critical = s->notify_on_critical;
     my_service->notify_on_downtime = s->notify_on_downtime;
     my_service->notify_on_flapping = s->notify_on_flapping;
     my_service->notify_on_recovery = s->notify_on_recovery;
+    my_service->notify_on_unknown = s->notify_on_unknown;
+    my_service->notify_on_warning = s->notify_on_warning;
     my_service->obsess_over = s->obsess_over_service;
     if (s->plugin_output) {
       my_service->output = s->plugin_output;
@@ -1593,6 +1596,10 @@ int neb::callback_service(int callback_type, void* data) {
     if (s->description)
       my_service->service_description = s->description;
     my_service->should_be_scheduled = s->should_be_scheduled;
+    my_service->stalk_on_critical = s->stalk_on_critical;
+    my_service->stalk_on_ok = s->stalk_on_ok;
+    my_service->stalk_on_unknown = s->stalk_on_unknown;
+    my_service->stalk_on_warning = s->stalk_on_warning;
     my_service->state_type = (s->has_been_checked
                               ? s->state_type
                               : HARD_STATE);
