@@ -20,7 +20,6 @@
 -- rt_issues
 -- rt_issues_issues_parents
 -- rt_metrics
--- rt_modules
 -- rt_notifications
 -- rt_schemaversion
 -- rt_services_services_dependencies
@@ -260,24 +259,6 @@ CREATE TABLE rt_issues_issues_parents (
   FOREIGN KEY (child_id) REFERENCES rt_issues (issue_id)
     ON DELETE CASCADE,
   FOREIGN KEY (parent_id) REFERENCES rt_issues (issue_id)
-    ON DELETE CASCADE
-) ENGINE=InnoDB;
-
-
---
--- Nagios modules.
---
-CREATE TABLE rt_modules (
-  module_id int NOT NULL auto_increment,
-  instance_id int NOT NULL,
-
-  args varchar(255) default NULL,
-  filename varchar(255) default NULL,
-  loaded boolean default NULL,
-  should_be_loaded boolean default NULL,
-
-  PRIMARY KEY (module_id),
-  FOREIGN KEY (instance_id) REFERENCES rt_instances (instance_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
 

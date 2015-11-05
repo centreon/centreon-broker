@@ -20,7 +20,6 @@
 -- rt_issues
 -- rt_issues_issues_parents
 -- rt_metrics
--- rt_modules
 -- rt_notifications
 -- rt_schemaversion
 -- rt_services_services_dependencies
@@ -313,34 +312,6 @@ CREATE TABLE rt_issues_issues_parents (
   FOREIGN KEY (parent_id) REFERENCES rt_issues (issue_id)
     ON DELETE CASCADE
 );
-
-
---
--- Nagios modules.
---
-CREATE TABLE rt_modules (
-  module_id int NOT NULL,
-  instance_id int NOT NULL,
-
-  args varchar(255) default NULL,
-  filename varchar(255) default NULL,
-  loaded char(1) default NULL,
-  should_be_loaded char(1) default NULL,
-
-  PRIMARY KEY (module_id),
-  FOREIGN KEY (instance_id) REFERENCES rt_instances (instance_id)
-    ON DELETE CASCADE
-);
-CREATE SEQUENCE modules_seq
-START WITH 1
-INCREMENT BY 1;
-CREATE TRIGGER modules_trigger
-BEFORE INSERT ON modules
-FOR EACH ROW
-BEGIN
-  SELECT modules_seq.nextval INTO :NEW.module_id FROM dual;
-END;
-/
 
 
 --
