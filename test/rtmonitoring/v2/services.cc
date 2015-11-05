@@ -607,32 +607,33 @@ int main() {
     expected[0][39] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_state_change
     expected[0][43] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_time_warning
     expected[0][48] = test::predicate(tpoints.last(), tpoints.last() + 2 * MONITORING_ENGINE_INTERVAL_LENGTH + 1); // next_check
-    expected[0][78] = 1; // state, DOWN
+    expected[0][78] = 1; // state, WARNING
     expected[0][79] = 0; // state_type, SOFT
     test::sleep_for(2);
     postcheck(tpoints, db, expected);
 
-    // Check check_attempt.
-    precheck(tpoints, "check_attempt, last_hard_state_change");
+    // Check check_attempt, last_hard_state, last_hard_state_change.
+    precheck(tpoints, "check_attempt, last_hard_state, last_hard_state_change");
     engine.extcmd().execute("PROCESS_SERVICE_CHECK_RESULT;1;renamed;1;mypluginoutput|metric=42v");
     test::sleep_for(2);
     tpoints.store();
     expected[0][7] = 2; // check_attempt
     expected[0][35] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_check
+    expected[0][36] = 1; // last_hard_state, WARNING
     expected[0][37] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_hard_state_change
     expected[0][43] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_time_warning
     expected[0][48] = test::predicate(tpoints.last(), tpoints.last() + 2 * MONITORING_ENGINE_INTERVAL_LENGTH + 1); // next_check
     expected[0][79] = 1; // state_type, HARD
     postcheck(tpoints, db, expected);
 
-    // Check last_hard_state, last_time_critical.
-    precheck(tpoints, "last_hard_state, last_time_critical");
+    // Check last_time_critical.
+    precheck(tpoints, "last_time_critical");
     engine.extcmd().execute("PROCESS_SERVICE_CHECK_RESULT;1;renamed;2;mypluginoutput|metric=42v");
     test::sleep_for(2);
     tpoints.store();
-    expected[0][7] = 1; // check_attempt
     expected[0][35] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_check
-    expected[0][36] = 1; // last_hard_state, WARNING
+    expected[0][36] = 2; // last_hard_state, CRITICAL
+    expected[0][37] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_hard_state_change
     expected[0][39] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_state_change
     expected[0][40] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_time_critical
     expected[0][48] = test::predicate(tpoints.last(), tpoints.last() + 2 * MONITORING_ENGINE_INTERVAL_LENGTH + 1); // next_check
@@ -645,10 +646,12 @@ int main() {
     test::sleep_for(2);
     tpoints.store();
     expected[0][35] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_check
+    expected[0][36] = 3; // last_hard_state, UNKNOWN
+    expected[0][37] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_hard_state_change
     expected[0][39] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_state_change
     expected[0][42] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_time_unknown
     expected[0][48] = test::predicate(tpoints.last(), tpoints.last() + 2 * MONITORING_ENGINE_INTERVAL_LENGTH + 1); // next_check
-    expected[0][78] = 2; // state, CRITICAL
+    expected[0][78] = 3; // state, UNKNOWN
     postcheck(tpoints, db, expected);
 
     // Check flapping.
@@ -663,8 +666,8 @@ int main() {
     precheck(tpoints, "last_notification");
     std::cout << "  not tested\n";
 
-    // Check next_host_notification.
-    precheck(tpoints, "next_host_notification");
+    // Check next_notification.
+    precheck(tpoints, "next_notification");
     std::cout << "  not tested\n";
 
     // Check no_more_notifications.
