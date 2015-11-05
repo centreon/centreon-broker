@@ -2034,8 +2034,9 @@ void stream::_write_logs() {
               ? "logs"
               : "log_logs")
           << "  (ctime, host_id, host_name, instance_name, issue_id, "
-          << "  msg_type,  output, retry, service_description, "
-          << "  service_id, status, type) "
+          << "  msg_type, notification_cmd, notification_contact, "
+          << "  output, retry, service_description, service_id,"
+          << "  status, type) "
           << "VALUES ";
 
     // Fields used to escape strings.
@@ -2045,11 +2046,17 @@ void stream::_write_logs() {
     QSqlField instance_name_field(
                 "instance_name",
                 QVariant::String);
-     QSqlField output_field(
+    QSqlField output_field(
                 "output",
                 QVariant::String);
     QSqlField service_description_field(
                 "service_description",
+                QVariant::String);
+    QSqlField notification_cmd_field(
+                "notification_cmd",
+                QVariant::String);
+    QSqlField notification_contact_field(
+                "notification_contact",
                 QVariant::String);
 
     // Browse log queue.
@@ -2097,6 +2104,8 @@ void stream::_write_logs() {
       static QString const null_string("NULL");
       host_name_field.setValue(le->host_name);
       instance_name_field.setValue(le->poller_name);
+      notification_cmd_field.setValue(le->notification_cmd);
+      notification_contact_field.setValue(le->notification_contact);
       output_field.setValue(le->output);
       service_description_field.setValue(le->service_description);
       query << "(" << le->c_time << ", ";
@@ -2115,6 +2124,12 @@ void stream::_write_logs() {
       else
         query << "NULL";
       query << ", " << le->msg_type << ", "
+            << (notification_cmd_field.isNull()
+                ? empty_string
+                : drivr->formatValue(notification_cmd_field)) << ", "
+            << (notification_contact_field.isNull()
+                ? empty_string
+                : drivr->formatValue(notification_contact_field)) << ", "
             << (output_field.isNull()
                 ? empty_string
                 : drivr->formatValue(output_field)) << ", " << le->retry
