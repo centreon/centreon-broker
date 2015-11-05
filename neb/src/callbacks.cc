@@ -665,7 +665,7 @@ int neb::callback_group(int callback_type, void* data) {
         if (new_hg->id) {
           logging::info(logging::low) << "callbacks: new host group "
             << new_hg->id << " ('" << new_hg->name << "') on instance "
-            << new_hg->instance_id;
+            << new_hg->poller_id;
           neb::gl_publisher.write(new_hg);
         }
       }
@@ -692,7 +692,7 @@ int neb::callback_group(int callback_type, void* data) {
         if (new_sg->id) {
           logging::info(logging::low) << "callbacks:: new service group "
             << new_sg->id << " ('" << new_sg->name << "') on instance "
-            << new_sg->instance_id;
+            << new_sg->poller_id;
           neb::gl_publisher.write(new_sg);
         }
       }
@@ -747,14 +747,14 @@ int neb::callback_group_member(int callback_type, void* data) {
           if (member_data->type == NEBTYPE_HOSTGROUPMEMBER_DELETE) {
             logging::info(logging::low) << "callbacks: host "
               << hgm->host_id << " is not a member of group "
-              << hgm->group_id << " on instance " << hgm->instance_id
+              << hgm->group_id << " on instance " << hgm->poller_id
               << " anymore";
             hgm->enabled = false;
           }
           else {
             logging::info(logging::low) << "callbacks: host "
               << hgm->host_id << " is a member of group "
-              << hgm->group_id << " on instance " << hgm->instance_id;
+              << hgm->group_id << " on instance " << hgm->poller_id;
             hgm->enabled = true;
           }
 
@@ -789,14 +789,14 @@ int neb::callback_group_member(int callback_type, void* data) {
             logging::info(logging::low) << "callbacks: service ("
               << sgm->host_id << ", " << sgm->service_id
               << ") is not a member of group " << sgm->group_id
-              << " on instance " << sgm->instance_id << " anymore";
+              << " on instance " << sgm->poller_id << " anymore";
             sgm->enabled = false;
           }
           else {
             logging::info(logging::low) << "callbacks: service ("
               << sgm->host_id << ", " << sgm->service_id
               << ") is a member of group " << sgm->group_id
-              << " on instance " << sgm->instance_id;
+              << " on instance " << sgm->poller_id;
             sgm->enabled = true;
           }
 
