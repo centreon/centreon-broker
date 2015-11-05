@@ -1111,7 +1111,7 @@ static mapped_data<host_group> const host_group_mapping[] = {
     "name"),
   mapped_data<host_group>(
     &host_group::id,
-    0,
+    NDO_DATA_HOSTID,
     "hostgroup_id"),
   mapped_data<host_group>()
 };
@@ -2253,7 +2253,7 @@ static mapped_data<service_group> const service_group_mapping[] = {
     "name"),
   mapped_data<service_group>(
     &service_group::id,
-    0,
+    NDO_DATA_SERVICEID,
     "servicegroup_id"),
   mapped_data<service_group>()
 };
