@@ -1037,16 +1037,18 @@ void stream::_process_host_group(
     hg(*static_cast<neb::host_group const*>(e.data()));
 
   if (hg.enabled) {
-    logging::info(logging::medium) << "SQL: enabling host group '"
-      << hg.name << "' of instance " << hg.instance_id;
+    logging::info(logging::medium) << "SQL: enabling host group "
+      << hg.id << " ('" << hg.name << "') on instance "
+      << hg.instance_id;
     _update_on_none_insert(
       _host_group_insert,
       _host_group_update,
       hg);
   }
   else {
-    logging::info(logging::medium) << "SQL: disabling host group '"
-      << hg.name << "' of instance " << hg.instance_id;
+    logging::info(logging::medium) << "SQL: disabling host group "
+      << hg.id << " ('" << hg.name << "' on instance "
+      << hg.instance_id;
 
     // Delete group members.
     {
@@ -1083,9 +1085,9 @@ void stream::_process_host_group_member(
   if (hgm.enabled) {
     // Log message.
     logging::info(logging::medium)
-      << "SQL: enabling host group member (group: "
-      << hgm.group_id << ", instance: " << hgm.instance_id
-      << ", host: " << hgm.host_id << ")";
+      << "SQL: enabling membership of host " << hgm.host_id
+      << " to host group " << hgm.group_id << " on instance "
+      << hgm.instance_id;
 
     // We only need to try to insert in this table as the
     // host_id/hostgroup_id should be UNIQUE.
@@ -1113,9 +1115,9 @@ void stream::_process_host_group_member(
   else {
     // Log message.
     logging::info(logging::medium)
-      << "SQL: removing host group member (group: "
-      << hgm.group_id << ", instance: " << hgm.instance_id
-      << ", host: " << hgm.host_id << ")";
+      << "SQL: disabling membership of host " << hgm.host_id
+      << " to host group " << hgm.group_id << " on instance "
+      << hgm.instance_id;
 
     try {
       _host_group_member_delete << hgm;
@@ -1634,16 +1636,18 @@ void stream::_process_service_group(
     sg(*static_cast<neb::service_group const*>(e.data()));
 
   if (sg.enabled) {
-    logging::info(logging::medium) << "SQL: enabling service group '"
-      << sg.name << "' of instance: " << sg.instance_id;
+    logging::info(logging::medium) << "SQL: enabling service group "
+      << sg.id << " ('" << sg.name << "') on instance "
+      << sg.instance_id;
     _update_on_none_insert(
       _service_group_insert,
       _service_group_update,
       sg);
   }
   else {
-    logging::info(logging::medium) << "SQL: disabling service group '"
-      << sg.name << "' of instance: " << sg.instance_id;
+    logging::info(logging::medium) << "SQL: disabling service group "
+      << sg.id << " ('" << sg.name << "') on instance "
+      << sg.instance_id;
 
     // Delete group members.
     {
@@ -1680,9 +1684,9 @@ void stream::_process_service_group_member(
   if (sgm.enabled) {
     // Log message.
     logging::info(logging::medium)
-      << "SQL: enabling service group member (group: "
-      << sgm.group_id << ", instance: " << sgm.instance_id << ", host: "
-      << sgm.host_id << ", service: " << sgm.service_id << ")";
+      << "SQL: enabling membership of service (" << sgm.host_id << ", "
+      << sgm.service_id << ") to service group " << sgm.group_id
+      << " on instance " << hgm.instance_id;
 
     // We only need to try to insert in this table as the
     // host_id/service_id/servicegroup_id combo should be UNIQUE.
@@ -1713,9 +1717,9 @@ void stream::_process_service_group_member(
   else {
     // Log message.
     logging::info(logging::medium)
-      << "SQL: removing service group member (group: "
-      << sgm.group_id << ", instance: " << sgm.instance_id << ", host: "
-      << sgm.host_id << ", service: " << sgm.service_id << ")";
+      << "SQL: disabling membership of service (" << sgm.host_id << ", "
+      << sgm.service_id << ") to service group " << sgm.group_id
+      << " on instance " << sgm.instance_id;
 
     try {
       _service_group_member_delete << sgm;
