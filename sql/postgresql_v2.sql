@@ -4,7 +4,6 @@
 --                                   --
 --                                   --
 --          Real-time data           --
---              Logs                 --
 --         Performance data          --
 -- ------------------------------------
 
@@ -21,7 +20,6 @@
 -- index_data
 -- issues
 -- issues_issues_parents
--- logs
 -- metrics
 -- notifications
 -- schemaversion
@@ -290,33 +288,6 @@ CREATE TABLE issues_issues_parents (
     ON DELETE CASCADE,
   FOREIGN KEY (parent_id) REFERENCES issues (issue_id)
     ON DELETE CASCADE
-);
-
-
---
--- Nagios logs.
---
-CREATE TABLE logs (
-  log_id serial,
-
-  ctime int default NULL,
-  host_id int default NULL,
-  host_name varchar(255) default NULL,
-  instance_name varchar(255) NOT NULL,
-  issue_id default NULL,
-  msg_type smallint default NULL,
-  notification_cmd varchar(255) default NULL,
-  notification_contact varchar(255) default NULL,
-  output text default NULL,
-  retry int default NULL,
-  service_description varchar(255) default NULL,
-  service_id int default NULL,
-  status smallint default NULL,
-  type smallint default NULL,
-
-  PRIMARY KEY (log_id),
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE SET NULL
 );
 
 
