@@ -1686,7 +1686,7 @@ void stream::_process_service_group_member(
     logging::info(logging::medium)
       << "SQL: enabling membership of service (" << sgm.host_id << ", "
       << sgm.service_id << ") to service group " << sgm.group_id
-      << " on instance " << hgm.instance_id;
+      << " on instance " << sgm.instance_id;
 
     // We only need to try to insert in this table as the
     // host_id/service_id/servicegroup_id combo should be UNIQUE.
