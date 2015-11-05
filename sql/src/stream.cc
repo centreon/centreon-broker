@@ -930,7 +930,7 @@ void stream::_process_host_group(
   // Insert/update group.
   else if (hg.enabled) {
     logging::info(logging::medium) << "SQL: enabling host group "
-      << hg.id << " ('" << hg.name << "') of instance "
+      << hg.id << " ('" << hg.name << "') on instance "
       << hg.poller_id;
     if (!_host_group_insert.prepared()
         || !_host_group_update.prepared()) {
@@ -947,8 +947,9 @@ void stream::_process_host_group(
   }
   // Delete group.
   else {
-    logging::info(logging::medium) << "SQL: disabling host group '"
-      << hg.name << "' of instance " << hg.poller_id;
+    logging::info(logging::medium) << "SQL: disabling host group "
+      << hg.id << " ('" << hg.name << "' on instance "
+      << hg.poller_id;
 
     // Delete group members.
     {
@@ -1033,7 +1034,7 @@ void stream::_process_host_group_member(
   else {
     // Log message.
     logging::info(logging::medium)
-      << "SQL: removing membership of host " << hgm.host_id
+      << "SQL: disabling membership of host " << hgm.host_id
       << " to host group " << hgm.group_id << " on instance "
       << hgm.poller_id;
 
@@ -1743,7 +1744,7 @@ void stream::_process_service_group(
   // Insert/update group.
   else if (sg.enabled) {
     logging::info(logging::medium) << "SQL: enabling service group "
-      << sg.id << " ('" << sg.name << "') of instance " << sg.poller_id;
+      << sg.id << " ('" << sg.name << "') on instance " << sg.poller_id;
     if (!_service_group_insert.prepared()
         || !_service_group_update.prepared()) {
       database_preparator::event_unique unique;
@@ -1760,8 +1761,9 @@ void stream::_process_service_group(
   }
   // Delete group.
   else {
-    logging::info(logging::medium) << "SQL: disabling service group '"
-      << sg.name << "' of instance " << sg.poller_id;
+    logging::info(logging::medium) << "SQL: disabling service group "
+      << sg.id << " ('" << sg.name << "') on instance "
+      << sg.poller_id;
 
     // Delete group members.
     {
@@ -1848,7 +1850,7 @@ void stream::_process_service_group_member(
   else {
     // Log message.
     logging::info(logging::medium)
-      << "SQL: removing membership of service (" << sgm.host_id << ", "
+      << "SQL: disabling membership of service (" << sgm.host_id << ", "
       << sgm.service_id << ") to service group " << sgm.group_id
       << " on instance " << sgm.poller_id;
 
