@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -54,6 +54,8 @@ namespace          neb {
     timestamp      issue_start_time;
     short          log_type;
     short          msg_type;
+    QString        notification_cmd;
+    QString        notification_contact;
     QString        output;
     QString        poller_name;
     int            retry;

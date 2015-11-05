@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Centreon
+** Copyright 2012-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -41,6 +41,8 @@ int main() {
            || (le.issue_start_time != 0)
            || (le.log_type != 0)
            || (le.msg_type != 0)
+           || !le.notification_cmd.isEmpty()
+           || !le.notification_contact.isEmpty()
            || (le.output != "")
            || (le.poller_name != "")
            || (le.retry != 0)

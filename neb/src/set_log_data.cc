@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Centreon
+** Copyright 2009-2011,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -66,6 +66,24 @@ static int status_id(char const* status) {
 }
 
 /**
+ *  Get the notification status of a log.
+ */
+static int notification_status_id(char const* status) {
+  char const* ptr(strchr(status, '('));
+  int id;
+  if (ptr) {
+    std::string substatus(ptr + 1);
+    size_t it(substatus.find_first_of(')'));
+    if (it != std::string::npos)
+      substatus.erase(it);
+    id = status_id(substatus.c_str());
+  }
+  else
+    id = status_id(status);
+  return (id);
+}
+
+/**
  *  Get the id of a log type.
  */
 static int type_id(char const* type) {
@@ -112,21 +130,21 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
       le.retry = strtol(log_extract(&lasts), NULL, 10);
       le.output = log_extract(&lasts);
     }
-    else if (!strcmp(datadup, "CURRENT SERVICE STATE")) {
-      le.msg_type = 6;
-      le.host_name = log_extract_first(lasts, &lasts);
+    else if (!strcmp(datadup, "SERVICE NOTIFICATION")) {
+      le.msg_type = 2;
+      le.notification_contact = log_extract_first(lasts, &lasts);
+      le.host_name = log_extract(&lasts);
       le.service_description = log_extract(&lasts);
-      le.status = status_id(log_extract(&lasts));
-      le.log_type = type_id(log_extract(&lasts));
-      le.retry = strtol(log_extract(&lasts), NULL, 10);
+      le.status = notification_status_id(log_extract(&lasts));
+      le.notification_cmd = log_extract(&lasts);
       le.output = log_extract(&lasts);
     }
-    else if (!strcmp(datadup, "CURRENT HOST STATE")) {
-      le.msg_type = 7;
-      le.host_name = log_extract_first(lasts, &lasts);
-      le.status = status_id(log_extract(&lasts));
-      le.log_type = type_id(log_extract(&lasts));
-      le.retry = strtol(log_extract(&lasts), NULL, 10);
+    else if (!strcmp(datadup, "HOST NOTIFICATION")) {
+      le.msg_type = 3;
+      le.notification_contact = log_extract_first(lasts, &lasts);
+      le.host_name = log_extract(&lasts);
+      le.status = notification_status_id(log_extract(&lasts));
+      le.notification_cmd = log_extract(&lasts);
       le.output = log_extract(&lasts);
     }
     else if (!strcmp(datadup, "INITIAL HOST STATE")) {
@@ -145,6 +163,33 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
       le.log_type = type_id(log_extract(&lasts));
       le.retry = strtol(log_extract(&lasts), NULL, 10);
       le.output = log_extract(&lasts);
+    }
+    else if (!strcmp(datadup, "EXTERNAL COMMAND")) {
+      char* data(log_extract_first(lasts, &lasts));
+      if (!strcmp(data, "ACKNOWLEDGE_SVC_PROBLEM")) {
+        le.msg_type = 10;
+        le.host_name = log_extract(&lasts);
+        le.service_description = log_extract(&lasts);
+        log_extract(&lasts);
+        log_extract(&lasts);
+        log_extract(&lasts);
+        le.notification_contact = log_extract(&lasts);
+        le.output = log_extract(&lasts);
+      }
+      else if (!strcmp(data, "ACKNOWLEDGE_HOST_PROBLEM")) {
+        le.msg_type = 11;
+        le.host_name = log_extract(&lasts);
+        log_extract(&lasts);
+        log_extract(&lasts);
+        log_extract(&lasts);
+        le.notification_contact = log_extract(&lasts);
+        le.output = log_extract(&lasts);
+      }
+      else {
+        le.msg_type = 5;
+        le.output = "EXTERNAL COMMAND: ";
+        le.output.append(lasts);
+      }
     }
     else if (!strcmp(datadup, "Warning")) {
       le.msg_type = 4;
