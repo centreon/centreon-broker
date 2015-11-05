@@ -662,10 +662,12 @@ int neb::callback_group(int callback_type, void* data) {
         new_hg->name = host_group->group_name;
 
         // Send host group event.
-        logging::info(logging::low) << "callbacks: new host group '"
-          << new_hg->name << "' (instance " << new_hg->poller_id
-          << ")";
-        neb::gl_publisher.write(new_hg);
+        if (new_hg->id) {
+          logging::info(logging::low) << "callbacks: new host group "
+            << new_hg->id << " ('" << new_hg->name << "') on instance "
+            << new_hg->instance_id;
+          neb::gl_publisher.write(new_hg);
+        }
       }
     }
     // Service group.
@@ -687,10 +689,12 @@ int neb::callback_group(int callback_type, void* data) {
         new_sg->name = service_group->group_name;
 
         // Send service group event.
-        logging::info(logging::low) << "callbacks:: new service group '"
-          << new_sg->name << "' (instance " << new_sg->poller_id
-          << ")";
-        neb::gl_publisher.write(new_sg);
+        if (new_sg->id) {
+          logging::info(logging::low) << "callbacks:: new service group "
+            << new_sg->id << " ('" << new_sg->name << "') on instance "
+            << new_sg->instance_id;
+          neb::gl_publisher.write(new_sg);
+        }
       }
     }
   }
@@ -742,22 +746,21 @@ int neb::callback_group_member(int callback_type, void* data) {
           hgm->host_id = host_id;
           if (member_data->type == NEBTYPE_HOSTGROUPMEMBER_DELETE) {
             logging::info(logging::low) << "callbacks: host "
-              << hgm->host_id << " is not a member of group '"
-              << hgm->group_id << "' on instance " << hgm->poller_id
+              << hgm->host_id << " is not a member of group "
+              << hgm->group_id << " on instance " << hgm->instance_id
               << " anymore";
             hgm->enabled = false;
           }
           else {
             logging::info(logging::low) << "callbacks: host "
-              << hgm->host_id << " is a member of group '" << hgm->group_id
-              << "' on instance " << hgm->poller_id;
+              << hgm->host_id << " is a member of group "
+              << hgm->group_id << " on instance " << hgm->instance_id;
             hgm->enabled = true;
           }
 
           // Send host group member event.
-          if (hgm->host_id) {
+          if (hgm->host_id && hgm->group_id)
             neb::gl_publisher.write(hgm);
-          }
         }
       }
     }
@@ -785,20 +788,20 @@ int neb::callback_group_member(int callback_type, void* data) {
           if (member_data->type == NEBTYPE_SERVICEGROUPMEMBER_DELETE) {
             logging::info(logging::low) << "callbacks: service ("
               << sgm->host_id << ", " << sgm->service_id
-              << ") is not a member of group '" << sgm->group_id
-              << "' on instance " << sgm->poller_id << " anymore";
+              << ") is not a member of group " << sgm->group_id
+              << " on instance " << sgm->instance_id << " anymore";
             sgm->enabled = false;
           }
           else {
             logging::info(logging::low) << "callbacks: service ("
               << sgm->host_id << ", " << sgm->service_id
-              << ") is a member of group '" << sgm->group_id
-              << "' on instance " << sgm->poller_id;
+              << ") is a member of group " << sgm->group_id
+              << " on instance " << sgm->instance_id;
             sgm->enabled = true;
           }
 
           // Send service group member event.
-          if (sgm->host_id && sgm->service_id)
+          if (sgm->host_id && sgm->service_id && sgm->group_id)
             neb::gl_publisher.write(sgm);
         }
       }
