@@ -20,6 +20,15 @@ CREATE TABLE log_logs (
   type smallint default NULL,
 
   PRIMARY KEY (log_id),
+  INDEX (host_name),
+  INDEX (service_description),
+  INDEX (status),
+  INDEX (instance_name),
+  INDEX (ctime),
+  INDEX (host_id, service_id, msg_type, status, ctime),
+  INDEX (host_id, msg_type, status, ctime),
+  INDEX (host_id, service_id, msg_type, ctime, status),
+  INDEX (host_id, msg_type, ctime, status),
   FOREIGN KEY (host_id) REFERENCES rt_hosts (host_id)
     ON DELETE SET NULL
 );
