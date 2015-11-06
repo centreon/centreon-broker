@@ -219,10 +219,17 @@ void db::check_content(
   // Browse data.
   int entry(0);
   while (q.next()) {
-    if (!expected[entry][0].is_valid())
-      throw (exceptions::msg()
-             << "too much data returned by query (query was "
-             << query << ")");
+    if (!expected[entry][0].is_valid()) {
+      exceptions::msg e;
+      e << "too much data returned by query: next entry is ";
+      QSqlRecord rec(q.record());
+      for (int i(0); i < columns; ++i)
+        e << rec.fieldName(i) << " "
+          << (q.value(i).isNull() ? "NULL" : q.value(i).toString())
+          << ((i == columns - 1) ? "" : ", ");
+      e << " (query was " << query << ")";
+      throw (e);
+    }
     std::list<int> mismatching;
     for (int i(0); i < columns; ++i)
       if (expected[entry][i] != q.value(i))
