@@ -754,6 +754,13 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
+  # Modules table.
+  set(TEST_NAME "running_rtmonitoring_v2_modules")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/rtmonitoring/v2/modules.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
   # XXX
   # # Monitoring to SQL.
   # set(TEST_NAME "running_monitoring_to_sql")
