@@ -8,7 +8,6 @@
 -- ------------------------------------
 
 -- rt_acknowledgements
--- rt_customvariables
 -- log_data_bin
 -- rt_downtimes
 -- rt_eventhandlers
@@ -116,26 +115,6 @@ CREATE TABLE rt_acknowledgements (
     ON DELETE CASCADE,
   FOREIGN KEY (instance_id) REFERENCES rt_instances (instance_id)
     ON DELETE SET NULL
-) ENGINE=InnoDB;
-
-
---
--- Custom variables.
---
-CREATE TABLE rt_customvariables (
-  customvariable_id int NOT NULL auto_increment,
-  host_id int default NULL,
-  name varchar(255) default NULL,
-  service_id int default NULL,
-
-  default_value varchar(255) default NULL,
-  modified boolean default NULL,
-  type smallint default NULL,
-  update_time int default NULL,
-  value varchar(255) default NULL,
-
-  PRIMARY KEY (customvariable_id),
-  UNIQUE (host_id, name, service_id)
 ) ENGINE=InnoDB;
 
 
