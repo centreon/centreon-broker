@@ -7,7 +7,6 @@
 --         Performance data          --
 -- ------------------------------------
 
--- rt_acknowledgements
 -- log_data_bin
 -- rt_downtimes
 -- rt_eventhandlers
@@ -87,34 +86,6 @@ CREATE TABLE rt_services_services_dependencies (
     ON DELETE CASCADE,
   FOREIGN KEY (host_id, service_id) REFERENCES rt_services (host_id, service_id)
     ON DELETE CASCADE
-);
-
-
---
--- Holds acknowledgedments information.
---
-CREATE TABLE rt_acknowledgements (
-  acknowledgement_id serial,
-  entry_time int NOT NULL,
-  host_id int NOT NULL,
-  service_id int default NULL,
-
-  author varchar(64) default NULL,
-  comment_data varchar(255) default NULL,
-  deletion_time int default NULL,
-  instance_id int default NULL,
-  notify_contacts boolean default NULL,
-  persistent_comment boolean default NULL,
-  state smallint default NULL,
-  sticky boolean default NULL,
-  type smallint default NULL,
-
-  PRIMARY KEY (acknowledgement_id),
-  UNIQUE (entry_time, host_id, service_id),
-  FOREIGN KEY (host_id) REFERENCES rt_hosts (host_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (instance_id) REFERENCES rt_instances (instance_id)
-    ON DELETE SET NULL
 );
 
 
