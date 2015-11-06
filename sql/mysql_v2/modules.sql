@@ -11,6 +11,7 @@ CREATE TABLE modules (
   should_be_loaded boolean default NULL,
 
   PRIMARY KEY (module_id),
+  INDEX (instance_id),
   FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
