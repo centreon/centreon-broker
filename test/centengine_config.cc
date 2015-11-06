@@ -35,6 +35,10 @@ centengine_config::centengine_config() {
   set_directive("command_check_interval", "-1");
   set_directive("state_retention_file", "");
   set_directive("check_result_reaper_frequency", "1");
+  // set_directive("debug_file", "monitoring_debug.log");
+  // set_directive("debug_level", "-1");
+  // set_directive("debug_verbosity", "2");
+  // set_directive("max_debug_file_size", "1000000000");
   // Deprecated in Centreon Engine 2.x.
   set_directive("accept_passive_host_checks", "1");
   set_directive("accept_passive_service_checks", "1");
