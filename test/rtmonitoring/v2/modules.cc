@@ -114,13 +114,20 @@ int main() {
     test::centengine engine(&engine_config);
 
     // Check default entries.
-    precheck("modules");
+    precheck("modules.insert");
     engine.start();
-    test::sleep_for(1);
+    test::sleep_for(2);
     test::predicate expected[][5] = {
       { 42, cbmod_args.c_str(), CBMOD_PATH, true, true },
       { test::predicate() }
     };
+    postcheck(db, expected);
+
+    // Check deletion.
+    precheck("modules.delete");
+    engine.stop();
+    test::sleep_for(2);
+    expected[0][0] = test::predicate();
     postcheck(db, expected);
 
     // Success.
