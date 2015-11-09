@@ -144,6 +144,7 @@ db::db(
   add_db_script(tables, "downtimes", db_dir_v2);
   add_db_script(tables, "eventhandlers", db_dir_v2);
   add_db_script(tables, "flappingstatuses", db_dir_v2);
+  add_db_script(tables, "issues", db_dir_v2);
   add_db_script(tables, "logs", db_dir_v2);
   add_db_script(tables, "modules", db_dir_v2);
   std::string db_dir_v3(db_dir);
@@ -158,6 +159,7 @@ db::db(
   add_db_script(tables, "rt_downtimes", db_dir_v3);
   add_db_script(tables, "rt_eventhandlers", db_dir_v3);
   add_db_script(tables, "rt_flappingstatuses", db_dir_v3);
+  add_db_script(tables, "rt_issues", db_dir_v3);
   add_db_script(tables, "rt_modules", db_dir_v3);
 
   // Only include valid tables.
