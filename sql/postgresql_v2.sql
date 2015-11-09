@@ -10,7 +10,6 @@
 -- data_bin
 -- hoststateevents
 -- index_data
--- issues_issues_parents
 -- metrics
 -- notifications
 -- schemaversion
@@ -25,22 +24,6 @@ CREATE TABLE schemaversion (
   version int NOT NULL
 );
 INSERT INTO schemaversion (software, version) VALUES ('centreon-broker', 2);
-
-
---
--- Issues parenting.
---
-CREATE TABLE issues_issues_parents (
-  child_id int NOT NULL,
-  end_time int default NULL,
-  start_time int NOT NULL,
-  parent_id int NOT NULL,
-
-  FOREIGN KEY (child_id) REFERENCES issues (issue_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (parent_id) REFERENCES issues (issue_id)
-    ON DELETE CASCADE
-);
 
 
 --

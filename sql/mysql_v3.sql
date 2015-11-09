@@ -10,7 +10,6 @@
 -- log_data_bin
 -- rt_hoststateevents
 -- rt_index_data
--- rt_issues_issues_parents
 -- rt_metrics
 -- rt_notifications
 -- rt_schemaversion
@@ -25,22 +24,6 @@ CREATE TABLE rt_schemaversion (
   version int NOT NULL
 ) ENGINE=InnoDB;
 INSERT INTO rt_schemaversion (software, version) VALUES ('centreon-broker', 3);
-
-
---
--- Issues parenting.
---
-CREATE TABLE rt_issues_issues_parents (
-  child_id int NOT NULL,
-  end_time int default NULL,
-  start_time int NOT NULL,
-  parent_id int NOT NULL,
-
-  FOREIGN KEY (child_id) REFERENCES rt_issues (issue_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (parent_id) REFERENCES rt_issues (issue_id)
-    ON DELETE CASCADE
-) ENGINE=InnoDB;
 
 
 --
