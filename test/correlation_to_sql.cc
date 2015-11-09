@@ -231,7 +231,7 @@ int main() {
     time_t t1(time(NULL));
 
     // Let the daemon initialize.
-    sleep_for(10 * MONITORING_ENGINE_INTERVAL_LENGTH);
+    sleep_for(5 * MONITORING_ENGINE_INTERVAL_LENGTH);
 
     /* Test cases
     ** ----------
