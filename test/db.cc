@@ -140,6 +140,7 @@ db::db(
   add_db_script(tables, "services", db_dir_v2);
   add_db_script(tables, "servicegroups", db_dir_v2);
   add_db_script(tables, "services_servicegroups", db_dir_v2);
+  add_db_script(tables, "services_services_dependencies", db_dir_v2);
   add_db_script(tables, "logs", db_dir_v2);
   add_db_script(tables, "modules", db_dir_v2);
   std::string db_dir_v3(db_dir);
@@ -149,6 +150,7 @@ db::db(
   add_db_script(tables, "rt_hosts_hosts_dependencies", db_dir_v3);
   add_db_script(tables, "rt_hosts_hosts_parents", db_dir_v3);
   add_db_script(tables, "rt_services", db_dir_v3);
+  add_db_script(tables, "rt_services_services_dependencies", db_dir_v3);
   add_db_script(tables, "log_logs", db_dir_v3);
   add_db_script(tables, "rt_modules", db_dir_v3);
 

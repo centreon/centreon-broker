@@ -18,7 +18,6 @@
 -- rt_metrics
 -- rt_notifications
 -- rt_schemaversion
--- rt_services_services_dependencies
 -- rt_servicestateevents
 
 
@@ -30,27 +29,6 @@ CREATE TABLE rt_schemaversion (
   version int NOT NULL
 );
 INSERT INTO rt_schemaversion (software, version) VALUES ('centreon-broker', 3);
-
-
---
--- Services dependencies.
---
-CREATE TABLE rt_services_services_dependencies (
-  dependent_host_id int NOT NULL,
-  dependent_service_id int NOT NULL,
-  host_id int NOT NULL,
-  service_id int NOT NULL,
-
-  dependency_period varchar(75) default NULL,
-  execution_failure_options varchar(15) default NULL,
-  inherits_parent boolean default NULL,
-  notification_failure_options varchar(15) default NULL,
-
-  FOREIGN KEY (dependent_host_id, dependent_service_id) REFERENCES rt_services (host_id, service_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (host_id, service_id) REFERENCES rt_services (host_id, service_id)
-    ON DELETE CASCADE
-);
 
 
 --
