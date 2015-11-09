@@ -147,6 +147,7 @@ db::db(
   add_db_script(tables, "issues", db_dir_v2);
   add_db_script(tables, "issues_issues_parents", db_dir_v2);
   add_db_script(tables, "hoststateevents", db_dir_v2);
+  add_db_script(tables, "servicestateevents", db_dir_v2);
   add_db_script(tables, "logs", db_dir_v2);
   add_db_script(tables, "modules", db_dir_v2);
   add_db_script(tables, "notifications", db_dir_v2);
@@ -165,6 +166,7 @@ db::db(
   add_db_script(tables, "rt_issues", db_dir_v3);
   add_db_script(tables, "rt_issues_issues_parents", db_dir_v3);
   add_db_script(tables, "rt_hoststateevents", db_dir_v3);
+  add_db_script(tables, "rt_servicestateevents", db_dir_v3);
   add_db_script(tables, "rt_modules", db_dir_v3);
   add_db_script(tables, "rt_notifications", db_dir_v3);
 

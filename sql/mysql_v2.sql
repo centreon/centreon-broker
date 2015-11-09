@@ -11,7 +11,6 @@
 -- index_data
 -- metrics
 -- schemaversion
--- servicestateevents
 
 
 --
@@ -22,25 +21,6 @@ CREATE TABLE schemaversion (
   version int NOT NULL
 ) ENGINE=InnoDB;
 INSERT INTO schemaversion (software, version) VALUES ('centreon-broker', 2);
-
-
---
---  Service states.
---
-CREATE TABLE servicestateevents (
-  host_id int NOT NULL,
-  service_id int NOT NULL,
-  start_time int NOT NULL,
-
-  ack_time int default NULL,
-  end_time int default NULL,
-  in_downtime boolean default NULL,
-  state int default NULL,
-
-  UNIQUE (host_id, service_id, start_time),
-  FOREIGN KEY (host_id, service_id) REFERENCES services (host_id, service_id)
-    ON DELETE CASCADE
-) ENGINE=InnoDB;
 
 
 --

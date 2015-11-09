@@ -11,7 +11,6 @@
 -- rt_index_data
 -- rt_metrics
 -- rt_schemaversion
--- rt_servicestateevents
 
 
 --
@@ -22,23 +21,6 @@ CREATE TABLE rt_schemaversion (
   version int NOT NULL
 );
 INSERT INTO rt_schemaversion (software, version) VALUES ('centreon-broker', 3);
-
-
---
---  Service states.
---
-CREATE TABLE rt_servicestateevents (
-  host_id int NOT NULL,
-  service_id int NOT NULL,
-  start_time int NOT NULL,
-
-  ack_time int default NULL,
-  end_time int default NULL,
-  in_downtime char(1) default NULL,
-  state int default NULL,
-
-  UNIQUE (host_id, service_id, start_time)
-);
 
 
 --
