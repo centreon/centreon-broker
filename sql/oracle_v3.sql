@@ -8,7 +8,6 @@
 -- ------------------------------------
 
 -- log_data_bin
--- rt_hoststateevents
 -- rt_index_data
 -- rt_metrics
 -- rt_schemaversion
@@ -23,22 +22,6 @@ CREATE TABLE rt_schemaversion (
   version int NOT NULL
 );
 INSERT INTO rt_schemaversion (software, version) VALUES ('centreon-broker', 3);
-
-
---
---  Host states.
---
-CREATE TABLE rt_hoststateevents (
-  host_id int NOT NULL,
-  start_time int NOT NULL,
-
-  ack_time int default NULL,
-  end_time int default NULL,
-  in_downtime char(1) default NULL,
-  state int default NULL,
-
-  UNIQUE (host_id, start_time)
-);
 
 
 --
