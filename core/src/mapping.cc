@@ -1097,37 +1097,21 @@ static mapped_data<host_dependency> const host_dependency_mapping[] = {
 // host_group members mapping.
 static mapped_data<host_group> const host_group_mapping[] = {
   mapped_data<host_group>(
-    &host_group::action_url,
-    NDO_DATA_ACTIONURL,
-    "action_url"),
-  mapped_data<host_group>(
-    &host_group::alias,
-    NDO_DATA_HOSTGROUPALIAS,
-    "alias"),
-  mapped_data<host_group>(
     &host_group::enabled,
     NDO_DATA_FIXED,
-    "enabled"),
+    NULL),
   mapped_data<host_group>(
     &host_group::instance_id,
     NDO_DATA_INSTANCE,
-    "instance_id",
+    NULL,
     NULL_ON_ZERO),
   mapped_data<host_group>(
     &host_group::name,
     NDO_DATA_HOSTGROUPNAME,
     "name"),
   mapped_data<host_group>(
-    &host_group::notes,
-    NDO_DATA_NOTES,
-    "notes"),
-  mapped_data<host_group>(
-    &host_group::notes_url,
-    NDO_DATA_NOTESURL,
-    "notes_url"),
-  mapped_data<host_group>(
     &host_group::id,
-    0,
+    NDO_DATA_HOSTID,
     "hostgroup_id"),
   mapped_data<host_group>()
 };
@@ -1139,13 +1123,18 @@ static mapped_data<host_group_member> const host_group_member_mapping[] = {
     NDO_DATA_FIXED,
     NULL),
   mapped_data<host_group_member>(
-    &host_group_member::group_id, // XXX : should be replaced by hostgroup_id
+    &host_group_member::group_id,
     NDO_DATA_HOSTGROUPNAME,
     "hostgroup_id"),
   mapped_data<host_group_member>(
+    &host_group_member::group_name,
+    NDO_DATA_HOST,
+    NULL),
+  mapped_data<host_group_member>(
     &host_group_member::instance_id,
     NDO_DATA_INSTANCE,
-    "instance_id"),
+    NULL,
+    NULL_ON_ZERO),
   mapped_data<host_group_member>(
     &host_group_member::host_id,
     NDO_DATA_HOSTGROUPMEMBER,
@@ -2250,37 +2239,21 @@ static mapped_data<service_dependency> const service_dependency_mapping[] = {
 // service_group members mapping.
 static mapped_data<service_group> const service_group_mapping[] = {
   mapped_data<service_group>(
-    &service_group::action_url,
-    NDO_DATA_ACTIONURL,
-    "action_url"),
-  mapped_data<service_group>(
-    &service_group::alias,
-    NDO_DATA_SERVICEGROUPALIAS,
-    "alias"),
-  mapped_data<service_group>(
     &service_group::enabled,
     NDO_DATA_FIXED,
-    "enabled"),
+    NULL),
   mapped_data<service_group>(
     &service_group::instance_id,
     NDO_DATA_INSTANCE,
-    "instance_id",
+    NULL,
     NULL_ON_ZERO),
   mapped_data<service_group>(
     &service_group::name,
     NDO_DATA_SERVICEGROUPNAME,
     "name"),
   mapped_data<service_group>(
-    &service_group::notes,
-    NDO_DATA_NOTES,
-    "notes"),
-  mapped_data<service_group>(
-    &service_group::notes_url,
-    NDO_DATA_NOTESURL,
-    "notes_url"),
-  mapped_data<service_group>(
     &service_group::id,
-    0,
+    NDO_DATA_SERVICEID,
     "servicegroup_id"),
   mapped_data<service_group>()
 };
@@ -2294,7 +2267,12 @@ static mapped_data<service_group_member> const service_group_member_mapping[] = 
   mapped_data<service_group_member>(
     &service_group_member::group_id,
     NDO_DATA_SERVICEGROUPNAME,
-    "servicegroup_id"),
+    "servicegroup_id",
+    NULL_ON_ZERO),
+  mapped_data<service_group_member>(
+    &service_group_member::group_name,
+    NDO_DATA_HOST,
+    NULL),
   mapped_data<service_group_member>(
     &service_group_member::host_id,
     NDO_DATA_HOST,
@@ -2303,7 +2281,8 @@ static mapped_data<service_group_member> const service_group_member_mapping[] = 
   mapped_data<service_group_member>(
     &service_group_member::instance_id,
     NDO_DATA_INSTANCE,
-    "instance_id"),
+    NULL,
+    NULL_ON_ZERO),
   mapped_data<service_group_member>(
     &service_group_member::service_id,
     NDO_DATA_SERVICEGROUPMEMBER,

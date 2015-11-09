@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014-2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -24,6 +24,11 @@
 
 CCB_BEGIN()
 
+// Forward declaration.
+namespace             config {
+  class               endpoint;
+}
+
 /**
  *  @class database_config database_config.hh "com/centreon/broker/database_config.hh"
  *  @brief Database configuration.
@@ -42,6 +47,7 @@ public:
                         std::string const& name,
                         int queries_per_transaction = 1,
                         bool check_replication = true);
+                      database_config(config::endpoint const& cfg);
                       database_config(database_config const& other);
                       ~database_config();
   database_config&    operator=(database_config const& other);

@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Centreon
+** Copyright 2012-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -32,13 +32,9 @@ int main() {
   neb::service_group sgrp;
 
   // Check.
-  return ((sgrp.action_url != "")
-          || (sgrp.alias != "")
-          || (sgrp.enabled != true)
+  return ((sgrp.enabled != true)
           || (sgrp.instance_id != 0)
           || (sgrp.name != "")
-          || (sgrp.notes != "")
-          || (sgrp.notes_url != "")
           || (sgrp.type()
               != io::events::data_type<io::events::neb, neb::de_service_group>::value));
 }

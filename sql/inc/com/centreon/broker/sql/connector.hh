@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Centreon
+** Copyright 2011-2012,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 #  define CCB_SQL_CONNECTOR_HH
 
 #  include <QString>
+#  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -35,37 +36,23 @@ namespace                        sql {
   class                          connector : public io::endpoint {
   public:
                                  connector();
-                                 connector(connector const& c);
+                                 connector(connector const& other);
                                  ~connector();
-    connector&                   operator=(connector const& c);
+    connector&                   operator=(connector const& other);
     io::endpoint*                clone() const;
     void                         close();
     void                         connect_to(
-                                   QString const& type,
-                                   QString const& host,
-                                   unsigned short port,
-                                   QString const& user,
-                                   QString const& password,
-                                   QString const& db,
-                                   unsigned int queries_per_transaction = 1,
+                                   database_config const& dbcfg,
                                    unsigned int cleanup_check_interval = 0,
                                    unsigned int instance_timeout = 15,
-                                   bool check_replication = true,
                                    bool with_state_events = false);
     misc::shared_ptr<io::stream> open();
     misc::shared_ptr<io::stream> open(QString const& id);
 
   private:
-    bool                         _check_replication;
     unsigned int                 _cleanup_check_interval;
-    QString                      _db;
-    QString                      _host;
+    database_config              _dbcfg;
     unsigned int                 _instance_timeout;
-    QString                      _password;
-    unsigned short               _port;
-    unsigned int                 _queries_per_transaction;
-    QString                      _type;
-    QString                      _user;
     bool                         _with_state_events;
   };
 }

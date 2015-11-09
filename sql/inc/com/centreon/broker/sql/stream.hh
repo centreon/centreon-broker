@@ -44,16 +44,9 @@ namespace          sql {
   class            stream : public io::stream {
   public:
                    stream(
-                     std::string const& type,
-                     std::string const& host,
-                     unsigned short port,
-                     std::string const& user,
-                     std::string const& password,
-                     std::string const& db,
-                     unsigned int queries_per_transaction,
+                     database_config const& dbcfg,
                      unsigned int cleanup_check_interval,
                      unsigned int instance_timeout,
-                     bool check_replication,
                      bool with_state_events);
                    ~stream();
     static void    initialize();
@@ -137,6 +130,8 @@ namespace          sql {
     database_query _custom_variable_status_update;
     database_query _downtime_insert;
     database_query _downtime_update;
+    database_query _empty_host_group_delete;
+    database_query _empty_service_group_delete;
     database_query _event_handler_insert;
     database_query _event_handler_update;
     database_query _flapping_status_insert;

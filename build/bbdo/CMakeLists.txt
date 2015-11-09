@@ -73,7 +73,7 @@ set(BBDO_MODULE_PATH "${BBDO_MODULE_PATH}" PARENT_SCOPE)
 
 # Testing.
 if (WITH_TESTING)
-  set(TEST_LIBRARIES "${NEB}" "${BAM}" "${DUMPER}" "${CORRELATION}" "${STORAGE}" "${FILE}" "${BBDO}" "roker")
+  set(TEST_LIBRARIES "${BBDO}" "${NEB}" "${BAM}" "${DUMPER}" "${CORRELATION}" "${STORAGE}" "${FILE}" "${BBDO}" "roker")
 
   #   Read events test.
   set(TEST_NAME "bbdo_read")

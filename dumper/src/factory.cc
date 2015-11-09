@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -146,21 +146,10 @@ io::endpoint* factory::new_endpoint(
   if ((type == opener::db_cfg_reader)
       || (type == opener::db_cfg_writer)) {
     // DB parameters.
-    std::string db_type(find_param(cfg, "db_type").toStdString());
-    std::string host(find_param(cfg, "db_host").toStdString());
-    unsigned short port(find_param(cfg, "db_port").toUInt());
-    std::string user(find_param(cfg, "db_user").toStdString());
-    std::string password(find_param(cfg, "db_password").toStdString());
-    std::string db_name(find_param(cfg, "db_name").toStdString());
+    database_config dbcfg(cfg);
 
     // Set opener properties.
-    openr->set_db(database_config(
-                    db_type,
-                    host,
-                    port,
-                    user,
-                    password,
-                    db_name));
+    openr->set_db(dbcfg);
   }
   // Filesystem dumpers.
   else {

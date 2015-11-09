@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Centreon
+** Copyright 2011-2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -142,25 +142,7 @@ io::endpoint* factory::new_endpoint(
   unsigned int rrd_length(find_param(cfg, "length").toUInt());
 
   // Find storage DB parameters.
-  database_config db_cfg;
-  db_cfg.set_type(find_param(cfg, "db_type").toStdString());
-  db_cfg.set_host(find_param(cfg, "db_host").toStdString());
-  db_cfg.set_port(find_param(cfg, "db_port").toUShort());
-  db_cfg.set_user(find_param(cfg, "db_user").toStdString());
-  db_cfg.set_password(find_param(cfg, "db_password").toStdString());
-  db_cfg.set_name(find_param(cfg, "db_name").toStdString());
-
-  // Transaction size.
-  unsigned int queries_per_transaction(0);
-  {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("queries_per_transaction"));
-    if (it != cfg.params.end())
-      queries_per_transaction = it.value().toUInt();
-    else
-      queries_per_transaction = 1000;
-  }
-  db_cfg.set_queries_per_transaction(queries_per_transaction);
+  database_config db_cfg(cfg);
 
   // Rebuild check interval.
   unsigned int rebuild_check_interval(0);
@@ -172,16 +154,6 @@ io::endpoint* factory::new_endpoint(
     else
       rebuild_check_interval = 300;
   }
-
-  // Check replication status ?
-  bool check_replication(true);
-  {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("check_replication"));
-    if (it != cfg.params.end())
-      check_replication = config::parser::parse_boolean(*it);
-  }
-  db_cfg.set_check_replication(check_replication);
 
   // Store or not in data_bin.
   bool store_in_data_bin(true);

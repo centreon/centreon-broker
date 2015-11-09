@@ -11,6 +11,10 @@ software are available as RPM packages.
 Alternatively, you can build and install your own version of this
 software by following the :ref:`user_installation_using_sources`.
 
+Before installing the software, please make sure that your platform is
+up to date, especially when using virtualization tools (VMware drivers
+notably).
+
 **************
 Using packages
 **************

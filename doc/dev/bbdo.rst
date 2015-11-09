@@ -117,8 +117,8 @@ Flapping status        7
 Host                   8
 Host check             9
 Host dependency        10
-Host group             11
-Host group member      27
+Host group             27
+Host group member      28
 Host parent            13
 Host status            14
 Instance               15
@@ -129,11 +129,13 @@ Notification           19
 Service                20
 Service check          21
 Service dependency     22
-Service group          23
-Service group member   28
+Service group          29
+Service group member   30
 Service status         25
 Instance configuration 26
+Deprecated             11
 Deprecated             12
+Deprecated             23
 Deprecated             24
 ====================== =====
 

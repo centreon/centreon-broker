@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Centreon
+** Copyright 2009-2012.2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -35,11 +35,11 @@ neb::group_member::group_member()
 /**
  *  Copy constructor.
  *
- *  @param[in] gm Object to copy.
+ *  @param[in] other  Object to copy.
  */
-neb::group_member::group_member(group_member const& gm)
-  : io::data(gm) {
-  _internal_copy(gm);
+neb::group_member::group_member(group_member const& other)
+  : io::data(other) {
+  _internal_copy(other);
 }
 
 /**
@@ -50,13 +50,16 @@ neb::group_member::~group_member() {}
 /**
  *  Assignement operator.
  *
- *  @param[in] gm Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-neb::group_member& neb::group_member::operator=(group_member const& gm) {
-  io::data::operator=(gm);
-  _internal_copy(gm);
+neb::group_member& neb::group_member::operator=(
+                                        group_member const& other) {
+  if (this != &other) {
+    io::data::operator=(other);
+    _internal_copy(other);
+  }
   return (*this);
 }
 
@@ -72,11 +75,12 @@ neb::group_member& neb::group_member::operator=(group_member const& gm) {
  *  This method is used by the copy constructor and the assignment
  *  operator.
  *
- *  @param[in] gm Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void neb::group_member::_internal_copy(group_member const& gm) {
-  enabled = gm.enabled;
-  group_id = gm.group_id;
-  host_id = gm.host_id;
-    return ;
+void neb::group_member::_internal_copy(group_member const& other) {
+  enabled = other.enabled;
+  group_id = other.group_id;
+  group_name = other.group_name;
+  host_id = other.host_id;
+  return ;
 }
