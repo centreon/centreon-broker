@@ -43,6 +43,17 @@ namespace           bbdo {
     void            statistics(io::properties& tree) const;
     unsigned int    write(misc::shared_ptr<io::data> const& d);
 
+    // XXX:
+    // This method is used by bbdo::acceptor to properly manage the closing
+    // of tcp sockets in one peer retention mode. Tcp sockets must be closed
+    // before the tcp acceptor, so the tcp acceptor wait for tcp sockets exit.
+    // This works well when sockets and acceptor live in different threads.
+    // This isn't the case in one peer retention mode.
+    //
+    // In one peer retention mode, we close the tcp sockets explicitely
+    // using this method.
+    void            close_underlying_streams();
+
   private:
     bool            _input_read;
     bool            _output_write;

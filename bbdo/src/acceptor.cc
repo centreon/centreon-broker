@@ -83,6 +83,7 @@ acceptor::acceptor(
 acceptor::acceptor(acceptor const& right)
   : QObject(),
     io::endpoint(right),
+    _one_peer_stream(right._one_peer_stream),
     _coarse(right._coarse),
     _extensions(right._extensions),
     _is_out(right._is_out),
@@ -116,6 +117,7 @@ acceptor::~acceptor() {
 acceptor& acceptor::operator=(acceptor const& right) {
   if (this != &right) {
     io::endpoint::operator=(right);
+    _one_peer_stream = right._one_peer_stream;
     _coarse = right._coarse;
     _extensions = right._extensions;
     _is_out = right._is_out;
@@ -143,6 +145,10 @@ io::endpoint* acceptor::clone() const {
  *  Close the acceptor.
  */
 void acceptor::close() {
+  if (!_one_peer_stream.isNull()) {
+    _one_peer_stream->close_underlying_streams();
+  }
+
   {
     QMutexLocker lock(&_clientsm);
     for (QList<QThread*>::iterator it = _clients.begin(), end = _clients.end();
@@ -177,6 +183,7 @@ misc::shared_ptr<io::stream> acceptor::open() {
         my_bbdo->read_from(s);
         my_bbdo->write_to(s);
         _negociate_features(s, my_bbdo);
+        _one_peer_stream = my_bbdo;
         return (my_bbdo);
       }
     }
@@ -218,6 +225,7 @@ misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
         my_bbdo->read_from(s);
         my_bbdo->write_to(s);
         _negociate_features(s, my_bbdo);
+        _one_peer_stream = my_bbdo;
         return (my_bbdo);
       }
     }

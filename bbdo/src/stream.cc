@@ -19,6 +19,7 @@
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/raw.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
@@ -122,4 +123,29 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
   else
     input::write(d);
   return (1);
+}
+
+/**
+ *  @brief Close the underlying streams.
+ *
+ *  We read for from and read to to.
+ *  This is used to ensure that the streams are properly deinitialized.
+ *
+ *  Yes, this is a ad hoc solution.
+ */
+void stream::close_underlying_streams() {
+  misc::shared_ptr<io::data> d;
+  if (!_from.isNull()) {
+    _from->process(false, false);
+    try {
+      _from->read(d);
+    } catch (...) {}
+  }
+  if (!_to.isNull()) {
+    _to->process(false, false);
+    try {
+      d = misc::shared_ptr<io::data>(new io::raw);
+      _to->write(d);
+    } catch (...) {}
+  }
 }
