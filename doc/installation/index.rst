@@ -266,7 +266,7 @@ installed run this ::
   $ git clone https://github.com/centreon/centreon-broker
 
 Or You can get the latest Centreon Broker's sources from its
-`download website <http://www.centreon.com/Centreon-Extensions/centreon-broker-download.html>`_
+`download website <http://download.centreon.com/>`_
 Once downloaded, extract it ::
 
   $ tar xzf centreon-broker.tar.gz
