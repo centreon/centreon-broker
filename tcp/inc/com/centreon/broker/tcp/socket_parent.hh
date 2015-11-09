@@ -41,8 +41,8 @@ namespace          tcp {
   public:
     virtual        ~socket_parent() {}
 
-    virtual void   add_child(stream& child) = 0;
-    virtual void   remove_child(stream& child) = 0;
+    virtual void   add_child(tcp::stream& child) = 0;
+    virtual void   remove_child(tcp::stream& child) = 0;
   };
 }
 

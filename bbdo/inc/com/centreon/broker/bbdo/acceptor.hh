@@ -102,6 +102,8 @@ namespace               com {
           QMutex        _clientsm;
           QList<QThread*>
                         _clients;
+          misc::shared_ptr<bbdo::stream>
+                        _one_peer_stream;
           bool          _coarse;
           QString       _extensions;
           bool          _is_out;

@@ -171,7 +171,7 @@ void connector::set_write_timeout(int secs) {
  *  Associate a child stream with the connector.
  *  @param[in] child  The child stream to associate.
  */
-void connector::add_child(stream& child) {
+void connector::add_child(tcp::stream& child) {
   if (_child)
     _child->close();
   _child = &child;
@@ -181,7 +181,7 @@ void connector::add_child(stream& child) {
  *  Remove a child stream associated with the connector.
  *  @param[in] child  The child stream to remove.
  */
-void connector::remove_child(stream& child) {
+void connector::remove_child(tcp::stream& child) {
   QMutexLocker lock(&_mutex);
   if (_child == &child)
     _child = NULL;

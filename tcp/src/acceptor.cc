@@ -57,7 +57,7 @@ acceptor::~acceptor() {
  *
  *  @param[in] child  Child name.
  */
-void acceptor::add_child(stream& child) {
+void acceptor::add_child(tcp::stream& child) {
   _children.push_back(&child);
   return ;
 }
@@ -179,7 +179,7 @@ misc::shared_ptr<io::stream> acceptor::open(QString const& id) {
  *
  *  @param[in] child  Child to remove.
  */
-void acceptor::remove_child(stream& child) {
+void acceptor::remove_child(tcp::stream& child) {
   QMutexLocker lock(&_childrenm);
   for (std::list<stream*>::iterator
          it(_children.begin()),
