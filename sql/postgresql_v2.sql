@@ -11,7 +11,6 @@
 -- downtimes
 -- eventhandlers
 -- flappingstatuses
--- hosts_hosts_dependencies
 -- hosts_hosts_parents
 -- hoststateevents
 -- index_data
@@ -32,25 +31,6 @@ CREATE TABLE schemaversion (
   version int NOT NULL
 );
 INSERT INTO schemaversion (software, version) VALUES ('centreon-broker', 2);
-
-
---
--- Hosts dependencies.
---
-CREATE TABLE hosts_hosts_dependencies (
-  dependent_host_id int NOT NULL,
-  host_id int NOT NULL,
-
-  dependency_period varchar(75) default NULL,
-  execution_failure_options varchar(15) default NULL,
-  inherits_parent boolean default NULL,
-  notification_failure_options varchar(15) default NULL,
-
-  FOREIGN KEY (dependent_host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE
-);
 
 
 --

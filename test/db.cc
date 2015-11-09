@@ -135,6 +135,7 @@ db::db(
   add_db_script(tables, "hosts", db_dir_v2);
   add_db_script(tables, "hostgroups", db_dir_v2);
   add_db_script(tables, "hosts_hostgroups", db_dir_v2);
+  add_db_script(tables, "hosts_hosts_dependencies", db_dir_v2);
   add_db_script(tables, "services", db_dir_v2);
   add_db_script(tables, "servicegroups", db_dir_v2);
   add_db_script(tables, "services_servicegroups", db_dir_v2);
@@ -144,6 +145,7 @@ db::db(
   db_dir_v3.append("_v3");
   add_db_script(tables, "rt_instances", db_dir_v3);
   add_db_script(tables, "rt_hosts", db_dir_v3);
+  add_db_script(tables, "rt_hosts_hosts_dependencies", db_dir_v3);
   add_db_script(tables, "rt_services", db_dir_v3);
   add_db_script(tables, "log_logs", db_dir_v3);
   add_db_script(tables, "rt_modules", db_dir_v3);
