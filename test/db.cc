@@ -151,6 +151,7 @@ db::db(
   add_db_script(tables, "logs", db_dir_v2);
   add_db_script(tables, "modules", db_dir_v2);
   add_db_script(tables, "notifications", db_dir_v2);
+  add_db_script(tables, "index_data", db_dir_v2);
   std::string db_dir_v3(db_dir);
   db_dir_v3.append("_v3");
   add_db_script(tables, "rt_instances", db_dir_v3);
@@ -169,6 +170,7 @@ db::db(
   add_db_script(tables, "rt_servicestateevents", db_dir_v3);
   add_db_script(tables, "rt_modules", db_dir_v3);
   add_db_script(tables, "rt_notifications", db_dir_v3);
+  add_db_script(tables, "rt_index_data", db_dir_v3);
 
   // Only include valid tables.
   if (include) {
