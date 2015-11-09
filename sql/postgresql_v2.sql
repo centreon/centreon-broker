@@ -11,7 +11,6 @@
 -- downtimes
 -- eventhandlers
 -- flappingstatuses
--- hosts_hosts_parents
 -- hoststateevents
 -- index_data
 -- issues
@@ -31,21 +30,6 @@ CREATE TABLE schemaversion (
   version int NOT NULL
 );
 INSERT INTO schemaversion (software, version) VALUES ('centreon-broker', 2);
-
-
---
--- Hosts parenting relationships.
---
-CREATE TABLE hosts_hosts_parents (
-  child_id int NOT NULL,
-  parent_id int NOT NULL,
-
-  UNIQUE (child_id, parent_id),
-  FOREIGN KEY (child_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (parent_id) REFERENCES hosts (host_id)
-    ON DELETE CASCADE
-);
 
 
 --
