@@ -733,6 +733,13 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
+  # Host dependencies table.
+  set(TEST_NAME "running_rtmonitoring_v2_hostdependencies")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/rtmonitoring/v2/hostdependencies.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
   # Services table.
   set(TEST_NAME "running_rtmonitoring_v2_services")
   add_executable("${TEST_NAME}"

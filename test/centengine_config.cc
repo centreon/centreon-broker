@@ -151,6 +151,10 @@ void centengine_config::host_depends_on(
   centengine_object obj(centengine_object::hostdependency_type);
   obj.set("dependent_host_name", dependent_host);
   obj.set("host_name", depended_host);
+  obj.set("dependency_period", "default_timeperiod");
+  obj.set("inherits_parent", "0");
+  obj.set("notification_failure_options", "a");
+  obj.set("execution_failure_options", "a");
   _host_deps.push_back(obj);
   return ;
 }
