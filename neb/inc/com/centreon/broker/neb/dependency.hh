@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ namespace        neb {
     QString      execution_failure_options;
     unsigned int host_id;
     bool         inherits_parent;
+    QString      notification_failure_options;
 
   private:
     void         _internal_copy(dependency const& dep);

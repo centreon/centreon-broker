@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -105,6 +105,12 @@ mapping::entry const host_dependency::entries[] = {
     &host_dependency::host_id,
     "host_id",
     mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &host_dependency::notification_failure_options,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notification_failure_options"),
   mapping::entry()
 };
 

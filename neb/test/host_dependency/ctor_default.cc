@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Centreon
+** Copyright 2012-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -38,9 +38,10 @@ int main() {
            || (hdep.dependency_period != "")
            || (hdep.dependent_host_id != 0)
            || (hdep.enabled != true)
-           || (hdep.execution_failure_options != "")
+           || !hdep.execution_failure_options.isEmpty()
            || (hdep.host_id != 0)
            || (hdep.inherits_parent != false)
+           || !hdep.notification_failure_options.isEmpty()
            || (hdep.type()
                != io::events::data_type<
                                 io::events::neb,

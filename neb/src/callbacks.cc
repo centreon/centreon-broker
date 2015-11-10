@@ -309,8 +309,21 @@ int neb::callback_dependency(int callback_type, void* data) {
       hst_dep->enabled = (nsadd->type != NEBTYPE_HOSTDEPENDENCY_DELETE);
       if (dep->dependency_period)
         hst_dep->dependency_period = dep->dependency_period;
-      // XXX if (dep->failure_options)
-      //   hst_dep->execution_failure_options = dep->failure_options;
+      {
+        QString options;
+        if (dep->fail_on_down)
+          options.append("d");
+        if (dep->fail_on_up)
+          options.append("o");
+        if (dep->fail_on_pending)
+          options.append("p");
+        if (dep->fail_on_unreachable)
+          options.append("u");
+        if (dep->dependency_type == NOTIFICATION_DEPENDENCY)
+          hst_dep->notification_failure_options = options;
+        else if (dep->dependency_type == EXECUTION_DEPENDENCY)
+          hst_dep->execution_failure_options = options;
+      }
       hst_dep->inherits_parent = dep->inherits_parent;
       logging::info(logging::low) << "callbacks: host " << dep_host_id
         << " depends on host " << host_id;
@@ -368,8 +381,23 @@ int neb::callback_dependency(int callback_type, void* data) {
         = (nsadd->type != NEBTYPE_SERVICEDEPENDENCY_DELETE);
       if (dep->dependency_period)
         svc_dep->dependency_period = dep->dependency_period;
-      // XXX if (dep->failure_options)
-      //   svc_dep->execution_failure_options = dep->failure_options;
+      {
+        QString options;
+        if (dep->fail_on_critical)
+          options.append("c");
+        if (dep->fail_on_ok)
+          options.append("o");
+        if (dep->fail_on_pending)
+          options.append("p");
+        if (dep->fail_on_unknown)
+          options.append("u");
+        if (dep->fail_on_warning)
+          options.append("w");
+        if (dep->dependency_type == NOTIFICATION_DEPENDENCY)
+          svc_dep->notification_failure_options = options;
+        else if (dep->dependency_type == EXECUTION_DEPENDENCY)
+          svc_dep->execution_failure_options = options;
+      }
       svc_dep->inherits_parent = dep->inherits_parent;
       logging::info(logging::low) << "callbacks: service ("
         << dep_host_id << ", " << dep_service_id

@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Centreon
+** Copyright 2012-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -38,9 +38,10 @@ int main() {
            || (sdep.dependency_period != "")
            || (sdep.dependent_host_id != 0)
            || (sdep.enabled != true)
-           || (sdep.execution_failure_options != "")
+           || !sdep.execution_failure_options.isEmpty()
            || (sdep.host_id != 0)
            || (sdep.inherits_parent != false)
+           || !sdep.notification_failure_options.isEmpty()
            || (sdep.service_id != 0)
            || (sdep.type()
                != io::events::data_type<
