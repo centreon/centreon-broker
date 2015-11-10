@@ -55,6 +55,20 @@ using namespace com::centreon::broker;
 // List of Nagios modules.
 extern nebmodule* neb_module_list;
 
+// Acknowledgement list.
+std::map<std::pair<unsigned int, unsigned int>, neb::acknowledgement>
+  neb::gl_acknowledgements;
+
+// Downtime list.
+struct   private_downtime_params {
+  time_t deletion_time;
+  time_t end_time;
+  bool   started;
+  time_t start_time;
+};
+// Unstarted downtimes.
+static umap<unsigned int, private_downtime_params> downtimes;
+
 // Load flags.
 int neb::gl_mod_flags(0);
 
@@ -66,6 +80,9 @@ static struct {
   unsigned int macro;
   int (* callback)(int, void*);
 } const gl_callbacks[] = {
+  { NEBCALLBACK_ACKNOWLEDGEMENT_DATA, &neb::callback_acknowledgement },
+  { NEBCALLBACK_COMMENT_DATA, &neb::callback_comment },
+  { NEBCALLBACK_DOWNTIME_DATA, &neb::callback_downtime },
   { NEBCALLBACK_EVENT_HANDLER_DATA, &neb::callback_event_handler },
   { NEBCALLBACK_EXTERNAL_COMMAND_DATA, &neb::callback_external_command },
   { NEBCALLBACK_FLAPPING_DATA, &neb::callback_flapping_status },
@@ -110,6 +127,141 @@ extern "C" void event_statistics(void* args) {
   // Avoid exception propagation in C code.
   catch (...) {}
   return ;
+}
+
+/**
+ *  @brief Function that process acknowledgement data.
+ *
+ *  This function is called by Nagios when some acknowledgement data are
+ *  available.
+ *
+ *  @param[in] callback_type Type of the callback
+ *                           (NEBCALLBACK_ACKNOWLEDGEMENT_DATA).
+ *  @param[in] data          A pointer to a nebstruct_acknowledgement_data
+ *                           containing the acknowledgement data.
+ *
+ *  @return 0 on success.
+ */
+int neb::callback_acknowledgement(int callback_type, void* data) {
+  // Log message.
+  logging::info(logging::medium)
+    << "callbacks: generating acknowledgement event";
+  (void)callback_type;
+
+  try {
+    // In/Out variables.
+    nebstruct_acknowledgement_data const* ack_data;
+    misc::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement);
+
+    // Fill output var.
+    ack_data = static_cast<nebstruct_acknowledgement_data*>(data);
+    ack->acknowledgement_type = ack_data->acknowledgement_type;
+    if (ack_data->author_name)
+      ack->author = ack_data->author_name;
+    if (ack_data->comment_data)
+      ack->comment = ack_data->comment_data;
+    ack->entry_time = time(NULL);
+    if (!ack_data->host_name)
+      throw (exceptions::msg() << "unnamed host");
+    ack->host_id = engine::get_host_id(ack_data->host_name);
+    if (ack->host_id == 0)
+      throw (exceptions::msg() << "could not find ID of host '"
+             << ack_data->host_name << "'");
+    if (ack_data->service_description) {
+      ack->service_id = engine::get_service_id(
+                                  ack_data->host_name,
+                                  ack_data->service_description);
+      if (ack->service_id == 0) {
+        throw (exceptions::msg() << "could not find ID of service ('"
+               << ack_data->host_name << "', '"
+               << ack_data->service_description << "')");
+      }
+    }
+    ack->poller_id = config::applier::state::instance().poller_id();
+    ack->is_sticky = ack_data->is_sticky;
+    ack->notify_contacts = ack_data->notify_contacts;
+    ack->persistent_comment = ack_data->persistent_comment;
+    ack->state = ack_data->state;
+    gl_acknowledgements[std::make_pair(ack->host_id, ack->service_id)]
+      = *ack;
+
+    // Send event.
+    gl_publisher.write(ack);
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium) << "callbacks: error occurred while"
+      " generating acknowledgement event: " << e.what();
+  }
+  // Avoid exception propagation in C code.
+  catch (...) {}
+  return (0);
+}
+
+/**
+ *  @brief Function that process comment data.
+ *
+ *  This function is called by Nagios when some comment data are available.
+ *
+ *  @param[in] callback_type Type of the callback (NEBCALLBACK_COMMENT_DATA).
+ *  @param[in] data          A pointer to a nebstruct_comment_data containing
+ *                           the comment data.
+ *
+ *  @return 0 on success.
+ */
+int neb::callback_comment(int callback_type, void* data) {
+  // Log message.
+  logging::info(logging::medium)
+    << "callbacks: generating comment event";
+  (void)callback_type;
+
+  try {
+    // In/Out variables.
+    nebstruct_comment_data const* comment_data;
+    misc::shared_ptr<neb::comment> comment(new neb::comment);
+
+    // Fill output var.
+    comment_data = static_cast<nebstruct_comment_data*>(data);
+    if (comment_data->author_name)
+      comment->author = comment_data->author_name;
+    if (comment_data->comment_data)
+      comment->data = comment_data->comment_data;
+    comment->comment_type = comment_data->type;
+    if (NEBTYPE_COMMENT_DELETE == comment_data->type)
+      comment->deletion_time = time(NULL);
+    comment->entry_time = comment_data->entry_time;
+    comment->entry_type = comment_data->entry_type;
+    comment->expire_time = comment_data->expire_time;
+    comment->expires = comment_data->expires;
+    if (!comment_data->host_name)
+      throw (exceptions::msg() << "unnamed host");
+    comment->host_id = engine::get_host_id(comment_data->host_name);
+    if (comment->host_id == 0)
+      throw (exceptions::msg() << "could not find ID of host '"
+             << comment_data->host_name << "'");
+    if (comment_data->service_description) {
+      comment->service_id = engine::get_service_id(
+                              comment_data->host_name,
+                              comment_data->service_description);
+      if (comment->service_id == 0)
+        throw (exceptions::msg() << "could not find ID of service ('"
+               << comment_data->host_name << "', '"
+               << comment_data->service_description << "')");
+    }
+    comment->poller_id = config::applier::state::instance().poller_id();
+    comment->internal_id = comment_data->comment_id;
+    comment->persistent = comment_data->persistent;
+    comment->source = comment_data->source;
+
+    // Send event.
+    gl_publisher.write(comment);
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium) << "callbacks: error occurred while"
+      " generating comment event: " << e.what();
+  }
+  // Avoid exception propagation in C code.
+  catch (...) {}
+  return (0);
 }
 
 /**
@@ -413,6 +565,97 @@ int neb::callback_dependency(int callback_type, void* data) {
 
   return (0);
 }
+
+/**
+ *  @brief Function that process downtime data.
+ *
+ *  This function is called by Nagios when some downtime data are available.
+ *
+ *  @param[in] callback_type Type of the callback (NEBCALLBACK_DOWNTIME_DATA).
+ *  @param[in] data          A pointer to a nebstruct_downtime_data containing
+ *                           the downtime data.
+ *
+ *  @return 0 on success.
+ */
+int neb::callback_downtime(int callback_type, void* data) {
+  // Log message.
+  logging::info(logging::medium)
+    << "callbacks: generating downtime event";
+  (void)callback_type;
+
+  try {
+    // In/Out variables.
+    nebstruct_downtime_data const* downtime_data;
+    misc::shared_ptr<neb::downtime> downtime(new neb::downtime);
+
+    // Fill output var.
+    downtime_data = static_cast<nebstruct_downtime_data*>(data);
+    if (downtime_data->author_name)
+      downtime->author = downtime_data->author_name;
+    if (downtime_data->comment_data)
+      downtime->comment = downtime_data->comment_data;
+    downtime->downtime_type = downtime_data->downtime_type;
+    downtime->duration = downtime_data->duration;
+    downtime->end_time = downtime_data->end_time;
+    downtime->entry_time = downtime_data->entry_time;
+    downtime->fixed = downtime_data->fixed;
+    if (!downtime_data->host_name)
+      throw (exceptions::msg() << "unnamed host");
+    downtime->host_id = engine::get_host_id(downtime_data->host_name);
+    if (downtime->host_id == 0)
+      throw (exceptions::msg() << "could not find ID of host '"
+             << downtime_data->host_name << "'");
+    if (downtime_data->service_description) {
+      downtime->service_id = engine::get_service_id(
+                               downtime_data->host_name,
+                               downtime_data->service_description);
+      if (downtime->service_id == 0)
+        throw (exceptions::msg() << "could not find ID of service ('"
+               << downtime_data->host_name << "', '"
+               << downtime_data->service_description << "')");
+    }
+    downtime->poller_id
+      = config::applier::state::instance().poller_id();
+    downtime->internal_id = downtime_data->downtime_id;
+    downtime->start_time = downtime_data->start_time;
+    downtime->triggered_by = downtime_data->triggered_by;
+    private_downtime_params& params(downtimes[downtime->internal_id]);
+    if ((NEBTYPE_DOWNTIME_ADD == downtime_data->type)
+        || (NEBTYPE_DOWNTIME_LOAD == downtime_data->type)) {
+      params.deletion_time = 0;
+      params.end_time = 0;
+      params.started = false;
+      params.start_time = 0;
+    }
+    else if (NEBTYPE_DOWNTIME_START == downtime_data->type) {
+      params.started = true;
+      params.start_time = downtime_data->timestamp.tv_sec;
+    }
+    else if (NEBTYPE_DOWNTIME_STOP == downtime_data->type) {
+      if (NEBATTR_DOWNTIME_STOP_CANCELLED == downtime_data->attr)
+        params.deletion_time = downtime_data->timestamp.tv_sec;
+      params.end_time = downtime_data->timestamp.tv_sec;
+    }
+    downtime->actual_start_time = params.start_time;
+    downtime->actual_end_time = params.end_time;
+    downtime->deletion_time = params.deletion_time;
+    downtime->was_cancelled = (downtime->deletion_time != 0);
+    downtime->was_started = params.started;
+    if (NEBTYPE_DOWNTIME_DELETE == downtime_data->type)
+      downtimes.erase(downtime->internal_id);
+
+    // Send event.
+    gl_publisher.write(downtime);
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium) << "callbacks: error occurred while"
+      "generating downtime event: " << e.what();
+  }
+  // Avoid exception propagation in C code.
+  catch (...) {}
+  return (0);
+}
+
 /**
  *  @brief Function that process event handler data.
  *
@@ -1146,6 +1389,26 @@ int neb::callback_host_status(int callback_type, void* data) {
 
     // Send event(s).
     gl_publisher.write(host_status);
+
+    // Acknowledgement event.
+    std::map<
+      std::pair<unsigned int, unsigned int>,
+      neb::acknowledgement>::iterator
+      it(gl_acknowledgements.find(
+           std::make_pair(host_status->host_id, 0u)));
+    if ((it != gl_acknowledgements.end())
+        && !host_status->acknowledged) {
+      if (!(!host_status->current_state // !(OK or (normal ack and NOK))
+            || (!it->second.is_sticky
+                && (host_status->current_state != it->second.state)))) {
+        misc::shared_ptr<neb::acknowledgement>
+          ack(new neb::acknowledgement(it->second));
+        ack->poller_id = config::applier::state::instance().poller_id();
+        ack->deletion_time = time(NULL);
+        gl_publisher.write(ack);
+      }
+      gl_acknowledgements.erase(it);
+    }
   }
   catch (std::exception const& e) {
     logging::error(logging::medium) << "callbacks: error occurred while"
@@ -1839,6 +2102,27 @@ int neb::callback_service_status(int callback_type, void* data) {
 
     // Send event(s).
     gl_publisher.write(service_status);
+
+    // Acknowledgement event.
+    std::map<
+      std::pair<unsigned int, unsigned int>,
+      neb::acknowledgement>::iterator
+      it(gl_acknowledgements.find(std::make_pair(
+                                         service_status->host_id,
+                                         service_status->service_id)));
+    if ((it != gl_acknowledgements.end())
+        && !service_status->acknowledged) {
+      if (!(!service_status->current_state // !(OK or (normal ack and NOK))
+            || (!it->second.is_sticky
+                && (service_status->current_state
+                    != it->second.state)))) {
+        misc::shared_ptr<neb::acknowledgement>
+          ack(new neb::acknowledgement(it->second));
+        ack->deletion_time = time(NULL);
+        gl_publisher.write(ack);
+      }
+      gl_acknowledgements.erase(it);
+    }
   }
   catch (std::exception const& e) {
     logging::error(logging::medium) << "callbacks: error occurred while"

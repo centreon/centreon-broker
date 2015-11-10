@@ -27,6 +27,7 @@ set(NEB_SOURCES
   # Sources.
   "${SRC_DIR}/acknowledgement.cc"
   "${SRC_DIR}/check.cc"
+  "${SRC_DIR}/comment.cc"
   "${SRC_DIR}/custom_variable.cc"
   "${SRC_DIR}/custom_variable_status.cc"
   "${SRC_DIR}/dependency.cc"
@@ -58,6 +59,7 @@ set(NEB_SOURCES
   # Headers.
   "${INC_DIR}/com/centreon/broker/neb/acknowledgement.hh"
   "${INC_DIR}/com/centreon/broker/neb/check.hh"
+  "${INC_DIR}/com/centreon/broker/neb/comment.hh"
   "${INC_DIR}/com/centreon/broker/neb/custom_variable.hh"
   "${INC_DIR}/com/centreon/broker/neb/custom_variable_status.hh"
   "${INC_DIR}/com/centreon/broker/neb/dependency.hh"

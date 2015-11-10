@@ -31,11 +31,16 @@
 #  include "com/centreon/broker/neb/callback.hh"
 
 CCB_BEGIN()
+
 namespace neb {
+  // Forward declaration.
+  class   acknowledgement;
+
   // Data elements.
   enum data_element {
     de_acknowledgement = 1,
     de_acknowledgement_removed,
+    de_comment,
     de_custom_variable,
     de_custom_variable_status,
     de_downtime,
@@ -64,15 +69,16 @@ namespace neb {
   // Configuration file.
   extern QString gl_configuration_file;
 
-  extern unsigned int instance_id;
-  extern QString      instance_name;
-
   // Sender object.
   extern multiplexing::publisher gl_publisher;
 
   // Registered callbacks.
   extern std::list<misc::shared_ptr<neb::callback> >
     gl_registered_callbacks;
+
+  // Acknowledgement list.
+  extern std::map<std::pair<unsigned int, unsigned int>, neb::acknowledgement>
+    gl_acknowledgements;
 }
 
 CCB_END()

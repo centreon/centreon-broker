@@ -20,6 +20,7 @@
 #  define CCB_NEB_EVENTS_HH
 
 #  include "com/centreon/broker/neb/acknowledgement.hh"
+#  include "com/centreon/broker/neb/comment.hh"
 #  include "com/centreon/broker/neb/custom_variable.hh"
 #  include "com/centreon/broker/neb/custom_variable_status.hh"
 #  include "com/centreon/broker/neb/downtime.hh"
