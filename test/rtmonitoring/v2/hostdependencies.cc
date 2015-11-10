@@ -64,7 +64,7 @@ static void postcheck(
 }
 
 /**
- *  Check that the instances table work properly.
+ *  Check that the host dependencies table work properly.
  *
  *  @return EXIT_SUCCESS on success.
  */
@@ -128,7 +128,7 @@ int main() {
     // Check default entry.
     precheck("dependent_host_id, host_id");
     engine.start();
-    test::sleep_for(183274);
+    test::sleep_for(2);
     test::predicate expected[][6] = {
       { 1, 2, "default_timeperiod", "", false, "dopu" },
       { 1, 2, "default_timeperiod", "dopu", false, "" },
