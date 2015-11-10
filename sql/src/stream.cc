@@ -1071,36 +1071,57 @@ void stream::_process_host_parent(
   // Log message.
   neb::host_parent const&
     hp(*static_cast<neb::host_parent const*>(e.data()));
-  logging::info(logging::medium)
-    << "SQL: processing host parent (host: " << hp.host_id << ", parent: "
-    << hp.parent_id << ")";
 
-  // Prepare queries.
-  if (!_host_parent_insert.prepared()
-      || !_host_parent_select.prepared()) {
-    database_preparator dbp(neb::host_parent::static_type());
-    dbp.prepare_insert(_host_parent_insert);
-    _prepare_select<neb::host_parent>(
-      _host_parent_select,
-      ((_db.schema_version() == database::v2)
-       ? "hosts_hosts_parents"
-       : "rt_hosts_hosts_parents"));
+  // Enable parenting.
+  if (hp.enabled) {
+    logging::info(logging::medium) << "SQL: host " << hp.parent_id
+      << " is parent of host " << hp.host_id;
+
+    // Prepare queries.
+    if (!_host_parent_insert.prepared()
+        || !_host_parent_select.prepared()) {
+      database_preparator dbp(neb::host_parent::static_type());
+      dbp.prepare_insert(_host_parent_insert);
+      _prepare_select<neb::host_parent>(
+        _host_parent_select,
+        ((_db.schema_version() == database::v2)
+         ? "hosts_hosts_parents"
+         : "rt_hosts_hosts_parents"));
+    }
+
+    // Insert.
+    try {
+      _host_parent_select << hp;
+      _host_parent_select.run_statement();
+      if (_host_parent_select.size() == 1)
+        return ;
+
+      _host_parent_insert << hp;
+      _host_parent_insert.run_statement();
+    }
+    catch (std::exception const& e) {
+      logging::error(logging::high)
+        << "SQL: could not process host parent declaration: "
+        << e.what();
+    }
   }
+  // Disable parenting.
+  else {
+    logging::info(logging::medium) << "SQL: host " << hp.parent_id
+      << " is not parent of host " << hp.host_id << " anymore";
 
-  // Insert.
-  try {
-    _host_parent_select << hp;
-    _host_parent_select.run_statement();
-    if (_host_parent_select.size() == 1)
-      return ;
+    // Prepare queries.
+    if (!_host_parent_delete.prepared()) {
+      database_preparator::event_unique unique;
+      unique.insert("child_id");
+      unique.insert("parent_id");
+      database_preparator dbp(neb::host_parent::static_type(), unique);
+      dbp.prepare_delete(_host_parent_delete);
+    }
 
-    _host_parent_insert << hp;
-    _host_parent_insert.run_statement();
-  }
-  catch (std::exception const& e) {
-    logging::error(logging::high)
-      << "SQL: could not process host parent declaration: "
-      << e.what();
+    // Delete.
+    _host_parent_delete << hp;
+    _host_parent_delete.run_statement("SQL");
   }
 
   return ;
@@ -2340,6 +2361,7 @@ stream::stream(
     _host_group_member_delete(_db),
     _host_parent_insert(_db),
     _host_parent_select(_db),
+    _host_parent_delete(_db),
     _host_state_insert(_db),
     _host_state_update(_db),
     _host_status_update(_db),

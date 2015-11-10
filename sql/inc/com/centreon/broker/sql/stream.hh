@@ -138,6 +138,7 @@ namespace          sql {
     database_query _host_group_member_delete;
     database_query _host_parent_insert;
     database_query _host_parent_select;
+    database_query _host_parent_delete;
     database_query _host_state_insert;
     database_query _host_state_update;
     database_query _host_status_update;
