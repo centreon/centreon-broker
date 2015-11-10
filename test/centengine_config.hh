@@ -19,8 +19,8 @@
 #ifndef CCB_TEST_CENTENGINE_CONFIG_HH
 #  define CCB_TEST_CENTENGINE_CONFIG_HH
 
-#  include <list>
 #  include <map>
+#  include <vector>
 #  include "com/centreon/broker/namespace.hh"
 #  include "test/centengine_object.hh"
 
@@ -32,7 +32,7 @@ namespace              test {
    */
   class                centengine_config {
   public:
-    typedef std::list<centengine_object> objlist;
+    typedef std::vector<centengine_object> objlist;
 
                        centengine_config();
                        ~centengine_config();
