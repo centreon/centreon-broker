@@ -34,6 +34,9 @@ centengine_config::centengine_config() {
   set_directive("command_file", "monitoring_engine.cmd");
   set_directive("command_check_interval", "-1");
   set_directive("state_retention_file", "");
+  set_directive("retain_state_information", "0");
+  set_directive("use_retained_program_state", "0");
+  set_directive("use_retained_scheduling_info", "0");
   set_directive("check_result_reaper_frequency", "1");
   // set_directive("debug_file", "monitoring_debug.log");
   // set_directive("debug_level", "-1");
