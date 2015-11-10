@@ -60,6 +60,7 @@ void (stream::* const stream::_neb_processing_table[])(misc::shared_ptr<io::data
   NULL,
   &stream::_process_acknowledgement,
   NULL,
+  NULL,
   &stream::_process_custom_variable,
   &stream::_process_custom_variable_status,
   &stream::_process_downtime,
