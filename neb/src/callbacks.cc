@@ -1403,7 +1403,6 @@ int neb::callback_host_status(int callback_type, void* data) {
                 && (host_status->current_state != it->second.state)))) {
         misc::shared_ptr<neb::acknowledgement>
           ack(new neb::acknowledgement(it->second));
-        ack->poller_id = config::applier::state::instance().poller_id();
         ack->deletion_time = time(NULL);
         gl_publisher.write(ack);
       }

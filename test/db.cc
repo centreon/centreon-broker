@@ -141,6 +141,8 @@ db::db(
   add_db_script(tables, "servicegroups", db_dir_v2);
   add_db_script(tables, "services_servicegroups", db_dir_v2);
   add_db_script(tables, "services_services_dependencies", db_dir_v2);
+  add_db_script(tables, "acknowledgements", db_dir_v2);
+  add_db_script(tables, "comments", db_dir_v2);
   add_db_script(tables, "downtimes", db_dir_v2);
   add_db_script(tables, "eventhandlers", db_dir_v2);
   add_db_script(tables, "flappingstatuses", db_dir_v2);
@@ -162,6 +164,7 @@ db::db(
   add_db_script(tables, "rt_hosts_hosts_parents", db_dir_v3);
   add_db_script(tables, "rt_services", db_dir_v3);
   add_db_script(tables, "rt_services_services_dependencies", db_dir_v3);
+  add_db_script(tables, "rt_acknowledgements", db_dir_v3);
   add_db_script(tables, "log_logs", db_dir_v3);
   add_db_script(tables, "rt_downtimes", db_dir_v3);
   add_db_script(tables, "rt_eventhandlers", db_dir_v3);
