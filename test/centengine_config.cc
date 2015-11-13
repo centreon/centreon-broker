@@ -264,7 +264,6 @@ void centengine_config::generate_services(int services_per_host) {
       new_service.set("service_description", description);
       new_service.set("host_name", it->get("host_name"));
       new_service.set("_SERVICE_ID", description);
-      new_service.set("_HOST_ID", it->get("_HOST_ID"));
       _services.push_back(new_service);
     }
   }
