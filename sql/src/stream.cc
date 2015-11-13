@@ -490,11 +490,6 @@ void stream::_process_custom_variable(
   neb::custom_variable const&
     cv(*static_cast<neb::custom_variable const*>(e.data()));
 
-  // Log message.
-  logging::info(logging::medium)
-    << "SQL: processing custom variable event (host: " << cv.host_id
-    << ", service: " << cv.service_id << ", name: " << cv.name << ")";
-
   // Prepare queries.
   if (!_custom_variable_insert.prepared()
       || !_custom_variable_update.prepared()
@@ -513,12 +508,18 @@ void stream::_process_custom_variable(
 
   // Processing.
   if (cv.enabled) {
+    logging::info(logging::medium)
+      << "SQL: enabling custom variable '" << cv.name << "' of ("
+      << cv.host_id << ", " << cv.service_id << ")";
     _update_on_none_insert(
       _custom_variable_insert,
       _custom_variable_update,
       cv);
   }
   else {
+    logging::info(logging::medium)
+      << "SQL: disabling custom variable '" << cv.name << "' of ("
+      << cv.host_id << ", " << cv.service_id << ")";
     _custom_variable_delete.bind_value(":host_id", cv.host_id);
     _custom_variable_delete.bind_value(
       ":service_id",
