@@ -28,7 +28,7 @@ CREATE TABLE instances (
   notifications boolean default NULL,
   obsess_over_hosts boolean default NULL,
   obsess_over_services boolean default NULL,
-  outdated boolean default NULL,
+  outdated boolean NOT NULL default false,
   passive_host_checks boolean default NULL,
   passive_service_checks boolean default NULL,
   pid int default NULL,

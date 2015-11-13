@@ -70,6 +70,8 @@ static void postcheck(
   tpoints.store();
   expected[0][13]
     = test::predicate(tpoints.prelast(), tpoints.last() + 1);
+  expected[0][14]
+    = test::predicate(tpoints.prelast(), tpoints.last() + 1);
   db.check_content(check_query, expected);
   std::cout << "  passed\n";
   return ;
@@ -141,7 +143,9 @@ int main() {
     test::time_points tpoints;
 
     // Check default entry.
-    precheck(tpoints, "engine, last_alive, pid, running, start_time");
+    precheck(
+      tpoints,
+      "engine, last_alive, last_command_check, pid, running, start_time");
     engine.start();
     test::sleep_for(1);
     tpoints.store();
@@ -248,12 +252,6 @@ int main() {
 
     // Check version.
     precheck(tpoints, "version");
-    // XXX
-    // postcheck(engine, tpoints, db, expected);
-    std::cout << "  not tested\n";
-
-    // Check last_command_check.
-    precheck(tpoints, "last_command_check");
     // XXX
     // postcheck(engine, tpoints, db, expected);
     std::cout << "  not tested\n";

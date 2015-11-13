@@ -21,7 +21,7 @@ CREATE TABLE rt_instances (
   notifications char(1) default NULL,
   obsess_over_hosts char(1) default NULL,
   obsess_over_services char(1) default NULL,
-  outdated boolean default NULL,
+  outdated boolean NOT NULL default 0,
   pid int default NULL,
   running char(1) default NULL,
   start_time int default NULL,
