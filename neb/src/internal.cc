@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Centreon
+** Copyright 2011,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -28,10 +28,6 @@ using namespace com::centreon::broker;
 
 // Configuration file name.
 QString neb::gl_configuration_file;
-
-// Instance information.
-unsigned int neb::instance_id;
-QString      neb::instance_name;
 
 // Sender object.
 multiplexing::publisher neb::gl_publisher;

@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@ int main() {
   // Check.
   return (((hs.source_id != 0)
            || (hs.destination_id != 0)
+           || hs.acknowledged
+           || (hs.acknowledgement_type != 0)
            || hs.active_checks_enabled
            || !hs.check_command.isEmpty()
            || (fabs(hs.check_interval) > 0.0001)
@@ -41,6 +43,7 @@ int main() {
            || (hs.check_type != 0)
            || (hs.current_check_attempt != 0)
            || (hs.current_state != 4)
+           || (hs.downtime_depth != 0)
            || !hs.enabled
            || !hs.event_handler.isEmpty()
            || hs.event_handler_enabled
@@ -52,6 +55,7 @@ int main() {
            || (hs.last_check != 0)
            || (hs.last_hard_state != 4)
            || (hs.last_hard_state_change != 0)
+           || (hs.last_notification != 0)
            || (hs.last_state_change != 0)
            || (hs.last_time_down != 0)
            || (hs.last_time_unreachable != 0)
@@ -60,8 +64,13 @@ int main() {
            || (fabs(hs.latency) > 0.0001)
            || (hs.max_check_attempts != 0)
            || (hs.next_check != 0)
+           || (hs.next_notification != 0)
+           || hs.no_more_notifications
+           || (hs.notification_number != 0)
+           || hs.notifications_enabled
            || hs.obsess_over
            || !hs.output.isEmpty()
+           || hs.passive_checks_enabled
            || (fabs(hs.percent_state_change) > 0.0001)
            || !hs.perf_data.isEmpty()
            || (fabs(hs.retry_interval) > 0.0001)

@@ -25,7 +25,6 @@
 #include <QVariant>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "test/config.hh"
 #include "test/vars.hh"
 
 using namespace com::centreon::broker;

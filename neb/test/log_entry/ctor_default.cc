@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Centreon
+** Copyright 2012-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -37,16 +37,18 @@ int main() {
            || (le.destination_id != 0)
            || (le.c_time != 0)
            || (le.host_id != 0)
-           || (le.host_name != "")
+           || !le.host_name.isEmpty()
            || (le.issue_start_time != 0)
            || (le.log_type != 0)
-           || (le.msg_type != 0)
-           || (le.output != "")
-           || (le.poller_name != "")
+           || (le.msg_type != 5)
+           || !le.notification_cmd.isEmpty()
+           || !le.notification_contact.isEmpty()
+           || !le.output.isEmpty()
+           || !le.poller_name.isEmpty()
            || (le.retry != 0)
-           || (le.service_description != "")
+           || !le.service_description.isEmpty()
            || (le.service_id != 0)
-           || (le.status != 5)
+           || (le.status != 0)
            || (le.type()
                != io::events::data_type<
                                 io::events::neb,

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Centreon
+** Copyright 2009-2011,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ namespace               exceptions {
      */
     template            <typename T>
     msg&                operator<<(T t) {
-      misc::stringifier::operator<<(t);
+      *(misc::stringifier*)this << t;
       return (*this);
     }
   };
@@ -59,4 +59,4 @@ namespace               exceptions {
 
 CCB_END()
 
-#endif /* !CCB_EXCEPTIONS_MSG_HH_ */
+#endif // !CCB_EXCEPTIONS_MSG_HH

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -133,6 +133,12 @@ mapping::entry const service_dependency::entries[] = {
   mapping::entry(
     &service_dependency::inherits_parent,
     "inherits_parent"),
+  mapping::entry(
+    &service_dependency::notification_failure_options,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notification_failure_options"),
   mapping::entry(
     &service_dependency::service_id,
     "service_id",

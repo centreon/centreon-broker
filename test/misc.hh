@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Centreon
+** Copyright 2012-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,12 +16,19 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef TEST_MISC_HH
-#  define TEST_MISC_HH
+#ifndef CCB_TEST_MISC_HH
+#  define CCB_TEST_MISC_HH
 
 #  include <string>
+#  include "com/centreon/broker/namespace.hh"
 
-void recursive_remove(std::string const& dir_path);
-void sleep_for(unsigned int seconds);
+CCB_BEGIN()
 
-#endif // !TEST_MISC_HH
+namespace test {
+  void    recursive_remove(std::string const& dir_path);
+  void    sleep_for(int units);
+}
+
+CCB_END()
+
+#endif // !CCB_TEST_MISC_HH

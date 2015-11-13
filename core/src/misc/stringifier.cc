@@ -325,7 +325,7 @@ stringifier& stringifier::_insert(
 
   unsigned int size(static_cast<unsigned int>(ret + 1));
   if (size + _current > _size) {
-    if (!_realloc(size))
+    if (!_realloc(size + _current))
       return (*this);
     if ((ret = snprintf(_buffer + _current,
                         _size - _current,
@@ -404,7 +404,7 @@ stringifier& stringifier::_internal_copy(stringifier const& right) {
  *
  *  @return True on success, otherwise false.
  */
-bool stringifier::_realloc(unsigned int new_size) throw () {
+bool stringifier::_realloc(unsigned int new_size) {
   try {
     _size = (new_size > _size * 2 ? new_size : _size * 2);
     char* new_buffer(new char[_size]);

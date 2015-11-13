@@ -95,9 +95,10 @@ unsigned int custom_variable::static_type() {
  *
  *  @param[in] other  Object to copy.
  */
-void custom_variable::_internal_copy(custom_variable const& cv) {
-  enabled = cv.enabled;
-  var_type = cv.var_type;
+void custom_variable::_internal_copy(custom_variable const& other) {
+  default_value = other.default_value;
+  enabled = other.enabled;
+  var_type = other.var_type;
   return ;
 }
 
@@ -109,6 +110,9 @@ void custom_variable::_internal_copy(custom_variable const& cv) {
 
 // Mapping.
 mapping::entry const custom_variable::entries[] = {
+  mapping::entry(
+    &custom_variable::enabled,
+    NULL),
   mapping::entry(
     &custom_variable::host_id,
     "host_id",
@@ -134,7 +138,7 @@ mapping::entry const custom_variable::entries[] = {
     &custom_variable::value,
     "value"),
   mapping::entry(
-    &custom_variable::value,
+    &custom_variable::default_value,
     "default_value"),
   mapping::entry()
 };

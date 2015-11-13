@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -39,10 +39,10 @@ log_entry::log_entry()
     host_id(0),
     issue_start_time(0),
     log_type(0),
-    msg_type(0),
+    msg_type(5),
     retry(0),
     service_id(0),
-    status(5) {}
+    status(0) {}
 
 /**
  *  @brief Copy constructor.
@@ -115,6 +115,8 @@ void log_entry::_internal_copy(log_entry const& le) {
   issue_start_time = le.issue_start_time;
   log_type = le.log_type;
   msg_type = le.msg_type;
+  notification_cmd = le.notification_cmd;
+  notification_contact = le.notification_contact;
   output = le.output;
   poller_name = le.poller_name;
   retry = le.retry;
@@ -155,6 +157,18 @@ mapping::entry const log_entry::entries[] = {
   mapping::entry(
     &log_entry::msg_type,
     "msg_type"),
+  mapping::entry(
+    &log_entry::notification_cmd,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notification_cmd"),
+  mapping::entry(
+    &log_entry::notification_contact,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notification_contact"),
   mapping::entry(
     &log_entry::retry,
     "retry"),

@@ -22,6 +22,7 @@
 #include "com/centreon/broker/database_query.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 
 using namespace com::centreon::broker;
@@ -236,7 +237,7 @@ static void bind_uint_null_on_minus_one(
  *  @param[in] db  Database object.
  */
 database_query::database_query(database& db)
-  : _db(db), _q(db.get_qt_db()) {
+  : _db(db), _q(db.get_qt_db()), _prepared(false) {
   _q.setForwardOnly(true);
 }
 
@@ -488,6 +489,8 @@ bool database_query::next() {
 void database_query::prepare(
                        std::string const& query,
                        char const* error_msg) {
+  logging::debug(logging::medium)
+    << "core: preparing query: " << query;
   if (!_q.prepare(query.c_str())) {
     exceptions::msg e;
     if (error_msg)
@@ -495,7 +498,17 @@ void database_query::prepare(
     e << "could not prepare query: " << _q.lastError().text();
     throw (e);
   }
+  _prepared = true;
   return ;
+}
+
+/**
+ *  Check if query has been prepared.
+ *
+ *  @return True if query has been prepared.
+ */
+bool database_query::prepared() const {
+  return (_prepared);
 }
 
 /**

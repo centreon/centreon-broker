@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -34,6 +34,9 @@ int main() {
   // Check.
   return (((h.source_id != 0)
            || (h.destination_id != 0)
+           || h.acknowledged
+           || (h.acknowledgement_type != 0)
+           || !h.action_url.isEmpty()
            || h.active_checks_enabled
            || !h.address.isEmpty()
            || !h.alias.isEmpty()
@@ -47,10 +50,14 @@ int main() {
            || h.default_active_checks_enabled
            || h.default_event_handler_enabled
            || h.default_flap_detection_enabled
+           || h.default_notifications_enabled
+           || h.default_passive_checks_enabled
+           || (h.downtime_depth != 0)
            || !h.enabled
            || !h.event_handler.isEmpty()
            || h.event_handler_enabled
            || (fabs(h.execution_time) > 0.0001)
+           || (fabs(h.first_notification_delay) > 0.0001)
            || h.flap_detection_enabled
            || h.flap_detection_on_down
            || h.flap_detection_on_unreachable
@@ -60,10 +67,13 @@ int main() {
            || (fabs(h.high_flap_threshold) > 0.0001)
            || (h.host_id != 0)
            || !h.host_name.isEmpty()
+           || !h.icon_image.isEmpty()
+           || !h.icon_image_alt.isEmpty()
            || h.is_flapping
            || (h.last_check != 0)
            || (h.last_hard_state != 4)
            || (h.last_hard_state_change != 0)
+           || (h.last_notification != 0)
            || (h.last_state_change != 0)
            || (h.last_time_down != 0)
            || (h.last_time_unreachable != 0)
@@ -73,13 +83,33 @@ int main() {
            || (fabs(h.low_flap_threshold) > 0.0001)
            || (h.max_check_attempts != 0)
            || (h.next_check != 0)
+           || (h.next_notification != 0)
+           || h.no_more_notifications
+           || !h.notes.isEmpty()
+           || !h.notes_url.isEmpty()
+           || (h.notification_number != 0)
+           || h.notifications_enabled
+           || (fabs(h.notification_interval) > 0.0001)
+           || !h.notification_period.isEmpty()
+           || h.notify_on_down
+           || h.notify_on_downtime
+           || h.notify_on_flapping
+           || h.notify_on_recovery
+           || h.notify_on_unreachable
            || h.obsess_over
            || !h.output.isEmpty()
+           || h.passive_checks_enabled
            || (fabs(h.percent_state_change) > 0.0001)
            || !h.perf_data.isEmpty()
+           || h.retain_nonstatus_information
+           || h.retain_status_information
            || (fabs(h.retry_interval) > 0.0001)
            || h.should_be_scheduled
-           || (h.state_type != 0))
+           || h.stalk_on_down
+           || h.stalk_on_unreachable
+           || h.stalk_on_up
+           || (h.state_type != 0)
+           || !h.statusmap_image.isEmpty())
           ? EXIT_FAILURE
           : EXIT_SUCCESS);
 }

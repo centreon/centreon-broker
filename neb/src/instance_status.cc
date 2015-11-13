@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -35,12 +35,16 @@ using namespace com::centreon::broker::neb;
  *  Initialize members to 0, NULL or equivalent.
  */
 instance_status::instance_status()
-  : check_hosts_freshness(false),
+  : active_host_checks_enabled(false),
+    active_service_checks_enabled(false),
+    check_hosts_freshness(false),
     check_services_freshness(false),
-    last_alive(0),
-    last_command_check(0),
+    last_alive((time_t)-1),
+    last_command_check((time_t)-1),
     obsess_over_hosts(false),
     obsess_over_services(false),
+    passive_host_checks_enabled(false),
+    passive_service_checks_enabled(false),
     poller_id(0) {}
 
 /**
@@ -110,16 +114,18 @@ unsigned int instance_status::static_type() {
  *  @param[in] other  Object to copy.
  */
 void instance_status::_internal_copy(instance_status const& other) {
-  address = other.address;
+  active_host_checks_enabled = other.active_host_checks_enabled;
+  active_service_checks_enabled = other.active_service_checks_enabled;
   check_hosts_freshness = other.check_hosts_freshness;
   check_services_freshness = other.check_services_freshness;
-  description = other.description;
   global_host_event_handler = other.global_host_event_handler;
   global_service_event_handler = other.global_service_event_handler;
   last_alive = other.last_alive;
   last_command_check = other.last_command_check;
   obsess_over_hosts = other.obsess_over_hosts;
   obsess_over_services = other.obsess_over_services;
+  passive_host_checks_enabled = other.passive_host_checks_enabled;
+  passive_service_checks_enabled = other.passive_service_checks_enabled;
   poller_id = other.poller_id;
   return ;
 }
@@ -133,17 +139,23 @@ void instance_status::_internal_copy(instance_status const& other) {
 // Mapping.
 mapping::entry const instance_status::entries[] = {
   mapping::entry(
-    &instance_status::address,
-    "address"),
+    &instance_status::active_host_checks_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "active_host_checks"),
+  mapping::entry(
+    &instance_status::active_service_checks_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "active_service_checks"),
   mapping::entry(
     &instance_status::check_hosts_freshness,
     "check_hosts_freshness"),
   mapping::entry(
     &instance_status::check_services_freshness,
     "check_services_freshness"),
-  mapping::entry(
-    &instance_status::description,
-    "description"),
   mapping::entry(
     &instance_status::event_handler_enabled,
     "event_handlers"),
@@ -156,16 +168,36 @@ mapping::entry const instance_status::entries[] = {
     mapping::entry::invalid_on_zero),
   mapping::entry(
     &instance_status::last_alive,
-    "last_alive"),
+    "last_alive",
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &instance_status::last_command_check,
-    "last_command_check"),
+    "last_command_check",
+    mapping::entry::invalid_on_minus_one),
+  mapping::entry(
+    &instance_status::notifications_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notifications"),
   mapping::entry(
     &instance_status::obsess_over_hosts,
     "obsess_over_hosts"),
   mapping::entry(
     &instance_status::obsess_over_services,
     "obsess_over_services"),
+  mapping::entry(
+    &instance_status::passive_host_checks_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "passive_host_checks"),
+  mapping::entry(
+    &instance_status::passive_service_checks_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "passive_service_checks"),
   mapping::entry(
     &instance_status::global_host_event_handler,
     "global_host_event_handler"),

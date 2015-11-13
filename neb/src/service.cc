@@ -44,7 +44,7 @@ service::service() {
  *  Copy all members from service_status to the current instance and
  *  zero-initialize remaining members.
  *
- *  @param[in] ss Object to copy.
+ *  @param[in] ss  Object to copy.
  */
 service::service(service_status const& ss) : service_status(ss) {
   _zero_initialize();
@@ -56,11 +56,11 @@ service::service(service_status const& ss) : service_status(ss) {
  *  Copy all members of the given service object to the current
  *  instance.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] other  Object to copy.
  */
-service::service(service const& s)
-  : host_service(s), service_status(s) {
-  _internal_copy(s);
+service::service(service const& other)
+  : host_service(other), service_status(other) {
+  _internal_copy(other);
 }
 
 /**
@@ -74,14 +74,16 @@ service::~service() {}
  *  Copy all members of the given service object to the current
  *  instance.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-service& service::operator=(service const& s) {
-  host_service::operator=(s);
-  service_status::operator=(s);
-  _internal_copy(s);
+service& service::operator=(service const& other) {
+  if (this != &other) {
+    host_service::operator=(other);
+    service_status::operator=(other);
+    _internal_copy(other);
+  }
   return (*this);
 }
 
@@ -115,14 +117,21 @@ unsigned int service::static_type() {
  *  Copy all members defined within the service class. This method is
  *  used by the copy constructor and the assignment operator.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void service::_internal_copy(service const& s) {
-  flap_detection_on_critical = s.flap_detection_on_critical;
-  flap_detection_on_ok = s.flap_detection_on_ok;
-  flap_detection_on_unknown = s.flap_detection_on_unknown;
-  flap_detection_on_warning = s.flap_detection_on_warning;
-  is_volatile = s.is_volatile;
+void service::_internal_copy(service const& other) {
+  flap_detection_on_critical = other.flap_detection_on_critical;
+  flap_detection_on_ok = other.flap_detection_on_ok;
+  flap_detection_on_unknown = other.flap_detection_on_unknown;
+  flap_detection_on_warning = other.flap_detection_on_warning;
+  is_volatile = other.is_volatile;
+  notify_on_critical = other.notify_on_critical;
+  notify_on_unknown = other.notify_on_unknown;
+  notify_on_warning = other.notify_on_warning;
+  stalk_on_critical = other.stalk_on_critical;
+  stalk_on_ok = other.stalk_on_ok;
+  stalk_on_unknown = other.stalk_on_unknown;
+  stalk_on_warning = other.stalk_on_warning;
   return ;
 }
 
@@ -138,6 +147,13 @@ void service::_zero_initialize() {
   flap_detection_on_unknown = false;
   flap_detection_on_warning = false;
   is_volatile = false;
+  notify_on_critical = false;
+  notify_on_unknown = false;
+  notify_on_warning = false;
+  stalk_on_critical = false;
+  stalk_on_ok = false;
+  stalk_on_unknown = false;
+  stalk_on_warning = false;
   return ;
 }
 
@@ -150,6 +166,24 @@ void service::_zero_initialize() {
 // Mapping. Some pointer-to-member are explicitely casted because they
 // are from the host_service class which does not inherit from io::data.
 mapping::entry const service::entries[] = {
+  mapping::entry(
+    &service::acknowledged,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "acknowledged"),
+  mapping::entry(
+    &service::acknowledgement_type,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "acknowledgement_type"),
+  mapping::entry(
+    static_cast<QString (service::*) >(&service::action_url),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "action_url"),
   mapping::entry(
     &service::active_checks_enabled,
     "active_checks"),
@@ -175,17 +209,35 @@ mapping::entry const service::entries[] = {
     static_cast<bool (service::*)>(&service::default_active_checks_enabled),
     "default_active_checks",
     mapping::entry::always_valid,
-    false),
+    true),
   mapping::entry(
     static_cast<bool (service::*)>(&service::default_event_handler_enabled),
     "default_event_handler_enabled",
     mapping::entry::always_valid,
-    false),
+    true),
   mapping::entry(
     static_cast<bool (service::*)>(&service::default_flap_detection_enabled),
     "default_flap_detection",
     mapping::entry::always_valid,
-    false),
+    true),
+  mapping::entry(
+    static_cast<bool (service::*) >(&service::default_notifications_enabled),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "default_notify"),
+  mapping::entry(
+    static_cast<bool (service::*) >(&service::default_passive_checks_enabled),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "default_passive_checks"),
+  mapping::entry(
+    &service::downtime_depth,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "scheduled_downtime_depth"),
   mapping::entry(
     &service::enabled,
     "enabled"),
@@ -198,6 +250,12 @@ mapping::entry const service::entries[] = {
   mapping::entry(
     &service::execution_time,
     "execution_time"),
+  mapping::entry(
+    static_cast<double (service::*) >(&service::first_notification_delay),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "first_notification_delay"),
   mapping::entry(
     &service::flap_detection_enabled,
     "flap_detection"),
@@ -230,6 +288,18 @@ mapping::entry const service::entries[] = {
     &service::host_name,
     ""),
   mapping::entry(
+    static_cast<QString (service::*) >(&service::icon_image),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "icon_image"),
+  mapping::entry(
+    static_cast<QString (service::*) >(&service::icon_image_alt),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "icon_image_alt"),
+  mapping::entry(
     &service::service_id,
     "service_id",
     mapping::entry::invalid_on_zero),
@@ -241,31 +311,45 @@ mapping::entry const service::entries[] = {
     "volatile"),
   mapping::entry(
     &service::last_check,
-    "last_check"),
+    "last_check",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service::last_hard_state,
     "last_hard_state"),
   mapping::entry(
     &service::last_hard_state_change,
-    "last_hard_state_change"),
+    "last_hard_state_change",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &service::last_notification,
+    NULL,
+    mapping::entry::invalid_on_zero,
+    true,
+    "last_notification"),
   mapping::entry(
     &service::last_state_change,
-    "last_state_change"),
+    "last_state_change",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service::last_time_critical,
-    "last_time_critical"),
+    "last_time_critical",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service::last_time_ok,
-    "last_time_ok"),
+    "last_time_ok",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service::last_time_unknown,
-    "last_time_unknown"),
+    "last_time_unknown",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service::last_time_warning,
-    "last_time_warning"),
+    "last_time_warning",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service::last_update,
-    "last_update"),
+    "last_update",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &service::latency,
     "latency"),
@@ -277,10 +361,101 @@ mapping::entry const service::entries[] = {
     "max_check_attempts"),
   mapping::entry(
     &service::next_check,
-    "next_check"),
+    "next_check",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &service::next_notification,
+    NULL,
+    mapping::entry::invalid_on_zero,
+    true,
+    "next_notification"),
+  mapping::entry(
+    &service::no_more_notifications,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "no_more_notifications"),
+  mapping::entry(
+    static_cast<QString (service::*) >(&service::notes),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notes"),
+  mapping::entry(
+    static_cast<QString (service::*) >(&service::notes_url),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notes_url"),
+  mapping::entry(
+    static_cast<double (service::*) >(&service::notification_interval),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notification_interval"),
+  mapping::entry(
+    &service::notification_number,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notification_number"),
+  mapping::entry(
+    static_cast<QString (service::*) >(&service::notification_period),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notification_period"),
+  mapping::entry(
+    &service_status::notifications_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify"),
+  mapping::entry(
+    &service::notify_on_critical,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify_on_critical"),
+  mapping::entry(
+    static_cast<bool (service::*) >(&service::notify_on_downtime),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify_on_downtime"),
+  mapping::entry(
+    static_cast<bool (service::*) >(&service::notify_on_flapping),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify_on_flapping"),
+  mapping::entry(
+    static_cast<bool (service::*) >(&service::notify_on_recovery),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify_on_recovery"),
+  mapping::entry(
+    &service::notify_on_unknown,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify_on_unknown"),
+  mapping::entry(
+    &service::notify_on_warning,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify_on_warning"),
   mapping::entry(
     &service::obsess_over,
     "obsess_over_service"),
+  mapping::entry(
+    &service::passive_checks_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "passive_checks"),
   mapping::entry(
     &service::percent_state_change,
     "percent_state_change"),
@@ -294,6 +469,30 @@ mapping::entry const service::entries[] = {
     &service::should_be_scheduled,
     "should_be_scheduled"),
   mapping::entry(
+    &service::stalk_on_critical,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "stalk_on_critical"),
+  mapping::entry(
+    &service::stalk_on_ok,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "stalk_on_ok"),
+  mapping::entry(
+    &service::stalk_on_unknown,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "stalk_on_unknown"),
+  mapping::entry(
+    &service::stalk_on_warning,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "stalk_on_warning"),
+  mapping::entry(
     &service::state_type,
     "state_type"),
   mapping::entry(
@@ -305,6 +504,18 @@ mapping::entry const service::entries[] = {
   mapping::entry(
     &service::perf_data,
     "perfdata"),
+  mapping::entry(
+    static_cast<bool (service::*) >(&service::retain_nonstatus_information),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "retain_nonstatus_information"),
+  mapping::entry(
+    static_cast<bool (service::*) >(&service::retain_status_information),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "retain_status_information"),
   mapping::entry()
 };
 

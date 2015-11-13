@@ -56,7 +56,7 @@ namespace                    mapping {
                              entry(
                                U (T::* prop),
                                char const* name,
-                               attribute attr = always_valid,
+                               unsigned int attr = always_valid,
                                bool serialize = true,
                                char const* name_v2 = NULL) {
       _name = name;
@@ -73,7 +73,7 @@ namespace                    mapping {
                              entry(entry const& other);
                              ~entry();
     entry&                   operator=(entry const& other);
-    attribute                get_attribute() const;
+    unsigned int             get_attribute() const;
     bool                     get_bool(io::data const& d) const;
     double                   get_double(io::data const& d) const;
     int                      get_int(io::data const& d) const;
@@ -107,7 +107,7 @@ namespace                    mapping {
                                unsigned short value) const;
 
   private:
-    attribute                _attribute;
+    unsigned int             _attribute;
     char const*              _name;
     char const*              _name_v2;
     source*                  _ptr;

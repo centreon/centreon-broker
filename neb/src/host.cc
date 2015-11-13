@@ -127,7 +127,13 @@ void host::_internal_copy(host const& other) {
   flap_detection_on_unreachable = other.flap_detection_on_unreachable;
   flap_detection_on_up = other.flap_detection_on_up;
   host_name = other.host_name;
+  notify_on_down = other.notify_on_down;
+  notify_on_unreachable = other.notify_on_unreachable;
   poller_id = other.poller_id;
+  stalk_on_down = other.stalk_on_down;
+  stalk_on_unreachable = other.stalk_on_unreachable;
+  stalk_on_up = other.stalk_on_up;
+  statusmap_image = other.statusmap_image;
   return ;
 }
 
@@ -140,7 +146,12 @@ void host::_zero_initialize() {
   flap_detection_on_down = 0;
   flap_detection_on_unreachable = 0;
   flap_detection_on_up = 0;
+  notify_on_down = false;
+  notify_on_unreachable = false;
   poller_id = 0;
+  stalk_on_down = false;
+  stalk_on_unreachable = false;
+  stalk_on_up = false;
   return ;
 }
 
@@ -153,6 +164,24 @@ void host::_zero_initialize() {
 // Mapping. Some pointer-to-member are explicitely casted because they
 // are from the host_service class which does not inherit from io::data.
 mapping::entry const host::entries[] = {
+  mapping::entry(
+    &host::acknowledged,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "acknowledged"),
+  mapping::entry(
+    &host::acknowledgement_type,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "acknowledgement_type"),
+  mapping::entry(
+    static_cast<QString (host::*) >(&host::action_url),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "action_url"),
   mapping::entry(
     &host::active_checks_enabled,
     "active_checks"),
@@ -184,17 +213,35 @@ mapping::entry const host::entries[] = {
     static_cast<bool (host::*) >(&host::default_active_checks_enabled),
     "default_active_checks",
     mapping::entry::always_valid,
-    false),
+    true),
   mapping::entry(
     static_cast<bool (host::*) >(&host::default_event_handler_enabled),
     "default_event_handler_enabled",
     mapping::entry::always_valid,
-    false),
+    true),
   mapping::entry(
     static_cast<bool (host::*) >(&host::default_flap_detection_enabled),
     "default_flap_detection",
     mapping::entry::always_valid,
-    false),
+    true),
+  mapping::entry(
+    static_cast<bool (host::*) >(&host::default_notifications_enabled),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "default_notify"),
+  mapping::entry(
+    static_cast<bool (host::*) >(&host::default_passive_checks_enabled),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "default_passive_checks"),
+  mapping::entry(
+    &host::downtime_depth,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "scheduled_downtime_depth"),
   mapping::entry(
     &host::enabled,
     "enabled"),
@@ -207,6 +254,12 @@ mapping::entry const host::entries[] = {
   mapping::entry(
     &host::execution_time,
     "execution_time"),
+  mapping::entry(
+    static_cast<double (host::*) >(&host::first_notification_delay),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "first_notification_delay"),
   mapping::entry(
     &host::flap_detection_enabled,
     "flap_detection"),
@@ -236,6 +289,18 @@ mapping::entry const host::entries[] = {
     "host_id",
     mapping::entry::invalid_on_zero),
   mapping::entry(
+    static_cast<QString (host::*) >(&host::icon_image),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "icon_image"),
+  mapping::entry(
+    static_cast<QString (host::*) >(&host::icon_image_alt),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "icon_image_alt"),
+  mapping::entry(
     &host::poller_id,
     "instance_id",
     mapping::entry::invalid_on_zero),
@@ -244,28 +309,41 @@ mapping::entry const host::entries[] = {
     "flapping"),
   mapping::entry(
     &host::last_check,
-    "last_check"),
+    "last_check",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host::last_hard_state,
     "last_hard_state"),
   mapping::entry(
     &host::last_hard_state_change,
-    "last_hard_state_change"),
+    "last_hard_state_change",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &host::last_notification,
+    NULL,
+    mapping::entry::invalid_on_zero,
+    true,
+    "last_notification"),
   mapping::entry(
     &host::last_state_change,
-    "last_state_change"),
+    "last_state_change",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host::last_time_down,
-    "last_time_down"),
+    "last_time_down",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host::last_time_unreachable,
-    "last_time_unreachable"),
+    "last_time_unreachable",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host::last_time_up,
-    "last_time_up"),
+    "last_time_up",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host::last_update,
-    "last_update"),
+    "last_update",
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &host::latency,
     "latency"),
@@ -277,10 +355,95 @@ mapping::entry const host::entries[] = {
     "max_check_attempts"),
   mapping::entry(
     &host::next_check,
-    "next_check"),
+    "next_check",
+    mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &host::next_notification,
+    NULL,
+    mapping::entry::invalid_on_zero,
+    true,
+    "next_host_notification"),
+  mapping::entry(
+    &host::no_more_notifications,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "no_more_notifications"),
+  mapping::entry(
+    static_cast<QString (host::*) >(&host::notes),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notes"),
+  mapping::entry(
+    static_cast<QString (host::*) >(&host::notes_url),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notes_url"),
+  mapping::entry(
+    static_cast<double (host::*) >(&host::notification_interval),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notification_interval"),
+  mapping::entry(
+    &host::notification_number,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notification_number"),
+  mapping::entry(
+    static_cast<QString (host::*) >(&host::notification_period),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notification_period"),
+  mapping::entry(
+    &host::notifications_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify"),
+  mapping::entry(
+    &host::notify_on_down,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify_on_down"),
+  mapping::entry(
+    static_cast<bool (host::*) >(&host::notify_on_downtime),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify_on_downtime"),
+  mapping::entry(
+    static_cast<bool (host::*) >(&host::notify_on_flapping),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify_on_flapping"),
+  mapping::entry(
+    static_cast<bool (host::*) >(&host::notify_on_recovery),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify_on_recovery"),
+  mapping::entry(
+    &host::notify_on_unreachable,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "notify_on_unreachable"),
   mapping::entry(
     &host::obsess_over,
     "obsess_over_host"),
+  mapping::entry(
+    &host::passive_checks_enabled,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "passive_checks"),
   mapping::entry(
     &host::percent_state_change,
     "percent_state_change"),
@@ -290,6 +453,30 @@ mapping::entry const host::entries[] = {
   mapping::entry(
     &host::should_be_scheduled,
     "should_be_scheduled"),
+  mapping::entry(
+    &host::stalk_on_down,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "stalk_on_down"),
+  mapping::entry(
+    &host::stalk_on_unreachable,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "stalk_on_unreachable"),
+  mapping::entry(
+    &host::stalk_on_up,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "stalk_on_up"),
+  mapping::entry(
+    &host::statusmap_image,
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "statusmap_image"),
   mapping::entry(
     &host::state_type,
     "state_type"),
@@ -302,6 +489,18 @@ mapping::entry const host::entries[] = {
   mapping::entry(
     &host::perf_data,
     "perfdata"),
+  mapping::entry(
+    static_cast<bool (host::*) >(&host::retain_nonstatus_information),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "retain_nonstatus_information"),
+  mapping::entry(
+    static_cast<bool (host::*) >(&host::retain_status_information),
+    NULL,
+    mapping::entry::always_valid,
+    true,
+    "retain_status_information"),
   mapping::entry()
 };
 

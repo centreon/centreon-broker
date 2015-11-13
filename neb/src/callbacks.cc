@@ -39,6 +39,7 @@
 #include "com/centreon/broker/neb/set_log_data.hh"
 #include "com/centreon/broker/neb/statistics/generator.hh"
 #include "com/centreon/engine/broker.hh"
+#include "com/centreon/engine/globals.hh"
 #include "com/centreon/engine/nebcallbacks.hh"
 #include "com/centreon/engine/nebstructs.hh"
 #include "com/centreon/engine/objects/hostdependency.hh"
@@ -54,6 +55,20 @@ using namespace com::centreon::broker;
 // List of Nagios modules.
 extern nebmodule* neb_module_list;
 
+// Acknowledgement list.
+std::map<std::pair<unsigned int, unsigned int>, neb::acknowledgement>
+  neb::gl_acknowledgements;
+
+// Downtime list.
+struct   private_downtime_params {
+  time_t deletion_time;
+  time_t end_time;
+  bool   started;
+  time_t start_time;
+};
+// Unstarted downtimes.
+static umap<unsigned int, private_downtime_params> downtimes;
+
 // Load flags.
 int neb::gl_mod_flags(0);
 
@@ -65,6 +80,9 @@ static struct {
   unsigned int macro;
   int (* callback)(int, void*);
 } const gl_callbacks[] = {
+  { NEBCALLBACK_ACKNOWLEDGEMENT_DATA, &neb::callback_acknowledgement },
+  { NEBCALLBACK_COMMENT_DATA, &neb::callback_comment },
+  { NEBCALLBACK_DOWNTIME_DATA, &neb::callback_downtime },
   { NEBCALLBACK_EVENT_HANDLER_DATA, &neb::callback_event_handler },
   { NEBCALLBACK_EXTERNAL_COMMAND_DATA, &neb::callback_external_command },
   { NEBCALLBACK_FLAPPING_DATA, &neb::callback_flapping_status },
@@ -84,6 +102,8 @@ static struct {
   { NEBCALLBACK_ADAPTIVE_HOST_DATA, &neb::callback_host },
   { NEBCALLBACK_ADAPTIVE_SERVICE_DATA, &neb::callback_service },
   { NEBCALLBACK_CUSTOM_VARIABLE_DATA, &neb::callback_custom_variable },
+  { NEBCALLBACK_GROUP_DATA, &neb::callback_group },
+  { NEBCALLBACK_GROUP_MEMBER_DATA, &neb::callback_group_member },
   { NEBCALLBACK_MODULE_DATA, &neb::callback_module },
   { NEBCALLBACK_RELATION_DATA, &neb::callback_relation }
 };
@@ -107,6 +127,141 @@ extern "C" void event_statistics(void* args) {
   // Avoid exception propagation in C code.
   catch (...) {}
   return ;
+}
+
+/**
+ *  @brief Function that process acknowledgement data.
+ *
+ *  This function is called by Nagios when some acknowledgement data are
+ *  available.
+ *
+ *  @param[in] callback_type Type of the callback
+ *                           (NEBCALLBACK_ACKNOWLEDGEMENT_DATA).
+ *  @param[in] data          A pointer to a nebstruct_acknowledgement_data
+ *                           containing the acknowledgement data.
+ *
+ *  @return 0 on success.
+ */
+int neb::callback_acknowledgement(int callback_type, void* data) {
+  // Log message.
+  logging::info(logging::medium)
+    << "callbacks: generating acknowledgement event";
+  (void)callback_type;
+
+  try {
+    // In/Out variables.
+    nebstruct_acknowledgement_data const* ack_data;
+    misc::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement);
+
+    // Fill output var.
+    ack_data = static_cast<nebstruct_acknowledgement_data*>(data);
+    ack->acknowledgement_type = ack_data->acknowledgement_type;
+    if (ack_data->author_name)
+      ack->author = ack_data->author_name;
+    if (ack_data->comment_data)
+      ack->comment = ack_data->comment_data;
+    ack->entry_time = time(NULL);
+    if (!ack_data->host_name)
+      throw (exceptions::msg() << "unnamed host");
+    ack->host_id = engine::get_host_id(ack_data->host_name);
+    if (ack->host_id == 0)
+      throw (exceptions::msg() << "could not find ID of host '"
+             << ack_data->host_name << "'");
+    if (ack_data->service_description) {
+      ack->service_id = engine::get_service_id(
+                                  ack_data->host_name,
+                                  ack_data->service_description);
+      if (ack->service_id == 0) {
+        throw (exceptions::msg() << "could not find ID of service ('"
+               << ack_data->host_name << "', '"
+               << ack_data->service_description << "')");
+      }
+    }
+    ack->poller_id = config::applier::state::instance().poller_id();
+    ack->is_sticky = ack_data->is_sticky;
+    ack->notify_contacts = ack_data->notify_contacts;
+    ack->persistent_comment = ack_data->persistent_comment;
+    ack->state = ack_data->state;
+    gl_acknowledgements[std::make_pair(ack->host_id, ack->service_id)]
+      = *ack;
+
+    // Send event.
+    gl_publisher.write(ack);
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium) << "callbacks: error occurred while"
+      " generating acknowledgement event: " << e.what();
+  }
+  // Avoid exception propagation in C code.
+  catch (...) {}
+  return (0);
+}
+
+/**
+ *  @brief Function that process comment data.
+ *
+ *  This function is called by Nagios when some comment data are available.
+ *
+ *  @param[in] callback_type Type of the callback (NEBCALLBACK_COMMENT_DATA).
+ *  @param[in] data          A pointer to a nebstruct_comment_data containing
+ *                           the comment data.
+ *
+ *  @return 0 on success.
+ */
+int neb::callback_comment(int callback_type, void* data) {
+  // Log message.
+  logging::info(logging::medium)
+    << "callbacks: generating comment event";
+  (void)callback_type;
+
+  try {
+    // In/Out variables.
+    nebstruct_comment_data const* comment_data;
+    misc::shared_ptr<neb::comment> comment(new neb::comment);
+
+    // Fill output var.
+    comment_data = static_cast<nebstruct_comment_data*>(data);
+    if (comment_data->author_name)
+      comment->author = comment_data->author_name;
+    if (comment_data->comment_data)
+      comment->data = comment_data->comment_data;
+    comment->comment_type = comment_data->type;
+    if (NEBTYPE_COMMENT_DELETE == comment_data->type)
+      comment->deletion_time = time(NULL);
+    comment->entry_time = comment_data->entry_time;
+    comment->entry_type = comment_data->entry_type;
+    comment->expire_time = comment_data->expire_time;
+    comment->expires = comment_data->expires;
+    if (!comment_data->host_name)
+      throw (exceptions::msg() << "unnamed host");
+    comment->host_id = engine::get_host_id(comment_data->host_name);
+    if (comment->host_id == 0)
+      throw (exceptions::msg() << "could not find ID of host '"
+             << comment_data->host_name << "'");
+    if (comment_data->service_description) {
+      comment->service_id = engine::get_service_id(
+                              comment_data->host_name,
+                              comment_data->service_description);
+      if (comment->service_id == 0)
+        throw (exceptions::msg() << "could not find ID of service ('"
+               << comment_data->host_name << "', '"
+               << comment_data->service_description << "')");
+    }
+    comment->poller_id = config::applier::state::instance().poller_id();
+    comment->internal_id = comment_data->comment_id;
+    comment->persistent = comment_data->persistent;
+    comment->source = comment_data->source;
+
+    // Send event.
+    gl_publisher.write(comment);
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium) << "callbacks: error occurred while"
+      " generating comment event: " << e.what();
+  }
+  // Avoid exception propagation in C code.
+  catch (...) {}
+  return (0);
 }
 
 /**
@@ -149,6 +304,7 @@ int neb::callback_custom_variable(int callback_type, void* data) {
             new_cvar->var_type = 0;
             new_cvar->update_time = cvar->timestamp.tv_sec;
             new_cvar->value = cvar->var_value;
+            new_cvar->default_value = cvar->var_value;
 
             // Send custom variable event.
             logging::info(logging::low)
@@ -199,6 +355,7 @@ int neb::callback_custom_variable(int callback_type, void* data) {
             new_cvar->var_type = 1;
             new_cvar->update_time = cvar->timestamp.tv_sec;
             new_cvar->value = cvar->var_value;
+            new_cvar->default_value = cvar->var_value;
 
             // Send custom variable event.
             logging::info(logging::low)
@@ -306,8 +463,21 @@ int neb::callback_dependency(int callback_type, void* data) {
       hst_dep->enabled = (nsadd->type != NEBTYPE_HOSTDEPENDENCY_DELETE);
       if (dep->dependency_period)
         hst_dep->dependency_period = dep->dependency_period;
-      // XXX if (dep->failure_options)
-      //   hst_dep->execution_failure_options = dep->failure_options;
+      {
+        QString options;
+        if (dep->fail_on_down)
+          options.append("d");
+        if (dep->fail_on_up)
+          options.append("o");
+        if (dep->fail_on_pending)
+          options.append("p");
+        if (dep->fail_on_unreachable)
+          options.append("u");
+        if (dep->dependency_type == NOTIFICATION_DEPENDENCY)
+          hst_dep->notification_failure_options = options;
+        else if (dep->dependency_type == EXECUTION_DEPENDENCY)
+          hst_dep->execution_failure_options = options;
+      }
       hst_dep->inherits_parent = dep->inherits_parent;
       logging::info(logging::low) << "callbacks: host " << dep_host_id
         << " depends on host " << host_id;
@@ -365,8 +535,23 @@ int neb::callback_dependency(int callback_type, void* data) {
         = (nsadd->type != NEBTYPE_SERVICEDEPENDENCY_DELETE);
       if (dep->dependency_period)
         svc_dep->dependency_period = dep->dependency_period;
-      // XXX if (dep->failure_options)
-      //   svc_dep->execution_failure_options = dep->failure_options;
+      {
+        QString options;
+        if (dep->fail_on_critical)
+          options.append("c");
+        if (dep->fail_on_ok)
+          options.append("o");
+        if (dep->fail_on_pending)
+          options.append("p");
+        if (dep->fail_on_unknown)
+          options.append("u");
+        if (dep->fail_on_warning)
+          options.append("w");
+        if (dep->dependency_type == NOTIFICATION_DEPENDENCY)
+          svc_dep->notification_failure_options = options;
+        else if (dep->dependency_type == EXECUTION_DEPENDENCY)
+          svc_dep->execution_failure_options = options;
+      }
       svc_dep->inherits_parent = dep->inherits_parent;
       logging::info(logging::low) << "callbacks: service ("
         << dep_host_id << ", " << dep_service_id
@@ -382,6 +567,97 @@ int neb::callback_dependency(int callback_type, void* data) {
 
   return (0);
 }
+
+/**
+ *  @brief Function that process downtime data.
+ *
+ *  This function is called by Nagios when some downtime data are available.
+ *
+ *  @param[in] callback_type Type of the callback (NEBCALLBACK_DOWNTIME_DATA).
+ *  @param[in] data          A pointer to a nebstruct_downtime_data containing
+ *                           the downtime data.
+ *
+ *  @return 0 on success.
+ */
+int neb::callback_downtime(int callback_type, void* data) {
+  // Log message.
+  logging::info(logging::medium)
+    << "callbacks: generating downtime event";
+  (void)callback_type;
+
+  try {
+    // In/Out variables.
+    nebstruct_downtime_data const* downtime_data;
+    misc::shared_ptr<neb::downtime> downtime(new neb::downtime);
+
+    // Fill output var.
+    downtime_data = static_cast<nebstruct_downtime_data*>(data);
+    if (downtime_data->author_name)
+      downtime->author = downtime_data->author_name;
+    if (downtime_data->comment_data)
+      downtime->comment = downtime_data->comment_data;
+    downtime->downtime_type = downtime_data->downtime_type;
+    downtime->duration = downtime_data->duration;
+    downtime->end_time = downtime_data->end_time;
+    downtime->entry_time = downtime_data->entry_time;
+    downtime->fixed = downtime_data->fixed;
+    if (!downtime_data->host_name)
+      throw (exceptions::msg() << "unnamed host");
+    downtime->host_id = engine::get_host_id(downtime_data->host_name);
+    if (downtime->host_id == 0)
+      throw (exceptions::msg() << "could not find ID of host '"
+             << downtime_data->host_name << "'");
+    if (downtime_data->service_description) {
+      downtime->service_id = engine::get_service_id(
+                               downtime_data->host_name,
+                               downtime_data->service_description);
+      if (downtime->service_id == 0)
+        throw (exceptions::msg() << "could not find ID of service ('"
+               << downtime_data->host_name << "', '"
+               << downtime_data->service_description << "')");
+    }
+    downtime->poller_id
+      = config::applier::state::instance().poller_id();
+    downtime->internal_id = downtime_data->downtime_id;
+    downtime->start_time = downtime_data->start_time;
+    downtime->triggered_by = downtime_data->triggered_by;
+    private_downtime_params& params(downtimes[downtime->internal_id]);
+    if ((NEBTYPE_DOWNTIME_ADD == downtime_data->type)
+        || (NEBTYPE_DOWNTIME_LOAD == downtime_data->type)) {
+      params.deletion_time = 0;
+      params.end_time = 0;
+      params.started = false;
+      params.start_time = 0;
+    }
+    else if (NEBTYPE_DOWNTIME_START == downtime_data->type) {
+      params.started = true;
+      params.start_time = downtime_data->timestamp.tv_sec;
+    }
+    else if (NEBTYPE_DOWNTIME_STOP == downtime_data->type) {
+      if (NEBATTR_DOWNTIME_STOP_CANCELLED == downtime_data->attr)
+        params.deletion_time = downtime_data->timestamp.tv_sec;
+      params.end_time = downtime_data->timestamp.tv_sec;
+    }
+    downtime->actual_start_time = params.start_time;
+    downtime->actual_end_time = params.end_time;
+    downtime->deletion_time = params.deletion_time;
+    downtime->was_cancelled = (downtime->deletion_time != 0);
+    downtime->was_started = params.started;
+    if (NEBTYPE_DOWNTIME_DELETE == downtime_data->type)
+      downtimes.erase(downtime->internal_id);
+
+    // Send event.
+    gl_publisher.write(downtime);
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium) << "callbacks: error occurred while"
+      "generating downtime event: " << e.what();
+  }
+  // Avoid exception propagation in C code.
+  catch (...) {}
+  return (0);
+}
+
 /**
  *  @brief Function that process event handler data.
  *
@@ -620,6 +896,196 @@ int neb::callback_flapping_status(int callback_type, void* data) {
 }
 
 /**
+ *  @brief Function that process group data.
+ *
+ *  This function is called by Engine when some group data is available.
+ *
+ *  @param[in] callback_type Type of the callback
+ *                           (NEBCALLBACK_GROUP_DATA).
+ *  @param[in] data          Pointer to a nebstruct_group_data
+ *                           containing the group data.
+ *
+ *  @return 0 on success.
+ */
+int neb::callback_group(int callback_type, void* data) {
+  // Log message.
+  logging::info(logging::medium)
+    << "callbacks: generating group event";
+  (void)callback_type;
+
+  try {
+    // Input variable.
+    nebstruct_group_data const*
+      group_data(static_cast<nebstruct_group_data*>(data));
+
+    // Host group.
+    if ((NEBTYPE_HOSTGROUP_ADD == group_data->type)
+        || (NEBTYPE_HOSTGROUP_UPDATE == group_data->type)
+        || (NEBTYPE_HOSTGROUP_DELETE == group_data->type)) {
+      ::hostgroup const*
+        host_group(static_cast< ::hostgroup*>(group_data->object_ptr));
+      if (host_group->group_name) {
+        misc::shared_ptr<neb::host_group> new_hg(new neb::host_group);
+        new_hg->poller_id
+          = config::applier::state::instance().poller_id();
+        new_hg->id = engine::get_hostgroup_id(host_group->group_name);
+        new_hg->enabled
+          = ((group_data->type != NEBTYPE_HOSTGROUP_DELETE)
+             && host_group->members);
+        new_hg->name = host_group->group_name;
+
+        // Send host group event.
+        if (new_hg->id) {
+          logging::info(logging::low) << "callbacks: new host group "
+            << new_hg->id << " ('" << new_hg->name << "') on instance "
+            << new_hg->poller_id;
+          neb::gl_publisher.write(new_hg);
+        }
+      }
+    }
+    // Service group.
+    else if ((NEBTYPE_SERVICEGROUP_ADD == group_data->type)
+             || (NEBTYPE_SERVICEGROUP_UPDATE == group_data->type)
+             || (NEBTYPE_SERVICEGROUP_DELETE == group_data->type)) {
+      ::servicegroup const*
+        service_group(static_cast< ::servicegroup*>(group_data->object_ptr));
+      if (service_group->group_name) {
+        misc::shared_ptr<neb::service_group>
+          new_sg(new neb::service_group);
+        new_sg->poller_id
+          = config::applier::state::instance().poller_id();
+        new_sg->id
+          = engine::get_servicegroup_id(service_group->group_name);
+        new_sg->enabled
+          = ((group_data->type != NEBTYPE_SERVICEGROUP_DELETE)
+             && service_group->members);
+        new_sg->name = service_group->group_name;
+
+        // Send service group event.
+        if (new_sg->id) {
+          logging::info(logging::low) << "callbacks:: new service group "
+            << new_sg->id << " ('" << new_sg->name << "') on instance "
+            << new_sg->poller_id;
+          neb::gl_publisher.write(new_sg);
+        }
+      }
+    }
+  }
+  // Avoid exception propagation to C code.
+  catch (...) {}
+  return (0);
+}
+
+/**
+ *  @brief Function that process group membership.
+ *
+ *  This function is called by Engine when some group membership data is
+ *  available.
+ *
+ *  @param[in] callback_type Type of the callback
+ *                           (NEBCALLBACK_GROUPMEMBER_DATA).
+ *  @param[in] data          Pointer to a nebstruct_group_member_data
+ *                           containing membership data.
+ *
+ *  @return 0 on success.
+ */
+int neb::callback_group_member(int callback_type, void* data) {
+  // Log message.
+  logging::info(logging::medium)
+    << "callbacks: generating group member event";
+  (void)callback_type;
+
+  try {
+    // Input variable.
+    nebstruct_group_member_data const*
+      member_data(static_cast<nebstruct_group_member_data*>(data));
+
+    // Host group member.
+    if ((member_data->type == NEBTYPE_HOSTGROUPMEMBER_ADD)
+        || (member_data->type == NEBTYPE_HOSTGROUPMEMBER_DELETE)) {
+      ::host const*
+        hst(static_cast< ::host*>(member_data->object_ptr));
+      ::hostgroup const*
+        hg(static_cast< ::hostgroup*>(member_data->group_ptr));
+      if (hst->name && hg->group_name) {
+        // Output variable.
+        misc::shared_ptr<neb::host_group_member>
+          hgm(new neb::host_group_member);
+        hgm->group_id = engine::get_hostgroup_id(hg->group_name);
+        hgm->group_name = hg->group_name;
+        hgm->poller_id = config::applier::state::instance().poller_id();
+        unsigned int host_id = engine::get_host_id(hst->name);
+        if (host_id != 0 && hgm->group_id != 0) {
+          hgm->host_id = host_id;
+          if (member_data->type == NEBTYPE_HOSTGROUPMEMBER_DELETE) {
+            logging::info(logging::low) << "callbacks: host "
+              << hgm->host_id << " is not a member of group "
+              << hgm->group_id << " on instance " << hgm->poller_id
+              << " anymore";
+            hgm->enabled = false;
+          }
+          else {
+            logging::info(logging::low) << "callbacks: host "
+              << hgm->host_id << " is a member of group "
+              << hgm->group_id << " on instance " << hgm->poller_id;
+            hgm->enabled = true;
+          }
+
+          // Send host group member event.
+          if (hgm->host_id && hgm->group_id)
+            neb::gl_publisher.write(hgm);
+        }
+      }
+    }
+    // Service group member.
+    else if ((member_data->type == NEBTYPE_SERVICEGROUPMEMBER_ADD)
+             || (member_data->type == NEBTYPE_SERVICEGROUPMEMBER_DELETE)) {
+      ::service const*
+        svc(static_cast< ::service*>(member_data->object_ptr));
+      ::servicegroup const*
+        sg(static_cast< ::servicegroup*>(member_data->group_ptr));
+      if (svc->description
+          && sg->group_name
+          && svc->host_name) {
+        // Output variable.
+        misc::shared_ptr<neb::service_group_member>
+          sgm(new neb::service_group_member);
+        sgm->group_id = engine::get_servicegroup_id(sg->group_name);
+        sgm->group_name = sg->group_name;
+        sgm->poller_id = config::applier::state::instance().poller_id();
+        sgm->host_id = engine::get_host_id(svc->host_name);
+        sgm->service_id = engine::get_service_id(
+                            svc->host_name,
+                            svc->description);
+        if (sgm->host_id && sgm->service_id && sgm->group_id) {
+          if (member_data->type == NEBTYPE_SERVICEGROUPMEMBER_DELETE) {
+            logging::info(logging::low) << "callbacks: service ("
+              << sgm->host_id << ", " << sgm->service_id
+              << ") is not a member of group " << sgm->group_id
+              << " on instance " << sgm->poller_id << " anymore";
+            sgm->enabled = false;
+          }
+          else {
+            logging::info(logging::low) << "callbacks: service ("
+              << sgm->host_id << ", " << sgm->service_id
+              << ") is a member of group " << sgm->group_id
+              << " on instance " << sgm->poller_id;
+            sgm->enabled = true;
+          }
+
+          // Send service group member event.
+          if (sgm->host_id && sgm->service_id && sgm->group_id)
+            neb::gl_publisher.write(sgm);
+        }
+      }
+    }
+  }
+  // Avoid exception propagation to C code.
+  catch (...) {}
+  return (0);
+}
+
+/**
  *  @brief Function that process host data.
  *
  *  This function is called by Engine when some host data is available.
@@ -645,10 +1111,11 @@ int neb::callback_host(int callback_type, void* data) {
       h(static_cast< ::host*>(host_data->object_ptr));
     misc::shared_ptr<neb::host> my_host(new neb::host);
 
-    // Get host id.
-
-
     // Set host parameters.
+    my_host->acknowledged = h->problem_has_been_acknowledged;
+    my_host->acknowledgement_type = h->acknowledgement_type;
+    if (h->action_url)
+      my_host->action_url = h->action_url;
     my_host->active_checks_enabled = h->checks_enabled;
     if (h->address)
       my_host->address = h->address;
@@ -668,11 +1135,14 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->default_active_checks_enabled = h->checks_enabled;
     my_host->default_event_handler_enabled = h->event_handler_enabled;
     my_host->default_flap_detection_enabled = h->flap_detection_enabled;
+    my_host->default_notifications_enabled = h->notifications_enabled;
+    my_host->default_passive_checks_enabled = h->accept_passive_host_checks;
     my_host->enabled = (host_data->type != NEBTYPE_HOST_DELETE);
     if (h->event_handler)
       my_host->event_handler = h->event_handler;
     my_host->event_handler_enabled = h->event_handler_enabled;
     my_host->execution_time = h->execution_time;
+    my_host->first_notification_delay = h->first_notification_delay;
     my_host->flap_detection_enabled = h->flap_detection_enabled;
     my_host->flap_detection_on_down = h->flap_detection_on_down;
     my_host->flap_detection_on_unreachable
@@ -683,10 +1153,15 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->high_flap_threshold = h->high_flap_threshold;
     if (h->name)
       my_host->host_name = h->name;
+    if (h->icon_image)
+      my_host->icon_image = h->icon_image;
+    if (h->icon_image_alt)
+      my_host->icon_image_alt = h->icon_image_alt;
     my_host->is_flapping = h->is_flapping;
     my_host->last_check = h->last_check;
     my_host->last_hard_state = h->last_hard_state;
     my_host->last_hard_state_change = h->last_hard_state_change;
+    my_host->last_notification = h->last_host_notification;
     my_host->last_state_change = h->last_state_change;
     my_host->last_time_down = h->last_time_down;
     my_host->last_time_unreachable = h->last_time_unreachable;
@@ -696,6 +1171,21 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->low_flap_threshold = h->low_flap_threshold;
     my_host->max_check_attempts = h->max_attempts;
     my_host->next_check = h->next_check;
+    my_host->next_notification = h->next_host_notification;
+    my_host->no_more_notifications = h->no_more_notifications;
+    if (h->notes)
+      my_host->notes = h->notes;
+    if (h->notes_url)
+      my_host->notes_url = h->notes_url;
+    my_host->notifications_enabled = h->notifications_enabled;
+    my_host->notification_interval = h->notification_interval;
+    if (h->notification_period)
+      my_host->notification_period = h->notification_period;
+    my_host->notify_on_down = h->notify_on_down;
+    my_host->notify_on_downtime = h->notify_on_downtime;
+    my_host->notify_on_flapping = h->notify_on_flapping;
+    my_host->notify_on_recovery = h->notify_on_recovery;
+    my_host->notify_on_unreachable = h->notify_on_unreachable;
     my_host->obsess_over = h->obsess_over_host;
     if (h->plugin_output) {
       my_host->output = h->plugin_output;
@@ -703,15 +1193,24 @@ int neb::callback_host(int callback_type, void* data) {
     }
     if (h->long_plugin_output)
         my_host->output.append(h->long_plugin_output);
+    my_host->passive_checks_enabled = h->accept_passive_host_checks;
     my_host->percent_state_change = h->percent_state_change;
     if (h->perf_data)
       my_host->perf_data = h->perf_data;
     my_host->poller_id = config::applier::state::instance().poller_id();
+    my_host->retain_nonstatus_information
+      = h->retain_nonstatus_information;
+    my_host->retain_status_information = h->retain_status_information;
     my_host->retry_interval = h->retry_interval;
     my_host->should_be_scheduled = h->should_be_scheduled;
+    my_host->stalk_on_down = h->stalk_on_down;
+    my_host->stalk_on_unreachable = h->stalk_on_unreachable;
+    my_host->stalk_on_up = h->stalk_on_up;
     my_host->state_type = (h->has_been_checked
                            ? h->state_type
                            : HARD_STATE);
+    if (h->statusmap_image)
+      my_host->statusmap_image = h->statusmap_image;
 
     // Find host ID.
     unsigned int host_id = engine::get_host_id(
@@ -830,6 +1329,8 @@ int neb::callback_host_status(int callback_type, void* data) {
     // Fill output var.
     h = static_cast< ::host*>(
       static_cast<nebstruct_host_status_data*>(data)->object_ptr);
+    host_status->acknowledged = h->problem_has_been_acknowledged;
+    host_status->acknowledgement_type = h->acknowledgement_type;
     host_status->active_checks_enabled = h->checks_enabled;
     if (h->host_check_command)
       host_status->check_command = h->host_check_command;
@@ -859,6 +1360,7 @@ int neb::callback_host_status(int callback_type, void* data) {
     host_status->last_check = h->last_check;
     host_status->last_hard_state = h->last_hard_state;
     host_status->last_hard_state_change = h->last_hard_state_change;
+    host_status->last_notification = h->last_host_notification;
     host_status->last_state_change = h->last_state_change;
     host_status->last_time_down = h->last_time_down;
     host_status->last_time_unreachable = h->last_time_unreachable;
@@ -867,6 +1369,9 @@ int neb::callback_host_status(int callback_type, void* data) {
     host_status->latency = h->latency;
     host_status->max_check_attempts = h->max_attempts;
     host_status->next_check = h->next_check;
+    host_status->next_notification = h->next_host_notification;
+    host_status->no_more_notifications = h->no_more_notifications;
+    host_status->notifications_enabled = h->notifications_enabled;
     host_status->obsess_over = h->obsess_over_host;
     if (h->plugin_output) {
       host_status->output = h->plugin_output;
@@ -874,6 +1379,7 @@ int neb::callback_host_status(int callback_type, void* data) {
     }
     if (h->long_plugin_output)
       host_status->output.append(h->long_plugin_output);
+    host_status->passive_checks_enabled = h->accept_passive_host_checks;
     host_status->percent_state_change = h->percent_state_change;
     if (h->perf_data)
       host_status->perf_data = h->perf_data;
@@ -885,6 +1391,25 @@ int neb::callback_host_status(int callback_type, void* data) {
 
     // Send event(s).
     gl_publisher.write(host_status);
+
+    // Acknowledgement event.
+    std::map<
+      std::pair<unsigned int, unsigned int>,
+      neb::acknowledgement>::iterator
+      it(gl_acknowledgements.find(
+           std::make_pair(host_status->host_id, 0u)));
+    if ((it != gl_acknowledgements.end())
+        && !host_status->acknowledged) {
+      if (!(!host_status->current_state // !(OK or (normal ack and NOK))
+            || (!it->second.is_sticky
+                && (host_status->current_state != it->second.state)))) {
+        misc::shared_ptr<neb::acknowledgement>
+          ack(new neb::acknowledgement(it->second));
+        ack->deletion_time = time(NULL);
+        gl_publisher.write(ack);
+      }
+      gl_acknowledgements.erase(it);
+    }
   }
   catch (std::exception const& e) {
     logging::error(logging::medium) << "callbacks: error occurred while"
@@ -1144,6 +1669,12 @@ int neb::callback_program_status(int callback_type, void* data) {
     // Fill output var.
     program_status_data = static_cast<nebstruct_program_status_data*>(data);
     is->poller_id = config::applier::state::instance().poller_id();
+    is->active_host_checks_enabled
+      = program_status_data->active_host_checks_enabled;
+    is->active_service_checks_enabled
+      = program_status_data->active_service_checks_enabled;
+    is->check_hosts_freshness = check_host_freshness;
+    is->check_services_freshness = check_service_freshness;
     is->event_handler_enabled
       = program_status_data->event_handlers_enabled;
     is->flap_detection_enabled
@@ -1156,10 +1687,16 @@ int neb::callback_program_status(int callback_type, void* data) {
         = program_status_data->global_service_event_handler;
     is->last_alive = time(NULL);
     is->last_command_check = program_status_data->last_command_check;
+    is->notifications_enabled
+      = program_status_data->notifications_enabled;
     is->obsess_over_hosts
       = program_status_data->obsess_over_hosts;
     is->obsess_over_services
       = program_status_data->obsess_over_services;
+    is->passive_host_checks_enabled
+      = program_status_data->passive_host_checks_enabled;
+    is->passive_service_checks_enabled
+      = program_status_data->passive_service_checks_enabled;
 
     // Send event.
     gl_publisher.write(is);
@@ -1259,6 +1796,10 @@ int neb::callback_service(int callback_type, void* data) {
     misc::shared_ptr<neb::service> my_service(new neb::service);
 
     // Fill output var.
+    my_service->acknowledged = s->problem_has_been_acknowledged;
+    my_service->acknowledgement_type = s->acknowledgement_type;
+    if (s->action_url)
+      my_service->action_url = s->action_url;
     my_service->active_checks_enabled = s->checks_enabled;
     if (s->service_check_command)
       my_service->check_command = s->service_check_command;
@@ -1274,12 +1815,16 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->default_active_checks_enabled = s->checks_enabled;
     my_service->default_event_handler_enabled = s->event_handler_enabled;
     my_service->default_flap_detection_enabled = s->flap_detection_enabled;
+    my_service->default_notifications_enabled = s->notifications_enabled;
+    my_service->default_passive_checks_enabled
+      = s->accept_passive_service_checks;
     my_service->enabled
       = (service_data->type != NEBTYPE_SERVICE_DELETE);
     if (s->event_handler)
       my_service->event_handler = s->event_handler;
     my_service->event_handler_enabled = s->event_handler_enabled;
     my_service->execution_time = s->execution_time;
+    my_service->first_notification_delay = s->first_notification_delay;
     my_service->flap_detection_enabled = s->flap_detection_enabled;
     my_service->flap_detection_on_critical = s->flap_detection_on_critical;
     my_service->flap_detection_on_ok = s->flap_detection_on_ok;
@@ -1290,11 +1835,16 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->high_flap_threshold = s->high_flap_threshold;
     if (s->host_name)
       my_service->host_name = s->host_name;
+    if (s->icon_image)
+      my_service->icon_image = s->icon_image;
+    if (s->icon_image_alt)
+      my_service->icon_image_alt = s->icon_image_alt;
     my_service->is_flapping = s->is_flapping;
     my_service->is_volatile = s->is_volatile;
     my_service->last_check = s->last_check;
     my_service->last_hard_state = s->last_hard_state;
     my_service->last_hard_state_change = s->last_hard_state_change;
+    my_service->last_notification = s->last_notification;
     my_service->last_state_change = s->last_state_change;
     my_service->last_time_critical = s->last_time_critical;
     my_service->last_time_ok = s->last_time_ok;
@@ -1305,6 +1855,22 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->low_flap_threshold = s->low_flap_threshold;
     my_service->max_check_attempts = s->max_attempts;
     my_service->next_check = s->next_check;
+    my_service->next_notification = s->next_notification;
+    my_service->no_more_notifications = s->no_more_notifications;
+    if (s->notes)
+      my_service->notes = s->notes;
+    if (s->notes_url)
+      my_service->notes_url = s->notes_url;
+    my_service->notifications_enabled = s->notifications_enabled;
+    my_service->notification_interval = s->notification_interval;
+    if (s->notification_period)
+      my_service->notification_period = s->notification_period;
+    my_service->notify_on_critical = s->notify_on_critical;
+    my_service->notify_on_downtime = s->notify_on_downtime;
+    my_service->notify_on_flapping = s->notify_on_flapping;
+    my_service->notify_on_recovery = s->notify_on_recovery;
+    my_service->notify_on_unknown = s->notify_on_unknown;
+    my_service->notify_on_warning = s->notify_on_warning;
     my_service->obsess_over = s->obsess_over_service;
     if (s->plugin_output) {
       my_service->output = s->plugin_output;
@@ -1312,13 +1878,23 @@ int neb::callback_service(int callback_type, void* data) {
     }
     if (s->long_plugin_output)
       my_service->output.append(s->long_plugin_output);
+    my_service->passive_checks_enabled
+      = s->accept_passive_service_checks;
     my_service->percent_state_change = s->percent_state_change;
     if (s->perf_data)
       my_service->perf_data = s->perf_data;
+    my_service->retain_nonstatus_information
+      = s->retain_nonstatus_information;
+    my_service->retain_status_information
+      = s->retain_status_information;
     my_service->retry_interval = s->retry_interval;
     if (s->description)
       my_service->service_description = s->description;
     my_service->should_be_scheduled = s->should_be_scheduled;
+    my_service->stalk_on_critical = s->stalk_on_critical;
+    my_service->stalk_on_ok = s->stalk_on_ok;
+    my_service->stalk_on_unknown = s->stalk_on_unknown;
+    my_service->stalk_on_warning = s->stalk_on_warning;
     my_service->state_type = (s->has_been_checked
                               ? s->state_type
                               : HARD_STATE);
@@ -1456,6 +2032,8 @@ int neb::callback_service_status(int callback_type, void* data) {
     // Fill output var.
     s = static_cast< ::service*>(
       static_cast<nebstruct_service_status_data*>(data)->object_ptr);
+    service_status->acknowledged = s->problem_has_been_acknowledged;
+    service_status->acknowledgement_type = s->acknowledgement_type;
     service_status->active_checks_enabled = s->checks_enabled;
     if (s->service_check_command)
       service_status->check_command = s->service_check_command;
@@ -1477,6 +2055,7 @@ int neb::callback_service_status(int callback_type, void* data) {
     service_status->last_check = s->last_check;
     service_status->last_hard_state = s->last_hard_state;
     service_status->last_hard_state_change = s->last_hard_state_change;
+    service_status->last_notification = s->last_notification;
     service_status->last_state_change = s->last_state_change;
     service_status->last_time_critical = s->last_time_critical;
     service_status->last_time_ok = s->last_time_ok;
@@ -1486,6 +2065,9 @@ int neb::callback_service_status(int callback_type, void* data) {
     service_status->latency = s->latency;
     service_status->max_check_attempts = s->max_attempts;
     service_status->next_check = s->next_check;
+    service_status->next_notification = s->next_notification;
+    service_status->no_more_notifications = s->no_more_notifications;
+    service_status->notifications_enabled = s->notifications_enabled;
     service_status->obsess_over = s->obsess_over_service;
     if (s->plugin_output) {
       service_status->output = s->plugin_output;
@@ -1493,6 +2075,8 @@ int neb::callback_service_status(int callback_type, void* data) {
     }
     if (s->long_plugin_output)
       service_status->output.append(s->long_plugin_output);
+    service_status->passive_checks_enabled
+      = s->accept_passive_service_checks;
     service_status->percent_state_change = s->percent_state_change;
     if (s->perf_data)
       service_status->perf_data = s->perf_data;
@@ -1519,6 +2103,27 @@ int neb::callback_service_status(int callback_type, void* data) {
 
     // Send event(s).
     gl_publisher.write(service_status);
+
+    // Acknowledgement event.
+    std::map<
+      std::pair<unsigned int, unsigned int>,
+      neb::acknowledgement>::iterator
+      it(gl_acknowledgements.find(std::make_pair(
+                                         service_status->host_id,
+                                         service_status->service_id)));
+    if ((it != gl_acknowledgements.end())
+        && !service_status->acknowledged) {
+      if (!(!service_status->current_state // !(OK or (normal ack and NOK))
+            || (!it->second.is_sticky
+                && (service_status->current_state
+                    != it->second.state)))) {
+        misc::shared_ptr<neb::acknowledgement>
+          ack(new neb::acknowledgement(it->second));
+        ack->deletion_time = time(NULL);
+        gl_publisher.write(ack);
+      }
+      gl_acknowledgements.erase(it);
+    }
   }
   catch (std::exception const& e) {
     logging::error(logging::medium) << "callbacks: error occurred while"
