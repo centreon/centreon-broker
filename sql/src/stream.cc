@@ -1517,8 +1517,9 @@ void stream::_process_log(
     *static_cast<neb::log_entry const*>(e.data()));
 
   // Log message.
-  logging::info(logging::medium) << "SQL: processing log event (ctime: "
-    << le.c_time << ")";
+  logging::info(logging::medium) << "SQL: processing log of poller '"
+    << le.poller_name << "' generated at " << le.c_time << " (type "
+    << le.msg_type << ")";
 
   // Enqueue log and eventually process it.
   _log_queue.push_back(e);

@@ -190,6 +190,8 @@ int main() {
     tpoints.store();
     engine.start();
     test::sleep_for(1);
+    engine.reload();
+    test::sleep_for(2);
 
     // Check configuration warning.
     {
