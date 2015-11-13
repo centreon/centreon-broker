@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Centreon
+** Copyright 2012-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -35,6 +35,8 @@ int main() {
   // Check.
   return (((cvar.source_id != 0)
            || (cvar.destination_id != 0)
+           || !cvar.default_value.isEmpty()
+           || !cvar.enabled
            || (cvar.host_id != 0)
            || (cvar.modified != false)
            || (cvar.name != "")

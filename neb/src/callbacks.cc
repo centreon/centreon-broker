@@ -304,6 +304,7 @@ int neb::callback_custom_variable(int callback_type, void* data) {
             new_cvar->var_type = 0;
             new_cvar->update_time = cvar->timestamp.tv_sec;
             new_cvar->value = cvar->var_value;
+            new_cvar->default_value = cvar->var_value;
 
             // Send custom variable event.
             logging::info(logging::low)
@@ -354,6 +355,7 @@ int neb::callback_custom_variable(int callback_type, void* data) {
             new_cvar->var_type = 1;
             new_cvar->update_time = cvar->timestamp.tv_sec;
             new_cvar->value = cvar->var_value;
+            new_cvar->default_value = cvar->var_value;
 
             // Send custom variable event.
             logging::info(logging::low)

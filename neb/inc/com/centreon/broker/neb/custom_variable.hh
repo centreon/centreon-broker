@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Centreon
+** Copyright 2009-2012,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ namespace            neb {
     static unsigned int
                      static_type();
 
+    QString          default_value;
     bool             enabled;
     short            var_type;
 
