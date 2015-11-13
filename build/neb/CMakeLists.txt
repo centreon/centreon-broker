@@ -634,24 +634,6 @@ if (WITH_TESTING)
     "${TEST_DIR}/set_log_data/initial_service_state.cc")
   target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
   add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Current host state.
-  set(TEST_NAME "neb_set_log_data_current_host_state")
-  add_executable("${TEST_NAME}"
-    "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/set_log_data.cc"
-    "${TEST_DIR}/set_log_data/dummy_engine.cc"
-    "${TEST_DIR}/set_log_data/current_host_state.cc")
-  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Current service state.
-  set(TEST_NAME "neb_set_log_data_current_service_state")
-  add_executable("${TEST_NAME}"
-    "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/set_log_data.cc"
-    "${TEST_DIR}/set_log_data/dummy_engine.cc"
-    "${TEST_DIR}/set_log_data/current_service_state.cc")
-  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
   #   Default logs.
   set(TEST_NAME "neb_set_log_data_default")
   add_executable("${TEST_NAME}"
