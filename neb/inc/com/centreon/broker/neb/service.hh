@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -56,6 +56,13 @@ namespace          neb {
     bool           flap_detection_on_unknown;
     bool           flap_detection_on_warning;
     bool           is_volatile;
+    bool           notify_on_critical;
+    bool           notify_on_unknown;
+    bool           notify_on_warning;
+    bool           stalk_on_critical;
+    bool           stalk_on_ok;
+    bool           stalk_on_unknown;
+    bool           stalk_on_warning;
 
     static mapping::entry const
                    entries[];

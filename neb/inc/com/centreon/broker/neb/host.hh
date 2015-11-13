@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -54,7 +54,13 @@ namespace          neb {
     bool           flap_detection_on_unreachable;
     bool           flap_detection_on_up;
     QString        host_name;
+    bool           notify_on_down;
+    bool           notify_on_unreachable;
     unsigned int   poller_id;
+    bool           stalk_on_down;
+    bool           stalk_on_unreachable;
+    bool           stalk_on_up;
+    QString        statusmap_image;
 
     static mapping::entry const
                    entries[];

@@ -1,6 +1,6 @@
 /*
-** Copyright 2002-2006 Ethan Galstad
-** Copyright 2011-2013 Merethis
+** Copyright 2002-2006      Ethan Galstad
+** Copyright 2011-2013,2015 Merethis
 **
 ** This file is part of Centreon Engine.
 **
@@ -231,7 +231,7 @@
 
 /* Modules. */
 #  define NEBTYPE_MODULE_ADD                       3000
-#  define NEBTYPE_MODULE_DELETE                    3000
+#  define NEBTYPE_MODULE_DELETE                    3001
 
 /* Parents. */
 #  define NEBTYPE_PARENT_ADD                       3100

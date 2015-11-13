@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -44,6 +44,8 @@ namespace                neb {
     virtual              ~host_service_status();
     host_service_status& operator=(host_service_status const& hss);
 
+    bool                 acknowledged;
+    short                acknowledgement_type;
     bool                 active_checks_enabled;
     QString              check_command;
     double               check_interval;
@@ -51,6 +53,7 @@ namespace                neb {
     short                check_type;
     short                current_check_attempt;
     short                current_state;
+    short                downtime_depth;
     bool                 enabled;
     QString              event_handler;
     double               execution_time;
@@ -60,13 +63,18 @@ namespace                neb {
     timestamp            last_check;
     short                last_hard_state;
     timestamp            last_hard_state_change;
+    timestamp            last_notification;
     timestamp            last_state_change;
     timestamp            last_update;
     double               latency;
     short                max_check_attempts;
     timestamp            next_check;
+    timestamp            next_notification;
+    bool                 no_more_notifications;
+    short                notification_number;
     bool                 obsess_over;
     QString              output;
+    bool                 passive_checks_enabled;
     double               percent_state_change;
     QString              perf_data;
     double               retry_interval;

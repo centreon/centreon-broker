@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Centreon
+** Copyright 2012-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -21,29 +21,36 @@
 
 #  include <QProcess>
 #  include <string>
+#  include "com/centreon/broker/namespace.hh"
 
-/**
- *  @class cbd cbd.hh "test/cbd.hh"
- *  @brief Centreon Broker daemon.
- *
- *  Centreon Broker daemon.
- */
-class         cbd {
-public:
-              cbd();
-              ~cbd();
-  void        set_config_file(std::string const& config_file);
-  void        start();
-  void        stop();
-  void        update();
-  void        wait();
+CCB_BEGIN()
 
-private:
-              cbd(cbd const& right);
-  cbd&        operator=(cbd const& right);
+namespace       test {
+  /**
+   *  @class cbd cbd.hh "test/cbd.hh"
+   *  @brief Centreon Broker daemon.
+   *
+   *  Centreon Broker daemon.
+   */
+  class         cbd {
+  public:
+                cbd();
+                ~cbd();
+    void        set_config_file(std::string const& config_file);
+    void        start();
+    void        stop();
+    void        update();
+    void        wait();
 
-  std::string _config_file;
-  QProcess    _cbd;
-};
+  private:
+                cbd(cbd const& other);
+    cbd&        operator=(cbd const& other);
+
+    std::string _config_file;
+    QProcess    _cbd;
+  };
+}
+
+CCB_END()
 
 #endif // !TEST_CBD_HH

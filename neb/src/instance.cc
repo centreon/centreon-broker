@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -38,8 +38,8 @@ instance::instance()
   : is_running(true),
     pid(0),
     poller_id(0),
-    program_end(0),
-    program_start(0) {}
+    program_end((time_t)-1),
+    program_start((time_t)-1) {}
 
 /**
  *  @brief Copy constructor.
@@ -143,10 +143,12 @@ mapping::entry const instance::entries[] = {
     "pid"),
   mapping::entry(
     &instance::program_end,
-    "end_time"),
+    "end_time",
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &instance::program_start,
-    "start_time"),
+    "start_time",
+    mapping::entry::invalid_on_minus_one),
   mapping::entry(
     &instance::version,
     "version"),

@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Centreon
+** Copyright 2012-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -25,12 +25,14 @@
 #include "test/misc.hh"
 #include "test/vars.hh"
 
+using namespace com::centreon::broker;
+
 /**
  *  Recursively remove a directory.
  *
  *  @param[in] dir_path Target directory.
  */
-void recursive_remove(std::string const& dir_path) {
+void test::recursive_remove(std::string const& dir_path) {
   QStringList entries(QDir(dir_path.c_str()).entryList());
   for (QStringList::const_iterator
          it(entries.begin()),
@@ -50,12 +52,14 @@ void recursive_remove(std::string const& dir_path) {
  *
  *  @param[in] units  Number of time units to sleep.
  */
-void sleep_for(unsigned int units) {
-  time_t now(time(NULL));
-  time_t target(now + units * MONITORING_ENGINE_INTERVAL_LENGTH);
-  while (now < target) {
-    sleep(target - now);
-    now = time(NULL);
+void test::sleep_for(int units) {
+  if (units > 0) {
+    time_t now(time(NULL));
+    time_t target(now + units * MONITORING_ENGINE_INTERVAL_LENGTH);
+    while (now < target) {
+      sleep(target - now);
+      now = time(NULL);
+    }
   }
   return ;
 }

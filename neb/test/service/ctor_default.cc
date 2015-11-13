@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -34,6 +34,9 @@ int main() {
   // Check.
   return (((s.source_id != 0)
            || (s.destination_id != 0)
+           || s.acknowledged
+           || (s.acknowledgement_type != 0)
+           || !s.action_url.isEmpty()
            || s.active_checks_enabled
            || !s.check_command.isEmpty()
            || s.check_freshness
@@ -45,10 +48,14 @@ int main() {
            || s.default_active_checks_enabled
            || s.default_event_handler_enabled
            || s.default_flap_detection_enabled
+           || s.default_notifications_enabled
+           || s.default_passive_checks_enabled
+           || (s.downtime_depth != 0)
            || !s.enabled
            || !s.event_handler.isEmpty()
            || s.event_handler_enabled
            || (fabs(s.execution_time) > 0.001)
+           || (fabs(s.first_notification_delay) > 0.0001)
            || s.flap_detection_enabled
            || s.flap_detection_on_critical
            || s.flap_detection_on_ok
@@ -59,11 +66,14 @@ int main() {
            || (fabs(s.high_flap_threshold) > 0.001)
            || (s.host_id != 0)
            || !s.host_name.isEmpty()
+           || !s.icon_image.isEmpty()
+           || !s.icon_image_alt.isEmpty()
            || s.is_flapping
            || s.is_volatile
            || (s.last_check != 0)
            || (s.last_hard_state != 4)
            || (s.last_hard_state_change != 0)
+           || (s.last_notification != 0)
            || (s.last_state_change != 0)
            || (s.last_time_critical != 0)
            || (s.last_time_ok != 0)
@@ -74,12 +84,33 @@ int main() {
            || (fabs(s.low_flap_threshold) > 0.001)
            || (s.max_check_attempts != 0)
            || (s.next_check != 0)
+           || (s.next_notification != 0)
+           || s.no_more_notifications
+           || !s.notes.isEmpty()
+           || !s.notes_url.isEmpty()
+           || s.notifications_enabled
+           || (fabs(s.notification_interval) > 0.0001)
+           || (s.notification_number != 0)
+           || !s.notification_period.isEmpty()
+           || s.notify_on_critical
+           || s.notify_on_downtime
+           || s.notify_on_flapping
+           || s.notify_on_recovery
+           || s.notify_on_unknown
+           || s.notify_on_warning
            || s.obsess_over
            || !s.output.isEmpty()
+           || s.passive_checks_enabled
            || (fabs(s.percent_state_change) > 0.001)
            || !s.perf_data.isEmpty()
+           || s.retain_nonstatus_information
+           || s.retain_status_information
            || (fabs(s.retry_interval) > 0.001)
            || s.should_be_scheduled
+           || s.stalk_on_critical
+           || s.stalk_on_ok
+           || s.stalk_on_unknown
+           || s.stalk_on_warning
            || (s.state_type != 0)
            || !s.service_description.isEmpty()
            || (s.service_id != 0))

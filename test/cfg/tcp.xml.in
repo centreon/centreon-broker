@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<centreonbroker>
+  <include>@PROJECT_SOURCE_DIR@/test/cfg/broker_modules.xml</include>
+  <broker_id>@BROKER_ID@</broker_id>
+  <broker_name>@BROKER_NAME@</broker_name>
+  <poller_id>@POLLER_ID@</poller_id>
+  <poller_name>@POLLER_NAME@</poller_name>
+  <!--
+  <stats>
+    <fifo>/tmp/tcp.fifo</fifo>
+  </stats>
+  <logger>
+    <type>file</type>
+    <name>tcp.log</name>
+    <config>1</config>
+    <debug>1</debug>
+    <error>1</error>
+    <info>1</info>
+    <level>3</level>
+  </logger>
+  -->
+  <output>
+    <name>tcp</name>
+    <type>tcp</type>
+    <protocol>bbdo</protocol>
+    <host>@TCP_HOST@</host>
+    <port>@TCP_PORT@</port>
+    @TCP_ADDITIONAL@
+  </output>
+</centreonbroker>

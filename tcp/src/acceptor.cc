@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -80,7 +80,6 @@ misc::shared_ptr<io::stream> acceptor::open() {
     _socket.reset(new server_socket(_port));
 
   // Wait for incoming connections.
-  logging::debug(logging::medium) << "TCP: waiting for new connection";
   if (!_socket->has_pending_connections()) {
     bool timedout(false);
     _socket->wait_for_new_connection(1000, &timedout);

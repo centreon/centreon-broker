@@ -60,9 +60,10 @@ namespace          sql {
     stream&        operator=(stream const& other);
     void           _cache_clean();
     void           _cache_create();
+    void           _clean_empty_host_groups();
+    void           _clean_empty_service_groups();
     void           _clean_tables(unsigned int instance_id);
     bool           _is_valid_poller(unsigned int poller_id);
-    void           _prepare();
     template <typename T>
     void           _prepare_select(
                      database_query& st,
@@ -77,6 +78,8 @@ namespace          sql {
     void           _process_host(misc::shared_ptr<io::data> const& e);
     void           _process_host_check(misc::shared_ptr<io::data> const& e);
     void           _process_host_dependency(misc::shared_ptr<io::data> const& e);
+    void           _process_host_group(misc::shared_ptr<io::data> const& e);
+    void           _process_host_group_member(misc::shared_ptr<io::data> const& e);
     void           _process_host_parent(misc::shared_ptr<io::data> const& e);
     void           _process_host_state(misc::shared_ptr<io::data> const& e);
     void           _process_host_status(misc::shared_ptr<io::data> const& e);
@@ -90,6 +93,8 @@ namespace          sql {
     void           _process_service(misc::shared_ptr<io::data> const& e);
     void           _process_service_check(misc::shared_ptr<io::data> const& e);
     void           _process_service_dependency(misc::shared_ptr<io::data> const& e);
+    void           _process_service_group(misc::shared_ptr<io::data> const& e);
+    void           _process_service_group_member(misc::shared_ptr<io::data> const& e);
     void           _process_service_state(misc::shared_ptr<io::data> const& e);
     void           _process_service_status(misc::shared_ptr<io::data> const& e);
     void           _process_state(misc::shared_ptr<io::data> const& e);
@@ -116,6 +121,8 @@ namespace          sql {
     database_query _custom_variable_status_update;
     database_query _downtime_insert;
     database_query _downtime_update;
+    database_query _empty_host_groups_delete;
+    database_query _empty_service_groups_delete;
     database_query _event_handler_insert;
     database_query _event_handler_update;
     database_query _flapping_status_insert;
@@ -125,8 +132,13 @@ namespace          sql {
     database_query _host_check_update;
     database_query _host_dependency_insert;
     database_query _host_dependency_update;
+    database_query _host_group_insert;
+    database_query _host_group_update;
+    database_query _host_group_member_insert;
+    database_query _host_group_member_delete;
     database_query _host_parent_insert;
     database_query _host_parent_select;
+    database_query _host_parent_delete;
     database_query _host_state_insert;
     database_query _host_state_update;
     database_query _host_status_update;
@@ -146,6 +158,10 @@ namespace          sql {
     database_query _service_check_update;
     database_query _service_dependency_insert;
     database_query _service_dependency_update;
+    database_query _service_group_insert;
+    database_query _service_group_update;
+    database_query _service_group_member_insert;
+    database_query _service_group_member_delete;
     database_query _service_state_insert;
     database_query _service_state_update;
     database_query _service_status_update;

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Centreon
+** Copyright 2009-2011,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ namespace                     misc {
           unsigned int limit,
           T t) throw ();
     stringifier&              _internal_copy(stringifier const& right);
-    bool                      _realloc(unsigned int new_size) throw ();
+    bool                      _realloc(unsigned int new_size);
 
     char*                     _buffer;
     unsigned int              _current;

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Centreon
+** Copyright 2009-2012,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -47,16 +47,18 @@ namespace            neb {
     static unsigned int
                      static_type();
 
-    QString          address;
+    bool             active_host_checks_enabled;
+    bool             active_service_checks_enabled;
     bool             check_hosts_freshness;
     bool             check_services_freshness;
-    QString          description;
     QString          global_host_event_handler;
     QString          global_service_event_handler;
     timestamp        last_alive;
     timestamp        last_command_check;
     bool             obsess_over_hosts;
     bool             obsess_over_services;
+    bool             passive_host_checks_enabled;
+    bool             passive_service_checks_enabled;
     unsigned int     poller_id;
 
     static mapping::entry const
