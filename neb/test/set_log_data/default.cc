@@ -44,7 +44,7 @@ int main() {
                != "EXTERNAL COMMAND: SCHEDULE_FORCED_SVC_CHECK;MyHost;MyService;1428930446")
            || (le.retry != 0)
            || (le.service_description != "")
-           || (le.status != 5))
+           || (le.status != 0))
           ? EXIT_FAILURE
           : EXIT_SUCCESS);
 }

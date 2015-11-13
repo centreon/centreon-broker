@@ -187,8 +187,7 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
       }
       else {
         le.msg_type = 5;
-        le.output = "EXTERNAL COMMAND: ";
-        le.output.append(lasts);
+        le.output = log_data;
       }
     }
     else if (!strcmp(datadup, "Warning")) {
