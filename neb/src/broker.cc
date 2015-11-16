@@ -84,6 +84,15 @@ extern "C" {
                   "acknowledgements"));
         e.register_event(
             io::events::neb,
+            neb::de_comment,
+            io::event_info(
+                  "comment",
+                  &neb::comment::operations,
+                  neb::comment::entries,
+                  "",
+                  "comments"));
+        e.register_event(
+            io::events::neb,
             neb::de_custom_variable,
             io::event_info(
                   "custom_variable",

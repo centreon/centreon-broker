@@ -225,7 +225,7 @@ int neb::callback_comment(int callback_type, void* data) {
       comment->author = comment_data->author_name;
     if (comment_data->comment_data)
       comment->data = comment_data->comment_data;
-    comment->comment_type = comment_data->type;
+    comment->comment_type = comment_data->comment_type;
     if (NEBTYPE_COMMENT_DELETE == comment_data->type)
       comment->deletion_time = time(NULL);
     comment->entry_time = comment_data->entry_time;

@@ -150,14 +150,14 @@ mapping::entry const comment::entries[] = {
     "author"),
   mapping::entry(
     &comment::comment_type,
-    "comment_type"),
+    "type"),
   mapping::entry(
     &comment::data,
     "data"),
   mapping::entry(
     &comment::deletion_time,
     "deletion_time",
-    mapping::entry::invalid_on_minus_one),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &comment::entry_time,
     "entry_time",
@@ -168,7 +168,7 @@ mapping::entry const comment::entries[] = {
   mapping::entry(
     &comment::expire_time,
     "expire_time",
-    mapping::entry::invalid_on_minus_one),
+    mapping::entry::invalid_on_zero),
   mapping::entry(
     &comment::expires,
     "expires"),
@@ -184,7 +184,7 @@ mapping::entry const comment::entries[] = {
     "persistent"),
   mapping::entry(
     &comment::poller_id,
-    "poller_id",
+    "instance_id",
     mapping::entry::invalid_on_zero),
   mapping::entry(
     &comment::service_id,
