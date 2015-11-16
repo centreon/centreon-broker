@@ -69,6 +69,7 @@ namespace          sql {
                      database_query& st,
                      std::string const& table_name);
     void           _process_acknowledgement(misc::shared_ptr<io::data> const& e);
+    void           _process_comment(misc::shared_ptr<io::data> const& e);
     void           _process_custom_variable(misc::shared_ptr<io::data> const& e);
     void           _process_custom_variable_status(misc::shared_ptr<io::data> const& e);
     void           _process_downtime(misc::shared_ptr<io::data> const& e);
@@ -115,6 +116,8 @@ namespace          sql {
     database       _db;
     database_query _acknowledgement_insert;
     database_query _acknowledgement_update;
+    database_query _comment_insert;
+    database_query _comment_update;
     database_query _custom_variable_insert;
     database_query _custom_variable_update;
     database_query _custom_variable_delete;

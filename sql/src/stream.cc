@@ -60,7 +60,7 @@ void (stream::* const stream::_neb_processing_table[])(misc::shared_ptr<io::data
   NULL,
   &stream::_process_acknowledgement,
   NULL,
-  NULL,
+  &stream::_process_comment,
   &stream::_process_custom_variable,
   &stream::_process_custom_variable_status,
   &stream::_process_downtime,
@@ -325,6 +325,24 @@ void stream::_clean_tables(unsigned int instance_id) {
       << "SQL: could not clean modules table: " << e.what();
   }
 
+  // Remove comments.
+  if (db_v2)
+    try {
+      std::ostringstream ss;
+      ss << "UPDATE comments AS c"
+            "  JOIN hosts AS h"
+            "    ON c.host_id=h.host_id"
+            "  SET c.deletion_time=" << time(NULL)
+         << "  WHERE h.instance_id=" << instance_id
+         << "    AND c.persistent=0"
+            "    AND (c.deletion_time IS NULL OR c.deletion_time=0)";
+      q.run_query(ss.str());
+    }
+    catch (std::exception const& e) {
+      logging::error(logging::medium)
+        << "SQL: could not clean comments table: " << e.what();
+    }
+
   // Remove custom variables.
   try {
     std::ostringstream ss;
@@ -475,6 +493,37 @@ void stream::_process_acknowledgement(
     // database_query q(_db);
     // q.run_query(query.str(), "SQL: couldn't update acknowledgement flags");
   }
+
+  return ;
+}
+
+/**
+ *  Process a comment event.
+ *
+ *  @param[in] e  Uncasted comment.
+ */
+void stream::_process_comment(misc::shared_ptr<io::data> const& e) {
+  // Cast object.
+  neb::comment const& cmmnt(e.ref_as<neb::comment const>());
+
+  // Prepare queries.
+  if (!_comment_insert.prepared() || !_comment_update.prepared()) {
+    database_preparator::event_unique unique;
+    unique.insert("host_id");
+    unique.insert("service_id");
+    unique.insert("entry_time");
+    unique.insert("instance_id");
+    unique.insert("internal_id");
+    database_preparator dbp(neb::comment::static_type(), unique);
+    dbp.prepare_insert(_comment_insert);
+    dbp.prepare_update(_comment_update);
+  }
+
+  // Processing.
+  logging::info(logging::medium)
+    << "SQL: processing comment of poller " << cmmnt.poller_id
+    << " on (" << cmmnt.host_id << ", " << cmmnt.service_id << ")";
+  _update_on_none_insert(_comment_insert, _comment_update, cmmnt);
 
   return ;
 }
@@ -2341,6 +2390,8 @@ stream::stream(
   : _db(dbcfg),
     _acknowledgement_insert(_db),
     _acknowledgement_update(_db),
+    _comment_insert(_db),
+    _comment_update(_db),
     _custom_variable_insert(_db),
     _custom_variable_update(_db),
     _custom_variable_delete(_db),
