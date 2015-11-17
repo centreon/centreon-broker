@@ -1652,7 +1652,7 @@ void stream::_process_service_group(
     // Delete group members.
     {
       std::ostringstream oss;
-      oss << "DELETE " << mapped_type<neb::service_group_member>::table
+      oss << "DELETE sgm"
           << "  FROM " << mapped_type<neb::service_group_member>::table << " AS sgm"
           << "  LEFT JOIN " << mapped_type<neb::host>::table << " AS h"
           << "    ON sgm.host_id=h.host_id"
