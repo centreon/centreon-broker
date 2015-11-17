@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ namespace               multiplexing {
    */
   class                 subscriber : public io::stream {
   public:
-                        subscriber(QString const& temporary_name);
+                        subscriber(QString const& temporary_name = "");
                         ~subscriber();
     static void         event_queue_max_size(unsigned int max) throw ();
     static unsigned int event_queue_max_size() throw ();

@@ -62,21 +62,23 @@ subscriber::subscriber(QString const& temporary_name)
       size = gl_subscribers.size();
     }
 
-    // if necessary load last temporary for recovery.
-    _temporary = io::temporary::instance().create(_temporary_name);
-    if (_temporary) {
-      misc::shared_ptr<io::data> event;
-      while (_total_events < event_queue_max_size()) {
-        _recovery_temporary = _get_event_from_temporary(event);
-        if (!_recovery_temporary) {
-          // All temporary event was loaded into the memory event queue.
-          // The recovery mode is disable.
-          break;
-        }
-        else {
-          // Push temporary event to the memory event queue.
-          _events.enqueue(event);
-          ++_total_events;
+    // If necessary load last temporary for recovery.
+    if (!_temporary_name.isEmpty()) {
+      _temporary = io::temporary::instance().create(_temporary_name);
+      if (_temporary) {
+        misc::shared_ptr<io::data> event;
+        while (_total_events < event_queue_max_size()) {
+          _recovery_temporary = _get_event_from_temporary(event);
+          if (!_recovery_temporary) {
+            // All temporary event was loaded into the memory event queue.
+            // The recovery mode is disable.
+            break;
+          }
+          else {
+            // Push temporary event to the memory event queue.
+            _events.enqueue(event);
+            ++_total_events;
+          }
         }
       }
     }
@@ -340,8 +342,17 @@ unsigned int subscriber::write(misc::shared_ptr<io::data> const& event) {
     // Check if the event queue limit is reach.
     if (_total_events >= event_queue_max_size()) {
       // Try to create temporary if is necessary.
-      if (!_temporary)
-        _temporary = io::temporary::instance().create(_temporary_name);
+      if (!_temporary) {
+        if (!_temporary_name.isEmpty())
+          _temporary = io::temporary::instance().create(_temporary_name);
+        else {
+          // If temporary name is empty we cannot be in recovery
+          // temporary mode, therefore we can pop queue and decrement
+          // event count.
+          _events.dequeue();
+          --_total_events;
+        }
+      }
 
       // Check if we have temporary.
       if (_temporary)
