@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/dumper/db_dump.hh"
+#include "com/centreon/broker/dumper/db_dump_committed.hh"
 #include "com/centreon/broker/dumper/db_loader.hh"
 #include "com/centreon/broker/dumper/db_reader.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
@@ -118,6 +119,8 @@ int db_reader::write(misc::shared_ptr<io::data> const& d) {
     if (req.is_addressed_to(_name)) {
       logging::info(logging::medium)
         << "db_reader: processing command: " << req.cmd;
+      // Cache the source id for asynchronuous response.
+      _req_id_to_source_id[req.uuid] = req.source_id;
       try {
         // Split command for processing.
         std::vector<std::string> params;
@@ -131,23 +134,14 @@ int db_reader::write(misc::shared_ptr<io::data> const& d) {
           // Process external commands.
           unsigned int poller_id(strtoul(params[1].c_str(), NULL, 0));
           if (params[0] == "UPDATE_CFG_DB")
-            _update_cfg_db(poller_id);
+            _update_cfg_db(poller_id, req.uuid);
           else if (params[0] == "SYNC_CFG_DB")
-            _sync_cfg_db(poller_id);
+            _sync_cfg_db(poller_id, req.uuid);
           else {
             throw (exceptions::msg()
                    << "unknown command: valid commands are"
                    << " UPDATE_CFG and SYNC_CFG_DB");
           }
-
-          // Send successful result.
-          misc::shared_ptr<extcmd::command_result>
-            res(new extcmd::command_result);
-          res->id = req.id;
-          res->msg = "Command successfully executed.";
-          res->code = 0;
-          res->destination_id = req.source_id;
-          multiplexing::publisher().write(res);
         }
       }
       catch (std::exception const& e) {
@@ -159,13 +153,23 @@ int db_reader::write(misc::shared_ptr<io::data> const& d) {
         // Send error result.
         misc::shared_ptr<extcmd::command_result>
           res(new extcmd::command_result);
-        res->id = req.id;
+        res->uuid = req.uuid;
         res->msg = e.what();
         res->code = -1;
         res->destination_id = req.source_id;
         multiplexing::publisher().write(res);
       }
     }
+  }
+  else if (d->type() == dumper::db_dump_committed::static_type()) {
+    // Send successful result.
+    misc::shared_ptr<extcmd::command_result>
+      res(new extcmd::command_result);
+    res->uuid = d.ref_as<dumper::db_dump_committed>().req_id;
+    res->msg = "Command successfully executed.";
+    res->code = 0;
+    res->destination_id = _req_id_to_source_id[res->uuid];
+    multiplexing::publisher().write(res);
   }
   return (1);
 }
@@ -181,7 +185,9 @@ int db_reader::write(misc::shared_ptr<io::data> const& d) {
  *
  *  @param[in] poller_id  Poller ID.
  */
-void db_reader::_sync_cfg_db(unsigned int poller_id) {
+void db_reader::_sync_cfg_db(
+                  unsigned int poller_id,
+                  QString const& req_id) {
   if (poller_id) {
     // Log message.
     logging::info(logging::medium)
@@ -203,6 +209,7 @@ void db_reader::_sync_cfg_db(unsigned int poller_id) {
       start->full = true;
       start->commit = false;
       start->poller_id = poller_id;
+      start->req_id = req_id;
       pblshr.write(start);
     }
     send_objects(state.get_organizations());
@@ -214,6 +221,7 @@ void db_reader::_sync_cfg_db(unsigned int poller_id) {
       end->full = true;
       end->commit = true;
       end->poller_id = poller_id;
+      end->req_id = req_id;
       pblshr.write(end);
     }
 
@@ -228,7 +236,7 @@ void db_reader::_sync_cfg_db(unsigned int poller_id) {
  *
  *  @param[in] poller_id  Poller ID.
  */
-void db_reader::_update_cfg_db(unsigned int poller_id) {
+void db_reader::_update_cfg_db(unsigned int poller_id, QString const& req_id) {
   if (poller_id) {
     // Log message.
     logging::info(logging::medium)
@@ -250,6 +258,7 @@ void db_reader::_update_cfg_db(unsigned int poller_id) {
       start->full = false;
       start->commit = false;
       start->poller_id = poller_id;
+      start->req_id = req_id;
       pblshr.write(start);
     }
     send_objects(d.organizations_to_delete());
@@ -278,6 +287,7 @@ void db_reader::_update_cfg_db(unsigned int poller_id) {
       end->full = false;
       end->commit = true;
       end->poller_id = poller_id;
+      end->req_id = req_id;
       pblshr.write(end);
     }
 

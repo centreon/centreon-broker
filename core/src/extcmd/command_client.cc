@@ -106,12 +106,9 @@ bool command_client::read(
       // another command status.
       static char const* execute_cmd("EXECUTE;");
       static char const* status_cmd("STATUS;");
-      if (cmd.substr(0, strlen(status_cmd)) == status_cmd) {
-        unsigned int cmd_id(strtoul(
-                              cmd.substr(strlen(status_cmd)).c_str(),
-                              NULL,
-                              0));
-        res = _listener->command_status(io::data::broker_id, cmd_id);
+      if (cmd.substr(0, ::strlen(status_cmd)) == status_cmd) {
+        res = _listener->command_status(
+                           QString::fromStdString(cmd.substr(::strlen(status_cmd))));
       }
       // Store command in result listener and let
       // it be processed by multiplexing engine.
@@ -121,11 +118,11 @@ bool command_client::read(
         req->parse(cmd.substr(strlen(execute_cmd)));
         d = req;
         logging::debug(logging::high)
-          << "command: sending request " << req->id << " ('" << req->cmd
+          << "command: sending request " << req->uuid << " ('" << req->cmd
           << "') to endpoint '" << req->endp
           << "' of Centreon Broker instance " << req->destination_id;
         _listener->write(req);
-        res = _listener->command_status(io::data::broker_id, req->id);
+        res = _listener->command_status(req->uuid);
       }
       else
         throw (exceptions::msg() << "invalid command format: expected "
@@ -135,7 +132,7 @@ bool command_client::read(
     catch (std::exception const& e) {
       // At this point, command request was not written to the command
       // listener, so it not necessary to write command result either.
-      res.id = 0;
+      res.uuid = QString();
       res.code = -1;
       res.msg = e.what();
     }
@@ -144,7 +141,7 @@ bool command_client::read(
     std::string result_str;
     {
       std::ostringstream oss;
-      oss << std::dec << res.id << " " << std::hex << std::showbase
+      oss << res.uuid.toStdString() << " " << std::hex << std::showbase
           << res.code << " " << res.msg.toStdString() << "\n";
       result_str = oss.str();
     }

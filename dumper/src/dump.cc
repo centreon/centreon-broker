@@ -85,6 +85,7 @@ void dump::_internal_copy(dump const& right) {
   content = right.content;
   tag = right.tag;
   filename = right.filename;
+  req_id = right.req_id;
   return ;
 }
 
@@ -105,6 +106,9 @@ mapping::entry const dump::entries[] = {
   mapping::entry(
     &dump::filename,
     "filename"),
+  mapping::entry(
+    &dump::req_id,
+    "req_id"),
   mapping::entry()
 };
 

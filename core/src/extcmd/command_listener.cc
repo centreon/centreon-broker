@@ -39,21 +39,19 @@ command_listener::~command_listener() {}
 /**
  *  Get status of command.
  *
- *  @param[in] source_broker_id  Source Broker ID.
- *  @param[in] command_id        Command ID.
+ *  @param[in] command_uuid      Command UUID.
  *
  *  @return Command result.
  */
 command_result command_listener::command_status(
-                                   unsigned int source_broker_id,
-                                   unsigned int command_id) {
+                                   QString const& command_uuid) {
   // Check for entries that should be removed from cache.
   _check_invalid();
 
   command_result res;
   QMutexLocker lock(&_pendingm);
-  std::map<std::pair<unsigned int, unsigned int>, pending_command>::const_iterator
-    it(_pending.find(std::make_pair(source_broker_id, command_id)));
+  std::map<std::string, pending_command>::const_iterator
+    it(_pending.find(command_uuid.toStdString()));
   // Command result exists.
   if (it != _pending.end()) {
     res = it->second.result;
@@ -61,12 +59,11 @@ command_result command_listener::command_status(
   // Fake command result.
   else {
     lock.unlock();
-    res.id = command_id;
-    res.destination_id = source_broker_id;
+    res.uuid = command_uuid;
+    res.destination_id = io::data::broker_id;
     res.code = -1;
     std::ostringstream oss;
-    oss << "Command " << command_id << " of Centreon Broker "
-        << source_broker_id
+    oss << "Command " << command_uuid.toStdString()
         << " is not available (invalid command ID, timeout, ?)";
     res.msg = oss.str().c_str();
   }
@@ -105,13 +102,13 @@ int command_listener::write(misc::shared_ptr<io::data> const& d) {
   if (d->type() == command_request::static_type()) {
     command_request const& req(d.ref_as<command_request const>());
     QMutexLocker lock(&_pendingm);
-    std::map<std::pair<unsigned int, unsigned int>, pending_command>::iterator
-      it(_pending.find(std::make_pair(req.source_id, req.id)));
+    std::map<std::string, pending_command>::iterator
+      it(_pending.find(req.uuid.toStdString()));
     if (it == _pending.end()) {
       pending_command&
-        p(_pending[std::make_pair(req.source_id, req.id)]);
+        p(_pending[req.uuid.toStdString()]);
       p.invalid_time = time(NULL) + _request_timeout;
-      p.result.id = req.id;
+      p.result.uuid = req.uuid;
       p.result.code = 1;
       p.result.msg = "Pending";
       if (p.invalid_time < _next_invalid)
@@ -123,7 +120,7 @@ int command_listener::write(misc::shared_ptr<io::data> const& d) {
     command_result const& res(d.ref_as<command_result const>());
     QMutexLocker lock(&_pendingm);
     pending_command&
-      p(_pending[std::make_pair(res.destination_id, res.id)]);
+      p(_pending[res.uuid.toStdString()]);
     p.result = res;
     p.invalid_time = time(NULL) + _result_timeout;
     if (p.invalid_time < _next_invalid)
@@ -143,7 +140,7 @@ void command_listener::_check_invalid() {
   time_t now(time(NULL));
   _next_invalid = now + 24 * 60 * 60;
   QMutexLocker lock(&_pendingm);
-  for (std::map<std::pair<unsigned int, unsigned int>, pending_command>::iterator
+  for (std::map<std::string, pending_command>::iterator
          it(_pending.begin()),
          end(_pending.end());
        it != end;) {
@@ -155,7 +152,7 @@ void command_listener::_check_invalid() {
         ++it;
       }
       else {
-        std::map<std::pair<unsigned int, unsigned int>, pending_command>::iterator
+        std::map<std::string, pending_command>::iterator
           to_delete(it);
         ++it;
         _pending.erase(to_delete);

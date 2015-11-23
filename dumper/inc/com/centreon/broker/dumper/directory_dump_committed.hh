@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,34 +16,37 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_DUMPER_RELOAD_HH
-#  define CCB_DUMPER_RELOAD_HH
+#ifndef CCB_DUMPER_DIRECTORY_DUMP_COMMITTED_HH
+#  define CCB_DUMPER_DIRECTORY_DUMP_COMMITTED_HH
 
-#  include <QString>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace               dumper {
   /**
-   *  @class reload reload.hh "com/centreon/broker/dumper/reload.hh"
-   *  @brief Event for an asked reload.
+   *  @class directory_dump_committed directory_dump_committed.hh "com/centreon/broker/dumper/directory_dump_committed.hh"
+   *  @brief Directory dump committed event.
    *
-   *  Reload asked.
+   *  Notify that a directory dump has been properly committed.
    */
-  class                 reload : public io::data {
+  class                 directory_dump_committed : public io::data {
   public:
-                        reload();
-                        reload(reload const& right);
-                        ~reload();
-    reload&             operator=(reload const& right);
+                        directory_dump_committed();
+                        directory_dump_committed(
+                          directory_dump_committed const& other);
+                        ~directory_dump_committed();
+    directory_dump_committed&
+                        operator=(directory_dump_committed const& other);
     unsigned int        type() const;
     static unsigned int static_type();
 
-    QString             tag;
+    bool                success;
+    QString             req_id;
+    QString             error_message;
 
     static mapping::entry const
                         entries[];
@@ -51,10 +54,10 @@ namespace               dumper {
                         operations;
 
   private:
-    void                _internal_copy(reload const& right);
+    void                _internal_copy(directory_dump_committed const& other);
   };
 }
 
 CCB_END()
 
-#endif // !CCB_DUMPER_RELOAD_HH
+#endif // !CCB_DUMPER_DIRECTORY_DUMP_COMMITTED_HH

@@ -16,13 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QMutexLocker>
-#include "com/centreon/broker/extcmd/command_result.hh"
-#include "com/centreon/broker/extcmd/internal.hh"
+#include "com/centreon/broker/dumper/directory_dump_committed.hh"
+#include "com/centreon/broker/dumper/internal.hh"
 #include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::extcmd;
+using namespace com::centreon::broker::dumper;
 
 /**************************************
 *                                     *
@@ -33,14 +32,15 @@ using namespace com::centreon::broker::extcmd;
 /**
  *  Default constructor.
  */
-command_result::command_result() : code(0) {}
+directory_dump_committed::directory_dump_committed()
+  : success(true) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-command_result::command_result(command_result const& other)
+directory_dump_committed::directory_dump_committed(directory_dump_committed const& other)
   : io::data(other) {
   _internal_copy(other);
 }
@@ -48,7 +48,7 @@ command_result::command_result(command_result const& other)
 /**
  *  Destructor.
  */
-command_result::~command_result() {}
+directory_dump_committed::~directory_dump_committed() {}
 
 /**
  *  Assignment operator.
@@ -57,8 +57,8 @@ command_result::~command_result() {}
  *
  *  @return This object.
  */
-command_result& command_result::operator=(
-                                  command_result const& other) {
+directory_dump_committed& directory_dump_committed::operator=(
+  directory_dump_committed const& other) {
   if (this != &other) {
     io::data::operator=(other);
     _internal_copy(other);
@@ -67,23 +67,22 @@ command_result& command_result::operator=(
 }
 
 /**
- *  Get the event type.
+ *  Get event type.
  *
- *  @return The event type.
+ *  @return Event type.
  */
-unsigned int command_result::type() const {
-  return (command_result::static_type());
+unsigned int directory_dump_committed::type() const {
+  return (static_type());
 }
 
 /**
- *  Get the event type.
+ *  Get event class type.
  *
- *  @return The event type.
+ *  @return Event class type.
  */
-unsigned int command_result::static_type() {
-  return (io::events::data_type<io::events::extcmd, io::events::de_command_result>::value);
+unsigned int directory_dump_committed::static_type() {
+  return (io::events::data_type<io::events::dumper, dumper::de_directory_dump_committed>::value);
 }
-
 
 /**************************************
 *                                     *
@@ -96,10 +95,11 @@ unsigned int command_result::static_type() {
  *
  *  @param[in] other  Object to copy.
  */
-void command_result::_internal_copy(command_result const& other) {
-  code = other.code;
-  uuid = other.uuid;
-  msg = other.msg;
+void directory_dump_committed::_internal_copy(
+       directory_dump_committed const& other) {
+  success = other.success;
+  req_id = other.req_id;
+  error_message = other.error_message;
   return ;
 }
 
@@ -110,24 +110,23 @@ void command_result::_internal_copy(command_result const& other) {
 **************************************/
 
 // Mapping.
-mapping::entry const command_result::entries[] = {
+mapping::entry const directory_dump_committed::entries[] = {
   mapping::entry(
-    &command_result::code,
-    "code"),
+    &directory_dump_committed::success,
+    "success"),
   mapping::entry(
-    &command_result::uuid,
-    "uuid",
-    mapping::entry::invalid_on_zero),
+    &directory_dump_committed::req_id,
+    "req_id"),
   mapping::entry(
-    &command_result::msg,
-    "msg"),
+    &directory_dump_committed::error_message,
+    "error_message"),
   mapping::entry()
 };
 
 // Operations.
-static io::data* new_command_result() {
-  return (new command_result);
+static io::data* new_directory_dump_committed() {
+  return (new directory_dump_committed);
 }
-io::event_info::event_operations const command_result::operations = {
-  &new_command_result
+io::event_info::event_operations const directory_dump_committed::operations = {
+  &new_directory_dump_committed
 };

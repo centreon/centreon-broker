@@ -48,11 +48,15 @@ namespace           dumper {
   private:
                     db_reader(db_reader const& other);
     db_reader&      operator=(db_reader const& other);
-    void            _sync_cfg_db(unsigned int poller_id);
-    void            _update_cfg_db(unsigned int poller_id);
+    void            _sync_cfg_db(unsigned int poller_id, QString const& req_id);
+    void            _update_cfg_db(
+                      unsigned int poller_id,
+                      QString const& req_id);
 
     umap<unsigned int, entries::state>
                     _cache;
+    umap<QString, unsigned int>
+                    _req_id_to_source_id;
     database_config _db_cfg;
     QString         _name;
   };

@@ -19,6 +19,7 @@
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/dumper/db_dump.hh"
 #include "com/centreon/broker/dumper/db_dump_committed.hh"
+#include "com/centreon/broker/dumper/directory_dump.hh"
 #include "com/centreon/broker/dumper/entries/ba.hh"
 #include "com/centreon/broker/dumper/entries/ba_type.hh"
 #include "com/centreon/broker/dumper/entries/boolean.hh"
@@ -195,6 +196,13 @@ extern "C" {
                   dumper::entries::service::entries,
                   "cfg_services",
                   "service"));
+        e.register_event(
+            io::events::dumper,
+            dumper::de_directory_dump,
+            io::event_info(
+                  "directory_dump",
+                  &dumper::directory_dump::operations,
+                  dumper::directory_dump::entries));
       }
 
 

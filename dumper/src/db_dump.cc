@@ -96,6 +96,7 @@ void db_dump::_internal_copy(db_dump const& other) {
   commit = other.commit;
   full = other.full;
   poller_id = other.poller_id;
+  req_id = other.req_id;
   return ;
 }
 
@@ -116,6 +117,9 @@ mapping::entry const db_dump::entries[] = {
   mapping::entry(
     &db_dump::poller_id,
     "poller_id"),
+  mapping::entry(
+    &db_dump::req_id,
+    "req_id"),
   mapping::entry()
 };
 

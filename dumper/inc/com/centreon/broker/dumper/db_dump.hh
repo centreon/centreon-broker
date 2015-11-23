@@ -45,6 +45,8 @@ namespace               dumper {
     bool                commit;
     bool                full;
     unsigned int        poller_id;
+    // Small cookie used to track which request is which.
+    QString             req_id;
 
     static mapping::entry const
                         entries[];

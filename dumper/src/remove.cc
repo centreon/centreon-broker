@@ -84,6 +84,7 @@ unsigned int dumper::remove::static_type() {
 void dumper::remove::_internal_copy(remove const& right) {
   tag = right.tag;
   filename = right.filename;
+  req_id = right.req_id;
   return ;
 }
 
@@ -101,6 +102,9 @@ mapping::entry const dumper::remove::entries[] = {
   mapping::entry(
     &dumper::remove::filename,
     "filename"),
+  mapping::entry(
+    &dumper::remove::req_id,
+    "req_id"),
   mapping::entry()
 };
 

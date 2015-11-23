@@ -65,8 +65,12 @@ namespace              dumper {
 
     std::map<std::string, timestamp_cache>
                         _files_cache;
+    std::map<std::string, unsigned int>
+                        _command_to_poller_id;
 
-    void               _dump_dir(std::string const& path);
+    void               _dump_dir(
+                         std::string const& path,
+                         QString const& req_id);
 
     void               _load_cache();
     void               _save_cache();

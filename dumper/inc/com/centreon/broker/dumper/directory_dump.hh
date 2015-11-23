@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_DUMPER_DB_DUMP_COMMITTED_HH
-#  define CCB_DUMPER_DB_DUMP_COMMITTED_HH
+#ifndef CCB_DUMPER_DIRECTORY_DUMP_HH
+#  define CCB_DUMPER_DIRECTORY_DUMP_HH
 
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
@@ -28,21 +28,22 @@ CCB_BEGIN()
 
 namespace               dumper {
   /**
-   *  @class db_dump_committed db_dump_committed.hh "com/centreon/broker/dumper/db_dump_committed.hh"
-   *  @brief DB dump committed event.
+   *  @class directory_dump directory_dump.hh "com/centreon/broker/dumper/directory_dump.hh"
+   *  @brief Directory dump event.
    *
-   *  A general notification that the database just has been dumped,
-   *  and endpoints should maybe reload their configurations.
+   *  Notify that a directory dump is starting or stopping.
    */
-  class                 db_dump_committed : public io::data {
+  class                 directory_dump : public io::data {
   public:
-                        db_dump_committed();
-                        db_dump_committed(db_dump_committed const& other);
-                        ~db_dump_committed();
-    db_dump_committed&  operator=(db_dump_committed const& other);
+                        directory_dump();
+                        directory_dump(directory_dump const& other);
+                        ~directory_dump();
+    directory_dump&     operator=(directory_dump const& other);
     unsigned int        type() const;
     static unsigned int static_type();
 
+    QString             tag;
+    bool                started;
     QString             req_id;
 
     static mapping::entry const
@@ -51,10 +52,10 @@ namespace               dumper {
                         operations;
 
   private:
-    void                _internal_copy(db_dump_committed const& other);
+    void                _internal_copy(directory_dump const& other);
   };
 }
 
 CCB_END()
 
-#endif // !CCB_DUMPER_DB_DUMP_COMMITTED_HH
+#endif // !CCB_DUMPER_DIRECTORY_DUMP_HH

@@ -19,6 +19,8 @@
 #ifndef CCB_DUMPER_STREAM_HH
 #  define CCB_DUMPER_STREAM_HH
 
+#  include <map>
+#  include <vector>
 #  include <QMutex>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
@@ -27,6 +29,11 @@
 CCB_BEGIN()
 
 namespace              dumper {
+  // Forward declaration.
+  class                dump;
+  class                directory_dump;
+  class                remove;
+
   /**
    *  @class stream stream.hh "com/centreon/broker/dumper/stream.hh"
    *  @brief Dumper stream.
@@ -48,9 +55,23 @@ namespace              dumper {
                        stream(stream const& s);
     stream&            operator=(stream const& s);
 
+    void               _process_dump_event(dump const& dmp);
+    void               _process_remove_event(remove const& rmv);
+    void               _process_directory_dump_event(directory_dump const& dd);
+    void               _add_to_directory_cache(
+                         QString const& req_id,
+                         misc::shared_ptr<io::data> event);
+
     QMutex             _mutex;
     std::string        _path;
     std::string        _tagname;
+
+    typedef std::map<
+                   std::string,
+                   std::vector<misc::shared_ptr<io::data> > >
+      directory_dump_cache;
+      directory_dump_cache
+                       _cached_directory_dump;
   };
 }
 

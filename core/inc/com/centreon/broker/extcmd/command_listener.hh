@@ -41,8 +41,7 @@ namespace                 extcmd {
                           command_listener();
                           ~command_listener();
     command_result        command_status(
-                            unsigned int source_broker_id,
-                            unsigned int command_id);
+                            QString const& command_uuid);
     bool                  read(
                             misc::shared_ptr<io::data>& d,
                             time_t deadline = (time_t)-1);
@@ -59,7 +58,7 @@ namespace                 extcmd {
     void                  _check_invalid();
 
     time_t                _next_invalid;
-    std::map<std::pair<unsigned int, unsigned int>, pending_command>
+    std::map<std::string, pending_command>
                           _pending;
     QMutex                _pendingm;
     static int const      _request_timeout = 10;

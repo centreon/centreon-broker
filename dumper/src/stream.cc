@@ -25,7 +25,8 @@
 #include <cstdio>
 #include <csignal>
 #include "com/centreon/broker/dumper/dump.hh"
-#include "com/centreon/broker/dumper/reload.hh"
+#include "com/centreon/broker/dumper/directory_dump.hh"
+#include "com/centreon/broker/dumper/directory_dump_committed.hh"
 #include "com/centreon/broker/dumper/remove.hh"
 #include "com/centreon/broker/dumper/internal.hh"
 #include "com/centreon/broker/dumper/stream.hh"
@@ -34,6 +35,7 @@
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::dumper;
@@ -98,87 +100,187 @@ int stream::write(misc::shared_ptr<io::data> const& d) {
 
   // Check if the event is a dumper event.
   if (d->type() == dump::static_type()) {
-    dump* data(static_cast<dump*>(d.data()));
-
-    // Check if this output dump this event.
-    if (data->tag.toStdString() == _tagname) {
-      // Lock mutex.
-      QMutexLocker lock(&_mutex);
-
-      logging::debug(logging::medium)
-        << "dumper: dumping content of file " << data->filename;
-
-      // Get Broker ID.
-      std::ostringstream oss;
-      oss << data->source_id;
-
-      // Build path.
-      std::string path(_path);
-      misc::string::replace(path, "$INSTANCEID$", oss.str());
-      misc::string::replace(path, "$BROKERID$", oss.str());
-      misc::string::replace(
-                      path,
-                      "$FILENAME$",
-                      data->filename.toStdString());
-
-      // Get sub directory, if any. Create it if needed.
-      QDir dir = QFileInfo(QString::fromStdString(path)).dir();
-      if (!dir.exists()) {
-        if (!dir.mkpath(dir.path()))
-          throw (exceptions::msg()
-            << "dumper: can't create the directory: " << dir.path());
-      }
-
-      // Open file.
-      std::ofstream file(path.c_str());
-      if (!file.is_open())
-        throw (exceptions::msg()
-               << "dumper: error can not open file '"
-               << path << "'");
-
-      // Write data.
-      file << data->content.toStdString();
+    dump const& data = d.ref_as<dump const>();
+    if (data.tag.toStdString() == _tagname) {
+      if (data.req_id == 0)
+        _process_dump_event(data);
+      else
+        _add_to_directory_cache(
+          data.req_id,
+          misc::make_shared(new dump(data)));
     }
   }
   else if (d->type() == dumper::remove::static_type()) {
-    remove const& data = d.ref_as<dumper::remove const>();
+    dumper::remove const& data = d.ref_as<dumper::remove const>();
     if (data.tag.toStdString() == _tagname) {
-      // Lock mutex.
-      QMutexLocker lock(&_mutex);
-
-      logging::debug(logging::medium)
-        << "dumper: removing file " << data.filename;
-
-      // Get Broker ID.
-      std::ostringstream oss;
-      oss << data.source_id;
-
-      // Build path.
-      std::string path(_path);
-      misc::string::replace(path, "$INSTANCEID$", oss.str());
-      misc::string::replace(path, "$BROKERID$", oss.str());
-      misc::string::replace(
-                      path,
-                      "$FILENAME$",
-                      data.filename.toStdString());
-
-      // Remove file.
-      if (::remove(path.c_str()) == -1) {
-        const char* msg = ::strerror(errno);
-        logging::error(logging::medium)
-          << "dumper: can't erase file '" << path << "': " << msg;
-      }
+      if (data.req_id == 0)
+        _process_remove_event(d.ref_as<dumper::remove const>());
+      else
+        _add_to_directory_cache(
+          data.req_id,
+          misc::make_shared(new dumper::remove(data)));
     }
   }
-  else if (d->type() == dumper::reload::static_type()) {
-    dumper::reload const& data = d.ref_as<dumper::reload const>();
-    if (data.tag.toStdString() == _tagname) {
-      // Lock mutex.
-      QMutexLocker loc(&_mutex);
-      logging::debug(logging::medium)
-        << "dumper: reloading";
-      ::raise(SIGHUP);
-    }
+  else if (d->type() == dumper::directory_dump::static_type()
+           && d.ref_as<dumper::directory_dump const>().tag.toStdString()
+                 == _tagname) {
+    _process_directory_dump_event(d.ref_as<dumper::directory_dump const>());
   }
   return (1);
+}
+
+/**
+ *  Process a dump event.
+ *
+ *  @param[in] data  The dump event.
+ */
+void stream::_process_dump_event(dump const& data) {
+  // Lock mutex.
+  QMutexLocker lock(&_mutex);
+
+  logging::debug(logging::medium)
+    << "dumper: dumping content of file " << data.filename;
+
+  // Get Broker ID.
+  std::ostringstream oss;
+  oss << data.source_id;
+
+  // Build path.
+  std::string path(_path);
+  misc::string::replace(path, "$INSTANCEID$", oss.str());
+  misc::string::replace(path, "$BROKERID$", oss.str());
+  misc::string::replace(
+                  path,
+                  "$FILENAME$",
+                  data.filename.toStdString());
+
+  // Get sub directory, if any. Create it if needed.
+  QDir dir = QFileInfo(QString::fromStdString(path)).dir();
+  if (!dir.exists()) {
+    if (!dir.mkpath(dir.path()))
+      throw (exceptions::msg()
+        << "dumper: can't create the directory: " << dir.path());
+  }
+
+  // Open file.
+  std::ofstream file(path.c_str());
+  if (!file.is_open())
+    throw (exceptions::msg()
+           << "dumper: error can not open file '"
+           << path << "'");
+
+  // Write data.
+  file << data.content.toStdString();
+}
+
+/**
+ *  Process a remove event.
+ *
+ *  @param[in] data  The remove event.
+ */
+void stream::_process_remove_event(remove const& data) {
+  // Lock mutex.
+  QMutexLocker lock(&_mutex);
+
+  logging::debug(logging::medium)
+    << "dumper: removing file " << data.filename;
+
+  // Get Broker ID.
+  std::ostringstream oss;
+  oss << data.source_id;
+
+  // Build path.
+  std::string path(_path);
+  misc::string::replace(path, "$INSTANCEID$", oss.str());
+  misc::string::replace(path, "$BROKERID$", oss.str());
+  misc::string::replace(
+                  path,
+                  "$FILENAME$",
+                  data.filename.toStdString());
+
+  // Remove file.
+  if (::remove(path.c_str()) == -1) {
+    const char* msg = ::strerror(errno);
+    logging::error(logging::medium)
+      << "dumper: can't erase file '" << path << "': " << msg;
+  }
+}
+
+/**
+ *  Process a directory dump event.
+ *
+ *  @param[in] dmp  The directory dump event.
+ */
+void stream::_process_directory_dump_event(directory_dump const& dd) {
+  // Lock mutex.
+  QMutexLocker lock(&_mutex);
+
+  if (dd.started) {
+    logging::debug(logging::medium)
+      << "dumper: starting directory dump for request " << dd.req_id;
+    // Create empty directory cache.
+    _cached_directory_dump[dd.req_id.toStdString()];
+  }
+  else {
+    logging::debug(logging::medium)
+      << "dumper: committing directory dump for request " << dd.req_id;
+    bool success = true;
+    QString error_message;
+
+    directory_dump_cache::iterator found;
+    if (found == _cached_directory_dump.end())
+      return ;
+    std::vector<misc::shared_ptr<io::data> > const& events
+      = found->second;
+    try {
+      for (std::vector<misc::shared_ptr<io::data> >::const_iterator
+             it = events.begin(),
+             end = events.end();
+           it != end;
+           ++it) {
+        if ((*it)->type() == dump::static_type())
+          _process_dump_event(it->ref_as<dump const>());
+        else if ((*it)->type() == dumper::remove::static_type())
+          _process_remove_event(it->ref_as<dumper::remove const>());
+      }
+    } catch (std::exception const& e) {
+      success = false;
+      error_message = e.what();
+    }
+
+    // Remove directory cache.
+    _cached_directory_dump.erase(dd.req_id.toStdString());
+
+    // Send acknowledgement event.
+    {
+      misc::shared_ptr<directory_dump_committed> ddc(
+        new directory_dump_committed);
+      ddc->success = success;
+      ddc->req_id = dd.req_id;
+      ddc->error_message = error_message;
+      multiplexing::publisher pblsh;
+      pblsh.write(ddc);
+    }
+
+      // Reload
+    logging::debug(logging::medium)
+      << "dumper: reloading";
+    ::raise(SIGHUP);
+  }
+}
+
+/**
+ *  Add to a directory cache if it exists.
+ *
+ *  @param[in] req_id             The id of the request.
+ *  @param[in] event              The event to add.
+ */
+void stream::_add_to_directory_cache(
+               QString const& req_id,
+               misc::shared_ptr<io::data> event) {
+  directory_dump_cache::iterator found
+    = _cached_directory_dump.find(req_id.toStdString());
+  if (found == _cached_directory_dump.end())
+    return ;
+  found->second.push_back(event);
 }

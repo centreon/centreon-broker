@@ -24,6 +24,8 @@
 #include <set>
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/misc/tokenizer.hh"
+#include "com/centreon/broker/dumper/directory_dump.hh"
+#include "com/centreon/broker/dumper/directory_dump_committed.hh"
 #include "com/centreon/broker/dumper/directory_dumper.hh"
 #include "com/centreon/broker/dumper/internal.hh"
 #include "com/centreon/broker/dumper/dump.hh"
@@ -119,22 +121,14 @@ int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
     extcmd::command_request const&
       req(d.ref_as<extcmd::command_request const>());
     if (req.is_addressed_to(_name)) {
+      _command_to_poller_id[req.uuid.toStdString()] = req.source_id;
       try {
         // Execute command that was especially addressed to us.
         if (req.cmd == "DUMP_DIR")
-          _dump_dir(_path);
+          _dump_dir(_path, req.uuid);
         else
           throw (exceptions::msg() << "unknown command:"
                  << " the only valid command is DUMP_DIR");
-
-        // Send successful result.
-        misc::shared_ptr<extcmd::command_result>
-          res(new extcmd::command_result);
-        res->id = req.id;
-        res->msg = "Command successfully executed.";
-        res->code = 0;
-        res->destination_id = req.source_id;
-        multiplexing::publisher().write(res);
       }
       catch (std::exception const& e) {
         // Log error.
@@ -145,13 +139,24 @@ int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
         // Send error result.
         misc::shared_ptr<extcmd::command_result>
           res(new extcmd::command_result);
-        res->id = req.id;
+        res->uuid = req.uuid;
         res->msg = e.what();
         res->code = -1;
         res->destination_id = req.source_id;
         multiplexing::publisher().write(res);
       }
     }
+  }
+  else if (d->type() == directory_dump_committed::static_type()) {
+    directory_dump_committed const& ddc = d.ref_as<directory_dump_committed>();
+    // Send successful result.
+    misc::shared_ptr<extcmd::command_result>
+      res(new extcmd::command_result);
+    res->uuid = ddc.req_id;
+    res->msg = "Command successfully executed.";
+    res->code = 0;
+    res->destination_id = _command_to_poller_id[ddc.req_id.toStdString()];
+    multiplexing::publisher().write(res);
   }
 
   return (1);
@@ -160,9 +165,13 @@ int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
 /**
  *  Dump the directory of this directory dumper.
  *
- *  @param[in] path  The path of the directory to dump.
+ *  @param[in] path               The path of the directory to dump.
+ *  @param[in] req_id             The id of the request.
+ *  @param[in] command_poller_id  The id of the poller making the request.
  */
-void directory_dumper::_dump_dir(std::string const& path) {
+void directory_dumper::_dump_dir(
+                         std::string const& path,
+                         QString const& req_id) {
   logging::debug(logging::medium)
     << "directory_dumper: dumping dir '" << path << "'";
 
@@ -174,6 +183,15 @@ void directory_dumper::_dump_dir(std::string const& path) {
     QDirIterator::Subdirectories);
 
   QDir root_dir(QString::fromStdString(path));
+
+  // Start the dump.
+  {
+    misc::shared_ptr<directory_dump> dmp(new directory_dump);
+    dmp->req_id = req_id;
+    dmp->tag = QString::fromStdString(_tagname);
+    dmp->started = true;
+    pblsh.write(dmp);
+  }
 
   // Set of found files.
   std::set<std::string> found;
@@ -189,6 +207,7 @@ void directory_dumper::_dump_dir(std::string const& path) {
     dmp->filename = root_dir.relativeFilePath(path);
     dmp->content = QString(content);
     dmp->tag = QString::fromStdString(_tagname);
+    dmp->req_id = req_id;
     pblsh.write(dmp);
     found.insert(dmp->filename.toStdString());
   }
@@ -203,6 +222,7 @@ void directory_dumper::_dump_dir(std::string const& path) {
       misc::shared_ptr<remove> rm(new remove);
       rm->tag = QString::fromStdString(_tagname);
       rm->filename = QString::fromStdString(it->first);
+      rm->req_id = req_id;
       pblsh.write(rm);
     }
 
@@ -218,10 +238,14 @@ void directory_dumper::_dump_dir(std::string const& path) {
     _files_cache[*it] = tc;
   }
 
-  // Ask for a reload.
-  misc::shared_ptr<reload> rl(new reload);
-  rl->tag = QString::fromStdString(_tagname);
-  pblsh.write(rl);
+  // End the dump.
+  {
+    misc::shared_ptr<directory_dump> dmp(new directory_dump);
+    dmp->req_id = req_id;
+    dmp->tag = QString::fromStdString(_tagname);
+    dmp->started = false;
+    pblsh.write(dmp);
+  }
 }
 
 /**

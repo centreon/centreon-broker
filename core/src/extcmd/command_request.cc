@@ -18,6 +18,7 @@
 
 #include <cstdlib>
 #include <QMutexLocker>
+#include <QUuid>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/internal.hh"
@@ -28,15 +29,6 @@ using namespace com::centreon::broker::extcmd;
 
 /**************************************
 *                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
-
-unsigned int command_request::_id(0);
-QMutex       command_request::_mutex;
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
@@ -44,10 +36,7 @@ QMutex       command_request::_mutex;
 /**
  *  Default constructor.
  */
-command_request::command_request() {
-  QMutexLocker lock(&_mutex);
-  id = ++_id;
-}
+command_request::command_request() : uuid(QUuid::createUuid().toString()) {}
 
 /**
  *  Copy constructor.
@@ -155,7 +144,7 @@ unsigned int command_request::static_type() {
 void command_request::_internal_copy(command_request const& other) {
   cmd = other.cmd;
   endp = other.endp;
-  id = other.id;
+  uuid = other.uuid;
   return ;
 }
 
@@ -174,8 +163,8 @@ mapping::entry const command_request::entries[] = {
     &command_request::endp,
     "endp"),
   mapping::entry(
-    &command_request::id,
-    "id",
+    &command_request::uuid,
+    "uuid",
     mapping::entry::invalid_on_zero),
   mapping::entry()
 };

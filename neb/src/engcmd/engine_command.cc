@@ -87,7 +87,7 @@ int engine_command::write(misc::shared_ptr<io::data> const& d) {
       _execute_command(request.endp.toStdString());
       misc::shared_ptr<command_result> result(new command_result);
       result->code = 1;
-      result->id = request.id;
+      result->uuid = request.uuid;
       result->msg = "Command successfully sent to engine";
       multiplexing::publisher pblsh;
       pblsh.write(result);

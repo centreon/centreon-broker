@@ -99,7 +99,9 @@ int db_writer::write(misc::shared_ptr<io::data> const& d) {
       _hosts.clear();
       _services.clear();
       multiplexing::publisher pblshr;
-      pblshr.write(new db_dump_committed);
+      misc::shared_ptr<db_dump_committed> ddc(new db_dump_committed);
+      ddc->req_id = dbd.req_id;
+      pblshr.write(ddc);
     }
   }
   else if (d->type() == entries::service::static_type()) {

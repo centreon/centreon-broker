@@ -38,7 +38,9 @@ namespace dumper {
     de_entries_host,
     de_entries_kpi,
     de_entries_organization,
-    de_entries_service
+    de_entries_service,
+    de_directory_dump,
+    de_directory_dump_committed
   };
 }
 

@@ -93,6 +93,7 @@ unsigned int db_dump_committed::static_type() {
  *  @param[in] other  Object to copy.
  */
 void db_dump_committed::_internal_copy(db_dump_committed const& other) {
+  req_id = other.req_id;
   return ;
 }
 

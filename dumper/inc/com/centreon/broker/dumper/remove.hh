@@ -45,6 +45,7 @@ namespace               dumper {
 
     QString             tag;
     QString             filename;
+    QString             req_id;
 
     static mapping::entry const
                         entries[];
