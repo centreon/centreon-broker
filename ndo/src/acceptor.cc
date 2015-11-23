@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -224,8 +224,7 @@ misc::shared_ptr<io::stream> acceptor::_open(
       out = misc::shared_ptr<io::stream>(new multiplexing::publisher);
     }
     else {
-      in = misc::shared_ptr<io::stream>(
-                   new multiplexing::subscriber(_name));
+      in = misc::shared_ptr<io::stream>(new multiplexing::subscriber);
       out = misc::shared_ptr<io::stream>(new ndo::output);
       out->read_from(stream);
       out->write_to(stream);

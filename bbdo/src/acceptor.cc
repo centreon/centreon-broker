@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2014 Centreon
+** Copyright 2013-2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -394,7 +394,7 @@ misc::shared_ptr<io::stream> acceptor::_open(
     }
     else {
       misc::shared_ptr<multiplexing::subscriber> sbcr(
-        new multiplexing::subscriber(_name));
+        new multiplexing::subscriber);
       sbcr->set_filters(_filter);
       in = sbcr;
       my_bbdo = misc::shared_ptr<bbdo::stream>(
@@ -491,4 +491,3 @@ void helper::exit() {
   if (_feeder.get())
     _feeder->exit();
 }
-
