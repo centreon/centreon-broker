@@ -961,7 +961,9 @@ InfluxDB
 ========
 
 .. warning::
-  This module is experimental.
+  This module is experimental. For the branch 2.x, only the macros
+  *$METRICID$*, *$INSTANCEID$*, *$METRIC$*, *$INDEXID$*, *$VALUE$*,
+  and *$TIME$* are managed by Centreon Broker.
 
 This module fills an InfluxDB instance with metrics. It uses the
 :ref:`storage engine <user_modules_storage>` as its performance data
@@ -1095,7 +1097,9 @@ Graphite
 ========
 
 .. warning::
-  This module is experimental.
+  This module is experimental. For the 2.x branch, only the macros
+  *$METRICID$*, *$INSTANCEID$*, *$METRIC$* and *INDEXID$* are managed
+  by Centreon Broker.
 
 This module fills a Graphite instance with metrics. It uses the
 :ref:`storage engine <user_modules_storage>` as its performance data
