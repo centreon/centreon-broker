@@ -120,7 +120,7 @@ int db_reader::write(misc::shared_ptr<io::data> const& d) {
       logging::info(logging::medium)
         << "db_reader: processing command: " << req.cmd;
       // Cache the source id for asynchronuous response.
-      _req_id_to_source_id[req.uuid] = req.source_id;
+      _req_id_to_source_id[req.uuid.toStdString()] = req.source_id;
       try {
         // Split command for processing.
         std::vector<std::string> params;
@@ -165,12 +165,13 @@ int db_reader::write(misc::shared_ptr<io::data> const& d) {
     // Send successful result.
     misc::shared_ptr<extcmd::command_result>
       res(new extcmd::command_result);
-    if (_req_id_to_source_id.find(d.ref_as<dumper::db_dump_committed>().req_id)
+    if (_req_id_to_source_id.find(
+          d.ref_as<dumper::db_dump_committed>().req_id.toStdString())
         != _req_id_to_source_id.end()) {
       res->uuid = d.ref_as<dumper::db_dump_committed>().req_id;
       res->msg = "Command successfully executed.";
       res->code = 0;
-      res->destination_id = _req_id_to_source_id[res->uuid];
+      res->destination_id = _req_id_to_source_id[res->uuid.toStdString()];
       multiplexing::publisher().write(res);
     }
   }
