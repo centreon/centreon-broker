@@ -809,6 +809,13 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
+  # Event handlers table.
+  set(TEST_NAME "running_rtmonitoring_v2_eventhandlers")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/rtmonitoring/v2/eventhandlers.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
   # Logs table.
   set(TEST_NAME "running_rtmonitoring_v2_logs")
   add_executable("${TEST_NAME}"
