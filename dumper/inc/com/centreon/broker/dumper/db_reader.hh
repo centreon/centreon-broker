@@ -55,7 +55,7 @@ namespace           dumper {
 
     umap<unsigned int, entries::state>
                     _cache;
-    umap<QString, unsigned int>
+    umap<std::string, unsigned int>
                     _req_id_to_source_id;
     database_config _db_cfg;
     QString         _name;
