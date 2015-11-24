@@ -148,14 +148,16 @@ int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
   }
   else if (d->type() == directory_dump_committed::static_type()) {
     directory_dump_committed const& ddc = d.ref_as<directory_dump_committed>();
-    // Send successful result.
-    misc::shared_ptr<extcmd::command_result>
-      res(new extcmd::command_result);
-    res->uuid = ddc.req_id;
-    res->msg = "Command successfully executed.";
-    res->code = 0;
-    res->destination_id = _command_to_poller_id[ddc.req_id.toStdString()];
-    multiplexing::publisher().write(res);
+    if (_command_to_poller_id.find(ddc.req_id.toStdString()) != _command_to_poller_id.end()) {
+      // Send successful result.
+      misc::shared_ptr<extcmd::command_result>
+        res(new extcmd::command_result);
+      res->uuid = ddc.req_id;
+      res->msg = "Command successfully executed.";
+      res->code = 0;
+      res->destination_id = _command_to_poller_id[ddc.req_id.toStdString()];
+      multiplexing::publisher().write(res);
+    }
   }
 
   return (1);

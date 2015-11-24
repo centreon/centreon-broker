@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <stdlib.h>
 #include <fstream>
 #include <iostream>
 #include <map>

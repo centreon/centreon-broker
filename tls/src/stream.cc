@@ -102,6 +102,7 @@ bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   }
   else
     throw (exceptions::msg() << "TLS session is terminated");
+  return (false);
 }
 
 /**

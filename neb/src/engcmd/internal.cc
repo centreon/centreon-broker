@@ -39,8 +39,6 @@ using namespace com::centreon::broker::neb;
  *  Initialize the command file endpoint.
  */
 void engcmd::load() {
-  io::events& e(io::events::instance());
-
   // Register extcmd protocol.
   io::protocols::instance().reg(
                               "engcmd",

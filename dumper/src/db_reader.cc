@@ -165,11 +165,14 @@ int db_reader::write(misc::shared_ptr<io::data> const& d) {
     // Send successful result.
     misc::shared_ptr<extcmd::command_result>
       res(new extcmd::command_result);
-    res->uuid = d.ref_as<dumper::db_dump_committed>().req_id;
-    res->msg = "Command successfully executed.";
-    res->code = 0;
-    res->destination_id = _req_id_to_source_id[res->uuid];
-    multiplexing::publisher().write(res);
+    if (_req_id_to_source_id.find(d.ref_as<dumper::db_dump_committed>().req_id)
+        != _req_id_to_source_id.end()) {
+      res->uuid = d.ref_as<dumper::db_dump_committed>().req_id;
+      res->msg = "Command successfully executed.";
+      res->code = 0;
+      res->destination_id = _req_id_to_source_id[res->uuid];
+      multiplexing::publisher().write(res);
+    }
   }
   return (1);
 }
