@@ -641,10 +641,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   #   "${PROJECT_SOURCE_DIR}/test/cfg/sql_transactions.xml")
   # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml.in"
   #   "${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml")
-  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/event_handlers_to_sql_1.xml.in"
-  #   "${PROJECT_SOURCE_DIR}/test/cfg/event_handlers_to_sql_1.xml")
-  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/event_handlers_to_sql_2.xml.in"
-  #   "${PROJECT_SOURCE_DIR}/test/cfg/event_handlers_to_sql_2.xml")
   # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/filtering_to_sql.xml.in"
   #   "${PROJECT_SOURCE_DIR}/test/cfg/filtering_to_sql.xml")
   # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_1.xml.in"
@@ -865,12 +861,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   # set(TEST_NAME "running_custom_variables_to_sql")
   # add_executable("${TEST_NAME}"
   #   "${PROJECT_SOURCE_DIR}/test/custom_variables_to_sql.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # Event handlers to SQL.
-  # set(TEST_NAME "running_event_handlers_to_sql")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/event_handlers_to_sql.cc")
   # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   # add_test("${TEST_NAME}" "${TEST_NAME}")
   # # Filtering to SQL.
