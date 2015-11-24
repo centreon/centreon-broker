@@ -624,10 +624,10 @@ int neb::callback_downtime(int callback_type, void* data) {
     private_downtime_params& params(downtimes[downtime->internal_id]);
     if ((NEBTYPE_DOWNTIME_ADD == downtime_data->type)
         || (NEBTYPE_DOWNTIME_LOAD == downtime_data->type)) {
-      params.deletion_time = 0;
-      params.end_time = 0;
+      params.deletion_time = -1;
+      params.end_time = -1;
       params.started = false;
-      params.start_time = 0;
+      params.start_time = -1;
     }
     else if (NEBTYPE_DOWNTIME_START == downtime_data->type) {
       params.started = true;
@@ -641,7 +641,7 @@ int neb::callback_downtime(int callback_type, void* data) {
     downtime->actual_start_time = params.start_time;
     downtime->actual_end_time = params.end_time;
     downtime->deletion_time = params.deletion_time;
-    downtime->was_cancelled = (downtime->deletion_time != 0);
+    downtime->was_cancelled = (downtime->deletion_time != -1);
     downtime->was_started = params.started;
     if (NEBTYPE_DOWNTIME_DELETE == downtime_data->type)
       downtimes.erase(downtime->internal_id);

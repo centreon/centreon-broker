@@ -238,10 +238,12 @@ mapping::entry const downtime::entries[] = {
     "comment_data"),
   mapping::entry(
     &downtime::is_recurring,
-    "is_recurring"),
+    "is_recurring",
+    mapping::entry::invalid_on_v2),
   mapping::entry(
     &downtime::recurring_timeperiod,
-    "recurring_timeperiod"),
+    "recurring_timeperiod",
+    mapping::entry::invalid_on_v2),
   mapping::entry(
     &downtime::come_from,
     ""),
