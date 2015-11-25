@@ -753,21 +753,6 @@ CREATE TABLE `cfg_resource_instance_relations` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `command` (
-  `command_id` int(11) NOT NULL AUTO_INCREMENT,
-  `connector_id` int(10) unsigned DEFAULT NULL,
-  `command_name` varchar(200) DEFAULT NULL,
-  `command_line` text,
-  `command_example` varchar(254) DEFAULT NULL,
-  `command_type` tinyint(4) DEFAULT NULL,
-  `enable_shell` int(1) unsigned NOT NULL DEFAULT '0',
-  `command_comment` text,
-  `graph_id` int(11) DEFAULT NULL,
-  `cmd_cat_id` int(11) DEFAULT NULL,
-  PRIMARY KEY (`command_id`),
-  KEY `connector_id` (`connector_id`),
-  CONSTRAINT `command_ibfk_1` FOREIGN KEY (`connector_id`) REFERENCES `connector` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -800,18 +785,6 @@ CREATE TABLE `command_categories_relation` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `connector` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `description` varchar(255) DEFAULT NULL,
-  `command_line` varchar(512) NOT NULL,
-  `enabled` int(1) unsigned NOT NULL DEFAULT '1',
-  `created` int(10) unsigned NOT NULL,
-  `modified` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`),
-  KEY `enabled` (`enabled`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -1503,65 +1476,6 @@ CREATE TABLE `giv_graphs_template` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `host` (
-  `host_id` int(11) NOT NULL AUTO_INCREMENT,
-  `host_template_model_htm_id` int(11) DEFAULT NULL,
-  `command_command_id` int(11) DEFAULT NULL,
-  `command_command_id_arg1` text,
-  `timeperiod_tp_id` int(11) DEFAULT NULL,
-  `timeperiod_tp_id2` int(11) DEFAULT NULL,
-  `command_command_id2` int(11) DEFAULT NULL,
-  `command_command_id_arg2` text,
-  `host_name` varchar(200) DEFAULT NULL,
-  `host_alias` varchar(200) DEFAULT NULL,
-  `host_address` varchar(255) DEFAULT NULL,
-  `display_name` varchar(255) DEFAULT NULL,
-  `host_max_check_attempts` int(11) DEFAULT NULL,
-  `host_check_interval` int(11) DEFAULT NULL,
-  `host_retry_check_interval` int(11) DEFAULT NULL,
-  `host_active_checks_enabled` enum('0','1','2') DEFAULT NULL,
-  `host_passive_checks_enabled` enum('0','1','2') DEFAULT NULL,
-  `host_checks_enabled` enum('0','1','2') DEFAULT NULL,
-  `initial_state` enum('o','d','u') DEFAULT NULL,
-  `host_obsess_over_host` enum('0','1','2') DEFAULT NULL,
-  `host_check_freshness` enum('0','1','2') DEFAULT NULL,
-  `host_freshness_threshold` int(11) DEFAULT NULL,
-  `host_event_handler_enabled` enum('0','1','2') DEFAULT NULL,
-  `host_low_flap_threshold` int(11) DEFAULT NULL,
-  `host_high_flap_threshold` int(11) DEFAULT NULL,
-  `host_flap_detection_enabled` enum('0','1','2') DEFAULT NULL,
-  `flap_detection_options` varchar(255) DEFAULT NULL,
-  `host_process_perf_data` enum('0','1','2') DEFAULT NULL,
-  `host_retain_status_information` enum('0','1','2') DEFAULT NULL,
-  `host_retain_nonstatus_information` enum('0','1','2') DEFAULT NULL,
-  `host_notification_interval` int(11) DEFAULT NULL,
-  `host_notification_options` varchar(200) DEFAULT NULL,
-  `host_notifications_enabled` enum('0','1','2') DEFAULT NULL,
-  `contact_additive_inheritance` boolean DEFAULT 0,
-  `cg_additive_inheritance` boolean DEFAULT 0,
-  `host_first_notification_delay` int(11) DEFAULT NULL,
-  `host_stalking_options` varchar(200) DEFAULT NULL,
-  `host_snmp_community` varchar(255) DEFAULT NULL,
-  `host_snmp_version` varchar(255) DEFAULT NULL,
-  `host_location` int(11) DEFAULT '0',
-  `host_comment` text,
-  `host_register` enum('0','1','2','3') DEFAULT NULL,
-  `host_activate` enum('0','1','2') DEFAULT '1',
-  PRIMARY KEY (`host_id`),
-  KEY `htm_index` (`host_template_model_htm_id`),
-  KEY `cmd1_index` (`command_command_id`),
-  KEY `cmd2_index` (`command_command_id2`),
-  KEY `tp1_index` (`timeperiod_tp_id`),
-  KEY `tp2_index` (`timeperiod_tp_id2`),
-  KEY `name_index` (`host_name`),
-  KEY `host_id_register` (`host_id`,`host_register`),
-  KEY `alias_index` (`host_alias`),
-  KEY `host_register` (`host_register`),
-  CONSTRAINT `host_ibfk_1` FOREIGN KEY (`command_command_id`) REFERENCES `command` (`command_id`) ON DELETE SET NULL,
-  CONSTRAINT `host_ibfk_2` FOREIGN KEY (`command_command_id2`) REFERENCES `command` (`command_id`) ON DELETE SET NULL,
-  CONSTRAINT `host_ibfk_3` FOREIGN KEY (`timeperiod_tp_id`) REFERENCES `timeperiod` (`tp_id`) ON DELETE SET NULL,
-  CONSTRAINT `host_ibfk_4` FOREIGN KEY (`timeperiod_tp_id2`) REFERENCES `timeperiod` (`tp_id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -1578,24 +1492,6 @@ CREATE TABLE `host_hostparent_relation` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `host_service_relation` (
-  `hsr_id` int(11) NOT NULL AUTO_INCREMENT,
-  `hostgroup_hg_id` int(11) DEFAULT NULL,
-  `host_host_id` int(11) DEFAULT NULL,
-  `servicegroup_sg_id` int(11) DEFAULT NULL,
-  `service_service_id` int(11) DEFAULT NULL,
-  PRIMARY KEY (`hsr_id`),
-  KEY `hostgroup_index` (`hostgroup_hg_id`),
-  KEY `host_index` (`host_host_id`),
-  KEY `servicegroup_index` (`servicegroup_sg_id`),
-  KEY `service_index` (`service_service_id`),
-  KEY `host_service_index` (`host_host_id`,`service_service_id`),
-  KEY `host_host_id` (`host_host_id`,`service_service_id`),
-  CONSTRAINT `host_service_relation_ibfk_1` FOREIGN KEY (`hostgroup_hg_id`) REFERENCES `hostgroup` (`hg_id`) ON DELETE CASCADE,
-  CONSTRAINT `host_service_relation_ibfk_2` FOREIGN KEY (`host_host_id`) REFERENCES `host` (`host_id`) ON DELETE CASCADE,
-  CONSTRAINT `host_service_relation_ibfk_3` FOREIGN KEY (`servicegroup_sg_id`) REFERENCES `servicegroup` (`sg_id`) ON DELETE CASCADE,
-  CONSTRAINT `host_service_relation_ibfk_4` FOREIGN KEY (`service_service_id`) REFERENCES `service` (`service_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -1639,22 +1535,6 @@ CREATE TABLE `hostcategories_relation` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `hostgroup` (
-  `hg_id` int(11) NOT NULL AUTO_INCREMENT,
-  `hg_name` varchar(200) DEFAULT NULL,
-  `hg_alias` varchar(200) DEFAULT NULL,
-  `hg_notes` varchar(255) DEFAULT NULL,
-  `hg_notes_url` varchar(255) DEFAULT NULL,
-  `hg_action_url` varchar(255) DEFAULT NULL,
-  `hg_icon_image` int(11) DEFAULT NULL,
-  `hg_map_icon_image` int(11) DEFAULT NULL,
-  `hg_rrd_retention` int(11) DEFAULT NULL,
-  `hg_comment` text,
-  `hg_activate` enum('0','1') NOT NULL DEFAULT '1',
-  PRIMARY KEY (`hg_id`),
-  KEY `name_index` (`hg_name`),
-  KEY `alias_index` (`hg_alias`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -1878,60 +1758,7 @@ CREATE TABLE `poller_command_relations` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `service` (
-  `service_id` int(11) NOT NULL AUTO_INCREMENT,
-  `service_template_model_stm_id` int(11) DEFAULT NULL,
-  `command_command_id` int(11) DEFAULT NULL,
-  `timeperiod_tp_id` int(11) DEFAULT NULL,
-  `command_command_id2` int(11) DEFAULT NULL,
-  `timeperiod_tp_id2` int(11) DEFAULT NULL,
-  `service_description` varchar(200) DEFAULT NULL,
-  `service_alias` varchar(255) DEFAULT NULL,
-  `display_name` varchar(255) DEFAULT NULL,
-  `service_is_volatile` enum('0','1','2') DEFAULT '2',
-  `service_max_check_attempts` int(11) DEFAULT NULL,
-  `service_normal_check_interval` int(11) DEFAULT NULL,
-  `service_retry_check_interval` int(11) DEFAULT NULL,
-  `service_active_checks_enabled` enum('0','1','2') DEFAULT '2',
-  `service_passive_checks_enabled` enum('0','1','2') DEFAULT '2',
-  `initial_state` enum('o','w','u','c') DEFAULT NULL,
-  `service_parallelize_check` enum('0','1','2') DEFAULT '2',
-  `service_obsess_over_service` enum('0','1','2') DEFAULT '2',
-  `service_check_freshness` enum('0','1','2') DEFAULT '2',
-  `service_freshness_threshold` int(11) DEFAULT NULL,
-  `service_event_handler_enabled` enum('0','1','2') DEFAULT '2',
-  `service_low_flap_threshold` int(11) DEFAULT NULL,
-  `service_high_flap_threshold` int(11) DEFAULT NULL,
-  `service_flap_detection_enabled` enum('0','1','2') DEFAULT '2',
-  `service_process_perf_data` enum('0','1','2') DEFAULT '2',
-  `service_retain_status_information` enum('0','1','2') DEFAULT '2',
-  `service_retain_nonstatus_information` enum('0','1','2') DEFAULT '2',
-  `service_notification_interval` int(11) DEFAULT NULL,
-  `service_notification_options` varchar(200) DEFAULT NULL,
-  `service_notifications_enabled` enum('0','1','2') DEFAULT '2',
-  `contact_additive_inheritance` boolean DEFAULT 0,
-  `cg_additive_inheritance` boolean DEFAULT 0,
-  `service_inherit_contacts_from_host` enum('0','1') DEFAULT '1',
-  `service_first_notification_delay` int(11) DEFAULT NULL,
-  `service_stalking_options` varchar(200) DEFAULT NULL,
-  `service_comment` text,
-  `command_command_id_arg` text,
-  `command_command_id_arg2` text,
-  `service_locked` BOOLEAN DEFAULT 0,
-  `service_register` enum('0','1','2','3') NOT NULL DEFAULT '0',
-  `service_activate` enum('0','1') NOT NULL DEFAULT '1',
-  PRIMARY KEY (`service_id`),
-  KEY `stm_index` (`service_template_model_stm_id`),
-  KEY `cmd1_index` (`command_command_id`),
-  KEY `cmd2_index` (`command_command_id2`),
-  KEY `tp1_index` (`timeperiod_tp_id`),
-  KEY `tp2_index` (`timeperiod_tp_id2`),
-  KEY `description_index` (`service_description`),
-  CONSTRAINT `service_ibfk_1` FOREIGN KEY (`command_command_id`) REFERENCES `command` (`command_id`) ON DELETE SET NULL,
-  CONSTRAINT `service_ibfk_2` FOREIGN KEY (`command_command_id2`) REFERENCES `command` (`command_id`) ON DELETE SET NULL,
-  CONSTRAINT `service_ibfk_3` FOREIGN KEY (`timeperiod_tp_id`) REFERENCES `timeperiod` (`tp_id`) ON DELETE SET NULL,
-  CONSTRAINT `service_ibfk_4` FOREIGN KEY (`timeperiod_tp_id2`) REFERENCES `timeperiod` (`tp_id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -1960,16 +1787,6 @@ CREATE TABLE `service_categories_relation` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `servicegroup` (
-  `sg_id` int(11) NOT NULL AUTO_INCREMENT,
-  `sg_name` varchar(200) DEFAULT NULL,
-  `sg_alias` varchar(200) DEFAULT NULL,
-  `sg_comment` text,
-  `sg_activate` enum('0','1') NOT NULL DEFAULT '1',
-  PRIMARY KEY (`sg_id`),
-  KEY `name_index` (`sg_name`),
-  KEY `alias_index` (`sg_alias`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -2012,22 +1829,6 @@ CREATE TABLE `session` (
   PRIMARY KEY (`id`),
   KEY `session_id` (`session_id`(255)),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `timeperiod` (
-  `tp_id` int(11) NOT NULL AUTO_INCREMENT,
-  `tp_name` varchar(200) DEFAULT NULL,
-  `tp_alias` varchar(200) DEFAULT NULL,
-  `tp_sunday` varchar(200) DEFAULT NULL,
-  `tp_monday` varchar(200) DEFAULT NULL,
-  `tp_tuesday` varchar(200) DEFAULT NULL,
-  `tp_wednesday` varchar(200) DEFAULT NULL,
-  `tp_thursday` varchar(200) DEFAULT NULL,
-  `tp_friday` varchar(200) DEFAULT NULL,
-  `tp_saturday` varchar(200) DEFAULT NULL,
-  PRIMARY KEY (`tp_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;

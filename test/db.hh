@@ -41,12 +41,45 @@
                                  "downtimes", \
                                  "eventhandlers", \
                                  "flappingstatuses", \
-                                 "issues", \
-                                 "issues_issues_parents", \
                                  "logs", \
-                                 "modules", \
-                                 "hoststateevents", \
-                                 "servicestateevents"
+                                 "modules"
+#  define CORRELATION_TABLES_V2 "issues", \
+                                "issues_issues_parents", \
+                                "hoststateevents", \
+                                "servicestateevents"
+#  define BAM_MONITORING_TABLES_V2 "timeperiod", \
+                                   "timeperiod_exceptions", \
+                                   "timeperiod_exclude_relations", \
+                                   "command", \
+                                   "connector", \
+                                   "host", \
+                                   "hostgroup", \
+                                   "service", \
+                                   "servicegroup", \
+                                   "host_service_relation", \
+                                   "mod_bam", \
+                                   "mod_bam_poller_relations", \
+                                   "mod_bam_impacts", \
+                                   "mod_bam_boolean", \
+                                   "mod_bam_kpi", \
+                                   "mod_bam_relations_ba_timeperiods", \
+                                   "mod_bam_ba_groups", \
+                                   "mod_bam_bagroup_ba_relation", \
+                                   "meta_service", \
+                                   "meta_service_relation"
+#  define BAM_REPORTING_TABLES_V2 "mod_bam_reporting_bv", \
+                                  "mod_bam_reporting_ba", \
+                                  "mod_bam_reporting_kpi", \
+                                  "mod_bam_reporting_relations_ba_bv", \
+                                  "mod_bam_reporting_ba_events", \
+                                  "mod_bam_reporting_kpi_events", \
+                                  "mod_bam_reporting_relations_ba_kpi_events", \
+                                  "mod_bam_reporting_timeperiods", \
+                                  "mod_bam_reporting_timeperiods_exceptions", \
+                                  "mod_bam_reporting_timeperiods_exclusions", \
+                                  "mod_bam_reporting_relations_ba_timeperiods", \
+                                  "mod_bam_reporting_ba_events_durations", \
+                                  "mod_bam_reporting_ba_availabilities"
 
 CCB_BEGIN()
 

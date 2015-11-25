@@ -168,6 +168,20 @@ db::db(
   add_db_script(tables, "index_data", db_dir);
   add_db_script(tables, "metrics", db_dir);
   add_db_script(tables, "data_bin", db_dir);
+  // Centreon.
+  db_dir = PROJECT_SOURCE_DIR "/test/";
+  db_dir.append(db_subdir);
+  db_dir.append("_v2");
+  add_db_script(tables, "timeperiod", db_dir);
+  add_db_script(tables, "timeperiod_exceptions", db_dir);
+  add_db_script(tables, "timeperiod_exclude_relations", db_dir);
+  add_db_script(tables, "connector", db_dir);
+  add_db_script(tables, "command", db_dir);
+  add_db_script(tables, "hostgroup", db_dir);
+  add_db_script(tables, "servicegroup", db_dir);
+  add_db_script(tables, "host", db_dir);
+  add_db_script(tables, "service", db_dir);
+  add_db_script(tables, "host_service_relation", db_dir);
   // BAM monitoring.
   db_dir = PROJECT_SOURCE_DIR "/bam/";
   db_dir.append(db_subdir);
@@ -541,7 +555,8 @@ void db::_run_script(char const* script_name) {
   QSqlQuery query(*_db);
   if (!query.exec(QString(table_creation_script)))
     throw (exceptions::msg()
-           << query.lastError().text().toStdString().c_str());
+           << "cannot run table creation script '" << script_name
+           << "': " << query.lastError().text().toStdString().c_str());
 
   return ;
 }
