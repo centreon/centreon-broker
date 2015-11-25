@@ -66,20 +66,20 @@ db::db(
       char const* const* exclude) : _remove_db_on_close(false) {
   // Find DB type.
   QString db_type;
-  std::string db_dir(PROJECT_SOURCE_DIR "/sql/");
+  std::string db_subdir;
   if (!strcmp(DB_TYPE, "mysql")) {
     db_type = "QMYSQL";
-    db_dir.append("mysql");
+    db_subdir = "mysql";
   }
   else if (!strcmp(DB_TYPE, "psql")
            || !strcmp(DB_TYPE, "postgres")
            || !strcmp(DB_TYPE, "postgresql")) {
     db_type = "QPSQL";
-    db_dir.append("postgresql");
+    db_subdir = "postgresql";
   }
   else if (!strcmp(DB_TYPE, "oci") || !strcmp(DB_TYPE, "oracle")) {
     db_type = "QOCI";
-    db_dir.append("oracle");
+    db_subdir = "oracle";
   }
   else
     throw (exceptions::msg() << "unsupported database type: "
@@ -130,57 +130,133 @@ db::db(
 
   // Build table creation script list. Order is important.
   std::list<std::pair<std::string, std::string> > tables;
-  std::string db_dir_v2(db_dir);
-  db_dir_v2.append("_v2");
-  add_db_script(tables, "instances", db_dir_v2);
-  add_db_script(tables, "hosts", db_dir_v2);
-  add_db_script(tables, "hostgroups", db_dir_v2);
-  add_db_script(tables, "hosts_hostgroups", db_dir_v2);
-  add_db_script(tables, "hosts_hosts_dependencies", db_dir_v2);
-  add_db_script(tables, "hosts_hosts_parents", db_dir_v2);
-  add_db_script(tables, "services", db_dir_v2);
-  add_db_script(tables, "servicegroups", db_dir_v2);
-  add_db_script(tables, "services_servicegroups", db_dir_v2);
-  add_db_script(tables, "services_services_dependencies", db_dir_v2);
-  add_db_script(tables, "acknowledgements", db_dir_v2);
-  add_db_script(tables, "comments", db_dir_v2);
-  add_db_script(tables, "customvariables", db_dir_v2);
-  add_db_script(tables, "downtimes", db_dir_v2);
-  add_db_script(tables, "eventhandlers", db_dir_v2);
-  add_db_script(tables, "flappingstatuses", db_dir_v2);
-  add_db_script(tables, "issues", db_dir_v2);
-  add_db_script(tables, "issues_issues_parents", db_dir_v2);
-  add_db_script(tables, "hoststateevents", db_dir_v2);
-  add_db_script(tables, "servicestateevents", db_dir_v2);
-  add_db_script(tables, "logs", db_dir_v2);
-  add_db_script(tables, "modules", db_dir_v2);
-  add_db_script(tables, "notifications", db_dir_v2);
-  add_db_script(tables, "index_data", db_dir_v2);
-  add_db_script(tables, "metrics", db_dir_v2);
-  add_db_script(tables, "data_bin", db_dir_v2);
-  std::string db_dir_v3(db_dir);
-  db_dir_v3.append("_v3");
-  add_db_script(tables, "rt_instances", db_dir_v3);
-  add_db_script(tables, "rt_hosts", db_dir_v3);
-  add_db_script(tables, "rt_hosts_hosts_dependencies", db_dir_v3);
-  add_db_script(tables, "rt_hosts_hosts_parents", db_dir_v3);
-  add_db_script(tables, "rt_services", db_dir_v3);
-  add_db_script(tables, "rt_services_services_dependencies", db_dir_v3);
-  add_db_script(tables, "rt_acknowledgements", db_dir_v3);
-  add_db_script(tables, "rt_customvariables", db_dir_v3);
-  add_db_script(tables, "log_logs", db_dir_v3);
-  add_db_script(tables, "rt_downtimes", db_dir_v3);
-  add_db_script(tables, "rt_eventhandlers", db_dir_v3);
-  add_db_script(tables, "rt_flappingstatuses", db_dir_v3);
-  add_db_script(tables, "rt_issues", db_dir_v3);
-  add_db_script(tables, "rt_issues_issues_parents", db_dir_v3);
-  add_db_script(tables, "rt_hoststateevents", db_dir_v3);
-  add_db_script(tables, "rt_servicestateevents", db_dir_v3);
-  add_db_script(tables, "rt_modules", db_dir_v3);
-  add_db_script(tables, "rt_notifications", db_dir_v3);
-  add_db_script(tables, "rt_index_data", db_dir_v3);
-  add_db_script(tables, "rt_metrics", db_dir_v3);
-  add_db_script(tables, "log_data_bin", db_dir_v3);
+  std::string db_dir;
+
+  //
+  // Schema version 2.
+  //
+
+  // RT-monitoring.
+  db_dir = PROJECT_SOURCE_DIR "/sql/";
+  db_dir.append(db_subdir);
+  db_dir.append("_v2");
+  add_db_script(tables, "instances", db_dir);
+  add_db_script(tables, "hosts", db_dir);
+  add_db_script(tables, "hostgroups", db_dir);
+  add_db_script(tables, "hosts_hostgroups", db_dir);
+  add_db_script(tables, "hosts_hosts_dependencies", db_dir);
+  add_db_script(tables, "hosts_hosts_parents", db_dir);
+  add_db_script(tables, "services", db_dir);
+  add_db_script(tables, "servicegroups", db_dir);
+  add_db_script(tables, "services_servicegroups", db_dir);
+  add_db_script(tables, "services_services_dependencies", db_dir);
+  add_db_script(tables, "acknowledgements", db_dir);
+  add_db_script(tables, "comments", db_dir);
+  add_db_script(tables, "customvariables", db_dir);
+  add_db_script(tables, "downtimes", db_dir);
+  add_db_script(tables, "eventhandlers", db_dir);
+  add_db_script(tables, "flappingstatuses", db_dir);
+  add_db_script(tables, "logs", db_dir);
+  add_db_script(tables, "modules", db_dir);
+  add_db_script(tables, "notifications", db_dir);
+  // Correlation.
+  add_db_script(tables, "issues", db_dir);
+  add_db_script(tables, "issues_issues_parents", db_dir);
+  add_db_script(tables, "hoststateevents", db_dir);
+  add_db_script(tables, "servicestateevents", db_dir);
+  // Performance data.
+  add_db_script(tables, "index_data", db_dir);
+  add_db_script(tables, "metrics", db_dir);
+  add_db_script(tables, "data_bin", db_dir);
+  // BAM monitoring.
+  db_dir = PROJECT_SOURCE_DIR "/bam/";
+  db_dir.append(db_subdir);
+  db_dir.append("_v2");
+  add_db_script(tables, "mod_bam", db_dir);
+  add_db_script(tables, "mod_bam_poller_relations", db_dir);
+  add_db_script(tables, "mod_bam_impacts", db_dir);
+  add_db_script(tables, "mod_bam_boolean", db_dir);
+  add_db_script(tables, "mod_bam_kpi", db_dir);
+  add_db_script(tables, "mod_bam_relations_ba_timeperiods", db_dir);
+  add_db_script(tables, "mod_bam_ba_groups", db_dir);
+  add_db_script(tables, "mod_bam_bagroup_ba_relation", db_dir);
+  add_db_script(tables, "meta_service", db_dir);
+  add_db_script(tables, "meta_service_relation", db_dir);
+  // BAM reporting.
+  add_db_script(tables, "mod_bam_reporting_bv", db_dir);
+  add_db_script(tables, "mod_bam_reporting_ba", db_dir);
+  add_db_script(tables, "mod_bam_reporting_kpi", db_dir);
+  add_db_script(tables, "mod_bam_reporting_relations_ba_bv", db_dir);
+  add_db_script(tables, "mod_bam_reporting_ba_events", db_dir);
+  add_db_script(tables, "mod_bam_reporting_kpi_events", db_dir);
+  add_db_script(tables, "mod_bam_reporting_relations_ba_kpi_events", db_dir);
+  add_db_script(tables, "mod_bam_reporting_timeperiods", db_dir);
+  add_db_script(tables, "mod_bam_reporting_timeperiods_exceptions", db_dir);
+  add_db_script(tables, "mod_bam_reporting_timeperiods_exclusions", db_dir);
+  add_db_script(tables, "mod_bam_reporting_relations_ba_timeperiods", db_dir);
+  add_db_script(tables, "mod_bam_reporting_ba_events_durations", db_dir);
+  add_db_script(tables, "mod_bam_reporting_ba_availabilities", db_dir);
+
+  //
+  // Schema version 3.
+  //
+
+  // RT-monitoring.
+  db_dir = PROJECT_SOURCE_DIR "/sql/";
+  db_dir.append(db_subdir);
+  db_dir.append("_v3");
+  add_db_script(tables, "rt_instances", db_dir);
+  add_db_script(tables, "rt_hosts", db_dir);
+  add_db_script(tables, "rt_hosts_hosts_dependencies", db_dir);
+  add_db_script(tables, "rt_hosts_hosts_parents", db_dir);
+  add_db_script(tables, "rt_services", db_dir);
+  add_db_script(tables, "rt_services_services_dependencies", db_dir);
+  add_db_script(tables, "rt_acknowledgements", db_dir);
+  add_db_script(tables, "rt_customvariables", db_dir);
+  add_db_script(tables, "log_logs", db_dir);
+  add_db_script(tables, "rt_downtimes", db_dir);
+  add_db_script(tables, "rt_eventhandlers", db_dir);
+  add_db_script(tables, "rt_flappingstatuses", db_dir);
+  add_db_script(tables, "rt_modules", db_dir);
+  add_db_script(tables, "rt_notifications", db_dir);
+  // Correlation.
+  add_db_script(tables, "rt_issues", db_dir);
+  add_db_script(tables, "rt_issues_issues_parents", db_dir);
+  add_db_script(tables, "rt_hoststateevents", db_dir);
+  add_db_script(tables, "rt_servicestateevents", db_dir);
+  // Performance data.
+  add_db_script(tables, "rt_index_data", db_dir);
+  add_db_script(tables, "rt_metrics", db_dir);
+  add_db_script(tables, "log_data_bin", db_dir);
+  // BAM monitoring.
+  db_dir = PROJECT_SOURCE_DIR "/bam/";
+  db_dir.append(db_subdir);
+  db_dir.append("_v3");
+  add_db_script(tables, "cfg_bam_ba_types", db_dir);
+  add_db_script(tables, "cfg_bam", db_dir);
+  add_db_script(tables, "cfg_bam_poller_relations", db_dir);
+  add_db_script(tables, "cfg_bam_impacts", db_dir);
+  add_db_script(tables, "cfg_bam_boolean", db_dir);
+  add_db_script(tables, "cfg_bam_kpi", db_dir);
+  add_db_script(tables, "cfg_bam_relations_ba_timeperiods", db_dir);
+  add_db_script(tables, "cfg_bam_ba_groups", db_dir);
+  add_db_script(tables, "cfg_bam_bagroup_ba_relation", db_dir);
+  add_db_script(tables, "cfg_meta_services", db_dir);
+  add_db_script(tables, "cfg_meta_services_relations", db_dir);
+  // BAM reporting.
+  // add_db_script(tables, "mod_bam_reporting_bv", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_ba", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_kpi", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_relations_ba_bv", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_ba_events", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_kpi_events", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_relations_ba_kpi_events", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_timeperiods", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_timeperiods_exceptions", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_timeperiods_exclusions", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_relations_ba_timeperiods", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_ba_events_durations", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_ba_availabilities", db_dir);
 
   // Only include valid tables.
   if (include) {
