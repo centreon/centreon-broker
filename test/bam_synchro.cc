@@ -348,7 +348,6 @@ int main() {
     }
 
     // Start monitoring engine.
-    time_t t0(time(NULL));
     std::string engine_config_file(engine_config_path);
     engine_config_file.append("/nagios.cfg");
     monitoring.set_config_file(engine_config_file);

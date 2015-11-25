@@ -229,27 +229,27 @@ int main() {
         { 2, 0, t1, t2, "",
           MY_PLUGIN_PATH " 0 ThisIsTheHostEventHandlerOutput", false,
           t1, t2, 0.0, static_cast<double>(t2 - t1),
-          ""/*"ThisIsTheHostEventHandlerOutput"*/, 0, 1, 0, 42, 0 },
+          "ThisIsTheHostEventHandlerOutput", 0, 1, 0, 42, 0 },
         { 2, 0, t2, t3, "",
           MY_PLUGIN_PATH " 0 ThisIsTheHostEventHandlerOutput", false,
           t2, t3, 0.0, static_cast<double>(t3 - t2),
-          ""/*"ThisIsTheHostEventHandlerOutput"*/, 0, 1, 0, 42, 0 },
+          "ThisIsTheHostEventHandlerOutput", 0, 1, 0, 42, 0 },
         { 2, 0, t3, t4, "",
           MY_PLUGIN_PATH " 0 ThisIsTheHostEventHandlerOutput", false,
           t3, t4, 0.0, static_cast<double>(t4 - t3),
-          ""/*"ThisIsTheHostEventHandlerOutput"*/, 0, 1, 1, 42, 0 },
+          "ThisIsTheHostEventHandlerOutput", 0, 1, 1, 42, 0 },
         { 1, 1, t1, t2, "",
           MY_PLUGIN_PATH " 0 ThisIsTheServiceEventHandlerOutput", false,
           t1, t2, 0.0, static_cast<double>(t2 - t1),
-          ""/*"ThisIsTheServiceEventHandlerOutput"*/, 0, 2, 0, 42, 1 },
+          "ThisIsTheServiceEventHandlerOutput", 0, 2, 0, 42, 1 },
         { 1, 1, t2, t3, "",
           MY_PLUGIN_PATH " 0 ThisIsTheServiceEventHandlerOutput", false,
           t2, t3, 0.0, static_cast<double>(t3 - t2),
-          ""/*"ThisIsTheServiceEventHandlerOutput"*/, 0, 2, 0, 42, 1 },
+          "ThisIsTheServiceEventHandlerOutput", 0, 2, 0, 42, 1 },
         { 1, 1, t3, t4, "",
           MY_PLUGIN_PATH " 0 ThisIsTheServiceEventHandlerOutput", false,
           t3, t4, 0.0, static_cast<double>(t4 - t3),
-          ""/*"ThisIsTheServiceEventHandlerOutput"*/, 0, 2, 1, 42, 1 }
+          "ThisIsTheServiceEventHandlerOutput", 0, 2, 1, 42, 1 }
       };
 
       std::string query(

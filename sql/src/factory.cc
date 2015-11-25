@@ -27,30 +27,6 @@ using namespace com::centreon::broker::sql;
 
 /**************************************
 *                                     *
-*            Local Objects            *
-*                                     *
-**************************************/
-
-/**
- *  Find a parameter in configuration.
- *
- *  @param[in] cfg Configuration object.
- *  @param[in] key Property to get.
- *
- *  @return Property value.
- */
-static QString const& find_param(
-                        config::endpoint const& cfg,
-                        QString const& key) {
-  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
-  if (cfg.params.end() == it)
-    throw (exceptions::msg() << "SQL: no '" << key
-           << "' defined for endpoint '" << cfg.name << "'");
-  return (it.value());
-}
-
-/**************************************
-*                                     *
 *           Public Methods            *
 *                                     *
 **************************************/
