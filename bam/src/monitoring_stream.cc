@@ -68,26 +68,13 @@ monitoring_stream::monitoring_stream(
     _ba_update(_db),
     _kpi_update(_db),
     _meta_service_update(_db),
-    _pending_events(0) {
+    _pending_events(0),
+    _storage_db_cfg(storage_db_cfg) {
   // Prepare queries.
   _prepare();
 
-  // Read configuration from DB.
-  configuration::state s;
-  if (_db.schema_version() == database::v2) {
-    configuration::reader_v2 r(_db, storage_db_cfg);
-    r.read(s);
-  }
-  else {
-    configuration::reader r(_db);
-    r.read(s);
-  }
-
-  // Apply configuration.
-  _applier.apply(s);
-
-  // Check if we need to rebuild something.
-  _rebuild();
+  // Simulate a configuration update.
+  update();
 }
 
 /**
@@ -155,7 +142,11 @@ void monitoring_stream::statistics(io::properties& tree) const {
 void monitoring_stream::update() {
   try {
     configuration::state s;
-    {
+    if (_db.schema_version() == database::v2) {
+      configuration::reader_v2 r(_db, _storage_db_cfg);
+      r.read(s);
+    }
+    else {
       configuration::reader r(_db);
       r.read(s);
     }
@@ -201,10 +192,10 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
   }
   else if (data->type() == neb::acknowledgement::static_type()) {
     misc::shared_ptr<neb::acknowledgement>
-ack(data.staticCast<neb::acknowledgement>());
+      ack(data.staticCast<neb::acknowledgement>());
     logging::debug(logging::low)
-<< "BAM: processing acknowledgement (host "
-<< ack->host_id << ", service " << ack->service_id << ")";
+      << "BAM: processing acknowledgement (host "
+      << ack->host_id << ", service " << ack->service_id << ")";
     multiplexing::publisher pblshr;
     event_cache_visitor ev_cache;
     _applier.book_service().update(ack, &ev_cache);
@@ -212,10 +203,10 @@ ack(data.staticCast<neb::acknowledgement>());
   }
   else if (data->type() == neb::downtime::static_type()) {
     misc::shared_ptr<neb::downtime>
-dt(data.staticCast<neb::downtime>());
+      dt(data.staticCast<neb::downtime>());
     logging::debug(logging::low)
-<< "BAM: processing downtime (host " << dt->host_id
-<< ", service " << dt->service_id << ")";
+      << "BAM: processing downtime (host " << dt->host_id
+      << ", service " << dt->service_id << ")";
     multiplexing::publisher pblshr;
     event_cache_visitor ev_cache;
     _applier.book_service().update(dt, &ev_cache);
@@ -329,19 +320,22 @@ dt(data.staticCast<neb::downtime>());
  *  Prepare queries.
  */
 void monitoring_stream::_prepare() {
+  // Database schema version.
+  bool db_v2(_db.schema_version() == database::v2);
+
   // BA status.
   {
-    std::string query;
-    query = "UPDATE cfg_bam"
-            "  SET current_level=:level_nominal,"
-            "      acknowledged=:level_acknowledgement,"
-            "      downtime=:level_downtime,"
-            "      last_state_change=:last_state_change,"
-            "      in_downtime=:in_downtime,"
-            "      current_status=:state"
-            "  WHERE ba_id=:ba_id";
+    std::ostringstream query;
+    query << "UPDATE " << (db_v2 ? "mod_bam" : "cfg_bam")
+          << "  SET current_level=:level_nominal,"
+             "      acknowledged=:level_acknowledgement,"
+             "      downtime=:level_downtime,"
+             "      last_state_change=:last_state_change,"
+             "      in_downtime=:in_downtime,"
+             "      current_status=:state"
+             "  WHERE ba_id=:ba_id";
     try {
-      _ba_update.prepare(query);
+      _ba_update.prepare(query.str());
     }
     catch (std::exception const& e) {
       throw (exceptions::msg()
@@ -352,28 +346,28 @@ void monitoring_stream::_prepare() {
 
   // KPI status.
   {
-    std::string query;
-    query = "UPDATE cfg_bam_kpi"
-            "  SET acknowledged=:level_acknowledgement,"
-            "      current_status=:state,"
-            "      downtime=:level_downtime, last_level=:level_nominal,"
-            "      state_type=:state_type,"
-            "      last_state_change=:last_state_change,"
-            "      last_impact=:last_impact, valid=:valid"
-            "  WHERE kpi_id=:kpi_id";
+    std::ostringstream query;
+    query << "UPDATE " << (db_v2 ? "mod_bam_kpi" : "cfg_bam_kpi")
+          << "  SET acknowledged=:level_acknowledgement,"
+             "      current_status=:state,"
+             "      downtime=:level_downtime, last_level=:level_nominal,"
+             "      state_type=:state_type,"
+             "      last_state_change=:last_state_change,"
+             "      last_impact=:last_impact, valid=:valid"
+             "  WHERE kpi_id=:kpi_id";
     _kpi_update.prepare(
-                  query,
+                  query.str(),
                   "BAM: could not prepare KPI update query");
   }
 
   // Meta-service status.
   {
-    std::string query;
-    query = "UPDATE cfg_meta_services"
-            "  SET value=:value"
-            "  WHERE meta_id=:meta_service_id";
+    std::ostringstream query;
+    query << "UPDATE " << (db_v2 ? "meta_service" : "cfg_meta_services")
+          << "  SET value=:value"
+             "  WHERE meta_id=:meta_service_id";
     _meta_service_update.prepare(
-      query,
+      query.str(),
       "BAM: could not prepare meta-service update query");
   }
 
@@ -384,15 +378,19 @@ void monitoring_stream::_prepare() {
  *  Rebuilds BA durations/availibities from BA events.
  */
 void monitoring_stream::_rebuild() {
+  // Database schema version.
+  bool db_v2(_db.schema_version() == database::v2);
+
   // Get the list of the BAs that should be rebuild.
   std::vector<unsigned int> bas_to_rebuild;
   {
-    std::string query = "SELECT ba_id"
-                        "  FROM cfg_bam"
-                        "  WHERE must_be_rebuild='1'";
+    std::ostringstream query;
+    query << "SELECT ba_id"
+          << "  FROM " << (db_v2 ? "mod_bam" : "cfg_bam")
+          << "  WHERE must_be_rebuild='1'";
     database_query q(_db);
     q.run_query(
-        query,
+        query.str(),
         "BAM: could not select the list of BAs to rebuild");
     while (q.next())
       bas_to_rebuild.push_back(q.value(0).toUInt());
@@ -422,11 +420,12 @@ void monitoring_stream::_rebuild() {
 
   // Set all the BAs to should not be rebuild.
   {
-    std::string query = "UPDATE cfg_bam"
-                        "  SET must_be_rebuild='0'";
+    std::ostringstream query;
+    query << "UPDATE " << (db_v2 ? "mod_bam" : "cfg_bam")
+          << "  SET must_be_rebuild='0'";
     database_query q(_db);
     q.run_query(
-        query,
+        query.str(),
         "BAM: could not update the list of BAs to rebuild");
   }
 }
