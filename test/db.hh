@@ -23,7 +23,7 @@
 #  include <QSqlDatabase>
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
-#  include "test/predicate.hh"
+#  include "test/table_content.hh"
 
 #  define RTMONITORING_TABLES_V2 "instances", \
                                  "hosts", \
@@ -94,10 +94,9 @@ namespace         test {
                     char const* const* include = NULL,
                     char const* const* exclude = NULL);
                   ~db();
-    template      <int columns>
     void          check_content(
                     std::string const& query,
-                    predicate expected[][columns]);
+                    table_content const& expected);
     void          close();
     QSqlDatabase* get_db();
     void          run(

@@ -690,6 +690,7 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/misc.cc"
     "${PROJECT_SOURCE_DIR}/test/predicate.cc"
     "${PROJECT_SOURCE_DIR}/test/rrd_file.cc"
+    "${PROJECT_SOURCE_DIR}/test/table_content.cc"
     "${PROJECT_SOURCE_DIR}/test/time_points.cc"
     # Headers.
     "${PROJECT_SOURCE_DIR}/test/broker_extcmd.hh"
@@ -703,6 +704,7 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/misc.hh"
     "${PROJECT_SOURCE_DIR}/test/predicate.hh"
     "${PROJECT_SOURCE_DIR}/test/rrd_file.hh"
+    "${PROJECT_SOURCE_DIR}/test/table_content.hh"
     "${PROJECT_SOURCE_DIR}/test/time_points.hh"
     )
   target_link_libraries("${TEST_LIB}" "roker")
