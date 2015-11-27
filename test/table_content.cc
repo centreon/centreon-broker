@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <algorithm>
 #include "test/table_content.hh"
 
 using namespace com::centreon::broker;
@@ -32,7 +33,9 @@ table_content::table_content() : _columns(0) {}
  *  @param[in] other  Object to copy.
  */
 table_content::table_content(table_content const& other)
-  : _columns(other._columns), _content(other._content) {}
+  : _columns(other._columns),
+    _content(other._content),
+    _order_by(NULL) {}
 
 /**
  *  Destructor.
@@ -55,7 +58,16 @@ table_content& table_content::operator=(table_content const& other) {
 }
 
 /**
- *  Get table row.
+ *  Get modifiable table row.
+ *
+ *  @param[in] index  Index of the row, starting at 0.
+ */
+std::vector<predicate>& table_content::operator[](int index) {
+  return (_content[index]);
+}
+
+/**
+ *  Get non-modifiable table row.
  *
  *  @param[in] index  Index of the row, starting at 0.
  */
@@ -80,4 +92,39 @@ int table_content::get_columns() const {
  */
 int table_content::get_rows() const {
   return (_content.size());
+}
+
+/**
+ *  Insert a row in table content.
+ *
+ *  @param[in] row  Array of columns() elements.
+ */
+void table_content::insert_row(predicate const* row) {
+  int index(_content.size());
+  _content.resize(index + 1);
+  _content[index].resize(_columns);
+  for (int i(0); i < _columns; ++i)
+    _content[index][i] = row[i];
+  sort();
+  return ;
+}
+
+/**
+ *  Set order by function.
+ *
+ *  @param[in] func  Order by function.
+ */
+void table_content::set_order_by(table_content::order_by func) {
+  _order_by = func;
+  sort();
+  return ;
+}
+
+/**
+ *  Sort table content.
+ */
+void table_content::sort() {
+  if (_order_by)
+    std::sort(_content.begin(), _content.end(), *_order_by);
+  return ;
 }
