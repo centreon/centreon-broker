@@ -30,6 +30,7 @@ CCB_BEGIN()
 namespace             extcmd {
   // Forward declaration.
   class               command_listener;
+  class               command_parser;
 
   /**
    *  @class command_client command_client.hh "com/centreon/broker/extcmd/command_client.hh"
@@ -41,7 +42,7 @@ namespace             extcmd {
   public:
                       command_client(
                         int native_socket,
-                        command_listener* listener);
+                        command_parser& parser);
                       ~command_client();
     bool              read(
                         misc::shared_ptr<io::data>& d,
@@ -54,7 +55,7 @@ namespace             extcmd {
     void              _initialize_socket();
 
     std::string       _buffer;
-    command_listener* _listener;
+    command_parser&   _parser;
     std::auto_ptr<QLocalSocket>
                       _socket;
     int               _socket_native;

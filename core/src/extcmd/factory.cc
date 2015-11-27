@@ -96,6 +96,7 @@ io::endpoint* factory::new_endpoint(
                          misc::shared_ptr<persistent_cache> cache) const {
   is_acceptor = true;
   return (new command_server(
+                command_server::plaintext,
                 cfg.params.value("extcmd").toStdString(),
                 cache));
 }
