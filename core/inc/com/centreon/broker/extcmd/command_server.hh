@@ -22,6 +22,7 @@
 #  include <memory>
 #  include <string>
 #  include "com/centreon/broker/extcmd/command_listener.hh"
+#  include "com/centreon/broker/extcmd/command_parser.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -47,7 +48,12 @@ namespace               extcmd {
    */
   class                 command_server : public io::endpoint {
   public:
+    enum                protocol {
+                        plaintext,
+                        json
+    };
                         command_server(
+                          protocol prot,
                           std::string const& socket_file,
                           misc::shared_ptr<persistent_cache> cache);
                         ~command_server();
@@ -60,7 +66,10 @@ namespace               extcmd {
 
     misc::shared_ptr<command_listener>
                         _listener;
+    misc::shared_ptr<command_parser>
+                        _parser;
     processing::thread* _listener_thread;
+    protocol            _protocol;
     std::auto_ptr<server_socket>
                         _socket;
     std::string         _socket_file;

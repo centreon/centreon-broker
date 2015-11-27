@@ -22,6 +22,8 @@
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/command_result.hh"
 #include "com/centreon/broker/extcmd/command_server.hh"
+#include "com/centreon/broker/extcmd/plaintext_command_parser.hh"
+#include "com/centreon/broker/extcmd/json_command_parser.hh"
 #include "com/centreon/broker/extcmd/server_socket.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/processing/feeder.hh"
@@ -32,14 +34,17 @@ using namespace com::centreon::broker::extcmd;
 /**
  *  Constructor.
  *
+ *  @param[in] prot         The protocol used by this server.
  *  @param[in] socket_file  Socket file.
  *  @param[in] cache        Endpoint persistent cache.
  */
 command_server::command_server(
+                  protocol prot,
                   std::string const& socket_file,
                   misc::shared_ptr<persistent_cache> cache)
   : io::endpoint(true),
     _listener_thread(NULL),
+    _protocol(prot),
     _socket_file(socket_file) {}
 
 /**
@@ -67,6 +72,12 @@ misc::shared_ptr<io::stream> command_server::open() {
 
     // Create command listener.
     _listener = new command_listener;
+    // Create command parser.
+    if (_protocol == json)
+      _parser = new json_command_parser(*_listener);
+    else
+      _parser = new plaintext_command_parser(*_listener);
+    // Create listener thread.
     uset<unsigned int> write_filters;
     write_filters.insert(command_request::static_type());
     write_filters.insert(command_result::static_type());
@@ -101,6 +112,6 @@ misc::shared_ptr<io::stream> command_server::open() {
            << _socket->error_string());
   logging::info(logging::medium) << "command: new client connected";
   misc::shared_ptr<io::stream>
-    new_client(new command_client(incoming, _listener.data()));
+    new_client(new command_client(incoming, *_parser.data()));
   return (new_client);
 }

@@ -22,6 +22,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/extcmd/command_client.hh"
 #include "com/centreon/broker/extcmd/command_listener.hh"
+#include "com/centreon/broker/extcmd/command_parser.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/command_result.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -40,12 +41,12 @@ using namespace com::centreon::broker::extcmd;
  *  Constructor.
  *
  *  @param[in]     native_socket  Client socket.
- *  @param[in,out] listener       Command listener.
+ *  @param[in,out] parser         Command parser.
  */
 command_client::command_client(
                   int native_socket,
-                  command_listener* listener)
-  : _listener(listener), _socket_native(native_socket) {}
+                  command_parser& parser)
+  : _parser(parser), _socket_native(native_socket) {}
 
 /**
  *  Destructor.
@@ -74,8 +75,10 @@ bool command_client::read(
 
   // Read commands from socket.
   d.clear();
-  size_t delimiter(_buffer.find_first_of('\n'));
-  while (delimiter == std::string::npos) {
+  command_result res;
+  misc::shared_ptr<command_request> req;
+  size_t parsed = 0;
+  while ((parsed = _parser.parse(_buffer, res, req)) == 0) {
     if (_socket->waitForReadyRead(0)) {
       char buffer[1000];
       int rb(_socket->read(buffer, sizeof(buffer)));
@@ -87,64 +90,20 @@ bool command_client::read(
                << _socket->errorString());
       _buffer.append(buffer, rb);
     }
-    delimiter = _buffer.find_first_of('\n');
     if ((deadline == (time_t)-1) || (time(NULL) < deadline))
       QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
     else
       break ;
   }
 
-  // External command received.
-  if (delimiter != std::string::npos) {
-    std::string cmd(_buffer.substr(0, delimiter));
-    _buffer.erase(0, delimiter + 1);
-
-    // Process command.
-    command_result res;
-    try {
-      // Process command immediately if it queries
-      // another command status.
-      static char const* execute_cmd("EXECUTE;");
-      static char const* status_cmd("STATUS;");
-      if (cmd.substr(0, ::strlen(status_cmd)) == status_cmd) {
-        res = _listener->command_status(
-                           QString::fromStdString(cmd.substr(::strlen(status_cmd))));
-      }
-      // Store command in result listener and let
-      // it be processed by multiplexing engine.
-      else if (cmd.substr(0, strlen(execute_cmd)) == execute_cmd) {
-        misc::shared_ptr<command_request>
-          req(new command_request);
-        req->parse(cmd.substr(strlen(execute_cmd)));
-        d = req;
-        logging::debug(logging::high)
-          << "command: sending request " << req->uuid << " ('" << req->cmd
-          << "') to endpoint '" << req->endp
-          << "' of Centreon Broker instance " << req->destination_id;
-        _listener->write(req);
-        res = _listener->command_status(req->uuid);
-      }
-      else
-        throw (exceptions::msg() << "invalid command format: expected "
-               << "either STATUS;<CMDID> or "
-               << "EXECUTE;<BROKERID>;<ENDPOINTNAME>;<CMD>[;ARG1[;ARG2...]]");
-    }
-    catch (std::exception const& e) {
-      // At this point, command request was not written to the command
-      // listener, so it not necessary to write command result either.
-      res.uuid = QString();
-      res.code = -1;
-      res.msg = e.what();
-    }
+  // External command parsed.
+  if (parsed != 0) {
+    d = req;
+    // Erase the parsed data.
+    _buffer.erase(0, parsed + 1);
 
     // Write result string to client.
-    std::string result_str;
-    {
-      std::ostringstream oss;
-      oss << res.uuid.toStdString() << " " << std::hex << std::showbase
-          << res.code << " " << res.msg.toStdString() << "\n";
-      result_str = oss.str();
-    }
+    std::string result_str = _parser.write(res);
     int pos(0), remaining(result_str.size());
     while (remaining > 0) {
       int wb(_socket->write(result_str.data() + pos, remaining));
