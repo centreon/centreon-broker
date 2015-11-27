@@ -209,10 +209,10 @@ if (WITH_DAEMONS)
     @ONLY)
   install(FILES "${PROJECT_SOURCE_DIR}/script/watchdog.xml"
     DESTINATION "${PREFIX_CONF}")
-  if (!WITH_SYSTEMD_INIT)
-  install(PROGRAMS "${PROJECT_SOURCE_DIR}/script/cbd.init"
-    DESTINATION "${STARTUP_DIR}"
-    RENAME "cbd")
+  if (NOT WITH_SYSTEMD_INIT)
+    install(PROGRAMS "${PROJECT_SOURCE_DIR}/script/cbd.init"
+      DESTINATION "${STARTUP_DIR}"
+      RENAME "cbd")
   endif ()
 endif ()
 
