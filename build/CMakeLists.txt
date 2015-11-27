@@ -1002,13 +1002,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   # target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
   # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # # BAM engine.
-  # set(TEST_NAME "running_bam")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/bam.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
   # # Circular path in BA graph.
   # set(TEST_NAME "running_bam_circular")
   # add_executable("${TEST_NAME}"
