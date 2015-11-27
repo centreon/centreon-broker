@@ -70,6 +70,7 @@ namespace           bam {
     database_query  _kpi_update;
     database_query  _meta_service_update;
     int             _pending_events;
+    database_config _storage_db_cfg;
   };
 }
 

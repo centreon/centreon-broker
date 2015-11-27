@@ -1,0 +1,68 @@
+--
+-- Host configuration table.
+--
+CREATE TABLE host (
+  host_id int NOT NULL auto_increment,
+
+  host_template_model_htm_id int default NULL,
+  command_command_id int default NULL,
+  command_command_id_arg1 text,
+  timeperiod_tp_id int default NULL,
+  timeperiod_tp_id2 int default NULL,
+  command_command_id2 int default NULL,
+  command_command_id_arg2 text,
+  host_name varchar(200) default NULL,
+  host_alias varchar(200) default NULL,
+  host_address varchar(255) default NULL,
+  display_name varchar(255) default NULL,
+  host_max_check_attempts int default NULL,
+  host_check_interval int default NULL,
+  host_retry_check_interval int default NULL,
+  host_active_checks_enabled enum('0','1','2') default NULL,
+  host_passive_checks_enabled enum('0','1','2') default NULL,
+  host_checks_enabled enum('0','1','2') default NULL,
+  initial_state enum('o','d','u') default NULL,
+  host_obsess_over_host enum('0','1','2') default NULL,
+  host_check_freshness enum('0','1','2') default NULL,
+  host_freshness_threshold int default NULL,
+  host_event_handler_enabled enum('0','1','2') default NULL,
+  host_low_flap_threshold int default NULL,
+  host_high_flap_threshold int default NULL,
+  host_flap_detection_enabled enum('0','1','2') default NULL,
+  flap_detection_options varchar(255) default NULL,
+  host_process_perf_data enum('0','1','2') default NULL,
+  host_retain_status_information enum('0','1','2') default NULL,
+  host_retain_nonstatus_information enum('0','1','2') default NULL,
+  host_notification_interval int default NULL,
+  host_notification_options varchar(200) default NULL,
+  host_notifications_enabled enum('0','1','2') default NULL,
+  contact_additive_inheritance boolean default 0,
+  cg_additive_inheritance boolean default 0,
+  host_first_notification_delay int default NULL,
+  host_stalking_options varchar(200) default NULL,
+  host_snmp_community varchar(255) default NULL,
+  host_snmp_version varchar(255) default NULL,
+  host_location int default '0',
+  host_comment text,
+  host_register enum('0','1','2','3') default NULL,
+  host_activate enum('0','1','2') default '1',
+
+  PRIMARY KEY (host_id),
+  INDEX (host_template_model_htm_id),
+  INDEX (command_command_id),
+  INDEX (command_command_id2),
+  INDEX (timeperiod_tp_id),
+  INDEX (timeperiod_tp_id2),
+  INDEX (host_name),
+  INDEX (host_id,host_register),
+  INDEX (host_alias),
+  INDEX (host_register),
+  FOREIGN KEY (command_command_id) REFERENCES command (command_id)
+    ON DELETE SET NULL,
+  FOREIGN KEY (command_command_id2) REFERENCES command (command_id)
+    ON DELETE SET NULL,
+  FOREIGN KEY (timeperiod_tp_id) REFERENCES timeperiod (tp_id)
+    ON DELETE SET NULL,
+  FOREIGN KEY (timeperiod_tp_id2) REFERENCES timeperiod (tp_id)
+    ON DELETE SET NULL
+) ENGINE=InnoDB CHARACTER SET utf8;

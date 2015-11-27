@@ -66,20 +66,20 @@ db::db(
       char const* const* exclude) : _remove_db_on_close(false) {
   // Find DB type.
   QString db_type;
-  std::string db_dir(PROJECT_SOURCE_DIR "/sql/");
+  std::string db_subdir;
   if (!strcmp(DB_TYPE, "mysql")) {
     db_type = "QMYSQL";
-    db_dir.append("mysql");
+    db_subdir = "mysql";
   }
   else if (!strcmp(DB_TYPE, "psql")
            || !strcmp(DB_TYPE, "postgres")
            || !strcmp(DB_TYPE, "postgresql")) {
     db_type = "QPSQL";
-    db_dir.append("postgresql");
+    db_subdir = "postgresql";
   }
   else if (!strcmp(DB_TYPE, "oci") || !strcmp(DB_TYPE, "oracle")) {
     db_type = "QOCI";
-    db_dir.append("oracle");
+    db_subdir = "oracle";
   }
   else
     throw (exceptions::msg() << "unsupported database type: "
@@ -130,57 +130,147 @@ db::db(
 
   // Build table creation script list. Order is important.
   std::list<std::pair<std::string, std::string> > tables;
-  std::string db_dir_v2(db_dir);
-  db_dir_v2.append("_v2");
-  add_db_script(tables, "instances", db_dir_v2);
-  add_db_script(tables, "hosts", db_dir_v2);
-  add_db_script(tables, "hostgroups", db_dir_v2);
-  add_db_script(tables, "hosts_hostgroups", db_dir_v2);
-  add_db_script(tables, "hosts_hosts_dependencies", db_dir_v2);
-  add_db_script(tables, "hosts_hosts_parents", db_dir_v2);
-  add_db_script(tables, "services", db_dir_v2);
-  add_db_script(tables, "servicegroups", db_dir_v2);
-  add_db_script(tables, "services_servicegroups", db_dir_v2);
-  add_db_script(tables, "services_services_dependencies", db_dir_v2);
-  add_db_script(tables, "acknowledgements", db_dir_v2);
-  add_db_script(tables, "comments", db_dir_v2);
-  add_db_script(tables, "customvariables", db_dir_v2);
-  add_db_script(tables, "downtimes", db_dir_v2);
-  add_db_script(tables, "eventhandlers", db_dir_v2);
-  add_db_script(tables, "flappingstatuses", db_dir_v2);
-  add_db_script(tables, "issues", db_dir_v2);
-  add_db_script(tables, "issues_issues_parents", db_dir_v2);
-  add_db_script(tables, "hoststateevents", db_dir_v2);
-  add_db_script(tables, "servicestateevents", db_dir_v2);
-  add_db_script(tables, "logs", db_dir_v2);
-  add_db_script(tables, "modules", db_dir_v2);
-  add_db_script(tables, "notifications", db_dir_v2);
-  add_db_script(tables, "index_data", db_dir_v2);
-  add_db_script(tables, "metrics", db_dir_v2);
-  add_db_script(tables, "data_bin", db_dir_v2);
-  std::string db_dir_v3(db_dir);
-  db_dir_v3.append("_v3");
-  add_db_script(tables, "rt_instances", db_dir_v3);
-  add_db_script(tables, "rt_hosts", db_dir_v3);
-  add_db_script(tables, "rt_hosts_hosts_dependencies", db_dir_v3);
-  add_db_script(tables, "rt_hosts_hosts_parents", db_dir_v3);
-  add_db_script(tables, "rt_services", db_dir_v3);
-  add_db_script(tables, "rt_services_services_dependencies", db_dir_v3);
-  add_db_script(tables, "rt_acknowledgements", db_dir_v3);
-  add_db_script(tables, "rt_customvariables", db_dir_v3);
-  add_db_script(tables, "log_logs", db_dir_v3);
-  add_db_script(tables, "rt_downtimes", db_dir_v3);
-  add_db_script(tables, "rt_eventhandlers", db_dir_v3);
-  add_db_script(tables, "rt_flappingstatuses", db_dir_v3);
-  add_db_script(tables, "rt_issues", db_dir_v3);
-  add_db_script(tables, "rt_issues_issues_parents", db_dir_v3);
-  add_db_script(tables, "rt_hoststateevents", db_dir_v3);
-  add_db_script(tables, "rt_servicestateevents", db_dir_v3);
-  add_db_script(tables, "rt_modules", db_dir_v3);
-  add_db_script(tables, "rt_notifications", db_dir_v3);
-  add_db_script(tables, "rt_index_data", db_dir_v3);
-  add_db_script(tables, "rt_metrics", db_dir_v3);
-  add_db_script(tables, "log_data_bin", db_dir_v3);
+  std::string db_dir;
+
+  //
+  // Schema version 2.
+  //
+
+  // RT-monitoring.
+  db_dir = PROJECT_SOURCE_DIR "/sql/";
+  db_dir.append(db_subdir);
+  db_dir.append("_v2");
+  add_db_script(tables, "instances", db_dir);
+  add_db_script(tables, "hosts", db_dir);
+  add_db_script(tables, "hostgroups", db_dir);
+  add_db_script(tables, "hosts_hostgroups", db_dir);
+  add_db_script(tables, "hosts_hosts_dependencies", db_dir);
+  add_db_script(tables, "hosts_hosts_parents", db_dir);
+  add_db_script(tables, "services", db_dir);
+  add_db_script(tables, "servicegroups", db_dir);
+  add_db_script(tables, "services_servicegroups", db_dir);
+  add_db_script(tables, "services_services_dependencies", db_dir);
+  add_db_script(tables, "acknowledgements", db_dir);
+  add_db_script(tables, "comments", db_dir);
+  add_db_script(tables, "customvariables", db_dir);
+  add_db_script(tables, "downtimes", db_dir);
+  add_db_script(tables, "eventhandlers", db_dir);
+  add_db_script(tables, "flappingstatuses", db_dir);
+  add_db_script(tables, "logs", db_dir);
+  add_db_script(tables, "modules", db_dir);
+  add_db_script(tables, "notifications", db_dir);
+  // Correlation.
+  add_db_script(tables, "issues", db_dir);
+  add_db_script(tables, "issues_issues_parents", db_dir);
+  add_db_script(tables, "hoststateevents", db_dir);
+  add_db_script(tables, "servicestateevents", db_dir);
+  // Performance data.
+  add_db_script(tables, "index_data", db_dir);
+  add_db_script(tables, "metrics", db_dir);
+  add_db_script(tables, "data_bin", db_dir);
+  // Centreon.
+  db_dir = PROJECT_SOURCE_DIR "/test/";
+  db_dir.append(db_subdir);
+  db_dir.append("_v2");
+  add_db_script(tables, "timeperiod", db_dir);
+  add_db_script(tables, "timeperiod_exceptions", db_dir);
+  add_db_script(tables, "timeperiod_exclude_relations", db_dir);
+  add_db_script(tables, "connector", db_dir);
+  add_db_script(tables, "command", db_dir);
+  add_db_script(tables, "hostgroup", db_dir);
+  add_db_script(tables, "servicegroup", db_dir);
+  add_db_script(tables, "host", db_dir);
+  add_db_script(tables, "service", db_dir);
+  add_db_script(tables, "host_service_relation", db_dir);
+  // BAM monitoring.
+  db_dir = PROJECT_SOURCE_DIR "/bam/";
+  db_dir.append(db_subdir);
+  db_dir.append("_v2");
+  add_db_script(tables, "mod_bam", db_dir);
+  add_db_script(tables, "mod_bam_poller_relations", db_dir);
+  add_db_script(tables, "mod_bam_impacts", db_dir);
+  add_db_script(tables, "mod_bam_boolean", db_dir);
+  add_db_script(tables, "mod_bam_kpi", db_dir);
+  add_db_script(tables, "mod_bam_relations_ba_timeperiods", db_dir);
+  add_db_script(tables, "mod_bam_ba_groups", db_dir);
+  add_db_script(tables, "mod_bam_bagroup_ba_relation", db_dir);
+  add_db_script(tables, "meta_service", db_dir);
+  add_db_script(tables, "meta_service_relation", db_dir);
+  // BAM reporting.
+  add_db_script(tables, "mod_bam_reporting_bv", db_dir);
+  add_db_script(tables, "mod_bam_reporting_ba", db_dir);
+  add_db_script(tables, "mod_bam_reporting_kpi", db_dir);
+  add_db_script(tables, "mod_bam_reporting_relations_ba_bv", db_dir);
+  add_db_script(tables, "mod_bam_reporting_ba_events", db_dir);
+  add_db_script(tables, "mod_bam_reporting_kpi_events", db_dir);
+  add_db_script(tables, "mod_bam_reporting_relations_ba_kpi_events", db_dir);
+  add_db_script(tables, "mod_bam_reporting_timeperiods", db_dir);
+  add_db_script(tables, "mod_bam_reporting_timeperiods_exceptions", db_dir);
+  add_db_script(tables, "mod_bam_reporting_timeperiods_exclusions", db_dir);
+  add_db_script(tables, "mod_bam_reporting_relations_ba_timeperiods", db_dir);
+  add_db_script(tables, "mod_bam_reporting_ba_events_durations", db_dir);
+  add_db_script(tables, "mod_bam_reporting_ba_availabilities", db_dir);
+
+  //
+  // Schema version 3.
+  //
+
+  // RT-monitoring.
+  db_dir = PROJECT_SOURCE_DIR "/sql/";
+  db_dir.append(db_subdir);
+  db_dir.append("_v3");
+  add_db_script(tables, "rt_instances", db_dir);
+  add_db_script(tables, "rt_hosts", db_dir);
+  add_db_script(tables, "rt_hosts_hosts_dependencies", db_dir);
+  add_db_script(tables, "rt_hosts_hosts_parents", db_dir);
+  add_db_script(tables, "rt_services", db_dir);
+  add_db_script(tables, "rt_services_services_dependencies", db_dir);
+  add_db_script(tables, "rt_acknowledgements", db_dir);
+  add_db_script(tables, "rt_customvariables", db_dir);
+  add_db_script(tables, "log_logs", db_dir);
+  add_db_script(tables, "rt_downtimes", db_dir);
+  add_db_script(tables, "rt_eventhandlers", db_dir);
+  add_db_script(tables, "rt_flappingstatuses", db_dir);
+  add_db_script(tables, "rt_modules", db_dir);
+  add_db_script(tables, "rt_notifications", db_dir);
+  // Correlation.
+  add_db_script(tables, "rt_issues", db_dir);
+  add_db_script(tables, "rt_issues_issues_parents", db_dir);
+  add_db_script(tables, "rt_hoststateevents", db_dir);
+  add_db_script(tables, "rt_servicestateevents", db_dir);
+  // Performance data.
+  add_db_script(tables, "rt_index_data", db_dir);
+  add_db_script(tables, "rt_metrics", db_dir);
+  add_db_script(tables, "log_data_bin", db_dir);
+  // BAM monitoring.
+  db_dir = PROJECT_SOURCE_DIR "/bam/";
+  db_dir.append(db_subdir);
+  db_dir.append("_v3");
+  add_db_script(tables, "cfg_bam_ba_types", db_dir);
+  add_db_script(tables, "cfg_bam", db_dir);
+  add_db_script(tables, "cfg_bam_poller_relations", db_dir);
+  add_db_script(tables, "cfg_bam_impacts", db_dir);
+  add_db_script(tables, "cfg_bam_boolean", db_dir);
+  add_db_script(tables, "cfg_bam_kpi", db_dir);
+  add_db_script(tables, "cfg_bam_relations_ba_timeperiods", db_dir);
+  add_db_script(tables, "cfg_bam_ba_groups", db_dir);
+  add_db_script(tables, "cfg_bam_bagroup_ba_relation", db_dir);
+  add_db_script(tables, "cfg_meta_services", db_dir);
+  add_db_script(tables, "cfg_meta_services_relations", db_dir);
+  // BAM reporting.
+  // add_db_script(tables, "mod_bam_reporting_bv", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_ba", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_kpi", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_relations_ba_bv", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_ba_events", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_kpi_events", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_relations_ba_kpi_events", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_timeperiods", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_timeperiods_exceptions", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_timeperiods_exclusions", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_relations_ba_timeperiods", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_ba_events_durations", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_ba_availabilities", db_dir);
 
   // Only include valid tables.
   if (include) {
@@ -236,14 +326,12 @@ db::~db() {
 /**
  *  Check database content.
  *
- *  @param[in] columns   Number of columns returned in the query.
  *  @param[in] query     SELECT query.
  *  @param[in] expected  Expected content.
  */
-template <int columns>
 void db::check_content(
            std::string const& query,
-           predicate expected[][columns]) {
+           table_content const& expected) {
   // Run query.
   QSqlQuery q(*_db);
   if (!q.exec(query.c_str()))
@@ -251,9 +339,11 @@ void db::check_content(
            << q.lastError().text() << " (query was " << query << ")");
 
   // Browse data.
+  int columns(expected.get_columns());
+  int rows(expected.get_rows());
   int entry(0);
   while (q.next()) {
-    if (!expected[entry][0].is_valid()) {
+    if (entry >= rows) {
       exceptions::msg e;
       e << "too much data returned by query: next entry is ";
       QSqlRecord rec(q.record());
@@ -288,96 +378,13 @@ void db::check_content(
   }
 
   // Check if enough data was provided.
-  if (expected[entry][0].is_valid())
+  if (entry != rows)
     throw (exceptions::msg()
            << "not enough data returned by query (query was "
            << query << ")");
 
   return ;
 }
-
-// Generate templates.
-template void db::check_content<1>(std::string const& query, predicate expected[][1]);
-template void db::check_content<2>(std::string const& query, predicate expected[][2]);
-template void db::check_content<3>(std::string const& query, predicate expected[][3]);
-template void db::check_content<4>(std::string const& query, predicate expected[][4]);
-template void db::check_content<5>(std::string const& query, predicate expected[][5]);
-template void db::check_content<6>(std::string const& query, predicate expected[][6]);
-template void db::check_content<7>(std::string const& query, predicate expected[][7]);
-template void db::check_content<8>(std::string const& query, predicate expected[][8]);
-template void db::check_content<9>(std::string const& query, predicate expected[][9]);
-template void db::check_content<10>(std::string const& query, predicate expected[][10]);
-template void db::check_content<11>(std::string const& query, predicate expected[][11]);
-template void db::check_content<12>(std::string const& query, predicate expected[][12]);
-template void db::check_content<13>(std::string const& query, predicate expected[][13]);
-template void db::check_content<14>(std::string const& query, predicate expected[][14]);
-template void db::check_content<15>(std::string const& query, predicate expected[][15]);
-template void db::check_content<16>(std::string const& query, predicate expected[][16]);
-template void db::check_content<17>(std::string const& query, predicate expected[][17]);
-template void db::check_content<18>(std::string const& query, predicate expected[][18]);
-template void db::check_content<19>(std::string const& query, predicate expected[][19]);
-template void db::check_content<20>(std::string const& query, predicate expected[][20]);
-template void db::check_content<21>(std::string const& query, predicate expected[][21]);
-template void db::check_content<22>(std::string const& query, predicate expected[][22]);
-template void db::check_content<23>(std::string const& query, predicate expected[][23]);
-template void db::check_content<24>(std::string const& query, predicate expected[][24]);
-template void db::check_content<25>(std::string const& query, predicate expected[][25]);
-template void db::check_content<26>(std::string const& query, predicate expected[][26]);
-template void db::check_content<27>(std::string const& query, predicate expected[][27]);
-template void db::check_content<28>(std::string const& query, predicate expected[][28]);
-template void db::check_content<29>(std::string const& query, predicate expected[][29]);
-template void db::check_content<30>(std::string const& query, predicate expected[][30]);
-template void db::check_content<31>(std::string const& query, predicate expected[][31]);
-template void db::check_content<32>(std::string const& query, predicate expected[][32]);
-template void db::check_content<33>(std::string const& query, predicate expected[][33]);
-template void db::check_content<34>(std::string const& query, predicate expected[][34]);
-template void db::check_content<35>(std::string const& query, predicate expected[][35]);
-template void db::check_content<36>(std::string const& query, predicate expected[][36]);
-template void db::check_content<37>(std::string const& query, predicate expected[][37]);
-template void db::check_content<38>(std::string const& query, predicate expected[][38]);
-template void db::check_content<39>(std::string const& query, predicate expected[][39]);
-template void db::check_content<40>(std::string const& query, predicate expected[][40]);
-template void db::check_content<41>(std::string const& query, predicate expected[][41]);
-template void db::check_content<42>(std::string const& query, predicate expected[][42]);
-template void db::check_content<43>(std::string const& query, predicate expected[][43]);
-template void db::check_content<44>(std::string const& query, predicate expected[][44]);
-template void db::check_content<45>(std::string const& query, predicate expected[][45]);
-template void db::check_content<46>(std::string const& query, predicate expected[][46]);
-template void db::check_content<47>(std::string const& query, predicate expected[][47]);
-template void db::check_content<48>(std::string const& query, predicate expected[][48]);
-template void db::check_content<49>(std::string const& query, predicate expected[][49]);
-template void db::check_content<50>(std::string const& query, predicate expected[][50]);
-template void db::check_content<51>(std::string const& query, predicate expected[][51]);
-template void db::check_content<52>(std::string const& query, predicate expected[][52]);
-template void db::check_content<53>(std::string const& query, predicate expected[][53]);
-template void db::check_content<54>(std::string const& query, predicate expected[][54]);
-template void db::check_content<55>(std::string const& query, predicate expected[][55]);
-template void db::check_content<56>(std::string const& query, predicate expected[][56]);
-template void db::check_content<57>(std::string const& query, predicate expected[][57]);
-template void db::check_content<58>(std::string const& query, predicate expected[][58]);
-template void db::check_content<59>(std::string const& query, predicate expected[][59]);
-template void db::check_content<60>(std::string const& query, predicate expected[][60]);
-template void db::check_content<61>(std::string const& query, predicate expected[][61]);
-template void db::check_content<62>(std::string const& query, predicate expected[][62]);
-template void db::check_content<63>(std::string const& query, predicate expected[][63]);
-template void db::check_content<64>(std::string const& query, predicate expected[][64]);
-template void db::check_content<65>(std::string const& query, predicate expected[][65]);
-template void db::check_content<66>(std::string const& query, predicate expected[][66]);
-template void db::check_content<67>(std::string const& query, predicate expected[][67]);
-template void db::check_content<68>(std::string const& query, predicate expected[][68]);
-template void db::check_content<69>(std::string const& query, predicate expected[][69]);
-template void db::check_content<70>(std::string const& query, predicate expected[][70]);
-template void db::check_content<71>(std::string const& query, predicate expected[][71]);
-template void db::check_content<72>(std::string const& query, predicate expected[][72]);
-template void db::check_content<73>(std::string const& query, predicate expected[][73]);
-template void db::check_content<74>(std::string const& query, predicate expected[][74]);
-template void db::check_content<75>(std::string const& query, predicate expected[][75]);
-template void db::check_content<76>(std::string const& query, predicate expected[][76]);
-template void db::check_content<77>(std::string const& query, predicate expected[][77]);
-template void db::check_content<78>(std::string const& query, predicate expected[][78]);
-template void db::check_content<79>(std::string const& query, predicate expected[][79]);
-template void db::check_content<80>(std::string const& query, predicate expected[][80]);
-template void db::check_content<81>(std::string const& query, predicate expected[][81]);
 
 /**
  *  Close database.
@@ -465,7 +472,8 @@ void db::_run_script(char const* script_name) {
   QSqlQuery query(*_db);
   if (!query.exec(QString(table_creation_script)))
     throw (exceptions::msg()
-           << query.lastError().text().toStdString().c_str());
+           << "cannot run table creation script '" << script_name
+           << "': " << query.lastError().text().toStdString().c_str());
 
   return ;
 }

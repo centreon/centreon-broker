@@ -704,6 +704,7 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/misc.cc"
     "${PROJECT_SOURCE_DIR}/test/predicate.cc"
     "${PROJECT_SOURCE_DIR}/test/rrd_file.cc"
+    "${PROJECT_SOURCE_DIR}/test/table_content.cc"
     "${PROJECT_SOURCE_DIR}/test/time_points.cc"
     # Headers.
     "${PROJECT_SOURCE_DIR}/test/broker_extcmd.hh"
@@ -717,6 +718,7 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/misc.hh"
     "${PROJECT_SOURCE_DIR}/test/predicate.hh"
     "${PROJECT_SOURCE_DIR}/test/rrd_file.hh"
+    "${PROJECT_SOURCE_DIR}/test/table_content.hh"
     "${PROJECT_SOURCE_DIR}/test/time_points.hh"
     )
   target_link_libraries("${TEST_LIB}" "roker")
@@ -837,6 +839,17 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   set(TEST_NAME "running_rtmonitoring_v2_modules")
   add_executable("${TEST_NAME}"
     "${PROJECT_SOURCE_DIR}/test/rtmonitoring/v2/modules.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  ##
+  ## BAM (v2).
+  ##
+
+  # Main BAM test.
+  set(TEST_NAME "running_bam_v2_main")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/bam/v2/main.cc")
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
@@ -1001,13 +1014,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   # add_executable("${TEST_NAME}"
   #   "${PROJECT_SOURCE_DIR}/test/stats_events.cc")
   # target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # BAM engine.
-  # set(TEST_NAME "running_bam")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/bam.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   # add_test("${TEST_NAME}" "${TEST_NAME}")
 
   # # Circular path in BA graph.
