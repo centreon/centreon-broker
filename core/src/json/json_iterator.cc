@@ -219,7 +219,7 @@ json_iterator json_iterator::enter_children() const throw() {
  *
  *  @return          Iterator this child, if any.
  */
-json_iterator json_iterator::find_child(std::string const& name) {
+json_iterator json_iterator::find_child(std::string const& name) const {
   json_iterator ret = this->enter_children();
   for (; !ret.end(); ++ret)
     if (ret.get_string() == name)
