@@ -130,6 +130,9 @@ void state::apply(
     ept.params.insert(
       "extcmd",
       QString::fromStdString(s.command_file()));
+    ept.params.insert(
+      "command_protocol",
+      QString::fromStdString(s.command_protocol()));
     ept.read_filters.insert("all");
     st.endpoints().push_back(ept);
   }
