@@ -320,8 +320,19 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
  *  Prepare queries.
  */
 void monitoring_stream::_prepare() {
-  // Database schema version.
-  bool db_v2(_db.schema_version() == database::v2);
+  // Database schema version. We cannot use _db.schema_version() as
+  // it is connected on the Centreon DB in 2.x schema.
+  bool db_v2;
+  {
+    database_query q(_db);
+    try {
+      q.run_query("SELECT ba_id FROM mod_bam LIMIT 1");
+      db_v2 = true;
+    }
+    catch (...) {
+      db_v2 = false;
+    }
+  }
 
   // BA status.
   {
@@ -378,8 +389,19 @@ void monitoring_stream::_prepare() {
  *  Rebuilds BA durations/availibities from BA events.
  */
 void monitoring_stream::_rebuild() {
-  // Database schema version.
-  bool db_v2(_db.schema_version() == database::v2);
+  // Database schema version. We cannot use _db.schema_version() as
+  // it is connected on the Centreon DB in 2.x schema.
+  bool db_v2;
+  {
+    database_query q(_db);
+    try {
+      q.run_query("SELECT ba_id FROM mod_bam LIMIT 1");
+      db_v2 = true;
+    }
+    catch (...) {
+      db_v2 = false;
+    }
+  }
 
   // Get the list of the BAs that should be rebuild.
   std::vector<unsigned int> bas_to_rebuild;
