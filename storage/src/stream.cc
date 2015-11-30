@@ -352,8 +352,8 @@ void stream::_check_deleted_index() {
     unsigned long long index_id;
     {
       std::ostringstream query;
-      query << "SELECT index_id"
-               "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
+      query << "SELECT " << (db_v2 ? "id" : "index_id")
+            << "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
             << "  WHERE to_delete=1"
                "  LIMIT 1";
       database_query q(_db);
@@ -625,8 +625,8 @@ unsigned int stream::_find_index_id(
           || !(retval = q.last_insert_id().toUInt())) {
         q.finish();
         std::ostringstream oss2;
-        oss2 << "SELECT index_id"
-                "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
+        oss2 << "SELECT " << (db_v2 ? "id" : "index_id")
+             << "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
              << "  WHERE host_id=" << host_id
              << "    AND service_id=" << service_id;
         database_query q(_db);
@@ -1007,7 +1007,8 @@ void stream::_rebuild_cache() {
   {
     // Execute query.
     std::ostringstream query;
-    query << "SELECT index_id, host_id, service_id, host_name,"
+    query << "SELECT " << (db_v2 ? "id" : "index_id")
+          << "       , host_id, service_id, host_name,"
              "       rrd_retention, service_description, special,"
              "       locked"
              " FROM " << (db_v2 ? "index_data" : "rt_index_data");
@@ -1027,7 +1028,10 @@ void stream::_rebuild_cache() {
       if (!info.rrd_retention)
         info.rrd_retention = _rrd_len;
       info.service_description = q.value(5).toString();
-      info.special = q.value(6).toBool();
+      if (db_v2)
+        info.special = (q.value(6).toUInt() == 2);
+      else
+        info.special = q.value(6).toBool();
       info.locked = q.value(7).toBool();
       logging::debug(logging::high) << "storage: loaded index "
         << info.index_id << " of (" << host_id << ", "
