@@ -95,8 +95,16 @@ io::endpoint* factory::new_endpoint(
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
   is_acceptor = true;
+  // Find the protocol to use.
+  command_server::protocol prot = command_server::json;
+  if (cfg.params.contains("command_protocol")) {
+    QString command_prot = cfg.params["command_protocol"];
+    if (command_prot == "plaintext")
+      prot = command_server::plaintext;
+  }
+
   return (new command_server(
-                command_server::plaintext,
+                prot,
                 cfg.params.value("extcmd").toStdString(),
                 cache));
 }

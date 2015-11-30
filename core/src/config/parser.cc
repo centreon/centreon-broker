@@ -158,6 +158,8 @@ void parser::parse(QString const& file, state& s) {
         s.cache_directory(elem.text().toStdString());
       else if (name == "command_file")
         s.command_file(elem.text().toStdString());
+      else if (name == "command_protocol")
+        s.command_protocol(elem.text().toStdString());
       else if (name == "module")
         s.module_list().push_back(elem.text().toStdString());
       else if (name == "module_directory")

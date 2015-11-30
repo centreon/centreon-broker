@@ -69,6 +69,7 @@ void state::clear() {
   _broker_name.clear();
   _cache_directory.clear();
   _command_file.clear();
+  _command_protocol = "json";
   _endpoints.clear();
   _event_queue_max_size = 10000;
   _flush_logs = true;
@@ -162,6 +163,25 @@ void state::command_file(std::string const& file) {
  */
 std::string const& state::command_file() const throw() {
   return (_command_file);
+}
+
+/**
+ *  Set the command protocol.
+ *
+ *  @param[in] prot  The command protocol.
+ */
+void state::command_protocol(std::string const& prot) {
+  _command_protocol = prot;
+}
+
+
+/**
+ *  Get the command protocol.
+ *
+ *  @return  The command protocol.
+ */
+std::string const& state::command_protocol() const throw() {
+  return (_command_protocol);
 }
 
 /**
@@ -404,6 +424,7 @@ void state::_internal_copy(state const& other) {
   _broker_name = other._broker_name;
   _cache_directory = other._cache_directory;
   _command_file = other._command_file;
+  _command_protocol = other._command_protocol;
   _endpoints = other._endpoints;
   _event_queue_max_size = other._event_queue_max_size;
   _log_thread_id = other._log_thread_id;

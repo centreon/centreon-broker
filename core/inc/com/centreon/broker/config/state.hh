@@ -51,6 +51,8 @@ namespace                         config {
     std::string const&            cache_directory() const throw ();
     void                          command_file(std::string const& file);
     std::string const&            command_file() const throw();
+    void                          command_protocol(std::string const& prot);
+    std::string const&            command_protocol() const throw();
     void                          clear();
     std::list<endpoint>&          endpoints() throw ();
     std::list<endpoint> const&    endpoints() const throw ();
@@ -89,6 +91,7 @@ namespace                         config {
     std::string                   _broker_name;
     std::string                   _cache_directory;
     std::string                   _command_file;
+    std::string                   _command_protocol;
     std::list<endpoint>           _endpoints;
     unsigned int                  _event_queue_max_size;
     bool                          _flush_logs;
