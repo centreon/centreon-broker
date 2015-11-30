@@ -123,6 +123,8 @@ unsigned int json_command_parser::parse(
       request->destination_id =
         QString::fromStdString(find_or_except("broker_id", it)).toUInt();
       request->endp = QString::fromStdString(find_or_except("endpoint", it));
+      request->with_partial_result
+        = it.find_child("with_partial_result").get_bool();
       logging::debug(logging::high)
         << "command: sending request " << request->uuid << " ('" << request->cmd
         << "') to endpoint '" << request->endp

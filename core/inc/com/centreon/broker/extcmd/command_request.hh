@@ -52,6 +52,7 @@ namespace                extcmd {
     QString              cmd;
     QString              endp;
     QString              uuid;
+    bool                 with_partial_result;
 
     static mapping::entry const
                          entries[];

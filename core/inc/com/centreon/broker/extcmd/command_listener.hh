@@ -50,12 +50,16 @@ namespace                 extcmd {
   private:
     struct                pending_command {
       time_t              invalid_time;
+      bool                with_partial_result;
       command_result      result;
     };
 
                           command_listener(command_listener const& other);
     command_listener&     operator=(command_listener const& other);
     void                  _check_invalid();
+    static void           _merge_partial_result(
+                            pending_command& dest,
+                            command_result const& res);
 
     time_t                _next_invalid;
     std::map<std::string, pending_command>

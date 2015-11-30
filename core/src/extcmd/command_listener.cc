@@ -50,11 +50,13 @@ command_result command_listener::command_status(
 
   command_result res;
   QMutexLocker lock(&_pendingm);
-  std::map<std::string, pending_command>::const_iterator
+  std::map<std::string, pending_command>::iterator
     it(_pending.find(command_uuid.toStdString()));
   // Command result exists.
   if (it != _pending.end()) {
     res = it->second.result;
+    if (it->second.with_partial_result)
+      it->second.result.msg.clear();
   }
   // Fake command result.
   else {
@@ -111,6 +113,7 @@ int command_listener::write(misc::shared_ptr<io::data> const& d) {
       p.result.uuid = req.uuid;
       p.result.code = 1;
       p.result.msg = "Pending";
+      p.with_partial_result = req.with_partial_result;
       if (p.invalid_time < _next_invalid)
         _next_invalid = p.invalid_time;
     }
@@ -121,7 +124,10 @@ int command_listener::write(misc::shared_ptr<io::data> const& d) {
     QMutexLocker lock(&_pendingm);
     pending_command&
       p(_pending[res.uuid.toStdString()]);
-    p.result = res;
+    if (p.with_partial_result == false)
+      p.result = res;
+    else
+      _merge_partial_result(p, res);
     p.invalid_time = time(NULL) + _result_timeout;
     if (p.invalid_time < _next_invalid)
       _next_invalid = p.invalid_time;
@@ -166,4 +172,16 @@ void command_listener::_check_invalid() {
       ++it;
   }
   return ;
+}
+
+/**
+ *  Merge partial result.
+ *
+ *  @param[out] dest  The destination of the merge.
+ *  @param[in] res    The partial result to merge.
+ */
+void command_listener::_merge_partial_result(
+                         pending_command& dest,
+                         command_result const& res) {
+  dest.result.msg.append(res.msg);
 }

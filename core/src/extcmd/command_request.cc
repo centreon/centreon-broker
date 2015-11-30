@@ -36,7 +36,9 @@ using namespace com::centreon::broker::extcmd;
 /**
  *  Default constructor.
  */
-command_request::command_request() : uuid(QUuid::createUuid().toString()) {}
+command_request::command_request()
+  : uuid(QUuid::createUuid().toString()),
+    with_partial_result(false) {}
 
 /**
  *  Copy constructor.
@@ -145,6 +147,7 @@ void command_request::_internal_copy(command_request const& other) {
   cmd = other.cmd;
   endp = other.endp;
   uuid = other.uuid;
+  with_partial_result = other.with_partial_result;
   return ;
 }
 
@@ -166,6 +169,9 @@ mapping::entry const command_request::entries[] = {
     &command_request::uuid,
     "uuid",
     mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &command_request::with_partial_result,
+    "with_partial_result"),
   mapping::entry()
 };
 
