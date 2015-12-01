@@ -131,7 +131,7 @@ void rebuilder::run() {
         query << "SELECT " << (db_v2 ? "id" : "index_id")
               << "       , host_id, service_id, rrd_retention"
                  "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
-              << "  WHERE must_be_rebuild=1";
+              << "  WHERE must_be_rebuild=" << (db_v2 ? "'1'" : "1");
         database_query index_to_rebuild_query(*db);
         index_to_rebuild_query.run_query(
           query.str(),
@@ -444,7 +444,8 @@ void rebuilder::_set_index_rebuild(
   bool db_v2(db.schema_version() == database::v2);
   std::ostringstream oss;
   oss << "UPDATE " << (db_v2 ? "index_data" : "rt_index_data")
-      << " SET must_be_rebuild=" << state
+      << " SET must_be_rebuild="
+      << (db_v2 ? "'" : "") << state << (db_v2 ? "'" : "")
       << " WHERE " << (db_v2 ? "id" : "index_id") << "=" << index_id;
   database_query update_index_query(db);
   try { update_index_query.run_query(oss.str()); }
