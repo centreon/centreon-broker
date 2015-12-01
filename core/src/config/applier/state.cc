@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Centreon
+** Copyright 2011-2012-2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -32,6 +33,7 @@
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/instance_broadcast.hh"
 
+using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
 
 // Class instance.
@@ -57,6 +59,23 @@ state::~state() {}
 void state::apply(
               com::centreon::broker::config::state const& s,
               bool run_mux) {
+  // Sanity checks.
+  if (!s.poller_id() || s.poller_name().empty())
+    throw (exceptions::msg() << "state applier: poller information are "
+           << "not set: please fill poller_id and poller_name");
+  if (!s.broker_id() || s.broker_name().empty())
+    throw (exceptions::msg() << "state applier: instance information "
+           << "are not set: please fill broker_id and broker_name");
+  for (std::list<config::endpoint>::const_iterator
+         it(s.endpoints().begin()),
+         end(s.endpoints().end());
+       it != end;
+       ++it)
+    if (it->name.isEmpty())
+      throw (exceptions::msg()
+             << "state applier: endpoint name is not set: "
+             << "please fill name of all endpoints");
+
   // Set Broker instance ID.
   io::data::broker_id = s.broker_id();
 
