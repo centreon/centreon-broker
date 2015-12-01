@@ -391,7 +391,8 @@ void stream::_check_deleted_index() {
     {
       std::ostringstream oss;
       oss << "DELETE FROM " << (db_v2 ? "index_data" : "rt_index_data")
-          << "  WHERE index_id=" << index_id;
+          << "  WHERE " << (db_v2 ? "id" : "index_id")
+          << "        =" << index_id;
       database_query q(_db);
       try { q.run_query(oss.str()); }
       catch (std::exception const& e) {
