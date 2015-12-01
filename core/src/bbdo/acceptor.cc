@@ -54,7 +54,7 @@ using namespace com::centreon::broker::bbdo;
  *                                     an ack needs to be sent.
  */
 acceptor::acceptor(
-            QString const& name,
+            std::string const& name,
             bool negociate,
             QString const& extensions,
             time_t timeout,

@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -115,14 +115,9 @@ io::endpoint* factory::new_endpoint(
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
   (void)cache;
-
-  std::string name = cfg.name.toStdString();
-  std::string command_module_path =
-    find_param(cfg, "command_module_path").toStdString();
-
-
-  // Return value.
-  std::auto_ptr<io::endpoint> end(new endpoint(name, command_module_path));
-
+  std::string command_module_path(
+    find_param(cfg, "command_module_path").toStdString());
+  std::auto_ptr<io::endpoint>
+    end(new endpoint(cfg.name, command_module_path));
   return (end.release());
 }

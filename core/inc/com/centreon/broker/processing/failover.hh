@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@
 #  include <climits>
 #  include <ctime>
 #  include <QMutex>
-#  include <QString>
 #  include <QVector>
+#  include <string>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/multiplexing/subscriber.hh"
@@ -57,7 +57,7 @@ namespace           processing {
                     failover(
                       misc::shared_ptr<io::endpoint> endp,
                       misc::shared_ptr<multiplexing::subscriber> sbscrbr,
-                      QString const& name);
+                      std::string const& name);
                     ~failover();
     void            add_secondary_endpoint(
                       misc::shared_ptr<io::endpoint> endp);

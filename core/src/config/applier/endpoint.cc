@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Centreon
+** Copyright 2011-2012,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ static config::applier::endpoint* gl_endpoint = NULL;
  */
 class                  failover_match_name {
 public:
-                       failover_match_name(QString const& fo)
+                       failover_match_name(std::string const& fo)
     : _failover(fo) {}
                        failover_match_name(failover_match_name const& fmn)
     : _failover(fmn._failover) {}
@@ -70,11 +70,11 @@ public:
   }
 
 private:
-  QString              _failover;
+  std::string          _failover;
 };
 class                  name_match_failover {
 public:
-                       name_match_failover(QString const& name)
+                       name_match_failover(std::string const& name)
     : _name(name) {}
                        name_match_failover(name_match_failover const& nmf)
     : _name(nmf._name) {}
@@ -91,7 +91,7 @@ public:
   }
 
 private:
-  QString              _name;
+  std::string          _name;
 };
 
 /**************************************
@@ -110,12 +110,9 @@ endpoint::~endpoint() {
 /**
  *  Apply the endpoint configuration.
  *
- *  @param[in] endpoints        Endpoints configuration objects.
- *  @param[in] cache_directory  Endpoint cache directory.
+ *  @param[in] endpoints  Endpoints configuration objects.
  */
-void endpoint::apply(
-                 std::list<config::endpoint> const& endpoints,
-                 std::string const& cache_directory) {
+void endpoint::apply(std::list<config::endpoint> const& endpoints) {
   // Log messages.
   logging::config(logging::medium)
     << "endpoint applier: loading configuration";
@@ -164,7 +161,7 @@ void endpoint::apply(
        it != end;
        ++it) {
     // Check that output is not a failover.
-    if (it->name.isEmpty()
+    if (it->name.empty()
         || (std::find_if(endp_to_create.begin(),
               endp_to_create.end(),
               name_match_failover(it->name))
@@ -178,7 +175,7 @@ void endpoint::apply(
       std::auto_ptr<processing::thread> endp;
       if (is_acceptor) {
         std::auto_ptr<processing::acceptor>
-          acceptr(new processing::acceptor(e, it->name.toStdString()));
+          acceptr(new processing::acceptor(e, it->name));
         acceptr->set_read_filters(_filters(it->read_filters));
         acceptr->set_write_filters(_filters(it->write_filters));
         endp.reset(acceptr.release());
@@ -333,9 +330,7 @@ multiplexing::subscriber* endpoint::_create_subscriber(config::endpoint& cfg) {
 
   // Create subscriber.
   std::auto_ptr<multiplexing::subscriber>
-    s(new multiplexing::subscriber(
-                          cfg.name.toStdString(),
-                          true));
+    s(new multiplexing::subscriber(cfg.name, true));
   s->get_muxer().set_read_filters(read_elements);
   s->get_muxer().set_write_filters(write_elements);
   return (s.release());
@@ -361,7 +356,7 @@ processing::failover* endpoint::_create_failover(
   // Check that failover is configured.
   misc::shared_ptr<processing::failover> failovr;
   if (!cfg.failovers.empty()) {
-    QString front_failover(cfg.failovers.front());
+    std::string front_failover(cfg.failovers.front());
     std::list<config::endpoint>::iterator
       it(std::find_if(l.begin(), l.end(), failover_match_name(front_failover)));
     if (it == l.end())
@@ -384,7 +379,7 @@ processing::failover* endpoint::_create_failover(
                   l));
 
     // Add secondary failovers
-    for (std::list<QString>::const_iterator
+    for (std::list<std::string>::const_iterator
            failover_it(++cfg.failovers.begin()),
            failover_end(cfg.failovers.end());
          failover_it != failover_end;
@@ -448,7 +443,8 @@ misc::shared_ptr<io::endpoint> endpoint::_create_endpoint(
       if (cfg.cache_enabled) {
         std::string
           cache_path(config::applier::state::instance().cache_dir());
-        cache_path.append(cfg.name.toStdString());
+        cache_path.append(".cache.");
+        cache_path.append(cfg.name);
         cache = misc::shared_ptr<persistent_cache>(
                         new persistent_cache(cache_path));
       }
@@ -513,7 +509,7 @@ void endpoint::_diff_endpoints(
     // Find a root entry.
     std::list<config::endpoint>::iterator list_it(new_ep.begin());
     while ((list_it != new_ep.end())
-           && !list_it->name.isEmpty()
+           && !list_it->name.empty()
            && (std::find_if(
                       new_ep.begin(),
                       new_ep.end(),
@@ -535,7 +531,7 @@ void endpoint::_diff_endpoints(
          ++it_entries) {
       // Find failovers.
       if (!it_entries->failovers.empty())
-        for (std::list<QString>::const_iterator
+        for (std::list<std::string>::const_iterator
                failover_it(it_entries->failovers.begin()),
                failover_end(it_entries->failovers.end());
              failover_it != failover_end;

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -372,7 +372,7 @@ void muxer::_get_last_event(misc::shared_ptr<io::data>& event) {
  */
 std::string muxer::_memory_file() const {
   std::string retval(config::applier::state::instance().cache_dir());
-  retval.append("memory-");
+  retval.append(".memory.");
   retval.append(_name);
   return (retval);
 }
@@ -384,7 +384,7 @@ std::string muxer::_memory_file() const {
  */
 std::string muxer::_queue_file() const {
   std::string retval(config::applier::state::instance().cache_dir());
-  retval.append("queue-");
+  retval.append(".queue.");
   retval.append(_name);
   return (retval);
 }

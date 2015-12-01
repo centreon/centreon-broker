@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Centreon
+** Copyright 2011-2012,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -61,8 +61,7 @@ namespace              config {
 
                        ~endpoint();
       void             apply(
-                         std::list<config::endpoint> const& endpoints,
-                         std::string const& cache_directory);
+                         std::list<config::endpoint> const& endpoints);
       void             discard();
       iterator         endpoints_begin();
       iterator         endpoints_end();
