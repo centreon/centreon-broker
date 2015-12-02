@@ -1137,6 +1137,7 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->default_flap_detection_enabled = h->flap_detection_enabled;
     my_host->default_notifications_enabled = h->notifications_enabled;
     my_host->default_passive_checks_enabled = h->accept_passive_host_checks;
+    my_host->downtime_depth = h->scheduled_downtime_depth;
     my_host->enabled = (host_data->type != NEBTYPE_HOST_DELETE);
     if (h->event_handler)
       my_host->event_handler = h->event_handler;
@@ -1342,6 +1343,7 @@ int neb::callback_host_status(int callback_type, void* data) {
     host_status->current_state = (h->has_been_checked
                                   ? h->current_state
                                   : 4); // Pending state.
+    host_status->downtime_depth = h->scheduled_downtime_depth;
     if (h->event_handler)
       host_status->event_handler = h->event_handler;
     host_status->event_handler_enabled = h->event_handler_enabled;
@@ -1818,6 +1820,7 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->default_notifications_enabled = s->notifications_enabled;
     my_service->default_passive_checks_enabled
       = s->accept_passive_service_checks;
+    my_service->downtime_depth = s->scheduled_downtime_depth;
     my_service->enabled
       = (service_data->type != NEBTYPE_SERVICE_DELETE);
     if (s->event_handler)
@@ -2045,6 +2048,7 @@ int neb::callback_service_status(int callback_type, void* data) {
     service_status->current_state = (s->has_been_checked
                                      ? s->current_state
                                      : 4); // Pending state.
+    service_status->downtime_depth = s->scheduled_downtime_depth;
     if (s->event_handler)
       service_status->event_handler = s->event_handler;
     service_status->event_handler_enabled = s->event_handler_enabled;

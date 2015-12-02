@@ -70,6 +70,20 @@ monitoring_stream::monitoring_stream(
     _meta_service_update(_db),
     _pending_events(0),
     _storage_db_cfg(storage_db_cfg) {
+  // Detect schema version. We cannot rely on _db.schema_version() here
+  // because it is connected to the centreon DB (not centreon_storage)
+  // and therefore auto-detection does not work.
+  {
+    database_query q(_db);
+    try {
+      q.run_query("SELECT ba_id FROM mod_bam LIMIT 1");
+      _db_v2 = true;
+    }
+    catch (...) {
+      _db_v2 = false;
+    }
+  }
+
   // Prepare queries.
   _prepare();
 
@@ -142,7 +156,7 @@ void monitoring_stream::statistics(io::properties& tree) const {
 void monitoring_stream::update() {
   try {
     configuration::state s;
-    if (_db.schema_version() == database::v2) {
+    if (_db_v2) {
       configuration::reader_v2 r(_db, _storage_db_cfg);
       r.read(s);
     }
@@ -320,13 +334,10 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
  *  Prepare queries.
  */
 void monitoring_stream::_prepare() {
-  // Database schema version.
-  bool db_v2(_db.schema_version() == database::v2);
-
   // BA status.
   {
     std::ostringstream query;
-    query << "UPDATE " << (db_v2 ? "mod_bam" : "cfg_bam")
+    query << "UPDATE " << (_db_v2 ? "mod_bam" : "cfg_bam")
           << "  SET current_level=:level_nominal,"
              "      acknowledged=:level_acknowledgement,"
              "      downtime=:level_downtime,"
@@ -347,7 +358,7 @@ void monitoring_stream::_prepare() {
   // KPI status.
   {
     std::ostringstream query;
-    query << "UPDATE " << (db_v2 ? "mod_bam_kpi" : "cfg_bam_kpi")
+    query << "UPDATE " << (_db_v2 ? "mod_bam_kpi" : "cfg_bam_kpi")
           << "  SET acknowledged=:level_acknowledgement,"
              "      current_status=:state,"
              "      downtime=:level_downtime, last_level=:level_nominal,"
@@ -363,7 +374,7 @@ void monitoring_stream::_prepare() {
   // Meta-service status.
   {
     std::ostringstream query;
-    query << "UPDATE " << (db_v2 ? "meta_service" : "cfg_meta_services")
+    query << "UPDATE " << (_db_v2 ? "meta_service" : "cfg_meta_services")
           << "  SET value=:value"
              "  WHERE meta_id=:meta_service_id";
     _meta_service_update.prepare(
@@ -378,15 +389,12 @@ void monitoring_stream::_prepare() {
  *  Rebuilds BA durations/availibities from BA events.
  */
 void monitoring_stream::_rebuild() {
-  // Database schema version.
-  bool db_v2(_db.schema_version() == database::v2);
-
   // Get the list of the BAs that should be rebuild.
   std::vector<unsigned int> bas_to_rebuild;
   {
     std::ostringstream query;
     query << "SELECT ba_id"
-          << "  FROM " << (db_v2 ? "mod_bam" : "cfg_bam")
+          << "  FROM " << (_db_v2 ? "mod_bam" : "cfg_bam")
           << "  WHERE must_be_rebuild='1'";
     database_query q(_db);
     q.run_query(
@@ -421,7 +429,7 @@ void monitoring_stream::_rebuild() {
   // Set all the BAs to should not be rebuild.
   {
     std::ostringstream query;
-    query << "UPDATE " << (db_v2 ? "mod_bam" : "cfg_bam")
+    query << "UPDATE " << (_db_v2 ? "mod_bam" : "cfg_bam")
           << "  SET must_be_rebuild='0'";
     database_query q(_db);
     q.run_query(

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -50,8 +50,8 @@ namespace                    config {
     bool                     operator<(endpoint const& other) const;
 
     time_t                   buffering_timeout;
-    std::list<QString>       failovers;
-    QString                  name;
+    std::list<std::string>   failovers;
+    std::string              name;
     QMap<QString, QString>   params;
     std::set<std::string>    read_filters;
     time_t                   read_timeout;

@@ -24,6 +24,7 @@
 #  include <QMutex>
 #  include <QString>
 #  include <QThread>
+#  include <string>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -47,7 +48,7 @@ namespace         bbdo {
   class           acceptor : public io::endpoint {
   public:
                   acceptor(
-                    QString const& name,
+                    std::string const& name,
                     bool negociate,
                     QString const& extensions,
                     time_t timeout,
@@ -69,7 +70,7 @@ namespace         bbdo {
 
     bool          _coarse;
     QString       _extensions;
-    QString       _name;
+    std::string   _name;
     bool          _negociate;
     bool          _one_peer_retention_mode;
     time_t        _timeout;

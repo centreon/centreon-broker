@@ -128,9 +128,10 @@ void rebuilder::run() {
       std::list<index_info> index_to_rebuild;
       {
         std::ostringstream query;
-        query << "SELECT index_id, host_id, service_id, rrd_retention"
+        query << "SELECT " << (db_v2 ? "id" : "index_id")
+              << "       , host_id, service_id, rrd_retention"
                  "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
-              << "  WHERE must_be_rebuild=1";
+              << "  WHERE must_be_rebuild=" << (db_v2 ? "'1'" : "1");
         database_query index_to_rebuild_query(*db);
         index_to_rebuild_query.run_query(
           query.str(),
@@ -175,9 +176,9 @@ void rebuilder::run() {
           database_query query(*db);
           query.run_query(oss.str());
           if (query.next())
-            check_interval = query.value(0).toUInt();
+            check_interval = query.value(0).toUInt() * 60;
           if (!check_interval)
-            check_interval = 5;
+            check_interval = 5 * 60;
         }
         logging::info(logging::medium) << "storage: rebuilder: index "
           << index_id << " (interval " << check_interval
@@ -301,7 +302,8 @@ void rebuilder::_rebuild_metric(
     std::ostringstream oss;
     oss << "SELECT ctime, value"
         << " FROM " << (db_v2 ? "data_bin" : "log_data_bin")
-        << " WHERE metric_id=" << metric_id
+        << " WHERE " << (db_v2 ? "id_metric" : "metric_id")
+        << "=" << metric_id
         << " ORDER BY ctime ASC";
     database_query data_bin_query(db);
     bool caught(false);
@@ -358,7 +360,7 @@ void rebuilder::_rebuild_status(
   // Log.
   logging::info(logging::low)
     << "storage: rebuilder: rebuilding status " << index_id
-    << "(interval " << interval << ")";
+    << " (interval " << interval << ")";
 
   // Send rebuild start event.
   _send_rebuild_event(false, index_id, true);
@@ -372,7 +374,7 @@ void rebuilder::_rebuild_status(
     oss << "SELECT d.ctime, d.status"
         << " FROM " << (db_v2 ? "metrics" : "rt_metrics") << " AS m"
         << " JOIN " << (db_v2 ? "data_bin" : "log_data_bin") << " AS d"
-        << "   ON m.metric_id=d.id_metric"
+        << "   ON m.metric_id=d." << (db_v2 ? "id_metric" : "metric_id")
         << " WHERE m.index_id=" << index_id
         << " ORDER BY d.ctime ASC";
     database_query data_bin_query(db);
@@ -443,8 +445,9 @@ void rebuilder::_set_index_rebuild(
   bool db_v2(db.schema_version() == database::v2);
   std::ostringstream oss;
   oss << "UPDATE " << (db_v2 ? "index_data" : "rt_index_data")
-      << " SET must_be_rebuild=" << state
-      << " WHERE index_id=" << index_id;
+      << " SET must_be_rebuild="
+      << (db_v2 ? "'" : "") << state << (db_v2 ? "'" : "")
+      << " WHERE " << (db_v2 ? "id" : "index_id") << "=" << index_id;
   database_query update_index_query(db);
   try { update_index_query.run_query(oss.str()); }
   catch (std::exception const& e) {

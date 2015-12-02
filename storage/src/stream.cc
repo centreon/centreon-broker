@@ -230,7 +230,7 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
       misc::shared_ptr<storage::status> status(new storage::status);
       status->ctime = ss->last_check;
       status->index_id = index_id;
-      status->interval = static_cast<time_t>(ss->check_interval);
+      status->interval = static_cast<time_t>(ss->check_interval * 60);
       status->is_for_rebuild = false;
       status->rrd_len = rrd_len;
       status->state = ss->last_hard_state;
@@ -352,8 +352,8 @@ void stream::_check_deleted_index() {
     unsigned long long index_id;
     {
       std::ostringstream query;
-      query << "SELECT index_id"
-               "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
+      query << "SELECT " << (db_v2 ? "id" : "index_id")
+            << "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
             << "  WHERE to_delete=1"
                "  LIMIT 1";
       database_query q(_db);
@@ -391,7 +391,8 @@ void stream::_check_deleted_index() {
     {
       std::ostringstream oss;
       oss << "DELETE FROM " << (db_v2 ? "index_data" : "rt_index_data")
-          << "  WHERE index_id=" << index_id;
+          << "  WHERE " << (db_v2 ? "id" : "index_id")
+          << "        =" << index_id;
       database_query q(_db);
       try { q.run_query(oss.str()); }
       catch (std::exception const& e) {
@@ -603,7 +604,8 @@ unsigned int stream::_find_index_id(
           << "  (host_id, host_name, service_id, service_description,"
              "   must_be_rebuild, special)"
              "  VALUES (" << host_id << ", :host_name, " << service_id
-          << ", :service_description, 0, :special)";
+          << ", :service_description, " << (db_v2 ? "'0'" : "0")
+          << ", :special)";
       database_query q(_db);
       try {
         q.prepare(oss.str());
@@ -625,8 +627,8 @@ unsigned int stream::_find_index_id(
           || !(retval = q.last_insert_id().toUInt())) {
         q.finish();
         std::ostringstream oss2;
-        oss2 << "SELECT index_id"
-                "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
+        oss2 << "SELECT " << (db_v2 ? "id" : "index_id")
+             << "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
              << "  WHERE host_id=" << host_id
              << "    AND service_id=" << service_id;
         database_query q(_db);
@@ -915,7 +917,8 @@ void stream::_insert_perfdatas() {
       query.precision(10);
       query << std::scientific
             << "INSERT INTO " << (db_v2 ? "data_bin" : "log_data_bin")
-            << "  (metric_id, ctime, status, value)"
+            << "  (" << (db_v2 ? "id_metric" : "metric_id")
+            << "   , ctime, status, value)"
                "  VALUES (" << mv.metric_id << ", " << mv.c_time << ", "
             << mv.status << ", '";
       if (isinf(mv.value))
@@ -1007,7 +1010,8 @@ void stream::_rebuild_cache() {
   {
     // Execute query.
     std::ostringstream query;
-    query << "SELECT index_id, host_id, service_id, host_name,"
+    query << "SELECT " << (db_v2 ? "id" : "index_id")
+          << "       , host_id, service_id, host_name,"
              "       rrd_retention, service_description, special,"
              "       locked"
              " FROM " << (db_v2 ? "index_data" : "rt_index_data");
@@ -1027,7 +1031,10 @@ void stream::_rebuild_cache() {
       if (!info.rrd_retention)
         info.rrd_retention = _rrd_len;
       info.service_description = q.value(5).toString();
-      info.special = q.value(6).toBool();
+      if (db_v2)
+        info.special = (q.value(6).toUInt() == 2);
+      else
+        info.special = q.value(6).toBool();
       info.locked = q.value(7).toBool();
       logging::debug(logging::high) << "storage: loaded index "
         << info.index_id << " of (" << host_id << ", "

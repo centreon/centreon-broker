@@ -112,7 +112,7 @@ io::endpoint* node_events_factory::new_endpoint(
   QString name = get(QString(), cfg, "cfg_file");
   is_acceptor = false;
   return (new node_events_connector(
-                cfg.name.toStdString(),
+                cfg.name,
                 cache,
                 name.toStdString()));
 }

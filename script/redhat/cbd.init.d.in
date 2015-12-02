@@ -40,6 +40,7 @@ lockfile=/var/lock/subsys/cbd
 stop_timeout=10
 user="@USER@"
 pidfile="${pid_path}/cbwd.pid"
+debug=0
 
 # Check that cbwd is executable.
 if [ ! -x "${cbwd}" ] ; then
@@ -63,8 +64,14 @@ start_watchdog() {
   fi
   # Start centreon broker watchdog.
   echo -n "Starting Centreon Broker watchdog: "
-  PID=`su - "${user}" -c "${cbwd} ${watchdog_file} >/dev/null 2>&1 & echo \\$!"`
-  RETVAL=$?
+  if [ $debug -eq 1 ]; then
+    echo "/tmp/%e.core.%t.%u.%p" > /proc/sys/kernel/core_pattern
+    PID=`su - "${user}" -c "ulimit -c unlimited; ${cbwd} ${watchdog_file} >/dev/null 2>&1 & echo \\$!"`
+    RETVAL=$?
+  else
+    PID=`su - "${user}" -c "${cbwd} ${watchdog_file} >/dev/null 2>&1 & echo \\$!"`
+    RETVAL=$?
+  fi
 
   if [ ${RETVAL} = 0 ]; then
     echo ${PID} > "${pidfile}"

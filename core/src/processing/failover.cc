@@ -45,8 +45,8 @@ using namespace com::centreon::broker::processing;
 failover::failover(
             misc::shared_ptr<io::endpoint> endp,
             misc::shared_ptr<multiplexing::subscriber> sbscrbr,
-            QString const& name)
-  : thread(name.toStdString()),
+            std::string const& name)
+  : thread(name),
     _buffering_timeout(0),
     _endpoint(endp),
     _failover_launched(false),

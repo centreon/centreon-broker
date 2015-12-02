@@ -66,6 +66,7 @@ namespace           bam {
     std::string     _status;
     mutable QMutex  _statusm;
     database        _db;
+    bool            _db_v2;
     database_query  _ba_update;
     database_query  _kpi_update;
     database_query  _meta_service_update;

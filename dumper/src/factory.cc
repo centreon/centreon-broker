@@ -139,7 +139,7 @@ io::endpoint* factory::new_endpoint(
 
   // Opener that should be set.
   std::auto_ptr<opener> openr(new opener);
-  openr->set_name(cfg.name.toStdString());
+  openr->set_name(cfg.name);
   openr->set_type(type);
   openr->set_cache(cache);
 

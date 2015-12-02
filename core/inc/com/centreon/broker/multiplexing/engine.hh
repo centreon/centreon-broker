@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Centreon
+** Copyright 2009-2012,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -49,7 +49,6 @@ namespace           multiplexing {
     static engine&  instance();
     static void     load();
     void            publish(misc::shared_ptr<io::data> const& d);
-    void            set_cache_file(std::string const& cache_filename);
     void            start();
     void            stop();
     void            subscribe(muxer* subscriber);
@@ -61,6 +60,7 @@ namespace           multiplexing {
                     engine();
                     engine(engine const& other);
     engine&         operator=(engine const& other);
+    std::string     _cache_file_path() const;
     void            _nop(misc::shared_ptr<io::data> const& d);
     void            _send_to_subscribers();
     void            _write(misc::shared_ptr<io::data> const& d);
@@ -69,7 +69,6 @@ namespace           multiplexing {
     static engine*  _instance;
     void (engine::* _write_func)(
                       misc::shared_ptr<io::data> const&);
-    std::string     _cache_filename;
     std::auto_ptr<persistent_cache>
                     _cache_file;
   };

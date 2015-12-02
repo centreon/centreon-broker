@@ -615,6 +615,38 @@ int main() {
     expected[0][76] = 2; // state, UNREACHABLE
     postcheck(tpoints, db, expected);
 
+    // Check acknowledged.
+    precheck(tpoints, "acknowledged");
+    engine.extcmd().execute("ACKNOWLEDGE_HOST_PROBLEM;renamed;0;0;1;user;comment");
+    test::sleep_for(2);
+    expected[0][3] = true;
+    expected[0][4] = 1;
+    postcheck(tpoints, db, expected);
+
+    // Check acknowledgement_type.
+    precheck(tpoints, "acknowledgement_type");
+    engine.extcmd().execute("ACKNOWLEDGE_HOST_PROBLEM;renamed;2;0;1;user;comment");
+    test::sleep_for(2);
+    expected[0][4] = 2;
+    postcheck(tpoints, db, expected);
+
+    // Check scheduled_downtime_depth.
+    precheck(tpoints, "scheduled_downtime_depth");
+    {
+      time_t now(time(NULL));
+      std::ostringstream ss1;
+      ss1 << "SCHEDULE_HOST_DOWNTIME;renamed;" << now << ";"
+         << now + 3600 << ";1;0;3600;admin;comment";
+      engine.extcmd().execute(ss1.str());
+      std::ostringstream ss2;
+      ss2 << "SCHEDULE_HOST_DOWNTIME;renamed;" << now << ";"
+          << now + 7200 << ";1;0;7200;admin;comment";
+      engine.extcmd().execute(ss2.str());
+    }
+    test::sleep_for(2);
+    expected[0][71] = 2;
+    postcheck(tpoints, db, expected);
+
     // Check flapping.
     precheck(tpoints, "flapping");
     std::cout << "  not tested\n";
@@ -637,18 +669,6 @@ int main() {
 
     // Check notification_number.
     precheck(tpoints, "notification_number");
-    std::cout << "  not tested\n";
-
-    // Check acknowledged.
-    precheck(tpoints, "acknowledged");
-    std::cout << "  not tested\n";
-
-    // Check acknowledgement_type.
-    precheck(tpoints, "acknowledgement_type");
-    std::cout << "  not tested\n";
-
-    // Check scheduled_downtime_depth.
-    precheck(tpoints, "scheduled_downtime_depth");
     std::cout << "  not tested\n";
 
     // Check real_state.
