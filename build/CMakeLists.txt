@@ -173,7 +173,7 @@ endif ()
 
 # Configure files.
 if (WITH_DAEMONS)
-  if (WITH_SYSTEMD_INIT)
+  if (WITH_STARTUP_SCRIPT STREQUAL "systemd")
     configure_file("${PROJECT_SOURCE_DIR}/script/systemd/cbd.service.in"
       "${PROJECT_SOURCE_DIR}/script/cbd.service"
       @ONLY)
@@ -209,7 +209,7 @@ if (WITH_DAEMONS)
     @ONLY)
   install(FILES "${PROJECT_SOURCE_DIR}/script/watchdog.xml"
     DESTINATION "${PREFIX_CONF}")
-  if (NOT WITH_SYSTEMD_INIT)
+  if (WITH_STARTUP_SCRIPT STREQUAL "sysv")
     install(PROGRAMS "${PROJECT_SOURCE_DIR}/script/cbd.init"
       DESTINATION "${STARTUP_DIR}"
       RENAME "cbd")
