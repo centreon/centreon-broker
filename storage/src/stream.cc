@@ -604,7 +604,8 @@ unsigned int stream::_find_index_id(
           << "  (host_id, host_name, service_id, service_description,"
              "   must_be_rebuild, special)"
              "  VALUES (" << host_id << ", :host_name, " << service_id
-          << ", :service_description, 0, :special)";
+          << ", :service_description, " << (db_v2 ? "'0'" : "0")
+          << ", :special)";
       database_query q(_db);
       try {
         q.prepare(oss.str());

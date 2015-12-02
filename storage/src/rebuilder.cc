@@ -302,7 +302,8 @@ void rebuilder::_rebuild_metric(
     std::ostringstream oss;
     oss << "SELECT ctime, value"
         << " FROM " << (db_v2 ? "data_bin" : "log_data_bin")
-        << " WHERE metric_id=" << metric_id
+        << " WHERE " << (db_v2 ? "id_metric" : "metric_id")
+        << "=" << metric_id
         << " ORDER BY ctime ASC";
     database_query data_bin_query(db);
     bool caught(false);
@@ -373,7 +374,7 @@ void rebuilder::_rebuild_status(
     oss << "SELECT d.ctime, d.status"
         << " FROM " << (db_v2 ? "metrics" : "rt_metrics") << " AS m"
         << " JOIN " << (db_v2 ? "data_bin" : "log_data_bin") << " AS d"
-        << "   ON m.metric_id=d.id_metric"
+        << "   ON m.metric_id=d." << (db_v2 ? "id_metric" : "metric_id")
         << " WHERE m.index_id=" << index_id
         << " ORDER BY d.ctime ASC";
     database_query data_bin_query(db);
