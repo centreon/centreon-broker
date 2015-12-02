@@ -176,7 +176,9 @@ void rebuilder::run() {
           database_query query(*db);
           query.run_query(oss.str());
           if (query.next())
-            check_interval = query.value(0).toUInt() * 60;
+            check_interval = (query.value(0).isNull()
+                              ? 0.0
+                              : query.value(0).toDouble()) * 60;
           if (!check_interval)
             check_interval = 5 * 60;
         }
