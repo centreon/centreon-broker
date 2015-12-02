@@ -157,12 +157,11 @@ if (WITH_STARTUP_SCRIPT STREQUAL "auto")
     message(STATUS "Centreon Broker does not provide startup script for ${CMAKE_SYSTEM_NAME}.")
     set(WITH_STARTUP_SCRIPT "no")
   endif ()
-else ()
-  set(WITH_STARTUP_SCRIPT "no")
 endif ()
 
 # Startup dir.
-if (WITH_STARTUP_SCRIPT STREQUAL "sysv")
+if (WITH_STARTUP_SCRIPT STREQUAL "sysv"
+    OR WITH_STARTUP_SCRIPT STREQUAL "systemd")
   # Set destination directory.
   if (WITH_STARTUP_DIR)
     set(STARTUP_DIR "${WITH_STARTUP_DIR}")
@@ -175,7 +174,7 @@ endif ()
 if (WITH_DAEMONS)
   if (WITH_STARTUP_SCRIPT STREQUAL "systemd")
     configure_file("${PROJECT_SOURCE_DIR}/script/systemd/cbd.service.in"
-      "${PROJECT_SOURCE_DIR}/script/cbd.service"
+      "${STARTUP_DIR}"
       @ONLY)
     install(FILES "${PROJECT_SOURCE_DIR}/script/cbd.service"
       DESTINATION "/lib/systemd/system/")
