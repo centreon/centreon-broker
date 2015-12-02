@@ -825,7 +825,7 @@ unsigned int stream::_find_metric_id(
     q.bind_value(":min", check_double(min));
     q.bind_value(":max", check_double(max));
     q.bind_value(":current_value", check_double(value));
-    q.bind_value(":data_source_type", *type);
+    q.bind_value(":data_source_type", *type + (db_v2 ? 1 : 0));
 
     // Execute query.
     try { q.run_statement(); }
