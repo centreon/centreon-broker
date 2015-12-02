@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 #include <QLibraryInfo>
 #include <QProcess>
 #include <sstream>
-#include "com/centreon/broker/config/applier/state.hh"
+#include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -124,7 +124,7 @@ void diagnostic::generate(
       diagnostic_state.loggers().push_back(stdout_log);
     }
   }
-  config::applier::state::instance().apply(diagnostic_state, false);
+  config::applier::logger::instance().apply(diagnostic_state.loggers());
 
   // Base information about the software.
   logging::info(logging::high)
