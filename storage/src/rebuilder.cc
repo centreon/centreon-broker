@@ -176,9 +176,9 @@ void rebuilder::run() {
           database_query query(*db);
           query.run_query(oss.str());
           if (query.next())
-            check_interval = query.value(0).toUInt();
+            check_interval = query.value(0).toUInt() * 60;
           if (!check_interval)
-            check_interval = 5;
+            check_interval = 5 * 60;
         }
         logging::info(logging::medium) << "storage: rebuilder: index "
           << index_id << " (interval " << check_interval
@@ -359,7 +359,7 @@ void rebuilder::_rebuild_status(
   // Log.
   logging::info(logging::low)
     << "storage: rebuilder: rebuilding status " << index_id
-    << "(interval " << interval << ")";
+    << " (interval " << interval << ")";
 
   // Send rebuild start event.
   _send_rebuild_event(false, index_id, true);

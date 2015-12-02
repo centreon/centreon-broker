@@ -230,7 +230,7 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
       misc::shared_ptr<storage::status> status(new storage::status);
       status->ctime = ss->last_check;
       status->index_id = index_id;
-      status->interval = static_cast<time_t>(ss->check_interval);
+      status->interval = static_cast<time_t>(ss->check_interval * 60);
       status->is_for_rebuild = false;
       status->rrd_len = rrd_len;
       status->state = ss->last_hard_state;
