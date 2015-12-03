@@ -174,10 +174,10 @@ endif ()
 if (WITH_DAEMONS)
   if (WITH_STARTUP_SCRIPT STREQUAL "systemd")
     configure_file("${PROJECT_SOURCE_DIR}/script/systemd/cbd.service.in"
-      "${STARTUP_DIR}"
+     "${PROJECT_SOURCE_DIR}/script/cbd.service"
       @ONLY)
     install(FILES "${PROJECT_SOURCE_DIR}/script/cbd.service"
-      DESTINATION "/lib/systemd/system/")
+      DESTINATION "${STARTUP_DIR}")
   elseif (OS_DISTRIBUTOR STREQUAL "CentOS" OR OS_DISTRIBUTOR STREQUAL "RedHat")
     configure_file("${PROJECT_SOURCE_DIR}/script/redhat/cbd.init.d.in"
       "${PROJECT_SOURCE_DIR}/script/cbd.init"
