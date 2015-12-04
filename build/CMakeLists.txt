@@ -852,6 +852,24 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
+  ##
+  ## RRD (v2).
+  ##
+
+  # Disable metric graphs generation.
+  set(TEST_NAME "running_rrd_v2_disable_metrics")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/rrd/v2/disable_metrics.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
+  # Disable status graphs generation.
+  set(TEST_NAME "running_rrd_v2_disable_status")
+  add_executable("${TEST_NAME}"
+    "${PROJECT_SOURCE_DIR}/test/rrd/v2/disable_status.cc")
+  target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
+  add_test("${TEST_NAME}" "${TEST_NAME}")
+
   # XXX
   # # Monitoring to SQL.
   # set(TEST_NAME "running_monitoring_to_sql")
