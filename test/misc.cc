@@ -16,12 +16,15 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cerrno>
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
 #include <QDir>
 #include <QStringList>
 #include <sstream>
 #include <unistd.h>
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "test/misc.hh"
 #include "test/vars.hh"
 
@@ -62,4 +65,22 @@ void test::sleep_for(int units) {
     }
   }
   return ;
+}
+
+/**
+ *  Get a temporary file path.
+ *
+ *  @return Temporary file path.
+ */
+std::string test::temp_path() {
+  char path[] = "/tmp/brokerXXXXXX";
+  int retval(mkstemp(path));
+  if (retval < 0) {
+    char const* err_msg(strerror(errno));
+    throw (exceptions::msg() << "cannot create temporary file: "
+           << err_msg);
+  }
+  close(retval);
+  ::remove(path);
+  return (path);
 }

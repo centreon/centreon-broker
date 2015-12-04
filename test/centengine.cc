@@ -45,7 +45,7 @@ using namespace com::centreon::broker::test;
  */
 centengine::centengine(centengine_config const* cfg) : _config(cfg) {
   // Create base directory.
-  _config_path = tmpnam(NULL);
+  _config_path = temp_path();
   mkdir(_config_path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
 
   // Write configuration files.

@@ -24,9 +24,10 @@
 
 CCB_BEGIN()
 
-namespace test {
-  void    recursive_remove(std::string const& dir_path);
-  void    sleep_for(int units);
+namespace     test {
+  void        recursive_remove(std::string const& dir_path);
+  void        sleep_for(int units);
+  std::string temp_path();
 }
 
 CCB_END()

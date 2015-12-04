@@ -21,6 +21,7 @@
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/centengine_extcmd.hh"
+#include "test/misc.hh"
 
 using namespace com::centreon::broker;
 
@@ -34,7 +35,7 @@ using namespace com::centreon::broker;
  *  Default constructor.
  */
 centengine_extcmd::centengine_extcmd() {
-  _file = tmpnam(NULL);
+  _file = test::temp_path();
 }
 
 /**
