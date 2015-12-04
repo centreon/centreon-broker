@@ -871,46 +871,10 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
   # XXX
-  # # Monitoring to SQL.
-  # set(TEST_NAME "running_monitoring_to_sql")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/monitoring_to_sql.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # Dependencies to SQL.
-  # set(TEST_NAME "running_dependencies_to_sql")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/dependencies_to_sql.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # SQL transactions.
-  # set(TEST_NAME "running_sql_transactions")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/sql_transactions.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # Acknowledgements to SQL.
-  # set(TEST_NAME "running_acknowledgements_to_sql")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/acknowledgements_to_sql.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
   # # Correlation to SQL.
   # set(TEST_NAME "running_correlation_to_sql")
   # add_executable("${TEST_NAME}"
   #   "${PROJECT_SOURCE_DIR}/test/correlation_to_sql.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # Custom variables to SQL.
-  # set(TEST_NAME "running_custom_variables_to_sql")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/custom_variables_to_sql.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # Filtering to SQL.
-  # set(TEST_NAME "running_filtering_to_sql")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/filtering_to_sql.cc")
   # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   # add_test("${TEST_NAME}" "${TEST_NAME}")
   # # Instance update when outdated.
@@ -974,18 +938,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   # add_executable("${TEST_NAME}"
   #   "${PROJECT_SOURCE_DIR}/test/rebuild_graphs.cc")
   # target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # Disable status graphs.
-  # set(TEST_NAME "running_disable_status_graphs")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/disable_status_graphs.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # Disable metrics graphs.
-  # set(TEST_NAME "running_disable_metrics_graphs")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/disable_metrics_graphs.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   # add_test("${TEST_NAME}" "${TEST_NAME}")
   # # Graph deletion.
   # set(TEST_NAME "running_delete_graphs")
