@@ -20,7 +20,7 @@
 Description=Centreon Broker watchdog
 
 [Service]
-ExecStart="@PREFIX_BIN@/cbwd" "@PREFIX_CONF@/watchdog.xml"
+ExecStart=@PREFIX_BIN@/cbwd @PREFIX_CONF@/watchdog.xml
 Type=simple
 User=centreon-broker
 
