@@ -23,6 +23,7 @@
 #include <QSqlQuery>
 #include <sys/stat.h>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/misc/misc.hh"
 #include "test/cbd.hh"
 #include "test/centengine.hh"
 #include "test/centengine_config.hh"
@@ -82,9 +83,9 @@ int main() {
     }
 
     // Temporary paths.
-    metrics_path = test::temp_path();
+    metrics_path = misc::temp_path();
     mkdir(metrics_path.c_str(), S_IRWXU);
-    status_path = test::temp_path();
+    status_path = misc::temp_path();
     mkdir(status_path.c_str(), S_IRWXU);
 
     // Monitoring broker.

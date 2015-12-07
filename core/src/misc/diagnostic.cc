@@ -27,6 +27,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/diagnostic.hh"
+#include "com/centreon/broker/misc/misc.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -80,11 +81,7 @@ void diagnostic::generate(
   // Destination directory.
   std::string tmp_dir;
   {
-    char const* tmp_dir_ptr(tmpnam(NULL));
-    if (!tmp_dir_ptr)
-      throw (exceptions::msg()
-             << "diagnostic: cannot generate temporary directory path");
-    tmp_dir = tmp_dir_ptr;
+    tmp_dir = temp_path();
     QDir dir;
     if (!dir.mkdir(tmp_dir.c_str()))
       throw (exceptions::msg()

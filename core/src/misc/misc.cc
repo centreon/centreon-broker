@@ -16,19 +16,30 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_TEST_MISC_HH
-#  define CCB_TEST_MISC_HH
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <unistd.h>
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/misc/misc.hh"
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+using namespace com::centreon::broker;
 
-CCB_BEGIN()
-
-namespace     test {
-  void        recursive_remove(std::string const& dir_path);
-  void        sleep_for(int units);
+/**
+ *  Get a temporary file path.
+ *
+ *  @return Temporary file path.
+ */
+std::string misc::temp_path() {
+  char path[] = "/tmp/brokerXXXXXX";
+  int retval(mkstemp(path));
+  if (retval < 0) {
+    char const* err_msg(strerror(errno));
+    throw (exceptions::msg() << "cannot create temporary file: "
+           << err_msg);
+  }
+  ::close(retval);
+  ::remove(path);
+  return (path);
 }
-
-CCB_END()
-
-#endif // !CCB_TEST_MISC_HH

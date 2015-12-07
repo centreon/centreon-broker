@@ -19,6 +19,7 @@
 #include <cstdio>
 #include <fstream>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/misc/misc.hh"
 #include "test/file.hh"
 #include "test/misc.hh"
 #include "test/vars.hh"
@@ -140,7 +141,7 @@ std::string const& file::generate() {
   }
 
   // Write target file.
-  _target_file = test::temp_path();
+  _target_file = misc::temp_path();
   std::ofstream ofs;
   ofs.open(
         _target_file.c_str(),
