@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Centreon
+** Copyright 2012,2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@
 #include <string>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/misc/misc.hh"
 
 using namespace com::centreon::broker;
 
@@ -37,7 +38,7 @@ int main() {
   int retval(EXIT_FAILURE);
 
   // File name.
-  std::string config_file(tmpnam(NULL));
+  std::string config_file(misc::temp_path());
 
   try {
     // Create configuration file.

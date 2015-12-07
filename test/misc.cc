@@ -16,12 +16,15 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cerrno>
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
 #include <QDir>
 #include <QStringList>
 #include <sstream>
 #include <unistd.h>
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "test/misc.hh"
 #include "test/vars.hh"
 

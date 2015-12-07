@@ -27,6 +27,7 @@
 #include <QPair>
 #include <QThread>
 #include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/misc/misc.hh"
 #include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/neb/node_events_stream.hh"
@@ -82,8 +83,8 @@ int main() {
   // Return value.
   int retval(EXIT_FAILURE);
 
-  std::string persistent_cache_file(::tmpnam(NULL));
-  std::string temporary_config_file(::tmpnam(NULL));
+  std::string persistent_cache_file(misc::temp_path());
+  std::string temporary_config_file(misc::temp_path());
 
   // Initialization.
   config::applier::init();
