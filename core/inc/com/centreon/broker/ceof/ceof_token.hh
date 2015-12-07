@@ -16,17 +16,17 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_NEB_CEOF_TOKEN_HH
-#  define CCB_NEB_CEOF_TOKEN_HH
+#ifndef CCB_CEOF_CEOF_TOKEN_HH
+#  define CCB_CEOF_CEOF_TOKEN_HH
 
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace        neb {
+namespace        ceof {
   /**
-   *  @class ceof_token ceof_token.hh "com/centreon/broker/neb/ceof_token.hh"
+   *  @class ceof_token ceof_token.hh "com/centreon/broker/ceof/ceof_token.hh"
    *  @brief Centreon Engine Object File token.
    *
    *  As produced by the parser.
@@ -65,4 +65,4 @@ namespace        neb {
 
 CCB_END()
 
-#endif // !CCB_NEB_CEOF_TOKEN_HH
+#endif // !CCB_CEOF_CEOF_TOKEN_HH

@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/neb/ceof_writer.hh"
+#include "com/centreon/broker/ceof/ceof_writer.hh"
 
-using namespace com::centreon::broker::neb;
+using namespace com::centreon::broker::ceof;
 
 /**
  *  Default constructor.

@@ -16,17 +16,17 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_NEB_CEOF_WRITER_HH
-#  define CCB_NEB_CEOF_WRITER_HH
+#ifndef CCB_CEOF_CEOF_WRITER_HH
+#  define CCB_CEOF_CEOF_WRITER_HH
 
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace   neb {
+namespace   ceof {
   /**
-   *  @class ceof_writer ceof_writer.hh "com/centreon/broker/neb/ceof_writer.hh"
+   *  @class ceof_writer ceof_writer.hh "com/centreon/broker/ceof/ceof_writer.hh"
    *  @brief Centreon Engine Object File writer.
    */
   class          ceof_writer {
@@ -51,4 +51,4 @@ namespace   neb {
 
 CCB_END()
 
-#endif // !CCB_NEB_CEOF_WRITER_HH
+#endif // !CCB_CEOF_CEOF_WRITER_HH

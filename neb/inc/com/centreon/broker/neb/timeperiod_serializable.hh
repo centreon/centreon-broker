@@ -23,7 +23,7 @@
 #  include <QHash>
 #  include <QString>
 #  include "com/centreon/broker/time/timeperiod.hh"
-#  include "com/centreon/broker/neb/ceof_serializable.hh"
+#  include "com/centreon/broker/ceof/ceof_serializable.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -34,7 +34,7 @@ namespace   neb {
    *  @brief Represent a serializable Centreon Engine Object File timeperiod.
    */
   class          timeperiod_serializable
-                   : public ceof_serializable<timeperiod_serializable> {
+                   : public ceof::ceof_serializable<timeperiod_serializable> {
   public:
                  timeperiod_serializable(
                    QHash<QString, time::timeperiod::ptr> const& tps);

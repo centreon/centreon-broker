@@ -31,8 +31,8 @@
 #include "com/centreon/broker/misc/tokenizer.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
-#include "com/centreon/broker/neb/ceof_parser.hh"
-#include "com/centreon/broker/neb/ceof_writer.hh"
+#include "com/centreon/broker/ceof/ceof_parser.hh"
+#include "com/centreon/broker/ceof/ceof_writer.hh"
 #include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/downtime_serializable.hh"
 #include "com/centreon/broker/neb/node_events_stream.hh"
@@ -41,6 +41,7 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
+using namespace com::centreon::broker::ceof;
 
 /**
  *  Constructor.

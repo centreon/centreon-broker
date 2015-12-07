@@ -16,18 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_NEB_CEOF_ITERATOR_HH
-#  define CCB_NEB_CEOF_ITERATOR_HH
+#ifndef CCB_CEOF_CEOF_ITERATOR_HH
+#  define CCB_CEOF_CEOF_ITERATOR_HH
 
 #  include <vector>
-#  include "com/centreon/broker/neb/ceof_token.hh"
+#  include "com/centreon/broker/ceof/ceof_token.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace   neb {
+namespace   ceof {
   /**
-   *  @class ceof_iterator ceof_iterator.hh "com/centreon/broker/neb/ceof_iterator.hh"
+   *  @class ceof_iterator ceof_iterator.hh "com/centreon/broker/ceof/ceof_iterator.hh"
    *  @brief Centreon Engine Object File iterator.
    *
    *  This iterates over the parsed tokens of a ceof document.
@@ -66,4 +66,4 @@ namespace   neb {
 
 CCB_END()
 
-#endif // !CCB_NEB_CEOF_ITERATOR_HH
+#endif // !CCB_CEOF_CEOF_ITERATOR_HH

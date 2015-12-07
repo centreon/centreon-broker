@@ -16,20 +16,20 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_NEB_CEOF_PARSER_HH
-#  define CCB_NEB_CEOF_PARSER_HH
+#ifndef CCB_CEOF_CEOF_PARSER_HH
+#  define CCB_CEOF_CEOF_PARSER_HH
 
 #  include <string>
 #  include <vector>
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/ceof_iterator.hh"
-#  include "com/centreon/broker/neb/ceof_token.hh"
+#  include "com/centreon/broker/ceof/ceof_iterator.hh"
+#  include "com/centreon/broker/ceof/ceof_token.hh"
 
 CCB_BEGIN()
 
-namespace   neb {
+namespace   ceof {
   /**
-   *  @class ceof_parser ceof_parser.hh "com/centreon/broker/neb/ceof_parser.hh"
+   *  @class ceof_parser ceof_parser.hh "com/centreon/broker/ceof/ceof_parser.hh"
    *  @brief Centreon Engine Object File parser.
    */
   class          ceof_parser {
@@ -52,4 +52,4 @@ namespace   neb {
 
 CCB_END()
 
-#endif // !CCB_NEB_CEOF_PARSER_HH
+#endif // !CCB_CEOF_CEOF_PARSER_HH

@@ -17,9 +17,9 @@
 */
 
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/neb/ceof_parser.hh"
+#include "com/centreon/broker/ceof/ceof_parser.hh"
 
-using namespace com::centreon::broker::neb;
+using namespace com::centreon::broker::ceof;
 
 /**
  *  Constructor.

@@ -25,7 +25,7 @@
 #  include <QString>
 #  include "com/centreon/broker/neb/downtime.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
-#  include "com/centreon/broker/neb/ceof_serializable.hh"
+#  include "com/centreon/broker/ceof/ceof_serializable.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -36,7 +36,7 @@ namespace   neb {
    *  @brief Represent a serializable Centreon Engine Object File downtime.
    */
   class          downtime_serializable
-                   : public ceof_serializable<downtime_serializable> {
+                   : public ceof::ceof_serializable<downtime_serializable> {
   public:
                  downtime_serializable();
                  downtime_serializable(

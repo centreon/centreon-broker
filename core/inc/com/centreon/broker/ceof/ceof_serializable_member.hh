@@ -16,20 +16,20 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_NEB_CEOF_SERIALIZABLE_MEMBER_HH
+#ifndef CCB_CEOF_CEOF_SERIALIZABLE_MEMBER_HH
 #  define CCB_NEB_CEOF_SERIALIZABLE_MEMBER_HH
 
 #  include <string>
 #  include <map>
-#  include "com/centreon/broker/neb/ceof_iterator.hh"
-#  include "com/centreon/broker/neb/ceof_writer.hh"
+#  include "com/centreon/broker/ceof/ceof_iterator.hh"
+#  include "com/centreon/broker/ceof/ceof_writer.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace   neb {
+namespace   ceof {
   /**
-   *  @class ceof_serializable_member ceof_serializable_member.hh "com/centreon/broker/neb/ceof_serializable_member.hh"
+   *  @class ceof_serializable_member ceof_serializable_member.hh "com/centreon/broker/ceof/ceof_serializable_member.hh"
    *  @brief Represent a serializable Centreon Engine Object File member.
    */
   template <typename T>
@@ -63,4 +63,4 @@ namespace   neb {
 
 CCB_END()
 
-#endif // !CCB_NEB_CEOF_SERIALIZABLE_MEMBER_HH
+#endif // !CCB_CEOF_CEOF_SERIALIZABLE_MEMBER_HH
