@@ -36,6 +36,11 @@ set(CENTREON_BROKER_MINOR 0)
 set(CENTREON_BROKER_PATCH 0)
 set(CENTREON_BROKER_VERSION "${CENTREON_BROKER_MAJOR}.${CENTREON_BROKER_MINOR}.${CENTREON_BROKER_PATCH}")
 add_definitions(-DCENTREON_BROKER_VERSION=\"${CENTREON_BROKER_VERSION}\")
+configure_file(
+  "${INC_DIR}/version.hh.in"
+  "${INC_DIR}/version.hh"
+  "@ONLY"
+)
 
 #
 # Check and/or find required components.
@@ -497,6 +502,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/time/time_info.hh"
   "${INC_DIR}/time/ptr_typedef.hh"
   "${INC_DIR}/time/daterange.hh"
+  "${INC_DIR}/version.hh"
 )
 
 # Static libraries.

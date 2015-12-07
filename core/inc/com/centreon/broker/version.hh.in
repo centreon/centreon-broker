@@ -1,0 +1,26 @@
+/*
+** Copyright 2013,2015 Merethis
+**
+** All rights reserved.
+*/
+
+#ifndef CCB_VERSION_HH
+#  define CCB_VERSION_HH
+
+#  include "com/centreon/broker/namespace.hh"
+
+CCB_BEGIN()
+
+#  define CENTREON_BROKER_VERSION_INCLUDE "@CENTREON_BROKER_VERSION@"
+
+namespace            version {
+  // Compile-time values.
+  unsigned int const major = @CENTREON_BROKER_MAJOR@;
+  unsigned int const minor = @CENTREON_BROKER_MINOR@;
+  unsigned int const patch = @CENTREON_BROKER_PATCH@;
+  char const* const  string = "@CENTREON_BROKER_VERSION@";
+}
+
+CCB_END()
+
+#endif // !CCB_VERSION_HH
