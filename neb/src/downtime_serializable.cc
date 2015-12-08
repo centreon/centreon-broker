@@ -57,10 +57,8 @@ std::ostream& com::centreon::broker::neb::operator<<(
  *  Default constructor.
  */
 downtime_serializable::downtime_serializable()
-  : ceof_serializable<downtime_serializable>(),
-    _downtime(new downtime){
+  : _downtime(new downtime){
   _downtime->come_from = 1;
-  init_bindings();
 }
 
 /**
@@ -69,8 +67,7 @@ downtime_serializable::downtime_serializable()
  *  @param[in] other  The object to copy.
  */
 downtime_serializable::downtime_serializable(downtime_serializable const& other)
-  : ceof_serializable<downtime_serializable>(other),
-    _downtime(new downtime(*other._downtime)) {
+  : _downtime(new downtime(*other._downtime)) {
 }
 
 /**
@@ -119,82 +116,103 @@ com::centreon::broker::misc::shared_ptr<downtime>
 }
 
 /**
- *  Init the bindings.
+ *   Visit.
+ *
+ *   @param[in] visitor  The visitor.
  */
-void downtime_serializable::init_bindings() {
-  add_member(
+void downtime_serializable::visit(ceof::ceof_visitor& visitor) {
+  visitor.visit(
+    *this,
     "actual_end_time",
     &downtime_serializable::get_downtime_member<timestamp, &downtime::actual_end_time>,
     &downtime_serializable::set_downtime_member<timestamp, &downtime::actual_end_time>);
-  add_member(
+  visitor.visit(
+    *this,
     "actual_start_time",
     &downtime_serializable::get_downtime_member<timestamp, &downtime::actual_start_time>,
     &downtime_serializable::set_downtime_member<timestamp, &downtime::actual_start_time>);
-  add_member(
+  visitor.visit(
+    *this,
     "author",
     &downtime_serializable::get_downtime_member<QString, &downtime::author>,
     &downtime_serializable::set_downtime_member<QString, &downtime::author>);
-  add_member(
+  visitor.visit(
+    *this,
     "comment",
     &downtime_serializable::get_downtime_member<QString, &downtime::comment>,
     &downtime_serializable::set_downtime_member<QString, &downtime::comment>);
-  add_member(
+  visitor.visit(
+    *this,
     "deletion_time",
     &downtime_serializable::get_downtime_member<timestamp, &downtime::deletion_time>,
     &downtime_serializable::set_downtime_member<timestamp, &downtime::deletion_time>);
-  add_member(
+  visitor.visit(
+    *this,
     "downtime_type",
     &downtime_serializable::get_downtime_member<short, &downtime::downtime_type>,
     &downtime_serializable::set_downtime_member<short, &downtime::downtime_type>);
-  add_member(
+  visitor.visit(
+    *this,
     "duration",
     &downtime_serializable::get_downtime_member<timestamp, &downtime::duration>,
     &downtime_serializable::set_downtime_member<timestamp, &downtime::duration>);
-  add_member(
+  visitor.visit(
+    *this,
     "end_time",
     &downtime_serializable::get_downtime_member<timestamp, &downtime::end_time>,
     &downtime_serializable::set_downtime_member<timestamp, &downtime::end_time>);
-  add_member(
+  visitor.visit(
+    *this,
     "entry_time",
     &downtime_serializable::get_downtime_member<timestamp, &downtime::entry_time>,
     &downtime_serializable::set_downtime_member<timestamp, &downtime::entry_time>);
-  add_member(
+  visitor.visit(
+    *this,
     "fixed",
     &downtime_serializable::get_downtime_member<bool, &downtime::fixed>,
     &downtime_serializable::set_downtime_member<bool, &downtime::fixed>);
-  add_member(
+  visitor.visit(
+    *this,
     "host_id",
     &downtime_serializable::get_downtime_member<unsigned int, &downtime::host_id>,
     &downtime_serializable::set_downtime_member<unsigned int, &downtime::host_id>);
-  add_member(
+  visitor.visit(
+    *this,
     "internal_id",
     &downtime_serializable::get_downtime_member<unsigned int, &downtime::internal_id>,
     &downtime_serializable::set_downtime_member<unsigned int, &downtime::internal_id>);
-  add_member(
+  visitor.visit(
+    *this,
     "service_id",
     &downtime_serializable::get_downtime_member<unsigned int, &downtime::service_id>,
     &downtime_serializable::set_downtime_member<unsigned int, &downtime::service_id>);
-  add_member(
+  visitor.visit(
+    *this,
     "start_time",
     &downtime_serializable::get_downtime_member<timestamp, &downtime::start_time>,
     &downtime_serializable::set_downtime_member<timestamp, &downtime::start_time>);
-  add_member(
+  visitor.visit(
+    *this,
     "triggered_by",
     &downtime_serializable::get_downtime_member<unsigned int, &downtime::triggered_by>,
     &downtime_serializable::set_downtime_member<unsigned int, &downtime::triggered_by>);
-  add_member(
+  visitor.visit(
+    *this,
     "was_cancelled",
     &downtime_serializable::get_downtime_member<bool, &downtime::was_cancelled>,
     &downtime_serializable::set_downtime_member<bool, &downtime::was_cancelled>);
-  add_member(
+  visitor.visit(
+    *this,
     "was_started",
     &downtime_serializable::get_downtime_member<bool, &downtime::was_started>,
     &downtime_serializable::set_downtime_member<bool, &downtime::was_started>);
-  add_member(
+  visitor.visit(
+    *this,
     "is_recurring",
     &downtime_serializable::get_downtime_member<bool, &downtime::is_recurring>,
     &downtime_serializable::set_downtime_member<bool, &downtime::is_recurring>);
-  add_member(
+  visitor.visit(
+    *this,
     "recurring_period",
     &downtime_serializable::get_downtime_member<QString, &downtime::recurring_timeperiod>,
     &downtime_serializable::set_downtime_member<QString, &downtime::recurring_timeperiod>);

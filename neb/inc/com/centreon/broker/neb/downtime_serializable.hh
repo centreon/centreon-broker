@@ -36,7 +36,7 @@ namespace   neb {
    *  @brief Represent a serializable Centreon Engine Object File downtime.
    */
   class          downtime_serializable
-                   : public ceof::ceof_serializable<downtime_serializable> {
+                   : public ceof::ceof_serializable {
   public:
                  downtime_serializable();
                  downtime_serializable(
@@ -54,7 +54,7 @@ namespace   neb {
     misc::shared_ptr<downtime>
                  get_downtime() const;
 
-    virtual void init_bindings();
+    virtual void visit(ceof::ceof_visitor& visitor);
 
   private:
     misc::shared_ptr<downtime>

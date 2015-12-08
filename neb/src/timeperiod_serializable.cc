@@ -30,7 +30,6 @@ timeperiod_serializable::timeperiod_serializable(
   QHash<QString, time::timeperiod::ptr> const& tps)
   : _tps(&tps),
     _tp(new time::timeperiod()){
-  init_bindings();
 }
 
 /**
@@ -40,8 +39,7 @@ timeperiod_serializable::timeperiod_serializable(
  */
 timeperiod_serializable::timeperiod_serializable(
                            timeperiod_serializable const& other)
-  : ceof_serializable<timeperiod_serializable>(other),
-    _tps(other._tps),
+  : _tps(other._tps),
     _tp(new time::timeperiod(*other._tp)){
 }
 
@@ -372,54 +370,68 @@ com::centreon::broker::time::timeperiod::ptr
 }
 
 /**
- *  Init the bindings.
+ *   Visit the object.
+ *
+ *   @param[in] visitor  The visitor.
  */
-void timeperiod_serializable::init_bindings() {
-  add_member(
+void timeperiod_serializable::visit(ceof::ceof_visitor& visitor) {
+  visitor.visit(
+    *this,
     "timeperiod_name",
     &timeperiod_serializable::get_name,
     &timeperiod_serializable::set_name);
-  add_member(
+  visitor.visit(
+    *this,
     "alias",
     &timeperiod_serializable::get_alias,
     &timeperiod_serializable::set_alias);
-  add_member(
+  visitor.visit(
+    *this,
     "sunday",
     &timeperiod_serializable::get_sunday,
     &timeperiod_serializable::set_sunday);
-  add_member(
+  visitor.visit(
+    *this,
     "monday",
     &timeperiod_serializable::get_monday,
     &timeperiod_serializable::set_monday);
-  add_member(
+  visitor.visit(
+     *this,
     "tuesday",
      &timeperiod_serializable::get_tuesday,
      &timeperiod_serializable::set_tuesday);
-  add_member(
+  visitor.visit(
+     *this,
      "wednesday",
      &timeperiod_serializable::get_wednesday,
      &timeperiod_serializable::set_wednesday);
-  add_member(
+  visitor.visit(
+     *this,
      "thursday",
      &timeperiod_serializable::get_thursday,
      &timeperiod_serializable::set_thursday);
-  add_member(
+  visitor.visit(
+     *this,
      "friday",
      &timeperiod_serializable::get_friday,
      &timeperiod_serializable::set_friday);
-  add_member(
+  visitor.visit(
+     *this,
      "saturday",
      &timeperiod_serializable::get_saturday,
      &timeperiod_serializable::set_saturday);
-  add_member(
+  visitor.visit(
+     *this,
      "exceptions",
      &timeperiod_serializable::get_exceptions,
      &timeperiod_serializable::set_exceptions);
-  add_member(
+  visitor.visit(
+     *this,
      "exclude",
      &timeperiod_serializable::get_excluded,
      &timeperiod_serializable::set_excluded);
-  add_member(
+  visitor.visit(
+     *this,
      "include",
      &timeperiod_serializable::get_included,
      &timeperiod_serializable::set_included);

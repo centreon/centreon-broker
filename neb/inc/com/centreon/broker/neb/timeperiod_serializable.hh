@@ -34,7 +34,7 @@ namespace   neb {
    *  @brief Represent a serializable Centreon Engine Object File timeperiod.
    */
   class          timeperiod_serializable
-                   : public ceof::ceof_serializable<timeperiod_serializable> {
+                   : public ceof::ceof_serializable {
   public:
                  timeperiod_serializable(
                    QHash<QString, time::timeperiod::ptr> const& tps);
@@ -73,7 +73,7 @@ namespace   neb {
     time::timeperiod::ptr
                  get_timeperiod() const;
 
-    virtual void init_bindings();
+    virtual void visit(ceof::ceof_visitor& visitor);
 
   private:
     QHash<QString, time::timeperiod::ptr> const*

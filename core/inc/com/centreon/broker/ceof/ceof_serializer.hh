@@ -16,32 +16,37 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_CEOF_CEOF_SERIALIZABLE_HH
-#  define CCB_CEOF_CEOF_SERIALIZABLE_HH
+#ifndef CCB_CEOF_CEOF_SERIALIZER_HH
+#  define CCB_CEOF_CEOF_SERIALIZER_HH
 
 #  include <string>
-#  include <map>
-#  include "com/centreon/broker/ceof/ceof_iterator.hh"
+#  include "com/centreon/broker/ceof/ceof_serializable.hh"
 #  include "com/centreon/broker/ceof/ceof_writer.hh"
 #  include "com/centreon/broker/ceof/ceof_visitor.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace   ceof {
   /**
-   *  @class ceof_serializable ceof_serializable.hh "com/centreon/broker/ceof/ceof_serializable.hh"
-   *  @brief Represent a serializable Centreon Engine Object File class.
+   *  @class ceof_deserializer ceof_deserializer.hh "com/centreon/broker/ceof/ceof_deserializer.hh"
+   *  @brief Represent a serializer for Centreon Engine Object File class.
    */
-  class            ceof_serializable {
+  class            ceof_serializer : public ceof_visitor {
   public:
-   virtual         ~ceof_serializable() {}
+                   ceof_serializer(ceof_writer& writer);
+   virtual         ~ceof_serializer() throw();
 
-    virtual void visit(ceof_visitor& visitor) = 0;
+  protected:
+    virtual void   serialize(
+                     std::string const& name,
+                     std::string const& value);
+
+  private:
+    ceof_writer&   _writer;
   };
 }
 
 CCB_END()
 
-#endif // !CCB_CEOF_CEOF_SERIALIZABLE_HH
+#endif // !CCB_CEOF_CEOF_SERIALIZER_HH

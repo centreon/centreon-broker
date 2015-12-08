@@ -33,6 +33,8 @@
 #include "com/centreon/broker/neb/acknowledgement.hh"
 #include "com/centreon/broker/ceof/ceof_parser.hh"
 #include "com/centreon/broker/ceof/ceof_writer.hh"
+#include "com/centreon/broker/ceof/ceof_deserializer.hh"
+#include "com/centreon/broker/ceof/ceof_serializer.hh"
 #include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/downtime_serializable.hh"
 #include "com/centreon/broker/neb/node_events_stream.hh"
@@ -778,12 +780,14 @@ void node_events_stream::_load_config_file() {
       std::string const& object_name = iterator.get_value();
       if (object_name == "downtime") {
         downtime_serializable ds;
-        ds.unserialize(ds, iterator.enter_children());
+        ceof::ceof_deserializer cd(iterator.enter_children());
+        ds.visit(cd);
         _incomplete_downtime.push_back(*ds.get_downtime());
       }
       else if (object_name == "timeperiod") {
         timeperiod_serializable ts(_timeperiods);
-        ts.unserialize(ts, iterator.enter_children());
+        ceof::ceof_deserializer cd(iterator.enter_children());
+        ts.visit(cd);
         _timeperiods.insert(
           QString::fromStdString(ts.get_name()), ts.get_timeperiod());
       }
