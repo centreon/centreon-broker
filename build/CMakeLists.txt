@@ -295,9 +295,42 @@ qt4_wrap_cpp(QT_WRAPPED_SOURCES
   "${INC_DIR}/processing/thread.hh"
 )
 
+include_directories("${INC_DIR}/json/yajl/")
+
+set(YAJL_SOURCES
+  # Sources.
+  "${SRC_DIR}/json/yajl/yajl_version.c"
+  "${SRC_DIR}/json/yajl/yajl_tree.c"
+  "${SRC_DIR}/json/yajl/yajl_parser.c"
+  "${SRC_DIR}/json/yajl/yajl_lex.c"
+  "${SRC_DIR}/json/yajl/yajl_gen.c"
+  "${SRC_DIR}/json/yajl/yajl_encode.c"
+  "${SRC_DIR}/json/yajl/yajl_buf.c"
+  "${SRC_DIR}/json/yajl/yajl_alloc.c"
+  "${SRC_DIR}/json/yajl/yajl.c"
+  # Includes.
+  "${SRC_DIR}/json/yajl/api/yajl_version.h"
+  "${SRC_DIR}/json/yajl/yajl_parser.h"
+  "${SRC_DIR}/json/yajl/yajl_lex.h"
+  "${SRC_DIR}/json/yajl/yajl_encode.h"
+  "${SRC_DIR}/json/yajl/yajl_bytestack.h"
+  "${SRC_DIR}/json/yajl/yajl_buf.h"
+  "${SRC_DIR}/json/yajl/yajl_alloc.h"
+  "${SRC_DIR}/json/yajl/api/yajl_tree.h"
+  "${SRC_DIR}/json/yajl/api/yajl_parse.h"
+  "${SRC_DIR}/json/yajl/api/yajl_gen.h"
+  "${SRC_DIR}/json/yajl/api/yajl_common.h"
+  "${INC_DIR}/json/yajl/yajl/yajl_version.h"
+  "${INC_DIR}/json/yajl/yajl/yajl_tree.h"
+  "${INC_DIR}/json/yajl/yajl/yajl_parse.h"
+  "${INC_DIR}/json/yajl/yajl/yajl_gen.h"
+  "${INC_DIR}/json/yajl/yajl/yajl_common.h"
+  )
+
 # Core library.
 set(LIBROKER_SOURCES
   # Sources.
+  ${YAJL_SOURCES}
   "${SRC_DIR}/bbdo/acceptor.cc"
   "${SRC_DIR}/bbdo/ack.cc"
   "${SRC_DIR}/bbdo/connector.cc"
@@ -366,6 +399,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/json/json_parser.cc"
   "${SRC_DIR}/json/json_iterator.cc"
   "${SRC_DIR}/json/json_writer.cc"
+  "${SRC_DIR}/json/yajl_parser.cc"
   "${SRC_DIR}/logging/backend.cc"
   "${SRC_DIR}/logging/file.cc"
   "${SRC_DIR}/logging/logger.cc"
@@ -476,6 +510,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/json/json_parser.hh"
   "${INC_DIR}/json/json_iterator.hh"
   "${INC_DIR}/json/json_writer.hh"
+  "${INC_DIR}/json/yajl_parser.hh"
   "${INC_DIR}/logging/backend.hh"
   "${INC_DIR}/logging/defines.hh"
   "${INC_DIR}/logging/file.hh"
