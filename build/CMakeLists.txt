@@ -511,6 +511,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/json/json_iterator.hh"
   "${INC_DIR}/json/json_writer.hh"
   "${INC_DIR}/json/yajl_parser.hh"
+  "${INC_DIR}/json/yajl_visitable.hh"
   "${INC_DIR}/logging/backend.hh"
   "${INC_DIR}/logging/defines.hh"
   "${INC_DIR}/logging/file.hh"

@@ -21,6 +21,7 @@
 
 #  include <string>
 #  include "com/centreon/broker/json/yajl/yajl/yajl_parse.h"
+#  include "com/centreon/broker/json/yajl_visitable.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -32,11 +33,14 @@ namespace json {
    */
   class                    yajl_parser {
   public:
-                           yajl_parser(yajl_callbacks const& callbacks);
+                           yajl_parser(
+                             yajl_visitable& visitable);
                            ~yajl_parser();
 
     void                   feed(std::string const& to_append);
     void                   finish();
+    std::string const&     get_text() const throw();
+    yajl_visitable&        get_target() throw();
 
   private:
     std::string            _stream;
@@ -44,6 +48,7 @@ namespace json {
                            yajl_parser(yajl_parser const&);
     yajl_parser&           operator=(yajl_parser const&);
 
+    yajl_visitable&        _visitable;
     std::string            _full_text;
     yajl_handle            _handle;
   };

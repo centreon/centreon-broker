@@ -1,7 +1,7 @@
 #ifndef YAJL_VERSION_H_
 #define YAJL_VERSION_H_
 
-#include <yajl/yajl_common.h>
+#include "com/centreon/broker/json/yajl/yajl/yajl_common.h"
 
 #define YAJL_MAJOR 2
 #define YAJL_MINOR 1

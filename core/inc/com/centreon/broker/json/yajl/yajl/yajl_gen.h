@@ -19,7 +19,7 @@
  * Interface to YAJL's JSON generation facilities.
  */
 
-#include <yajl/yajl_common.h>
+#include "com/centreon/broker/json/yajl/yajl/yajl_common.h"
 
 #ifndef __YAJL_GEN_H__
 #define __YAJL_GEN_H__
