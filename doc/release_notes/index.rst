@@ -5,6 +5,7 @@ Release notes
 .. toctree::
    :glob:
 
+   broker211
    broker210
    broker29
    broker28
