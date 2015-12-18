@@ -97,7 +97,7 @@ static ::yajl_callbacks callbacks = {
  *
  *  @param[in] ajl_visitable  The visitable to use.
  */
-yajl_parser::yajl_parser(ajl_visitable& visitable)
+yajl_parser::yajl_parser(yajl_visitable& visitable)
   : _visitable(visitable) {
   _handle = ::yajl_alloc(&callbacks, NULL, &visitable);
 }
