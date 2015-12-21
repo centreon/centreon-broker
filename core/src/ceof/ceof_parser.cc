@@ -86,7 +86,9 @@ ceof_iterator ceof_parser::parse() {
   int parent_token = -1;
   while (actual != std::string::npos) {
     // Get the token.
-    size_t end_of_token = _string.find_first_of(" \t\n", actual);
+    size_t end_of_token = _string.find_first_of(
+                            state == in_object_waiting_for_value ? "\n" : " \t\n",
+                            actual);
     if (end_of_token == std::string::npos)
       end_of_token = _string.size();
     std::string substr = _string.substr(actual, end_of_token - actual);
