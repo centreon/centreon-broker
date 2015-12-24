@@ -50,6 +50,7 @@ public:
   bool read(
          misc::shared_ptr<io::data>& d,
          time_t deadline = (time_t)-1) {
+    (void)deadline;
     if (sent_data)
       throw (io::exceptions::shutdown(true, true));
     misc::shared_ptr<io::raw> raw(new io::raw);
@@ -60,6 +61,7 @@ public:
   }
 
   int write(misc::shared_ptr<io::data> const& d) {
+    (void)d;
     throw (io::exceptions::shutdown(false, true));
     return (-1);
   }

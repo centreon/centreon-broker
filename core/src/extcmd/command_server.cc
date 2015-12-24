@@ -45,7 +45,9 @@ command_server::command_server(
   : io::endpoint(true),
     _listener_thread(NULL),
     _protocol(prot),
-    _socket_file(socket_file) {}
+    _socket_file(socket_file) {
+  (void)cache;
+}
 
 /**
  *  Destructor.

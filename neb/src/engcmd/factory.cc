@@ -119,5 +119,6 @@ io::endpoint* factory::new_endpoint(
     find_param(cfg, "command_module_path").toStdString());
   std::auto_ptr<io::endpoint>
     end(new endpoint(cfg.name, command_module_path));
+  is_acceptor = false;
   return (end.release());
 }

@@ -73,6 +73,7 @@ bool_expression& bool_expression::operator=(
 bool bool_expression::child_has_update(
                         computable* child,
                         io::stream* visitor) {
+  (void)visitor;
   // It is useless to maintain a cache of expression values in this
   // class, as the bool_* classes already cache most of them.
   if (child == _expression.data()) {

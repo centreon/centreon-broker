@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <QDir>
 #include <QDomDocument>
 #include <QDomElement>
 #include <QFile>
@@ -119,6 +120,22 @@ void parser::parse(QString const& file, state& s) {
       else if (name == "include") {
         QString included_file(elem.text());
         parse(included_file, s);
+      }
+      else if (name == "include_dir") {
+        QString dirname(elem.text());
+        QDir dir(dirname);
+        QStringList l;
+        l.push_back("*.xml");
+        dir.setNameFilters(l);
+        l = dir.entryList();
+        for (QStringList::iterator it(l.begin()), end(l.end());
+             it != end;
+             ++it) {
+          QString file(dirname);
+          file.append("/");
+          file.append(*it);
+          parse(file, s);
+        }
       }
       else if ((name == "endpoint") || (name == "output")) {
         endpoint out;
