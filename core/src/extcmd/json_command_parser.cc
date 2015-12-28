@@ -41,7 +41,7 @@ using namespace com::centreon::broker::extcmd;
 std::string find_or_except(
               std::string const& val,
               json::json_iterator const& it) {
-  json::json_iterator found = it.find_child(val);
+  json::json_iterator found = it.find_child(val).enter_children();
   if (found.is_null())
     throw (exceptions::msg() << "couldn't find '" << val << "'");
   return (found.get_string());
@@ -97,7 +97,7 @@ unsigned int json_command_parser::parse(
     // Didn't find opening '{'.
     if (level == 0)
       return (0);
-    for (; parsed < buffer.size(); ++parsed) {
+    for (++parsed; parsed < buffer.size(); ++parsed) {
       if (buffer[parsed] == '{')
         ++level;
       else if (buffer[parsed] == '}')
@@ -106,7 +106,7 @@ unsigned int json_command_parser::parse(
         break ;
     }
     // Didn't find closing '}'
-    if (parsed == buffer.size())
+    if (level != 0)
       return (0);
 
     // Found a (hopefully) valid json snippet. Try to parse it.
