@@ -75,8 +75,8 @@ bool endpoint::operator==(endpoint const& e) const {
           && (name == e.name)
           && (failover == e.failover)
           && (filters == e.filters)
-          && (params == e.params)
-          && (cfg == e.cfg));
+          && (cfg.toDocument().toString() == e.cfg.toDocument().toString()))
+          && (params == e.params);
 }
 
 /**
@@ -113,8 +113,12 @@ bool endpoint::operator<(endpoint const& e) const {
     return (failover < e.failover);
   else if (filters != e.filters)
     return (filters < e.filters);
-  else if (cfg != e.cfg)
-    return (cfg.toText().data() < e.cfg.toText().data());
+  else {
+    QString str1 = cfg.toDocument().toString();
+    QString str2 = e.cfg.toDocument().toString();
+    if (str1 != str2)
+      return (str1 < str2);
+  }
 
   // Need to check all parameters one by one.
   QMap<QString, QString>::const_iterator it1(params.begin()),
