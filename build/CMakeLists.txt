@@ -1252,7 +1252,7 @@ install(TARGETS "${DAEMON}"
 install(DIRECTORY "${INC_DIR}/../../../"
   DESTINATION "${PREFIX_INC}/"
   COMPONENT "development"
-  FILES_MATCHING PATTERN "*.hh"
+  FILES_MATCHING PATTERN "*.hh" PATTERN "*.h"
 )
 
 #
