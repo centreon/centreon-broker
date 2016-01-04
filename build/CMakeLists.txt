@@ -1248,6 +1248,13 @@ install(TARGETS "${DAEMON}"
 #  endforeach()
 #endif ()
 
+# Install header files for development.
+install(DIRECTORY "${INC_DIR}/"
+  DESTINATION "${PREFIX_INC}"
+  COMPONENT "development"
+  FILES_MATCHING PATTERN "*.hh"
+)
+
 #
 # Packaging.
 #
