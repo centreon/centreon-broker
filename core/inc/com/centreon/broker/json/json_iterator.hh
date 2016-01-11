@@ -34,9 +34,9 @@ namespace json {
    *  As an example, the document:
    *  '{ "name" : "Jack", "age" : 27 }'
    *
-   *  contains 5 tokens: the toplevel object, with 4 children:
-   *  name, Jack, age and 27. Pair association is done through a children
-   *  association: i.e the child of a key is its direct value.
+   *  contains 5 tokens: the toplevel object, with 2 children:
+   *  name, and age, each having a child each. Pair association is done through
+   *  a children association: i.e the child of a key is its direct value.
    */
   class                    json_iterator {
   public:
