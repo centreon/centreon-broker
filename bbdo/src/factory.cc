@@ -149,6 +149,9 @@ io::endpoint* factory::new_endpoint(
                          cfg.read_timeout,
                          one_peer_retention_mode,
                          coarse);
+    // An endpoint in one peer retention mode does not behave like an acceptor.
+    if (one_peer_retention_mode)
+      is_acceptor = false;
   }
   else
     retval = new bbdo::connector(

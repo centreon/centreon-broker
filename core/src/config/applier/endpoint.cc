@@ -550,6 +550,14 @@ processing::failover* endpoint::_create_endpoint(
     ++level;
   }
 
+  // An acceptor should never have a failover.
+  if (is_acceptor && !failovr.isNull()) {
+    logging::config(logging::medium)
+      << "endpoint applier: ignoring failover of acceptor-type endpoint '"
+      << cfg.name << "'";
+    failovr.clear();
+  }
+
   // Return failover thread.
   std::auto_ptr<processing::failover>
     fo(new processing::failover(endp, is_output, cfg.name, elements));
