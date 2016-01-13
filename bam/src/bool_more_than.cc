@@ -16,27 +16,32 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/bam/bool_and.hh"
+#include "com/centreon/broker/bam/bool_more_than.hh"
 
 using namespace com::centreon::broker::bam;
 
 /**
  *  Default constructor.
+ *
+ *  @param[in] strict  Should the operator be strict?
  */
-bool_and::bool_and() {}
+bool_more_than::bool_more_than(bool strict)
+  : _strict(strict) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-bool_and::bool_and(bool_and const& right)
-  : bool_binary_operator(right) {}
+bool_more_than::bool_more_than(bool_more_than const& right)
+  : bool_binary_operator(right) {
+  _strict = right._strict;
+}
 
 /**
  *  Destructor.
  */
-bool_and::~bool_and() {}
+bool_more_than::~bool_more_than() {}
 
 /**
  *  Assignment operator.
@@ -45,8 +50,11 @@ bool_and::~bool_and() {}
  *
  *  @return This object.
  */
-bool_and& bool_and::operator=(bool_and const& right) {
+bool_more_than& bool_more_than::operator=(bool_more_than const& right) {
   bool_binary_operator::operator=(right);
+  if (this != &right) {
+    _strict = right._strict;
+  }
   return (*this);
 }
 
@@ -55,8 +63,8 @@ bool_and& bool_and::operator=(bool_and const& right) {
  *
  *  @return Evaluation of the expression with hard values.
  */
-double bool_and::value_hard() {
-  return (_left_hard && _right_hard);
+double bool_more_than::value_hard() {
+  return (_strict ? _left_hard > _right_hard : _left_hard >= _right_hard);
 }
 
 /**
@@ -64,6 +72,6 @@ double bool_and::value_hard() {
  *
  *  @return Evaluation of the expression with soft values.
  */
-double bool_and::value_soft() {
-  return (_left_soft && _right_soft);
+double bool_more_than::value_soft() {
+  return (_strict ? _left_soft > _right_soft : _left_soft >= _right_soft);
 }

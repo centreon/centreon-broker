@@ -16,9 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_BAM_BOOL_XOR_HH
-#  define CCB_BAM_BOOL_XOR_HH
+#ifndef CCB_BAM_BOOL_OPERATION_HH
+#  define CCB_BAM_BOOL_OPERATION_HH
 
+#  include <string>
 #  include "com/centreon/broker/bam/bool_binary_operator.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -26,23 +27,34 @@ CCB_BEGIN()
 
 namespace     bam {
   /**
-   *  @class bool_xor bool_xor.hh "com/centreon/broker/bam/bool_xor.hh"
-   *  @brief XOR operator.
+   *  @class bool_operation bool_operation.hh "com/centreon/broker/bam/bool_operation.hh"
+   *  @brief Boolean operation.
    *
-   *  In the context of a KPI computation, bool_xor represents a logical
-   *  XOR between two bool_value.
+   *  In the context of a KPI computation, bool_operation represents a
+   *  mathematical operation between two bool_value.
    */
-  class       bool_xor : public bool_binary_operator {
+  class       bool_operation : public bool_binary_operator {
   public:
-              bool_xor();
-              bool_xor(bool_xor const& right);
-              ~bool_xor();
-    bool_xor& operator=(bool_xor const& right);
+              bool_operation(std::string const& op);
+              bool_operation(bool_operation const& right);
+              ~bool_operation();
+    bool_operation&
+              operator=(bool_operation const& right);
     double    value_hard();
     double    value_soft();
+
+  private:
+    enum      operation_type {
+      addition,
+      substraction,
+      multiplication,
+      division
+    };
+    operation_type
+              _type;
   };
 }
 
 CCB_END()
 
-#endif // !CCB_BAM_BOOL_XOR_HH
+#endif // !CCB_BAM_BOOL_OR_HH

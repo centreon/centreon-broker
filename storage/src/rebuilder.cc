@@ -155,11 +155,15 @@ void rebuilder::run() {
       while (!_should_exit && !index_to_rebuild.empty()) {
         // Get check interval of host/service.
         unsigned int index_id;
+        unsigned int host_id;
+        unsigned int service_id;
         unsigned int check_interval(0);
         unsigned int rrd_len;
         {
           index_info info(index_to_rebuild.front());
           index_id = info.index_id;
+          host_id = info.host_id;
+          service_id = info.service_id;
           rrd_len = info.rrd_retention;
           index_to_rebuild.pop_front();
 
@@ -222,6 +226,8 @@ void rebuilder::run() {
             metrics_to_rebuild.pop_front();
             _rebuild_metric(
               *db,
+              host_id,
+              service_id,
               info.metric_id,
               info.metric_name,
               info.metric_type,
@@ -275,6 +281,8 @@ void rebuilder::run() {
  *
  *  @param[in] db           Database object.
  *  @param[in] metric_id    Metric ID.
+ *  @param[in] host_id      Id of the host this metric belong to.
+ *  @param[in] service_id   Id of the service this metric belong to.
  *  @param[in] metric_name  Metric name.
  *  @param[in] type         Metric type.
  *  @param[in] interval     Host/service check interval.
@@ -283,6 +291,8 @@ void rebuilder::run() {
 void rebuilder::_rebuild_metric(
                   database& db,
                   unsigned int metric_id,
+                  unsigned int host_id,
+                  unsigned int service_id,
                   QString const& metric_name,
                   short metric_type,
                   unsigned int interval,
@@ -327,6 +337,8 @@ void rebuilder::_rebuild_metric(
         entry->rrd_len = length;
         entry->value_type = metric_type;
         entry->value = data_bin_query.value(1).toDouble();
+        entry->host_id = host_id;
+        entry->service_id = service_id;
         if (entry->value > FLT_MAX * 0.999)
           entry->value = INFINITY;
         else if (entry->value < -FLT_MAX * 0.999)

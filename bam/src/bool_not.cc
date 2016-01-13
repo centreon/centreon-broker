@@ -90,7 +90,7 @@ void bool_not::set_value(misc::shared_ptr<bool_value>& value) {
  *
  *  @return Hard value.
  */
-bool bool_not::value_hard() {
+double bool_not::value_hard() {
   return (!_value->value_hard());
 }
 
@@ -99,7 +99,7 @@ bool bool_not::value_hard() {
  *
  *  @return Soft value.
  */
-bool bool_not::value_soft() {
+double bool_not::value_soft() {
   return (!_value->value_soft());
 }
 

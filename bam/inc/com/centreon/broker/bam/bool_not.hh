@@ -47,8 +47,8 @@ namespace     bam {
                 computable* child,
                 io::stream* visitor = NULL);
     void      set_value(misc::shared_ptr<bool_value>& value);
-    bool      value_hard();
-    bool      value_soft();
+    double    value_hard();
+    double       value_soft();
     bool      state_known() const;
 
   private:

@@ -16,27 +16,31 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/bam/bool_and.hh"
+#include "com/centreon/broker/bam/bool_constant.hh"
 
 using namespace com::centreon::broker::bam;
 
 /**
- *  Default constructor.
+ *  Constructor.
+ *
+ *  @param[in] val  The constant value to assign.
  */
-bool_and::bool_and() {}
+bool_constant::bool_constant(double val) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-bool_and::bool_and(bool_and const& right)
-  : bool_binary_operator(right) {}
+bool_constant::bool_constant(bool_constant const& right)
+  : bool_value(right) {
+  _value = right._value;
+}
 
 /**
  *  Destructor.
  */
-bool_and::~bool_and() {}
+bool_constant::~bool_constant() {}
 
 /**
  *  Assignment operator.
@@ -45,9 +49,28 @@ bool_and::~bool_and() {}
  *
  *  @return This object.
  */
-bool_and& bool_and::operator=(bool_and const& right) {
-  bool_binary_operator::operator=(right);
+bool_constant& bool_constant::operator=(bool_constant const& right) {
+  bool_value::operator=(right);
+  if (this != &right) {
+    _value = right._value;
+  }
   return (*this);
+}
+
+/**
+ *  Get notified of child update.
+ *
+ *  @param[in] child    The child.
+ *  @param[in] visitor  A visitor.
+ *
+ *  @return True if the parent was modified.
+ */
+bool bool_constant::child_has_update(
+                      computable* child,
+                      io::stream* visitor) {
+  (void) child;
+  (void) visitor;
+  return (false);
 }
 
 /**
@@ -55,8 +78,8 @@ bool_and& bool_and::operator=(bool_and const& right) {
  *
  *  @return Evaluation of the expression with hard values.
  */
-double bool_and::value_hard() {
-  return (_left_hard && _right_hard);
+double bool_constant::value_hard() {
+  return (_value);
 }
 
 /**
@@ -64,6 +87,15 @@ double bool_and::value_hard() {
  *
  *  @return Evaluation of the expression with soft values.
  */
-double bool_and::value_soft() {
-  return (_left_soft && _right_soft);
+double bool_constant::value_soft() {
+  return (_value);
+}
+
+/**
+ *  Is the state known ?
+ *
+ *  @return  True if the state is known.
+ */
+bool bool_constant::state_known() const {
+  return (true);
 }

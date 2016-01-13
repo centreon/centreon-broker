@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_BAM_BOOL_XOR_HH
-#  define CCB_BAM_BOOL_XOR_HH
+#ifndef CCB_BAM_BOOL_MORE_THAN_HH
+#  define CCB_BAM_BOOL_MORE_THAN_HH
 
 #  include "com/centreon/broker/bam/bool_binary_operator.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -26,23 +26,27 @@ CCB_BEGIN()
 
 namespace     bam {
   /**
-   *  @class bool_xor bool_xor.hh "com/centreon/broker/bam/bool_xor.hh"
-   *  @brief XOR operator.
+   *  @class bool_or bool_or.hh "com/centreon/broker/bam/bool_or.hh"
+   *  @brief OR operator.
    *
-   *  In the context of a KPI computation, bool_xor represents a logical
-   *  XOR between two bool_value.
+   *  In the context of a KPI computation, bool_or represents a logical
+   *  OR between two bool_value.
    */
-  class       bool_xor : public bool_binary_operator {
+  class       bool_more_than : public bool_binary_operator {
   public:
-              bool_xor();
-              bool_xor(bool_xor const& right);
-              ~bool_xor();
-    bool_xor& operator=(bool_xor const& right);
+              bool_more_than(bool strict = false);
+              bool_more_than(bool_more_than const& right);
+              ~bool_more_than();
+    bool_more_than&
+              operator=(bool_more_than const& right);
     double    value_hard();
     double    value_soft();
+
+  private:
+    bool      _strict;
   };
 }
 
 CCB_END()
 
-#endif // !CCB_BAM_BOOL_XOR_HH
+#endif // !CCB_BAM_BOOL_MORE_THAN_HH

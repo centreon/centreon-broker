@@ -55,7 +55,7 @@ bool_xor& bool_xor::operator=(bool_xor const& right) {
  *
  *  @return Evaluation of the expression with hard values.
  */
-bool bool_xor::value_hard() {
+double bool_xor::value_hard() {
   return ((!_left_hard && _right_hard)
           || (_left_hard && !_right_hard));
 }
@@ -65,7 +65,7 @@ bool bool_xor::value_hard() {
  *
  *  @return Evaluation of the expression with soft values.
  */
-bool bool_xor::value_soft() {
+double bool_xor::value_soft() {
   return ((!_left_soft && _right_soft)
           || (_left_soft && !_right_soft));
 }

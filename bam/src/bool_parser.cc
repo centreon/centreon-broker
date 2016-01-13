@@ -18,8 +18,15 @@
 
 #include <algorithm>
 #include <cctype>
+#include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/bam/bool_and.hh"
+#include "com/centreon/broker/bam/bool_constant.hh"
+#include "com/centreon/broker/bam/bool_equal.hh"
+#include "com/centreon/broker/bam/bool_less_than.hh"
+#include "com/centreon/broker/bam/bool_metric.hh"
+#include "com/centreon/broker/bam/bool_more_than.hh"
 #include "com/centreon/broker/bam/bool_not.hh"
+#include "com/centreon/broker/bam/bool_operation.hh"
 #include "com/centreon/broker/bam/bool_or.hh"
 #include "com/centreon/broker/bam/bool_parser.hh"
 #include "com/centreon/broker/bam/bool_service.hh"
@@ -124,47 +131,6 @@ bool_value::ptr bool_parser::_make_boolean_exp() {
 }
 
 /**
- *  @brief Make host service state.
- *
- *  Turns a token into a boolean node.
- *
- *  @return Return bool value
- */
-bool_value::ptr bool_parser::_make_host_service_state() {
-  // FORMAT example   {HOST SERV} {is} {UNKNOWN}
-
-  // Get host.
-  std::string hst_svc(_toknizr.get_token());
-  size_t split(hst_svc.find(' '));
-  if (split == std::string::npos)
-    throw (exceptions::msg()
-           << "service must be expressed as {HOST SERVICE}");
-  std::string hst(hst_svc.substr(0, split));
-  std::string svc(hst_svc.substr(split + 1));
-  std::pair<unsigned int, unsigned int>
-    ids(_mapping.get_service_id(hst, svc));
-  if (!ids.first || !ids.second)
-    throw (exceptions::msg()
-           << "could not find ID of service '" << svc
-           << "' or of host '" << hst << "'");
-
-  // Condition whether state desired OR not
-  bool is_expected(_token_to_condition(_toknizr.get_token()));
-
-  // Get referred state
-  short state(_token_to_service_state(_toknizr.get_token()));
-
-  // Create object.
-  bool_service::ptr ret(new bool_service);
-  ret->set_host_id(ids.first);
-  ret->set_service_id(ids.second);
-  ret->set_value_if_state_match(is_expected);
-  ret->set_expected_state(state);
-  _services.push_back(ret);
-  return (ret.staticCast<bool_value>());
-}
-
-/**
  *  @brief Make operator.
  *
  *  This method consumes an operator token.
@@ -187,12 +153,28 @@ bool_binary_operator::ptr bool_parser::_make_op() {
         result = new bool_or();
       else if (sym == "XOR")
         result =  new bool_xor();
+      else if (sym == "IS" || sym == "EQUAL" || sym == "=")
+        result = new bool_equal();
+      else if (sym == "<=" || sym == "<")
+        result = new bool_less_than(sym == "<");
+      else if (sym == ">=" || sym == ">")
+        result = new bool_more_than(sym == ">");
+      else if (sym == "+" || sym == "-" || sym == "*" || sym == "/")
+        result = new bool_operation(sym);
       else
         throw (exceptions::msg() << "illegal operator '" << sym << "'");
     }
   }
   return (result);
 }
+
+bool_parser::term_parse_function bool_parser::_term_parse_functions[] =
+    {&bool_parser::_make_constant,
+     &bool_parser::_make_status,
+     &bool_parser::_make_metric,
+     &bool_parser::_make_aggregate,
+     &bool_parser::_make_call,
+     &bool_parser::_make_service};
 
 /**
  *  @brief Eat term.
@@ -211,8 +193,18 @@ bool_value::ptr bool_parser::_make_term() {
       result = new bool_not(_make_term());
     }
     else {
-      // Host_service construct.
-      result = _make_host_service_state();
+      // Try to parse a term.
+      for (size_t i = 0;
+           i < sizeof(_term_parse_functions) / sizeof(*_term_parse_functions)
+           && result.isNull();
+           ++i)
+        (this->*_term_parse_functions[i])(_toknizr.get_token());
+
+      if (result.isNull())
+        throw (exceptions::msg()
+               << "couldn't parse operand at token '"
+               << _toknizr.get_token() << "'");
+      _toknizr.drop_token();
     }
   }
   else if (_toknizr.char_is('(')) {
@@ -230,51 +222,143 @@ bool_value::ptr bool_parser::_make_term() {
 }
 
 /**
- *  Convert a plain condition (IS or NOT) to a boolean.
+ *  Parse and return a constant object.
  *
- *  @param[in] token Either "IS" or "NOT".
+ *  @param[in] The string.
  *
- *  @return True if IS, false if NOT.
+ *  @return  The constant object or null.
  */
-bool bool_parser::_token_to_condition(std::string const& token) {
-  std::string be(token);
-  std::transform(be.begin(), be.end(), be.begin(), toupper);
-  bool retval;
-  if (be == "IS")
-    retval = true;
-  else if (be == "NOT")
-    retval = false;
-  else
-    throw (exceptions::msg() << "invalid condition '" << be << "'");
+bool_value::ptr bool_parser::_make_constant(std::string const& constant) {
+  int val = 0;
+  bool_value::ptr retval;
+
+  if (misc::string::to(constant.c_str(), val))
+    retval = bool_value::ptr(new bool_constant(val));
+
   return (retval);
 }
 
 /**
- *  Convert a plain STATE to its values.
+ *  Parse a service from a string.
  *
- *  @param[in] token WARNING, CRITICAL, UNKNOWN, PENDING or OK.
+ *  @param[in] str          The string to parse.
+ *  @param[out] host_id     The parsed host id.
+ *  @param[out] service_id  The parsed service id.
  *
- *  @return The numeric state matching token.
+ *  @return  True if parsing was succesfull.
  */
-short bool_parser::_token_to_service_state(std::string const& token) {
-  std::string serv_state(token);
-  std::transform(
-         serv_state.begin(),
-         serv_state.end(),
-         serv_state.begin(),
-         toupper);
-  short retval;
-  if (serv_state == "OK")
-    retval = 0;
-  else if (serv_state == "WARNING")
-    retval = 1;
-  else if (serv_state == "CRITICAL")
-    retval = 2;
-  else if (serv_state == "UNKNOWN")
-    retval = 3;
-  else if (serv_state == "PENDING")
-    retval = 4;
-  else
-    throw (exceptions::msg() << "invalid state '" << serv_state << "'");
+bool bool_parser::_parse_service(
+                   std::string const& str,
+                   unsigned int& host_id,
+                   unsigned int& service_id) const {
+  bool retval = false;
+
+  if (str.find(':') == std::string::npos
+      && std::count(str.begin(), str.end(), ' ') < 1) {
+    size_t split(str.find(' '));
+    std::string hst(str.substr(0, split));
+    std::string svc;
+    if (split != std::string::npos)
+      svc = str.substr(split + 1);
+    std::pair<unsigned int, unsigned int>
+      ids(_mapping.get_service_id(hst, svc));
+    if (!ids.first || !ids.second)
+      throw (exceptions::msg()
+             << "could not find ID of service '" << svc
+             << "' or of host '" << hst << "'");
+    retval = true;
+    host_id = ids.first;
+    service_id = ids.second;
+  }
+  return (retval);
+}
+
+/**
+ *  Parse and return a service object.
+ *
+ *  @param[in] str  The string.
+ *
+ *  @return  The service object or null.
+ */
+bool_value::ptr bool_parser::_make_service(std::string const& str) {
+  bool_value::ptr retval;
+  unsigned int service_id;
+  unsigned int host_id;
+
+  if (_parse_service(str, host_id, service_id)) {
+    bool_service::ptr ret(new bool_service);
+    retval = ret;
+    ret->set_host_id(host_id);
+    ret->set_service_id(service_id);
+    _services.push_back(ret);
+  }
+
+  return (retval);
+}
+
+/**
+ *  Parse and return a status object.
+ *
+ *  @param[in] str  The string.
+ *
+ *  @return  The status object or null.
+ */
+bool_value::ptr bool_parser::_make_status(std::string const& str) {
+  bool_value::ptr retval;
+
+  if (str == "OK")
+    retval = bool_value::ptr(new bool_constant(0));
+  else if (str == "WARNING")
+    retval = bool_value::ptr(new bool_constant(1));
+  else if (str == "CRITICAL")
+    retval = bool_value::ptr(new bool_constant(2));
+  else if (str == "UNKNOWN")
+    retval = bool_value::ptr(new bool_constant(3));
+  else if (str == "PENDING")
+    retval = bool_value::ptr(new bool_constant(4));
+
+  return (retval);
+}
+
+/**
+ *  Parse and return a metric object.
+ *
+ *  @param[in] str  The string.
+ *
+ *  @return  The metric object or null.
+ */
+bool_value::ptr bool_parser::_make_metric(std::string const& str) {
+  bool_value::ptr retval;
+
+  if (str.compare(0, ::strlen("metric:"), "metric:") == 0) {
+    std::string metric_name(str.substr(::strlen("metric:") + 1));
+  }
+
+  return (retval);
+}
+
+/**
+ *  Parse and return an aggregate object.
+ *
+ *  @param[in] str  The string.
+ *
+ *  @return  The aggregate object or null.
+ */
+bool_value::ptr bool_parser::_make_aggregate(std::string const& str) {
+  bool_value::ptr retval;
+
+  return (retval);
+}
+
+/**
+ *  Parse and return a call object.
+ *
+ *   @param[in] str  The string.
+ *
+ *  @return  The call object or null.
+ */
+bool_value::ptr bool_parser::_make_call(std::string const& str) {
+  bool_value::ptr retval;
+
   return (retval);
 }

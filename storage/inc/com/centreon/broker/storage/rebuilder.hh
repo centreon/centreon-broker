@@ -54,6 +54,8 @@ namespace           storage {
     void            _rebuild_metric(
                       database& db,
                       unsigned int metric_id,
+                      unsigned int host_id,
+                      unsigned int service_id,
                       QString const& metric_name,
                       short metric_type,
                       unsigned int interval,

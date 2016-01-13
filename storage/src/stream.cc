@@ -302,6 +302,8 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
             perf->rrd_len = rrd_len;
             perf->value = pd.value();
             perf->value_type = metric_type;
+            perf->host_id = ss->host_id;
+            perf->service_id = ss->service_id;
             logging::debug(logging::high)
               << "storage: generating perfdata event for metric "
               << perf->metric_id << " (name " << perf->name

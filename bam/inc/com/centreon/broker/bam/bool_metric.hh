@@ -16,11 +16,13 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_BAM_BOOL_SERVICE_HH
-#  define CCB_BAM_BOOL_SERVICE_HH
+#ifndef CCB_BAM_BOOL_METRIC_HH
+#  define CCB_BAM_BOOL_METRIC_HH
 
+#  include <set>
+#  include <string>
 #  include "com/centreon/broker/bam/bool_value.hh"
-#  include "com/centreon/broker/bam/service_listener.hh"
+#  include "com/centreon/broker/bam/metric_listener.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -29,46 +31,42 @@ CCB_BEGIN()
 
 namespace         bam {
   /**
-   *  @class bool_service bool_service.hh "com/centreon/broker/bam/bool_service.hh"
-   *  @brief Evaluation of a service state.
+   *  @class bool_metric bool_metric.hh "com/centreon/broker/bam/bool_metric.hh"
+   *  @brief Evaluation of a metric.
    *
-   *  This class compares the state of a service to compute a boolean
+   *  This class cache the value of a metric to compute a boolean
    *  value.
    */
-  class           bool_service : public bool_value,
-                                 public service_listener {
+  class           bool_metric : public bool_value,
+                                 public metric_listener {
   public:
-    typedef misc::shared_ptr<bool_service> ptr;
+    typedef misc::shared_ptr<bool_metric> ptr;
 
-                  bool_service();
-                  bool_service(bool_service const& right);
-                  ~bool_service();
-    bool_service& operator=(bool_service const& right);
+                  bool_metric(std::string const& metric_name);
+                  bool_metric(bool_metric const& right);
+                  ~bool_metric();
+    bool_metric& operator=(bool_metric const& right);
     bool          child_has_update(
                     computable* child,
                     io::stream* visitor = NULL);
-    unsigned int  get_host_id() const;
-    unsigned int  get_service_id() const;
-    void          set_host_id(unsigned int host_id);
-    void          set_service_id(unsigned int service_id);
-    void          service_update(
-                    misc::shared_ptr<neb::service_status> const& status,
+    void          metric_update(
+                    misc::shared_ptr<storage::metric> const& m,
                     io::stream* visitor = NULL);
     double        value_hard();
     double        value_soft();
     bool          state_known() const;
 
-  private:
-    void          _internal_copy(bool_service const& right);
-
+private:
+    std::string   _metric_name;
+    double        _value;
+    bool          _state_known;
     unsigned int  _host_id;
     unsigned int  _service_id;
-    short         _state_hard;
-    short         _state_soft;
-    bool          _state_known;
+
+    bool          _metric_matches(storage::metric const& m) const;
   };
 }
 
 CCB_END()
 
-#endif // !CCB_BAM_BOOL_SERVICE_HH
+#endif // !CCB_BAM_BOOL_METRIC_HH

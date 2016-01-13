@@ -152,8 +152,18 @@ bool_tokenizer::token_limits bool_tokenizer::_get_token_limits() {
   if (!char_is('{'))
     throw (exceptions::msg() << "cannot find beginning of a valid token");
 
+  size_t deepness = 1;
   std::string::iterator from(_pos + 1);
-  std::string::iterator to(std::find(from, _text.end(), '}'));
+  std::string::iterator to = from;
+  for (; to != _text.end(); ++to) {
+    if (*to == '{')
+      ++deepness;
+    else if (*to == '}')
+      --deepness;
+    if (deepness == 0)
+      break ;
+  }
+
   if (to == _text.end())
     throw (exceptions::msg() << "cannot find end of token");
 

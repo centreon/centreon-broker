@@ -28,10 +28,8 @@ using namespace com::centreon::broker::bam;
 bool_service::bool_service()
   : _host_id(0),
     _service_id(0),
-    _state_expected(0),
     _state_hard(0),
     _state_soft(0),
-    _value_if_state_match(true),
     _state_known(false) {}
 
 /**
@@ -103,16 +101,6 @@ unsigned int bool_service::get_service_id() const {
 }
 
 /**
- *  Set the expected state of the service.
- *
- *  @param[in] expected Expected state of the service.
- */
-void bool_service::set_expected_state(short expected) {
-  _state_expected = expected;
-  return ;
-}
-
-/**
  *  Set host ID.
  *
  *  @param[in] host_id Host ID.
@@ -129,17 +117,6 @@ void bool_service::set_host_id(unsigned int host_id) {
  */
 void bool_service::set_service_id(unsigned int service_id) {
   _service_id = service_id;
-  return ;
-}
-
-/**
- *  Set value if service state match the expected state.
- *
- *  @param[in] value Value to return with value_hard() and value_soft()
- *                   if the service state match the expected state.
- */
-void bool_service::set_value_if_state_match(bool value) {
-  _value_if_state_match = value;
   return ;
 }
 
@@ -168,10 +145,8 @@ void bool_service::service_update(
  *
  *  @return Hard value.
  */
-bool bool_service::value_hard() {
-  return ((_state_hard == _state_expected)
-          ? _value_if_state_match
-          : !_value_if_state_match);
+double bool_service::value_hard() {
+  return (_state_hard);
 }
 
 /**
@@ -179,10 +154,8 @@ bool bool_service::value_hard() {
  *
  *  @preturn Soft value.
  */
-bool bool_service::value_soft() {
-  return ((_state_soft == _state_expected)
-          ? _value_if_state_match
-          : !_value_if_state_match);
+double bool_service::value_soft() {
+  return (_state_soft);
 }
 
 /**
@@ -202,10 +175,8 @@ bool bool_service::state_known() const {
 void bool_service::_internal_copy(bool_service const& right) {
   _host_id = right._host_id;
   _service_id = right._service_id;
-  _state_expected = right._state_expected;
   _state_hard = right._state_hard;
   _state_soft = right._state_soft;
-  _value_if_state_match = right._value_if_state_match;
   _state_known = right._state_known;
   return ;
 }

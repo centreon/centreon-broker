@@ -68,6 +68,8 @@ namespace            bam {
     std::map<std::pair<unsigned int, unsigned int>,
              bool>
                      _activated_mapping;
+
+
   };
 }
 

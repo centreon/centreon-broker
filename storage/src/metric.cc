@@ -41,7 +41,9 @@ metric::metric()
     metric_id(0),
     rrd_len(0),
     value(NAN),
-    value_type(perfdata::gauge) {}
+    value_type(perfdata::gauge),
+    host_id(0),
+    service_id(0) {}
 
 /**
  *  Copy constructor.
@@ -99,6 +101,8 @@ void metric::_internal_copy(metric const& m) {
   rrd_len = m.rrd_len;
   value = m.value;
   value_type = m.value_type;
+  host_id = m.host_id;
+  service_id = m.service_id;
   return ;
 }
 
@@ -136,6 +140,13 @@ mapping::entry const metric::entries[] = {
   mapping::entry(
     &metric::is_for_rebuild,
     "is_for_rebuild"),
+  mapping::entry(
+    &metric::host_id,
+    "host_id",
+     mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &metric::service_id,
+    "service_id"),
   mapping::entry()
 };
 

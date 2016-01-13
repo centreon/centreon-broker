@@ -23,6 +23,7 @@
 #  include <string>
 #  include "com/centreon/broker/bam/bool_binary_operator.hh"
 #  include "com/centreon/broker/bam/bool_service.hh"
+#  include "com/centreon/broker/bam/bool_metric.hh"
 #  include "com/centreon/broker/bam/bool_tokenizer.hh"
 #  include "com/centreon/broker/bam/bool_value.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -39,10 +40,24 @@ namespace            bam {
    *
    *  A boolean expression parser for interpreting BAM expressions
    *  consisting of a boolean-type syntax.
+   *
+   *  begin <- expression
+   *  expression <- (term operator)* term
+   *  term <- constant / node / metric / aggregation / status / \(expression\) / call / {NOT} term
+   *  operator <- {IS} / {NOT} / {OR} / {AND} / {>} / {<} / {>=} / {<=} / {EQUAL} / {+} / {-} / {*} / {/} / {%}
+   *  constant <- {(-/+)?[0-9]+}
+   *  node <- {literal literal?}
+   *  metric <- {metric: literal node?}
+   *  aggregation <- {aggregation_type: (metric,)* metric}
+   *  aggregation_type <- AVERAGE / SUM / MIN / MAX / COUNT
+   *  call <- {call: literal}
+   *  status <- {OK} / {CRITICAL} / {WARNING} / {UNKNOWN}
+   *  literal <- [:word:]
    */
   class              bool_parser{
   public:
     typedef std::list<bool_service::ptr> list_service;
+    typedef std::list<bool_metric::ptr> list_metric;
 
                      bool_parser(
                        std::string const& exp_text,
@@ -61,13 +76,28 @@ namespace            bam {
     list_service     _services;
     bool_tokenizer   _toknizr;
 
-    bool_value::ptr  _make_boolean_exp();
-    bool_value::ptr  _make_host_service_state();
     bool_binary_operator::ptr
                      _make_op();
     bool_value::ptr  _make_term();
-    bool             _token_to_condition(std::string const& token);
-    short            _token_to_service_state(std::string const& token);
+
+    // Terms
+    typedef bool_value::ptr
+                      (bool_parser::*term_parse_function)(std::string const&);
+
+    static term_parse_function
+                      _term_parse_functions[];
+    bool_value::ptr   _make_constant(std::string const& constant);
+    bool              _parse_service(
+                        std::string const& str,
+                        unsigned int& host_id,
+                        unsigned int& service_id) const;
+    bool_value::ptr   _make_service(std::string const& str);
+    bool_value::ptr   _make_status(std::string const& str);
+    bool_value::ptr   _make_metric(std::string const& str);
+    bool_value::ptr   _make_aggregate(std::string const& str);
+    bool_value::ptr   _make_call(std::string const& str);
+
+    bool_value::ptr  _make_boolean_exp();
   };
 }
 

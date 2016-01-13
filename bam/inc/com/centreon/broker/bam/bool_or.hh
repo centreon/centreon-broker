@@ -38,8 +38,8 @@ namespace     bam {
               bool_or(bool_or const& right);
               ~bool_or();
     bool_or&  operator=(bool_or const& right);
-    bool      value_hard();
-    bool      value_soft();
+    double    value_hard();
+    double    value_soft();
   };
 }
 

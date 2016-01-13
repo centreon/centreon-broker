@@ -66,6 +66,8 @@ namespace          storage {
     int            rrd_len;
     double         value;
     short          value_type;
+    unsigned int   host_id;
+    unsigned int   service_id;
 
     static mapping::entry const
                     entries[];

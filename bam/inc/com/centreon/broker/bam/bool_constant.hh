@@ -16,33 +16,40 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_BAM_BOOL_XOR_HH
-#  define CCB_BAM_BOOL_XOR_HH
+#ifndef CCB_BAM_BOOL_CONSTANT_HH
+#  define CCB_BAM_BOOL_CONSTANT_HH
 
-#  include "com/centreon/broker/bam/bool_binary_operator.hh"
+#  include "com/centreon/broker/bam/bool_value.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace     bam {
   /**
-   *  @class bool_xor bool_xor.hh "com/centreon/broker/bam/bool_xor.hh"
-   *  @brief XOR operator.
+   *  @class bool_and bool_and.hh "com/centreon/broker/bam/bool_and.hh"
+   *  @brief AND operator.
    *
-   *  In the context of a KPI computation, bool_xor represents a logical
-   *  XOR between two bool_value.
+   *  In the context of a KPI computation, bool_constant represents a constant
+   *  value (i.e '42').
    */
-  class       bool_xor : public bool_binary_operator {
+  class       bool_constant : public bool_value {
   public:
-              bool_xor();
-              bool_xor(bool_xor const& right);
-              ~bool_xor();
-    bool_xor& operator=(bool_xor const& right);
+              bool_constant(double value);
+              bool_constant(bool_constant const& right);
+              ~bool_constant();
+    bool_constant& operator=(bool_constant const& right);
+    bool      child_has_update(
+                computable* child,
+                io::stream* visitor);
     double    value_hard();
     double    value_soft();
+    bool      state_known() const;
+
+  private:
+    double    _value;
   };
 }
 
 CCB_END()
 
-#endif // !CCB_BAM_BOOL_XOR_HH
+#endif // !CCB_BAM_BOOL_CONSTANT_HH

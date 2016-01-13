@@ -55,7 +55,7 @@ bool_or& bool_or::operator=(bool_or const& right) {
  *
  *  @return Evaluation of the expression with hard values.
  */
-bool bool_or::value_hard() {
+double bool_or::value_hard() {
   return (_left_hard || _right_hard);
 }
 
@@ -64,6 +64,6 @@ bool bool_or::value_hard() {
  *
  *  @return Evaluation of the expression with soft values.
  */
-bool bool_or::value_soft() {
+double bool_or::value_soft() {
   return (_left_soft || _right_soft);
 }

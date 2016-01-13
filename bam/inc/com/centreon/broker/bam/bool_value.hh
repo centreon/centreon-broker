@@ -25,24 +25,24 @@
 
 CCB_BEGIN()
 
-namespace        bam {
+namespace          bam {
   /**
    *  @class bool_value bool_value.hh "com/centreon/broker/bam/bool_value.hh"
    *  @brief Computable boolean value.
    *
    *  This class abstracts a boolean value that can get computed.
    */
-  class          bool_value : public computable {
+  class            bool_value : public computable {
   public:
     typedef misc::shared_ptr<bool_value> ptr;
 
-                 bool_value();
-                 bool_value(bool_value const& right);
-    virtual      ~bool_value();
-    bool_value&  operator=(bool_value const& right);
-    virtual bool value_hard() = 0;
-    virtual bool value_soft() = 0;
-    virtual bool state_known() const = 0;
+                   bool_value();
+                   bool_value(bool_value const& right);
+    virtual        ~bool_value();
+    bool_value&    operator=(bool_value const& right);
+    virtual double value_hard() = 0;
+    virtual double value_soft() = 0;
+    virtual bool   state_known() const = 0;
   };
 }
 
