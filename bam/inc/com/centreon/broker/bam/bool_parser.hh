@@ -26,6 +26,7 @@
 #  include "com/centreon/broker/bam/bool_metric.hh"
 #  include "com/centreon/broker/bam/bool_tokenizer.hh"
 #  include "com/centreon/broker/bam/bool_value.hh"
+#  include "com/centreon/broker/bam/bool_call.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -58,6 +59,7 @@ namespace            bam {
   public:
     typedef std::list<bool_service::ptr> list_service;
     typedef std::list<bool_metric::ptr> list_metric;
+    typedef std::list<bool_call::ptr> list_call;
 
                      bool_parser(
                        std::string const& exp_text,
@@ -67,6 +69,10 @@ namespace            bam {
     bool_parser&     operator=(bool_parser const& other);
     list_service const&
                      get_services() const;
+    list_call const&
+                     get_calls() const;
+    list_metric const&
+                     get_metrics() const;
     bool_value::ptr  get_tree() const;
 
   private:
@@ -74,6 +80,8 @@ namespace            bam {
                      _mapping;
     bool_value::ptr  _root;
     list_service     _services;
+    list_call        _calls;
+    list_metric      _metrics;
     bool_tokenizer   _toknizr;
 
     bool_binary_operator::ptr
@@ -93,6 +101,11 @@ namespace            bam {
                         unsigned int& service_id) const;
     bool_value::ptr   _make_service(std::string const& str);
     bool_value::ptr   _make_status(std::string const& str);
+    bool              _parse_metric(
+                        std::string const& str,
+                        std::string& metric_name,
+                        unsigned int& host_id,
+                        unsigned int& service_id) const;
     bool_value::ptr   _make_metric(std::string const& str);
     bool_value::ptr   _make_aggregate(std::string const& str);
     bool_value::ptr   _make_call(std::string const& str);

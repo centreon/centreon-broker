@@ -19,6 +19,7 @@
 #ifndef CCB_BAM_HST_SVC_MAPPING_HH
 #  define CCB_BAM_HST_SVC_MAPPING_HH
 
+#  include <vector>
 #  include <map>
 #  include <string>
 #  include <utility>
@@ -53,6 +54,16 @@ namespace            bam {
                        unsigned int host_id,
                        unsigned int service_id,
                        bool activated);
+    void             register_metric(
+                       unsigned int metric_id,
+                       std::string const& metric_name,
+                       unsigned int host_id,
+                       unsigned int service_id);
+    std::vector<unsigned int>
+                      get_metric_ids(
+                       std::string const& metric_name,
+                       unsigned int host_id,
+                       unsigned int service_id) const;
 
     bool             get_activated(
                        unsigned int hst_id,
@@ -69,7 +80,11 @@ namespace            bam {
              bool>
                      _activated_mapping;
 
-
+    std::map<std::pair<unsigned int, unsigned int>,
+              std::map<std::string, unsigned int> >
+                     _metrics;
+    std::multimap<std::string, unsigned int>
+                     _metric_by_name;
   };
 }
 

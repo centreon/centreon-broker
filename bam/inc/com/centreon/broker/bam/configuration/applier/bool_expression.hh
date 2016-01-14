@@ -32,7 +32,10 @@ namespace                bam {
   // Forward declarations.
   class                  bool_expression;
   class                  bool_service;
+  class                  bool_call;
+  class                  bool_metric;
   class                  service_book;
+  class                  metric_book;
 
   namespace              configuration {
     namespace            applier {
@@ -54,7 +57,8 @@ namespace                bam {
         void             apply(
                            configuration::state::bool_exps const& my_bools,
                            hst_svc_mapping const& mapping,
-                           service_book& book);
+                           service_book& book,
+                           metric_book& metric_book);
         misc::shared_ptr<bam::bool_expression>
                          find_boolexp(unsigned int id);
 
@@ -63,12 +67,15 @@ namespace                bam {
           configuration::bool_expression                  cfg;
           misc::shared_ptr<bam::bool_expression>          obj;
           std::list<misc::shared_ptr<bam::bool_service> > svc;
+          std::list<misc::shared_ptr<bam::bool_call> >    call;
+          std::list<misc::shared_ptr<bam::bool_metric> >   mtrc;
         };
 
         void             _internal_copy(bool_expression const& other);
         misc::shared_ptr<bam::bool_expression>
                          _new_bool_exp(
                            configuration::bool_expression const& cfg);
+        void             _resolve_expression_calls();
 
         std::map<unsigned int, applied>
                          _applied;

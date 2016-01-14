@@ -317,7 +317,7 @@ void reader_v2::_load(state::bool_exps& bool_exps) {
   // Load boolean expressions themselves.
   try {
     std::ostringstream q;
-    q << "SELECT b.boolean_id, b.expression, b.bool_state"
+    q << "SELECT b.boolean_id, b.boolean_name, b.expression, b.bool_state"
          "  FROM mod_bam_boolean AS b"
          "  INNER JOIN mod_bam_kpi AS k"
          "    ON b.boolean_id=k.boolean_id"
@@ -332,8 +332,9 @@ void reader_v2::_load(state::bool_exps& bool_exps) {
       bool_exps[query.value(0).toUInt()] =
                   bool_expression(
                     query.value(0).toUInt(), // ID.
-                    query.value(1).toString().toStdString(), // Expression.
-                    query.value(2).toBool()); // Impact if.
+                    query.value(1).toString().toStdString(), // Name.
+                    query.value(2).toString().toStdString(), // Expression.
+                    query.value(3).toBool()); // Impact if.
     }
   }
   catch (reader_exception const& e) {
@@ -548,6 +549,30 @@ void reader_v2::_load(bam::hst_svc_mapping& mapping) {
            << "BAM: could not retrieve host/service IDs: "
            << e.what());
   }
+
+  try {
+    std::stringstream query;
+    query << "SELECT m.metric_id, m.metric_name,"
+          << "       i.host_id,"
+          << "       s.service_id"
+          << "  FROM metrics AS m"
+          << "    INNER JOIN index_data AS i"
+          << "    ON m.index_id=i.index_id"
+          << "    INNER JOIN services AS s"
+          << "    ON i.host_id=s.host_id AND i.service_id=s.service_id";
+    database_query q(_db);
+    q.run_query(query.str());
+    mapping.register_metric(
+              q.value(0).toUInt(),
+              q.value(1).toString().toStdString(),
+              q.value(2).toUInt(),
+              q.value(3).toUInt());
+  } catch (std::exception const& e) {
+    throw (reader_exception()
+           << "BAM: could not retrieve known metrics: "
+           << e.what());
+  }
+
   return ;
 }
 

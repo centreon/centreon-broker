@@ -23,6 +23,7 @@
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker::bam;
+using namespace com::centreon::broker;
 
 /**
  *  Default constructor.
@@ -102,6 +103,15 @@ short bool_expression::get_state() const {
  */
 bool bool_expression::state_known() const {
   return (_expression->state_known());
+}
+
+/**
+ *  Get the expression.
+ *
+ *  @return  The expression.
+ */
+misc::shared_ptr<bool_value> bool_expression::get_expression() const {
+  return (_expression);
 }
 
 /**

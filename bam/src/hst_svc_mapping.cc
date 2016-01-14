@@ -131,6 +131,65 @@ bool hst_svc_mapping::get_activated (
   return (it == _activated_mapping.end() ? true : it->second);
 }
 
+/**
+ *  Register a metric.
+ *
+ *  @param[in] metric_id    The id of the metric.
+ *  @param[in] metric_name  The name of the metric.
+ *  @param[in] host_id      The id of the host.
+ *  @param[in] service_id   The id of the service.
+ */
+void hst_svc_mapping::register_metric(
+                        unsigned int metric_id,
+                        std::string const& metric_name,
+                        unsigned int host_id,
+                        unsigned int service_id) {
+  _metrics[std::make_pair(host_id, service_id)][metric_name] = metric_id;
+  _metric_by_name.insert(std::make_pair(metric_name, metric_id));
+}
+
+/**
+ *  Get metric ids from name/host and service ids.
+ *
+ *  If both host id and service id are equal to zero,
+ *  will match all metric ids with the same name.
+ *
+ *  @param[in] metric_name   The metric name.
+ *  @param[in] host_id       The host id. Can be zero.
+ *  @param[in] service_id    The service id. Can be zero.
+ *
+ *  @return  A list of found metric ids.
+ */
+std::vector<unsigned int>
+                  hst_svc_mapping::get_metric_ids(
+                   std::string const& metric_name,
+                   unsigned int host_id,
+                   unsigned int service_id) const {
+  std::vector<unsigned int> retval;
+
+  if (host_id != 0 || service_id != 0) {
+    std::map<std::pair<unsigned int, unsigned int>,
+              std::map<std::string, unsigned int> >::const_iterator
+      metrics_found = _metrics.find(std::make_pair(host_id, service_id));
+    if (metrics_found == _metrics.end())
+      return (retval);
+
+    std::map<std::string, unsigned int>::const_iterator
+      metric_found = metrics_found->second.find(metric_name);
+
+    if (metric_found != metrics_found->second.end())
+      retval.push_back(metric_found->second);
+  }
+  else {
+    std::pair<std::multimap<std::string, unsigned int>::const_iterator,
+              std::multimap<std::string, unsigned int>::const_iterator>
+      found = _metric_by_name.equal_range(metric_name);
+    for (; found.first != found.second; ++found.first)
+      retval.push_back(found.first->second);
+  }
+
+  return (retval);
+}
 
 /**
  *  Copy internal data members.
@@ -139,5 +198,8 @@ bool hst_svc_mapping::get_activated (
  */
 void hst_svc_mapping::_internal_copy(hst_svc_mapping const& other) {
   _mapping = other._mapping;
+  _activated_mapping = other._activated_mapping;
+  _metrics = other._metrics;
+  _metric_by_name = other._metric_by_name;
   return ;
 }

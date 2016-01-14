@@ -20,19 +20,23 @@
 #include "com/centreon/broker/bam/configuration/bool_expression.hh"
 
 using namespace com::centreon::broker::bam::configuration;
+using namespace com::centreon::broker;
 
 /**
  *  Constructor.
  *
  *  @param[in] id             BA id.
+ *  @param[in] name           BA name.
  *  @param[in] expression     BA expression.
  *  @param[in] impact_if      BA impact_if
  */
 bool_expression::bool_expression(
                    unsigned int id,
+                   std::string const& name,
                    std::string const& expression,
                    bool impact_if)
   : _id(id),
+    _name(name),
     _expression(expression),
     _impact_if(impact_if) {}
 
@@ -43,6 +47,7 @@ bool_expression::bool_expression(
  */
 bool_expression::bool_expression(bool_expression const& other)
   : _id(other._id),
+    _name(other._name),
     _expression(other._expression),
     _impact_if(other._impact_if) {}
 
@@ -61,6 +66,7 @@ bool_expression::~bool_expression() {}
 bool_expression& bool_expression::operator=(bool_expression const& other) {
   if (&other != this) {
     _id = other._id;
+    _name = other._name;
     _expression = other._expression;
     _impact_if = other._impact_if;
   }
@@ -76,6 +82,7 @@ bool_expression& bool_expression::operator=(bool_expression const& other) {
  */
 bool bool_expression::operator==(bool_expression const& other) const {
   return ((_id == other._id)
+          && (_name == other._name)
           && (_expression == other._expression)
           && (_impact_if == other._impact_if));
 }
@@ -101,6 +108,15 @@ unsigned int bool_expression::get_id() const {
 }
 
 /**
+ *  Get the name.
+ *
+ *  @return The name of this expression..
+ */
+std::string const& bool_expression::get_name() const {
+  return (_name);
+}
+
+/**
  *  Get the boolean expression.
  *
  *  @return The textual representation of the expression.
@@ -117,6 +133,15 @@ std::string const& bool_expression::get_expression() const {
  */
 bool bool_expression::get_impact_if() const {
   return (_impact_if);
+}
+
+/**
+ *  Set name.
+ *
+ *  @param[in]  name Set the textual value for the name.
+ */
+void bool_expression::set_name(std::string const& name) {
+  _name = name;
 }
 
 /**

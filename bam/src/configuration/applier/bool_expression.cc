@@ -23,6 +23,7 @@
 #include "com/centreon/broker/bam/configuration/applier/bool_expression.hh"
 #include "com/centreon/broker/bam/configuration/bool_expression.hh"
 #include "com/centreon/broker/bam/service_book.hh"
+#include "com/centreon/broker/bam/metric_book.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -69,11 +70,13 @@ applier::bool_expression& applier::bool_expression::operator=(
  *  @param[in]     mapping  Host/service mapping (names to IDs).
  *  @param[out]    book     Used to notify bool_service of service
  *                          change.
+ *  @param[out]    metric_book  Used to notify bool_metric of metric change.
  */
 void applier::bool_expression::apply(
                                  configuration::state::bool_exps const& my_bools,
                                  hst_svc_mapping const& mapping,
-                                 service_book& book) {
+                                 service_book& book,
+                                 metric_book& metric_book) {
   //
   // DIFF
   //
@@ -156,6 +159,8 @@ void applier::bool_expression::apply(
       content.cfg = it->second;
       content.obj = new_bool_exp;
       content.svc = p.get_services();
+      content.call = p.get_calls();
+      content.mtrc = p.get_metrics();
       for (std::list<bool_service::ptr>::const_iterator
              it2(content.svc.begin()),
              end2(content.svc.end());
@@ -165,6 +170,29 @@ void applier::bool_expression::apply(
                (*it2)->get_host_id(),
                (*it2)->get_service_id(),
                it2->data());
+      for (std::list<bool_metric::ptr>::const_iterator
+             it2 = content.mtrc.begin(),
+             end2 = content.mtrc.end();
+           it2 != end2;
+           ++it2) {
+        std::vector<unsigned int> ids =
+          mapping.get_metric_ids(
+                     (*it2)->get_name(),
+                     (*it2)->get_host_id(),
+                     (*it2)->get_service_id());
+        if (ids.empty())
+          logging::error(logging::high)
+                 << "could not find metric ids for metric '"
+                 << (*it2)->get_name() << "'";
+        for (std::vector<unsigned int>::const_iterator
+               metrics_it = ids.begin(),
+               metrics_end = ids.end();
+             metrics_it != metrics_end;
+             ++metrics_it)
+          metric_book.listen(
+                      *metrics_it,
+                      it2->data());
+      }
     }
     catch (std::exception const& e) {
       logging::error(logging::high)
@@ -203,4 +231,45 @@ void applier::bool_expression::_internal_copy(
                                  applier::bool_expression const& other) {
   _applied = other._applied;
   return ;
+}
+
+/**
+ *  Resolve the cross
+ */
+void applier::bool_expression::_resolve_expression_calls() {
+  std::map<std::string, unsigned int>
+    _name_to_ids;
+  for (std::map<unsigned int, applied>::const_iterator
+         it = _applied.begin(),
+         end = _applied.end();
+       it != end;
+       ++it)
+    _name_to_ids[it->second.cfg.get_name()] = it->first;
+
+  for (std::map<unsigned int, applied>::iterator
+         it = _applied.begin(),
+         tmp = it,
+         end = _applied.end();
+       it != end;
+       it = tmp) {
+    ++tmp;
+    for (std::list<misc::shared_ptr<bam::bool_call> >::iterator
+           call_it = it->second.call.begin(),
+           call_end = it->second.call.end();
+         call_it != call_end;
+         ++call_it) {
+      std::map<std::string, unsigned int>::const_iterator
+        found = _name_to_ids.find((*call_it)->get_name());
+      if (found == _name_to_ids.end()) {
+        logging::error(logging::high)
+          << "BAM: could not resolve the external boolean called '"
+          << (*call_it)->get_name() << "' for expression '"
+          << it->second.cfg.get_name() << "'";
+        break;
+      }
+      else {
+        (*call_it)->set_expression(_applied[found->second].obj->get_expression());
+      }
+    }
+  }
 }

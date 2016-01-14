@@ -26,12 +26,15 @@ using namespace com::centreon::broker::bam;
  *
  *  @param[in] metric_name  The name of the metric.
  */
-bool_metric::bool_metric(std::string const& metric_name) :
+bool_metric::bool_metric(
+               std::string const& metric_name,
+               unsigned int host_id,
+               unsigned int service_id) :
   _metric_name(metric_name),
   _value(false),
   _state_known(false),
-  _host_id(0),
-  _service_id(0) {}
+  _host_id(host_id),
+  _service_id(service_id) {}
 
 /**
  *  Copy constructor.
@@ -131,6 +134,33 @@ double bool_metric::value_soft() {
  */
 bool bool_metric::state_known() const {
   return (_state_known);
+}
+
+/**
+ *  Get the name of the metric being watched.
+ *
+ *  @return  The name of the metric being watched.
+ */
+std::string const& bool_metric::get_name() const {
+  return (_metric_name);
+}
+
+/**
+ *  Get the host id being watched.
+ *
+ *  @return  The host id.
+ */
+unsigned int bool_metric::get_host_id() const {
+  return (_host_id);
+}
+
+/**
+ *  get the service id being watched.
+ *
+ *  @return  The service id.
+ */
+unsigned int bool_metric::get_service_id() const {
+  return (_service_id);
 }
 
 /**

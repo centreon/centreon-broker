@@ -39,6 +39,7 @@ namespace                   bam {
     public:
                             bool_expression(
                               unsigned int id = 0,
+                              std::string const& name = "",
                               std::string const& expression = "",
                               bool impact_if = false);
                             bool_expression(bool_expression const& other);
@@ -48,15 +49,18 @@ namespace                   bam {
       bool                  operator!=(bool_expression const& other) const;
 
       unsigned int          get_id() const;
+      std::string const&    get_name() const;
       std::string const&    get_expression() const;
       bool                  get_impact_if() const;
 
+      void                  set_name(std::string const& name);
       void                  set_expression(std::string const& s);
       void                  set_id(unsigned int id);
       void                  set_impact_if(bool b);
 
     private:
       unsigned int          _id;
+      std::string           _name;
       std::string           _expression;
       bool                  _impact_if;
     };

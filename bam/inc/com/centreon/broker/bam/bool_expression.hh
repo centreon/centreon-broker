@@ -49,6 +49,8 @@ namespace            bam {
     bool             state_known() const;
     void             set_expression(
                        misc::shared_ptr<bool_value> const& expression);
+    misc::shared_ptr<bool_value>
+                     get_expression() const;
     void             set_id(unsigned int id);
     void             set_impact_if(bool impact_if);
 

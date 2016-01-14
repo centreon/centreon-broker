@@ -42,7 +42,10 @@ namespace         bam {
   public:
     typedef misc::shared_ptr<bool_metric> ptr;
 
-                  bool_metric(std::string const& metric_name);
+                  bool_metric(
+                    std::string const& metric_name,
+                    unsigned int host_id,
+                    unsigned int service_id);
                   bool_metric(bool_metric const& right);
                   ~bool_metric();
     bool_metric& operator=(bool_metric const& right);
@@ -55,6 +58,10 @@ namespace         bam {
     double        value_hard();
     double        value_soft();
     bool          state_known() const;
+    std::string const&
+                  get_name() const;
+    unsigned int  get_host_id() const;
+    unsigned int  get_service_id() const;
 
 private:
     std::string   _metric_name;

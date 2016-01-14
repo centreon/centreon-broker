@@ -98,6 +98,24 @@ bool_parser::list_service const& bool_parser::get_services() const {
 }
 
 /**
+ *  Get calls.
+ *
+ *  @return Boolean values that acts on an expression calls.
+ */
+bool_parser::list_call const& bool_parser::get_calls() const {
+  return (_calls);
+}
+
+/**
+ *  Get metrics.
+ *
+ *  @return  The metrics.
+ */
+bool_parser::list_metric const& bool_parser::get_metrics() const {
+  return (_metrics);
+}
+
+/**
  *  Get expression tree.
  *
  *  @return Expression tree build with bool_value subclasses.
@@ -321,6 +339,46 @@ bool_value::ptr bool_parser::_make_status(std::string const& str) {
 }
 
 /**
+ *  Parse a metric from a string.
+ *
+ *  @param[in] str            The string.
+ *  @param[out] metric_name   The parsed name of the metric.
+ *  @param[in] host_id        The parsed id of the host.
+ *  @param[in] service_id     The parsed id of the service.
+ *
+ *  @return                   True if parsed succesfully.
+ */
+bool bool_parser::_parse_metric(
+                    std::string const& str,
+                    std::string& metric_name,
+                    unsigned int& host_id,
+                    unsigned int& service_id) const {
+  if (str.compare(0, ::strlen("metric:"), "metric:") != 0)
+    return (false);
+
+  size_t end = str.find(' ', ::strlen("metric:") + 1);
+  if (end == std::string::npos)
+    end = str.size();
+  metric_name = str.substr(::strlen("metric:"), end);
+  misc::string::trim(metric_name);
+
+  std::string node = metric_name.substr(end);
+  misc::string::trim(node);
+  if (!node.empty()) {
+    if (node[0] != '{' || node.size() <= 2 || node[1] != '}')
+      throw (exceptions::msg()
+             << "couldn't parse metric '" << str << "'");
+    node.erase(0, 1);
+    node.erase(node.size() - 1, 1);
+    if (!_parse_service(node, host_id, service_id))
+      throw (exceptions::msg()
+             << "couldn't parse metric node in '" << str << "'");
+  }
+
+  return (true);
+}
+
+/**
  *  Parse and return a metric object.
  *
  *  @param[in] str  The string.
@@ -329,9 +387,14 @@ bool_value::ptr bool_parser::_make_status(std::string const& str) {
  */
 bool_value::ptr bool_parser::_make_metric(std::string const& str) {
   bool_value::ptr retval;
+  std::string metric_name;
+  unsigned int host_id;
+  unsigned int service_id;
 
-  if (str.compare(0, ::strlen("metric:"), "metric:") == 0) {
-    std::string metric_name(str.substr(::strlen("metric:") + 1));
+  if (_parse_metric(str, metric_name, host_id, service_id)) {
+    bool_metric::ptr metric(new bool_metric(metric_name, host_id, service_id));
+    retval = metric;
+    _metrics.push_back(metric);
   }
 
   return (retval);
@@ -359,6 +422,14 @@ bool_value::ptr bool_parser::_make_aggregate(std::string const& str) {
  */
 bool_value::ptr bool_parser::_make_call(std::string const& str) {
   bool_value::ptr retval;
+
+  if (str.compare(0, ::strlen("call:"), "call:") == 0) {
+    std::string name = str.substr(::strlen("call:") + 1);
+    misc::string::trim(name);
+    bool_call::ptr call(new bool_call(name));
+    retval = call;
+    _calls.push_back(call);
+  }
 
   return (retval);
 }
