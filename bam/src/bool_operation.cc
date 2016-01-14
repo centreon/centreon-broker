@@ -35,6 +35,8 @@ bool_operation::bool_operation(std::string const& op) {
     _type = multiplication;
   else if (op == "/")
     _type = division;
+  else if (op == "%")
+    _type = modulo;
   else
     _type = addition;
 }
@@ -86,6 +88,10 @@ double bool_operation::value_hard() {
     if (_right_hard == 0)
       return (NAN);
     return (_left_hard / _right_hard);
+  case modulo:
+    if (_right_hard == 0)
+      return (NAN);
+    return (_left_hard % _right_hard);
   }
 }
 
@@ -106,6 +112,10 @@ double bool_operation::value_soft() {
     if (_right_soft == 0)
       return (NAN);
     return (_left_soft / _right_soft);
+  case modulo:
+    if (_right_soft == 0)
+      return (NAN);
+    return (_left_soft % _right_soft);
   }
 }
 
@@ -116,7 +126,9 @@ double bool_operation::value_soft() {
  */
 bool bool_operation::state_known() const {
   bool known = bool_binary_operator::state_known();
-  if (known && _type == division && (_right_hard == 0 || _right_soft == 0))
+  if (known
+      && (_type == division || _type == modulo)
+      && (_right_hard == 0 || _right_soft == 0))
     return (false);
   else
     return (known);

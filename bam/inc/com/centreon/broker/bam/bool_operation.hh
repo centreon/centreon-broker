@@ -49,7 +49,8 @@ namespace     bam {
       addition,
       substraction,
       multiplication,
-      division
+      division,
+      modulo
     };
     operation_type
               _type;

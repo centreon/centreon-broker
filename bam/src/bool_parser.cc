@@ -177,7 +177,11 @@ bool_binary_operator::ptr bool_parser::_make_op() {
         result = new bool_less_than(sym == "<");
       else if (sym == ">=" || sym == ">")
         result = new bool_more_than(sym == ">");
-      else if (sym == "+" || sym == "-" || sym == "*" || sym == "/")
+      else if (sym == "+"
+               || sym == "-"
+               || sym == "*"
+               || sym == "/"
+               || sym == "%")
         result = new bool_operation(sym);
       else
         throw (exceptions::msg() << "illegal operator '" << sym << "'");
