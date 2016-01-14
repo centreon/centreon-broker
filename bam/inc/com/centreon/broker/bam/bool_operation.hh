@@ -42,6 +42,7 @@ namespace     bam {
               operator=(bool_operation const& right);
     double    value_hard();
     double    value_soft();
+    bool      state_known() const;
 
   private:
     enum      operation_type {

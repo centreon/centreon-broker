@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cmath>
 #include "com/centreon/broker/bam/bool_operation.hh"
 
 using namespace com::centreon::broker::bam;
@@ -82,6 +83,8 @@ double bool_operation::value_hard() {
   case multiplication:
     return (_left_hard * _right_hard);
   case division:
+    if (_right_hard == 0)
+      return (NAN);
     return (_left_hard / _right_hard);
   }
 }
@@ -100,6 +103,21 @@ double bool_operation::value_soft() {
   case multiplication:
     return (_left_soft * _right_soft);
   case division:
+    if (_right_soft == 0)
+      return (NAN);
     return (_left_soft / _right_soft);
   }
+}
+
+/**
+ *  Is the state known?
+ *
+ *  @return  True if the state is known.
+ */
+bool bool_operation::state_known() const {
+  bool known = bool_binary_operator::state_known();
+  if (known && _type == division && (_right_hard == 0 || _right_soft == 0))
+    return (false);
+  else
+    return (known);
 }
