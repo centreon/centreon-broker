@@ -116,15 +116,6 @@ bool_parser::list_metric const& bool_parser::get_metrics() const {
 }
 
 /**
- *  Get aggregates.
- *
- *  @return  The aggregates.
- */
-bool_parser::list_aggregate const& bool_parser::get_aggregates() const {
-  return (_aggregates);
-}
-
-/**
  *  Get expression tree.
  *
  *  @return Expression tree build with bool_value subclasses.

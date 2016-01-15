@@ -61,7 +61,6 @@ namespace            bam {
     typedef std::list<bool_service::ptr> list_service;
     typedef std::list<bool_metric::ptr> list_metric;
     typedef std::list<bool_call::ptr> list_call;
-    typedef std::list<bool_aggregate::ptr> list_aggregate;
 
                      bool_parser(
                        std::string const& exp_text,
@@ -75,8 +74,6 @@ namespace            bam {
                      get_calls() const;
     list_metric const&
                      get_metrics() const;
-    list_aggregate const&
-                     get_aggregates() const;
     bool_value::ptr  get_tree() const;
 
   private:
@@ -86,7 +83,6 @@ namespace            bam {
     list_service     _services;
     list_call        _calls;
     list_metric      _metrics;
-    list_aggregate   _aggregates;
     bool_tokenizer   _toknizr;
 
     bool_binary_operator::ptr

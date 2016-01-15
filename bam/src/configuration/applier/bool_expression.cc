@@ -161,7 +161,6 @@ void applier::bool_expression::apply(
       content.svc = p.get_services();
       content.call = p.get_calls();
       content.mtrc = p.get_metrics();
-      content.aggr = p.get_aggregates();
       // Resolve boolean service.
       for (std::list<bool_service::ptr>::const_iterator
              it2(content.svc.begin()),
@@ -189,33 +188,6 @@ void applier::bool_expression::apply(
           metric_book.listen(
                       *metrics_it,
                       it2->data());
-        // resolve boolean aggregates.
-        for (std::list<bool_aggregate::ptr>::const_iterator
-               it2 = content.aggr.begin(),
-               end2 = content.aggr.end();
-             it2 != end2;
-             ++it2) {
-          std::vector<bool_metric::ptr> const&
-            metrics = (*it2)->get_boolean_metrics();
-          for (std::vector<bool_metric::ptr>::const_iterator
-                 metrics_it = metrics.begin(),
-                 metrics_end = metrics.end();
-               metrics_it != metrics_end;
-               ++metrics_it) {
-            (*metrics_it)->resolve_metrics(mapping);
-            std::set<unsigned int> const& ids
-              = (*metrics_it)->get_resolved_metrics();
-            for (std::set<unsigned int>::const_iterator
-                   metrics_ids_it = ids.begin(),
-                   metrics_ids_end = ids.end();
-                 metrics_ids_it != metrics_ids_end;
-                 ++metrics_ids_it) {
-              metric_book.listen(
-                          *metrics_ids_it,
-                          metrics_it->data());
-            }
-          }
-        }
       }
     }
     catch (std::exception const& e) {
