@@ -160,12 +160,12 @@ void hst_svc_mapping::register_metric(
  *
  *  @return  A list of found metric ids.
  */
-std::vector<unsigned int>
+std::set<unsigned int>
                   hst_svc_mapping::get_metric_ids(
                    std::string const& metric_name,
                    unsigned int host_id,
                    unsigned int service_id) const {
-  std::vector<unsigned int> retval;
+  std::set<unsigned int> retval;
 
   if (host_id != 0 || service_id != 0) {
     std::map<std::pair<unsigned int, unsigned int>,
@@ -178,14 +178,14 @@ std::vector<unsigned int>
       metric_found = metrics_found->second.find(metric_name);
 
     if (metric_found != metrics_found->second.end())
-      retval.push_back(metric_found->second);
+      retval.insert(metric_found->second);
   }
   else {
     std::pair<std::multimap<std::string, unsigned int>::const_iterator,
               std::multimap<std::string, unsigned int>::const_iterator>
       found = _metric_by_name.equal_range(metric_name);
     for (; found.first != found.second; ++found.first)
-      retval.push_back(found.first->second);
+      retval.insert(found.first->second);
   }
 
   return (retval);

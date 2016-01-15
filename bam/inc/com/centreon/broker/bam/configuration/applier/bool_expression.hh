@@ -34,6 +34,7 @@ namespace                bam {
   class                  bool_service;
   class                  bool_call;
   class                  bool_metric;
+  class                  bool_aggregate;
   class                  service_book;
   class                  metric_book;
 
@@ -69,6 +70,7 @@ namespace                bam {
           std::list<misc::shared_ptr<bam::bool_service> > svc;
           std::list<misc::shared_ptr<bam::bool_call> >    call;
           std::list<misc::shared_ptr<bam::bool_metric> >   mtrc;
+          std::list<misc::shared_ptr<bam::bool_aggregate> > aggr;
         };
 
         void             _internal_copy(bool_expression const& other);

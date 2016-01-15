@@ -21,8 +21,10 @@
 
 #  include <set>
 #  include <string>
+#  include <map>
 #  include "com/centreon/broker/bam/bool_value.hh"
 #  include "com/centreon/broker/bam/metric_listener.hh"
+#  include "com/centreon/broker/bam/hst_svc_mapping.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -62,13 +64,24 @@ namespace         bam {
                   get_name() const;
     unsigned int  get_host_id() const;
     unsigned int  get_service_id() const;
+    void          resolve_metrics(hst_svc_mapping const& mappings);
+    std::set<unsigned int> const&
+                  get_resolved_metrics() const;
+    std::map<unsigned int, double> const&
+                  values() const;
 
 private:
     std::string   _metric_name;
     double        _value;
-    bool          _state_known;
     unsigned int  _host_id;
     unsigned int  _service_id;
+
+    std::set<unsigned int>
+                  _resolved_metric_ids;
+    std::set<unsigned int>
+                  _unknown_state_metrics;
+    std::map<unsigned int, double>
+                  _values;
 
     bool          _metric_matches(storage::metric const& m) const;
   };

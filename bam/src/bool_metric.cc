@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/bam/bool_metric.hh"
 
@@ -32,7 +33,6 @@ bool_metric::bool_metric(
                unsigned int service_id) :
   _metric_name(metric_name),
   _value(false),
-  _state_known(false),
   _host_id(host_id),
   _service_id(service_id) {}
 
@@ -45,9 +45,10 @@ bool_metric::bool_metric(bool_metric const& right)
   : bool_value(right),
     _metric_name(right._metric_name),
     _value(right._value),
-    _state_known(right._state_known),
     _host_id(right._host_id),
-    _service_id(right._service_id) {}
+    _service_id(right._service_id),
+    _resolved_metric_ids(right._resolved_metric_ids),
+    _unknown_state_metrics(right._unknown_state_metrics) {}
 
 /**
  *  Destructor.
@@ -66,9 +67,10 @@ bool_metric& bool_metric::operator=(bool_metric const& right) {
   if (this != &right) {
     _metric_name = right._metric_name;
     _value = right._value;
-    _state_known = right._state_known;
     _host_id = right._host_id;
     _service_id = right._service_id;
+    _resolved_metric_ids = right._resolved_metric_ids;
+    _unknown_state_metrics = right._unknown_state_metrics;
   }
   return (*this);
 }
@@ -103,8 +105,9 @@ void bool_metric::metric_update(
 
   if (_value != m->value) {
     _value = m->value;
+    _values[m->metric_id] = m->value;
     propagate_update(visitor);
-    _state_known = true;
+    _unknown_state_metrics.erase(m->metric_id);
   }
   (void)visitor;
 }
@@ -133,7 +136,7 @@ double bool_metric::value_soft() {
  *  @return  True if the state is known.
  */
 bool bool_metric::state_known() const {
-  return (_state_known);
+  return (_unknown_state_metrics.empty());
 }
 
 /**
@@ -164,6 +167,40 @@ unsigned int bool_metric::get_service_id() const {
 }
 
 /**
+ *  Resolve the metrics.
+ *
+ *  @param[in] mappings  The mapping of every metric.
+ */
+void bool_metric::resolve_metrics(hst_svc_mapping const& mappings) {
+  std::set<unsigned int> ids =
+    mappings.get_metric_ids(_metric_name, _host_id, _service_id);
+  if (ids.empty())
+    logging::error(logging::high)
+           << "bam: could not find metric ids for metric '"
+           << _metric_name << "'";
+  _resolved_metric_ids = ids;
+  _unknown_state_metrics = ids;
+}
+
+/**
+ *  Get the resolved metrics.
+ *
+ *  @return  Resolved metrics.
+ */
+std::set<unsigned int> const& bool_metric::get_resolved_metrics() const {
+  return (_resolved_metric_ids);
+}
+
+/**
+ *  Get all values.
+ *
+ *  @return  All values.
+ */
+std::map<unsigned int, double> const& bool_metric::values() const {
+  return (_values);
+}
+
+/**
 *  Get if the ids of the metric matches ours.
 *
 *  @param[in] m  The metric.
@@ -171,7 +208,6 @@ unsigned int bool_metric::get_service_id() const {
 *  @return  True if it matches.
 */
 bool bool_metric::_metric_matches(storage::metric const& m) const {
-  return (m.name.toStdString() == _metric_name
-          && ((_host_id == 0 && _service_id == 0)
-              || (_host_id == m.host_id && _service_id == m.service_id)));
+  return (_resolved_metric_ids.find(m.metric_id)
+          != _resolved_metric_ids.end());
 }

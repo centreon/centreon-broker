@@ -19,7 +19,7 @@
 #ifndef CCB_BAM_HST_SVC_MAPPING_HH
 #  define CCB_BAM_HST_SVC_MAPPING_HH
 
-#  include <vector>
+#  include <set>
 #  include <map>
 #  include <string>
 #  include <utility>
@@ -59,7 +59,7 @@ namespace            bam {
                        std::string const& metric_name,
                        unsigned int host_id,
                        unsigned int service_id);
-    std::vector<unsigned int>
+    std::set<unsigned int>
                       get_metric_ids(
                        std::string const& metric_name,
                        unsigned int host_id,
