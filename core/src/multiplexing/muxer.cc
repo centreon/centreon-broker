@@ -73,6 +73,7 @@ muxer::muxer(
 
   // Load temporary file back in memory.
   {
+    try  {
     _temporary.reset(new persistent_file(_queue_file()));
     misc::shared_ptr<io::data> e;
     do {
@@ -85,6 +86,10 @@ muxer::muxer(
       // Push temporary event to the memory event queue.
       publish(e);
     } while (_total_events < event_queue_max_size());
+    } catch (io::exceptions::shutdown const& e) {
+      // Temporary file did not exist.
+      (void) e;
+    }
   }
 
   // Log messages.

@@ -48,7 +48,7 @@ int main() {
     uset<unsigned int> filters;
     filters.insert(io::raw::static_type());
     multiplexing::subscriber
-      s("core_multiplexing_engine_start_stop", "");
+      s("core_multiplexing_engine_start_stop", false);
     s.get_muxer().set_read_filters(filters);
     s.get_muxer().set_write_filters(filters);
 
