@@ -35,8 +35,7 @@ namespace         bam {
    *  @class bool_aggregate bool_aggregate.hh "com/centreon/broker/bam/bool_aggregate.hh"
    *  @brief Evaluation of an aggregate of several metric.
    */
-  class           bool_aggregate : public bool_value,
-                                 public metric_listener {
+  class           bool_aggregate : public bool_value {
   public:
     typedef misc::shared_ptr<bool_aggregate> ptr;
 
@@ -55,9 +54,6 @@ namespace         bam {
                   operator=(bool_aggregate const& right);
     bool          child_has_update(
                     computable* child,
-                    io::stream* visitor = NULL);
-    void          metric_update(
-                    misc::shared_ptr<storage::metric> const& m,
                     io::stream* visitor = NULL);
     double        value_hard();
     double        value_soft();
