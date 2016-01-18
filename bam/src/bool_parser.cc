@@ -414,6 +414,43 @@ bool_value::ptr bool_parser::_make_metric(std::string const& str) {
 bool_value::ptr bool_parser::_make_aggregate(std::string const& str) {
   bool_value::ptr retval;
 
+  static struct {
+    char const* name;
+    double (*f)(std::vector<misc::shared_ptr<bool_metric> > const&);
+  } functions[] = {
+    {"AVERAGE:", &bool_aggregate::avg},
+    {"SUM:", &bool_aggregate::sum},
+    {"MAX:", &bool_aggregate::max},
+    {"MIN:", &bool_aggregate::min},
+    {"COUNT:", &bool_aggregate::count}
+  };
+
+  for (size_t i = 0; i < sizeof(functions) / sizeof(*functions); ++i) {
+    if (str.compare(0, ::strlen(functions[i].name), functions[i].name) == 0) {
+      std::string rest = str.substr(::strlen(functions[i].name));
+      misc::string::trim(rest);
+      bool_aggregate::ptr aggr(new bool_aggregate(functions[i].f));
+      std::vector<std::string> split;
+      misc::string::split(rest, split, ',');
+      for (std::vector<std::string>::iterator
+             it = split.begin(),
+             end = split.end();
+           it != end;
+           ++it) {
+        misc::string::trim(*it);
+        bool_value::ptr sub_metric = _make_metric(*it);
+        if (sub_metric.isNull())
+          throw (exceptions::msg()
+                 << "could not parse sub metric '"
+                 << sub_metric << "' of aggregate '" << str << "'");
+        aggr->add_boolean_metric(sub_metric.staticCast<bool_metric>());
+        sub_metric->add_parent(aggr);
+      }
+      retval = aggr;
+      break;
+    }
+  }
+
   return (retval);
 }
 
