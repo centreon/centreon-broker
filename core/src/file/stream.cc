@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -105,7 +105,7 @@ bool stream::read(
   // Check that read should be done.
   if (!_rfile.data())
     throw (io::exceptions::shutdown(true, false)
-           << "file stream is shutdown");
+           << "end of file");
 
   // Seek to position.
   _rfile->seek(_roffset);
@@ -124,6 +124,7 @@ bool stream::read(
     if (_wid == _rid) {
       _rfile->close();
       _rfile.clear();
+      _wfile.clear();
       std::string file_path(_file_path(_rid));
       if (_auto_delete) {
         logging::info(logging::high) << "file: end of last file '"
@@ -291,6 +292,11 @@ int stream::write(misc::shared_ptr<io::data> const& d) {
   // Check that data exists.
   if (!validate(d, "file"))
     return (1);
+
+  // Check that file should still be written to.
+  if (_wfile.isNull())
+    throw (io::exceptions::shutdown(true, true)
+           << "end of file");
 
   if (d->type() == io::raw::static_type()) {
     // Lock mutex.

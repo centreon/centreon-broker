@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Centreon
+** Copyright 2012,2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -82,7 +82,8 @@ unsigned long cfile::read(void* buffer, unsigned long max_size) {
   size_t retval(fread(buffer, 1, max_size, _stream));
   if (retval == 0) {
     if (feof(_stream))
-      throw (io::exceptions::shutdown(true, true));
+      throw (io::exceptions::shutdown(true, true)
+             << "end of file reached");
     else if ((EAGAIN == errno) || (EINTR == errno))
       retval = 0;
     else {
