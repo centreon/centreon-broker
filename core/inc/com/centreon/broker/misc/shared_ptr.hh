@@ -56,6 +56,7 @@ namespace             misc {
           throw ;
         }
         *_refs = 1;
+        *_weak_refs = 0;
         _ptr = ptr;
       }
       else {
