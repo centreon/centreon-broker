@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2014 Centreon
+** Copyright 2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,47 +16,39 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_MISC_SHARED_PTR_HH
-#  define CCB_MISC_SHARED_PTR_HH
+#ifndef CCB_MISC_WEAK_PTR_HH
+#  define CCB_MISC_WEAK_PTR_HH
 
 #  include <QMutex>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
 
 CCB_BEGIN()
 
-namespace             misc {  
+namespace             misc {
   /**
-   *  @class shared_ptr shared_ptr.hh "com/centreon/broker/misc/shared_ptr.hh"
-   *  @brief Shared pointer.
+   *  @class weak_ptr weak_ptr.hh "com/centreon/broker/misc/weak_ptr.hh"
+   *  @brief Weak shared pointer.
    *
-   *  Explicitely hold shareable strong reference to some object.
+   *  Explicitely hold shareable weak reference to some object.
    */
   template            <typename T>
-  class               shared_ptr {
-    template          <typename U>
-    friend class      shared_ptr;
+  class               weak_ptr {
     template          <typename U>
     friend class      weak_ptr;
 
   public:
     /**
-     *  Construct shared pointer from a standalone pointer.
+     *  Construct weakly shared pointer from shared ptr.
      *
      *  @param[in] ptr Pointer.
      */
-                      shared_ptr(T* ptr = NULL) {
-      if (ptr) {
-        _mtx = new QMutex;
-        try {
-          _refs = new unsigned int;
-          _weak_refs = new unsigned int;
-        }
-        catch (...) {
-          delete _mtx;
-          throw ;
-        }
-        *_refs = 1;
-        _ptr = ptr;
+                      weak_ptr(misc::shared_ptr<T> ptr = misc::shared_ptr<T>()) {
+      if (!ptr.isNull()) {
+        _mtx = ptr._mtx;
+        _ptr = ptr._ptr;
+        _refs = ptr._refs;
+        _weak_refs = ptr._weak_refs;
       }
       else {
         _mtx = NULL;
@@ -71,7 +63,7 @@ namespace             misc {
      *
      *  @param[in] right Object to copy.
      */
-                      shared_ptr(shared_ptr<T> const& right) {
+                      weak_ptr(weak_ptr<T> const& right) {
       _internal_copy(right);
     }
 
@@ -81,14 +73,14 @@ namespace             misc {
      *  @param[in] right Object to copy.
      */
     template <typename U>
-                      shared_ptr(shared_ptr<U> const& right) {
+                      weak_ptr(weak_ptr<U> const& right) {
       _internal_copy(right);
     }
 
     /**
      *  Destroy a shared pointer.
      */
-                      ~shared_ptr() throw () {
+                      ~weak_ptr() throw () {
       try {
         clear();
       }
@@ -102,7 +94,7 @@ namespace             misc {
     *
     *  @return This object.
     */
-    shared_ptr<T>&    operator=(shared_ptr<T> const& right) {
+    weak_ptr<T>&    operator=(weak_ptr<T> const& right) {
       if (_ptr != right._ptr) {
         clear();
         _internal_copy(right);
@@ -118,7 +110,7 @@ namespace             misc {
      *  @return This object.
      */
     template <typename U>
-    shared_ptr<T>&    operator=(shared_ptr<U> const& right) {
+    weak_ptr<T>&    operator=(weak_ptr<U> const& right) {
       if (_ptr != right._ptr) {
         clear();
         _internal_copy(right);
@@ -132,7 +124,16 @@ namespace             misc {
      *  @return true if pointer is not NULL.
      */
                       operator bool() const {
-      return (_ptr);
+      if (_weak_refs) {
+        QMutexLocker ref_lock(_mtx);
+        if (*_refs == 0) {
+          ref_lock.unlock();
+          clear();
+        }
+        else
+          return (true);
+      }
+      return (false);
     }
 
     /**
@@ -147,21 +148,33 @@ namespace             misc {
     }
 
     /**
-     *  Get reference to pointer.
+     *  Get a shared ptr from a weak ptr.
      *
-     *  @return Reference to stored pointer.
+     *  @return  The shared ptr.
      */
-    T&                operator*() const {
-      return (*_ptr);
-    }
+    misc::shared_ptr<T>
+                      lock() {
+      if (_weak_refs) {
+        QMutexLocker ref_lock(_mtx);
 
-    /**
-     *  Get pointer.
-     *
-     *  @return Pointer.
-     */
-    T*                operator->() const {
-      return (_ptr);
+        // No hard reference left, clear and return an empty shared ptr.
+        if (*_refs == 0) {
+          ref_lock.unlock();
+          clear();
+        }
+        else {
+          // Create a new shared_ptr and add one to the hard reference count.
+          misc::shared_ptr<T> retval;
+          retval._mtx = _mtx;
+          retval._ptr = _ptr;
+          retval._refs = _refs;
+          retval._weak_refs = _weak_refs;
+          ++*_refs;
+          return (retval);
+        }
+      }
+
+      return (misc::shared_ptr<T>());
     }
 
     /**
@@ -169,19 +182,15 @@ namespace             misc {
      */
     void              clear() {
       // Decrease reference count.
-      if (_ptr) {
+      if (_weak_refs) {
         QMutexLocker ref_lock(_mtx);
-        --*_refs;
 
-        // No more reference, destroy everything.
-        if (*_refs <= 0) {
-          delete _ptr;
-          if (*_weak_refs <= 0) {
-            ref_lock.unlock();
-            delete _mtx;
-            delete _refs;
-            delete _weak_refs;
-          }
+        --*_weak_refs;
+        if (*_weak_refs <= 0 && *_refs <= 0) {
+          ref_lock.unlock();
+          delete _mtx;
+          delete _refs;
+          delete _weak_refs;
         }
 
         // Reset pointers.
@@ -194,40 +203,12 @@ namespace             misc {
     }
 
     /**
-     *  Get pointer.
-     *
-     *  @return Pointer.
-     */
-    T*                data() const {
-      return (_ptr);
-    }
-
-    /**
      *  Check is pointer is NULL.
      *
      *  @return true if pointer is NULL.
      */
     bool              isNull() const {
-      return (!_ptr);
-    }
-
-    /**
-     *  Get reference to pointer.
-     *
-     *  @return  Reference to pointer.
-     */
-    T&                ref() const {
-      return (*_ptr);
-    }
-
-    /**
-     *  Get reference as.
-     *
-     *  @return  Reference casted as.
-     */
-    template <typename U>
-    U&                ref_as() const {
-      return (static_cast<U&>(*_ptr));
+      return ((bool)(*this));
     }
 
     /**
@@ -237,7 +218,7 @@ namespace             misc {
      *  @return Shared pointer of another type.
      */
     template          <typename U>
-    shared_ptr<U>     staticCast() const {
+    weak_ptr<U>     staticCast() const {
       shared_ptr<U> retval;
       if (_ptr) {
         // Copy data.
@@ -248,7 +229,7 @@ namespace             misc {
 
         // Increase reference count.
         QMutexLocker refs_lock(retval._mtx);
-        ++*retval._refs;
+        ++*retval._weak_refs;
       }
       return (retval);
     }
@@ -260,7 +241,7 @@ namespace             misc {
      *  @param[in] right Object to copy.
      */
     template <typename U>
-    void              _internal_copy(shared_ptr<U> const& right) {
+    void              _internal_copy(weak_ptr<U> const& right) {
       // Copy data.
       _mtx = right._mtx;
       _ptr = right._ptr;
@@ -270,7 +251,7 @@ namespace             misc {
       // Increase reference count.
       if (_ptr) {
         QMutexLocker ref_lock(_mtx);
-        ++*_refs;
+        ++*_weak_refs;
       }
 
       return ;
@@ -281,18 +262,8 @@ namespace             misc {
     unsigned int*     _refs;
     unsigned int*     _weak_refs;
   };
-
-  /**
-   *  Create a shared pointer from an object.
-   *
-   *  @param[in] obj  The object.
-   */
-  template <typename T>
-  misc::shared_ptr<T> make_shared(T* obj) {
-    return (misc::shared_ptr<T>(obj));
-  }
 }
 
 CCB_END()
 
-#endif // !CCB_MISC_SHARED_PTR_HH
+#endif // !CCB_MISC_WEAK_PTR_HH

@@ -532,6 +532,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/misc/tokenizer.hh"
   "${INC_DIR}/misc/global_lock.hh"
   "${INC_DIR}/misc/shared_ptr.hh"
+  "${INC_DIR}/misc/weak_ptr.hh"
   "${INC_DIR}/modules/handle.hh"
   "${INC_DIR}/modules/loader.hh"
   "${INC_DIR}/multiplexing/engine.hh"
