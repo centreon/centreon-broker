@@ -203,7 +203,7 @@ int json_iterator::children() const throw() {
  *  @return  A json_iterator on the first children, if any.
  */
 json_iterator json_iterator::enter_children() const throw() {
-  if (_tokens[_index].size > 0)
+  if (!end() && _tokens[_index].size > 0)
     return (json_iterator(
               _js,
               _tokens + _index + 1,
