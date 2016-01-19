@@ -78,8 +78,9 @@ double bool_aggregate::max(std::vector<bool_metric::ptr> const& metrics) {
  *  @return  The average.
  */
 double bool_aggregate::avg(std::vector<bool_metric::ptr> const& metrics) {
-  if (metrics.size() > 0)
-    return (bool_aggregate::sum(metrics) / metrics.size());
+  double count = bool_aggregate::count(metrics);
+  if (count > 0)
+    return (bool_aggregate::sum(metrics) / count);
   else
     return (0);
 }
@@ -102,8 +103,22 @@ double bool_aggregate::sum(std::vector<bool_metric::ptr> const& metrics) {
   return (retval);
 }
 
+/**
+ *  Count function.
+ *
+ *  @param[in] metrics  The number of metrics.
+ *
+ *  @return  The number of metrics.
+ */
 double bool_aggregate::count(std::vector<bool_metric::ptr> const& metrics) {
-  return (metrics.size());
+  double retval = 0;
+  for (std::vector<bool_metric::ptr>::const_iterator
+         it = metrics.begin(),
+         end = metrics.end();
+       it != end;
+       ++it)
+    retval += (*it)->get_resolved_metrics().size();
+  return (retval);
 }
 
 /**
