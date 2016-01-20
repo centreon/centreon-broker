@@ -21,6 +21,7 @@
 
 #  include <list>
 #  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/misc/weak_ptr.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -63,7 +64,7 @@ namespace        bam {
   private:
     void         _internal_copy(computable const& right);
 
-    std::list<misc::shared_ptr<computable> >
+    std::list<misc::weak_ptr<computable> >
                  _parents;
   };
 }
