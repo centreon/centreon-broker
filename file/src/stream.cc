@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Centreon
+** Copyright 2011-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -130,6 +130,7 @@ void stream::read(misc::shared_ptr<io::data>& d) {
     if (_wid == _rid) {
       _rfile->close();
       _rfile.clear();
+      _wfile.clear();
       std::string file_path(_file_path(_rid));
       logging::info(logging::high) << "file: end of last file '"
         << file_path.c_str() << "' reached, closing and erasing file";
@@ -295,6 +296,11 @@ unsigned int stream::write(misc::shared_ptr<io::data> const& d) {
   if (d->type() == io::events::data_type<io::events::internal, 1>::value) {
     // Lock mutex.
     QMutexLocker lock(&_mutex);
+
+    // Check that data should be written to file.
+    if (_wfile.isNull())
+      throw (io::exceptions::shutdown(true, true)
+             << "file stream is shutdown");
 
     // Seek to end of file if necessary.
     _wfile->seek(_woffset);
