@@ -170,6 +170,7 @@ namespace             misc {
           retval._refs = _refs;
           retval._weak_refs = _weak_refs;
           ++*_refs;
+          ref_lock.unlock();
           return (retval);
         }
       }
