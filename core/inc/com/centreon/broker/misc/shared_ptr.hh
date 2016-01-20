@@ -176,13 +176,14 @@ namespace             misc {
 
         // No more reference, destroy everything.
         if (*_refs <= 0) {
-          delete _ptr;
           if (*_weak_refs <= 0) {
             ref_lock.unlock();
             delete _mtx;
             delete _refs;
             delete _weak_refs;
           }
+          ref_lock.unlock();
+          delete _ptr;
         }
 
         // Reset pointers.
