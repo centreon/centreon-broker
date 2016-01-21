@@ -188,17 +188,29 @@ namespace             misc {
 
         --*_weak_refs;
         if (*_weak_refs <= 0 && *_refs <= 0) {
+          // Get pointers.
+          // We cache and and reset the pointers before unlocking, to prevent
+          // any race condition.
+          QMutex* mtx = _mtx;
+          unsigned int* refs = _refs;
+          unsigned int* weak_refs = _weak_refs;
+          // Reset pointers.
+          _mtx = NULL;
+          _refs = NULL;
+          _weak_refs = NULL;
+          // Unlock.
           ref_lock.unlock();
-          delete _mtx;
-          delete _refs;
-          delete _weak_refs;
+          // Free pointers.
+          delete mtx;
+          delete refs;
+          delete weak_refs;
         }
 
         // Reset pointers.
         _mtx = NULL;
-        _ptr = NULL;
         _refs = NULL;
         _weak_refs = NULL;
+        _ptr = NULL;
       }
       return ;
     }
