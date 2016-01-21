@@ -176,14 +176,28 @@ namespace             misc {
 
         // No more reference, destroy everything.
         if (*_refs <= 0) {
+          T* ptr = _ptr;
+          _ptr = NULL;
           if (*_weak_refs <= 0) {
+            // Get pointers.
+            // We cache and and reset the pointers before unlocking, to prevent
+            // any race condition.
+            QMutex* mtx = _mtx;
+            unsigned int* refs = _refs;
+            unsigned int* weak_refs = _weak_refs;
+            // Reset pointers.
+            _mtx = NULL;
+            _refs = NULL;
+            _weak_refs = NULL;
+            // Unlock.
             ref_lock.unlock();
-            delete _mtx;
-            delete _refs;
-            delete _weak_refs;
+            // Free pointers.
+            delete mtx;
+            delete refs;
+            delete weak_refs;
           }
           ref_lock.unlock();
-          delete _ptr;
+          delete ptr;
         }
 
         // Reset pointers.
