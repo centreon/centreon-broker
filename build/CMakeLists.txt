@@ -169,7 +169,13 @@ endif ()
 
 # Configure files.
 if (WITH_DAEMONS)
-  if (OS_DISTRIBUTOR STREQUAL "CentOS" OR OS_DISTRIBUTOR STREQUAL "RedHat")
+  if (WITH_STARTUP_SCRIPT STREQUAL "systemd")
+    configure_file("${PROJECT_SOURCE_DIR}/script/systemd/cbd.service.in"
+     "${PROJECT_SOURCE_DIR}/script/cbd.service"
+      @ONLY)
+    install(FILES "${PROJECT_SOURCE_DIR}/script/cbd.service"
+      DESTINATION "${STARTUP_DIR}")
+  elseif (OS_DISTRIBUTOR STREQUAL "CentOS" OR OS_DISTRIBUTOR STREQUAL "RedHat")
     configure_file("${PROJECT_SOURCE_DIR}/script/redhat/cbd.init.d.in"
       "${PROJECT_SOURCE_DIR}/script/cbd.init"
       @ONLY)
@@ -189,20 +195,21 @@ if (WITH_DAEMONS)
       @ONLY)
   endif ()
 
-  set(DAEMONS_CONFIGURATION "")
   foreach (DAEMON_NAME IN LISTS WITH_DAEMONS)
     set(DAEMONS_CONFIGURATION
-      "${DAEMONS_CONFIGURATION}${DAEMON_NAME}\t${DAEMON_NAME}.xml\ty\ty\n")
+      "${DAEMONS_CONFIGURATION}  <cbd>\n  <name>${DAEMON_NAME}</name>\n    <configuration_file>${PREFIX_CONF}/${DAEMON_NAME}.xml</configuration_file>\n    <run>1</run>\n    <reload>1</reload>\n  </cbd>\n")
   endforeach ()
 
-  configure_file("${PROJECT_SOURCE_DIR}/script/master.run.in"
-    "${PROJECT_SOURCE_DIR}/script/master.run"
+  configure_file("${PROJECT_SOURCE_DIR}/script/watchdog.xml.in"
+    "${PROJECT_SOURCE_DIR}/script/watchdog.xml"
     @ONLY)
-  install(FILES "${PROJECT_SOURCE_DIR}/script/master.run"
+  install(FILES "${PROJECT_SOURCE_DIR}/script/watchdog.xml"
     DESTINATION "${PREFIX_CONF}")
-  install(PROGRAMS "${PROJECT_SOURCE_DIR}/script/cbd.init"
-    DESTINATION "${STARTUP_DIR}"
-    RENAME "cbd")
+  if (WITH_STARTUP_SCRIPT STREQUAL "sysv")
+    install(PROGRAMS "${PROJECT_SOURCE_DIR}/script/cbd.init"
+      DESTINATION "${STARTUP_DIR}"
+      RENAME "cbd")
+  endif ()
 endif ()
 
 # Monitoring engine (for testing).
@@ -427,6 +434,12 @@ endif ()
 get_property(CBD_PATH
   TARGET "cbd"
   PROPERTY LOCATION)
+
+# Centreon Broker Watchdog
+option(WITH_CBWD "Build centreon broker watchdong." ON)
+if (WITH_CBWD)
+  add_subdirectory("watchdog")
+endif()
 
 # Module list.
 unset(MODULE_LIST)

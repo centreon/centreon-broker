@@ -33,19 +33,20 @@
 
 PKGNAME=cbd
 DESC="Centreon Broker"
-DAEMON="@PREFIX_BIN@/cbd"
+DAEMON="@PREFIX_BIN@/cbwd"
 PID_PATH="/var/run"
-MASTER_FILE="@PREFIX_CONF@/master.run"
+WATCHDOG_FILE="@PREFIX_CONF@/master.run"
 CONFIG_DIR="@PREFIX_CONF@"
+pidfile="${pid_path}/cbwd.pid"
 
 # Check that cbd is executable.
 if [ ! -x "${DAEMON}" ] ; then
-  echo "The cbd binary can't be run."
+  echo "The cbwd binary can't be run."
   exit 3
 fi
 
 # Check that configuration file exists.
-if [ ! -e "${MASTER_FILE}" ] ; then
+if [ ! -e "${WATCHDOG_FILE}" ] ; then
   echo "The master file isn't found."
   exit 3
 fi
@@ -75,82 +76,49 @@ do_start()
 {
   cat ${MASTER_FILE} | grep -v '^#'| while read line; do
     global_retval=0
-    daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
-    daemon_config="${CONFIG_DIR}/$(echo ${line} | awk '{ print $2 }')"
-    running="$(echo ${line} | awk '{ print $3 }')"
-    pidfile="${PID_PATH}/${daemon_name}.pid"
-    if [ "${running}" = "y" ]; then
-      [ "${VERBOSE}" != "no" ] && log_daemon_msg "Starting ${daemon_name}" "${PKGNAME}"
-      start-stop-daemon --start --background --quiet --pidfile ${pidfile} --exec ${DAEMON} \
-        --chuid ${USER} --user ${USER} --test
-      [ "$?" = "0" ] || global_retval=1
-      start-stop-daemon --start --background --quiet --pidfile ${pidfile} --exec ${DAEMON} \
-        --make-pidfile --chuid ${USER} --user ${USER} -- ${daemon_config}
-      [ "$?" = "0" ] || global_retval=2
-      case "${global_retval}" in
-        0|1) [ "${VERBOSE}" != "no" ] && log_end_msg 0 ;;
-        2) [ "${VERBOSE}" != "no" ] && log_end_msg 1 ;;
-      esac
-    fi
-  done
+    [ "${VERBOSE}" != "no" ] && log_daemon_msg "Starting Centreon Broker watchdog" "${PKGNAME}"
+    start-stop-daemon --start --background --quiet --pidfile ${pidfile} --exec ${DAEMON} \
+    --chuid ${USER} --user ${USER} --test
+    [ "$?" = "0" ] || global_retval=1
+    start-stop-daemon --start --background --quiet --pidfile ${pidfile} --exec ${DAEMON} \
+    --make-pidfile --chuid ${USER} --user ${USER} -- ${WATCHDOG_FILE}
+    [ "$?" = "0" ] || global_retval=2
+    case "${global_retval}" in
+      0|1) [ "${VERBOSE}" != "no" ] && log_end_msg 0 ;;
+      2) [ "${VERBOSE}" != "no" ] && log_end_msg 1 ;;
+  esac
   return ${global_retval}
 }
 
 # Stop cbd.
 do_stop()
 {
-  cat ${MASTER_FILE} | grep -v '^#'| while read line; do
-    global_retval=0
-    daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
-    daemon_config="${CONFIG_DIR}/$(echo ${line} | awk '{ print $2 }')"
-    running="$(echo ${line} | awk '{ print $3 }')"
-    pidfile="${PID_PATH}/${daemon_name}.pid"
-    if [ "${running}" = "y" ]; then
-      [ "${VERBOSE}" != no ] && log_daemon_msg "Restarting ${daemon_name}" "${PKGNAME}"
-      start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --user ${USER} --pidfile ${pidfile}
-      [ "$?" = "2" ] && global_retval=2
-      rm -f ${pidfile}
-      [ "$?" = "0" ] || global_retval=1
-      case "${global_retval}" in
-        0|1) [ "${VERBOSE}" != "no" ] && log_end_msg 0 ;;
-        2) [ "${VERBOSE}" != "no" ] && log_end_msg 1 ;;
-      esac
-    fi
-  done
+  [ "${VERBOSE}" != no ] && log_daemon_msg "Restarting Centreon Broker watchdog" "${PKGNAME}"
+  start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --user ${USER} --pidfile ${pidfile}
+  [ "$?" = "2" ] && global_retval=2
+  rm -f ${pidfile}
+  [ "$?" = "0" ] || global_retval=1
+  case "${global_retval}" in
+    0|1) [ "${VERBOSE}" != "no" ] && log_end_msg 0 ;;
+    2) [ "${VERBOSE}" != "no" ] && log_end_msg 1 ;;
+  esac
 }
 
 # Send kill HUP
 do_reload()
 {
-  cat ${MASTER_FILE} | grep -v '^#'| while read line; do
-    daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
-    daemon_config="${CONFIG_DIR}/$(echo ${line} | awk '{ print $2 }')"
-    running="$(echo ${line} | awk '{ print $3 }')"
-    reload="$(echo ${line} | awk '{ print $4 }')"
-    pidfile="${PID_PATH}/${daemon_name}.pid"
-    if [ "${running}" = "y" -a "${reload}" = "y" ]; then
-      [ "${VERBOSE}" != no ] && log_daemon_msg "Reloading ${daemon_name}" "${PKGNAME}"
-      start-stop-daemon --stop --quiet --signal=HUP --user ${USER} --pidfile ${pidfile}
-      case "$?" in
-        0|1) [ "${VERBOSE}" != "no" ] && log_end_msg 0 ;;
-        2) [ "${VERBOSE}" != "no" ] && log_end_msg 1 ;;
-      esac
-    fi
-  done
+  [ "${VERBOSE}" != no ] && log_daemon_msg "Reloading Centreon Broker watchdog" "${PKGNAME}"
+  start-stop-daemon --stop --quiet --signal=HUP --user ${USER} --pidfile ${pidfile}
+  case "$?" in
+    0|1) [ "${VERBOSE}" != "no" ] && log_end_msg 0 ;;
+    2) [ "${VERBOSE}" != "no" ] && log_end_msg 1 ;;
+  esac
 }
 
 # Status
 status_all()
 {
-  cat ${MASTER_FILE} | grep -v '^#'| while read line; do
-    daemon_name="cbd_$(echo ${line} | awk '{ print $1 }')"
-    daemon_config="${CONFIG_DIR}/$(echo ${line} | awk '{ print $2 }')"
-    running="$(echo ${line} | awk '{ print $3 }')"
-    pidfile="${PID_PATH}/${daemon_name}.pid"
-    if [ "${running}" = "y" ]; then
-      status_of_proc ${DAEMON} ${daemon_name} -p ${pidfile}
-    fi
-  done
+  status_of_proc ${DAEMON} "Centreon Broker watchdog" -p ${pidfile}
 }
 
 # Switch case.

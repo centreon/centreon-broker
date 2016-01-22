@@ -98,6 +98,15 @@ public:
     return (_sec == (time_t)-1);
   }
 
+  /**
+   *  Return a timestamp from now.
+   *
+   *  @return  A timestamp set to present time, present day.
+   */
+  static timestamp now() {
+    return (::time(NULL));
+  }
+
   // Data.
   std::time_t _sec;
 };

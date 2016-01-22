@@ -62,7 +62,7 @@ if [ \( x"$help" = x1 \) \
 fi
 
 # Get full metric list.
-mysql -B -N -h "$dbhost" -u "$dbuser" -p"$dbpassword" -e "SELECT index_id, metric_id, metric_name FROM metrics ORDER BY index_id" "$dbname" > "$tmpfile"
+mysql -B -N -h "$dbhost" -u "$dbuser" -p"$dbpassword" -e "SELECT index_id, metric_id, metric_name FROM rt_metrics ORDER BY index_id" "$dbname" > "$tmpfile"
 
 # Browse all metrics.
 lastindexid=
@@ -77,30 +77,30 @@ while read line ; do
 
   # Process if metric name is modified.
   if [ x"$metricname" != x"$oldmetricname" ] ; then
-    oldmetricid=`mysql -B -N -h "$dbhost" -u "$dbuser" -p"$dbpassword" -e "SELECT metric_id FROM metrics WHERE index_id=$indexid AND metric_name='$oldmetricname'" "$dbname"`
+    oldmetricid=`mysql -B -N -h "$dbhost" -u "$dbuser" -p"$dbpassword" -e "SELECT metric_id FROM rt_metrics WHERE index_id=$indexid AND metric_name='$oldmetricname'" "$dbname"`
     if [ x"$oldmetricid" != x ] ; then
       echo "(index $indexid, metric $oldmetricid, name $oldmetricname)  =>  (index $indexid, metric $metricid, name $metricname)"
 
       # Move data entries to the new metric.
       if [ x"$execute" = x1 ] ; then
-        mysql -B -N -h "$dbhost" -u "$dbuser" -p"$dbpassword" -e "UPDATE data_bin SET id_metric=$metricid WHERE id_metric=$oldmetricid" "$dbname"
+        mysql -B -N -h "$dbhost" -u "$dbuser" -p"$dbpassword" -e "UPDATE log_data_bin SET id_metric=$metricid WHERE id_metric=$oldmetricid" "$dbname"
       else
-        echo "  UPDATE data_bin SET id_metric=$metricid WHERE id_metric=$oldmetricid"
+        echo "  UPDATE log_data_bin SET id_metric=$metricid WHERE id_metric=$oldmetricid"
       fi
 
       # Remove the old metric.
       if [ x"$clean" = x1 ] ; then
-        mysql -B -N -h "$dbhost" -u "$dbuser" -p"$dbpassword" -e "DELETE FROM metrics WHERE metric_id=$oldmetricid" "$dbname"
+        mysql -B -N -h "$dbhost" -u "$dbuser" -p"$dbpassword" -e "DELETE FROM rt_metrics WHERE metric_id=$oldmetricid" "$dbname"
       else
-        echo "  DELETE FROM metrics WHERE metric_id=$oldmetricid"
+        echo "  DELETE FROM rt_metrics WHERE metric_id=$oldmetricid"
       fi
 
       # Rebuild graphs.
       if [ x"$indexid" != x"$lastindexid" ] ; then
         if [ x"$rebuild" = x1 ] ; then
-          mysql -B -N -h "$dbhost" -u "$dbuser" -p"$dbpassword" -e "UPDATE index_data SET must_be_rebuild=1 WHERE id=$indexid" "$dbname"
+          mysql -B -N -h "$dbhost" -u "$dbuser" -p"$dbpassword" -e "UPDATE rt_index_data SET must_be_rebuild=1 WHERE id=$indexid" "$dbname"
         else
-          echo "UPDATE index_data SET must_be_rebuild=1 WHERE id=$indexid"
+          echo "UPDATE rt_index_data SET must_be_rebuild=1 WHERE id=$indexid"
         fi
         lastindexid="$indexid"
       fi
