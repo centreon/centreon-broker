@@ -112,7 +112,7 @@ int command_listener::write(misc::shared_ptr<io::data> const& d) {
       p.invalid_time = time(NULL) + _request_timeout;
       p.result.uuid = req.uuid;
       p.result.code = 1;
-      p.result.msg = "Pending";
+      p.result.msg = "\"Pending\"";
       p.with_partial_result = req.with_partial_result;
       if (p.invalid_time < _next_invalid)
         _next_invalid = p.invalid_time;
@@ -154,7 +154,7 @@ void command_listener::_check_invalid() {
       if (it->second.result.code == 1) { // Pending.
         it->second.invalid_time = now + _result_timeout;
         it->second.result.code = -1;
-        it->second.result.msg = "Command timeout";
+        it->second.result.msg = "\"Command timeout\"";
         ++it;
       }
       else {

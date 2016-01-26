@@ -141,7 +141,7 @@ unsigned int json_command_parser::parse(
     // listener, so it not necessary to write command result either.
     res.uuid = QString();
     res.code = -1;
-    res.msg = e.what();
+    res.msg = QString("\"") + e.what() + "\"";
   }
   return (parsed);
 }

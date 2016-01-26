@@ -139,7 +139,7 @@ int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
         misc::shared_ptr<extcmd::command_result>
           res(new extcmd::command_result);
         res->uuid = req.uuid;
-        res->msg = e.what();
+        res->msg = QString("\"") + e.what() + "\"";
         res->code = -1;
         res->destination_id = req.source_id;
         multiplexing::publisher().write(res);
@@ -153,7 +153,7 @@ int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
       misc::shared_ptr<extcmd::command_result>
         res(new extcmd::command_result);
       res->uuid = ddc.req_id;
-      res->msg = "Command successfully executed.";
+      res->msg = "\"Command successfully executed.\"";
       res->code = 0;
       res->destination_id = _command_to_poller_id[ddc.req_id.toStdString()];
       multiplexing::publisher().write(res);
