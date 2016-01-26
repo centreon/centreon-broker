@@ -65,8 +65,8 @@ command_result command_listener::command_status(
     res.destination_id = io::data::broker_id;
     res.code = -1;
     std::ostringstream oss;
-    oss << "Command " << command_uuid.toStdString()
-        << " is not available (invalid command ID, timeout, ?)";
+    oss << "\"Command " << command_uuid.toStdString()
+        << " is not available (invalid command ID, timeout, ?)\"";
     res.msg = oss.str().c_str();
   }
   return (res);
