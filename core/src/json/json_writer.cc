@@ -94,6 +94,16 @@ void json_writer::add_string(std::string const& str) {
 }
 
 /**
+ *  Add raw json to the string.
+ *
+ *  @param[in] str  The raw string to add.
+ */
+void json_writer::add_raw(std::string const& str) {
+  _put_comma();
+  _string += str;
+}
+
+/**
  *  Add a number.
  *
  *  @param[in] number  The number.

@@ -161,7 +161,7 @@ std::string json_command_parser::write(command_result const& res) {
   writer.add_key("command_code");
   writer.add_number(res.code);
   writer.add_key("command_output");
-  writer.add_string(res.msg.toStdString());
+  writer.add_raw(res.msg.toStdString());
   writer.close_object();
   return (writer.get_string());
 }
