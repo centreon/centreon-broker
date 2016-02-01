@@ -839,6 +839,10 @@ value_type     short integer    Metric type (1 = counter, 2 = derive,
                                 3 = absolute, other = gauge).
 is_for_rebuild boolean          Set to true when a graph is being
                                 rebuild (see the rebuild event).
+host_id        unsigned integer The id of the host this metric is        Since 3.0.0
+                                attached to.
+service_id     unsigned integer The id of the service this metric is     Since 3.0.0
+                                attached to.
 instance_id    unsigned integer Instance ID.                             Since 2.6.0
                                                                          (BBDO 1.1.0).
 ============== ================ ======================================== =============
