@@ -87,6 +87,7 @@ do_start()
       0|1) [ "${VERBOSE}" != "no" ] && log_end_msg 0 ;;
       2) [ "${VERBOSE}" != "no" ] && log_end_msg 1 ;;
   esac
+  done
   return ${global_retval}
 }
 
