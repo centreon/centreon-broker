@@ -49,6 +49,8 @@ namespace             misc {
         _ptr = ptr._ptr;
         _refs = ptr._refs;
         _weak_refs = ptr._weak_refs;
+        QMutexLocker ref_lock(_mtx);
+        ++*_weak_refs;
       }
       else {
         _mtx = NULL;
