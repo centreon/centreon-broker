@@ -1924,6 +1924,8 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->freshness_threshold = s->freshness_threshold;
     my_service->has_been_checked = s->has_been_checked;
     my_service->high_flap_threshold = s->high_flap_threshold;
+    if (s->host_name)
+      my_service->host_name = s->host_name;
     if (s->icon_image)
       my_service->icon_image = s->icon_image;
     if (s->icon_image_alt)
