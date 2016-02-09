@@ -136,11 +136,7 @@ GnuTLS **(>= 2.0)**         gnutls-devel (el6)         Development files for gnu
 
    $ yum install qt4-devel qt4-mysql
 
-#. Install GnuTLS (for CentOS 5) ::
-
-   $ yum install compat-gnutls-devel
-
-#. Install GnuTLS (for CentOS 6) ::
+#. Install GnuTLS ::
 
    $ yum install gnutls-devel
 
