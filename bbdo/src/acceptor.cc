@@ -472,6 +472,12 @@ void helper::run() {
   // Remove feeder.
   _feeder.reset();
 
+  // Remove stream.
+  // The stream needs to be removed here to prevent dangling stream pointing
+  // toward parent acceptor that doesn't exist anymore. This can happen in
+  // bbdo::acceptor::~acceptor()
+  _stream.clear();
+
   return ;
 }
 
