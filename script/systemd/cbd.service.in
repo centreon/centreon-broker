@@ -21,6 +21,7 @@ Description=Centreon Broker watchdog
 
 [Service]
 ExecStart=@PREFIX_BIN@/cbwd @PREFIX_CONF@/watchdog.xml
+ExecReload=/bin/kill -HUP $MAINPID
 Type=simple
 User=centreon-broker
 
