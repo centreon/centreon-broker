@@ -71,12 +71,16 @@ software by running *make install* as priviledged user.
 
 You're done !
 
-## Bug reports ##
+## Bug reports / Feature requests ##
 
-The best way to report a bug is to open an issue in GitHub's
-[issue tracker](https://github.com/centreon/centreon-broker/issues/).
+The best way to report a bug or to request a feature is to open an issue
+in GitHub's [issue tracker](https://github.com/centreon/centreon-broker/issues/).
 
-For a quick resolution your message should contain :
+Please note that Centreon Broker follows the
+[same workflow as Centreon](https://github.com/centreon/centreon/blob/master/project/issues.md)
+to process issues.
+
+For a quick resolution of a bug your message should contain :
 
 * the problem description
 * precise steps on how to reproduce the issue (if you're using Centreon
@@ -94,8 +98,3 @@ which version/commit they apply.
 
 For any question or remark feel free to send a mail to the project
 maintainer : Matthieu Kermagoret (mkermagoret@centreon.com).
-
-## Feature requests ##
-
-Features can be requested in the
-[issue tracker](https://github.com/centreon/centreon-broker/issues/).
