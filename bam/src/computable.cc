@@ -84,6 +84,8 @@ void computable::propagate_update(io::stream* visitor) {
     misc::shared_ptr<computable> ptr = it->lock();
     if (!ptr.isNull())
       filter[i++] = ptr->child_has_update(this, visitor);
+    else
+      ++i;
   }
   i = 0;
   for (std::list<misc::weak_ptr<computable> >::iterator
