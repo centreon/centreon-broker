@@ -159,13 +159,19 @@ void db_loader::_load_kpis() {
            "  FROM mod_bam_kpi AS k"
            "  INNER JOIN mod_bam_poller_relations AS pr"
            "    ON k.id_ba=pr.ba_id"
+           "  INNER JOIN mod_bam as b"
+           "    ON k.id_ba=b.ba_id"
            "  LEFT JOIN mod_bam_impacts AS iw"
            "    ON k.drop_warning_impact_id=iw.id_impact"
            "  LEFT JOIN mod_bam_impacts AS ic"
            "    ON k.drop_critical_impact_id=ic.id_impact"
            "  LEFT JOIN mod_bam_impacts AS iu"
            "    ON k.drop_unknown_impact_id=iu.id_impact"
+           "  LEFT JOIN service AS s"
+           "    ON s.service_id = k.service_id"
            "  WHERE k.activate='1'"
+           "    AND b.activate='1'"
+           "    AND COALESCE(s.service_activate, '1')='1'"
            "    AND pr.poller_id=" << _poller_id;
   database_query q(*_db);
   q.run_query(
