@@ -96,8 +96,14 @@ unsigned int db_writer::write(misc::shared_ptr<io::data> const& d) {
       db_dump const& dbd(d.ref_as<db_dump const>());
       if (dbd.poller_id
           == config::applier::state::instance().get_instance_id()) {
-        if (dbd.commit)
+        if (dbd.commit) {
+          try {
           _commit();
+          } catch (std::exception const& e) {
+            logging::error(logging::medium)
+              << "db_dumper: could not write database configuration: " << e.what();
+          }
+        }
         else
           _full_dump = dbd.full;
         _bas.clear();
