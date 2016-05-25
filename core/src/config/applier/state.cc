@@ -61,7 +61,7 @@ void state::apply(
               bool run_mux) {
   // Sanity checks.
   static char const* const
-    allowed_chars("abcdefghijklmnopqrstuvwxyz0123456789-_");
+    allowed_chars("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
   if (!s.poller_id() || s.poller_name().empty())
     throw (exceptions::msg() << "state applier: poller information are "
            << "not set: please fill poller_id and poller_name");
