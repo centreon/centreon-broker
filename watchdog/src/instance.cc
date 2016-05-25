@@ -101,7 +101,7 @@ void instance::stop_instance() {
       << "watchdog: stopping process '" << _config.get_name() << "'";
     _started = false;
     terminate();
-    if (!waitForFinished()) {
+    if (!waitForFinished(_exit_timeout)) {
       logging::error(logging::medium)
         << "watchdog: couldn't properly terminate the process '"
         << _config.get_name() << "'(" << pid() << "): killing it";

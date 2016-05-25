@@ -64,6 +64,9 @@ namespace               com {
                         _config;
           bool          _started;
           timestamp     _since_last_start;
+
+          static const unsigned int
+                        _exit_timeout = 10000;
         };
       }
     }
