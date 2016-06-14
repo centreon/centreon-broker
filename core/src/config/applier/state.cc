@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012-2015 Centreon
+** Copyright 2011-2013,2015-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ void state::apply(
               bool run_mux) {
   // Sanity checks.
   static char const* const
-    allowed_chars("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
+    allowed_chars("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_");
   if (!s.poller_id() || s.poller_name().empty())
     throw (exceptions::msg() << "state applier: poller information are "
            << "not set: please fill poller_id and poller_name");
