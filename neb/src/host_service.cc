@@ -102,6 +102,7 @@ void host_service::_internal_copy(host_service const& other) {
   default_flap_detection_enabled = other.default_flap_detection_enabled;
   default_notifications_enabled = other.default_notifications_enabled;
   default_passive_checks_enabled = other.default_passive_checks_enabled;
+  display_name = other.display_name;
   first_notification_delay = other.first_notification_delay;
   freshness_threshold = other.freshness_threshold;
   high_flap_threshold = other.high_flap_threshold;

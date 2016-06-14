@@ -1138,6 +1138,8 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->default_notifications_enabled = h->notifications_enabled;
     my_host->default_passive_checks_enabled = h->accept_passive_host_checks;
     my_host->downtime_depth = h->scheduled_downtime_depth;
+    if (h->display_name)
+      my_host->display_name = h->display_name;
     my_host->enabled = (host_data->type != NEBTYPE_HOST_DELETE);
     if (h->event_handler)
       my_host->event_handler = h->event_handler;
@@ -1821,6 +1823,8 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->default_passive_checks_enabled
       = s->accept_passive_service_checks;
     my_service->downtime_depth = s->scheduled_downtime_depth;
+    if (s->display_name)
+      my_service->display_name = s->display_name;
     my_service->enabled
       = (service_data->type != NEBTYPE_SERVICE_DELETE);
     if (s->event_handler)

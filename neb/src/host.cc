@@ -243,6 +243,11 @@ mapping::entry const host::entries[] = {
     true,
     "scheduled_downtime_depth"),
   mapping::entry(
+    static_cast<QString (host::*) >(&host::display_name),
+    "display_name",
+    mapping::entry::invalid_on_v3,
+    true),
+  mapping::entry(
     &host::enabled,
     "enabled"),
   mapping::entry(

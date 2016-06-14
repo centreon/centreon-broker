@@ -49,6 +49,7 @@ namespace         neb {
     bool          default_flap_detection_enabled;
     bool          default_notifications_enabled;
     bool          default_passive_checks_enabled;
+    QString       display_name;
     double        first_notification_delay;
     double        freshness_threshold;
     double        high_flap_threshold;

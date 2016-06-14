@@ -239,6 +239,11 @@ mapping::entry const service::entries[] = {
     true,
     "scheduled_downtime_depth"),
   mapping::entry(
+    static_cast<QString (service::*) >(&service::display_name),
+    "display_name",
+    mapping::entry::invalid_on_v3,
+    true),
+  mapping::entry(
     &service::enabled,
     "enabled"),
   mapping::entry(
