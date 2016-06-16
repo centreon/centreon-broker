@@ -567,7 +567,8 @@ void ba::service_update(
       << _host_id << ", " << _service_id << ")";
 
     // Check if there was a change.
-    bool in_downtime(dt->was_started && (dt->actual_end_time != -1));
+    bool in_downtime(dt->was_started &&
+                       (dt->actual_end_time == -1 || dt->actual_end_time == 0));
     if (_in_downtime != in_downtime) {
       _in_downtime = in_downtime;
 
