@@ -405,6 +405,7 @@ void ba::set_level_warning(double level) {
 void ba::set_initial_event(ba_event const& event) {
   if (_event.isNull()) {
     _event = misc::shared_ptr<ba_event>(new ba_event(event));
+    _in_downtime = event.in_downtime;
     _last_kpi_update = _event->start_time;
     _initial_events.push_back(_event);
   }
