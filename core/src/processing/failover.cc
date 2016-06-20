@@ -350,9 +350,15 @@ void failover::run() {
               << "failover: writing event of multiplexing engine to endpoint '"
               << _name << "'";
             _update_status("writing event to stream");
-            {
+            try {
               QMutexLocker stream_lock(&_streamm);
               _stream->write(d);
+            }
+            catch (io::exceptions::shutdown const& e) {
+              logging::debug(logging::medium)
+                << "failover: stream of endpoint '" << _name
+                << "' shutdown while writing: " << e.what();
+              muxer_can_read = false;
             }
             tick();
             for (std::vector<misc::shared_ptr<io::stream> >::iterator
