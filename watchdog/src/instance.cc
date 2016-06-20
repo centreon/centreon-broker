@@ -107,6 +107,11 @@ void instance::stop_instance() {
         << _config.get_name() << "'(" << pid() << "): killing it";
       kill();
     }
+    else {
+      logging::error(logging::medium)
+       << "watchdog: process '" << _config.get_name()
+       << "' stopped gracefully";
+    }
   }
 }
 
