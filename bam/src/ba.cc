@@ -507,6 +507,7 @@ void ba::service_update(
     bool in_downtime(status->scheduled_downtime_depth > 0);
     if (_in_downtime != in_downtime) {
       _in_downtime = in_downtime;
+      _last_kpi_update = status->last_update;
 
       // Generate status event.
       visit(visitor);
