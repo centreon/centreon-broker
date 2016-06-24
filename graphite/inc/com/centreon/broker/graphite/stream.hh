@@ -25,6 +25,7 @@
 #  include <memory>
 #  include <QSqlDatabase>
 #  include <QString>
+#  include <QTcpSocket>
 #  include <utility>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/multiplexing/hooker.hh"
@@ -91,6 +92,8 @@ namespace          graphite {
     query          _status_query;
     std::string    _query;
     std::string    _auth_query;
+    std::auto_ptr<QTcpSocket>
+                   _socket;
 
     // Process metric/status and generate query.
     void           _process_metric(storage::metric const& me);

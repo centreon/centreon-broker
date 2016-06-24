@@ -80,12 +80,23 @@ stream::stream(
       .append("\n");
     _query.append(_auth_query);
   }
+  _socket = std::auto_ptr<QTcpSocket>(new QTcpSocket);
+  _socket->connectToHost(QString::fromStdString(_db_host), _db_port);
+  if (!_socket->waitForConnected())
+    throw exceptions::msg()
+          << "graphite: can't connect to graphite on host '"
+          << _db_host << "', port '" << _db_port << "': "
+          << _socket->errorString();
 }
 
 /**
  *  Destructor.
  */
 stream::~stream() {
+  if (_socket.get()) {
+    _socket->close();
+    _socket->waitForDisconnected();
+  }
 }
 
 /**
@@ -206,29 +217,18 @@ void stream::_process_status(storage::status const& st) {
  *  Commit all the processed event to the database.
  */
 void stream::_commit() {
-  std::auto_ptr<QTcpSocket> connect(new QTcpSocket);
-
-  connect->connectToHost(QString::fromStdString(_db_host), _db_port);
-  if (!connect->waitForConnected())
-    throw exceptions::msg()
-          << "graphite: can't connect to graphite on host '"
-          << _db_host << "', port '" << _db_port << "': "
-          << connect->errorString();
-
-  if (connect->write(_query.c_str(), _query.size()) == -1)
+  if (_socket->write(_query.c_str(), _query.size()) == -1)
     throw exceptions::msg()
       << "graphite: can't send data to graphite on host '"
       << _db_host << "', port '" << _db_port << "': "
-      << connect->errorString();
+      << _socket->errorString();
 
-  if (connect->waitForBytesWritten() == false)
+  if (_socket->waitForBytesWritten() == false)
     throw exceptions::msg()
       << "graphite: can't send data to graphite on host '"
       << _db_host << "', port '" << _db_port << "': "
-      << connect->errorString();
+      << _socket->errorString();
 
-  connect->close();
-  connect->waitForDisconnected();
   _query.clear();
   _query.append(_auth_query);
 }
