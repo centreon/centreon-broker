@@ -15,7 +15,7 @@ list below describes the most common of them.
   - SQL: store real-time monitoring events in a SQL database
   - storage: parse and store performance data in a SQL database
   - RRD: write RRD graph files from monitoring performance data
-  - BAM: compute Business Activyt status and availability
+  - BAM: compute Business Activity status and availability
   - Graphite: write monitoring performance data to Graphite
   - InfluxDB: write monitoring performance data to InfluxDB
 
