@@ -7,6 +7,22 @@ transmitter (broker). It is a low-level component of the
 Centreon Broker is released under the Apache License, Version 2.0
 and is endorsed by the [Centreon company](https://www.centreon.com).
 
+Centreon Broker is the communication backbone of the Centreon software
+suite so most events are processed by one or more of its module.
+Centreon Broker has multiple modules that perform specific tasks. The
+list below describes the most common of them.
+
+  - SQL: store real-time monitoring events in a SQL database
+  - storage: parse and store performance data in a SQL database
+  - RRD: write RRD graph files from monitoring performance data
+  - BAM: compute Business Activyt status and availability
+  - Graphite: write monitoring performance data to Graphite
+  - InfluxDB: write monitoring performance data to InfluxDB
+
+Centreon Broker is extremely fast and is a credible alternative to the
+old NDOutils. It is also extremly modular and can fit most network
+security requirements. Just give it a try !
+
 ## Documentation ##
 
 The full Centreon Broker documentation is available online
