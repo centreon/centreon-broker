@@ -68,13 +68,16 @@ connector& connector::operator=(connector const& other) {
 /**
  *  Set connection parameters.
  *
+ *  @param[in] ext_cmd_file     The external command file to connect to Centreon Engine.
  *  @param[in] db_cfg           Database configuration.
  *  @param[in] storage_db_name  Storage database name.
  */
 void connector::connect_monitoring(
+                  std::string const& ext_cmd_file,
                   database_config const& db_cfg,
                   std::string const& storage_db_name) {
   _type = bam_monitoring_type;
+  _ext_cmd_file = ext_cmd_file;
   _db_cfg = db_cfg;
   if (storage_db_name.empty())
     _storage_db_name = db_cfg.get_name();
@@ -110,7 +113,7 @@ misc::shared_ptr<io::stream> connector::open() {
     database_config storage_db_cfg(_db_cfg);
     storage_db_cfg.set_name(_storage_db_name);
     misc::shared_ptr<monitoring_stream>
-      s(new monitoring_stream(_db_cfg, storage_db_cfg));
+      s(new monitoring_stream(_ext_cmd_file, _db_cfg, storage_db_cfg));
     s->initialize();
     return (s.staticCast<io::stream>());
   }

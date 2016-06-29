@@ -57,14 +57,17 @@ using namespace com::centreon::broker::bam;
 /**
  *  Constructor.
  *
+ *  @param[in] ext_cmd_file    The command file to write into.
  *  @param[in] db_cfg          Main (centreon) database configuration.
  *  @param[in] storage_db_cfg  Storage (centreon_storage) database
  *                             configuration.
  */
 monitoring_stream::monitoring_stream(
+                     std::string const& ext_cmd_file,
                      database_config const& db_cfg,
                      database_config const& storage_db_cfg)
-  : _db(db_cfg),
+  : _ext_cmd_file(ext_cmd_file),
+    _db(db_cfg),
     _ba_update(_db),
     _kpi_update(_db),
     _meta_service_update(_db),
@@ -165,6 +168,8 @@ void monitoring_stream::update() {
       r.read(s);
     }
     _applier.apply(s);
+    _ba_mapping = s.get_ba_svc_mapping();
+    _meta_mapping = s.get_meta_svc_mapping();
     _rebuild();
     initialize();
   }
@@ -262,6 +267,25 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
       throw (exceptions::msg() << "BAM: could not update BA "
              << status->ba_id << ": " << e.what());
     }
+
+    if (status->state_changed) {
+      std::pair<std::string, std::string>
+        ba_svc_name(_ba_mapping.get_service(status->ba_id));
+      if (ba_svc_name.first.empty() || ba_svc_name.second.empty()) {
+        logging::error(logging::high)
+          << "BAM: could not trigger check of virtual service of BA "
+          << status->ba_id
+          << ": host name and service description were not found";
+      }
+      else {
+        std::ostringstream oss;
+        time_t now(time(NULL));
+        oss << "[" << now << "] SCHEDULE_FORCED_SVC_CHECK;"
+            << ba_svc_name.first << ";" << ba_svc_name.second << ";"
+            << now;
+        _write_external_command(oss.str());
+      }
+    }
   }
   else if (data->type() == bam::kpi_status::static_type()) {
     kpi_status* status(static_cast<kpi_status*>(data.data()));
@@ -310,6 +334,24 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
       throw (exceptions::msg()
              << "BAM: could not update meta-service "
              << status->meta_service_id << ": " << e.what());
+    }
+    if (status->state_changed) {
+      std::pair<std::string, std::string>
+        meta_svc_name(_meta_mapping.get_service(status->meta_service_id));
+      if (meta_svc_name.first.empty() || meta_svc_name.second.empty()) {
+        logging::error(logging::high)
+          << "BAM: could not trigger check of virtual service of meta-service "
+          << status->meta_service_id
+          << ": host name and service description were not found";
+      }
+      else {
+        std::ostringstream oss;
+        time_t now(time(NULL));
+        oss << "[" << now << "] SCHEDULE_FORCED_SVC_CHECK;"
+            << meta_svc_name.first << ";" << meta_svc_name.second
+            << ";" << now;
+        _write_external_command(oss.str());
+      }
     }
   }
 
@@ -446,5 +488,33 @@ void monitoring_stream::_rebuild() {
 void monitoring_stream::_update_status(std::string const& status) {
   QMutexLocker lock(&_statusm);
   _status = status;
+  return ;
+}
+
+/**
+ *  Write an external command to Engine.
+ *
+ *  @param[in] cmd  Command to write to the external command pipe.
+ */
+void monitoring_stream::_write_external_command(
+                          std::string const& cmd) {
+  std::ofstream ofs;
+  ofs.open(_ext_cmd_file.c_str());
+  if (!ofs.good()) {
+    logging::error(logging::medium)
+      << "BAM: could not write BA check result to command file '"
+      << _ext_cmd_file << "'";
+  }
+  else {
+    ofs.write(cmd.c_str(), cmd.size());
+    if (!ofs.good())
+      logging::error(logging::medium)
+        << "BAM: could not write BA check result to command file '"
+        << _ext_cmd_file << "'";
+    else
+      logging::debug(logging::medium)
+        << "BAM: sent external command '" << cmd << "'";
+    ofs.close();
+  }
   return ;
 }

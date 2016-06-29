@@ -49,7 +49,7 @@ namespace               bam {
                         reader(reader const& other);
       reader&           operator=(reader const& other);
       void              _load(state::kpis& kpis);
-      void              _load(state::bas& bas);
+      void              _load(state::bas& bas, ba_svc_mapping& mapping);
       void              _load(state::bool_exps& bool_exps);
       void              _load(state::meta_services& meta_services);
       void              _load(bam::hst_svc_mapping& mapping);

@@ -66,7 +66,7 @@ reader::~reader() {}
 void reader::read(state& st) {
   try {
     _load_dimensions();
-    _load(st.get_bas());
+    _load(st.get_bas(), st.get_ba_svc_mapping());
     _load(st.get_kpis());
     _load(st.get_bool_exps());
     _load(st.get_meta_services());
@@ -196,8 +196,9 @@ void reader::_load(state::kpis& kpis) {
  *  Load BAs from the DB.
  *
  *  @param[out] bas  The list of BAs in database.
+ *  @param[out] mapping  The mapping of BA ID to host/service IDs.
  */
-void reader::_load(state::bas& bas) {
+void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
   try {
     database_query query(_db);
     {
@@ -331,6 +332,62 @@ void reader::_load(state::bas& bas) {
   catch (std::exception const& e) {
     throw (reader_exception()
            << "BAM: could not retrieve BA configuration from DB: "
+           << e.what());
+  }
+
+  // Load host_id/service_id of virtual BA services. All the associated
+  // services have for description 'ba_[id]'.
+  try {
+    database_query query(_db);
+    query.run_query(
+            "SELECT h.host_name, s.service_description,"
+            "       hsr.host_host_id, hsr.service_service_id"
+            "  FROM service AS s"
+            "  INNER JOIN host_service_relation AS hsr"
+            "    ON s.service_id=hsr.service_service_id"
+            "  INNER JOIN host AS h"
+            "    ON hsr.host_host_id=h.host_id"
+            "  WHERE s.service_description LIKE 'ba_%'");
+    while (query.next()) {
+      unsigned int host_id = query.value(2).toUInt();
+      unsigned int service_id = query.value(3).toUInt();
+      std::string service_description = query.value(1).toString().toStdString();
+      service_description.erase(0, strlen("ba_"));
+
+      if (!service_description.empty()) {
+        bool ok = false;
+        unsigned int ba_id = QString(service_description.c_str()).toUInt(&ok);
+        if (!ok) {
+          logging::info(logging::medium)
+            << "BAM: service '" << query.value(1).toString() << "' of host '"
+            << query.value(0).toString()
+            << "' is not a valid virtual BA service";
+          continue ;
+        }
+        state::bas::iterator found = bas.find(ba_id);
+        if (found == bas.end()) {
+          logging::info(logging::medium) << "BAM: virtual BA service '"
+            << query.value(1).toString() << "' of host '"
+            << query.value(0).toString() << "' references an unknown BA ("
+            << ba_id << ")";
+          continue;
+        }
+        found->second.set_host_id(host_id);
+        found->second.set_service_id(service_id);
+        mapping.set(
+                  ba_id,
+                  query.value(0).toString().toStdString(),
+                  query.value(1).toString().toStdString());
+      }
+    }
+  }
+  catch (reader_exception const& e) {
+    (void)e;
+    throw ;
+  }
+  catch (std::exception const& e) {
+    throw (reader_exception()
+           << "BAM: could not retrieve BA service IDs from DB: "
            << e.what());
   }
 

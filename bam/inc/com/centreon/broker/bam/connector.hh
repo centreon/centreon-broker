@@ -40,6 +40,7 @@ namespace           bam {
                     ~connector();
     connector&      operator=(connector const& other);
     void            connect_monitoring(
+                      std::string const& ext_cmd_file,
                       database_config const& db_cfg,
                       std::string const& storage_db_name);
     void            connect_reporting(
@@ -56,6 +57,7 @@ namespace           bam {
     void            _internal_copy(connector const& other);
 
     database_config _db_cfg;
+    std::string     _ext_cmd_file;
     std::string     _storage_db_name;
     stream_type     _type;
   };

@@ -108,6 +108,17 @@ io::endpoint* factory::new_endpoint(
   // Is it a BAM or BAM-BI output ?
   bool is_bam_bi(!cfg.type.compare("bam_bi", Qt::CaseInsensitive));
 
+  // External command file.
+  std::string ext_cmd_file;
+  if (!is_bam_bi) {
+    QMap<QString, QString>::const_iterator
+      it = cfg.params.find("command_file");
+    if (it == cfg.params.end() || it->isEmpty())
+      throw (exceptions::msg()
+             << "BAM: command_file parameter not set");
+    ext_cmd_file = it->toStdString();
+  }
+
   // Storage database name.
   std::string storage_db_name;
   {
@@ -122,7 +133,7 @@ io::endpoint* factory::new_endpoint(
   if (is_bam_bi)
     c->connect_reporting(db_cfg);
   else
-    c->connect_monitoring(db_cfg, storage_db_name);
+    c->connect_monitoring(ext_cmd_file, db_cfg, storage_db_name);
   is_acceptor = false;
   return (c.release());
 }
