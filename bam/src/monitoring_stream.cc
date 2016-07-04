@@ -369,7 +369,7 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
           << ";1;0;0;BAM Module;"
              "Automatic downtime triggered by BA downtime inheritance";
     else
-      oss << "[" << now << "] DEL_FULL_SVC_DOWNTIME;_Module_BAM_1;ba_"
+      oss << "[" << now << "] DEL_SVC_DOWNTIME_FULL;_Module_BAM_1;ba_"
           << dwn.ba_id << ";;" << timestamp::max()
           << ";1;0;0;BAM Module;"
              "Automatic downtime triggered by BA downtime inheritance";
