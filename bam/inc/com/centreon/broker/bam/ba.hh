@@ -21,11 +21,14 @@
 
 #  include <string>
 #  include <vector>
+#  include <memory>
 #  include "com/centreon/broker/bam/ba_event.hh"
 #  include "com/centreon/broker/bam/ba_duration_event.hh"
 #  include "com/centreon/broker/bam/computable.hh"
 #  include "com/centreon/broker/bam/impact_values.hh"
 #  include "com/centreon/broker/bam/service_listener.hh"
+#  include "com/centreon/broker/bam/inherited_downtime.hh"
+#  include "com/centreon/broker/persistent_cache.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
@@ -84,6 +87,10 @@ namespace        bam {
     void         service_update(
                    misc::shared_ptr<neb::downtime> const& dt,
                    io::stream* visitor);
+    void         save_inherited_downtime(
+                   persistent_cache& cache) const;
+    void         set_inherited_downtime(
+                   inherited_downtime const& dwn);
 
   private:
     static int const        _recompute_limit = 100;
@@ -125,6 +132,8 @@ namespace        bam {
     unsigned int _service_id;
     bool         _valid;
     bool         _inherit_kpi_downtime;
+    std::auto_ptr<inherited_downtime>
+                 _inherited_downtime;
 
     void         _commit_initial_events(io::stream* visitor);
 

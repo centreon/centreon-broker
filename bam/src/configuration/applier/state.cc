@@ -347,3 +347,21 @@ void applier::state::_internal_copy(applier::state const& other) {
   _meta_service_applier = other._meta_service_applier;
   return ;
 }
+
+/**
+ *  Save the state to the cache.
+ *
+ *  @param[in] cache  The cache.
+ */
+void applier::state::save_to_cache(persistent_cache& cache) {
+  _ba_applier.save_to_cache(cache);
+}
+
+/**
+ *  Load the state from the cache.
+ *
+ *  @param[in] cache  the cache.
+ */
+void applier::state::load_from_cache(persistent_cache& cache) {
+  _ba_applier.load_from_cache(cache);
+}

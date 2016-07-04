@@ -64,6 +64,9 @@ namespace           bam {
     void            _update_status(std::string const& status);
     void            _write_external_command(std::string const& cmd);
 
+    void            _read_cache();
+    void            _write_cache();
+
     configuration::applier::state
                     _applier;
     std::string     _status;

@@ -57,6 +57,8 @@ namespace               bam {
         metric_book&    book_metric();
         service_book&   book_service();
         void            visit(io::stream* visitor);
+        void            save_to_cache(persistent_cache& cache);
+        void            load_from_cache(persistent_cache& cache);
 
       private:
         struct          circular_check_node {

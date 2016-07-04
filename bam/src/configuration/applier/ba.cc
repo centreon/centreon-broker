@@ -298,3 +298,39 @@ misc::shared_ptr<bam::ba> applier::ba::_new_ba(
   book.listen(cfg.get_host_id(), cfg.get_service_id(), obj.data());
   return (obj);
 }
+
+/**
+ *  Save inherited downtime to the cache.
+ *
+ *  @param[in] cache  The cache.
+ */
+void applier::ba::save_to_cache(persistent_cache& cache) {
+  cache.transaction();
+  for (std::map<unsigned int, applied>::const_iterator
+       it = _applied.begin(),
+       end = _applied.end();
+       it != end;
+       ++it) {
+    it->second.obj->save_inherited_downtime(cache);
+  }
+  cache.commit();
+}
+
+/**
+ *  Load inherited downtime from cache.
+ *
+ *  @param[in] cache  The cache.
+ */
+void applier::ba::load_from_cache(persistent_cache& cache) {
+  misc::shared_ptr<io::data> d;
+  cache.get(d);
+  while (!d.isNull()) {
+    if (d->type() != inherited_downtime::static_type())
+      continue ;
+    inherited_downtime const& dwn = d.ref_as<inherited_downtime const>();
+    std::map<unsigned int, applied>::iterator found = _applied.find(dwn.ba_id);
+    if (found != _applied.end())
+      found->second.obj->set_inherited_downtime(dwn);
+    cache.get(d);
+  }
+}

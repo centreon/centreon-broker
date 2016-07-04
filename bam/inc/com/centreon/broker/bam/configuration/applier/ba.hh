@@ -24,6 +24,7 @@
 #  include "com/centreon/broker/bam/configuration/ba.hh"
 #  include "com/centreon/broker/bam/configuration/state.hh"
 #  include "com/centreon/broker/bam/service_book.hh"
+#  include "com/centreon/broker/persistent_cache.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -57,6 +58,8 @@ namespace     bam {
         misc::shared_ptr<bam::ba>
               find_ba(unsigned int id);
         void  visit(io::stream* visitor);
+        void  save_to_cache(persistent_cache& cache);
+        void  load_from_cache(persistent_cache& cache);
 
       private:
         struct applied {

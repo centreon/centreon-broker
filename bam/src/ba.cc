@@ -598,6 +598,27 @@ void ba::service_update(
 }
 
 /**
+ *  Save the inherited downtime to the cache.
+ *
+ *  @param[in] cache  The cache.
+ */
+void ba::save_inherited_downtime(persistent_cache& cache) const {
+  if (_inherited_downtime.get())
+    cache.add(misc::shared_ptr<inherited_downtime>(
+                new inherited_downtime(*_inherited_downtime)));
+}
+
+/**
+ *  Set the inherited downtime of this ba.
+ *
+ *  @param[in] dwn  The inherited downtime.
+ */
+void ba::set_inherited_downtime(
+           inherited_downtime const& dwn) {
+  _inherited_downtime.reset(new inherited_downtime(dwn));
+}
+
+/**
  *  Apply some impact.
  *
  *  @param[in] impact Impact information.
@@ -748,7 +769,28 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
     }
   }
 
+  bool state_ok = (_level_hard < _level_critical);
   // Ideally, a state machine should be used, but this will suffice for now.
   // Case 1: state not ok, every child in downtime, no actual downtime: put the ba in downtime.
+  if (!state_ok && every_kpi_in_downtime && !_inherited_downtime.get()) {
+    _inherited_downtime.reset(new inherited_downtime);
+    _inherited_downtime->ba_id = _id;
+    _inherited_downtime->in_downtime = true;
+    if (visitor)
+      visitor->write(
+        misc::shared_ptr<inherited_downtime>(
+                new inherited_downtime(*_inherited_downtime)));
+  }
+  // Case 2: state ok or not every kpi in downtime, actual downtime: remove the downtime
+  else if ((state_ok || !every_kpi_in_downtime)
+             && _inherited_downtime.get()) {
+    _inherited_downtime.reset();
+    if (visitor) {
+      misc::shared_ptr<inherited_downtime> dwn(new inherited_downtime);
+      dwn->ba_id = _id;
+      dwn->in_downtime = false;
+      visitor->write(dwn);
+    }
+  }
 
 }

@@ -175,6 +175,7 @@ void monitoring_stream::update() {
     _meta_mapping = s.get_meta_svc_mapping();
     _rebuild();
     initialize();
+    _read_cache();
   }
   catch (std::exception const& e) {
     throw (exceptions::msg()
@@ -520,4 +521,24 @@ void monitoring_stream::_write_external_command(
     ofs.close();
   }
   return ;
+}
+
+/**
+ *  Get inherited downtime from the cache.
+ */
+void monitoring_stream::_read_cache() {
+  if (_cache.isNull())
+    return ;
+
+  _applier.load_from_cache(*_cache);
+}
+
+/**
+ *  Save inherited downtime to the cache.
+ */
+void monitoring_stream::_write_cache() {
+  if (_cache.isNull())
+    return ;
+
+  _applier.save_to_cache(*_cache);
 }
