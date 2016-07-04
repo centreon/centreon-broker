@@ -132,6 +132,10 @@ public:
     return (::time(NULL));
   }
 
+  static timestamp max() {
+    return (timestamp());
+  }
+
   // Data.
   std::time_t _sec;
 };
