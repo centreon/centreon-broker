@@ -92,7 +92,7 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
  *
  *  @param[in]  cfg         Endpoint configuration.
  *  @param[out] is_acceptor Will be set to false.
- *  @param[in]  cache       Unused.
+ *  @param[in]  cache       The persistent cache.
  *
  *  @return Endpoint matching the given configuration.
  */
@@ -100,8 +100,6 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
-  (void)cache;
-
   // Find DB parameters.
   database_config db_cfg(cfg);
 
@@ -133,7 +131,7 @@ io::endpoint* factory::new_endpoint(
   if (is_bam_bi)
     c->connect_reporting(db_cfg);
   else
-    c->connect_monitoring(ext_cmd_file, db_cfg, storage_db_name);
+    c->connect_monitoring(ext_cmd_file, db_cfg, storage_db_name, cache);
   is_acceptor = false;
   return (c.release());
 }

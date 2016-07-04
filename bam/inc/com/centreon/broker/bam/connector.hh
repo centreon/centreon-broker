@@ -20,6 +20,7 @@
 #  define CCB_BAM_CONNECTOR_HH
 
 #  include <string>
+#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -42,7 +43,8 @@ namespace           bam {
     void            connect_monitoring(
                       std::string const& ext_cmd_file,
                       database_config const& db_cfg,
-                      std::string const& storage_db_name);
+                      std::string const& storage_db_name,
+                      misc::shared_ptr<persistent_cache> cache);
     void            connect_reporting(
                       database_config const& db_cfg);
     misc::shared_ptr<io::stream>
@@ -60,6 +62,8 @@ namespace           bam {
     std::string     _ext_cmd_file;
     std::string     _storage_db_name;
     stream_type     _type;
+    misc::shared_ptr<persistent_cache>
+                    _cache;
   };
 }
 

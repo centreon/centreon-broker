@@ -39,6 +39,7 @@
 #include "com/centreon/broker/bam/dimension_ba_timeperiod_relation.hh"
 #include "com/centreon/broker/bam/dimension_timeperiod_exception.hh"
 #include "com/centreon/broker/bam/dimension_timeperiod_exclusion.hh"
+#include "com/centreon/broker/bam/inherited_downtime.hh"
 
 using namespace com::centreon::broker;
 
@@ -175,6 +176,10 @@ extern "C" {
                                   e,
                                   bam::de_dimension_timeperiod_exclusion,
                                   "dimension_timeperiod_exclusion");
+        register_bam_event<bam::inherited_downtime>(
+                                  e,
+                                  bam::de_inherited_downtime,
+                                  "inherited_downtime");
       }
     }
     return ;

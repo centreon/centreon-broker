@@ -28,18 +28,21 @@ using namespace com::centreon::broker::bam::configuration;
  *  @param[in] name           BA name.
  *  @param[in] warning_level  BA warning_level.
  *  @param[in] critical_level BA critical_level.
+ *  @param[in] inherit_kpi_downtime  Should the BA inherit kpi's downtimes?
  */
 ba::ba(
       unsigned int id,
       std::string const& name,
       double warning_level,
-      double critical_level):
+      double critical_level,
+      bool inherit_kpi_downtime):
   _id(id),
   _host_id(0),
   _service_id(0),
   _name(name),
   _warning_level(warning_level),
-  _critical_level(critical_level) {}
+  _critical_level(critical_level),
+  _inherit_kpi_downtime(inherit_kpi_downtime) {}
 
 /**
  *  Copy constructor.
@@ -53,7 +56,8 @@ ba::ba(ba const& other)
     _name(other._name),
     _warning_level(other._warning_level),
     _critical_level(other._critical_level),
-    _event(other._event) {}
+    _event(other._event),
+    _inherit_kpi_downtime (other._inherit_kpi_downtime) {}
 
 /**
  *  Destructor.
@@ -76,6 +80,7 @@ ba& ba::operator=(ba const& other) {
     _warning_level = other._warning_level;
     _critical_level = other._critical_level;
     _event = other._event;
+    _inherit_kpi_downtime = other._inherit_kpi_downtime;
   }
   return (*this);
 }
@@ -94,7 +99,8 @@ bool ba::operator==(ba const& right) const {
           && (_name == right._name)
           && (_warning_level == right._warning_level)
           && (_critical_level == right._critical_level)
-          && (_event == right._event));
+          && (_event == right._event)
+          && (_inherit_kpi_downtime == right._inherit_kpi_downtime));
 }
 
 /**
@@ -172,6 +178,15 @@ com::centreon::broker::bam::ba_event const& ba::get_opened_event() const {
 }
 
 /**
+ *  Get if the BA should inherit the downtime of its kpis.
+ *
+ *  @return  True if the BA should inherit the downtime of its kpis.
+ */
+bool ba::get_inherit_kpi_downtime() const {
+  return (_inherit_kpi_downtime);
+}
+
+/**
  *  Set id.
  *
  *  @param[in] id Set business activity id key.
@@ -234,3 +249,11 @@ void ba::set_opened_event(bam::ba_event const& e) {
   _event = e;
 }
 
+/**
+ *  Set the value of the inherit kpi downtime flag.
+ *
+ *  @param[in] value The value of the inherit kpi downtime flag.
+ */
+void ba::set_inherit_kpi_downtime(bool value) {
+  _inherit_kpi_downtime = value;
+}

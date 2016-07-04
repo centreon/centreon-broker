@@ -41,7 +41,8 @@ namespace                bam {
                            unsigned int id = 0,
                            std::string const& name = "",
                            double warning_level = 0.0,
-                           double critical_level = 0.0);
+                           double critical_level = 0.0,
+                           bool inherit_kpi_downtime = false);
                          ba(ba const& right);
                          ~ba();
       ba&                operator=(ba const& right);
@@ -59,6 +60,7 @@ namespace                bam {
       unsigned int       get_default_timeperiod() const;
       std::vector<unsigned int> const&
                          get_timeperiods() const;
+      bool               get_inherit_kpi_downtime() const;
 
       void               set_id(unsigned int id);
       void               set_host_id(unsigned int host_id);
@@ -67,6 +69,7 @@ namespace                bam {
       void               set_warning_level(double warning_level);
       void               set_critical_level(double critical_level);
       void               set_opened_event(bam::ba_event const& e);
+      void               set_inherit_kpi_downtime(bool value);
 
     private:
       unsigned int       _id;
@@ -76,6 +79,7 @@ namespace                bam {
       double             _warning_level;
       double             _critical_level;
       bam::ba_event      _event;
+      bool               _inherit_kpi_downtime;
     };
   }
 }

@@ -440,6 +440,15 @@ void ba::set_valid(bool valid) {
 }
 
 /**
+ * @brief Set the inherit kpi downtime flag.
+ *
+ *  @param[in] value  The value to set.
+ */
+void ba::set_inherit_kpi_downtime(bool value) {
+  _inherit_kpi_downtime = value;
+}
+
+/**
  *  Visit BA.
  *
  *  @param[out] visitor  Visitor that will receive BA status and events.
@@ -716,4 +725,30 @@ void ba::_commit_initial_events(io::stream* visitor) {
       visitor->write(misc::shared_ptr<io::data>(new ba_event(**it)));
   }
   _initial_events.clear();
+}
+
+/**
+ *  Compute the inherited downtime.
+ */
+void ba::_compute_inherited_downtime(io::stream* visitor) {
+  // kpi downtime heritance deactived. Do nothing.
+  if (!_inherit_kpi_downtime)
+    return ;
+
+  // Check if every child kpis are in downtime.
+  bool every_kpi_in_downtime = true;
+  for (umap<kpi*, impact_info>::const_iterator
+         it = _impacts.begin(),
+         end = _impacts.end();
+       it != end;
+       ++it) {
+    if (!it->first->in_downtime()) {
+      every_kpi_in_downtime = false;
+      break;
+    }
+  }
+
+  // Ideally, a state machine should be used, but this will suffice for now.
+  // Case 1: state not ok, every child in downtime, no actual downtime: put the ba in downtime.
+
 }

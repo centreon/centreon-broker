@@ -61,18 +61,21 @@ using namespace com::centreon::broker::bam;
  *  @param[in] db_cfg          Main (centreon) database configuration.
  *  @param[in] storage_db_cfg  Storage (centreon_storage) database
  *                             configuration.
+ *  @param[in] cache           The persistent cache.
  */
 monitoring_stream::monitoring_stream(
                      std::string const& ext_cmd_file,
                      database_config const& db_cfg,
-                     database_config const& storage_db_cfg)
+                     database_config const& storage_db_cfg,
+                     misc::shared_ptr<persistent_cache> cache)
   : _ext_cmd_file(ext_cmd_file),
     _db(db_cfg),
     _ba_update(_db),
     _kpi_update(_db),
     _meta_service_update(_db),
     _pending_events(0),
-    _storage_db_cfg(storage_db_cfg) {
+    _storage_db_cfg(storage_db_cfg),
+    _cache(cache) {
   // Detect schema version. We cannot rely on _db.schema_version() here
   // because it is connected to the centreon DB (not centreon_storage)
   // and therefore auto-detection does not work.

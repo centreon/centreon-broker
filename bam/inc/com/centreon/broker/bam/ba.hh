@@ -79,6 +79,7 @@ namespace        bam {
     void         set_initial_event(ba_event const& event);
     void         set_name(std::string const& name);
     void         set_valid(bool valid);
+    void         set_inherit_kpi_downtime(bool value);
     void         visit(io::stream* visitor);
     void         service_update(
                    misc::shared_ptr<neb::downtime> const& dt,
@@ -100,6 +101,7 @@ namespace        bam {
                    short service_hard_state);
     void         _recompute();
     void         _unapply_impact(impact_info& impact);
+    void         _compute_inherited_downtime(io::stream* visitor);
 
     double       _acknowledgement_hard;
     double       _acknowledgement_soft;
@@ -122,6 +124,7 @@ namespace        bam {
     int          _recompute_count;
     unsigned int _service_id;
     bool         _valid;
+    bool         _inherit_kpi_downtime;
 
     void         _commit_initial_events(io::stream* visitor);
 

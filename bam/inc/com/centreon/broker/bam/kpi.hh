@@ -53,6 +53,7 @@ namespace        bam {
     void         set_id(unsigned int id);
     virtual void set_initial_event(kpi_event const& e);
     virtual void visit(io::stream* visitor) = 0;
+    virtual bool in_downtime() const;
 
     void         commit_initial_events(io::stream* visitor);
 

@@ -139,3 +139,12 @@ void kpi::commit_initial_events(io::stream* visitor) {
   }
   _initial_events.clear();
 }
+
+/**
+ *  Is this kpi in downtime?
+ *
+ *  @return  Default value: false.
+ */
+bool kpi::in_downtime() const {
+  return (false);
+}
