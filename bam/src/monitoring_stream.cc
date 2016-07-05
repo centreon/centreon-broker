@@ -324,41 +324,41 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
              << status->kpi_id << ": " << e.what());
     }
   }
-  else if (data->type() == bam::meta_service_status::static_type()) {
-    meta_service_status* status(static_cast<meta_service_status*>(data.data()));
-    logging::debug(logging::low)
-      << "BAM: processing meta-service status (id "
-      << status->meta_service_id << ", value " << status->value
-      << ")";
-    _meta_service_update.bind_value(
-                            ":meta_service_id",
-                            status->meta_service_id);
-    _meta_service_update.bind_value(":value", status->value);
-    try { _meta_service_update.run_statement(); }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "BAM: could not update meta-service "
-             << status->meta_service_id << ": " << e.what());
-    }
-    if (status->state_changed) {
-      std::pair<std::string, std::string>
-        meta_svc_name(_meta_mapping.get_service(status->meta_service_id));
-      if (meta_svc_name.first.empty() || meta_svc_name.second.empty()) {
-        logging::error(logging::high)
-          << "BAM: could not trigger check of virtual service of meta-service "
-          << status->meta_service_id
-          << ": host name and service description were not found";
-      }
-      else {
-        std::ostringstream oss;
-        time_t now(time(NULL));
-        oss << "[" << now << "] SCHEDULE_FORCED_SVC_CHECK;"
-            << meta_svc_name.first << ";" << meta_svc_name.second
-            << ";" << now;
-        _write_external_command(oss.str());
-      }
-    }
-  }
+  // else if (data->type() == bam::meta_service_status::static_type()) {
+  //   meta_service_status* status(static_cast<meta_service_status*>(data.data()));
+  //   logging::debug(logging::low)
+  //     << "BAM: processing meta-service status (id "
+  //     << status->meta_service_id << ", value " << status->value
+  //     << ")";
+  //   _meta_service_update.bind_value(
+  //                           ":meta_service_id",
+  //                           status->meta_service_id);
+  //   _meta_service_update.bind_value(":value", status->value);
+  //   try { _meta_service_update.run_statement(); }
+  //   catch (std::exception const& e) {
+  //     throw (exceptions::msg()
+  //            << "BAM: could not update meta-service "
+  //            << status->meta_service_id << ": " << e.what());
+  //   }
+  //   if (status->state_changed) {
+  //     std::pair<std::string, std::string>
+  //       meta_svc_name(_meta_mapping.get_service(status->meta_service_id));
+  //     if (meta_svc_name.first.empty() || meta_svc_name.second.empty()) {
+  //       logging::error(logging::high)
+  //         << "BAM: could not trigger check of virtual service of meta-service "
+  //         << status->meta_service_id
+  //         << ": host name and service description were not found";
+  //     }
+  //     else {
+  //       std::ostringstream oss;
+  //       time_t now(time(NULL));
+  //       oss << "[" << now << "] SCHEDULE_FORCED_SVC_CHECK;"
+  //           << meta_svc_name.first << ";" << meta_svc_name.second
+  //           << ";" << now;
+  //       _write_external_command(oss.str());
+  //     }
+  //   }
+  // }
   else if (data->type() == inherited_downtime::static_type()) {
     std::ostringstream oss;
     timestamp now = timestamp::now();
@@ -435,15 +435,15 @@ void monitoring_stream::_prepare() {
   }
 
   // Meta-service status.
-  {
-    std::ostringstream query;
-    query << "UPDATE " << (_db_v2 ? "meta_service" : "cfg_meta_services")
-          << "  SET value=:value"
-             "  WHERE meta_id=:meta_service_id";
-    _meta_service_update.prepare(
-      query.str(),
-      "BAM: could not prepare meta-service update query");
-  }
+  // {
+  //   std::ostringstream query;
+  //   query << "UPDATE " << (_db_v2 ? "meta_service" : "cfg_meta_services")
+  //         << "  SET value=:value"
+  //            "  WHERE meta_id=:meta_service_id";
+  //   _meta_service_update.prepare(
+  //     query.str(),
+  //     "BAM: could not prepare meta-service update query");
+  // }
 
   return ;
 }
