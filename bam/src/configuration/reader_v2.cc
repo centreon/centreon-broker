@@ -557,16 +557,19 @@ void reader_v2::_load(bam::hst_svc_mapping& mapping) {
           << "       s.service_id"
           << "  FROM metrics AS m"
           << "    INNER JOIN index_data AS i"
-          << "    ON m.index_id=i.index_id"
+          << "    ON m.index_id=i.id"
           << "    INNER JOIN services AS s"
           << "    ON i.host_id=s.host_id AND i.service_id=s.service_id";
-    database_query q(_db);
+    std::auto_ptr<database> storage_db(new database(_storage_cfg));
+    database_query q(*storage_db);
     q.run_query(query.str());
-    mapping.register_metric(
-              q.value(0).toUInt(),
-              q.value(1).toString().toStdString(),
-              q.value(2).toUInt(),
-              q.value(3).toUInt());
+    while (q.next()) {
+      mapping.register_metric(
+                q.value(0).toUInt(),
+                q.value(1).toString().toStdString(),
+                q.value(2).toUInt(),
+                q.value(3).toUInt());
+    }
   } catch (std::exception const& e) {
     throw (reader_exception()
            << "BAM: could not retrieve known metrics: "
