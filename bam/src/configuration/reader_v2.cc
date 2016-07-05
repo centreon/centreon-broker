@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -317,7 +317,7 @@ void reader_v2::_load(state::bool_exps& bool_exps) {
   // Load boolean expressions themselves.
   try {
     std::ostringstream q;
-    q << "SELECT b.boolean_id, b.boolean_name, b.expression, b.bool_state"
+    q << "SELECT b.boolean_id, b.name, b.expression, b.bool_state"
          "  FROM mod_bam_boolean AS b"
          "  INNER JOIN mod_bam_kpi AS k"
          "    ON b.boolean_id=k.boolean_id"
