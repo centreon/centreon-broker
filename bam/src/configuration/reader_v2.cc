@@ -204,7 +204,8 @@ void reader_v2::_load(state::bas& bas) {
     {
       std::ostringstream oss;
       oss << "SELECT b.ba_id, b.name, b.level_w, b.level_c,"
-             "       b.last_state_change, b.current_status, b.in_downtime"
+             "       b.last_state_change, b.current_status,"
+             "       b.in_downtime, b.inherit_kpi_downtime"
              "  FROM mod_bam AS b"
              "  INNER JOIN mod_bam_poller_relations AS pr"
              "    ON b.ba_id=pr.ba_id"
@@ -221,7 +222,8 @@ void reader_v2::_load(state::bas& bas) {
           ba_id, // ID.
           query.value(1).toString().toStdString(), // Name.
           query.value(2).toFloat(), // Warning level.
-          query.value(3).toFloat()); // Critical level.
+          query.value(3).toFloat(), // Critical level.
+          query.value(7).toBool()); // Downtime inheritance.
 
       // BA state.
       if (!query.value(4).isNull()) {

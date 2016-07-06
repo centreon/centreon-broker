@@ -222,9 +222,9 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
           ba_id, // ID.
           query.value(1).toString().toStdString(), // Name.
           query.value(2).toFloat(), // Warning level.
-          query.value(3).toFloat(),
-          query.value(7).toBool()
-          ); // Critical level.
+          query.value(3).toFloat(), // Critical level.
+          query.value(7).toBool() // Downtime inheritance.
+          );
 
       // BA state.
       if (!query.value(4).isNull()) {
