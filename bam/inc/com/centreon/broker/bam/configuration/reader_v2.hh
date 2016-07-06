@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -30,10 +30,6 @@ CCB_BEGIN()
 class                   database;
 
 namespace               bam {
-  // Forward declarations.
-  class                 ba_svc_mapping;
-  class                 hst_svc_mapping;
-
   namespace             configuration {
     /**
      *  @class reader_v2 reader_v2.hh "com/centreon/broker/bam/configuration/reader_v2.hh"
@@ -55,7 +51,7 @@ namespace               bam {
                         reader_v2(reader_v2 const& other);
       reader_v2&        operator=(reader_v2 const& other);
       void              _load(state::kpis& kpis);
-      void              _load(state::bas& bas);
+      void              _load(state::bas& bas, ba_svc_mapping& mapping);
       void              _load(state::bool_exps& bool_exps);
       void              _load(state::meta_services& meta_services);
       void              _load(bam::hst_svc_mapping& mapping);

@@ -67,7 +67,7 @@ reader_v2::~reader_v2() {}
 void reader_v2::read(state& st) {
   try {
     _load_dimensions();
-    _load(st.get_bas());
+    _load(st.get_bas(), st.get_ba_svc_mapping());
     _load(st.get_kpis());
     _load(st.get_bool_exps());
     _load(st.get_meta_services());
@@ -196,9 +196,11 @@ void reader_v2::_load(state::kpis& kpis) {
 /**
  *  Load BAs from the DB.
  *
- *  @param[out] bas  The list of BAs in database.
+ *  @param[out] bas      The list of BAs in database.
+ *  @param[out] mapping  The mapping of BA ID to host name/service
+ *                       description.
  */
-void reader_v2::_load(state::bas& bas) {
+void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
   try {
     database_query query(_db);
     {
@@ -285,6 +287,10 @@ void reader_v2::_load(state::bas& bas) {
         }
         found->second.set_host_id(host_id);
         found->second.set_service_id(service_id);
+        mapping.set(
+                  ba_id,
+                  query.value(0).toString().toStdString(),
+                  query.value(1).toString().toStdString());
       }
     }
   }

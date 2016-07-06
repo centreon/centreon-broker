@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -195,8 +195,9 @@ void reader::_load(state::kpis& kpis) {
 /**
  *  Load BAs from the DB.
  *
- *  @param[out] bas  The list of BAs in database.
- *  @param[out] mapping  The mapping of BA ID to host/service IDs.
+ *  @param[out] bas      The list of BAs in database.
+ *  @param[out] mapping  The mapping of BA ID to host name/service
+ *                       description.
  */
 void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
   try {
@@ -223,8 +224,7 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
           query.value(1).toString().toStdString(), // Name.
           query.value(2).toFloat(), // Warning level.
           query.value(3).toFloat(), // Critical level.
-          query.value(7).toBool() // Downtime inheritance.
-          );
+          query.value(7).toBool()); // Downtime inheritance.
 
       // BA state.
       if (!query.value(4).isNull()) {
