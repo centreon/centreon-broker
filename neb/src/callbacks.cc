@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2015 Centreon
+** Copyright 2009-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -110,6 +110,11 @@ static struct {
 
 // Registered callbacks.
 std::list<misc::shared_ptr<neb::callback> > neb::gl_registered_callbacks;
+
+// External function to get program version.
+extern "C" {
+  char const* get_program_version();
+}
 
 // Statistics generator.
 static neb::statistics::generator gl_generator;
@@ -1586,7 +1591,7 @@ int neb::callback_process(int callback_type, void *data) {
         = config::applier::state::instance().poller_name().c_str();
       instance->pid = getpid();
       instance->program_start = time(NULL);
-      instance->version = "2.x";
+      instance->version = get_program_version();
       start_time = instance->program_start;
 
       // Send initial event and then configuration.
@@ -1632,7 +1637,7 @@ int neb::callback_process(int callback_type, void *data) {
       instance->pid = getpid();
       instance->program_end = time(NULL);
       instance->program_start = start_time;
-      instance->version = "2.x";
+      instance->version = get_program_version();
 
       // Send event.
       gl_publisher.write(instance);
