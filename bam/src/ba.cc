@@ -168,6 +168,9 @@ bool ba::child_has_update(
     it->second.soft_impact = new_soft_impact;
     _apply_impact(it->second);
 
+    // Check for inherited downtimes.
+    _compute_inherited_downtime(visitor);
+
     // Generate status event.
     visit(visitor);
   }
