@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Centreon
+** Copyright 2012,2015-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -96,7 +96,8 @@ public:
    *  @return  True if this is a null timestamp.
    */
   bool is_null() const {
-    return (_sec == (time_t)-1);
+    return ((_sec == (time_t)-1)
+            || (_sec == (time_t)0));
   }
 
   /**
