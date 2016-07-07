@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2016 Centreon
+** Copyright 2014-2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -96,12 +96,22 @@ monitoring_stream::monitoring_stream(
 
   // Simulate a configuration update.
   update();
+  // Read cache.
+  _read_cache();
 }
 
 /**
  *  Destructor.
  */
-monitoring_stream::~monitoring_stream() {}
+monitoring_stream::~monitoring_stream() {
+  // save cache
+  try {
+    _write_cache();
+  } catch (std::exception const& e) {
+    logging::error(logging::medium)
+      << "BAM: can't save cache: '" << e.what() << "'";
+  }
+}
 
 /**
  *  Flush data.
@@ -176,7 +186,6 @@ void monitoring_stream::update() {
     _meta_mapping = s.get_meta_svc_mapping();
     _rebuild();
     initialize();
-    _read_cache();
   }
   catch (std::exception const& e) {
     throw (exceptions::msg()
@@ -365,13 +374,13 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
     inherited_downtime const& dwn = data.ref_as<inherited_downtime const>();
     if (dwn.in_downtime)
       oss << "[" << now << "] SCHEDULE_SVC_DOWNTIME;_Module_BAM_1;ba_"
-          << dwn.ba_id << ";" << timestamp::now() << ";"
-          << timestamp::max() << ";1;0;0;Centreon Broker BAM Module;"
+          << dwn.ba_id << ";;" << timestamp::max()
+          << ";1;0;0;BAM Module;"
              "Automatic downtime triggered by BA downtime inheritance";
     else
       oss << "[" << now << "] DEL_SVC_DOWNTIME_FULL;_Module_BAM_1;ba_"
           << dwn.ba_id << ";;" << timestamp::max()
-          << ";1;0;0;Centreon Broker BAM Module;"
+          << ";1;0;0;BAM Module;"
              "Automatic downtime triggered by BA downtime inheritance";
     _write_external_command(oss.str());
   }
