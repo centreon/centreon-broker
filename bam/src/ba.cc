@@ -772,7 +772,7 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
     }
   }
 
-  bool state_ok = (_level_hard < _level_critical);
+  bool state_ok(!get_state_hard());
   // Ideally, a state machine should be used, but this will suffice for now.
   // Case 1: state not ok, every child in downtime, no actual downtime: put the ba in downtime.
   if (!state_ok && every_kpi_in_downtime && !_inherited_downtime.get()) {
