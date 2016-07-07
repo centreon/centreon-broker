@@ -290,7 +290,7 @@ void kpi_service::service_update(
       << _host_id << ", " << _service_id << ")";
 
     // Update information.
-    _downtimed = (dt->was_started && (dt->actual_end_time != -1));
+    _downtimed = (dt->was_started && dt->actual_end_time.is_null());
 
     // Generate status event.
     visit(visitor);
