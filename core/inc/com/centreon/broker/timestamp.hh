@@ -21,6 +21,7 @@
 
 #  include <ctime>
 #  include <istream>
+#  include <limits>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -133,8 +134,13 @@ public:
     return (::time(NULL));
   }
 
+  /**
+   *  Return the upper time limit.
+   *
+   *  @return A timestamp set in a very far future.
+   */
   static timestamp max() {
-    return (timestamp());
+    return (timestamp(std::numeric_limits<time_t>::max()));
   }
 
   // Data.
