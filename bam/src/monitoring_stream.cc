@@ -380,7 +380,7 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
     else
       oss << "[" << now << "] DEL_SVC_DOWNTIME_FULL;_Module_BAM_1;ba_"
           << dwn.ba_id << ";;" << timestamp::max()
-          << ";1;0;0;BAM Module;"
+          << ";1;0;;Centreon Broker BAM Module;"
              "Automatic downtime triggered by BA downtime inheritance";
     _write_external_command(oss.str());
   }
