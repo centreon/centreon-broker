@@ -566,5 +566,8 @@ void monitoring_stream::_write_cache() {
   if (_cache.isNull())
     return ;
 
+  logging::debug(logging::medium)
+    << "BAM: loading cache";
+
   _applier.save_to_cache(*_cache);
 }

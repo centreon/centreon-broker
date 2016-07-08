@@ -330,8 +330,11 @@ void applier::ba::load_from_cache(persistent_cache& cache) {
       continue ;
     inherited_downtime const& dwn = d.ref_as<inherited_downtime const>();
     std::map<unsigned int, applied>::iterator found = _applied.find(dwn.ba_id);
-    if (found != _applied.end())
+    if (found != _applied.end()) {
+      logging::debug(logging::medium)
+        << "BAM: found an inherited downtime for BA " << found->first;
       found->second.obj->set_inherited_downtime(dwn);
+    }
     cache.get(d);
   }
 }
