@@ -563,8 +563,11 @@ void monitoring_stream::_read_cache() {
  *  Save inherited downtime to the cache.
  */
 void monitoring_stream::_write_cache() {
-  if (_cache.isNull())
+  if (_cache.isNull()) {
+    logging::debug(logging::medium)
+      << "BAM: no cache configured";
     return ;
+  }
 
   logging::debug(logging::medium)
     << "BAM: loading cache";
