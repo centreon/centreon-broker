@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2014 Centreon
+** Copyright 2009-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -41,69 +41,6 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
-
-/**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
-
-/**
- *  Determine whether or not a node should have the unknown state.
- *
- *  @param[in] n Node to check.
- *
- *  @return true if the node should be unknown.
- */
-static bool should_be_unknown(node const& n) {
-  bool all_parents_down;
-  bool one_dependency_down;
-
-  // If node has no parents, then all_parents_down will be false.
-  if (!n.parents().isEmpty()) {
-    all_parents_down = true;
-    for (QList<node*>::const_iterator
-           it(n.parents().begin()),
-           end(n.parents().end());
-         it != end;
-         ++it)
-      all_parents_down = (all_parents_down && (*it)->state);
-  }
-  else
-    all_parents_down = false;
-
-  // Check dependencies.
-  one_dependency_down = false;
-  for (QList<node*>::const_iterator
-         it(n.depends_on().begin()),
-         end(n.depends_on().end());
-       it != end;
-       ++it)
-    one_dependency_down = (one_dependency_down || (*it)->state);
-
-  // Debug message.
-  if (all_parents_down && one_dependency_down)
-    logging::debug(logging::medium)
-      << "correlation: unknown state of node (" << n.host_id << ", "
-      << n.service_id << ") is triggered by parenting AND dependencies";
-  else if (all_parents_down)
-    logging::debug(logging::medium)
-      << "correlation: unknown state of node (" << n.host_id << ", "
-      << n.service_id << ") is triggered by parenting";
-  else if (one_dependency_down)
-    logging::debug(logging::medium)
-      << "correlation: unknown state of node (" << n.host_id << ", "
-      << n.service_id << ") is triggered by dependencies";
-
-  return (all_parents_down || one_dependency_down);
-}
-
-/**
- *  Get the unknown state that match a host.
- */
-static int unknown_state(node const& n) {
-  return (n.service_id ? 3 : 2); // Unknown is UNREACHABLE for hosts.
-}
 
 /**************************************
 *                                     *
@@ -532,14 +469,6 @@ void correlator::_correlate_host_service_status(
     n = &*ss_it;
   }
 
-  if (hss.current_state
-      && (hss.current_state != unknown_state(*n))
-      && should_be_unknown(*n)) {
-    logging::debug(logging::medium) << "correlation: retagging node ("
-      << n->host_id << ", " << n->service_id << ") to unknown";
-    hss.current_state = unknown_state(*n);
-  }
-
   time_t now(hss.last_check);
   if (!now)
     now = hss.last_update;
@@ -885,7 +814,7 @@ void correlator::_internal_copy(correlator const& c) {
  *                  linkage.
  */
 void correlator::_issue_parenting(node* n, bool full) {
-  if (full && (unknown_state(*n) == n->state)) {
+  if (full && n->my_issue.get()) {
     // Loop dependencies.
     for (QList<node*>::const_iterator
            it(n->depends_on().begin()),
