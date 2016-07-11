@@ -17,13 +17,14 @@
 ##
 
 # Tests directory.
-set(TESTS_DIR "${PROJECT_SOURCE_DIR}/core/tests")
+set(TESTS_DIR "${PROJECT_SOURCE_DIR}/core/test")
 add_subdirectory("googletest")
 
 # Unit test executable.
 add_executable("ut"
   # Core sources.
+  "${TESTS_DIR}/exceptions/msg/default.cc"
   # Module sources.
   ${TESTS_SOURCES}
 )
-target_link_libraries("ut" "gtest" "gtest_main" ${TESTS_LIBRARIES})
+target_link_libraries("ut" "gtest" "gtest_main" ${TESTS_LIBRARIES} "roker")
