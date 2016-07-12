@@ -24,7 +24,7 @@ using namespace com::centreon::broker;
 // Given an exceptions::msg object
 // When it is default constructed
 // Then its error message is empty
-TEST(ExceptionMsgDefault, DefaultConstructor) {
+TEST(ExceptionsMsgDefault, DefaultConstructor) {
   exceptions::msg e;
   ASSERT_STREQ(e.what(), "");
 }
