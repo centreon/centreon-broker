@@ -64,7 +64,7 @@ target_link_libraries("${CORRELATION}" ${QT_LIBRARIES})
 set_target_properties("${CORRELATION}" PROPERTIES PREFIX "")
 
 # Testing.
-if (WITH_TESTING)
+if (0) # WITH_TESTING)
   include_directories("${PROJECT_SOURCE_DIR}/correlation")
   set(TEST_LIBRARIES "${NOTIFICATION}" "${CORRELATION}" "${NEB}" "rokerbase" "roker")
 

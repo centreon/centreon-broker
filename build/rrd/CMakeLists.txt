@@ -90,7 +90,7 @@ if (LIBRRD_CFLAGS)
 endif ()
 target_link_libraries("${RRD}" ${LIBRRD_LDFLAGS})
 
-if (WITH_TESTING)
+if (0) # WITH_TESTING)
   set(TEST_LIBRARIES "${RRD}" "10-neb" "20-storage" "roker" "rokerbase" "roker")
 
   # Open exception tests.
