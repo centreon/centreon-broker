@@ -1219,6 +1219,8 @@ int neb::callback_host(int callback_type, void* data) {
                            : HARD_STATE);
     if (h->statusmap_image)
       my_host->statusmap_image = h->statusmap_image;
+    my_host->timezone =
+      engine::get_host_timezone(my_host->host_name.toStdString().c_str());
 
     // Find host ID.
     unsigned int host_id = engine::get_host_id(

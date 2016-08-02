@@ -134,6 +134,7 @@ void host::_internal_copy(host const& other) {
   stalk_on_unreachable = other.stalk_on_unreachable;
   stalk_on_up = other.stalk_on_up;
   statusmap_image = other.statusmap_image;
+  timezone = other.timezone;
   return ;
 }
 
@@ -506,6 +507,9 @@ mapping::entry const host::entries[] = {
     mapping::entry::always_valid,
     true,
     "retain_status_information"),
+  mapping::entry(
+    &host::timezone,
+    "timezone"),
   mapping::entry()
 };
 

@@ -61,6 +61,7 @@ namespace          neb {
     bool           stalk_on_unreachable;
     bool           stalk_on_up;
     QString        statusmap_image;
+    QString        timezone;
 
     static mapping::entry const
                    entries[];
