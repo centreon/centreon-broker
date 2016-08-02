@@ -256,7 +256,7 @@ endif ()
 set_target_properties("${CBMOD}" PROPERTIES PREFIX "")
 
 # Unit tests.
-if (WITH_TESTING)
+if (0) # WITH_TESTING)
   include_directories("${PROJECT_SOURCE_DIR}/neb")
   include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
   include_directories("${PROJECT_SOURCE_DIR}/dumper/inc")

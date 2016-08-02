@@ -64,7 +64,7 @@ add_library("${STORAGE}" SHARED
 target_link_libraries("${STORAGE}" ${QT_LIBRARIES})
 set_target_properties("${STORAGE}" PROPERTIES PREFIX "")
 
-if (WITH_TESTING)
+if (0) # WITH_TESTING)
   set(TEST_LIBRARIES "${STORAGE}" "10-neb" "rokerbase" "roker" "rokerbase")
 
   # Perfdata exception tests.

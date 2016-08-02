@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -760,15 +760,16 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
     return ;
 
   // Check if every child kpis are in downtime.
-  bool every_kpi_in_downtime = true;
+  bool every_kpi_in_downtime = !_impacts.empty();
   for (umap<kpi*, impact_info>::const_iterator
          it = _impacts.begin(),
          end = _impacts.end();
        it != end;
        ++it) {
-    if (!it->first->in_downtime()) {
+    if ((it->second.hard_impact.get_nominal() > 0.0)
+        && !it->first->in_downtime() ) {
       every_kpi_in_downtime = false;
-      break;
+      break ;
     }
   }
 

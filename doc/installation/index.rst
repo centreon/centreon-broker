@@ -23,7 +23,7 @@ Centreon provides RPM for its products through Centreon Entreprise
 Server (CES). Open source products are freely available from our
 repository.
 
-These packages are available for CentOS 5 and CentOS 6.
+These packages are available for CentOS 6.
 
 .. _user_installation_packages_prerequisites:
 
@@ -32,16 +32,6 @@ Prerequisites
 
 In order to use RPM from the CES repository, you have to install the
 appropriate repository.
-
-CentOS 5
---------
-
-Run the following commands as privileged user ::
-
-  $ wget http://yum.centreon.com/standard/2.2/noarch/RPMS/ces-release-2.2-4.noarch.rpm
-  $ yum install --nogpgcheck ces-release-2.2-4.noarch.rpm
-  $ rm -f ces-release-2.2-4.noarch.rpm
-  $ yum clean all
 
 CentOS 6
 --------
@@ -122,8 +112,7 @@ Qt **(>= 4.7.4)**           qt4-devel                  Centreon Broker require Q
                                                        Centreon for example).
 RRDTool                     rrdtool-devel              Development files for RRD file
                                                        (graph) creation and update.
-GnuTLS **(>= 2.0)**         gnutls-devel (el6)         Development files for gnutls.
-                            compat-gnutls2-devel (el5)
+GnuTLS **(>= 2.0)**         gnutls-devel               Development files for gnutls.
 =========================== ========================== ================================
 
 #. Install basic compilation tools ::
@@ -148,11 +137,7 @@ GnuTLS **(>= 2.0)**         gnutls-devel (el6)         Development files for gnu
 
    $ yum install qt4-devel qt4-mysql
 
-#. Install GnuTLS (for CentOS 5) ::
-
-   $ yum install compat-gnutls-devel
-
-#. Install GnuTLS (for CentOS 6) ::
+#. Install GnuTLS ::
 
    $ yum install gnutls-devel
 
