@@ -28,6 +28,7 @@ using namespace com::centreon::broker::bam;
  */
 kpi_status::kpi_status()
   : kpi_id(0),
+    in_downtime(false),
     level_acknowledgement_hard(0.0),
     level_acknowledgement_soft(0.0),
     level_downtime_hard(0.0),
@@ -92,6 +93,7 @@ unsigned int kpi_status::static_type() {
  */
 void kpi_status::_internal_copy(kpi_status const& other) {
   kpi_id = other.kpi_id;
+  in_downtime = other.in_downtime;
   level_acknowledgement_hard = other.level_acknowledgement_hard;
   level_acknowledgement_soft = other.level_acknowledgement_soft;
   level_downtime_hard = other.level_downtime_hard;
@@ -118,6 +120,9 @@ mapping::entry const kpi_status::entries[] = {
     &bam::kpi_status::kpi_id,
     "kpi_id",
     mapping::entry::invalid_on_zero),
+  mapping::entry(
+    &bam::kpi_status::in_downtime,
+    "in_downtime"),
   mapping::entry(
     &bam::kpi_status::level_acknowledgement_hard,
     "level_acknowledgement_hard"),

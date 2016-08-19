@@ -83,20 +83,23 @@ Event categories
 
 The current available categories are described in the table below.
 
-=========== ===================== ===== ================================
-Category    API macro             Value Description
-=========== ===================== ===== ================================
-NEB         BBDO_NEB_TYPE         1     Classical monitoring events
-                                        (hosts, services, notifications,
-                                        event handlers, plugin
-                                        execution, ...).
-Storage     BBDO_STORAGE_TYPE     2     Category related to RRD graph
-                                        building.
-Correlation BBDO_CORRELATION_TYPE 3     Status correlation.
-Bam         BBDO_BAM_TYPE         4     Bam events.
-Internal    BBDO_INTERNAL_TYPE    65535 Reserved for internal protocol
-                                        use.
-=========== ===================== ===== ================================
+============= ===================== ===== ================================
+Category      API macro             Value Description
+============= ===================== ===== ================================
+NEB           BBDO_NEB_TYPE         1     Classical monitoring events
+                                          (hosts, services, notifications,
+                                          event handlers, plugin
+                                          execution, ...).
+Storage       BBDO_STORAGE_TYPE     2     Category related to RRD graph
+                                          building.
+Correlation   BBDO_CORRELATION_TYPE 3     Status correlation.
+Dumper        BBDO_DUMPER_TYPE      4     Dumper events.
+Bam           BBDO_BAM_TYPE         5     Bam events.
+Extcmd        BBDO_EXTCMD_TYPE      6     Centreon Broker external
+                                          commands.
+Internal      BBDO_INTERNAL_TYPE    65535 Reserved for internal protocol
+                                          use.
+============= ===================== ===== ================================
 
 NEB
 ===
@@ -104,35 +107,36 @@ NEB
 The table below lists event types available in the NEB category. They
 have to be mixed with the BBDO_NEB_TYPE category to get a BBDO event ID.
 
-====================== =====
-Type                   Value
-====================== =====
-Acknowledgement        1
-Comment                2
-Custom variable        3
-Custom variable status 4
-Downtime               5
-Event handler          6
-Flapping status        7
-Host                   8
-Host check             9
-Host dependency        10
-Host group             11
-Host group member      12
-Host parent            13
-Host status            14
-Instance               15
-Instance status        16
-Log entry              17
-Module                 18
-Notification           19
-Service                20
-Service check          21
-Service dependency     22
-Service group          23
-Service group member   24
-Service status         25
-====================== =====
+======================== =====
+Type                     Value
+======================== =====
+Acknowledgement          1
+Acknowledgement removed  2
+Comment                  3
+Custom variable          4
+Custom variable status   5
+Downtime                 6
+Downtime removed         7
+Event handler            8
+Flapping status          9
+Host check               10
+Host dependency          11
+Host group               12
+Host group member        13
+Host                     14
+Host parent              15
+Host status              16
+Instance                 17
+Instance status          18
+Log entry                19
+Module                   20
+Service check            21
+Service dependency       22
+Service group            23
+Service group member     24
+Service                  25
+Service status           26
+======================== =====
 
 Storage
 =======
@@ -141,14 +145,16 @@ The table below lists event types available in the Storage category.
 They have to be mixed with the BBDO_STORAGE_TYPE category to get a BBDO
 event ID.
 
-============ =====
-Type         Value
-============ =====
-metric       1
-rebuild      2
-remove_graph 3
-status       4
-============ =====
+=============== =====
+Type            Value
+=============== =====
+metric          1
+rebuild         2
+remove_graph    3
+status          4
+index mapping   5
+metric mapping  6
+=============== =====
 
 Correlation
 ===========
@@ -161,10 +167,10 @@ BBDO event ID.
 Type          Value
 ============= =====
 engine_state  1
-host_state    2
-issue         3
-issue_parent  4
-service_state 5
+issue         2
+issue_parent  3
+state         4
+Log issue     5
 ============= =====
 
 Internal
@@ -207,7 +213,50 @@ dimension_timeperiod              14
 dimension_ba_timeperiod_relation  15
 dimension_timeperiod_exception    16
 dimension_timeperiod_exclusion    17
+inherited_downtime                18
 ================================= =====
+
+Dumper
+======
+
+The table below lists event types available in the Dumper category.
+They have to be mixed with the BBDO_DUMPER_TYPE category to get a
+BBDO event ID.
+
+================================= =====
+Type                              Value
+================================= =====
+Dump                              1
+Timestamp cache                   2
+Remove                            3
+Reload                            4
+Db dump                           5
+Db dump committed                 6
+Entries Ba                        7
+Entries Ba type                   8
+Entries boolean                   9
+Entries host                      10
+Entries kpi                       11
+Entries organization              12
+Entries service                   13
+Directory dump                    14
+Directory dump committed          15
+================================= =====
+
+Extcmd
+======
+
+The table below lists event types available in the Extcmd category.
+They have to be mixed with the BBDO_EXTCMD_TYPE category to get a
+BBDO event ID.
+
+================================= =====
+Type                              Value
+================================= =====
+Command request                   1
+Command result                    2
+================================= =====
+
 
 *******************
 Event serialization

@@ -48,18 +48,21 @@ namespace               io {
       correlation,
       dumper,
       bam,
-      notification,
       extcmd,
       internal = 65535
     };
     // Internal events used by the core.
     enum                internal_event_category {
       de_raw = 1,
-      de_command_request,
-      de_command_result,
       de_instance_broadcast,
       de_buffer
     };
+    // Extcmd events used by the core.
+    enum               extcmd_event_category {
+      de_command_request = 1,
+      de_command_result,
+    };
+
     template <unsigned short category, unsigned short element>
     struct data_type {
       enum { value = static_cast<unsigned int>(category << 16 | element) };

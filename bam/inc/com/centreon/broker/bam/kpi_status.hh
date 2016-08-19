@@ -45,6 +45,7 @@ namespace        bam {
                  static_type();
 
     unsigned int kpi_id;
+    bool         in_downtime;
     double       level_acknowledgement_hard;
     double       level_acknowledgement_soft;
     double       level_downtime_hard;

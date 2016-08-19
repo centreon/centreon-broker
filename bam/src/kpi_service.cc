@@ -440,6 +440,7 @@ void kpi_service::visit(io::stream* visitor) {
     {
       misc::shared_ptr<kpi_status> status(new kpi_status);
       status->kpi_id = _id;
+      status->in_downtime = this->in_downtime();
       status->level_acknowledgement_hard = hard_values.get_acknowledgement();
       status->level_acknowledgement_soft = soft_values.get_acknowledgement();
       status->level_downtime_hard = hard_values.get_downtime();

@@ -15,28 +15,29 @@ NEB
 Acknowledgement
 ===============
 
-==================== ================ ================================== =============
-Property             Type             Description                        Version
-==================== ================ ================================== =============
-acknowledgement_type short integer    Host acknowledgement when 0,
-                                      service acknowledgement when 1.
-author               string           Acknowledgement author.
-comment              string           Comment associated to the
-                                      acknowledgement.
-deletion_time        time             Time at which the acknowledgement
-                                      was deleted. If 0, it was not
-                                      deleted.
-entry_time           time             Time at which the acknowledgement
-                                      was created.
-host_id              unsigned integer Host ID.
-instance_id          unsigned integer Instance ID.
-is_sticky            boolean          Sticky flag.
-notify_contacts      boolean          Notification flag.
-persistent_comment   boolean          True if the comment is persistent.
-service_id           unsigned integer Service ID. 0 for a host
-                                      acknowledgement.
-state                short integer    Host / service state.
-==================== ================ ================================== =============
+======================================== ================ ====================================================== =============
+Property                                 Type             Description                                            Version
+======================================== ================ ====================================================== =============
+acknowledgement_type                     short integer    Host acknowledgement when 0,
+                                                          service acknowledgement when 1.
+author                                   string           Acknowledgement author.
+comment                                  string           Comment associated to the
+                                                          acknowledgement.
+deletion_time                            time             Time at which the acknowledgement
+                                                          was deleted. If 0, it was not
+                                                          deleted.
+entry_time                               time             Time at which the acknowledgement
+                                                          was created.
+host_id                                  unsigned integer Host ID.
+instance_id                              unsigned integer Instance ID.
+is_sticky                                boolean          Sticky flag.
+notify_contacts                          boolean          Notification flag.
+persistent_comment                       boolean          True if the comment is persistent.
+service_id                               unsigned integer Service ID. 0 for a host
+                                                          acknowledgement.
+state                                    short integer    Host / service state.
+notify_only_if_not_already_acknowledged  boolean          A notification should be sent only if not already ack.
+======================================== ================ ====================================================== =============
 
 Comment
 =======
@@ -47,6 +48,7 @@ Property      Type             Description                               Version
 author        string           Comment author.
 comment_type  short integer    1 for a host comment, 2 for a service
                                comment.
+data          string           Comment data (text).
 deletion_time time             Time at which the comment was deleted. 0
                                if the comment was not deleted (yet).
 entry_time    time             Time at which the comment was created.
@@ -58,37 +60,36 @@ expire_time   time             Comment expiration time. 0 if no
                                expiration time.
 expires       bool             True if the comment expires.
 host_id       unsigned integer Host ID.
-instance_id   unsigned integer Instance ID.
 internal_id   unsigned integer Internal monitoring engine ID of the
                                comment.
 persistent    boolean          True if the comment is persistent.
+instance_id   unsigned integer Instance ID.
 service_id    unsigned integer Service ID. 0 if this is a host comment.
 source        short integer    0 when the comment originates from the
                                monitoring engine (internal) or 1 when
                                the comment comes from another source
                                (external).
-data          string           Comment data (text).
 ============= ================ ========================================= =============
 
 Custom variable
 ===============
 
-=========== ================ =========================================== =============
-Property    Type             Description                                 Version
-=========== ================ =========================================== =============
-host_id     unsigned integer Host ID.
-modified    boolean          True if the variable was modified.
-name        string           Variable name.
-service_id  unsigned integer Service ID. 0 if this is a host custom
-                             variable.
-update_time time             Last time at which the variable was
-                             updated.
-var_type    short integer    0 for a host custom variable, 1 for a
-                             service custom variable.
-value       string           Variable value.
-instance_id unsigned integer Instance ID.                                Since 2.6.0
-                                                                         (BBDO 1.1.0).
-=========== ================ =========================================== =============
+============= ================ =========================================== =============
+Property      Type             Description                                 Version
+============= ================ =========================================== =============
+enabled       boolean          True if the custom variable is enabled.
+host_id       unsigned integer Host ID.
+modified      boolean          True if the variable was modified.
+name          string           Variable name.
+service_id    unsigned integer Service ID. 0 if this is a host custom
+                               variable.
+update_time   time             Last time at which the variable was
+                               updated.
+var_type      short integer    0 for a host custom variable, 1 for a
+                               service custom variable.
+value         string           Variable value.
+default_value string           The default value of the custom var.
+============= ================ =========================================== =============
 
 Custom variable status
 ======================
@@ -107,16 +108,14 @@ service_id  unsigned integer Service ID. 0 if this is a host custom
 update_time time             Last time at which the variable was
                              updated.
 value       string           Variable value.
-instance_id unsigned integer Instance ID.                                Since 2.6.0
-                                                                         (BBDO 1.1.0).
 =========== ================ =========================================== =============
 
 Downtime
 ========
 
-================= ================ ===================================== =============
+================= ================ ===================================== =================
 Property          Type             Description                           Version
-================= ================ ===================================== =============
+================= ================ ===================================== =================
 actual_end_time   time             Actual time at which the downtime
                                    ended.
 actual_start_time time             Actual time at which the downtime
@@ -144,7 +143,13 @@ was_cancelled     boolean          True if the downtime was cancelled.
 was_started       boolean          True if the downtime has been
                                    started.
 comment           string           Downtime comment.
-================= ================ ===================================== =============
+is_recurring      boolean          True if this downtime is recurring.   Only Broker
+                                                                         managed downtimes
+recurring_tp      string           The recurring timepriod of the        Only Broker
+                                   recurring downtime.                   managed downtimes
+come_from         short            Id of the parent recurring downtime   Only Broker
+                                   for spawned downtimes.                managed downtimes
+================= ================ ===================================== =================
 
 Event handler
 =============
