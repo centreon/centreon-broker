@@ -53,6 +53,7 @@ namespace            bam {
                      get_expression() const;
     void             set_id(unsigned int id);
     void             set_impact_if(bool impact_if);
+    bool             in_downtime() const;
 
   private:
     void             _internal_copy(bool_expression const& right);

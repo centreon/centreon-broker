@@ -48,3 +48,12 @@ bool_value& bool_value::operator=(bool_value const& right) {
   computable::operator=(right);
   return (*this);
 }
+
+/**
+ *  Is this boolean value in downtime?
+ *
+ *  @return  True if this boolean value is in downtime.
+ */
+bool bool_value::in_downtime() const {
+  return (false);
+}

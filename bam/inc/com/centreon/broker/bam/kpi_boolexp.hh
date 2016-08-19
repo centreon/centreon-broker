@@ -47,6 +47,7 @@ namespace        bam {
     bool         child_has_update(
                    computable* child,
                    io::stream* visitor = NULL);
+    bool         in_downtime() const;
     double       get_impact() const;
     void         impact_hard(impact_values& hard_impact);
     void         impact_soft(impact_values& soft_impact);

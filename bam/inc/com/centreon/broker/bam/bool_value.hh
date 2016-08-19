@@ -43,6 +43,7 @@ namespace          bam {
     virtual double value_hard() = 0;
     virtual double value_soft() = 0;
     virtual bool   state_known() const = 0;
+    virtual bool   in_downtime() const;
   };
 }
 

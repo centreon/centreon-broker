@@ -84,6 +84,17 @@ bool kpi_boolexp::child_has_update(
 }
 
 /**
+ *  Return true if in downtime.
+ *
+ *  @return  True or false.
+ */
+bool kpi_boolexp::in_downtime() const {
+  if (!_boolexp.isNull())
+    return (_boolexp->in_downtime());
+  return (false);
+}
+
+/**
  *  Get the impact introduced when the boolean expression is triggered.
  *
  *  @return Impact if the boolean expression is triggered.
@@ -175,6 +186,7 @@ void kpi_boolexp::visit(io::stream* visitor) {
     {
       misc::shared_ptr<kpi_status> status(new kpi_status);
       status->kpi_id = _id;
+      status->in_downtime = in_downtime();
       status->level_acknowledgement_hard = values.get_acknowledgement();
       status->level_acknowledgement_soft = values.get_acknowledgement();
       status->level_downtime_hard = values.get_downtime();

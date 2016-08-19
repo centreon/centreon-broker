@@ -30,7 +30,8 @@ bool_service::bool_service()
     _service_id(0),
     _state_hard(0),
     _state_soft(0),
-    _state_known(false) {}
+    _state_known(false),
+    _in_downtime(false) {}
 
 /**
  *  Copy constructor.
@@ -135,6 +136,7 @@ void bool_service::service_update(
     _state_hard = status->last_hard_state;
     _state_soft = status->current_state;
     _state_known = true;
+    _in_downtime = (status->downtime_depth > 0);
     propagate_update(visitor);
   }
   return ;
@@ -178,5 +180,15 @@ void bool_service::_internal_copy(bool_service const& right) {
   _state_hard = right._state_hard;
   _state_soft = right._state_soft;
   _state_known = right._state_known;
+  _in_downtime = right._in_downtime;
   return ;
+}
+
+/**
+ *  Get is this boolean service is in downtime.
+ *
+ *  @return  True if in downtime.
+ */
+bool bool_service::in_downtime() const {
+  return (_in_downtime);
 }

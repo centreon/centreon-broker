@@ -141,3 +141,17 @@ bool bool_binary_operator::state_known() const {
             && _left->state_known()
             && _right->state_known());
 }
+
+/**
+ *  Is this expression in downtime?
+ *
+ *  @return  True if this expression is in downtime.
+ */
+bool bool_binary_operator::in_downtime() const {
+  bool in_downtime_left =
+          _left.isNull() ? true : _left->in_downtime();
+  bool in_downtime_right =
+           _right.isNull() ? true : _right->in_downtime();
+  return ((in_downtime_left || in_downtime_right)
+          && (!_left.isNull() || !_right.isNull()));
+}

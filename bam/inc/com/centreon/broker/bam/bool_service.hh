@@ -57,6 +57,7 @@ namespace         bam {
     double        value_hard();
     double        value_soft();
     bool          state_known() const;
+    bool          in_downtime() const;
 
   private:
     void          _internal_copy(bool_service const& right);
@@ -66,6 +67,7 @@ namespace         bam {
     short         _state_hard;
     short         _state_soft;
     bool          _state_known;
+    bool          _in_downtime;
   };
 }
 

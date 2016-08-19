@@ -106,6 +106,15 @@ bool bool_expression::state_known() const {
 }
 
 /**
+ *  Get if the boolean expression is in downtime.
+ *
+ *  @return  True if the boolean expression is in downtime.
+ */
+bool bool_expression::in_downtime() const {
+  return (_expression->in_downtime());
+}
+
+/**
  *  Get the expression.
  *
  *  @return  The expression.

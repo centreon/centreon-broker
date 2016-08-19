@@ -50,6 +50,7 @@ namespace     bam {
     double    value_hard();
     double       value_soft();
     bool      state_known() const;
+    bool      in_downtime() const;
 
   private:
     void      _internal_copy(bool_not const& right);

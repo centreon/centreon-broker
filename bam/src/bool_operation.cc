@@ -133,3 +133,4 @@ bool bool_operation::state_known() const {
   else
     return (known);
 }
+
