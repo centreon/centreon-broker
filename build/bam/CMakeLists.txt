@@ -181,6 +181,18 @@ target_link_libraries("${BAM}" ${QT_LIBRARIES})
 set_target_properties("${BAM}" PROPERTIES PREFIX "")
 
 # Testing.
+set(
+  TESTS_SOURCES
+  ${TESTS_SOURCES}
+  "${TEST_DIR}/bool_tokenizer/get_token.cc"
+  PARENT_SCOPE
+)
+set(
+  TESTS_LIBRARIES
+  ${TESTS_LIBRARIES}
+  "${BAM}"
+  PARENT_SCOPE
+)
 if (0) # WITH_TESTING)
   set(TEST_LIBRARIES "${NEB}" "${BAM}" "roker")
 
