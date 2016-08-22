@@ -20,6 +20,9 @@
 set(TESTS_DIR "${PROJECT_SOURCE_DIR}/core/test")
 add_subdirectory("googletest")
 
+# Include directories.
+include_directories("${PROJECT_SOURCE_DIR}/bam/inc")
+
 # Unit test executable.
 add_executable("ut"
   # Core sources.
@@ -27,4 +30,4 @@ add_executable("ut"
   # Module sources.
   ${TESTS_SOURCES}
 )
-target_link_libraries("ut" "gtest" "gtest_main" ${TESTS_LIBRARIES} "roker")
+target_link_libraries("ut" "gtest" "gtest_main" ${TESTS_LIBRARIES} ${NEB} "rokerbase" "roker")
