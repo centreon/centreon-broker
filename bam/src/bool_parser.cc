@@ -215,18 +215,18 @@ bool_value::ptr bool_parser::_make_term() {
       result = new bool_not(_make_term());
     }
     else {
+      std::string token = _toknizr.get_token();
       // Try to parse a term.
       for (size_t i = 0;
            i < sizeof(_term_parse_functions) / sizeof(*_term_parse_functions)
            && result.isNull();
            ++i)
-        (this->*_term_parse_functions[i])(_toknizr.get_token());
+        (this->*_term_parse_functions[i])(token);
 
       if (result.isNull())
         throw (exceptions::msg()
                << "couldn't parse operand at token '"
-               << _toknizr.get_token() << "'");
-      _toknizr.drop_token();
+               << token << "'");
     }
   }
   else if (_toknizr.char_is('(')) {
