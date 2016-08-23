@@ -221,7 +221,7 @@ bool_value::ptr bool_parser::_make_term() {
            i < sizeof(_term_parse_functions) / sizeof(*_term_parse_functions)
            && result.isNull();
            ++i)
-        (this->*_term_parse_functions[i])(token);
+        result = (this->*_term_parse_functions[i])(token);
 
       if (result.isNull())
         throw (exceptions::msg()
@@ -276,7 +276,7 @@ bool bool_parser::_parse_service(
   bool retval = false;
 
   if (str.find(':') == std::string::npos
-      && std::count(str.begin(), str.end(), ' ') < 1) {
+      && std::count(str.begin(), str.end(), ' ') <= 1) {
     size_t split(str.find(' '));
     std::string hst(str.substr(0, split));
     std::string svc;
