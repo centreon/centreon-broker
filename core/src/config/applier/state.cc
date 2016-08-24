@@ -21,6 +21,7 @@
 #include <QCoreApplication>
 #include <QMutex>
 #include <QMutexLocker>
+#include "com/centreon/broker/vars.hh"
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
@@ -105,8 +106,9 @@ void state::apply(
 
   // Set cache directory.
   _cache_dir = s.cache_directory();
-  if (!_cache_dir.empty())
-    _cache_dir.append("/");
+  if (_cache_dir.empty())
+    _cache_dir.append(PREFIX_VAR);
+  _cache_dir.append("/");
   _cache_dir.append(s.broker_name());
 
   // Apply logging configuration.
