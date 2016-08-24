@@ -184,6 +184,7 @@ set_target_properties("${BAM}" PROPERTIES PREFIX "")
 set(
   TESTS_SOURCES
   ${TESTS_SOURCES}
+  "${TEST_DIR}/bool_parser/get_tree.cc"
   "${TEST_DIR}/bool_tokenizer/get_token.cc"
   PARENT_SCOPE
 )
