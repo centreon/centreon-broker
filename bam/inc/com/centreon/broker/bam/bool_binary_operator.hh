@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -59,6 +59,8 @@ namespace                 bam {
                           _right;
     bool                  _right_hard;
     bool                  _right_soft;
+    bool                  _state_known;
+    bool                  _in_downtime;
 
   private:
     void                  _internal_copy(

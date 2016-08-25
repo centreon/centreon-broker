@@ -115,7 +115,6 @@ void bool_call::set_expression(misc::shared_ptr<bool_value> expression) {
 }
 
 /**
- *
  *  Called when a child has update.
  *
  *  @param[in] child    The child.
@@ -126,7 +125,7 @@ void bool_call::set_expression(misc::shared_ptr<bool_value> expression) {
 bool bool_call::child_has_update(
                   computable* child,
                   io::stream* visitor) {
-  (void) child;
-  (void) visitor;
-  return (false);
+  (void)child;
+  (void)visitor;
+  return (true);
 }

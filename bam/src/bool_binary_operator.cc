@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -27,7 +27,9 @@ bool_binary_operator::bool_binary_operator()
   : _left_hard(false),
     _left_soft(false),
     _right_hard(false),
-    _right_soft(false) {}
+    _right_soft(false),
+    _state_known(false),
+    _in_downtime(false) {}
 
 /**
  *  Copy constructor.
@@ -73,23 +75,45 @@ bool bool_binary_operator::child_has_update(
                              computable* child,
                              io::stream* visitor) {
   (void)visitor;
+  bool retval(true);
+
+  // Check operation members values.
   if (child) {
     if (child == _left.data()) {
-      if (_left_hard == _left->value_hard()
-            && _left_soft == _left->value_soft())
-        return false;
-      _left_hard = _left->value_hard();
-      _left_soft = _left->value_soft();
+      bool value_hard(_left->value_hard());
+      bool value_soft(_left->value_soft());
+      if ((_left_hard != value_hard) || (_left_soft != value_soft)) {
+        _left_hard = value_hard;
+        _left_soft = value_soft;
+        retval = true;
+      }
     }
     else if (child == _right.data()) {
-      if (_right_hard == _right->value_hard()
-            && _right_soft == _right->value_soft())
-        return false;
-      _right_hard = _right->value_hard();
-      _right_soft = _right->value_soft();
+      bool value_hard(_right->value_hard());
+      bool value_soft(_right->value_soft());
+      if ((_right_hard != value_hard) || (_right_soft == value_soft)) {
+        _right_hard = value_hard;
+        _right_soft = value_soft;
+        retval = true;
+      }
     }
   }
-  return true;
+
+  // Check known flag.
+  bool known(state_known());
+  if (_state_known != known) {
+    _state_known = known;
+    retval = true;
+  }
+
+  // Check downtime flag.
+  bool in_dt(in_downtime());
+  if (_in_downtime != in_dt) {
+    _in_downtime = in_dt;
+    retval = true;
+  }
+
+  return (retval);
 }
 
 /**
@@ -127,6 +151,8 @@ void bool_binary_operator::_internal_copy(
   _right = right._right;
   _right_hard = right._right_hard;
   _right_soft = right._right_soft;
+  _state_known = right._state_known;
+  _in_downtime = right._in_downtime;
   return ;
 }
 
@@ -137,9 +163,9 @@ void bool_binary_operator::_internal_copy(
  */
 bool bool_binary_operator::state_known() const {
   return (!_left.isNull()
-            && !_right.isNull()
-            && _left->state_known()
-            && _right->state_known());
+          && !_right.isNull()
+          && _left->state_known()
+          && _right->state_known());
 }
 
 /**
@@ -148,10 +174,6 @@ bool bool_binary_operator::state_known() const {
  *  @return  True if this expression is in downtime.
  */
 bool bool_binary_operator::in_downtime() const {
-  bool in_downtime_left =
-          _left.isNull() ? true : _left->in_downtime();
-  bool in_downtime_right =
-           _right.isNull() ? true : _right->in_downtime();
-  return ((in_downtime_left || in_downtime_right)
-          && (!_left.isNull() || !_right.isNull()));
+  return ((!_left.isNull() && _left->in_downtime())
+          || (!_right.isNull() && _right->in_downtime()));
 }

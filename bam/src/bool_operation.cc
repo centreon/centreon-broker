@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -93,6 +93,7 @@ double bool_operation::value_hard() {
       return (NAN);
     return (_left_hard % _right_hard);
   }
+  return (NAN);
 }
 
 /**
@@ -117,6 +118,7 @@ double bool_operation::value_soft() {
       return (NAN);
     return (_left_soft % _right_soft);
   }
+  return (NAN);
 }
 
 /**
@@ -133,4 +135,3 @@ bool bool_operation::state_known() const {
   else
     return (known);
 }
-

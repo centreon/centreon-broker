@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ bool_metric::bool_metric(
  *  @param[in] right Object to copy.
  */
 bool_metric::bool_metric(bool_metric const& right)
-  : bool_value(right),
+  : bool_value(right), metric_listener(right),
     _metric_name(right._metric_name),
     _value(right._value),
     _host_id(right._host_id),
@@ -86,9 +86,9 @@ bool_metric& bool_metric::operator=(bool_metric const& right) {
 bool bool_metric::child_has_update(
                     computable* child,
                     io::stream* visitor) {
-  (void) child;
-  (void) visitor;
-  return (false);
+  (void)child;
+  (void)visitor;
+  return (true);
 }
 
 /**

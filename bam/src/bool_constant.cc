@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ using namespace com::centreon::broker::bam;
  *
  *  @param[in] val  The constant value to assign.
  */
-bool_constant::bool_constant(double val) {}
+bool_constant::bool_constant(double val) : _value(val) {}
 
 /**
  *  Copy constructor.
@@ -68,9 +68,9 @@ bool_constant& bool_constant::operator=(bool_constant const& right) {
 bool bool_constant::child_has_update(
                       computable* child,
                       io::stream* visitor) {
-  (void) child;
-  (void) visitor;
-  return (false);
+  (void)child;
+  (void)visitor;
+  return (true);
 }
 
 /**

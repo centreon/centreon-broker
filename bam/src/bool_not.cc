@@ -72,7 +72,7 @@ bool bool_not::child_has_update(
                  io::stream* visitor) {
   (void)child;
   (void)visitor;
-  return true;
+  return (true);
 }
 
 /**
