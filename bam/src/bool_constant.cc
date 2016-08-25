@@ -68,9 +68,9 @@ bool_constant& bool_constant::operator=(bool_constant const& right) {
 bool bool_constant::child_has_update(
                       computable* child,
                       io::stream* visitor) {
-  (void) child;
-  (void) visitor;
-  return (false);
+  (void)child;
+  (void)visitor;
+  return (true);
 }
 
 /**

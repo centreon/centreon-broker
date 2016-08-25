@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -174,9 +174,9 @@ bool_aggregate& bool_aggregate::operator=(bool_aggregate const& right) {
 bool bool_aggregate::child_has_update(
                       computable* child,
                       io::stream* visitor) {
-  (void) child;
-  (void) visitor;
-  return (false);
+  (void)child;
+  (void)visitor;
+  return (true);
 }
 
 /**
