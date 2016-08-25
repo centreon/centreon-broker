@@ -51,7 +51,8 @@ namespace         influxdb {
                   query(
                     std::string const& naming_scheme,
                     data_type type,
-                    macro_cache const& cache);
+                    macro_cache const& cache,
+                    bool escape = false);
                   query(query const& f);
                   ~query();
     query&        operator=(query const& f);
@@ -73,6 +74,9 @@ namespace         influxdb {
     // Macro cache
     macro_cache const*
                   _cache;
+
+    // Should the data be escaped?
+    bool          _escape;
 
     void          _compile_naming_scheme(
                     std::string const& naming_scheme,

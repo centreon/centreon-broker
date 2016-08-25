@@ -29,6 +29,7 @@
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/influxdb/stream.hh"
 #include "com/centreon/broker/influxdb/influxdb9.hh"
+#include "com/centreon/broker/influxdb/influxdb10.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
@@ -69,6 +70,18 @@ stream::stream(
     _cache(cache) {
   if (version == "0.9")
     _influx_db.reset(new influxdb9(
+                           user,
+                           passwd,
+                           addr,
+                           port,
+                           db,
+                           status_ts,
+                           status_cols,
+                           metric_ts,
+                           metric_cols,
+                           _cache));
+  else if (version == "1.0")
+    _influx_db.reset(new influxdb10(
                            user,
                            passwd,
                            addr,

@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <sstream>
+#include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/influxdb/query.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -46,10 +47,12 @@ query::query()
 query::query(
         std::string const& naming_scheme,
         data_type type,
-        macro_cache const& cache) :
+        macro_cache const& cache,
+        bool escape) :
   _naming_scheme_index(0),
   _type(type),
-  _cache(&cache) {
+  _cache(&cache),
+  _escape(escape) {
   _compile_naming_scheme(naming_scheme, type);
 }
 
@@ -87,6 +90,19 @@ query& query::operator=(query const& q) {
 }
 
 /**
+ *  Escape string for influxdb10
+ *
+ *  @param str  The string.
+ *  @return     The string, escaped.
+ */
+static std::string escape(std::string const& str) {
+  std::string ret(str);
+  ::com::centreon::broker::misc::string::replace(ret, " ", "\\ ");
+  ::com::centreon::broker::misc::string::replace(ret, ",", "\\,");
+  return (ret);
+}
+
+/**
  *  Generate the query for a metric.
  *
  *  @param[in] me  The metric.
@@ -105,8 +121,15 @@ std::string query::generate_metric(storage::metric const& me) {
            it(_compiled_getters.begin()),
            end(_compiled_getters.end());
          it != end;
-         ++it)
-      (this->**it)(me, iss);
+         ++it) {
+      if (!_escape)
+        (this->**it)(me, iss);
+      else {
+        std::ostringstream escaped;
+        (this->**it)(me, escaped);
+        iss << escape(escaped.str());
+      }
+    }
   }
   catch (std::exception const& e) {
     logging::error(logging::medium)
@@ -137,8 +160,15 @@ std::string query::generate_status(storage::status const& st) {
            it(_compiled_getters.begin()),
            end(_compiled_getters.end());
          it != end;
-         ++it)
-      (this->**it)(st, iss);
+         ++it) {
+      if (!_escape)
+        (this->**it)(st, iss);
+      else {
+        std::ostringstream escaped;
+        (this->**it)(st, escaped);
+        iss << escape(escaped.str());
+      }
+    }
   } catch (std::exception const& e) {
     logging::error(logging::medium)
       << "influxdb: couldn't generate query for status "
@@ -394,3 +424,4 @@ void query::_get_service_id(io::data const& d, std::ostream& is) {
 void query::_get_instance(io::data const& d, std::ostream& is) {
   is << _cache->get_instance(d.source_id);
 }
+
