@@ -42,7 +42,7 @@ bool_metric::bool_metric(
  *  @param[in] right Object to copy.
  */
 bool_metric::bool_metric(bool_metric const& right)
-  : bool_value(right),
+  : bool_value(right), metric_listener(right),
     _metric_name(right._metric_name),
     _value(right._value),
     _host_id(right._host_id),
