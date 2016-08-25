@@ -275,6 +275,14 @@ if (WITH_DB_TYPE)
   endif ()
 endif ()
 
+# Broker vars
+configure_file(
+  "${INC_DIR}/vars.hh.in"
+  "${INC_DIR}/vars.hh"
+  "@ONLY"
+)
+
+
 #
 # Targets.
 #
@@ -547,6 +555,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/time/ptr_typedef.hh"
   "${INC_DIR}/time/daterange.hh"
   "${INC_DIR}/version.hh"
+  "${INC_DIR}/vars.hh"
 )
 
 # Static libraries.

@@ -170,7 +170,7 @@ engine_state  1
 issue         2
 issue_parent  3
 state         4
-Log issue     5
+log issue     5
 ============= =====
 
 Internal
@@ -197,23 +197,22 @@ BBDO event ID.
 Type                              Value
 ================================= =====
 ba_status                         1
-bool_status                       2
-kpi_status                        3
-meta_service_status               4
-ba_event                          5
-kpi_event                         6
-ba_duration_event                 7
-dimension_ba_event                8
-dimension_kpi_event               9
-dimension_ba_bv_relation_event    10
-dimension_bv_event                11
-dimension_truncate_table_signal   12
-rebuild                           13
-dimension_timeperiod              14
-dimension_ba_timeperiod_relation  15
-dimension_timeperiod_exception    16
-dimension_timeperiod_exclusion    17
-inherited_downtime                18
+kpi_status                        2
+meta_service_status               3
+ba_event                          4
+kpi_event                         5
+ba_duration_event                 6
+dimension_ba_event                7
+dimension_kpi_event               8
+dimension_ba_bv_relation_event    9
+dimension_bv_event                10
+dimension_truncate_table_signal   11
+rebuild                           12
+dimension_timeperiod              13
+dimension_ba_timeperiod_relation  14
+dimension_timeperiod_exception    15
+dimension_timeperiod_exclusion    16
+inherited_downtime                17
 ================================= =====
 
 Dumper
