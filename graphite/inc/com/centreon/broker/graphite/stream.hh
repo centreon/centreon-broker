@@ -96,8 +96,8 @@ namespace          graphite {
                    _socket;
 
     // Process metric/status and generate query.
-    void           _process_metric(storage::metric const& me);
-    void           _process_status(storage::status const& st);
+    bool           _process_metric(storage::metric const& me);
+    bool           _process_status(storage::status const& st);
     void           _commit();
   };
 }

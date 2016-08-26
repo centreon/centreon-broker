@@ -200,8 +200,10 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
  *
  *  @param[in] me  The event to process.
  */
-void stream::_process_metric(storage::metric const& me) {
-  _query.append(_metric_query.generate_metric(me));
+bool stream::_process_metric(storage::metric const& me) {
+  std::string to_append = _metric_query.generate_metric(me);
+  _query.append(to_append);
+  return (!to_append.empty());
 }
 
 /**
@@ -209,25 +211,29 @@ void stream::_process_metric(storage::metric const& me) {
  *
  *  @param[in] st  The status event.
  */
-void stream::_process_status(storage::status const& st) {
-  _query.append(_status_query.generate_status(st));
+bool stream::_process_status(storage::status const& st) {
+  std::string to_append = _status_query.generate_status(st);
+  _query.append(to_append);
+  return (!to_append.empty());
 }
 
 /**
  *  Commit all the processed event to the database.
  */
 void stream::_commit() {
-  if (_socket->write(_query.c_str(), _query.size()) == -1)
-    throw exceptions::msg()
-      << "graphite: can't send data to graphite on host '"
-      << _db_host << "', port '" << _db_port << "': "
-      << _socket->errorString();
+  if (!_query.empty()) {
+    if (_socket->write(_query.c_str(), _query.size()) == -1)
+      throw exceptions::msg()
+        << "graphite: can't send data to graphite on host '"
+        << _db_host << "', port '" << _db_port << "': "
+        << _socket->errorString();
 
-  if (_socket->waitForBytesWritten() == false)
-    throw exceptions::msg()
-      << "graphite: can't send data to graphite on host '"
-      << _db_host << "', port '" << _db_port << "': "
-      << _socket->errorString();
+    if (_socket->waitForBytesWritten() == false)
+      throw exceptions::msg()
+        << "graphite: can't send data to graphite on host '"
+        << _db_host << "', port '" << _db_port << "': "
+        << _socket->errorString();
+  }
 
   _query.clear();
   _query.append(_auth_query);
