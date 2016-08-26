@@ -171,14 +171,14 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
   if (data->type()
         == io::events::data_type<io::events::storage,
                                  storage::de_metric>::value) {
-    _process_metric(data.ref_as<storage::metric const>());
-    ++_actual_query;
+    if (_process_metric(data.ref_as<storage::metric const>()))
+      ++_actual_query;
   }
   else if (data->type()
              == io::events::data_type<io::events::storage,
                                       storage::de_status>::value) {
-    _process_status(data.ref_as<storage::status const>());
-    ++_actual_query;
+    if (_process_status(data.ref_as<storage::status const>()))
+      ++_actual_query;
   }
   if (_actual_query >= _queries_per_transaction)
     _commit_flag = true;
