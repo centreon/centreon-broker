@@ -625,7 +625,7 @@ void failover::_forward_statistic(io::properties& tree) {
   _subscriber->get_muxer().statistics(tree);
   io::properties subtree;
   if (!_failover.isNull())
-    _failover->statistics(subtree);
+    _failover->stats(subtree);
   tree.add_child(subtree, "failover");
 }
 
