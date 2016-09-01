@@ -162,6 +162,8 @@ static unsigned int set_uint(
  *  Unserialize an event in the BBDO protocol.
  *
  *  @param[in] event_type  Event type.
+ *  @param[in] source_id   The source id.
+ *  @param[in] destination The destination id.
  *  @param[in] buffer      Serialized data.
  *  @param[in] size        Buffer size.
  *
@@ -169,6 +171,8 @@ static unsigned int set_uint(
  */
 static io::data* unserialize(
                    unsigned int event_type,
+                   unsigned int source_id,
+                   unsigned int destination_id,
                    char const* buffer,
                    unsigned int size) {
   // Get event info (operations and mapping).
@@ -179,14 +183,8 @@ static io::data* unserialize(
       // Create object.
       std::auto_ptr<io::data> t(info->get_operations().constructor());
       if (t.get()) {
-        // Get source and destination.
-        uint32_t const* addresses(static_cast<uint32_t const*>(
-                                    static_cast<void const*>(buffer)));
-        t->source_id = ntohl(addresses[0]);
-        t->destination_id = ntohl(addresses[1]);
-        buffer += 2 * sizeof(*addresses);
-        size -= 2 * sizeof(*addresses);
-
+        t->source_id = source_id;
+        t->destination_id = destination_id;
         // Browse all mapping to unserialize the object.
         for (mapping::entry const* current_entry(info->get_mapping());
              !current_entry->is_null();
@@ -357,6 +355,8 @@ bool input::read_any(
     // Get header informations.
     unsigned int event_id;
     unsigned int packet_size;
+    unsigned int source_id;
+    unsigned int destination_id;
     while (1) {
       // Read next packet header.
       _buffer_must_have_unprocessed(BBDO_HEADER_SIZE, deadline);
@@ -371,13 +371,22 @@ bool input::read_any(
                           static_cast<void const*>(
                             _buffer.c_str() + _processed + 4)));
 
+      // Get source and destination.
+      source_id = ntohl(*static_cast<uint32_t const*>(
+                           static_cast<void const*>(
+                             _buffer.c_str() + _processed + 8)));
+
+      destination_id = ntohl(*static_cast<uint32_t const*>(
+                               static_cast<void const*>(
+                                 _buffer.c_str() + _processed + 12)));
+
       // Get checksum.
       unsigned chksum(ntohs(*static_cast<uint16_t const*>(
                                static_cast<void const*>(
                                  _buffer.c_str() + _processed))));
 
       // Check header integrity.
-      uint16_t expected(qChecksum(_buffer.c_str() + _processed + 2, 6));
+      uint16_t expected(qChecksum(_buffer.c_str() + _processed + 2, 14));
       if (chksum == expected)
         break ;
 
@@ -424,6 +433,8 @@ bool input::read_any(
     // Unserialize event.
     d = unserialize(
           event_id,
+          source_id,
+          destination_id,
           _buffer.c_str() + _processed,
           total_size);
     if (!d.isNull())
