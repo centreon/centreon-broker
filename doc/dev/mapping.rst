@@ -37,6 +37,8 @@ service_id                               unsigned integer Service ID. 0 for a ho
                                                           acknowledgement.
 state                                    short integer    Host / service state.
 notify_only_if_not_already_acknowledged  boolean          A notification should be sent only if not already ack.
+source_id                                unsigned integer The id of the source instance of this event.
+destination_id                           unsigned integer The id of the destination instance of this event.
 ======================================== ================ ====================================================== =============
 
 Comment
@@ -69,6 +71,10 @@ source         short integer    0 when the comment originates from the
                                 monitoring engine (internal) or 1 when
                                 the comment comes from another source
                                 (external).
+source_id      unsigned integer The id of the source instance of
+                                this event.
+destination_id unsigned integer The id of the destination
+                                instance of this event.
 ============== ================ ========================================= =============
 
 Custom variable
@@ -89,6 +95,10 @@ var_type       short integer    0 for a host custom variable, 1 for a
                                 service custom variable.
 value          string           Variable value.
 default_value  string           The default value of the custom var.
+source_id      unsigned integer The id of the source instance of
+                                this event.
+destination_id unsigned integer The id of the destination
+                                instance of this event.
 ============== ================ =========================================== =============
 
 Custom variable status
@@ -108,6 +118,10 @@ service_id     unsigned integer Service ID. 0 if this is a host custom
 update_time    time             Last time at which the variable was
                                 updated.
 value          string           Variable value.
+source_id      unsigned integer The id of the source instance of
+                                this event.
+destination_id unsigned integer The id of the destination
+                                instance of this event.
 ============== ================ =========================================== =============
 
 Downtime
@@ -149,6 +163,10 @@ recurring_tp      string           The recurring timepriod of the        Only Br
                                    recurring downtime.                   managed downtimes
 come_from         short            Id of the parent recurring downtime   Only Broker
                                    for spawned downtimes.                managed downtimes
+source_id         unsigned integer The id of the source instance of
+                                   this event.
+destination_id    unsigned integer The id of the destination
+                                   instance of this event.
 ================= ================ ===================================== =================
 
 Event handler
@@ -198,6 +216,10 @@ percent_state_change real
 reason_type          short integer
 service_id           unsigned integer Service ID. 0 if this is a host
                                       flapping entry.
+source_id            unsigned integer The id of the source instance of
+                                      this event.
+destination_id       unsigned integer The id of the destination
+                                      instance of this event.
 ==================== ================ ================================== =============
 
 Host
@@ -286,6 +308,10 @@ perf_data                      string
 retain_nonstatus_information   boolean
 retain_status_information      boolean
 timezone                       string
+source_id                      unsigned integer The id of the source
+                                                instance this event.
+destination_id                 unsigned integer The id of the destination
+                                                instance of this event.
 ============================== ================ ========================= =============
 
 Host check
@@ -320,6 +346,10 @@ execution_failure_options    string
 inherits_parent              boolean
 host_id                      unsigned integer
 notification_failure_options string
+source_id                    unsigned integer The id of the source
+                                              instance this event.
+destination_id               unsigned integer The id of the destination
+                                              instance of this event.
 ============================ ================ ========================== =============
 
 Host group
@@ -333,6 +363,9 @@ name           string           Group name.
 enabled        boolean          True if the group is enabled, false if it
                                 is not (deletion).
 poller_id      unsigned integer
+source_id      unsigned integer The id of the source instance this event.
+destination_id unsigned integer The id of the destination instance of this
+                                event.
 ============== ================ =========================================== =============
 
 Host group member
@@ -361,6 +394,9 @@ enabled        boolean          True if parenting is enabled, false if it is
                                 not (deletion).
 child_id       unsigned integer Child host ID.
 parent_id      unsigned integer Parent host ID.
+source_id      unsigned integer The id of the source instance this event.
+destination_id unsigned integer The id of the destination instance of this
+                                event.
 ============== ================ ============================================= =============
 
 Host status
@@ -411,6 +447,10 @@ state_type                    short integer
 check_command                 string
 output                        string
 perf_data                     string
+source_id                     unsigned integer The id of the source instance of
+                                               this event.
+destination_id                unsigned integer The id of the destination
+                                               instance of this event.
 ============================= ================ ========================= =============
 
 Instance
@@ -419,16 +459,20 @@ Instance
 ============== ================ ========================================= =============
 Property       Type             Description                               Version
 ============== ================ ========================================= =============
-engine        string            Name of the monitoring engine used on
-                                this instance.
-id            unsigned integer  Instance ID.
-name          string            Instance name.
-is_running    boolean           Whether or not this instance is running.
-pid           unsigned integer  Monitoring engine PID.
-program_end   time              Time at which the instance shut down.
-program_start time              Time at which the instance started.
-version       string            Version of the monitoring engine used on
-                                this instance.
+engine        string           Name of the monitoring engine used on
+                               this instance.
+id            unsigned integer Instance ID.
+name          string           Instance name.
+is_running    boolean          Whether or not this instance is running.
+pid           unsigned integer Monitoring engine PID.
+program_end   time             Time at which the instance shut down.
+program_start time             Time at which the instance started.
+version       string           Version of the monitoring engine used on
+                               this instance.
+source_id      unsigned integer The id of the source instance of
+                                this event.
+destination_id unsigned integer The id of the destination instance of
+                                this event.
 ============== ================ ========================================= =============
 
 Instance status
@@ -479,6 +523,10 @@ global_host_event_handler      string           Global host event
                                                 handler.
 global_service_event_handler   string           Global service event
                                                 handler.
+source_id                      unsigned integer The id of the source instance of
+                                                this event.
+destination_id                 unsigned integer The id of the destination
+                                                instance of this event.
 ============================== ================ ================================ =============
 
 Log entry
@@ -521,6 +569,10 @@ service_id           unsigned integer Service ID. 0 if log entry does
                                       not refer to a specific service.
 status               short integer    Host / service status.
 output               string           Output.
+source_id            unsigned integer The id of the source instance of
+                                      this event.
+destination_id       unsigned integer The id of the destination
+                                      instance of this event.
 ==================== ================ ================================== =============
 
 Module
@@ -539,6 +591,10 @@ instance_id      unsigned integer Instance ID.
 loaded           boolean          Whether or not this module is loaded.
 should_be_loaded boolean          Whether or not this module should be
                                   (should have been) loaded.
+source_id        unsigned integer The id of the source instance of
+                                  this event.
+destination_id   unsigned integer The id of the destination
+                                  instance of this event.
 ================ ================ ====================================== =============
 
 Service
@@ -630,6 +686,10 @@ output                         string
 perf_data                      string
 retain_nonstatus_information   boolean
 retain_status_information      boolean
+source_id                      unsigned integer The id of the source instance of
+                                                this event.
+destination_id                 unsigned integer The id of the destination
+                                                instance of this event.
 ============================== ================ ================================ =============
 
 Service check
@@ -646,6 +706,10 @@ next_check            time             Time at which the next check is
                                        scheduled.
 service_id            unsigned integer Service ID.
 command_line          string           Check command line.
+source_id             unsigned integer The id of the source instance of
+                                       this event.
+destination_id        unsigned integer The id of the destination
+                                       instance of this event.
 ===================== ================ ================================= =============
 
 Service dependency
@@ -663,6 +727,9 @@ host_id                      unsigned integer
 inherits_parent              boolean
 notification_failure_options string
 service_id                   unsigned integer
+source_id                    unsigned integer The id of the source instance of this event.
+destination_id               unsigned integer The id of the destination instance of this
+                                              event.
 ============================ ================ ============================================== =============
 
 Service group
@@ -676,6 +743,9 @@ name             string           Group name.
 enabled          enabled          True if the group is enable, false if it is
                                   not (deletion).
 poller_id        unsigned integer
+source_id        unsigned integer The id of the source instance of this event.
+destination_id   unsigned integer The id of the destination instance of this
+                                  event.
 ===============  ================ ============================================ =============
 
 Service group member
@@ -691,6 +761,9 @@ enabled         enabled           True if the group is enable, false if it is
                                   not (deletion).
 group_name       string           Group name.
 poller_id        unsigned integer
+source_id        unsigned integer The id of the source instance of this event.
+destination_id   unsigned integer The id of the destination instance of this
+                                  event.
 ================ ================ ============================================ =============
 
 Service status
@@ -746,6 +819,9 @@ state_type                    short integer
 check_command                 string
 output                        string
 perf_data                     string
+source_id                     unsigned integer The id of the source instance of this event.
+destination_id                unsigned integer The id of the destination instance of this
+                                               event.
 ============================= ================ ============================================= =============
 
 *******
@@ -777,6 +853,10 @@ host_id        unsigned integer The id of the host this metric is        Since 3
                                 attached to.
 service_id     unsigned integer The id of the service this metric is     Since 3.0.0
                                 attached to.
+source_id      unsigned integer The id of the source instance of this
+                                event.
+destination_id unsigned integer The id of the destination instance of
+                                this event.
 ============== ================ ======================================== =============
 
 Rebuild
@@ -797,6 +877,9 @@ id             unsigned integer ID of metric to rebuild if is_index is false,
                                 is_index is true.
 is_index       boolean          Index flag. Rebuild index (status) if true,
                                 rebuild metric if false.
+source_id      unsigned integer The id of the source instance of this event.
+destination_id unsigned integer The id of the destination instance of this
+                                event.
 ============== ================ ============================================== =============
 
 Remove graph
@@ -813,6 +896,9 @@ id             unsigned integer Index ID (is_index = true) or metric ID
 is_index       boolean          Index flag. If true, a index (status) graph
                                 will be deleted. If false, a metric graph will
                                 be deleted.
+source_id      unsigned integer The id of the source instance of this event.
+destination_id unsigned integer The id of the destination instance of this
+                                event.
 ============== ================ ============================================== =============
 
 Status
@@ -829,6 +915,10 @@ rrd_len        time             RRD retention in seconds.
 state          short integer    Service state.
 is_for_rebuild boolean          Set to true when a graph is being
                                 rebuild (see the rebuild event).
+source_id      unsigned integer The id of the source instance of this
+                                event.
+destination_id unsigned integer The id of the destination instance of
+                                this event.
 ============== ================ ======================================== =============
 
 Metric Mapping
@@ -839,6 +929,9 @@ Property       Type             Description                              Version
 ============== ================ ======================================== =============
 index_id       unsigned integer Index ID.
 metric_d       unsigned integer Index ID.
+source_id      unsigned integer The id of the source instance of this event.
+destination_id unsigned integer The id of the destination instance of this
+                                event.
 ============== ================ ======================================== =============
 
 Index Mapping
@@ -850,6 +943,10 @@ Property          Type             Description                              Vers
 index_id          unsigned integer Index ID.
 host_id           unsigned integer Index ID.
 service_id        unsigned integer Index ID.
+source_id         unsigned integer The id of the source instance of this
+                                   event.
+destination_id    unsigned integer The id of the destination instance of
+                                   this event.
 ================= ================ ======================================== =============
 
 ***********
@@ -866,6 +963,9 @@ Property          Type             Description                                  
 ================= ================ ======================================================= =============
 started           boolean          True if the correlation engine is starting, false if it
                                    is stopping.
+source_id         unsigned integer The id of the source instance of this event.
+destination_id    unsigned integer The id of the destination instance of this
+                                   event.
 ================= ================ ======================================================= =============
 
 State
@@ -881,6 +981,10 @@ host_id           unsigned integer
 in_downtime       boolean
 service_id        unsigned integer 0 for a host.
 start_time        time
+source_id         unsigned integer The id of the source instance of this
+                                   event.
+destination_id    unsigned integer The id of the destination instance of
+                                   this event.
 ================= ================ ========================================= =============
 
 Issue
@@ -894,6 +998,9 @@ end_time          time
 host_id           unsigned integer
 service_id        unsigned integer
 start_time        time
+source_id         unsigned integer The id of the source instance of this event.
+destination_id    unsigned integer The id of the destination instance of this
+                                   event.
 ================= ================ ============================================ =============
 
 Issue parent
@@ -910,6 +1017,10 @@ parent_host_id    unsigned integer
 parent_service_id unsigned integer
 parent_start_time time
 start_time        time
+source_id         unsigned integer The id of the source instance of this
+                                   event.
+destination_id    unsigned integer The id of the destination instance of
+                                   this event.
 ================= ================ ===================================== =============
 
 Log issue
@@ -922,6 +1033,10 @@ log_ctime         time
 host_id           unsigned integer
 service_id        unsigned integer
 issue_start_time  time
+source_id         unsigned integer The id of the source instance of this
+                                   event.
+destination_id    unsigned integer The id of the destination instance of
+                                   this event.
 ================= ================ ===================================== =============
 
 ********
@@ -946,6 +1061,9 @@ extensions      string           Space-separated string of extensions supported
                                  packet.
 instance_id     unsigned integer Instance ID.                                    Since 2.6.0
                                                                                  (BBDO 1.1.0).
+source_id       unsigned integer The id of the source instance of this event.
+destination_id  unsigned integer The id of the destination instance of this
+                                 event.
 =============== ================ =============================================== =============
 
 *******
@@ -976,6 +1094,9 @@ state                     short integer    The state of the BA.                 
                                                                                            (BBDO 1.2.0).
 state_changed             boolean          True if the state of the BA just changed.       Since 2.8.0
                                                                                            (BBDO 1.2.0).
+source_id                 unsigned integer The id of the source instance of this event.
+destination_id            unsigned integer The id of the destination instance of this
+                                           event.
 ========================= ================ =============================================== =============
 
 KPI status event
@@ -1010,6 +1131,9 @@ last_state_change            time             The time of the last state change 
 last_impact                  real             The last impact of the KPI.                     Since 2.8.0
                                                                                               (BBDO 1.2.0).
 valid                        bool             True if the KPi is valid.
+source_id                    unsigned integer The id of the source instance of this event.
+destination_id               unsigned integer The id of the destination instance of this
+                                              event.
 ============================ ================ =============================================== =============
 
 Meta service status event
@@ -1026,6 +1150,9 @@ value                        real             The value of the meta service.    
                                                                                               (BBDO 1.2.0).
 state_changed                boolean          True if the state just changed.                 Since 2.8.0
                                                                                               (BBDO 1.2.0).
+source_id                    unsigned integer The id of the source instance of this event.
+destination_id               unsigned integer The id of the destination instance of this
+                                              event.
 ============================ ================ =============================================== =============
 
 BA-event event
@@ -1048,6 +1175,9 @@ start_time                   time             The start_time of the event.      
                                                                                               (BBDO 1.2.0).
 status                       short integer    The status of the BA during the event.          Since 2.8.0
                                                                                               (BBDO 1.2.0).
+source_id                    unsigned integer The id of the source instance of this event.
+destination_id               unsigned integer The id of the destination instance of this
+                                              event.
 ============================ ================ =============================================== =============
 
 KPI-event event
@@ -1074,6 +1204,9 @@ start_time                   time             The start_time of the event.      
                                                                                               (BBDO 1.2.0).
 status                       short integer    The status of the BA during the event.          Since 2.8.0
                                                                                               (BBDO 1.2.0).
+source_id                    unsigned integer The id of the source instance of this event.
+destination_id               unsigned integer The id of the destination instance of this
+                                              event.
 ============================ ================ =============================================== =============
 
 BA duration event event
@@ -1098,6 +1231,9 @@ sla_duration                 unsigned integer The duration of the event in the g
                                               timperiod.                                      (BBDO 1.2.0).
 timeperiod_is_default        boolean          True if the timeperiod if the default for       Since 2.8.0
                                               this BA.                                        (BBDO 1.2.0).
+source_id                    unsigned integer The id of the source instance of this event.
+destination_id               unsigned integer The id of the destination instance of this
+                                              event.
 ============================ ================ =============================================== =============
 
 Dimension BA
@@ -1123,6 +1259,9 @@ sla_month_duration_crit      unsigned integer                                   
                                                                                               (BBDO 1.2.0).
 sla_month_duration_warn      unsigned integer                                                 Since 2.8.0
                                                                                               (BBDO 1.2.0).
+source_id                    unsigned integer The id of the source instance of this event.
+destination_id               unsigned integer The id of the destination instance of this
+                                              event.
 ============================ ================ =============================================== =============
 
 Dimension KPI
@@ -1166,6 +1305,9 @@ impact_critical              real             The impact of a critical state for
                                                                                               (BBDO 1.2.0).
 impact_unknown               real             The impact of a unknown state for this KPI.     Since 2.8.0
                                                                                               (BBDO 1.2.0).
+source_id                    unsigned integer The id of the source instance of this event.
+destination_id               unsigned integer The id of the destination instance of this
+                                              event.
 ============================ ================ =============================================== =============
 
 Dimension BA BV relation
@@ -1181,6 +1323,9 @@ ba_id                        unsigned integer The id of the BA.                 
                                                                                               (BBDO 1.2.0).
 bv_id                        unsigned integer The id of the BV.                               Since 2.8.0
                                                                                               (BBDO 1.2.0).
+source_id                    unsigned integer The id of the source instance of this event.
+destination_id               unsigned integer The id of the destination instance of this
+                                              event.
 ============================ ================ =============================================== =============
 
 Dimension BV
@@ -1198,6 +1343,9 @@ bv_name                      string           The name of the BV.               
                                                                                               (BBDO 1.2.0).
 bv_description               string           The description of the BV.                      Since 2.8.0
                                                                                               (BBDO 1.2.0).
+source_id                    unsigned integer The id of the source instance of this event.
+destination_id               unsigned integer The id of the destination instance of this
+                                              event.
 ============================ ================ =============================================== =============
 
 Dimension table signal
@@ -1213,6 +1361,9 @@ Property                     Type             Description                       
 ============================ ================ =============================================== =============
 update_started               boolean          True if this is the start of the dump,          Since 2.8.0
                                               false if it's the end.                          (BBD0 1.2.0).
+source_id                    unsigned integer The id of the source instance of this event.
+destination_id               unsigned integer The id of the destination instance of this
+                                              event.
 ============================ ================ =============================================== =============
 
 Rebuild signal
@@ -1227,6 +1378,9 @@ Property                     Type             Description                       
 bas_to_rebuild               string           A string containing the id of all the BAs       Since 2.8.0
                                               to rebuild, separated by a comma and a space    (BBDO 1.2.0).
                                               (i.e "1, 5, 8, 12").
+source_id                    unsigned integer The id of the source instance of this event.
+destination_id               unsigned integer The id of the destination instance of this
+                                              event.
 ============================ ================ =============================================== =============
 
 Dimension timeperiod
@@ -1256,6 +1410,9 @@ saturday                     string           The timeperiod rule for this day. 
                                                                                               (BBDO 1.2.0).
 sunday                       string           The timeperiod rule for this day.               Since 2.8.0
                                                                                               (BBDO 1.2.0).
+source_id                    unsigned integer The id of the source instance of this event.
+destination_id               unsigned integer The id of the destination instance of this
+                                              event.
 ============================ ================ =============================================== =============
 
 Dimension BA timeperiod relation
@@ -1273,6 +1430,9 @@ timeperiod_id                unsigned integer The id of the timeperiod.         
                                                                                               (BBDO 1.2.0).
 is_default                   boolean          True if the timeperiod is the default one for   Since 2.8.0
                                               this BA.                                        (BBDO 1.2.0).
+source_id                    unsigned integer The id of the source instance of this event.
+destination_id               unsigned integer The id of the destination instance of this
+                                              event.
 ============================ ================ =============================================== =============
 
 Dimension timeperiod exception
@@ -1288,6 +1448,9 @@ timeperiod_id                unsigned integer The id of the timeperiod having th
 daterange                    string           A string containing the date of the range.      Since 2.8.0
 timerange                    string           A string containing the time of the range.      Since 2.8.0
                                                                                               (BBDO 1.2.0).
+source_id                    unsigned integer The id of the source instance of this event.
+destination_id               unsigned integer The id of the destination instance of this
+                                              event.
 ============================ ================ =============================================== =============
 
 Dimension timeperiod exclusion
@@ -1303,6 +1466,9 @@ timeperiod_id                unsigned integer The id of the timeperiod having th
                                                                                               (BBDO 1.2.0).
 excluded_timeperiod_id       unsigned integer The id of the excluded timeperiod.              Since 2.8.0
                                                                                               (BBDO 1.2.0).
+source_id                    unsigned integer The id of the source instance of this event.
+destination_id               unsigned integer The id of the destination instance of this
+                                              event.
 ============================ ================ =============================================== =============
 
 Inherited downtime
@@ -1313,6 +1479,9 @@ Property                     Type             Description                       
 ============================ ================ =============================================== =============
 bad_id                       unsigned integer The id of the BA in downtime.
 in_downtime                  boolean          True if the BA is in downtime.
+source_id                    unsigned integer The id of the source instance of this event.
+destination_id               unsigned integer The id of the destination instance of this
+                                              event.              
 ============================ ================ =============================================== =============
 
 ******
@@ -1330,6 +1499,9 @@ endp                         string           The endpoint this command is desti
 uuid                         string           The uuid of this request.
 with_partial_result          boolean          True if the command should be answered
                                               with partial result.
+source_id                    unsigned integer The id of the source instance of this event.
+destination_id               unsigned integer The id of the destination instance of this
+                                              event.
 ============================ ================ =============================================== =============
 
 Command result
@@ -1342,4 +1514,7 @@ code                         integer          The return code of this command.
 uuid                         string           The uuid of the request this command is the 
                                               result of.
 msg                          string           The string message of the command result.
+source_id                    unsigned integer The id of the source instance of this event.
+destination_id               unsigned integer The id of the destination instance of this
+                                              event.
 ============================ ================ =============================================== =============
