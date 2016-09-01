@@ -162,18 +162,6 @@ static io::raw* serialize(io::data const& e) {
                                data.data() + data.size())) - 1)
       = htonl(e.type());
 
-    // Serialize source and destination.
-    {
-      uint32_t source_id(htonl(e.source_id));
-      uint32_t destination_id(htonl(e.destination_id));
-      data.append(
-               static_cast<char*>(static_cast<void*>(&source_id)),
-               sizeof(source_id));
-      data.append(
-               static_cast<char*>(static_cast<void*>(&destination_id)),
-               sizeof(destination_id));
-    }
-
     // Serialize properties of the object.
     for (mapping::entry const* current_entry(info->get_mapping());
          !current_entry->is_null();
@@ -217,6 +205,15 @@ static io::raw* serialize(io::data const& e) {
                                    data.data() + beginning)) + 1)
           = 0xFFFF;
 
+        // Source and destination
+        *(static_cast<uint32_t*>(static_cast<void*>(
+                                   data.data() + beginning)) + 2)
+          = htonl(e.source_id);
+
+        *(static_cast<uint32_t*>(static_cast<void*>(
+                                   data.data() + beginning)) + 3)
+          = htonl(e.destination_id);
+
         // Set checksum.
         uint16_t chksum(qChecksum(
                           data.data() + beginning + 2,
@@ -239,6 +236,13 @@ static io::raw* serialize(io::data const& e) {
     *(static_cast<uint16_t*>(static_cast<void*>(
                                data.data() + beginning)) + 1)
       = htons(data.size() - beginning - BBDO_HEADER_SIZE);
+
+    // Source and destination.
+    *(static_cast<uint32_t*>(static_cast<void*>(data.data() + beginning)) + 2)
+      = htonl(e.source_id);
+
+    *(static_cast<uint32_t*>(static_cast<void*>(data.data() + beginning)) + 3)
+      = htonl(e.destination_id);
 
     // Checksum.
     uint16_t chksum(qChecksum(

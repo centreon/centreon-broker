@@ -47,22 +47,27 @@ real          nul-terminated UTF-8 string variable
 Packet format
 *************
 
-The packets format of Centreon Broker introduce only 8 bytes of header
+The packets format of Centreon Broker introduce only 16 bytes of header
 to transmit each monitoring event (usually about 100-200 bytes each).
 Fields are provided in the big endian format.
 
-========= ====================== =====================================
-Field     Type                   Description
-========= ====================== =====================================
-checksum  unsigned short integer CRC-16-CCITT X.25 of size and id.
-                                 The checksum can be used to recover
-                                 from an incomplete data packet sent
-                                 in the stream by dropping bytes one
-                                 by one.
-size      unsigned short integer Size of the packet, excluding header.
-id        unsigned integer       ID of the event.
-data                             Payload data.
-========= ====================== =====================================
+============== ====================== =====================================
+Field          Type                   Description
+============== ====================== =====================================
+checksum       unsigned short integer CRC-16-CCITT X.25 of size, id,
+                                      source and destination.
+                                      The checksum can be used to recover
+                                      from an incomplete data packet sent
+                                      in the stream by dropping bytes one
+                                      by one.
+size           unsigned short integer Size of the packet, excluding header.
+id             unsigned integer       ID of the event.
+source_id      unsigned integer       The id of the source instance of this
+                                      event.
+destination_id unsigned integer       The id of the destination instance
+                                      for this event.       
+data                                  Payload data.
+============== ====================== =====================================
 
 Packet ID
 =========
