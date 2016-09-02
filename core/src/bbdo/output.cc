@@ -207,11 +207,11 @@ static io::raw* serialize(io::data const& e) {
 
         // Source and destination
         *(static_cast<uint32_t*>(static_cast<void*>(
-                                   data.data() + beginning)) + 2)
+                                   data.data() + beginning)) + 1)
           = htonl(e.source_id);
 
         *(static_cast<uint32_t*>(static_cast<void*>(
-                                   data.data() + beginning)) + 3)
+                                   data.data() + beginning)) + 2)
           = htonl(e.destination_id);
 
         // Set checksum.
@@ -238,10 +238,10 @@ static io::raw* serialize(io::data const& e) {
       = htons(data.size() - beginning - BBDO_HEADER_SIZE);
 
     // Source and destination.
-    *(static_cast<uint32_t*>(static_cast<void*>(data.data() + beginning)) + 2)
+    *(static_cast<uint32_t*>(static_cast<void*>(data.data() + beginning)) + 1)
       = htonl(e.source_id);
 
-    *(static_cast<uint32_t*>(static_cast<void*>(data.data() + beginning)) + 3)
+    *(static_cast<uint32_t*>(static_cast<void*>(data.data() + beginning)) + 2)
       = htonl(e.destination_id);
 
     // Checksum.
