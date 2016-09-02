@@ -179,62 +179,55 @@ static io::data* unserialize(
   io::event_info const*
     info(io::events::instance().get_event_info(event_type));
   if (info) {
-    if (size >= 2 * sizeof(uint32_t)) {
-      // Create object.
-      std::auto_ptr<io::data> t(info->get_operations().constructor());
-      if (t.get()) {
-        t->source_id = source_id;
-        t->destination_id = destination_id;
-        // Browse all mapping to unserialize the object.
-        for (mapping::entry const* current_entry(info->get_mapping());
-             !current_entry->is_null();
-             ++current_entry)
-          // Skip entries that should not be serialized.
-          if (current_entry->get_serialize()) {
-            unsigned int rb;
-            switch (current_entry->get_type()) {
-            case mapping::source::BOOL:
-              rb = set_boolean(*t, *current_entry, buffer, size);
-              break ;
-            case mapping::source::DOUBLE:
-              rb = set_double(*t, *current_entry, buffer, size);
-              break ;
-            case mapping::source::INT:
-              rb = set_integer(*t, *current_entry, buffer, size);
-              break ;
-            case mapping::source::SHORT:
-              rb = set_short(*t, *current_entry, buffer, size);
-              break ;
-            case mapping::source::STRING:
-              rb = set_string(*t, *current_entry, buffer, size);
-              break ;
-            case mapping::source::TIME:
-              rb = set_timestamp(*t, *current_entry, buffer, size);
-              break ;
-            case mapping::source::UINT:
-              rb = set_uint(*t, *current_entry, buffer, size);
-              break ;
-            default:
-              throw (exceptions::msg() << "BBDO: invalid mapping for "
-                     << "object of type '" << info->get_name() << "': "
-                     << current_entry->get_type()
-                     << " is not a known type ID");
-            }
-            buffer += rb;
-            size -= rb;
+    // Create object.
+    std::auto_ptr<io::data> t(info->get_operations().constructor());
+    if (t.get()) {
+      t->source_id = source_id;
+      t->destination_id = destination_id;
+      // Browse all mapping to unserialize the object.
+      for (mapping::entry const* current_entry(info->get_mapping());
+           !current_entry->is_null();
+           ++current_entry)
+        // Skip entries that should not be serialized.
+        if (current_entry->get_serialize()) {
+          unsigned int rb;
+          switch (current_entry->get_type()) {
+          case mapping::source::BOOL:
+            rb = set_boolean(*t, *current_entry, buffer, size);
+            break ;
+          case mapping::source::DOUBLE:
+            rb = set_double(*t, *current_entry, buffer, size);
+            break ;
+          case mapping::source::INT:
+            rb = set_integer(*t, *current_entry, buffer, size);
+            break ;
+          case mapping::source::SHORT:
+            rb = set_short(*t, *current_entry, buffer, size);
+            break ;
+          case mapping::source::STRING:
+            rb = set_string(*t, *current_entry, buffer, size);
+            break ;
+          case mapping::source::TIME:
+            rb = set_timestamp(*t, *current_entry, buffer, size);
+            break ;
+          case mapping::source::UINT:
+            rb = set_uint(*t, *current_entry, buffer, size);
+            break ;
+          default:
+            throw (exceptions::msg() << "BBDO: invalid mapping for "
+                   << "object of type '" << info->get_name() << "': "
+                   << current_entry->get_type()
+                   << " is not a known type ID");
           }
-        return (t.release());
+          buffer += rb;
+          size -= rb;
+        }
+      return (t.release());
       }
       else
         throw (exceptions::msg() << "BBDO: cannot create object of ID "
                << event_type << " whereas it has been registered");
     }
-    else
-      logging::info(logging::high)
-        << "BBDO: cannot unserialize event of ID " << event_type
-        << ": payload is too small (" << size
-        << " bytes) to contain such event";
-  }
   else
     logging::info(logging::high)
       << "BBDO: cannot unserialize event of ID " << event_type

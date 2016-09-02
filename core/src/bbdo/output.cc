@@ -159,7 +159,7 @@ static io::raw* serialize(io::data const& e) {
     unsigned int beginning(data.size());
     data.resize(data.size() + BBDO_HEADER_SIZE);
     *(static_cast<uint32_t*>(static_cast<void*>(
-                               data.data() + 4)))
+                               data.data() + beginning + 4)))
       = htonl(e.type());
 
     // Serialize properties of the object.
