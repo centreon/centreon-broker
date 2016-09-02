@@ -386,7 +386,8 @@ bool input::read_any(
                                  _buffer.c_str() + _processed))));
 
       // Check header integrity.
-      uint16_t expected(qChecksum(_buffer.c_str() + _processed + 2, 14));
+      uint16_t expected(
+        qChecksum(_buffer.c_str() + _processed + 2, BBDO_HEADER_SIZE - 2));
       if (chksum == expected)
         break ;
 
@@ -400,6 +401,7 @@ bool input::read_any(
     // Log.
     logging::debug(logging::high)
       << "BBDO: got new header with a size of " << packet_size
+      << ", source of " <<  source_id << ", destination of " << destination_id
       << " and an ID of " << event_id;
 
     // Read data payload.
