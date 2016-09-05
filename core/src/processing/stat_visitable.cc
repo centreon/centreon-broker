@@ -75,7 +75,7 @@ static std::string dump_filters(uset<unsigned int> const& filters) {
      std::map<unsigned int, std::string>::const_iterator
        found = name_by_id.find(*it);
      if (found != name_by_id.end())
-       ret.append("\n  ").append(found->second);
+       ret.append(",  ").append(found->second);
   }
   return (ret);
 }
