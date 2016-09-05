@@ -380,3 +380,18 @@ performed sequentially.
   - compression connection is opened
   - now data transmitted between C and S is both encrypted and
     compressed !
+
+***************
+Acknowledgement
+***************
+
+So called 'clever' clients/servers can acknowledge packets sent their ways.
+This is used by Centreon Broker to insure every packet is accounted
+for, and to start retention procedure in case the other side is unresponsive.
+
+To do so, the other side must periodically send a BBDO 'ack' packet back
+the same TCP channel. This packet has the number of packet acknowledged
+by the client.
+
+'Clever'/'Dumb' modes are configured on each TCP output, on a per Broker
+basis.
