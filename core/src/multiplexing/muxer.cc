@@ -286,6 +286,34 @@ int muxer::write(misc::shared_ptr<io::data> const& d) {
   return (1);
 }
 
+/**
+ *  Get the memory file name associated with this muxer.
+ *
+ *  @param[in] name  Name of this muxer.
+ *
+ *  @return  The memory file name associated with this muxer.
+ */
+std::string muxer::memory_file(std::string const& name) {
+  std::string retval(config::applier::state::instance().cache_dir());
+  retval.append(".memory.");
+  retval.append(name);
+  return (retval);
+}
+
+/**
+ *  Get the queue file name associated with this muxer.
+ *
+ *  @param[in] name  Name of this muxer.
+ *
+ *  @return  The queue file name associated with this muxer.
+ */
+std::string muxer::queue_file(std::string const& name) {
+  std::string retval(config::applier::state::instance().cache_dir());
+  retval.append(".queue.");
+  retval.append(name);
+  return (retval);
+}
+
 /**************************************
 *                                     *
 *           Private Methods           *
@@ -376,10 +404,7 @@ void muxer::_get_last_event(misc::shared_ptr<io::data>& event) {
  *  @return Path to the memory file.
  */
 std::string muxer::_memory_file() const {
-  std::string retval(config::applier::state::instance().cache_dir());
-  retval.append(".memory.");
-  retval.append(_name);
-  return (retval);
+  return (memory_file(_name));
 }
 
 /**
@@ -388,8 +413,5 @@ std::string muxer::_memory_file() const {
  *  @return Path to the queue file.
  */
 std::string muxer::_queue_file() const {
-  std::string retval(config::applier::state::instance().cache_dir());
-  retval.append(".queue.");
-  retval.append(_name);
-  return (retval);
+  return (queue_file(_name));
 }

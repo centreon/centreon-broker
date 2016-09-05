@@ -65,6 +65,9 @@ namespace               multiplexing {
     void                wake();
     int                 write(misc::shared_ptr<io::data> const& d);
 
+    static std::string  memory_file(std::string const& name);
+    static std::string  queue_file(std::string const& name);
+
   private:
                         muxer(muxer const& other);
     muxer&              operator=(muxer const& other);

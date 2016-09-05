@@ -28,6 +28,7 @@
 #include "com/centreon/broker/io/properties.hh"
 #include "com/centreon/broker/processing/thread.hh"
 #include "com/centreon/broker/stats/builder.hh"
+#include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/misc/string.hh"
 
 using namespace com::centreon::broker;
@@ -195,6 +196,20 @@ std::string builder::_generate_stats_for_endpoint(
                        io::properties& tree) {
   // Header.
   std::string endpoint = std::string("endpoint ") + fo->get_name();
+
+  // Add memory and queue file
+  tree.add_property(
+        "queue file",
+        io::property(
+              "queue file",
+               com::centreon::broker::multiplexing::muxer::queue_file(
+                      fo->get_name())));
+    tree.add_property(
+          "memory file",
+          io::property(
+                "memory file",
+                 com::centreon::broker::multiplexing::muxer::memory_file(
+                       fo->get_name())));
 
   // Gather statistic.
   fo->stats(tree);
