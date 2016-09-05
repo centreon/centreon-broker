@@ -95,12 +95,14 @@ NEB           BBDO_NEB_TYPE         1     Classical monitoring events
                                           (hosts, services, notifications,
                                           event handlers, plugin
                                           execution, ...).
-Storage       BBDO_STORAGE_TYPE     2     Category related to RRD graph
+BBDO          BBDO_BBDO_TYPE        2     Category internal to the BBDO
+                                          protocol.
+Storage       BBDO_STORAGE_TYPE     3     Category related to RRD graph
                                           building.
-Correlation   BBDO_CORRELATION_TYPE 3     Status correlation.
-Dumper        BBDO_DUMPER_TYPE      4     Dumper events.
-Bam           BBDO_BAM_TYPE         5     Bam events.
-Extcmd        BBDO_EXTCMD_TYPE      6     Centreon Broker external
+Correlation   BBDO_CORRELATION_TYPE 4     Status correlation.
+Dumper        BBDO_DUMPER_TYPE      5     Dumper events.
+Bam           BBDO_BAM_TYPE         6     Bam events.
+Extcmd        BBDO_EXTCMD_TYPE      7     Centreon Broker external
                                           commands.
 Internal      BBDO_INTERNAL_TYPE    65535 Reserved for internal protocol
                                           use.
@@ -178,17 +180,18 @@ state         4
 log issue     5
 ============= =====
 
-Internal
-========
+BBDO
+====
 
-The table below lists event types available in the Internal category.
-They have to be mixed with the BBDO_INTERNAL_TYPE category to get a BBDO
+The table below lists event types available in the BBDO category.
+They have to be mixed with the BBDO_BBDO_TYPE category to get a BBDO
 event ID.
 
 ================ =====
 Type             Value
 ================ =====
 version_response 1
+ack              2
 ================ =====
 
 BAM

@@ -924,9 +924,9 @@ service_id        unsigned integer
 issue_start_time  time
 ================= ================ ===================================== =============
 
-********
-Internal
-********
+****
+BBDO
+****
 
 Version response
 ================
@@ -944,9 +944,19 @@ bbdo_patch      short integer    BBDO protocol patch used by the peer sending
 extensions      string           Space-separated string of extensions supported
                                  by the peer sending this *version_response*
                                  packet.
-instance_id     unsigned integer Instance ID.                                    Since 2.6.0
-                                                                                 (BBDO 1.1.0).
 =============== ================ =============================================== =============
+
+Ack
+===
+
+=================== ================ =============================================== =============
+Property            Type             Description                                     Version
+=================== ================ =============================================== =============
+acknowledged events unsigned integer Number of acknowledged events. Only used by
+                                     "smart" clients (i.e able to acknowledge
+                                     events).
+                                     Not to be used by dumb clients.
+=================== ================ =============================================== =============
 
 *******
 BAM
