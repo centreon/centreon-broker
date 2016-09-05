@@ -39,12 +39,10 @@ namespace neb {
   // Data elements.
   enum data_element {
     de_acknowledgement = 1,
-    de_acknowledgement_removed,
     de_comment,
     de_custom_variable,
     de_custom_variable_status,
     de_downtime,
-    de_downtime_removed,
     de_event_handler,
     de_flapping_status,
     de_host_check,

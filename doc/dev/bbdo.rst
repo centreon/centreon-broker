@@ -118,31 +118,29 @@ have to be mixed with the BBDO_NEB_TYPE category to get a BBDO event ID.
 Type                     Value
 ======================== =====
 Acknowledgement          1
-Acknowledgement removed  2
-Comment                  3
-Custom variable          4
-Custom variable status   5
-Downtime                 6
-Downtime removed         7
-Event handler            8
-Flapping status          9
-Host check               10
-Host dependency          11
-Host group               12
-Host group member        13
-Host                     14
-Host parent              15
-Host status              16
-Instance                 17
-Instance status          18
-Log entry                19
-Module                   20
-Service check            21
-Service dependency       22
-Service group            23
-Service group member     24
-Service                  25
-Service status           26
+Comment                  2
+Custom variable          3
+Custom variable status   4
+Downtime                 5
+Event handler            6
+Flapping status          7
+Host check               8
+Host dependency          9
+Host group               10
+Host group member        11
+Host                     12
+Host parent              13
+Host status              14
+Instance                 15
+Instance status          16
+Log entry                17
+Module                   18
+Service check            19
+Service dependency       20
+Service group            21
+Service group member     22
+Service                  23
+Service status           24
 ======================== =====
 
 Storage

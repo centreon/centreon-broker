@@ -676,7 +676,7 @@ name             string           Group name.
 enabled          enabled          True if the group is enable, false if it is
                                   not (deletion).
 poller_id        unsigned integer
-===============  ================ ============================================ =============
+================ ================ ============================================ =============
 
 Service group member
 ====================
@@ -687,11 +687,11 @@ Property        Type             Description                                  Ve
 id              unsigned integer 
 host_id         unsigned integer
 service_id      unsigned integer
-enabled         enabled           True if the group is enable, false if it is
-                                  not (deletion).
-group_name       string           Group name.
-poller_id        unsigned integer
-================ ================ ============================================ =============
+enabled         enabled          True if the group is enable, false if it is
+                                 not (deletion).
+group_name      string           Group name.
+poller_id       unsigned integer
+=============== ================ ============================================ =============
 
 Service status
 ==============
