@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2015 Centreon
+** Copyright 2009-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -59,12 +59,10 @@ void (stream::* const stream::_correlation_processing_table[])(misc::shared_ptr<
 void (stream::* const stream::_neb_processing_table[])(misc::shared_ptr<io::data> const&) = {
   NULL,
   &stream::_process_acknowledgement,
-  NULL,
   &stream::_process_comment,
   &stream::_process_custom_variable,
   &stream::_process_custom_variable_status,
   &stream::_process_downtime,
-  NULL,
   &stream::_process_event_handler,
   &stream::_process_flapping_status,
   &stream::_process_host_check,
