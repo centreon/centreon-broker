@@ -2538,13 +2538,13 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
   else if (cat == io::events::correlation)
     (this->*(_correlation_processing_table[elem]))(data);
 
-  // Update hosts and services of stopped instances
-  _update_hosts_and_services_of_unresponsive_instances();
-
   // Event acknowledgement.
   logging::debug(logging::low) << "SQL: " << _pending_events
     << " events have not yet been acknowledged";
   if (_db.committed()) {
+    // Update hosts and services of stopped instances
+    _update_hosts_and_services_of_unresponsive_instances();
+    // Commit.
     _db.clear_committed_flag();
     _write_logs();
     int retval(_pending_events);
