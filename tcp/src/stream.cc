@@ -65,15 +65,15 @@ stream::stream(int socket_descriptor)
  *  Destructor.
  */
 stream::~stream() {
-  if (_socket.get()) {
-    _socket->close();
-    if (_parent)
-      _parent->remove_child(_name);
-  }
-  else if (_socket_descriptor != -1) {
-    // Destructor of socket will properly shutdown connection.
+  // Destructor of socket will properly shutdown connection.
+  if (_socket_description != -1)
     _initialize_socket();
-  }
+  // Close the socket.
+  if (_socket.get())
+    _socket->close();
+  // Remove from parent.
+  if (_parent)
+    _parent->remove_child(_name);
 }
 
 /**
