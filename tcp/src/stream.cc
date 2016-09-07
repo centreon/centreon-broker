@@ -66,7 +66,7 @@ stream::stream(int socket_descriptor)
  */
 stream::~stream() {
   // Destructor of socket will properly shutdown connection.
-  if (_socket_description != -1)
+  if (_socket_descriptor != -1)
     _initialize_socket();
   // Close the socket.
   if (_socket.get())
