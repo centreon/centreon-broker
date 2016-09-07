@@ -191,9 +191,8 @@ void database_preparator::prepare_update(database_query& q) {
     }
     // Part of ID field.
     else {
-      where.append("COALESCE(");
       where.append(entry_name);
-      where.append(", -1)=COALESCE(:");
+      where.append("=COALESCE(:");
       where.append(entry_name);
       where.append(", -1) AND ");
     }
@@ -245,9 +244,8 @@ void database_preparator::prepare_delete(database_query& q) {
          end(_unique.end());
        it != end;
        ++it) {
-    query.append("COALESCE(");
     query.append(*it);
-    query.append(", -1)=COALESCE(:");
+    query.append("=COALESCE(:");
     query.append(*it);
     query.append(", -1) AND ");
   }
