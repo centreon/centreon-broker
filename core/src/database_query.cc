@@ -369,7 +369,12 @@ database_query& database_query::operator<<(io::data const& d) {
 void database_query::bind_value(
                        QString const& placeholder,
                        QVariant const& value) {
-  _q.bindValue(placeholder, value);
+  if (_doubled_fields.find(placeholder) == _doubled_fields.end())
+    _q.bindValue(placeholder, value);
+  else {
+    _q.bindValue(placeholder + "1", value);
+    _q.bindValue(placeholder + "2", value);
+  }
   return ;
 }
 
@@ -420,6 +425,15 @@ void database_query::set_excluded(
                        database_query::excluded_fields const& excluded) {
   _excluded = excluded;
   return ;
+}
+
+/**
+ *  Set doubled fields.
+ *
+ *  @param[in] doubled  Doubled fields.
+ */
+void database_query::set_doubled(doubled_fields const& doubled) {
+  _doubled_fields = doubled;
 }
 
 /**

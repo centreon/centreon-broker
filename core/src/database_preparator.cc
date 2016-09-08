@@ -191,14 +191,29 @@ void database_preparator::prepare_update(database_query& q) {
     }
     // Part of ID field.
     else {
+      where.append("((");
       where.append(entry_name);
-      where.append("=COALESCE(:");
+      where.append("=:");
       where.append(entry_name);
-      where.append(", -1) AND ");
+      where.append("1) OR (");
+      where.append(entry_name);
+      where.append(" IS NULL AND :");
+      where.append(entry_name);
+      where.append("2 IS NULL)) AND ");
     }
   }
   query.resize(query.size() - 2);
   query.append(where, 0, where.size() - 5);
+
+  // Get doubled fields.
+  database_query::doubled_fields doubled;
+  for (event_unique::const_iterator
+         it = _unique.begin(),
+         end = _unique.end();
+       it != end;
+       ++it)
+    doubled.insert(QString(":") + QString::fromStdString(*it));
+  q.set_doubled(doubled);
 
   // Prepare statement.
   try {
@@ -244,12 +259,27 @@ void database_preparator::prepare_delete(database_query& q) {
          end(_unique.end());
        it != end;
        ++it) {
+    query.append("((");
     query.append(*it);
-    query.append("=COALESCE(:");
+    query.append("=:");
     query.append(*it);
-    query.append(", -1) AND ");
+    query.append("1) OR (");
+    query.append(*it);
+    query.append(" IS NULL AND :");
+    query.append(*it);
+    query.append("2 IS NULL)) AND ");
   }
   query.resize(query.size() - 5);
+
+  // Get doubled fields.
+  database_query::doubled_fields doubled;
+  for (event_unique::const_iterator
+         it = _unique.begin(),
+         end = _unique.end();
+       it != end;
+       ++it)
+    doubled.insert(QString(":") + QString::fromStdString(*it));
+  q.set_doubled(doubled);
 
   // Prepare statement.
   try {
