@@ -134,7 +134,7 @@ io::endpoint* factory::new_endpoint(
     QMap<QString, QString>::const_iterator
       it(cfg.params.find("db_port"));
     if (it == cfg.params.end())
-      port = 8086;
+      port = 2003;
     else {
       ss << it->toStdString();
       ss >> port;
