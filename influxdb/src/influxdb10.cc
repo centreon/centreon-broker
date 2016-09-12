@@ -283,8 +283,10 @@ void influxdb10::_create_queries(
           .append(escape(it->get_value()))
           .append("\"");
     }
-   query_str.append(" ").append("$TIME$");
-   _status_query = query(query_str, query::status, _cache, true);
+  if (!first)
+    query_str.append(" ");
+  query_str.append("$TIME$");
+  _status_query = query(query_str, query::status, _cache, true);
 
    // Create metric query.
    query_str.clear();
@@ -333,6 +335,8 @@ void influxdb10::_create_queries(
            .append(escape(it->get_value()))
            .append("\"");
      }
-    query_str.append(" ").append("$TIME$");
+   if (!first)
+     query_str.append(" ");
+    query_str.append("$TIME$");
     _metric_query = query(query_str, query::metric, _cache, true);
 }
