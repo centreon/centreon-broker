@@ -122,7 +122,7 @@ std::string query::generate_metric(storage::metric const& me) {
            end(_compiled_getters.end());
          it != end;
          ++it) {
-      if (!_escape)
+      if (!_escape || *it == &query::_get_string)
         (this->**it)(me, iss);
       else {
         std::ostringstream escaped;
@@ -161,7 +161,7 @@ std::string query::generate_status(storage::status const& st) {
            end(_compiled_getters.end());
          it != end;
          ++it) {
-      if (!_escape)
+      if (!_escape || *it == &query::_get_string)
         (this->**it)(st, iss);
       else {
         std::ostringstream escaped;
