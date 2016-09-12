@@ -182,7 +182,7 @@ bool influxdb10::_check_answer_string(std::string const& ans) {
          std::istream_iterator<std::string>(),
          std::back_inserter(split));
 
-  if (split.size() != 3)
+  if (split.size() < 3)
     throw (exceptions::msg()
       << "influxdb: unrecognizable HTTP header for '"
       << _socket->peerAddress().toString()
