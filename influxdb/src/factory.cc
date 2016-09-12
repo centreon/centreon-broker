@@ -161,7 +161,7 @@ io::endpoint* factory::new_endpoint(
     if (it != cfg.params.end())
       version = it.value().toStdString();
     else
-      version = "0.9";
+      version = "1.0";
   }
 
   // Get status query.
