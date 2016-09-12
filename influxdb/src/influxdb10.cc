@@ -239,38 +239,47 @@ void influxdb10::_create_queries(
   // Create status query.
   std::string query_str;
   query_str
-    .append(escape(status_ts))
-    .append(",");
+    .append(escape(status_ts));
   for (std::vector<column>::const_iterator
          it(status_cols.begin()),
          end(status_cols.end());
        it != end; ++it)
     if (it->is_flag()) {
+      query_str.append(",");
       if (it->get_type() == column::number)
         query_str
           .append(escape(it->get_name()))
+          .append("=")
           .append(escape(it->get_value()));
       else if (it->get_type() == column::string)
         query_str
           .append(escape(it->get_name()))
           .append("\"")
+          .append("=")
           .append(escape(it->get_value()))
           .append("\"");
     }
   query_str.append(" ");
+  bool first = true;
   for (std::vector<column>::const_iterator
          it(status_cols.begin()),
          end(status_cols.end());
        it != end; ++it)
     if (!it->is_flag()) {
+      if (first)
+        first = false;
+      else
+        query_str.append(",");
       if (it->get_type() == column::number)
         query_str
           .append(escape(it->get_name()))
+          .append("=")
           .append(escape(it->get_value()));
       else if (it->get_type() == column::string)
         query_str
           .append(escape(it->get_name()))
           .append("\"")
+          .append("=")
           .append(escape(it->get_value()))
           .append("\"");
     }
@@ -280,38 +289,47 @@ void influxdb10::_create_queries(
    // Create metric query.
    query_str.clear();
    query_str
-     .append(escape(metric_ts))
-     .append(",");
+     .append(escape(metric_ts));
    for (std::vector<column>::const_iterator
           it(metric_cols.begin()),
           end(metric_cols.end());
         it != end; ++it)
      if (it->is_flag()) {
+       query_str.append(",");
        if (it->get_type() == column::number)
          query_str
            .append(escape(it->get_name()))
+           .append("=")
            .append(escape(it->get_value()));
        else if (it->get_type() == column::string)
          query_str
            .append(escape(it->get_name()))
            .append("\"")
+           .append("=")
            .append(escape(it->get_value()))
            .append("\"");
      }
    query_str.append(" ");
+   first = true;
    for (std::vector<column>::const_iterator
           it(metric_cols.begin()),
           end(metric_cols.end());
         it != end; ++it)
      if (!it->is_flag()) {
+       if (first)
+         first = false;
+       else
+         query_str.append(",");
        if (it->get_type() == column::number)
          query_str
            .append(escape(it->get_name()))
+           .append("=")
            .append(escape(it->get_value()));
        else if (it->get_type() == column::string)
          query_str
            .append(escape(it->get_name()))
            .append("\"")
+           .append("=")
            .append(escape(it->get_value()))
            .append("\"");
      }
