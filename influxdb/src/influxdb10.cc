@@ -254,8 +254,8 @@ void influxdb10::_create_queries(
       else if (it->get_type() == column::string)
         query_str
           .append(escape(it->get_name()))
-          .append("\"")
           .append("=")
+          .append("\"")
           .append(escape(it->get_value()))
           .append("\"");
     }
@@ -278,8 +278,8 @@ void influxdb10::_create_queries(
       else if (it->get_type() == column::string)
         query_str
           .append(escape(it->get_name()))
-          .append("\"")
           .append("=")
+          .append("\"")
           .append(escape(it->get_value()))
           .append("\"");
     }
@@ -306,8 +306,8 @@ void influxdb10::_create_queries(
        else if (it->get_type() == column::string)
          query_str
            .append(escape(it->get_name()))
-           .append("\"")
            .append("=")
+           .append("\"")
            .append(escape(it->get_value()))
            .append("\"");
      }
@@ -330,8 +330,8 @@ void influxdb10::_create_queries(
        else if (it->get_type() == column::string)
          query_str
            .append(escape(it->get_name()))
-           .append("\"")
            .append("=")
+           .append("\"")
            .append(escape(it->get_value()))
            .append("\"");
      }
