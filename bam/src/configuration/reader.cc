@@ -963,10 +963,13 @@ void reader::_load_dimensions() {
         std::map<unsigned int,
                  misc::shared_ptr<dimension_ba_event> >::const_iterator
             found = bas.find(k->kpi_ba_id);
-        if (found == bas.end())
-          throw (reader_exception()
+        if (found == bas.end()) {
+          logging::error(logging::high)
                  << "BAM: could not retrieve BA " << k->kpi_ba_id
-                 << " used as KPI " << k->kpi_id);
+                 << " used as KPI " << k->kpi_id
+                 << " in dimension table: ignoring this KPI";
+          break;
+        }
         k->kpi_ba_name = found->second->ba_name;
       }
       datas.push_back(k.staticCast<io::data>());
