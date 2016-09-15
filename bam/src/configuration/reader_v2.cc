@@ -842,7 +842,7 @@ void reader_v2::_load_dimensions() {
                  << "BAM: could not retrieve BA " << k->kpi_ba_id
                  << " used as KPI " << k->kpi_id
                  << " in dimension table: ignoring this KPI";
-          break;
+          continue;
         }
         k->kpi_ba_name = found->second->ba_name;
       }
