@@ -419,15 +419,15 @@ Instance
 ============== ================ ========================================= =============
 Property       Type             Description                               Version
 ============== ================ ========================================= =============
-engine        string            Name of the monitoring engine used on
+engine         string           Name of the monitoring engine used on
                                 this instance.
-id            unsigned integer  Instance ID.
-name          string            Instance name.
-is_running    boolean           Whether or not this instance is running.
-pid           unsigned integer  Monitoring engine PID.
-program_end   time              Time at which the instance shut down.
-program_start time              Time at which the instance started.
-version       string            Version of the monitoring engine used on
+id             unsigned integer Instance ID.
+name           string           Instance name.
+is_running     boolean          Whether or not this instance is running.
+pid            unsigned integer Monitoring engine PID.
+program_end    time             Time at which the instance shut down.
+program_start  time             Time at which the instance started.
+version        string           Version of the monitoring engine used on
                                 this instance.
 ============== ================ ========================================= =============
 
