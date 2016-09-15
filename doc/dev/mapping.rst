@@ -597,7 +597,6 @@ last_update                    time
 latency                        real
 low_flap_threshold             real
 max_check_attempts             short integer
-modified_attributes            unsigned integer
 next_check                     time
 next_notification              time
 no_more_notifications          boolean
