@@ -56,6 +56,7 @@ namespace        bam {
     void         set_impact(double impact);
     void         unlink_boolexp();
     void         visit(io::stream* visitor);
+    bool         ok_state() const;
 
   private:
     void         _fill_impact(impact_values& impact);

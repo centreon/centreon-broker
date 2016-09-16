@@ -57,6 +57,7 @@ namespace   bam {
     void    set_impact_warning(double impact);
     void    unlink_ba();
     void    visit(io::stream* visitor);
+    bool    ok_state() const;
 
   private:
     void    _fill_impact(

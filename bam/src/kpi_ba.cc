@@ -314,3 +314,12 @@ void kpi_ba::_open_new_event(
   }
   return ;
 }
+
+/**
+ *  Is this KPI in an ok state?
+ *
+ *  @return  True if this KPI is in an ok state.
+ */
+bool kpi_ba::ok_state() const {
+  return (_ba->get_state_hard() == 0);
+}

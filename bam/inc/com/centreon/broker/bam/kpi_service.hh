@@ -77,6 +77,7 @@ namespace        bam {
     void         set_state_type(short type);
     void         visit(io::stream* visitor);
     virtual void set_initial_event(kpi_event const& e);
+    bool         ok_state() const;
 
   private:
     void         _fill_impact(impact_values& impact, short state);

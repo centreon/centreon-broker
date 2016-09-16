@@ -268,3 +268,12 @@ void kpi_meta::_open_new_event(
   }
   return ;
 }
+
+/**
+ *  Is this KPI in an ok state?
+ *
+ *  @return  True if this KPI is in an ok state.
+ */
+bool kpi_meta::ok_state() const {
+  return (_meta->get_state() == 0);
+}

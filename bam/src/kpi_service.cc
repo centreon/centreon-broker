@@ -534,3 +534,12 @@ void kpi_service::set_initial_event(kpi_event const& e) {
   kpi::set_initial_event(e);
   _last_check = _event->start_time;
 }
+
+/**
+ *  Is this KPI in an ok state?
+ *
+ *  @return  True if this KPI is in an ok state.
+ */
+bool kpi_service::ok_state() const {
+  return (_state_hard == 0);
+}

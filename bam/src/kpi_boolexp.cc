@@ -279,3 +279,12 @@ short kpi_boolexp::_get_state() const {
       return (_boolexp->get_state());
   }
 }
+
+/**
+ *  Is this KPI in an ok state?
+ *
+ *  @return  True if this KPI is in an ok state.
+ */
+bool kpi_boolexp::ok_state() const {
+  return (_get_state() == 0);
+}

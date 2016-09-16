@@ -759,15 +759,19 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
   if (!_inherit_kpi_downtime)
     return ;
 
-  // Check if every child kpis are in downtime.
+  // Check if every impacting child kpis are in downtime.
+  // Two non downtime cases:
+  //  - The child kpi is impacting and not in downtime
+  //  - The child kpi is in an ok state, even if it's in downtime.
   bool every_kpi_in_downtime = !_impacts.empty();
   for (umap<kpi*, impact_info>::const_iterator
          it = _impacts.begin(),
          end = _impacts.end();
        it != end;
        ++it) {
-    if ((it->second.hard_impact.get_nominal() > 0.0)
-        && !it->first->in_downtime() ) {
+    if (((it->second.hard_impact.get_nominal() > 0.0)
+          && !it->first->in_downtime())
+        || (it->first->ok_state())) {
       every_kpi_in_downtime = false;
       break ;
     }
