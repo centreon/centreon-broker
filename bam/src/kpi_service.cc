@@ -533,6 +533,7 @@ void kpi_service::_open_new_event(
 void kpi_service::set_initial_event(kpi_event const& e) {
   kpi::set_initial_event(e);
   _last_check = _event->start_time;
+  _downtimed = event->in_downtime;
 }
 
 /**
