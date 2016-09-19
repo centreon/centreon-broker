@@ -529,7 +529,8 @@ void monitoring_stream::_update_status(std::string const& status) {
  *  @param[in] cmd  Command to write to the external command pipe.
  */
 void monitoring_stream::_write_external_command(
-                          std::string const& cmd) {
+                          std::string cmd) {
+  cmd.append("\n");
   std::ofstream ofs;
   ofs.open(_ext_cmd_file.c_str());
   if (!ofs.good()) {
