@@ -291,7 +291,7 @@ extern "C" {
                   "services"));
         e.register_event(
             io::events::neb,
-            neb::de_service_status,
+            neb::de_instance_configuration,
             io::event_info(
                   "instance_configuration",
                   &neb::instance_configuration::operations,
