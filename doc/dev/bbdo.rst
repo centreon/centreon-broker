@@ -141,6 +141,7 @@ Service group            21
 Service group member     22
 Service                  23
 Service status           24
+Instance Configuration   25
 ======================== =====
 
 Storage
