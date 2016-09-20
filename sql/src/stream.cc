@@ -82,7 +82,8 @@ void (stream::* const stream::_neb_processing_table[])(misc::shared_ptr<io::data
   &stream::_process_service_group,
   &stream::_process_service_group_member,
   &stream::_process_service,
-  &stream::_process_service_status
+  &stream::_process_service_status,
+  NULL
 };
 
 /**************************************
