@@ -22,6 +22,7 @@
 #include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/callbacks.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/initial.hh"
@@ -48,6 +49,8 @@ using namespace com::centreon::broker;
 extern "C" {
   nebmodule* neb_module_list;
 }
+
+static bool loaded_successfully = true;
 
 /**************************************
 *                                     *
@@ -408,6 +411,26 @@ static void send_service_list() {
   return ;
 }
 
+/**
+ *  Send the instance configuration loaded event.
+ */
+static void send_instance_configuration() {
+  // Log message.
+  const char* loaded =
+    loaded_successfully ? "loaded" : "not loaded";
+  logging::info(logging::medium)
+    << "init: sending instance configuration loaded event:"
+       " configuration '" << loaded << "'";
+
+  misc::shared_ptr<neb::instance_configuration>
+    ic(new neb::instance_configuration);
+
+  ic->source_id = config::applier::state::instance().poller_id();
+  ic->loaded = loaded_successfully;
+
+  neb::gl_publisher.write(ic);
+}
+
 /**************************************
 *                                     *
 *          Global Functions           *
@@ -427,5 +450,6 @@ void neb::send_initial_configuration() {
   send_host_dependencies_list();
   send_service_dependencies_list();
   send_module_list();
+  send_instance_configuration();
   return ;
 }

@@ -289,6 +289,13 @@ extern "C" {
                   neb::service_status::entries,
                   "rt_services",
                   "services"));
+        e.register_event(
+            io::events::neb,
+            neb::de_service_status,
+            io::event_info(
+                  "instance_configuration",
+                  &neb::instance_configuration::operations,
+                  neb::instance_configuration::entries));
       }
 
       // Register neb layer.
