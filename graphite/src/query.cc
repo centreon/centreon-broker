@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/graphite/query.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
@@ -94,13 +95,19 @@ std::string query::generate_metric(storage::metric const& me) {
               " with a query of the bad type");
   _naming_scheme_index = 0;
   std::ostringstream iss;
+  std::ostringstream tmp;
   try {
     for (std::vector<void (query::*)(io::data const&, std::ostream&)>::const_iterator
            it(_compiled_getters.begin()),
            end(_compiled_getters.end());
          it != end;
-         ++it)
-      (this->**it)(me, iss);
+         ++it) {
+      (this->**it)(me, tmp);
+      std::string escaped = tmp.str();
+      misc::string::replace(escaped, " ", "_");
+      iss << escaped;
+      tmp.str("");
+    }
   } catch (std::exception const& e) {
     logging::error(logging::high)
       << "graphite: couldn't generate query for metric "
@@ -127,13 +134,19 @@ std::string query::generate_status(storage::status const& st) {
               " with a query of the bad type");
   _naming_scheme_index = 0;
   std::ostringstream iss;
+  std::ostringstream tmp;
   try {
     for (std::vector<void (query::*)(io::data const&, std::ostream&)>::const_iterator
            it(_compiled_getters.begin()),
            end(_compiled_getters.end());
          it != end;
-         ++it)
-      (this->**it)(st, iss);
+         ++it) {
+      (this->**it)(st, tmp);
+      std::string escaped = tmp.str();
+      misc::string::replace(escaped, " ", "_");
+      iss << escaped;
+      tmp.str("");
+    }
   } catch (std::exception const& e) {
     logging::error(logging::high)
       << "graphite: couldn't generate query for status "
