@@ -102,7 +102,7 @@ std::string query::generate_metric(storage::metric const& me) {
          ++it)
       (this->**it)(me, iss);
   } catch (std::exception const& e) {
-    logging::error(logging::medium)
+    logging::error(logging::high)
       << "graphite: couldn't generate query for metric "
       << me.metric_id << ":" << e.what();
     return ("");
@@ -135,7 +135,7 @@ std::string query::generate_status(storage::status const& st) {
          ++it)
       (this->**it)(st, iss);
   } catch (std::exception const& e) {
-    logging::error(logging::medium)
+    logging::error(logging::high)
       << "graphite: couldn't generate query for status "
       << st.index_id << ":" << e.what();
     return ("");
