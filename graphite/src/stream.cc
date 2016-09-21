@@ -234,6 +234,12 @@ void stream::_commit() {
         << _db_host << "', port '" << _db_port << "': "
         << _socket->errorString();
   }
+  else if (_socket->state() != QTcpSocket::ConnectedState) {
+    throw exceptions::msg()
+      << "graphite: unexpected termination of connection to host '"
+      << _db_host << "', port '" << _db_port << "': "
+      << _socket->errorString();
+  }
 
   _query.clear();
   _query.append(_auth_query);
