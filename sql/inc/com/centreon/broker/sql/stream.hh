@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -85,6 +85,7 @@ namespace          sql {
     void           _process_host_state(misc::shared_ptr<io::data> const& e);
     void           _process_host_status(misc::shared_ptr<io::data> const& e);
     void           _process_instance(misc::shared_ptr<io::data> const& e);
+    void           _process_instance_configuration(misc::shared_ptr<io::data> const& e);
     void           _process_instance_status(misc::shared_ptr<io::data> const& e);
     void           _process_issue(misc::shared_ptr<io::data> const& e);
     void           _process_issue_parent(misc::shared_ptr<io::data> const& e);

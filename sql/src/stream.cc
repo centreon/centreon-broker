@@ -83,7 +83,7 @@ void (stream::* const stream::_neb_processing_table[])(misc::shared_ptr<io::data
   &stream::_process_service_group_member,
   &stream::_process_service,
   &stream::_process_service_status,
-  NULL
+  &stream::_process_instance_configuration
 };
 
 /**************************************
@@ -1319,6 +1319,18 @@ void stream::_process_instance(
     _update_on_none_insert(_instance_insert, _instance_update, i);
   }
 
+  return ;
+}
+
+/**
+ *  Process an instance configuration event.
+ *
+ *  @param[in] e  Uncasted instance configuration.
+ */
+void stream::_process_instance_configuration(
+               misc::shared_ptr<io::data> const& e) {
+  // Nothing to do.
+  (void)e;
   return ;
 }
 
