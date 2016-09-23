@@ -646,7 +646,7 @@ int neb::callback_downtime(int callback_type, void* data) {
     downtime->actual_start_time = params.start_time;
     downtime->actual_end_time = params.end_time;
     downtime->deletion_time = params.deletion_time;
-    downtime->was_cancelled = (downtime->deletion_time != -1);
+    downtime->was_cancelled = (downtime->deletion_time > 0);
     downtime->was_started = params.started;
     if (NEBTYPE_DOWNTIME_DELETE == downtime_data->type)
       downtimes.erase(downtime->internal_id);
