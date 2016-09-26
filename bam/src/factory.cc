@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -83,6 +83,10 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
   if (is_bam || is_bam_bi) {
     cfg.params["read_timeout"] = "1";
     cfg.read_timeout = 1;
+  }
+  if (is_bam) {
+    cfg.params["cache"] = "yes";
+    cfg.cache_enabled = true;
   }
   return (is_bam || is_bam_bi);
 }

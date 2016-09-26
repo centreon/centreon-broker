@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -101,7 +101,12 @@ io::factory* factory::clone() const {
  *  @return True if the endpoint match the configuration.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  return (!cfg.type.compare("notification", Qt::CaseInsensitive));
+  bool is_notif(!cfg.type.compare("notification", Qt::CaseInsensitive));
+  if (is_notif) {
+    cfg.params["cache"] = "yes";
+    cfg.cache_enabled = true;
+  }
+  return (is_notif);
 }
 
 /**

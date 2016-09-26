@@ -74,6 +74,10 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
   bool is_correlation(!cfg.type.compare(
                                   "correlation",
                                   Qt::CaseInsensitive));
+  if (is_correlation) {
+    cfg.params["cache"] = "yes";
+    cfg.cache_enabled = true;
+  }
   return (is_correlation);
 }
 

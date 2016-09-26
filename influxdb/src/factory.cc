@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -105,6 +105,10 @@ io::factory* factory::clone() const {
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
   bool is_ifdb(!cfg.type.compare("influxdb", Qt::CaseInsensitive));
+  if (is_ifdb) {
+    cfg.params["cache"] = "yes";
+    cfg.cache_enabled = true;
+  }
   return (is_ifdb);
 }
 
@@ -121,8 +125,6 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
-  (void)cache;
-
   std::string user(find_param(cfg, "db_user"));
   std::string passwd(find_param(cfg, "db_password"));
   std::string addr(find_param(cfg, "db_host"));

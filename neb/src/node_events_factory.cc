@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -93,7 +93,12 @@ io::factory* node_events_factory::clone() const {
  *  @return True if configuration matches the node event layer.
  */
 bool node_events_factory::has_endpoint(config::endpoint& cfg) const {
-  return (cfg.type == "node_events");
+  bool is_node_events(cfg.type == "node_events");
+  if (is_node_events) {
+    cfg.params["cache"] = "yes";
+    cfg.cache_enabled = true;
+  }
+  return (is_node_events);
 }
 
 /**
