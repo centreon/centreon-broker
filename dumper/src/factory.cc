@@ -1,5 +1,5 @@
 /*
-** Copyright 2013,2015 Centreon
+** Copyright 2013,2015-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -101,11 +101,20 @@ io::factory* factory::clone() const {
  *  @return True if configuration matches the dumper layer.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  return (cfg.type == "dumper"
-          || cfg.type == "dump_fifo"
-          || cfg.type == "dump_dir"
-          || cfg.type == "db_cfg_reader"
-          || cfg.type == "db_cfg_writer");
+  bool is_dumper(cfg.type == "dumper");
+  bool is_dump_fifo(cfg.type == "dump_fifo");
+  bool is_dump_dir(cfg.type == "dump_dir");
+  bool is_db_cfg_reader(cfg.type == "db_cfg_reader");
+  bool is_db_cfg_writer(cfg.type == "db_cfg_writer");
+  if (is_dump_dir) {
+    cfg.params["cache"] = "yes";
+    cfg.cache_enabled = true;
+  }
+  return (is_dumper
+          || is_dump_fifo
+          || is_dump_dir
+          || is_db_cfg_reader
+          || is_db_cfg_writer);
 }
 
 /**
