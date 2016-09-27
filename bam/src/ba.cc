@@ -542,10 +542,7 @@ void ba::visit(io::stream* visitor) {
         std::ostringstream oss;
         oss << "BA_Level=" << static_cast<int>(normalize(_level_hard))
             << "%;" << static_cast<int>(_level_warning) << ";"
-            << static_cast<int>(_level_critical) << ";0;100 BA_Downtime="
-            << static_cast<int>(_downtime_hard)
-            << " BA_Acknowledgement="
-            << static_cast<int>(_acknowledgement_hard);
+            << static_cast<int>(_level_critical) << ";0;100";
         status->perf_data = oss.str().c_str();
       }
       status->retry_interval = 0;
