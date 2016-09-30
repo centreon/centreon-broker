@@ -79,6 +79,7 @@ add_library("${BAM}" SHARED
   "${SRC_DIR}/dimension_timeperiod_exclusion.cc"
   "${SRC_DIR}/dimension_ba_timeperiod_relation.cc"
   "${SRC_DIR}/dimension_truncate_table_signal.cc"
+  "${SRC_DIR}/exp_tokenizer.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/event_cache_visitor.cc"
   "${SRC_DIR}/hst_svc_mapping.cc"
@@ -154,6 +155,7 @@ add_library("${BAM}" SHARED
   "${INC_DIR}/dimension_truncate_table_signal.hh"
   "${INC_DIR}/events.hh"
   "${INC_DIR}/event_cache_visitor.hh"
+  "${INC_DIR}/exp_tokenizer.hh"
   "${INC_DIR}/factory.hh"
   "${INC_DIR}/hst_svc_mapping.hh"
   "${INC_DIR}/impact_values.hh"
@@ -186,6 +188,7 @@ set(
   ${TESTS_SOURCES}
   "${TEST_DIR}/bool_parser/get_tree.cc"
   "${TEST_DIR}/bool_tokenizer/get_token.cc"
+  "${TEST_DIR}/exp_tokenizer/next.cc"
   PARENT_SCOPE
 )
 set(
