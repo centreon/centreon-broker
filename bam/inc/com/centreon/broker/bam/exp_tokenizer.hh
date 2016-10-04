@@ -19,6 +19,7 @@
 #ifndef CCB_BAM_EXP_TOKENIZER_HH
 #  define CCB_BAM_EXP_TOKENIZER_HH
 
+#  include <queue>
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
@@ -41,12 +42,18 @@ namespace          bam {
 
   private:
     std::string    _extract_token();
+    std::string    _extract_until(bool (exp_tokenizer::* predicate)());
     void           _internal_copy(exp_tokenizer const& other);
-    bool           _is_special_char(char c);
+    bool           _is_right_brace();
+    bool           _is_space_or_right_brace();
+    bool           _is_special_char();
+    bool           _is_delimiter();
     void           _skip_ws();
 
     std::size_t    _current;
     std::size_t    _next;
+    std::queue<std::string>
+                   _queue;
     std::size_t    _size;
     std::string    _text;
   };
