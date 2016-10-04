@@ -190,6 +190,7 @@ set(
   ${TESTS_SOURCES}
   "${TEST_DIR}/bool_parser/get_tree.cc"
   "${TEST_DIR}/bool_tokenizer/get_token.cc"
+  "${TEST_DIR}/exp_parser/get_postfix.cc"
   "${TEST_DIR}/exp_tokenizer/next.cc"
   PARENT_SCOPE
 )

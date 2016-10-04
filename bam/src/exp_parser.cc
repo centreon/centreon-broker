@@ -111,13 +111,8 @@ exp_parser::notation const& exp_parser::get_postfix() {
     std::string token(tokens.front());
     tokens.pop_front();
 
-    // If token is a number, then add it to the output queue.
-    if (is_number(token)) {
-      _postfix.push_back(token);
-      can_be_unary = false;
-    }
     // If token is a function, then push it onto the stack.
-    else if (is_function(token)) {
+    if (is_function(token)) {
       stack.push(token);
       arity.push(1);
       can_be_unary = false;
@@ -137,6 +132,11 @@ exp_parser::notation const& exp_parser::get_postfix() {
       }
 
       // Increment function arity.
+      if (arity.empty()) {
+        throw (exceptions::msg()
+               << "found comma outside function call while parsing "
+               << "the following expression: " << _exp);
+      }
       ++arity.top();
 
       // Next token cannot be unary.
@@ -191,15 +191,20 @@ exp_parser::notation const& exp_parser::get_postfix() {
       // If the token at the top of the stack is a function, pop it
       // onto the output queue.
       if (is_function(stack.top())) {
+        _postfix.push_back(stack.top());
+        stack.pop();
         std::ostringstream oss;
         oss << arity.top();
         _postfix.push_back(oss.str());
         arity.pop();
-        _postfix.push_back(stack.top());
-        stack.pop();
       }
 
       // Next token cannot be unary.
+      can_be_unary = false;
+    }
+    // If token is a number, then add it to the output queue.
+    else {
+      _postfix.push_back(token);
       can_be_unary = false;
     }
   }
@@ -227,7 +232,11 @@ exp_parser::notation const& exp_parser::get_postfix() {
  *  @return True if token is a valid function name.
  */
 bool exp_parser::is_function(std::string const& token) {
-  return ((token == "AVERAGE")
+  return ((token == "HOSTSTATUS")
+          || (token == "SERVICESTATUS")
+          || (token == "METRICS")
+          || (token == "METRIC")
+          || (token == "AVERAGE")
           || (token == "COUNT")
           || (token == "MAX")
           || (token == "MIN")
