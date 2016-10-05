@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@
 */
 
 #include <sstream>
-#include "com/centreon/broker/bam/bool_parser.hh"
+#include "com/centreon/broker/bam/exp_builder.hh"
+#include "com/centreon/broker/bam/exp_parser.hh"
 #include "com/centreon/broker/bam/configuration/applier/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 
@@ -250,12 +251,13 @@ void applier::state::_circular_check(
     std::string bool_id(boolexp_node_id(it->first));
     _nodes[bool_id];
     try {
-      bool_parser parsr(
-                    it->second.get_expression(),
+      exp_parser parsr(it->second.get_expression());
+      exp_builder buildr(
+                    parsr.get_postfix(),
                     my_state.get_hst_svc_mapping());
       for (std::list<bool_service::ptr>::const_iterator
-             it_svc(parsr.get_services().begin()),
-             end_svc(parsr.get_services().end());
+             it_svc(buildr.get_services().begin()),
+             end_svc(buildr.get_services().end());
            it_svc != end_svc;
            ++it_svc)
         _nodes[service_node_id(

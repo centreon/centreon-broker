@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -18,10 +18,11 @@
 
 #include "com/centreon/broker/bam/ba.hh"
 #include "com/centreon/broker/bam/bool_expression.hh"
-#include "com/centreon/broker/bam/bool_parser.hh"
 #include "com/centreon/broker/bam/configuration/applier/ba.hh"
 #include "com/centreon/broker/bam/configuration/applier/bool_expression.hh"
 #include "com/centreon/broker/bam/configuration/bool_expression.hh"
+#include "com/centreon/broker/bam/exp_builder.hh"
+#include "com/centreon/broker/bam/exp_parser.hh"
 #include "com/centreon/broker/bam/service_book.hh"
 #include "com/centreon/broker/bam/metric_book.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -150,17 +151,18 @@ void applier::bool_expression::apply(
     misc::shared_ptr<bam::bool_expression>
       new_bool_exp(new bam::bool_expression);
     try {
-      bam::bool_parser p(it->second.get_expression(), mapping);
-      bam::bool_value::ptr tree(p.get_tree());
+      bam::exp_parser p(it->second.get_expression());
+      bam::exp_builder b(p.get_postfix(), mapping);
+      bam::bool_value::ptr tree(b.get_tree());
       new_bool_exp->set_expression(tree);
       if (!tree.isNull())
         tree->add_parent(new_bool_exp.staticCast<bam::computable>());
       applied& content(_applied[it->first]);
       content.cfg = it->second;
       content.obj = new_bool_exp;
-      content.svc = p.get_services();
-      content.call = p.get_calls();
-      content.mtrc = p.get_metrics();
+      content.svc = b.get_services();
+      content.call = b.get_calls();
+      content.mtrc = b.get_metrics();
       // Resolve boolean service.
       for (std::list<bool_service::ptr>::const_iterator
              it2(content.svc.begin()),
