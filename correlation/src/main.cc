@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -116,7 +116,8 @@ extern "C" {
                   "issue",
                   &correlation::issue::operations,
                   correlation::issue::entries,
-                  "rt_issues"));
+                  "rt_issues",
+                  "issues"));
         e.register_event(
             io::events::correlation,
             correlation::de_issue_parent,
@@ -124,7 +125,8 @@ extern "C" {
                   "issue_parent",
                   &correlation::issue_parent::operations,
                   correlation::issue_parent::entries,
-                  "rt_issues_issues_parents"));
+                  "rt_issues_issues_parents",
+                  "issues_issues_parents"));
         e.register_event(
             io::events::correlation,
             correlation::de_log_issue,
@@ -132,7 +134,8 @@ extern "C" {
                   "log_issue",
                   &correlation::log_issue::operations,
                   correlation::log_issue::entries,
-                  "log_logs"));
+                  "log_logs",
+                  "logs"));
       }
     }
     return ;
