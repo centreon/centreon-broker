@@ -1,5 +1,5 @@
 ##
-## Copyright 2011-2015 Centreon
+## Copyright 2011-2016 Centreon
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
 ## you may not use this file except in compliance with the License.
@@ -50,9 +50,7 @@ add_library("${BAM}" SHARED
   "${SRC_DIR}/bool_not.cc"
   "${SRC_DIR}/bool_operation.cc"
   "${SRC_DIR}/bool_or.cc"
-  "${SRC_DIR}/bool_parser.cc"
   "${SRC_DIR}/bool_service.cc"
-  "${SRC_DIR}/bool_tokenizer.cc"
   "${SRC_DIR}/bool_value.cc"
   "${SRC_DIR}/bool_xor.cc"
   "${SRC_DIR}/computable.cc"
@@ -126,9 +124,7 @@ add_library("${BAM}" SHARED
   "${INC_DIR}/bool_not.hh"
   "${INC_DIR}/bool_operation.hh"
   "${INC_DIR}/bool_or.hh"
-  "${INC_DIR}/bool_parser.hh"
   "${INC_DIR}/bool_service.hh"
-  "${INC_DIR}/bool_tokenizer.hh"
   "${INC_DIR}/bool_value.hh"
   "${INC_DIR}/bool_xor.hh"
   "${INC_DIR}/computable.hh"
@@ -190,8 +186,6 @@ set_target_properties("${BAM}" PROPERTIES PREFIX "")
 set(
   TESTS_SOURCES
   ${TESTS_SOURCES}
-  "${TEST_DIR}/bool_parser/get_tree.cc"
-  "${TEST_DIR}/bool_tokenizer/get_token.cc"
   "${TEST_DIR}/exp_parser/get_postfix.cc"
   "${TEST_DIR}/exp_tokenizer/next.cc"
   PARENT_SCOPE
