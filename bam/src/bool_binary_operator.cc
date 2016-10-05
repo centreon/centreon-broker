@@ -122,7 +122,7 @@ bool bool_binary_operator::child_has_update(
  *  @param[in] left Left member of the boolean operator.
  */
 void bool_binary_operator::set_left(
-                             misc::shared_ptr<bool_value>& left) {
+                             misc::shared_ptr<bool_value> const& left) {
   _left = left;
   return ;
 }
@@ -133,7 +133,7 @@ void bool_binary_operator::set_left(
  *  @param[in] right Right member of the boolean operator.
  */
 void bool_binary_operator::set_right(
-                             misc::shared_ptr<bool_value>& right) {
+                             misc::shared_ptr<bool_value> const& right) {
   _right = right;
   return ;
 }

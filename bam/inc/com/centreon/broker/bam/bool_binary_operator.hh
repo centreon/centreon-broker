@@ -45,8 +45,10 @@ namespace                 bam {
     bool                  child_has_update(
                             computable* child,
                             io::stream* visitor = NULL);
-    void                  set_left(misc::shared_ptr<bool_value>& left);
-    void                  set_right(misc::shared_ptr<bool_value>& right);
+    void                  set_left(
+                            misc::shared_ptr<bool_value> const& left);
+    void                  set_right(
+                            misc::shared_ptr<bool_value> const& right);
     bool                  state_known() const;
     bool                  in_downtime() const;
 
