@@ -739,7 +739,7 @@ void stream::_process_engine(
     {
       std::ostringstream ss;
       ss << "UPDATE " << (db_v2
-                          ? "isues_issues_parents"
+                          ? "issues_issues_parents"
                           : "rt_issues_issues_parents")
          << "  SET end_time=" << now
          << "  WHERE end_time=0 OR end_time IS NULL";
