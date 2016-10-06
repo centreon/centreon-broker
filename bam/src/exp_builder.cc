@@ -104,13 +104,14 @@ exp_builder::exp_builder(
         _check_arity("HOSTSTATUS()", 1, arity);
 
         // XXX
+        _pop_string();
       }
       // Service status.
       else if (func == "SERVICESTATUS") {
         // Arity check.
         _check_arity("SERVICESTATUS()", 2, arity);
-        std::string hst(_pop_string());
         std::string svc(_pop_string());
+        std::string hst(_pop_string());
 
         // Find host and service IDs.
         std::pair<unsigned int, unsigned int>
@@ -132,16 +133,27 @@ exp_builder::exp_builder(
       else if (func == "METRIC") {
         // Arity check.
         _check_arity("METRIC()", 3, arity);
+
+        // XXX
+        _pop_string();
+        _pop_string();
+        _pop_string();
       }
       // Multiple metrics.
       else if (func == "METRICS") {
         // Arity check.
         _check_arity("METRICS()", 1, arity);
+
+        // XXX
+        _pop_string();
       }
       // Call.
       else if (func == "CALL") {
         // Arity check.
         _check_arity("CALL()", 1, arity);
+
+        // XXX
+        _pop_string();
       }
       // Unsupported function.
       else
