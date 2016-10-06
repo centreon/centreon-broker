@@ -190,7 +190,7 @@ exp_parser::notation const& exp_parser::get_postfix() {
 
       // If the token at the top of the stack is a function, pop it
       // onto the output queue.
-      if (is_function(stack.top())) {
+      if (!stack.empty() && is_function(stack.top())) {
         _postfix.push_back(stack.top());
         stack.pop();
         std::ostringstream oss;
