@@ -62,7 +62,9 @@ exp_builder::exp_builder(
         // XXX
       }
       else if (*it == "NOTU") {
-        any_operand exp(new bool_not(_pop_operand()), "");
+        bool_value::ptr arg(_pop_operand());
+        any_operand exp(new bool_not(arg), "");
+        arg->add_parent(exp.first);
         _operands.push(exp);
       }
       // Binary operators.
@@ -93,8 +95,12 @@ exp_builder::exp_builder(
         else
           throw (exceptions::msg() << "unsupported operator "
                  << *it << " found while parsing expression");
-        binary->set_left(_pop_operand());
-        binary->set_right(_pop_operand());
+        bool_value::ptr right(_pop_operand());
+        bool_value::ptr left(_pop_operand());
+        left->add_parent(binary);
+        right->add_parent(binary);
+        binary->set_left(left);
+        binary->set_right(right);
         _operands.push(any_operand(binary, ""));
       }
     }
