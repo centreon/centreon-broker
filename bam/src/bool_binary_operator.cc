@@ -24,10 +24,10 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 bool_binary_operator::bool_binary_operator()
-  : _left_hard(false),
-    _left_soft(false),
-    _right_hard(false),
-    _right_soft(false),
+  : _left_hard(0.0),
+    _left_soft(0.0),
+    _right_hard(0.0),
+    _right_soft(0.0),
     _state_known(false),
     _in_downtime(false) {}
 
@@ -80,8 +80,8 @@ bool bool_binary_operator::child_has_update(
   // Check operation members values.
   if (child) {
     if (child == _left.data()) {
-      bool value_hard(_left->value_hard());
-      bool value_soft(_left->value_soft());
+      double value_hard(_left->value_hard());
+      double value_soft(_left->value_soft());
       if ((_left_hard != value_hard) || (_left_soft != value_soft)) {
         _left_hard = value_hard;
         _left_soft = value_soft;
@@ -89,8 +89,8 @@ bool bool_binary_operator::child_has_update(
       }
     }
     else if (child == _right.data()) {
-      bool value_hard(_right->value_hard());
-      bool value_soft(_right->value_soft());
+      double value_hard(_right->value_hard());
+      double value_soft(_right->value_soft());
       if ((_right_hard != value_hard) || (_right_soft == value_soft)) {
         _right_hard = value_hard;
         _right_soft = value_soft;

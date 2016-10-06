@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cmath>
 #include "com/centreon/broker/bam/bool_not_equal.hh"
 
 using namespace com::centreon::broker::bam;
@@ -56,7 +57,9 @@ bool_not_equal& bool_not_equal::operator=(bool_not_equal const& other) {
  *  @return Evaluation of the expression with hard values.
  */
 double bool_not_equal::value_hard() {
-  return (_left_hard != _right_hard);
+  return ((std::fabs(_left_hard - _right_hard) >= COMPARE_EPSILON)
+          ? 1.0
+          : 0.0);
 }
 
 /**
@@ -65,5 +68,7 @@ double bool_not_equal::value_hard() {
  *  @return Evaluation of the expression with soft values.
  */
 double bool_not_equal::value_soft() {
-  return (_left_soft != _right_soft);
+  return ((std::fabs(_left_soft - _right_soft) >= COMPARE_EPSILON)
+          ? 1.0
+          : 0.0);
 }
