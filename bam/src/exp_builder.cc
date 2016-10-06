@@ -25,6 +25,8 @@
 #include "com/centreon/broker/bam/bool_less_than.hh"
 #include "com/centreon/broker/bam/bool_more_than.hh"
 #include "com/centreon/broker/bam/bool_not.hh"
+#include "com/centreon/broker/bam/bool_not_equal.hh"
+#include "com/centreon/broker/bam/bool_operation.hh"
 #include "com/centreon/broker/bam/bool_or.hh"
 #include "com/centreon/broker/bam/bool_service.hh"
 #include "com/centreon/broker/bam/exp_builder.hh"
@@ -70,16 +72,24 @@ exp_builder::exp_builder(
           binary = new bool_and();
         else if (*it == "OR")
           binary = new bool_or();
-        else if (*it == "=")
+        else if ((*it == "=") || (*it == "IS"))
           binary = new bool_equal();
+        else if ((*it == "!=") || (*it == "NOT"))
+          binary = new bool_not_equal();
         else if (*it == ">")
           binary = new bool_more_than(true);
         else if (*it == ">=")
-          binary = new bool_more_than(true);
+          binary = new bool_more_than(false);
         else if (*it == "<")
           binary = new bool_less_than(true);
         else if (*it == "<=")
           binary = new bool_less_than(false);
+        else if ((*it == "+")
+                 || (*it == "-")
+                 || (*it == "*")
+                 || (*it == "/")
+                 || (*it == "%"))
+          binary = new bool_operation(*it);
         else
           throw (exceptions::msg() << "unsupported operator "
                  << *it << " found while parsing expression");
