@@ -82,3 +82,27 @@ TEST(BamExpParserGetPostfix, Valid2) {
   };
   ASSERT_EQ(p.get_postfix(), array_to_list(expected));
 }
+
+// Given an exp_parser object
+// When it is constructed with a valid expression
+// Then get_postfix() return its postfix notation
+TEST(BamExpParserGetPostfix, Valid3) {
+  bam::exp_parser p("{Host1 Service1} {IS} {OK} {AND} {Host2 Service2} {IS} {OK}");
+  char const* expected[] = {
+    "Host1",
+    "Service1",
+    "SERVICESTATUS",
+    "2",
+    "OK",
+    "IS",
+    "Host2",
+    "Service2",
+    "SERVICESTATUS",
+    "2",
+    "OK",
+    "IS",
+    "AND",
+    NULL
+  };
+  ASSERT_EQ(p.get_postfix(), array_to_list(expected));
+}
