@@ -33,10 +33,10 @@ using namespace com::centreon::broker::bam;
  */
 exp_parser::exp_parser(std::string const& expression)
   : _exp(expression) {
-  _precedence["IS"] = 2;
   _precedence["AND"] = 2;
   _precedence["OR"] = 2;
-  _precedence["NOT"] = 2;
+  _precedence["IS"] = 3;
+  _precedence["NOT"] = 3;
   _precedence[">"] = 3;
   _precedence[">="] = 3;
   _precedence["<"] = 3;
