@@ -1,5 +1,5 @@
 ##
-## Copyright 2011-2015 Centreon
+## Copyright 2011-2016 Centreon
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
 ## you may not use this file except in compliance with the License.
@@ -48,11 +48,10 @@ add_library("${BAM}" SHARED
   "${SRC_DIR}/bool_metric.cc"
   "${SRC_DIR}/bool_more_than.cc"
   "${SRC_DIR}/bool_not.cc"
+  "${SRC_DIR}/bool_not_equal.cc"
   "${SRC_DIR}/bool_operation.cc"
   "${SRC_DIR}/bool_or.cc"
-  "${SRC_DIR}/bool_parser.cc"
   "${SRC_DIR}/bool_service.cc"
-  "${SRC_DIR}/bool_tokenizer.cc"
   "${SRC_DIR}/bool_value.cc"
   "${SRC_DIR}/bool_xor.cc"
   "${SRC_DIR}/computable.cc"
@@ -79,6 +78,9 @@ add_library("${BAM}" SHARED
   "${SRC_DIR}/dimension_timeperiod_exclusion.cc"
   "${SRC_DIR}/dimension_ba_timeperiod_relation.cc"
   "${SRC_DIR}/dimension_truncate_table_signal.cc"
+  "${SRC_DIR}/exp_builder.cc"
+  "${SRC_DIR}/exp_parser.cc"
+  "${SRC_DIR}/exp_tokenizer.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/event_cache_visitor.cc"
   "${SRC_DIR}/hst_svc_mapping.cc"
@@ -121,11 +123,10 @@ add_library("${BAM}" SHARED
   "${INC_DIR}/bool_metric.hh"
   "${INC_DIR}/bool_more_than.hh"
   "${INC_DIR}/bool_not.hh"
+  "${INC_DIR}/bool_not_equal.hh"
   "${INC_DIR}/bool_operation.hh"
   "${INC_DIR}/bool_or.hh"
-  "${INC_DIR}/bool_parser.hh"
   "${INC_DIR}/bool_service.hh"
-  "${INC_DIR}/bool_tokenizer.hh"
   "${INC_DIR}/bool_value.hh"
   "${INC_DIR}/bool_xor.hh"
   "${INC_DIR}/computable.hh"
@@ -154,6 +155,9 @@ add_library("${BAM}" SHARED
   "${INC_DIR}/dimension_truncate_table_signal.hh"
   "${INC_DIR}/events.hh"
   "${INC_DIR}/event_cache_visitor.hh"
+  "${INC_DIR}/exp_builder.hh"
+  "${INC_DIR}/exp_parser.hh"
+  "${INC_DIR}/exp_tokenizer.hh"
   "${INC_DIR}/factory.hh"
   "${INC_DIR}/hst_svc_mapping.hh"
   "${INC_DIR}/impact_values.hh"
@@ -184,8 +188,8 @@ set_target_properties("${BAM}" PROPERTIES PREFIX "")
 set(
   TESTS_SOURCES
   ${TESTS_SOURCES}
-  "${TEST_DIR}/bool_parser/get_tree.cc"
-  "${TEST_DIR}/bool_tokenizer/get_token.cc"
+  "${TEST_DIR}/exp_parser/get_postfix.cc"
+  "${TEST_DIR}/exp_tokenizer/next.cc"
   PARENT_SCOPE
 )
 set(

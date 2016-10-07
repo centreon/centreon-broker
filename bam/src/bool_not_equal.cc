@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2016 Centreon
+** Copyright 2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -17,37 +17,37 @@
 */
 
 #include <cmath>
-#include "com/centreon/broker/bam/bool_equal.hh"
+#include "com/centreon/broker/bam/bool_not_equal.hh"
 
 using namespace com::centreon::broker::bam;
 
 /**
  *  Default constructor.
  */
-bool_equal::bool_equal() {}
+bool_not_equal::bool_not_equal() {}
 
 /**
  *  Copy constructor.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  */
-bool_equal::bool_equal(bool_equal const& right)
-  : bool_binary_operator(right) {}
+bool_not_equal::bool_not_equal(bool_not_equal const& other)
+  : bool_binary_operator(other) {}
 
 /**
  *  Destructor.
  */
-bool_equal::~bool_equal() {}
+bool_not_equal::~bool_not_equal() {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] right Object to copy.
+ *  @param[in] other  Object to copy.
  *
  *  @return This object.
  */
-bool_equal& bool_equal::operator=(bool_equal const& right) {
-  bool_binary_operator::operator=(right);
+bool_not_equal& bool_not_equal::operator=(bool_not_equal const& other) {
+  bool_binary_operator::operator=(other);
   return (*this);
 }
 
@@ -56,8 +56,8 @@ bool_equal& bool_equal::operator=(bool_equal const& right) {
  *
  *  @return Evaluation of the expression with hard values.
  */
-double bool_equal::value_hard() {
-  return ((std::fabs(_left_hard - _right_hard) < COMPARE_EPSILON)
+double bool_not_equal::value_hard() {
+  return ((std::fabs(_left_hard - _right_hard) >= COMPARE_EPSILON)
           ? 1.0
           : 0.0);
 }
@@ -67,8 +67,8 @@ double bool_equal::value_hard() {
  *
  *  @return Evaluation of the expression with soft values.
  */
-double bool_equal::value_soft() {
-  return ((std::fabs(_left_soft - _right_soft) < COMPARE_EPSILON)
+double bool_not_equal::value_soft() {
+  return ((std::fabs(_left_soft - _right_soft) >= COMPARE_EPSILON)
           ? 1.0
           : 0.0);
 }

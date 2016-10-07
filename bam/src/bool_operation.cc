@@ -85,13 +85,17 @@ double bool_operation::value_hard() {
   case multiplication:
     return (_left_hard * _right_hard);
   case division:
-    if (_right_hard == 0)
+    if (std::fabs(_right_hard) < COMPARE_EPSILON)
       return (NAN);
     return (_left_hard / _right_hard);
   case modulo:
-    if (_right_hard == 0)
-      return (NAN);
-    return (_left_hard % _right_hard);
+    {
+      long long left_val(static_cast<long long>(_left_hard));
+      long long right_val(static_cast<long long>(_right_hard));
+      if (right_val == 0)
+        return (NAN);
+      return (left_val % right_val);
+    }
   }
   return (NAN);
 }
@@ -110,13 +114,17 @@ double bool_operation::value_soft() {
   case multiplication:
     return (_left_soft * _right_soft);
   case division:
-    if (_right_soft == 0)
+    if (std::fabs(_right_soft) < COMPARE_EPSILON)
       return (NAN);
     return (_left_soft / _right_soft);
   case modulo:
-    if (_right_soft == 0)
-      return (NAN);
-    return (_left_soft % _right_soft);
+    {
+      long long left_val(static_cast<long long>(_left_soft));
+      long long right_val(static_cast<long long>(_right_soft));
+      if (right_val == 0)
+        return (NAN);
+      return (left_val % right_val);
+    }
   }
   return (NAN);
 }
@@ -130,7 +138,8 @@ bool bool_operation::state_known() const {
   bool known = bool_binary_operator::state_known();
   if (known
       && (_type == division || _type == modulo)
-      && (_right_hard == 0 || _right_soft == 0))
+      && ((std::fabs(_right_hard) < COMPARE_EPSILON)
+          || std::fabs(_right_soft) < COMPARE_EPSILON))
     return (false);
   else
     return (known);

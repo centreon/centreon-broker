@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014,2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ namespace     bam {
                 io::stream* visitor = NULL);
     void      set_value(misc::shared_ptr<bool_value>& value);
     double    value_hard();
-    double       value_soft();
+    double    value_soft();
     bool      state_known() const;
     bool      in_downtime() const;
 
