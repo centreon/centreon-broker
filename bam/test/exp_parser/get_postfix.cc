@@ -106,3 +106,29 @@ TEST(BamExpParserGetPostfix, Valid3) {
   };
   ASSERT_EQ(p.get_postfix(), array_to_list(expected));
 }
+
+// Given an exp_parser object
+// When it is constructed with a valid expression
+// Then get_postfix() return its postfix notation
+TEST(BamExpParserGetPostfix, Valid4) {
+  bam::exp_parser p("SERVICESTATUS('MyHost1','MyService1')!=OK||(42+36<SERVICESTATUS('MyHost2',\"MyService2\"))");
+  char const* expected[] = {
+    "MyHost1",
+    "MyService1",
+    "SERVICESTATUS",
+    "2",
+    "OK",
+    "!=",
+    "42",
+    "36",
+    "+",
+    "MyHost2",
+    "MyService2",
+    "SERVICESTATUS",
+    "2",
+    "<",
+    "||",
+    NULL
+  };
+  ASSERT_EQ(p.get_postfix(), array_to_list(expected));
+}

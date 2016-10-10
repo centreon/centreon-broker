@@ -33,7 +33,9 @@ using namespace com::centreon::broker::bam;
  */
 exp_parser::exp_parser(std::string const& expression)
   : _exp(expression) {
+  _precedence["&&"] = 2;
   _precedence["AND"] = 2;
+  _precedence["||"] = 2;
   _precedence["OR"] = 2;
   _precedence["IS"] = 3;
   _precedence["NOT"] = 3;
@@ -42,6 +44,7 @@ exp_parser::exp_parser(std::string const& expression)
   _precedence["<"] = 3;
   _precedence["<="] = 3;
   _precedence["="] = 3;
+  _precedence["!="] = 3;
   _precedence["+"] = 4;
   _precedence["-"] = 4;
   _precedence["*"] = 5;
@@ -148,8 +151,8 @@ exp_parser::notation const& exp_parser::get_postfix() {
       if (can_be_unary && (token == "-")) {
         stack.push("-u");
       }
-      else if (token == "NOT") {
-        stack.push("NOTU");
+      else if ((token == "NOT") || (token == "!")) {
+        stack.push("!");
       }
       else {
         // While there is an operator token o2 at the top of the stack...
@@ -273,10 +276,13 @@ bool exp_parser::is_operator(std::string const& token) {
           || (token == "<=")
           || (token == "=")
           || (token == "IS")
-          || (token == "AND")
-          || (token == "OR")
           || (token == "NOT")
-          || (token == "NOTU"));
+          || (token == "!=")
+          || (token == "!")
+          || (token == "AND")
+          || (token == "&&")
+          || (token == "OR")
+          || (token == "||"));
 }
 
 /**

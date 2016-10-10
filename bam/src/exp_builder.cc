@@ -61,7 +61,7 @@ exp_builder::exp_builder(
       if (*it == "-u") {
         // XXX
       }
-      else if (*it == "NOTU") {
+      else if (*it == "!") {
         bool_value::ptr arg(_pop_operand());
         any_operand exp(new bool_not(arg), "");
         arg->add_parent(exp.first);

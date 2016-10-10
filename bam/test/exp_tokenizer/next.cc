@@ -84,7 +84,7 @@ TEST(BamExpTokenizerNext, Valid3) {
 // Given an exp_tokenizer object
 // When it is constructed with a valid expression
 // Then next() returns the tokens one after the other
-TEST(BamExpTokenizerNext, Valid4) {
+TEST(BamExpTokenizerNext, NoSpaces1) {
   bam::exp_tokenizer toknzr("!HOSTSTATUS('MyHost1')!=HOSTSTATUS('MyHost2')||HOSTSTATUS(\"MyHost3\")");
   ASSERT_EQ(toknzr.next(), "!");
   ASSERT_EQ(toknzr.next(), "HOSTSTATUS");
@@ -100,6 +100,35 @@ TEST(BamExpTokenizerNext, Valid4) {
   ASSERT_EQ(toknzr.next(), "HOSTSTATUS");
   ASSERT_EQ(toknzr.next(), "(");
   ASSERT_EQ(toknzr.next(), "MyHost3");
+  ASSERT_EQ(toknzr.next(), ")");
+  ASSERT_EQ(toknzr.next(), "");
+}
+
+// Given an exp_tokenizer object
+// When it is constructed with a valid expression
+// Then next() returns the tokens one after the other
+TEST(BamExpTokenizerNext, NoSpaces2) {
+  bam::exp_tokenizer toknzr("SERVICESTATUS('MyHost1','MyService1')!=OK||(42+36<SERVICESTATUS('MyHost2',\"MyService2\"))");
+  ASSERT_EQ(toknzr.next(), "SERVICESTATUS");
+  ASSERT_EQ(toknzr.next(), "(");
+  ASSERT_EQ(toknzr.next(), "MyHost1");
+  ASSERT_EQ(toknzr.next(), ",");
+  ASSERT_EQ(toknzr.next(), "MyService1");
+  ASSERT_EQ(toknzr.next(), ")");
+  ASSERT_EQ(toknzr.next(), "!=");
+  ASSERT_EQ(toknzr.next(), "OK");
+  ASSERT_EQ(toknzr.next(), "||");
+  ASSERT_EQ(toknzr.next(), "(");
+  ASSERT_EQ(toknzr.next(), "42");
+  ASSERT_EQ(toknzr.next(), "+");
+  ASSERT_EQ(toknzr.next(), "36");
+  ASSERT_EQ(toknzr.next(), "<");
+  ASSERT_EQ(toknzr.next(), "SERVICESTATUS");
+  ASSERT_EQ(toknzr.next(), "(");
+  ASSERT_EQ(toknzr.next(), "MyHost2");
+  ASSERT_EQ(toknzr.next(), ",");
+  ASSERT_EQ(toknzr.next(), "MyService2");
+  ASSERT_EQ(toknzr.next(), ")");
   ASSERT_EQ(toknzr.next(), ")");
   ASSERT_EQ(toknzr.next(), "");
 }
