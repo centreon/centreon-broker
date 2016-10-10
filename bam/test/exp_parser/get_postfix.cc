@@ -111,7 +111,7 @@ TEST(BamExpParserGetPostfix, Valid3) {
 // When it is constructed with a valid expression
 // Then get_postfix() return its postfix notation
 TEST(BamExpParserGetPostfix, Valid4) {
-  bam::exp_parser p("SERVICESTATUS('MyHost1','MyService1')!=OK||(42+36<SERVICESTATUS('MyHost2',\"MyService2\"))");
+  bam::exp_parser p("SERVICESTATUS('MyHost1','MyService1')!=OK||(42+36==SERVICESTATUS('MyHost2',\"MyService2\"))");
   char const* expected[] = {
     "MyHost1",
     "MyService1",
@@ -126,7 +126,7 @@ TEST(BamExpParserGetPostfix, Valid4) {
     "MyService2",
     "SERVICESTATUS",
     "2",
-    "<",
+    "==",
     "||",
     NULL
   };

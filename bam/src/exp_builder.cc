@@ -74,7 +74,7 @@ exp_builder::exp_builder(
           binary = new bool_and();
         else if ((*it == "||") || (*it == "OR"))
           binary = new bool_or();
-        else if ((*it == "=") || (*it == "IS"))
+        else if ((*it == "==") || (*it == "IS"))
           binary = new bool_equal();
         else if ((*it == "!=") || (*it == "NOT"))
           binary = new bool_not_equal();

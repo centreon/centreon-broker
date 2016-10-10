@@ -82,8 +82,9 @@ std::string exp_tokenizer::next() {
       // Special char. Most of them are single-charaters token.
       if (_is_special_char()) {
         if ((_current + 1 < _size)
-            // Double character exceptions: !=, >=, <=.
-            && ((((_text[_current] == '!')
+            // Double character exceptions: ==, !=, >=, <=.
+            && ((((_text[_current] == '=')
+                  || (_text[_current] == '!')
                   || (_text[_current] == '<')
                   || (_text[_current] == '>'))
                  && (_text[_current + 1] == '='))
@@ -94,12 +95,6 @@ std::string exp_tokenizer::next() {
           retval.push_back(_text[_current]);
           retval.push_back(_text[_current + 1]);
           _next = _current + 2;
-        }
-        else if (((_text[_current] == '|')
-                  || (_text[_current] == '&'))
-                 && (_current + 1 < _size)
-                 && (_text[_current] == _text[_current + 1])) {
-
         }
         else {
           retval.push_back(_text[_current]);

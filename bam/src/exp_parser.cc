@@ -43,7 +43,7 @@ exp_parser::exp_parser(std::string const& expression)
   _precedence[">="] = 3;
   _precedence["<"] = 3;
   _precedence["<="] = 3;
-  _precedence["="] = 3;
+  _precedence["=="] = 3;
   _precedence["!="] = 3;
   _precedence["+"] = 4;
   _precedence["-"] = 4;
@@ -274,7 +274,7 @@ bool exp_parser::is_operator(std::string const& token) {
           || (token == ">=")
           || (token == "<")
           || (token == "<=")
-          || (token == "=")
+          || (token == "==")
           || (token == "IS")
           || (token == "NOT")
           || (token == "!=")

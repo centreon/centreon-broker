@@ -108,7 +108,7 @@ TEST(BamExpTokenizerNext, NoSpaces1) {
 // When it is constructed with a valid expression
 // Then next() returns the tokens one after the other
 TEST(BamExpTokenizerNext, NoSpaces2) {
-  bam::exp_tokenizer toknzr("SERVICESTATUS('MyHost1','MyService1')!=OK||(42+36<SERVICESTATUS('MyHost2',\"MyService2\"))");
+  bam::exp_tokenizer toknzr("SERVICESTATUS('MyHost1','MyService1')!=OK||(42+36==SERVICESTATUS('MyHost2',\"MyService2\"))");
   ASSERT_EQ(toknzr.next(), "SERVICESTATUS");
   ASSERT_EQ(toknzr.next(), "(");
   ASSERT_EQ(toknzr.next(), "MyHost1");
@@ -122,7 +122,7 @@ TEST(BamExpTokenizerNext, NoSpaces2) {
   ASSERT_EQ(toknzr.next(), "42");
   ASSERT_EQ(toknzr.next(), "+");
   ASSERT_EQ(toknzr.next(), "36");
-  ASSERT_EQ(toknzr.next(), "<");
+  ASSERT_EQ(toknzr.next(), "==");
   ASSERT_EQ(toknzr.next(), "SERVICESTATUS");
   ASSERT_EQ(toknzr.next(), "(");
   ASSERT_EQ(toknzr.next(), "MyHost2");
