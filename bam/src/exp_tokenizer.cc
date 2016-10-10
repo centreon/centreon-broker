@@ -80,15 +80,26 @@ std::string exp_tokenizer::next() {
     // Check if there are more tokens to read.
     if (_current < _size) {
       // Special char. Most of them are single-charaters token.
-      // Exceptions are >= and <=.
       if (_is_special_char()) {
-        if (((_text[_current] == '<')
-             || (_text[_current] == '>'))
-            && (_current + 1 < _size)
-            && (_text[_current + 1] == '=')) {
+        if ((_current + 1 < _size)
+            // Double character exceptions: !=, >=, <=.
+            && ((((_text[_current] == '!')
+                  || (_text[_current] == '<')
+                  || (_text[_current] == '>'))
+                 && (_text[_current + 1] == '='))
+            // Double character exceptions: ||, &&.
+                || (((_text[_current] == '|')
+                     || (_text[_current] == '&'))
+                    && (_text[_current] == _text[_current + 1])))) {
           retval.push_back(_text[_current]);
           retval.push_back(_text[_current + 1]);
           _next = _current + 2;
+        }
+        else if (((_text[_current] == '|')
+                  || (_text[_current] == '&'))
+                 && (_current + 1 < _size)
+                 && (_text[_current] == _text[_current + 1])) {
+
         }
         else {
           retval.push_back(_text[_current]);
@@ -280,8 +291,11 @@ bool exp_tokenizer::_is_special_char() {
     case '/':
     case '%':
     case '=':
+    case '!':
     case '>':
     case '<':
+    case '|':
+    case '&':
       return (true);
   }
   return (false);

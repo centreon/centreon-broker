@@ -82,6 +82,29 @@ TEST(BamExpTokenizerNext, Valid3) {
 }
 
 // Given an exp_tokenizer object
+// When it is constructed with a valid expression
+// Then next() returns the tokens one after the other
+TEST(BamExpTokenizerNext, Valid4) {
+  bam::exp_tokenizer toknzr("!HOSTSTATUS('MyHost1')!=HOSTSTATUS('MyHost2')||HOSTSTATUS(\"MyHost3\")");
+  ASSERT_EQ(toknzr.next(), "!");
+  ASSERT_EQ(toknzr.next(), "HOSTSTATUS");
+  ASSERT_EQ(toknzr.next(), "(");
+  ASSERT_EQ(toknzr.next(), "MyHost1");
+  ASSERT_EQ(toknzr.next(), ")");
+  ASSERT_EQ(toknzr.next(), "!=");
+  ASSERT_EQ(toknzr.next(), "HOSTSTATUS");
+  ASSERT_EQ(toknzr.next(), "(");
+  ASSERT_EQ(toknzr.next(), "MyHost2");
+  ASSERT_EQ(toknzr.next(), ")");
+  ASSERT_EQ(toknzr.next(), "||");
+  ASSERT_EQ(toknzr.next(), "HOSTSTATUS");
+  ASSERT_EQ(toknzr.next(), "(");
+  ASSERT_EQ(toknzr.next(), "MyHost3");
+  ASSERT_EQ(toknzr.next(), ")");
+  ASSERT_EQ(toknzr.next(), "");
+}
+
+// Given an exp_tokenizer object
 // When it is constructed with a valid expression of the old syntax
 // Then next() returns the tokens one after the other
 TEST(BamExpTokenizerNext, OldSyntax1) {
