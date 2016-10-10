@@ -70,9 +70,9 @@ exp_builder::exp_builder(
       // Binary operators.
       else {
         bool_binary_operator::ptr binary;
-        if (*it == "AND")
+        if ((*it == "&&") || (*it == "AND"))
           binary = new bool_and();
-        else if (*it == "OR")
+        else if ((*it == "||") || (*it == "OR"))
           binary = new bool_or();
         else if ((*it == "=") || (*it == "IS"))
           binary = new bool_equal();
