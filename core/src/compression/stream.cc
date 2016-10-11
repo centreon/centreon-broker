@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -54,7 +54,11 @@ stream::stream(stream const& other) : io::stream(other) {
  *  Destructor.
  */
 stream::~stream() {
-  _flush();
+  try {
+    _flush();
+  }
+  // Ignore exception whatever the error might be.
+  catch (...) {}
 }
 
 /**

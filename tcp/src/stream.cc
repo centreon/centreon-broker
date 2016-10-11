@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -65,15 +65,19 @@ stream::stream(int socket_descriptor)
  *  Destructor.
  */
 stream::~stream() {
-  // Destructor of socket will properly shutdown connection.
-  if (_socket_descriptor != -1)
-    _initialize_socket();
-  // Close the socket.
-  if (_socket.get())
-    _socket->close();
-  // Remove from parent.
-  if (_parent)
-    _parent->remove_child(_name);
+  try {
+    // Destructor of socket will properly shutdown connection.
+    if (_socket_descriptor != -1)
+      _initialize_socket();
+    // Close the socket.
+    if (_socket.get())
+      _socket->close();
+    // Remove from parent.
+    if (_parent)
+      _parent->remove_child(_name);
+  }
+  // Ignore exception, whatever the error might be.
+  catch (...) {}
 }
 
 /**
