@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2014 Centreon
+** Copyright 2009-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -52,12 +52,16 @@ stream::stream(gnutls_session_t* sess)
  *  been released yet.
  */
 stream::~stream() {
-  if (_session) {
-    gnutls_bye(*_session, GNUTLS_SHUT_RDWR);
-    gnutls_deinit(*_session);
-    delete (_session);
-    _session = NULL;
+  try {
+    if (_session) {
+      gnutls_bye(*_session, GNUTLS_SHUT_RDWR);
+      gnutls_deinit(*_session);
+      delete (_session);
+      _session = NULL;
+    }
   }
+  // Ignore exception, whatever the error might be.
+  catch (...) {}
 }
 
 /**
