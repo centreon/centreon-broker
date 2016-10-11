@@ -64,7 +64,7 @@ dependencies:
 * CMake **(>= 2.8)**, a cross-platform build system.
 * the Qt **(>= 4.7.4)** framework with QtCore, QtSql and QtXml modules.
 * RRDTool development files (for the RRD module).
-* GnuTLS **(>= 2.0)**, a secure communications library.
+* GnuTLS **(>= 2.8)**, a secure communications library.
 
 This program is compatible only with Unix-like platforms (Linux,
 FreeBSD, Solaris, ...).
@@ -111,8 +111,7 @@ Qt **(>= 4.7.4)**           qt4-devel                  Centreon Broker require Q
                                                        Centreon for example).
 RRDTool                     rrdtool-devel              Development files for RRD file
                                                        (graph) creation and update.
-GnuTLS **(>= 2.0)**         gnutls-devel (el6)         Development files for gnutls.
-                            compat-gnutls2-devel (el5)
+GnuTLS **(>= 2.8)**         gnutls-devel               Development files for gnutls.
 =========================== ========================== ================================
 
 #. Install basic compilation tools ::
@@ -169,7 +168,7 @@ Qt **(>= 4.7.4)**           libqt4-dev       Centreon Broker require Qt
                                              Centreon for example).
 RRDTool                     librrd-dev       Development files for RRD file
                                              (graph) creation and update.
-GnuTLS **(>= 2.0)**         libgnutls28-dev  Development files for gnutls.
+GnuTLS **(>= 2.8)**         libgnutls28-dev  Development files for gnutls.
 =========================== ================ ================================
 
 #. Install compilation tools ::
@@ -211,7 +210,7 @@ Qt **(>= 4.7.4)**           libqt4-devel      Centreon Broker require Qt
                                               Centreon for example).
 RRDTool                     rrdtool-devel     Development files for RRD file
                                               (graph) creation and update.
-GnuTLS **(>= 2.0)**         libgnutls-devel   Development files for gnutls.
+GnuTLS **(>= 2.8)**         libgnutls-devel   Development files for gnutls.
 =========================== ================= ================================
 
 #. Install compilation tools ::
