@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015 Centreon
+** Copyright 2011-2013,2015-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -63,6 +63,7 @@ namespace           processing {
                       misc::shared_ptr<io::endpoint> endp);
     void            exit();
     time_t          get_buffering_timeout() const throw ();
+    bool            get_initialized() const throw ();
     time_t          get_retry_interval() const throw ();
     bool            read(
                       misc::shared_ptr<io::data>& d,
@@ -106,6 +107,7 @@ namespace           processing {
     misc::shared_ptr<failover>
                     _failover;
     bool            _failover_launched;
+    volatile bool   _initialized;
     time_t          _next_timeout;
     time_t          _read_timeout;
     volatile time_t _retry_interval;

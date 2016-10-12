@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ failover::failover(
     _buffering_timeout(0),
     _endpoint(endp),
     _failover_launched(false),
+    _initialized(false),
     _next_timeout((time_t)-1),
     _read_timeout((time_t)-1),
     _retry_interval(30),
@@ -88,6 +89,15 @@ void failover::exit() {
  */
 time_t failover::get_buffering_timeout() const throw () {
   return (_buffering_timeout);
+}
+
+/**
+ *  Check whether or not the thread has initialize.
+ *
+ *  @return True if the thread is initializable. That is it is read()able.
+ */
+bool failover::get_initialized() const throw () {
+  return (_initialized);
 }
 
 /**
@@ -196,6 +206,7 @@ void failover::run() {
           QMutexLocker stream_lock(&_streamm);
           _stream = s;
         }
+        _initialized = true;
         set_last_connection_success(timestamp::now());
       }
       _update_status("");
@@ -408,6 +419,7 @@ void failover::run() {
         _stream.clear();
       }
       _launch_failover();
+      _initialized = true;
     }
     catch (...) {
       logging::error(logging::high) << "failover: endpoint '" << _name
@@ -418,6 +430,7 @@ void failover::run() {
         _stream.clear();
       }
       _launch_failover();
+      _initialized = true;
     }
 
     // Clear stream.
@@ -642,6 +655,8 @@ void failover::_launch_failover() {
   if (!_failover.isNull() && !_failover_launched) {
     _failover_launched = true;
     _failover->start();
+    while (!_failover->get_initialized() && !_failover->wait(10))
+      yieldCurrentThread();
   }
   return ;
 }
