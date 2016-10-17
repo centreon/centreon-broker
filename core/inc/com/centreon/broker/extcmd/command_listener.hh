@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -65,8 +65,8 @@ namespace                 extcmd {
     std::map<std::string, pending_command>
                           _pending;
     QMutex                _pendingm;
-    static int const      _request_timeout = 10;
-    static int const      _result_timeout = 30;
+    static int const      _request_timeout = 30;
+    static int const      _result_timeout = 60;
   };
 }
 
