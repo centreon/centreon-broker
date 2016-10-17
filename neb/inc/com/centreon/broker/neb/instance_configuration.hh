@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Centreon
+** Copyright 2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ namespace          neb {
     unsigned int   type() const;
 
     bool           loaded;
+    unsigned int   poller_id;
 
     static mapping::entry const
                    entries[];

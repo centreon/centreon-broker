@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ using namespace com::centreon::broker::neb;
  *  Initialize members to 0, NULL or equivalent.
  */
 instance_configuration::instance_configuration()
-  : loaded(false) {}
+  : loaded(false), poller_id(0) {}
 
 /**
  *  @brief Copy constructor.
@@ -62,9 +62,11 @@ instance_configuration::~instance_configuration() {}
  *  @param[in] i Object to copy.
  */
 instance_configuration& instance_configuration::operator=(
-  instance_configuration const& i) {
-  io::data::operator=(i);
-  _internal_copy(i);
+                                                  instance_configuration const& i) {
+  if (this != &i) {
+    io::data::operator=(i);
+    _internal_copy(i);
+  }
   return (*this);
 }
 
@@ -88,6 +90,9 @@ mapping::entry const instance_configuration::entries[] = {
   mapping::entry(
     &instance_configuration::loaded,
     "loaded"),
+  mapping::entry(
+    &instance_configuration::poller_id,
+    "poller_id"),
   mapping::entry()
 };
 
@@ -114,7 +119,9 @@ io::event_info::event_operations const instance_configuration::operations = {
  *
  *  @param[in] i Object to copy.
  */
-void instance_configuration::_internal_copy(instance_configuration const& i) {
+void instance_configuration::_internal_copy(
+                               instance_configuration const& i) {
   loaded = i.loaded;
+  poller_id = i.poller_id;
   return ;
 }

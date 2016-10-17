@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013,2015 Centreon
+** Copyright 2009-2013,2015-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,9 +16,11 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/node_events_factory.hh"
@@ -306,6 +308,24 @@ extern "C" {
                                   7);
     }
 
+    return ;
+  }
+
+  /**
+   *  Module update routine. Will send a configuration update message.
+   *
+   *  @param[in] arg  Module argument.
+   */
+  void broker_module_update(void const* arg) {
+    (void)arg;
+    logging::info(logging::medium)
+      << "NEB: sending instance configuration loading event after reload";
+    misc::shared_ptr<neb::instance_configuration>
+      ic(new neb::instance_configuration);
+    ic->loaded = true;
+    ic->poller_id = config::applier::state::instance().poller_id();
+    multiplexing::publisher publishr;
+    publishr.write(ic);
     return ;
   }
 }

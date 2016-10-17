@@ -50,8 +50,6 @@ extern "C" {
   nebmodule* neb_module_list;
 }
 
-static bool loaded_successfully = true;
-
 /**************************************
 *                                     *
 *          Static Functions           *
@@ -415,19 +413,12 @@ static void send_service_list() {
  *  Send the instance configuration loaded event.
  */
 static void send_instance_configuration() {
-  // Log message.
-  const char* loaded =
-    loaded_successfully ? "loaded" : "not loaded";
   logging::info(logging::medium)
-    << "init: sending instance configuration loaded event:"
-       " configuration '" << loaded << "'";
-
+    << "init: sending initial instance configuration loading event";
   misc::shared_ptr<neb::instance_configuration>
     ic(new neb::instance_configuration);
-
-  ic->source_id = config::applier::state::instance().poller_id();
-  ic->loaded = loaded_successfully;
-
+  ic->loaded = true;
+  ic->poller_id = config::applier::state::instance().poller_id();
   neb::gl_publisher.write(ic);
 }
 

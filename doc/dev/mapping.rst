@@ -206,7 +206,7 @@ Host
 ============================== ================ ========================= =============
 Property                       Type             Description               Version
 ============================== ================ ========================= =============
-acknowledged                   boolean      
+acknowledged                   boolean
 acknowledgement_type           short integer
 action_url                     string
 active_checks_enabled          boolean
@@ -328,7 +328,7 @@ Host group
 ============== ================ =========================================== =============
 Property      Type             Description                                 Version
 ============== ================ =========================================== =============
-host_group_id  unsigned integer 
+host_group_id  unsigned integer
 name           string           Group name.
 enabled        boolean          True if the group is enabled, false if it
                                 is not (deletion).
@@ -670,7 +670,7 @@ Service group
 ================ ================ ============================================ =============
 Property         Type             Description                                  Version
 ================ ================ ============================================ =============
-id               unsigned integer 
+id               unsigned integer
 name             string           Group name.
 enabled          enabled          True if the group is enable, false if it is
                                   not (deletion).
@@ -683,7 +683,7 @@ Service group member
 =============== ================ ============================================ =============
 Property        Type             Description                                  Version
 =============== ================ ============================================ =============
-id              unsigned integer 
+id              unsigned integer
 host_id         unsigned integer
 service_id      unsigned integer
 enabled         enabled          True if the group is enable, false if it is
@@ -753,7 +753,9 @@ Instance configuration
 =============== ================ ============================================ =============
 Property        Type             Description                                  Version
 =============== ================ ============================================ =============
-loaded          boolean          True if the instance loaded successfully. 
+loaded          boolean          True if the instance loaded successfully.
+poller_id       unsigned integer ID of the poller which received a
+                                 configuration update request (reload).
 =============== ================ ============================================ =============
 
 *******
@@ -1357,7 +1359,7 @@ Command result
 Property                     Type             Description                                     Version
 ============================ ================ =============================================== =============
 code                         integer          The return code of this command.
-uuid                         string           The uuid of the request this command is the 
+uuid                         string           The uuid of the request this command is the
                                               result of.
 msg                          string           The string message of the command result.
 ============================ ================ =============================================== =============
