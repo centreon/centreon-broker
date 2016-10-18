@@ -123,6 +123,12 @@ ceof_iterator ceof_parser::parse() {
       if (substr == "}")
         throw (exceptions::msg()
                << "expected value instead of '{' at position " << actual);
+      size_t trimmed(substr.find_last_not_of(" \t"));
+      substr = substr.substr(
+                        0,
+                        (trimmed == std::string::npos)
+                        ? std::string::npos
+                        : trimmed + 1);
       _tokens.push_back(
         ceof_token(ceof_token::value, substr, _tokens.size(), parent_token));
       state = in_object_waiting_for_key;

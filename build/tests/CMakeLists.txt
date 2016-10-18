@@ -26,6 +26,7 @@ include_directories("${PROJECT_SOURCE_DIR}/bam/inc")
 # Unit test executable.
 add_executable("ut"
   # Core sources.
+  "${TESTS_DIR}/ceof/ceof_parser/parse.cc"
   "${TESTS_DIR}/exceptions/msg/default.cc"
   # Module sources.
   ${TESTS_SOURCES}
