@@ -784,7 +784,7 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
   }
   // Case 2: state ok or not every kpi in downtime, actual downtime.
   //         Remove the downtime.
-  else if ((state_ok || every_kpi_in_downtime)
+  else if ((state_ok || !every_kpi_in_downtime)
            && _inherited_downtime.get()) {
     _inherited_downtime.reset();
     if (visitor) {
