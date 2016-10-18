@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -286,7 +286,7 @@ void applier::ba::_internal_copy(applier::ba const& other) {
 misc::shared_ptr<bam::ba> applier::ba::_new_ba(
                                          configuration::ba const& cfg,
                                          service_book& book) {
-  misc::shared_ptr<bam::ba> obj(new bam::ba);
+  misc::shared_ptr<bam::ba> obj(new bam::ba(false));
   obj->set_id(cfg.get_id());
   obj->set_host_id(cfg.get_host_id());
   obj->set_service_id(cfg.get_service_id());
