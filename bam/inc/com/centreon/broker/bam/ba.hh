@@ -99,6 +99,7 @@ namespace        bam {
       misc::shared_ptr<kpi> kpi_ptr;
       impact_values         hard_impact;
       impact_values         soft_impact;
+      bool                  in_downtime;
     };
 
     void         _apply_impact(impact_info& impact);

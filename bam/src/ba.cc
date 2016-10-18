@@ -112,6 +112,7 @@ void ba::add_impact(misc::shared_ptr<kpi> const& impact) {
     ii.kpi_ptr = impact;
     impact->impact_hard(ii.hard_impact);
     impact->impact_soft(ii.soft_impact);
+    ii.in_downtime = impact->in_downtime();
     _apply_impact(ii);
     timestamp last_state_change(impact->get_last_state_change());
     if (last_state_change.get_time_t() != (time_t)-1)
@@ -141,6 +142,7 @@ bool ba::child_has_update(
     impact_values new_soft_impact;
     it->second.kpi_ptr->impact_hard(new_hard_impact);
     it->second.kpi_ptr->impact_soft(new_soft_impact);
+    bool kpi_in_downtime(it->second.kpi_ptr->in_downtime());
 
     // Logging.
     logging::debug(logging::low) << "BAM: BA " << _id
@@ -151,7 +153,8 @@ bool ba::child_has_update(
 
     // If the new impact is the same as the old, don't update.
     if (it->second.hard_impact == new_hard_impact
-        && it->second.soft_impact == new_soft_impact)
+        && it->second.soft_impact == new_soft_impact
+        && it->second.in_downtime == kpi_in_downtime)
       return (false);
     timestamp last_state_change(
                 it->second.kpi_ptr->get_last_state_change());
