@@ -756,36 +756,21 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
   if (!_inherit_kpi_downtime)
     return ;
 
-  // Check if every impacting child kpis are in downtime.
-  enum {
-    unknown,
-    yes,
-    no
-  } every_kpi_in_downtime = _impacts.empty() ? no : unknown;
+  // Check if every impacting child KPIs are in downtime.
+  bool every_kpi_in_downtime(!_impacts.empty());
   for (umap<kpi*, impact_info>::const_iterator
          it = _impacts.begin(),
          end = _impacts.end();
        it != end;
        ++it) {
-    if (every_kpi_in_downtime == unknown
-        && !it->first->ok_state()
-        && it->first->in_downtime()) {
-      every_kpi_in_downtime = yes;
-    }
-    else if (every_kpi_in_downtime == yes
-             && !it->first->ok_state()
-             && !it->first->in_downtime()) {
-      every_kpi_in_downtime = no;
-      break;
-    }
+    if (!it->first->ok_state() && !it->first->in_downtime())
+      every_kpi_in_downtime = false;
   }
-  if (every_kpi_in_downtime == unknown)
-    every_kpi_in_downtime = no;
 
+  // Case 1: state not ok, every child in downtime, no actual downtime.
+  //         Put the BA in downtime.
   bool state_ok(!get_state_hard());
-  // Ideally, a state machine should be used, but this will suffice for now.
-  // Case 1: state not ok, every child in downtime, no actual downtime: put the ba in downtime.
-  if (!state_ok && every_kpi_in_downtime == yes && !_inherited_downtime.get()) {
+  if (!state_ok && every_kpi_in_downtime && !_inherited_downtime.get()) {
     _inherited_downtime.reset(new inherited_downtime);
     _inherited_downtime->ba_id = _id;
     _inherited_downtime->in_downtime = true;
@@ -794,9 +779,10 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
         misc::shared_ptr<inherited_downtime>(
                 new inherited_downtime(*_inherited_downtime)));
   }
-  // Case 2: state ok or not every kpi in downtime, actual downtime: remove the downtime
-  else if ((state_ok || every_kpi_in_downtime == no)
-             && _inherited_downtime.get()) {
+  // Case 2: state ok or not every kpi in downtime, actual downtime.
+  //         Remove the downtime.
+  else if ((state_ok || every_kpi_in_downtime)
+           && _inherited_downtime.get()) {
     _inherited_downtime.reset();
     if (visitor) {
       misc::shared_ptr<inherited_downtime> dwn(new inherited_downtime);
@@ -805,5 +791,4 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
       visitor->write(dwn);
     }
   }
-
 }
