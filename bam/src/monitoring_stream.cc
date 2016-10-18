@@ -375,7 +375,7 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
     inherited_downtime const& dwn = data.ref_as<inherited_downtime const>();
     if (dwn.in_downtime)
       oss << "[" << now << "] SCHEDULE_SVC_DOWNTIME;_Module_BAM_1;ba_"
-          << dwn.ba_id << ";;" << timestamp::max()
+          << dwn.ba_id << ";" << now << ";" << timestamp::max()
           << ";1;0;0;Centreon Broker BAM Module;"
              "Automatic downtime triggered by BA downtime inheritance";
     else
