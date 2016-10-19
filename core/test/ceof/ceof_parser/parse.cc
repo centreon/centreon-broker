@@ -41,8 +41,7 @@ TEST(CeofCeofParserParse, Valid1) {
   ASSERT_EQ((++child).get_value(), "centreon-discovery-nmap");
   ASSERT_EQ((++child).get_value(), "command_line");
   ASSERT_EQ((++child).get_value(), "perl /usr/lib/nagios/plugins/centreon-plugins/centreon_plugins.pl --plugin=discovery::nmap::plugin --mode=fastscan --range=\"$NETWORK$\"");
-  ASSERT_EQ((++child).get_value(), "");
-  ASSERT_TRUE(child.end());
+  ASSERT_TRUE((++child).end());
   ++it;
   ASSERT_EQ(it.get_value(), "command");
   child = it.enter_children();
@@ -50,8 +49,7 @@ TEST(CeofCeofParserParse, Valid1) {
   ASSERT_EQ((++child).get_value(), "centreon-discovery-toto");
   ASSERT_EQ((++child).get_value(), "command_line");
   ASSERT_EQ((++child).get_value(), "/usr/lib/nagios/plugins/check_centreon_dummy");
-  ASSERT_EQ((++child).get_value(), "");
-  ASSERT_TRUE(child.end());
+  ASSERT_TRUE((++child).end());
   ++it;
   ASSERT_TRUE(it.end());
 }
