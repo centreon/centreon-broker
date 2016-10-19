@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013,2015 Centreon
+** Copyright 2009-2013,2015-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -26,13 +26,17 @@
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/logging/manager.hh"
+#include "com/centreon/broker/misc/shared_ptr.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/callbacks.hh"
+#include "com/centreon/broker/neb/instance_configuration.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/monitoring_logger.hh"
 #include "com/centreon/broker/neb/engcmd/internal.hh"
@@ -182,7 +186,7 @@ extern "C" {
       neb_set_module_info(
         neb::gl_mod_handle,
         NEBMODULE_MODINFO_COPYRIGHT,
-        "Copyright 2009-2015 Centreon");
+        "Copyright 2009-2016 Centreon");
       neb_set_module_info(
         neb::gl_mod_handle,
         NEBMODULE_MODINFO_VERSION,
@@ -195,7 +199,7 @@ extern "C" {
         neb::gl_mod_handle,
         NEBMODULE_MODINFO_DESC,
         "cbmod is part of Centreon Broker and is designed to "    \
-        "convert internal Centreon Engine / Nagios events to a "  \
+        "convert internal Centreon Engine events to a "  \
         "proper data stream that can then be parsed by Centreon " \
         "Broker's cbd.");
 
@@ -338,6 +342,24 @@ extern "C" {
       return (-1);
     }
 
+    return (0);
+  }
+
+  /**
+   *  @brief Reload module after configuration reload.
+   *
+   *  This will effectively send an instance_configuration object to the
+   *  multiplexer.
+   *
+   *  @return OK.
+   */
+  int nebmodule_reload() {
+    misc::shared_ptr<neb::instance_configuration>
+      ic(new neb::instance_configuration);
+    ic->loaded = true;
+    ic->poller_id = config::applier::state::instance().poller_id();
+    multiplexing::publisher p;
+    p.write(ic);
     return (0);
   }
 }
