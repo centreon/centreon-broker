@@ -24,6 +24,7 @@ ExecStart=@PREFIX_BIN@/cbwd @PREFIX_CONF@/watchdog.xml
 ExecReload=/bin/kill -HUP $MAINPID
 Type=simple
 User=centreon-broker
+UMask=0002
 
 [Install]
 WantedBy=multi-user.target
