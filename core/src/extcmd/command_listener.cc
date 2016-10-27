@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -53,11 +53,8 @@ command_result command_listener::command_status(
   std::map<std::string, pending_command>::iterator
     it(_pending.find(command_uuid.toStdString()));
   // Command result exists.
-  if (it != _pending.end()) {
-    res = it->second.result;
-    if (it->second.with_partial_result)
-      it->second.result.msg.clear();
-  }
+  if (it != _pending.end())
+    _extract_command_result(res, it->second);
   // Fake command result.
   else {
     lock.unlock();
@@ -110,9 +107,8 @@ int command_listener::write(misc::shared_ptr<io::data> const& d) {
       pending_command&
         p(_pending[req.uuid.toStdString()]);
       p.invalid_time = time(NULL) + _request_timeout;
-      p.result.uuid = req.uuid;
-      p.result.code = 1;
-      p.result.msg = "\"Pending\"";
+      p.uuid = req.uuid;
+      p.code = 1;
       p.with_partial_result = req.with_partial_result;
       if (p.invalid_time < _next_invalid)
         _next_invalid = p.invalid_time;
@@ -124,10 +120,7 @@ int command_listener::write(misc::shared_ptr<io::data> const& d) {
     QMutexLocker lock(&_pendingm);
     pending_command&
       p(_pending[res.uuid.toStdString()]);
-    if (p.with_partial_result == false)
-      p.result = res;
-    else
-      _merge_partial_result(p, res);
+    p.msgs.push_back(res.msg);
     p.invalid_time = time(NULL) + _result_timeout;
     if (p.invalid_time < _next_invalid)
       _next_invalid = p.invalid_time;
@@ -151,10 +144,11 @@ void command_listener::_check_invalid() {
          end(_pending.end());
        it != end;) {
     if (it->second.invalid_time < now) {
-      if (it->second.result.code == 1) { // Pending.
+      if (it->second.code == 1) { // Pending.
         it->second.invalid_time = now + _result_timeout;
-        it->second.result.code = -1;
-        it->second.result.msg = "\"Command timeout\"";
+        it->second.code = -1;
+        it->second.msgs.clear();
+        it->second.msgs.push_back("\"Command timeout\"");
         ++it;
       }
       else {
@@ -175,13 +169,38 @@ void command_listener::_check_invalid() {
 }
 
 /**
- *  Merge partial result.
+ *  Extract next command result.
  *
- *  @param[out] dest  The destination of the merge.
- *  @param[in] res    The partial result to merge.
+ *  @param[out]    res      Command result.
+ *  @param[in,out] pending  Pending command.
  */
-void command_listener::_merge_partial_result(
-                         pending_command& dest,
-                         command_result const& res) {
-  dest.result.msg.append(res.msg);
+void command_listener::_extract_command_result(
+                         command_result& res,
+                         pending_command& pending) {
+  // Set basic properties.
+  res.code = pending.code;
+  res.uuid = pending.uuid;
+
+  if (!pending.msgs.empty()) {
+    // Merge results if necessary.
+    if (!pending.with_partial_result && (pending.msgs.size() != 1)) {
+      QString msg;
+      for (std::list<QString>::const_iterator
+             it(pending.msgs.begin()), end(pending.msgs.end());
+           it != end;
+           ++it) {
+        msg.append(*it);
+      }
+      pending.msgs.clear();
+      pending.msgs.push_back(msg);
+    }
+
+    // Extract next result.
+    res.msg = pending.msgs.front();
+
+    // Discard this result if partial result mode is enabled.
+    if (pending.with_partial_result)
+      pending.msgs.pop_front();
+  }
+  return ;
 }
