@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -124,11 +124,13 @@ unsigned int json_command_parser::parse(
         QString::fromStdString(find_or_except("broker_id", it)).toUInt();
       request->endp = QString::fromStdString(find_or_except("endpoint", it));
       request->with_partial_result
-        = it.find_child("with_partial_result").get_bool();
+        = it.find_child("with_partial_result").enter_children().get_bool();
       logging::debug(logging::high)
         << "command: sending request " << request->uuid << " ('" << request->cmd
         << "') to endpoint '" << request->endp
-        << "' of Centreon Broker instance " << request->destination_id;
+        << "' of Centreon Broker instance " << request->destination_id
+        << " with partial result "
+        << (request->with_partial_result ? "enabled" : "disabled");
       _listener.write(request);
       res = _listener.command_status(request->uuid);
     }
