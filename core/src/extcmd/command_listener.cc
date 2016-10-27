@@ -120,6 +120,7 @@ int command_listener::write(misc::shared_ptr<io::data> const& d) {
     QMutexLocker lock(&_pendingm);
     pending_command&
       p(_pending[res.uuid.toStdString()]);
+    p.code = res.code;
     p.msgs.push_back(res.msg);
     p.invalid_time = time(NULL) + _result_timeout;
     if (p.invalid_time < _next_invalid)
