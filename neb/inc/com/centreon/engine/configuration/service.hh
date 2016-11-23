@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015 Merethis
+** Copyright 2011-2013,2015-2016 Centreon
 **
 ** This file is part of Centreon Engine.
 **
@@ -92,6 +92,8 @@ namespace                  configuration {
     list_string const&     hostgroups() const throw ();
     list_string&           hosts() throw ();
     list_string const&     hosts() const throw ();
+    unsigned int           host_id() const throw ();
+    void                   host_id(unsigned int id);
     std::string const&     icon_image() const throw ();
     std::string const&     icon_image_alt() const throw ();
     unsigned int           initial_state() const throw ();
@@ -115,6 +117,7 @@ namespace                  configuration {
     bool                   retain_nonstatus_information() const throw ();
     bool                   retain_status_information() const throw ();
     unsigned int           retry_interval() const throw ();
+    unsigned int           recovery_notification_delay() const throw();
     list_string&           servicegroups() throw ();
     list_string const&     servicegroups() const throw ();
     std::string&           service_description() throw ();
@@ -124,6 +127,8 @@ namespace                  configuration {
     void                   timezone(std::string const& time_zone);
     std::string const&     timezone() const throw ();
     bool                   timezone_defined() const throw ();
+    int                    get_acknowledgement_timeout() const throw ();
+    bool                   set_acknowledgement_timeout(int value);
 
   private:
     struct                 setters {
@@ -170,12 +175,14 @@ namespace                  configuration {
     bool                   _set_retain_nonstatus_information(bool value);
     bool                   _set_retain_status_information(bool value);
     bool                   _set_retry_interval(unsigned int value);
+    bool                   _set_recovery_notification_delay(unsigned int value);
     bool                   _set_servicegroups(std::string const& value);
     bool                   _set_service_description(std::string const& value);
     bool                   _set_service_id(unsigned int value);
     bool                   _set_stalking_options(std::string const& value);
     bool                   _set_timezone(std::string const& value);
 
+    opt<int>               _acknowledgement_timeout;
     std::string            _action_url;
     opt<bool>              _checks_active;
     opt<bool>              _checks_passive;
@@ -197,6 +204,7 @@ namespace                  configuration {
     opt<unsigned int>      _high_flap_threshold;
     group                  _hostgroups;
     group                  _hosts;
+    unsigned int           _host_id;
     std::string            _icon_image;
     std::string            _icon_image_alt;
     opt<unsigned int>      _initial_state;
@@ -214,6 +222,7 @@ namespace                  configuration {
     opt<bool>              _retain_nonstatus_information;
     opt<bool>              _retain_status_information;
     opt<unsigned int>      _retry_interval;
+    opt<unsigned int>      _recovery_notification_delay;
     group                  _servicegroups;
     std::string            _service_description;
     unsigned int           _service_id;

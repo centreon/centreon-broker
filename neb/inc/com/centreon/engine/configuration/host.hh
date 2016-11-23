@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015 Merethis
+** Copyright 2011-2013,2015-2016 Centreon
 **
 ** This file is part of Centreon Engine.
 **
@@ -107,10 +107,13 @@ namespace                  configuration {
     bool                   retain_nonstatus_information() const throw ();
     bool                   retain_status_information() const throw ();
     unsigned int           retry_interval() const throw ();
+    unsigned int           recovery_notification_delay() const throw();
     unsigned int           stalking_options() const throw ();
     std::string const&     statusmap_image() const throw ();
     std::string const&     timezone() const throw ();
     std::string const&     vrml_image() const throw ();
+    int                    get_acknowledgement_timeout() const throw ();
+    bool                   set_acknowledgement_timeout(int value);
 
   private:
     struct                 setters {
@@ -161,11 +164,13 @@ namespace                  configuration {
     bool                   _set_retain_nonstatus_information(bool value);
     bool                   _set_retain_status_information(bool value);
     bool                   _set_retry_interval(unsigned int value);
+    bool                   _set_recovery_notification_delay(unsigned int value);
     bool                   _set_stalking_options(std::string const& value);
     bool                   _set_statusmap_image(std::string const& value);
     bool                   _set_timezone(std::string const& value);
     bool                   _set_vrml_image(std::string const& value);
 
+    opt<int>               _acknowledgement_timeout;
     std::string            _action_url;
     std::string            _address;
     std::string            _alias;
@@ -208,6 +213,7 @@ namespace                  configuration {
     opt<bool>              _retain_nonstatus_information;
     opt<bool>              _retain_status_information;
     opt<unsigned int>      _retry_interval;
+    opt<unsigned int>      _recovery_notification_delay;
     static setters const   _setters[];
     opt<unsigned int>      _stalking_options;
     std::string            _statusmap_image;

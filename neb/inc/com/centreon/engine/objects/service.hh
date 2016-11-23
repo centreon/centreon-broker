@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015 Merethis
+** Copyright 2011-2013,2015-2016 Centreon
 **
 ** This file is part of Centreon Engine.
 **
@@ -151,7 +151,12 @@ typedef struct                  service_struct {
 struct                          service_other_properties {
   time_t                        initial_notif_time;
   std::string                   timezone;
+  unsigned int                  host_id;
   unsigned int                  service_id;
+  int                           acknowledgement_timeout;
+  time_t                        last_acknowledgement;
+  unsigned int                  recovery_notification_delay;
+  bool                          recovery_been_sent;
 };
 
 #  ifdef __cplusplus
@@ -233,13 +238,19 @@ std::ostream& operator<<(std::ostream& os, service const& obj);
 
 CCE_BEGIN()
 
+void          check_for_expired_acknowledgement(service* s);
 service&      find_service(
                 std::string const& host_name,
                 std::string const& service_description);
 char const*   get_service_timezone(char const* hst, char const* svc);
 bool          is_service_exist(
                 std::pair<std::string, std::string> const& id);
+std::pair<unsigned int, unsigned int>
+              get_host_and_service_id(
+                char const* host,
+                char const* svc);
 unsigned int  get_service_id(char const* host, char const* svc);
+void          schedule_acknowledgement_expiration(service* s);
 
 CCE_END()
 

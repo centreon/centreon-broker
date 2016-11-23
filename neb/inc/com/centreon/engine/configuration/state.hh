@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2016 Centreon
 **
 ** This file is part of Centreon Engine.
 **
@@ -192,8 +192,6 @@ namespace               configuration {
     void                enable_environment_macros(bool value);
     bool                enable_event_handlers() const throw ();
     void                enable_event_handlers(bool value);
-    bool                enable_failure_prediction() const throw ();
-    void                enable_failure_prediction(bool value);
     bool                enable_flap_detection() const throw ();
     void                enable_flap_detection(bool value);
     bool                enable_notifications() const throw ();
@@ -300,8 +298,6 @@ namespace               configuration {
     void                max_service_check_spread(unsigned int value);
     unsigned int        notification_timeout() const throw ();
     void                notification_timeout(unsigned int value);
-    std::string const&  object_cache_file() const throw ();
-    void                object_cache_file(std::string const& value);
     bool                obsess_over_hosts() const throw ();
     void                obsess_over_hosts(bool value);
     bool                obsess_over_services() const throw ();
@@ -318,8 +314,6 @@ namespace               configuration {
     void                passive_host_checks_are_soft(bool value);
     int                 perfdata_timeout() const throw ();
     void                perfdata_timeout(int value);
-    std::string const&  precached_object_file() const throw ();
-    void                precached_object_file(std::string const& value);
     bool                process_performance_data() const throw ();
     void                process_performance_data(bool value);
     std::list<std::string> const&
@@ -402,9 +396,9 @@ namespace               configuration {
     void                time_change_threshold(unsigned int value);
     bool                translate_passive_host_checks() const throw ();
     void                translate_passive_host_checks(bool value);
-    std::vector<std::string> const&
+    umap<std::string, std::string> const&
                         user() const throw ();
-    void                user(std::vector<std::string> const& value);
+    void                user(umap<std::string, std::string> const& value);
     void                user(std::string const& key, std::string const& value);
     void                user(unsigned int key, std::string const& value);
     bool                use_aggressive_host_checking() const throw ();
@@ -449,6 +443,7 @@ namespace               configuration {
     void                _set_date_format(std::string const& value);
     void                _set_downtime_file(std::string const& value);
     void                _set_enable_embedded_perl(std::string const& value);
+    void                _set_enable_failure_prediction(std::string const& value);
     void                _set_event_broker_options(std::string const& value);
     void                _set_free_child_process_memory(std::string const& value);
     void                _set_host_inter_check_delay_method(std::string const& value);
@@ -458,7 +453,9 @@ namespace               configuration {
     void                _set_log_rotation_method(std::string const& value);
     void                _set_nagios_group(std::string const& value);
     void                _set_nagios_user(std::string const& value);
+    void                _set_object_cache_file(std::string const& value);
     void                _set_p1_file(std::string const& value);
+    void                _set_precached_object_file(std::string const& value);
     void                _set_resource_file(std::string const& value);
     void                _set_retained_process_service_attribute_mask(std::string const& value);
     void                _set_retained_service_attribute_mask(std::string const& value);
@@ -541,7 +538,6 @@ namespace               configuration {
     unsigned int        _debug_verbosity;
     bool                _enable_environment_macros;
     bool                _enable_event_handlers;
-    bool                _enable_failure_prediction;
     bool                _enable_flap_detection;
     bool                _enable_notifications;
     bool                _enable_predictive_host_dependency_checks;
@@ -590,7 +586,6 @@ namespace               configuration {
     unsigned int        _max_parallel_service_checks;
     unsigned int        _max_service_check_spread;
     unsigned int        _notification_timeout;
-    std::string         _object_cache_file;
     bool                _obsess_over_hosts;
     bool                _obsess_over_services;
     std::string         _ochp_command;
@@ -599,7 +594,6 @@ namespace               configuration {
     unsigned int        _ocsp_timeout;
     bool                _passive_host_checks_are_soft;
     int                 _perfdata_timeout;
-    std::string         _precached_object_file;
     bool                _process_performance_data;
     std::list<std::string>
                         _resource_file;
@@ -636,7 +630,7 @@ namespace               configuration {
     set_timeperiod      _timeperiods;
     unsigned int        _time_change_threshold;
     bool                _translate_passive_host_checks;
-    std::vector<std::string>
+    umap<std::string, std::string>
                         _users;
     bool                _use_aggressive_host_checking;
     bool                _use_check_result_path;

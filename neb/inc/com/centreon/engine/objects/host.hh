@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Merethis
+** Copyright 2011-2016 Centreon
 **
 ** This file is part of Centreon Engine.
 **
@@ -163,6 +163,10 @@ struct                          host_other_properties {
   bool                          should_reschedule_current_check;
   std::string                   timezone;
   unsigned int                  host_id;
+  int                           acknowledgement_timeout;
+  time_t                        last_acknowledgement;
+  unsigned int                  recovery_notification_delay;
+  bool                          recovery_been_sent;
 };
 
 /* Hash structures. */
@@ -258,10 +262,12 @@ std::ostream& operator<<(std::ostream& os, host const& obj);
 
 CCE_BEGIN()
 
+void          check_for_expired_acknowledgement(host* h);
 host&         find_host(std::string const& name);
 char const*   get_host_timezone(char const* name);
 bool          is_host_exist(std::string const& name) throw ();
 unsigned int  get_host_id(char const* name);
+void          schedule_acknowledgement_expiration(host* h);
 
 CCE_END()
 
