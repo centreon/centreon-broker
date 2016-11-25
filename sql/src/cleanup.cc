@@ -106,13 +106,13 @@ void cleanup::run() {
             "  INNER JOIN instances"
             "    ON hosts.instance_id=instances.instance_id"
             "  SET index_data.to_delete=1"
-            "  WHERE instances.delete=1",
+            "  WHERE instances.deleted=1",
             "could not flag the index_data table"
             " to delete outdated entries");
         q.run_query(
             "DELETE hosts FROM hosts INNER JOIN instances"
             "  ON hosts.instance_id=instances.instance_id"
-            "  WHERE instances.delete=1",
+            "  WHERE instances.deleted=1",
             "could not delete outdated entries from the hosts table");
         q.run_query(
             "DELETE modules FROM modules INNER JOIN instances"
