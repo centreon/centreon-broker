@@ -1,6 +1,26 @@
-===================
-Centreon Broker 3.0
-===================
+=====================
+Centreon Broker 3.0.2
+=====================
+
+*********
+Bug fixes
+*********
+
+Cleanup service events after host deletion
+==========================================
+
+This fix was introduced along Centreon Engine 1.6.2. It allows service
+events to be properly cleaned up after host deletion.
+
+Asynchronous host/service cleanup
+=================================
+
+The SQL cleanup thread contained an invalid query that prevented hosts
+and services tables to be cleaned up properly.
+
+=====================
+Centreon Broker 3.0.1
+=====================
 
 **********
 What's new
@@ -30,3 +50,10 @@ Compatibility with Centreon Engine 1.6
 Centreon Engine 1.6 introduces technical changes needed by Centreon
 Broker 3 and is therefore not compatible with the earlier releases of
 Centreon Engine.
+
+Dropped support of NDO protocol
+===============================
+
+The NDO protocol is no longer supported by Centreon Broker. Please use
+the BBDO protocol instead, which is far better (lower network footprint,
+automatic compression and encryption).
