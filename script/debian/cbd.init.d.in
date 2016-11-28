@@ -1,6 +1,6 @@
 #!/bin/sh
 ##
-## Copyright 2009-2012 Centreon
+## Copyright 2009-2012,2016 Centreon
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
 ## you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ PKGNAME=cbd
 DESC="Centreon Broker"
 DAEMON="@PREFIX_BIN@/cbwd"
 PID_PATH="/var/run"
-WATCHDOG_FILE="@PREFIX_CONF@/master.run"
+WATCHDOG_FILE="@PREFIX_CONF@/watchdog.xml"
 CONFIG_DIR="@PREFIX_CONF@"
 pidfile="${pid_path}/cbwd.pid"
 
@@ -74,20 +74,18 @@ fi
 # Start cbd.
 do_start()
 {
-  cat ${MASTER_FILE} | grep -v '^#'| while read line; do
-    global_retval=0
-    [ "${VERBOSE}" != "no" ] && log_daemon_msg "Starting Centreon Broker watchdog" "${PKGNAME}"
-    start-stop-daemon --start --background --quiet --pidfile ${pidfile} --exec ${DAEMON} \
+  global_retval=0
+  [ "${VERBOSE}" != "no" ] && log_daemon_msg "Starting Centreon Broker watchdog" "${PKGNAME}"
+  start-stop-daemon --start --background --quiet --pidfile ${pidfile} --exec ${DAEMON} \
     --chuid ${USER} --user ${USER} --test
-    [ "$?" = "0" ] || global_retval=1
-    start-stop-daemon --start --background --quiet --pidfile ${pidfile} --exec ${DAEMON} \
+  [ "$?" = "0" ] || global_retval=1
+  start-stop-daemon --start --background --quiet --pidfile ${pidfile} --exec ${DAEMON} \
     --make-pidfile --chuid ${USER} --user ${USER} -- ${WATCHDOG_FILE}
-    [ "$?" = "0" ] || global_retval=2
-    case "${global_retval}" in
-      0|1) [ "${VERBOSE}" != "no" ] && log_end_msg 0 ;;
-      2) [ "${VERBOSE}" != "no" ] && log_end_msg 1 ;;
+  [ "$?" = "0" ] || global_retval=2
+  case "${global_retval}" in
+    0|1) [ "${VERBOSE}" != "no" ] && log_end_msg 0 ;;
+    2) [ "${VERBOSE}" != "no" ] && log_end_msg 1 ;;
   esac
-  done
   return ${global_retval}
 }
 

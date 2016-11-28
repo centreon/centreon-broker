@@ -4,6 +4,7 @@
 
 Andrzej Augustynowicz
 Jean-Baptiste Borrel
+Eric Coquard
 Kevin Defives
 David Du Serre-Telmon
 Raphael Troiano
