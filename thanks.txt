@@ -3,6 +3,7 @@
 -----------------------------------------------------------------------
 
 Andrzej Augustynowicz
+Jean-Baptiste Borrel
 Kevin Defives
 David Du Serre-Telmon
 Raphael Troiano
