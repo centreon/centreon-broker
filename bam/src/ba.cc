@@ -169,6 +169,7 @@ bool ba::child_has_update(
     // Apply new data.
     it->second.hard_impact = new_hard_impact;
     it->second.soft_impact = new_soft_impact;
+    it->second.in_downtime = kpi_in_downtime;
     _apply_impact(it->second);
 
     // Check for inherited downtimes.
