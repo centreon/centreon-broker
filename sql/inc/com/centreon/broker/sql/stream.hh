@@ -106,7 +106,6 @@ namespace          sql {
                      database_query& ins,
                      database_query& up,
                      T& t);
-    void           _write_logs();
     void           _update_timestamp(unsigned int instance_id);
     void           _get_all_outdated_instances_from_db();
     void           _update_hosts_and_services_of_unresponsive_instances();
@@ -154,6 +153,7 @@ namespace          sql {
     database_query _issue_update;
     database_query _issue_parent_insert;
     database_query _issue_parent_update;
+    database_query _log_insert;
     database_query _module_insert;
     database_query _notification_insert;
     database_query _notification_update;
@@ -171,8 +171,6 @@ namespace          sql {
     database_query _service_status_update;
     std::set<unsigned int>      _cache_deleted_instance_id;
     cleanup                     _cleanup_thread;
-    std::deque<misc::shared_ptr<io::data> >
-                                _log_queue;
     int                         _pending_events;
     bool                        _with_state_events;
     unsigned int                _instance_timeout;
