@@ -1585,7 +1585,7 @@ void stream::_process_log(
   // Prepare query.
   if (!_log_insert.prepared()) {
     database_preparator dbp(neb::log_entry::static_type());
-    dbp.prepare_insert(_module_insert);
+    dbp.prepare_insert(_log_insert);
   }
 
   // Run query.
