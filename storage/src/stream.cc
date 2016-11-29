@@ -285,9 +285,17 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
             _data_bin_insert.bind_value(
               ":ctime",
               static_cast<long long>(ss->last_check.get_time_t()));
-            _data_bin_insert.bind_value(":status", ss->current_state);
+            _data_bin_insert.bind_value(":status", ss->current_state + 1);
+            QVariant value;
+            if (isinf(pd.value()))
+              value = (pd.value() < 0.0) ? -FLT_MAX : FLT_MAX;
+            else if (isnan(pd.value()))
+              value= QVariant(QVariant::Double);
+            else
+              value = pd.value();
             _data_bin_insert.bind_value(":value", pd.value());
-            _data_bin_insert.run_statement();
+            _data_bin_insert.run_statement(
+              "storage: cannot insert performance data");
           }
 
           if (!index_locked && !metric_locked) {
