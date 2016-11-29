@@ -122,7 +122,6 @@ namespace          storage {
     void           _rebuild_cache();
     void           _update_status(std::string const& status);
 
-    database_query _data_bin_insert;
     std::map<std::pair<unsigned int, unsigned int>, index_info>
                    _index_cache;
     bool           _insert_in_index_data;
@@ -135,6 +134,7 @@ namespace          storage {
     mutable QMutex _statusm;
     bool           _store_in_db;
     database       _db;
+    database_query _data_bin_insert;
     database_query _update_metrics;
   };
 }

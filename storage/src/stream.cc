@@ -109,8 +109,7 @@ stream::stream(
           unsigned int rebuild_check_interval,
           bool store_in_db,
           bool insert_in_index_data)
-  : _data_bin_insert(_db),
-    _insert_in_index_data(insert_in_index_data),
+  : _insert_in_index_data(insert_in_index_data),
     _pending_events(0),
     _rebuild_thread(
       db_cfg,
@@ -119,6 +118,7 @@ stream::stream(
     _rrd_len(rrd_len ? rrd_len : 15552000),
     _store_in_db(store_in_db),
     _db(db_cfg),
+    _data_bin_insert(_db),
     _update_metrics(_db) {
   // Prepare queries.
   _prepare();
