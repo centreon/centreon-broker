@@ -1582,8 +1582,15 @@ void stream::_process_log(
     << le.poller_name << "' generated at " << le.c_time << " (type "
     << le.msg_type << ")";
 
-  // Enqueue log and eventually process it.
-  _log_queue.push_back(e);
+  // Prepare query.
+  if (!_log_insert.prepared()) {
+    database_preparator dbp(neb::log_entry::static_type());
+    dbp.prepare_insert(_module_insert);
+  }
+
+  // Run query.
+  _log_insert << le;
+  _log_insert.run_statement("SQL");
 
   return ;
 }
@@ -2104,144 +2111,6 @@ void stream::_update_on_none_insert(
 }
 
 /**
- *  Write logs to the DB.
- */
-void stream::_write_logs() {
-  if (!_log_queue.empty()) {
-    // Driver object used for escaping.
-    QSqlDriver const* drivr(_db.get_qt_driver());
-
-    // Log insertion query.
-    QString q;
-    QTextStream query(&q);
-    query << "INSERT INTO "
-          << ((_db.schema_version() == database::v2)
-              ? "logs"
-              : "log_logs")
-          << "  (ctime, host_id, host_name, instance_name, issue_id, "
-          << "  msg_type, notification_cmd, notification_contact, "
-          << "  output, retry, service_description, service_id,"
-          << "  status, type) "
-          << "VALUES ";
-
-    // Fields used to escape strings.
-    QSqlField host_name_field(
-                "host_name",
-                QVariant::String);
-    QSqlField instance_name_field(
-                "instance_name",
-                QVariant::String);
-    QSqlField output_field(
-                "output",
-                QVariant::String);
-    QSqlField service_description_field(
-                "service_description",
-                QVariant::String);
-    QSqlField notification_cmd_field(
-                "notification_cmd",
-                QVariant::String);
-    QSqlField notification_contact_field(
-                "notification_contact",
-                QVariant::String);
-
-    // Browse log queue.
-    while (!_log_queue.empty()) {
-      // Get log object.
-      misc::shared_ptr<neb::log_entry>
-        le(_log_queue.front().staticCast<neb::log_entry>());
-      _log_queue.pop_front();
-
-      // Fetch issue ID (if any).
-      int issue;
-      if (le->issue_start_time) {
-        if (!_issue_select.prepared()) {
-          std::ostringstream ss;
-          ss << "SELECT issue_id"
-             << "  FROM " << ((_db.schema_version() == database::v2)
-                              ? "issues"
-                              : "rt_issues")
-             << "  WHERE host_id=:host_id"
-                "    AND service_id=:service_id"
-            "    AND start_time=:start_time";
-          _issue_select.prepare(ss.str());
-        }
-        _issue_select.bind_value(":host_id", le->host_id);
-        _issue_select.bind_value(
-                        ":service_id",
-                        (le->service_id
-                         ? QVariant(le->service_id)
-                         : QVariant(QVariant::Int)));
-        _issue_select.bind_value(
-                        ":start_time",
-                        static_cast<qlonglong>(
-                          le->issue_start_time.get_time_t()));
-        _issue_select.run_statement();
-        if (_issue_select.next())
-          issue = _issue_select.value(0).toInt();
-        else
-          issue = 0;
-      }
-      else
-        issue = 0;
-
-      // Build insertion query.
-      static QString const empty_string("''");
-      static QString const null_string("NULL");
-      host_name_field.setValue(le->host_name);
-      instance_name_field.setValue(le->poller_name);
-      notification_cmd_field.setValue(le->notification_cmd);
-      notification_contact_field.setValue(le->notification_contact);
-      output_field.setValue(le->output);
-      service_description_field.setValue(le->service_description);
-      query << "(" << le->c_time << ", ";
-      if (le->host_id)
-        query << le->host_id;
-      else
-        query << "NULL";
-      query << ", " << (host_name_field.isNull()
-                        ? null_string
-                        : drivr->formatValue(host_name_field)) << ", "
-            << (instance_name_field.isNull()
-                ? empty_string
-                : drivr->formatValue(instance_name_field)) << ", ";
-      if (issue)
-        query << issue;
-      else
-        query << "NULL";
-      query << ", " << le->msg_type << ", "
-            << (notification_cmd_field.isNull()
-                ? empty_string
-                : drivr->formatValue(notification_cmd_field)) << ", "
-            << (notification_contact_field.isNull()
-                ? empty_string
-                : drivr->formatValue(notification_contact_field)) << ", "
-            << (output_field.isNull()
-                ? empty_string
-                : drivr->formatValue(output_field)) << ", " << le->retry
-            << ", " << (service_description_field.isNull()
-                        ? null_string
-                        : drivr->formatValue(service_description_field))
-            << ", ";
-      if (le->service_id)
-        query << le->service_id;
-      else
-        query << "NULL";
-      query << ", " << le->status << ", " << le->log_type << ")";
-      if (!_log_queue.empty())
-        query << ", ";
-    }
-
-    // Execute query.
-    query.flush();
-    database_query dbq(_db);
-    dbq.run_query(
-          q.toStdString(),
-          "SQL: could not insert some logs");
-  }
-  return ;
-}
-
-/**
  *  Update the store of living instance timestamps.
  *
  *  @param instance_id The id of the instance to have its timestamp updated.
@@ -2439,6 +2308,7 @@ stream::stream(
     _issue_update(_db),
     _issue_parent_insert(_db),
     _issue_parent_update(_db),
+    _log_insert(_db),
     _module_insert(_db),
     _notification_insert(_db),
     _notification_update(_db),
@@ -2494,7 +2364,6 @@ int stream::flush() {
   // Commit transaction.
   logging::info(logging::medium)
     << "SQL: committing transaction";
-  _write_logs();
   _db.commit();
   _db.clear_committed_flag();
   int retval(_pending_events);
@@ -2559,7 +2428,6 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
     _update_hosts_and_services_of_unresponsive_instances();
     // Commit.
     _db.clear_committed_flag();
-    _write_logs();
     int retval(_pending_events);
     _pending_events = 0;
     return (retval);
