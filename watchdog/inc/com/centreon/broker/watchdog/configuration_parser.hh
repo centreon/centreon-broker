@@ -52,10 +52,11 @@ namespace         watchdog {
 
     void          _parse_file(std::string const& config_filename);
     void          _parse_xml_document();
-    void          _parse_centreon_broker_element(QDomElement const& element);
+    void          _parse_centreon_broker_element(QDomElement const& element,QString const& bin_path);
 
     QDomDocument  _xml_document;
     QString       _log_path;
+    QString       _bin_path;
     configuration::instance_map
                   _instances_configuration;
 
