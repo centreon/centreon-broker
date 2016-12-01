@@ -30,6 +30,7 @@ instance_configuration::instance_configuration()
 /**
  *  Constructor.
  *
+ *  @param[in] bin_path       The bin path of the instance.
  *  @param[in] name           The name of the instance.
  *  @param[in] config_file    The config file of the instance.
  *  @param[in] should_run     Should this instance be run?
@@ -37,12 +38,14 @@ instance_configuration::instance_configuration()
  *  @param[in] seconds_per_tentative  The number of seconds between tentatives.
  */
 instance_configuration::instance_configuration(
+                                 std::string const& bin_path,
                                  std::string const& name,
                                  std::string const& config_file,
                                  bool should_run,
                                  bool should_reload,
                                  unsigned int seconds_per_tentative)
-  : _name(name),
+  : _bin_path(bin_path),
+    _name(name),
     _config_file(config_file),
     _run(should_run),
     _reload(should_reload),
@@ -59,7 +62,8 @@ instance_configuration::~instance_configuration() {}
  */
 instance_configuration::instance_configuration(
                                  instance_configuration const& other)
-  : _name(other._name),
+  : _bin_path(other._bin_path),
+    _name(other._name),
     _config_file(other._config_file),
     _run(other._run),
     _reload(other._reload),
@@ -75,6 +79,7 @@ instance_configuration::instance_configuration(
 instance_configuration& instance_configuration::operator=(
                                  instance_configuration const& other) {
   if (this != &other) {
+    _bin_path = other._bin_path;
     _name = other._name;
     _config_file = other._config_file;
     _run = other._run;
@@ -96,7 +101,8 @@ instance_configuration& instance_configuration::operator=(
  */
 bool instance_configuration::operator==(
        instance_configuration const& other) const {
-  return (_name == other._name
+  return (_bin_path == other._bin_path
+          && _name == other._name
           && _config_file == other._config_file
           && _run == other._run);
 }
@@ -111,6 +117,16 @@ bool instance_configuration::operator==(
 bool instance_configuration::operator!=(
        instance_configuration const& other) const {
   return (!instance_configuration::operator==(other));
+}
+
+/**
+ *  Get the bin path for this instance.
+ *
+ *  @return[in]  The bin path for this instance.
+ */
+std::string const&
+  instance_configuration::get_bin_path() const throw() {
+  return (_bin_path);
 }
 
 /**
