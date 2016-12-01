@@ -32,7 +32,8 @@ namespace         watchdog {
   class           instance_configuration {
   public:
                   instance_configuration();
-                  instance_configuration(std::string const& name,
+                  instance_configuration(std::string const& bin_path,
+                    std::string const& name,
                     std::string const& config_file,
                     bool should_run,
                     bool should_reload,
@@ -48,6 +49,8 @@ namespace         watchdog {
     bool          is_empty() const throw();
 
     std::string const&
+                  get_bin_path() const throw();
+    std::string const&
                   get_name() const throw();
     std::string const&
                   get_config_file() const throw();
@@ -56,6 +59,7 @@ namespace         watchdog {
     unsigned int  seconds_per_tentative() const throw();
 
   private:
+    std::string   _bin_path;
     std::string   _name;
     std::string   _config_file;
     bool          _run;
