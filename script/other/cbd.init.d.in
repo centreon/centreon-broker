@@ -41,7 +41,7 @@
 watchdog_file="@PREFIX_CONF@/master.run"
 config_dir="@PREFIX_CONF@"
 cbwd="@PREFIX_BIN@/cbwd"
-pid_path=/var/run
+pid_path="@PREFIX_VAR@/run"
 stop_timeout=10
 user="@USER@"
 debug=0
@@ -72,9 +72,11 @@ start_watchdog() {
   if [ $debug -eq 1 ]; then
     echo "/tmp/%e.core.%t.%u.%p" > /proc/sys/kernel/core_pattern
     PID=`su - "${user}" -c "ulimit -c unlimited; ${cbwd} ${watchdog_file} >/dev/null 2>&1 & echo \\$!"`
+    RETVAL=$?
   else
-   PID=`su - "${user}" -c "${cbwd} ${watchdog_file} >/dev/null 2>&1 & echo \\$!"`
-  RETVAL=$?
+    PID=`su - "${user}" -c "${cbwd} ${watchdog_file} >/dev/null 2>&1 & echo \\$!"`
+    RETVAL=$?
+  fi
 
   if [ ${RETVAL} = 0 ]; then
     echo ${PID} > "${pidfile}"
