@@ -12,6 +12,7 @@
   </cbd>
   <name> and <configuration_file> are mandatory.
   -->
+  <bin>/usr/sbin/cbd</bin>
 @DAEMONS_CONFIGURATION@
   <log>/var/log/centreon-broker/watchdog.log</log>
 </centreonbroker>

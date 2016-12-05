@@ -74,7 +74,7 @@ void instance::start_instance() {
     logging::info(logging::medium)
       << "watchdog: starting process '" << _config.get_name() << "'";
     start(
-      "/usr/sbin/cbd",
+      QString::fromStdString(_config.get_bin_path()),
        QStringList(QString::fromStdString(_config.get_config_file())),
        QProcess::ReadOnly);
   }

@@ -83,8 +83,10 @@ void configuration_parser::_parse_xml_document() {
   while(!e.isNull()) {
       if (e.tagName() == "log")
         _log_path = e.text();
-      else if (e.tagName() == "cbd")
-        _parse_centreon_broker_element(e);
+      else if (e.tagName() == "bin")
+        _bin_path = e.text();
+      else if (e.tagName() == "cbd" && _bin_path != "")
+        _parse_centreon_broker_element(e, _bin_path);
      e = e.nextSiblingElement();
   }
 }
@@ -95,7 +97,7 @@ void configuration_parser::_parse_xml_document() {
  *  @param[in] element  The element.
  */
 void configuration_parser::_parse_centreon_broker_element(
-                             QDomElement const& element) {
+                             QDomElement const& element, QString const& bin_path) {
   // The default are sane.
   QString instance_name = element.firstChildElement("name").text();
   QString instance_config = element.firstChildElement("configuration_file").text();
@@ -109,6 +111,7 @@ void configuration_parser::_parse_centreon_broker_element(
 
   if (_instances_configuration.insert(
     std::make_pair(
+           bin_path.toStdString(),
            instance_name.toStdString(),
            instance_configuration(
              instance_name.toStdString(),
