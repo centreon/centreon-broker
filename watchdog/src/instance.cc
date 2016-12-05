@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2015-2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 #include <QTimer>
 #include <csignal>
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/vars.hh"
 #include "com/centreon/broker/watchdog/instance.hh"
 #include "com/centreon/broker/watchdog/application.hh"
 
@@ -74,9 +75,9 @@ void instance::start_instance() {
     logging::info(logging::medium)
       << "watchdog: starting process '" << _config.get_name() << "'";
     start(
-      "/usr/sbin/cbd",
-       QStringList(QString::fromStdString(_config.get_config_file())),
-       QProcess::ReadOnly);
+      PREFIX_BIN "/cbd",
+      QStringList(QString::fromStdString(_config.get_config_file())),
+      QProcess::ReadOnly);
   }
 }
 
