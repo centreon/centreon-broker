@@ -232,23 +232,22 @@ void stream::_flush() {
 bool stream::_get_data(
                unsigned int size,
                time_t deadline) {
-  bool retval;
-  if (static_cast<unsigned int>(_rbuffer.size()) < size) {
+  bool retval(false);
+  while (static_cast<unsigned int>(_rbuffer.size()) < size) {
     misc::shared_ptr<io::data> d;
     if (!_substream->read(d, deadline))
       throw (exceptions::timeout());
     if (d.isNull())
-      retval = false;
-    else {
-      if (d->type() == io::raw::static_type()) {
-        misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
-        _rbuffer.append(*r);
-      }
-      retval = _get_data(size, deadline);
+      break ;
+    if (d->type() == io::raw::static_type()) {
+      misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
+      _rbuffer.append(*r);
     }
   }
-  else
+
+  if (static_cast<unsigned int>(_rbuffer.size()) >= size)
     retval = true;
+
   return (retval);
 }
 
