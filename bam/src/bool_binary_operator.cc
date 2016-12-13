@@ -124,6 +124,10 @@ bool bool_binary_operator::child_has_update(
 void bool_binary_operator::set_left(
                              misc::shared_ptr<bool_value> const& left) {
   _left = left;
+  _left_hard = _left->value_hard();
+  _left_soft = _left->value_soft();
+  _state_known = state_known();
+  _in_downtime = in_downtime();
   return ;
 }
 
@@ -135,6 +139,10 @@ void bool_binary_operator::set_left(
 void bool_binary_operator::set_right(
                              misc::shared_ptr<bool_value> const& right) {
   _right = right;
+  _right_hard = _right->value_hard();
+  _right_soft = _right->value_soft();
+  _state_known = state_known();
+  _in_downtime = in_downtime();
   return ;
 }
 
