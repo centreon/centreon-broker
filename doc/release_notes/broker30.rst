@@ -1,4 +1,28 @@
 =====================
+Centreon Broker 3.0.3
+=====================
+
+*********
+Bug fixes
+*********
+
+Non-OK statuses in BAM expressions were always considered as OK
+===============================================================
+
+Non-OK statuses in BAM expressions (such as {CRITICAL}) were always
+treated as OKs by the BAM computation engine. Therefore most
+expressions using non-OK stasuses were improperly evaluated and
+sometimes trigger BA impacts that were not justified.
+
+Use non-standard path in watchdog
+=================================
+
+The watchdog was always using */usr/sbin/cbd* to run the Centreon Broker
+daemon. This was not aligned with the build variable WITH_PREFIX_BIN.
+This should help users of Debian-based distributions in their manual
+installations.
+
+=====================
 Centreon Broker 3.0.2
 =====================
 
