@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2016 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -99,7 +99,6 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
-  (void)is_acceptor;
   (void)cache;
 
   // Find path to the file.
@@ -127,5 +126,6 @@ io::endpoint* factory::new_endpoint(
   std::auto_ptr<opener> openr(new opener);
   openr->set_filename(filename);
   openr->set_max_size(max_size);
+  is_acceptor = false;
   return (openr.release());
 }
