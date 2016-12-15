@@ -234,7 +234,7 @@ misc::shared_ptr<neb::host> applier::ba::_ba_host(
                                            unsigned int host_id) {
   misc::shared_ptr<neb::host> h(new neb::host);
   h->host_id = host_id;
-  h->host_name = "_Module_BAM";
+  h->host_name = "_Module_BAM_1";
   h->last_update = time(NULL);
   h->poller_id
     = com::centreon::broker::config::applier::state::instance().poller_id();
