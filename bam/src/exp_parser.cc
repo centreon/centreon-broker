@@ -50,6 +50,8 @@ exp_parser::exp_parser(std::string const& expression)
   _precedence["*"] = 5;
   _precedence["/"] = 5;
   _precedence["%"] = 5;
+  _precedence["-u"] = 6;
+  _precedence["!"] = 6;
 }
 
 /**
@@ -151,7 +153,7 @@ exp_parser::notation const& exp_parser::get_postfix() {
       if (can_be_unary && (token == "-")) {
         stack.push("-u");
       }
-      else if ((token == "NOT") || (token == "!")) {
+      else if (can_be_unary && ((token == "NOT") || (token == "!"))) {
         stack.push("!");
       }
       else {

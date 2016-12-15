@@ -132,3 +132,39 @@ TEST(BamExpParserGetPostfix, Valid4) {
   };
   ASSERT_EQ(p.get_postfix(), array_to_list(expected));
 }
+
+// Given an exp_parser object
+// When it is constructed with a valid expression
+// Then get_postfix() return its postfix notation
+TEST(BamExpParserGetPostfix, Valid5) {
+  bam::exp_parser p(
+    "{poller-paris Cpu} {NOT} {OK}\n"
+    "{OR}\n"
+    "{poller-paris Disk-/} {NOT} {OK}\n"
+    "{OR}\n"
+    "{poller-paris Load} {NOT} {OK}\n");
+  char const* expected[] = {
+    "poller-paris",
+    "Cpu",
+    "SERVICESTATUS",
+    "2",
+    "OK",
+    "NOT",
+    "poller-paris",
+    "Disk-/",
+    "SERVICESTATUS",
+    "2",
+    "OK",
+    "NOT",
+    "OR",
+    "poller-paris",
+    "Load",
+    "SERVICESTATUS",
+    "2",
+    "OK",
+    "NOT",
+    "OR",
+    NULL
+  };
+  ASSERT_EQ(p.get_postfix(), array_to_list(expected));
+}
