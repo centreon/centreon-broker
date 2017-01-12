@@ -302,6 +302,7 @@ WITH_PREFIX_INC         Define specific directory for Centreon Broker        ``$
 WITH_PREFIX_LIB         Where shared objects (like cbmod.so) will be         ``${WITH_PREFIX}/lib``
                         installed.
 WITH_PREFIX_MODULES     Where Centreon Broker modules will be installed.     ``${WITH_PREFIX_LIB}/centreon-broker``
+WITH_PREFIX_VAR         Centreon Broker runtime directory.                   ``${WITH_PREFIX}/var``
 WITH_STARTUP_DIR        Define the startup directory.                        Generaly in ``/etc/init.d`` or ``/etc/init``
 WITH_STARTUP_SCRIPT     Generate and install startup script.                 auto detection
 WITH_TESTING            Enable build of unit tests. Disabled by default.     OFF
@@ -335,6 +336,7 @@ Example ::
       -DWITH_PREFIX_INC=/usr/include/centreon-broker \
       -DWITH_PREFIX_LIB=/usr/lib/nagios \
       -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker \
+      -DWITH_PREFIX_VAR=/var/lib/centreon-broker \
       -DWITH_STARTUP_DIR=/etc/init.d \
       -DWITH_STARTUP_SCRIPT=auto \
       -DWITH_TESTING=0 \
