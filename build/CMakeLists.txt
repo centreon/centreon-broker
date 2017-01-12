@@ -1225,6 +1225,7 @@ install(CODE "
   mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_MODULES}\")
   mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_INC}\")
   mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_CONF}\")
+  mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_VAR}\")
   if (WITH_STARTUP_SCRIPT STREQUAL \"sysv\")
     mkdir_chown(\"${USER}\" \"${GROUP}\" \"${STARTUP_DIR}\")
   endif ()
