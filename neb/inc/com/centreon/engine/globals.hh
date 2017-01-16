@@ -35,6 +35,7 @@
 #  include "com/centreon/engine/notifications.hh"
 #  include "com/centreon/engine/objects.hh"
 #  include "com/centreon/engine/utils.hh"
+#  include "skiplist.h"
 
 #  ifdef __cplusplus
 extern "C" {
@@ -128,6 +129,8 @@ extern hostdependency*           hostdependency_list;
 extern hostdependency*           hostdependency_list_tail;
 extern hostescalation*           hostescalation_list;
 extern hostescalation*           hostescalation_list_tail;
+
+extern skiplist*                 object_skiplists[];
 
 extern int                       __nagios_object_structure_version;
 

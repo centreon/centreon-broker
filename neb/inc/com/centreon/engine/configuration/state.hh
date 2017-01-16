@@ -192,8 +192,6 @@ namespace               configuration {
     void                enable_environment_macros(bool value);
     bool                enable_event_handlers() const throw ();
     void                enable_event_handlers(bool value);
-    bool                enable_failure_prediction() const throw ();
-    void                enable_failure_prediction(bool value);
     bool                enable_flap_detection() const throw ();
     void                enable_flap_detection(bool value);
     bool                enable_notifications() const throw ();
@@ -402,9 +400,9 @@ namespace               configuration {
     void                time_change_threshold(unsigned int value);
     bool                translate_passive_host_checks() const throw ();
     void                translate_passive_host_checks(bool value);
-    std::vector<std::string> const&
+    umap<std::string, std::string> const&
                         user() const throw ();
-    void                user(std::vector<std::string> const& value);
+    void                user(umap<std::string, std::string> const& value);
     void                user(std::string const& key, std::string const& value);
     void                user(unsigned int key, std::string const& value);
     bool                use_aggressive_host_checking() const throw ();
@@ -449,6 +447,7 @@ namespace               configuration {
     void                _set_date_format(std::string const& value);
     void                _set_downtime_file(std::string const& value);
     void                _set_enable_embedded_perl(std::string const& value);
+    void                _set_enable_failure_prediction(std::string const& value);
     void                _set_event_broker_options(std::string const& value);
     void                _set_free_child_process_memory(std::string const& value);
     void                _set_host_inter_check_delay_method(std::string const& value);
@@ -541,7 +540,6 @@ namespace               configuration {
     unsigned int        _debug_verbosity;
     bool                _enable_environment_macros;
     bool                _enable_event_handlers;
-    bool                _enable_failure_prediction;
     bool                _enable_flap_detection;
     bool                _enable_notifications;
     bool                _enable_predictive_host_dependency_checks;
@@ -636,7 +634,7 @@ namespace               configuration {
     set_timeperiod      _timeperiods;
     unsigned int        _time_change_threshold;
     bool                _translate_passive_host_checks;
-    std::vector<std::string>
+    umap<std::string, std::string>
                         _users;
     bool                _use_aggressive_host_checking;
     bool                _use_check_result_path;
