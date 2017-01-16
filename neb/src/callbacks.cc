@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2015 Centreon
+** Copyright 2009-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -171,19 +171,23 @@ int neb::callback_acknowledgement(int callback_type, void* data) {
     ack->entry_time = time(NULL);
     if (!ack_data->host_name)
       throw (exceptions::msg() << "unnamed host");
-    ack->host_id = engine::get_host_id(ack_data->host_name);
-    if (ack->host_id == 0)
-      throw (exceptions::msg() << "could not find ID of host '"
-             << ack_data->host_name << "'");
     if (ack_data->service_description) {
-      ack->service_id = engine::get_service_id(
-                                  ack_data->host_name,
-                                  ack_data->service_description);
-      if (ack->service_id == 0) {
+      std::pair<unsigned int, unsigned int> p;
+      p = engine::get_host_and_service_id(
+                    ack_data->host_name,
+                    ack_data->service_description);
+      ack->host_id = p.first;
+      ack->service_id = p.second;
+      if (!ack->host_id || !ack->service_id)
         throw (exceptions::msg() << "could not find ID of service ('"
                << ack_data->host_name << "', '"
                << ack_data->service_description << "')");
-      }
+    }
+    else {
+      ack->host_id = engine::get_host_id(ack_data->host_name);
+      if (ack->host_id == 0)
+        throw (exceptions::msg() << "could not find ID of host '"
+               << ack_data->host_name << "'");
     }
     ack->instance_id = instance_id;
     ack->is_sticky = ack_data->is_sticky;
@@ -242,18 +246,23 @@ int neb::callback_comment(int callback_type, void* data) {
     comment->expires = comment_data->expires;
     if (!comment_data->host_name)
       throw (exceptions::msg() << "unnamed host");
-    comment->host_id = engine::get_host_id(comment_data->host_name);
-    if (comment->host_id == 0)
-      throw (exceptions::msg() << "could not find ID of host '"
-             << comment_data->host_name << "'");
     if (comment_data->service_description) {
-      comment->service_id = engine::get_service_id(
-                              comment_data->host_name,
-                              comment_data->service_description);
-      if (comment->service_id == 0)
+      std::pair<unsigned int, unsigned int> p;
+      p = engine::get_host_and_service_id(
+                    comment_data->host_name,
+                    comment_data->service_description);
+      comment->host_id = p.first;
+      comment->service_id = p.second;
+      if (!comment->host_id || !comment->service_id)
         throw (exceptions::msg() << "could not find ID of service ('"
                << comment_data->host_name << "', '"
                << comment_data->service_description << "')");
+    }
+    else {
+      comment->host_id = engine::get_host_id(comment_data->host_name);
+      if (comment->host_id == 0)
+        throw (exceptions::msg() << "could not find ID of host '"
+               << comment_data->host_name << "'");
     }
     comment->instance_id = instance_id;
     comment->internal_id = comment_data->comment_id;
@@ -349,19 +358,19 @@ int neb::callback_custom_variable(int callback_type, void* data) {
         ::service* svc(static_cast< ::service*>(cvar->object_ptr));
         if (svc && svc->description && svc->host_name) {
           // Fill custom variable event.
-          unsigned int host_id = engine::get_host_id(svc->host_name);
-          unsigned int service_id = engine::get_service_id(
-                                      svc->host_name,
-                                      svc->description);
-          if (host_id != 0 && service_id != 0) {
+          std::pair<unsigned int, unsigned int> p;
+          p = engine::get_host_and_service_id(
+                        svc->host_name,
+                        svc->description);
+          if (p.first && p.second) {
             misc::shared_ptr<custom_variable>
               new_cvar(new custom_variable);
             new_cvar->enabled = true;
             new_cvar->instance_id = instance_id;
-            new_cvar->host_id = host_id;
+            new_cvar->host_id = p.first;
             new_cvar->modified = false;
             new_cvar->name = cvar->var_name;
-            new_cvar->service_id = service_id;
+            new_cvar->service_id = p.second;
             new_cvar->var_type = 1;
             new_cvar->update_time = cvar->timestamp.tv_sec;
             new_cvar->value = cvar->var_value;
@@ -380,19 +389,19 @@ int neb::callback_custom_variable(int callback_type, void* data) {
         if (svc
             && svc->description
             && svc->host_name) {
-          unsigned int host_id = engine::get_host_id(svc->host_name);
-          unsigned int service_id = engine::get_service_id(
-                                      svc->host_name,
-                                      svc->description);
-          if (host_id != 0 && service_id != 0) {
+          std::pair<unsigned int, unsigned int> p;
+          p = engine::get_host_and_service_id(
+                        svc->host_name,
+                        svc->description);
+          if (p.first && p.second) {
             misc::shared_ptr<custom_variable>
               old_cvar(new custom_variable);
             old_cvar->enabled = false;
             old_cvar->instance_id = instance_id;
-            old_cvar->host_id = host_id;
+            old_cvar->host_id = p.first;
             old_cvar->modified = true;
             old_cvar->name = cvar->var_name;
-            old_cvar->service_id = service_id;
+            old_cvar->service_id = p.second;
             old_cvar->var_type = 1;
             old_cvar->update_time = cvar->timestamp.tv_sec;
 
@@ -493,48 +502,44 @@ int neb::callback_dependency(int callback_type, void* data) {
              || (NEBTYPE_SERVICEDEPENDENCY_UPDATE == nsadd->type)
              || (NEBTYPE_SERVICEDEPENDENCY_DELETE == nsadd->type)) {
       // Find IDs.
-      unsigned int host_id;
-      unsigned int service_id;
-      unsigned int dep_host_id;
-      unsigned int dep_service_id;
+      std::pair<unsigned int, unsigned int> ids;
+      std::pair<unsigned int, unsigned int> dep_ids;
       servicedependency*
         dep(static_cast<servicedependency*>(nsadd->object_ptr));
       if (dep->host_name && dep->service_description) {
-        host_id = engine::get_host_id(dep->host_name);
-        service_id = engine::get_service_id(
-                       dep->host_name,
-                       dep->service_description);
+        ids = engine::get_host_and_service_id(
+                        dep->host_name,
+                        dep->service_description);
       }
       else {
         logging::error(logging::medium)
           << "callbacks: dependency callback called without "
           << "valid service";
-        host_id = 0;
-        service_id = 0;
+        ids.first = 0;
+        ids.second = 0;
       }
       if (dep->dependent_host_name
           && dep->dependent_service_description) {
-        dep_host_id = engine::get_host_id(dep->dependent_host_name);
-        dep_service_id = engine::get_service_id(
-                           dep->dependent_host_name,
-                           dep->dependent_service_description);
+        dep_ids = engine::get_host_and_service_id(
+                            dep->host_name,
+                            dep->service_description);
       }
       else {
         logging::error(logging::medium)
           << "callbacks: dependency callback called without "
           << "valid dependent service";
-        dep_host_id = 0;
-        dep_service_id = 0;
+        dep_ids.first = 0;
+        dep_ids.second = 0;
       }
 
       // Generate service dependency event.
       misc::shared_ptr<service_dependency>
         svc_dep(new service_dependency);
       svc_dep->instance_id = instance_id;
-      svc_dep->host_id = host_id;
-      svc_dep->service_id = service_id;
-      svc_dep->dependent_host_id = dep_host_id;
-      svc_dep->dependent_service_id = dep_service_id;
+      svc_dep->host_id = ids.first;
+      svc_dep->service_id = ids.second;
+      svc_dep->dependent_host_id = dep_ids.first;
+      svc_dep->dependent_service_id = dep_ids.second;
       svc_dep->enabled
         = (nsadd->type != NEBTYPE_SERVICEDEPENDENCY_DELETE);
       if (dep->dependency_period)
@@ -548,8 +553,8 @@ int neb::callback_dependency(int callback_type, void* data) {
       //   svc_dep->notification_failure_options
       //     = dep->notification_failure_options;
       logging::info(logging::low) << "callbacks: service ("
-        << dep_host_id << ", " << dep_service_id
-        << ") depends on service (" << host_id << ", " << service_id
+        << dep_ids.first << ", " << dep_ids.second
+        << ") depends on service (" << ids.first << ", " << ids.second
         << ")";
 
       // Publish dependency event.
@@ -597,18 +602,23 @@ int neb::callback_downtime(int callback_type, void* data) {
     downtime->fixed = downtime_data->fixed;
     if (!downtime_data->host_name)
       throw (exceptions::msg() << "unnamed host");
-    downtime->host_id = engine::get_host_id(downtime_data->host_name);
-    if (downtime->host_id == 0)
-      throw (exceptions::msg() << "could not find ID of host '"
-             << downtime_data->host_name << "'");
     if (downtime_data->service_description) {
-      downtime->service_id = engine::get_service_id(
-                               downtime_data->host_name,
-                               downtime_data->service_description);
-      if (downtime->service_id == 0)
+      std::pair<unsigned int, unsigned int> p;
+      p = engine::get_host_and_service_id(
+                    downtime_data->host_name,
+                    downtime_data->service_description);
+      downtime->host_id = p.first;
+      downtime->service_id = p.second;
+      if (!downtime->host_id || !downtime->service_id)
         throw (exceptions::msg() << "could not find ID of service ('"
                << downtime_data->host_name << "', '"
                << downtime_data->service_description << "')");
+    }
+    else {
+      downtime->host_id = engine::get_host_id(downtime_data->host_name);
+      if (downtime->host_id == 0)
+        throw (exceptions::msg() << "could not find ID of host '"
+               << downtime_data->host_name << "'");
     }
     downtime->instance_id = instance_id;
     downtime->internal_id = downtime_data->downtime_id;
@@ -686,19 +696,24 @@ int neb::callback_event_handler(int callback_type, void* data) {
     event_handler->execution_time = event_handler_data->execution_time;
     if (!event_handler_data->host_name)
       throw (exceptions::msg() << "unnamed host");
-    event_handler->host_id = engine::get_host_id(
-                               event_handler_data->host_name);
-    if (event_handler->host_id == 0)
-      throw (exceptions::msg() << "could not find ID of host '"
-             << event_handler_data->host_name << "'");
     if (event_handler_data->service_description) {
-      event_handler->service_id = engine::get_service_id(
-                                    event_handler_data->host_name,
-                                    event_handler_data->service_description);
-      if (event_handler->service_id == 0)
+      std::pair<unsigned int, unsigned int> p;
+      p = engine::get_host_and_service_id(
+                    event_handler_data->host_name,
+                    event_handler_data->service_description);
+      event_handler->host_id = p.first;
+      event_handler->service_id = p.second;
+      if (!event_handler->host_id || !event_handler->service_id)
         throw (exceptions::msg() << "could not find ID of service ('"
                << event_handler_data->host_name << "', '"
                << event_handler_data->service_description << "')");
+    }
+    else {
+      event_handler->host_id = engine::get_host_id(
+                                         event_handler_data->host_name);
+      if (event_handler->host_id == 0)
+        throw (exceptions::msg() << "could not find ID of host '"
+               << event_handler_data->host_name << "'");
     }
     if (event_handler_data->output)
       event_handler->output = event_handler_data->output;
@@ -799,20 +814,19 @@ int neb::callback_external_command(int callback_type, void* data) {
             QString var_value(*it);
 
             // Find host/service IDs.
-            unsigned int host_id = engine::get_host_id(
-                                     host.toStdString().c_str());
-            unsigned int service_id = engine::get_service_id(
-                                        host.toStdString().c_str(),
-                                        service.toStdString().c_str());
-            if (host_id != 0 && service_id != 0) {
+            std::pair<unsigned int, unsigned int> p;
+            p = engine::get_host_and_service_id(
+                          host.toStdString().c_str(),
+                          service.toStdString().c_str());
+            if (p.first && p.second) {
               // Fill custom variable.
               misc::shared_ptr<neb::custom_variable_status> cvs(
                 new neb::custom_variable_status);
               cvs->instance_id = instance_id;
-              cvs->host_id = host_id;
+              cvs->host_id = p.first;
               cvs->modified = true;
               cvs->name = var_name;
-              cvs->service_id = service_id;
+              cvs->service_id = p.second;
               cvs->update_time = necd->timestamp.tv_sec;
               cvs->value = var_value;
 
@@ -871,15 +885,14 @@ int neb::callback_flapping_status(int callback_type, void* data) {
     flapping_status->high_threshold = flapping_data->high_threshold;
     if (!flapping_data->host_name)
       throw (exceptions::msg() << "unnamed host");
-    flapping_status->host_id = engine::get_host_id(flapping_data->host_name);
-    if (flapping_status->host_id == 0)
-      throw (exceptions::msg() << "could not find ID of host '"
-             << flapping_data->host_name << "'");
     if (flapping_data->service_description) {
-      flapping_status->service_id = engine::get_service_id(
-                                      flapping_data->host_name,
-                                      flapping_data->service_description);
-      if (flapping_status->service_id == 0)
+      std::pair<unsigned int, unsigned int> p;
+      p = engine::get_host_and_service_id(
+                    flapping_data->host_name,
+                    flapping_data->service_description);
+      flapping_status->host_id = p.first;
+      flapping_status->service_id = p.second;
+      if (!flapping_status->host_id || !flapping_status->service_id)
         throw (exceptions::msg() << "could not find ID of service ('"
                << flapping_data->host_name << "', '"
                << flapping_data->service_description << "')");
@@ -890,6 +903,12 @@ int neb::callback_flapping_status(int callback_type, void* data) {
         flapping_status->comment_time = com->entry_time;
     }
     else {
+      flapping_status->host_id = engine::get_host_id(flapping_data->host_name);
+      if (flapping_status->host_id == 0)
+        throw (exceptions::msg() << "could not find ID of host '"
+               << flapping_data->host_name << "'");
+
+      // Set comment time.
       ::comment* com = find_host_comment(flapping_data->comment_id);
       if (com)
         flapping_status->comment_time = com->entry_time;
@@ -1069,10 +1088,12 @@ int neb::callback_group_member(int callback_type, void* data) {
         sgm->group_id = engine::get_servicegroup_id(sg->group_name);
         sgm->group_name = sg->group_name;
         sgm->instance_id = neb::instance_id;
-        sgm->host_id = engine::get_host_id(svc->host_name);
-        sgm->service_id = engine::get_service_id(
-                            svc->host_name,
-                            svc->description);
+        std::pair<unsigned int, unsigned int> p;
+        p = engine::get_host_and_service_id(
+                      svc->host_name,
+                      svc->description);
+        sgm->host_id = p.first;
+        sgm->service_id = p.second;
         if (sgm->host_id && sgm->service_id && sgm->group_id) {
           if (member_data->type == NEBTYPE_SERVICEGROUPMEMBER_DELETE) {
             logging::info(logging::low) << "callbacks: service ("
@@ -1993,11 +2014,12 @@ int neb::callback_service(int callback_type, void* data) {
                               : HARD_STATE);
 
     // Search host ID and service ID.
-    my_service->host_id = engine::get_host_id(
-                            s->host_name ? s->host_name : "");
-    my_service->service_id = engine::get_service_id(
-                               s->host_name ? s->host_name : "",
-                               my_service->service_description.toStdString().c_str());
+    std::pair<unsigned int, unsigned int> p;
+    p = engine::get_host_and_service_id(
+                  s->host_name ? s->host_name : "",
+                  my_service->service_description.toStdString().c_str());
+    my_service->host_id = p.first;
+    my_service->service_id = p.second;
     if (my_service->host_id && my_service->service_id) {
       // Find if an id has changed. If this is the case, remove the old service
       // before adding the new.
@@ -2102,10 +2124,12 @@ int neb::callback_service_check(int callback_type, void* data) {
         throw (exceptions::msg() << "unnamed host");
       if (!scdata->service_description)
         throw (exceptions::msg() << "unnamed service");
-      service_check->host_id = engine::get_host_id(scdata->host_name);
-      service_check->service_id = engine::get_service_id(
-                                    scdata->host_name,
-                                    scdata->service_description);
+      std::pair<unsigned int, unsigned int> p;
+      p = engine::get_host_and_service_id(
+                    scdata->host_name,
+                    scdata->service_description);
+      service_check->host_id = p.first;
+      service_check->service_id = p.second;
       if (!service_check->host_id || !service_check->service_id)
         throw (exceptions::msg() << "could not find ID of service ('"
                << scdata->host_name << "', '"
@@ -2218,10 +2242,10 @@ int neb::callback_service_status(int callback_type, void* data) {
     service_status->host_name = s->host_name;
     service_status->service_description = s->description;
     {
-      service_status->host_id = engine::get_host_id(s->host_name);
-      service_status->service_id = engine::get_service_id(
-                                     s->host_name,
-                                     s->description);
+      std::pair<unsigned int, unsigned int> p;
+      p = engine::get_host_and_service_id(s->host_name, s->description);
+      service_status->host_id = p.first;
+      service_status->service_id = p.second;
       if (!service_status->host_id || !service_status->service_id)
         throw (exceptions::msg() << "could not find ID of service ('"
                << s->host_name << "', '" << s->description << "')");
