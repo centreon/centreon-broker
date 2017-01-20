@@ -489,10 +489,9 @@ unsigned int timeperiod::duration_intersect(
     current_start_time = get_next_valid(current_end_time);
     current_end_time = get_next_invalid(current_start_time);
     if ((current_start_time == (time_t)-1)
-        || (current_end_time == (time_t)-1)
         || (current_start_time > end_time))
       break ;
-    if (current_end_time > end_time) {
+    if ((current_end_time == (time_t)-1) || (current_end_time > end_time)) {
       duration += std::difftime(end_time, current_start_time);
       break ;
     }
