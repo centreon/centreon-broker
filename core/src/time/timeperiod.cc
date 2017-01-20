@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Centreon
+** Copyright 2011-2014,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -366,9 +366,9 @@ time_t timeperiod::get_next_invalid(time_t preferred_time) const {
 unsigned int timeperiod::duration_intersect(
                            time_t start_time,
                            time_t end_time) const {
-  unsigned int duration = 0;
-  time_t current_start_time = start_time;
-  time_t current_end_time = current_start_time;
+  unsigned int duration(0);
+  time_t current_start_time(start_time);
+  time_t current_end_time(current_start_time);
 
   if (end_time < start_time)
     return (0);
@@ -376,9 +376,11 @@ unsigned int timeperiod::duration_intersect(
   // We iterate on the range, going from next valid times to next invalid times.
   while (true) {
     current_start_time = get_next_valid(current_end_time);
-    if (current_start_time > end_time)
-      break ;
     current_end_time = get_next_invalid(current_start_time);
+    if ((current_start_time == (time_t)-1)
+        || (current_end_time == (time_t)-1)
+        || (current_start_time > end_time))
+      break ;
     if (current_end_time > end_time) {
       duration += std::difftime(end_time, current_start_time);
       break ;
