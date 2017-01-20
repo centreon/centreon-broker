@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -1412,7 +1412,9 @@ void reporting_stream::_compute_event_durations(
     dur_ev->real_start_time = ev->start_time;
     dur_ev->start_time = tp->get_next_valid(ev->start_time);
     dur_ev->end_time = ev->end_time;
-    if (dur_ev->start_time < dur_ev->end_time) {
+    if ((dur_ev->start_time != (time_t)-1)
+        && (dur_ev->end_time != (time_t)-1)
+        && (dur_ev->start_time < dur_ev->end_time)) {
       dur_ev->duration = dur_ev->end_time - dur_ev->start_time;
       dur_ev->sla_duration = tp->duration_intersect(
                                    dur_ev->start_time,
