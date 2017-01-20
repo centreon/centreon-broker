@@ -1391,8 +1391,13 @@ void reporting_stream::_compute_event_durations(
   std::vector<std::pair<time::timeperiod::ptr, bool> >
     timeperiods = _timeperiods.get_timeperiods_by_ba_id(ev->ba_id);
 
-  if (timeperiods.empty())
+  if (timeperiods.empty()) {
+    logging::debug(logging::medium)
+      << "BAM-BI: no reporting period defined for event started at "
+      << ev->start_time << " and ended at " << ev->end_time
+      << " on BA " << ev->ba_id;
     return ;
+  }
 
   for (std::vector<std::pair<time::timeperiod::ptr, bool> >::const_iterator
          it(timeperiods.begin()),
@@ -1414,8 +1419,19 @@ void reporting_stream::_compute_event_durations(
                                    dur_ev->end_time);
       dur_ev->timeperiod_id = tp->get_id();
       dur_ev->timeperiod_is_default = is_default;
+      logging::debug(logging::low)
+        << "BAM-BI: durations of event started at " << ev->start_time
+        << " and ended at " << ev->end_time << " on BA " << ev->ba_id
+        << " were computed for timeperiod " << tp->get_name()
+        << ", duration is " << dur_ev->duration << "s, SLA duration is "
+        << dur_ev->sla_duration;
       visitor->write(dur_ev.staticCast<io::data>());
     }
+    else
+      logging::debug(logging::medium)
+        << "BAM-BI: event started at " << ev->start_time
+        << " and ended at " << ev->end_time << " on BA " << ev->ba_id
+        << " has no duration on timeperiod " << tp->get_name();
   }
 }
 
