@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013,2015 Centreon
+** Copyright 2009-2013,2015-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -62,11 +62,14 @@ muxer::muxer(
       while (true) {
         e.clear();
         mf->read(e, 0);
-        publish(e);
+        if (!e.isNull()) {
+          _events.push(e);
+          ++_total_events;
+        }
       }
     }
     catch (io::exceptions::shutdown const& e) {
-      // Queue file was properly read back in memory.
+      // Memory file was properly read back in memory.
       (void)e;
     }
   }
@@ -74,21 +77,24 @@ muxer::muxer(
   // Load temporary file back in memory.
   {
     try  {
-    _temporary.reset(new persistent_file(_queue_file()));
-    misc::shared_ptr<io::data> e;
-    do {
-      e.clear();
-      if (!_get_event_from_temporary(e))
-        // All temporary event was loaded into the memory event queue.
-        // The recovery mode is disable.
-        break ;
+      _temporary.reset(new persistent_file(_queue_file()));
+      misc::shared_ptr<io::data> e;
+      do {
+        e.clear();
+        if (!_get_event_from_temporary(e))
+          // All temporary event was loaded into the memory event queue.
+          // The recovery mode is disable.
+          break ;
 
-      // Push temporary event to the memory event queue.
-      publish(e);
-    } while (_total_events < event_queue_max_size());
+        // Push temporary event to the memory event queue.
+        if (!e.isNull()) {
+          _events.push(e);
+          ++_total_events;
+        }
+      } while (_total_events < event_queue_max_size());
     } catch (io::exceptions::shutdown const& e) {
-      // Temporary file did not exist.
-      (void) e;
+      // Queue was was entirely read back.
+      (void)e;
     }
   }
 
