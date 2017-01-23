@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2016 Centreon
+** Copyright 2011-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -318,15 +318,14 @@ int stream::write(misc::shared_ptr<io::data> const& d) {
     logging::debug(logging::low) << "file: write request of "
       << size << " bytes for '" << _file_path(_wid).c_str() << "'";
 
+    // Open new file if necessary.
+    if ((_woffset + size) > _max_size)
+      _open_next_write();
+
     // Write data.
     while (size > 0) {
-      if (_woffset == _max_size)
-        _open_next_write();
-      unsigned long max_write(_max_size - _woffset);
-      if (size < max_write)
-        max_write = size;
       unsigned long
-        wb(_wfile->write(memory, max_write));
+        wb(_wfile->write(memory, size));
       size -= wb;
       _woffset += wb;
       memory += wb;
