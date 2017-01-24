@@ -297,6 +297,8 @@ void parser::_parse_logger(QDomElement& elem, logger& l) {
         l.error(parse_boolean(entry.text()));
       else if (name == "info")
         l.info(parse_boolean(entry.text()));
+      else if (name == "perf")
+        l.perf(parse_boolean(entry.text()));
       else if (name == "facility") {
         QString val(entry.text());
         if (!val.compare("kern", Qt::CaseInsensitive))

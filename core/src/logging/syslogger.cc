@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Centreon
+** Copyright 2009-2011,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -90,6 +90,7 @@ void syslogger::log_msg(char const* msg,
     priority = LOG_ERR;
     break ;
    case info_type:
+   case perf_type:
     priority = LOG_NOTICE;
     break ;
    default:

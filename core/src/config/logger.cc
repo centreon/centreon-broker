@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Centreon
+** Copyright 2009-2012,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -226,6 +226,28 @@ void logger::info(bool i) throw () {
  */
 bool logger::info() const throw () {
   return (_types & logging::info_type);
+}
+
+/**
+ *  Set the perf parameter.
+ *
+ *  @param[in] i New value.
+ */
+void logger::perf(bool p) throw () {
+  if (p)
+    _types = (_types | logging::perf_type);
+  else
+    _types = (_types & ~logging::perf_type);
+  return ;
+}
+
+/**
+ *  Get the perf parameter.
+ *
+ *  @return Current value.
+ */
+bool logger::perf() const throw () {
+  return (_types & logging::perf_type);
 }
 
 /**

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Centreon
+** Copyright 2009-2012,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -60,6 +60,8 @@ namespace              config {
     int                facility() const throw ();
     void               info(bool i) throw ();
     bool               info() const throw ();
+    void               perf(bool i) throw ();
+    bool               perf() const throw ();
     void               level(logging::level l) throw ();
     logging::level     level() const throw ();
     void               max_size(unsigned long long max) throw ();

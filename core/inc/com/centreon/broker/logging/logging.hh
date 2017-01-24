@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Centreon
+** Copyright 2009-2011,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_LOGGING_LOGGING_HH_
-# define CCB_LOGGING_LOGGING_HH_
+#ifndef CCB_LOGGING_LOGGING_HH
+#  define CCB_LOGGING_LOGGING_HH
 
-# include "com/centreon/broker/logging/logger.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/logging/logger.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -30,8 +30,9 @@ namespace       logging {
   extern logger debug;
   extern logger error;
   extern logger info;
+  extern logger perf;
 }
 
 CCB_END()
 
-#endif /* !CCB_LOGGING_LOGGING_HH_ */
+#endif // !CCB_LOGGING_LOGGING_HH

@@ -44,7 +44,8 @@ namespace logging {
     config_type = 1,
     debug_type = 2,
     error_type = 4,
-    info_type = 8
+    info_type = 8,
+    perf_type = 16
   };
 }
 

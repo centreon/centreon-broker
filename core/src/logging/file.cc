@@ -138,6 +138,9 @@ void file::log_msg(char const* msg,
      case info_type:
       prefix = "info:    ";
       break ;
+    case perf_type:
+      prefix = "perf:    ";
+      break ;
      default:
       prefix = "unknown: ";
     }

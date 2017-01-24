@@ -75,7 +75,8 @@ namespace                 com {
                               types = config_type
                                       | debug_type
                                       | error_type
-                                      | info_type,
+                                      | info_type
+                                      | perf_type,
                             level min_priority = medium);
           static void     unload();
         };
