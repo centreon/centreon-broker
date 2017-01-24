@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015 Centreon
+** Copyright 2011-2013,2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -161,7 +161,10 @@ void parser::parse(QString const& file, state& s) {
       }
       else if (name == "log_timestamp") {
         QString val(elem.text());
-        s.log_timestamp((val == "yes") || val.toInt());
+        if (val == "nano")
+          s.log_timestamp(logging::nano_timestamp);
+        else if ((val == "yes") || (val == "second") || val.toInt())
+          s.log_timestamp(logging::second_timestamp);
       }
       else if (name == "log_human_readable_timestamp") {
         QString val(elem.text());

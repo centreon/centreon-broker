@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Centreon
+** Copyright 2009-2012,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -48,8 +48,9 @@ namespace              logging {
     static void        with_flush(bool enable) throw ();
     static bool        with_thread_id() throw ();
     static void        with_thread_id(bool enable) throw ();
-    static bool        with_timestamp() throw ();
-    static void        with_timestamp(bool enable) throw ();
+    static timestamp_type
+                       with_timestamp() throw ();
+    static void        with_timestamp(timestamp_type ts_type) throw ();
     static bool        with_human_redable_timestamp() throw();
     static void        with_human_redable_timestamp(bool enable) throw();
 
@@ -63,7 +64,8 @@ namespace              logging {
     unsigned long long _max;
     bool               _special;
     static bool        _with_flush;
-    static bool        _with_timestamp;
+    static timestamp_type
+                       _with_timestamp;
     static bool        _with_human_readable_timestamp;
     static bool        _with_thread_id;
     unsigned long long _written;

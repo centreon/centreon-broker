@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Centreon
+** Copyright 2009-2012,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -34,8 +34,8 @@ using namespace com::centreon::broker::logging;
 bool file::_with_flush(true);
 // Should thread ID be printed ?
 bool file::_with_thread_id(false);
-// Should timestamp be printed ?
-bool file::_with_timestamp(true);
+// Should/how timestamp be printed ?
+timestamp_type file::_with_timestamp(second_timestamp);
 // Should a human readable timestamp be printed?
 bool file::_with_human_readable_timestamp(false);
 
@@ -141,13 +141,27 @@ void file::log_msg(char const* msg,
      default:
       prefix = "unknown: ";
     }
-    if (_with_timestamp || _with_human_readable_timestamp) {
+    if ((_with_timestamp != no_timestamp)
+        || _with_human_readable_timestamp) {
+      struct timespec ts;
+      memset(&ts, 0, sizeof(ts));
+      clock_gettime(CLOCK_REALTIME, &ts);
       _write("[");
-      char buffer[integer_width<time_t>::value];
-      snprintf(buffer,
-        sizeof(buffer),
-        "%llu",
-        static_cast<unsigned long long>(time(NULL)));
+      // 10 comes from the limits of nanoseconds (9) + dot (1).
+      char buffer[integer_width<time_t>::value + 10];
+      if (_with_timestamp == nano_timestamp)
+        snprintf(
+          buffer,
+          sizeof(buffer),
+          "%llu.%09li",
+          static_cast<unsigned long long>(ts.tv_sec),
+          ts.tv_nsec);
+      else
+        snprintf(
+          buffer,
+          sizeof(buffer),
+          "%llu",
+          static_cast<unsigned long long>(ts.tv_sec));
       _write(buffer);
       _write("] ");
       if (_with_human_readable_timestamp) {
@@ -218,21 +232,21 @@ void file::with_thread_id(bool enable) throw () {
 }
 
 /**
- *  Check if timestamp should be printed.
+ *  Check if and how timestamp should be printed.
  *
- *  @return true if timestamp should be printed.
+ *  @return Any acceptable value.
  */
-bool file::with_timestamp() throw () {
+timestamp_type file::with_timestamp() throw () {
   return (_with_timestamp);
 }
 
 /**
- *  Set if timestamp should be printed or not.
+ *  Set if and how timestamp should be printed.
  *
- *  @param[in] enable true to enable timestamp printing.
+ *  @param[in] ts_type  Any acceptable value.
  */
-void file::with_timestamp(bool enable) throw () {
-  _with_timestamp = enable;
+void file::with_timestamp(timestamp_type ts_type) throw () {
+  _with_timestamp = ts_type;
   return ;
 }
 

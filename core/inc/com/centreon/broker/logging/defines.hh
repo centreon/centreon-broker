@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012 Centreon
+** Copyright 2009-2012,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -30,6 +30,13 @@ namespace logging {
     high,
     medium,
     low
+  };
+
+  // Timestamp types.
+  enum    timestamp_type {
+    no_timestamp = 0,
+    second_timestamp,
+    nano_timestamp
   };
 
   // Log types.

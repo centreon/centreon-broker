@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Centreon
+** Copyright 2011-2012,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -63,8 +63,8 @@ namespace                         config {
     bool                          flush_logs() const throw ();
     void                          log_thread_id(bool log_id) throw ();
     bool                          log_thread_id() const throw ();
-    void                          log_timestamp(bool log_time) throw ();
-    bool                          log_timestamp() const throw ();
+    void                          log_timestamp(logging::timestamp_type log_time) throw ();
+    logging::timestamp_type       log_timestamp() const throw ();
     void                          log_human_readable_timestamp(
                                     bool human_log_time) throw ();
     bool                          log_human_readable_timestamp() const throw();
@@ -96,7 +96,7 @@ namespace                         config {
     unsigned int                  _event_queue_max_size;
     bool                          _flush_logs;
     bool                          _log_thread_id;
-    bool                          _log_timestamp;
+    logging::timestamp_type       _log_timestamp;
     bool                          _log_human_readable_timestamp;
     std::list<logger>             _loggers;
     std::string                   _module_dir;
