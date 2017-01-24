@@ -1,4 +1,26 @@
 =====================
+Centreon Broker 3.0.4
+=====================
+
+*********
+Bug fixes
+*********
+
+BA availabilities with non-standard timeperiods
+===============================================
+
+Availabilities were improperly computed when linked to non-standard
+timeperiods (exceptions, exclusions, templates, ...).
+
+Use prepared statements on logs and data_bin
+============================================
+
+Starting with Centreon 2.8, the default storage engine for the logs and
+data_bin tables is now InnoDB. To improve performances with this storage
+engine, the query system now use prepared statements and transactions to
+insert data in these tables.
+
+=====================
 Centreon Broker 3.0.3
 =====================
 
