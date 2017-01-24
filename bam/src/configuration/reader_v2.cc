@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2016 Centreon
+** Copyright 2014-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -640,59 +640,59 @@ void reader_v2::_load_dimensions() {
       datas.push_back(tp.staticCast<io::data>());
     }
 
-    // Load the timeperiod exceptions.
-    q.run_query(
-      "SELECT timeperiod_id, days, timerange"
-      "  FROM timeperiod_exceptions",
-      "could not retrieve timeperiod exceptions from the database");
-    while (q.next()) {
-      unsigned int timeperiod_id = q.value(0).toUInt();
-      std::map<unsigned int, time::timeperiod::ptr>::iterator found
-          = timeperiods.find(timeperiod_id);
-      if (found == timeperiods.end())
-        throw (reader_exception()
-               << "BAM: found a timeperiod exception pointing to an "
-               "inexisting timeperiod (timeperiod ID is " << timeperiod_id
-               << ")");
-      found->second->add_exception(
-                       q.value(1).toString().toStdString(),
-                       q.value(2).toString().toStdString());
-      misc::shared_ptr<dimension_timeperiod_exception>
-        exception(new dimension_timeperiod_exception);
-      exception->timeperiod_id = timeperiod_id;
-      exception->daterange = q.value(1).toString();
-      exception->timerange = q.value(2).toString();
-      datas.push_back(exception.staticCast<io::data>());
-    }
+    // // Load the timeperiod exceptions.
+    // q.run_query(
+    //   "SELECT timeperiod_id, days, timerange"
+    //   "  FROM timeperiod_exceptions",
+    //   "could not retrieve timeperiod exceptions from the database");
+    // while (q.next()) {
+    //   unsigned int timeperiod_id = q.value(0).toUInt();
+    //   std::map<unsigned int, time::timeperiod::ptr>::iterator found
+    //       = timeperiods.find(timeperiod_id);
+    //   if (found == timeperiods.end())
+    //     throw (reader_exception()
+    //            << "BAM: found a timeperiod exception pointing to an "
+    //            "inexisting timeperiod (timeperiod ID is " << timeperiod_id
+    //            << ")");
+    //   found->second->add_exception(
+    //                    q.value(1).toString().toStdString(),
+    //                    q.value(2).toString().toStdString());
+    //   misc::shared_ptr<dimension_timeperiod_exception>
+    //     exception(new dimension_timeperiod_exception);
+    //   exception->timeperiod_id = timeperiod_id;
+    //   exception->daterange = q.value(1).toString();
+    //   exception->timerange = q.value(2).toString();
+    //   datas.push_back(exception.staticCast<io::data>());
+    // }
 
-    // Load the excluded timeperiods.
-    q.run_query(
-      "SELECT timeperiod_id, timeperiod_exclude_id"
-      "  FROM timeperiod_exclude_relations",
-      "could not retrieve timeperiod exclusions from the database");
-    while (q.next()) {
-      unsigned int timeperiod_id = q.value(0).toUInt();
-      unsigned int timeperiod_exclude_id = q.value(1).toUInt();
-      std::map<unsigned int, time::timeperiod::ptr>::iterator found
-          = timeperiods.find(timeperiod_id);
-      if (found == timeperiods.end())
-        throw (reader_exception()
-               << "BAM: found a timeperiod exclude pointing to an inexisting "
-               "timeperiod (timeperiod has ID " << timeperiod_id << ")");
-      std::map<unsigned int, time::timeperiod::ptr>::iterator found_excluded =
-        timeperiods.find(timeperiod_exclude_id);
-      if (found_excluded == timeperiods.end())
-        throw (reader_exception()
-               << "BAM: found a timeperiod exclude pointing to an inexisting "
-                  "excluded timeperiod (excluded timeperiod has ID "
-               << timeperiod_exclude_id << ")");
-      found->second->add_excluded(found_excluded->second);
-      misc::shared_ptr<dimension_timeperiod_exclusion>
-        exclusion(new dimension_timeperiod_exclusion);
-      exclusion->timeperiod_id = timeperiod_id;
-      exclusion->excluded_timeperiod_id = timeperiod_exclude_id;
-      datas.push_back(exclusion.staticCast<io::data>());
-    }
+    // // Load the excluded timeperiods.
+    // q.run_query(
+    //   "SELECT timeperiod_id, timeperiod_exclude_id"
+    //   "  FROM timeperiod_exclude_relations",
+    //   "could not retrieve timeperiod exclusions from the database");
+    // while (q.next()) {
+    //   unsigned int timeperiod_id = q.value(0).toUInt();
+    //   unsigned int timeperiod_exclude_id = q.value(1).toUInt();
+    //   std::map<unsigned int, time::timeperiod::ptr>::iterator found
+    //       = timeperiods.find(timeperiod_id);
+    //   if (found == timeperiods.end())
+    //     throw (reader_exception()
+    //            << "BAM: found a timeperiod exclude pointing to an inexisting "
+    //            "timeperiod (timeperiod has ID " << timeperiod_id << ")");
+    //   std::map<unsigned int, time::timeperiod::ptr>::iterator found_excluded =
+    //     timeperiods.find(timeperiod_exclude_id);
+    //   if (found_excluded == timeperiods.end())
+    //     throw (reader_exception()
+    //            << "BAM: found a timeperiod exclude pointing to an inexisting "
+    //               "excluded timeperiod (excluded timeperiod has ID "
+    //            << timeperiod_exclude_id << ")");
+    //   found->second->add_excluded(found_excluded->second);
+    //   misc::shared_ptr<dimension_timeperiod_exclusion>
+    //     exclusion(new dimension_timeperiod_exclusion);
+    //   exclusion->timeperiod_id = timeperiod_id;
+    //   exclusion->excluded_timeperiod_id = timeperiod_exclude_id;
+    //   datas.push_back(exclusion.staticCast<io::data>());
+    // }
 
     // Load the BAs.
     std::ostringstream oss;
