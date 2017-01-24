@@ -1,5 +1,5 @@
 ##
-## Copyright 2009-2016 Centreon
+## Copyright 2009-2017 Centreon
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
 ## you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")
 # Version.
 set(CENTREON_BROKER_MAJOR 3)
 set(CENTREON_BROKER_MINOR 0)
-set(CENTREON_BROKER_PATCH 3)
+set(CENTREON_BROKER_PATCH 4)
 set(CENTREON_BROKER_VERSION "${CENTREON_BROKER_MAJOR}.${CENTREON_BROKER_MINOR}.${CENTREON_BROKER_PATCH}")
 add_definitions(-DCENTREON_BROKER_VERSION=\"${CENTREON_BROKER_VERSION}\")
 configure_file(
