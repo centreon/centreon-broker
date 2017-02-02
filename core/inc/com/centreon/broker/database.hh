@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ public:
   void              clear_committed_flag();
   static QString    qt_db_type(std::string const& broker_type);
   void              query_executed();
+  void              set_error();
 
 private:
                     database(database const& other);
@@ -57,6 +58,7 @@ private:
                     _db;
   QString           _connection_id;
   database_config   _db_cfg;
+  bool              _error;
   int               _pending_queries;
   bool              _committed;
 };

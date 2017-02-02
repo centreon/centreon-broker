@@ -102,6 +102,7 @@ void database_query::run_query(
                        std::string const& query,
                        char const* error_msg) {
   if (!_q.exec(query.c_str())) {
+    _db.set_error();
     exceptions::msg e;
     if (error_msg)
       e << error_msg << ": ";
@@ -120,6 +121,7 @@ void database_query::run_query(
  */
 void database_query::run_statement(char const* error_msg) {
   if (!_q.exec()) {
+    _db.set_error();
     exceptions::msg e;
     if (error_msg)
       e << error_msg << ": ";
@@ -150,6 +152,7 @@ void database_query::prepare(
                        std::string const& query,
                        char const* error_msg) {
   if (!_q.prepare(query.c_str())) {
+    _db.set_error();
     exceptions::msg e;
     if (error_msg)
       e << error_msg << ": ";

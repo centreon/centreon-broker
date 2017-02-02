@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ using namespace com::centreon::broker;
  */
 database::database(database_config const& db_cfg)
   : _db_cfg(db_cfg),
+    _error(false),
     _pending_queries(0),
     _committed(db_cfg.get_queries_per_transaction() > 1 ? false : true) {
   // Qt type.
@@ -126,7 +127,8 @@ database::database(database_config const& db_cfg)
  *  Destructor.
  */
 database::~database() {
-  _commit();
+  if (!_error)
+    _commit();
   _db.reset();
   QSqlDatabase::removeDatabase(_connection_id);
 }
@@ -265,6 +267,14 @@ void database::query_executed() {
       _new_transaction();
     }
   }
+  return ;
+}
+
+/**
+ *  Set the error flag of the database connection.
+ */
+void database::set_error() {
+  _error = true;
   return ;
 }
 
