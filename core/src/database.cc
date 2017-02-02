@@ -37,7 +37,7 @@ using namespace com::centreon::broker;
  */
 database::database(database_config const& db_cfg)
   : _db_cfg(db_cfg),
-    _error(true),
+    _error(false),
     _pending_queries(0),
     _committed(db_cfg.get_queries_per_transaction() > 1 ? false : true),
     _version(v3) {
