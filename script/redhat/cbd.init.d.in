@@ -39,6 +39,7 @@ pid_path=/var/run
 lockfile=/var/lock/subsys/cbd
 stop_timeout=10
 user="@USER@"
+debug=0
 
 # Check that cbd is executable.
 if [ ! -x "${cbd}" ] ; then
@@ -75,7 +76,12 @@ start_all() {
 
       # Start cbd.
       echo -n "Starting ${daemon_name}: "
-      PID=`su - "${user}" -c "${cbd} ${daemon_config} >/dev/null 2>&1 & echo \\$!"`
+      if [ $debug -eq 1 ] ; then
+	  echo "/tmp/%e.core.%t.%u.%p" > /proc/sys/kernel/core_pattern
+	  PID=`su - "${user}" -c "ulimit -c unlimited; ${cbd} ${daemon_config} > /dev/null 2>&1 & echo \\$!"`
+      else
+	  PID=`su - "${user}" -c "${cbd} ${daemon_config} > /dev/null 2>&1 & echo \\$!"`
+      fi
       RETVAL=$?
       if [ ${RETVAL} = 0 ]; then
         echo ${PID} > "${pidfile}"
