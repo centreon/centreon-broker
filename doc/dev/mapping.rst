@@ -47,7 +47,7 @@ Property       Type             Description                               Versio
 ============== ================ ========================================= =============
 author         string           Comment author.
 comment_type   short integer    1 for a host comment, 2 for a service
-                               comment.
+                                comment.
 data           string           Comment data (text).
 deletion_time  time             Time at which the comment was deleted. 0
                                 if the comment was not deleted (yet).
@@ -326,7 +326,7 @@ Host group
 ==========
 
 ============== ================ =========================================== =============
-Property      Type             Description                                 Version
+Property       Type             Description                                 Version
 ============== ================ =========================================== =============
 host_group_id  unsigned integer
 name           string           Group name.
@@ -484,9 +484,9 @@ global_service_event_handler   string           Global service event
 Log entry
 =========
 
-==================== ================ ================================== =============
-Property             Type             Description                        Version
-==================== ================ ================================== =============
+==================== ================ =================================== =============
+Property             Type             Description                         Version
+==================== ================ =================================== =============
 c_time               time             Log time.
 host_id              unsigned integer Host ID. 0 if log entry does not
                                       refer to a specific host or
@@ -499,18 +499,36 @@ issue_start_time     time             Issue start time if correlation is
                                       enabled and log entry refers to an
                                       issue.
 log_type             short integer    0 for SOFT, 1 for HARD.
-msg_type             short integer    0 for SERVICE ALERT, 1 for HOST
-                                      ALERT, 2 for SERVICE NOTIFICATION,
-                                      3 for HOST NOTIFICATION, 4 for
-                                      Warning, 5 for EXTERNAL COMMAND,
-                                      6 for CURRENT SERVICE STATE, 7 for
-                                      CURRENT HOST STATE, 8 for INITIAL
-                                      SERVICE STATE, 9 for INITIAL HOST
-                                      STATE, 10 for
+msg_type             short integer    0 for SERVICE ALERT (sent on
+                                      service state change), 1 for HOST
+                                      ALERT (sent on host state change(,
+                                      2 for SERVICE NOTIFICATION
+                                      (notification sent out for a
+                                      service), 3 for HOST NOTIFICATION
+                                      (notification sent out for a host),
+                                      4 for Warning (Centreon Engine
+                                      warning), 5 for EXTERNAL COMMAND
+                                      (external command received), 6 for
+                                      CURRENT SERVICE STATE (current
+                                      state of monitored service, usually
+                                      sent at configuration reload), 7
+                                      for CURRENT HOST STATE (current
+                                      state of monitored host, usually
+                                      sent at configuration reload), 8
+                                      for INITIAL SERVICE STATE (initial
+                                      state of service, after retention
+                                      processing, sent at process start),
+                                      9 for INITIAL HOST STATE (initial
+                                      state of monitored host, after
+                                      retention processing, sent at
+                                      process start), 10 for
                                       ACKNOWLEDGE_SVC_PROBLEM external
-                                      command, 11 for
+                                      command (special case of EXTERNAL
+                                      COMMAND for service
+                                      acknowledgement), 11 for
                                       ACKNOWLEDGE_HOST_PROBLEM external
-                                      command.
+                                      command (special case of EXTERNAL
+                                      COMMAND for host acknowledgement).
 notification_cmd     string           Notification command.
 notification_contact string           Notification contact.
 retry                integer          Current check attempt.
@@ -521,7 +539,7 @@ service_id           unsigned integer Service ID. 0 if log entry does
                                       not refer to a specific service.
 status               short integer    Host / service status.
 output               string           Output.
-==================== ================ ================================== =============
+==================== ================ =================================== =============
 
 Module
 ======
@@ -842,7 +860,7 @@ is_for_rebuild boolean          Set to true when a graph is being
 ============== ================ ======================================== =============
 
 Metric Mapping
-=============
+==============
 
 ============== ================ ======================================== =============
 Property       Type             Description                              Version
