@@ -603,6 +603,13 @@ endif()
 # Module list.
 unset(MODULE_LIST)
 
+# Generator module.
+option(WITH_MODULE_GENERATOR "Build generator module." OFF)
+if (WITH_MODULE_GENERATOR)
+  add_subdirectory("generator")
+  list(APPEND MODULE_LIST "generator")
+endif ()
+
 # Stats module.
 option(WITH_MODULE_STATS "Build stats module." ON)
 if (WITH_MODULE_STATS)
