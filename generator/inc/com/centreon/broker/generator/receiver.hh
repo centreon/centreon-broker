@@ -20,6 +20,7 @@
 #  define CCB_GENERATOR_RECEIVER_HH
 
 #  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -43,6 +44,9 @@ namespace              generator {
    private:
                        receiver(receiver const& other);
     receiver&          operator=(receiver const& other);
+
+    umap<unsigned int, unsigned int>
+                       _last_numbers;
   };
 }
 

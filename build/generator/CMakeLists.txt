@@ -30,6 +30,7 @@ add_library("${GENERATOR}" SHARED
   "${SRC_DIR}/endpoint.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
+  "${SRC_DIR}/receiver.cc"
   "${SRC_DIR}/sender.cc"
   # Headers.
   "${INC_DIR}/dummy.hh"
