@@ -26,8 +26,13 @@ set(GENERATOR "90-generator")
 set(GENERATOR "${GENERATOR}" PARENT_SCOPE)
 add_library("${GENERATOR}" SHARED
   # Sources.
-  "${SRC_DIR}/main.cc"
+  "${SRC_DIR}/factory.cc"
+  #"${SRC_DIR}/main.cc"
   # Headers.
+  "${INC_DIR}/endpoint.hh"
+  "${INC_DIR}/factory.hh"
+  "${INC_DIR}/receiver.hh"
+  "${INC_DIR}/sender.hh"
 )
 target_link_libraries("${GENERATOR}" ${QT_LIBRARIES})
 set_target_properties("${GENERATOR}" PROPERTIES PREFIX "")
