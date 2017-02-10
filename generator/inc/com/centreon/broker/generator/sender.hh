@@ -43,6 +43,8 @@ namespace              generator {
    private:
                        sender(sender const& other);
     sender&            operator=(sender const& other);
+
+    unsigned int       _number;
   };
 }
 

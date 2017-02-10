@@ -39,7 +39,7 @@ namespace               generator {
    */
   class                 dummy : public io::data {
    public:
-                        dummy();
+                        dummy(unsigned int number = 0);
                         dummy(dummy const& other);
                         ~dummy();
     dummy&              operator=(dummy const& other);

@@ -26,10 +26,11 @@ set(GENERATOR "90-generator")
 set(GENERATOR "${GENERATOR}" PARENT_SCOPE)
 add_library("${GENERATOR}" SHARED
   # Sources.
-  "${SRC_DIR}/endpoint.cc"
   "${SRC_DIR}/dummy.cc"
+  "${SRC_DIR}/endpoint.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
+  "${SRC_DIR}/sender.cc"
   # Headers.
   "${INC_DIR}/dummy.hh"
   "${INC_DIR}/endpoint.hh"

@@ -25,8 +25,10 @@ using namespace com::centreon::broker::generator;
 
 /**
  *  Constructor.
+ *
+ *  @param[in] n  Number value.
  */
-dummy::dummy() : number(0) {}
+dummy::dummy(unsigned int n) : number(n) {}
 
 /**
  *  Copy constructor.
