@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ namespace               io {
       dumper,
       bam,
       extcmd,
+      generator,
       internal = 65535
     };
     // Internal events used by the core.
