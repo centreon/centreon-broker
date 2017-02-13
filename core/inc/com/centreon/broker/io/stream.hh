@@ -46,7 +46,7 @@ namespace                    io {
    *  The write() method is used to send data through the stream. It
    *  should return the number of event fully written through (taking into
    *  account any buffering, or underlayer) to the end device. If that
-   *  information is not available or meaningful, it should always return '-1'.
+   *  information is not available or meaningful, it should always return '1'.
    */
   class                      stream {
   public:
