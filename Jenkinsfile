@@ -16,12 +16,28 @@ stage('Unit tests') {
     node {
       sh 'cd /opt/centreon-build && git pull && cd -'
       sh '/opt/centreon-build/jobs/broker/mon-broker-unittest.sh centos6'
+      step([
+        $class: 'XUnitBuilder',
+        thresholds: [
+          [$class: 'FailedThreshold', failureThreshold: '0'],
+          [$class: 'SkippedThreshold', failureThreshold: '0']
+        ],
+        tools: [[$class: 'GoogleTestType', pattern: 'ut.xml']]
+      ])
     }
   },
   'centos7': {
     node {
       sh 'cd /opt/centreon-build && git pull && cd -'
       sh '/opt/centreon-build/jobs/broker/mon-broker-unittest.sh centos7'
+      step([
+        $class: 'XUnitBuilder',
+        thresholds: [
+          [$class: 'FailedThreshold', failureThreshold: '0'],
+          [$class: 'SkippedThreshold', failureThreshold: '0']
+        ],
+        tools: [[$class: 'GoogleTestType', pattern: 'ut.xml']]
+      ])
     }
   }
   if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
