@@ -76,7 +76,7 @@ int receiver::write(misc::shared_ptr<io::data> const& d) {
       throw (exceptions::msg()
              << "invalid sequence number for Centreon Broker instance "
              << e.source_id << ": got " << e.number << ", expected "
-             << it->second - 1);
+             << it->second);
   }
   return (1);
 }
