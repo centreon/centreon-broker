@@ -184,13 +184,6 @@ void failover::run() {
     return ;
   }
 
-  // Initial launch of failovers (to read retained data).
-  logging::debug(logging::medium)
-    << "failover: initializing failovers of endpoint '" << _name << "'";
-  _update_status("initializing failovers");
-  _launch_failover();
-  _update_status("");
-
   // Thread should be aware of external exit requests.
   do {
     // This try/catch block handle any errors of the current thread
@@ -253,29 +246,8 @@ void failover::run() {
         }
       _update_status("");
 
-      // Recovery loop.
+      // Shutdown failover.
       if (_failover_launched) {
-        logging::debug(logging::medium)
-          << "failover: recovering data from failover";
-        _update_status("recovering data from failover");
-        try {
-          misc::shared_ptr<io::data> d;
-          while (!should_exit()) {
-            // XXX : event acknowledgement
-            bool timed_out(!_failover->read(d, 0));
-            if (timed_out)
-              break ;
-            if (!d.isNull()) {
-              _stream->write(d);
-              tick();
-            }
-          }
-        }
-        catch (io::exceptions::shutdown const& e) {
-          // Normal termination.
-          (void)e;
-        }
-        // Shutdown failover.
         logging::debug(logging::medium)
           << "failover: shutting down failover of endpoint '"
           << _name << "'";
@@ -290,6 +262,7 @@ void failover::run() {
       logging::debug(logging::medium)
         << "failover: launching event loop of endpoint '"
         << _name << "'";
+      _subscriber->get_muxer().nack_events();
       bool stream_can_read(true);
       bool muxer_can_read(true);
       bool should_commit(false);
@@ -309,7 +282,6 @@ void failover::run() {
         d.clear();
         bool timed_out_stream(true);
         if (stream_can_read) {
-          // XXX : event acknowledgement
           logging::debug(logging::low)
             << "failover: reading event from endpoint '"
             << _name << "'";
@@ -356,14 +328,15 @@ void failover::run() {
             muxer_can_read = false;
           }
           if (!d.isNull()) {
-            // XXX : event acknowledgement
             logging::debug(logging::low)
               << "failover: writing event of multiplexing engine to endpoint '"
               << _name << "'";
             _update_status("writing event to stream");
+            int we(0);
             try {
               QMutexLocker stream_lock(&_streamm);
-              _stream->write(d);
+              we = _stream->write(d);
+              _subscriber->get_muxer().ack_events(we);
             }
             catch (io::exceptions::shutdown const& e) {
               logging::debug(logging::medium)
@@ -652,6 +625,7 @@ void failover::_forward_statistic(io::properties& tree) {
  *  Launch failover of this endpoint.
  */
 void failover::_launch_failover() {
+  _subscriber->get_muxer().nack_events();
   if (!_failover.isNull() && !_failover_launched) {
     _failover_launched = true;
     _failover->start();
