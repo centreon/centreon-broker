@@ -148,20 +148,7 @@ bool stream::read(
   _roffset += rb;
   d = misc::shared_ptr<io::data>(data.release());
 
-  // Erase read data.
-  _rfile->seek(0);
-  union {
-    char     bytes[2 * sizeof(uint32_t)];
-    uint32_t integers[2];
-  } header;
-  header.integers[0] = htonl(_roffset / 4294967296ull);
-  header.integers[1] = htonl(_roffset % 4294967296ull);
-  unsigned int written(0);
-  while (written != sizeof(header.bytes))
-    written += _rfile->write(
-                         header.bytes + written,
-                         sizeof(header.bytes) - written);
-return (true);
+  return (true);
 }
 
 /**
