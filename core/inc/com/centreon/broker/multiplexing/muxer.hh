@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ namespace               multiplexing {
    *  @see engine
    */
   class                 muxer : public io::stream {
-  public:
+   public:
     typedef             uset<unsigned int>
                         filters;
 
@@ -50,6 +50,7 @@ namespace               multiplexing {
                           std::string const& name,
                           bool persistent = false);
                         ~muxer();
+    void                ack_events(int count);
     static void         event_queue_max_size(unsigned int max) throw ();
     static unsigned int event_queue_max_size() throw ();
     void                publish(misc::shared_ptr<io::data> const& d);
@@ -61,6 +62,7 @@ namespace               multiplexing {
     filters const&      get_read_filters() const;
     filters const&      get_write_filters() const;
     unsigned int        get_event_queue_size() const;
+    void                nack_events();
     void                statistics(io::properties& tree) const;
     void                wake();
     int                 write(misc::shared_ptr<io::data> const& d);
