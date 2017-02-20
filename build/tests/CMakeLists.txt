@@ -26,9 +26,11 @@ include_directories("${PROJECT_SOURCE_DIR}/bam/inc")
 # Unit test executable.
 add_executable("ut"
   # Core sources.
+  "${TESTS_DIR}/main.cc"
   "${TESTS_DIR}/ceof/ceof_parser/parse.cc"
   "${TESTS_DIR}/exceptions/msg/default.cc"
+  "${TESTS_DIR}/multiplexing/muxer/read.cc"
   # Module sources.
   ${TESTS_SOURCES}
 )
-target_link_libraries("ut" "gtest" "gtest_main" ${TESTS_LIBRARIES} ${NEB} "rokerbase" "roker")
+target_link_libraries("ut" "gtest" ${TESTS_LIBRARIES} ${NEB} "rokerbase" "roker")
