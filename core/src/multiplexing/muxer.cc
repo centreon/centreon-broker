@@ -50,9 +50,9 @@ unsigned int muxer::_event_queue_max_size = std::numeric_limits<unsigned int>::m
 muxer::muxer(
          std::string const& name,
          bool persistent)
-  : _name(name),
-    _persistent(persistent),
-    _total_events(0) {
+  : _events_size(0),
+    _name(name),
+    _persistent(persistent) {
   // Load head queue file back in memory.
   if (_persistent) {
     try {
@@ -63,8 +63,8 @@ muxer::muxer(
         e.clear();
         mf->read(e, 0);
         if (!e.isNull()) {
-          _events.push(e);
-          ++_total_events;
+          _events.push_back(e);
+          ++_events_size;
         }
       }
     }
@@ -74,35 +74,33 @@ muxer::muxer(
     }
   }
 
-  // Load temporary file back in memory.
-  {
-    try  {
-      _temporary.reset(new persistent_file(_queue_file()));
-      misc::shared_ptr<io::data> e;
-      do {
-        e.clear();
-        if (!_get_event_from_temporary(e))
-          // All temporary event was loaded into the memory event queue.
-          // The recovery mode is disable.
-          break ;
-
-        // Push temporary event to the memory event queue.
-        if (!e.isNull()) {
-          _events.push(e);
-          ++_total_events;
-        }
-      } while (_total_events < event_queue_max_size());
-    } catch (io::exceptions::shutdown const& e) {
-      // Queue was was entirely read back.
-      (void)e;
-    }
+  // Load queue file back in memory.
+  try {
+    _file.reset(new persistent_file(_queue_file()));
+    misc::shared_ptr<io::data> e;
+    // The following do-while might read an extra event from the queue
+    // file back in memory. However this is necessary to ensure that a
+    // read() operation was done on the queue file and prevent it from
+    // being open in case it is empty.
+    do {
+      e.clear();
+      _get_event_from_file(e);
+      if (e.isNull())
+        break ;
+      _push_to_queue(e);
+    } while (_events_size < event_queue_max_size());
   }
+  catch (io::exceptions::shutdown const& e) {
+    // Queue file was entirely read back.
+    (void)e;
+  }
+  _pos = _events.begin();
 
   // Log messages.
   logging::info(logging::low)
-    << "multiplexing: '" << _name << "' start with " << _total_events
+    << "multiplexing: '" << _name << "' start with " << _events_size
     << " in queue and the queue file is "
-    << (_temporary.get() ? "enable" : "disable");
+    << (_file.get() ? "enable" : "disable");
 }
 
 /**
@@ -110,6 +108,32 @@ muxer::muxer(
  */
 muxer::~muxer() {
   _clean();
+}
+
+/**
+ *  Acknowledge events.
+ *
+ *  @param[in] count  Number of events to acknowledge.
+ */
+void muxer::ack_events(int count) {
+  // Remove acknowledged events.
+  QMutexLocker lock(&_mutex);
+  for (int i(0); (i < count) && !_events.empty(); ++i) {
+    _events.pop_front();
+    --_events_size;
+  }
+
+  // Fill memory from file.
+  misc::shared_ptr<io::data> e;
+  while (_events_size < event_queue_max_size()) {
+    e.clear();
+    _get_event_from_file(e);
+    if (e.isNull())
+      break ;
+    _push_to_queue(e);
+  }
+
+  return ;
 }
 
 /**
@@ -145,17 +169,14 @@ void muxer::publish(misc::shared_ptr<io::data> const& event) {
     if (_write_filters.find(event->type()) == _write_filters.end())
       return ;
     // Check if the event queue limit is reach.
-    if (_total_events >= event_queue_max_size()) {
-      // Try to create temporary if is necessary.
-      if (!_temporary.get())
-        _temporary.reset(new persistent_file(_queue_file()));
-      _temporary->write(event);
+    if (_events_size >= event_queue_max_size()) {
+      // Try to create file if is necessary.
+      if (!_file.get())
+        _file.reset(new persistent_file(_queue_file()));
+      _file->write(event);
     }
-    else {
-      _events.push(event);
-      _cv.wakeOne();
-    }
-    ++_total_events;
+    else
+      _push_to_queue(event);
   }
   return ;
 }
@@ -175,7 +196,7 @@ bool muxer::read(
   QMutexLocker lock(&_mutex);
 
   // No data is directly available.
-  if (_events.empty()) {
+  if (_pos == _events.end()) {
     // Wait a while if subscriber was not shutdown.
     if ((time_t)-1 == deadline)
       _cv.wait(&_mutex);
@@ -186,8 +207,9 @@ bool muxer::read(
       else
         timed_out = true;
     }
-    if (!_events.empty()) {
-      _get_last_event(event);
+    if (_pos != _events.end()) {
+      event = *_pos;
+      ++_pos;
       lock.unlock();
       if (!event.isNull())
         timed_out = false;
@@ -197,7 +219,8 @@ bool muxer::read(
   }
   // Data is available, no need to wait.
   else {
-    _get_last_event(event);
+    event = *_pos;
+    ++_pos;
     lock.unlock();
   }
   return (!timed_out);
@@ -255,6 +278,15 @@ unsigned int muxer::get_event_queue_size() const {
 }
 
 /**
+ *  Reprocess non-acknowledged events.
+ */
+void muxer::nack_events() {
+  QMutexLocker lock(&_mutex);
+  _pos = _events.begin();
+  return ;
+}
+
+/**
  *  Generate statistics about the subscriber.
  *
  *  @param[out] buffer Output buffer.
@@ -263,10 +295,10 @@ void muxer::statistics(io::properties& tree) const {
   // Lock object.
   QMutexLocker lock(&_mutex);
 
-  // Temporary mode.
+  // Queue file mode.
   tree.add_property(
          "queue_file_enabled",
-         io::property("queue file enabled", _temporary.get() ? "yes" : "no"));
+         io::property("queue file enabled", _file.get() ? "yes" : "no"));
 
   return ;
 }
@@ -331,15 +363,15 @@ std::string muxer::queue_file(std::string const& name) {
  */
 void muxer::_clean() {
   QMutexLocker lock(&_mutex);
-  if (_temporary.get())
-    _temporary.reset();
+  _file.reset();
   if (_persistent && !_events.empty()) {
     try {
       std::auto_ptr<io::stream>
         mf(new persistent_file(_memory_file()));
       while (!_events.empty()) {
         mf->write(_events.front());
-        _events.pop();
+        _events.pop_front();
+        --_events_size;
       }
     }
     catch (std::exception const& e) {
@@ -348,59 +380,32 @@ void muxer::_clean() {
         << "': " << e.what();
     }
   }
-  while (!_events.empty())
-    _events.pop();
-  _total_events = 0;
+  _events.clear();
+  _events_size = 0;
   return ;
 }
 
 /**
- *  Get event from temporary file. Warning, lock
- *  _mutex before use this function.
+ *  Get event from retention file. Warning: lock _mutex before using
+ *  this function.
  *
- *  @param[out] event The Last event available.
- *
- *  @return True if have event into the temporary.
+ *  @param[out] event  Last event available. Null if none is available.
  */
-bool muxer::_get_event_from_temporary(
-              misc::shared_ptr<io::data>& event) {
-  bool ret(false);
+void muxer::_get_event_from_file(misc::shared_ptr<io::data>& event) {
   event.clear();
-  // If temporary exist, try to get the last event.
-  if (_temporary.get()) {
+  // If file exist, try to get the last event.
+  if (_file.get()) {
     try {
       do {
-        _temporary->read(event);
+        _file->read(event);
       } while (event.isNull());
-      ret = true;
     }
     catch (io::exceptions::shutdown const& e) {
-      // The temporary end was reach.
+      // The file end was reach.
       (void)e;
-      _temporary.reset();
-      _total_events = _events.size();
+      _file.reset();
     }
   }
-  return (ret);
-}
-
-/**
- *  Get the last event available from the internal queue. Warning, lock
- *  _mutex before use this function.
- *
- *  @param[out] event Last event available.
- */
-void muxer::_get_last_event(misc::shared_ptr<io::data>& event) {
-  // Get the last avaiable event.
-  event = _events.front();
-  _events.pop();
-  --_total_events;
-
-  // Try to get the last temporary event.
-  misc::shared_ptr<io::data> e;
-  if (_get_event_from_temporary(e))
-    _events.push(e);
-
   return ;
 }
 
@@ -411,6 +416,22 @@ void muxer::_get_last_event(misc::shared_ptr<io::data>& event) {
  */
 std::string muxer::_memory_file() const {
   return (memory_file(_name));
+}
+
+/**
+ *  Push event to queue.
+ *
+ *  @param[in] event  New event.
+ */
+void muxer::_push_to_queue(misc::shared_ptr<io::data> const& event) {
+  bool pos_has_no_more_to_read(_pos == _events.end());
+  _events.push_back(event);
+  ++_events_size;
+  if (pos_has_no_more_to_read) {
+    _pos = --_events.end();
+    _cv.wakeOne();
+  }
+  return ;
 }
 
 /**

@@ -74,24 +74,26 @@ namespace               multiplexing {
                         muxer(muxer const& other);
     muxer&              operator=(muxer const& other);
     void                _clean();
-    bool                _get_event_from_temporary(
-                          misc::shared_ptr<io::data>& event);
-    void                _get_last_event(
+    void                _get_event_from_file(
                           misc::shared_ptr<io::data>& event);
     std::string         _memory_file() const;
+    void                _push_to_queue(
+                          misc::shared_ptr<io::data> const& event);
     std::string         _queue_file() const;
 
     QWaitCondition      _cv;
-    std::queue<misc::shared_ptr<io::data> >
+    std::list<misc::shared_ptr<io::data> >
                         _events;
+    unsigned int        _events_size;
     static unsigned int _event_queue_max_size;
+    std::auto_ptr<io::stream>
+                        _file;
     mutable QMutex      _mutex;
     std::string         _name;
     bool                _persistent;
+    std::list<misc::shared_ptr<io::data> >::iterator
+                        _pos;
     filters             _read_filters;
-    std::auto_ptr<io::stream>
-                        _temporary;
-    unsigned int        _total_events;
     filters             _write_filters;
   };
 }
