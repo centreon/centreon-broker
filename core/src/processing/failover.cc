@@ -336,7 +336,6 @@ void failover::run() {
             try {
               QMutexLocker stream_lock(&_streamm);
               we = _stream->write(d);
-              _subscriber->get_muxer().ack_events(we);
             }
             catch (io::exceptions::shutdown const& e) {
               logging::debug(logging::medium)
@@ -344,6 +343,7 @@ void failover::run() {
                 << "' shutdown while writing: " << e.what();
               muxer_can_read = false;
             }
+            _subscriber->get_muxer().ack_events(we);
             tick();
             for (std::vector<misc::shared_ptr<io::stream> >::iterator
                    it(secondaries.begin()),
