@@ -290,9 +290,8 @@ void stream::statistics(io::properties& tree) const {
 int stream::write(misc::shared_ptr<io::data> const& d) {
   if (!_negociated)
     negociate(negociate_second);
-
   output::write(d);
-  int retval = _acknowledged_events;
+  int retval(_acknowledged_events);
   _acknowledged_events = 0;
   return (retval);
 }

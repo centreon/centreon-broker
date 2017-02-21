@@ -334,5 +334,5 @@ int output::write(misc::shared_ptr<io::data> const& e) {
     _substream->write(serialized);
 
   // Event acknowledgement is done in the higher level bbdo::stream.
-  return (-1);
+  return (0);
 }
