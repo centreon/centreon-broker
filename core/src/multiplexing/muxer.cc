@@ -117,6 +117,9 @@ muxer::~muxer() {
  */
 void muxer::ack_events(int count) {
   // Remove acknowledged events.
+  logging::debug(logging::low)
+    << "multiplexing: acknowledging " << count << " events from "
+    << _name << " event queue";
   QMutexLocker lock(&_mutex);
   for (int i(0); (i < count) && !_events.empty(); ++i) {
     _events.pop_front();
@@ -281,6 +284,9 @@ unsigned int muxer::get_event_queue_size() const {
  *  Reprocess non-acknowledged events.
  */
 void muxer::nack_events() {
+  logging::debug(logging::low)
+    << "multiplexing: reprocessing unacknowledged events from "
+    << _name << " event queue";
   QMutexLocker lock(&_mutex);
   _pos = _events.begin();
   return ;
