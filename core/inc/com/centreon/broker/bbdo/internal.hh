@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@
 #  define BBDO_VERSION_MAJOR 2
 #  define BBDO_VERSION_MINOR 0
 #  define BBDO_VERSION_PATCH 0
-#  define BBDO_INTERNAL_TYPE 65535u
 
 CCB_BEGIN()
 

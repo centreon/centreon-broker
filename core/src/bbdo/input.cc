@@ -291,7 +291,7 @@ bool input::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   bool timed_out(!read_any(d, deadline));
   unsigned int event_id(d.isNull() ? 0 : d->type());
   while (!timed_out
-         && ((event_id >> 16) == BBDO_INTERNAL_TYPE)) {
+         && ((event_id >> 16) == io::events::bbdo)) {
     // Version response.
     if ((event_id & 0xFFFF) == 1) {
       misc::shared_ptr<version_response>
