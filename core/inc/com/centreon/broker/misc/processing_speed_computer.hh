@@ -30,7 +30,7 @@ namespace         misc {
    *  @brief Compute processing speed.
    */
   class           processing_speed_computer {
-  public:
+   public:
                   processing_speed_computer();
                   processing_speed_computer(
                     processing_speed_computer const& right);
@@ -45,9 +45,8 @@ namespace         misc {
     static int const
                   window_length = 30;
 
-  private:
+   private:
     unsigned int  _event_by_seconds[window_length];
-    timestamp     _first_event_time;
     timestamp     _last_tick;
   };
 }
