@@ -70,13 +70,13 @@ int receiver::write(misc::shared_ptr<io::data> const& d) {
     }
 
     // Check current number.
-    if (e.number == 1)
-      it->second = e.number;
-    else if (e.number != ++(it->second))
+    ++(it->second);
+    if (e.number > it->second)
       throw (exceptions::msg()
              << "invalid sequence number for Centreon Broker instance "
              << e.source_id << ": got " << e.number << ", expected "
              << it->second);
+    it->second = e.number;
   }
   return (1);
 }
