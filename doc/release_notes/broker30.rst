@@ -34,6 +34,13 @@ Downtimes not deleted if not started
 The cancellation flag of the downtimes table was not set if a downtime
 was deleted before it started.
 
+Fix data insertion in InfluxDB databases
+========================================
+
+The InfluxDB was incorrectly inserting data in database for at least
+three different reasons : invalid timestamp format, wrong HTTP status
+code check and quoted tags. This is now fixed.
+
 =====================
 Centreon Broker 3.0.3
 =====================
