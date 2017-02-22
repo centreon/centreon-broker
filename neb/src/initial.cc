@@ -29,6 +29,7 @@
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/engine/broker.hh"
 #include "com/centreon/engine/common.hh"
+#include "com/centreon/engine/globals.hh"
 #include "com/centreon/engine/nebcallbacks.hh"
 #include "com/centreon/engine/nebstructs.hh"
 #include "com/centreon/engine/objects.hh"
@@ -109,6 +110,46 @@ static void send_custom_variables_list() {
   // End log message.
   logging::info(logging::medium)
     << "init: end of custom variables dump";
+
+  return ;
+}
+
+/**
+ *  Send to the global publisher the list of downtimes.
+ */
+static void send_downtimes_list() {
+  // Start log message.
+  logging::info(logging::medium) << "init: beginning downtimes dump";
+
+  // Iterate through all downtimes.
+  for (scheduled_downtime* dt(scheduled_downtime_list);
+       dt;
+       dt = dt->next) {
+    // Fill callback struct.
+    nebstruct_downtime_data nsdd;
+    memset(&nsdd, 0, sizeof(nsdd));
+    nsdd.type = NEBTYPE_DOWNTIME_ADD;
+    nsdd.timestamp.tv_sec = time(NULL);
+    nsdd.downtime_type = dt->type;
+    nsdd.host_name = dt->host_name;
+    nsdd.service_description = dt->service_description;
+    nsdd.entry_time = dt->entry_time;
+    nsdd.author_name = dt->author;
+    nsdd.comment_data = dt->comment;
+    nsdd.start_time = dt->start_time;
+    nsdd.end_time = dt->end_time;
+    nsdd.fixed = dt->fixed;
+    nsdd.duration = dt->duration;
+    nsdd.triggered_by = dt->triggered_by;
+    nsdd.downtime_id = dt->downtime_id;
+    nsdd.object_ptr = dt;
+
+    // Callback.
+    neb::callback_downtime(NEBCALLBACK_DOWNTIME_DATA, &nsdd);
+  }
+
+  // End log message.
+  logging::info(logging::medium) << "init: end of downtimes dump";
 
   return ;
 }
@@ -435,6 +476,7 @@ void neb::send_initial_configuration() {
   send_host_list();
   send_service_list();
   send_custom_variables_list();
+  send_downtimes_list();
   send_host_parents_list();
   send_host_group_list();
   send_service_group_list();
