@@ -27,7 +27,7 @@ using namespace com::centreon::broker;
 // Given a storage::parser object
 // When parse_perfdata() is called with a valid perfdata string
 // Then perfdata are returned in a list
-TEST(StorageParserParsePerfdata, Simple) {
+TEST(StorageParserParsePerfdata, Simple1) {
   // Parse perfdata.
   QList<storage::perfdata> list;
   storage::parser p;
@@ -50,13 +50,32 @@ TEST(StorageParserParsePerfdata, Simple) {
   expected.min(0.0);
   expected.max(10.0);
   ASSERT_TRUE(expected == *it);
-  ++it;
 }
 
-// Given a storage::parser object
-// When parse_perfdata() is called with a valid perfdata string
-// Then perfdata are returned in a list
-TEST(StorageParserParsePerfdata, Complex) {
+TEST(StorageParserParsePerfdata, Simple2) {
+  // Parse perfdata.
+  QList<storage::perfdata> list;
+  storage::parser p;
+  p.parse_perfdata("'ABCD12E'=18.00%;15:;10:;0;100", list);
+
+  // Assertions.
+  ASSERT_EQ(list.size(), 1);
+  QList<storage::perfdata>::const_iterator it(list.begin());
+  storage::perfdata expected;
+  expected.name("ABCD12E");
+  expected.value_type(storage::perfdata::gauge);
+  expected.value(18.0);
+  expected.unit("%");
+  expected.warning(INFINITY);
+  expected.warning_low(15.0);
+  expected.critical(INFINITY);
+  expected.critical_low(10.0);
+  expected.min(0.0);
+  expected.max(100.0);
+  ASSERT_TRUE(expected == *it);
+}
+
+TEST(StorageParserParsePerfdata, Complex1) {
   // Parse perfdata.
   QList<storage::perfdata> list;
   storage::parser p;
@@ -151,7 +170,6 @@ TEST(StorageParserParsePerfdata, Complex) {
   expected.min(0.0);
   expected.max(100.0);
   ASSERT_TRUE(expected == *it);
-  ++it;
 }
 
 // Given a storage::parser object
