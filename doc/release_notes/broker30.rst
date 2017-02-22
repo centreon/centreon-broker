@@ -20,6 +20,20 @@ data_bin tables is now InnoDB. To improve performances with this storage
 engine, the query system now use prepared statements and transactions to
 insert data in these tables.
 
+Invalid event acknowledgement
+=============================
+
+Events read from cache/retention files were improperly acknowledged.
+This means that in case of failure following a successful reading of the
+file events could be lost. Now events are only acknowledged once
+processing is confirmed.
+
+Downtimes not deleted if not started
+====================================
+
+The cancellation flag of the downtimes table was not set if a downtime
+was deleted before it started.
+
 =====================
 Centreon Broker 3.0.3
 =====================
