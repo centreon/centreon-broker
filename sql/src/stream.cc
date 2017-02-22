@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2016 Centreon
+** Copyright 2009-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -322,6 +322,23 @@ void stream::_clean_tables(unsigned int instance_id) {
   catch (std::exception const& e) {
     logging::error(logging::medium)
       << "SQL: could not clean modules table: " << e.what();
+  }
+
+  // Remove downtimes.
+  try {
+    std::ostringstream ss;
+    ss << "UPDATE downtimes AS d"
+          "  INNER JOIN hosts AS h"
+          "    ON d.host_id=h.host_id"
+          "  SET d.cancelled=1"
+          "  WHERE d.actual_end_time IS NULL"
+          "    AND d.cancelled=0"
+          "    AND h.instance_id=" << instance_id;
+    q.run_query(ss.str());
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium)
+      << "SQL: could not clean downtimes table: " << e.what();
   }
 
   // Remove comments.
