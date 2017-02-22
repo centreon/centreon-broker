@@ -19,6 +19,7 @@
 #include <cmath>
 #include <gtest/gtest.h>
 #include <QList>
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/storage/parser.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 
@@ -205,4 +206,18 @@ TEST(StorageParserParsePerfdata, Loop) {
     ASSERT_TRUE(expected == *it);
     ++it;
   }
+}
+
+// Given a storage::parser object
+// When parse_perfdata() is called with an invalid string
+// Then it throws an exceptions::msg
+TEST(StorageParserParsePerfdata, Incorrect) {
+  // Objects.
+  QList<storage::perfdata> list;
+  storage::parser p;
+
+  // Attempt to parse perfdata.
+  ASSERT_THROW(
+    { p.parse_perfdata("metric1= 10 metric2=42", list); },
+    com::centreon::broker::exceptions::msg);
 }
