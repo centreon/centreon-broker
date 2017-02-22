@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -189,7 +189,10 @@ bool influxdb10::_check_answer_string(std::string const& ans) {
       << "' and port '" << _socket->peerPort() << "': got '"
       << first_line_str << "'");
 
-  if (split[0] == "HTTP/1.0" && split[1] == "204" && split[2] == "No" && split[3] == "Content")
+  if ((split[0] == "HTTP/1.0")
+      && (split[1] == "204")
+      && (split[2] == "No")
+      && (split[3] == "Content"))
     return (true);
   else
     throw (exceptions::msg()
@@ -233,7 +236,8 @@ void influxdb10::_create_queries(
   base_url
     .append("/write?u=").append(user)
     .append("&p=").append(passwd)
-    .append("&db=").append(db);
+    .append("&db=").append(db)
+    .append("&precision=s");
   _post_header.append("POST ").append(base_url).append(" HTTP/1.0\n");
 
   // Create status query.
@@ -277,7 +281,7 @@ void influxdb10::_create_queries(
     }
   if (!first)
     query_str.append(" ");
-  query_str.append("$TIME$000000000\n");
+  query_str.append("$TIME$\n");
   _status_query = query(query_str, query::status, _cache, true);
 
    // Create metric query.
@@ -321,6 +325,6 @@ void influxdb10::_create_queries(
      }
    if (!first)
      query_str.append(" ");
-    query_str.append("$TIME$000000000\n");
+    query_str.append("$TIME$\n");
     _metric_query = query(query_str, query::metric, _cache, true);
 }
