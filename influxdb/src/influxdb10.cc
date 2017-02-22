@@ -189,7 +189,7 @@ bool influxdb10::_check_answer_string(std::string const& ans) {
       << "' and port '" << _socket->peerPort() << "': got '"
       << first_line_str << "'");
 
-  if (split[0] == "HTTP/1.0" && split[1] == "200" && split[2] == "OK")
+  if (split[0] == "HTTP/1.0" && split[1] == "204" && split[2] == "No" && split[3] == "Content")
     return (true);
   else
     throw (exceptions::msg()
@@ -246,18 +246,10 @@ void influxdb10::_create_queries(
        it != end; ++it)
     if (it->is_flag()) {
       query_str.append(",");
-      if (it->get_type() == column::number)
-        query_str
-          .append(escape(it->get_name()))
-          .append("=")
-          .append(escape(it->get_value()));
-      else if (it->get_type() == column::string)
-        query_str
-          .append(escape(it->get_name()))
-          .append("=")
-          .append("\"")
-          .append(escape(it->get_value()))
-          .append("\"");
+      query_str
+        .append(escape(it->get_name()))
+        .append("=")
+        .append(escape(it->get_value()));
     }
   query_str.append(" ");
   bool first = true;
@@ -285,7 +277,7 @@ void influxdb10::_create_queries(
     }
   if (!first)
     query_str.append(" ");
-  query_str.append("$TIME$\n");
+  query_str.append("$TIME$000000000\n");
   _status_query = query(query_str, query::status, _cache, true);
 
    // Create metric query.
@@ -298,18 +290,10 @@ void influxdb10::_create_queries(
         it != end; ++it)
      if (it->is_flag()) {
        query_str.append(",");
-       if (it->get_type() == column::number)
-         query_str
-           .append(escape(it->get_name()))
-           .append("=")
-           .append(escape(it->get_value()));
-       else if (it->get_type() == column::string)
-         query_str
-           .append(escape(it->get_name()))
-           .append("=")
-           .append("\"")
-           .append(escape(it->get_value()))
-           .append("\"");
+       query_str
+         .append(escape(it->get_name()))
+         .append("=")
+         .append(escape(it->get_value()));
      }
    query_str.append(" ");
    first = true;
@@ -337,6 +321,6 @@ void influxdb10::_create_queries(
      }
    if (!first)
      query_str.append(" ");
-    query_str.append("$TIME$\n");
+    query_str.append("$TIME$000000000\n");
     _metric_query = query(query_str, query::metric, _cache, true);
 }
