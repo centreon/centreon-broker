@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/influxdb/stream.hh"
-#include "com/centreon/broker/influxdb/influxdb9.hh"
 #include "com/centreon/broker/influxdb/influxdb10.hh"
 
 using namespace com::centreon::broker;
@@ -51,7 +50,6 @@ stream::stream(
           unsigned short port,
           std::string const& db,
           unsigned int queries_per_transaction,
-          std::string const& version,
           std::string const& status_ts,
           std::vector<column> const& status_cols,
           std::string const& metric_ts,
@@ -68,33 +66,17 @@ stream::stream(
     _actual_query(0),
     _commit(false),
     _cache(cache) {
-  if (version == "0.9")
-    _influx_db.reset(new influxdb9(
-                           user,
-                           passwd,
-                           addr,
-                           port,
-                           db,
-                           status_ts,
-                           status_cols,
-                           metric_ts,
-                           metric_cols,
-                           _cache));
-  else if (version == "1.0")
-    _influx_db.reset(new influxdb10(
-                           user,
-                           passwd,
-                           addr,
-                           port,
-                           db,
-                           status_ts,
-                           status_cols,
-                           metric_ts,
-                           metric_cols,
-                           _cache));
-  else
-    throw (exceptions::msg()
-           << "influxdb: unrecognized influxdb version '" << version << "'");
+  _influx_db.reset(new influxdb10(
+                         user,
+                         passwd,
+                         addr,
+                         port,
+                         db,
+                         status_ts,
+                         status_cols,
+                         metric_ts,
+                         metric_cols,
+                         _cache));
 }
 
 /**

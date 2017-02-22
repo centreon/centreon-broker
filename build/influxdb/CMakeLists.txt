@@ -1,5 +1,5 @@
 ##
-## Copyright 2011-2015 Centreon
+## Copyright 2011-2017 Centreon
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
 ## you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ add_library("${INFLUXDB}" SHARED
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/column.cc"
   "${SRC_DIR}/factory.cc"
-  "${SRC_DIR}/influxdb9.cc"
   "${SRC_DIR}/influxdb10.cc"
   "${SRC_DIR}/stream.cc"
   "${SRC_DIR}/macro_cache.cc"
@@ -45,7 +44,6 @@ add_library("${INFLUXDB}" SHARED
   "${INC_DIR}/column.hh"
   "${INC_DIR}/factory.hh"
   "${INC_DIR}/influxdb.hh"
-  "${INC_DIR}/influxdb9.hh"
   "${INC_DIR}/influxdb10.hh"
   "${INC_DIR}/stream.hh"
   "${INC_DIR}/macro_cache.hh"

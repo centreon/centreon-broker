@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -76,7 +76,6 @@ void connector::connect_to(
                   unsigned short port,
                   std::string const& db,
                   unsigned int queries_per_transaction,
-                  std::string const& version,
                   std::string const& status_ts,
                   std::vector<column> const& status_cols,
                   std::string const& metric_ts,
@@ -88,7 +87,6 @@ void connector::connect_to(
   _port = port,
   _db = db;
   _queries_per_transaction = queries_per_transaction;
-  _version = version;
   _status_ts = status_ts;
   _status_cols = status_cols;
   _metric_ts = metric_ts;
@@ -111,7 +109,6 @@ misc::shared_ptr<io::stream> connector::open() {
                   _port,
                   _db,
                   _queries_per_transaction,
-                  _version,
                   _status_ts,
                   _status_cols,
                   _metric_ts,
@@ -137,7 +134,6 @@ void connector::_internal_copy(connector const& other) {
   _port = other._port;
   _db = other._db;
   _queries_per_transaction = other._queries_per_transaction;
-  _version = other._version;
   _status_ts = other._status_ts;
   _status_cols = other._status_cols;
   _metric_ts = other._metric_ts;
