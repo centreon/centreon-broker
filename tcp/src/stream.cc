@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2016 Centreon
+** Copyright 2011-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -109,24 +109,21 @@ bool stream::read(
   if (_socket->bytesAvailable() <= 0) {
     bool ret(_socket->waitForReadyRead(0));
     while (_socket->bytesAvailable() <= 0) {
-      // Request timeout.
-      if ((deadline != (time_t)-1)
-          && (time(NULL) >= deadline))
-        return (false);
       // Disconnected socket with no data.
-      else if (!ret
-          && (_socket->state() == QAbstractSocket::UnconnectedState)
-          && (_socket->bytesAvailable() <= 0))
+      if (!ret
+          && (_socket->state() == QAbstractSocket::UnconnectedState))
         throw (exceptions::msg() << "TCP peer '"
                << _name << "' is disconnected");
+      // Request timeout.
+      else if ((deadline != (time_t)-1) && (time(NULL) >= deadline))
+        return (false);
       // Got data.
       else if (ret
-          || (_socket->error() != QAbstractSocket::SocketTimeoutError)
-          || (_socket->bytesAvailable() > 0))
+          || (_socket->error() != QAbstractSocket::SocketTimeoutError))
         break ;
 
       // Wait for data.
-      _socket->waitForReadyRead(200);
+      ret = _socket->waitForReadyRead(200);
     }
   }
 
