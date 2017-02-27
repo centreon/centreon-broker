@@ -41,6 +41,12 @@ The InfluxDB was incorrectly inserting data in database for at least
 three different reasons : invalid timestamp format, wrong HTTP status
 code check and quoted tags. This is now fixed.
 
+Reconnect when using one peer retention mode
+============================================
+
+A bug in the TCP layer prevented one peer retention mode connections to
+reconnect.
+
 =====================
 Centreon Broker 3.0.3
 =====================
