@@ -120,17 +120,17 @@ void stream::read(misc::shared_ptr<io::data>& d) {
         throw (io::exceptions::shutdown(!_process_in, !_process_out)
                  << "TCP stream is shutdown");
       }
-      // Request timeout.
-      else if ((_read_timeout != (time_t)-1)
-          && (time(NULL) >= deadline)) {
-        return ;
-      }
       // Disconnected socket with no data.
       else if (!ret
           && (_socket->state() == QAbstractSocket::UnconnectedState)
           && (_socket->bytesAvailable() <= 0))
         throw (exceptions::msg() << "TCP peer '"
                << _name << "' is disconnected");
+      // Request timeout.
+      else if ((_read_timeout != (time_t)-1)
+          && (time(NULL) >= deadline)) {
+        return ;
+      }
       // Got data.
       else if (ret
           || (_socket->error() != QAbstractSocket::SocketTimeoutError)
@@ -138,7 +138,7 @@ void stream::read(misc::shared_ptr<io::data>& d) {
         break ;
 
       // Wait for data.
-      _socket->waitForReadyRead(200);
+      ret = _socket->waitForReadyRead(200);
     }
   }
 
