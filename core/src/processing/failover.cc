@@ -110,64 +110,6 @@ time_t failover::get_retry_interval() const throw () {
 }
 
 /**
- *  Read data.
- *
- *  @param[out] data      Data.
- *  @param[in]  deadline  Timeout.
- */
-bool failover::read(
-                 misc::shared_ptr<io::data>& data,
-                 time_t deadline) {
-  // The read() method is used by external objects to read from the main
-  // stream contained in this object. Typically this method is called
-  // by another failover object that uses this object as its failover
-  // endpoint.
-  data.clear();
-
-  // First we try to read from the main stream.
-  QMutexLocker stream_lock(&_streamm);
-  if (!_stream.isNull()) {
-    try {
-      return (_stream->read(data, deadline));
-    }
-    catch (std::exception const& e) {
-      // In the run() method, it is guaranteed that no more write will
-      // occur on the stream if thread exit was requested. It is
-      // important to unlock the stream lock only after setting the exit
-      // flag.
-      if (isRunning()) {
-        exit();
-        stream_lock.unlock();
-        wait();
-      }
-      else {
-        _stream.clear();
-        stream_lock.unlock();
-      }
-      logging::info(logging::high)
-        << "failover: endpoint '" << _name
-        << "' main stream cannot be read anymore, will try failover: "
-        << e.what();
-
-      // Now that the stream is cleared and mutex released, try to read
-      // from failover.
-      return (read(data, deadline));
-    }
-  }
-  // If the main stream was not ready to provide events, try the
-  // failover thread.
-  else {
-    stream_lock.unlock();
-    if (!_failover.isNull())
-      return (_failover->read(data, deadline));
-    else
-      throw (io::exceptions::shutdown(true, true)
-             << "failover: endpoint '" << _name
-             << "' does not have further events");
-  }
-}
-
-/**
  *  Thread core function.
  */
 void failover::run() {
@@ -530,21 +472,6 @@ bool failover::wait(unsigned long time) {
   else
     finished = false;
   return (finished);
-}
-
-/**
- *  Write data.
- *
- *  @param[in] d  Unused.
- *
- *  @return Does not return, throw an exception.
- */
-int failover::write(misc::shared_ptr<io::data> const& d) {
-  (void)d;
-  if (!d.isNull())
-    throw (exceptions::msg() << "cannot write to endpoint '"
-           << _name << "'");
-  return (1);
 }
 
 /**
