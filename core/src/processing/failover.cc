@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2016 Centreon
+** Copyright 2011-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -428,16 +428,6 @@ void failover::set_read_timeout(time_t read_timeout) {
  */
 void failover::set_retry_interval(time_t retry_interval) {
   _retry_interval = retry_interval;
-  return ;
-}
-
-/**
- *  Get statistics of the failover.
- *
- *  @param[out] tree  Properties tree.
- */
-void failover::statistics(io::properties& tree) const {
-  // XXX
   return ;
 }
 

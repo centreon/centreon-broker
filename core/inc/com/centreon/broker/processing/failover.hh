@@ -71,7 +71,6 @@ namespace           processing {
                       misc::shared_ptr<processing::failover> fo);
     void            set_read_timeout(time_t read_timeout);
     void            set_retry_interval(time_t retry_interval);
-    void            statistics(io::properties& tree) const;
     void            update();
     bool            wait(unsigned long time = ULONG_MAX);
 
