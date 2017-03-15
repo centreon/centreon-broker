@@ -306,6 +306,19 @@ void muxer::statistics(io::properties& tree) const {
          "queue_file_enabled",
          io::property("queue file enabled", _file.get() ? "yes" : "no"));
 
+  // Unacknowledged events count.
+  int unacknowledged(0);
+  for (std::list<misc::shared_ptr<io::data> >::const_iterator
+         it(_events.begin());
+       it != _pos;
+       ++it)
+    ++unacknowledged;
+  tree.add_property(
+         "unacknowledged_events",
+         io::property(
+               "unacknowledged_events",
+               misc::string::get(unacknowledged)));
+
   return ;
 }
 
