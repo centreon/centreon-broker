@@ -2421,14 +2421,12 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 int stream::write(misc::shared_ptr<io::data> const& data) {
-  if (!validate(data, "SQL"))
-    return (1);
-
   // Take this event into account.
   ++_pending_events;
+  if (!validate(data, "SQL"))
+    return (0);
 
-  // Check that data exists.
-    // Process event.
+  // Process event.
   unsigned int type(data->type());
   unsigned short cat(io::events::category_of_type(type));
   unsigned short elem(io::events::element_of_type(type));
