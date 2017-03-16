@@ -143,10 +143,10 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 int stream::write(misc::shared_ptr<io::data> const& data) {
-  if (!validate(data, "influxdb"))
-    return (1);
-
+  // Take this event into account.
   ++_pending_queries;
+  if (!validate(data, "influxdb"))
+    return (0);
 
   // Give data to cache.
   _cache.write(data);
