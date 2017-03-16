@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -159,10 +159,10 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 int stream::write(misc::shared_ptr<io::data> const& data) {
-  if (!validate(data, "graphite"))
-    return (1);
-
+  // Take this event into account.
   ++_pending_queries;
+  if (!validate(data, "graphite"))
+    return (0);
 
   // Give the event to the cache.
   _cache.write(data);
