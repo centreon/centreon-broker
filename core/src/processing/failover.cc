@@ -311,17 +311,19 @@ void failover::run() {
         d.clear();
         if (timed_out_stream && timed_out_muxer) {
           time_t now(time(NULL));
+          int we(0);
           if (should_commit) {
             should_commit = false;
             QMutexLocker stream_lock(&_streamm);
-            _stream->flush();
+            we = _stream->flush();
           }
           else if ((_next_timeout != (time_t)-1)
                    && (now >= _next_timeout)) {
             _next_timeout = now + _read_timeout;
             QMutexLocker stream_lock(&_streamm);
-            _stream->flush();
+            we = _stream->flush();
           }
+          _subscriber->get_muxer().ack_events(we);
           ::usleep(100000);
         }
       }
