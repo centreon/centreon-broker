@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -202,11 +202,10 @@ void monitoring_stream::update() {
  *  @return Number of events acknowledged.
  */
 int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
-  if (!validate(data, "BAM"))
-    return (1);
-
   // Take this event into account.
   ++_pending_events;
+  if (!validate(data, "BAM"))
+    return (0);
 
   // Process service status events.
   if ((data->type() == neb::service_status::static_type())

@@ -163,11 +163,10 @@ int reporting_stream::flush() {
  *  @return Number of events acknowledged.
  */
 int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
-  if (!validate(data, "BAM-BI"))
-    return (1);
-
   // Take this event into account.
   ++_pending_events;
+  if (!validate(data, "BAM-BI"))
+    return (0);
 
   if (data->type()
       == io::events::data_type<io::events::bam,
