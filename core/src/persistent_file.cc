@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ persistent_file::persistent_file(std::string const& path) {
   bs->set_substream(cs);
 
   // Set stream.
-  _file = bs;
+  io::stream::set_substream(bs);
 }
 
 /**
@@ -64,7 +64,7 @@ persistent_file::~persistent_file() {}
 bool persistent_file::read(
                         misc::shared_ptr<io::data>& d,
                         time_t deadline) {
-  return (_file->read(d, deadline));
+  return (_substream->read(d, deadline));
 }
 
 /**
@@ -73,5 +73,5 @@ bool persistent_file::read(
  *  @param[in] d  Input data.
  */
 int persistent_file::write(misc::shared_ptr<io::data> const& d) {
-  return (_file->write(d));
+  return (_substream->write(d));
 }
