@@ -775,9 +775,15 @@ void stream::_process_engine(
  */
 void stream::_process_event_handler(
                misc::shared_ptr<io::data> const& e) {
+  // Cast object.
+  neb::event_handler const&
+    eh(*static_cast<neb::event_handler const*>(e.data()));
+
   // Log message.
   logging::info(logging::medium)
-    << "SQL: processing event handler event";
+    << "SQL: processing event handler event (host: " << eh.host_id
+    << ", service: " << eh.service_id << ", start time "
+    << eh.start_time << ")";
 
   // Prepare queries.
   if (!_event_handler_insert.prepared()
@@ -797,7 +803,7 @@ void stream::_process_event_handler(
   _update_on_none_insert(
     _event_handler_insert,
     _event_handler_update,
-    *static_cast<neb::event_handler const*>(e.data()));
+    eh);
 
   return ;
 }
@@ -809,9 +815,15 @@ void stream::_process_event_handler(
  */
 void stream::_process_flapping_status(
                misc::shared_ptr<io::data> const& e) {
+  // Cast object.
+  neb::flapping_status const&
+    fs(*static_cast<neb::flapping_status const*>(e.data()));
+
   // Log message.
   logging::info(logging::medium)
-    << "SQL: processing flapping status event";
+    << "SQL: processing flapping status event (host: " << fs.host_id
+    << ", service: " << fs.service_id << ", entry time "
+    << fs.event_time << ")";
 
   // Prepare queries.
   if (!_flapping_status_insert.prepared()
@@ -831,7 +843,7 @@ void stream::_process_flapping_status(
   _update_on_none_insert(
     _flapping_status_insert,
     _flapping_status_update,
-    *static_cast<neb::flapping_status const*>(e.data()));
+    fs);
 
   return ;
 }
