@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2015 Centreon
+** Copyright 2013-2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -197,17 +197,17 @@ std::string builder::_generate_stats_for_endpoint(
   // Header.
   std::string endpoint = std::string("endpoint ") + fo->get_name();
 
-  // Add memory and queue file
+  // Add memory and queue file.
   tree.add_property(
-        "queue file",
+        "queue_file_path",
         io::property(
-              "queue file",
+              "queue_file_path",
                com::centreon::broker::multiplexing::muxer::queue_file(
                       fo->get_name())));
     tree.add_property(
-          "memory file",
+          "memory_file_path",
           io::property(
-                "memory file",
+                "memory_file_path",
                  com::centreon::broker::multiplexing::muxer::memory_file(
                        fo->get_name())));
 
@@ -216,4 +216,3 @@ std::string builder::_generate_stats_for_endpoint(
 
   return (endpoint);
 }
-
