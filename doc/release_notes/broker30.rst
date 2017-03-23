@@ -1,4 +1,17 @@
 =====================
+Centreon Broker 3.0.5
+=====================
+
+*********
+Bug fixes
+*********
+
+Print queue file statistics
+===========================
+
+Print queue file statistics (if available) for every endpoint.
+
+=====================
 Centreon Broker 3.0.4
 =====================
 
