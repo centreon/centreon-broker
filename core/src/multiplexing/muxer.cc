@@ -302,9 +302,17 @@ void muxer::statistics(io::properties& tree) const {
   QMutexLocker lock(&_mutex);
 
   // Queue file mode.
+  bool queue_file_enabled(_file.get());
   tree.add_property(
          "queue_file_enabled",
-         io::property("queue file enabled", _file.get() ? "yes" : "no"));
+         io::property(
+               "queue_file_enabled",
+               queue_file_enabled ? "yes" : "no"));
+  if (queue_file_enabled) {
+    io::properties queue_file;
+    _file->statistics(queue_file);
+    tree.add_child(queue_file, "queue_file");
+  }
 
   // Unacknowledged events count.
   int unacknowledged(0);

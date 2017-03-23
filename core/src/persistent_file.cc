@@ -68,6 +68,16 @@ bool persistent_file::read(
 }
 
 /**
+ *  Generate statistics of persistent file.
+ *
+ *  @param[out] tree  Statistics tree.
+ */
+void persistent_file::statistics(io::properties& tree) const {
+  _substream->statistics(tree);
+  return ;
+}
+
+/**
  *  Write data to file.
  *
  *  @param[in] d  Input data.

@@ -38,6 +38,7 @@ class              persistent_file : public io::stream {
   bool             read(
                      misc::shared_ptr<io::data>& d,
                      time_t deadline);
+  void             statistics(io::properties& tree) const;
   int              write(misc::shared_ptr<io::data> const& d);
 
  private:
