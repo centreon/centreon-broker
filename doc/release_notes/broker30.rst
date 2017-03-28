@@ -11,6 +11,13 @@ Print queue file statistics
 
 Print queue file statistics (if available) for every endpoint.
 
+Correct duplicate BA event durations
+====================================
+
+This was caused by an invalid UPDATE query so the BA event durations
+were always inserted. The consequence was that UNIQUE keys were
+triggered and lead to duplicate errors.
+
 =====================
 Centreon Broker 3.0.4
 =====================
