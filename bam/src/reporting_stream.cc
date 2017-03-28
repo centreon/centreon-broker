@@ -533,12 +533,15 @@ void reporting_stream::_prepare() {
   // BA duration event update.
   {
     std::string query;
-    query = "UPDATE mod_bam_reporting_ba_events_durations"
-            "  SET start_time=:start_time, end_time=:end_time, "
-            "      duration=:duration, sla_duration=:sla_duration,"
-            "      timeperiod_is_default=:timeperiod_is_default"
-            "  WHERE ba_event_id=:ba_event_id"
-            "    AND timeperiod_id=:timeperiod_id";
+    query = "UPDATE mod_bam_reporting_ba_events_durations AS d"
+            "  INNER JOIN mod_bam_reporting_ba_events AS e"
+            "    ON d.ba_event_id=e.ba_event_id"
+            "  SET d.start_time=:start_time, d.end_time=:end_time, "
+            "      d.duration=:duration, d.sla_duration=:sla_duration,"
+            "      d.timeperiod_is_default=:timeperiod_is_default"
+            "  WHERE e.ba_id=:ba_id"
+            "    AND e.start_time=:real_start_time"
+            "    AND d.timeperiod_id=:timeperiod_id";
     _ba_duration_event_update.prepare(
       query,
       "BAM-BI: could not prepare BA duration event update query");
