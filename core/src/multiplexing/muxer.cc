@@ -87,7 +87,8 @@ muxer::muxer(
       _get_event_from_file(e);
       if (e.isNull())
         break ;
-      _push_to_queue(e);
+      _events.push_back(e);
+      ++_events_size;
     } while (_events_size < event_queue_max_size());
   }
   catch (io::exceptions::shutdown const& e) {
@@ -122,6 +123,13 @@ void muxer::ack_events(int count) {
     << _name << " event queue";
   QMutexLocker lock(&_mutex);
   for (int i(0); (i < count) && !_events.empty(); ++i) {
+    if (_events.begin() == _pos) {
+      logging::error(logging::high) << "multiplexing: attempt to "
+        << "acknowledge more events than available in " << _name
+        << " event queue: " << count << " requested, " << i
+        << " acknowledged";
+      break ;
+    }
     _events.pop_front();
     --_events_size;
   }
