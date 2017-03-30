@@ -6,6 +6,13 @@ Centreon Broker 3.0.5
 Bug fixes
 *********
 
+Fix a crash by memory corruption
+================================
+
+In some cases, the current pointer to the next in-memory event to
+process can be corrupted. On high-volume platforms this usually leads
+to crashes within minutes.
+
 Print queue file statistics
 ===========================
 
