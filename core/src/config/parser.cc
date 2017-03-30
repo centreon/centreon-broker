@@ -239,31 +239,22 @@ void parser::_parse_endpoint(QDomElement& elem, endpoint& e) {
         e.read_timeout = static_cast<time_t>(entry.text().toInt());
       else if (name == "retry_interval")
         e.retry_interval = static_cast<time_t>(entry.text().toUInt());
-      else if (name == "read_filters") {
-        e.read_filters.clear();
+      else if (name == "filters") {
+        std::set<std::string> (endpoint::* member);
+        if (e.write_filters.empty()) // Input.
+          member = &endpoint::read_filters;
+        else // Output.
+          member = &endpoint::write_filters;
+        (e.*member).clear();
         QDomNodeList nlist(entry.childNodes());
         for (int i(0), len(nlist.size()); i < len; ++i) {
           QDomElement entry(nlist.item(i).toElement());
           if (!entry.isNull()) {
             QString name(entry.tagName());
             if (name == "category")
-              e.read_filters.insert(entry.text().toStdString());
+              (e.*member).insert(entry.text().toStdString());
             else if (name == "all")
-              e.read_filters.insert("all");
-          }
-        }
-      }
-      else if ((name == "filters") || (name == "write_filters")) {
-        e.write_filters.clear();
-        QDomNodeList nlist(entry.childNodes());
-        for (int i(0), len(nlist.size()); i < len; ++i) {
-          QDomElement entry(nlist.item(i).toElement());
-          if (!entry.isNull()) {
-            QString name(entry.tagName());
-            if (name == "category")
-              e.write_filters.insert(entry.text().toStdString());
-            else if (name == "all")
-              e.write_filters.insert("all");
+              (e.*member).insert("all");
           }
         }
       }
