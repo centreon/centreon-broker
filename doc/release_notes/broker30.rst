@@ -6,6 +6,13 @@ Centreon Broker 3.0.6
 Bug fixes
 *********
 
+Do not allow write filters on inputs
+====================================
+
+The consequence of setting filters on inputs was that event loop could
+occur. In this release, inputs can only one way of filters, therefore
+preventing event loops.
+
 =====================
 Centreon Broker 3.0.5
 =====================
