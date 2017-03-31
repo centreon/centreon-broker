@@ -20,7 +20,7 @@
 #  define CCB_FILE_STREAM_HH
 
 #  include <QMutex>
-#  include "com/centreon/broker/file/cfile.hh"
+#  include "com/centreon/broker/file/fs_file.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -66,11 +66,11 @@ namespace              file {
     long               _max_size;
     QMutex             _mutex;
     std::string        _path;
-    misc::shared_ptr<cfile>
+    misc::shared_ptr<fs_file>
                        _rfile;
     unsigned int       _rid;
     long               _roffset;
-    misc::shared_ptr<cfile>
+    misc::shared_ptr<fs_file>
                        _wfile;
     unsigned int       _wid;
     long               _woffset;

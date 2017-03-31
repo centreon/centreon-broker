@@ -28,6 +28,7 @@
 #include <sstream>
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/file/cfile.hh"
 #include "com/centreon/broker/file/stream.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
@@ -447,8 +448,9 @@ void stream::_open_next_read() {
     // Open file.
     std::string file_path(_file_path(_rid + 1));
     {
-      misc::shared_ptr<cfile> new_file(new cfile);
-      new_file->open(file_path.c_str(), "r+");
+      cfile_factory f;
+      misc::shared_ptr<fs_file> new_file(f.new_cfile());
+      new_file->open(file_path, fs_file::open_read_write_no_create);
       _rfile = new_file;
     }
   }
@@ -493,22 +495,23 @@ void stream::_open_next_write(bool truncate) {
   logging::info(logging::high) << "file: opening new file '"
     << file_path.c_str() << "'";
   {
-    misc::shared_ptr<cfile> new_file(new cfile);
+    cfile_factory f;
+    misc::shared_ptr<fs_file> new_file(f.new_cfile());
     if (truncate)
-      new_file->open(file_path.c_str(), "w+");
+      new_file->open(file_path, fs_file::open_read_write_truncate);
     else {
       try {
-        new_file->open(file_path.c_str(), "r+");
+        new_file->open(file_path, fs_file::open_read_write_no_create);
       }
       catch (exceptions::msg const& e) {
-        new_file->open(file_path.c_str(), "w+");
+        new_file->open(file_path, fs_file::open_read_write_truncate);
       }
     }
     _wfile = new_file;
   }
 
   // Position.
-  _wfile->seek(0, SEEK_END);
+  _wfile->seek(0, fs_file::seek_end);
   _woffset = _wfile->tell();
 
   // Adjust current index.
