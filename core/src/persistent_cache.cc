@@ -178,7 +178,6 @@ void persistent_cache::_open() {
   // Create file stream.
   misc::shared_ptr<file::stream> fs(new file::stream(_cache_file));
   fs->set_auto_delete(false);
-  fs->reset();
 
   // Create BBDO layer.
   misc::shared_ptr<bbdo::stream> bs(new bbdo::stream);
