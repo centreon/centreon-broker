@@ -34,15 +34,15 @@ namespace        file {
   class          fs_file {
    public:
     enum         open_mode {
-      mode_read = 1,
-      mode_write,
-      mode_read_write,
-      mode_read_write_no_create
+      open_read = 1,
+      open_write,
+      open_read_write_truncate,
+      open_read_write_no_create
     };
     enum         seek_whence {
-      whence_start = 1,
-      whence_current,
-      whence_end
+      seek_start = 1,
+      seek_current,
+      seek_end
     };
 
                  fs_file();
@@ -52,7 +52,7 @@ namespace        file {
     virtual long read(void* buffer, long max_size) = 0;
     virtual void seek(
                    long offset,
-                   seek_whence whence = whence_start) = 0;
+                   seek_whence whence = seek_start) = 0;
     virtual long tell() = 0;
     virtual long write(void const* buffer, long size) = 0;
 
