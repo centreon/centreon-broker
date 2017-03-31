@@ -58,9 +58,10 @@ namespace  file {
    *
    *  Build a new cfile.
    */
-  class            cfile_factory {
+  class      cfile_factory : public fs_file_factory {
    public:
-    cfile*         new_cfile();
+    cfile*   new_cfile();
+    fs_file* new_fs_file();
   };
 }
 

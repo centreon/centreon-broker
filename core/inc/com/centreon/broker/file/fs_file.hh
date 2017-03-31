@@ -60,6 +60,17 @@ namespace        file {
                  fs_file(fs_file const& other);
     fs_file&     operator=(fs_file const& other);
   };
+
+  /**
+   *  @class fs_file_factory fs_file.hh "com/centreon/broker/file/fs_file.hh"
+   *  @brief Interface to create fs_file.
+   *
+   *  Interface used to create fs_file without knowing the concrete type.
+   */
+  class              fs_file_factory {
+   public:
+    virtual fs_file* new_fs_file() = 0;
+  };
 }
 
 CCB_END()

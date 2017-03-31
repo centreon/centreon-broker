@@ -184,7 +184,18 @@ long cfile::write(void const* buffer, long size) {
 
 /**
  *  Create a new cfile.
+ *
+ *  @return A new cfile object.
  */
 cfile* cfile_factory::new_cfile() {
   return (new cfile());
+}
+
+/**
+ *  Create a new cfile.
+ *
+ *  @return A new cfile object.
+ */
+fs_file* cfile_factory::new_fs_file() {
+  return (new_cfile());
 }
