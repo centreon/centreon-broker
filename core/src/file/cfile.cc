@@ -66,13 +66,13 @@ void cfile::open(std::string const& path, fs_file::open_mode mode) {
   // Compute cfile's mode.
   char const* cfile_mode(NULL);
   switch (mode) {
-   case fs_file::mode_write:
+   case fs_file::open_write:
     cfile_mode = "w";
     break ;
-   case fs_file::mode_read_write:
+   case fs_file::open_read_write_truncate:
     cfile_mode = "w+";
     break ;
-   case fs_file::mode_read_write_no_create:
+   case fs_file::open_read_write_no_create:
     cfile_mode = "r+";
     break ;
    default:
@@ -124,10 +124,10 @@ void cfile::seek(long offset, fs_file::seek_whence whence) {
   // Compute cfile's whence.
   int seek_whence;
   switch (whence) {
-   case fs_file::whence_current:
+   case fs_file::seek_current:
     seek_whence = SEEK_CUR;
     break ;
-   case fs_file::whence_end:
+   case fs_file::seek_end:
     seek_whence = SEEK_END;
     break ;
    default:
