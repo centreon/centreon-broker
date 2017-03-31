@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ namespace              file {
    *  Read and write data to a stream.
    */
   class                stream : public io::stream {
-  public:
+   public:
                        stream(
                          std::string const& path,
                          unsigned long long max_size = 0);
@@ -44,12 +44,11 @@ namespace              file {
     bool               read(
                          misc::shared_ptr<io::data>& d,
                          time_t deadline);
-    void               reset();
     void               set_auto_delete(bool auto_delete);
     void               statistics(io::properties& tree) const;
     int                write(misc::shared_ptr<io::data> const& d);
 
-  private:
+   private:
                        stream(stream const& s);
     stream&            operator=(stream const& s);
     std::string        _file_path(unsigned int id) const;

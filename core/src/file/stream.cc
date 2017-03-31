@@ -46,9 +46,8 @@ using namespace com::centreon::broker::file;
 /**
  *  Constructor.
  *
- *  @param[in] filename     Filename.
- *  @param[in] mode         Open mode.
- *  @param[in] is_temporary Create temporary path base on the filename.
+ *  @param[in] path      Base file path.
+ *  @param[in] max_size  Indication about maximum file size.
  */
 stream::stream(
           std::string const& path,
@@ -149,13 +148,6 @@ bool stream::read(
   d = misc::shared_ptr<io::data>(data.release());
 
   return (true);
-}
-
-/**
- *  Reset read file to the beginning.
- */
-void stream::reset() {
-  // XXX
 }
 
 /**
