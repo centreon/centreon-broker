@@ -1,5 +1,5 @@
 /*
-** Copyright 2012,2016 Centreon
+** Copyright 2012,2016-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -38,14 +38,14 @@ cfile::cfile() : _stream(NULL) {}
 /**
  *  Destructor.
  */
-cfile::~cfile() throw () {
+cfile::~cfile() {
   close();
 }
 
 /**
  *  Close file.
  */
-void cfile::close() throw () {
+void cfile::close() {
   if (_stream) {
     fclose(_stream);
     _stream = NULL;
@@ -59,14 +59,34 @@ void cfile::close() throw () {
  *  @param[in] path Path to the file.
  *  @param[in] mode Open mode.
  */
-void cfile::open(char const* path, char const* mode) {
+void cfile::open(std::string const& path, fs_file::open_mode mode) {
+  // Close previously open file.
   close();
-  _stream = fopen(path, mode);
+
+  // Compute cfile's mode.
+  char const* cfile_mode(NULL);
+  switch (mode) {
+   case fs_file::mode_write:
+    cfile_mode = "w";
+    break ;
+   case fs_file::mode_read_write:
+    cfile_mode = "w+";
+    break ;
+   case fs_file::mode_read_write_no_create:
+    cfile_mode = "r+";
+    break ;
+   default:
+    cfile_mode = "r";
+  };
+
+  // Open file.
+  _stream = fopen(path.c_str(), cfile_mode);
   if (!_stream) {
     char const* msg(strerror(errno));
     throw (exceptions::msg() << "cannot open '" << path << "' (mode "
-           << mode << "): " << msg);
+           << cfile_mode << "): " << msg);
   }
+
   return ;
 }
 
@@ -76,9 +96,9 @@ void cfile::open(char const* path, char const* mode) {
  *  @param[out] buffer   Destination buffer.
  *  @param[in]  max_size Maximum size in bytes to read.
  *
- *  @return Number of bytes written.
+ *  @return Number of bytes read.
  */
-unsigned long cfile::read(void* buffer, unsigned long max_size) {
+long cfile::read(void* buffer, long max_size) {
   size_t retval(fread(buffer, 1, max_size, _stream));
   if (retval == 0) {
     if (feof(_stream))
@@ -100,17 +120,32 @@ unsigned long cfile::read(void* buffer, unsigned long max_size) {
  *  @param[in] offset Offset.
  *  @param[in] whence Base position.
  */
-void cfile::seek(long offset, int whence) {
+void cfile::seek(long offset, fs_file::seek_whence whence) {
+  // Compute cfile's whence.
+  int seek_whence;
+  switch (whence) {
+   case fs_file::whence_current:
+    seek_whence = SEEK_CUR;
+    break ;
+   case fs_file::whence_end:
+    seek_whence = SEEK_END;
+    break ;
+   default:
+    seek_whence = SEEK_SET;
+  };
+
+  // Seek.
   int retval;
-  while ((retval = fseek(_stream, offset, whence))
+  while ((retval = fseek(_stream, offset, seek_whence))
          && (EAGAIN == errno)
          && (EINTR == errno))
     ;
   if (retval) {
     char const* msg(strerror(errno));
     throw (exceptions::msg() << "cannot seek in file to position ("
-           << whence << ", " << offset << "): " << msg);
+           << seek_whence << ", " << offset << "): " << msg);
   }
+
   return ;
 }
 
@@ -137,7 +172,7 @@ long cfile::tell() {
  *
  *  @return Number of bytes written.
  */
-unsigned long cfile::write(void const* buffer, unsigned long size) {
+long cfile::write(void const* buffer, long size) {
   size_t retval(fwrite(buffer, 1, size, _stream));
   if (ferror(_stream)) {
     char const* msg(strerror(errno));
@@ -145,4 +180,11 @@ unsigned long cfile::write(void const* buffer, unsigned long size) {
            << " bytes to file: " << msg);
   }
   return (retval);
+}
+
+/**
+ *  Create a new cfile.
+ */
+cfile* cfile_factory::new_cfile() {
+  return (new cfile());
 }
