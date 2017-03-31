@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@
 #  define CCB_FILE_FIFO_HH
 
 #  include <QMutex>
-#  include "com/centreon/broker/file/cfile.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -35,22 +34,22 @@ namespace              file {
    *  This class manage a fifo.
    */
   class     fifo {
-  public:
+   public:
             fifo(std::string const& path);
             ~fifo();
 
     std::string
             read_line(int usecs_timeout = 3000000);
 
-  private:
+   private:
+    void    _open_fifo();
+
     std::string
             _path;
     int     _fd;
 
     std::string
             _polled_line;
-
-    void    _open_fifo();
   };
 }
 
