@@ -19,10 +19,10 @@
 #ifndef CCB_FILE_STREAM_HH
 #  define CCB_FILE_STREAM_HH
 
+#  include <memory>
 #  include <QMutex>
-#  include "com/centreon/broker/file/fs_file.hh"
+#  include "com/centreon/broker/file/splitter.hh"
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -36,44 +36,21 @@ namespace              file {
    */
   class                stream : public io::stream {
    public:
-                       stream(
-                         std::string const& path,
-                         unsigned long long max_size = 0);
+                       stream(splitter* file);
                        ~stream();
-    unsigned long long get_max_size() const throw ();
     bool               read(
                          misc::shared_ptr<io::data>& d,
                          time_t deadline);
-    void               set_auto_delete(bool auto_delete);
     void               statistics(io::properties& tree) const;
     int                write(misc::shared_ptr<io::data> const& d);
 
    private:
-                       stream(stream const& s);
-    stream&            operator=(stream const& s);
-    std::string        _file_path(unsigned int id) const;
-    void               _open_first_read();
-    void               _open_first_write();
-    void               _open_next_read();
-    void               _open_next_write(bool truncate = true);
+                       stream(stream const& other);
+    stream&            operator=(stream const& other);
 
-    bool               _auto_delete;
-    mutable unsigned long long
-                       _last_read_offset;
-    mutable time_t     _last_time;
-    mutable unsigned long long
-                       _last_write_offset;
-    long               _max_size;
+    std::auto_ptr<splitter>
+                       _file;
     QMutex             _mutex;
-    std::string        _path;
-    misc::shared_ptr<fs_file>
-                       _rfile;
-    unsigned int       _rid;
-    long               _roffset;
-    misc::shared_ptr<fs_file>
-                       _wfile;
-    unsigned int       _wid;
-    long               _woffset;
   };
 }
 
