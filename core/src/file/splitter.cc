@@ -54,7 +54,11 @@ splitter::splitter(
     _base_path(path),
     _file_factory(file_factory),
     _fs(fs),
-    _max_file_size(max_file_size) {
+    _max_file_size(max_file_size),
+    _rid(0),
+    _roffset(0),
+    _wid(0),
+    _woffset(0) {
   (void)mode;
 
   // Set max file size.
@@ -65,8 +69,54 @@ splitter::splitter(
   else if (_max_file_size < min_file_size)
     _max_file_size = min_file_size;
 
-  // Get IDs of already existing file parts.
-  // XXX
+  // Get IDs of already existing file parts. File parts are suffixed
+  // with their order number. A file named /var/lib/foo would have
+  // parts named /var/lib/foo, /var/lib/foo1, /var/lib/foo2, ...
+  // in this order.
+  std::string base_dir;
+  std::string base_name;
+  {
+    size_t last_slash(_base_path.find_last_of('/'));
+    if (last_slash == std::string::npos) {
+      base_dir = ".";
+      base_name = _base_path;
+    }
+    else {
+      base_dir = _base_path.substr(0, last_slash).c_str();
+      base_name = _base_path.substr(last_slash + 1).c_str();
+    }
+  }
+  base_name.append("*");
+  fs_browser::entry_list parts(_fs->read_directory(
+                                      base_dir,
+                                      base_name));
+  _rid = std::numeric_limits<int>::max();
+  _wid = 0;
+  for (fs_browser::entry_list::iterator
+         it(parts.begin()),
+         end(parts.end());
+       it != end;
+       ++it) {
+    char const* ptr(it->c_str() + base_name.size());
+    int val(0);
+    if (*ptr) { // Not, empty, conversion needed.
+      char* endptr(NULL);
+      val = strtol(ptr, &endptr, 10);
+      if (ptr && *ptr) // Invalid conversion.
+        continue ;
+    }
+
+    if (val < _rid)
+      _rid = val;
+    if (val > _wid)
+      _wid = val;
+  }
+  if (_rid == std::numeric_limits<int>::max())
+    _rid = 0;
+
+  // File IDs will be incremented when opening next files.
+  --_rid;
+  --_wid;
 }
 
 /**
