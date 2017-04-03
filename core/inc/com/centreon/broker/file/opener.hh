@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Centreon
+** Copyright 2011-2012,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 #ifndef CCB_FILE_OPENER_HH
 #  define CCB_FILE_OPENER_HH
 
+#  include <string>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -32,17 +33,19 @@ namespace                        file {
    *  Open a file stream.
    */
   class                          opener : public io::endpoint {
-  public:
+   public:
                                  opener();
                                  opener(opener const& other);
                                  ~opener();
     opener&                      operator=(opener const& other);
     misc::shared_ptr<io::stream> open();
-    void                         set_filename(QString const& filename);
+    void                         set_auto_delete(bool auto_delete);
+    void                         set_filename(std::string const& filename);
     void                         set_max_size(unsigned long long max);
 
    private:
-    QString                      _filename;
+    bool                         _auto_delete;
+    std::string                  _filename;
     unsigned long long           _max_size;
   };
 }

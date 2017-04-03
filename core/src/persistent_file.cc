@@ -18,7 +18,7 @@
 
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/compression/stream.hh"
-#include "com/centreon/broker/file/stream.hh"
+#include "com/centreon/broker/file/opener.hh"
 #include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/persistent_file.hh"
 
@@ -31,8 +31,9 @@ using namespace com::centreon::broker;
  */
 persistent_file::persistent_file(std::string const& path) {
   // On-disk file.
-  misc::shared_ptr<file::stream>
-    fs(new file::stream(path, 100000000ll));
+  file::opener opnr;
+  opnr.set_filename(path);
+  misc::shared_ptr<io::stream> fs(opnr.open());
 
   // Compression layer.
   misc::shared_ptr<compression::stream> cs(new compression::stream);

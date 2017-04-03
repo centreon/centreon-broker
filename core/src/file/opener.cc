@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Centreon
+** Copyright 2011-2012,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/opener.hh"
+#include "com/centreon/broker/file/splitter.hh"
 #include "com/centreon/broker/file/stream.hh"
 
 using namespace com::centreon::broker;
@@ -34,7 +35,8 @@ using namespace com::centreon::broker::file;
 /**
  *  Constructor.
  */
-opener::opener() : io::endpoint(false), _max_size(0) {}
+opener::opener()
+  : io::endpoint(false), _auto_delete(true), _max_size(0) {}
 
 /**
  *  Copy constructor.
@@ -43,6 +45,7 @@ opener::opener() : io::endpoint(false), _max_size(0) {}
  */
 opener::opener(opener const& other)
   : io::endpoint(other),
+    _auto_delete(other._auto_delete),
     _filename(other._filename),
     _max_size(other._max_size) {}
 
@@ -61,6 +64,7 @@ opener::~opener() {}
 opener& opener::operator=(opener const& other) {
   if (this != &other) {
     io::endpoint::operator=(other);
+    _auto_delete = other._auto_delete;
     _filename = other._filename;
     _max_size = other._max_size;
   }
@@ -73,9 +77,26 @@ opener& opener::operator=(opener const& other) {
  *  @return Opened stream.
  */
 misc::shared_ptr<io::stream> opener::open() {
-  QString filename(_filename);
-  return (misc::shared_ptr<io::stream>(
-            new stream(qPrintable(filename), _max_size)));
+  // Open splitted file.
+  splitter_factory f;
+  std::auto_ptr<splitter> file(f.new_cfile_splitter(
+                                   _filename,
+                                   fs_file::open_read_write_truncate,
+                                   _max_size,
+                                   _auto_delete));
+  misc::shared_ptr<io::stream> retval(new stream(file.get()));
+  file.release();
+  return (retval);
+}
+
+/**
+ *  Enable or disable auto-delete mode.
+ *
+ *  @param[in] auto_delete  True to automatically delete file parts.
+ */
+void opener::set_auto_delete(bool auto_delete) {
+  _auto_delete = auto_delete;
+  return ;
 }
 
 /**
@@ -83,7 +104,7 @@ misc::shared_ptr<io::stream> opener::open() {
  *
  *  @param[in] filename Filename.
  */
-void opener::set_filename(QString const& filename) {
+void opener::set_filename(std::string const& filename) {
   _filename = filename;
   return ;
 }
