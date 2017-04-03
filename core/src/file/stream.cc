@@ -122,7 +122,6 @@ bool stream::read(
   catch (io::exceptions::shutdown const& e) {
     (void)e;
     if (_wid == _rid) {
-      _rfile->close();
       _rfile.clear();
       _wfile.clear();
       std::string file_path(_file_path(_rid));
@@ -449,8 +448,8 @@ void stream::_open_next_read() {
     std::string file_path(_file_path(_rid + 1));
     {
       cfile_factory f;
-      misc::shared_ptr<fs_file> new_file(f.new_cfile());
-      new_file->open(file_path, fs_file::open_read_write_no_create);
+      misc::shared_ptr<fs_file>
+        new_file(f.new_cfile(file_path, fs_file::open_read_write_no_create));
       _rfile = new_file;
     }
   }
@@ -496,15 +495,21 @@ void stream::_open_next_write(bool truncate) {
     << file_path.c_str() << "'";
   {
     cfile_factory f;
-    misc::shared_ptr<fs_file> new_file(f.new_cfile());
+    misc::shared_ptr<fs_file> new_file;
     if (truncate)
-      new_file->open(file_path, fs_file::open_read_write_truncate);
+      new_file = f.new_cfile(
+                     file_path,
+                     fs_file::open_read_write_truncate);
     else {
       try {
-        new_file->open(file_path, fs_file::open_read_write_no_create);
+        new_file = f.new_cfile(
+                       file_path,
+                       fs_file::open_read_write_no_create);
       }
       catch (exceptions::msg const& e) {
-        new_file->open(file_path, fs_file::open_read_write_truncate);
+        new_file = f.new_cfile(
+                       file_path,
+                       fs_file::open_read_write_truncate);
       }
     }
     _wfile = new_file;

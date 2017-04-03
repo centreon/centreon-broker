@@ -34,10 +34,8 @@ namespace  file {
    */
   class    cfile : public fs_file {
    public:
-           cfile();
+           cfile(std::string const& path, fs_file::open_mode mode);
            ~cfile();
-    void   close();
-    void   open(std::string const& path, fs_file::open_mode mode);
     long   read(void* buffer, long max_size);
     void   seek(
              long offset,
@@ -60,8 +58,12 @@ namespace  file {
    */
   class      cfile_factory : public fs_file_factory {
    public:
-    cfile*   new_cfile();
-    fs_file* new_fs_file();
+    cfile*   new_cfile(
+               std::string const& path,
+               fs_file::open_mode mode);
+    fs_file* new_fs_file(
+               std::string const& path,
+               fs_file::open_mode mode);
   };
 }
 

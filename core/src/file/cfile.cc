@@ -31,38 +31,13 @@ using namespace com::centreon::broker::file;
 **************************************/
 
 /**
- *  Default constructor.
- */
-cfile::cfile() : _stream(NULL) {}
-
-/**
- *  Destructor.
- */
-cfile::~cfile() {
-  close();
-}
-
-/**
- *  Close file.
- */
-void cfile::close() {
-  if (_stream) {
-    fclose(_stream);
-    _stream = NULL;
-  }
-  return ;
-}
-
-/**
  *  Open a file.
  *
- *  @param[in] path Path to the file.
- *  @param[in] mode Open mode.
+ *  @param[in] path  Path to file.
+ *  @param[in] mode  Open mode.
  */
-void cfile::open(std::string const& path, fs_file::open_mode mode) {
-  // Close previously open file.
-  close();
-
+cfile::cfile(std::string const& path, fs_file::open_mode mode)
+  : _stream(NULL) {
   // Compute cfile's mode.
   char const* cfile_mode(NULL);
   switch (mode) {
@@ -86,8 +61,16 @@ void cfile::open(std::string const& path, fs_file::open_mode mode) {
     throw (exceptions::msg() << "cannot open '" << path << "' (mode "
            << cfile_mode << "): " << msg);
   }
+}
 
-  return ;
+/**
+ *  Destructor.
+ */
+cfile::~cfile() {
+  if (_stream) {
+    fclose(_stream);
+    _stream = NULL;
+  }
 }
 
 /**
@@ -185,17 +168,27 @@ long cfile::write(void const* buffer, long size) {
 /**
  *  Create a new cfile.
  *
+ *  @param[in] path  Path to file.
+ *  @param[in] mode  Open mode.
+ *
  *  @return A new cfile object.
  */
-cfile* cfile_factory::new_cfile() {
-  return (new cfile());
+cfile* cfile_factory::new_cfile(
+                        std::string const& path,
+                        fs_file::open_mode mode) {
+  return (new cfile(path, mode));
 }
 
 /**
  *  Create a new cfile.
  *
+ *  @param[in] path  Path to file.
+ *  @param[in] mode  Open mode.
+ *
  *  @return A new cfile object.
  */
-fs_file* cfile_factory::new_fs_file() {
-  return (new_cfile());
+fs_file* cfile_factory::new_fs_file(
+                          std::string const& path,
+                          fs_file::open_mode mode) {
+  return (new_cfile(path, mode));
 }

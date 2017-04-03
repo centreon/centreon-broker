@@ -47,8 +47,6 @@ namespace        file {
 
                  fs_file();
     virtual      ~fs_file();
-    virtual void close() = 0;
-    virtual void open(std::string const& path, open_mode mode) = 0;
     virtual long read(void* buffer, long max_size) = 0;
     virtual void seek(
                    long offset,
@@ -69,7 +67,9 @@ namespace        file {
    */
   class              fs_file_factory {
    public:
-    virtual fs_file* new_fs_file() = 0;
+    virtual fs_file* new_fs_file(
+                       std::string const& path,
+                       fs_file::open_mode mode) = 0;
   };
 }
 
