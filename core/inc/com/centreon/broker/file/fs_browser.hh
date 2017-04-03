@@ -42,6 +42,10 @@ namespace              file {
                          std::string const& path,
                          std::string const& filters = "") = 0;
     virtual void       remove(std::string const& path) = 0;
+
+   private:
+                       fs_browser(fs_browser const& other);
+    fs_browser&        operator=(fs_browser const& other);
   };
 }
 
