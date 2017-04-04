@@ -62,10 +62,9 @@ splitter::splitter(
   (void)mode;
 
   // Set max file size.
-  static long min_file_size(10000000);
-  if (!_max_file_size) {
+  static long min_file_size(10000);
+  if (!_max_file_size)
     _max_file_size = std::numeric_limits<long>::max();
-  }
   else if (_max_file_size < min_file_size)
     _max_file_size = min_file_size;
 
@@ -134,7 +133,7 @@ splitter::~splitter() {}
  */
 long splitter::read(void* buffer, long max_size) {
   // Check if we should read.
-  if (!_rfile.data()) {
+  if (_rfile.isNull()) {
     // If read-ID equals write-ID, then we're finished.
     if (_rid >= _wid) {
       _wfile.clear();
@@ -144,9 +143,9 @@ long splitter::read(void* buffer, long max_size) {
     // Otherwise open next ID.
     _open_next_read();
   }
-
   // Seek to position.
-  _rfile->seek(_roffset);
+  else
+    _rfile->seek(_roffset);
 
   // Read data.
   long rb;
@@ -211,21 +210,17 @@ long splitter::tell() {
  *  @return Number of bytes written.
  */
 long splitter::write(void const* buffer, long size) {
-  // Check that file should still be written to.
-  if (_wfile.isNull())
-    throw (io::exceptions::shutdown(true, true)
-           << "end of file");
-
-  // Seek to end of file if necessary.
-  _wfile->seek(_woffset);
+  // Open next write file if necessary.
+  if (_wfile.isNull()
+      || (_woffset + size) > _max_file_size)
+    _open_next_write();
+  // Otherwise seek to end of file.
+  else
+    _wfile->seek(_woffset);
 
   // Debug message.
   logging::debug(logging::low) << "file: write request of "
     << size << " bytes for '" << _file_path(_wid).c_str() << "'";
-
-  // Open new file if necessary.
-  if ((_woffset + size) > _max_file_size)
-    _open_next_write();
 
   // Write data.
   while (size > 0) {
@@ -273,7 +268,8 @@ void splitter::_open_next_read() {
       _rfile = new_file;
     }
   }
-  _roffset = 0;
+  _roffset = 2 * sizeof(uint32_t);
+  _rfile->seek(_roffset);
 
   // Remove previous file.
   std::string file_path(_file_path(_rid - 1));
