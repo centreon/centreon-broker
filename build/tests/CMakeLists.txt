@@ -30,6 +30,11 @@ add_executable("ut"
   "${TESTS_DIR}/main.cc"
   "${TESTS_DIR}/ceof/ceof_parser/parse.cc"
   "${TESTS_DIR}/exceptions/msg/default.cc"
+  "${TESTS_DIR}/file/splitter/more_than_max_size.cc"
+  "${TESTS_DIR}/file/test_file.hh"
+  "${TESTS_DIR}/file/test_file.cc"
+  "${TESTS_DIR}/file/test_fs_browser.hh"
+  "${TESTS_DIR}/file/test_fs_browser.cc"
   "${TESTS_DIR}/multiplexing/muxer/read.cc"
   # Module sources.
   ${TESTS_SOURCES}
