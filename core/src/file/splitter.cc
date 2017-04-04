@@ -85,10 +85,12 @@ splitter::splitter(
       base_name = _base_path.substr(last_slash + 1).c_str();
     }
   }
-  base_name.append("*");
-  fs_browser::entry_list parts(_fs->read_directory(
-                                      base_dir,
-                                      base_name));
+  fs_browser::entry_list parts;
+  {
+    std::string name_pattern(base_name);
+    name_pattern.append("*");
+    parts = _fs->read_directory(base_dir, name_pattern);
+  }
   _rid = std::numeric_limits<int>::max();
   _wid = 0;
   for (fs_browser::entry_list::iterator
@@ -101,7 +103,7 @@ splitter::splitter(
     if (*ptr) { // Not, empty, conversion needed.
       char* endptr(NULL);
       val = strtol(ptr, &endptr, 10);
-      if (ptr && *ptr) // Invalid conversion.
+      if (endptr && *endptr) // Invalid conversion.
         continue ;
     }
 
