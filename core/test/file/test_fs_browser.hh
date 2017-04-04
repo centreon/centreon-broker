@@ -19,12 +19,15 @@
 #ifndef TEST_FS_BROWSER_HH
 #  define TEST_FS_BROWSER_HH
 
+#  include <list>
 #  include "com/centreon/broker/file/fs_browser.hh"
 
 class              test_fs_browser : public com::centreon::broker::file::fs_browser {
  public:
                    test_fs_browser();
                    ~test_fs_browser();
+  void             add_result(
+                     com::centreon::broker::file::fs_browser::entry_list const& result);
   com::centreon::broker::file::fs_browser::entry_list
                    read_directory(
                      std::string const& path,
@@ -34,6 +37,9 @@ class              test_fs_browser : public com::centreon::broker::file::fs_brow
  private:
                    test_fs_browser(test_fs_browser const& other);
   test_fs_browser& operator=(test_fs_browser const& other);
+
+  std::list<com::centreon::broker::file::fs_browser::entry_list>
+                   _results;
 };
 
 #endif // !TEST_FS_BROWSER_HH

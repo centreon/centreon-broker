@@ -24,12 +24,23 @@ test_fs_browser::test_fs_browser() {}
 
 test_fs_browser::~test_fs_browser() {}
 
+void test_fs_browser::add_result(
+                        file::fs_browser::entry_list const& result) {
+  _results.push_back(result);
+  return ;
+}
+
 file::fs_browser::entry_list test_fs_browser::read_directory(
                                                 std::string const& path,
                                                 std::string const& filters) {
   (void)path;
   (void)filters;
-  return (file::fs_browser::entry_list());
+  file::fs_browser::entry_list retval;
+  if (!_results.empty()) {
+    retval = _results.front();
+    _results.pop_front();
+  }
+  return (retval);
 }
 
 void test_fs_browser::remove(std::string const& path) {
