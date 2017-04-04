@@ -241,6 +241,51 @@ long splitter::write(void const* buffer, long size) {
 }
 
 /**
+ *  Get max file size.
+ *
+ *  @return Max file size.
+ */
+long splitter::get_max_file_size() const {
+  return (_max_file_size);
+}
+
+/**
+ *  Get current read ID.
+ *
+ *  @return Current read ID.
+ */
+int splitter::get_rid() const {
+  return (_rid);
+}
+
+/**
+ *  Get current read offset.
+ *
+ *  @return Current read offset.
+ */
+long splitter::get_roffset() const {
+  return (_roffset);
+}
+
+/**
+ *  Get current write ID.
+ *
+ *  @return Current write ID.
+ */
+int splitter::get_wid() const {
+  return (_wid);
+}
+
+/**
+ *  Get current write offset.
+ *
+ *  @return Current write offset.
+ */
+long splitter::get_woffset() const {
+  return (_woffset);
+}
+
+/**
  *  Get the file path matching the ID.
  *
  *  @param[in] id Current ID.

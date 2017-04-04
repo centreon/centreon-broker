@@ -53,6 +53,12 @@ namespace       file {
     long        tell();
     long        write(void const* buffer, long size);
 
+    long        get_max_file_size() const;
+    int         get_rid() const;
+    long        get_roffset() const;
+    int         get_wid() const;
+    long        get_woffset() const;
+
    private:
                 splitter(splitter const& other);
     splitter&   operator=(splitter const& other);
