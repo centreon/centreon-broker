@@ -57,8 +57,8 @@ namespace       file {
                 splitter(splitter const& other);
     splitter&   operator=(splitter const& other);
     std::string _file_path(int id) const;
-    void        _open_next_read();
-    void        _open_next_write();
+    void        _open_read_file();
+    void        _open_write_file();
 
     bool        _auto_delete;
     std::string _base_path;

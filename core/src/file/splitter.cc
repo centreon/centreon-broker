@@ -115,9 +115,9 @@ splitter::splitter(
   if (_rid == std::numeric_limits<int>::max())
     _rid = 0;
 
-  // File IDs will be incremented when opening next files.
-  --_rid;
-  --_wid;
+  // Initial write file opening to allow read file to be opened
+  // with no exception.
+  _open_write_file();
 }
 
 /**
@@ -134,52 +134,51 @@ splitter::~splitter() {}
  *  @return Number of bytes read.
  */
 long splitter::read(void* buffer, long max_size) {
-  // Check if we should read.
-  if (_rfile.isNull()) {
-    // If read-ID equals write-ID, then we're finished.
-    if (_rid >= _wid) {
-      _wfile.clear();
-      throw (io::exceptions::shutdown(true, true)
-             << "end of file");
-    }
-    // Otherwise open next ID.
-    _open_next_read();
-  }
-  // Seek to position.
+  // Open next file if necessary.
+  if (_rfile.isNull())
+    _open_read_file();
+  // Otherwise seek to current read position.
   else
     _rfile->seek(_roffset);
 
   // Read data.
-  long rb;
   try {
-    rb = _rfile->read(buffer, max_size);
+    long rb(_rfile->read(buffer, max_size));
+    logging::debug(logging::low) << "file: read " << rb << " bytes from '"
+      << _file_path(_rid) << "'";
+    _roffset += rb;
+    return (rb);
   }
   catch (io::exceptions::shutdown const& e) {
     (void)e;
-    if (_wid == _rid) {
-      _rfile.clear();
-      _wfile.clear();
-      std::string file_path(_file_path(_rid));
-      if (_auto_delete) {
-        logging::info(logging::high) << "file: end of last file '"
-          << file_path.c_str() << "' reached, closing and erasing file";
-        ::remove(file_path.c_str());
-      }
-      else {
-        logging::info(logging::high) << "file: end of last file '"
-          << file_path.c_str() << "' reached, closing but NOT erasing file";
-      }
-      throw ;
-    }
-    _open_next_read();
-    rb = _rfile->read(buffer, max_size);
-  }
 
-  // Process data.
-  logging::debug(logging::low) << "file: read " << rb << " bytes from '"
-    << _file_path(_rid).c_str() << "'";
-  _roffset += rb;
-  return (rb);
+    // Erase file that just got read.
+    bool reached_end(_wid == _rid);
+    _rfile.clear();
+    if (reached_end)
+      _wfile.clear();
+    std::string file_path(_file_path(_rid));
+    if (_auto_delete) {
+      logging::info(logging::high) << "file: end of file '"
+        << file_path << "' reached, erasing file";
+      _fs->remove(file_path.c_str());
+    }
+    else {
+      logging::info(logging::high) << "file: end of file '"
+        << file_path << "' reached, NOT erasing file";
+    }
+
+    // The current read position reached the write position.
+    // Reading is over.
+    if (reached_end)
+      throw ;
+    // Open next read file.
+    else {
+      ++_rid;
+      _open_read_file();
+      return (read(buffer, max_size));
+    }
+  }
 }
 
 /**
@@ -212,17 +211,22 @@ long splitter::tell() {
  *  @return Number of bytes written.
  */
 long splitter::write(void const* buffer, long size) {
-  // Open next write file if necessary.
-  if (_wfile.isNull()
-      || (_woffset + size) > _max_file_size)
-    _open_next_write();
+  // Open current write file if not already done.
+  if (_wfile.isNull())
+    _open_write_file();
+  // Open next write file is max file size is reached.
+  else if ((_woffset + size) > _max_file_size) {
+    _wfile.clear();
+    ++_wid;
+    _open_write_file();
+  }
   // Otherwise seek to end of file.
   else
     _wfile->seek(_woffset);
 
   // Debug message.
   logging::debug(logging::low) << "file: write request of "
-    << size << " bytes for '" << _file_path(_wid).c_str() << "'";
+    << size << " bytes for '" << _file_path(_wid) << "'";
 
   // Write data.
   while (size > 0) {
@@ -251,54 +255,43 @@ std::string splitter::_file_path(int id) const {
 }
 
 /**
- *  Open the next readable file.
+ *  Open the readable file.
  */
-void splitter::_open_next_read() {
-  // Did we reached the write file ?
+void splitter::_open_read_file() {
   _rfile.clear();
-  ++_rid;
-  if (_rid == _wid)
+
+  // If we reached write-ID and wfile is open, use it.
+  if ((_rid == _wid) && !_wfile.isNull())
     _rfile = _wfile;
+  // Otherwise open next file.
   else {
-    // Open next file.
     std::string file_path(_file_path(_rid));
-    {
-      misc::shared_ptr<fs_file>
-        new_file(_file_factory->new_fs_file(
-                                  file_path,
-                                  fs_file::open_read_write_no_create));
-      _rfile = new_file;
-    }
+    misc::shared_ptr<fs_file>
+      new_file(_file_factory->new_fs_file(
+                                file_path,
+                                fs_file::open_read_write_no_create));
+    _rfile = new_file;
   }
   _roffset = 2 * sizeof(uint32_t);
   _rfile->seek(_roffset);
-
-  // Remove previous file.
-  std::string file_path(_file_path(_rid - 1));
-  if (_auto_delete) {
-    logging::info(logging::high) << "file: end of file '"
-      << file_path.c_str() << "' reached, erasing file";
-    ::remove(file_path.c_str());
-  }
-  else {
-    logging::info(logging::high) << "file: end of file '"
-      << file_path.c_str() << "' reached, NOT erasing file";
-  }
 
   return ;
 }
 
 /**
- *  Open the next writable file.
+ *  Open the writable file.
  */
-void splitter::_open_next_write() {
-  // Open file.
+void splitter::_open_write_file() {
   _wfile.clear();
-  ++_wid;
-  std::string file_path(_file_path(_wid));
-  logging::info(logging::high) << "file: opening new file '"
-    << file_path.c_str() << "'";
-  {
+
+  // If we are already reading the latest file, use it.
+  if ((_rid == _wid) && !_rfile.isNull())
+    _wfile = _rfile;
+  // Otherwise open file.
+  else {
+    std::string file_path(_file_path(_wid));
+    logging::info(logging::high) << "file: opening new file '"
+      << file_path.c_str() << "'";
     try {
       _wfile = _file_factory->new_fs_file(
                                 file_path,
@@ -315,11 +308,9 @@ void splitter::_open_next_write() {
   _wfile->seek(0, fs_file::seek_end);
   _woffset = _wfile->tell();
 
+  // Ensure 8-bytes header is written at file beginning.
   if (_woffset < static_cast<long>(2 * sizeof(uint32_t))) {
-    // Rewind to file beginning.
     _wfile->seek(0);
-
-    // Write read offset.
     union {
       char     bytes[2 * sizeof(uint32_t)];
       uint32_t integers[2];
@@ -329,8 +320,6 @@ void splitter::_open_next_write() {
     unsigned int size(0);
     while (size < sizeof(header))
       size += _wfile->write(header.bytes + size, sizeof(header) - size);
-
-    // Set current offset.
     _woffset = 2 * sizeof(uint32_t);
   }
 
